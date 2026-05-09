@@ -6,7 +6,7 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 
 | Area | Latest recorded result | Evidence |
 | --- | --- | --- |
-| Repository xUnit tests | 2026-05-09 local baseline on commit `2907ab8`: 247 passed, 0 failed, 0 skipped | `dotnet test Broiler.JS.slnx --no-build --logger trx --results-directory /tmp/broiler-tests-final` |
+| Repository xUnit tests | 2026-05-09 local baseline on commit `2907ab8fee53adfeb9af0d1974eab5052a97c241`: 247 passed, 0 failed, 0 skipped | `dotnet test Broiler.JS.slnx --no-build --logger trx --results-directory /tmp/broiler-tests-final` |
 | test262 (real subset, custom raw-script runner) | 2026-05-09 snapshot of `tc39/test262` `main` at `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`: 126 executed / 1 skipped across `Array.isArray`, `addition`, `strict-equals`, and `RegExp.escape`; Broiler passed 75 and failed 51 while Chromium passed 126 and failed 0 | Downloaded the upstream suite outside the repo, prepended the standard harness files (`assert.js`, `sta.js`, and per-test includes), then executed the same files through the repaired Broiler CLI script host and Chromium 147.0.7727.0. |
 | test262-harness smoke | Official `test262-harness` now launches the Broiler CLI, but the Node-style host prelude still fails before real test execution because Broiler does not yet match the expected global/CommonJS setup | `npx test262-harness --host-type node --host-path /tmp/broilerjs-host .../Array/isArray/15.4.3.2-0-1.js` currently aborts at `Function(\"return this;\")().require = require`. |
 | engine262 tests | Pending harness integration | Add command and totals after the first run. |
@@ -15,7 +15,7 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 
 ## 2026-05-09 local comparison run
 
-- Broiler commit under test: `2907ab8`.
+- Broiler commit under test: `2907ab8fee53adfeb9af0d1974eab5052a97c241`.
 - test262 source snapshot: `tc39/test262` `main` at `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`.
 - Chromium reference engine: `Chromium 147.0.7727.0`.
 - The custom runner intentionally executed the real upstream test files with standard harness collateral, but only for a filtered raw-script subset; async, module, and host-harness-dependent tests were excluded from this first pass.
