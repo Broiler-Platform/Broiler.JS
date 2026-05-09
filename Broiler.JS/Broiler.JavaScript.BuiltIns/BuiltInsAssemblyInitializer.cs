@@ -68,6 +68,13 @@ internal static class BuiltInsAssemblyInitializer
         JSValue.CreateArrayFactory = static () => new JSArray();
         JSValue.CreateArrayWithLengthFactory = static count => new JSArray(count);
 
+        JSObject.CreatePrimitiveObject = static value => value switch
+        {
+            JSPrimitive primitive => new JSPrimitiveObject(primitive),
+            JSSymbol symbol => new JSSymbolObject(symbol),
+            _ => throw JSEngine.NewTypeError($"Cannot convert {value} to object")
+        };
+
         // Initialize JSArrayBuilder with the concrete JSArray type so the
         // Compiler can build array expression trees without a direct reference.
         JSArrayBuilder.Initialize(typeof(JSArray));

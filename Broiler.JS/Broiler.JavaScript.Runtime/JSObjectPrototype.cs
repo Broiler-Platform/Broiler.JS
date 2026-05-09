@@ -18,7 +18,7 @@ public partial class JSObject
         if (first.IsNullOrUndefined)
             return new JSObject();
 
-        return CreatePrimitiveObject(first as JSPrimitive);
+        return CreatePrimitiveObject(first);
     }
 
     [JSPrototypeMethod][JSExport("propertyIsEnumerable")]

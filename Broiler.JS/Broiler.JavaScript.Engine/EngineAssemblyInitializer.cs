@@ -23,7 +23,9 @@ internal static class EngineAssemblyInitializer
         // ── JSObject factory delegates ──────────────────────────────
         JSObject.NewTypeError = static msg => JSEngine.NewTypeError(msg);
         JSObject.CoerceToNumber = static str => NumberParser.CoerceToNumber(str);
-        JSObject.CreatePrimitiveObject = static p => new JSPrimitiveObject(p);
+        JSObject.CreatePrimitiveObject ??= static p => p is JSPrimitive primitive
+            ? new JSPrimitiveObject(primitive)
+            : throw JSEngine.NewTypeError($"Cannot convert {p} to object");
         JSObject.TryGetClrEnumeratorFunc = CoreInternalHelpers.TryGetClrEnumerator;
         JSObject.TryUnmarshalObject = CoreInternalHelpers.TryUnmarshal;
 

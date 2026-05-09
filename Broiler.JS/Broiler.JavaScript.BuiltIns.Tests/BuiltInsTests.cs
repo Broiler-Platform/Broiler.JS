@@ -1008,6 +1008,29 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Object_Symbol_Wrapper_Uses_Symbol_Coercion_Path()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            (function () {
+                try {
+                    return Object(Symbol('x')) + '';
+                } catch (e) {
+                    return [
+                        typeof Object(Symbol('x')),
+                        e.constructor && e.constructor.name,
+                        e.message
+                    ].join('|');
+                }
+            })();
+        ");
+
+        Assert.Equal("object|TypeError|Cannot convert a Symbol value to a string.", result.ToString());
+    }
+
+    [Fact]
     public void String_IsWellFormed_Detects_Paired_And_Lone_Surrogates()
     {
         EnsureBuiltInsLoaded();
