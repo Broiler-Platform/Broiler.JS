@@ -40,7 +40,14 @@ partial class FastCompiler
         }
 
         if (left.Type == FastNodeType.Identifier)
-            return Assign(VisitIdentifierReference((AstIdentifier)left), right, assignmentOperator);
+        {
+            var identifier = (AstIdentifier)left;
+            var variable = scope.Top.GetVariable(identifier.Name, true);
+            if (variable == null && assignmentOperator == TokenTypes.Assign)
+                return JSContextBuilder.AssignIdentifier(KeyOfName(identifier.Name), Visit(right));
+
+            return Assign(variable?.Expression ?? JSContextBuilder.Index(KeyOfName(identifier.Name)), right, assignmentOperator);
+        }
 
         return Assign(Visit(left), right, assignmentOperator);
     }
