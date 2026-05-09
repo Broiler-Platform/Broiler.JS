@@ -263,12 +263,12 @@ internal static class BuiltInsAssemblyInitializer
                 return clone;
             }
 
-            if (value is Broiler.JavaScript.BuiltIns.DataView.DataView dataView)
+            if (value is DataView.DataView dataView)
             {
                 var clonedBuffer = recurse(dataView.Buffer, seen) as JSArrayBuffer
                     ?? throw JSEngine.NewTypeError("structuredClone: DataView buffer must be an ArrayBuffer");
 
-                var clone = new Broiler.JavaScript.BuiltIns.DataView.DataView(clonedBuffer, dataView.ByteOffset, dataView.ByteLength);
+                var clone = new DataView.DataView(clonedBuffer, dataView.ByteOffset, dataView.ByteLength);
                 seen[value] = clone;
                 return clone;
             }

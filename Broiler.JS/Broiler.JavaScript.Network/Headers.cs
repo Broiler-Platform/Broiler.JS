@@ -7,7 +7,7 @@ using Broiler.JavaScript.Clr;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.ExpressionCompiler;
 
-namespace BroilerJSJS.Network
+namespace BroilerJS.Network
 {
     [JSClassGenerator("Headers")]
     public partial class Headers : KeyValueStore

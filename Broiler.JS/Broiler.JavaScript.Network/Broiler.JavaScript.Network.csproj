@@ -2,10 +2,10 @@
 
   <PropertyGroup>
 	  <TargetFramework>net8.0</TargetFramework>
-	  <AssemblyName>BroilerJSJS.Network</AssemblyName>
-	  <PackageId>BroilerJSJS.Network</PackageId>
+	  <AssemblyName>BroilerJS.Network</AssemblyName>
+	  <PackageId>BroilerJS.Network</PackageId>
 	  <PackageTags>broilerjsjs.network,network</PackageTags>
-	  <Description>Network Services (fetch api) for BroilerJSJS</Description>
+	  <Description>Network Services (fetch api) for BroilerJS</Description>
 	  <PackageProjectUrl>http://broilerjsjs.com/</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/broilerjsjs/broilerjs</RepositoryUrl>
 	  <Version>1.0.1</Version>
@@ -40,7 +40,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Broiler.JavaScript.BuiltIns\Broiler.JavaScript.BuiltIns.csproj" />
 		<ProjectReference Include="..\Broiler.JavaScript.Clr\Broiler.JavaScript.Clr.csproj" />
-		<PackageReference Include="Nerdbank.GitVersioning" Version="3.7.115">
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.9.50">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>

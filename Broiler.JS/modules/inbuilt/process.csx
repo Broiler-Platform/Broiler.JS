@@ -1,9 +1,9 @@
-#r "nuget: BroilerJSJS.Core,1.2.1"
+#r "nuget: BroilerJS.Core,1.2.1"
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using BroilerJSJS.Core;
-using BroilerJSJS.Core.Clr;
+using BroilerJS.Core;
+using BroilerJS.Core.Clr;
 
 
 public class YProcess {

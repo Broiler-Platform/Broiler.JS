@@ -3,8 +3,8 @@ using System.Runtime.CompilerServices;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.BuiltIns;
 using Broiler.JavaScript.BuiltIns.Null;
-using Broiler.JavaScript.Core.Core;
 using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Parser;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
@@ -23,9 +23,9 @@ public class M6ValidationTests
     private static void EnsureAllAssembliesLoaded()
     {
         RuntimeHelpers.RunClassConstructor(
-            typeof(Broiler.JavaScript.BuiltIns.Weak.JSWeakRef).TypeHandle);
+            typeof(BuiltIns.Weak.JSWeakRef).TypeHandle);
         RuntimeHelpers.RunClassConstructor(
-            typeof(Broiler.JavaScript.Clr.DefaultClrInterop).TypeHandle);
+            typeof(Clr.DefaultClrInterop).TypeHandle);
     }
 
     // ── 6.2: Type Location Verification ──────────────────────────────
@@ -106,7 +106,7 @@ public class M6ValidationTests
 
         // ClrAssemblyInitializer wires the full CLR interop implementation.
         Assert.NotNull(JSEngine.ClrInterop);
-        Assert.IsType<Broiler.JavaScript.Clr.DefaultClrInterop>(JSEngine.ClrInterop);
+        Assert.IsType<Clr.DefaultClrInterop>(JSEngine.ClrInterop);
     }
 
     [Fact]

@@ -5,7 +5,6 @@ using Broiler.JavaScript.BuiltIns.Intl;
 using Broiler.JavaScript.BuiltIns.Iterator;
 using Broiler.JavaScript.BuiltIns.Promise;
 using Broiler.JavaScript.BuiltIns.RegExp;
-using Broiler.JavaScript.Core.Core;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Runtime;
@@ -25,9 +24,9 @@ public class M7ValidationTests
     private static void EnsureAllAssembliesLoaded()
     {
         RuntimeHelpers.RunClassConstructor(
-            typeof(Broiler.JavaScript.BuiltIns.Weak.JSWeakRef).TypeHandle);
+            typeof(BuiltIns.Weak.JSWeakRef).TypeHandle);
         RuntimeHelpers.RunClassConstructor(
-            typeof(Broiler.JavaScript.Clr.DefaultClrInterop).TypeHandle);
+            typeof(Clr.DefaultClrInterop).TypeHandle);
     }
 
     // ── 7.1: TypedArrays — Extracted to BuiltIns ──────────────────────
@@ -48,7 +47,7 @@ public class M7ValidationTests
     {
         // The Compiler assembly must NOT reference TypedArray types.
         // This confirms extraction didn't introduce unwanted coupling.
-        var compilerAssembly = typeof(Broiler.JavaScript.Compiler.FastCompiler).Assembly;
+        var compilerAssembly = typeof(Compiler.FastCompiler).Assembly;
 
         var compilerTypes = compilerAssembly.GetTypes()
             .SelectMany(t => t.GetMethods(
@@ -125,7 +124,7 @@ public class M7ValidationTests
         Assert.NotNull(regExpBuilderType);
 
         // Confirm the Compiler assembly references Engine (for JSRegExpBuilder).
-        var compilerAssembly = typeof(Broiler.JavaScript.Compiler.FastCompiler).Assembly;
+        var compilerAssembly = typeof(Compiler.FastCompiler).Assembly;
         var compilerRefs = compilerAssembly.GetReferencedAssemblies()
             .Select(r => r.Name!)
             .ToHashSet();
@@ -200,8 +199,8 @@ public class M7ValidationTests
     public void M7_Iterator_NoCompilerOrParserCoupling()
     {
         // Neither Compiler nor Parser reference JSIteratorObject.
-        var compilerAssembly = typeof(Broiler.JavaScript.Compiler.FastCompiler).Assembly;
-        var parserAssembly = typeof(Broiler.JavaScript.Parser.FastParser).Assembly;
+        var compilerAssembly = typeof(Compiler.FastCompiler).Assembly;
+        var parserAssembly = typeof(Parser.FastParser).Assembly;
 
         var compilerTypeNames = compilerAssembly.GetTypes()
             .Select(t => t.FullName ?? "")

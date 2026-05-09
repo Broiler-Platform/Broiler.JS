@@ -37,7 +37,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         // add top level...
 
         var parserPool = new FastPool();
-        var parser = new Broiler.JavaScript.Parser.FastParser(new FastTokenStream(parserPool, code));
+        var parser = new FastParser(new FastTokenStream(parserPool, code));
         var jScript = parser.ParseProgram();
         parserPool.Dispose();
 

@@ -13,7 +13,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
 {
     string IJSRegExp.Pattern => pattern;
     string IJSRegExp.Flags => flags;
-    System.Text.RegularExpressions.Regex IJSRegExp.Value => value;
+    Regex IJSRegExp.Value => value;
 
     [JSExport("escape")]
     internal static JSValue Escape(in Arguments a)

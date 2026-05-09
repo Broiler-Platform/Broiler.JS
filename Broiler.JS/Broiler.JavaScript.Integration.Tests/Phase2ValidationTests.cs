@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Broiler.JavaScript.BuiltIns;
-using Broiler.JavaScript.Core.Core;
 using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
@@ -21,9 +21,9 @@ public class Phase2ValidationTests
     private static void EnsureAllAssembliesLoaded()
     {
         RuntimeHelpers.RunClassConstructor(
-            typeof(Broiler.JavaScript.BuiltIns.Weak.JSWeakRef).TypeHandle);
+            typeof(BuiltIns.Weak.JSWeakRef).TypeHandle);
         RuntimeHelpers.RunClassConstructor(
-            typeof(Broiler.JavaScript.Clr.DefaultClrInterop).TypeHandle);
+            typeof(Clr.DefaultClrInterop).TypeHandle);
     }
 
     // ── M9: Code-Generation Builder Isolation Analysis ─────────────────
@@ -32,7 +32,7 @@ public class Phase2ValidationTests
     public void M9_BuildersInLinqExpressions()
     {
         // LinqExpressions builders live in the LinqExpressions assembly.
-        var linqAssembly = typeof(Broiler.JavaScript.LinqExpressions.LinqExpressions.JSRegExpBuilder).Assembly;
+        var linqAssembly = typeof(JSRegExpBuilder).Assembly;
         var linqTypes = linqAssembly.GetTypes().Select(t => t.FullName).ToList();
 
         // Key builder types in LinqExpressions:
@@ -72,7 +72,7 @@ public class Phase2ValidationTests
     public void M9_CompilerStillReferencesEngine()
     {
         // Verify that Compiler assembly references Engine (not the other way around).
-        var compilerAssembly = typeof(Broiler.JavaScript.Compiler.FastCompiler).Assembly;
+        var compilerAssembly = typeof(Compiler.FastCompiler).Assembly;
         var engineAssembly = typeof(JSContext).Assembly;
 
         var compilerRefs = compilerAssembly.GetReferencedAssemblies()
@@ -93,7 +93,7 @@ public class Phase2ValidationTests
         // JSArray was moved to the BuiltIns assembly (Broiler.JavaScript.BuiltIns.Array namespace).
         // Its prototype methods are split into partial files:
         // JSArrayPrototype.Iteration.cs, .Search.cs, .Modification.cs, .Utility.cs
-        var builtInsAssembly = typeof(Broiler.JavaScript.BuiltIns.Array.Typed.JSArrayBuffer).Assembly;
+        var builtInsAssembly = typeof(BuiltIns.Array.Typed.JSArrayBuffer).Assembly;
         var type = builtInsAssembly.GetTypes()
             .FirstOrDefault(t => t.Name == "JSArray" && t.Namespace == "Broiler.JavaScript.BuiltIns.Array");
         Assert.NotNull(type);
@@ -154,7 +154,7 @@ public class Phase2ValidationTests
         // JSString's prototype methods were split into partial files:
         // JSStringPrototype.Search.cs, .Transform.cs, .Extract.cs, .Pattern.cs
         // The class is JSString (partial), now in the BuiltIns assembly.
-        var type = typeof(Broiler.JavaScript.BuiltIns.String.JSString);
+        var type = typeof(BuiltIns.String.JSString);
         Assert.NotNull(type);
 
         var allMethods = type.GetMethods(
@@ -180,7 +180,7 @@ public class Phase2ValidationTests
     {
         // Moving files to subdirectories should not affect partial class merging.
         // Verify FastCompiler has visitor methods from all subdirectories.
-        var compilerType = typeof(Broiler.JavaScript.Compiler.FastCompiler);
+        var compilerType = typeof(Compiler.FastCompiler);
         Assert.NotNull(compilerType);
 
         var methods = compilerType.GetMethods(
@@ -199,7 +199,7 @@ public class Phase2ValidationTests
         // after being moved to Infrastructure/ subdirectory.
         EnsureAllAssembliesLoaded();
 
-        var compilerAssembly = typeof(Broiler.JavaScript.Compiler.FastCompiler).Assembly;
+        var compilerAssembly = typeof(Compiler.FastCompiler).Assembly;
         var initializerType = compilerAssembly.GetTypes()
             .FirstOrDefault(t => t.Name == "CompilerAssemblyInitializer");
         Assert.NotNull(initializerType);
@@ -209,7 +209,7 @@ public class Phase2ValidationTests
     public void M12_CompilerAssembly_NamespaceMatchesAssembly()
     {
         // FastCompiler lives in the Broiler.JavaScript.Compiler namespace.
-        var compilerType = typeof(Broiler.JavaScript.Compiler.FastCompiler);
+        var compilerType = typeof(Compiler.FastCompiler);
         Assert.Equal("Broiler.JavaScript.Compiler", compilerType.Namespace);
     }
 
@@ -219,7 +219,7 @@ public class Phase2ValidationTests
     public void M13_ExpressionCompiler_RemainsMonolithic()
     {
         // M13 concluded no-go on decomposition. Verify the assembly exists as one unit.
-        var ecAssembly = typeof(Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression).Assembly;
+        var ecAssembly = typeof(ExpressionCompiler.Expressions.YExpression).Assembly;
         Assert.Equal("Broiler.JavaScript.ExpressionCompiler", ecAssembly.GetName().Name);
 
         // Verify key functional groups coexist in same assembly:
@@ -241,7 +241,7 @@ public class Phase2ValidationTests
     public void M13_ExpressionCompiler_IsLeafDependency()
     {
         // ExpressionCompiler should not reference any other Broiler assemblies.
-        var ecAssembly = typeof(Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression).Assembly;
+        var ecAssembly = typeof(ExpressionCompiler.Expressions.YExpression).Assembly;
         var refs = ecAssembly.GetReferencedAssemblies()
             .Select(a => a.Name)
             .Where(n => n != null && n.StartsWith("Broiler."))

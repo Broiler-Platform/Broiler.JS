@@ -6,9 +6,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using BroilerJSJS.Utils;
+using BroilerJS.Utils;
 
-namespace BroilerJSJS
+namespace BroilerJS
 {
     /// <summary>
     /// A <see cref="MetadataReferenceResolver"/> decorator that handles

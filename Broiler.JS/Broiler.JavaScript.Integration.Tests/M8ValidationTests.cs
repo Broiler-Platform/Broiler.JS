@@ -1,8 +1,8 @@
 using System.Runtime.CompilerServices;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.BuiltIns;
-using Broiler.JavaScript.Core.Core;
 using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Parser;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
@@ -22,9 +22,9 @@ public class M8ValidationTests
     private static void EnsureAllAssembliesLoaded()
     {
         RuntimeHelpers.RunClassConstructor(
-            typeof(Broiler.JavaScript.BuiltIns.Weak.JSWeakRef).TypeHandle);
+            typeof(BuiltIns.Weak.JSWeakRef).TypeHandle);
         RuntimeHelpers.RunClassConstructor(
-            typeof(Broiler.JavaScript.Clr.DefaultClrInterop).TypeHandle);
+            typeof(Clr.DefaultClrInterop).TypeHandle);
     }
 
     // ── 8.1: Extraction Pattern Documentation Accuracy ────────────────
@@ -64,7 +64,7 @@ public class M8ValidationTests
     {
         // Verify the documented 4-layer architecture by checking assembly references.
         // Feature layer (BuiltIns) must reference Engine layer but not vice versa.
-        var builtInsAssembly = typeof(Broiler.JavaScript.BuiltIns.Map.JSMap).Assembly;
+        var builtInsAssembly = typeof(BuiltIns.Map.JSMap).Assembly;
         var engineAssembly = typeof(JSContext).Assembly;
 
         Assert.Equal("Broiler.JavaScript.BuiltIns", builtInsAssembly.GetName().Name);
@@ -133,17 +133,17 @@ public class M8ValidationTests
         Assert.Contains("PropertySequenceCoreExtensions", engineTypes);
 
         // BuiltIns assembly — 1 initializer:
-        var builtInsAssembly = typeof(Broiler.JavaScript.BuiltIns.Map.JSMap).Assembly;
+        var builtInsAssembly = typeof(BuiltIns.Map.JSMap).Assembly;
         var builtInsTypes = builtInsAssembly.GetTypes().Select(t => t.Name).ToList();
         Assert.Contains("BuiltInsAssemblyInitializer", builtInsTypes);
 
         // Compiler assembly — 1 initializer:
-        var compilerAssembly = typeof(Broiler.JavaScript.Compiler.FastCompiler).Assembly;
+        var compilerAssembly = typeof(Compiler.FastCompiler).Assembly;
         var compilerTypes = compilerAssembly.GetTypes().Select(t => t.Name).ToList();
         Assert.Contains("CompilerAssemblyInitializer", compilerTypes);
 
         // Clr assembly — 1 initializer:
-        var clrAssembly = typeof(Broiler.JavaScript.Clr.DefaultClrInterop).Assembly;
+        var clrAssembly = typeof(Clr.DefaultClrInterop).Assembly;
         var clrTypes = clrAssembly.GetTypes().Select(t => t.Name).ToList();
         Assert.Contains("ClrAssemblyInitializer", clrTypes);
     }
@@ -155,16 +155,16 @@ public class M8ValidationTests
     {
         // The contribution guide states that built-in types live in
         // Broiler.JavaScript.BuiltIns.* namespaces in the BuiltIns assembly.
-        var builtInsAssembly = typeof(Broiler.JavaScript.BuiltIns.Map.JSMap).Assembly;
+        var builtInsAssembly = typeof(BuiltIns.Map.JSMap).Assembly;
         Assert.Equal("Broiler.JavaScript.BuiltIns", builtInsAssembly.GetName().Name);
 
         // Verify several extracted types retain their expected namespaces:
         Assert.StartsWith("Broiler.JavaScript.BuiltIns",
-            typeof(Broiler.JavaScript.BuiltIns.Map.JSMap).Namespace);
+            typeof(BuiltIns.Map.JSMap).Namespace);
         Assert.StartsWith("Broiler.JavaScript.BuiltIns",
-            typeof(Broiler.JavaScript.BuiltIns.Set.JSSet).Namespace);
+            typeof(BuiltIns.Set.JSSet).Namespace);
         Assert.StartsWith("Broiler.JavaScript.BuiltIns",
-            typeof(Broiler.JavaScript.BuiltIns.BigInt.JSBigInt).Namespace);
+            typeof(BuiltIns.BigInt.JSBigInt).Namespace);
     }
 
     [Fact]

@@ -20,10 +20,10 @@ using Broiler.JavaScript.Extensions;
 using Broiler.JavaScript.Modules;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
-using BroilerJSJS.Utils;
-using BroilerJSJS.Network;
+using BroilerJS.Utils;
+using BroilerJS.Network;
 
-namespace BroilerJSJS
+namespace BroilerJS
 {
 
     public delegate void ModuleDelegate(
@@ -248,7 +248,7 @@ namespace BroilerJSJS
                 if(l.StartsWith("#r \"nuget: "))
                 {
                     var name = ParseName(l);
-                    if (name == "BroilerJSJS.Core")
+                    if (name == "BroilerJS.Core")
                         continue;
                 }
                 sb.AppendLine(line);

@@ -1,6 +1,3 @@
-using Broiler.JavaScript.Core;
-using Broiler.JavaScript.Core.Core;
-using Broiler.JavaScript.Clr;
 using Broiler.JavaScript.Engine;
 
 namespace Broiler.JavaScript.Clr.Tests;
@@ -11,7 +8,7 @@ public class ClrTests
     public void ClrProxy_From_WrapsObject()
     {
         using var ctx = new JSContext();
-        var list = new System.Collections.Generic.List<int> { 1, 2, 3 };
+        var list = new List<int> { 1, 2, 3 };
         var proxy = ClrProxy.From(list);
         Assert.NotNull(proxy);
     }

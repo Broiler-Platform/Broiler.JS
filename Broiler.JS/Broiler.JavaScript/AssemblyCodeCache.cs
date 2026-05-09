@@ -10,7 +10,7 @@ using Broiler.JavaScript.Core.Core;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 
-namespace BroilerJSJS
+namespace BroilerJS
 {
     public class AssemblyCodeCache : ICodeCache
     {

@@ -13,7 +13,7 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Storage;
 
-namespace BroilerJSJS.Network
+namespace BroilerJS.Network
 {
     [JSRegistrationGenerator]
     public static partial class Names

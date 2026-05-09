@@ -6,7 +6,7 @@ using Broiler.JavaScript.Core.Core;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Runtime;
 
-namespace BroilerJSJS.Utils
+namespace BroilerJS.Utils
 {
     public class BroilerJSConsole
     {

@@ -7,7 +7,7 @@ using Broiler.JavaScript.BuiltIns.Events;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.ExpressionCompiler;
 
-namespace BroilerJSJS.Network
+namespace BroilerJS.Network
 {
     [JSClassGenerator]
     public partial class AbortSignal: EventTarget

@@ -14,7 +14,7 @@ using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.ExpressionCompiler;
 
-namespace BroilerJSJS.Network
+namespace BroilerJS.Network
 {
     internal static class JSArrayBufferExtensions
     {

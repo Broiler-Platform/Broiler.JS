@@ -10,7 +10,7 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.ExpressionCompiler;
 
-namespace BroilerJSJS.Network
+namespace BroilerJS.Network
 {
     [JSClassGenerator]
     public partial class Request : JSObject

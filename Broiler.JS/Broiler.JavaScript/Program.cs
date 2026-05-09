@@ -2,13 +2,13 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using BroilerJSJS;
+using BroilerJS;
 using Broiler.JavaScript.Core.Core;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.ExpressionCompiler.Generator;
 using Broiler.JavaScript.Runtime;
-using BroilerJSJS.Utils;
-using BroilerJSJS.REPL;
+using BroilerJS.Utils;
+using BroilerJS.REPL;
 
 namespace BroilerJS
 {

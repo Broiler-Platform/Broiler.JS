@@ -1316,8 +1316,8 @@ public class BuiltInsTests
         // Load CLR assembly so JSEngine.ClrInterop is properly configured
         // (required for JSConsole marshalling via ClrProxy).
         RuntimeHelpers.RunClassConstructor(
-            typeof(Broiler.JavaScript.Clr.DefaultClrInterop).TypeHandle);
+            typeof(Clr.DefaultClrInterop).TypeHandle);
         RuntimeHelpers.RunClassConstructor(
-            typeof(Broiler.JavaScript.BuiltIns.Weak.JSWeakRef).TypeHandle);
+            typeof(Weak.JSWeakRef).TypeHandle);
     }
 }

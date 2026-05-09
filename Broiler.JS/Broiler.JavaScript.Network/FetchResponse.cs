@@ -10,7 +10,7 @@ using Broiler.JavaScript.BuiltIns.String;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.ExpressionCompiler;
 
-namespace BroilerJSJS.Network
+namespace BroilerJS.Network
 {
     [JSClassGenerator]
     public partial class FetchResponse : JSObject
