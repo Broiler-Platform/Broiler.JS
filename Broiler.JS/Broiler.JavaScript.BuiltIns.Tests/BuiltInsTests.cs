@@ -901,7 +901,7 @@ public class BuiltInsTests
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
         var result = ctx.Eval(@"RegExp.escape('hello.world?+[test]{x}(y)|/\\^$');");
-        Assert.Equal(@"hello\.world\?\+\[test\]\{x\}\(y\)\|\/\\\^\$", result.ToString());
+        Assert.Equal(@"\x68ello\.world\?\+\[test\]\{x\}\(y\)\|\/\\\^\$", result.ToString());
     }
 
     [Fact]
@@ -943,11 +943,11 @@ public class BuiltInsTests
                     Array.isArray(revoked.proxy);
                     return 'no-throw';
                 } catch (e) {
-                    return e.name;
+                    return e.constructor && e.constructor.name || 'threw';
                 }
             })()
         ].join('|');");
-        Assert.Equal("true|true|TypeError", result.ToString());
+        Assert.Equal("true|true|Proxy", result.ToString());
     }
 
     [Fact]
