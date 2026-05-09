@@ -929,6 +929,27 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void BigInt_Wrapper_Addition_Preserves_BigInt_Mixing_Rules()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            (function () {
+                try {
+                    return Object(1n) + 1;
+                } catch (e) {
+                    return e.constructor.name + '|' + e.message;
+                }
+            })(),
+            (function () {
+                var value = Object(1n) + 1n;
+                return typeof value + '|' + String(value);
+            })()
+        ].join('||');");
+        Assert.Equal("TypeError|Cannot mix BigInt and other types, use explicit conversions||bigint|2", result.ToString());
+    }
+
+    [Fact]
     public void Array_IsArray_Recognizes_ArrayPrototype_And_Proxy_Targets()
     {
         EnsureBuiltInsLoaded();

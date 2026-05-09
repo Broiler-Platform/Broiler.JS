@@ -30,6 +30,10 @@ public class JSPrimitiveObject : JSObject
 
     public override JSValue AddValue(JSValue value) => this.value.AddValue(value);
 
+    public override JSValue AddValue(double value) => this.value.AddValue(value);
+
+    public override JSValue AddValue(string value) => this.value.AddValue(value);
+
     protected internal override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
     {
         if (key.Key == KeyStrings.length.Key)

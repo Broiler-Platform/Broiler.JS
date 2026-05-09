@@ -23,7 +23,6 @@ This file tracks areas that must be validated before Broiler.JS can make strong 
 ### Built-in areas with implementation but incomplete standards evidence
 
 - [ ] Bring `Array.isArray` into line with test262 for `Array.prototype`, proxies / revoked proxies, and constructor / descriptor metadata checks.
-- [ ] Fix wrapper-object, symbol, and bigint coercion in the `+` operator so test262 addition cases match Chromium.
 - [ ] Validate `Intl` behavior against ECMA-402-focused suites before making internationalization compliance claims.
 - [ ] Add public-suite and regression coverage for `Proxy` invariants and revocation edge cases.
 - [ ] Add public-suite and regression coverage for typed arrays, `ArrayBuffer`, and `DataView`, including detach/transfer edge cases.
