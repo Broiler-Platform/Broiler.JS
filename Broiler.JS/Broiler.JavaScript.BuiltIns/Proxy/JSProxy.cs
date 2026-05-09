@@ -65,6 +65,8 @@ public partial class JSProxy : JSObject
         return $"s:{key.KeyString.Key}";
     }
 
+    private static string CreateSymbolKeyIdentity(uint key) => $"y:{key}";
+
     private static void ValidateGetInvariant(JSObject target, in PropertyKey key, JSValue trapResult)
     {
         var property = GetOwnTargetProperty(target, in key);
@@ -126,7 +128,7 @@ public partial class JSProxy : JSObject
 
         foreach (var (key, property) in target.GetSymbols().AllValues())
         {
-            if (!property.IsConfigurable && !seenKeys.Contains($"y:{key}"))
+            if (!property.IsConfigurable && !seenKeys.Contains(CreateSymbolKeyIdentity(key)))
                 throw JSEngine.NewTypeError("Proxy ownKeys trap must include all non-configurable target keys");
         }
     }
