@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -22,8 +23,14 @@ namespace BroilerJS
 
             ILCodeGenerator.GenerateLogs = true;
 
+            var recognizedOptions = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "--script-host"
+            };
+
             var scriptHostMode = args.Contains("--script-host");
-            var scriptPath = args.FirstOrDefault(arg => !arg.StartsWith("-"));
+            var positionalArgs = args.Where(arg => !recognizedOptions.Contains(arg)).ToArray();
+            var scriptPath = positionalArgs.FirstOrDefault(arg => !arg.StartsWith("-"));
 
             if (scriptPath == null)
             {
@@ -46,6 +53,8 @@ namespace BroilerJS
             {
                 using var context = new JSContext();
                 var code = await File.ReadAllTextAsync(file.FullName);
+                // Pass the global context explicitly so top-level `this` resolves to
+                // the same host object that owns the evaluated script.
                 var result = context.Eval(code, file.FullName, context);
                 if (!result.IsUndefined)
                     Console.WriteLine(result);
