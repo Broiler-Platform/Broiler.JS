@@ -9,9 +9,9 @@ partial class FastCompiler
 
     private YExpression VisitIdentifierReference(AstIdentifier identifier)
     {
-        var var = scope.Top.GetVariable(identifier.Name, true);
-        if (var != null)
-            return var.Expression;
+        var variable = scope.Top.GetVariable(identifier.Name, true);
+        if (variable != null)
+            return variable.Expression;
 
         return JSContextBuilder.Index(KeyOfName(identifier.Name));
     }
@@ -31,9 +31,9 @@ partial class FastCompiler
             return vs.Expression;
         }
 
-        var var = scope.Top.GetVariable(identifier.Name, true);
-        if (var != null)
-            return var.Expression;
+        var variable = scope.Top.GetVariable(identifier.Name, true);
+        if (variable != null)
+            return variable.Expression;
 
         return throwIfMissing
             ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
