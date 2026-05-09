@@ -10,6 +10,8 @@
 		<None Include="..\Jint.Tests.CommonScripts\Scripts\**" CopyToOutputDirectory="PreserveNewest" LinkBase="Scripts" />
 	</ItemGroup>
 	<ItemGroup>
+		<ProjectReference Include="..\..\Broiler.JavaScript.All\Broiler.JavaScript.All.csproj" />
+		<ProjectReference Include="..\..\Broiler.JavaScript.Compiler\Broiler.JavaScript.Compiler.csproj" />
 	  <ProjectReference Include="..\..\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj" />
 	</ItemGroup>
 
