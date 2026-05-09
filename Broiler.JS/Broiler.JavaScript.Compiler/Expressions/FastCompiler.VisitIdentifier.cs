@@ -31,9 +31,12 @@ partial class FastCompiler
             return vs.Expression;
         }
 
-        var reference = VisitIdentifierReference(identifier);
+        var var = scope.Top.GetVariable(identifier.Name, true);
+        if (var != null)
+            return var.Expression;
+
         return throwIfMissing
             ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
-            : reference;
+            : JSContextBuilder.Index(KeyOfName(identifier.Name));
     }
 }
