@@ -213,7 +213,8 @@ public class M8ValidationTests
 
             var dashboard = File.ReadAllText(Path.Combine(repoRoot, "docs", "compliance", "dashboard.md"));
             Assert.Contains("Compliance dashboard", dashboard);
-            Assert.Contains("247 passed", dashboard);
+            Assert.Contains("local baseline on commit", dashboard);
+            Assert.Contains("dotnet test Broiler.JS.slnx", dashboard);
             Assert.Contains("Compliance workstreams", dashboard);
             Assert.Contains("test262", dashboard);
             Assert.Contains("Regression tracking", dashboard);
