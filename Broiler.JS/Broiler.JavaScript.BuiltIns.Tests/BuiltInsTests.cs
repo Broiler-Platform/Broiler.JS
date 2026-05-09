@@ -999,7 +999,7 @@ public class BuiltInsTests
     {
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
-        var result = ctx.Eval(@"(function () {
+        var parts = ctx.Eval(@"(function () {
             var descriptor = Object.getOwnPropertyDescriptor(RegExp, 'escape');
             var lengthDescriptor = Object.getOwnPropertyDescriptor(RegExp.escape, 'length');
             var nameDescriptor = Object.getOwnPropertyDescriptor(RegExp.escape, 'name');
@@ -1017,8 +1017,19 @@ public class BuiltInsTests
                 nameDescriptor.enumerable,
                 nameDescriptor.configurable
             ].join('|');
-        })();");
-        Assert.Equal("1|escape|true|false|true|false|false|true|false|false|true", result.ToString());
+        })();").ToString().Split('|');
+        Assert.Equal(11, parts.Length);
+        Assert.Equal("1", parts[0]);
+        Assert.Equal("escape", parts[1]);
+        Assert.Equal("true", parts[2]);
+        Assert.Equal("false", parts[3]);
+        Assert.Equal("true", parts[4]);
+        Assert.Equal("false", parts[5]);
+        Assert.Equal("false", parts[6]);
+        Assert.Equal("true", parts[7]);
+        Assert.Equal("false", parts[8]);
+        Assert.Equal("false", parts[9]);
+        Assert.Equal("true", parts[10]);
     }
 
     [Fact]
@@ -1083,7 +1094,7 @@ public class BuiltInsTests
     {
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
-        var result = ctx.Eval(@"(function () {
+        var parts = ctx.Eval(@"(function () {
             var descriptor = Object.getOwnPropertyDescriptor(Array, 'isArray');
             var lengthDescriptor = Object.getOwnPropertyDescriptor(Array.isArray, 'length');
             var nameDescriptor = Object.getOwnPropertyDescriptor(Array.isArray, 'name');
@@ -1105,8 +1116,23 @@ public class BuiltInsTests
                 nameDescriptor.enumerable,
                 nameDescriptor.configurable
             ].join('|');
-        })();");
-        Assert.Equal("true|false|false|true|1|isArray|true|false|true|false|false|true|false|false|true", result.ToString());
+        })();").ToString().Split('|');
+        Assert.Equal(15, parts.Length);
+        Assert.Equal("true", parts[0]);
+        Assert.Equal("false", parts[1]);
+        Assert.Equal("false", parts[2]);
+        Assert.Equal("true", parts[3]);
+        Assert.Equal("1", parts[4]);
+        Assert.Equal("isArray", parts[5]);
+        Assert.Equal("true", parts[6]);
+        Assert.Equal("false", parts[7]);
+        Assert.Equal("true", parts[8]);
+        Assert.Equal("false", parts[9]);
+        Assert.Equal("false", parts[10]);
+        Assert.Equal("true", parts[11]);
+        Assert.Equal("false", parts[12]);
+        Assert.Equal("false", parts[13]);
+        Assert.Equal("true", parts[14]);
     }
 
     [Fact]
