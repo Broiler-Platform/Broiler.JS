@@ -317,6 +317,94 @@ public class BuiltInsTests
         Assert.Equal("hello", result.ToString());
     }
 
+    [Fact]
+    public void Proxy_SetTrap_Receives_Value()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var target = {};
+            var seen = [];
+            var proxy = new Proxy(target, {
+                set: function(obj, prop, value, receiver) {
+                    seen = [String(prop), String(value)];
+                    obj[prop] = value;
+                    return true;
+                }
+            });
+            proxy.answer = 42;
+            [seen[0], seen[1], target.answer].join('|');
+        ");
+        Assert.Equal("answer|42|42", result.ToString());
+    }
+
+    [Fact]
+    public void Proxy_Revoked_Get_Set_And_ObjectKeys_Throw_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var revoked = Proxy.revocable({ fixed: 1 }, {});
+            revoked.revoke();
+            [
+                (function () { try { return revoked.proxy.fixed; } catch (e) { return e.constructor.name; } })(),
+                (function () { try { revoked.proxy.fixed = 2; return 'no-throw'; } catch (e) { return e.constructor.name; } })(),
+                (function () { try { Object.keys(revoked.proxy); return 'no-throw'; } catch (e) { return e.constructor.name; } })()
+            ].join('|');
+        ");
+        Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Proxy_GetTrap_Cannot_Lie_About_NonConfigurable_Readonly_Data_Properties()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var target = {};
+            Object.defineProperty(target, 'fixed', {
+                value: 1,
+                writable: false,
+                configurable: false
+            });
+            var proxy = new Proxy(target, {
+                get: function() { return 2; }
+            });
+            try {
+                proxy.fixed;
+                return 'no-throw';
+            } catch (e) {
+                return e.constructor.name;
+            }
+        ");
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Proxy_OwnKeys_Trap_Must_Report_NonConfigurable_Target_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var target = {};
+            Object.defineProperty(target, 'fixed', {
+                value: 1,
+                enumerable: true,
+                configurable: false
+            });
+            var proxy = new Proxy(target, {
+                ownKeys: function() { return []; }
+            });
+            try {
+                Object.keys(proxy);
+                return 'no-throw';
+            } catch (e) {
+                return e.constructor.name;
+            }
+        ");
+        Assert.Equal("TypeError", result.ToString());
+    }
+
     // ── M2: JSConsole tests ──────────────────────────────────────────
 
     [Fact]

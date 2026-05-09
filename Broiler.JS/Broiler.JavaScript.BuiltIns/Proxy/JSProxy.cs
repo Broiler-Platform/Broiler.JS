@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.BuiltIns.Array;
+﻿using System.Collections.Generic;
+using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -41,6 +42,94 @@ public partial class JSProxy : JSObject
     }
 
     internal void Revoke() => revoked = true;
+
+    private static JSProperty GetOwnTargetProperty(JSObject target, in PropertyKey key)
+    {
+        if (key.IsSymbol)
+            return target.GetInternalProperty(key.Symbol, false);
+
+        if (key.IsUInt)
+            return target.GetInternalProperty(key.Index, false);
+
+        return target.GetInternalProperty(in key.KeyString, false);
+    }
+
+    private static string CreateKeyIdentity(in PropertyKey key)
+    {
+        if (key.IsSymbol)
+            return $"y:{key.Symbol.Key}";
+
+        if (key.IsUInt)
+            return $"u:{key.Index}";
+
+        return $"s:{key.KeyString.Key}";
+    }
+
+    private static void ValidateGetInvariant(JSObject target, in PropertyKey key, JSValue trapResult)
+    {
+        var property = GetOwnTargetProperty(target, in key);
+        if (property.IsEmpty || property.IsConfigurable)
+            return;
+
+        if (!property.IsProperty)
+        {
+            if (property.IsReadOnly)
+            {
+                var targetValue = target.GetValue(property);
+                if (!trapResult.StrictEquals(targetValue))
+                    throw JSEngine.NewTypeError("Proxy get trap violated an invariant for a non-configurable, non-writable property");
+            }
+
+            return;
+        }
+
+        if (property.get == null && !trapResult.IsUndefined)
+            throw JSEngine.NewTypeError("Proxy get trap violated an invariant for a non-configurable accessor without a getter");
+    }
+
+    private static void ValidateSetInvariant(JSObject target, in PropertyKey key, JSValue value)
+    {
+        var property = GetOwnTargetProperty(target, in key);
+        if (property.IsEmpty || property.IsConfigurable)
+            return;
+
+        if (!property.IsProperty)
+        {
+            if (property.IsReadOnly)
+            {
+                var targetValue = target.GetValue(property);
+                if (!value.StrictEquals(targetValue))
+                    throw JSEngine.NewTypeError("Proxy set trap violated an invariant for a non-configurable, non-writable property");
+            }
+
+            return;
+        }
+
+        if (property.set == null)
+            throw JSEngine.NewTypeError("Proxy set trap violated an invariant for a non-configurable accessor without a setter");
+    }
+
+    private static void ValidateOwnKeysInvariant(JSObject target, HashSet<string> seenKeys)
+    {
+        foreach (var (key, property) in target.GetElements().AllValues())
+        {
+            if (!property.IsConfigurable && !seenKeys.Contains(CreateKeyIdentity(key)))
+                throw JSEngine.NewTypeError("Proxy ownKeys trap must include all non-configurable target keys");
+        }
+
+        var properties = target.GetOwnProperties(false).GetEnumerator(false);
+        while (properties.MoveNext(out KeyString key, out JSProperty property))
+        {
+            if (!property.IsConfigurable && !seenKeys.Contains(CreateKeyIdentity(key)))
+                throw JSEngine.NewTypeError("Proxy ownKeys trap must include all non-configurable target keys");
+        }
+
+        foreach (var (key, property) in target.GetSymbols().AllValues())
+        {
+            if (!property.IsConfigurable && !seenKeys.Contains($"y:{key}"))
+                throw JSEngine.NewTypeError("Proxy ownKeys trap must include all non-configurable target keys");
+        }
+    }
 
     public override JSValue InvokeFunction(in Arguments a)
     {
@@ -93,7 +182,11 @@ public partial class JSProxy : JSObject
         var target = RequireTarget();
         var fx = handler[KeyStrings.get];
         if (fx is JSFunction fxFunction)
-            return fxFunction.InvokeFunction(new Arguments(target, target, (JSValue)(JSSymbol)key, receiver));
+        {
+            var result = fxFunction.InvokeFunction(new Arguments(target, target, (JSValue)(JSSymbol)key, receiver));
+            ValidateGetInvariant(target, PropertyKey.FromSymbol(key), result);
+            return result;
+        }
 
         return target.GetValue(key, receiver, throwError);
     }
@@ -103,7 +196,11 @@ public partial class JSProxy : JSObject
         var target = RequireTarget();
         var fx = handler[KeyStrings.get];
         if (fx is JSFunction fxFunction)
-            return fxFunction.InvokeFunction(new Arguments(target, target, key.ToJSValue(), receiver));
+        {
+            var result = fxFunction.InvokeFunction(new Arguments(target, target, key.ToJSValue(), receiver));
+            ValidateGetInvariant(target, key, result);
+            return result;
+        }
 
         return target.GetValue(key, receiver, throwError);
     }
@@ -113,7 +210,11 @@ public partial class JSProxy : JSObject
         var target = RequireTarget();
         var fx = handler[KeyStrings.get];
         if (fx is JSFunction fxFunction)
-            return fxFunction.InvokeFunction(new Arguments(target, target, new JSNumber(key), receiver));
+        {
+            var result = fxFunction.InvokeFunction(new Arguments(target, target, new JSNumber(key), receiver));
+            ValidateGetInvariant(target, key, result);
+            return result;
+        }
 
         return target.GetValue(key, receiver, throwError);
     }
@@ -124,7 +225,11 @@ public partial class JSProxy : JSObject
         var fx = handler[KeyStrings.set];
         if (fx is JSFunction fxFunction)
         {
-            fxFunction.InvokeFunction(new Arguments(target, target, (JSValue)(JSSymbol)name, receiver));
+            var setResult = fxFunction.InvokeFunction(new Arguments(target, target, (JSValue)(JSSymbol)name, value, receiver));
+            if (!setResult.BooleanValue)
+                return false;
+
+            ValidateSetInvariant(target, PropertyKey.FromSymbol(name), value);
             return true;
         }
 
@@ -137,7 +242,11 @@ public partial class JSProxy : JSObject
         var fx = handler[KeyStrings.set];
         if (fx is JSFunction fxFunction)
         {
-            fxFunction.InvokeFunction(new Arguments(target, target, name.ToJSValue(), receiver));
+            var setResult = fxFunction.InvokeFunction(new Arguments(target, target, name.ToJSValue(), value, receiver));
+            if (!setResult.BooleanValue)
+                return false;
+
+            ValidateSetInvariant(target, name, value);
             return true;
         }
 
@@ -150,7 +259,11 @@ public partial class JSProxy : JSObject
         var fx = handler[KeyStrings.set];
         if (fx is JSFunction fxFunction)
         {
-            fxFunction.InvokeFunction(new Arguments(target, target, new JSNumber(name), receiver));
+            var setResult = fxFunction.InvokeFunction(new Arguments(target, target, new JSNumber(name), value, receiver));
+            if (!setResult.BooleanValue)
+                return false;
+
+            ValidateSetInvariant(target, name, value);
             return true;
         }
 
@@ -185,7 +298,27 @@ public partial class JSProxy : JSObject
         var target = RequireTarget();
         var fx = handler[KeyStrings.ownKeys];
         if (fx is JSFunction fxFunction)
-            return fxFunction.InvokeFunction(new Arguments(target)).GetElementEnumerator();
+        {
+            var result = fxFunction.InvokeFunction(new Arguments(target));
+            var array = new JSArray();
+            var seenKeys = new HashSet<string>();
+            var en = result.GetElementEnumerator();
+            while (en.MoveNext(out var hasValue, out var value, out var _))
+            {
+                if (!hasValue)
+                    continue;
+
+                var key = value.ToKey();
+                var identity = CreateKeyIdentity(key);
+                if (!seenKeys.Add(identity))
+                    throw JSEngine.NewTypeError("Proxy ownKeys trap cannot report duplicate keys");
+
+                array.Add(value);
+            }
+
+            ValidateOwnKeysInvariant(target, seenKeys);
+            return array.GetElementEnumerator();
+        }
 
         return target.GetAllKeys(showEnumerableOnly, inherited);
     }
