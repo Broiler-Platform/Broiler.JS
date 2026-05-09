@@ -27,7 +27,7 @@ This file tracks areas that must be validated before Broiler.JS can make strong 
 - [ ] Add public-suite and regression coverage for `Proxy` invariants and revocation edge cases.
 - [ ] Add public-suite and regression coverage for typed arrays, `ArrayBuffer`, and `DataView`, including detach/transfer edge cases.
 - [ ] Add public-suite and regression coverage for `RegExp` flags, captures, Unicode edge cases, and the current `RegExp.escape` escaping / descriptor divergences surfaced by the 2026-05-09 subset run.
-- [ ] Add public-suite and regression coverage for error subclassing and related built-in constructor semantics.
+- [ ] Run a matching public-suite subset for error subclassing and related built-in constructor semantics; local regression coverage now covers constructor names, prototype chains, `instanceof`, and message propagation.
 
 ## 2026-05-09 local evidence
 
