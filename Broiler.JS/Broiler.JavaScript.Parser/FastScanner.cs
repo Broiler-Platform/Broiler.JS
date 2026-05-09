@@ -1140,15 +1140,15 @@ public class FastScanner
 
     private FastToken ReadNumber(State state, char first)
     {
-        void ConsumeDigits(bool hex = false, bool binary = false)
+        void ConsumeDigits(bool hex = false, bool binary = false, bool octal = false)
         {
             char peek = Peek();
-            if (!peek.IsDigitPart(hex, binary))
+            if (!peek.IsDigitPart(hex, binary, octal))
                 return;
             do
             {
                 peek = Consume();
-            } while (peek.IsDigitPart(hex, binary));
+            } while (peek.IsDigitPart(hex, binary, octal));
         }
 
         if (Peek() == '0')
@@ -1159,12 +1159,24 @@ public class FastScanner
                 case 'X':
                     Consume();
                     ConsumeDigits(hex: true);
+                    if (CanConsume('n'))
+                        return state.Commit(TokenTypes.BigInt);
                     return state.Commit(TokenTypes.Number, true);
 
                 case 'b':
                 case 'B':
                     Consume();
                     ConsumeDigits(binary: true);
+                    if (CanConsume('n'))
+                        return state.Commit(TokenTypes.BigInt);
+                    return state.Commit(TokenTypes.Number, true);
+
+                case 'o':
+                case 'O':
+                    Consume();
+                    ConsumeDigits(octal: true);
+                    if (CanConsume('n'))
+                        return state.Commit(TokenTypes.BigInt);
                     return state.Commit(TokenTypes.Number, true);
             }
         }

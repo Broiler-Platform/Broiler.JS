@@ -1031,6 +1031,23 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Prefixed_BigInt_Literals_Parse_And_Compare_Correctly()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            [
+                typeof 0x1n, 0x1n === 1n,
+                typeof 0b1n, 0b1n === 1n,
+                typeof 0o1n, 0o1n === 1n
+            ].join('|');
+        ");
+
+        Assert.Equal("bigint|true|bigint|true|bigint|true", result.ToString());
+    }
+
+    [Fact]
     public void String_IsWellFormed_Detects_Paired_And_Lone_Surrogates()
     {
         EnsureBuiltInsLoaded();
