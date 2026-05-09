@@ -971,13 +971,14 @@ public class BuiltInsTests
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
 
-        var addError = Assert.Throws<JSException>(() => ctx.Eval("missingValue + 1;"));
-        var strictEqualsError = Assert.Throws<JSException>(() => ctx.Eval("missingValue === 1;"));
+        var result = ctx.Eval(@"
+            [
+                (function () { try { missingValue + 1; return 'no-throw'; } catch (e) { return e.constructor.name + '|' + e.message; } })(),
+                (function () { try { missingValue === 1; return 'no-throw'; } catch (e) { return e.constructor.name + '|' + e.message; } })()
+            ].join('||');
+        ");
 
-        Assert.Equal("ReferenceError", addError.Error?.prototypeChain.Object[KeyStrings.constructor][KeyStrings.name].ToString());
-        Assert.Equal("ReferenceError", strictEqualsError.Error?.prototypeChain.Object[KeyStrings.constructor][KeyStrings.name].ToString());
-        Assert.Equal("missingValue is not defined", addError.Error?.Message);
-        Assert.Equal("missingValue is not defined", strictEqualsError.Error?.Message);
+        Assert.Equal("ReferenceError|missingValue is not defined||ReferenceError|missingValue is not defined", result.ToString());
     }
 
     [Fact]
