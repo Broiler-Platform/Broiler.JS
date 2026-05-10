@@ -1,0 +1,8 @@
+test/built-ins/Proxy/get/not-same-value-configurable-false-writable-false-throws.js
+test/built-ins/Proxy/ownKeys/extensible-return-trap-result-absent-not-configurable-keys.js
+test/built-ins/Proxy/ownKeys/return-all-non-configurable-keys.js
+test/built-ins/Proxy/revocable/proxy.js
+test/built-ins/Proxy/revocable/revoke.js
+test/built-ins/Proxy/revocable/handler-is-revoked-proxy.js
+test/built-ins/Proxy/revocable/target-is-revoked-proxy.js
+test/built-ins/Proxy/revocable/target-is-revoked-function-proxy.js

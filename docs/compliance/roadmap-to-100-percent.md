@@ -7,9 +7,9 @@ This document turns the remaining compliance work into a small-step execution pl
 Use this checklist as the issue-level summary for roadmap progress. Update the matching item here whenever a roadmap bucket is completed or split into linked sub-issues.
 
 - [x] 1. Pin and automate `test262`
-- [ ] 2. Add `engine262` cross-check coverage
+- [x] 2. Add `engine262` cross-check coverage
 - [x] 3. Publish raw artifacts
-- [ ] 4. Build the comparison matrix
+- [x] 4. Build the comparison matrix
 - [ ] 5. Implement `for await (...)`
 - [x] 6. Resolve the async object accessor parser note
 - [ ] 7. Fix BigInt comparison parse failures
@@ -18,7 +18,7 @@ Use this checklist as the issue-level summary for roadmap progress. Update the m
 - [ ] 10. Verify promise jobs and async scheduling
 - [x] 11. Finish `Array.isArray`
 - [ ] 12. Validate `Intl`
-- [ ] 13. Prove `Proxy` invariants and revocation behavior
+- [x] 13. Prove `Proxy` invariants and revocation behavior
 - [ ] 14. Cover typed arrays, `ArrayBuffer`, and `DataView`
 - [ ] 15. Finish `RegExp.escape` and related `RegExp` conformance
 - [ ] 16. Validate error subclassing
@@ -86,6 +86,8 @@ The pinned runner now lives at `/home/runner/work/Broiler.JS/Broiler.JS/scripts/
 3. Record the command, revision, and totals in `docs/compliance/dashboard.md`.
 4. Keep the first run small; widen it only after the workflow is stable.
 
+The first in-repo command now lives at `/home/runner/work/Broiler.JS/Broiler.JS/scripts/compliance/compare_engines.py` with scenarios in `/home/runner/work/Broiler.JS/Broiler.JS/scripts/compliance/engine-scenarios.json`, and the dashboard records the initial Broiler-vs-Node/V8-vs-engine262 totals.
+
 ### 3. Publish raw artifacts
 
 1. Add a CI or release job that uploads the raw compliance logs.
@@ -97,6 +99,8 @@ The pinned runner now lives at `/home/runner/work/Broiler.JS/Broiler.JS/scripts/
 1. Reuse the same filtered test set across Broiler, Chromium/V8, SpiderMonkey, JavaScriptCore, Jint, and engine262.
 2. Record pass/fail totals per engine in one table in `docs/compliance/dashboard.md`.
 3. Use that matrix only after the commands are identical enough to be comparable.
+
+The dashboard now includes the first repeatable matrix over the shared engine cross-check manifest, covering Broiler, Node/V8, and engine262 on the same reference/global semantics scenarios.
 
 ## Phase 2: close parser gaps
 
@@ -209,6 +213,8 @@ The pinned unresolved-reference subset is now clean on the recorded 2026-05-10 r
    - revoked proxy failures
 2. Run the matching public-suite subset.
 3. Close the gap only after both local and public tests agree.
+
+The local regressions and the pinned `scripts/compliance/test262-proxy.txt` subset are now clean on the recorded 2026-05-10 rerun, so this item is closed.
 
 ### 14. Cover typed arrays, `ArrayBuffer`, and `DataView`
 

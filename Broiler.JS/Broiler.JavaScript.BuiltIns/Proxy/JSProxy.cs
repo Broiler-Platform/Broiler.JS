@@ -17,6 +17,7 @@ public partial class JSProxy : JSObject
 {
     readonly JSObject target;
     private readonly JSObject handler;
+    private readonly bool callable;
     private bool revoked;
 
     protected JSProxy((JSObject target, JSObject handler) p) : base((JSEngine.Current as IJSExecutionContext)?.ObjectPrototype)
@@ -27,6 +28,7 @@ public partial class JSProxy : JSObject
 
         this.target = target;
         this.handler = handler;
+        callable = IsCallableTarget(target);
     }
 
     public override bool BooleanValue => target.BooleanValue;
@@ -42,6 +44,13 @@ public partial class JSProxy : JSObject
     }
 
     internal void Revoke() => revoked = true;
+
+    private static bool IsCallableTarget(JSObject target) => target switch
+    {
+        JSFunction => true,
+        JSProxy proxy => proxy.callable,
+        _ => false
+    };
 
     private static JSProperty GetOwnTargetProperty(JSObject target, in PropertyKey key)
     {
@@ -327,7 +336,7 @@ public partial class JSProxy : JSObject
 
     public override bool StrictEquals(JSValue value) => RequireTarget().StrictEquals(value);
 
-    public override JSValue TypeOf() => RequireTarget().TypeOf();
+    public override JSValue TypeOf() => callable ? JSConstants.Function : JSConstants.Object;
 
     internal override PropertyKey ToKey(bool create = false) => RequireTarget().ToKey();
 

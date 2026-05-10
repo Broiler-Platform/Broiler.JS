@@ -1,0 +1,38 @@
+[
+  {
+    "name": "reference-addition",
+    "category": "reference-resolution",
+    "expected": "ReferenceError",
+    "expression": "(function () { try { x + 1; return 'no-throw'; } catch (e) { return e.constructor.name; } })()"
+  },
+  {
+    "name": "reference-strict-equals",
+    "category": "reference-resolution",
+    "expected": "ReferenceError",
+    "expression": "(function () { try { x === 1; return 'no-throw'; } catch (e) { return e.constructor.name; } })()"
+  },
+  {
+    "name": "nonstrict-bare-call-this",
+    "category": "global-semantics",
+    "expected": "true",
+    "expression": "(function () { return String((function () { return this === globalThis; })()); })()"
+  },
+  {
+    "name": "function-constructor-global-this",
+    "category": "global-semantics",
+    "expected": "true",
+    "expression": "(function () { return String(Function('return this === globalThis')()); })()"
+  },
+  {
+    "name": "implicit-global-assignment",
+    "category": "global-semantics",
+    "expected": "true",
+    "expression": "(function () { function run() { implicitCrossCheck = 1; return globalThis.implicitCrossCheck === 1; } var result = run(); delete globalThis.implicitCrossCheck; return String(result); })()"
+  },
+  {
+    "name": "global-var-binding",
+    "category": "global-semantics",
+    "expected": "true",
+    "expression": "(function () { var value = (0, eval)('var crossCheckVar = 7; globalThis.crossCheckVar === 7;'); delete globalThis.crossCheckVar; return String(value); })()"
+  }
+]

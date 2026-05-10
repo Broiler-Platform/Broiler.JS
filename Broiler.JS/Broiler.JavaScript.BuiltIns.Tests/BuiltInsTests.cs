@@ -405,6 +405,27 @@ public class BuiltInsTests
         Assert.Equal("TypeError", result.ToString());
     }
 
+    [Fact]
+    public void Proxy_Created_With_Revoked_Proxy_Target_Preserves_Typeof_Metadata()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var revokedObjectTarget = Proxy.revocable({}, {});
+            revokedObjectTarget.revoke();
+
+            var revokedFunctionTarget = Proxy.revocable(function () {}, {});
+            revokedFunctionTarget.revoke();
+
+            [
+                typeof Proxy.revocable(revokedObjectTarget.proxy, {}).proxy,
+                typeof Proxy.revocable(revokedFunctionTarget.proxy, {}).proxy
+            ].join('|');
+        ");
+
+        Assert.Equal("object|function", result.ToString());
+    }
+
     // ── M2: JSConsole tests ──────────────────────────────────────────
 
     [Fact]

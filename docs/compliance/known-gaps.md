@@ -9,9 +9,9 @@ Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-perce
 ### Measurement and reporting
 
 - [x] Pinned `test262` automation and totals — see tracked batch `measurement-test262`.
-- [ ] `engine262` smoke/cross-check command and totals — see tracked batch `measurement-engine262`.
+- [x] `engine262` smoke/cross-check command and totals — see tracked batch `measurement-engine262`.
 - [x] Raw compliance artifacts linked from the dashboard — see tracked batch `measurement-artifacts`.
-- [ ] Comparative engine matrix in the dashboard — see tracked batch `measurement-matrix`.
+- [x] Comparative engine matrix in the dashboard — see tracked batch `measurement-matrix`.
 
 ### Parser and execution semantics needing follow-up
 
@@ -24,7 +24,7 @@ Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-perce
 ### Built-in areas with implementation but incomplete standards evidence
 
 - [ ] `Intl` behavior and supported ECMA-402 scope — see tracked batch `builtins-intl`.
-- [ ] `Proxy` invariants and revocation public-suite evidence — see tracked batch `builtins-proxy`.
+- [x] `Proxy` invariants and revocation public-suite evidence — see tracked batch `builtins-proxy`.
 - [ ] Typed arrays, `ArrayBuffer`, and `DataView` public-suite evidence — see tracked batch `builtins-binary-data`.
 - [ ] `RegExp` public-suite evidence — see tracked batch `builtins-regexp`.
 - [ ] Error subclassing and constructor semantics public-suite evidence — see tracked batch `builtins-error-subclassing`.
@@ -35,6 +35,8 @@ Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-perce
 - Largest failing executed areas were `addition`, `RegExp.escape`, `strict-equals`, and `Array.isArray`.
 - 2026-05-10 pinned `test262` rerun for `test/built-ins/Array/isArray`: 29 executed, 29 passed, 0 failed; the `Array.isArray` gap is closed and removed from the active checklist.
 - 2026-05-10 pinned `test262` rerun for the unresolved-reference cases in `addition` and `strict-equals`: 6 executed, 6 passed, 0 failed; the unresolved-reference gap is closed and removed from the active checklist.
+- 2026-05-10 pinned `test262` rerun for the focused `Proxy` invariants/revocation subset: 8 executed, 8 passed, 0 failed; the active proxy gap is closed and removed from the active checklist.
+- 2026-05-10 shared engine matrix against Node/V8 and engine262: Broiler matched both engines on 2/2 unresolved-reference scenarios and diverged on 4/4 non-strict/global scenarios, giving the dashboard its first repeatable cross-check totals and matrix.
 - The repo-local `JIntPerfTests` / Dromaeo-derived script set passed 11/11 on both Broiler and Chromium, so the immediate compliance gaps are concentrated in standards edge cases rather than the basic compatibility smoke scripts.
 
 ## Gap lifecycle

@@ -211,13 +211,17 @@ public class M8ValidationTests
             Assert.Contains("test262", process);
             Assert.Contains("suite revision", process);
             Assert.Contains("scripts/compliance/run_test262.py", process);
+            Assert.Contains("scripts/compliance/compare_engines.py", process);
 
             var roadmap = File.ReadAllText(Path.Combine(repoRoot, "docs", "compliance", "roadmap-to-100-percent.md"));
             Assert.Contains("- [x] 1. Pin and automate `test262`", roadmap);
+            Assert.Contains("- [x] 2. Add `engine262` cross-check coverage", roadmap);
             Assert.Contains("Resolve the async object accessor parser note", roadmap);
             Assert.Contains("invalid ECMAScript syntax", roadmap);
+            Assert.Contains("- [x] 4. Build the comparison matrix", roadmap);
             Assert.Contains("- [x] 9. Align unresolved-reference behavior in `+` and `===`", roadmap);
             Assert.Contains("Verify promise jobs and async scheduling", roadmap);
+            Assert.Contains("- [x] 13. Prove `Proxy` invariants and revocation behavior", roadmap);
             Assert.Contains("microtask ordering", roadmap);
             Assert.Contains("Tracked gap batches", roadmap);
             Assert.Contains("measurement-test262", roadmap);
@@ -233,6 +237,10 @@ public class M8ValidationTests
             Assert.Contains("test262", dashboard);
             Assert.Contains("29 executed, Broiler passed 29 and failed 0", dashboard);
             Assert.Contains("6 executed, Broiler passed 6 and failed 0", dashboard);
+            Assert.Contains("8 executed, Broiler passed 8 and failed 0", dashboard);
+            Assert.Contains("2 passed / 0 failed", dashboard);
+            Assert.Contains("4 passed / 0 failed", dashboard);
+            Assert.Contains("scripts/compliance/engine-scenarios.json", dashboard);
             Assert.Contains("scripts/compliance/test262-unresolved-reference.txt", dashboard);
             Assert.Contains("Regression tracking", dashboard);
             Assert.Contains("Raw compliance log link", dashboard);
@@ -242,7 +250,10 @@ public class M8ValidationTests
             Assert.Contains("Tracking checklist", knownGaps);
             Assert.Contains("for await (...)", knownGaps);
             Assert.Contains("- [x] Pinned `test262` automation and totals", knownGaps);
+            Assert.Contains("- [x] `engine262` smoke/cross-check command and totals", knownGaps);
+            Assert.Contains("- [x] Comparative engine matrix in the dashboard", knownGaps);
             Assert.Contains("- [x] Unresolved-reference behavior in `addition` and `strict-equals`", knownGaps);
+            Assert.Contains("- [x] `Proxy` invariants and revocation public-suite evidence", knownGaps);
             Assert.Contains("semantics-promise-jobs", knownGaps);
             Assert.Contains("Intl", knownGaps);
             Assert.Contains("Tracked batch details live", knownGaps);
