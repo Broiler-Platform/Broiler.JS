@@ -15,7 +15,7 @@ public partial class DataView : JSObject
     internal readonly int byteOffset;
     internal readonly int byteLength;
 
-    [JSExport(Length = 3)]
+    [JSExport(Length = 1)]
     public DataView(in Arguments a) : this(JSEngine.NewTargetPrototype)
     {
         var buffer = a[0] as JSArrayBuffer ?? throw JSEngine.NewTypeError("First argument to DataView constructor must be an ArrayBuffer.");

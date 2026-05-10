@@ -11,7 +11,31 @@ namespace Broiler.JavaScript.BuiltIns.BigInt;
 
 static class JSBigIntExtensions
 {
+    internal const int NaNComparison = int.MinValue;
+
     public static BigInteger AsBigIntegerOnly(this JSValue @this) => @this is JSBigInt v ? v.value : throw JSBigInt.CannotMix();
+
+    public static JSValue UnwrapPrimitive(this JSValue value)
+        => value is JSPrimitiveObject primitiveObject ? primitiveObject.ValueOf() : value;
+
+    public static int CompareToNumber(this BigInteger left, double right)
+    {
+        if (double.IsNaN(right))
+            return NaNComparison;
+
+        if (double.IsPositiveInfinity(right))
+            return -1;
+
+        if (double.IsNegativeInfinity(right))
+            return 1;
+
+        var truncated = Math.Truncate(right);
+        var integerComparison = left.CompareTo(new BigInteger(truncated));
+        if (truncated == right || integerComparison != 0)
+            return integerComparison;
+
+        return right > 0 ? -1 : 1;
+    }
 }
 
 [JSBaseClass("Object")]
@@ -173,6 +197,38 @@ public partial class JSBigInt : JSPrimitive
 
         return this.value == bigint.value;
     }
+
+    private bool TryCompare(JSValue value, out int comparison)
+    {
+        value = value.UnwrapPrimitive();
+
+        switch (value)
+        {
+            case JSBigInt bigint:
+                comparison = this.value.CompareTo(bigint.value);
+                return true;
+            case var _ when value.IsNumber || value.IsBoolean || value.IsNull || value.IsString:
+                comparison = this.value.CompareToNumber(value.DoubleValue);
+                return true;
+            default:
+                comparison = default;
+                return false;
+        }
+    }
+
+    private static bool IsValidComparison(int comparison) => comparison != JSBigIntExtensions.NaNComparison;
+
+    public override bool Less(JSValue value)
+        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison < 0 : base.Less(value);
+
+    public override bool LessOrEqual(JSValue value)
+        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison <= 0 : base.LessOrEqual(value);
+
+    public override bool Greater(JSValue value)
+        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison > 0 : base.Greater(value);
+
+    public override bool GreaterOrEqual(JSValue value)
+        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison >= 0 : base.GreaterOrEqual(value);
 
     public override bool EqualsLiteral(string value) => this.value.ToString() == value;
 

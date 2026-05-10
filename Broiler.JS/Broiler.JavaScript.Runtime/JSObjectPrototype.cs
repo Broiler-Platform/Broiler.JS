@@ -1,4 +1,5 @@
 ﻿using Broiler.JavaScript.ExpressionCompiler;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Runtime;
 
@@ -45,7 +46,8 @@ public partial class JSObject
     /// <returns></returns>
     [JSPrototypeMethod][JSExport("toString")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "JavaScript Method Signature is Standard")]
-    public static JSValue ToString(in Arguments a) => JSValue.CreateString("[object Object]");
+    public static JSValue ToString(in Arguments a)
+        => JSValue.CreateString(a.This?.TypeOf() == JSConstants.Function ? "[object Function]" : "[object Object]");
 
     [JSExport("__proto__")]
     internal JSValue ObjectPrototype
@@ -81,13 +83,15 @@ public partial class JSObject
         if (key.IsSymbol)
         {
             ref var symbols = ref @object.GetSymbols();
-            if (symbols.HasKey(key.Symbol.Key))
+            ref var property = ref symbols.GetRefOrDefault(key.Symbol.Key, ref JSProperty.Empty);
+            if (!property.IsEmpty)
                 return JSValue.BooleanTrue;
             return JSValue.BooleanFalse;
         }
 
         ref var op = ref @object.GetOwnProperties(false);
-        if (op.HasKey(key.KeyString.Key))
+        ref var ownProperty = ref op.GetValue(key.KeyString.Key);
+        if (!ownProperty.IsEmpty)
             return JSValue.BooleanTrue;
 
         return JSValue.BooleanFalse;

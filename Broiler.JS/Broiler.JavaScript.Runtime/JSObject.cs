@@ -16,6 +16,7 @@ public partial class JSObject : JSValue
 {
     private IJSPrototype currentPrototype;
     protected bool HasIterator = false;
+    protected bool HasAsyncIterator = false;
 
     /// <summary>
     /// Returns the Object prototype from the current execution context.

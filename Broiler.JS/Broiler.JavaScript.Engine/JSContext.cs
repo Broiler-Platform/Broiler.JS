@@ -75,7 +75,11 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         var oldV = this[variable.Name];
         var hasOwnProperty = !GetInternalProperty(variable.Name, false).IsEmpty;
 
-        if (!hasOwnProperty || oldV != v)
+        if (!hasOwnProperty)
+        {
+            FastAddValue(variable.Name, v, JSPropertyAttributes.Value | JSPropertyAttributes.Enumerable);
+        }
+        else if (oldV != v)
         {
             this[variable.Name] = v;
         }
@@ -110,7 +114,10 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         var hasProperty = !GetInternalProperty(name).IsEmpty;
 
         if (!hasVariable && !hasProperty)
-            throw JSEngine.NewReferenceError($"{name} is not defined");
+        {
+            FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            return value;
+        }
 
         if (hasVariable)
             variable.Value = value;
@@ -119,6 +126,27 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             this[name] = value;
 
         return value;
+    }
+
+    public JSValue DeleteIdentifier(in KeyString name)
+    {
+        var hasVariable = globalVars.TryGetValue(name.Key, out _);
+        var property = GetInternalProperty(name, false);
+
+        if (hasVariable)
+        {
+            if (property.IsEmpty)
+                return JSValue.BooleanFalse;
+
+            return property.IsConfigurable
+                ? Delete(name)
+                : JSValue.BooleanFalse;
+        }
+
+        if (!property.IsEmpty)
+            return property.IsConfigurable ? Delete(name) : JSValue.BooleanFalse;
+
+        return JSValue.BooleanTrue;
     }
 
     internal void FillStackTrace(StringBuilder sb) { }
@@ -149,6 +177,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
         func.BasePrototypeObject = Object;
         FunctionPrototype.BasePrototypeObject = ObjectPrototype;
+        ReattachFunctionPrototypeMethods();
 
         if (JSEngine.BuiltInRegistry != null)
         {
@@ -159,7 +188,18 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             JSEngine.CoreClassRegistrations?.Invoke(this);
         }
 
+        this[KeyStrings.globalThis] = this;
         this[KeyStrings.debug] = JSValue.CreateFunction(Debug);
+    }
+
+    private void ReattachFunctionPrototypeMethods()
+    {
+        var en = FunctionPrototype.GetOwnProperties(false).GetEnumerator();
+        while (en.MoveNext(out var _, out var property))
+        {
+            if (property.IsValue && property.value is JSValue value && value.IsFunction)
+                value.BasePrototypeObject = FunctionPrototype;
+        }
     }
 
     public bool HasExperimentalFeature(JavaScriptFeatureFlags feature)

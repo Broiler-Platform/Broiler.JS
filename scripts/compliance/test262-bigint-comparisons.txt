@@ -1,0 +1,8 @@
+test/language/expressions/strict-equals/bigint-and-string.js
+test/language/expressions/strict-equals/bigint-and-bigint.js
+test/language/expressions/strict-equals/bigint-and-incomparable-primitive.js
+test/language/expressions/strict-equals/bigint-and-number-extremes.js
+test/language/expressions/strict-equals/bigint-and-object.js
+test/language/expressions/strict-equals/bigint-and-non-finite.js
+test/language/expressions/strict-equals/bigint-and-boolean.js
+test/language/expressions/strict-equals/bigint-and-number.js

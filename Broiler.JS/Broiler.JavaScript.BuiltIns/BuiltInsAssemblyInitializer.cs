@@ -51,11 +51,16 @@ internal static class BuiltInsAssemblyInitializer
         // satellite assemblies can contribute built-in types.
         var existing = DefaultBuiltInRegistry.AdditionalRegistrations;
         DefaultBuiltInRegistry.AdditionalRegistrations = existing == null
-            ? static context => context.RegisterBuiltInClasses()
+            ? static context =>
+            {
+                context.RegisterBuiltInClasses();
+                PatchErrorConstructors(context);
+            }
             : context =>
             {
                 existing(context);
                 context.RegisterBuiltInClasses();
+                PatchErrorConstructors(context);
             };
 
         // Wire factory delegate for JSDisposableStack so the Compiler can create
@@ -64,7 +69,7 @@ internal static class BuiltInsAssemblyInitializer
 
         // Wire factory delegate for the Intl global object so the Globals assembly
         // does not directly reference JSIntl.
-        DefaultBuiltInRegistry.IntlFactory = static () => JSEngine.ClrInterop.GetClrType(typeof(JSIntl));
+        DefaultBuiltInRegistry.IntlFactory = static () => JSIntl.GetIntlObject();
 
         // Wire factory delegate for JSDate so Core/Clr can create
         // Date values without referencing the concrete type directly.
@@ -145,6 +150,7 @@ internal static class BuiltInsAssemblyInitializer
         // and other assemblies can work with symbols without referencing the
         // concrete JSSymbol type directly.
         JSValue.SymbolIterator = JSSymbol.iterator;
+        JSValue.SymbolAsyncIterator = JSSymbol.asyncIterator;
         JSValue.SymbolDispose = JSSymbol.dispose;
         JSValue.SymbolAsyncDispose = JSSymbol.asyncDispose;
         JSValue.CreateSymbolFactory = static name => new JSSymbol(name);
@@ -348,5 +354,40 @@ internal static class BuiltInsAssemblyInitializer
             JSFloat64Array => new JSFloat64Array(args),
             _ => throw JSEngine.NewTypeError($"structuredClone: unsupported typed array type {typedArray.GetType().Name}")
         };
+    }
+
+    private static void PatchErrorConstructors(JSContext context)
+    {
+        PatchErrorConstructor(context, KeyStrings.Error, static (in Arguments a) => new JSError(in a));
+        PatchErrorConstructor(context, KeyStrings.TypeError, static (in Arguments a) => new JSTypeError(in a));
+        PatchErrorConstructor(context, KeyStrings.SyntaxError, static (in Arguments a) => new JSSyntaxError(in a));
+        PatchErrorConstructor(context, KeyStrings.URIError, static (in Arguments a) => new JSURIError(in a));
+        PatchErrorConstructor(context, KeyStrings.RangeError, static (in Arguments a) => new JSRangeError(in a));
+        PatchErrorConstructor(context, KeyStrings.ReferenceError, static (in Arguments a) => new JSReferenceError(in a));
+        PatchErrorConstructor(context, KeyStrings.EvalError, static (in Arguments a) => new JSEvalError(in a));
+    }
+
+    private static void PatchErrorConstructor(JSContext context, KeyString key, JSFunctionDelegate factory)
+    {
+        if (context[key] is not JSFunction existing)
+            return;
+
+        var name = key.Value;
+        var isErrorKey = KeyStrings.GetOrCreate("isError");
+        var replacement = new JSFunction(factory, name, $"function {name}() {{ [native code] }}", length: 1, createPrototype: false)
+        {
+            prototype = existing.prototype
+        };
+        var functionMetadata = new JSFunction(JSFunction.empty, "Function", "function Function() { [native code] }", length: 1, createPrototype: false);
+
+        replacement.FastAddValue(KeyStrings.prototype, existing.prototype, JSPropertyAttributes.ConfigurableValue);
+        replacement.FastAddValue(KeyStrings.constructor, functionMetadata, JSPropertyAttributes.ConfigurableValue);
+        existing.prototype.FastAddValue(KeyStrings.name, JSValue.CreateString(name.Value), JSPropertyAttributes.ConfigurableValue);
+
+        if (!existing[isErrorKey].IsUndefined)
+            replacement.FastAddValue(isErrorKey, existing[isErrorKey], JSPropertyAttributes.ConfigurableValue);
+
+        existing.prototype[KeyStrings.constructor] = replacement;
+        context.FastAddValue(key, replacement, JSPropertyAttributes.ConfigurableValue);
     }
 }

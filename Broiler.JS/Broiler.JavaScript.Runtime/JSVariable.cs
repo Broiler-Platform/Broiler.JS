@@ -1,4 +1,4 @@
-﻿using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Storage;
 using System;
 using System.Reflection;
@@ -64,8 +64,15 @@ public class JSVariable
 
             if (GetCurrentContext?.Invoke() is JSObject ctx)
             {
+                var property = ctx.GetInternalProperty(key, false);
+                if (property.IsEmpty)
+                {
+                    ctx.FastAddValue(key, value, JSPropertyAttributes.Value | JSPropertyAttributes.Enumerable);
+                    return;
+                }
+
                 var old = ctx[key];
-                if (old != value && !value.IsUndefined)
+                if (old != value)
                     ctx[key] = value;
             }
         }

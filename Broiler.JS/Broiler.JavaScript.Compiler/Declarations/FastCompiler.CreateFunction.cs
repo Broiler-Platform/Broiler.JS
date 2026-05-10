@@ -167,7 +167,7 @@ partial class FastCompiler
             else
             {
                 lambda = YExpression.Lambda(typeof(JSFunctionDelegate), block, in scriptFunctionName, [cs.Arguments]);
-                jsf = JSFunctionBuilder.New(ToDelegate(lambda), fxName, code, functionDeclaration.Params.Count);
+                jsf = JSFunctionBuilder.EnableNonStrictThis(JSFunctionBuilder.New(ToDelegate(lambda), fxName, code, functionDeclaration.Params.Count));
             }
 
             cs.Dispose();

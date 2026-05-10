@@ -1,0 +1,7 @@
+test/built-ins/RegExp/escape/is-function.js
+test/built-ins/RegExp/escape/name.js
+test/built-ins/RegExp/escape/length.js
+test/built-ins/RegExp/escape/not-a-constructor.js
+test/built-ins/RegExp/escape/escaped-syntax-characters-simple.js
+test/built-ins/RegExp/escape/not-escaped.js
+test/built-ins/RegExp/escape/escaped-control-characters.js

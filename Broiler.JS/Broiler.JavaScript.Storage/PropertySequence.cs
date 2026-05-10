@@ -172,7 +172,7 @@ public struct PropertySequence
         if (property.IsEmpty)
             return false;
 
-        if (property.IsReadOnly || !property.IsConfigurable)
+        if (!property.IsConfigurable)
         {
             var factory = TypeErrorFactory;
             if (factory != null)

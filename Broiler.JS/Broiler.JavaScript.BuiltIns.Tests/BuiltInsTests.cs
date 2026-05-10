@@ -317,6 +317,115 @@ public class BuiltInsTests
         Assert.Equal("hello", result.ToString());
     }
 
+    [Fact]
+    public void Proxy_SetTrap_Receives_Value()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var target = {};
+            var seen = [];
+            var proxy = new Proxy(target, {
+                set: function(obj, prop, value, receiver) {
+                    seen = [String(prop), String(value)];
+                    obj[prop] = value;
+                    return true;
+                }
+            });
+            proxy.answer = 42;
+            [seen[0], seen[1], target.answer].join('|');
+        ");
+        Assert.Equal("answer|42|42", result.ToString());
+    }
+
+    [Fact]
+    public void Proxy_Revoked_Get_Set_And_ObjectKeys_Throw_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var revoked = Proxy.revocable({ fixed: 1 }, {});
+            revoked.revoke();
+            [
+                (function () { try { return revoked.proxy.fixed; } catch (e) { return e.constructor.name; } })(),
+                (function () { try { revoked.proxy.fixed = 2; return 'no-throw'; } catch (e) { return e.constructor.name; } })(),
+                (function () { try { Object.keys(revoked.proxy); return 'no-throw'; } catch (e) { return e.constructor.name; } })()
+            ].join('|');
+        ");
+        Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Proxy_GetTrap_Cannot_Lie_About_NonConfigurable_Readonly_Data_Properties()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var target = {};
+            Object.defineProperty(target, 'fixed', {
+                value: 1,
+                writable: false,
+                configurable: false
+            });
+            var proxy = new Proxy(target, {
+                get: function() { return 2; }
+            });
+            try {
+                proxy.fixed;
+                return 'no-throw';
+            } catch (e) {
+                return e.constructor.name;
+            }
+        ");
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Proxy_OwnKeys_Trap_Must_Report_NonConfigurable_Target_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var target = {};
+            Object.defineProperty(target, 'fixed', {
+                value: 1,
+                enumerable: true,
+                configurable: false
+            });
+            var proxy = new Proxy(target, {
+                ownKeys: function() { return []; }
+            });
+            try {
+                Object.keys(proxy);
+                return 'no-throw';
+            } catch (e) {
+                return e.constructor.name;
+            }
+        ");
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Proxy_Created_With_Revoked_Proxy_Target_Preserves_Typeof_Metadata()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var revokedObjectTarget = Proxy.revocable({}, {});
+            revokedObjectTarget.revoke();
+
+            var revokedFunctionTarget = Proxy.revocable(function () {}, {});
+            revokedFunctionTarget.revoke();
+
+            [
+                typeof Proxy.revocable(revokedObjectTarget.proxy, {}).proxy,
+                typeof Proxy.revocable(revokedFunctionTarget.proxy, {}).proxy
+            ].join('|');
+        ");
+
+        Assert.Equal("object|function", result.ToString());
+    }
+
     // ── M2: JSConsole tests ──────────────────────────────────────────
 
     [Fact]
@@ -467,6 +576,121 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Error_Constructors_Preserve_Names_Prototypes_And_Messages()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var parts = ctx.Eval(@"(function () {
+            var error = new Error('boom');
+            var typeError = new TypeError('type boom');
+            var referenceError = new ReferenceError('ref boom');
+
+            return [
+                Error.name,
+                TypeError.name,
+                ReferenceError.name,
+                error.constructor === Error,
+                typeError.constructor === TypeError,
+                referenceError.constructor === ReferenceError,
+                Object.getPrototypeOf(TypeError.prototype) === Error.prototype,
+                Object.getPrototypeOf(ReferenceError.prototype) === Error.prototype,
+                error instanceof Error,
+                typeError instanceof TypeError,
+                typeError instanceof Error,
+                referenceError instanceof ReferenceError,
+                referenceError instanceof Error,
+                error.message,
+                typeError.message,
+                referenceError.message
+            ].join('|');
+        })();").ToString().Split('|');
+        Assert.Equal(16, parts.Length);
+        Assert.Equal("Error", parts[0]);
+        Assert.Equal("TypeError", parts[1]);
+        Assert.Equal("ReferenceError", parts[2]);
+        Assert.Equal("true", parts[3]);
+        Assert.Equal("true", parts[4]);
+        Assert.Equal("true", parts[5]);
+        Assert.Equal("true", parts[6]);
+        Assert.Equal("true", parts[7]);
+        Assert.Equal("true", parts[8]);
+        Assert.Equal("true", parts[9]);
+        Assert.Equal("true", parts[10]);
+        Assert.Equal("true", parts[11]);
+        Assert.Equal("true", parts[12]);
+        Assert.Equal("boom", parts[13]);
+        Assert.Equal("type boom", parts[14]);
+        Assert.Equal("ref boom", parts[15]);
+    }
+
+    [Fact]
+    public void Custom_Error_Subclass_Chains_Preserve_Instanceof_And_Message()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var parts = ctx.Eval(@"(function () {
+            class BaseCustomError extends Error {}
+            class DerivedCustomError extends BaseCustomError {}
+
+            var error = new DerivedCustomError('custom boom');
+            return [
+                error.constructor === DerivedCustomError,
+                Object.getPrototypeOf(DerivedCustomError.prototype) === BaseCustomError.prototype,
+                Object.getPrototypeOf(BaseCustomError.prototype) === Error.prototype,
+                error instanceof DerivedCustomError,
+                error instanceof BaseCustomError,
+                error instanceof Error,
+                error.constructor.name,
+                error.message
+            ].join('|');
+        })();").ToString().Split('|');
+        Assert.Equal(8, parts.Length);
+        Assert.Equal("true", parts[0]);
+        Assert.Equal("true", parts[1]);
+        Assert.Equal("true", parts[2]);
+        Assert.Equal("true", parts[3]);
+        Assert.Equal("true", parts[4]);
+        Assert.Equal("true", parts[5]);
+        Assert.Equal("DerivedCustomError", parts[6]);
+        Assert.Equal("custom boom", parts[7]);
+    }
+
+    [Fact]
+    public void Error_Constructor_Is_Callable_And_Global_Descriptor_Is_Not_Enumerable()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            Error('boom') instanceof Error,
+            Object.getPrototypeOf(Error) === Function.prototype,
+            Object.prototype.propertyIsEnumerable.call(this, 'Error'),
+            Error.name,
+            Error.length
+        ].join('|');");
+
+        Assert.Equal("true|true|false|Error|1", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_Constructors_Expose_Function_Metadata()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            Object.isExtensible(Intl),
+            Object.getPrototypeOf(Intl) === Object.prototype,
+            Object.prototype.toString.call(Intl.DateTimeFormat),
+            Object.getPrototypeOf(Intl.DateTimeFormat) === Function.prototype,
+            Object.prototype.toString.call(Intl.RelativeTimeFormat),
+            Object.getPrototypeOf(Intl.RelativeTimeFormat) === Function.prototype,
+            Intl.RelativeTimeFormat.name,
+            Intl.RelativeTimeFormat.length
+        ].join('|');");
+
+        Assert.Equal("true|true|[object Function]|true|[object Function]|true|RelativeTimeFormat|0", result.ToString());
+    }
+
+    [Fact]
     public void Array_FromAsync_IsDisabled_WhenFlagIsOff()
     {
         EnsureBuiltInsLoaded();
@@ -572,6 +796,15 @@ public class BuiltInsTests
             Math.round(dv.getFloat32(0, true) * 100) / 100;
         ");
         Assert.Equal(3.14, result.DoubleValue, 2);
+    }
+
+    [Fact]
+    public void ArrayBuffer_And_DataView_Constructors_Expose_Spec_Length()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("[ArrayBuffer.length, DataView.length].join('|');");
+        Assert.Equal("1|1", result.ToString());
     }
 
     // ── M2: ArrayBuffer transfer tests ───────────────────────────────
@@ -896,6 +1129,78 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Promise_Reactions_Run_After_Synchronous_Code()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var order = [];
+            var promise = Promise.resolve('ok').then(value => {
+                order.push('then:' + value);
+                return order.join('|');
+            });
+            order.push('sync');
+            promise;
+        ");
+
+        Assert.Equal("sync|then:ok", result.ToString());
+    }
+
+    [Fact]
+    public void Promise_Nested_Resolution_Assimilates_Inner_Promise()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            Promise.resolve('outer')
+                .then(value => Promise.resolve(value + ':inner'))
+                .then(value => value);
+        ");
+
+        Assert.Equal("outer:inner", result.ToString());
+    }
+
+    [Fact]
+    public void Async_Await_Continuation_Runs_After_Synchronous_Code()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var order = [];
+            async function run() {
+                order.push('start');
+                await Promise.resolve('step');
+                order.push('after');
+                return order.join('|');
+            }
+
+            var promise = run();
+            order.push('sync');
+            promise;
+        ");
+
+        Assert.Equal("start|sync|after", result.ToString());
+    }
+
+    [Fact]
+    public void Promise_Rejection_Handlers_Run_In_Microtask_Order()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var order = [];
+            var promise = Promise.reject('boom').then(value => value, reason => {
+                order.push('reject:' + reason);
+                return order.join('|');
+            });
+            order.push('sync');
+            promise;
+        ");
+
+        Assert.Equal("sync|reject:boom", result.ToString());
+    }
+
+    [Fact]
     public void RegExp_Escape_Escapes_Syntax_Characters()
     {
         EnsureBuiltInsLoaded();
@@ -912,6 +1217,44 @@ public class BuiltInsTests
         var result = ctx.Eval(@"RegExp.escape('\uFEFF \u00A0\u202F');");
         Assert.Equal(@"\ufeff\x20\xa0\u202f", result.ToString());
         Assert.Throws<JSException>(() => ctx.Eval("RegExp.escape(123);"));
+    }
+
+    [Fact]
+    public void RegExp_Escape_Exposes_Expected_Metadata_And_Descriptors()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var parts = ctx.Eval(@"(function () {
+            var descriptor = Object.getOwnPropertyDescriptor(RegExp, 'escape');
+            var lengthDescriptor = Object.getOwnPropertyDescriptor(RegExp.escape, 'length');
+            var nameDescriptor = Object.getOwnPropertyDescriptor(RegExp.escape, 'name');
+
+            return [
+                RegExp.escape.length,
+                RegExp.escape.name,
+                descriptor.writable,
+                descriptor.enumerable,
+                descriptor.configurable,
+                lengthDescriptor.writable,
+                lengthDescriptor.enumerable,
+                lengthDescriptor.configurable,
+                nameDescriptor.writable,
+                nameDescriptor.enumerable,
+                nameDescriptor.configurable
+            ].join('|');
+        })();").ToString().Split('|');
+        Assert.Equal(11, parts.Length);
+        Assert.Equal("1", parts[0]);
+        Assert.Equal("escape", parts[1]);
+        Assert.Equal("true", parts[2]);
+        Assert.Equal("false", parts[3]);
+        Assert.Equal("true", parts[4]);
+        Assert.Equal("false", parts[5]);
+        Assert.Equal("false", parts[6]);
+        Assert.Equal("true", parts[7]);
+        Assert.Equal("false", parts[8]);
+        Assert.Equal("false", parts[9]);
+        Assert.Equal("true", parts[10]);
     }
 
     [Fact]
@@ -972,6 +1315,100 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_IsArray_Exposes_Expected_Metadata_And_Non_Array_Results()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var parts = ctx.Eval(@"(function () {
+            var descriptor = Object.getOwnPropertyDescriptor(Array, 'isArray');
+            var lengthDescriptor = Object.getOwnPropertyDescriptor(Array.isArray, 'length');
+            var nameDescriptor = Object.getOwnPropertyDescriptor(Array.isArray, 'name');
+
+            return [
+                Array.isArray([]),
+                Array.isArray({ length: 0 }),
+                Array.isArray(new Proxy({}, {})),
+                Array.isArray(new Proxy(new Proxy([], {}), {})),
+                Array.isArray.length,
+                Array.isArray.name,
+                descriptor.writable,
+                descriptor.enumerable,
+                descriptor.configurable,
+                lengthDescriptor.writable,
+                lengthDescriptor.enumerable,
+                lengthDescriptor.configurable,
+                nameDescriptor.writable,
+                nameDescriptor.enumerable,
+                nameDescriptor.configurable
+            ].join('|');
+        })();").ToString().Split('|');
+        Assert.Equal(15, parts.Length);
+        Assert.Equal("true", parts[0]);
+        Assert.Equal("false", parts[1]);
+        Assert.Equal("false", parts[2]);
+        Assert.Equal("true", parts[3]);
+        Assert.Equal("1", parts[4]);
+        Assert.Equal("isArray", parts[5]);
+        Assert.Equal("true", parts[6]);
+        Assert.Equal("false", parts[7]);
+        Assert.Equal("true", parts[8]);
+        Assert.Equal("false", parts[9]);
+        Assert.Equal("false", parts[10]);
+        Assert.Equal("true", parts[11]);
+        Assert.Equal("false", parts[12]);
+        Assert.Equal("false", parts[13]);
+        Assert.Equal("true", parts[14]);
+    }
+
+    [Fact]
+    public void Function_Prototype_Methods_Inherit_Bind_In_A_Fresh_Context()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            typeof Function.prototype.call.bind,
+            Function.prototype.call.bind(Array.prototype.join)(['a', 'b'], ',')
+        ].join('|');");
+        Assert.Equal("function|a,b", result.ToString());
+    }
+
+    [Fact]
+    public void Array_IsArray_Is_Not_A_Constructor_In_ReflectConstruct()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            try {
+                Reflect.construct(function () {}, [], Array.isArray);
+                return 'no-throw';
+            } catch (e) {
+                return e instanceof TypeError;
+            }
+        })();");
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
+    public void Array_IsArray_And_Name_Properties_Are_Actually_Configurable()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            var fn = Array.isArray;
+            var deleteMethod = delete Array.isArray;
+            var deleteName = delete fn.name;
+
+            return [
+                deleteMethod,
+                Object.prototype.hasOwnProperty.call(Array, 'isArray'),
+                deleteName,
+                Object.prototype.hasOwnProperty.call(fn, 'name')
+            ].join('|');
+        })();");
+        Assert.Equal("true|false|true|false", result.ToString());
+    }
+
+    [Fact]
     public void RegExp_Escape_Handles_Initial_Characters_And_Punctuators()
     {
         EnsureBuiltInsLoaded();
@@ -1000,6 +1437,27 @@ public class BuiltInsTests
         ");
 
         Assert.Equal("ReferenceError|missingValue is not defined||ReferenceError|missingValue is not defined", result.ToString());
+    }
+
+    [Fact]
+    public void Unresolved_Identifier_Reads_Throw_ReferenceError_In_Grouped_And_Reversed_Binary_Expressions()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            [
+                (function () { try { 1 + missingValue; return 'no-throw'; } catch (e) { return e.constructor.name + '|' + e.message; } })(),
+                (function () { try { (missingValue) + 1; return 'no-throw'; } catch (e) { return e.constructor.name + '|' + e.message; } })(),
+                (function () { try { 1 + (missingValue); return 'no-throw'; } catch (e) { return e.constructor.name + '|' + e.message; } })(),
+                (function () { try { 1 === missingValue; return 'no-throw'; } catch (e) { return e.constructor.name + '|' + e.message; } })(),
+                (function () { try { (missingValue) === 1; return 'no-throw'; } catch (e) { return e.constructor.name + '|' + e.message; } })(),
+                (function () { try { 1 === (missingValue); return 'no-throw'; } catch (e) { return e.constructor.name + '|' + e.message; } })()
+            ].join('||');
+        ");
+
+        var expected = string.Join("||", Enumerable.Repeat("ReferenceError|missingValue is not defined", 6));
+        Assert.Equal(expected, result.ToString());
     }
 
     [Fact]
@@ -1045,6 +1503,75 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void GlobalThis_Resolves_To_The_Current_Global_Object()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("globalThis === this;");
+
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
+    public void Bare_Function_Calls_And_Implicit_Global_Assignments_Use_NonStrict_Global_Semantics()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"[
+            (function () { return this === globalThis; })(),
+            (function () { implicitGlobalValue = 1; return globalThis.implicitGlobalValue === 1; })(),
+            (function () { var declared = 1; return [delete declared, delete globalThis.declared].join('|'); })()
+        ].join('|');");
+
+        Assert.Equal("true|true|false|true", result.ToString());
+        ctx.Eval("delete globalThis.implicitGlobalValue;");
+    }
+
+    [Fact]
+    public async Task ForAwait_Over_Sync_And_AsyncIterator_Facades_Awaits_Each_Value()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var syncResult = ctx.Execute(@"
+            async function run() {
+                var values = [];
+                for await (var value of [Promise.resolve('a'), Promise.resolve('b')]) {
+                    values.push(value);
+                }
+                return values.join('|');
+            }
+
+            run();
+        ");
+
+        Assert.Equal("a|b", syncResult.ToString());
+
+        var asyncFacadeResult = ctx.Execute(@"
+            async function run() {
+                var values = [];
+                var iterable = {
+                    [Symbol.asyncIterator]() {
+                        return [Promise.resolve('x'), Promise.resolve('y')][Symbol.iterator]();
+                    }
+                };
+
+                for await (var value of iterable) {
+                    values.push(value);
+                }
+
+                return values.join('|');
+            }
+
+            run();
+        ");
+
+        Assert.Equal("x|y", asyncFacadeResult.ToString());
+    }
+
+    [Fact]
     public void Object_Symbol_Wrapper_Uses_Symbol_Coercion_Path()
     {
         EnsureBuiltInsLoaded();
@@ -1082,6 +1609,48 @@ public class BuiltInsTests
         ");
 
         Assert.Equal("bigint|true|bigint|true|bigint|true", result.ToString());
+    }
+
+    [Fact]
+    public void BigInt_Relational_Comparisons_Work_For_BigInt_And_Number_Operands()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            [
+                10n < 2n,
+                10n > 2n,
+                10n <= 10n,
+                10n >= 10n,
+                1n < 2,
+                2 > 1n,
+                1n < 2.5,
+                2.5 > 1n,
+                1n < Number.NaN,
+                Number.NaN < 1n
+            ].join('|');
+        ");
+
+        Assert.Equal("false|true|true|true|true|true|true|true|false|false", result.ToString());
+    }
+
+    [Fact]
+    public void BigInt_Relational_Comparisons_Respect_Equality_Precedence()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            [
+                1n < 2 === true,
+                1n === 1n < 2,
+                1n < 2n === true,
+                1n === 1n < 2n
+            ].join('|');
+        ");
+
+        Assert.Equal("true|false|true|false", result.ToString());
     }
 
     [Fact]
@@ -1228,6 +1797,63 @@ public class BuiltInsTests
         using var ctx = new JSContext();
         Assert.Throws<JSException>(() => ctx.Eval("/a/dd"));
         Assert.Throws<JSException>(() => ctx.Eval("/a/yy"));
+    }
+
+    [Fact]
+    public void RegExp_Sticky_Exec_Uses_LastIndex_And_Resets_On_Failure()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var re = /a/y;
+            re.lastIndex = 1;
+            var first = re.exec('ba');
+            var afterFirst = re.lastIndex;
+            var second = re.exec('ba');
+            [
+                first[0],
+                first.index,
+                afterFirst,
+                second === null,
+                re.lastIndex
+            ].join('|');
+        ");
+        Assert.Equal("a|1|2|true|0", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Sticky_Test_Does_Not_Scan_Past_LastIndex()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var re = /a/y;
+            var first = re.test('ba');
+            var afterFirst = re.lastIndex;
+            re.lastIndex = 1;
+            var second = re.test('ba');
+            var afterSecond = re.lastIndex;
+            var third = re.test('ba');
+            [first, afterFirst, second, afterSecond, third, re.lastIndex].join('|');
+        ");
+        Assert.Equal("false|0|true|2|false|0", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Exec_Returns_Undefined_For_Unmatched_Optional_Captures()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var match = /(a)?b/.exec('b');
+            [
+                match[0],
+                match[1] === undefined,
+                match.index,
+                match.input
+            ].join('|');
+        ");
+        Assert.Equal("b|true|0|b", result.ToString());
     }
 
     [Fact]

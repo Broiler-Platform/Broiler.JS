@@ -1,0 +1,5 @@
+test/built-ins/Promise/resolve/resolve-thenable.js
+test/language/expressions/await/await-awaits-thenables.js
+test/built-ins/Promise/reject-via-fn-immed-queue.js
+test/built-ins/Promise/prototype/finally/resolved-observable-then-calls.js
+test/built-ins/Promise/prototype/finally/rejected-observable-then-calls.js
