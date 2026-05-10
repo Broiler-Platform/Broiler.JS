@@ -1483,6 +1483,63 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RegExp_Sticky_Exec_Uses_LastIndex_And_Resets_On_Failure()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var re = /a/y;
+            re.lastIndex = 1;
+            var first = re.exec('ba');
+            var afterFirst = re.lastIndex;
+            var second = re.exec('ba');
+            [
+                first[0],
+                first.index,
+                afterFirst,
+                second === null,
+                re.lastIndex
+            ].join('|');
+        ");
+        Assert.Equal("a|1|2|true|0", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Sticky_Test_Does_Not_Scan_Past_LastIndex()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var re = /a/y;
+            var first = re.test('ba');
+            var afterFirst = re.lastIndex;
+            re.lastIndex = 1;
+            var second = re.test('ba');
+            var afterSecond = re.lastIndex;
+            var third = re.test('ba');
+            [first, afterFirst, second, afterSecond, third, re.lastIndex].join('|');
+        ");
+        Assert.Equal("false|0|true|2|false|0", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Exec_Returns_Undefined_For_Unmatched_Optional_Captures()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var match = /(a)?b/.exec('b');
+            [
+                match[0],
+                match[1] === undefined,
+                match.index,
+                match.input
+            ].join('|');
+        ");
+        Assert.Equal("b|true|0|b", result.ToString());
+    }
+
+    [Fact]
     public void Iterator_From_Map_Filter_Take_ToArray()
     {
         EnsureBuiltInsLoaded();

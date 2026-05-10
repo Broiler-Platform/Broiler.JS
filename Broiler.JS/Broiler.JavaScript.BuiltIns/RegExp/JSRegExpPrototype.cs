@@ -15,15 +15,22 @@ public partial class JSRegExp
     public JSValue Test(in Arguments a)
     {
         var text = a.Get1().ToString();
-        var match = value.Match(text, CalculateStartPosition(text));
+        var startPosition = CalculateStartPosition(text);
+        var match = value.Match(text, startPosition);
+
+        if (sticky && (!match.Success || match.Index != startPosition))
+            match = System.Text.RegularExpressions.Match.Empty;
 
         if (match.Success)
         {
-            if (globalSearch)
+            if (globalSearch || sticky)
                 lastIndex = match.Index + match.Length;
 
             return JSValue.BooleanTrue;
         }
+
+        if (globalSearch || sticky)
+            lastIndex = 0;
 
         return JSValue.BooleanFalse;
     }
@@ -33,19 +40,23 @@ public partial class JSRegExp
     {
         var input = a.Get1().ToString();
         // Perform the regular expression matching.
-        var match = value.Match(input, CalculateStartPosition(input));
+        var startPosition = CalculateStartPosition(input);
+        var match = value.Match(input, startPosition);
+
+        if (sticky && (!match.Success || match.Index != startPosition))
+            match = System.Text.RegularExpressions.Match.Empty;
 
         // Return null if no match was found.
         if (match.Success == false)
         {
             // Reset the lastIndex property.
-            if (globalSearch == true)
+            if (globalSearch || sticky)
                 lastIndex = 0;
 
             return JSValue.NullValue;
         }
 
-        if (globalSearch)
+        if (globalSearch || sticky)
             lastIndex = match.Index + match.Length;
 
         var groups = match.Groups;
@@ -104,7 +115,7 @@ public partial class JSRegExp
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int CalculateStartPosition(string input)
     {
-        if (globalSearch == false)
+        if (!globalSearch && !sticky)
             return 0;
 
         var maxIndex = lastIndex > 0 ? lastIndex : 0;

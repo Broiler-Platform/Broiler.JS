@@ -26,7 +26,7 @@ This file tracks areas that must be validated before Broiler.JS can make strong 
 - [ ] Validate `Intl` behavior against ECMA-402-focused suites before making internationalization compliance claims.
 - [ ] Run a matching public-suite subset for `Proxy` invariants and revocation edge cases; local regression coverage now covers revoked proxies plus `get`/`set`/`ownKeys` invariants around non-configurable properties.
 - [ ] Add public-suite and regression coverage for typed arrays, `ArrayBuffer`, and `DataView`, including detach/transfer edge cases.
-- [ ] Add public-suite and regression coverage for `RegExp` flags, captures, Unicode edge cases, and the current `RegExp.escape` escaping / descriptor divergences surfaced by the 2026-05-09 subset run.
+- [ ] Run a matching public-suite subset for `RegExp`; local regression coverage now includes `RegExp.escape` divergences, flag normalization, sticky `lastIndex` behavior, and unmatched optional captures, but broader Unicode / capture edge cases still need measured suite evidence.
 - [ ] Run a matching public-suite subset for error subclassing and related built-in constructor semantics; local regression coverage now covers constructor names, prototype chains, `instanceof`, and message propagation.
 
 ## 2026-05-09 local evidence
