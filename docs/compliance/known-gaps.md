@@ -2,30 +2,32 @@
 
 This file tracks areas that must be validated before Broiler.JS can make strong standards-compliance claims.
 
+Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-percent.md#tracked-gap-batches).
+
 ## Tracking checklist
 
 ### Measurement and reporting
 
-- [ ] Integrate `test262` with a pinned upstream commit and publish the pass/fail totals in `dashboard.md`.
-- [ ] Integrate `engine262` smoke/cross-check coverage and publish the recorded command and totals in `dashboard.md`.
-- [ ] Publish CI or release artifacts for each compliance run so the dashboard links to raw logs instead of local-only output.
-- [ ] Produce the comparative engine matrix called for in `dashboard.md` against V8, SpiderMonkey, JavaScriptCore, Jint, and engine262.
+- [ ] Pinned `test262` automation and totals — see tracked batch `measurement-test262`.
+- [ ] `engine262` smoke/cross-check command and totals — see tracked batch `measurement-engine262`.
+- [ ] Raw compliance artifacts linked from the dashboard — see tracked batch `measurement-artifacts`.
+- [ ] Comparative engine matrix in the dashboard — see tracked batch `measurement-matrix`.
 
 ### Parser and execution semantics needing follow-up
 
-- [ ] Add coverage and implementation work for `for await (...)` loops, which are still rejected in `Broiler.JS/Broiler.JavaScript.Parser/FastParser.ForStatement.cs`.
-- [ ] Validate non-strict/global semantics against the compliance suites; `Broiler.JS/OtherTests/JIntPerfTests/Program.cs` still documents the engine as strict-mode only by default.
-- [ ] Re-run the failing `addition` and `strict-equals` public-suite files; local regression coverage now includes unresolved reads in `+` and `===` expressions across grouped forms plus left/right operand order variations, but the original test262 mismatches still need measured confirmation.
-- [ ] Re-run the failing BigInt comparison public-suite files; local regression coverage now includes mixed BigInt/Number relational semantics plus `===` precedence-adjacent cases, but the original subset parser failures still need measured confirmation.
-- [ ] Re-run the matching promise-job / async public-suite coverage against a reference engine; local regressions now cover microtask ordering, nested promise resolution, async/await continuation order, and rejection timing, but the remaining gap is measured external conformance evidence.
+- [ ] `for await (...)` loops — see tracked batch `parser-for-await`.
+- [ ] Non-strict/global semantics — see tracked batch `semantics-global-nonstrict`.
+- [ ] Unresolved-reference behavior in `addition` and `strict-equals` — see tracked batch `semantics-reference-resolution`.
+- [ ] BigInt comparison parser failures — see tracked batch `semantics-bigint-comparisons`.
+- [ ] Promise-job / async scheduling public-suite evidence — see tracked batch `semantics-promise-jobs`.
 
 ### Built-in areas with implementation but incomplete standards evidence
 
-- [ ] Validate `Intl` behavior against ECMA-402-focused suites before making internationalization compliance claims.
-- [ ] Run a matching public-suite subset for `Proxy` invariants and revocation edge cases; local regression coverage now covers revoked proxies plus `get`/`set`/`ownKeys` invariants around non-configurable properties.
-- [ ] Add public-suite and regression coverage for typed arrays, `ArrayBuffer`, and `DataView`, including detach/transfer edge cases.
-- [ ] Run a matching public-suite subset for `RegExp`; local regression coverage now includes `RegExp.escape` divergences, flag normalization, sticky `lastIndex` behavior, and unmatched optional captures, but broader Unicode / capture edge cases still need measured suite evidence.
-- [ ] Run a matching public-suite subset for error subclassing and related built-in constructor semantics; local regression coverage now covers constructor names, prototype chains, `instanceof`, and message propagation.
+- [ ] `Intl` behavior and supported ECMA-402 scope — see tracked batch `builtins-intl`.
+- [ ] `Proxy` invariants and revocation public-suite evidence — see tracked batch `builtins-proxy`.
+- [ ] Typed arrays, `ArrayBuffer`, and `DataView` public-suite evidence — see tracked batch `builtins-binary-data`.
+- [ ] `RegExp` public-suite evidence — see tracked batch `builtins-regexp`.
+- [ ] Error subclassing and constructor semantics public-suite evidence — see tracked batch `builtins-error-subclassing`.
 
 ## 2026-05-09 local evidence
 
