@@ -108,8 +108,8 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 - [x] Record the repository-test baseline required by `process.md`.
 - [x] Add a pinned `test262` harness run and publish suite totals here.
 - [x] Add an `engine262` cross-check run and publish suite totals here.
-- [x] Expand syntax-compliance coverage for parser gaps called out in `known-gaps.md`.
-- [x] Expand built-in compliance coverage for the high-risk areas called out in `known-gaps.md`.
+- [ ] Expand syntax-compliance coverage for parser gaps called out in `known-gaps.md`.
+- [ ] Expand built-in compliance coverage for the high-risk areas called out in `known-gaps.md`.
 - [x] Publish a comparative engine matrix for release-time regression tracking.
 
 ## Regression tracking
