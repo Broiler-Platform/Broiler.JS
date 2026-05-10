@@ -218,6 +218,7 @@ public class M8ValidationTests
             Assert.Contains("microtask ordering", roadmap);
             Assert.Contains("Tracked gap batches", roadmap);
             Assert.Contains("measurement-test262", roadmap);
+            Assert.Contains("- [x] 3. Publish raw artifacts", roadmap);
             Assert.Contains("Define the final “ready to claim” checklist", roadmap);
             Assert.Contains("Do not publish a 100% compliance statement until this exact checklist is complete", roadmap);
 

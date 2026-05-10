@@ -8,7 +8,7 @@ Use this checklist as the issue-level summary for roadmap progress. Update the m
 
 - [ ] 1. Pin and automate `test262`
 - [ ] 2. Add `engine262` cross-check coverage
-- [ ] 3. Publish raw artifacts
+- [x] 3. Publish raw artifacts
 - [ ] 4. Build the comparison matrix
 - [ ] 5. Implement `for await (...)`
 - [x] 6. Resolve the async object accessor parser note
