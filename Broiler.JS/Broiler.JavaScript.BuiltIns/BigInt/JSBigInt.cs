@@ -11,6 +11,8 @@ namespace Broiler.JavaScript.BuiltIns.BigInt;
 
 static class JSBigIntExtensions
 {
+    internal const int NaNComparison = int.MinValue;
+
     public static BigInteger AsBigIntegerOnly(this JSValue @this) => @this is JSBigInt v ? v.value : throw JSBigInt.CannotMix();
 
     public static JSValue UnwrapPrimitive(this JSValue value)
@@ -19,7 +21,7 @@ static class JSBigIntExtensions
     public static int CompareToNumber(this BigInteger left, double right)
     {
         if (double.IsNaN(right))
-            return int.MinValue;
+            return NaNComparison;
 
         if (double.IsPositiveInfinity(right))
             return -1;
@@ -214,17 +216,19 @@ public partial class JSBigInt : JSPrimitive
         }
     }
 
+    private static bool IsValidComparison(int comparison) => comparison != JSBigIntExtensions.NaNComparison;
+
     public override bool Less(JSValue value)
-        => TryCompare(value, out var comparison) ? comparison != int.MinValue && comparison < 0 : base.Less(value);
+        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison < 0 : base.Less(value);
 
     public override bool LessOrEqual(JSValue value)
-        => TryCompare(value, out var comparison) ? comparison != int.MinValue && comparison <= 0 : base.LessOrEqual(value);
+        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison <= 0 : base.LessOrEqual(value);
 
     public override bool Greater(JSValue value)
-        => TryCompare(value, out var comparison) ? comparison != int.MinValue && comparison > 0 : base.Greater(value);
+        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison > 0 : base.Greater(value);
 
     public override bool GreaterOrEqual(JSValue value)
-        => TryCompare(value, out var comparison) ? comparison != int.MinValue && comparison >= 0 : base.GreaterOrEqual(value);
+        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison >= 0 : base.GreaterOrEqual(value);
 
     public override bool EqualsLiteral(string value) => this.value.ToString() == value;
 
