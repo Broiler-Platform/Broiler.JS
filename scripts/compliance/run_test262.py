@@ -20,6 +20,7 @@ DEFAULT_BROILER_DLL = (
     "/home/runner/work/Broiler.JS/Broiler.JS/"
     "Broiler.JS/Broiler.JavaScript/bin/Debug/net8.0/BroilerJS.dll"
 )
+TEMP_DIRECTORY = Path(tempfile.gettempdir()) / "broiler-test262"
 UNSUPPORTED_FLAGS = {"async", "module", "raw", "onlyStrict", "noStrict"}
 
 
@@ -141,7 +142,7 @@ def run_test(
         "w",
         suffix=".js",
         delete=False,
-        dir="/tmp",
+        dir=TEMP_DIRECTORY,
         encoding="utf-8",
     ) as handle:
         handle.write("\n".join(parts))
@@ -220,6 +221,7 @@ def main() -> int:
     args = parser.parse_args()
 
     repo = Test262Repository(args.suite_ref)
+    TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
     requested_paths = list(args.paths)
     for path_file in args.path_file:
         for line in Path(path_file).read_text(encoding="utf-8").splitlines():
@@ -247,7 +249,7 @@ def main() -> int:
         output_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
     print(json.dumps(summary, indent=2))
-    return 1 if summary["failed"] else 0
+    return 1 if summary["failed"] > 0 else 0
 
 
 if __name__ == "__main__":
