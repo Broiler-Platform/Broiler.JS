@@ -6,7 +6,7 @@ This document turns the remaining compliance work into a small-step execution pl
 
 Use this checklist as the issue-level summary for roadmap progress. Update the matching item here whenever a roadmap bucket is completed or split into linked sub-issues.
 
-- [ ] 1. Pin and automate `test262`
+- [x] 1. Pin and automate `test262`
 - [ ] 2. Add `engine262` cross-check coverage
 - [x] 3. Publish raw artifacts
 - [ ] 4. Build the comparison matrix
@@ -14,7 +14,7 @@ Use this checklist as the issue-level summary for roadmap progress. Update the m
 - [x] 6. Resolve the async object accessor parser note
 - [ ] 7. Fix BigInt comparison parse failures
 - [ ] 8. Finish non-strict/global semantics validation
-- [ ] 9. Align unresolved-reference behavior in `+` and `===`
+- [x] 9. Align unresolved-reference behavior in `+` and `===`
 - [ ] 10. Verify promise jobs and async scheduling
 - [x] 11. Finish `Array.isArray`
 - [ ] 12. Validate `Intl`
@@ -76,6 +76,8 @@ The first blocker to a “100%” claim is missing measurement, not just missing
    - `test/built-ins/RegExp/escape`
 4. Expand from those directories to broader language and built-in coverage after each bucket is clean.
 5. Record the exact command, suite revision, totals, and exclusions in `docs/compliance/dashboard.md`.
+
+The pinned runner now lives at `/home/runner/work/Broiler.JS/Broiler.JS/scripts/compliance/run_test262.py`, the pinned manifests live beside it, and the dashboard records the exact commands and totals for the automated `Array.isArray` and unresolved-reference reruns.
 
 ### 2. Add `engine262` cross-check coverage
 
@@ -161,6 +163,8 @@ Primary source: `/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/OtherTests/J
    - left/right operand order variations
 3. Inspect compiler fast paths for native-number/native-string shortcuts so they do not bypass identifier resolution.
 4. Re-run the `addition` and `strict-equals` subsets until no unresolved-reference mismatches remain.
+
+The pinned unresolved-reference subset is now clean on the recorded 2026-05-10 rerun, so this item is closed.
 
 ### 10. Verify promise jobs and async scheduling
 

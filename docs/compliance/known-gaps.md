@@ -8,7 +8,7 @@ Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-perce
 
 ### Measurement and reporting
 
-- [ ] Pinned `test262` automation and totals — see tracked batch `measurement-test262`.
+- [x] Pinned `test262` automation and totals — see tracked batch `measurement-test262`.
 - [ ] `engine262` smoke/cross-check command and totals — see tracked batch `measurement-engine262`.
 - [x] Raw compliance artifacts linked from the dashboard — see tracked batch `measurement-artifacts`.
 - [ ] Comparative engine matrix in the dashboard — see tracked batch `measurement-matrix`.
@@ -17,7 +17,7 @@ Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-perce
 
 - [ ] `for await (...)` loops — see tracked batch `parser-for-await`.
 - [ ] Non-strict/global semantics — see tracked batch `semantics-global-nonstrict`.
-- [ ] Unresolved-reference behavior in `addition` and `strict-equals` — see tracked batch `semantics-reference-resolution`.
+- [x] Unresolved-reference behavior in `addition` and `strict-equals` — see tracked batch `semantics-reference-resolution`.
 - [ ] BigInt comparison parser failures — see tracked batch `semantics-bigint-comparisons`.
 - [ ] Promise-job / async scheduling public-suite evidence — see tracked batch `semantics-promise-jobs`.
 
@@ -34,6 +34,7 @@ Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-perce
 - test262 subset against Chromium: 126 executed / 1 skipped; Broiler passed 75 and failed 51 while Chromium passed all 126 executed files.
 - Largest failing executed areas were `addition`, `RegExp.escape`, `strict-equals`, and `Array.isArray`.
 - 2026-05-10 pinned `test262` rerun for `test/built-ins/Array/isArray`: 29 executed, 29 passed, 0 failed; the `Array.isArray` gap is closed and removed from the active checklist.
+- 2026-05-10 pinned `test262` rerun for the unresolved-reference cases in `addition` and `strict-equals`: 6 executed, 6 passed, 0 failed; the unresolved-reference gap is closed and removed from the active checklist.
 - The repo-local `JIntPerfTests` / Dromaeo-derived script set passed 11/11 on both Broiler and Chromium, so the immediate compliance gaps are concentrated in standards edge cases rather than the basic compatibility smoke scripts.
 
 ## Gap lifecycle

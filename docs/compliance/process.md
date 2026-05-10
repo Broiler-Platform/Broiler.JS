@@ -14,10 +14,11 @@ Broiler.JS compliance is measured with repository tests plus public JavaScript c
 ## Running compliance evidence
 
 1. Restore and run repository tests with `dotnet test Broiler.JS.slnx`.
-2. Clone or cache public suites outside the source tree or as CI cache inputs; do not vendor large external suites without a license and update policy.
-3. Record the exact suite revision, command line, host options, and environment in `docs/compliance/dashboard.md`.
-4. File or update issues for failing feature areas and link them from `docs/compliance/known-gaps.md`.
-5. Treat any newly failing previously-passing test as a regression unless a suite update intentionally changed expected behavior.
+2. Use the pinned runner at `python scripts/compliance/run_test262.py --suite-ref <sha> --path-file <manifest.txt>` for script-host-compatible `test262` subsets.
+3. Clone or cache larger public suites outside the source tree or as CI cache inputs when broader coverage is needed; do not vendor large external suites without a license and update policy.
+4. Record the exact suite revision, command line, host options, and environment in `docs/compliance/dashboard.md`.
+5. File or update issues for failing feature areas and link them from `docs/compliance/known-gaps.md`.
+6. Treat any newly failing previously-passing test as a regression unless a suite update intentionally changed expected behavior.
 
 ## Reporting format
 

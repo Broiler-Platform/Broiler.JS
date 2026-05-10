@@ -8,7 +8,8 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 | --- | --- | --- |
 | Repository xUnit tests | 2026-05-09 local baseline on commit `2907ab8fee53adfeb9af0d1974eab5052a97c241`: 247 passed, 0 failed, 0 skipped | `dotnet test Broiler.JS.slnx --no-build --logger trx --results-directory /tmp/broiler-tests-final` |
 | test262 (real subset, custom raw-script runner) | 2026-05-09 snapshot of `tc39/test262` `main` at `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`: 126 executed / 1 skipped across `Array.isArray`, `addition`, `strict-equals`, and `RegExp.escape`; Broiler passed 75 and failed 51 while Chromium passed 126 and failed 0 | Downloaded the upstream suite outside the repo, prepended the standard harness files (`assert.js`, `sta.js`, and per-test includes), then executed the same files through the repaired Broiler CLI script host and Chromium 147.0.7727.0. |
-| test262 `Array.isArray` subset rerun | 2026-05-10 rerun of pinned `test/built-ins/Array/isArray`: 29 executed, Broiler passed 29 and failed 0 | Reused the same pinned `tc39/test262` snapshot and custom raw-script runner, executed all files in `test/built-ins/Array/isArray` with `assert.js`, `sta.js`, and per-test includes through the Broiler CLI script host. |
+| test262 automated `Array.isArray` subset rerun | 2026-05-10 rerun of pinned `test/built-ins/Array/isArray`: 29 executed, Broiler passed 29 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/array-isarray-summary.json --path-file scripts/compliance/test262-array-isarray.txt` |
+| test262 automated unresolved-reference subset rerun | 2026-05-10 rerun of the unresolved-reference cases from `addition` and `strict-equals`: 6 executed, Broiler passed 6 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/unresolved-summary.json --path-file scripts/compliance/test262-unresolved-reference.txt` |
 | test262-harness smoke | Official `test262-harness` now launches the Broiler CLI, but the Node-style host prelude still fails before real test execution because Broiler does not yet match the expected global/CommonJS setup | `npx test262-harness --host-type node --host-path /tmp/broilerjs-host .../Array/isArray/15.4.3.2-0-1.js` currently aborts at `Function(\"return this;\")().require = require`. |
 | engine262 tests | Pending harness integration | Add command and totals after the first run. |
 | JInt compatibility/performance scripts | 2026-05-09 local comparison: 11 executed, Broiler passed 11 and Chromium passed 11 | Ran every script in `Broiler.JS/OtherTests/JIntPerfTests/Scripts` through the repaired Broiler script host and Chromium 147.0.7727.0. |
@@ -39,15 +40,21 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 
 ## 2026-05-10 `Array.isArray` follow-up
 
-- Rebuilt the Broiler CLI, reran the pinned `test262` `test/built-ins/Array/isArray` subset, and executed all 29 files successfully.
+- Rebuilt the Broiler CLI, checked in the pinned `scripts/compliance/run_test262.py` runner plus the `scripts/compliance/test262-array-isarray.txt` manifest, reran the pinned `test262` `test/built-ins/Array/isArray` subset, and executed all 29 files successfully.
 - The rerun covered the earlier failing proxy, revoked-proxy, descriptor, and metadata cases.
 - `Array.isArray` is now closed in the roadmap and removed from the active gap checklist.
+
+## 2026-05-10 unresolved-reference follow-up
+
+- Added the pinned `scripts/compliance/run_test262.py` runner and the `scripts/compliance/test262-unresolved-reference.txt` manifest for the unresolved `GetValue` cases that previously returned values instead of throwing.
+- Reran the pinned unresolved-reference subset across `test/language/expressions/addition` and `test/language/expressions/strict-equals`: 6 executed, 6 passed, 0 failed.
+- The unresolved-reference mismatch is now closed in both the roadmap and the active gap checklist.
 
 ## Compliance workstreams
 
 - [x] Review the documents in `docs/compliance/` against the current repository layout and validation process.
 - [x] Record the repository-test baseline required by `process.md`.
-- [ ] Add a pinned `test262` harness run and publish suite totals here.
+- [x] Add a pinned `test262` harness run and publish suite totals here.
 - [ ] Add an `engine262` cross-check run and publish suite totals here.
 - [ ] Expand syntax-compliance coverage for parser gaps called out in `known-gaps.md`.
 - [ ] Expand built-in compliance coverage for the high-risk areas called out in `known-gaps.md`.
