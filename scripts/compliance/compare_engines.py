@@ -39,6 +39,8 @@ def run_process(command: list[str], program: str, suffix: str = ".js") -> dict[s
     finally:
         os.unlink(path)
 
+    # The comparison programs are expected to emit a single result line; if a host
+    # prints extra diagnostics we treat the final non-empty stdout line as the result.
     stdout_lines = [line.strip() for line in process.stdout.splitlines() if line.strip()]
     stderr_lines = [line.strip() for line in process.stderr.splitlines() if line.strip()]
     output = stdout_lines[-1] if stdout_lines else ""
