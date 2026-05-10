@@ -51,6 +51,9 @@ public partial class JSPromise : JSObject, IJSPromise
     long promiseID;
     ConcurrentDictionary<long, JSValue> pending;
 
+    private static SynchronizationContext CaptureSynchronizationContext()
+        => (JSEngine.Current as JSContext)?.synchronizationContext ?? SynchronizationContext.Current;
+
     /// <summary>
     /// .Net removes promises aggressively via
     /// garbage collection... so all promises
@@ -78,7 +81,7 @@ public partial class JSPromise : JSObject, IJSPromise
     /// <param name="value"></param>
     public JSPromise(Task<JSValue> value) : this()
     {
-        sc = (JSEngine.Current as JSContext)?.synchronizationContext;
+        sc = CaptureSynchronizationContext();
         RegisterPromise();
         value.ContinueWith((t) =>
         {
@@ -129,7 +132,7 @@ public partial class JSPromise : JSObject, IJSPromise
     private void InitPromise()
     {
         // to improve speed of promise, we will add then/catch here...
-        sc = (JSEngine.Current as JSContext)?.synchronizationContext;
+        sc = CaptureSynchronizationContext();
 
         RegisterPromise();
 

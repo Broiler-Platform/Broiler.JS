@@ -1064,6 +1064,78 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public async Task Promise_Reactions_Run_After_Synchronous_Code()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = await ctx.ExecuteAsync(@"
+            var order = [];
+            var promise = Promise.resolve('ok').then(value => {
+                order.push('then:' + value);
+                return order.join('|');
+            });
+            order.push('sync');
+            promise;
+        ");
+
+        Assert.Equal("sync|then:ok", result.ToString());
+    }
+
+    [Fact]
+    public async Task Promise_Nested_Resolution_Assimilates_Inner_Promise()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = await ctx.ExecuteAsync(@"
+            Promise.resolve('outer')
+                .then(value => Promise.resolve(value + ':inner'))
+                .then(value => value);
+        ");
+
+        Assert.Equal("outer:inner", result.ToString());
+    }
+
+    [Fact]
+    public async Task Async_Await_Continuation_Runs_After_Synchronous_Code()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = await ctx.ExecuteAsync(@"
+            var order = [];
+            async function run() {
+                order.push('start');
+                await Promise.resolve('step');
+                order.push('after');
+                return order.join('|');
+            }
+
+            var promise = run();
+            order.push('sync');
+            promise;
+        ");
+
+        Assert.Equal("start|sync|after", result.ToString());
+    }
+
+    [Fact]
+    public async Task Promise_Rejection_Handlers_Run_In_Microtask_Order()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = await ctx.ExecuteAsync(@"
+            var order = [];
+            var promise = Promise.reject('boom').then(value => value, reason => {
+                order.push('reject:' + reason);
+                return order.join('|');
+            });
+            order.push('sync');
+            promise;
+        ");
+
+        Assert.Equal("sync|reject:boom", result.ToString());
+    }
+
+    [Fact]
     public void RegExp_Escape_Escapes_Syntax_Characters()
     {
         EnsureBuiltInsLoaded();

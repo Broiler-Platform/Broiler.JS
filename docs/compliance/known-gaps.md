@@ -17,7 +17,7 @@ This file tracks areas that must be validated before Broiler.JS can make strong 
 - [ ] Validate non-strict/global semantics against the compliance suites; `Broiler.JS/OtherTests/JIntPerfTests/Program.cs` still documents the engine as strict-mode only by default.
 - [ ] Re-run the failing `addition` and `strict-equals` public-suite files; local regression coverage now includes unresolved reads in `+` and `===` expressions across grouped forms plus left/right operand order variations, but the original test262 mismatches still need measured confirmation.
 - [ ] Re-run the failing BigInt comparison public-suite files; local regression coverage now includes mixed BigInt/Number relational semantics plus `===` precedence-adjacent cases, but the original subset parser failures still need measured confirmation.
-- [ ] Verify host-defined promise job queue and async interaction behavior against public suites, not only repository unit tests.
+- [ ] Verify host-defined promise job queue and async interaction behavior against public suites, not only repository unit tests; local regression coverage now includes microtask ordering, nested promise resolution, async/await continuation order, and rejection timing.
 
 ### Built-in areas with implementation but incomplete standards evidence
 
