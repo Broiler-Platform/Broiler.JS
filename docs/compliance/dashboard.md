@@ -6,17 +6,21 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 
 | Area | Latest recorded result | Evidence |
 | --- | --- | --- |
-| Repository xUnit tests | 2026-05-09 local baseline on commit `2907ab8fee53adfeb9af0d1974eab5052a97c241`: 247 passed, 0 failed, 0 skipped | `dotnet test Broiler.JS.slnx --no-build --logger trx --results-directory /tmp/broiler-tests-final` |
+| Repository xUnit tests | 2026-05-10 local rerun: 293 passed, 0 failed, 0 skipped | `dotnet test Broiler.JS.slnx` |
 | test262 (real subset, custom raw-script runner) | 2026-05-09 snapshot of `tc39/test262` `main` at `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`: 126 executed / 1 skipped across `Array.isArray`, `addition`, `strict-equals`, and `RegExp.escape`; Broiler passed 75 and failed 51 while Chromium passed 126 and failed 0 | Downloaded the upstream suite outside the repo, prepended the standard harness files (`assert.js`, `sta.js`, and per-test includes), then executed the same files through the repaired Broiler CLI script host and Chromium 147.0.7727.0. |
 | test262 automated `Array.isArray` subset rerun | 2026-05-10 rerun of pinned `test/built-ins/Array/isArray`: 29 executed, Broiler passed 29 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/array-isarray-summary.json --path-file scripts/compliance/test262-array-isarray.txt` |
 | test262 automated unresolved-reference subset rerun | 2026-05-10 rerun of the unresolved-reference cases from `addition` and `strict-equals`: 6 executed, Broiler passed 6 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/unresolved-summary.json --path-file scripts/compliance/test262-unresolved-reference.txt` |
 | test262 automated `Proxy` subset rerun | 2026-05-10 rerun of a pinned `Proxy` invariants and revocation subset: 8 executed, Broiler passed 8 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/proxy-summary.json --path-file scripts/compliance/test262-proxy.txt` |
 | test262 automated BigInt comparison subset rerun | 2026-05-10 rerun of the pinned strict-equality BigInt comparison cases: 8 executed, Broiler passed 8 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/bigint-summary.json --path-file scripts/compliance/test262-bigint-comparisons.txt` |
 | test262 automated promise-job subset rerun | 2026-05-10 rerun of a pinned async promise-job and `await` scheduling subset: 5 executed, Broiler passed 5 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/promise-summary.json --path-file scripts/compliance/test262-promise-jobs.txt` |
+| test262 automated `for await (...)` subset rerun | 2026-05-10 rerun of a pinned `for await (... of ...)` subset: 2 executed, Broiler passed 2 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/for-await-summary.json --path-file scripts/compliance/test262-for-await.txt` |
+| test262 automated non-strict/global subset rerun | 2026-05-10 rerun of a pinned non-strict/global semantics subset: 6 executed, Broiler passed 6 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/global-nonstrict-summary.json --path-file scripts/compliance/test262-global-nonstrict.txt` |
 | test262 automated binary-data subset rerun | 2026-05-10 rerun of a pinned `ArrayBuffer` / `DataView` subset: 7 executed, Broiler passed 7 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/binary-summary.json --path-file scripts/compliance/test262-binary-data.txt` |
 | test262 automated `RegExp.escape` subset rerun | 2026-05-10 rerun of a pinned `RegExp.escape` subset: 7 executed, Broiler passed 7 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/regexp-summary.json --path-file scripts/compliance/test262-regexp.txt` |
+| test262 automated `Intl` subset rerun | 2026-05-10 rerun of the measured `Intl` constructor subset: 5 executed, Broiler passed 5 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/intl-summary.json --path-file scripts/compliance/test262-intl.txt` |
+| test262 automated error constructor subset rerun | 2026-05-10 rerun of the error constructor/subclassing subset: 6 executed, Broiler passed 6 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/error-summary.json --path-file scripts/compliance/test262-error-subclassing.txt` |
 | test262-harness smoke | Official `test262-harness` now launches the Broiler CLI, but the Node-style host prelude still fails before real test execution because Broiler does not yet match the expected global/CommonJS setup | `npx test262-harness --host-type node --host-path /tmp/broilerjs-host .../Array/isArray/15.4.3.2-0-1.js` currently aborts at `Function(\"return this;\")().require = require`. |
-| engine262 cross-check scenarios | 2026-05-10 local cross-check over `scripts/compliance/engine-scenarios.json`: Broiler passed 2/6 while Node/V8 and engine262 each passed 6/6 on the same reference-resolution and global-semantics cases | `python scripts/compliance/compare_engines.py --manifest scripts/compliance/engine-scenarios.json --engine262-bin /tmp/engine262-cli/node_modules/.bin/engine262 --output /tmp/broiler-compliance/engine-scenarios-summary.json` |
+| engine262 cross-check scenarios | 2026-05-10 local cross-check over `scripts/compliance/engine-scenarios.json`: Broiler, Node/V8, and engine262 each passed 6/6 on the same reference-resolution and global-semantics cases | `python scripts/compliance/compare_engines.py --manifest scripts/compliance/engine-scenarios.json --engine262-bin /tmp/engine262-cli/node_modules/.bin/engine262 --output /tmp/broiler-compliance/engine-scenarios-summary.json` |
 | JInt compatibility/performance scripts | 2026-05-09 local comparison: 11 executed, Broiler passed 11 and Chromium passed 11 | Ran every script in `Broiler.JS/OtherTests/JIntPerfTests/Scripts` through the repaired Broiler script host and Chromium 147.0.7727.0. |
 | Comparative engine checks | First Chromium comparison recorded: Broiler diverged on 51 of 126 executed test262 subset files and matched Chromium on all 11 local JInt compatibility scripts | Use the detailed failure buckets below to drive follow-up issues before broader engine comparisons are added. |
 
@@ -82,6 +86,34 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 - Reran the pinned promise-job subset: 5 executed, 5 passed, 0 failed.
 - The promise-job / async scheduling evidence gap is now closed in both the roadmap and the active gap checklist.
 
+## 2026-05-10 `for await (...)` follow-up
+
+- Added the pinned `scripts/compliance/test262-for-await.txt` manifest for a focused `for await (... of ...)` subset that exercises both async-from-sync wrapping and custom async-iterator facades.
+- Implemented parser/compiler/runtime support for `for await (... of ...)`, including invalid `for await (... in ...)` rejection and awaited loop-value handling.
+- Reran the pinned `for await (...)` subset: 2 executed, 2 passed, 0 failed.
+- The `for await (...)` gap is now closed in both the roadmap and the active gap checklist.
+
+## 2026-05-10 non-strict/global follow-up
+
+- Added the pinned `scripts/compliance/test262-global-nonstrict.txt` manifest for the non-strict/global scenarios that previously diverged in the dashboard matrix.
+- Fixed non-strict bare-call `this`, implicit global assignment, global `var` property attributes, `delete` behavior, and `Function` constructor bodies so they match the reference engines on the recorded scenarios.
+- Reran the pinned non-strict/global subset: 6 executed, 6 passed, 0 failed.
+- Re-ran the shared engine matrix and Broiler now matches Node/V8 and engine262 on all 6/6 recorded scenarios.
+
+## 2026-05-10 `Intl` follow-up
+
+- Added the pinned `scripts/compliance/test262-intl.txt` manifest for the currently supported ECMA-402 scope: the exposed `Intl` object plus constructor metadata for `Intl.DateTimeFormat` and `Intl.RelativeTimeFormat`.
+- Replaced the old stubbed `Intl` constructor surface with concrete built-in constructors that report the expected function metadata for the supported scope.
+- Reran the pinned `Intl` subset: 5 executed, 5 passed, 0 failed.
+- The measured `Intl` scope is now closed in both the roadmap and the active gap checklist.
+
+## 2026-05-10 error constructor follow-up
+
+- Added the pinned `scripts/compliance/test262-error-subclassing.txt` manifest for callable `Error` constructors, name/length metadata, and property-descriptor checks.
+- Patched the built-in error constructors so callable `Error`/`TypeError`/`ReferenceError` behavior and metadata align with the local regressions and the pinned public-suite subset.
+- Reran the pinned error subset: 6 executed, 6 passed, 0 failed.
+- The error subclassing / constructor evidence gap is now closed in both the roadmap and the active gap checklist.
+
 ## 2026-05-10 binary-data follow-up
 
 - Added the pinned `scripts/compliance/test262-binary-data.txt` manifest for constructor metadata and basic `ArrayBuffer` / `DataView` behavior.
@@ -100,7 +132,7 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 | Scenario set | Broiler | Node/V8 | engine262 |
 | --- | --- | --- | --- |
 | Shared reference-resolution scenarios (`reference-addition`, `reference-strict-equals`) | 2 passed / 0 failed | 2 passed / 0 failed | 2 passed / 0 failed |
-| Shared global/non-strict scenarios (`nonstrict-bare-call-this`, `function-constructor-global-this`, `implicit-global-assignment`, `global-var-binding`) | 0 passed / 4 failed | 4 passed / 0 failed | 4 passed / 0 failed |
+| Shared global/non-strict scenarios (`nonstrict-bare-call-this`, `function-constructor-global-this`, `implicit-global-assignment`, `global-var-binding`) | 4 passed / 0 failed | 4 passed / 0 failed | 4 passed / 0 failed |
 
 ## Compliance workstreams
 
@@ -108,8 +140,8 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 - [x] Record the repository-test baseline required by `process.md`.
 - [x] Add a pinned `test262` harness run and publish suite totals here.
 - [x] Add an `engine262` cross-check run and publish suite totals here.
-- [ ] Expand syntax-compliance coverage for parser gaps called out in `known-gaps.md`.
-- [ ] Expand built-in compliance coverage for the high-risk areas called out in `known-gaps.md`.
+- [x] Expand syntax-compliance coverage for parser gaps called out in `known-gaps.md`.
+- [x] Expand built-in compliance coverage for the high-risk areas called out in `known-gaps.md`.
 - [x] Publish a comparative engine matrix for release-time regression tracking.
 
 ## Regression tracking

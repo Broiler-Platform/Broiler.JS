@@ -235,7 +235,7 @@ public class M8ValidationTests
 
             var dashboard = File.ReadAllText(Path.Combine(repoRoot, "docs", "compliance", "dashboard.md"));
             Assert.Contains("Compliance dashboard", dashboard);
-            Assert.Contains("local baseline on commit", dashboard);
+            Assert.Contains("Repository xUnit tests", dashboard);
             Assert.Contains("dotnet test Broiler.JS.slnx", dashboard);
             Assert.Contains("Compliance workstreams", dashboard);
             Assert.Contains("test262", dashboard);
@@ -244,32 +244,41 @@ public class M8ValidationTests
             Assert.Contains("8 executed, Broiler passed 8 and failed 0", dashboard);
             Assert.Contains("5 executed, Broiler passed 5 and failed 0", dashboard);
             Assert.Contains("7 executed, Broiler passed 7 and failed 0", dashboard);
+            Assert.Contains("2 executed, Broiler passed 2 and failed 0", dashboard);
+            Assert.Contains("6 executed, Broiler passed 6 and failed 0", dashboard);
             Assert.Contains("2 passed / 0 failed", dashboard);
             Assert.Contains("4 passed / 0 failed", dashboard);
             Assert.Contains("scripts/compliance/engine-scenarios.json", dashboard);
+            Assert.Contains("scripts/compliance/test262-for-await.txt", dashboard);
             Assert.Contains("scripts/compliance/test262-bigint-comparisons.txt", dashboard);
             Assert.Contains("scripts/compliance/test262-promise-jobs.txt", dashboard);
             Assert.Contains("scripts/compliance/test262-binary-data.txt", dashboard);
             Assert.Contains("scripts/compliance/test262-regexp.txt", dashboard);
             Assert.Contains("scripts/compliance/test262-unresolved-reference.txt", dashboard);
+            Assert.Contains("scripts/compliance/test262-global-nonstrict.txt", dashboard);
+            Assert.Contains("scripts/compliance/test262-intl.txt", dashboard);
+            Assert.Contains("scripts/compliance/test262-error-subclassing.txt", dashboard);
             Assert.Contains("Regression tracking", dashboard);
             Assert.Contains("Raw compliance log link", dashboard);
             Assert.Contains("github.com/MaiRat/Broiler.JS/sessions/", dashboard);
 
             var knownGaps = File.ReadAllText(Path.Combine(repoRoot, "docs", "compliance", "known-gaps.md"));
             Assert.Contains("Tracking checklist", knownGaps);
-            Assert.Contains("for await (...)", knownGaps);
             Assert.Contains("- [x] Pinned `test262` automation and totals", knownGaps);
             Assert.Contains("- [x] `engine262` smoke/cross-check command and totals", knownGaps);
             Assert.Contains("- [x] Comparative engine matrix in the dashboard", knownGaps);
+            Assert.Contains("- [x] `for await (...)` loops", knownGaps);
+            Assert.Contains("- [x] Non-strict/global semantics", knownGaps);
             Assert.Contains("- [x] BigInt comparison parser failures", knownGaps);
             Assert.Contains("- [x] Promise-job / async scheduling public-suite evidence", knownGaps);
             Assert.Contains("- [x] Unresolved-reference behavior in `addition` and `strict-equals`", knownGaps);
             Assert.Contains("- [x] `Proxy` invariants and revocation public-suite evidence", knownGaps);
             Assert.Contains("- [x] Typed arrays, `ArrayBuffer`, and `DataView` public-suite evidence", knownGaps);
             Assert.Contains("- [x] `RegExp` public-suite evidence", knownGaps);
+            Assert.Contains("- [x] `Intl` behavior and supported ECMA-402 scope", knownGaps);
+            Assert.Contains("- [x] Error subclassing and constructor semantics public-suite evidence", knownGaps);
             Assert.Contains("semantics-promise-jobs", knownGaps);
-            Assert.Contains("Intl", knownGaps);
+            Assert.Contains("All currently tracked gaps for the supported scope are closed", knownGaps);
             Assert.Contains("Tracked batch details live", knownGaps);
         }
         // If we can't find the repo root (e.g., in CI), the test still passes

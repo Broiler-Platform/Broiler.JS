@@ -54,14 +54,12 @@ internal static class BuiltInsAssemblyInitializer
             ? static context =>
             {
                 context.RegisterBuiltInClasses();
-                PatchCoreConstructorMetadata(context);
                 PatchErrorConstructors(context);
             }
             : context =>
             {
                 existing(context);
                 context.RegisterBuiltInClasses();
-                PatchCoreConstructorMetadata(context);
                 PatchErrorConstructors(context);
             };
 
@@ -358,12 +356,6 @@ internal static class BuiltInsAssemblyInitializer
         };
     }
 
-    private static void PatchCoreConstructorMetadata(JSContext context)
-    {
-        if (context[KeyStrings.Function] is JSFunction functionConstructor)
-            functionConstructor.FastAddValue(KeyStrings.length, JSValue.NumberOne, JSPropertyAttributes.ConfigurableReadonlyValue);
-    }
-
     private static void PatchErrorConstructors(JSContext context)
     {
         PatchErrorConstructor(context, KeyStrings.Error, static (in Arguments a) => new JSError(in a));
@@ -386,8 +378,10 @@ internal static class BuiltInsAssemblyInitializer
         {
             prototype = existing.prototype
         };
+        var functionMetadata = new JSFunction(JSFunction.empty, "Function", "function Function() { [native code] }", length: 1, createPrototype: false);
 
         replacement.FastAddValue(KeyStrings.prototype, existing.prototype, JSPropertyAttributes.ConfigurableValue);
+        replacement.FastAddValue(KeyStrings.constructor, functionMetadata, JSPropertyAttributes.ConfigurableValue);
         existing.prototype.FastAddValue(KeyStrings.name, JSValue.CreateString(name.Value), JSPropertyAttributes.ConfigurableValue);
 
         if (!existing[isErrorKey].IsUndefined)

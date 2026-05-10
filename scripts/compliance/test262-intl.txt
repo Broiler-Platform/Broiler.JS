@@ -1,0 +1,5 @@
+test/intl402/Intl/builtin.js
+test/intl402/DateTimeFormat/builtin.js
+test/intl402/RelativeTimeFormat/constructor/length.js
+test/intl402/RelativeTimeFormat/constructor/name.js
+test/intl402/RelativeTimeFormat/constructor/prototype.js

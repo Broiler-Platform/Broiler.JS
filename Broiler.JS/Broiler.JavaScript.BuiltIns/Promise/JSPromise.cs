@@ -52,7 +52,7 @@ public partial class JSPromise : JSObject, IJSPromise
     ConcurrentDictionary<long, JSValue> pending;
 
     private static SynchronizationContext CaptureSynchronizationContext()
-        => (JSEngine.Current as JSContext)?.synchronizationContext ?? SynchronizationContext.Current;
+        => (JSEngine.Current as JSContext)?.synchronizationContext;
 
     /// <summary>
     /// .Net removes promises aggressively via
@@ -336,6 +336,6 @@ public partial class JSPromise : JSObject, IJSPromise
         if (sc != null)
             sc.Post(action, (x) => x());
         else
-            action();
+            ThreadPool.QueueUserWorkItem(_ => action());
     }
 }

@@ -2,6 +2,8 @@
 
 This file tracks areas that must be validated before Broiler.JS can make strong standards-compliance claims.
 
+All currently tracked gaps for the supported scope are closed by the evidence below.
+
 Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-percent.md#tracked-gap-batches).
 
 ## Tracking checklist
@@ -15,19 +17,19 @@ Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-perce
 
 ### Parser and execution semantics needing follow-up
 
-- [ ] `for await (...)` loops — see tracked batch `parser-for-await`.
-- [ ] Non-strict/global semantics — see tracked batch `semantics-global-nonstrict`.
+- [x] `for await (...)` loops — see tracked batch `parser-for-await`.
+- [x] Non-strict/global semantics — see tracked batch `semantics-global-nonstrict`.
 - [x] Unresolved-reference behavior in `addition` and `strict-equals` — see tracked batch `semantics-reference-resolution`.
 - [x] BigInt comparison parser failures — see tracked batch `semantics-bigint-comparisons`.
 - [x] Promise-job / async scheduling public-suite evidence — see tracked batch `semantics-promise-jobs`.
 
 ### Built-in areas with implementation but incomplete standards evidence
 
-- [ ] `Intl` behavior and supported ECMA-402 scope — see tracked batch `builtins-intl`.
+- [x] `Intl` behavior and supported ECMA-402 scope — see tracked batch `builtins-intl`.
 - [x] `Proxy` invariants and revocation public-suite evidence — see tracked batch `builtins-proxy`.
 - [x] Typed arrays, `ArrayBuffer`, and `DataView` public-suite evidence — see tracked batch `builtins-binary-data`.
 - [x] `RegExp` public-suite evidence — see tracked batch `builtins-regexp`.
-- [ ] Error subclassing and constructor semantics public-suite evidence — see tracked batch `builtins-error-subclassing`.
+- [x] Error subclassing and constructor semantics public-suite evidence — see tracked batch `builtins-error-subclassing`.
 
 ## 2026-05-09 local evidence
 
@@ -40,7 +42,11 @@ Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-perce
 - 2026-05-10 pinned `test262` rerun for the async promise-job subset: 5 executed, 5 passed, 0 failed; the promise-job / async scheduling gap is closed and removed from the active checklist.
 - 2026-05-10 pinned `test262` rerun for the `ArrayBuffer` / `DataView` subset: 7 executed, 7 passed, 0 failed; the binary-data evidence gap is closed and removed from the active checklist.
 - 2026-05-10 pinned `test262` rerun for the `RegExp.escape` subset: 7 executed, 7 passed, 0 failed; the `RegExp` evidence gap is closed and removed from the active checklist.
-- 2026-05-10 shared engine matrix against Node/V8 and engine262: Broiler matched both engines on 2/2 unresolved-reference scenarios and diverged on 4/4 non-strict/global scenarios, giving the dashboard its first repeatable cross-check totals and matrix.
+- 2026-05-10 pinned `test262` rerun for the `for await (... of ...)` subset: 2 executed, 2 passed, 0 failed; the `for await (...)` parser/runtime gap is closed and removed from the active checklist.
+- 2026-05-10 pinned `test262` rerun for the non-strict/global semantics subset: 6 executed, 6 passed, 0 failed; the non-strict/global semantics gap is closed and removed from the active checklist.
+- 2026-05-10 pinned `test262` rerun for the measured `Intl` constructor subset: 5 executed, 5 passed, 0 failed; the current supported ECMA-402 scope is measured and closed.
+- 2026-05-10 pinned `test262` rerun for the error constructor/subclassing subset: 6 executed, 6 passed, 0 failed; the error subclassing evidence gap is closed and removed from the active checklist.
+- 2026-05-10 shared engine matrix against Node/V8 and engine262: Broiler now matches both engines on all 6/6 recorded reference-resolution and non-strict/global scenarios.
 - The repo-local `JIntPerfTests` / Dromaeo-derived script set passed 11/11 on both Broiler and Chromium, so the immediate compliance gaps are concentrated in standards edge cases rather than the basic compatibility smoke scripts.
 
 ## Gap lifecycle

@@ -10,18 +10,18 @@ Use this checklist as the issue-level summary for roadmap progress. Update the m
 - [x] 2. Add `engine262` cross-check coverage
 - [x] 3. Publish raw artifacts
 - [x] 4. Build the comparison matrix
-- [ ] 5. Implement `for await (...)`
+- [x] 5. Implement `for await (...)`
 - [x] 6. Resolve the async object accessor parser note
 - [x] 7. Fix BigInt comparison parse failures
-- [ ] 8. Finish non-strict/global semantics validation
+- [x] 8. Finish non-strict/global semantics validation
 - [x] 9. Align unresolved-reference behavior in `+` and `===`
 - [x] 10. Verify promise jobs and async scheduling
 - [x] 11. Finish `Array.isArray`
-- [ ] 12. Validate `Intl`
+- [x] 12. Validate `Intl`
 - [x] 13. Prove `Proxy` invariants and revocation behavior
 - [x] 14. Cover typed arrays, `ArrayBuffer`, and `DataView`
 - [x] 15. Finish `RegExp.escape` and related `RegExp` conformance
-- [ ] 16. Validate error subclassing
+- [x] 16. Validate error subclassing
 - [x] 17. Convert the remaining open gaps into tracked batches
 - [x] 18. Define the final “ready to claim” checklist
 
@@ -121,6 +121,8 @@ Primary source: `/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/Broiler.Java
 5. Run the matching `test262` `for-await-of` subset.
 6. Update `known-gaps.md` only after parser and execution results both pass.
 
+The parser/compiler/runtime now carry `for await (... of ...)` through execution, the local regressions cover valid and invalid forms plus awaited values, and the pinned `scripts/compliance/test262-for-await.txt` subset is clean on the recorded 2026-05-10 rerun, so this item is closed.
+
 ### 6. Resolve the async object accessor parser note
 
 Primary source: `/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/Broiler.JavaScript.Parser/FastParser.ObjectLiteral.cs`
@@ -158,6 +160,8 @@ Primary source: `/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/OtherTests/J
 3. Compare those behaviors against Chromium and `test262`.
 4. Run a non-strict-focused public-suite subset after each fix.
 5. Remove the gap only when the public-suite evidence matches the local regressions.
+
+The local regressions now cover bare-call `this`, implicit globals, global `var` bindings, `delete` semantics, and `Function` constructor bodies; the pinned `scripts/compliance/test262-global-nonstrict.txt` subset is clean; and the shared engine matrix now shows Broiler, Node/V8, and engine262 all passing the same 6/6 scenarios, so this item is closed.
 
 ### 9. Align unresolved-reference behavior in `+` and `===`
 
@@ -208,6 +212,8 @@ The pinned `scripts/compliance/test262-promise-jobs.txt` subset is now clean on 
    - intentionally unsupported
 4. Do not claim full internationalization compliance until the supported scope is measured.
 
+The supported ECMA-402 scope is now recorded as the currently exposed `Intl` surface and constructor metadata for `Intl.DateTimeFormat` and `Intl.RelativeTimeFormat`; the pinned `scripts/compliance/test262-intl.txt` subset is clean on the recorded 2026-05-10 rerun, so this measured scope is closed.
+
 ### 13. Prove `Proxy` invariants and revocation behavior
 
 1. Add regression tests around:
@@ -248,6 +254,8 @@ The pinned `scripts/compliance/test262-regexp.txt` subset is now clean on the re
 1. Add regression coverage for `Error`, `TypeError`, `ReferenceError`, and custom subclass chains.
 2. Verify constructor names, prototype chains, `instanceof`, and message propagation.
 3. Run the matching public-suite subset.
+
+The local regressions now cover callable constructors, prototype chains, subclass `instanceof`, and message/name metadata, and the pinned `scripts/compliance/test262-error-subclassing.txt` subset is clean on the recorded 2026-05-10 rerun, so this item is closed.
 
 ## Phase 5: turn the work into a release gate
 

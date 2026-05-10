@@ -13,16 +13,12 @@ public class JSAsyncFunction
     {
         JSValue ToAsync(in Arguments a)
         {
-            var args = gf is JSFunction ? a.OverrideThis(JSFunction.CoerceNonStrictThis(a.This)) : a;
-            var gen = gf.InvokeFunction(in args) as IJSGenerator;
+            var gen = gf.InvokeFunction(in a) as IJSGenerator;
             return ToPromise(gen!, JSUndefined.Value);
         }
 
         var fn = gf as JSFunction;
-        var result = JSValue.CreateFunction(ToAsync, fn?.name.Value, null, gf.Length);
-        if (result is JSFunction asyncFn)
-            asyncFn.CoerceThisOnInvoke = true;
-        return result;
+        return JSValue.CreateFunction(ToAsync, fn?.name.Value, null, gf.Length);
     }
 
     private static JSValue ToPromise(IJSGenerator gen, JSValue lastResult)
@@ -36,7 +32,7 @@ public class JSAsyncFunction
             if (then.IsUndefined)
                 return JSEngine.CreateResolvedOrRejectedPromise(r, true);
 
-            var continuationContext = (JSEngine.Current as JSContext)?.synchronizationContext ?? SynchronizationContext.Current;
+            var continuationContext = (JSEngine.Current as JSContext)?.synchronizationContext;
 
             return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
             {
@@ -45,7 +41,7 @@ public class JSAsyncFunction
                     if (continuationContext != null)
                         continuationContext.Post(_ => action(), null);
                     else
-                        action();
+                        ThreadPool.QueueUserWorkItem(_ => action());
                 }
 
                 r.InvokeMethod(in KeyStrings.then,
