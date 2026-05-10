@@ -32,7 +32,7 @@ public class JSAsyncFunction
             if (then.IsUndefined)
                 return JSEngine.CreateResolvedOrRejectedPromise(r, true);
 
-            var continuationContext = SynchronizationContext.Current ?? (JSEngine.Current as JSContext)?.synchronizationContext;
+            var continuationContext = (JSEngine.Current as JSContext)?.synchronizationContext ?? SynchronizationContext.Current;
 
             return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
             {
