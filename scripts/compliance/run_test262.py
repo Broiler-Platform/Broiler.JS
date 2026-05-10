@@ -16,12 +16,13 @@ from pathlib import Path
 
 
 DEFAULT_SUITE_REF = "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e"
-DEFAULT_BROILER_DLL = (
-    "/home/runner/work/Broiler.JS/Broiler.JS/"
-    "Broiler.JS/Broiler.JavaScript/bin/Debug/net8.0/BroilerJS.dll"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_BROILER_DLL = str(
+    REPO_ROOT / "Broiler.JS/Broiler.JavaScript/bin/Debug/net8.0/BroilerJS.dll"
 )
 TEMP_DIRECTORY = Path(tempfile.gettempdir()) / "broiler-test262"
 UNSUPPORTED_FLAGS = {"async", "module", "raw", "onlyStrict", "noStrict"}
+USER_AGENT = "Broiler.JS compliance runner"
 
 
 class Test262Repository:
@@ -40,7 +41,7 @@ class Test262Repository:
             url,
             headers={
                 "Accept": "application/vnd.github+json",
-                "User-Agent": "Broiler.JS compliance runner",
+                "User-Agent": USER_AGENT,
             },
         )
         with urllib.request.urlopen(request) as response:
@@ -52,9 +53,7 @@ class Test262Repository:
                 f"https://raw.githubusercontent.com/tc39/test262/"
                 f"{self.suite_ref}/{path}"
             )
-            request = urllib.request.Request(
-                url, headers={"User-Agent": "Broiler.JS compliance runner"}
-            )
+            request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
             with urllib.request.urlopen(request) as response:
                 self.text_cache[path] = response.read().decode("utf-8")
         return self.text_cache[path]
