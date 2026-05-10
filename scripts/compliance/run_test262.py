@@ -126,6 +126,7 @@ def run_test(
             "status": "skipped",
             "reason": f"unsupported flags: {', '.join(unsupported)}",
         }
+    is_async = "async" in metadata["flags"]
 
     def harness_text(name: str) -> str:
         if name not in harness_cache:
@@ -135,7 +136,7 @@ def run_test(
     parts = [harness_text("assert.js"), harness_text("sta.js")]
     for include in metadata["includes"]:
         parts.append(harness_text(include))
-    if "async" in metadata["flags"]:
+    if is_async:
         parts.append(
             """
 const __broilerDonePromise = new Promise((resolve, reject) => {
@@ -156,7 +157,7 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
 """.strip()
         )
     parts.append(body)
-    if "async" in metadata["flags"]:
+    if is_async:
         parts.append("__broilerDonePromise")
 
     with tempfile.NamedTemporaryFile(
