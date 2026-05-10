@@ -56,6 +56,7 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 ## Regression tracking
 
 - A compliance run is complete only when raw logs and summary totals are linked from this file.
+- Raw compliance log link for the 2026-05-10 repository validation rerun: https://github.com/MaiRat/Broiler.JS/sessions/d7c812ab-9583-4530-8471-15fe44c49bd0
 - Failing tests that represent unsupported syntax, missing built-ins, host limitations, or known bugs must be summarized in `known-gaps.md`.
 - A result row should never claim “fully compliant” or “most compliant” unless the linked public suites and comparison data support that claim.
 

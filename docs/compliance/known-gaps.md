@@ -10,7 +10,7 @@ Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-perce
 
 - [ ] Pinned `test262` automation and totals — see tracked batch `measurement-test262`.
 - [ ] `engine262` smoke/cross-check command and totals — see tracked batch `measurement-engine262`.
-- [ ] Raw compliance artifacts linked from the dashboard — see tracked batch `measurement-artifacts`.
+- [x] Raw compliance artifacts linked from the dashboard — see tracked batch `measurement-artifacts`.
 - [ ] Comparative engine matrix in the dashboard — see tracked batch `measurement-matrix`.
 
 ### Parser and execution semantics needing follow-up
