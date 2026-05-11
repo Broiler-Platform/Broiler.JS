@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import shutil
+import signal
 import socket
 import subprocess
 import sys
@@ -16,6 +18,11 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+try:
+    import resource
+except ImportError:  # pragma: no cover - only exercised on non-POSIX platforms
+    resource = None
 
 
 DEFAULT_SUITE_REF = "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e"
@@ -32,6 +39,8 @@ MAX_ARCHIVE_SIZE_BYTES = 256 * 1024 * 1024
 HOST_HARNESS_INCLUDE_BLOCKERS = {"doneprintHandle.js"}
 HOST_HARNESS_REFERENCE_PATTERN = re.compile(r"\$262(?:\b|\.)")
 HOST_HARNESS_BLOCKER_NAME = "$262"
+DEFAULT_TEST_TIMEOUT_SECONDS = 30.0
+POST_TERMINATION_TIMEOUT_SECONDS = 5.0
 
 
 class Test262Repository:
@@ -370,6 +379,20 @@ def collect_requested_paths(paths: list[str], path_files: list[str]) -> list[str
     return requested_paths
 
 
+def positive_float(value: str) -> float:
+    parsed = float(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError(f"value must be positive, got {value}")
+    return parsed
+
+
+def non_negative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError(f"value must be non-negative, got {value}")
+    return parsed
+
+
 def apply_shard(paths: list[str], shard_count: int, shard_index: int) -> list[str]:
     """Return one deterministic modulo-based shard from an ordered path list."""
     if shard_count <= 0:
@@ -403,6 +426,48 @@ def format_shard_label(shard_index: int, shard_count: int) -> str:
     if shard_index == ALL_SHARDS:
         return f"all/{shard_count}"
     return f"{shard_index + 1}/{shard_count}"
+
+
+def create_process_limit_setup(
+    timeout_seconds: float,
+    memory_limit_mb: int,
+):
+    if os.name != "posix" or resource is None:
+        return None
+
+    # RLIMIT_CPU is whole-second based, so sub-second wall-clock timeouts rely only
+    # on communicate(timeout=...) for enforcement.
+    cpu_limit_seconds = int(math.ceil(timeout_seconds)) if timeout_seconds >= 1 else None
+    cpu_hard_limit_seconds = (
+        cpu_limit_seconds + 5 if cpu_limit_seconds is not None else None
+    )
+    memory_limit_bytes = memory_limit_mb * 1024 * 1024 if memory_limit_mb > 0 else None
+
+    def limit_process_resources() -> None:
+        if hasattr(resource, "RLIMIT_CORE"):
+            resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+        if cpu_limit_seconds is not None and hasattr(resource, "RLIMIT_CPU"):
+            resource.setrlimit(
+                resource.RLIMIT_CPU,
+                (cpu_limit_seconds, cpu_hard_limit_seconds),
+            )
+        if memory_limit_bytes is not None:
+            for limit_name in ("RLIMIT_AS", "RLIMIT_DATA"):
+                if hasattr(resource, limit_name):
+                    limit = getattr(resource, limit_name)
+                    resource.setrlimit(limit, (memory_limit_bytes, memory_limit_bytes))
+
+    return limit_process_resources
+
+
+def terminate_process_tree(process: subprocess.Popen[str]) -> None:
+    if os.name == "posix":
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+            return
+        except ProcessLookupError:
+            return
+    process.kill()
 
 
 def select_paths(
@@ -447,6 +512,8 @@ def run_test(
     broiler_dll: str,
     path: str,
     harness_cache: dict[str, str],
+    timeout_seconds: float,
+    memory_limit_mb: int,
 ) -> dict[str, object]:
     source = repo.read_text(path)
     metadata, body = parse_metadata(source)
@@ -507,12 +574,32 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
         script_path = handle.name
 
     try:
-        process = subprocess.run(
+        process = subprocess.Popen(
             ["dotnet", broiler_dll, "--script-host", script_path],
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            check=False,
+            start_new_session=os.name == "posix",
+            preexec_fn=create_process_limit_setup(timeout_seconds, memory_limit_mb),
         )
+        try:
+            stdout, stderr = process.communicate(timeout=timeout_seconds)
+        except subprocess.TimeoutExpired:
+            terminate_process_tree(process)
+            try:
+                stdout, stderr = process.communicate(
+                    timeout=POST_TERMINATION_TIMEOUT_SECONDS
+                )
+            except subprocess.TimeoutExpired:
+                process.kill()
+                stdout, stderr = process.communicate()
+            return {
+                "path": path,
+                "status": "timedOut",
+                "reason": f"timed out after {timeout_seconds:g}s",
+                "stdout": stdout or "",
+                "stderr": stderr or "",
+            }
     finally:
         os.unlink(script_path)
 
@@ -522,8 +609,8 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
     return {
         "path": path,
         "status": "failed",
-        "stdout": process.stdout,
-        "stderr": process.stderr,
+        "stdout": stdout,
+        "stderr": stderr,
     }
 
 
@@ -534,14 +621,19 @@ def build_summary(
     expanded_paths: list[str],
     results: list[dict[str, object]],
     selection: dict[str, object],
+    test_timeout_seconds: float,
+    memory_limit_mb: int,
 ) -> dict[str, object]:
     passed = sum(1 for result in results if result["status"] == "passed")
     failed = sum(1 for result in results if result["status"] == "failed")
     skipped = sum(1 for result in results if result["status"] == "skipped")
-    executed = passed + failed
+    timed_out = sum(1 for result in results if result["status"] == "timedOut")
+    executed = passed + failed + timed_out
     return {
         "suiteRef": suite_ref,
         "broilerDll": broiler_dll,
+        "testTimeoutSeconds": test_timeout_seconds,
+        "memoryLimitMb": memory_limit_mb,
         "requestedPaths": requested_paths,
         "expandedPaths": expanded_paths,
         "selectionMode": selection["selectionMode"],
@@ -553,6 +645,7 @@ def build_summary(
         "passed": passed,
         "failed": failed,
         "skipped": skipped,
+        "timedOut": timed_out,
         "results": results,
     }
 
@@ -562,6 +655,8 @@ def run_selected_tests(
     broiler_dll: str,
     expanded_paths: list[str],
     selection: dict[str, object],
+    timeout_seconds: float,
+    memory_limit_mb: int,
 ) -> list[dict[str, object]]:
     total = len(expanded_paths)
     if total == 0:
@@ -573,6 +668,10 @@ def run_selected_tests(
         int(selection["shardCount"]),
     )
     log_progress(f"Running {total} test(s) for shard {shard_label}.")
+    memory_limit_label = f"{memory_limit_mb} MiB" if memory_limit_mb > 0 else "disabled"
+    log_progress(
+        f"Per-test timeout is {timeout_seconds:g}s; POSIX memory cap is {memory_limit_label}."
+    )
 
     interval = calculate_progress_log_interval(total)
     harness_cache: dict[str, str] = {}
@@ -580,9 +679,17 @@ def run_selected_tests(
     passed = 0
     failed = 0
     skipped = 0
+    timed_out = 0
 
     for index, path in enumerate(expanded_paths, start=1):
-        result = run_test(repo, broiler_dll, path, harness_cache)
+        result = run_test(
+            repo,
+            broiler_dll,
+            path,
+            harness_cache,
+            timeout_seconds,
+            memory_limit_mb,
+        )
         results.append(result)
 
         status = str(result["status"])
@@ -591,13 +698,16 @@ def run_selected_tests(
         elif status == "failed":
             failed += 1
             log_progress(f"Failure {failed} at {path}")
+        elif status == "timedOut":
+            timed_out += 1
+            log_progress(f"Timeout {timed_out} at {path} after {timeout_seconds:g}s")
         else:
             skipped += 1
 
         if interval is not None and (index % interval == 0 or index == total):
             log_progress(
                 f"Completed {index}/{total} test(s) "
-                f"(passed={passed}, failed={failed}, skipped={skipped})."
+                f"(passed={passed}, failed={failed}, skipped={skipped}, timedOut={timed_out})."
             )
 
     return results
@@ -649,6 +759,18 @@ def main() -> int:
         default=0,
         help="Zero-based shard index to execute from the selected test set, or -1 to run all shards",
     )
+    parser.add_argument(
+        "--test-timeout-seconds",
+        type=positive_float,
+        default=DEFAULT_TEST_TIMEOUT_SECONDS,
+        help="Per-test wall-clock timeout in seconds",
+    )
+    parser.add_argument(
+        "--memory-limit-mb",
+        type=non_negative_int,
+        default=0,
+        help="Optional POSIX per-test address-space limit in MiB; pass 0 to disable",
+    )
     args = parser.parse_args()
 
     log_progress(
@@ -681,8 +803,20 @@ def main() -> int:
         f"using mode {selection['selectionMode']}."
     )
     log_progress(f"Using Broiler script host at {args.broiler_dll}")
+    if args.memory_limit_mb > 0 and (os.name != "posix" or resource is None):
+        log_progress(
+            "POSIX resource limits are unavailable on this platform; "
+            "continuing with timeout/process isolation only."
+        )
 
-    results = run_selected_tests(repo, args.broiler_dll, expanded_paths, selection)
+    results = run_selected_tests(
+        repo,
+        args.broiler_dll,
+        expanded_paths,
+        selection,
+        args.test_timeout_seconds,
+        args.memory_limit_mb,
+    )
     summary = build_summary(
         args.suite_ref,
         args.broiler_dll,
@@ -690,6 +824,8 @@ def main() -> int:
         expanded_paths,
         results,
         selection,
+        args.test_timeout_seconds,
+        args.memory_limit_mb,
     )
 
     if args.output:
@@ -700,10 +836,12 @@ def main() -> int:
 
     log_progress(
         f"Finished test262 run: executed={summary['executed']}, "
-        f"passed={summary['passed']}, failed={summary['failed']}, skipped={summary['skipped']}"
+        f"passed={summary['passed']}, failed={summary['failed']}, "
+        f"skipped={summary['skipped']}, timedOut={summary['timedOut']}"
     )
     print(json.dumps(summary, indent=2))
-    return 1 if summary["failed"] > 0 else 0
+    has_failures = summary["failed"] > 0 or summary["timedOut"] > 0
+    return 1 if has_failures else 0
 
 
 if __name__ == "__main__":
