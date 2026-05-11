@@ -236,9 +236,9 @@ def main() -> int:
     # silently reporting coverage for unsupported-flag or negative-metadata files that
     # this workflow does not validate correctly yet.
     return 1 if (
-        summary["manifestUnsupportedTests"]
-        or summary["manifestNegativeTests"]
-        or summary["manifestHostHarnessTests"]
+        len(summary["manifestUnsupportedTests"]) > 0
+        or len(summary["manifestNegativeTests"]) > 0
+        or len(summary["manifestHostHarnessTests"]) > 0
     ) else 0
 
 

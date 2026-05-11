@@ -97,7 +97,7 @@ jobs:
           summary = json.loads(result_path.read_text(encoding="utf-8"))
 
           lines = [
-              f"## test262 full script-host shard {shard_index}/{summary['shardCount'] - 1}",
+              f"## test262 full script-host shard {int(shard_index) + 1}/{summary['shardCount']}",
               "",
               f"- Suite ref: `{summary['suiteRef']}`",
               f"- Selection mode: `{summary['selectionMode']}`",
