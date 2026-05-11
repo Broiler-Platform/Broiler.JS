@@ -1,6 +1,10 @@
 name: test262-full-script-host
 
 on:
+  pull_request:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       suite_ref:
