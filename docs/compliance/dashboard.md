@@ -153,7 +153,7 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 
 ## Next automation steps
 
-1. Add a CI job that restores Broiler.JS and runs repository tests.
-2. Add a separate scheduled compliance job that downloads or caches pinned test262 inputs.
-3. Publish machine-readable totals as CI artifacts and update this dashboard for releases.
+1. Keep the pinned `test262` CI workflow current as new manifests or host requirements are added.
+2. Add a separate scheduled compliance job for broader or slower suites that should not block every PR.
+3. Publish machine-readable totals from release-time compliance runs and update this dashboard for releases.
 4. Track pass-rate deltas per suite revision to detect regressions.
