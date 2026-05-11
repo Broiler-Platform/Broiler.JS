@@ -560,7 +560,7 @@ public partial class JSMath : JSObject
     /// Returns the sum of values from an iterable using Neumaier compensated
     /// summation for improved floating-point precision.
     /// </summary>
-    [JSExport("sumPrecise")]
+    [JSExport("sumPrecise", Length = 1)]
     public static JSValue SumPrecise(in Arguments args)
     {
         var iterable = args.Get1();

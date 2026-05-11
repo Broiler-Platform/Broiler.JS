@@ -132,7 +132,7 @@ public partial class JSUInt8Array : JSTypedArray
     /// Decodes a hex string and writes bytes into this typed array.
     /// Returns an object { read, written }.
     /// </summary>
-    [JSExport("setFromHex")]
+    [JSExport("setFromHex", Length = 1)]
     public JSValue SetFromHex(in Arguments a)
     {
         var str = a.Get1();

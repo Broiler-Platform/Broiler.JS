@@ -30,11 +30,13 @@ internal static class JSObjectCoreExtensions
         }
         else
         {
+            var getter = px.get as JSValue ?? JSUndefined.Value;
+            var setter = px.set as JSValue ?? JSUndefined.Value;
             obj = JSObject.NewWithProperties()
                 .AddProperty(KeyStrings.configurable, px.IsConfigurable ? t : f)
                 .AddProperty(KeyStrings.enumerable, px.IsEnumerable ? t : f)
-                .AddProperty(KeyStrings.@get, (JSValue)px.get)
-                .AddProperty(KeyStrings.@set, (JSValue)px.set);
+                .AddProperty(KeyStrings.@get, getter)
+                .AddProperty(KeyStrings.@set, setter);
         }
 
         return obj;

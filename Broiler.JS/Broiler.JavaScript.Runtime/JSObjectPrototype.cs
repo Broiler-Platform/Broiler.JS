@@ -49,6 +49,15 @@ public partial class JSObject
     public static JSValue ToString(in Arguments a)
         => JSValue.CreateString(a.This?.TypeOf() == JSConstants.Function ? "[object Function]" : "[object Object]");
 
+    [JSPrototypeMethod][JSExport("toLocaleString")]
+    public static JSValue ToLocaleString(in Arguments a)
+    {
+        if (a.This.IsNullOrUndefined)
+            throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
+
+        return ToString(in a);
+    }
+
     [JSExport("__proto__")]
     internal JSValue ObjectPrototype
     {
@@ -97,6 +106,24 @@ public partial class JSObject
         return JSValue.BooleanFalse;
     }
 
+    [JSPrototypeMethod][JSExport("__defineGetter__", Length = 2)]
+    internal static JSValue DefineGetter(in Arguments a)
+    {
+        if (!a.This.TryAsObjectThrowIfNullOrUndefined(out var @object))
+            throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
+
+        var (propertyName, getter) = a.Get2();
+        if (getter is not IJSFunction)
+            throw NewTypeError("Getter must be a function");
+
+        var descriptor = new JSObject();
+        descriptor[KeyStrings.get] = getter;
+        descriptor[KeyStrings.enumerable] = JSValue.BooleanTrue;
+        descriptor[KeyStrings.configurable] = JSValue.BooleanTrue;
+        @object.DefineProperty(propertyName, descriptor);
+        return JSUndefined.Value;
+    }
+
     [JSPrototypeMethod]
     [JSExport("valueOf")]
     public static JSValue ValueOf(in Arguments a) => a.This;
@@ -104,10 +131,13 @@ public partial class JSObject
     [JSPrototypeMethod][JSExport("isPrototypeOf")]
     internal static JSValue IsPrototypeOf(in Arguments a)
     {
+        var first = a.Get1();
+        if (!first.IsObject)
+            return JSValue.BooleanFalse;
+
         if (!a.This.TryAsObjectThrowIfNullOrUndefined(out var @this))
             return JSValue.BooleanFalse;
 
-        var first = a.Get1();
         while (true)
         {
             if (@this == (first.prototypeChain as IJSPrototype)?.Object)

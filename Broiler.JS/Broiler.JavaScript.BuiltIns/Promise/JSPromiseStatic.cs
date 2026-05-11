@@ -113,14 +113,10 @@ public partial class JSPromise
             {
                 empty = false;
 
-                if (e is not JSPromise p)
-                    throw JSEngine.NewTypeError($"All parameters must be Promise");
-
                 var item = e;
                 var ni = i++;
                 total = i;
-
-                p.Then((in Arguments args) =>
+                var resolveElement = new JSFunction((in Arguments args) =>
                 {
                     var r1 = args.Get1();
                     sc.Post((r) =>
@@ -132,16 +128,176 @@ public partial class JSPromise
                             resolve(result);
                     }, r1);
                     return JSUndefined.Value;
-                }, (in Arguments args) =>
+                }, "", "function () { [native] }", length: 1, createPrototype: false);
+                var rejectElement = new JSFunction((in Arguments args) =>
                 {
                     var v = args.Get1();
                     sc.Post((o) => reject(o as JSValue), v);
+                    return JSUndefined.Value;
+                }, "", "function () { [native] }", length: 1, createPrototype: false);
+
+                if (item is JSPromise p)
+                {
+                    p.Then(resolveElement.Delegate, rejectElement.Delegate);
+                    continue;
+                }
+
+                var then = item[KeyStrings.then];
+                if (then.IsFunction)
+                {
+                    then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
+                    continue;
+                }
+
+                resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
+            }
+
+            if (empty)
+                sc.Post((o) => resolve(JSValue.CreateArray()), null);
+        });
+    }
+
+    [JSExport("allSettled", Length = 1)]
+    public static JSValue AllSettled(in Arguments a)
+    {
+        var iterable = a.Get1();
+        var en = iterable.GetElementEnumerator();
+        var result = JSValue.CreateArray();
+        uint index = 0;
+
+        return new JSPromise((resolve, reject) =>
+        {
+            var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
+                ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
+
+            uint remaining = 0;
+            bool empty = true;
+
+            void FinishIfDone()
+            {
+                if (remaining == 0)
+                    sc.Post(_ => resolve(result), null);
+            }
+
+            while (en.MoveNext(out var hasValue, out var item, out var _))
+            {
+                if (!hasValue)
+                    continue;
+
+                empty = false;
+                var currentIndex = index++;
+                remaining++;
+                var promise = item as JSPromise ?? new JSPromise(item, JSPromise.PromiseState.Resolved);
+                promise.Then((in Arguments args) =>
+                {
+                    var entry = new JSObject();
+                    entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("fulfilled");
+                    var value = args.Get1();
+                    entry[KeyStrings.GetOrCreate("value")] = value;
+                    sc.Post(_ =>
+                    {
+                        result[currentIndex] = entry;
+                        remaining--;
+                        FinishIfDone();
+                    }, null);
+                    return JSUndefined.Value;
+                }, (in Arguments args) =>
+                {
+                    var entry = new JSObject();
+                    entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("rejected");
+                    var reason = args.Get1();
+                    entry[KeyStrings.GetOrCreate("reason")] = reason;
+                    sc.Post(_ =>
+                    {
+                        result[currentIndex] = entry;
+                        remaining--;
+                        FinishIfDone();
+                    }, null);
                     return JSUndefined.Value;
                 });
             }
 
             if (empty)
-                sc.Post((o) => resolve(JSValue.CreateArray()), null);
+                sc.Post(_ => resolve(result), null);
+        });
+    }
+
+    [JSExport("allSettledKeyed", Length = 1)]
+    public static JSValue AllSettledKeyed(in Arguments a)
+    {
+        var input = a.Get1();
+        if (input is not JSObject obj)
+            return new JSPromise(new JSObject(), JSPromise.PromiseState.Resolved);
+
+        var result = new JSObject();
+        var en = obj.GetOwnProperties(false).GetEnumerator();
+        while (en.MoveNext(out var key, out var property))
+        {
+            var value = obj.GetValue(property);
+            var entry = new JSObject();
+            if (value is JSPromise promise && promise.state == JSPromise.PromiseState.Rejected)
+            {
+                entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("rejected");
+                entry[KeyStrings.GetOrCreate("reason")] = promise.result;
+            }
+            else
+            {
+                entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("fulfilled");
+                entry[KeyStrings.GetOrCreate("value")] = value is JSPromise settled ? settled.result : value;
+            }
+
+            result[key] = entry;
+        }
+
+        return new JSPromise(result, JSPromise.PromiseState.Resolved);
+    }
+
+    [JSExport("any", Length = 1)]
+    public static JSValue Any(in Arguments a)
+    {
+        var iterable = a.Get1();
+        var en = iterable.GetElementEnumerator();
+        var errors = JSValue.CreateArray();
+        uint errorIndex = 0;
+
+        return new JSPromise((resolve, reject) =>
+        {
+            var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
+                ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
+
+            uint remaining = 0;
+            bool empty = true;
+
+            while (en.MoveNext(out var hasValue, out var item, out var _))
+            {
+                if (!hasValue)
+                    continue;
+
+                empty = false;
+                remaining++;
+                var promise = item as JSPromise ?? new JSPromise(item, JSPromise.PromiseState.Resolved);
+                promise.Then((in Arguments args) =>
+                {
+                    var value = args.Get1();
+                    sc.Post(_ => resolve(value), null);
+                    return JSUndefined.Value;
+                }, (in Arguments args) =>
+                {
+                    var currentIndex = errorIndex++;
+                    var reason = args.Get1();
+                    sc.Post(_ =>
+                    {
+                        errors[currentIndex] = reason;
+                        remaining--;
+                        if (remaining == 0)
+                            reject(errors);
+                    }, null);
+                    return JSUndefined.Value;
+                });
+            }
+
+            if (empty)
+                sc.Post(_ => reject(errors), null);
         });
     }
 }

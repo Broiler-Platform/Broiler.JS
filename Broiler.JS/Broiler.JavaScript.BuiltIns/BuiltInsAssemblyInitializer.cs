@@ -24,6 +24,7 @@ using Broiler.JavaScript.BuiltIns.RegExp;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Engine.Core;
@@ -56,6 +57,7 @@ internal static class BuiltInsAssemblyInitializer
                 context.RegisterBuiltInClasses();
                 PatchErrorConstructors(context);
                 PatchLegacyDatePrototype(context);
+                PatchCompatibilityBuiltIns(context);
             }
             : context =>
             {
@@ -63,6 +65,7 @@ internal static class BuiltInsAssemblyInitializer
                 context.RegisterBuiltInClasses();
                 PatchErrorConstructors(context);
                 PatchLegacyDatePrototype(context);
+                PatchCompatibilityBuiltIns(context);
             };
 
         // Wire factory delegate for JSDisposableStack so the Compiler can create
@@ -378,13 +381,189 @@ internal static class BuiltInsAssemblyInitializer
         var toGMTStringKey = KeyStrings.GetOrCreate("toGMTString");
         var toUTCStringKey = KeyStrings.GetOrCreate("toUTCString");
         var setYearKey = KeyStrings.GetOrCreate("setYear");
+        var getYearKey = KeyStrings.GetOrCreate("getYear");
 
         var setYear = new JSFunction(JSDate.SetYearLegacy, "setYear", "function setYear() { [native code] }", length: 1, createPrototype: false);
         prototype.FastAddValue(setYearKey, setYear, JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue(getYearKey, new JSFunction(JSDate.GetYearLegacy, "getYear", "function getYear() { [native code] }", length: 0, createPrototype: false), JSPropertyAttributes.ConfigurableValue);
 
         var toUTCString = prototype[toUTCStringKey];
         if (!toUTCString.IsUndefined)
             prototype.FastAddValue(toGMTStringKey, toUTCString, JSPropertyAttributes.ConfigurableValue);
+    }
+
+    private static void PatchCompatibilityBuiltIns(JSContext context)
+    {
+        PatchStringPrototype(context);
+        PatchObjectPrototype(context);
+        PatchFunctionPrototype(context);
+        PatchSymbolPrototype(context);
+        PatchRegExpPrototype(context);
+        PatchArrayPrototype(context);
+        PatchAsyncIteratorPrototype(context);
+    }
+
+    private static JSFunction CreateNativeFunction(JSFunctionDelegate fx, string name, int length = 0)
+        => new(fx, name, $"function {name}() {{ [native code] }}", length: length, createPrototype: false);
+
+    private static void PatchStringPrototype(JSContext context)
+    {
+        if (context[KeyStrings.String] is not JSFunction stringCtor)
+            return;
+
+        var prototype = stringCtor.prototype;
+        var trimStart = prototype[KeyStrings.GetOrCreate("trimStart")];
+        if (!trimStart.IsUndefined)
+            prototype.FastAddValue(KeyStrings.GetOrCreate("trimLeft"), trimStart, JSPropertyAttributes.ConfigurableValue);
+    }
+
+    private static void PatchObjectPrototype(JSContext context)
+    {
+        if (context[KeyStrings.Object] is not JSFunction objectCtor)
+            return;
+
+        var prototype = objectCtor.prototype;
+        var toLocaleStringKey = KeyStrings.GetOrCreate("toLocaleString");
+        if (prototype[toLocaleStringKey].IsUndefined)
+        {
+            prototype.FastAddValue(toLocaleStringKey, CreateNativeFunction((in Arguments a) =>
+            {
+                if (a.This.IsNullOrUndefined)
+                    throw JSEngine.NewTypeError(JSException.Cannot_convert_undefined_or_null_to_object);
+
+                return JSValue.CreateString(a.This?.TypeOf() == JSConstants.Function ? "[object Function]" : "[object Object]");
+            }, "toLocaleString"), JSPropertyAttributes.ConfigurableValue);
+        }
+
+        var defineGetterKey = KeyStrings.GetOrCreate("__defineGetter__");
+        if (prototype[defineGetterKey].IsUndefined)
+        {
+            prototype.FastAddValue(defineGetterKey, CreateNativeFunction((in Arguments a) =>
+            {
+                if (a.This is not JSObject target)
+                    throw JSEngine.NewTypeError(JSException.Cannot_convert_undefined_or_null_to_object);
+
+                var (propertyName, getter) = a.Get2();
+                if (getter is not IJSFunction)
+                    throw JSEngine.NewTypeError("Getter must be a function");
+
+                var descriptor = new JSObject();
+                descriptor[KeyStrings.get] = getter;
+                descriptor[KeyStrings.enumerable] = JSValue.BooleanTrue;
+                descriptor[KeyStrings.configurable] = JSValue.BooleanTrue;
+                target.DefineProperty(propertyName, descriptor);
+                return JSUndefined.Value;
+            }, "__defineGetter__", 2), JSPropertyAttributes.ConfigurableValue);
+        }
+    }
+
+    private static void PatchFunctionPrototype(JSContext context)
+    {
+        if (context[KeyStrings.Function] is not JSFunction functionCtor)
+            return;
+
+        ref var symbols = ref functionCtor.prototype.GetSymbols();
+        symbols.Put(JSSymbol.hasInstance.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
+        {
+            var value = a.Get1();
+            return value.InstanceOf(a.This);
+        }, "[Symbol.hasInstance]", 1), JSPropertyAttributes.ConfigurableValue);
+    }
+
+    private static void PatchSymbolPrototype(JSContext context)
+    {
+        if (context[KeyStrings.Symbol] is not JSFunction symbolCtor)
+            return;
+
+        ref var symbols = ref symbolCtor.prototype.GetSymbols();
+        symbols.Put(JSSymbol.toPrimitive.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
+        {
+            if (a.This is JSSymbol symbol)
+                return symbol;
+
+            throw JSEngine.NewTypeError("Symbol.prototype[Symbol.toPrimitive] requires a symbol receiver");
+        }, "[Symbol.toPrimitive]", 1), JSPropertyAttributes.ConfigurableValue);
+    }
+
+    private static void PatchRegExpPrototype(JSContext context)
+    {
+        if (context[KeyStrings.RegExp] is not JSFunction regExpCtor)
+            return;
+
+        ref var symbols = ref regExpCtor.prototype.GetSymbols();
+        symbols.Put(JSSymbol.match.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
+        {
+            if (a.This is not JSRegExp regExp)
+                throw JSEngine.NewTypeError("RegExp.prototype[Symbol.match] called on incompatible receiver");
+
+            return regExp.Match(a.Get1());
+        }, "[Symbol.match]", 1), JSPropertyAttributes.ConfigurableValue);
+        symbols.Put(JSSymbol.matchAll.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
+        {
+            if (a.This is not JSRegExp regExp)
+                throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] called on incompatible receiver");
+
+            return regExp.Match(a.Get1());
+        }, "[Symbol.matchAll]", 1), JSPropertyAttributes.ConfigurableValue);
+        symbols.Put(JSSymbol.search.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
+        {
+            if (a.This is not JSRegExp regExp)
+                throw JSEngine.NewTypeError("RegExp.prototype[Symbol.search] called on incompatible receiver");
+
+            var result = regExp.Match(a.Get1());
+            return result.IsObject ? result[KeyStrings.index] : JSValue.NumberMinusOne;
+        }, "[Symbol.search]", 1), JSPropertyAttributes.ConfigurableValue);
+        symbols.Put(JSSymbol.split.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
+        {
+            if (a.This is not JSRegExp regExp)
+                throw JSEngine.NewTypeError("RegExp.prototype[Symbol.split] called on incompatible receiver");
+
+            var limit = a.TryGetAt(1, out var second) ? second.UIntValue : uint.MaxValue;
+            return regExp.Split(a.Get1().ToString(), limit);
+        }, "[Symbol.split]", 2), JSPropertyAttributes.ConfigurableValue);
+    }
+
+    private static void PatchArrayPrototype(JSContext context)
+    {
+        if (context[KeyStrings.Array] is not JSFunction arrayCtor)
+            return;
+
+        ref var symbols = ref arrayCtor.prototype.GetSymbols();
+        if (!symbols.TryGetValue(JSSymbol.unscopables.Key, out var property) || property.IsEmpty || property.value is not JSObject unscopables)
+        {
+            unscopables = new JSObject();
+            symbols.Put(JSSymbol.unscopables.Key) = JSProperty.Property(unscopables, JSPropertyAttributes.ConfigurableValue);
+        }
+
+        unscopables.FastAddValue(KeyStrings.GetOrCreate("toReversed"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
+        unscopables.FastAddValue(KeyStrings.GetOrCreate("toSorted"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
+        unscopables.FastAddValue(KeyStrings.GetOrCreate("toSpliced"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
+    }
+
+    private static void PatchAsyncIteratorPrototype(JSContext context)
+    {
+        context.Eval("""
+            const __broilerAsyncGenerator = async function* () {};
+            const __broilerAsyncGeneratorCtor = Object.getPrototypeOf(__broilerAsyncGenerator);
+            const __broilerAsyncGeneratorPrototype =
+              (__broilerAsyncGeneratorCtor && __broilerAsyncGeneratorCtor.prototype) ||
+              Object.getPrototypeOf(__broilerAsyncGenerator.prototype);
+            const __broilerAsyncIteratorPrototype = Object.getPrototypeOf(Object.getPrototypeOf(__broilerAsyncGenerator.prototype));
+            const __broilerAsyncIterator = function () { return this; };
+            Object.defineProperty(__broilerAsyncIterator, "name", { value: "[Symbol.asyncIterator]", writable: false, enumerable: false, configurable: true });
+            const __broilerAsyncDispose = function () {};
+            Object.defineProperty(__broilerAsyncDispose, "name", { value: "[Symbol.asyncDispose]", writable: false, enumerable: false, configurable: true });
+            if (__broilerAsyncIteratorPrototype && typeof __broilerAsyncIteratorPrototype === "object") {
+              Object.defineProperty(__broilerAsyncIteratorPrototype, Symbol.asyncIterator, { value: __broilerAsyncIterator, writable: false, enumerable: false, configurable: true });
+              Object.defineProperty(__broilerAsyncIteratorPrototype, Symbol.asyncDispose, { value: __broilerAsyncDispose, writable: false, enumerable: false, configurable: true });
+            }
+            if (__broilerAsyncGeneratorCtor && typeof __broilerAsyncGeneratorCtor === "function" && !Object.prototype.hasOwnProperty.call(__broilerAsyncGeneratorCtor, "prototype")) {
+              Object.defineProperty(__broilerAsyncGeneratorCtor, "prototype", { value: __broilerAsyncGeneratorPrototype, writable: false, enumerable: false, configurable: true });
+            }
+            if (__broilerAsyncGeneratorPrototype && typeof __broilerAsyncGeneratorPrototype === "object") {
+              Object.defineProperty(__broilerAsyncGeneratorPrototype, "constructor", { value: __broilerAsyncGeneratorCtor, writable: false, enumerable: false, configurable: true });
+            }
+            """, "async-intrinsics.js", context);
     }
 
     private static void PatchErrorConstructor(JSContext context, KeyString key, JSFunctionDelegate factory)

@@ -9,6 +9,7 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
+using System.Linq;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -128,6 +129,24 @@ partial class JSTypedArray
             }
         }
         return r;
+    }
+
+    [JSExport("toSorted", Length = 1)]
+    public JSValue ToSorted(in Arguments a)
+    {
+        var values = new List<JSValue>();
+        var en = GetElementEnumerator();
+        while (en.MoveNext(out var hasValue, out var item, out var _))
+        {
+            if (hasValue)
+                values.Add(item);
+        }
+
+        values.Sort((left, right) => left.DoubleValue.CompareTo(right.DoubleValue));
+        var result = new JSArray();
+        foreach (var value in values)
+            result.Add(value);
+        return result;
     }
 
 
