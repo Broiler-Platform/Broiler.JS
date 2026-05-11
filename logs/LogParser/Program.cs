@@ -18,7 +18,7 @@ internal static class Program
                 .Select(SummarizeInput)
                 .ToArray();
 
-            Console.WriteLine(FormatOutput(summaries, options.OutputFormat));
+            Console.WriteLine(FormatOutput(summaries, options));
             return 0;
         }
         catch (Exception ex)
@@ -32,6 +32,8 @@ internal static class Program
     {
         var inputs = new List<string>();
         var outputFormat = "text";
+        var typeFilter = default(string);
+        var contextFilter = default(string);
         var pendingOption = string.Empty;
 
         foreach (var arg in args)
@@ -43,9 +45,35 @@ internal static class Program
                 continue;
             }
 
+            if (string.Equals(pendingOption, "--type", StringComparison.Ordinal))
+            {
+                typeFilter = NormalizeFilterValue(arg, "--type");
+                pendingOption = string.Empty;
+                continue;
+            }
+
+            if (string.Equals(pendingOption, "--context", StringComparison.Ordinal))
+            {
+                contextFilter = NormalizeFilterValue(arg, "--context");
+                pendingOption = string.Empty;
+                continue;
+            }
+
             if (arg.StartsWith("--output=", StringComparison.Ordinal))
             {
                 outputFormat = NormalizeOutputFormat(arg["--output=".Length..]);
+                continue;
+            }
+
+            if (arg.StartsWith("--type=", StringComparison.Ordinal))
+            {
+                typeFilter = NormalizeFilterValue(arg["--type=".Length..], "--type");
+                continue;
+            }
+
+            if (arg.StartsWith("--context=", StringComparison.Ordinal))
+            {
+                contextFilter = NormalizeFilterValue(arg["--context=".Length..], "--context");
                 continue;
             }
 
@@ -53,6 +81,18 @@ internal static class Program
                 || string.Equals(arg, "-o", StringComparison.Ordinal))
             {
                 pendingOption = "--output";
+                continue;
+            }
+
+            if (string.Equals(arg, "--type", StringComparison.Ordinal))
+            {
+                pendingOption = "--type";
+                continue;
+            }
+
+            if (string.Equals(arg, "--context", StringComparison.Ordinal))
+            {
+                pendingOption = "--context";
                 continue;
             }
 
@@ -67,10 +107,10 @@ internal static class Program
 
         if (!string.IsNullOrEmpty(pendingOption))
         {
-            throw new ArgumentException("Missing value for --output.");
+            throw new ArgumentException($"Missing value for {pendingOption}.");
         }
 
-        return new ProgramOptions(inputs, outputFormat);
+        return new ProgramOptions(inputs, outputFormat, typeFilter, contextFilter);
     }
 
     internal static IReadOnlyList<SummaryInput> ResolveSummaryInputs(IEnumerable<string> inputs)
@@ -93,13 +133,15 @@ internal static class Program
             .ToArray();
     }
 
-    private static string FormatOutput(IEnumerable<LogFileSummary> summaries, string outputFormat)
+    private static string FormatOutput(IEnumerable<LogFileSummary> summaries, ProgramOptions options)
     {
-        return outputFormat switch
+        return options.OutputFormat switch
         {
+            "text" when HasActiveFilters(options) => LogReportFormatter.FormatFilteredExceptions(summaries, options.TypeFilter, options.ContextFilter),
+            "json" when HasActiveFilters(options) => LogReportFormatter.FormatFilteredExceptionsJson(summaries, options.TypeFilter, options.ContextFilter),
             "text" => LogReportFormatter.Format(summaries),
             "json" => LogReportFormatter.FormatJson(summaries),
-            _ => throw new ArgumentOutOfRangeException(nameof(outputFormat), outputFormat, "Unsupported output format.")
+            _ => throw new ArgumentOutOfRangeException(nameof(options.OutputFormat), options.OutputFormat, "Unsupported output format.")
         };
     }
 
@@ -153,6 +195,24 @@ internal static class Program
         };
     }
 
-    internal readonly record struct ProgramOptions(IReadOnlyList<string> Inputs, string OutputFormat);
+    private static string NormalizeFilterValue(string value, string optionName)
+    {
+        var normalized = value.Trim();
+        return !string.IsNullOrEmpty(normalized)
+            ? normalized
+            : throw new ArgumentException($"Missing value for {optionName}.");
+    }
+
+    private static bool HasActiveFilters(ProgramOptions options)
+    {
+        return !string.IsNullOrEmpty(options.TypeFilter)
+            || !string.IsNullOrEmpty(options.ContextFilter);
+    }
+
+    internal readonly record struct ProgramOptions(
+        IReadOnlyList<string> Inputs,
+        string OutputFormat,
+        string? TypeFilter,
+        string? ContextFilter);
     internal readonly record struct SummaryInput(string Path, bool IsDirectory);
 }

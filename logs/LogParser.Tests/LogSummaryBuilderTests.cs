@@ -147,7 +147,7 @@ public class LogSummaryBuilderTests
     }
 
     [Fact]
-    public void Format_IncludesParsedExceptionDetailsAndEntries()
+    public void Format_IncludesParsedExceptionDetailsAndExceptions()
     {
         var formatted = LogReportFormatter.Format(
         [
@@ -160,12 +160,12 @@ public class LogSummaryBuilderTests
         Assert.Contains("context: InitializeFactories", formatted, StringComparison.Ordinal);
         Assert.Contains("context: GetDate", formatted, StringComparison.Ordinal);
         Assert.Contains("message: Cannot get property set of undefined", formatted, StringComparison.Ordinal);
-        Assert.Contains("entries:", formatted, StringComparison.Ordinal);
+        Assert.Contains("exceptions:", formatted, StringComparison.Ordinal);
         Assert.Contains("path: test/annexB/alpha.js", formatted, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void ParseAndSummarize_IncludesAllExceptionEntriesInsteadOfCappedExamples()
+    public void ParseAndSummarize_IncludesAllExceptionsInsteadOfTruncatingMatches()
     {
         using var fixture = TempLogFile.Create("""
         {
@@ -218,9 +218,9 @@ public class LogSummaryBuilderTests
             summary.ExceptionSummary.MessageGroups,
             group => group.Message == "Cannot get property set of undefined");
 
-        Assert.Equal(5, typeGroup.Examples.Count);
-        Assert.Equal(5, contextGroup.Examples.Count);
-        Assert.Equal(5, messageGroup.Examples.Count);
+        Assert.Equal(5, typeGroup.Exceptions.Count);
+        Assert.Equal(5, contextGroup.Exceptions.Count);
+        Assert.Equal(5, messageGroup.Exceptions.Count);
         Assert.Equal(
             [
                 "test/annexB/alpha.js",
@@ -229,7 +229,7 @@ public class LogSummaryBuilderTests
                 "test/annexB/epsilon.js",
                 "test/annexB/gamma.js"
             ],
-            typeGroup.Examples.Select(example => example.Path).ToArray());
+            typeGroup.Exceptions.Select(exception => exception.Path).ToArray());
     }
 
     [Fact]
@@ -315,6 +315,18 @@ public class LogSummaryBuilderTests
         Assert.Equal(expectedInputs, options.Inputs);
     }
 
+    [Theory]
+    [InlineData(new[] { "--type", "Broiler.JavaScript.Runtime.JSException", "sample.json" }, "Broiler.JavaScript.Runtime.JSException", null)]
+    [InlineData(new[] { "--type=Broiler.JavaScript.Runtime.JSException", "--context=InitializeFactories", "sample.json" }, "Broiler.JavaScript.Runtime.JSException", "InitializeFactories")]
+    [InlineData(new[] { "--context", "GetDate", "sample.json" }, null, "GetDate")]
+    public void ParseOptions_ReadsSupportedExceptionFilterSyntaxes(string[] args, string? expectedType, string? expectedContext)
+    {
+        var options = Program.ParseOptions(args);
+
+        Assert.Equal(expectedType, options.TypeFilter);
+        Assert.Equal(expectedContext, options.ContextFilter);
+    }
+
     [Fact]
     public void ParseOptions_DefaultsToTextWhenOutputIsNotSpecified()
     {
@@ -322,6 +334,47 @@ public class LogSummaryBuilderTests
 
         Assert.Equal("text", options.OutputFormat);
         Assert.Equal(["sample.json"], options.Inputs);
+        Assert.Null(options.TypeFilter);
+        Assert.Null(options.ContextFilter);
+    }
+
+    [Fact]
+    public void FormatFilteredExceptions_SuppressesSummariesAndShowsOnlyMatches()
+    {
+        var formatted = LogReportFormatter.FormatFilteredExceptions(
+            [
+                LogSummaryBuilder.ParseAndSummarize(GetExceptionFixturePath())
+            ],
+            "Broiler.JavaScript.Runtime.JSException",
+            "InitializeFactories");
+
+        Assert.Contains("Filters:", formatted, StringComparison.Ordinal);
+        Assert.Contains("type: Broiler.JavaScript.Runtime.JSException", formatted, StringComparison.Ordinal);
+        Assert.Contains("context: InitializeFactories", formatted, StringComparison.Ordinal);
+        Assert.Contains("Matches:", formatted, StringComparison.Ordinal);
+        Assert.Contains("path: test/annexB/alpha.js", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("Totals:", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("Status groups:", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("Path groups (depth 4):", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("Exception summary:", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("path: test/date/beta.js", formatted, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FormatFilteredExceptionsJson_SuppressesSummariesProperty()
+    {
+        var json = LogReportFormatter.FormatFilteredExceptionsJson(
+            [
+                LogSummaryBuilder.ParseAndSummarize(GetExceptionFixturePath())
+            ],
+            "Broiler.JavaScript.Runtime.JSException",
+            "InitializeFactories");
+
+        Assert.Contains("\"outputFormat\": \"json\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"filters\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"matches\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"exceptions\"", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"summaries\"", json, StringComparison.Ordinal);
     }
 
     [Fact]
