@@ -381,14 +381,14 @@ def collect_requested_paths(paths: list[str], path_files: list[str]) -> list[str
 def positive_float(value: str) -> float:
     parsed = float(value)
     if parsed <= 0:
-        raise argparse.ArgumentTypeError(f"value must be greater than 0, got {value}")
+        raise argparse.ArgumentTypeError(f"value must be positive, got {value}")
     return parsed
 
 
 def non_negative_int(value: str) -> int:
     parsed = int(value)
     if parsed < 0:
-        raise argparse.ArgumentTypeError(f"value must be greater than or equal to 0, got {value}")
+        raise argparse.ArgumentTypeError(f"value must be non-negative, got {value}")
     return parsed
 
 

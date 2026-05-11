@@ -166,7 +166,11 @@ jobs:
               f"- Runnable paths before sharding: {summary['selectedCountBeforeSharding']}",
               f"- Paths executed in this shard: {len(summary['expandedPaths'])}",
               f"- Per-test timeout: {summary['testTimeoutSeconds']}s",
-              f"- Per-test memory cap: {summary['memoryLimitMb']} MiB" if summary['memoryLimitMb'] else "- Per-test memory cap: disabled",
+              (
+                  f"- Per-test memory cap: {summary['memoryLimitMb']} MiB"
+                  if summary['memoryLimitMb']
+                  else "- Per-test memory cap: 0 MiB (disabled)"
+              ),
               f"- Passed: {summary['passed']}",
               f"- Failed: {summary['failed']}",
               f"- Skipped: {summary['skipped']}",
