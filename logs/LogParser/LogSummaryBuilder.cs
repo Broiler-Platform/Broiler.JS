@@ -12,6 +12,10 @@ public static class LogSummaryBuilder
     private const string AllPathsBucket = "(all paths)";
     private const string UnhandledExceptionPrefix = "Unhandled exception. ";
     private const string UnknownContext = "(unknown context)";
+    // Matches common .NET and JavaScript stack frames such as:
+    //   at InitializeFactories in /repo/File.cs:line 17
+    //   at Compile:/tmp/script.js:206,1
+    // The "method" group captures the method/function token after "at ".
     private static readonly Regex StackFrameContextRegex = new(
         @"^at\s+(?<method>.+?)(?:\s+in\s+|\s+\(|:|$)",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -276,24 +280,32 @@ public static class LogSummaryBuilder
         }
 
         var lines = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        for (var i = 0; i < lines.Length; i++)
+        var lineIndex = 0;
+        foreach (var line in lines)
         {
-            var line = lines[i];
             if (TryParseExceptionLine(line, out var exceptionType, out var exceptionMessage))
             {
                 return new ParsedException
                 {
                     Type = exceptionType,
                     Message = exceptionMessage,
-                    Context = TryParseExceptionContext(lines, i + 1),
+                    Context = TryParseExceptionContext(lines, lineIndex + 1),
                     LogLine = line
                 };
             }
+
+            lineIndex++;
         }
 
         return null;
     }
 
+    /// <summary>
+    /// Extracts the method or function name from the first stack frame that follows a parsed exception line.
+    /// </summary>
+    /// <param name="lines">All non-empty log lines from the captured output.</param>
+    /// <param name="startIndex">The index immediately after the line that contained the exception header.</param>
+    /// <returns>The parsed method or function name, or <see langword="null"/> when no stack frame context is present.</returns>
     private static string? TryParseExceptionContext(IReadOnlyList<string> lines, int startIndex)
     {
         for (var i = startIndex; i < lines.Count; i++)
