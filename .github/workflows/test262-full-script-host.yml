@@ -40,7 +40,15 @@ jobs:
           import sys
 
           shard_count = int(os.environ["SHARD_COUNT"])
-          shard_index = int(os.environ["SELECTED_SHARD_INDEX"])
+          requested_shard_index = os.environ["SELECTED_SHARD_INDEX"]
+
+          try:
+              shard_index = int(requested_shard_index)
+          except ValueError:
+              sys.exit(
+                  f"shard_index must be an integer equal to -1 or between 0 and "
+                  f"{shard_count - 1}, got {requested_shard_index!r}"
+              )
 
           if shard_index == -1:
               matrix = [{"shard-index": index} for index in range(shard_count)]

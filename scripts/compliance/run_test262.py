@@ -376,7 +376,7 @@ def apply_shard(paths: list[str], shard_count: int, shard_index: int) -> list[st
         raise ValueError(f"shard_count must be greater than 0, got {shard_count}")
     if shard_index == ALL_SHARDS:
         return list(paths)
-    if shard_index < 0 or shard_index >= shard_count:
+    if shard_index < ALL_SHARDS or shard_index >= shard_count:
         raise ValueError(
             f"shard_index must be -1 or between 0 and {shard_count - 1}, got {shard_index}"
         )

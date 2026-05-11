@@ -106,6 +106,9 @@ class RunTest262Tests(unittest.TestCase):
         )
 
         with self.assertRaisesRegex(ValueError, "shard_index must be -1 or between 0 and 1"):
+            run_test262.apply_shard(["test/language/example.js"], 2, -2)
+
+        with self.assertRaisesRegex(ValueError, "shard_index must be -1 or between 0 and 1"):
             run_test262.apply_shard(["test/language/example.js"], 2, 2)
 
     def test_main_accepts_shard_index_minus_one_for_all_selected_paths(self) -> None:
