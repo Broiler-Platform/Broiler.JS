@@ -39,7 +39,7 @@ def collect_suite_test_paths(repo: Test262Repository, suite_root: Path | None) -
 
 def directory_bucket(path: str, depth: int) -> str:
     parts = path.split("/")
-    return "/".join(parts[: min(depth, max(len(parts) - 1, 1))])
+    return "/".join(parts[: min(depth, len(parts))])
 
 
 def summarize_buckets(paths: list[str], depth: int, limit: int | None = None) -> list[dict[str, object]]:

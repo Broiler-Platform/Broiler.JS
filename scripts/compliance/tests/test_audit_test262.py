@@ -81,7 +81,7 @@ class AuditTest262Tests(unittest.TestCase):
             summary["topLevelCounts"]["excluded"],
         )
         self.assertEqual(
-            [{"bucket": "test/language", "count": 1}],
+            [{"bucket": "test/language/no-strict.js", "count": 1}],
             summary["largestUncoveredScriptHostVerifiableBuckets"],
         )
         self.assertEqual(50.0, summary["manifestCoverageOfSuitePercent"])
