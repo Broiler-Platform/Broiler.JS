@@ -17,6 +17,8 @@ env:
   RESULTS_DIR: ${{ github.workspace }}/.artifacts/test262/full-script-host
   BROILER_DLL: ${{ github.workspace }}/Broiler.JS/Broiler.JavaScript/bin/Release/net8.0/BroilerJS.dll
   SHARD_COUNT: 8
+  TEST_TIMEOUT_SECONDS: 30
+  MEMORY_LIMIT_MB: 0
 
 jobs:
   test262:
@@ -29,6 +31,8 @@ jobs:
     steps:
       - name: Check out Broiler.JS
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
@@ -81,6 +85,8 @@ jobs:
             --all-script-host-verifiable \
             --shard-count "$SHARD_COUNT" \
             --shard-index "${{ matrix.shard-index }}" \
+            --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
+            --memory-limit-mb "$MEMORY_LIMIT_MB" \
             --output "$output_path"
 
       - name: Publish workflow summary
@@ -104,9 +110,12 @@ jobs:
               f"- Candidate paths discovered: {summary['candidateCount']}",
               f"- Runnable paths before sharding: {summary['selectedCountBeforeSharding']}",
               f"- Paths executed in this shard: {len(summary['expandedPaths'])}",
+              f"- Per-test timeout: {summary['testTimeoutSeconds']}s",
+              f"- Per-test memory cap: {summary['memoryLimitMb']} MiB" if summary['memoryLimitMb'] else "- Per-test memory cap: disabled",
               f"- Passed: {summary['passed']}",
               f"- Failed: {summary['failed']}",
               f"- Skipped: {summary['skipped']}",
+              f"- Timed out: {summary['timedOut']}",
           ]
 
           Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
