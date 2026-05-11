@@ -54,7 +54,7 @@ class RunTest262Tests(unittest.TestCase):
                 self.returncode = 0
 
             def communicate(self, *, timeout: float):
-                self.timeout = timeout
+                captured_script["timeout"] = timeout
                 script_path = Path(self.args[-1])
                 captured_script["contents"] = script_path.read_text(encoding="utf-8")
                 return "", ""
@@ -73,9 +73,10 @@ class RunTest262Tests(unittest.TestCase):
             return FakeProcess(args)
 
         with mock.patch.object(run_test262.subprocess, "Popen", side_effect=fake_run):
-            result = run_test262.run_test(repo, TEST_ENGINE_PATH, path, {}, 30.0, 256)
+            result = run_test262.run_test(repo, TEST_ENGINE_PATH, path, {}, 12.5, 256)
 
         self.assertEqual({"path": path, "status": "passed"}, result)
+        self.assertEqual(12.5, captured_script["timeout"])
         self.assertIn('"use strict";\n\nthis;\n', captured_script["contents"])
 
     def test_run_test_times_out_and_kills_process_group(self) -> None:

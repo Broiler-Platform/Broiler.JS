@@ -40,6 +40,7 @@ HOST_HARNESS_INCLUDE_BLOCKERS = {"doneprintHandle.js"}
 HOST_HARNESS_REFERENCE_PATTERN = re.compile(r"\$262(?:\b|\.)")
 HOST_HARNESS_BLOCKER_NAME = "$262"
 DEFAULT_TEST_TIMEOUT_SECONDS = 30.0
+POST_TERMINATION_TIMEOUT_SECONDS = 5.0
 
 
 class Test262Repository:
@@ -434,17 +435,18 @@ def create_process_limit_setup(
     if os.name != "posix" or resource is None:
         return None
 
-    # RLIMIT_CPU is whole-second based. Wall-clock enforcement still comes from
-    # communicate(timeout=...), while the child intentionally receives at least a
-    # one-second CPU budget so very small timeout values do not fail at process start.
-    cpu_limit_seconds = max(1, int(math.ceil(timeout_seconds)))
-    cpu_hard_limit_seconds = cpu_limit_seconds + 5
+    # RLIMIT_CPU is whole-second based, so sub-second wall-clock timeouts rely only
+    # on communicate(timeout=...) for enforcement.
+    cpu_limit_seconds = int(math.ceil(timeout_seconds)) if timeout_seconds >= 1 else None
+    cpu_hard_limit_seconds = (
+        cpu_limit_seconds + 5 if cpu_limit_seconds is not None else None
+    )
     memory_limit_bytes = memory_limit_mb * 1024 * 1024 if memory_limit_mb > 0 else None
 
     def limit_process_resources() -> None:
         if hasattr(resource, "RLIMIT_CORE"):
             resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
-        if hasattr(resource, "RLIMIT_CPU"):
+        if cpu_limit_seconds is not None and hasattr(resource, "RLIMIT_CPU"):
             resource.setrlimit(
                 resource.RLIMIT_CPU,
                 (cpu_limit_seconds, cpu_hard_limit_seconds),
@@ -584,7 +586,13 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
             stdout, stderr = process.communicate(timeout=timeout_seconds)
         except subprocess.TimeoutExpired:
             terminate_process_tree(process)
-            stdout, stderr = process.communicate()
+            try:
+                stdout, stderr = process.communicate(
+                    timeout=POST_TERMINATION_TIMEOUT_SECONDS
+                )
+            except subprocess.TimeoutExpired:
+                process.kill()
+                stdout, stderr = process.communicate()
             return {
                 "path": path,
                 "status": "timedOut",
