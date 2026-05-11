@@ -321,6 +321,11 @@ def classify_test(
     repo: Test262Repository | None = None,
     harness_dependency_cache: dict[str, bool] | None = None,
 ) -> dict[str, object]:
+    """Classify one test262 source file for raw script-host execution.
+
+    Returns flags, unsupported flag names, optional negative metadata,
+    optional host-harness blockers, and a boolean isScriptHostVerifiable flag.
+    """
     metadata, _ = parse_metadata(source)
     flags = list(metadata["flags"])
     unsupported_flags = sorted(UNSUPPORTED_FLAGS & set(flags))
@@ -364,6 +369,7 @@ def collect_requested_paths(paths: list[str], path_files: list[str]) -> list[str
 
 
 def apply_shard(paths: list[str], shard_count: int, shard_index: int) -> list[str]:
+    """Return one deterministic modulo-based shard from an ordered path list."""
     if shard_count <= 0:
         raise ValueError(f"shard_count must be at least 1, got {shard_count}")
     if shard_index < 0 or shard_index >= shard_count:
@@ -384,6 +390,7 @@ def select_paths(
     shard_count: int,
     shard_index: int,
 ) -> tuple[list[str], dict[str, object]]:
+    """Select test paths plus metadata for requested or full script-host runs."""
     selection_mode = "requested"
     if all_script_host_verifiable:
         candidate_paths = repo.list_paths(prefix="test/", suffix=".js")

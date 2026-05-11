@@ -72,7 +72,7 @@ class RunTest262Tests(unittest.TestCase):
             "test/language/c-module.js",
             "/*---\nflags: [module]\n---*/\nexport {};\n",
         )
-        self.write_test("test/language/c2-host.js", "$262.createRealm();\n")
+        self.write_test("test/language/host-harness.js", "$262.createRealm();\n")
         second_path = self.write_test(
             "test/language/d-async.js",
             "/*---\nflags: [async]\n---*/\n$DONE();\n",

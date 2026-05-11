@@ -235,10 +235,12 @@ def main() -> int:
     # manifests whose entries are script-host-verifiable. Failing here prevents CI from
     # silently reporting coverage for unsupported-flag or negative-metadata files that
     # this workflow does not validate correctly yet.
-    return 1 if (
-        len(summary["manifestUnsupportedTests"]) > 0
-        or len(summary["manifestNegativeTests"]) > 0
-        or len(summary["manifestHostHarnessTests"]) > 0
+    return 1 if any(
+        (
+            summary["manifestUnsupportedTests"],
+            summary["manifestNegativeTests"],
+            summary["manifestHostHarnessTests"],
+        )
     ) else 0
 
 
