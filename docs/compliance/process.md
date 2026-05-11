@@ -14,12 +14,13 @@ Broiler.JS compliance is measured with repository tests plus public JavaScript c
 ## Running compliance evidence
 
 1. Restore and run repository tests with `dotnet test Broiler.JS.slnx`.
-2. Use the pinned runner at `python scripts/compliance/run_test262.py --suite-ref <sha> --path-file <manifest.txt>` for script-host-compatible `test262` subsets, including async and `noStrict` files that only depend on `$DONE` and standard harness includes.
-3. Use `python scripts/compliance/compare_engines.py --manifest scripts/compliance/engine-scenarios.json --engine262-bin <path-to-engine262>` for the shared Broiler-vs-V8-vs-engine262 cross-check matrix.
-4. Clone or cache larger public suites outside the source tree or as CI cache inputs when broader coverage is needed; do not vendor large external suites without a license and update policy.
-5. Record the exact suite revision, command line, host options, and environment in `docs/compliance/dashboard.md`.
-6. File or update issues for failing feature areas and link them from `docs/compliance/known-gaps.md`.
-7. Treat any newly failing previously-passing test as a regression unless a suite update intentionally changed expected behavior.
+2. Audit the pinned `test262` checkout with `python scripts/compliance/audit_test262.py --suite-ref <sha> --suite-root <local-test262-checkout> --manifest-glob 'scripts/compliance/test262-*.txt'` to record the full upstream testcase count, the script-host-verifiable subset, and how much of that surface the pinned manifests cover.
+3. Use the pinned runner at `python scripts/compliance/run_test262.py --suite-ref <sha> --path-file <manifest.txt>` for script-host-compatible non-negative `test262` subsets, including async and `noStrict` files that only depend on `$DONE` and standard harness includes.
+4. Use `python scripts/compliance/compare_engines.py --manifest scripts/compliance/engine-scenarios.json --engine262-bin <path-to-engine262>` for the shared Broiler-vs-V8-vs-engine262 cross-check matrix.
+5. Clone or cache larger public suites outside the source tree or as CI cache inputs when broader coverage is needed; do not vendor large external suites without a license and update policy.
+6. Record the exact suite revision, command line, host options, environment, upstream discovered count, and manifest coverage percentage in `docs/compliance/dashboard.md`.
+7. File or update issues for failing feature areas and link them from `docs/compliance/known-gaps.md`.
+8. Treat any newly failing previously-passing test as a regression unless a suite update intentionally changed expected behavior.
 
 ## Reporting format
 
@@ -27,6 +28,7 @@ Each run should report:
 
 - Date and commit under test.
 - Suite name and upstream revision.
+- Total discovered upstream test files and the percentage covered by the manifest(s) being reported.
 - Total, passed, failed, skipped, timed out, and unsupported counts.
 - Feature tags or directories with the largest failure counts.
 - Raw logs or artifact location.
