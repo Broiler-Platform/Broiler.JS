@@ -1,0 +1,193 @@
+name: test262
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TEST262_REF: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+  TEST262_ROOT: ${{ github.workspace }}/.cache/test262
+  RESULTS_DIR: ${{ github.workspace }}/.artifacts/test262/results
+  FAILURE_LOG: ${{ github.workspace }}/.artifacts/test262/failed-tests.log
+  BROILER_DLL: ${{ github.workspace }}/Broiler.JS/Broiler.JavaScript/bin/Release/net8.0/BroilerJS.dll
+
+jobs:
+  test262:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Broiler.JS
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache test262 checkout
+        id: cache-test262
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.TEST262_ROOT }}
+          key: test262-${{ runner.os }}-${{ env.TEST262_REF }}
+
+      - name: Download pinned test262 suite
+        if: steps.cache-test262.outputs.cache-hit != 'true'
+        run: |
+          rm -rf "$TEST262_ROOT"
+          git clone --filter=blob:none https://github.com/tc39/test262.git "$TEST262_ROOT"
+          git -C "$TEST262_ROOT" checkout --force "$TEST262_REF"
+
+      - name: Restore Broiler.JS
+        run: dotnet restore Broiler.JS.slnx
+
+      - name: Build Broiler.JS CLI
+        run: dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release
+
+      - name: Run pinned test262 manifests
+        id: run-test262
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RESULTS_DIR"
+          status=0
+
+          for manifest in scripts/compliance/test262-*.txt; do
+            name="$(basename "$manifest" .txt)"
+            output_path="$RESULTS_DIR/${name}.json"
+
+            echo "Running $manifest"
+            if ! python scripts/compliance/run_test262.py \
+              --suite-ref "$TEST262_REF" \
+              --suite-root "$TEST262_ROOT" \
+              --broiler-dll "$BROILER_DLL" \
+              --path-file "$manifest" \
+              --output "$output_path"; then
+              status=1
+            fi
+          done
+
+          exit "$status"
+
+      - name: Publish workflow summary
+        id: summary
+        if: always()
+        run: |
+          python <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          results_dir = Path(os.environ["RESULTS_DIR"])
+          failure_log = Path(os.environ["FAILURE_LOG"])
+          github_output_path = Path(os.environ["GITHUB_OUTPUT"])
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+          suite_ref = os.environ["TEST262_REF"]
+
+          files = sorted(results_dir.glob("*.json"))
+          rows = []
+          totals = {"executed": 0, "passed": 0, "failed": 0, "skipped": 0}
+          failed_entries: list[str] = []
+
+          for file in files:
+            summary = json.loads(file.read_text(encoding="utf-8"))
+            manifest_name = file.stem.removeprefix("test262-")
+            rows.append(
+              "| {manifest} | {executed} | {passed} | {failed} | {skipped} |".format(
+                manifest=manifest_name,
+                executed=summary["executed"],
+                passed=summary["passed"],
+                failed=summary["failed"],
+                skipped=summary["skipped"],
+              )
+            )
+
+            for key in totals:
+              totals[key] += int(summary[key])
+
+            for result in summary["results"]:
+              if result["status"] != "failed":
+                continue
+
+              failed_entries.append(
+                "\n".join(
+                  [
+                    f"[{manifest_name}] {result['path']}",
+                    "--- stdout ---",
+                    str(result.get("stdout", "")).rstrip(),
+                    "--- stderr ---",
+                    str(result.get("stderr", "")).rstrip(),
+                    "",
+                  ]
+                ).rstrip()
+              )
+
+          if failed_entries:
+            failure_log.parent.mkdir(parents=True, exist_ok=True)
+            failure_log.write_text("\n\n".join(failed_entries) + "\n", encoding="utf-8")
+          elif failure_log.exists():
+            failure_log.unlink()
+
+          if not rows:
+            rows.append("| no-results | 0 | 0 | 1 | 0 |")
+            totals["failed"] = 1
+
+          summary_lines = [
+            "## test262 summary",
+            "",
+            f"Pinned suite ref: `{suite_ref}`",
+            "",
+            "| Manifest | Executed | Passed | Failed | Skipped |",
+            "| --- | ---: | ---: | ---: | ---: |",
+            *rows,
+            "| **total** | {executed} | {passed} | {failed} | {skipped} |".format(**totals),
+          ]
+
+          if totals["failed"] > 0:
+            summary_lines.extend(
+              [
+                "",
+                f"Failed test details were written to `{failure_log.name}`.",
+              ]
+            )
+
+          summary_path.write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
+
+          with github_output_path.open("a", encoding="utf-8") as handle:
+            handle.write(f"failed-count={totals['failed']}\n")
+          PY
+
+      - name: Upload failed test logs
+        if: always() && steps.summary.outputs.failed-count != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test262-failures
+          path: |
+            ${{ env.FAILURE_LOG }}
+            ${{ env.RESULTS_DIR }}
+
+      - name: Fail workflow when test262 reports failures
+        if: always()
+        shell: bash
+        run: |
+          failed_count="${{ steps.summary.outputs.failed-count }}"
+          if [ "${{ steps.run-test262.outcome }}" != "success" ] || [ "${failed_count:-0}" -ne 0 ]; then
+            exit 1
+          fi

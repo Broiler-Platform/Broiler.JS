@@ -26,10 +26,26 @@ USER_AGENT = "Broiler.JS compliance runner"
 
 
 class Test262Repository:
-    def __init__(self, suite_ref: str):
+    def __init__(self, suite_ref: str, suite_root: str | None = None):
         self.suite_ref = suite_ref
+        self.suite_root = (
+            Path(suite_root).resolve()
+            if suite_root is not None and suite_root.strip()
+            else None
+        )
         self.contents_cache: dict[str, list[dict[str, object]]] = {}
         self.text_cache: dict[str, str] = {}
+
+    def _resolve_local_path(self, path: str) -> Path:
+        if self.suite_root is None:
+            raise RuntimeError("No local suite root configured")
+
+        resolved = (self.suite_root / path.strip("/")).resolve()
+        try:
+            resolved.relative_to(self.suite_root)
+        except ValueError as exc:
+            raise ValueError(f"Path escapes suite root: {path}") from exc
+        return resolved
 
     def _fetch_json(self, path: str):
         encoded_path = urllib.parse.quote(path.strip("/"))
@@ -49,13 +65,18 @@ class Test262Repository:
 
     def read_text(self, path: str) -> str:
         if path not in self.text_cache:
-            url = (
-                f"https://raw.githubusercontent.com/tc39/test262/"
-                f"{self.suite_ref}/{path}"
-            )
-            request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-            with urllib.request.urlopen(request) as response:
-                self.text_cache[path] = response.read().decode("utf-8")
+            if self.suite_root is not None:
+                self.text_cache[path] = self._resolve_local_path(path).read_text(
+                    encoding="utf-8"
+                )
+            else:
+                url = (
+                    f"https://raw.githubusercontent.com/tc39/test262/"
+                    f"{self.suite_ref}/{path}"
+                )
+                request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+                with urllib.request.urlopen(request) as response:
+                    self.text_cache[path] = response.read().decode("utf-8")
         return self.text_cache[path]
 
     def expand_paths(self, paths: list[str]) -> list[str]:
@@ -65,6 +86,20 @@ class Test262Repository:
         return sorted(dict.fromkeys(files))
 
     def _expand_path(self, path: str) -> list[str]:
+        if self.suite_root is not None:
+            local_path = self._resolve_local_path(path)
+            if local_path.is_file():
+                return [path]
+
+            if not local_path.is_dir():
+                raise FileNotFoundError(path)
+
+            return sorted(
+                child.relative_to(self.suite_root).as_posix()
+                for child in local_path.rglob("*.js")
+                if child.is_file()
+            )
+
         if path.endswith(".js"):
             return [path]
 
@@ -237,12 +272,16 @@ def main() -> int:
         help="Path to BroilerJS.dll",
     )
     parser.add_argument(
+        "--suite-root",
+        help="Optional path to a local test262 checkout",
+    )
+    parser.add_argument(
         "--output",
         help="Optional path for machine-readable JSON output",
     )
     args = parser.parse_args()
 
-    repo = Test262Repository(args.suite_ref)
+    repo = Test262Repository(args.suite_ref, args.suite_root)
     TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
     requested_paths = list(args.paths)
     for path_file in args.path_file:
