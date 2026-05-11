@@ -180,6 +180,13 @@ jobs:
             unsupported_flag_counts = ", ".join(
               f"{name}={count}" for name, count in sorted(audit["unsupportedFlagCounts"].items())
             ) or "none"
+            blocker_counts = ", ".join(
+              f"{name}={count}" for name, count in sorted(audit["scriptHostBlockerCounts"].items())
+            ) or "none"
+            largest_uncovered = ", ".join(
+              f"{entry['bucket']}={entry['count']}"
+              for entry in audit["largestUncoveredScriptHostVerifiableBuckets"][:5]
+            ) or "none"
             summary_lines.extend(
               [
                 "",
@@ -190,11 +197,16 @@ jobs:
                 f"- Files excluded by unsupported flags: {audit['unsupportedFlaggedTests']} ({unsupported_flag_counts})",
                 f"- Negative-metadata files not currently validated by this raw script-host runner: {audit['negativeTests']}",
                 (
+                  "- Unique script-host exclusions: "
+                  f"{audit['scriptHostExcludedTests']} ({blocker_counts}; blocker counts can overlap)"
+                ),
+                (
                   "- Unique manifest files executed in this workflow: "
                   f"{audit['manifestUniqueTests']} "
                   f"({audit['manifestCoverageOfSuitePercent']:.2f}% of all discovered tests; "
                   f"{audit['manifestCoverageOfScriptHostVerifiablePercent']:.2f}% of script-host-verifiable tests)"
                 ),
+                f"- Largest uncovered script-host-verifiable buckets: {largest_uncovered}",
               ]
             )
 

@@ -65,11 +65,25 @@ class AuditTest262Tests(unittest.TestCase):
         self.assertEqual(1, summary["unsupportedFlaggedTests"])
         self.assertEqual({"module": 1}, summary["unsupportedFlagCounts"])
         self.assertEqual(1, summary["negativeTests"])
+        self.assertEqual(2, summary["scriptHostExcludedTests"])
+        self.assertEqual({"module": 1, "negative": 1}, summary["scriptHostBlockerCounts"])
         self.assertEqual(4, summary["scriptHostVerifiableTests"])
         self.assertEqual(1, summary["asyncScriptHostVerifiableTests"])
         self.assertEqual(3, summary["manifestEntries"])
         self.assertEqual(3, summary["manifestUniqueTests"])
         self.assertEqual(3, summary["manifestScriptHostVerifiableTests"])
+        self.assertEqual(
+            [{"bucket": "test/language", "count": 4}],
+            summary["topLevelCounts"]["scriptHostVerifiable"],
+        )
+        self.assertEqual(
+            [{"bucket": "test/language", "count": 2}],
+            summary["topLevelCounts"]["excluded"],
+        )
+        self.assertEqual(
+            [{"bucket": "test/language/no-strict.js", "count": 1}],
+            summary["largestUncoveredScriptHostVerifiableBuckets"],
+        )
         self.assertEqual(50.0, summary["manifestCoverageOfSuitePercent"])
         expected_script_host_coverage = 3 * 100.0 / 4
         self.assertAlmostEqual(
@@ -99,6 +113,10 @@ class AuditTest262Tests(unittest.TestCase):
         self.assertEqual([unsupported_path], summary["manifestUnsupportedTests"])
         self.assertEqual([negative_path], summary["manifestNegativeTests"])
         self.assertEqual(0, summary["manifestScriptHostVerifiableTests"])
+
+    def test_directory_bucket_rejects_non_positive_depth(self) -> None:
+        with self.assertRaises(ValueError):
+            audit_test262.directory_bucket("test/language/example.js", 0)
 
 
 if __name__ == "__main__":

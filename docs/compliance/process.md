@@ -14,7 +14,7 @@ Broiler.JS compliance is measured with repository tests plus public JavaScript c
 ## Running compliance evidence
 
 1. Restore and run repository tests with `dotnet test Broiler.JS.slnx`.
-2. Audit the pinned `test262` checkout with `python scripts/compliance/audit_test262.py --suite-ref <sha> --suite-root <local-test262-checkout> --manifest-glob 'scripts/compliance/test262-*.txt'` to record the full upstream testcase count, the script-host-verifiable subset, and how much of that surface the pinned manifests cover.
+2. Audit the pinned `test262` checkout with `python scripts/compliance/audit_test262.py --suite-ref <sha> --manifest-glob 'scripts/compliance/test262-*.txt'`. Pass `--suite-root <local-test262-checkout>` when a local checkout is already available; otherwise the audit downloads and caches the pinned suite archive under the tool's temp directory before computing totals, blocker counts, and uncovered-bucket breakdowns.
 3. Use the pinned runner at `python scripts/compliance/run_test262.py --suite-ref <sha> --path-file <manifest.txt>` for script-host-compatible non-negative `test262` subsets, including async and `noStrict` files plus `onlyStrict` files that only depend on `$DONE` and standard harness includes.
 4. The current workflow breadth is manifest-driven: `.github/workflows/test262.yml` executes every `scripts/compliance/test262-*.txt` file, so expanding coverage means growing those manifests from proven-clean directories or explicitly selected files and then re-auditing the unique coverage.
 5. Use `python scripts/compliance/compare_engines.py --manifest scripts/compliance/engine-scenarios.json --engine262-bin <path-to-engine262>` for the shared Broiler-vs-V8-vs-engine262 cross-check matrix.
@@ -30,7 +30,9 @@ Each run should report:
 - Date and commit under test.
 - Suite name and upstream revision.
 - Total discovered upstream test files and the percentage covered by the manifest(s) being reported.
+- Unique script-host exclusions plus the blocker counts that caused those exclusions (`negative`, `module`, `raw`, etc.); note when counts overlap.
 - Total, passed, failed, skipped, timed out, and unsupported counts.
 - Feature tags or directories with the largest failure counts.
+- The largest uncovered script-host-verifiable top-level areas/buckets so manifest growth can be prioritized.
 - Raw logs or artifact location.
 - Follow-up owner or issue link for regressions.

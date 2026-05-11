@@ -56,6 +56,12 @@ class RunTest262Tests(unittest.TestCase):
         self.assertEqual({"path": path, "status": "passed"}, result)
         self.assertIn('"use strict";\n\nthis;\n', captured_script["contents"])
 
+    def test_list_paths_uses_local_suite_root(self) -> None:
+        file_path = self.write_test("test/language/example.js", "1 + 1;\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        self.assertEqual([file_path], repo.list_paths(prefix="test/", suffix=".js"))
+
 
 if __name__ == "__main__":
     unittest.main()
