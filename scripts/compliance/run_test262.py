@@ -384,6 +384,18 @@ def apply_shard(paths: list[str], shard_count: int, shard_index: int) -> list[st
     return [path for index, path in enumerate(paths) if index % shard_count == shard_index]
 
 
+def log_progress(message: str) -> None:
+    print(f"[test262] {message}", file=sys.stderr, flush=True)
+
+
+def progress_interval(total: int) -> int | None:
+    if total <= 0:
+        return None
+    if total < 25:
+        return total
+    return max(25, total // 10)
+
+
 def select_paths(
     repo: Test262Repository,
     requested_paths: list[str],
@@ -536,6 +548,49 @@ def build_summary(
     }
 
 
+def run_selected_tests(
+    repo: Test262Repository,
+    broiler_dll: str,
+    expanded_paths: list[str],
+    selection: dict[str, object],
+) -> list[dict[str, object]]:
+    total = len(expanded_paths)
+    if total == 0:
+        log_progress("No tests matched the current selection.")
+        return []
+
+    shard_label = f"{int(selection['shardIndex']) + 1}/{int(selection['shardCount'])}"
+    log_progress(f"Running {total} test(s) for shard {shard_label}.")
+
+    interval = progress_interval(total)
+    harness_cache: dict[str, str] = {}
+    results: list[dict[str, object]] = []
+    passed = 0
+    failed = 0
+    skipped = 0
+
+    for index, path in enumerate(expanded_paths, start=1):
+        result = run_test(repo, broiler_dll, path, harness_cache)
+        results.append(result)
+
+        status = str(result["status"])
+        if status == "passed":
+            passed += 1
+        elif status == "failed":
+            failed += 1
+            log_progress(f"Failure {failed} at {path}")
+        else:
+            skipped += 1
+
+        if interval is not None and (index % interval == 0 or index == total):
+            log_progress(
+                f"Completed {index}/{total} test(s) "
+                f"(passed={passed}, failed={failed}, skipped={skipped})."
+            )
+
+    return results
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Run a pinned test262 subset against Broiler's script host."
@@ -584,6 +639,11 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    log_progress(
+        f"Starting test262 run for suite ref {args.suite_ref}"
+        + (f" using local suite root {args.suite_root}" if args.suite_root else "")
+    )
+
     repo = Test262Repository(args.suite_ref, args.suite_root)
     TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
     requested_paths = collect_requested_paths(args.paths, args.path_file)
@@ -601,11 +661,16 @@ def main() -> int:
     except ValueError as exc:
         parser.error(str(exc))
 
-    harness_cache: dict[str, str] = {}
-    results = [
-        run_test(repo, args.broiler_dll, path, harness_cache)
-        for path in expanded_paths
-    ]
+    shard_label = f"{selection['shardIndex'] + 1}/{selection['shardCount']}"
+    log_progress(
+        f"Selected {len(expanded_paths)} runnable test(s) for shard {shard_label} "
+        f"from {selection['selectedCountBeforeSharding']} selected file(s) "
+        f"and {selection['candidateCount']} candidate path(s) "
+        f"using mode {selection['selectionMode']}."
+    )
+    log_progress(f"Using Broiler script host at {args.broiler_dll}")
+
+    results = run_selected_tests(repo, args.broiler_dll, expanded_paths, selection)
     summary = build_summary(
         args.suite_ref,
         args.broiler_dll,
@@ -619,7 +684,12 @@ def main() -> int:
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        log_progress(f"Wrote machine-readable summary to {output_path}")
 
+    log_progress(
+        f"Finished test262 run: executed={summary['executed']}, "
+        f"passed={summary['passed']}, failed={summary['failed']}, skipped={summary['skipped']}"
+    )
     print(json.dumps(summary, indent=2))
     return 1 if summary["failed"] > 0 else 0
 
