@@ -51,6 +51,7 @@ namespace BroilerJS
             
             if (scriptHostMode)
             {
+                Environment.SetEnvironmentVariable("BROILER_SCRIPT_HOST", "1");
                 using var context = new JSContext(experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026);
                 var code = await File.ReadAllTextAsync(file.FullName);
                 // Pass the global context explicitly so top-level `this` resolves to

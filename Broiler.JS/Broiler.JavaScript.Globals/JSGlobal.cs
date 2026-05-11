@@ -54,7 +54,10 @@ public partial class JSGlobalStatic
         string location = null;
 
         (JSEngine.Current as IJSExecutionContext)?.DispatchEvalEvent(ref text, ref location);
-        return CoreScript.Evaluate(text, null);
+        if (JSEngine.Current is JSContext context)
+            return context.Eval(text, location, context);
+
+        return CoreScript.Evaluate(text, location);
     }
 
     [JSExport("encodeURI", Length = 1)]

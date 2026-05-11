@@ -97,7 +97,6 @@ public partial class JSPromise
     public static JSValue All(in Arguments a)
     {
         var f = a.Get1();
-        var en = f.GetElementEnumerator();
         var result = JSValue.CreateArray();
         uint i = 0;
 
@@ -109,11 +108,14 @@ public partial class JSPromise
 
             bool empty = true;
 
-            while (en.MoveNext(out var hasValue, out var e, out var index))
+            var length = (uint)Math.Max(f.Length, 0);
+            for (uint index = 0; index < length; index++)
             {
-                empty = false;
+                var item = f[index];
+                if (item.IsUndefined)
+                    continue;
 
-                var item = e;
+                empty = false;
                 var ni = i++;
                 total = i;
                 var resolveElement = new JSFunction((in Arguments args) =>

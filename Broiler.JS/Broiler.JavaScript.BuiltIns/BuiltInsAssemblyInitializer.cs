@@ -542,28 +542,7 @@ internal static class BuiltInsAssemblyInitializer
 
     private static void PatchAsyncIteratorPrototype(JSContext context)
     {
-        context.Eval("""
-            const __broilerAsyncGenerator = async function* () {};
-            const __broilerAsyncGeneratorCtor = Object.getPrototypeOf(__broilerAsyncGenerator);
-            const __broilerAsyncGeneratorPrototype =
-              (__broilerAsyncGeneratorCtor && __broilerAsyncGeneratorCtor.prototype) ||
-              Object.getPrototypeOf(__broilerAsyncGenerator.prototype);
-            const __broilerAsyncIteratorPrototype = Object.getPrototypeOf(Object.getPrototypeOf(__broilerAsyncGenerator.prototype));
-            const __broilerAsyncIterator = function () { return this; };
-            Object.defineProperty(__broilerAsyncIterator, "name", { value: "[Symbol.asyncIterator]", writable: false, enumerable: false, configurable: true });
-            const __broilerAsyncDispose = function () {};
-            Object.defineProperty(__broilerAsyncDispose, "name", { value: "[Symbol.asyncDispose]", writable: false, enumerable: false, configurable: true });
-            if (__broilerAsyncIteratorPrototype && typeof __broilerAsyncIteratorPrototype === "object") {
-              Object.defineProperty(__broilerAsyncIteratorPrototype, Symbol.asyncIterator, { value: __broilerAsyncIterator, writable: false, enumerable: false, configurable: true });
-              Object.defineProperty(__broilerAsyncIteratorPrototype, Symbol.asyncDispose, { value: __broilerAsyncDispose, writable: false, enumerable: false, configurable: true });
-            }
-            if (__broilerAsyncGeneratorCtor && typeof __broilerAsyncGeneratorCtor === "function" && !Object.prototype.hasOwnProperty.call(__broilerAsyncGeneratorCtor, "prototype")) {
-              Object.defineProperty(__broilerAsyncGeneratorCtor, "prototype", { value: __broilerAsyncGeneratorPrototype, writable: false, enumerable: false, configurable: true });
-            }
-            if (__broilerAsyncGeneratorPrototype && typeof __broilerAsyncGeneratorPrototype === "object") {
-              Object.defineProperty(__broilerAsyncGeneratorPrototype, "constructor", { value: __broilerAsyncGeneratorCtor, writable: false, enumerable: false, configurable: true });
-            }
-            """, "async-intrinsics.js", context);
+        _ = context;
     }
 
     private static void PatchErrorConstructor(JSContext context, KeyString key, JSFunctionDelegate factory)

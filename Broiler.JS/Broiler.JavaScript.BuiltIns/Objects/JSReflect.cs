@@ -65,7 +65,8 @@ public partial class JSReflect : JSObject
         if (attributes is not JSObject pd)
             return JSBoolean.False;
 
-        return targetObject.DefineProperty(propertyKey, pd);
+        targetObject.DefineProperty(propertyKey, pd);
+        return JSBoolean.True;
     }
 
     [JSExport(Length = 2)]

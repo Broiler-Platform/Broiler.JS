@@ -91,7 +91,8 @@ public partial class JSObject
         if (desc is not JSObject pd)
             throw NewTypeError("Property Description must be an object");
 
-        return targetObject.DefineProperty(key, pd);
+        targetObject.DefineProperty(key, pd);
+        return targetObject;
     }
 
     [JSExport("entries")]
