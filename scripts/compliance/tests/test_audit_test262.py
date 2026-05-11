@@ -51,6 +51,10 @@ class AuditTest262Tests(unittest.TestCase):
             "test/language/negative.js",
             "/*---\nnegative:\n  phase: runtime\n  type: ReferenceError\n---*/\nnotDeclared;\n",
         )
+        self.write_test(
+            "test/language/host-harness.js",
+            "$262.createRealm();\n",
+        )
 
         repo = Test262Repository("suite-ref", str(self.suite_root))
         summary = audit_test262.build_audit_summary(
@@ -61,12 +65,16 @@ class AuditTest262Tests(unittest.TestCase):
             [],
         )
 
-        self.assertEqual(6, summary["suiteTestsDiscovered"])
+        self.assertEqual(7, summary["suiteTestsDiscovered"])
         self.assertEqual(1, summary["unsupportedFlaggedTests"])
         self.assertEqual({"module": 1}, summary["unsupportedFlagCounts"])
         self.assertEqual(1, summary["negativeTests"])
-        self.assertEqual(2, summary["scriptHostExcludedTests"])
-        self.assertEqual({"module": 1, "negative": 1}, summary["scriptHostBlockerCounts"])
+        self.assertEqual(1, summary["hostHarnessDependentTests"])
+        self.assertEqual(3, summary["scriptHostExcludedTests"])
+        self.assertEqual(
+            {"hostHarness": 1, "module": 1, "negative": 1},
+            summary["scriptHostBlockerCounts"],
+        )
         self.assertEqual(4, summary["scriptHostVerifiableTests"])
         self.assertEqual(1, summary["asyncScriptHostVerifiableTests"])
         self.assertEqual(3, summary["manifestEntries"])
@@ -77,14 +85,14 @@ class AuditTest262Tests(unittest.TestCase):
             summary["topLevelCounts"]["scriptHostVerifiable"],
         )
         self.assertEqual(
-            [{"bucket": "test/language", "count": 2}],
+            [{"bucket": "test/language", "count": 3}],
             summary["topLevelCounts"]["excluded"],
         )
         self.assertEqual(
             [{"bucket": "test/language/no-strict.js", "count": 1}],
             summary["largestUncoveredScriptHostVerifiableBuckets"],
         )
-        self.assertEqual(50.0, summary["manifestCoverageOfSuitePercent"])
+        self.assertAlmostEqual(3 * 100.0 / 7, summary["manifestCoverageOfSuitePercent"])
         expected_script_host_coverage = 3 * 100.0 / 4
         self.assertAlmostEqual(
             expected_script_host_coverage,
@@ -100,18 +108,23 @@ class AuditTest262Tests(unittest.TestCase):
             "test/language/negative.js",
             "/*---\nnegative:\n  phase: runtime\n  type: TypeError\n---*/\nthrow new TypeError('boom');\n",
         )
+        host_harness_path = self.write_test(
+            "test/language/host-harness.js",
+            "$262.detachArrayBuffer({});\n",
+        )
 
         repo = Test262Repository("suite-ref", str(self.suite_root))
         summary = audit_test262.build_audit_summary(
             repo,
             self.suite_root,
             "suite-ref",
-            [unsupported_path, negative_path],
+            [unsupported_path, negative_path, host_harness_path],
             [],
         )
 
         self.assertEqual([unsupported_path], summary["manifestUnsupportedTests"])
         self.assertEqual([negative_path], summary["manifestNegativeTests"])
+        self.assertEqual([host_harness_path], summary["manifestHostHarnessTests"])
         self.assertEqual(0, summary["manifestScriptHostVerifiableTests"])
 
     def test_directory_bucket_rejects_non_positive_depth(self) -> None:

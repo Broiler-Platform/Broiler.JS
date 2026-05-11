@@ -194,6 +194,10 @@ jobs:
                 "",
                 f"- Upstream `test/**/*.js` files discovered: {audit['suiteTestsDiscovered']}",
                 f"- Script-host-verifiable files: {audit['scriptHostVerifiableTests']}",
+                (
+                  "- Files excluded by host-harness dependencies: "
+                  f"{audit['hostHarnessDependentTests']}"
+                ),
                 f"- Files excluded by unsupported flags: {audit['unsupportedFlaggedTests']} ({unsupported_flag_counts})",
                 f"- Negative-metadata files not currently validated by this raw script-host runner: {audit['negativeTests']}",
                 (
