@@ -46,6 +46,28 @@ public class LogSummaryBuilderTests
     }
 
     [Fact]
+    public void ParseAndSummarizeDirectory_CombinesAllFilesIntoOneSummary()
+    {
+        var summary = LogSummaryBuilder.ParseAndSummarizeDirectory(GetTestDataDirectoryPath());
+
+        Assert.True(summary.IsDirectorySummary);
+        Assert.Equal(GetTestDataDirectoryPath(), summary.FilePath);
+        Assert.Equal(8, summary.LogRun.Executed);
+        Assert.Equal(3, summary.LogRun.Passed);
+        Assert.Equal(5, summary.LogRun.Failed);
+        Assert.Equal(0, summary.LogRun.Skipped);
+        Assert.Equal(8, summary.LogRun.Results.Length);
+        Assert.Equal(3, summary.ExceptionSummary.TotalEntriesWithExceptions);
+
+        var failedGroup = Assert.Single(summary.StatusGroups, group => group.Key == "failed");
+        var passedGroup = Assert.Single(summary.StatusGroups, group => group.Key == "passed");
+        Assert.Equal(5, failedGroup.Count);
+        Assert.Equal(3, passedGroup.Count);
+        Assert.Contains(summary.PathGroups, group => group.Key == "test/built-ins/Array/from" && group.Count == 2);
+        Assert.Contains(summary.PathGroups, group => group.Key == "test/annexB/alpha.js" && group.Count == 1);
+    }
+
+    [Fact]
     public void Format_IncludesBothFilesAndSummarySections()
     {
         var formatted = LogReportFormatter.Format(
@@ -59,6 +81,20 @@ public class LogSummaryBuilderTests
         Assert.Contains("Status groups:", formatted, StringComparison.Ordinal);
         Assert.Contains("Path groups (depth 4):", formatted, StringComparison.Ordinal);
         Assert.Contains("Exception summary:", formatted, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Format_DirectorySummary_UsesDirectoryHeading()
+    {
+        var formatted = LogReportFormatter.Format(
+        [
+            LogSummaryBuilder.ParseAndSummarizeDirectory(GetTestDataDirectoryPath())
+        ]);
+
+        Assert.Contains("Directory: TestData", formatted, StringComparison.Ordinal);
+        Assert.Contains("Totals: declared executed=8, passed=3, failed=5, skipped=0; parsed results=8", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("File: sample-shard.json", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("File: sample-exceptions.json", formatted, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -167,6 +203,11 @@ public class LogSummaryBuilderTests
     private static string GetFixturePath()
     {
         return Path.Combine(AppContext.BaseDirectory, "TestData", "sample-shard.json");
+    }
+
+    private static string GetTestDataDirectoryPath()
+    {
+        return Path.Combine(AppContext.BaseDirectory, "TestData");
     }
 
     private static string GetExceptionFixturePath()

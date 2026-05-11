@@ -39,15 +39,66 @@ public static class LogSummaryBuilder
 
     public static LogFileSummary ParseAndSummarize(string path, int bucketDepth = 4, int notableEntryLimit = 3)
     {
-        var logRun = ParseFile(path);
+        return SummarizeLogRun(
+            Path.GetFullPath(path),
+            ParseFile(path),
+            isDirectorySummary: false,
+            bucketDepth,
+            notableEntryLimit);
+    }
+
+    public static LogFileSummary ParseAndSummarizeDirectory(string path, int bucketDepth = 4, int notableEntryLimit = 3)
+    {
+        var fullPath = Path.GetFullPath(path);
+        var filePaths = Directory
+            .GetFiles(fullPath, "*.json", SearchOption.TopDirectoryOnly)
+            .OrderBy(filePath => filePath, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (filePaths.Length == 0)
+        {
+            throw new InvalidOperationException($"Directory '{path}' does not contain any .json log files.");
+        }
+
+        return SummarizeLogRun(
+            fullPath,
+            CombineLogRuns(filePaths.Select(ParseFile)),
+            isDirectorySummary: true,
+            bucketDepth,
+            notableEntryLimit);
+    }
+
+    private static LogFileSummary SummarizeLogRun(
+        string path,
+        LogRun logRun,
+        bool isDirectorySummary,
+        int bucketDepth,
+        int notableEntryLimit)
+    {
         return new LogFileSummary
         {
-            FilePath = Path.GetFullPath(path),
+            FilePath = path,
+            IsDirectorySummary = isDirectorySummary,
             LogRun = logRun,
             BucketDepth = bucketDepth,
             StatusGroups = SummarizeGroups(logRun.Results, entry => entry.Status, notableEntryLimit),
             PathGroups = SummarizeGroups(logRun.Results, entry => GetPathBucket(entry.Path, bucketDepth), notableEntryLimit),
             ExceptionSummary = SummarizeExceptions(logRun.Results, notableEntryLimit)
+        };
+    }
+
+    private static LogRun CombineLogRuns(IEnumerable<LogRun> logRuns)
+    {
+        var runs = logRuns.ToArray();
+        return new LogRun
+        {
+            SuiteRef = CombineMetadata(runs.Select(run => run.SuiteRef)),
+            BroilerDll = CombineMetadata(runs.Select(run => run.BroilerDll)),
+            Executed = runs.Sum(run => run.Executed),
+            Passed = runs.Sum(run => run.Passed),
+            Failed = runs.Sum(run => run.Failed),
+            Skipped = runs.Sum(run => run.Skipped),
+            Results = runs.SelectMany(run => run.Results).ToArray()
         };
     }
 
@@ -372,5 +423,21 @@ public static class LogSummaryBuilder
         return typeCandidate.EndsWith("Exception", StringComparison.Ordinal)
             || typeCandidate.EndsWith("Error", StringComparison.Ordinal)
             || typeCandidate.Contains('.', StringComparison.Ordinal);
+    }
+
+    private static string CombineMetadata(IEnumerable<string> values)
+    {
+        var distinctValues = values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return distinctValues.Length switch
+        {
+            0 => string.Empty,
+            1 => distinctValues[0],
+            _ => string.Join(", ", distinctValues)
+        };
     }
 }

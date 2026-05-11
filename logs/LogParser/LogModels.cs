@@ -47,6 +47,7 @@ public sealed class ParsedException
 public sealed class LogFileSummary
 {
     public required string FilePath { get; init; }
+    public required bool IsDirectorySummary { get; init; }
     public required LogRun LogRun { get; init; }
     public required IReadOnlyList<LogGroupSummary> StatusGroups { get; init; }
     public required IReadOnlyList<LogGroupSummary> PathGroups { get; init; }

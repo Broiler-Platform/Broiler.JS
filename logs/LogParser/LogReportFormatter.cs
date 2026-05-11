@@ -27,7 +27,7 @@ public static class LogReportFormatter
 
     private static void AppendFileSummary(StringBuilder builder, LogFileSummary summary)
     {
-        builder.AppendLine($"File: {Path.GetFileName(summary.FilePath)}");
+        builder.AppendLine($"{(summary.IsDirectorySummary ? "Directory" : "File")}: {GetDisplayName(summary)}");
         builder.AppendLine($"  SuiteRef: {summary.LogRun.SuiteRef}");
         builder.AppendLine(
             $"  Totals: declared executed={summary.LogRun.Executed}, passed={summary.LogRun.Passed}, failed={summary.LogRun.Failed}, skipped={summary.LogRun.Skipped}; parsed results={summary.LogRun.Results.Length}");
@@ -117,5 +117,12 @@ public static class LogReportFormatter
         {
             builder.AppendLine($"      - {pattern}");
         }
+    }
+
+    private static string GetDisplayName(LogFileSummary summary)
+    {
+        var trimmedPath = summary.FilePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var fileName = Path.GetFileName(trimmedPath);
+        return string.IsNullOrEmpty(fileName) ? trimmedPath : fileName;
     }
 }
