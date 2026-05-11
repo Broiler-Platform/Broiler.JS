@@ -16,6 +16,8 @@ public class JSPrimitiveObject : JSObject
 
     public override string ToString() => value.ToString();
 
+    public override JSValue ValueOf() => value;
+
     public override double DoubleValue => value.DoubleValue;
 
     public override long BigIntValue => value.BigIntValue;
@@ -27,6 +29,10 @@ public class JSPrimitiveObject : JSObject
     public override JSValue CreateInstance(in Arguments a) => throw NewTypeError($"Cannot create instance of {this}");
 
     public override JSValue AddValue(JSValue value) => this.value.AddValue(value);
+
+    public override JSValue AddValue(double value) => this.value.AddValue(value);
+
+    public override JSValue AddValue(string value) => this.value.AddValue(value);
 
     protected internal override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
     {

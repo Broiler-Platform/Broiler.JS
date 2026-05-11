@@ -32,7 +32,7 @@ public static class CharExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static bool IsDigitPart(this char ch, bool hex, bool binary)
+    internal static bool IsDigitPart(this char ch, bool hex, bool binary, bool octal = false)
     {
         switch (ch)
         {
@@ -46,9 +46,16 @@ public static class CharExtensions
             case '5':
             case '6':
             case '7':
+                if (binary || octal)
+                    return false;
+
+                return true;
             case '8':
             case '9':
                 if (binary)
+                    return false;
+
+                if (octal)
                     return false;
 
                 return true;

@@ -1,6 +1,7 @@
-﻿using Broiler.JavaScript.BuiltIns.Boolean;
+using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Error;
 using Broiler.JavaScript.BuiltIns.Promise;
+using Broiler.JavaScript.BuiltIns.Proxy;
 using System;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
@@ -39,7 +40,25 @@ public partial class JSArray
     }
 
     [JSExport("isArray", Length = 1)]
-    public static JSValue StaticIsArray(in Arguments a) => a.Get1() is JSArray ? JSBoolean.True : JSBoolean.False;
+    public static JSValue StaticIsArray(in Arguments a) => IsArrayValue(a.Get1()) ? JSBoolean.True : JSBoolean.False;
+
+    private static bool IsArrayValue(JSValue value)
+    {
+        if (value is JSArray)
+            return true;
+
+        if (value is JSProxy proxy)
+            return IsArrayValue(proxy.RequireTarget());
+
+        if (JSEngine.CurrentContext is JSObject global
+            && global[KeyStrings.Array] is IJSFunction arrayCtor
+            && ReferenceEquals(value, arrayCtor.Prototype))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     [JSExport("of")]
     public static JSValue StaticOf(in Arguments a)

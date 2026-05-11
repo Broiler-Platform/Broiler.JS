@@ -82,6 +82,7 @@ public static class JSEngine
     internal static Func<string, string, string, int, JSException> CreateSyntaxError;
     internal static Func<string, string, string, int, JSException> CreateURIError;
     internal static Func<string, string, string, int, JSException> CreateRangeError;
+    internal static Func<string, string, string, int, JSException> CreateReferenceError;
     internal static Func<string, string, string, int, JSException> CreateError;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -114,6 +115,14 @@ public static class JSEngine
         [CallerFilePath] string filePath = null,
         [CallerLineNumber] int line = 0) =>
         (CreateRangeError ?? throw new InvalidOperationException("JSEngine.CreateRangeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run."))
+            (message, function, filePath, line);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static JSException NewReferenceError(string message,
+        [CallerMemberName] string function = null,
+        [CallerFilePath] string filePath = null,
+        [CallerLineNumber] int line = 0) =>
+        (CreateReferenceError ?? throw new InvalidOperationException("JSEngine.CreateReferenceError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run."))
             (message, function, filePath, line);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -179,7 +188,11 @@ public static class JSEngine
     /// </summary>
     internal static void EnsureBuiltInsAssemblyLoaded()
     {
-        if (BuiltInRegistry != null)
+        if (BuiltInRegistry != null
+            && CreateFunctionClass != null
+            && CreateObjectClass != null
+            && CreateTypeError != null
+            && CreateError != null)
             return;
 
         TryLoadAssembly("Broiler.JavaScript.Engine");

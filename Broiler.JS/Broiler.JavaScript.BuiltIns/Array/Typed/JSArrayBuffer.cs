@@ -15,6 +15,7 @@ public partial class JSArrayBuffer : JSObject
 
     public byte[] Buffer => buffer;
 
+    [JSExport(Length = 1)]
     public JSArrayBuffer(in Arguments a) : this(JSEngine.NewTargetPrototype)
     {
         int length = a.Get1().AsInt32OrDefault();

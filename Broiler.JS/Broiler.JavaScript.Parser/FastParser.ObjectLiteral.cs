@@ -19,7 +19,9 @@ partial class FastParser
         var isStatic = isClass ? stream.CheckAndConsume(FastKeywords.@static) : false;
 
 
-        // check for async method.. async getter/setter are not supported yet...
+        // Check for async methods first. `async get foo()` / `async set foo()` remain
+        // invalid ECMAScript syntax; `async get()` / `async set()` are async methods
+        // whose property names happen to be `get` / `set`.
         if (stream.CheckAndConsume(FastKeywords.async))
         {
             if (ObjectProperty(out property, true, isClass: isClass, isAsync: true))

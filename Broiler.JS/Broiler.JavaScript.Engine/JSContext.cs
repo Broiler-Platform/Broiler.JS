@@ -73,8 +73,13 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     {
         var v = variable.Value;
         var oldV = this[variable.Name];
+        var hasOwnProperty = !GetInternalProperty(variable.Name, false).IsEmpty;
 
-        if (oldV != v)
+        if (!hasOwnProperty)
+        {
+            FastAddValue(variable.Name, v, JSPropertyAttributes.Value | JSPropertyAttributes.Enumerable);
+        }
+        else if (oldV != v)
         {
             this[variable.Name] = v;
         }
@@ -93,6 +98,55 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             if (globalVars.TryGetValue(name.Key, out var jsv))
                 jsv.Value = value;
         }
+    }
+
+    public JSValue ResolveIdentifier(in KeyString name)
+    {
+        if (!GetInternalProperty(name).IsEmpty)
+            return this[name];
+
+        throw JSEngine.NewReferenceError($"{name} is not defined");
+    }
+
+    public JSValue AssignIdentifier(in KeyString name, JSValue value)
+    {
+        var hasVariable = globalVars.TryGetValue(name.Key, out var variable);
+        var hasProperty = !GetInternalProperty(name).IsEmpty;
+
+        if (!hasVariable && !hasProperty)
+        {
+            FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            return value;
+        }
+
+        if (hasVariable)
+            variable.Value = value;
+
+        if (hasProperty)
+            this[name] = value;
+
+        return value;
+    }
+
+    public JSValue DeleteIdentifier(in KeyString name)
+    {
+        var hasVariable = globalVars.TryGetValue(name.Key, out _);
+        var property = GetInternalProperty(name, false);
+
+        if (hasVariable)
+        {
+            if (property.IsEmpty)
+                return JSValue.BooleanFalse;
+
+            return property.IsConfigurable
+                ? Delete(name)
+                : JSValue.BooleanFalse;
+        }
+
+        if (!property.IsEmpty)
+            return property.IsConfigurable ? Delete(name) : JSValue.BooleanFalse;
+
+        return JSValue.BooleanTrue;
     }
 
     internal void FillStackTrace(StringBuilder sb) { }
@@ -123,6 +177,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
         func.BasePrototypeObject = Object;
         FunctionPrototype.BasePrototypeObject = ObjectPrototype;
+        ReattachFunctionPrototypeMethods();
 
         if (JSEngine.BuiltInRegistry != null)
         {
@@ -133,7 +188,18 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             JSEngine.CoreClassRegistrations?.Invoke(this);
         }
 
+        this[KeyStrings.globalThis] = this;
         this[KeyStrings.debug] = JSValue.CreateFunction(Debug);
+    }
+
+    private void ReattachFunctionPrototypeMethods()
+    {
+        var en = FunctionPrototype.GetOwnProperties(false).GetEnumerator();
+        while (en.MoveNext(out var _, out var property))
+        {
+            if (property.IsValue && property.value is JSValue value && value.IsFunction)
+                value.BasePrototypeObject = FunctionPrototype;
+        }
     }
 
     public bool HasExperimentalFeature(JavaScriptFeatureFlags feature)

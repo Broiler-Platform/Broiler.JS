@@ -1,0 +1,123 @@
+name: test262
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite_ref:
+        description: Optional test262 ref or commit SHA to execute
+        required: false
+        default: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+
+permissions:
+  contents: read
+
+env:
+  TEST262_REF: ${{ inputs.suite_ref || 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e' }}
+  TEST262_ROOT: ${{ github.workspace }}/.cache/test262
+  RESULTS_DIR: ${{ github.workspace }}/.artifacts/test262/full-script-host
+  BROILER_DLL: ${{ github.workspace }}/Broiler.JS/Broiler.JavaScript/bin/Release/net8.0/BroilerJS.dll
+  SHARD_COUNT: 8
+
+jobs:
+  test262:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard-index: [0, 1, 2, 3, 4, 5, 6, 7]
+
+    steps:
+      - name: Check out Broiler.JS
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache test262 checkout
+        id: cache-test262
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.TEST262_ROOT }}
+          key: test262-${{ runner.os }}-${{ env.TEST262_REF }}
+
+      - name: Download pinned test262 suite
+        if: steps.cache-test262.outputs.cache-hit != 'true'
+        run: |
+          rm -rf "$TEST262_ROOT"
+          git clone --filter=blob:none https://github.com/tc39/test262.git "$TEST262_ROOT"
+          git -C "$TEST262_ROOT" checkout --force "$TEST262_REF"
+
+      - name: Restore Broiler.JS
+        run: dotnet restore Broiler.JS.slnx
+
+      - name: Build Broiler.JS CLI
+        run: dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release
+
+      - name: Run full script-host-verifiable shard
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RESULTS_DIR"
+          output_path="$RESULTS_DIR/shard-${{ matrix.shard-index }}.json"
+          python scripts/compliance/run_test262.py \
+            --suite-ref "$TEST262_REF" \
+            --suite-root "$TEST262_ROOT" \
+            --broiler-dll "$BROILER_DLL" \
+            --all-script-host-verifiable \
+            --shard-count "$SHARD_COUNT" \
+            --shard-index "${{ matrix.shard-index }}" \
+            --output "$output_path"
+
+      - name: Publish workflow summary
+        if: always()
+        shell: bash
+        run: |
+          python <<'PY'
+          import json
+          import os
+          from pathlib import Path
+ 
+          shard_index = "${{ matrix.shard-index }}"
+          result_path = Path(os.environ["RESULTS_DIR"]) / f"shard-{shard_index}.json"
+          summary = json.loads(result_path.read_text(encoding="utf-8"))
+
+          lines = [
+              f"## test262 shard {int(shard_index) + 1}/{summary['shardCount']}",
+              "",
+              f"- Suite ref: `{summary['suiteRef']}`",
+              f"- Selection mode: `{summary['selectionMode']}`",
+              f"- Candidate paths discovered: {summary['candidateCount']}",
+              f"- Runnable paths before sharding: {summary['selectedCountBeforeSharding']}",
+              f"- Paths executed in this shard: {len(summary['expandedPaths'])}",
+              f"- Passed: {summary['passed']}",
+              f"- Failed: {summary['failed']}",
+              f"- Skipped: {summary['skipped']}",
+          ]
+
+          Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
+              "\n".join(lines) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload shard result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test262-shard-${{ matrix.shard-index }}
+          path: ${{ env.RESULTS_DIR }}/shard-${{ matrix.shard-index }}.json

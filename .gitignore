@@ -1,4 +1,10 @@
 *.cache
+*.pyc
 *.dll
 *.exe
 *.pdb
+**/__pycache__/
+
+**/bin/
+**/obj/
+**/Generated/

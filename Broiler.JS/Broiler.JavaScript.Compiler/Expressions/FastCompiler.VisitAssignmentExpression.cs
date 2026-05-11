@@ -39,6 +39,16 @@ partial class FastCompiler
             }
         }
 
+        if (left.Type == FastNodeType.Identifier)
+        {
+            var identifier = (AstIdentifier)left;
+            var variable = scope.Top.GetVariable(identifier.Name, true);
+            if (variable == null && assignmentOperator == TokenTypes.Assign)
+                return JSContextBuilder.AssignIdentifier(KeyOfName(identifier.Name), Visit(right));
+
+            return Assign(variable?.Expression ?? JSContextBuilder.Index(KeyOfName(identifier.Name)), right, assignmentOperator);
+        }
+
         return Assign(Visit(left), right, assignmentOperator);
     }
 
@@ -80,7 +90,7 @@ partial class FastCompiler
                     }
                     else
                     {
-                        target = VisitIdentifier(id);
+                        target = VisitIdentifierReference(id);
                     }
 
                     inits.Add(YExpression.Assign(target, init));
@@ -166,7 +176,7 @@ partial class FastCompiler
                                 if (createVariable)
                                     scope.Top.CreateVariable(id.Name.Value, null, newScope);
 
-                                var assignee = VisitIdentifier(id);
+                                var assignee = VisitIdentifierReference(id);
                                 inits.Add(IElementEnumeratorBuilder.AssignMoveNext(assignee, destExp));
                                 break;
                             case FastNodeType.BinaryExpression:
@@ -186,7 +196,7 @@ partial class FastCompiler
                                 if (createVariable)
                                     scope.Top.CreateVariable(id.Name.Value, null, newScope);
 
-                                assignee = VisitIdentifier(id);
+                                assignee = VisitIdentifierReference(id);
                                 inits.Add(IElementEnumeratorBuilder.AssignMoveNext(assignee, destExp));
                                 inits.Add(JSValueExtensionsBuilder.AssignCoalesce(assignee, Visit(be.Right)));
                                 break;

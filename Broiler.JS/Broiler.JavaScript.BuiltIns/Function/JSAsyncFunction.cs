@@ -1,5 +1,7 @@
-﻿using System;
+using System;
+using System.Threading;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 
@@ -23,25 +25,61 @@ public class JSAsyncFunction
     {
         try
         {
-            if(!gen.MoveNext(lastResult, out var r))
+            if (!gen.MoveNext(lastResult, out var r))
                 return JSEngine.CreateResolvedOrRejectedPromise(r, true);
 
             var then = r[KeyStrings.then];
             if (then.IsUndefined)
                 return JSEngine.CreateResolvedOrRejectedPromise(r, true);
 
-            r = r.InvokeMethod(in KeyStrings.then, JSValue.CreateFunction((in Arguments a) =>
+            var continuationContext = (JSEngine.Current as JSContext)?.synchronizationContext;
+
+            return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
             {
-                return ToPromise(gen, a.Get1());
-            }), 
-            JSValue.CreateFunction((in Arguments a) =>
-            {
-                gen.Throw(a.Get1());
-                return a.Get1();
-            }));
-            
-            return r;
-        } 
+                void Queue(Action action)
+                {
+                    if (continuationContext != null)
+                        continuationContext.Post(_ => action(), null);
+                    else
+                        ThreadPool.QueueUserWorkItem(_ => action());
+                }
+
+                r.InvokeMethod(in KeyStrings.then,
+                    JSValue.CreateFunction((in Arguments a) =>
+                    {
+                        var resumeValue = a.Get1();
+                        Queue(() =>
+                        {
+                            try
+                            {
+                                resolve(ToPromise(gen, resumeValue));
+                            }
+                            catch (Exception ex)
+                            {
+                                reject(JSException.JSErrorFrom(ex));
+                            }
+                        });
+                        return JSUndefined.Value;
+                    }),
+                    JSValue.CreateFunction((in Arguments a) =>
+                    {
+                        var thrownValue = a.Get1();
+                        Queue(() =>
+                        {
+                            try
+                            {
+                                var thrownResult = gen.Throw(thrownValue);
+                                resolve(ToPromise(gen, thrownResult));
+                            }
+                            catch (Exception ex)
+                            {
+                                reject(JSException.JSErrorFrom(ex));
+                            }
+                        });
+                        return JSUndefined.Value;
+                    }));
+            });
+        }
         catch (Exception ex)
         {
             return JSEngine.CreateResolvedOrRejectedPromise(JSException.JSErrorFrom(ex), false);

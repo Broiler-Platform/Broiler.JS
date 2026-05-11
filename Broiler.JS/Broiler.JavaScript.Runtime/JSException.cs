@@ -42,6 +42,7 @@ public class JSException : Exception
     }
 
     public JSValue Error { get; internal set; }
+    internal string RawMessage { get; }
 
     internal protected JSException With(JSValue error)
     {
@@ -56,6 +57,7 @@ public class JSException : Exception
         if (function != null)
             trace.Add((function, filePath ?? "Unknown", line, 1));
 
+        RawMessage = message?.ToString();
         Error = message;
     }
 
@@ -64,6 +66,7 @@ public class JSException : Exception
         if (function != null)
             trace.Add((function, filePath ?? "Unknown", line, 1));
 
+        RawMessage = message;
         Error = (CreateJSError ?? throw new InvalidOperationException("JSException.CreateJSError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run."))
             (this, message);
     }
@@ -73,6 +76,7 @@ public class JSException : Exception
         if (function != null)
             trace.Add((function, filePath ?? "Unknown", line, 1));
 
+        RawMessage = message;
         Error = (CreateJSErrorWithPrototype ?? throw new InvalidOperationException("JSException.CreateJSErrorWithPrototype delegate is not initialized. Ensure the BuiltIns assembly module initializer has run."))
             (this, prototype);
     }

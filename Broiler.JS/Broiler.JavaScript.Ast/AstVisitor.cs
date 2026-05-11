@@ -296,7 +296,7 @@ public abstract class AstReduce : AstMapVisitor<AstNode>
     protected override AstNode VisitForOfStatement(AstForOfStatement forOfStatement, string label = null)
     {
         if (Modified(forOfStatement.Init, forOfStatement.Target, forOfStatement.Body, out var init, out var target, out var body))
-            return new AstForInStatement(forOfStatement.Start, forOfStatement.End, init, target, body);
+            return new AstForOfStatement(forOfStatement.Start, forOfStatement.End, init, target, body, forOfStatement.IsAwait);
 
         return forOfStatement;
     }

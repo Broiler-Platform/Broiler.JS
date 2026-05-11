@@ -24,8 +24,7 @@ partial class FastParser
         var begin = stream.Current;
         stream.Consume();
 
-        if (stream.CheckAndConsume(FastKeywords.await))
-            throw stream.Unexpected();
+        var awaitOf = stream.CheckAndConsume(FastKeywords.await);
 
         stream.Expect(TokenTypes.BracketStart);
 
@@ -85,6 +84,9 @@ partial class FastParser
 
             if (stream.CheckAndConsume(TokenTypes.In))
             {
+                if (awaitOf)
+                    throw stream.Unexpected();
+
                 @in = true;
 
                 if (!Expression(out inTarget))
@@ -151,7 +153,7 @@ partial class FastParser
 
             if (of)
             {
-                node = new AstForOfStatement(begin, PreviousToken, beginNode, ofTarget, statement);
+                node = new AstForOfStatement(begin, PreviousToken, beginNode, ofTarget, statement, awaitOf);
                 scope.GetVariables();
 
                 return true;

@@ -49,9 +49,19 @@ partial class FastCompiler
         var en = YExpression.Variable(typeof(IElementEnumerator));
         var pList = en.AsSequence();
         var body = VisitStatement(forOfStatement.Body);
-        var bodyList = YExpression.Block(YExpression.IfThen(YExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)), YExpression.Goto(s.Break)), body);
+        var bodyListItems = new Sequence<YExpression>
+        {
+            YExpression.IfThen(YExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)), YExpression.Goto(s.Break))
+        };
+
+        if (forOfStatement.IsAwait)
+            bodyListItems.Add(YExpression.Assign(identifier, YExpression.Yield(identifier)));
+
+        bodyListItems.Add(body);
+        var bodyList = YExpression.Block(bodyListItems);
         var right = VisitExpression(forOfStatement.Target);
-        var r = YExpression.Block(pList, YExpression.Assign(en, IElementEnumeratorBuilder.Get(right)), YExpression.Loop(bodyList, s.Break, s.Continue));
+        var enumerator = forOfStatement.IsAwait ? IElementEnumeratorBuilder.GetAsync(right) : IElementEnumeratorBuilder.Get(right);
+        var r = YExpression.Block(pList, YExpression.Assign(en, enumerator), YExpression.Loop(bodyList, s.Break, s.Continue));
 
         return r;
     }

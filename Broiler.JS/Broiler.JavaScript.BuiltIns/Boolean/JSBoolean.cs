@@ -1,6 +1,8 @@
-﻿using Broiler.JavaScript.ExpressionCompiler;
+using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using Broiler.JavaScript.BuiltIns.Number;
+using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.BuiltIns.Boolean;
@@ -17,7 +19,13 @@ public partial class JSBoolean : JSPrimitive
     private JSBoolean(bool _value) : base() => this._value = _value;
 
     [JSExport(IsConstructor = true)]
-    public static JSValue Constructor(in Arguments a) => (a[0]?.BooleanValue ?? false) ? True : False;
+    public static JSValue Constructor(in Arguments a)
+    {
+        var value = (a[0]?.BooleanValue ?? false) ? True : False;
+        return (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null
+            ? value
+            : new JSPrimitiveObject(value);
+    }
 
     protected override JSValue GetPrototype() => GetCurrentPrototype();
 

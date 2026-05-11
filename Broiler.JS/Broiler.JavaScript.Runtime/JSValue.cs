@@ -196,6 +196,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// Wired by the BuiltIns assembly via <c>[ModuleInitializer]</c>.
     /// </summary>
     internal static IJSSymbol SymbolIterator;
+    internal static IJSSymbol SymbolAsyncIterator;
 
     /// <summary>
     /// Well-known <c>Symbol.dispose</c> singleton.
@@ -964,6 +965,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     }
 
     public virtual IElementEnumerator GetElementEnumerator() => ElementEnumerator.Empty;
+    public virtual IElementEnumerator GetAsyncElementEnumerator() => GetElementEnumerator();
 
     private readonly struct ElementEnumerator : IElementEnumerator
     {

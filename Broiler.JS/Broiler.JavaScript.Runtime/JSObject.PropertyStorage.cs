@@ -296,6 +296,8 @@ public partial class JSObject
     {
         if (name.Key == JSValue.SymbolIterator.Key)
             HasIterator = true;
+        else if (JSValue.SymbolAsyncIterator != null && name.Key == JSValue.SymbolAsyncIterator.Key)
+            HasAsyncIterator = true;
 
         var p = GetInternalProperty(name);
         if (p.IsProperty)
@@ -468,6 +470,10 @@ public partial class JSObject
         if (IsSealedOrFrozen())
             throw NewTypeError($"Cannot delete property {key} of {this}");
 
+        var property = ownProperties.GetValue(key.Key);
+        if (!property.IsEmpty && !property.IsConfigurable)
+            return JSValue.BooleanFalse;
+
         if (ownProperties.RemoveAt(key.Key))
         {
             PropertyChanged?.Invoke(this, (key.Key, uint.MaxValue, null));
@@ -481,6 +487,9 @@ public partial class JSObject
     {
         if (IsSealedOrFrozen())
             throw NewTypeError($"Cannot delete property {key} of {this}");
+
+        if (elements.TryGetValue(key, out var property) && !property.IsConfigurable)
+            return JSValue.BooleanFalse;
 
         ref var element = ref elements.Get(key);
 
@@ -497,6 +506,9 @@ public partial class JSObject
     {
         if (IsSealedOrFrozen())
             throw NewTypeError($"Cannot delete property {symbol} of {this}");
+
+        if (symbols.TryGetValue(symbol.Key, out var property) && !property.IsConfigurable)
+            return JSValue.BooleanFalse;
 
         if (symbols.RemoveAt(symbol.Key))
         {
@@ -586,6 +598,18 @@ public partial class JSObject
         }
 
         return new ElementEnumerator(this);
+    }
+
+    public override IElementEnumerator GetAsyncElementEnumerator()
+    {
+        if (JSValue.SymbolAsyncIterator != null
+            && (HasAsyncIterator || symbols.TryGetValue(JSValue.SymbolAsyncIterator.Key, out _)))
+        {
+            var v = this.GetValue(symbols[JSValue.SymbolAsyncIterator.Key]);
+            return new JSIterator(v.InvokeFunction(new Arguments(this)));
+        }
+
+        return GetElementEnumerator();
     }
 
     private readonly struct ElementEnumerator(JSObject @object) : IElementEnumerator

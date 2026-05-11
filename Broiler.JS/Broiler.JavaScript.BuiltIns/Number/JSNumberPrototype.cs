@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.Engine;
+﻿using Broiler.JavaScript.BuiltIns.BigInt;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
@@ -27,6 +28,65 @@ internal static class JSNumberExtensions
 
 partial class JSNumber
 {
+    public override bool Less(JSValue value)
+    {
+        value = value.UnwrapPrimitive();
+
+        if (value is JSBigInt bigint)
+        {
+            if (double.IsNaN(this.value))
+                return false;
+
+            return bigint.value.CompareToNumber(this.value) > 0;
+        }
+
+        return base.Less(value);
+    }
+
+    public override bool LessOrEqual(JSValue value)
+    {
+        value = value.UnwrapPrimitive();
+
+        if (value is JSBigInt bigint)
+        {
+            if (double.IsNaN(this.value))
+                return false;
+
+            return bigint.value.CompareToNumber(this.value) >= 0;
+        }
+
+        return base.LessOrEqual(value);
+    }
+
+    public override bool Greater(JSValue value)
+    {
+        value = value.UnwrapPrimitive();
+
+        if (value is JSBigInt bigint)
+        {
+            if (double.IsNaN(this.value))
+                return false;
+
+            return bigint.value.CompareToNumber(this.value) < 0;
+        }
+
+        return base.Greater(value);
+    }
+
+    public override bool GreaterOrEqual(JSValue value)
+    {
+        value = value.UnwrapPrimitive();
+
+        if (value is JSBigInt bigint)
+        {
+            if (double.IsNaN(this.value))
+                return false;
+
+            return bigint.value.CompareToNumber(this.value) <= 0;
+        }
+
+        return base.GreaterOrEqual(value);
+    }
 
     [JSExport(Length = 1, IsConstructor = true)]
     public static JSValue Constructor(in Arguments a)

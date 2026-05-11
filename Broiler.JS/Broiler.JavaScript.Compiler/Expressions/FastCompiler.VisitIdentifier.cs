@@ -5,7 +5,18 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitIdentifier(AstIdentifier identifier)
+    protected override YExpression VisitIdentifier(AstIdentifier identifier) => VisitIdentifier(identifier, true);
+
+    private YExpression VisitIdentifierReference(AstIdentifier identifier)
+    {
+        var variable = scope.Top.GetVariable(identifier.Name, true);
+        if (variable != null)
+            return variable.Expression;
+
+        return JSContextBuilder.Index(KeyOfName(identifier.Name));
+    }
+
+    private YExpression VisitIdentifier(AstIdentifier identifier, bool throwIfMissing)
     {
         if (identifier.Name.Equals("undefined"))
             return JSUndefinedBuilder.Value;
@@ -20,10 +31,12 @@ partial class FastCompiler
             return vs.Expression;
         }
 
-        var var = scope.Top.GetVariable(identifier.Name, true);
-        if (var != null)
-            return var.Expression;
+        var variable = scope.Top.GetVariable(identifier.Name, true);
+        if (variable != null)
+            return variable.Expression;
 
-        return JSContextBuilder.Index(KeyOfName(identifier.Name));
+        return throwIfMissing
+            ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
+            : JSContextBuilder.Index(KeyOfName(identifier.Name));
     }
 }

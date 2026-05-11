@@ -14,14 +14,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Broiler.JavaScript.BuiltIns.Promise;
 using Broiler.JavaScript.Clr;
-using Broiler.JavaScript.Core;
-using Broiler.JavaScript.Core.Core;
 using Broiler.JavaScript.Extensions;
 using Broiler.JavaScript.Modules;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
 using BroilerJS.Utils;
-using BroilerJS.Network;
 
 namespace BroilerJS
 {
@@ -69,8 +66,6 @@ namespace BroilerJS
             this.extensions = new string[] { ".csx", ".js"  };
 
             this[KeyStrings.console] = (typeof(BroilerJSConsole)).Marshal();
-
-            this.InstallNetworkServices();
         }
 
         private async Task<JSModuleDelegate> LoadDelegate(string assemblyPath)

@@ -19,6 +19,14 @@ public class IElementEnumeratorBuilder
         throw new NotImplementedException();
     }
 
+    public static Expression GetAsync(Expression target)
+    {
+        if (typeof(JSValue).IsAssignableFrom(target.Type))
+            return target.CallExpression<JSValue, IElementEnumerator>(() => (x) => x.GetAsyncElementEnumerator());
+
+        return Get(target);
+    }
+
     public static Expression MoveNext(Expression target, Expression item) => target.CallExpression<IElementEnumerator, JSValue, bool>(() => (x, a) => x.MoveNext(out a), item);
 
     public static Expression AssignMoveNext(Expression assignee, Expression target) => Expression.Assign(assignee,

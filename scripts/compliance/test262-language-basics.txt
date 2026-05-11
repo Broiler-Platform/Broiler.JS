@@ -1,0 +1,12 @@
+test/language/expressions/strict-does-not-equals
+test/language/statements/throw
+test/language/statements/empty
+test/language/expressions/relational
+test/language/expressions/assignment/11.13.1-1-s.js
+test/language/expressions/assignment/11.13.1-2-s.js
+test/language/expressions/assignment/11.13.1-3-s.js
+test/language/expressions/comma/S11.14_A1.js
+test/language/expressions/comma/S11.14_A2.1_T1.js
+test/language/expressions/comma/S11.14_A2.1_T2.js
+test/language/expressions/comma/S11.14_A2.1_T3.js
+test/language/expressions/comma/S11.14_A3.js

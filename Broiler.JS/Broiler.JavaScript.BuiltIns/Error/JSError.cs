@@ -78,9 +78,11 @@ public partial class JSError : JSObject, IJSError
     {
         Exception = ex;
         ex.Error ??= this;
+        Message = ex.RawMessage ?? ex.Message;
+        Stack = ex.JSStackTrace.ToString();
 
-        FastAddValue(KeyStrings.message, JSValue.CreateString(ex.Message), JSPropertyAttributes.ConfigurableValue);
-        FastAddValue(KeyStrings.stack, ex.JSStackTrace, JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(KeyStrings.message, JSValue.CreateString(Message), JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(KeyStrings.stack, JSValue.CreateString(Stack), JSPropertyAttributes.ConfigurableValue);
     }
 
     internal JSError(JSException ex, string msg) : this()
@@ -88,9 +90,10 @@ public partial class JSError : JSObject, IJSError
         Exception = ex;
         ex.Error ??= this;
         Message = msg;
+        Stack = ex.JSStackTrace.ToString();
 
         FastAddValue(KeyStrings.message, JSValue.CreateString(msg), JSPropertyAttributes.ConfigurableValue);
-        FastAddValue(KeyStrings.stack, ex.JSStackTrace, JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(KeyStrings.stack, JSValue.CreateString(Stack), JSPropertyAttributes.ConfigurableValue);
     }
 
     public static JSValue From(Exception ex)
@@ -131,6 +134,14 @@ public partial class JSURIError : JSError
 public partial class JSRangeError : JSError
 {
     public JSRangeError(in Arguments a, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) :
+        base(in a, function: function, filePath: filePath, line: line)
+    { }
+}
+
+[JSClassGenerator("ReferenceError"), JSBaseClass("Error")]
+public partial class JSReferenceError : JSError
+{
+    public JSReferenceError(in Arguments a, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) :
         base(in a, function: function, filePath: filePath, line: line)
     { }
 }

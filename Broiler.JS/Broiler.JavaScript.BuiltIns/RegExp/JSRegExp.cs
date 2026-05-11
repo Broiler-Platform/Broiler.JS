@@ -15,7 +15,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     string IJSRegExp.Flags => flags;
     Regex IJSRegExp.Value => value;
 
-    [JSExport("escape")]
+    [JSExport("escape", Length = 1)]
     internal static JSValue Escape(in Arguments a)
     {
         var input = a.Get1();
@@ -28,15 +28,8 @@ public partial class JSRegExp : JSObject, IJSRegExp
         for (int i = 0; i < str.Length; i++)
         {
             var c = str[i];
-            if (TryAppendWhitespaceEscape(sb, c))
+            if (TryAppendEscape(sb, c, i == 0))
                 continue;
-
-            if (c == '^' || c == '$' || c == '\\' || c == '.' || c == '*' ||
-                c == '+' || c == '?' || c == '(' || c == ')' || c == '[' ||
-                c == ']' || c == '{' || c == '}' || c == '|' || c == '/')
-            {
-                sb.Append('\\');
-            }
 
             sb.Append(c);
         }
@@ -44,8 +37,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
         return JSValue.CreateString(sb.ToString());
     }
 
-    private static bool TryAppendWhitespaceEscape(StringBuilder sb, char c)
+    private static bool TryAppendEscape(StringBuilder sb, char c, bool isFirstCharacter)
     {
+        if (isFirstCharacter && IsAsciiLetterOrDigit(c))
+        {
+            AppendHexEscape(sb, c);
+            return true;
+        }
+
         switch (c)
         {
             case '\t':
@@ -68,23 +67,65 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 return true;
         }
 
+        if (IsSyntaxCharacter(c))
+        {
+            sb.Append('\\');
+            return false;
+        }
+
+        if (IsOtherPunctuator(c))
+        {
+            AppendHexEscape(sb, c);
+            return true;
+        }
+
+        if (char.IsSurrogate(c))
+        {
+            AppendUnicodeEscape(sb, c);
+            return true;
+        }
+
         if (char.IsWhiteSpace(c) || c == '\uFEFF' || c == '\u2028' || c == '\u2029')
         {
-            if (c <= 0xFF)
-            {
-                sb.Append(@"\x");
-                sb.Append(((int)c).ToString("x2"));
-            }
-            else
-            {
-                sb.Append(@"\u");
-                sb.Append(((int)c).ToString("x4"));
-            }
-
+            AppendUnicodeEscape(sb, c);
             return true;
         }
 
         return false;
+    }
+
+    private static bool IsAsciiLetterOrDigit(char c)
+        => (c >= 'a' && c <= 'z')
+        || (c >= 'A' && c <= 'Z')
+        || (c >= '0' && c <= '9');
+
+    private static bool IsSyntaxCharacter(char c)
+        => c == '^' || c == '$' || c == '\\' || c == '.' || c == '*'
+        || c == '+' || c == '?' || c == '(' || c == ')' || c == '['
+        || c == ']' || c == '{' || c == '}' || c == '|' || c == '/';
+
+    private static bool IsOtherPunctuator(char c)
+        => c == ',' || c == '-' || c == '=' || c == '<' || c == '>'
+        || c == '#' || c == '&' || c == '!' || c == '%' || c == ':'
+        || c == ';' || c == '@' || c == '~' || c == '\'' || c == '"'
+        || c == '`';
+
+    private static void AppendHexEscape(StringBuilder sb, char c)
+    {
+        sb.Append(@"\x");
+        sb.Append(((int)c).ToString("x2"));
+    }
+
+    private static void AppendUnicodeEscape(StringBuilder sb, char c)
+    {
+        if (c <= 0xFF)
+        {
+            AppendHexEscape(sb, c);
+            return;
+        }
+
+        sb.Append(@"\u");
+        sb.Append(((int)c).ToString("x4"));
     }
 
     [JSExport("source")]

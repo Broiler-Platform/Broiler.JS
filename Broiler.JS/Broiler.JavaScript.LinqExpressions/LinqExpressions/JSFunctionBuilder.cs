@@ -14,6 +14,7 @@ public class JSFunctionBuilder
     public static FieldInfo _prototype;
 
     private static FieldInfo _f;
+    private static PropertyInfo _coerceThisOnInvoke;
 
     private static MethodInfo invokeFunction;
 
@@ -30,6 +31,8 @@ public class JSFunctionBuilder
             ?? throw new InvalidOperationException($"prototype field not found on {type.FullName}");
         _f = type.InternalField("f")
             ?? throw new InvalidOperationException($"f field not found on {type.FullName}");
+        _coerceThisOnInvoke = type.GetProperty("CoerceThisOnInvoke")
+            ?? throw new InvalidOperationException($"CoerceThisOnInvoke property not found on {type.FullName}");
         invokeFunction = typeof(JSValue).InternalMethod("InvokeFunction", ArgumentsBuilder.refType)
             ?? throw new InvalidOperationException("InvokeFunction method not found on JSValue");
         _invokeSuperConstructor = type.PublicMethod("InvokeSuperConstructor",
@@ -68,4 +71,14 @@ public class JSFunctionBuilder
 
     public static Expression New(Expression del, Expression name, Expression code, int length) =>
         NewLambdaExpression.NewExpression(type, del, name, code, Expression.Constant(length), Expression.Constant(true));
+
+    public static Expression EnableNonStrictThis(Expression target)
+    {
+        var temp = Expression.Parameter(type, "#function");
+        return Expression.Block(
+            temp.AsSequence(),
+            Expression.Assign(temp, target),
+            Expression.Assign(Expression.Property(temp, _coerceThisOnInvoke), Expression.Constant(true)),
+            temp);
+    }
 }

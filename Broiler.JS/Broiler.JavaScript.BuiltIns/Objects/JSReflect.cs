@@ -6,6 +6,7 @@ using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Extensions;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Objects;
@@ -28,8 +29,27 @@ public partial class JSReflect : JSObject
         var (target, arguments, newTarget) = a.Get3();
         newTarget = newTarget.IsUndefined ? target : newTarget;
 
-        var fx = target as JSFunction;
-        return fx.CreateInstance(Arguments.ForApply(new JSObject(), arguments));
+        if (target is not JSFunction fx)
+            throw JSEngine.NewTypeError("target is not a constructor");
+
+        if (newTarget is not IJSFunction { Prototype: JSObject } newTargetFunction)
+            throw JSEngine.NewTypeError("newTarget is not a constructor");
+
+        var ec = JSEngine.Current as IJSExecutionContext;
+        var previousNewTarget = ec?.CurrentNewTarget;
+
+        if (ec != null)
+            ec.CurrentNewTarget = (JSValue)newTargetFunction;
+
+        try
+        {
+            return fx.CreateInstance(Arguments.ForApply(new JSObject(), arguments));
+        }
+        finally
+        {
+            if (ec != null)
+                ec.CurrentNewTarget = previousNewTarget;
+        }
     }
 
     [JSExport(Length = 3)]

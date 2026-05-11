@@ -1,0 +1,3 @@
+test/language/expressions/addition/S11.6.1_A2.1_T2.js
+test/language/expressions/addition/S11.6.1_A2.1_T3.js
+test/language/expressions/addition/S11.6.1_A2.4_T3.js

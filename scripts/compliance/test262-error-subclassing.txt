@@ -1,0 +1,6 @@
+test/built-ins/Error/name.js
+test/built-ins/Error/length.js
+test/built-ins/Error/is-a-constructor.js
+test/built-ins/Error/internal-prototype.js
+test/built-ins/Error/message_property.js
+test/built-ins/Error/prop-desc.js

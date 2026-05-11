@@ -16,6 +16,7 @@ public partial class JSObject : JSValue
 {
     private IJSPrototype currentPrototype;
     protected bool HasIterator = false;
+    protected bool HasAsyncIterator = false;
 
     /// <summary>
     /// Returns the Object prototype from the current execution context.
@@ -36,7 +37,7 @@ public partial class JSObject : JSValue
     internal new static Func<string, Exception> NewTypeError;
     internal static Func<JSObject> GetCurrentObjectPrototype;
     internal static Func<string, double> CoerceToNumber;
-    internal static Func<JSPrimitive, JSValue> CreatePrimitiveObject;
+    internal static Func<JSValue, JSValue> CreatePrimitiveObject;
 
     // Error message constants (originally from JSException in Core)
     internal const string Cannot_convert_undefined_or_null_to_object = "Cannot convert undefined or null to object";

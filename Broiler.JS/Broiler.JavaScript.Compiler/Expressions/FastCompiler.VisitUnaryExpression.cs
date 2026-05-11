@@ -58,7 +58,10 @@ partial class FastCompiler
                         if (id.Name == "this")
                             return JSBooleanBuilder.True;
 
-                        return JSExceptionBuilder.ThrowSyntaxError("Cannot delete a variable in Strict Mode");
+                        if (scope.Top.GetVariable(id.Name, false) != null)
+                            return JSBooleanBuilder.False;
+
+                        return JSContextBuilder.DeleteIdentifier(KeyOfName(id.Name));
 
                     case FastNodeType.MemberExpression:
                         break;
@@ -102,6 +105,9 @@ partial class FastCompiler
                 return JSUndefinedBuilder.Value;
 
             case UnaryOperator.@typeof:
+                if (target is AstIdentifier identifier)
+                    return JSValueBuilder.TypeOf(VisitIdentifier(identifier, false));
+
                 return JSValueBuilder.TypeOf(VisitExpression(target));
 
             case UnaryOperator.Increment:
