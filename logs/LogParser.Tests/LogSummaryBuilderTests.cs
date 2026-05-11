@@ -78,9 +78,14 @@ public class LogSummaryBuilderTests
 
         Assert.Contains("File: shard-7.json", formatted, StringComparison.Ordinal);
         Assert.Contains("File: sample-shard.json", formatted, StringComparison.Ordinal);
+        Assert.Contains("Source:", formatted, StringComparison.Ordinal);
+        Assert.Contains("Metadata:", formatted, StringComparison.Ordinal);
+        Assert.Contains("Totals:", formatted, StringComparison.Ordinal);
         Assert.Contains("Status groups:", formatted, StringComparison.Ordinal);
         Assert.Contains("Path groups (depth 4):", formatted, StringComparison.Ordinal);
         Assert.Contains("Exception summary:", formatted, StringComparison.Ordinal);
+        Assert.Contains("key: failed", formatted, StringComparison.Ordinal);
+        Assert.Contains("statusCounts:", formatted, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -92,7 +97,8 @@ public class LogSummaryBuilderTests
         ]);
 
         Assert.Contains("Directory: TestData", formatted, StringComparison.Ordinal);
-        Assert.Contains("Totals: declared executed=8, passed=3, failed=5, skipped=0; parsed results=8", formatted, StringComparison.Ordinal);
+        Assert.Contains("declaredExecuted: 8", formatted, StringComparison.Ordinal);
+        Assert.Contains("parsedResults: 8", formatted, StringComparison.Ordinal);
         Assert.DoesNotContain("File: sample-shard.json", formatted, StringComparison.Ordinal);
         Assert.DoesNotContain("File: sample-exceptions.json", formatted, StringComparison.Ordinal);
     }
@@ -148,12 +154,51 @@ public class LogSummaryBuilderTests
             LogSummaryBuilder.ParseAndSummarize(GetExceptionFixturePath())
         ]);
 
-        Assert.Contains("entries with parsed exceptions=3/4", formatted, StringComparison.Ordinal);
-        Assert.Contains("Broiler.JavaScript.Runtime.JSException: count=2", formatted, StringComparison.Ordinal);
-        Assert.Contains("Broiler.JavaScript.Runtime.JSException in InitializeFactories: count=1", formatted, StringComparison.Ordinal);
-        Assert.Contains("Broiler.JavaScript.Runtime.JSException in GetDate: count=1", formatted, StringComparison.Ordinal);
-        Assert.Contains("Cannot get property set of undefined: count=2", formatted, StringComparison.Ordinal);
-        Assert.Contains("example: test/annexB/alpha.js => type=Broiler.JavaScript.Runtime.JSException, context=InitializeFactories, message=Cannot get property set of undefined", formatted, StringComparison.Ordinal);
+        Assert.Contains("totalEntriesWithExceptions: 3", formatted, StringComparison.Ordinal);
+        Assert.Contains("totalResults: 4", formatted, StringComparison.Ordinal);
+        Assert.Contains("type: Broiler.JavaScript.Runtime.JSException", formatted, StringComparison.Ordinal);
+        Assert.Contains("context: InitializeFactories", formatted, StringComparison.Ordinal);
+        Assert.Contains("context: GetDate", formatted, StringComparison.Ordinal);
+        Assert.Contains("message: Cannot get property set of undefined", formatted, StringComparison.Ordinal);
+        Assert.Contains("path: test/annexB/alpha.js", formatted, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FormatJson_SerializesStructuredReport()
+    {
+        var json = LogReportFormatter.FormatJson(
+        [
+            LogSummaryBuilder.ParseAndSummarize(GetFixturePath())
+        ]);
+
+        Assert.Contains("\"outputFormat\": \"json\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"kind\": \"file\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"name\": \"sample-shard.json\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"declaredExecuted\": 4", json, StringComparison.Ordinal);
+        Assert.Contains("\"statusGroups\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"pathGroups\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"exceptionSummary\"", json, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(new[] { "--output", "json", "sample.json" }, "json", new[] { "sample.json" })]
+    [InlineData(new[] { "--output=json", "sample.json" }, "json", new[] { "sample.json" })]
+    [InlineData(new[] { "-o", "text", "sample.json" }, "text", new[] { "sample.json" })]
+    public void ParseOptions_ReadsSupportedOutputSyntaxes(string[] args, string expectedOutput, string[] expectedInputs)
+    {
+        var options = Program.ParseOptions(args);
+
+        Assert.Equal(expectedOutput, options.OutputFormat);
+        Assert.Equal(expectedInputs, options.Inputs);
+    }
+
+    [Fact]
+    public void ParseOptions_DefaultsToTextWhenOutputIsNotSpecified()
+    {
+        var options = Program.ParseOptions(["sample.json"]);
+
+        Assert.Equal("text", options.OutputFormat);
+        Assert.Equal(["sample.json"], options.Inputs);
     }
 
     [Fact]
