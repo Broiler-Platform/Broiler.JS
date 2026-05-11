@@ -25,6 +25,8 @@ DEFAULT_BROILER_DLL = str(
 TEMP_DIRECTORY = Path(tempfile.gettempdir()) / "broiler-test262"
 UNSUPPORTED_FLAGS = {"module", "raw"}
 USER_AGENT = "Broiler.JS compliance runner"
+DOWNLOAD_TIMEOUT_SECONDS = 120
+MAX_ARCHIVE_SIZE_BYTES = 256 * 1024 * 1024
 
 
 class Test262Repository:
@@ -61,8 +63,24 @@ class Test262Repository:
         if not archive_path.exists():
             url = f"https://codeload.github.com/tc39/test262/tar.gz/{self.suite_ref}"
             request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-            with urllib.request.urlopen(request) as response, archive_path.open("wb") as handle:
-                handle.write(response.read())
+            with urllib.request.urlopen(request, timeout=DOWNLOAD_TIMEOUT_SECONDS) as response:
+                content_length = response.headers.get("Content-Length")
+                if content_length is not None and int(content_length) > MAX_ARCHIVE_SIZE_BYTES:
+                    raise RuntimeError(
+                        f"test262 archive is too large to cache safely ({content_length} bytes)"
+                    )
+                total_bytes = 0
+                with archive_path.open("wb") as handle:
+                    while True:
+                        chunk = response.read(1024 * 1024)
+                        if not chunk:
+                            break
+                        total_bytes += len(chunk)
+                        if total_bytes > MAX_ARCHIVE_SIZE_BYTES:
+                            raise RuntimeError(
+                                "test262 archive exceeded the maximum cached size"
+                            )
+                        handle.write(chunk)
 
         try:
             with tarfile.open(archive_path, "r:gz") as archive:

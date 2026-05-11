@@ -38,11 +38,14 @@ def collect_suite_test_paths(repo: Test262Repository, suite_root: Path | None) -
 
 
 def directory_bucket(path: str, depth: int) -> str:
+    if depth <= 0:
+        raise ValueError("depth must be positive")
     parts = path.split("/")
     return "/".join(parts[: min(depth, len(parts))])
 
 
 def summarize_buckets(paths: list[str], depth: int, limit: int | None = None) -> list[dict[str, object]]:
+    """Group paths by bucket depth, sort by largest count, and optionally limit the result."""
     counts = Counter(directory_bucket(path, depth) for path in paths)
     rows = [
         {"bucket": bucket, "count": count}

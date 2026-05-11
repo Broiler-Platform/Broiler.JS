@@ -114,6 +114,10 @@ class AuditTest262Tests(unittest.TestCase):
         self.assertEqual([negative_path], summary["manifestNegativeTests"])
         self.assertEqual(0, summary["manifestScriptHostVerifiableTests"])
 
+    def test_directory_bucket_rejects_non_positive_depth(self) -> None:
+        with self.assertRaises(ValueError):
+            audit_test262.directory_bucket("test/language/example.js", 0)
+
 
 if __name__ == "__main__":
     unittest.main()
