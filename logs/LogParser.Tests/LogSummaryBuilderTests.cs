@@ -84,7 +84,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("Status groups:", formatted, StringComparison.Ordinal);
         Assert.Contains("Path groups (depth 4):", formatted, StringComparison.Ordinal);
         Assert.Contains("Exception summary:", formatted, StringComparison.Ordinal);
-        Assert.Contains("- key: failed", formatted, StringComparison.Ordinal);
+        Assert.Contains("key: failed", formatted, StringComparison.Ordinal);
         Assert.Contains("statusCounts:", formatted, StringComparison.Ordinal);
     }
 
@@ -156,11 +156,11 @@ public class LogSummaryBuilderTests
 
         Assert.Contains("totalEntriesWithExceptions: 3", formatted, StringComparison.Ordinal);
         Assert.Contains("totalResults: 4", formatted, StringComparison.Ordinal);
-        Assert.Contains("- type: Broiler.JavaScript.Runtime.JSException", formatted, StringComparison.Ordinal);
+        Assert.Contains("type: Broiler.JavaScript.Runtime.JSException", formatted, StringComparison.Ordinal);
         Assert.Contains("context: InitializeFactories", formatted, StringComparison.Ordinal);
         Assert.Contains("context: GetDate", formatted, StringComparison.Ordinal);
-        Assert.Contains("- message: Cannot get property set of undefined", formatted, StringComparison.Ordinal);
-        Assert.Contains("- path: test/annexB/alpha.js", formatted, StringComparison.Ordinal);
+        Assert.Contains("message: Cannot get property set of undefined", formatted, StringComparison.Ordinal);
+        Assert.Contains("path: test/annexB/alpha.js", formatted, StringComparison.Ordinal);
     }
 
     [Fact]

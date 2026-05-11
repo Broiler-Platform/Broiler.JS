@@ -100,7 +100,8 @@ public static class LogReportFormatter
         builder.AppendLine($"  {title}:");
         foreach (var group in groups)
         {
-            builder.AppendLine($"    - key: {group.Key}");
+            builder.AppendLine("    -");
+            builder.AppendLine($"      key: {group.Key}");
             builder.AppendLine($"      count: {group.Count}");
             builder.AppendLine($"      statusCounts: {FormatStatusCounts(group.StatusCounts)}");
             builder.AppendLine(
@@ -111,7 +112,8 @@ public static class LogReportFormatter
 
             foreach (var notableEntry in group.NotableEntries)
             {
-                builder.AppendLine($"        - path: {notableEntry.Path}");
+                builder.AppendLine("        -");
+                builder.AppendLine($"          path: {notableEntry.Path}");
                 builder.AppendLine($"          status: {notableEntry.Status}");
                 builder.AppendLine($"          stdoutLength: {notableEntry.StdoutLength}");
                 builder.AppendLine($"          stderrLength: {notableEntry.StderrLength}");
@@ -155,7 +157,8 @@ public static class LogReportFormatter
         builder.AppendLine("    typeGroups:");
         foreach (var group in summary.TypeGroups)
         {
-            builder.AppendLine($"      - type: {group.Type}");
+            builder.AppendLine("      -");
+            builder.AppendLine($"        type: {group.Type}");
             builder.AppendLine($"        count: {group.Count}");
             builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
             builder.AppendLine($"        distinctMessageCount: {group.DistinctMessageCount}");
@@ -163,7 +166,8 @@ public static class LogReportFormatter
 
             foreach (var example in group.Examples)
             {
-                builder.AppendLine($"          - path: {example.Path}");
+                builder.AppendLine("          -");
+                builder.AppendLine($"            path: {example.Path}");
                 builder.AppendLine($"            type: {example.Type}");
                 builder.AppendLine($"            context: {example.Context ?? "(unknown context)"}");
                 builder.AppendLine($"            message: {example.Message}");
@@ -179,7 +183,8 @@ public static class LogReportFormatter
         builder.AppendLine("    contextGroups:");
         foreach (var group in summary.ContextGroups)
         {
-            builder.AppendLine($"      - type: {group.Type}");
+            builder.AppendLine("      -");
+            builder.AppendLine($"        type: {group.Type}");
             builder.AppendLine($"        context: {group.Context}");
             builder.AppendLine($"        count: {group.Count}");
             builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
@@ -188,7 +193,8 @@ public static class LogReportFormatter
 
             foreach (var example in group.Examples)
             {
-                builder.AppendLine($"          - path: {example.Path}");
+                builder.AppendLine("          -");
+                builder.AppendLine($"            path: {example.Path}");
                 builder.AppendLine($"            type: {example.Type}");
                 builder.AppendLine($"            context: {example.Context ?? "(unknown context)"}");
                 builder.AppendLine($"            message: {example.Message}");
@@ -204,14 +210,16 @@ public static class LogReportFormatter
         builder.AppendLine("    messageGroups:");
         foreach (var group in summary.MessageGroups)
         {
-            builder.AppendLine($"      - message: {group.Message}");
+            builder.AppendLine("      -");
+            builder.AppendLine($"        message: {group.Message}");
             builder.AppendLine($"        count: {group.Count}");
             builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
             builder.AppendLine("        examples:");
 
             foreach (var example in group.Examples)
             {
-                builder.AppendLine($"          - path: {example.Path}");
+                builder.AppendLine("          -");
+                builder.AppendLine($"            path: {example.Path}");
                 builder.AppendLine($"            type: {example.Type}");
                 builder.AppendLine($"            context: {example.Context ?? "(unknown context)"}");
                 builder.AppendLine($"            message: {example.Message}");
