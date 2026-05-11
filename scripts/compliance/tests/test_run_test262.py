@@ -5,6 +5,8 @@ from pathlib import Path
 import subprocess
 import sys
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from io import StringIO
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -100,6 +102,55 @@ class RunTest262Tests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "shard_index must be between 0 and 1"):
             run_test262.apply_shard(["test/language/example.js"], 2, 2)
+
+    def test_main_logs_major_checkpoints_to_stderr_and_preserves_json_stdout(self) -> None:
+        path = self.write_test("test/language/example.js", "1 + 1;\n")
+        output_path = Path(self.temp_directory.name) / "summary.json"
+        stdout = StringIO()
+        stderr = StringIO()
+
+        with (
+            mock.patch.object(
+                sys,
+                "argv",
+                [
+                    "run_test262.py",
+                    "--suite-ref",
+                    TEST_SUITE_REF,
+                    "--suite-root",
+                    str(self.suite_root),
+                    "--broiler-dll",
+                    TEST_ENGINE_PATH,
+                    "--output",
+                    str(output_path),
+                    path,
+                ],
+            ),
+            mock.patch.object(
+                run_test262,
+                "run_test",
+                return_value={"path": path, "status": "passed"},
+            ),
+            redirect_stdout(stdout),
+            redirect_stderr(stderr),
+        ):
+            exit_code = run_test262.main()
+
+        self.assertEqual(0, exit_code)
+        summary = run_test262.json.loads(stdout.getvalue())
+        self.assertEqual(TEST_SUITE_REF, summary["suiteRef"])
+        self.assertEqual(1, summary["passed"])
+        self.assertEqual([path], summary["expandedPaths"])
+        self.assertEqual(summary, run_test262.json.loads(output_path.read_text(encoding="utf-8")))
+
+        log_output = stderr.getvalue()
+        self.assertIn(f"Starting test262 run for suite ref {TEST_SUITE_REF}", log_output)
+        self.assertIn("Selected 1 runnable test(s) for shard 1/1", log_output)
+        self.assertIn(f"Using Broiler script host at {TEST_ENGINE_PATH}", log_output)
+        self.assertIn("Running 1 test(s) for shard 1/1", log_output)
+        self.assertIn("Completed 1/1 test(s) (passed=1, failed=0, skipped=0).", log_output)
+        self.assertIn(f"Wrote machine-readable summary to {output_path}", log_output)
+        self.assertIn("Finished test262 run: executed=1, passed=1, failed=0, skipped=0", log_output)
 
 
 if __name__ == "__main__":
