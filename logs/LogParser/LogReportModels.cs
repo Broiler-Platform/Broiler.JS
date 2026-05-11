@@ -10,6 +10,16 @@ public sealed class LogReport
 }
 
 /// <summary>
+/// Structured report emitted when exception filters are active.
+/// </summary>
+public sealed class FilteredExceptionReport
+{
+    public required string OutputFormat { get; init; }
+    public required FilteredExceptionFilters Filters { get; init; }
+    public required IReadOnlyList<FilteredExceptionMatch> Matches { get; init; }
+}
+
+/// <summary>
 /// Structured summary for a parsed file or directory.
 /// </summary>
 public sealed class LogReportSummary
@@ -20,6 +30,24 @@ public sealed class LogReportSummary
     public required IReadOnlyList<LogGroupSummary> StatusGroups { get; init; }
     public required IReadOnlyList<LogGroupSummary> PathGroups { get; init; }
     public required ExceptionAnalysisSummary ExceptionSummary { get; init; }
+}
+
+/// <summary>
+/// Active exception filters applied to a report.
+/// </summary>
+public sealed class FilteredExceptionFilters
+{
+    public string? Type { get; init; }
+    public string? Context { get; init; }
+}
+
+/// <summary>
+/// Filtered exception matches for a single source file or directory.
+/// </summary>
+public sealed class FilteredExceptionMatch
+{
+    public required LogReportSource Source { get; init; }
+    public required IReadOnlyList<LoggedException> Exceptions { get; init; }
 }
 
 /// <summary>

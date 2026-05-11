@@ -83,7 +83,7 @@ public static class LogSummaryBuilder
             BucketDepth = bucketDepth,
             StatusGroups = SummarizeGroups(logRun.Results, entry => entry.Status, notableEntryLimit),
             PathGroups = SummarizeGroups(logRun.Results, entry => GetPathBucket(entry.Path, bucketDepth), notableEntryLimit),
-            ExceptionSummary = SummarizeExceptions(logRun.Results, notableEntryLimit)
+            ExceptionSummary = SummarizeExceptions(logRun.Results)
         };
     }
 
@@ -130,7 +130,7 @@ public static class LogSummaryBuilder
             : string.Join('/', segments.Take(depth));
     }
 
-    public static ExceptionAnalysisSummary SummarizeExceptions(IEnumerable<LogEntry> entries, int exampleLimit = 3)
+    public static ExceptionAnalysisSummary SummarizeExceptions(IEnumerable<LogEntry> entries)
     {
         var allEntries = entries.ToArray();
         var exceptionEntries = allEntries
@@ -138,7 +138,7 @@ public static class LogSummaryBuilder
             .Select(entry => (
                 Entry: entry,
                 Exception: entry.Exception!,
-                Example: new ExceptionExample
+                LoggedException: new LoggedException
                 {
                     Path = entry.Path ?? string.Empty,
                     Type = entry.Exception!.Type,
@@ -166,7 +166,7 @@ public static class LogSummaryBuilder
                         .Select(item => item.Exception.Message)
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .Count(),
-                    Examples = SelectExceptionExamples(group, exampleLimit)
+                    Exceptions = SelectExceptions(group)
                 })
                 .OrderByDescending(group => group.Count)
                 .ThenBy(group => group.Type, StringComparer.OrdinalIgnoreCase)
@@ -185,7 +185,7 @@ public static class LogSummaryBuilder
                             .Select(item => item.Exception.Message)
                             .Distinct(StringComparer.OrdinalIgnoreCase)
                             .Count(),
-                        Examples = SelectExceptionExamples(group, exampleLimit)
+                        Exceptions = SelectExceptions(group)
                     }))
                 .OrderByDescending(group => group.Count)
                 .ThenBy(group => group.Type, StringComparer.OrdinalIgnoreCase)
@@ -198,7 +198,7 @@ public static class LogSummaryBuilder
                     Message = group.Key,
                     Count = group.Count(),
                     OccurrenceRate = totalEntryCount == 0 ? 0 : group.Count() / (double)totalEntryCount,
-                    Examples = SelectExceptionExamples(group, exampleLimit)
+                    Exceptions = SelectExceptions(group)
                 })
                 .OrderByDescending(group => group.Count)
                 .ThenBy(group => group.Message, StringComparer.OrdinalIgnoreCase)
@@ -268,19 +268,18 @@ public static class LogSummaryBuilder
         };
     }
 
-    private static IReadOnlyList<ExceptionExample> SelectExceptionExamples(
-        IEnumerable<(LogEntry Entry, ParsedException Exception, ExceptionExample Example)> entries,
-        int exampleLimit)
+    private static IReadOnlyList<LoggedException> SelectExceptions(
+        IEnumerable<(LogEntry Entry, ParsedException Exception, LoggedException LoggedException)> entries)
     {
         return entries
             .OrderBy(item => item.Entry.Path, StringComparer.OrdinalIgnoreCase)
             .ThenBy(item => item.Exception.Message, StringComparer.OrdinalIgnoreCase)
-            .Select(item => item.Example)
+            .Select(item => item.LoggedException)
             .ToArray();
     }
 
     private static IReadOnlyList<string> BuildSuggestedPatterns(
-        IEnumerable<(LogEntry Entry, ParsedException Exception, ExceptionExample Example)> exceptionEntries,
+        IEnumerable<(LogEntry Entry, ParsedException Exception, LoggedException LoggedException)> exceptionEntries,
         int totalExceptionCount)
     {
         if (totalExceptionCount == 0)

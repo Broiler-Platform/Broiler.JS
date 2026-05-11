@@ -105,7 +105,7 @@ public sealed class ExceptionTypeSummary
     public required int Count { get; init; }
     public required double OccurrenceRate { get; init; }
     public required int DistinctMessageCount { get; init; }
-    public required IReadOnlyList<ExceptionExample> Examples { get; init; }
+    public required IReadOnlyList<LoggedException> Exceptions { get; init; }
 }
 
 /// <summary>
@@ -118,7 +118,7 @@ public sealed class ExceptionContextSummary
     public required int Count { get; init; }
     public required double OccurrenceRate { get; init; }
     public required int DistinctMessageCount { get; init; }
-    public required IReadOnlyList<ExceptionExample> Examples { get; init; }
+    public required IReadOnlyList<LoggedException> Exceptions { get; init; }
 }
 
 /// <summary>
@@ -129,13 +129,13 @@ public sealed class ExceptionMessageSummary
     public required string Message { get; init; }
     public required int Count { get; init; }
     public required double OccurrenceRate { get; init; }
-    public required IReadOnlyList<ExceptionExample> Examples { get; init; }
+    public required IReadOnlyList<LoggedException> Exceptions { get; init; }
 }
 
 /// <summary>
-/// A representative parsed exception surfaced in the summary.
+/// A parsed exception surfaced in either summary or filtered output.
 /// </summary>
-public sealed class ExceptionExample
+public sealed class LoggedException
 {
     public required string Path { get; init; }
     public required string Type { get; init; }

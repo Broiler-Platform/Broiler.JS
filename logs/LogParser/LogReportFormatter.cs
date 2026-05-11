@@ -37,6 +37,55 @@ public static class LogReportFormatter
         return JsonSerializer.Serialize(CreateReport(fileSummaries, outputFormat: "json"), JsonOptions);
     }
 
+    public static string FormatFilteredExceptions(
+        IEnumerable<LogFileSummary> fileSummaries,
+        string? typeFilter,
+        string? contextFilter)
+    {
+        var report = CreateFilteredExceptionReport(fileSummaries, outputFormat: "text", typeFilter, contextFilter);
+        var builder = new StringBuilder();
+
+        builder.AppendLine("Filters:");
+        builder.AppendLine($"  type: {report.Filters.Type ?? "(any)"}");
+        builder.AppendLine($"  context: {report.Filters.Context ?? "(any)"}");
+        builder.AppendLine("Matches:");
+
+        if (report.Matches.Count == 0)
+        {
+            builder.AppendLine("  []");
+            return builder.ToString().TrimEnd();
+        }
+
+        foreach (var match in report.Matches)
+        {
+            builder.AppendLine($"  {(match.Source.Kind == "directory" ? "Directory" : "File")}: {match.Source.Name}");
+            builder.AppendLine($"    path: {match.Source.Path}");
+            builder.AppendLine("    exceptions:");
+
+            foreach (var exception in match.Exceptions)
+            {
+                builder.AppendLine("      -");
+                builder.AppendLine($"        path: {exception.Path}");
+                builder.AppendLine($"        type: {exception.Type}");
+                builder.AppendLine($"        context: {exception.Context ?? "(unknown context)"}");
+                builder.AppendLine($"        message: {exception.Message}");
+                builder.AppendLine($"        logLine: {exception.LogLine}");
+            }
+        }
+
+        return builder.ToString().TrimEnd();
+    }
+
+    public static string FormatFilteredExceptionsJson(
+        IEnumerable<LogFileSummary> fileSummaries,
+        string? typeFilter,
+        string? contextFilter)
+    {
+        return JsonSerializer.Serialize(
+            CreateFilteredExceptionReport(fileSummaries, outputFormat: "json", typeFilter, contextFilter),
+            JsonOptions);
+    }
+
     internal static LogReport CreateReport(IEnumerable<LogFileSummary> fileSummaries, string outputFormat)
     {
         return new LogReport
@@ -69,6 +118,49 @@ public static class LogReportFormatter
                     PathGroups = summary.PathGroups,
                     ExceptionSummary = summary.ExceptionSummary
                 })
+                .ToArray()
+        };
+    }
+
+    internal static FilteredExceptionReport CreateFilteredExceptionReport(
+        IEnumerable<LogFileSummary> fileSummaries,
+        string outputFormat,
+        string? typeFilter,
+        string? contextFilter)
+    {
+        return new FilteredExceptionReport
+        {
+            OutputFormat = outputFormat,
+            Filters = new FilteredExceptionFilters
+            {
+                Type = typeFilter,
+                Context = contextFilter
+            },
+            Matches = fileSummaries
+                .Select(summary => new FilteredExceptionMatch
+                {
+                    Source = new LogReportSource
+                    {
+                        Kind = summary.IsDirectorySummary ? "directory" : "file",
+                        Name = GetDisplayName(summary),
+                        Path = summary.FilePath
+                    },
+                    Exceptions = summary.LogRun.Results
+                        .Where(entry => entry.Exception is not null && MatchesExceptionFilter(entry.Exception!, typeFilter, contextFilter))
+                        .OrderBy(entry => entry.Path, StringComparer.OrdinalIgnoreCase)
+                        .ThenBy(entry => entry.Exception!.Type, StringComparer.OrdinalIgnoreCase)
+                        .ThenBy(entry => entry.Exception!.Context ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+                        .Select(entry => new LoggedException
+                        {
+                            Path = entry.Path,
+                            Type = entry.Exception!.Type,
+                            Message = entry.Exception.Message,
+                            Context = entry.Exception.Context,
+                            LogLine = entry.Exception.LogLine
+                        })
+                        .ToArray()
+                })
+                .Where(match => match.Exceptions.Count > 0)
                 .ToArray()
         };
     }
@@ -162,9 +254,9 @@ public static class LogReportFormatter
             builder.AppendLine($"        count: {group.Count}");
             builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
             builder.AppendLine($"        distinctMessageCount: {group.DistinctMessageCount}");
-            builder.AppendLine("        entries:");
+            builder.AppendLine("        exceptions:");
 
-            foreach (var entry in group.Examples)
+            foreach (var entry in group.Exceptions)
             {
                 builder.AppendLine("          -");
                 builder.AppendLine($"            path: {entry.Path}");
@@ -174,7 +266,7 @@ public static class LogReportFormatter
                 builder.AppendLine($"            logLine: {entry.LogLine}");
             }
 
-            if (group.Examples.Count == 0)
+            if (group.Exceptions.Count == 0)
             {
                 builder.AppendLine("          []");
             }
@@ -189,9 +281,9 @@ public static class LogReportFormatter
             builder.AppendLine($"        count: {group.Count}");
             builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
             builder.AppendLine($"        distinctMessageCount: {group.DistinctMessageCount}");
-            builder.AppendLine("        entries:");
+            builder.AppendLine("        exceptions:");
 
-            foreach (var entry in group.Examples)
+            foreach (var entry in group.Exceptions)
             {
                 builder.AppendLine("          -");
                 builder.AppendLine($"            path: {entry.Path}");
@@ -201,7 +293,7 @@ public static class LogReportFormatter
                 builder.AppendLine($"            logLine: {entry.LogLine}");
             }
 
-            if (group.Examples.Count == 0)
+            if (group.Exceptions.Count == 0)
             {
                 builder.AppendLine("          []");
             }
@@ -214,9 +306,9 @@ public static class LogReportFormatter
             builder.AppendLine($"        message: {group.Message}");
             builder.AppendLine($"        count: {group.Count}");
             builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
-            builder.AppendLine("        entries:");
+            builder.AppendLine("        exceptions:");
 
-            foreach (var entry in group.Examples)
+            foreach (var entry in group.Exceptions)
             {
                 builder.AppendLine("          -");
                 builder.AppendLine($"            path: {entry.Path}");
@@ -226,7 +318,7 @@ public static class LogReportFormatter
                 builder.AppendLine($"            logLine: {entry.LogLine}");
             }
 
-            if (group.Examples.Count == 0)
+            if (group.Exceptions.Count == 0)
             {
                 builder.AppendLine("          []");
             }
@@ -249,5 +341,22 @@ public static class LogReportFormatter
         var trimmedPath = summary.FilePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         var fileName = Path.GetFileName(trimmedPath);
         return string.IsNullOrEmpty(fileName) ? trimmedPath : fileName;
+    }
+
+    private static bool MatchesExceptionFilter(ParsedException exception, string? typeFilter, string? contextFilter)
+    {
+        if (!string.IsNullOrEmpty(typeFilter)
+            && !string.Equals(exception.Type, typeFilter, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(contextFilter)
+            && !string.Equals(exception.Context ?? string.Empty, contextFilter, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
     }
 }
