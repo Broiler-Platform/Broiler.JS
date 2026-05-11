@@ -1409,6 +1409,45 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Date_Prototype_SetYear_Is_Installed_With_AnnexB_Metadata_And_Behavior()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var parts = ctx.Eval(@"(function () {
+            var descriptor = Object.getOwnPropertyDescriptor(Date.prototype, 'setYear');
+            var date = new Date(1970, 1, 2, 3, 4, 5);
+            var expected = new Date(1971, 1, 2, 3, 4, 5).valueOf();
+
+            return [
+                Object.prototype.hasOwnProperty.call(Date.prototype, 'setYear'),
+                typeof Date.prototype.setYear,
+                descriptor.writable,
+                descriptor.enumerable,
+                descriptor.configurable,
+                date.setYear(71) === expected,
+                date.valueOf() === expected
+            ].join('|');
+        })();").ToString().Split('|');
+        Assert.Equal(7, parts.Length);
+        Assert.Equal("true", parts[0]);
+        Assert.Equal("function", parts[1]);
+        Assert.Equal("true", parts[2]);
+        Assert.Equal("false", parts[3]);
+        Assert.Equal("true", parts[4]);
+        Assert.Equal("true", parts[5]);
+        Assert.Equal("true", parts[6]);
+    }
+
+    [Fact]
+    public void Date_Prototype_ToGMTString_Is_The_ToUTCString_Alias()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"Date.prototype.toGMTString === Date.prototype.toUTCString;");
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
     public void RegExp_Escape_Handles_Initial_Characters_And_Punctuators()
     {
         EnsureBuiltInsLoaded();

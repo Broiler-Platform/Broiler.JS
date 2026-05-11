@@ -227,6 +227,57 @@ public partial class JSDate
         return new JSNumber(value.ToJSDate());
     }
 
+    internal static JSValue SetYearLegacy(in Arguments a)
+    {
+        var date = a.This.AsJSDate();
+        var yearValue = a.Get1().DoubleValue;
+        var time = date.GetTimeMs();
+
+        if (double.IsNaN(time))
+            time = 0;
+        else
+            time = JSDateMath.LocalTime(time);
+
+        if (double.IsNaN(yearValue) || double.IsInfinity(yearValue) || yearValue < long.MinValue || yearValue > long.MaxValue)
+        {
+            date.rawTimeMs = double.NaN;
+            date.value = InvalidDate;
+            return JSNumber.NaN;
+        }
+
+        var year = (long)Math.Truncate(yearValue);
+        if (year >= 0 && year <= 99)
+            year += 1900;
+
+        var newDate = JSDateMath.MakeDate(
+            JSDateMath.MakeDay(year, JSDateMath.MonthFromTime(time), JSDateMath.DateFromTime(time)),
+            JSDateMath.TimeWithinDay(time));
+        var result = JSDateMath.TimeClip(JSDateMath.UTC(newDate));
+
+        if (double.IsNaN(result))
+        {
+            date.rawTimeMs = double.NaN;
+            date.value = InvalidDate;
+            return JSNumber.NaN;
+        }
+
+        var minMs = DateTimeOffset.MinValue.ToUnixTimeMilliseconds();
+        var maxMs = DateTimeOffset.MaxValue.ToUnixTimeMilliseconds();
+
+        if (result >= minMs && result <= maxMs)
+        {
+            date.rawTimeMs = double.NaN;
+            date.value = DateTimeOffset.FromUnixTimeMilliseconds((long)result).ToLocalTime();
+        }
+        else
+        {
+            date.rawTimeMs = result;
+            date.value = InvalidDate;
+        }
+
+        return new JSNumber(result);
+    }
+
     [JSExport("setUTCDate", Length = 1)]
     internal JSValue setUTCDate(in Arguments a)
     {

@@ -55,12 +55,14 @@ internal static class BuiltInsAssemblyInitializer
             {
                 context.RegisterBuiltInClasses();
                 PatchErrorConstructors(context);
+                PatchLegacyDatePrototype(context);
             }
             : context =>
             {
                 existing(context);
                 context.RegisterBuiltInClasses();
                 PatchErrorConstructors(context);
+                PatchLegacyDatePrototype(context);
             };
 
         // Wire factory delegate for JSDisposableStack so the Compiler can create
@@ -365,6 +367,24 @@ internal static class BuiltInsAssemblyInitializer
         PatchErrorConstructor(context, KeyStrings.RangeError, static (in Arguments a) => new JSRangeError(in a));
         PatchErrorConstructor(context, KeyStrings.ReferenceError, static (in Arguments a) => new JSReferenceError(in a));
         PatchErrorConstructor(context, KeyStrings.EvalError, static (in Arguments a) => new JSEvalError(in a));
+    }
+
+    private static void PatchLegacyDatePrototype(JSContext context)
+    {
+        if (context[KeyStrings.Date] is not JSFunction dateCtor)
+            return;
+
+        var prototype = dateCtor.prototype;
+        var toGMTStringKey = KeyStrings.GetOrCreate("toGMTString");
+        var toUTCStringKey = KeyStrings.GetOrCreate("toUTCString");
+        var setYearKey = KeyStrings.GetOrCreate("setYear");
+
+        var setYear = new JSFunction(JSDate.SetYearLegacy, "setYear", "function setYear() { [native code] }", length: 1, createPrototype: false);
+        prototype.FastAddValue(setYearKey, setYear, JSPropertyAttributes.ConfigurableValue);
+
+        var toUTCString = prototype[toUTCStringKey];
+        if (!toUTCString.IsUndefined)
+            prototype.FastAddValue(toGMTStringKey, toUTCString, JSPropertyAttributes.ConfigurableValue);
     }
 
     private static void PatchErrorConstructor(JSContext context, KeyString key, JSFunctionDelegate factory)
