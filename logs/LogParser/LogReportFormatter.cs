@@ -162,7 +162,7 @@ public static class LogReportFormatter
             builder.AppendLine($"        count: {group.Count}");
             builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
             builder.AppendLine($"        distinctMessageCount: {group.DistinctMessageCount}");
-            builder.AppendLine("        examples:");
+            builder.AppendLine("        entries:");
 
             foreach (var example in group.Examples)
             {
@@ -189,7 +189,7 @@ public static class LogReportFormatter
             builder.AppendLine($"        count: {group.Count}");
             builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
             builder.AppendLine($"        distinctMessageCount: {group.DistinctMessageCount}");
-            builder.AppendLine("        examples:");
+            builder.AppendLine("        entries:");
 
             foreach (var example in group.Examples)
             {
@@ -214,7 +214,7 @@ public static class LogReportFormatter
             builder.AppendLine($"        message: {group.Message}");
             builder.AppendLine($"        count: {group.Count}");
             builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
-            builder.AppendLine("        examples:");
+            builder.AppendLine("        entries:");
 
             foreach (var example in group.Examples)
             {

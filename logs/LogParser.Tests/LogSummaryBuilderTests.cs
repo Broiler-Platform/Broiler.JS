@@ -147,7 +147,7 @@ public class LogSummaryBuilderTests
     }
 
     [Fact]
-    public void Format_IncludesParsedExceptionDetailsAndExamples()
+    public void Format_IncludesParsedExceptionDetailsAndEntries()
     {
         var formatted = LogReportFormatter.Format(
         [
@@ -160,7 +160,130 @@ public class LogSummaryBuilderTests
         Assert.Contains("context: InitializeFactories", formatted, StringComparison.Ordinal);
         Assert.Contains("context: GetDate", formatted, StringComparison.Ordinal);
         Assert.Contains("message: Cannot get property set of undefined", formatted, StringComparison.Ordinal);
+        Assert.Contains("entries:", formatted, StringComparison.Ordinal);
         Assert.Contains("path: test/annexB/alpha.js", formatted, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ParseAndSummarize_IncludesAllExceptionEntriesInsteadOfCappedExamples()
+    {
+        using var fixture = TempLogFile.Create("""
+        {
+          "suiteRef": "fixture-many-exceptions",
+          "broilerDll": "fixture/BroilerJS.dll",
+          "executed": 5,
+          "passed": 0,
+          "failed": 5,
+          "skipped": 0,
+          "results": [
+            {
+              "path": "test/annexB/alpha.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Cannot get property set of undefined\nat InitializeFactories in /repo/JSValueCoreExtensions.cs:line 17\n"
+            },
+            {
+              "path": "test/annexB/beta.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Cannot get property set of undefined\nat InitializeFactories in /repo/JSValueCoreExtensions.cs:line 17\n"
+            },
+            {
+              "path": "test/annexB/gamma.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Cannot get property set of undefined\nat InitializeFactories in /repo/JSValueCoreExtensions.cs:line 17\n"
+            },
+            {
+              "path": "test/annexB/delta.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Cannot get property set of undefined\nat InitializeFactories in /repo/JSValueCoreExtensions.cs:line 17\n"
+            },
+            {
+              "path": "test/annexB/epsilon.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Cannot get property set of undefined\nat InitializeFactories in /repo/JSValueCoreExtensions.cs:line 17\n"
+            }
+          ]
+        }
+        """);
+
+        var summary = LogSummaryBuilder.ParseAndSummarize(fixture.Path);
+
+        var typeGroup = Assert.Single(
+            summary.ExceptionSummary.TypeGroups,
+            group => group.Type == "Broiler.JavaScript.Runtime.JSException");
+        var contextGroup = Assert.Single(
+            summary.ExceptionSummary.ContextGroups,
+            group => group.Type == "Broiler.JavaScript.Runtime.JSException"
+                && group.Context == "InitializeFactories");
+        var messageGroup = Assert.Single(
+            summary.ExceptionSummary.MessageGroups,
+            group => group.Message == "Cannot get property set of undefined");
+
+        Assert.Equal(5, typeGroup.Examples.Count);
+        Assert.Equal(5, contextGroup.Examples.Count);
+        Assert.Equal(5, messageGroup.Examples.Count);
+        Assert.Equal(
+            [
+                "test/annexB/alpha.js",
+                "test/annexB/beta.js",
+                "test/annexB/delta.js",
+                "test/annexB/epsilon.js",
+                "test/annexB/gamma.js"
+            ],
+            typeGroup.Examples.Select(example => example.Path).ToArray());
+    }
+
+    [Fact]
+    public void Format_IncludesEveryExceptionEntryForLargeGroups()
+    {
+        using var fixture = TempLogFile.Create("""
+        {
+          "suiteRef": "fixture-many-exceptions",
+          "broilerDll": "fixture/BroilerJS.dll",
+          "executed": 5,
+          "passed": 0,
+          "failed": 5,
+          "skipped": 0,
+          "results": [
+            {
+              "path": "test/annexB/alpha.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Cannot get property set of undefined\nat InitializeFactories in /repo/JSValueCoreExtensions.cs:line 17\n"
+            },
+            {
+              "path": "test/annexB/beta.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Cannot get property set of undefined\nat InitializeFactories in /repo/JSValueCoreExtensions.cs:line 17\n"
+            },
+            {
+              "path": "test/annexB/gamma.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Cannot get property set of undefined\nat InitializeFactories in /repo/JSValueCoreExtensions.cs:line 17\n"
+            },
+            {
+              "path": "test/annexB/delta.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Cannot get property set of undefined\nat InitializeFactories in /repo/JSValueCoreExtensions.cs:line 17\n"
+            },
+            {
+              "path": "test/annexB/epsilon.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Cannot get property set of undefined\nat InitializeFactories in /repo/JSValueCoreExtensions.cs:line 17\n"
+            }
+          ]
+        }
+        """);
+
+        var formatted = LogReportFormatter.Format(
+        [
+            LogSummaryBuilder.ParseAndSummarize(fixture.Path)
+        ]);
+
+        Assert.Contains("path: test/annexB/alpha.js", formatted, StringComparison.Ordinal);
+        Assert.Contains("path: test/annexB/beta.js", formatted, StringComparison.Ordinal);
+        Assert.Contains("path: test/annexB/gamma.js", formatted, StringComparison.Ordinal);
+        Assert.Contains("path: test/annexB/delta.js", formatted, StringComparison.Ordinal);
+        Assert.Contains("path: test/annexB/epsilon.js", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("examples:", formatted, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -258,5 +381,25 @@ public class LogSummaryBuilderTests
     private static string GetExceptionFixturePath()
     {
         return Path.Combine(AppContext.BaseDirectory, "TestData", "sample-exceptions.json");
+    }
+
+    private sealed class TempLogFile(string path) : IDisposable
+    {
+        public string Path { get; } = path;
+
+        public static TempLogFile Create(string content)
+        {
+            var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+            File.WriteAllText(path, content);
+            return new TempLogFile(path);
+        }
+
+        public void Dispose()
+        {
+            if (File.Exists(Path))
+            {
+                File.Delete(Path);
+            }
+        }
     }
 }

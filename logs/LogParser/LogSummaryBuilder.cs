@@ -265,15 +265,14 @@ public static class LogSummaryBuilder
         return entries
             .OrderBy(item => item.Entry.Path, StringComparer.OrdinalIgnoreCase)
             .ThenBy(item => item.Exception.Message, StringComparer.OrdinalIgnoreCase)
-            .Take(Math.Max(0, exampleLimit))
-                .Select(item => new ExceptionExample
-                {
-                    Path = item.Entry.Path ?? string.Empty,
-                    Type = item.Exception.Type,
-                    Message = item.Exception.Message,
-                    Context = item.Exception.Context,
-                    LogLine = item.Exception.LogLine
-                })
+            .Select(item => new ExceptionExample
+            {
+                Path = item.Entry.Path ?? string.Empty,
+                Type = item.Exception.Type,
+                Message = item.Exception.Message,
+                Context = item.Exception.Context,
+                LogLine = item.Exception.LogLine
+            })
             .ToArray();
     }
 

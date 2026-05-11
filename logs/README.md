@@ -63,3 +63,5 @@ JSON mode emits the same report shape in a machine-friendly format:
   ]
 }
 ```
+
+Exception summaries now emit every parsed error entry in each matching type/context/message group rather than truncating the output to a small example set.
