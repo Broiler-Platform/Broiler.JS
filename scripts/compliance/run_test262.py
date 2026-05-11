@@ -63,38 +63,48 @@ class Test262Repository:
         if not archive_path.exists():
             url = f"https://codeload.github.com/tc39/test262/tar.gz/{self.suite_ref}"
             request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-            with urllib.request.urlopen(request, timeout=DOWNLOAD_TIMEOUT_SECONDS) as response:
-                content_length = response.headers.get("Content-Length")
-                if content_length is not None and int(content_length) > MAX_ARCHIVE_SIZE_BYTES:
-                    raise RuntimeError(
-                        f"test262 archive is too large to cache safely ({content_length} bytes)"
-                    )
-                total_bytes = 0
-                with archive_path.open("wb") as handle:
-                    while True:
-                        chunk = response.read(1024 * 1024)
-                        if not chunk:
-                            break
-                        total_bytes += len(chunk)
-                        if total_bytes > MAX_ARCHIVE_SIZE_BYTES:
-                            raise RuntimeError(
-                                "test262 archive exceeded the maximum cached size"
-                            )
-                        handle.write(chunk)
+            try:
+                with urllib.request.urlopen(request, timeout=DOWNLOAD_TIMEOUT_SECONDS) as response:
+                    content_length = response.headers.get("Content-Length")
+                    if content_length is not None and int(content_length) > MAX_ARCHIVE_SIZE_BYTES:
+                        raise RuntimeError(
+                            f"test262 archive is too large to cache safely ({content_length} bytes)"
+                        )
+                    total_bytes = 0
+                    with archive_path.open("wb") as handle:
+                        while True:
+                            chunk = response.read(1024 * 1024)
+                            if not chunk:
+                                break
+                            total_bytes += len(chunk)
+                            if total_bytes > MAX_ARCHIVE_SIZE_BYTES:
+                                raise RuntimeError(
+                                    "test262 archive exceeded the maximum cached size"
+                                )
+                            handle.write(chunk)
+            except urllib.error.URLError as exc:
+                raise RuntimeError(
+                    f"Failed to download pinned test262 archive from {url}"
+                ) from exc
 
         try:
-            with tarfile.open(archive_path, "r:gz") as archive:
-                members = archive.getmembers()
-                resolved_extract_root = temporary_extract_root.resolve()
-                for member in members:
-                    member_path = (temporary_extract_root / member.name).resolve()
-                    try:
-                        member_path.relative_to(resolved_extract_root)
-                    except ValueError as exc:
-                        raise RuntimeError(
-                            f"Unsafe path in test262 archive: {member.name}"
-                        ) from exc
-                archive.extractall(temporary_extract_root)
+            try:
+                with tarfile.open(archive_path, "r:gz") as archive:
+                    members = archive.getmembers()
+                    resolved_extract_root = temporary_extract_root.resolve()
+                    for member in members:
+                        member_path = (temporary_extract_root / member.name).resolve()
+                        try:
+                            member_path.relative_to(resolved_extract_root)
+                        except ValueError as exc:
+                            raise RuntimeError(
+                                f"Unsafe path in test262 archive: {member.name}"
+                            ) from exc
+                    archive.extractall(temporary_extract_root)
+            except tarfile.TarError as exc:
+                raise RuntimeError(
+                    f"Failed to extract cached test262 archive at {archive_path}"
+                ) from exc
 
             extracted_children = [
                 child for child in temporary_extract_root.iterdir() if child.is_dir()
@@ -166,7 +176,7 @@ class Test262Repository:
                         if child.is_file()
                     ]
                 else:
-                    raise FileNotFoundError(prefix)
+                    raise FileNotFoundError(f"Path not found: {prefix}")
             else:
                 if self.tree_cache is None:
                     url = (
@@ -224,7 +234,7 @@ class Test262Repository:
                 return [path]
 
             if not local_path.is_dir():
-                raise FileNotFoundError(path)
+                raise FileNotFoundError(f"Path not found: {path}")
 
             return sorted(
                 child.relative_to(self.suite_root).as_posix()
