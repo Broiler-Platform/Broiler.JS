@@ -30,7 +30,14 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-          cache: true
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -63,7 +70,7 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          set -uo pipefail
+          set -euo pipefail
           mkdir -p "$RESULTS_DIR"
           status=0
 
@@ -87,8 +94,6 @@ jobs:
       - name: Publish workflow summary
         id: summary
         if: always()
-        env:
-          GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
         run: |
           python <<'PY'
           import json
@@ -97,7 +102,7 @@ jobs:
 
           results_dir = Path(os.environ["RESULTS_DIR"])
           failure_log = Path(os.environ["FAILURE_LOG"])
-          output_path = Path(os.environ["GITHUB_OUTPUT"])
+          github_output_path = Path(os.environ["GITHUB_OUTPUT"])
           summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
           suite_ref = os.environ["TEST262_REF"]
 
@@ -170,7 +175,7 @@ jobs:
 
           summary_path.write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
 
-          with output_path.open("a", encoding="utf-8") as handle:
+          with github_output_path.open("a", encoding="utf-8") as handle:
             handle.write(f"failed-count={totals['failed']}\n")
           PY
 
@@ -187,6 +192,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          if [ "${{ steps.run-test262.outcome }}" != "success" ] || [ "${{ steps.summary.outputs.failed-count }}" != "0" ]; then
+          failed_count="${{ steps.summary.outputs.failed-count }}"
+          if [ "${{ steps.run-test262.outcome }}" != "success" ] || [ "${failed_count:-0}" -ne 0 ]; then
             exit 1
           fi

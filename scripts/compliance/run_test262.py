@@ -28,7 +28,11 @@ USER_AGENT = "Broiler.JS compliance runner"
 class Test262Repository:
     def __init__(self, suite_ref: str, suite_root: str | None = None):
         self.suite_ref = suite_ref
-        self.suite_root = Path(suite_root).resolve() if suite_root else None
+        self.suite_root = (
+            Path(suite_root).resolve()
+            if suite_root is not None and suite_root.strip()
+            else None
+        )
         self.contents_cache: dict[str, list[dict[str, object]]] = {}
         self.text_cache: dict[str, str] = {}
 
