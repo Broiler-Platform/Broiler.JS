@@ -7,6 +7,9 @@ namespace LogParser;
 /// </summary>
 public static class LogSummaryBuilder
 {
+    private const string UnknownStatus = "unknown";
+    private const string AllPathsBucket = "(all paths)";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -51,7 +54,7 @@ public static class LogSummaryBuilder
     {
         if (depth <= 0)
         {
-            return "(all paths)";
+            return AllPathsBucket;
         }
 
         var segments = path
@@ -113,7 +116,7 @@ public static class LogSummaryBuilder
                 .Select(entry => new LogEntry
                 {
                     Path = entry.Path ?? string.Empty,
-                    Status = string.IsNullOrWhiteSpace(entry.Status) ? "unknown" : entry.Status,
+                    Status = string.IsNullOrWhiteSpace(entry.Status) ? UnknownStatus : entry.Status,
                     Stdout = entry.Stdout,
                     Stderr = entry.Stderr
                 })
