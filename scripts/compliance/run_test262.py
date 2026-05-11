@@ -23,6 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BROILER_DLL = str(
     REPO_ROOT / "Broiler.JS/Broiler.JavaScript/bin/Debug/net8.0/BroilerJS.dll"
 )
+ALL_SHARDS = -1
 TEMP_DIRECTORY = Path(tempfile.gettempdir()) / "broiler-test262"
 UNSUPPORTED_FLAGS = {"module", "raw"}
 USER_AGENT = "Broiler.JS compliance runner"
@@ -373,9 +374,11 @@ def apply_shard(paths: list[str], shard_count: int, shard_index: int) -> list[st
     """Return one deterministic modulo-based shard from an ordered path list."""
     if shard_count <= 0:
         raise ValueError(f"shard_count must be greater than 0, got {shard_count}")
-    if shard_index < 0 or shard_index >= shard_count:
+    if shard_index == ALL_SHARDS:
+        return list(paths)
+    if shard_index < ALL_SHARDS or shard_index >= shard_count:
         raise ValueError(
-            f"shard_index must be between 0 and {shard_count - 1}, got {shard_index}"
+            f"shard_index must be -1 or between 0 and {shard_count - 1}, got {shard_index}"
         )
 
     if shard_count == 1:
@@ -397,6 +400,8 @@ def calculate_progress_log_interval(total: int) -> int | None:
 
 
 def format_shard_label(shard_index: int, shard_count: int) -> str:
+    if shard_index == ALL_SHARDS:
+        return f"all/{shard_count}"
     return f"{shard_index + 1}/{shard_count}"
 
 
@@ -642,7 +647,7 @@ def main() -> int:
         "--shard-index",
         type=int,
         default=0,
-        help="Zero-based shard index to execute from the selected test set",
+        help="Zero-based shard index to execute from the selected test set, or -1 to run all shards",
     )
     args = parser.parse_args()
 

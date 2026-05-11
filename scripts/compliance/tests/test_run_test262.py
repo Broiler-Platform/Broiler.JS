@@ -100,8 +100,71 @@ class RunTest262Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "shard_count must be greater than 0"):
             run_test262.apply_shard(["test/language/example.js"], 0, 0)
 
-        with self.assertRaisesRegex(ValueError, "shard_index must be between 0 and 1"):
+        self.assertEqual(
+            ["test/language/example.js"],
+            run_test262.apply_shard(["test/language/example.js"], 2, -1),
+        )
+        self.assertEqual(
+            ["a.js", "b.js", "c.js"],
+            run_test262.apply_shard(["a.js", "b.js", "c.js"], 8, -1),
+        )
+
+        with self.assertRaisesRegex(ValueError, "shard_index must be -1 or between 0 and 1"):
+            run_test262.apply_shard(["test/language/example.js"], 2, -2)
+
+        with self.assertRaisesRegex(ValueError, "shard_index must be -1 or between 0 and 1"):
             run_test262.apply_shard(["test/language/example.js"], 2, 2)
+
+    def test_main_accepts_shard_index_minus_one_for_all_selected_paths(self) -> None:
+        first_path = self.write_test("test/language/a.js", "1 + 1;\n")
+        second_path = self.write_test("test/language/b.js", "2 + 2;\n")
+        stdout = StringIO()
+        stderr = StringIO()
+
+        with (
+            mock.patch.object(
+                sys,
+                "argv",
+                [
+                    "run_test262.py",
+                    "--suite-ref",
+                    TEST_SUITE_REF,
+                    "--suite-root",
+                    str(self.suite_root),
+                    "--broiler-dll",
+                    TEST_ENGINE_PATH,
+                    "--all-script-host-verifiable",
+                    "--shard-count",
+                    "8",
+                    "--shard-index",
+                    "-1",
+                ],
+            ),
+            mock.patch.object(
+                run_test262,
+                "run_test",
+                side_effect=[
+                    {"path": first_path, "status": "passed"},
+                    {"path": second_path, "status": "passed"},
+                ],
+            ) as run_test_mock,
+            redirect_stdout(stdout),
+            redirect_stderr(stderr),
+        ):
+            exit_code = run_test262.main()
+
+        self.assertEqual(0, exit_code)
+        summary = run_test262.json.loads(stdout.getvalue())
+        self.assertEqual(-1, summary["shardIndex"])
+        self.assertEqual(8, summary["shardCount"])
+        self.assertEqual([first_path, second_path], summary["expandedPaths"])
+        self.assertIn("Selected 2 runnable test(s) for shard all/8", stderr.getvalue())
+        self.assertIn("Running 2 test(s) for shard all/8", stderr.getvalue())
+        self.assertEqual(2, run_test_mock.call_count)
+        self.assertEqual(
+            [first_path, second_path],
+            [call.args[2] for call in run_test_mock.call_args_list],
+        )
 
     def test_main_logs_major_checkpoints_to_stderr_and_preserves_json_stdout(self) -> None:
         path = self.write_test("test/language/example.js", "1 + 1;\n")

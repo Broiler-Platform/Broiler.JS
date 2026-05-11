@@ -7,6 +7,11 @@ on:
         description: Optional test262 ref or commit SHA to execute
         required: false
         default: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+      shard_index:
+        description: Zero-based shard index to execute, or -1 to run all shards
+        type: number
+        required: false
+        default: -1
 
 permissions:
   contents: read
@@ -17,14 +22,54 @@ env:
   RESULTS_DIR: ${{ github.workspace }}/.artifacts/test262/full-script-host
   BROILER_DLL: ${{ github.workspace }}/Broiler.JS/Broiler.JavaScript/bin/Release/net8.0/BroilerJS.dll
   SHARD_COUNT: 8
+  SELECTED_SHARD_INDEX: ${{ inputs.shard_index }}
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      shard-matrix: ${{ steps.shards.outputs.matrix }}
+    steps:
+      - name: Resolve shard matrix
+        id: shards
+        shell: bash
+        run: |
+          python <<'PY'
+          import json
+          import os
+          import sys
+
+          shard_count = int(os.environ["SHARD_COUNT"])
+          requested_shard_index = os.environ["SELECTED_SHARD_INDEX"]
+
+          try:
+              shard_index = int(requested_shard_index)
+          except ValueError:
+              sys.exit(
+                  f"shard_index must be an integer value: -1 or between 0 and "
+                  f"{shard_count - 1}, got {requested_shard_index!r}"
+              )
+
+          if shard_index == -1:
+              matrix = [{"shard-index": index} for index in range(shard_count)]
+          elif 0 <= shard_index < shard_count:
+              matrix = [{"shard-index": shard_index}]
+          else:
+              sys.exit(
+                  f"shard_index must be -1 or between 0 and {shard_count - 1}, got {shard_index}"
+              )
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write(f"matrix={json.dumps(matrix)}\n")
+          PY
+
   run:
+    needs: plan
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard-index: [0, 1, 2, 3, 4, 5, 6, 7]
+        include: ${{ fromJson(needs.plan.outputs.shard-matrix) }}
 
     steps:
       - name: Check out Broiler.JS
