@@ -1,0 +1,30 @@
+{
+  "suiteRef": "fixture-suite",
+  "broilerDll": "fixture/BroilerJS.dll",
+  "executed": 4,
+  "passed": 2,
+  "failed": 2,
+  "skipped": 0,
+  "results": [
+    {
+      "path": "test/built-ins/Array/from/a.js",
+      "status": "passed",
+      "stdout": "ok"
+    },
+    {
+      "path": "test/built-ins/Array/from/b.js",
+      "status": "failed",
+      "stderr": "short"
+    },
+    {
+      "path": "test/built-ins/Array/map/c.js",
+      "status": "failed",
+      "stdout": "warn",
+      "stderr": "very long error"
+    },
+    {
+      "path": "test/language/statements/d.js",
+      "status": "passed"
+    }
+  ]
+}
