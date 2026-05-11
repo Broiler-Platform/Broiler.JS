@@ -184,7 +184,7 @@ public partial class JSMap : JSObject
     /// Returns the value for key if present, otherwise inserts defaultValue
     /// and returns it.
     /// </summary>
-    [JSExport("getOrInsert")]
+    [JSExport("getOrInsert", Length = 2)]
     public JSValue GetOrInsert(in Arguments a)
     {
         var (key, defaultValue) = a.Get2();

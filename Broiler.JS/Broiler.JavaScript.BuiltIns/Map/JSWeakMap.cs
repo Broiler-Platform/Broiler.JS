@@ -107,7 +107,7 @@ public partial class JSWeakMap: JSObject
     /// Returns the value for key if present, otherwise inserts defaultValue
     /// and returns it.
     /// </summary>
-    [JSExport("getOrInsert")]
+    [JSExport("getOrInsert", Length = 2)]
     public JSValue GetOrInsert(in Arguments a)
     {
         var (keyVal, defaultValue) = a.Get2();

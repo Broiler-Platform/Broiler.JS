@@ -1,4 +1,6 @@
 ﻿using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Symbol;
 
@@ -23,7 +25,10 @@ public partial class JSSymbol
     public static JSSymbol iterator = new("Symbol.iterator");
 
     [JSExport("match")]
-    public static JSSymbol match = new("Symbol.matchAll");
+    public static JSSymbol match = new("Symbol.match");
+
+    [JSExport("matchAll")]
+    public static JSSymbol matchAll = new("Symbol.matchAll");
 
     [JSExport("replace")]
     public static JSSymbol replace = new("Symbol.replace");
@@ -61,5 +66,18 @@ public partial class JSSymbol
     {
         var name = a.Get1().ToString();
         return globals.GetOrCreate(name, (x) => new JSSymbol(x.Value));
+    }
+
+    [JSExport("keyFor", Length = 1)]
+    public static JSValue KeyFor(in Arguments a)
+    {
+        if (a.Get1() is not JSSymbol symbol)
+            throw JSEngine.NewTypeError("Symbol.keyFor requires a symbol");
+
+        var description = symbol.ToString();
+        if (globals.TryGetValue(description, out var existing) && ReferenceEquals(existing, symbol))
+            return JSValue.CreateString(description);
+
+        return JSUndefined.Value;
     }
 }

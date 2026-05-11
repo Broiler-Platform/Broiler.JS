@@ -1,6 +1,7 @@
 ﻿using System;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.Number;
+using Broiler.JavaScript.BuiltIns.DataView;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
@@ -10,6 +11,12 @@ namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 [JSClassGenerator("ArrayBuffer")]
 public partial class JSArrayBuffer : JSObject
 {
+    [JSExport("isView", Length = 1)]
+    public static JSValue IsView(in Arguments a)
+        => a.Get1() is JSTypedArray || a.Get1() is DataView.DataView
+            ? JSValue.BooleanTrue
+            : JSValue.BooleanFalse;
+
     internal byte[] buffer;
     internal bool isDetached;
 

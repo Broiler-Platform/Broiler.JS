@@ -157,4 +157,24 @@ public partial class JSArray
         return args.This.InvokeMethod(KeyStrings.join, in args);
     }
 
+    [JSPrototypeMethod]
+    [JSExport("toReversed", Length = 0)]
+    internal static JSValue ToReversed(in Arguments a)
+    {
+        var source = a.This as JSObject;
+        var result = new JSArray((uint)Math.Max(source?.Length ?? 0, 0));
+        var length = (uint)Math.Max(source?.Length ?? 0, 0);
+        for (uint i = 0; i < length; i++)
+            result[i] = source[length - i - 1];
+        return result;
+    }
+
+    [JSPrototypeMethod]
+    [JSExport("toSorted", Length = 1)]
+    internal static JSValue ToSorted(in Arguments a)
+    {
+        var copy = Slice(new Arguments(a.This, JSValue.NumberZero, JSValue.CreateNumber(a.This.Length)));
+        return copy.InvokeMethod(KeyStrings.GetOrCreate("sort"), a.Get1());
+    }
+
 }

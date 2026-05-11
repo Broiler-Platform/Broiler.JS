@@ -78,7 +78,7 @@ public partial class JSArray
     /// Creates an array from an async iterable or iterable/array-like,
     /// returning a Promise that resolves to the new array.
     /// </summary>
-    [JSExport("fromAsync")]
+    [JSExport("fromAsync", Length = 1)]
     public static JSValue StaticFromAsync(in Arguments a)
     {
         var (items, mapFn, thisArg) = a.Get3();

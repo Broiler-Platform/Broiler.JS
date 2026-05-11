@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Date;
 
@@ -85,6 +86,23 @@ public partial class JSDate
 
         var result = value.Year;
         return new JSNumber(result);
+    }
+
+    [JSExport("getYear", Length = 0)]
+    internal JSValue GetYear(in Arguments a)
+    {
+        var fullYear = GetFullYear(in a);
+        return fullYear.IsUndefined || double.IsNaN(fullYear.DoubleValue)
+            ? fullYear
+            : new JSNumber(fullYear.DoubleValue - 1900);
+    }
+
+    internal static JSValue GetYearLegacy(in Arguments a)
+    {
+        if (a.This is JSDate date)
+            return date.GetYear(in a);
+
+        throw JSEngine.NewTypeError("Date.prototype.getYear called on incompatible receiver");
     }
 
     [JSExport("getHours", Length = 0)]
