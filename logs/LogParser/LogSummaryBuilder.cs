@@ -185,7 +185,7 @@ public static class LogSummaryBuilder
             .Take(Math.Max(0, exampleLimit))
             .Select(item => new ExceptionExample
             {
-                Path = item.Entry.Path,
+                Path = item.Entry.Path ?? string.Empty,
                 Type = item.Exception.Type,
                 Message = item.Exception.Message,
                 LogLine = item.Exception.LogLine
