@@ -434,8 +434,9 @@ def create_process_limit_setup(
     if os.name != "posix" or resource is None:
         return None
 
-    # RLIMIT_CPU is whole-second based, so sub-second wall-clock timeouts still rely
-    # on communicate(timeout=...) while the child receives at least a one-second CPU budget.
+    # RLIMIT_CPU is whole-second based. Wall-clock enforcement still comes from
+    # communicate(timeout=...), while the child intentionally receives at least a
+    # one-second CPU budget so very small timeout values do not fail at process start.
     cpu_limit_seconds = max(1, int(math.ceil(timeout_seconds)))
     cpu_hard_limit_seconds = cpu_limit_seconds + 5
     memory_limit_bytes = memory_limit_mb * 1024 * 1024 if memory_limit_mb > 0 else None
@@ -831,7 +832,8 @@ def main() -> int:
         f"skipped={summary['skipped']}, timedOut={summary['timedOut']}"
     )
     print(json.dumps(summary, indent=2))
-    return 1 if summary["failed"] > 0 or summary["timedOut"] > 0 else 0
+    has_failures = summary["failed"] > 0 or summary["timedOut"] > 0
+    return 1 if has_failures else 0
 
 
 if __name__ == "__main__":
