@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 
 namespace LogParser;
 
@@ -7,34 +8,91 @@ namespace LogParser;
 /// </summary>
 public static class LogReportFormatter
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
+
     public static string Format(IEnumerable<LogFileSummary> fileSummaries)
     {
-        var summaries = fileSummaries.ToArray();
+        var report = CreateReport(fileSummaries, outputFormat: "text");
         var builder = new StringBuilder();
 
-        for (var i = 0; i < summaries.Length; i++)
+        for (var i = 0; i < report.Summaries.Count; i++)
         {
             if (i > 0)
             {
                 builder.AppendLine();
             }
 
-            AppendFileSummary(builder, summaries[i]);
+            AppendFileSummary(builder, report.Summaries[i]);
         }
 
         return builder.ToString().TrimEnd();
     }
 
-    private static void AppendFileSummary(StringBuilder builder, LogFileSummary summary)
+    public static string FormatJson(IEnumerable<LogFileSummary> fileSummaries)
     {
-        builder.AppendLine($"{(summary.IsDirectorySummary ? "Directory" : "File")}: {GetDisplayName(summary)}");
-        builder.AppendLine($"  SuiteRef: {summary.LogRun.SuiteRef}");
-        builder.AppendLine(
-            $"  Totals: declared executed={summary.LogRun.Executed}, passed={summary.LogRun.Passed}, failed={summary.LogRun.Failed}, skipped={summary.LogRun.Skipped}; parsed results={summary.LogRun.Results.Length}");
+        return JsonSerializer.Serialize(CreateReport(fileSummaries, outputFormat: "json"), JsonOptions);
+    }
+
+    internal static LogReport CreateReport(IEnumerable<LogFileSummary> fileSummaries, string outputFormat)
+    {
+        return new LogReport
+        {
+            OutputFormat = outputFormat,
+            Summaries = fileSummaries
+                .Select(summary => new LogReportSummary
+                {
+                    Source = new LogReportSource
+                    {
+                        Kind = summary.IsDirectorySummary ? "directory" : "file",
+                        Name = GetDisplayName(summary),
+                        Path = summary.FilePath
+                    },
+                    Metadata = new LogReportMetadata
+                    {
+                        SuiteRef = summary.LogRun.SuiteRef,
+                        BroilerDll = summary.LogRun.BroilerDll,
+                        BucketDepth = summary.BucketDepth
+                    },
+                    Totals = new LogReportTotals
+                    {
+                        DeclaredExecuted = summary.LogRun.Executed,
+                        Passed = summary.LogRun.Passed,
+                        Failed = summary.LogRun.Failed,
+                        Skipped = summary.LogRun.Skipped,
+                        ParsedResults = summary.LogRun.Results.Length
+                    },
+                    StatusGroups = summary.StatusGroups,
+                    PathGroups = summary.PathGroups,
+                    ExceptionSummary = summary.ExceptionSummary
+                })
+                .ToArray()
+        };
+    }
+
+    private static void AppendFileSummary(StringBuilder builder, LogReportSummary summary)
+    {
+        builder.AppendLine($"{(summary.Source.Kind == "directory" ? "Directory" : "File")}: {summary.Source.Name}");
+        builder.AppendLine("  Source:");
+        builder.AppendLine($"    kind: {summary.Source.Kind}");
+        builder.AppendLine($"    path: {summary.Source.Path}");
+        builder.AppendLine("  Metadata:");
+        builder.AppendLine($"    suiteRef: {summary.Metadata.SuiteRef}");
+        builder.AppendLine($"    broilerDll: {summary.Metadata.BroilerDll}");
+        builder.AppendLine($"    bucketDepth: {summary.Metadata.BucketDepth}");
+        builder.AppendLine("  Totals:");
+        builder.AppendLine($"    declaredExecuted: {summary.Totals.DeclaredExecuted}");
+        builder.AppendLine($"    passed: {summary.Totals.Passed}");
+        builder.AppendLine($"    failed: {summary.Totals.Failed}");
+        builder.AppendLine($"    skipped: {summary.Totals.Skipped}");
+        builder.AppendLine($"    parsedResults: {summary.Totals.ParsedResults}");
 
         AppendGroupSection(builder, "Status groups", summary.StatusGroups);
-        AppendGroupSection(builder, $"Path groups (depth {summary.BucketDepth})", summary.PathGroups);
-        AppendExceptionSection(builder, summary.ExceptionSummary, summary.LogRun.Results.Length);
+        AppendGroupSection(builder, $"Path groups (depth {summary.Metadata.BucketDepth})", summary.PathGroups);
+        AppendExceptionSection(builder, summary.ExceptionSummary, summary.Totals.ParsedResults);
     }
 
     private static void AppendGroupSection(StringBuilder builder, string title, IEnumerable<LogGroupSummary> groups)
@@ -42,13 +100,26 @@ public static class LogReportFormatter
         builder.AppendLine($"  {title}:");
         foreach (var group in groups)
         {
+            builder.AppendLine($"    - key: {group.Key}");
+            builder.AppendLine($"      count: {group.Count}");
+            builder.AppendLine($"      statusCounts: {FormatStatusCounts(group.StatusCounts)}");
             builder.AppendLine(
-                $"    - {group.Key}: count={group.Count}, statuses=[{FormatStatusCounts(group.StatusCounts)}], stdout(len min/avg/max)={group.MinStdoutLength}/{group.AverageStdoutLength:F1}/{group.MaxStdoutLength}, stderr(len min/avg/max)={group.MinStderrLength}/{group.AverageStderrLength:F1}/{group.MaxStderrLength}");
+                $"      stdoutLength: min={group.MinStdoutLength}, avg={group.AverageStdoutLength:F1}, max={group.MaxStdoutLength}");
+            builder.AppendLine(
+                $"      stderrLength: min={group.MinStderrLength}, avg={group.AverageStderrLength:F1}, max={group.MaxStderrLength}");
+            builder.AppendLine("      notableEntries:");
 
             foreach (var notableEntry in group.NotableEntries)
             {
-                builder.AppendLine(
-                    $"      notable: {notableEntry.Path} [{notableEntry.Status}] stdout={notableEntry.StdoutLength}, stderr={notableEntry.StderrLength}");
+                builder.AppendLine($"        - path: {notableEntry.Path}");
+                builder.AppendLine($"          status: {notableEntry.Status}");
+                builder.AppendLine($"          stdoutLength: {notableEntry.StdoutLength}");
+                builder.AppendLine($"          stderrLength: {notableEntry.StderrLength}");
+            }
+
+            if (group.NotableEntries.Count == 0)
+            {
+                builder.AppendLine("        []");
             }
         }
     }
@@ -64,58 +135,104 @@ public static class LogReportFormatter
         int totalResultCount)
     {
         builder.AppendLine("  Exception summary:");
-        builder.AppendLine(
-            $"    - entries with parsed exceptions={summary.TotalEntriesWithExceptions}/{totalResultCount} ({summary.OccurrenceRate:P1})");
+        builder.AppendLine($"    totalEntriesWithExceptions: {summary.TotalEntriesWithExceptions}");
+        builder.AppendLine($"    totalResults: {totalResultCount}");
+        builder.AppendLine($"    occurrenceRate: {summary.OccurrenceRate:P1}");
 
         if (summary.TotalEntriesWithExceptions == 0)
         {
-            builder.AppendLine("    - no exception lines were detected");
+            builder.AppendLine("    typeGroups:");
+            builder.AppendLine("      []");
+            builder.AppendLine("    contextGroups:");
+            builder.AppendLine("      []");
+            builder.AppendLine("    messageGroups:");
+            builder.AppendLine("      []");
+            builder.AppendLine("    suggestedPatterns:");
+            builder.AppendLine("      []");
             return;
         }
 
-        builder.AppendLine("    - by type:");
+        builder.AppendLine("    typeGroups:");
         foreach (var group in summary.TypeGroups)
         {
-            builder.AppendLine(
-                $"      - {group.Type}: count={group.Count}, rate={group.OccurrenceRate:P1}, distinct messages={group.DistinctMessageCount}");
+            builder.AppendLine($"      - type: {group.Type}");
+            builder.AppendLine($"        count: {group.Count}");
+            builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
+            builder.AppendLine($"        distinctMessageCount: {group.DistinctMessageCount}");
+            builder.AppendLine("        examples:");
 
             foreach (var example in group.Examples)
             {
-                builder.AppendLine(
-                    $"        example: {example.Path} => type={example.Type}, context={example.Context ?? "(unknown context)"}, message={example.Message}, log line=\"{example.LogLine}\"");
+                builder.AppendLine($"          - path: {example.Path}");
+                builder.AppendLine($"            type: {example.Type}");
+                builder.AppendLine($"            context: {example.Context ?? "(unknown context)"}");
+                builder.AppendLine($"            message: {example.Message}");
+                builder.AppendLine($"            logLine: {example.LogLine}");
+            }
+
+            if (group.Examples.Count == 0)
+            {
+                builder.AppendLine("          []");
             }
         }
 
-        builder.AppendLine("    - by type and context:");
+        builder.AppendLine("    contextGroups:");
         foreach (var group in summary.ContextGroups)
         {
-            builder.AppendLine(
-                $"      - {group.Type} in {group.Context}: count={group.Count}, rate={group.OccurrenceRate:P1}, distinct messages={group.DistinctMessageCount}");
+            builder.AppendLine($"      - type: {group.Type}");
+            builder.AppendLine($"        context: {group.Context}");
+            builder.AppendLine($"        count: {group.Count}");
+            builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
+            builder.AppendLine($"        distinctMessageCount: {group.DistinctMessageCount}");
+            builder.AppendLine("        examples:");
 
             foreach (var example in group.Examples)
             {
-                builder.AppendLine(
-                    $"        example: {example.Path} => type={example.Type}, context={example.Context ?? "(unknown context)"}, message={example.Message}, log line=\"{example.LogLine}\"");
+                builder.AppendLine($"          - path: {example.Path}");
+                builder.AppendLine($"            type: {example.Type}");
+                builder.AppendLine($"            context: {example.Context ?? "(unknown context)"}");
+                builder.AppendLine($"            message: {example.Message}");
+                builder.AppendLine($"            logLine: {example.LogLine}");
+            }
+
+            if (group.Examples.Count == 0)
+            {
+                builder.AppendLine("          []");
             }
         }
 
-        builder.AppendLine("    - by message:");
+        builder.AppendLine("    messageGroups:");
         foreach (var group in summary.MessageGroups)
         {
-            builder.AppendLine(
-                $"      - {group.Message}: count={group.Count}, rate={group.OccurrenceRate:P1}");
+            builder.AppendLine($"      - message: {group.Message}");
+            builder.AppendLine($"        count: {group.Count}");
+            builder.AppendLine($"        occurrenceRate: {group.OccurrenceRate:P1}");
+            builder.AppendLine("        examples:");
 
             foreach (var example in group.Examples)
             {
-                builder.AppendLine(
-                    $"        example: {example.Path} => type={example.Type}, context={example.Context ?? "(unknown context)"}, message={example.Message}, log line=\"{example.LogLine}\"");
+                builder.AppendLine($"          - path: {example.Path}");
+                builder.AppendLine($"            type: {example.Type}");
+                builder.AppendLine($"            context: {example.Context ?? "(unknown context)"}");
+                builder.AppendLine($"            message: {example.Message}");
+                builder.AppendLine($"            logLine: {example.LogLine}");
+            }
+
+            if (group.Examples.Count == 0)
+            {
+                builder.AppendLine("          []");
             }
         }
 
-        builder.AppendLine("    - suggested patterns:");
+        builder.AppendLine("    suggestedPatterns:");
         foreach (var pattern in summary.SuggestedPatterns)
         {
             builder.AppendLine($"      - {pattern}");
+        }
+
+        if (summary.SuggestedPatterns.Count == 0)
+        {
+            builder.AppendLine("      []");
         }
     }
 

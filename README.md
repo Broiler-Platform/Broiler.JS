@@ -10,6 +10,7 @@ Broiler.JS is a modular JavaScript engine for .NET. The codebase is organized as
 - [Compliance dashboard](docs/compliance/dashboard.md) is the maintained status report for test suites, known gaps, and regression tracking.
 - [Known compliance gaps](docs/compliance/known-gaps.md) records areas that need implementation work before claiming full ECMAScript compliance.
 - [Compliance roadmap to 100%](docs/compliance/roadmap-to-100-percent.md) breaks the remaining compliance work into small execution steps.
+- [LogParser usage](logs/README.md) documents the shard log summarizer, including structured text output and JSON export.
 
 ## Building and testing
 
