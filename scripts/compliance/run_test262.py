@@ -243,7 +243,9 @@ class Test262Repository:
                 return [path]
 
             if not local_path.is_dir():
-                raise FileNotFoundError(f"Path not found: {path}")
+                raise FileNotFoundError(
+                    f"Path not found: {path} (resolved to {local_path})"
+                )
 
             return sorted(
                 child.relative_to(self.suite_root).as_posix()
