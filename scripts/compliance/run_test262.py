@@ -388,12 +388,16 @@ def log_progress(message: str) -> None:
     print(f"[test262] {message}", file=sys.stderr, flush=True)
 
 
-def progress_interval(total: int) -> int | None:
+def calculate_progress_log_interval(total: int) -> int | None:
     if total <= 0:
         return None
     if total < 25:
         return total
     return max(25, total // 10)
+
+
+def format_shard_label(shard_index: int, shard_count: int) -> str:
+    return f"{shard_index + 1}/{shard_count}"
 
 
 def select_paths(
@@ -559,10 +563,13 @@ def run_selected_tests(
         log_progress("No tests matched the current selection.")
         return []
 
-    shard_label = f"{int(selection['shardIndex']) + 1}/{int(selection['shardCount'])}"
+    shard_label = format_shard_label(
+        int(selection["shardIndex"]),
+        int(selection["shardCount"]),
+    )
     log_progress(f"Running {total} test(s) for shard {shard_label}.")
 
-    interval = progress_interval(total)
+    interval = calculate_progress_log_interval(total)
     harness_cache: dict[str, str] = {}
     results: list[dict[str, object]] = []
     passed = 0
@@ -661,7 +668,7 @@ def main() -> int:
     except ValueError as exc:
         parser.error(str(exc))
 
-    shard_label = f"{selection['shardIndex'] + 1}/{selection['shardCount']}"
+    shard_label = format_shard_label(selection["shardIndex"], selection["shardCount"])
     log_progress(
         f"Selected {len(expanded_paths)} runnable test(s) for shard {shard_label} "
         f"from {selection['selectedCountBeforeSharding']} selected file(s) "
