@@ -28,6 +28,9 @@ UNSUPPORTED_FLAGS = {"module", "raw"}
 USER_AGENT = "Broiler.JS compliance runner"
 DOWNLOAD_TIMEOUT_SECONDS = 120
 MAX_ARCHIVE_SIZE_BYTES = 256 * 1024 * 1024
+HOST_HARNESS_INCLUDE_BLOCKERS = {"doneprintHandle.js"}
+HOST_HARNESS_REFERENCE_PATTERN = re.compile(r"\$262(?:\b|\.)")
+HOST_HARNESS_BLOCKER_NAME = "$262"
 
 
 class Test262Repository:
@@ -295,6 +298,129 @@ def parse_metadata(source: str) -> tuple[dict[str, list[str]], str]:
     return {"includes": parse_list("includes"), "flags": parse_list("flags")}, body
 
 
+def parse_negative_metadata(source: str) -> dict[str, str] | None:
+    metadata_match = re.search(r"/\*---\n(.*?)\n---\*/", source, re.S)
+    if metadata_match is None:
+        return None
+
+    negative_match = re.search(r"(?m)^negative:\s*\n((?:[ \t]+.*\n?)*)", metadata_match.group(1))
+    if negative_match is None:
+        return None
+
+    negative_block = negative_match.group(1)
+    summary: dict[str, str] = {}
+    for key in ("phase", "type"):
+        value_match = re.search(rf"(?m)^[ \t]+{key}:\s*(.+?)\s*$", negative_block)
+        if value_match is not None:
+            summary[key] = value_match.group(1)
+
+    return summary if summary else None
+
+
+def classify_test(
+    source: str,
+    repo: Test262Repository | None = None,
+    harness_dependency_cache: dict[str, bool] | None = None,
+) -> dict[str, object]:
+    """Classify one test262 source file for raw script-host execution.
+
+    Returns flags, unsupported flag names, optional negative metadata,
+    optional host-harness blockers, and a boolean isScriptHostVerifiable flag.
+    """
+    metadata, _ = parse_metadata(source)
+    flags = list(metadata["flags"])
+    unsupported_flags = sorted(UNSUPPORTED_FLAGS & set(flags))
+    negative = parse_negative_metadata(source)
+    host_harness_blockers: list[str] = []
+    if HOST_HARNESS_REFERENCE_PATTERN.search(source):
+        host_harness_blockers.append(HOST_HARNESS_BLOCKER_NAME)
+    if repo is not None and harness_dependency_cache is not None:
+        for include in metadata["includes"]:
+            if include not in harness_dependency_cache:
+                if include in HOST_HARNESS_INCLUDE_BLOCKERS:
+                    harness_dependency_cache[include] = True
+                else:
+                    harness_dependency_cache[include] = HOST_HARNESS_REFERENCE_PATTERN.search(
+                        repo.read_text(f"harness/{include}")
+                    ) is not None
+            if harness_dependency_cache[include]:
+                host_harness_blockers.append(f"include:{include}")
+
+    return {
+        "flags": flags,
+        "unsupportedFlags": unsupported_flags,
+        "negative": negative,
+        "hostHarnessBlockers": sorted(set(host_harness_blockers)),
+        "isScriptHostVerifiable": (
+            not unsupported_flags
+            and negative is None
+            and not host_harness_blockers
+        ),
+    }
+
+
+def collect_requested_paths(paths: list[str], path_files: list[str]) -> list[str]:
+    requested_paths = list(paths)
+    for path_file in path_files:
+        for line in Path(path_file).read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#"):
+                requested_paths.append(line)
+    return requested_paths
+
+
+def apply_shard(paths: list[str], shard_count: int, shard_index: int) -> list[str]:
+    """Return one deterministic modulo-based shard from an ordered path list."""
+    if shard_count <= 0:
+        raise ValueError(f"shard_count must be greater than 0, got {shard_count}")
+    if shard_index < 0 or shard_index >= shard_count:
+        raise ValueError(
+            f"shard_index must be between 0 and {shard_count - 1}, got {shard_index}"
+        )
+
+    if shard_count == 1:
+        return list(paths)
+
+    return [path for index, path in enumerate(paths) if index % shard_count == shard_index]
+
+
+def select_paths(
+    repo: Test262Repository,
+    requested_paths: list[str],
+    all_script_host_verifiable: bool,
+    shard_count: int,
+    shard_index: int,
+) -> tuple[list[str], dict[str, object]]:
+    """Select test paths plus metadata for requested or full script-host runs."""
+    selection_mode = "requested"
+    if all_script_host_verifiable:
+        candidate_paths = repo.list_paths(prefix="test/", suffix=".js")
+        harness_dependency_cache: dict[str, bool] = {}
+        expanded_paths = [
+            path
+            for path in candidate_paths
+            if classify_test(
+                repo.read_text(path),
+                repo,
+                harness_dependency_cache,
+            )["isScriptHostVerifiable"]
+        ]
+        selection_mode = "all-script-host-verifiable"
+    else:
+        candidate_paths = repo.expand_paths(requested_paths)
+        expanded_paths = list(candidate_paths)
+
+    sharded_paths = apply_shard(expanded_paths, shard_count, shard_index)
+    selection = {
+        "selectionMode": selection_mode,
+        "candidateCount": len(candidate_paths),
+        "selectedCountBeforeSharding": len(expanded_paths),
+        "shardCount": shard_count,
+        "shardIndex": shard_index,
+    }
+    return sharded_paths, selection
+
+
 def run_test(
     repo: Test262Repository,
     broiler_dll: str,
@@ -386,6 +512,7 @@ def build_summary(
     requested_paths: list[str],
     expanded_paths: list[str],
     results: list[dict[str, object]],
+    selection: dict[str, object],
 ) -> dict[str, object]:
     passed = sum(1 for result in results if result["status"] == "passed")
     failed = sum(1 for result in results if result["status"] == "failed")
@@ -396,6 +523,11 @@ def build_summary(
         "broilerDll": broiler_dll,
         "requestedPaths": requested_paths,
         "expandedPaths": expanded_paths,
+        "selectionMode": selection["selectionMode"],
+        "candidateCount": selection["candidateCount"],
+        "selectedCountBeforeSharding": selection["selectedCountBeforeSharding"],
+        "shardCount": selection["shardCount"],
+        "shardIndex": selection["shardIndex"],
         "executed": executed,
         "passed": passed,
         "failed": failed,
@@ -433,18 +565,42 @@ def main() -> int:
         "--output",
         help="Optional path for machine-readable JSON output",
     )
+    parser.add_argument(
+        "--all-script-host-verifiable",
+        action="store_true",
+        help="Discover and run every current script-host-verifiable test262 file",
+    )
+    parser.add_argument(
+        "--shard-count",
+        type=int,
+        default=1,
+        help="Total number of deterministic shards to split the selected test set into",
+    )
+    parser.add_argument(
+        "--shard-index",
+        type=int,
+        default=0,
+        help="Zero-based shard index to execute from the selected test set",
+    )
     args = parser.parse_args()
 
     repo = Test262Repository(args.suite_ref, args.suite_root)
     TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
-    requested_paths = list(args.paths)
-    for path_file in args.path_file:
-        for line in Path(path_file).read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if line and not line.startswith("#"):
-                requested_paths.append(line)
+    requested_paths = collect_requested_paths(args.paths, args.path_file)
+    if args.all_script_host_verifiable and requested_paths:
+        parser.error("--all-script-host-verifiable cannot be combined with explicit paths")
 
-    expanded_paths = repo.expand_paths(requested_paths)
+    try:
+        expanded_paths, selection = select_paths(
+            repo,
+            requested_paths,
+            args.all_script_host_verifiable,
+            args.shard_count,
+            args.shard_index,
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
+
     harness_cache: dict[str, str] = {}
     results = [
         run_test(repo, args.broiler_dll, path, harness_cache)
@@ -456,6 +612,7 @@ def main() -> int:
         requested_paths,
         expanded_paths,
         results,
+        selection,
     )
 
     if args.output:

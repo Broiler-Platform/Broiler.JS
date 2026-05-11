@@ -5,11 +5,10 @@ from __future__ import annotations
 import argparse
 import glob
 import json
-import re
 from collections import Counter
 from pathlib import Path
 
-from run_test262 import DEFAULT_SUITE_REF, Test262Repository, UNSUPPORTED_FLAGS, parse_metadata
+from run_test262 import DEFAULT_SUITE_REF, Test262Repository, classify_test
 
 MAX_LARGEST_UNCOVERED_BUCKETS = 10
 
@@ -57,38 +56,6 @@ def summarize_buckets(paths: list[str], depth: int, limit: int | None = None) ->
     return rows[:limit] if limit is not None else rows
 
 
-def parse_negative_metadata(source: str) -> dict[str, str] | None:
-    metadata_match = re.search(r"/\*---\n(.*?)\n---\*/", source, re.S)
-    if metadata_match is None:
-        return None
-
-    negative_match = re.search(r"(?m)^negative:\s*\n((?:[ \t]+.*\n?)*)", metadata_match.group(1))
-    if negative_match is None:
-        return None
-
-    negative_block = negative_match.group(1)
-    summary: dict[str, str] = {}
-    for key in ("phase", "type"):
-        value_match = re.search(rf"(?m)^[ \t]+{key}:\s*(.+?)\s*$", negative_block)
-        if value_match is not None:
-            summary[key] = value_match.group(1)
-
-    return summary if summary else None
-
-
-def classify_test(source: str) -> dict[str, object]:
-    metadata, _ = parse_metadata(source)
-    flags = list(metadata["flags"])
-    unsupported_flags = sorted(UNSUPPORTED_FLAGS & set(flags))
-    negative = parse_negative_metadata(source)
-    return {
-        "flags": flags,
-        "unsupportedFlags": unsupported_flags,
-        "negative": negative,
-        "isScriptHostVerifiable": not unsupported_flags and negative is None,
-    }
-
-
 def build_audit_summary(
     repo: Test262Repository,
     suite_root: Path | None,
@@ -103,6 +70,7 @@ def build_audit_summary(
     blocker_counts: Counter[str] = Counter()
     unsupported_flagged_tests = 0
     negative_tests = 0
+    host_harness_dependent_tests = 0
     async_script_host_verifiable_tests = 0
     no_strict_script_host_verifiable_tests = 0
     script_host_verifiable_tests = 0
@@ -111,13 +79,20 @@ def build_audit_summary(
 
     manifest_unsupported_tests: list[str] = []
     manifest_negative_tests: list[str] = []
+    manifest_host_harness_tests: list[str] = []
     manifest_script_host_verifiable_tests = 0
 
     manifest_path_set = set(manifest_expanded_paths)
+    harness_dependency_cache: dict[str, bool] = {}
     for path in suite_paths:
-        classification = classify_test(repo.read_text(path))
+        classification = classify_test(
+            repo.read_text(path),
+            repo,
+            harness_dependency_cache,
+        )
         unsupported_flags = classification["unsupportedFlags"]
         negative = classification["negative"]
+        host_harness_blockers = classification["hostHarnessBlockers"]
         flags = classification["flags"]
 
         if unsupported_flags:
@@ -128,6 +103,10 @@ def build_audit_summary(
         if negative is not None:
             negative_tests += 1
             blocker_counts.update(["negative"])
+
+        if host_harness_blockers:
+            host_harness_dependent_tests += 1
+            blocker_counts.update(["hostHarness"])
 
         if classification["isScriptHostVerifiable"]:
             script_host_verifiable_tests += 1
@@ -146,6 +125,8 @@ def build_audit_summary(
             manifest_unsupported_tests.append(path)
         if negative is not None:
             manifest_negative_tests.append(path)
+        if host_harness_blockers:
+            manifest_host_harness_tests.append(path)
         if classification["isScriptHostVerifiable"]:
             manifest_script_host_verifiable_tests += 1
 
@@ -164,6 +145,7 @@ def build_audit_summary(
         "unsupportedFlagCounts": dict(sorted(unsupported_flag_counts.items())),
         "scriptHostBlockerCounts": dict(sorted(blocker_counts.items())),
         "negativeTests": negative_tests,
+        "hostHarnessDependentTests": host_harness_dependent_tests,
         "scriptHostVerifiableTests": script_host_verifiable_tests,
         "scriptHostExcludedTests": suite_tests_discovered - script_host_verifiable_tests,
         "asyncScriptHostVerifiableTests": async_script_host_verifiable_tests,
@@ -173,6 +155,7 @@ def build_audit_summary(
         "manifestUniqueTests": manifest_unique_tests,
         "manifestUnsupportedTests": manifest_unsupported_tests,
         "manifestNegativeTests": manifest_negative_tests,
+        "manifestHostHarnessTests": manifest_host_harness_tests,
         "manifestScriptHostVerifiableTests": manifest_script_host_verifiable_tests,
         "topLevelCounts": {
             "scriptHostVerifiable": summarize_buckets(script_host_verifiable_paths, depth=2),
@@ -252,7 +235,13 @@ def main() -> int:
     # manifests whose entries are script-host-verifiable. Failing here prevents CI from
     # silently reporting coverage for unsupported-flag or negative-metadata files that
     # this workflow does not validate correctly yet.
-    return 1 if summary["manifestUnsupportedTests"] or summary["manifestNegativeTests"] else 0
+    return 1 if any(
+        (
+            summary["manifestUnsupportedTests"],
+            summary["manifestNegativeTests"],
+            summary["manifestHostHarnessTests"],
+        )
+    ) else 0
 
 
 if __name__ == "__main__":

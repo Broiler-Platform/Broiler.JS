@@ -7,7 +7,7 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 | Area | Latest recorded result | Evidence |
 | --- | --- | --- |
 | Repository xUnit tests | 2026-05-10 local rerun: 293 passed, 0 failed, 0 skipped | `dotnet test Broiler.JS.slnx` |
-| test262 automated manifest coverage | 2026-05-11 local rerun of all pinned manifests: 163 executed, 163 passed, 0 failed, 0 skipped; audit found 53,469 upstream files, 48,214 script-host-verifiable files, 5,255 unique script-host exclusions, and 163 unique manifest-covered files (0.30% of the suite / 0.34% of the script-host-verifiable subset) | `python scripts/compliance/audit_test262.py --suite-ref ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e --manifest-glob 'scripts/compliance/test262-*.txt'` plus the existing `.github/workflows/test262.yml` loop over every `scripts/compliance/test262-*.txt` manifest |
+| test262 automated manifest coverage | 2026-05-11 local rerun of all pinned manifests: 163 executed, 163 passed, 0 failed, 0 skipped; audit found 53,469 upstream files, 47,420 script-host-verifiable files, 6,049 unique script-host exclusions, and 163 unique manifest-covered files (0.30% of the suite / 0.34% of the script-host-verifiable subset) | `python scripts/compliance/audit_test262.py --suite-ref ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e --manifest-glob 'scripts/compliance/test262-*.txt'`, `.github/workflows/test262.yml`, and the sharded full-suite automation in `.github/workflows/test262-full-script-host.yml` |
 | test262 (real subset, custom raw-script runner) | 2026-05-09 snapshot of `tc39/test262` `main` at `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`: 126 executed / 1 skipped across `Array.isArray`, `addition`, `strict-equals`, and `RegExp.escape`; Broiler passed 75 and failed 51 while Chromium passed 126 and failed 0 | Downloaded the upstream suite outside the repo, prepended the standard harness files (`assert.js`, `sta.js`, and per-test includes), then executed the same files through the repaired Broiler CLI script host and Chromium 147.0.7727.0. |
 | test262 automated `Array.isArray` subset rerun | 2026-05-10 rerun of pinned `test/built-ins/Array/isArray`: 29 executed, Broiler passed 29 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/array-isarray-summary.json --path-file scripts/compliance/test262-array-isarray.txt` |
 | test262 automated unresolved-reference subset rerun | 2026-05-10 rerun of the unresolved-reference cases from `addition` and `strict-equals`: 6 executed, Broiler passed 6 and failed 0 | `python scripts/compliance/run_test262.py --output /tmp/broiler-compliance/unresolved-summary.json --path-file scripts/compliance/test262-unresolved-reference.txt` |
@@ -134,13 +134,13 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 - `scripts/compliance/run_test262.py` now executes `onlyStrict` tests by prepending a strict-mode directive before the test body, and the audit now counts those files as script-host-verifiable. The remaining raw-script exclusions are `module`, `raw`, and negative-metadata tests.
 - Expanded the manifest set from 89 unique test files to 163 by promoting the full `test/language/expressions/strict-equals` directory, adding a new `test262-language-basics.txt` manifest, and removing strict-equals duplicates from the unresolved-reference manifest.
 - Verified the new coverage directly: `test262-bigint-comparisons.txt` now runs 30/30 strict-equality files, and `test262-language-basics.txt` runs 55/55 additional language-basics files.
-- The richer audit shows why the workflow still stops at 163 tests even though the raw script host can parse/run far more files: only 91 manifest entries are currently promoted into CI, so the workflow covers just 163 unique files out of 48,214 script-host-verifiable tests (0.34%).
-- Structural raw-runner exclusions currently affect 5,255 unique files. The blocker counts are `negative=4,669`, `module=821`, and `raw=32`; those counts overlap, so they are larger than the unique excluded-file total.
-- The largest uncovered script-host-verifiable top-level areas are `test/built-ins` (23,275 files), `test/language` (18,786), `test/intl402` (3,319), `test/staging` (1,484), and `test/annexB` (1,071). The largest uncovered depth-3 buckets are `test/language/expressions` (8,999), `test/language/statements` (7,790), `test/built-ins/Object` (3,411), `test/built-ins/Array` (3,052), and `test/built-ins/RegExp` (1,680).
+- The richer audit shows why the workflow still stops at 163 tests even though the raw script host can parse/run far more files: only 91 manifest entries are currently promoted into CI, so the workflow covers just 163 unique files out of 47,420 script-host-verifiable tests (0.34%).
+- Structural raw-runner exclusions currently affect 6,049 unique files. The blocker counts are `negative=4,669`, `hostHarness=802`, `module=821`, and `raw=32`; those counts overlap, so they are larger than the unique excluded-file total.
+- The largest uncovered script-host-verifiable top-level areas are `test/built-ins` (22,709 files), `test/language` (18,754), `test/intl402` (3,309), `test/staging` (1,362), and `test/annexB` (1,011). The largest uncovered depth-3 buckets are `test/language/expressions` (8,983), `test/language/statements` (7,790), `test/built-ins/Temporal` (4,588), `test/built-ins/Object` (3,410), and `test/built-ins/Array` (3,036).
 
 ### Feasibility, blockers, and expansion plan
 
-1. **What is feasible without engine or harness changes:** the current raw script host can already execute the 48,214 script-host-verifiable files, so the fastest path to materially higher coverage is manifest growth plus failure triage, not a wholesale harness rewrite.
+1. **What is feasible without engine or harness changes:** the current raw script host can already execute the 47,420 script-host-verifiable files, so the fastest path to materially higher coverage is manifest growth plus failure triage, not a wholesale harness rewrite.
 2. **What currently blocks “all possible testcases”:**
    - Negative tests need expected-phase/result handling instead of today's pass-only runner.
    - `module` and `raw` tests need a different host mode than the current single-file script host.
@@ -150,8 +150,15 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
    - Expand manifests from the largest script-host-verifiable ES language buckets first (`test/language/expressions`, `test/language/statements`) in small directory or subdirectory shards and keep each shard green before promoting the next one.
    - Continue with proven built-in areas that already have local regressions or prior public-suite evidence (`Object`, `Array`, `RegExp`, `TypedArray`, `String`) before attempting heavier `Temporal`/`intl402` surfaces.
    - Add negative-test support to the runner so the 4,669 negative files become measurable instead of structurally excluded.
+   - Add targeted host shims (for example `$262` helpers) or a richer test262 harness adapter so more of the current 802 host-harness-dependent files move into the runnable set.
    - Add separate module/raw host modes and move those categories into their own scheduled workflow once the engine surface is ready.
 4. **Effort estimate:** manifest-only breadth growth is a short-term task that can add hundreds to low-thousands of tests in days/weeks; negative-test support is a medium-sized tooling task; module/raw coverage and the large `Temporal`/`intl402` buckets are multi-iteration engine-and-harness work.
+
+### Full-suite automation now available
+
+- `scripts/compliance/run_test262.py` now supports `--all-script-host-verifiable` for dynamic discovery of every current runnable `test262` file at a chosen suite ref, plus deterministic `--shard-count` / `--shard-index` splitting for large runs.
+- `.github/workflows/test262-full-script-host.yml` uses that mode to fetch the selected `test262` ref and execute the full script-host-verifiable subset in 8 shards without maintaining manifest files by hand.
+- This automation covers current and future script-host-verifiable files automatically whenever the suite ref changes; the remaining non-runnable categories still need negative-result handling (`negative`), additional host shims (`hostHarness` / `$262`), or a different host mode (`module`, `raw`).
 
 ## Comparative engine matrix
 
@@ -180,6 +187,6 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 ## Next automation steps
 
 1. Keep the pinned `test262` CI workflow current as new manifests or host requirements are added.
-2. Add a separate scheduled compliance job for broader or slower suites that should not block every PR.
+2. Decide whether the sharded full-script-host workflow should stay manual-only or also run on a release/scheduled cadence once the expected runtime is measured.
 3. Publish machine-readable totals from release-time compliance runs and update this dashboard for releases.
 4. Track pass-rate deltas per suite revision to detect regressions.

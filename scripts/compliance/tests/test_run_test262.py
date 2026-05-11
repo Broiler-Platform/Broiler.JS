@@ -62,6 +62,45 @@ class RunTest262Tests(unittest.TestCase):
 
         self.assertEqual([file_path], repo.list_paths(prefix="test/", suffix=".js"))
 
+    def test_select_paths_all_script_host_verifiable_filters_blocked_tests_and_shards(self) -> None:
+        first_path = self.write_test("test/language/a.js", "1 + 1;\n")
+        self.write_test(
+            "test/language/b-negative.js",
+            "/*---\nnegative:\n  phase: runtime\n  type: ReferenceError\n---*/\nmissing;\n",
+        )
+        self.write_test(
+            "test/language/c-module.js",
+            "/*---\nflags: [module]\n---*/\nexport {};\n",
+        )
+        self.write_test("test/language/host-harness.js", "$262.createRealm();\n")
+        second_path = self.write_test(
+            "test/language/d-async.js",
+            "/*---\nflags: [async]\n---*/\n$DONE();\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        selected_paths, selection = run_test262.select_paths(
+            repo,
+            [],
+            all_script_host_verifiable=True,
+            shard_count=2,
+            shard_index=1,
+        )
+
+        self.assertEqual([second_path], selected_paths)
+        self.assertEqual("all-script-host-verifiable", selection["selectionMode"])
+        self.assertEqual(5, selection["candidateCount"])
+        self.assertEqual(2, selection["selectedCountBeforeSharding"])
+        self.assertEqual(2, selection["shardCount"])
+        self.assertEqual(1, selection["shardIndex"])
+
+    def test_apply_shard_rejects_invalid_parameters(self) -> None:
+        with self.assertRaisesRegex(ValueError, "shard_count must be greater than 0"):
+            run_test262.apply_shard(["test/language/example.js"], 0, 0)
+
+        with self.assertRaisesRegex(ValueError, "shard_index must be between 0 and 1"):
+            run_test262.apply_shard(["test/language/example.js"], 2, 2)
+
 
 if __name__ == "__main__":
     unittest.main()
