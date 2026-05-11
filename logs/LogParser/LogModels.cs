@@ -38,6 +38,7 @@ public sealed class ParsedException
     public required string Type { get; init; }
     public required string Message { get; init; }
     public string? Context { get; init; }
+    public int? LineNumber { get; init; }
     public required string LogLine { get; init; }
 }
 
@@ -141,5 +142,6 @@ public sealed class LoggedException
     public required string Type { get; init; }
     public required string Message { get; init; }
     public string? Context { get; init; }
+    public int? LineNumber { get; init; }
     public required string LogLine { get; init; }
 }

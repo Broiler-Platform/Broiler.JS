@@ -7,6 +7,7 @@ dotnet run --project logs/LogParser -- logs/shard-1.json
 dotnet run --project logs/LogParser -- logs/shard-1.json --output json
 dotnet run --project logs/LogParser -- logs/shard-1.json --type System.NullReferenceException
 dotnet run --project logs/LogParser -- logs/shard-1.json --type System.NullReferenceException --context "Broiler.JavaScript.BuiltIns.Array.JSArray.Filter"
+dotnet run --project logs/LogParser -- logs/shard-1.json --message "property set"
 ```
 
 The default text output now uses explicit sections and field names so each summary is easier to scan and post-process.
@@ -66,6 +67,6 @@ JSON mode emits the same report shape in a machine-friendly format:
 }
 ```
 
-Exception summaries now emit every parsed error entry in each matching type/context/message group rather than truncating the output to a small set of examples.
+Exception summaries now emit every parsed error entry in each matching type/context/message group rather than truncating the output to a small set of examples, and each parsed exception entry includes the stack-frame line number when it can be extracted.
 
-When `--type` and/or `--context` filters are active, LogParser suppresses the normal summary report and emits only matching exceptions. This applies to both text and JSON output; filtered JSON emits a `matches` collection instead of `summaries`.
+When `--type`, `--context`, and/or `--message` filters are active, LogParser suppresses the normal summary report and emits only matching exceptions. Message filters use case-insensitive substring matching, so both partial and exact message searches work. This applies to both text and JSON output; filtered JSON emits a `matches` collection instead of `summaries`.

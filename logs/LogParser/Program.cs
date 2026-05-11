@@ -34,6 +34,7 @@ internal static class Program
         var outputFormat = "text";
         var typeFilter = default(string);
         var contextFilter = default(string);
+        var messageFilter = default(string);
         var pendingOption = string.Empty;
 
         foreach (var arg in args)
@@ -59,6 +60,13 @@ internal static class Program
                 continue;
             }
 
+            if (string.Equals(pendingOption, "--message", StringComparison.Ordinal))
+            {
+                messageFilter = NormalizeFilterValue(arg, "--message");
+                pendingOption = string.Empty;
+                continue;
+            }
+
             if (arg.StartsWith("--output=", StringComparison.Ordinal))
             {
                 outputFormat = NormalizeOutputFormat(arg["--output=".Length..]);
@@ -74,6 +82,12 @@ internal static class Program
             if (arg.StartsWith("--context=", StringComparison.Ordinal))
             {
                 contextFilter = NormalizeFilterValue(arg["--context=".Length..], "--context");
+                continue;
+            }
+
+            if (arg.StartsWith("--message=", StringComparison.Ordinal))
+            {
+                messageFilter = NormalizeFilterValue(arg["--message=".Length..], "--message");
                 continue;
             }
 
@@ -96,6 +110,12 @@ internal static class Program
                 continue;
             }
 
+            if (string.Equals(arg, "--message", StringComparison.Ordinal))
+            {
+                pendingOption = "--message";
+                continue;
+            }
+
             if (arg.StartsWith("-o=", StringComparison.Ordinal))
             {
                 outputFormat = NormalizeOutputFormat(arg["-o=".Length..]);
@@ -110,7 +130,7 @@ internal static class Program
             throw new ArgumentException($"Missing value for {pendingOption}.");
         }
 
-        return new ProgramOptions(inputs, outputFormat, typeFilter, contextFilter);
+        return new ProgramOptions(inputs, outputFormat, typeFilter, contextFilter, messageFilter);
     }
 
     internal static IReadOnlyList<SummaryInput> ResolveSummaryInputs(IEnumerable<string> inputs)
@@ -137,8 +157,8 @@ internal static class Program
     {
         return options.OutputFormat switch
         {
-            "text" when HasActiveFilters(options) => LogReportFormatter.FormatFilteredExceptions(summaries, options.TypeFilter, options.ContextFilter),
-            "json" when HasActiveFilters(options) => LogReportFormatter.FormatFilteredExceptionsJson(summaries, options.TypeFilter, options.ContextFilter),
+            "json" when HasActiveFilters(options) => LogReportFormatter.FormatFilteredExceptionsJson(summaries, options.TypeFilter, options.ContextFilter, options.MessageFilter),
+            "text" when HasActiveFilters(options) => LogReportFormatter.FormatFilteredExceptions(summaries, options.TypeFilter, options.ContextFilter, options.MessageFilter),
             "text" => LogReportFormatter.Format(summaries),
             "json" => LogReportFormatter.FormatJson(summaries),
             _ => throw new ArgumentOutOfRangeException(nameof(options.OutputFormat), options.OutputFormat, "Unsupported output format.")
@@ -206,13 +226,15 @@ internal static class Program
     private static bool HasActiveFilters(ProgramOptions options)
     {
         return !string.IsNullOrEmpty(options.TypeFilter)
-            || !string.IsNullOrEmpty(options.ContextFilter);
+            || !string.IsNullOrEmpty(options.ContextFilter)
+            || !string.IsNullOrEmpty(options.MessageFilter);
     }
 
     internal readonly record struct ProgramOptions(
         IReadOnlyList<string> Inputs,
         string OutputFormat,
         string? TypeFilter,
-        string? ContextFilter);
+        string? ContextFilter,
+        string? MessageFilter);
     internal readonly record struct SummaryInput(string Path, bool IsDirectory);
 }

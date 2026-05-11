@@ -40,14 +40,16 @@ public static class LogReportFormatter
     public static string FormatFilteredExceptions(
         IEnumerable<LogFileSummary> fileSummaries,
         string? typeFilter,
-        string? contextFilter)
+        string? contextFilter,
+        string? messageFilter = null)
     {
-        var report = CreateFilteredExceptionReport(fileSummaries, outputFormat: "text", typeFilter, contextFilter);
+        var report = CreateFilteredExceptionReport(fileSummaries, outputFormat: "text", typeFilter, contextFilter, messageFilter);
         var builder = new StringBuilder();
 
         builder.AppendLine("Filters:");
         builder.AppendLine($"  type: {report.Filters.Type ?? "(any)"}");
         builder.AppendLine($"  context: {report.Filters.Context ?? "(any)"}");
+        builder.AppendLine($"  message: {report.Filters.Message ?? "(any)"}");
         builder.AppendLine("Matches:");
 
         if (report.Matches.Count == 0)
@@ -69,6 +71,7 @@ public static class LogReportFormatter
                 builder.AppendLine($"        type: {exception.Type}");
                 builder.AppendLine($"        context: {exception.Context ?? "(unknown context)"}");
                 builder.AppendLine($"        message: {exception.Message}");
+                builder.AppendLine($"        lineNumber: {FormatLineNumber(exception.LineNumber)}");
                 builder.AppendLine($"        logLine: {exception.LogLine}");
             }
         }
@@ -79,10 +82,11 @@ public static class LogReportFormatter
     public static string FormatFilteredExceptionsJson(
         IEnumerable<LogFileSummary> fileSummaries,
         string? typeFilter,
-        string? contextFilter)
+        string? contextFilter,
+        string? messageFilter = null)
     {
         return JsonSerializer.Serialize(
-            CreateFilteredExceptionReport(fileSummaries, outputFormat: "json", typeFilter, contextFilter),
+            CreateFilteredExceptionReport(fileSummaries, outputFormat: "json", typeFilter, contextFilter, messageFilter),
             JsonOptions);
     }
 
@@ -126,7 +130,8 @@ public static class LogReportFormatter
         IEnumerable<LogFileSummary> fileSummaries,
         string outputFormat,
         string? typeFilter,
-        string? contextFilter)
+        string? contextFilter,
+        string? messageFilter = null)
     {
         return new FilteredExceptionReport
         {
@@ -134,7 +139,8 @@ public static class LogReportFormatter
             Filters = new FilteredExceptionFilters
             {
                 Type = typeFilter,
-                Context = contextFilter
+                Context = contextFilter,
+                Message = messageFilter
             },
             Matches = fileSummaries
                 .Select(summary => new FilteredExceptionMatch
@@ -146,7 +152,7 @@ public static class LogReportFormatter
                         Path = summary.FilePath
                     },
                     Exceptions = summary.LogRun.Results
-                        .Where(entry => entry.Exception is not null && MatchesExceptionFilter(entry.Exception!, typeFilter, contextFilter))
+                        .Where(entry => entry.Exception is not null && MatchesExceptionFilter(entry.Exception!, typeFilter, contextFilter, messageFilter))
                         .OrderBy(entry => entry.Path, StringComparer.OrdinalIgnoreCase)
                         .ThenBy(entry => entry.Exception!.Type, StringComparer.OrdinalIgnoreCase)
                         .ThenBy(entry => entry.Exception!.Context ?? string.Empty, StringComparer.OrdinalIgnoreCase)
@@ -156,6 +162,7 @@ public static class LogReportFormatter
                             Type = entry.Exception!.Type,
                             Message = entry.Exception.Message,
                             Context = entry.Exception.Context,
+                            LineNumber = entry.Exception.LineNumber,
                             LogLine = entry.Exception.LogLine
                         })
                         .ToArray()
@@ -263,6 +270,7 @@ public static class LogReportFormatter
                 builder.AppendLine($"            type: {entry.Type}");
                 builder.AppendLine($"            context: {entry.Context ?? "(unknown context)"}");
                 builder.AppendLine($"            message: {entry.Message}");
+                builder.AppendLine($"            lineNumber: {FormatLineNumber(entry.LineNumber)}");
                 builder.AppendLine($"            logLine: {entry.LogLine}");
             }
 
@@ -290,6 +298,7 @@ public static class LogReportFormatter
                 builder.AppendLine($"            type: {entry.Type}");
                 builder.AppendLine($"            context: {entry.Context ?? "(unknown context)"}");
                 builder.AppendLine($"            message: {entry.Message}");
+                builder.AppendLine($"            lineNumber: {FormatLineNumber(entry.LineNumber)}");
                 builder.AppendLine($"            logLine: {entry.LogLine}");
             }
 
@@ -315,6 +324,7 @@ public static class LogReportFormatter
                 builder.AppendLine($"            type: {entry.Type}");
                 builder.AppendLine($"            context: {entry.Context ?? "(unknown context)"}");
                 builder.AppendLine($"            message: {entry.Message}");
+                builder.AppendLine($"            lineNumber: {FormatLineNumber(entry.LineNumber)}");
                 builder.AppendLine($"            logLine: {entry.LogLine}");
             }
 
@@ -343,7 +353,7 @@ public static class LogReportFormatter
         return string.IsNullOrEmpty(fileName) ? trimmedPath : fileName;
     }
 
-    private static bool MatchesExceptionFilter(ParsedException exception, string? typeFilter, string? contextFilter)
+    private static bool MatchesExceptionFilter(ParsedException exception, string? typeFilter, string? contextFilter, string? messageFilter)
     {
         if (!string.IsNullOrEmpty(typeFilter)
             && !string.Equals(exception.Type, typeFilter, StringComparison.OrdinalIgnoreCase))
@@ -357,6 +367,17 @@ public static class LogReportFormatter
             return false;
         }
 
+        if (!string.IsNullOrEmpty(messageFilter)
+            && exception.Message.IndexOf(messageFilter, StringComparison.OrdinalIgnoreCase) < 0)
+        {
+            return false;
+        }
+
         return true;
+    }
+
+    private static string FormatLineNumber(int? lineNumber)
+    {
+        return lineNumber?.ToString() ?? "(unknown)";
     }
 }

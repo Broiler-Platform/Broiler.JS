@@ -124,6 +124,7 @@ public class LogSummaryBuilderTests
         Assert.Equal("Broiler.JavaScript.Runtime.JSException", parsedException.Type);
         Assert.Equal("Cannot get property set of undefined", parsedException.Message);
         Assert.Equal("InitializeFactories", parsedException.Context);
+        Assert.Equal(17, parsedException.LineNumber);
         Assert.StartsWith("Unhandled exception.", parsedException.LogLine, StringComparison.Ordinal);
 
         var initializeFactoriesGroup = Assert.Single(
@@ -160,6 +161,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("context: InitializeFactories", formatted, StringComparison.Ordinal);
         Assert.Contains("context: GetDate", formatted, StringComparison.Ordinal);
         Assert.Contains("message: Cannot get property set of undefined", formatted, StringComparison.Ordinal);
+        Assert.Contains("lineNumber: 17", formatted, StringComparison.Ordinal);
         Assert.Contains("exceptions:", formatted, StringComparison.Ordinal);
         Assert.Contains("path: test/annexB/alpha.js", formatted, StringComparison.Ordinal);
     }
@@ -303,6 +305,19 @@ public class LogSummaryBuilderTests
         Assert.Contains("\"exceptionSummary\"", json, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void FormatJson_IncludesExceptionLineNumbers()
+    {
+        var json = LogReportFormatter.FormatJson(
+        [
+            LogSummaryBuilder.ParseAndSummarize(GetExceptionFixturePath())
+        ]);
+
+        Assert.Contains("\"lineNumber\": 17", json, StringComparison.Ordinal);
+        Assert.Contains("\"lineNumber\": 99", json, StringComparison.Ordinal);
+        Assert.Contains("\"lineNumber\": 42", json, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData(new[] { "--output", "json", "sample.json" }, "json", new[] { "sample.json" })]
     [InlineData(new[] { "--output=json", "sample.json" }, "json", new[] { "sample.json" })]
@@ -327,6 +342,16 @@ public class LogSummaryBuilderTests
         Assert.Equal(expectedContext, options.ContextFilter);
     }
 
+    [Theory]
+    [InlineData(new[] { "--message", "property set", "sample.json" }, "property set")]
+    [InlineData(new[] { "--message=Unexpected parser state", "sample.json" }, "Unexpected parser state")]
+    public void ParseOptions_ReadsSupportedMessageFilterSyntaxes(string[] args, string expectedMessage)
+    {
+        var options = Program.ParseOptions(args);
+
+        Assert.Equal(expectedMessage, options.MessageFilter);
+    }
+
     [Fact]
     public void ParseOptions_DefaultsToTextWhenOutputIsNotSpecified()
     {
@@ -336,6 +361,7 @@ public class LogSummaryBuilderTests
         Assert.Equal(["sample.json"], options.Inputs);
         Assert.Null(options.TypeFilter);
         Assert.Null(options.ContextFilter);
+        Assert.Null(options.MessageFilter);
     }
 
     [Fact]
@@ -361,6 +387,31 @@ public class LogSummaryBuilderTests
     }
 
     [Fact]
+    public void CreateFilteredExceptionReport_FiltersByPartialMessageMatch()
+    {
+        var report = LogReportFormatter.CreateFilteredExceptionReport(
+            [
+                LogSummaryBuilder.ParseAndSummarize(GetExceptionFixturePath())
+            ],
+            outputFormat: "json",
+            typeFilter: null,
+            contextFilter: null,
+            messageFilter: "property set");
+
+        Assert.Equal("property set", report.Filters.Message);
+
+        var match = Assert.Single(report.Matches);
+        Assert.Equal(
+            [
+                "test/annexB/alpha.js",
+                "test/annexB/beta.js"
+            ],
+            match.Exceptions.Select(exception => exception.Path).ToArray());
+        Assert.All(match.Exceptions, exception => Assert.Equal("Cannot get property set of undefined", exception.Message));
+        Assert.All(match.Exceptions, exception => Assert.True(exception.LineNumber is 17 or 99));
+    }
+
+    [Fact]
     public void FormatFilteredExceptionsJson_SuppressesSummariesProperty()
     {
         var json = LogReportFormatter.FormatFilteredExceptionsJson(
@@ -368,12 +419,15 @@ public class LogSummaryBuilderTests
                 LogSummaryBuilder.ParseAndSummarize(GetExceptionFixturePath())
             ],
             "Broiler.JavaScript.Runtime.JSException",
-            "InitializeFactories");
+            "InitializeFactories",
+            "property set");
 
         Assert.Contains("\"outputFormat\": \"json\"", json, StringComparison.Ordinal);
         Assert.Contains("\"filters\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"message\": \"property set\"", json, StringComparison.Ordinal);
         Assert.Contains("\"matches\"", json, StringComparison.Ordinal);
         Assert.Contains("\"exceptions\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"lineNumber\": 17", json, StringComparison.Ordinal);
         Assert.DoesNotContain("\"summaries\"", json, StringComparison.Ordinal);
     }
 

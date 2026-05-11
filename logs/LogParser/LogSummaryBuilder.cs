@@ -22,6 +22,12 @@ public static class LogSummaryBuilder
     private static readonly Regex StackFrameContextRegex = new(
         @"^\s*at\s+(?<method>.+?)(?:\s+in\s+|\(|:|$)",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex DotNetStackFrameLineNumberRegex = new(
+        @"\bline\s+(?<line>\d+)\b",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+    private static readonly Regex ScriptStackFrameLineNumberRegex = new(
+        @":(?<line>\d+)(?:,\d+)?\s*$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -144,6 +150,7 @@ public static class LogSummaryBuilder
                     Type = entry.Exception!.Type,
                     Message = entry.Exception.Message,
                     Context = entry.Exception.Context,
+                    LineNumber = entry.Exception.LineNumber,
                     LogLine = entry.Exception.LogLine
                 }))
             .ToArray();
@@ -340,11 +347,13 @@ public static class LogSummaryBuilder
         {
             if (TryParseExceptionLine(line, out var exceptionType, out var exceptionMessage))
             {
+                var stackFrame = TryParseExceptionFrame(lines, lineIndex + 1);
                 return new ParsedException
                 {
                     Type = exceptionType,
                     Message = exceptionMessage,
-                    Context = TryParseExceptionContext(lines, lineIndex + 1),
+                    Context = stackFrame.Context,
+                    LineNumber = stackFrame.LineNumber,
                     LogLine = line
                 };
             }
@@ -356,13 +365,13 @@ public static class LogSummaryBuilder
     }
 
     /// <summary>
-    /// Extracts the method or function name from the first recognizable stack frame that follows a parsed
-    /// exception line, tolerating intervening wrapper lines until a stack frame is found.
+    /// Extracts stack frame details from the first recognizable stack frame that follows a parsed exception
+    /// line, tolerating intervening wrapper lines until a stack frame is found.
     /// </summary>
     /// <param name="lines">All non-empty log lines from the captured output.</param>
     /// <param name="startIndex">The index immediately after the line that contained the exception header.</param>
-    /// <returns>The parsed method or function name, or <see langword="null"/> when no stack frame context is present.</returns>
-    private static string? TryParseExceptionContext(IReadOnlyList<string> lines, int startIndex)
+    /// <returns>The parsed frame details, or empty details when no stack frame is present.</returns>
+    private static ExceptionFrameDetails TryParseExceptionFrame(IReadOnlyList<string> lines, int startIndex)
     {
         for (var i = startIndex; i < lines.Count; i++)
         {
@@ -372,12 +381,25 @@ public static class LogSummaryBuilder
                 var context = match.Groups["method"].Value.Trim();
                 if (!string.IsNullOrWhiteSpace(context))
                 {
-                    return context;
+                    return new ExceptionFrameDetails(context, TryParseLineNumber(lines[i]));
                 }
             }
         }
 
-        return null;
+        return new ExceptionFrameDetails(null, null);
+    }
+
+    private static int? TryParseLineNumber(string stackFrame)
+    {
+        var lineMatch = DotNetStackFrameLineNumberRegex.Match(stackFrame);
+        if (!lineMatch.Success)
+        {
+            lineMatch = ScriptStackFrameLineNumberRegex.Match(stackFrame);
+        }
+
+        return lineMatch.Success && int.TryParse(lineMatch.Groups["line"].Value, out var lineNumber)
+            ? lineNumber
+            : null;
     }
 
     private static bool TryParseExceptionLine(string line, out string exceptionType, out string exceptionMessage)
@@ -441,4 +463,6 @@ public static class LogSummaryBuilder
             _ => string.Join(", ", distinctValues)
         };
     }
+
+    private readonly record struct ExceptionFrameDetails(string? Context, int? LineNumber);
 }

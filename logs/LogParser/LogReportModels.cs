@@ -39,6 +39,7 @@ public sealed class FilteredExceptionFilters
 {
     public string? Type { get; init; }
     public string? Context { get; init; }
+    public string? Message { get; init; }
 }
 
 /// <summary>
