@@ -70,9 +70,7 @@ class RunTest262Tests(unittest.TestCase):
             self.assertTrue(text)
             self.assertIsNotNone(preexec_fn)
             self.assertTrue(start_new_session)
-            process = FakeProcess(args)
-            captured_script["timeout"] = None
-            return process
+            return FakeProcess(args)
 
         with mock.patch.object(run_test262.subprocess, "Popen", side_effect=fake_run):
             result = run_test262.run_test(repo, TEST_ENGINE_PATH, path, {}, 30.0, 256)

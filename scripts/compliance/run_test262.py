@@ -434,6 +434,8 @@ def create_process_limit_setup(
     if os.name != "posix" or resource is None:
         return None
 
+    # RLIMIT_CPU is whole-second based, so sub-second wall-clock timeouts still rely
+    # on communicate(timeout=...) while the child receives at least a one-second CPU budget.
     cpu_limit_seconds = max(1, int(math.ceil(timeout_seconds)))
     cpu_hard_limit_seconds = cpu_limit_seconds + 5
     memory_limit_bytes = memory_limit_mb * 1024 * 1024 if memory_limit_mb > 0 else None
