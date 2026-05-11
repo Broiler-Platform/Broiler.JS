@@ -53,7 +53,7 @@ class RunTest262Tests(unittest.TestCase):
                 self.pid = 1234
                 self.returncode = 0
 
-            def communicate(self, timeout: float):
+            def communicate(self, *, timeout: float):
                 self.timeout = timeout
                 script_path = Path(self.args[-1])
                 captured_script["contents"] = script_path.read_text(encoding="utf-8")
