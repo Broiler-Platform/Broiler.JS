@@ -3,6 +3,7 @@ using System;
 using System.Globalization;
 using System.Numerics;
 using Broiler.JavaScript.BuiltIns.Number;
+using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
@@ -64,11 +65,16 @@ public partial class JSBigInt : JSPrimitive
 
             case JSBigInt bigint:
                 return bigint;
+
+            case JSBoolean boolean:
+                return new JSBigInt(boolean.BooleanValue ? BigInteger.One : BigInteger.Zero);
         }
 
         var text = f.ToString();
-        if (!TryParseBigIntLiteral(text, out var v))
-            throw JSEngine.NewSyntaxError($"{f} is not a valid big integer");
+        if (!TryParseBigIntString(text, out var v))
+            throw (f.IsString || f.IsObject)
+                ? JSEngine.NewSyntaxError($"{f} is not a valid big integer")
+                : JSEngine.NewTypeError($"{f} is not a valid big integer");
 
         return new JSBigInt(v);
     }
@@ -76,16 +82,12 @@ public partial class JSBigInt : JSPrimitive
     public JSBigInt(BigInteger value) => this.value = value;
     public JSBigInt(string stringValue)
     {
-        var literalText = stringValue;
-        if (literalText.EndsWith('n'))
-            literalText = literalText[..^1];
-
-        if (!TryParseBigIntLiteral(literalText, out var n))
+        if (!TryParseBigIntLiteral(stringValue, out var n))
             throw JSEngine.NewTypeError($"{stringValue} is not a valid big integer");
         value = n;
     }
 
-    private static bool TryParseBigIntLiteral(string value, out BigInteger result)
+    private static bool TryParseBigIntString(string value, out BigInteger result)
     {
         var text = value.Trim();
         if (text.Length == 0 || text.Contains('_') || text.EndsWith('n'))
@@ -118,6 +120,31 @@ public partial class JSBigInt : JSPrimitive
             return TryParsePrefixedDigits(text.AsSpan(2), 8, 1, out result);
 
         return BigInteger.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out result);
+    }
+
+    private static bool TryParseBigIntLiteral(string value, out BigInteger result)
+    {
+        var text = value.Trim().TrimEnd('n').Replace("_", "");
+        var sign = 1;
+
+        if (text.StartsWith("+", StringComparison.Ordinal))
+            text = text[1..];
+        else if (text.StartsWith("-", StringComparison.Ordinal))
+        {
+            sign = -1;
+            text = text[1..];
+        }
+
+        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            return TryParsePrefixedDigits(text.AsSpan(2), 16, sign, out result);
+
+        if (text.StartsWith("0b", StringComparison.OrdinalIgnoreCase))
+            return TryParsePrefixedDigits(text.AsSpan(2), 2, sign, out result);
+
+        if (text.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
+            return TryParsePrefixedDigits(text.AsSpan(2), 8, sign, out result);
+
+        return BigInteger.TryParse(sign < 0 ? "-" + text : text, out result);
     }
 
     private static bool TryParsePrefixedDigits(ReadOnlySpan<char> digits, int numberBase, int sign, out BigInteger result)
