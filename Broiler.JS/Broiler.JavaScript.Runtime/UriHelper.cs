@@ -67,6 +67,12 @@ internal static class UriHelper
         return result;
     }
 
+    private static bool IsEscapeUnescaped(char c) =>
+        (c >= 'A' && c <= 'Z') ||
+        (c >= 'a' && c <= 'z') ||
+        (c >= '0' && c <= '9') ||
+        c is '@' or '*' or '_' or '+' or '-' or '.' or '/';
+
     /// <summary>
     /// Ref: https://github.com/paulbartrum/jurassic/blob/1e9b24b4926740aa2c1b0df8169398b3d340f681/Jurassic/Library/GlobalObject.cs#L305
     /// Decodes a string containing a URI or a portion of a URI.
@@ -168,6 +174,69 @@ internal static class UriHelper
             }
             else
                 result.Append(c);
+        }
+
+        return result.ToString();
+    }
+
+    internal static string Escape(string input)
+    {
+        var result = new StringBuilder(input.Length);
+        for (int i = 0; i < input.Length; i++)
+        {
+            char c = input[i];
+            if (IsEscapeUnescaped(c))
+            {
+                result.Append(c);
+                continue;
+            }
+
+            if (c < 256)
+            {
+                result.Append('%');
+                result.Append(((int)c).ToString("X2"));
+                continue;
+            }
+
+            result.Append("%u");
+            result.Append(((int)c).ToString("X4"));
+        }
+
+        return result.ToString();
+    }
+
+    internal static string Unescape(string input)
+    {
+        var result = new StringBuilder(input.Length);
+        for (int i = 0; i < input.Length; i++)
+        {
+            char c = input[i];
+            if (c != '%' || i == input.Length - 1)
+            {
+                result.Append(c);
+                continue;
+            }
+
+            if ((input[i + 1] == 'u' || input[i + 1] == 'U') && i + 5 < input.Length)
+            {
+                int unicode = ParseHexNumber(input, i + 2, 4);
+                if (unicode >= 0)
+                {
+                    result.Append((char)unicode);
+                    i += 5;
+                    continue;
+                }
+            }
+
+            int escaped = ParseHexNumber(input, i + 1, 2);
+            if (escaped >= 0)
+            {
+                result.Append((char)escaped);
+                i += 2;
+                continue;
+            }
+
+            result.Append(c);
         }
 
         return result.ToString();

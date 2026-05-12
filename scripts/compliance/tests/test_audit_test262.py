@@ -48,6 +48,10 @@ class AuditTest262Tests(unittest.TestCase):
             "/*---\nflags: [module]\n---*/\nexport {};\n",
         )
         self.write_test(
+            "test/language/temporal.js",
+            "/*---\nfeatures: [Temporal]\n---*/\nTemporal.Duration();\n",
+        )
+        self.write_test(
             "test/language/negative.js",
             "/*---\nnegative:\n  phase: runtime\n  type: ReferenceError\n---*/\nnotDeclared;\n",
         )
@@ -65,14 +69,16 @@ class AuditTest262Tests(unittest.TestCase):
             [],
         )
 
-        self.assertEqual(7, summary["suiteTestsDiscovered"])
+        self.assertEqual(8, summary["suiteTestsDiscovered"])
         self.assertEqual(1, summary["unsupportedFlaggedTests"])
         self.assertEqual({"module": 1}, summary["unsupportedFlagCounts"])
+        self.assertEqual(1, summary["unsupportedFeaturedTests"])
+        self.assertEqual({"Temporal": 1}, summary["unsupportedFeatureCounts"])
         self.assertEqual(1, summary["negativeTests"])
         self.assertEqual(1, summary["hostHarnessDependentTests"])
-        self.assertEqual(3, summary["scriptHostExcludedTests"])
+        self.assertEqual(4, summary["scriptHostExcludedTests"])
         self.assertEqual(
-            {"hostHarness": 1, "module": 1, "negative": 1},
+            {"Temporal": 1, "hostHarness": 1, "module": 1, "negative": 1},
             summary["scriptHostBlockerCounts"],
         )
         self.assertEqual(4, summary["scriptHostVerifiableTests"])
@@ -85,14 +91,14 @@ class AuditTest262Tests(unittest.TestCase):
             summary["topLevelCounts"]["scriptHostVerifiable"],
         )
         self.assertEqual(
-            [{"bucket": "test/language", "count": 3}],
+            [{"bucket": "test/language", "count": 4}],
             summary["topLevelCounts"]["excluded"],
         )
         self.assertEqual(
             [{"bucket": "test/language/no-strict.js", "count": 1}],
             summary["largestUncoveredScriptHostVerifiableBuckets"],
         )
-        self.assertAlmostEqual(3 * 100.0 / 7, summary["manifestCoverageOfSuitePercent"])
+        self.assertAlmostEqual(3 * 100.0 / 8, summary["manifestCoverageOfSuitePercent"])
         expected_script_host_coverage = 3 * 100.0 / 4
         self.assertAlmostEqual(
             expected_script_host_coverage,
@@ -103,6 +109,10 @@ class AuditTest262Tests(unittest.TestCase):
         unsupported_path = self.write_test(
             "test/language/module.js",
             "/*---\nflags: [module]\n---*/\nexport {};\n",
+        )
+        unsupported_feature_path = self.write_test(
+            "test/language/temporal.js",
+            "/*---\nfeatures: [Temporal]\n---*/\nTemporal.Duration();\n",
         )
         negative_path = self.write_test(
             "test/language/negative.js",
@@ -118,11 +128,14 @@ class AuditTest262Tests(unittest.TestCase):
             repo,
             self.suite_root,
             "suite-ref",
-            [unsupported_path, negative_path, host_harness_path],
+            [unsupported_path, unsupported_feature_path, negative_path, host_harness_path],
             [],
         )
 
-        self.assertEqual([unsupported_path], summary["manifestUnsupportedTests"])
+        self.assertEqual(
+            [unsupported_path, unsupported_feature_path],
+            summary["manifestUnsupportedTests"],
+        )
         self.assertEqual([negative_path], summary["manifestNegativeTests"])
         self.assertEqual([host_harness_path], summary["manifestHostHarnessTests"])
         self.assertEqual(0, summary["manifestScriptHostVerifiableTests"])

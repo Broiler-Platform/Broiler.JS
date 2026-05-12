@@ -33,6 +33,14 @@ DEFAULT_BROILER_DLL = str(
 ALL_SHARDS = -1
 TEMP_DIRECTORY = Path(tempfile.gettempdir()) / "broiler-test262"
 UNSUPPORTED_FLAGS = {"module", "raw"}
+UNSUPPORTED_FEATURES = {
+    "Atomics",
+    "SharedArrayBuffer",
+    "Temporal",
+    "dynamic-import",
+    "explicit-resource-management",
+    "resizable-arraybuffer",
+}
 USER_AGENT = "Broiler.JS compliance runner"
 DOWNLOAD_TIMEOUT_SECONDS = 120
 MAX_ARCHIVE_SIZE_BYTES = 256 * 1024 * 1024
@@ -289,23 +297,40 @@ class Test262Repository:
 def parse_metadata(source: str) -> tuple[dict[str, list[str]], str]:
     match = re.search(r"/\*---\n(.*?)\n---\*/", source, re.S)
     if match is None:
-        return {"includes": [], "flags": []}, source
+        return {"features": [], "includes": [], "flags": []}, source
 
     block = match.group(1)
     body = source[: match.start()] + source[match.end() :]
 
     def parse_list(name: str) -> list[str]:
-        list_match = re.search(rf"{name}:\s*\[(.*?)\]", block, re.S)
-        if list_match is None:
+        inline_match = re.search(rf"(?m)^{name}:\s*\[(.*?)\]\s*$", block, re.S)
+        if inline_match is not None:
+            values = inline_match.group(1)
+            return [
+                item.strip().strip("'\"")
+                for item in values.split(",")
+                if item.strip()
+            ]
+
+        # Match YAML-style list fields like:
+        # name:
+        #   - value
+        #   - other
+        block_match = re.search(rf"(?m)^{name}:\s*\n((?:[ \t]*-[ \t]*.*(?:\n|$))*)", block)
+        if block_match is None:
             return []
-        values = list_match.group(1)
+
         return [
-            item.strip().strip("'\"")
-            for item in values.split(",")
-            if item.strip()
+            line.strip()[2:].strip().strip("'\"")
+            for line in block_match.group(1).splitlines()
+            if line.strip().startswith("- ")
         ]
 
-    return {"includes": parse_list("includes"), "flags": parse_list("flags")}, body
+    return {
+        "features": parse_list("features"),
+        "includes": parse_list("includes"),
+        "flags": parse_list("flags"),
+    }, body
 
 
 def parse_negative_metadata(source: str) -> dict[str, str] | None:
@@ -339,7 +364,9 @@ def classify_test(
     """
     metadata, _ = parse_metadata(source)
     flags = list(metadata["flags"])
+    features = list(metadata["features"])
     unsupported_flags = sorted(UNSUPPORTED_FLAGS & set(flags))
+    unsupported_features = sorted(UNSUPPORTED_FEATURES & set(features))
     negative = parse_negative_metadata(source)
     host_harness_blockers: list[str] = []
     if HOST_HARNESS_REFERENCE_PATTERN.search(source):
@@ -358,11 +385,14 @@ def classify_test(
 
     return {
         "flags": flags,
+        "features": features,
         "unsupportedFlags": unsupported_flags,
+        "unsupportedFeatures": unsupported_features,
         "negative": negative,
         "hostHarnessBlockers": sorted(set(host_harness_blockers)),
         "isScriptHostVerifiable": (
             not unsupported_flags
+            and not unsupported_features
             and negative is None
             and not host_harness_blockers
         ),
@@ -519,11 +549,19 @@ def run_test(
     metadata, body = parse_metadata(source)
 
     unsupported = sorted(UNSUPPORTED_FLAGS & set(metadata["flags"]))
-    if unsupported:
+    unsupported_features = sorted(UNSUPPORTED_FEATURES & set(metadata["features"]))
+    if unsupported or unsupported_features:
+        reasons: list[str] = []
+        if unsupported:
+            reasons.append(f"unsupported flags: {', '.join(unsupported)}")
+        if unsupported_features:
+            reasons.append(
+                f"unsupported features: {', '.join(unsupported_features)}"
+            )
         return {
             "path": path,
             "status": "skipped",
-            "reason": f"unsupported flags: {', '.join(unsupported)}",
+            "reason": "; ".join(reasons),
         }
     is_async = "async" in metadata["flags"]
     is_only_strict = "onlyStrict" in metadata["flags"]

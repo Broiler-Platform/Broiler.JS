@@ -1448,6 +1448,79 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Escape_And_Unescape_Are_Installed_With_AnnexB_Metadata_And_Basic_Behavior()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var parts = ctx.Eval(@"(function () {
+            var escapeDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'escape');
+            var unescapeDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'unescape');
+
+            return [
+                typeof escape,
+                typeof unescape,
+                escape.length,
+                unescape.length,
+                escape('A B©/'),
+                unescape('%41%20%42%A9%2F'),
+                escapeDescriptor.writable,
+                escapeDescriptor.enumerable,
+                escapeDescriptor.configurable,
+                unescapeDescriptor.writable,
+                unescapeDescriptor.enumerable,
+                unescapeDescriptor.configurable
+            ].join('|');
+        })();").ToString().Split('|');
+
+        Assert.Equal(12, parts.Length);
+        Assert.Equal("function", parts[0]);
+        Assert.Equal("function", parts[1]);
+        Assert.Equal("1", parts[2]);
+        Assert.Equal("1", parts[3]);
+        Assert.Equal("A%20B%A9/", parts[4]);
+        Assert.Equal("A B©/", parts[5]);
+        Assert.Equal("true", parts[6]);
+        Assert.Equal("false", parts[7]);
+        Assert.Equal("true", parts[8]);
+        Assert.Equal("true", parts[9]);
+        Assert.Equal("false", parts[10]);
+        Assert.Equal("true", parts[11]);
+    }
+
+    [Fact]
+    public void Escape_And_Unescape_Propagate_TypeErrors_From_ToString_Coercion()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            (function () {
+                try {
+                    escape(Symbol('x'));
+                    return 'no-throw';
+                } catch (e) {
+                    return e.name + '|' + e.message;
+                }
+            })(),
+            (function () {
+                try {
+                    unescape({
+                        toString() { throw new Error('unreachable'); },
+                        valueOf() { throw new Error('unreachable'); },
+                        [Symbol.toPrimitive]() { return function () {}; }
+                    });
+                    return 'no-throw';
+                } catch (e) {
+                    return e.name;
+                }
+            })()
+        ].join('||');");
+
+        Assert.Equal(
+            "TypeError|Cannot convert a Symbol value to a string.||TypeError",
+            result.ToString());
+    }
+
+    [Fact]
     public void RegExp_Escape_Handles_Initial_Characters_And_Punctuators()
     {
         EnsureBuiltInsLoaded();

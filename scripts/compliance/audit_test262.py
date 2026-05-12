@@ -67,8 +67,10 @@ def build_audit_summary(
     manifest_expanded_paths = repo.expand_paths(requested_paths)
 
     unsupported_flag_counts: Counter[str] = Counter()
+    unsupported_feature_counts: Counter[str] = Counter()
     blocker_counts: Counter[str] = Counter()
     unsupported_flagged_tests = 0
+    unsupported_featured_tests = 0
     negative_tests = 0
     host_harness_dependent_tests = 0
     async_script_host_verifiable_tests = 0
@@ -91,6 +93,7 @@ def build_audit_summary(
             harness_dependency_cache,
         )
         unsupported_flags = classification["unsupportedFlags"]
+        unsupported_features = classification["unsupportedFeatures"]
         negative = classification["negative"]
         host_harness_blockers = classification["hostHarnessBlockers"]
         flags = classification["flags"]
@@ -99,6 +102,11 @@ def build_audit_summary(
             unsupported_flagged_tests += 1
             unsupported_flag_counts.update(unsupported_flags)
             blocker_counts.update(unsupported_flags)
+
+        if unsupported_features:
+            unsupported_featured_tests += 1
+            unsupported_feature_counts.update(unsupported_features)
+            blocker_counts.update(unsupported_features)
 
         if negative is not None:
             negative_tests += 1
@@ -121,7 +129,7 @@ def build_audit_summary(
         if path not in manifest_path_set:
             continue
 
-        if unsupported_flags:
+        if unsupported_flags or unsupported_features:
             manifest_unsupported_tests.append(path)
         if negative is not None:
             manifest_negative_tests.append(path)
@@ -143,6 +151,8 @@ def build_audit_summary(
         "suiteTestsDiscovered": suite_tests_discovered,
         "unsupportedFlaggedTests": unsupported_flagged_tests,
         "unsupportedFlagCounts": dict(sorted(unsupported_flag_counts.items())),
+        "unsupportedFeaturedTests": unsupported_featured_tests,
+        "unsupportedFeatureCounts": dict(sorted(unsupported_feature_counts.items())),
         "scriptHostBlockerCounts": dict(sorted(blocker_counts.items())),
         "negativeTests": negative_tests,
         "hostHarnessDependentTests": host_harness_dependent_tests,

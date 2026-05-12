@@ -140,6 +140,14 @@ class RunTest262Tests(unittest.TestCase):
             "test/language/c-module.js",
             "/*---\nflags: [module]\n---*/\nexport {};\n",
         )
+        self.write_test(
+            "test/language/c2-module-block.js",
+            "/*---\nflags:\n  - module\n---*/\nexport {};\n",
+        )
+        self.write_test(
+            "test/language/c3-temporal.js",
+            "/*---\nfeatures: [Temporal]\n---*/\nTemporal.Duration();\n",
+        )
         self.write_test("test/language/host-harness.js", "$262.createRealm();\n")
         second_path = self.write_test(
             "test/language/d-async.js",
@@ -157,10 +165,28 @@ class RunTest262Tests(unittest.TestCase):
 
         self.assertEqual([second_path], selected_paths)
         self.assertEqual("all-script-host-verifiable", selection["selectionMode"])
-        self.assertEqual(5, selection["candidateCount"])
+        self.assertEqual(7, selection["candidateCount"])
         self.assertEqual(2, selection["selectedCountBeforeSharding"])
         self.assertEqual(2, selection["shardCount"])
         self.assertEqual(1, selection["shardIndex"])
+
+    def test_parse_metadata_supports_inline_and_block_style_lists(self) -> None:
+        metadata, _ = run_test262.parse_metadata(
+            """/*---
+features:
+  - Temporal
+  - SharedArrayBuffer
+flags:
+  - module
+includes: [assert.js, sta.js]
+---*/
+1 + 1;
+"""
+        )
+
+        self.assertEqual(["Temporal", "SharedArrayBuffer"], metadata["features"])
+        self.assertEqual(["module"], metadata["flags"])
+        self.assertEqual(["assert.js", "sta.js"], metadata["includes"])
 
     def test_apply_shard_rejects_invalid_parameters(self) -> None:
         with self.assertRaisesRegex(ValueError, "shard_count must be greater than 0"):

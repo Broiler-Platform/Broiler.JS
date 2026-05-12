@@ -12,6 +12,7 @@ using Broiler.JavaScript.BuiltIns;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.Globals;
@@ -19,6 +20,26 @@ namespace Broiler.JavaScript.Globals;
 [JSFunctionGenerator("Globals", Globals = true)]
 public partial class JSGlobalStatic
 {
+    private static string CoerceLegacyUriString(JSValue value)
+    {
+        if (value is JSObject @object)
+        {
+            // Annex B escape/unescape first perform ToString, which must respect an
+            // own Symbol.toPrimitive string hint before falling back to legacy object coercion.
+            var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
+            if (!toPrimitive.IsUndefined)
+            {
+                var primitive = toPrimitive.InvokeFunction(new Arguments(@object, JSConstants.String));
+                if (primitive.IsObject)
+                    throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+
+                return primitive.StringValue;
+            }
+        }
+
+        return value.StringValue;
+    }
+
     [JSExport("Infinity")]
     public static JSValue Infinity = JSValue.NumberPositiveInfinity;
 
@@ -72,6 +93,13 @@ public partial class JSGlobalStatic
     {
         var f = a.Get1().ToString();
         return JSValue.CreateString(Uri.EscapeDataString(f));
+    }
+
+    [JSExport("escape", Length = 1)]
+    public static JSValue Escape(in Arguments a)
+    {
+        var f = CoerceLegacyUriString(a.Get1());
+        return JSValue.CreateString(UriHelper.Escape(f));
     }
 
     [JSExport("isFinite", Length = 1)]
@@ -140,6 +168,13 @@ public partial class JSGlobalStatic
 
         var d = NumberParser.ParseInt(text.Trim(), radix, false);
         return JSValue.CreateNumber(d);
+    }
+
+    [JSExport("unescape", Length = 1)]
+    public static JSValue Unescape(in Arguments a)
+    {
+        var f = CoerceLegacyUriString(a.Get1());
+        return JSValue.CreateString(UriHelper.Unescape(f));
     }
 
     [JSExport("setImmediate", Length = 1)]
