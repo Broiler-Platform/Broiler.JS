@@ -98,11 +98,7 @@ public partial class JSError : JSObject, IJSError
 
     public static JSValue From(Exception ex)
     {
-        if (ex is JSException jse)
-            return jse.Error;
-
-        var je = new JSException(ex.Message + "\r\n" + ex.ToString());
-        return je.Error;
+        return JSException.ErrorFrom(ex);
     }
 }
 

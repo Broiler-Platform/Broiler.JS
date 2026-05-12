@@ -59,12 +59,7 @@ public static partial class JSValueExtensions
     public static JSValue InvokeMethodSpread(this JSValue @this, in KeyString name, JSValue[] args)
     {
         var fx = @this.GetMethod(name) ?? throw JSEngine.NewTypeError($"Method {name} not found in {@this}");
-        var length = 0;
-
-        foreach (var item in args)
-            length += item.IsSpread ? item.Length : 1;
-
-        var a = new Arguments(@this, args, length);
+        var a = new Arguments(@this, args, 0);
         return fx(a);
     }
 }

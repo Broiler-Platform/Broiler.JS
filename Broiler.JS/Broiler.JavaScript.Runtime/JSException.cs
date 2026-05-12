@@ -108,7 +108,10 @@ public class JSException : Exception
         Console.Error.WriteLine($"  Function: {function}, File: {filePath}, Line: {line}");
         Console.Error.WriteLine(st.ToString());
 #endif
-        throw value is IJSError jse ? (JSException)jse.Exception : new JSException(value);
+        if (value is IJSError error && TryGetJSException(error.Exception, out var jsException))
+            throw jsException.With(value);
+
+        throw new JSException(value);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -124,20 +127,17 @@ public class JSException : Exception
 
     public static JSException FromValue(JSValue value)
     {
-        if (value is IJSError error)
-            return (JSException)error.Exception;
+        if (value is IJSError error && TryGetJSException(error.Exception, out var jsException))
+            return jsException.With(value);
 
-        var ex = new JSException(value.ToString());
+        var ex = new JSException(value);
         return ex;
     }
 
     public static JSException From(Exception exception)
     {
-        if (exception.InnerException is JSException jse)
-            return jse;
-
-        if (exception is JSException jse2)
-            return jse2;
+        if (TryGetJSException(exception, out var jsException))
+            return jsException;
 
         var error = new JSException(exception.InnerException?.ToString() ?? exception.ToString());
         return error;
@@ -145,14 +145,36 @@ public class JSException : Exception
 
     public static JSValue ErrorFrom(Exception exception)
     {
-        if (exception.InnerException is JSException jse)
-            return jse.Error;
-
-        if (exception is JSException jse2)
-            return jse2.Error;
+        if (TryGetJSException(exception, out var jsException))
+            return jsException.Error;
 
         var error = new JSException(exception.InnerException?.Message ?? exception.Message);
         return error.Error;
+    }
+
+    private static bool TryGetJSException(Exception exception, out JSException jsException)
+    {
+        switch (exception)
+        {
+            case JSException direct:
+                jsException = direct;
+                return true;
+            case AggregateException aggregateException:
+                foreach (var innerException in aggregateException.Flatten().InnerExceptions)
+                {
+                    if (TryGetJSException(innerException, out jsException))
+                        return true;
+                }
+ 
+                break;
+        }
+
+        var inner = exception?.InnerException;
+        if (inner != null && !ReferenceEquals(inner, exception) && TryGetJSException(inner, out jsException))
+            return true;
+
+        jsException = null;
+        return false;
     }
 
     public override string StackTrace

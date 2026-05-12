@@ -319,7 +319,7 @@ public partial class JSObject
             return false;
         }
 
-        symbols.Put(name.Key) = JSProperty.Property(value);
+        symbols.Put(name.Key) = new JSProperty(name.Key, value, JSPropertyAttributes.EnumerableConfigurableValue);
         PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, name));
         return true;
     }

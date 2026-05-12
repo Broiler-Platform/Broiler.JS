@@ -1,5 +1,6 @@
-﻿#nullable enable
+#nullable enable
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -155,13 +156,7 @@ public readonly partial struct Arguments
     }
 
     public static Arguments Spread(JSValue @this, params JSValue[] list)
-    {
-        int length = 0;
-        foreach (var item in list)
-            length += item.IsSpread ? item.Length : 1;
-
-        return new Arguments(@this, list, length);
-    }
+        => new Arguments(@this, list, 0);
 
     internal static Func<JSValue, JSValue> GetSpreadTarget;
 
@@ -171,22 +166,8 @@ public readonly partial struct Arguments
     {
         // NewTarget = null;
         This = @this;
-        Length = length;
-        JSValue[] args = new JSValue[length];
-        int i = 0;
-
-        foreach (var a in list)
-        {
-            if (a.IsSpread)
-            {
-                var spreadTarget = GetSpreadTarget(a);
-                for (uint j = 0; j < (uint)spreadTarget.Length; j++)
-                    args[i++] = spreadTarget[j];
-                continue;
-            }
-
-            args[i++] = a;
-        }
+        JSValue[] args = ExpandSpreadArguments(list);
+        Length = args.Length;
 
         switch (Length)
         {
@@ -233,6 +214,27 @@ public readonly partial struct Arguments
                 Args = args;
                 break;
         }
+    }
+
+    private static JSValue[] ExpandSpreadArguments(JSValue[] list)
+    {
+        var args = new List<JSValue>(list.Length);
+
+        foreach (var item in list)
+        {
+            if (!item.IsSpread)
+            {
+                args.Add(item);
+                continue;
+            }
+
+            var spreadTarget = GetSpreadTarget(item);
+            var enumerator = spreadTarget.GetElementEnumerator();
+            while (enumerator.MoveNext(out var value))
+                args.Add(value);
+        }
+
+        return [.. args];
     }
 
 
