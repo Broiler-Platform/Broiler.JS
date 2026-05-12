@@ -3,6 +3,7 @@ using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Promise;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Storage;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -705,6 +706,75 @@ public class BuiltInsTests
         Assert.Equal("true", parts[5]);
         Assert.Equal("DerivedCustomError", parts[6]);
         Assert.Equal("custom boom", parts[7]);
+    }
+
+    [Fact]
+    public void Promise_Task_Preserves_Custom_Error_Subclass_In_Rejection()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var promise = Assert.IsType<JSPromise>(ctx.Eval(@"(function () {
+            class Test262Error extends Error {}
+            return Promise.reject(new Test262Error('custom boom'));
+        })();"));
+
+        var ex = Assert.Throws<JSException>(() =>
+        {
+            _ = promise.Task;
+        });
+
+        Assert.Equal("Test262Error", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("custom boom", ex.Error[KeyStrings.message].ToString());
+    }
+
+    [Fact]
+    public void Spread_Iterator_Abrupt_Completion_Preserves_Custom_Error_Subclass()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            class Test262Error extends Error {}
+            var iter = {};
+            iter[Symbol.iterator] = function() {
+                return {
+                    next: function() {
+                        throw new Test262Error('custom boom');
+                    }
+                };
+            };
+
+            try {
+                (function() {}(...iter));
+                return 'no-throw';
+            } catch (e) {
+                return [e.constructor.name, e instanceof Test262Error, e.message].join('|');
+            }
+        })();");
+
+        Assert.Equal("Test262Error|true|custom boom", result.ToString());
+    }
+
+    [Fact]
+    public void Promise_Finally_On_Thenable_Preserves_Custom_Error_Subclass()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            class Test262Error extends Error {}
+            var thrower = new Promise(function() {});
+            thrower.then = function() {
+                throw new Test262Error('custom boom');
+            };
+
+            try {
+                Promise.prototype.finally.call(thrower);
+                return 'no-throw';
+            } catch (e) {
+                return [e.constructor.name, e instanceof Test262Error, e.message].join('|');
+            }
+        })();");
+
+        Assert.Equal("Test262Error|true|custom boom", result.ToString());
     }
 
     [Fact]

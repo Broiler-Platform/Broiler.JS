@@ -79,11 +79,7 @@ public static partial class JSValueExtensions
         if (fx.IsUndefined)
             throw JSEngine.NewTypeError($"Method {name} not found on {@this}");
 
-        var length = 0;
-        foreach (var item in args)
-            length += item.IsSpread ? item.Length : 1;
-
-        var a = new Arguments(@this, args, length);
+        var a = new Arguments(@this, args, 0);
         return fx.InvokeFunction(a);
     }
 
