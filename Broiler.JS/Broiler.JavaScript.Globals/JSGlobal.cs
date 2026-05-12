@@ -24,6 +24,8 @@ public partial class JSGlobalStatic
     {
         if (value is JSObject @object)
         {
+            // Annex B escape/unescape first perform ToString, which must respect an
+            // own Symbol.toPrimitive string hint before falling back to legacy object coercion.
             var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
             if (!toPrimitive.IsUndefined)
             {

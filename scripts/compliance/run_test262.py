@@ -312,6 +312,10 @@ def parse_metadata(source: str) -> tuple[dict[str, list[str]], str]:
                 if item.strip()
             ]
 
+        # Match YAML-style list fields like:
+        # name:
+        #   - value
+        #   - other
         block_match = re.search(rf"(?m)^{name}:\s*\n((?:[ \t]*-[ \t]*.*(?:\n|$))*)", block)
         if block_match is None:
             return []
