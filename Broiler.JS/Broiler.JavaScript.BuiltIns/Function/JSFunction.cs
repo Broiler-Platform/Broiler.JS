@@ -267,7 +267,6 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         if (a.This is not JSFunction fOriginal)
             throw JSEngine.NewTypeError($"{a.This} is not a function");
 
-        var original = a;
         var copy = a;
         var fx = new JSFunction((in Arguments a2) => { return fOriginal.InvokeFunction(copy.CopyForBind(a2)); })
         {
