@@ -12,11 +12,11 @@ public partial class JSString
     {
         var value = a.This.IsNullOrUndefined
             ? throw JSEngine.NewTypeError("String.prototype HTML wrapper called on null or undefined")
-            : a.This.ToString();
+            : a.This.StringValue;
         var sb = new StringBuilder();
         sb.Append('<').Append(tagName);
         if (attributeName != null)
-            sb.Append(' ').Append(attributeName).Append("=\"").Append(a.Get1().ToString()).Append('"');
+            sb.Append(' ').Append(attributeName).Append("=\"").Append(a.Get1().StringValue).Append('"');
         sb.Append('>').Append(value).Append("</").Append(tagName).Append('>');
         return JSValue.CreateString(sb.ToString());
     }
@@ -30,6 +30,14 @@ public partial class JSString
     internal static JSValue Bold(in Arguments a) => CreateHtmlWrapper(in a, "b");
 
     [JSPrototypeMethod]
+    [JSExport("big", Length = 0)]
+    internal static JSValue Big(in Arguments a) => CreateHtmlWrapper(in a, "big");
+
+    [JSPrototypeMethod]
+    [JSExport("blink", Length = 0)]
+    internal static JSValue Blink(in Arguments a) => CreateHtmlWrapper(in a, "blink");
+
+    [JSPrototypeMethod]
     [JSExport("@fixed", Length = 0)]
     internal static JSValue Fixed(in Arguments a) => CreateHtmlWrapper(in a, "tt");
 
@@ -38,12 +46,28 @@ public partial class JSString
     internal static JSValue FontColor(in Arguments a) => CreateHtmlWrapper(in a, "font", "color");
 
     [JSPrototypeMethod]
+    [JSExport("fontsize", Length = 1)]
+    internal static JSValue FontSize(in Arguments a) => CreateHtmlWrapper(in a, "font", "size");
+
+    [JSPrototypeMethod]
+    [JSExport("italics", Length = 0)]
+    internal static JSValue Italics(in Arguments a) => CreateHtmlWrapper(in a, "i");
+
+    [JSPrototypeMethod]
+    [JSExport("link", Length = 1)]
+    internal static JSValue Link(in Arguments a) => CreateHtmlWrapper(in a, "a", "href");
+
+    [JSPrototypeMethod]
     [JSExport("small", Length = 0)]
     internal static JSValue Small(in Arguments a) => CreateHtmlWrapper(in a, "small");
 
     [JSPrototypeMethod]
     [JSExport("strike", Length = 0)]
     internal static JSValue Strike(in Arguments a) => CreateHtmlWrapper(in a, "strike");
+
+    [JSPrototypeMethod]
+    [JSExport("sub", Length = 0)]
+    internal static JSValue Sub(in Arguments a) => CreateHtmlWrapper(in a, "sub");
 
     [JSPrototypeMethod]
     [JSExport("sup", Length = 0)]
