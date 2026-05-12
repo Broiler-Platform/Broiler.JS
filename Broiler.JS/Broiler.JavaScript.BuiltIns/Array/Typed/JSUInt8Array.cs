@@ -9,6 +9,9 @@ namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 [JSClassGenerator("Uint8Array"), JSBaseClass("TypedArray")]
 public partial class JSUInt8Array : JSTypedArray
 {
+    private const string Base64Alphabet = "base64";
+    private const string Base64UrlAlphabet = "base64url";
+
     [JSExport("BYTES_PER_ELEMENT")]
     internal static readonly int BYTES_PER_ELENENT = 1;
 
@@ -58,7 +61,7 @@ public partial class JSUInt8Array : JSTypedArray
         var str = a.Get1();
         if (!str.IsString)
             throw JSEngine.NewTypeError("Uint8Array.fromBase64 requires a string argument");
-        var bytes = System.Convert.FromBase64String(str.ToString());
+        var bytes = DecodeBase64(str.ToString(), a.Length > 1 ? a[1] : JSUndefined.Value);
         return new JSUInt8Array(bytes);
     }
 
@@ -118,13 +121,57 @@ public partial class JSUInt8Array : JSTypedArray
         var str = a.Get1();
         if (!str.IsString)
             throw JSEngine.NewTypeError("setFromBase64 requires a string argument");
-        var bytes = System.Convert.FromBase64String(str.ToString());
+        var bytes = DecodeBase64(str.ToString(), a.Length > 1 ? a[1] : JSUndefined.Value);
         int written = Math.Min(bytes.Length, length);
         System.Array.Copy(bytes, 0, buffer.buffer, byteOffset, written);
         var result = new JSObject();
         result["read"] = new JSNumber(str.ToString().Length);
         result["written"] = new JSNumber(written);
         return result;
+    }
+
+    private static byte[] DecodeBase64(string text, JSValue options)
+    {
+        var alphabet = GetBase64Alphabet(options);
+
+        if (alphabet == Base64UrlAlphabet)
+        {
+            if (text.IndexOfAny(['+', '/']) >= 0)
+                throw JSEngine.NewSyntaxError("Invalid base64url alphabet");
+
+            text = text.Replace('-', '+').Replace('_', '/');
+        }
+        else if (text.IndexOfAny(['-', '_']) >= 0)
+        {
+            throw JSEngine.NewSyntaxError("Invalid base64 alphabet");
+        }
+
+        try
+        {
+            return System.Convert.FromBase64String(text);
+        }
+        catch (FormatException ex)
+        {
+            throw JSEngine.NewSyntaxError(ex.Message);
+        }
+    }
+
+    private static string GetBase64Alphabet(JSValue options)
+    {
+        if (options is JSObject @object)
+        {
+            var alphabet = @object["alphabet"];
+            if (!alphabet.IsNullOrUndefined)
+            {
+                var value = alphabet.ToString();
+                if (value != Base64Alphabet && value != Base64UrlAlphabet)
+                    throw JSEngine.NewTypeError($"Invalid alphabet option {value}");
+
+                return value;
+            }
+        }
+
+        return Base64Alphabet;
     }
 
     /// <summary>

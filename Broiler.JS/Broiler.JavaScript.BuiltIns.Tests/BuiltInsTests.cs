@@ -1657,6 +1657,73 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void NewFunction_Invalid_Parameter_Syntax_Throws_SyntaxError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            try {
+              Function('-->', '');
+              'no error';
+            } catch (e) {
+              e.name;
+            }
+            """);
+
+        Assert.Equal("SyntaxError", result.ToString());
+    }
+
+    [Fact]
+    public void BigInt_Invalid_String_Syntax_Throws_SyntaxError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              (() => { try { BigInt('10n'); return 'no error'; } catch (e) { return e.name; } })(),
+              (() => { try { BigInt('-0x1'); return 'no error'; } catch (e) { return e.name; } })(),
+              (() => { try { BigInt('0b'); return 'no error'; } catch (e) { return e.name; } })()
+            ].join('|');
+            """);
+
+        Assert.Equal("SyntaxError|SyntaxError|SyntaxError", result.ToString());
+    }
+
+    [Fact]
+    public void Uint8Array_Base64_Alphabet_Mismatches_Throw_SyntaxError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext(JavaScriptFeatureFlags.Uint8ArrayBase64);
+
+        var result = ctx.Eval("""
+            [
+              (() => { try { Uint8Array.fromBase64('x+/y', { alphabet: 'base64url' }); return 'no error'; } catch (e) { return e.name; } })(),
+              (() => {
+                var value = Uint8Array.fromBase64('x-_y', { alphabet: 'base64url' });
+                return [value[0], value[1], value[2]].join(',');
+              })(),
+              (() => {
+                try {
+                  new Uint8Array([255, 255, 255, 255]).setFromBase64('x+/y', { alphabet: 'base64url' });
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })(),
+              (() => {
+                var target = new Uint8Array([255, 255, 255, 255]);
+                var read = target.setFromBase64('x-_y', { alphabet: 'base64url' });
+                return [read.read, read.written, target[0], target[1], target[2], target[3]].join(',');
+              })()
+            ].join('|');
+            """);
+
+        Assert.Equal("SyntaxError|199,239,242|SyntaxError|4,3,199,239,242,255", result.ToString());
+    }
+
+    [Fact]
     public void GlobalThis_Resolves_To_The_Current_Global_Object()
     {
         EnsureBuiltInsLoaded();

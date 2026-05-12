@@ -3,6 +3,7 @@ using System;
 using System.Globalization;
 using System.Numerics;
 using Broiler.JavaScript.BuiltIns.Number;
+using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
@@ -64,11 +65,16 @@ public partial class JSBigInt : JSPrimitive
 
             case JSBigInt bigint:
                 return bigint;
+
+            case JSBoolean boolean:
+                return new JSBigInt(boolean.BooleanValue ? BigInteger.One : BigInteger.Zero);
         }
 
         var text = f.ToString();
-        if (!TryParseBigIntLiteral(text, out var v))
-            throw JSEngine.NewTypeError($"{f} is not a valid big integer");
+        if (!TryParseBigIntString(text, out var v))
+            throw (f.IsString || f.IsObject)
+                ? JSEngine.NewSyntaxError($"{f} is not a valid big integer")
+                : JSEngine.NewTypeError($"{f} is not a valid big integer");
 
         return new JSBigInt(v);
     }
@@ -79,6 +85,41 @@ public partial class JSBigInt : JSPrimitive
         if (!TryParseBigIntLiteral(stringValue, out var n))
             throw JSEngine.NewTypeError($"{stringValue} is not a valid big integer");
         value = n;
+    }
+
+    private static bool TryParseBigIntString(string value, out BigInteger result)
+    {
+        var text = value.Trim();
+        if (text.Length == 0 || text.Contains('_') || text.EndsWith('n'))
+        {
+            result = default;
+            return false;
+        }
+
+        if (text.StartsWith("+", StringComparison.Ordinal) || text.StartsWith("-", StringComparison.Ordinal))
+        {
+            var rest = text[1..];
+            if (rest.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                || rest.StartsWith("0b", StringComparison.OrdinalIgnoreCase)
+                || rest.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
+            {
+                result = default;
+                return false;
+            }
+
+            return BigInteger.TryParse(text, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out result);
+        }
+
+        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            return TryParsePrefixedDigits(text.AsSpan(2), 16, 1, out result);
+
+        if (text.StartsWith("0b", StringComparison.OrdinalIgnoreCase))
+            return TryParsePrefixedDigits(text.AsSpan(2), 2, 1, out result);
+
+        if (text.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
+            return TryParsePrefixedDigits(text.AsSpan(2), 8, 1, out result);
+
+        return BigInteger.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out result);
     }
 
     private static bool TryParseBigIntLiteral(string value, out BigInteger result)
@@ -103,13 +144,7 @@ public partial class JSBigInt : JSPrimitive
         if (text.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
             return TryParsePrefixedDigits(text.AsSpan(2), 8, sign, out result);
 
-        if (!BigInteger.TryParse(sign < 0 ? "-" + text : text, out result))
-        {
-            result = default;
-            return false;
-        }
-
-        return true;
+        return BigInteger.TryParse(sign < 0 ? "-" + text : text, out result);
     }
 
     private static bool TryParsePrefixedDigits(ReadOnlySpan<char> digits, int numberBase, int sign, out BigInteger result)
