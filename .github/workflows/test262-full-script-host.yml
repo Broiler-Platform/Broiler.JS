@@ -133,6 +133,7 @@ jobs:
           mkdir -p "$shard_dir"
           output_path="$shard_dir/result.json"
           log_path="$shard_dir/runner.log"
+          # Temporarily relax errexit so the shard log is still captured when the runner fails.
           set +e
           python scripts/compliance/run_test262.py \
             --suite-ref "$TEST262_REF" \
@@ -144,6 +145,7 @@ jobs:
             --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
             --memory-limit-mb "$MEMORY_LIMIT_MB" \
             --output "$output_path" 2>&1 | tee "$log_path"
+          # Preserve the Python exit status rather than tee's exit status.
           status=${PIPESTATUS[0]}
           set -e
           printf '%s\n' "$status" > "$shard_dir/exit-code.txt"
