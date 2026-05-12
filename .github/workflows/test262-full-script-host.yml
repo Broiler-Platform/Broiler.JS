@@ -145,6 +145,7 @@ jobs:
             --memory-limit-mb "$MEMORY_LIMIT_MB" \
             --output "$output_path" 2>&1 | tee "$log_path"
           status=${PIPESTATUS[0]}
+          set -e
           printf '%s\n' "$status" > "$shard_dir/exit-code.txt"
           exit "$status"
 
@@ -171,7 +172,7 @@ jobs:
                           "",
                           "- Runner did not produce a JSON summary.",
                           f"- Exit code: {exit_code}",
-                          f"- Captured log: `shard-{shard_index}/runner.log`",
+                          f"- Captured log: available in the uploaded artifact at `shard-{shard_index}/runner.log`",
                       ]
                   ) + "\n",
                   encoding="utf-8",
