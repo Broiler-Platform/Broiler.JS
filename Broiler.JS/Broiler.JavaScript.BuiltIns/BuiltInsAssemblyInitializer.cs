@@ -573,7 +573,6 @@ internal static class BuiltInsAssemblyInitializer
             return regExp.Split(a.Get1().ToString(), limit);
         }, "[Symbol.split]", 2), JSPropertyAttributes.ConfigurableValue);
 
-        EnsureAccessorProperty(regExpCtor, JSSymbol.species, "[Symbol.species]", static (in Arguments a) => a.This);
         EnsureAccessorProperty(regExpCtor.prototype, KeyStrings.GetOrCreate("dotAll"), "dotAll", static (in Arguments a) =>
         {
             if (a.This is not IJSRegExp regExp)
@@ -625,7 +624,6 @@ internal static class BuiltInsAssemblyInitializer
         if (context[KeyStrings.GetOrCreate("TypedArray")] is not JSFunction typedArrayCtor)
             return;
 
-        EnsureAccessorProperty(typedArrayCtor, JSSymbol.species, "[Symbol.species]", static (in Arguments a) => a.This);
         EnsureAccessorProperty(typedArrayCtor.prototype, JSSymbol.toStringTag, "[Symbol.toStringTag]", static (in Arguments a) =>
         {
             return GetTypedArrayTag(a.This);
