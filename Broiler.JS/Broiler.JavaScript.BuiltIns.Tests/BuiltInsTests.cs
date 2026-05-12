@@ -1403,6 +1403,53 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_Iteration_Methods_Preserve_Abrupt_Completions_From_Length_Property_And_Predicate()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            function thrownCtor(fn) {
+                try {
+                    fn();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            }
+
+            var lengthThrows = {};
+            Object.defineProperty(lengthThrows, 'length', {
+                get: function() { throw new RangeError('length'); },
+                configurable: true
+            });
+
+            var propertyThrows = { length: 1 };
+            Object.defineProperty(propertyThrows, '0', {
+                get: function() { throw new SyntaxError('property'); },
+                configurable: true
+            });
+
+            return [
+                typeof Array.prototype.findLast,
+                typeof Array.prototype.findLastIndex,
+                thrownCtor(function () { Array.prototype.every.call(lengthThrows, undefined); }),
+                thrownCtor(function () { Array.prototype.filter.call(lengthThrows, undefined); }),
+                thrownCtor(function () { Array.prototype.find.call(lengthThrows, undefined); }),
+                thrownCtor(function () { Array.prototype.findLast.call(lengthThrows, undefined); }),
+                thrownCtor(function () { Array.prototype.findLastIndex.call(lengthThrows, undefined); }),
+                thrownCtor(function () { Array.prototype.findLast.call(propertyThrows, function () { return false; }); }),
+                thrownCtor(function () { Array.prototype.findLastIndex.call(propertyThrows, function () { return false; }); }),
+                thrownCtor(function () { Array.prototype.findLast.call([1], function () { throw new URIError('predicate'); }); }),
+                thrownCtor(function () { Array.prototype.findLastIndex.call([1], function () { throw new URIError('predicate'); }); })
+            ].join('|');
+        })();");
+
+        Assert.Equal(
+            "function|function|RangeError|RangeError|RangeError|RangeError|RangeError|SyntaxError|SyntaxError|URIError|URIError",
+            result.ToString());
+    }
+
+    [Fact]
     public void Function_Prototype_Methods_Inherit_Bind_In_A_Fresh_Context()
     {
         EnsureBuiltInsLoaded();
@@ -1575,6 +1622,75 @@ public class BuiltInsTests
             RegExp.escape('\uD800')
         ].join('|');");
         Assert.Equal(@"\x66oo|\x31abc|\x2c|\x21|\ud800", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Compile_Exists_And_Preserves_ToString_Abrupt_Completions()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            function thrownCtor(fn) {
+                try {
+                    fn();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            }
+
+            var badPattern = {
+                toString: function() { throw new RangeError('pattern'); }
+            };
+            var badFlags = {
+                toString: function() { throw new SyntaxError('flags'); }
+            };
+
+            return [
+                typeof /./.compile,
+                thrownCtor(function () { /./.compile(badPattern); }),
+                thrownCtor(function () { /./.compile('', badFlags); }),
+                thrownCtor(function () { /./.compile('', Symbol('x')); })
+            ].join('|');
+        })();");
+
+        Assert.Equal("function|RangeError|SyntaxError|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void String_Legacy_Html_Wrappers_Exist_And_Preserve_ToString_Abrupt_Completions()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            function thrownCtor(fn) {
+                try {
+                    fn();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            }
+
+            return [
+                typeof String.prototype.big,
+                typeof String.prototype.blink,
+                typeof String.prototype.fontsize,
+                typeof String.prototype.italics,
+                typeof String.prototype.link,
+                typeof String.prototype.sub,
+                thrownCtor(function () { String.prototype.big.call({ toString: function () { throw new RangeError('this'); } }); }),
+                thrownCtor(function () { String.prototype.blink.call({ toString: function () { throw new RangeError('this'); } }); }),
+                thrownCtor(function () { String.prototype.italics.call({ toString: function () { throw new RangeError('this'); } }); }),
+                thrownCtor(function () { String.prototype.sub.call({ toString: function () { throw new RangeError('this'); } }); }),
+                thrownCtor(function () { String.prototype.fontsize.call('x', { toString: function () { throw new SyntaxError('attr'); } }); }),
+                thrownCtor(function () { String.prototype.link.call('x', { toString: function () { throw new SyntaxError('attr'); } }); })
+            ].join('|');
+        })();");
+
+        Assert.Equal(
+            "function|function|function|function|function|function|RangeError|RangeError|RangeError|RangeError|SyntaxError|SyntaxError",
+            result.ToString());
     }
 
     [Fact]

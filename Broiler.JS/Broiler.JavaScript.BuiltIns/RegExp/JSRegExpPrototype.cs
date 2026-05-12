@@ -1,10 +1,40 @@
-﻿using Broiler.JavaScript.Runtime;
+﻿using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Runtime;
 using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
 
 public partial class JSRegExp
 {
+    [JSExport("compile", Length = 2)]
+    public JSValue Compile(in Arguments a)
+    {
+        var patternValue = a.Get1();
+        var flagsValue = a[1];
+
+        string nextPattern;
+        string nextFlags;
+
+        if (patternValue is JSRegExp regExp)
+        {
+            if (!flagsValue.IsUndefined)
+                throw JSEngine.NewTypeError("Cannot supply flags when constructing one RegExp from another");
+
+            nextPattern = regExp.pattern;
+            nextFlags = regExp.flags;
+        }
+        else
+        {
+            nextPattern = patternValue.IsUndefined ? string.Empty : patternValue.StringValue;
+            nextFlags = flagsValue.IsUndefined ? string.Empty : flagsValue.StringValue;
+        }
+
+        pattern = nextPattern;
+        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, flags) = CreateRegex(nextPattern, nextFlags);
+        lastIndex = 0;
+        return this;
+    }
+
     [JSExport]
     public int LastIndex
     {

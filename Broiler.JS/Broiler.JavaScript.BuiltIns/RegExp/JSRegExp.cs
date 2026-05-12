@@ -129,26 +129,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
     }
 
     [JSExport("source")]
-    public readonly string pattern;
+    public string pattern;
 
     [JSExport]
-    public readonly string flags;
+    public string flags;
 
     [JSExport("global")]
-    public readonly bool globalSearch;
+    public bool globalSearch;
 
     [JSExport]
-    public readonly bool multiline;
+    public bool multiline;
     [JSExport]
-    public readonly bool ignoreCase;
+    public bool ignoreCase;
     [JSExport]
-    public readonly bool hasIndices;
+    public bool hasIndices;
     [JSExport]
-    public readonly bool sticky;
+    public bool sticky;
     [JSExport]
-    public readonly bool unicode;
+    public bool unicode;
     [JSExport]
-    public readonly bool unicodeSets;
+    public bool unicodeSets;
 
     internal Regex value;
 
@@ -161,10 +161,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
         var flags = "";
 
         if (a.Length > 0)
-            pattern = a.GetAt(0).ToString();
+            pattern = a.GetAt(0).StringValue;
 
         if (a.Length > 1)
-            flags = a.GetAt(1).ToString();
+            flags = a.GetAt(1).StringValue;
 
         this.pattern = pattern;
 

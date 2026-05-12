@@ -10,22 +10,49 @@ namespace Broiler.JavaScript.BuiltIns.Array;
 
 public partial class JSArray
 {
+    private static JSObject ToArrayLikeObject(JSValue value)
+    {
+        if (value is JSObject @object)
+            return @object;
+
+        if (value.IsNullOrUndefined)
+            throw JSEngine.NewTypeError(JSException.Cannot_convert_undefined_or_null_to_object);
+
+        return (JSObject)JSObject.CreatePrimitiveObject(value);
+    }
+
+    private static uint GetArrayLikeLength(JSObject @object)
+    {
+        var lengthValue = @object[KeyStrings.length];
+        if (lengthValue.IsUndefined)
+            return 0;
+
+        var length = lengthValue.DoubleValue;
+        if (double.IsNaN(length) || length <= 0)
+            return 0;
+
+        return length >= uint.MaxValue
+            ? uint.MaxValue
+            : (uint)length;
+    }
+
     [JSPrototypeMethod]
     [JSExport("every", Length = 1)]
     public static JSValue Every(in Arguments a)
     {
-        var array = a.This;
+        var array = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(array);
         var (first, thisArg) = a.Get2();
 
         if (first is not JSFunction fn)
             throw JSEngine.NewTypeError($"First argument is not function");
-        
-        var en = array.GetElementEnumerator();
-        
-        while (en.MoveNext(out var hasValue, out var item, out var index))
-        {
-            var itemArgs = new Arguments(thisArg, item, new JSNumber(index), array);
 
+        for (uint index = 0; index < length; index++)
+        {
+            if (!array.TryGetElement(index, out var item))
+                continue;
+
+            var itemArgs = new Arguments(thisArg, item, new JSNumber(index), array);
             if (!fn.f(itemArgs).BooleanValue)
                 return JSBoolean.False;
         }
@@ -45,18 +72,20 @@ public partial class JSArray
     [JSExport("filter", Length = 1)]
     public static JSValue Filter(in Arguments a)
     {
-        var @this = a.This;
+        var @this = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(@this);
         var (callback, thisArg) = a.Get2();
 
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.filter");
-        
+
         var r = new JSArray();
-        var en = @this.GetElementEnumerator();
-        
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+
+        for (uint index = 0; index < length; index++)
         {
-            if (!hasValue) continue;
+            if (!@this.TryGetElement(index, out var item))
+                continue;
+
             var itemParams = new Arguments(thisArg, item, new JSNumber(index), @this);
 
             if (fn.f(itemParams).BooleanValue)
@@ -69,20 +98,18 @@ public partial class JSArray
     [JSExport("find", Length = 1)]
     public static JSValue Find(in Arguments a)
     {
-        var @this = a.This;
+        var @this = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(@this);
         var (callback, thisArg) = a.Get2();
 
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.find");
-        
-        var en = @this.GetElementEnumerator();
-        
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+
+        for (uint index = 0; index < length; index++)
         {
-            // ignore holes...
-            if (!hasValue)
+            if (!@this.TryGetElement(index, out var item))
                 continue;
-            
+
             var itemParams = new Arguments(thisArg, item, new JSNumber(index), @this);
             if (fn.f(itemParams).BooleanValue)
                 return item;
@@ -153,23 +180,71 @@ public partial class JSArray
     [JSExport("findIndex", Length = 1)]
     public static JSValue FindIndex(in Arguments a)
     {
-        var @this = a.This;
+        var @this = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(@this);
         var (callback, thisArg) = a.Get2();
 
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.find");
 
-        var en = @this.GetElementEnumerator();
-
-        while (en.MoveNext(out var hasValue, out var item, out var n))
+        for (uint n = 0; n < length; n++)
         {
-            // ignore holes...
-            if (!hasValue)
+            if (!@this.TryGetElement(n, out var item))
                 continue;
 
             var index = new JSNumber(n);
             var itemParams = new Arguments(thisArg, item, index, @this);
 
+            if (fn.f(itemParams).BooleanValue)
+                return index;
+        }
+
+        return JSNumber.MinusOne;
+    }
+
+    [JSPrototypeMethod]
+    [JSExport("findLast", Length = 1)]
+    public static JSValue FindLast(in Arguments a)
+    {
+        var @this = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(@this);
+        var (callback, thisArg) = a.Get2();
+
+        if (callback is not JSFunction fn)
+            throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.findLast");
+
+        for (var n = (long)length - 1; n >= 0; n--)
+        {
+            if (!@this.TryGetElement((uint)n, out var item))
+                continue;
+
+            var index = new JSNumber(n);
+            var itemParams = new Arguments(thisArg, item, index, @this);
+            if (fn.f(itemParams).BooleanValue)
+                return item;
+        }
+
+        return JSUndefined.Value;
+    }
+
+    [JSPrototypeMethod]
+    [JSExport("findLastIndex", Length = 1)]
+    public static JSValue FindLastIndex(in Arguments a)
+    {
+        var @this = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(@this);
+        var (callback, thisArg) = a.Get2();
+
+        if (callback is not JSFunction fn)
+            throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.findLastIndex");
+
+        for (var n = (long)length - 1; n >= 0; n--)
+        {
+            if (!@this.TryGetElement((uint)n, out var item))
+                continue;
+
+            var index = new JSNumber(n);
+            var itemParams = new Arguments(thisArg, item, index, @this);
             if (fn.f(itemParams).BooleanValue)
                 return index;
         }
