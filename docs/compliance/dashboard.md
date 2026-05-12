@@ -156,9 +156,9 @@ This dashboard is the public status page for Broiler.JS standards compliance. It
 
 ### Full-suite automation now wired into the manual workflow
 
-- `scripts/compliance/run_test262.py` now supports `--all-script-host-verifiable` for dynamic discovery of every current runnable `test262` file at a chosen suite ref, plus deterministic `--shard-count` / `--shard-index` splitting for large runs.
+- `scripts/compliance/run_test262.py` now supports `--all-script-host-verifiable` for dynamic discovery of every current runnable `test262` file at a chosen suite ref, plus deterministic `--shard-count` / `--shard-index` splitting for large runs, including `--shard-index -1` to run every selected shard locally.
 - `.github/workflows/test262.yml` now uses that mode when manually dispatched, so one manual `test262` run fetches the selected `test262` ref and executes the full script-host-verifiable subset in 8 shards instead of stopping at the manifest subset.
-- `.github/workflows/test262-full-script-host.yml` remains available as a dedicated manual variant of the same sharded full-suite run.
+- `.github/workflows/test262-full-script-host.yml` remains available as a dedicated manual variant of the same sharded full-suite run, with a `shard_index` workflow-dispatch input that accepts one zero-based shard index or `-1` for all shards.
 - This automation covers current and future script-host-verifiable files automatically for whichever pinned suite ref the manual workflow runs; the remaining non-runnable categories still need negative-result handling (`negative`), additional host shims (`hostHarness` / `$262`), or a different host mode (`module`, `raw`).
 
 ## Comparative engine matrix

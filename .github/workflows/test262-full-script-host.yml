@@ -7,6 +7,21 @@ on:
         description: Optional test262 ref or commit SHA to execute
         required: false
         default: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+      shard_index:
+        description: Zero-based shard index to execute, or -1 to run all shards
+        type: number
+        required: false
+        default: -1
+      test_timeout_seconds:
+        description: Per-test timeout in seconds
+        type: number
+        required: false
+        default: 30
+      memory_limit_mb:
+        description: Per-test POSIX memory cap in MiB (0 disables the cap)
+        type: number
+        required: false
+        default: 0
 
 permissions:
   contents: read
@@ -17,14 +32,56 @@ env:
   RESULTS_DIR: ${{ github.workspace }}/.artifacts/test262/full-script-host
   BROILER_DLL: ${{ github.workspace }}/Broiler.JS/Broiler.JavaScript/bin/Release/net8.0/BroilerJS.dll
   SHARD_COUNT: 8
+  SELECTED_SHARD_INDEX: ${{ inputs.shard_index }}
+  TEST_TIMEOUT_SECONDS: ${{ inputs.test_timeout_seconds || 30 }}
+  MEMORY_LIMIT_MB: ${{ inputs.memory_limit_mb || 0 }}
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      shard-matrix: ${{ steps.shards.outputs.matrix }}
+    steps:
+      - name: Resolve shard matrix
+        id: shards
+        shell: bash
+        run: |
+          python <<'PY'
+          import json
+          import os
+          import sys
+
+          shard_count = int(os.environ["SHARD_COUNT"])
+          requested_shard_index = os.environ["SELECTED_SHARD_INDEX"]
+
+          try:
+              shard_index = int(requested_shard_index)
+          except ValueError:
+              sys.exit(
+                  f"shard_index must be an integer value: -1 or between 0 and "
+                  f"{shard_count - 1}, got {requested_shard_index!r}"
+              )
+
+          if shard_index == -1:
+              matrix = [{"shard-index": index} for index in range(shard_count)]
+          elif 0 <= shard_index < shard_count:
+              matrix = [{"shard-index": shard_index}]
+          else:
+              sys.exit(
+                  f"shard_index must be -1 or between 0 and {shard_count - 1}, got {shard_index}"
+              )
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write(f"matrix={json.dumps(matrix)}\n")
+          PY
+
   run:
+    needs: plan
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard-index: [0, 1, 2, 3, 4, 5, 6, 7]
+        include: ${{ fromJson(needs.plan.outputs.shard-matrix) }}
 
     steps:
       - name: Check out Broiler.JS
@@ -81,6 +138,8 @@ jobs:
             --all-script-host-verifiable \
             --shard-count "$SHARD_COUNT" \
             --shard-index "${{ matrix.shard-index }}" \
+            --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
+            --memory-limit-mb "$MEMORY_LIMIT_MB" \
             --output "$output_path"
 
       - name: Publish shard summary
@@ -104,9 +163,16 @@ jobs:
               f"- Candidate paths discovered: {summary['candidateCount']}",
               f"- Runnable paths before sharding: {summary['selectedCountBeforeSharding']}",
               f"- Paths executed in this shard: {len(summary['expandedPaths'])}",
+              f"- Per-test timeout: {summary['testTimeoutSeconds']}s",
+              (
+                  f"- Per-test memory cap: {summary['memoryLimitMb']} MiB"
+                  if summary['memoryLimitMb']
+                  else "- Per-test memory cap: 0 MiB (disabled)"
+              ),
               f"- Passed: {summary['passed']}",
               f"- Failed: {summary['failed']}",
               f"- Skipped: {summary['skipped']}",
+              f"- Timed out: {summary['timedOut']}",
           ]
 
           Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(

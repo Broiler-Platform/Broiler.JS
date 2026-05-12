@@ -47,16 +47,82 @@ class RunTest262Tests(unittest.TestCase):
         repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
         captured_script = {}
 
-        def fake_run(args: list[str], capture_output: bool, text: bool, check: bool):
-            script_path = Path(args[-1])
-            captured_script["contents"] = script_path.read_text(encoding="utf-8")
-            return subprocess.CompletedProcess(args, 0, "", "")
+        class FakeProcess:
+            def __init__(self, args: list[str]):
+                self.args = args
+                self.pid = 1234
+                self.returncode = 0
 
-        with mock.patch.object(run_test262.subprocess, "run", side_effect=fake_run):
-            result = run_test262.run_test(repo, TEST_ENGINE_PATH, path, {})
+            def communicate(self, *, timeout: float):
+                captured_script["timeout"] = timeout
+                script_path = Path(self.args[-1])
+                captured_script["contents"] = script_path.read_text(encoding="utf-8")
+                return "", ""
+
+        def fake_run(
+            args: list[str],
+            stdout: int,
+            stderr: int,
+            text: bool,
+            start_new_session: bool,
+            preexec_fn,
+        ):
+            self.assertTrue(text)
+            self.assertIsNotNone(preexec_fn)
+            self.assertTrue(start_new_session)
+            return FakeProcess(args)
+
+        with mock.patch.object(run_test262.subprocess, "Popen", side_effect=fake_run):
+            result = run_test262.run_test(repo, TEST_ENGINE_PATH, path, {}, 12.5, 256)
 
         self.assertEqual({"path": path, "status": "passed"}, result)
+        self.assertEqual(12.5, captured_script["timeout"])
         self.assertIn('"use strict";\n\nthis;\n', captured_script["contents"])
+
+    def test_run_test_times_out_and_kills_process_group(self) -> None:
+        path = self.write_test("test/language/timeout.js", "for (;;) {}\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        process = mock.Mock()
+        process.pid = 4321
+        process.returncode = -9
+        process.communicate.side_effect = [
+            subprocess.TimeoutExpired(cmd=["dotnet"], timeout=30.0),
+            ("partial stdout", "partial stderr"),
+        ]
+
+        with (
+            mock.patch.object(run_test262.subprocess, "Popen", return_value=process),
+            mock.patch.object(run_test262.os, "killpg") as killpg,
+        ):
+            result = run_test262.run_test(repo, TEST_ENGINE_PATH, path, {}, 30.0, 0)
+
+        self.assertEqual("timedOut", result["status"])
+        self.assertEqual("timed out after 30s", result["reason"])
+        self.assertEqual("partial stdout", result["stdout"])
+        self.assertEqual("partial stderr", result["stderr"])
+        killpg.assert_called_once_with(4321, run_test262.signal.SIGKILL)
+
+    def test_create_process_limit_setup_applies_posix_limits(self) -> None:
+        fake_resource = mock.Mock()
+        fake_resource.RLIMIT_CORE = 1
+        fake_resource.RLIMIT_CPU = 2
+        fake_resource.RLIMIT_AS = 3
+        fake_resource.RLIMIT_DATA = 4
+        fake_resource.setrlimit = mock.Mock()
+
+        with mock.patch.object(run_test262, "resource", fake_resource):
+            limit_setup = run_test262.create_process_limit_setup(30.0, 256)
+            self.assertIsNotNone(limit_setup)
+            limit_setup()
+        self.assertEqual(
+            [
+                mock.call(fake_resource.RLIMIT_CORE, (0, 0)),
+                mock.call(fake_resource.RLIMIT_CPU, (30, 35)),
+                mock.call(fake_resource.RLIMIT_AS, (268435456, 268435456)),
+                mock.call(fake_resource.RLIMIT_DATA, (268435456, 268435456)),
+            ],
+            fake_resource.setrlimit.call_args_list,
+        )
 
     def test_list_paths_uses_local_suite_root(self) -> None:
         file_path = self.write_test("test/language/example.js", "1 + 1;\n")
@@ -100,8 +166,73 @@ class RunTest262Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "shard_count must be greater than 0"):
             run_test262.apply_shard(["test/language/example.js"], 0, 0)
 
-        with self.assertRaisesRegex(ValueError, "shard_index must be between 0 and 1"):
+        self.assertEqual(
+            ["test/language/example.js"],
+            run_test262.apply_shard(["test/language/example.js"], 2, -1),
+        )
+        self.assertEqual(
+            ["a.js", "b.js", "c.js"],
+            run_test262.apply_shard(["a.js", "b.js", "c.js"], 8, -1),
+        )
+
+        with self.assertRaisesRegex(ValueError, "shard_index must be -1 or between 0 and 1"):
+            run_test262.apply_shard(["test/language/example.js"], 2, -2)
+
+        with self.assertRaisesRegex(ValueError, "shard_index must be -1 or between 0 and 1"):
             run_test262.apply_shard(["test/language/example.js"], 2, 2)
+
+    def test_main_accepts_shard_index_minus_one_for_all_selected_paths(self) -> None:
+        first_path = self.write_test("test/language/a.js", "1 + 1;\n")
+        second_path = self.write_test("test/language/b.js", "2 + 2;\n")
+        stdout = StringIO()
+        stderr = StringIO()
+
+        with (
+            mock.patch.object(
+                sys,
+                "argv",
+                [
+                    "run_test262.py",
+                    "--suite-ref",
+                    TEST_SUITE_REF,
+                    "--suite-root",
+                    str(self.suite_root),
+                    "--broiler-dll",
+                    TEST_ENGINE_PATH,
+                    "--all-script-host-verifiable",
+                    "--shard-count",
+                    "8",
+                    "--shard-index",
+                    "-1",
+                ],
+            ),
+            mock.patch.object(
+                run_test262,
+                "run_test",
+                side_effect=[
+                    {"path": first_path, "status": "passed"},
+                    {"path": second_path, "status": "passed"},
+                ],
+            ) as run_test_mock,
+            redirect_stdout(stdout),
+            redirect_stderr(stderr),
+        ):
+            exit_code = run_test262.main()
+
+        self.assertEqual(0, exit_code)
+        summary = run_test262.json.loads(stdout.getvalue())
+        self.assertEqual(-1, summary["shardIndex"])
+        self.assertEqual(8, summary["shardCount"])
+        self.assertEqual([first_path, second_path], summary["expandedPaths"])
+        self.assertIn("Selected 2 runnable test(s) for shard all/8", stderr.getvalue())
+        self.assertIn("Running 2 test(s) for shard all/8", stderr.getvalue())
+        self.assertEqual(2, run_test_mock.call_count)
+        self.assertEqual(
+            [first_path, second_path],
+            [call.args[2] for call in run_test_mock.call_args_list],
+        )
+        self.assertEqual(30.0, run_test_mock.call_args.args[4])
+        self.assertEqual(0, run_test_mock.call_args.args[5])
 
     def test_main_logs_major_checkpoints_to_stderr_and_preserves_json_stdout(self) -> None:
         path = self.write_test("test/language/example.js", "1 + 1;\n")
@@ -123,6 +254,10 @@ class RunTest262Tests(unittest.TestCase):
                     TEST_ENGINE_PATH,
                     "--output",
                     str(output_path),
+                    "--test-timeout-seconds",
+                    "12.5",
+                    "--memory-limit-mb",
+                    "512",
                     path,
                 ],
             ),
@@ -139,6 +274,8 @@ class RunTest262Tests(unittest.TestCase):
         self.assertEqual(0, exit_code)
         summary = run_test262.json.loads(stdout.getvalue())
         self.assertEqual(TEST_SUITE_REF, summary["suiteRef"])
+        self.assertEqual(12.5, summary["testTimeoutSeconds"])
+        self.assertEqual(512, summary["memoryLimitMb"])
         self.assertEqual(1, summary["passed"])
         self.assertEqual([path], summary["expandedPaths"])
         self.assertEqual(summary, run_test262.json.loads(output_path.read_text(encoding="utf-8")))
@@ -148,9 +285,16 @@ class RunTest262Tests(unittest.TestCase):
         self.assertIn("Selected 1 runnable test(s) for shard 1/1", log_output)
         self.assertIn(f"Using Broiler script host at {TEST_ENGINE_PATH}", log_output)
         self.assertIn("Running 1 test(s) for shard 1/1", log_output)
-        self.assertIn("Completed 1/1 test(s) (passed=1, failed=0, skipped=0).", log_output)
+        self.assertIn("Per-test timeout is 12.5s; POSIX memory cap is 512 MiB.", log_output)
+        self.assertIn(
+            "Completed 1/1 test(s) (passed=1, failed=0, skipped=0, timedOut=0).",
+            log_output,
+        )
         self.assertIn(f"Wrote machine-readable summary to {output_path}", log_output)
-        self.assertIn("Finished test262 run: executed=1, passed=1, failed=0, skipped=0", log_output)
+        self.assertIn(
+            "Finished test262 run: executed=1, passed=1, failed=0, skipped=0, timedOut=0",
+            log_output,
+        )
 
 
 if __name__ == "__main__":
