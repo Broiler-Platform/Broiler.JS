@@ -173,7 +173,6 @@ public class JSException : Exception
         if (inner != null && !ReferenceEquals(inner, exception) && TryGetJSException(inner, out jsException))
             return true;
 
-        jsException = null;
         return false;
     }
 

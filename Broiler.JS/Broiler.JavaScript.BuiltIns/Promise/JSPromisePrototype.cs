@@ -47,7 +47,7 @@ public partial class JSPromise
         var onFinally = a.Get1();
         var then = a.This[KeyStrings.then];
         if (then is not JSFunction thenFunction)
-            throw JSEngine.NewTypeError("Parameter for then is not a function");
+            throw JSEngine.NewTypeError("Property then is not a function");
 
         return thenFunction.InvokeFunction(new Arguments(a.This, onFinally, onFinally));
     }
