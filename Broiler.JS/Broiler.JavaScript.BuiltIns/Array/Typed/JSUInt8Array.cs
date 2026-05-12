@@ -162,7 +162,13 @@ public partial class JSUInt8Array : JSTypedArray
         {
             var alphabet = @object["alphabet"];
             if (!alphabet.IsNullOrUndefined)
-                return alphabet.ToString();
+            {
+                var value = alphabet.ToString();
+                if (value != Base64Alphabet && value != Base64UrlAlphabet)
+                    throw JSEngine.NewTypeError($"Invalid alphabet option {value}");
+
+                return value;
+            }
         }
 
         return Base64Alphabet;
