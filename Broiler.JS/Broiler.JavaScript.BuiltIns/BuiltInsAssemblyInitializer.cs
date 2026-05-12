@@ -397,14 +397,54 @@ internal static class BuiltInsAssemblyInitializer
         PatchStringPrototype(context);
         PatchObjectPrototype(context);
         PatchFunctionPrototype(context);
+        PatchSpeciesConstructors(context);
         PatchSymbolPrototype(context);
         PatchRegExpPrototype(context);
         PatchArrayPrototype(context);
+        PatchTypedArrayBuiltIns(context);
         PatchAsyncIteratorPrototype(context);
     }
 
     private static JSFunction CreateNativeFunction(JSFunctionDelegate fx, string name, int length = 0)
         => new(fx, name, $"function {name}() {{ [native code] }}", length: length, createPrototype: false);
+
+    private static JSFunction CreateNativeGetter(JSFunctionDelegate fx, string name)
+        => new(fx, $"get {name}", $"function get {name}() {{ [native code] }}", createPrototype: false, length: 0);
+
+    private static void EnsureAccessorProperty(JSObject target, JSValue key, string name, JSFunctionDelegate getter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
+    {
+        if (!target.GetOwnPropertyDescriptor(key).IsUndefined)
+            return;
+
+        target.FastAddProperty(key, CreateNativeGetter(getter, name), null, attributes);
+    }
+
+    private static void EnsureAccessorProperty(JSObject target, KeyString key, string name, JSFunctionDelegate getter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
+    {
+        if (!target.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(key.ToString(), key)).IsUndefined)
+            return;
+
+        target.FastAddProperty(key, CreateNativeGetter(getter, name), null, attributes);
+    }
+
+    private static void PatchSpeciesConstructors(JSContext context)
+    {
+        PatchSpeciesConstructor(context, KeyStrings.Array);
+        PatchSpeciesConstructor(context, KeyStrings.Promise);
+        PatchSpeciesConstructor(context, KeyStrings.Map);
+        PatchSpeciesConstructor(context, KeyStrings.Set);
+        PatchSpeciesConstructor(context, KeyStrings.RegExp);
+        PatchSpeciesConstructor(context, KeyStrings.GetOrCreate("ArrayBuffer"));
+        PatchSpeciesConstructor(context, KeyStrings.GetOrCreate("TypedArray"));
+    }
+
+    private static void PatchSpeciesConstructor(JSContext context, KeyString constructorName)
+    {
+        if (context[constructorName] is not JSObject constructor)
+            return;
+
+        EnsureAccessorProperty(constructor, JSSymbol.species, "[Symbol.species]", static (in Arguments a) => a.This);
+    }
 
     private static void PatchStringPrototype(JSContext context)
     {
@@ -483,6 +523,17 @@ internal static class BuiltInsAssemblyInitializer
 
             throw JSEngine.NewTypeError("Symbol.prototype[Symbol.toPrimitive] requires a symbol receiver");
         }, "[Symbol.toPrimitive]", 1), JSPropertyAttributes.ConfigurableValue);
+
+        EnsureAccessorProperty(symbolCtor.prototype, KeyStrings.GetOrCreate("description"), "description", static (in Arguments a) =>
+        {
+            if (a.This is JSSymbol symbol)
+                return JSValue.CreateString(symbol.ToString());
+
+            if (a.This is JSObject symbolObject && symbolObject.ValueOf() is JSSymbol boxed)
+                return JSValue.CreateString(boxed.ToString());
+
+            throw JSEngine.NewTypeError("Symbol.prototype.description requires a symbol receiver");
+        });
     }
 
     private static void PatchRegExpPrototype(JSContext context)
@@ -521,6 +572,34 @@ internal static class BuiltInsAssemblyInitializer
             var limit = a.TryGetAt(1, out var second) ? second.UIntValue : uint.MaxValue;
             return regExp.Split(a.Get1().ToString(), limit);
         }, "[Symbol.split]", 2), JSPropertyAttributes.ConfigurableValue);
+
+        EnsureAccessorProperty(regExpCtor.prototype, KeyStrings.GetOrCreate("dotAll"), "dotAll", static (in Arguments a) =>
+        {
+            if (a.This is not IJSRegExp regExp)
+                throw JSEngine.NewTypeError("RegExp.prototype.dotAll called on incompatible receiver");
+
+            return regExp.Flags.Contains('s') ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        });
+
+        PatchLegacyRegExpAccessor(regExpCtor, "lastMatch", "$&");
+        PatchLegacyRegExpAccessor(regExpCtor, "lastParen", "$+");
+        PatchLegacyRegExpAccessor(regExpCtor, "leftContext", "$`");
+        PatchLegacyRegExpAccessor(regExpCtor, "rightContext", "$'");
+        PatchLegacyRegExpAccessor(regExpCtor, "input", "$_");
+
+        for (var i = 1; i <= 9; i++)
+            PatchLegacyRegExpAccessor(regExpCtor, $"${i}");
+    }
+
+    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, string alias)
+    {
+        PatchLegacyRegExpAccessor(regExpCtor, propertyName);
+        PatchLegacyRegExpAccessor(regExpCtor, alias);
+    }
+
+    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName)
+    {
+        EnsureAccessorProperty(regExpCtor, KeyStrings.GetOrCreate(propertyName), propertyName, static (in Arguments _) => JSValue.EmptyString);
     }
 
     private static void PatchArrayPrototype(JSContext context)
@@ -539,6 +618,32 @@ internal static class BuiltInsAssemblyInitializer
         unscopables.FastAddValue(KeyStrings.GetOrCreate("toSorted"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
         unscopables.FastAddValue(KeyStrings.GetOrCreate("toSpliced"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
     }
+
+    private static void PatchTypedArrayBuiltIns(JSContext context)
+    {
+        if (context[KeyStrings.GetOrCreate("TypedArray")] is not JSFunction typedArrayCtor)
+            return;
+
+        EnsureAccessorProperty(typedArrayCtor.prototype, JSSymbol.toStringTag, "[Symbol.toStringTag]", static (in Arguments a) =>
+        {
+            return GetTypedArrayTag(a.This);
+        });
+    }
+
+    private static JSValue GetTypedArrayTag(JSValue value) => value switch
+    {
+        JSInt8Array => JSValue.CreateString("Int8Array"),
+        JSUInt8Array => JSValue.CreateString("Uint8Array"),
+        JSUint8ClampedArray => JSValue.CreateString("Uint8ClampedArray"),
+        JSInt16Array => JSValue.CreateString("Int16Array"),
+        JSUInt16Array => JSValue.CreateString("Uint16Array"),
+        JSInt32Array => JSValue.CreateString("Int32Array"),
+        JSUInt32Array => JSValue.CreateString("Uint32Array"),
+        JSFloat16Array => JSValue.CreateString("Float16Array"),
+        JSFloat32Array => JSValue.CreateString("Float32Array"),
+        JSFloat64Array => JSValue.CreateString("Float64Array"),
+        _ => JSUndefined.Value
+    };
 
     private static void PatchAsyncIteratorPrototype(JSContext context)
     {

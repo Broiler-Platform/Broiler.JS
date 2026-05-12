@@ -93,6 +93,18 @@ public static class JSIntl
         constructor.FastAddValue(SupportedLocalesOfKey,
             new JSFunction(static (in Arguments a) => a.Get1().IsNullOrUndefined ? JSValue.CreateArray() : a.Get1(), "supportedLocalesOf", "function supportedLocalesOf() { [native code] }", createPrototype: false, length: 1),
             JSPropertyAttributes.ConfigurableValue);
+        if (constructor.prototype.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(FormatKey.ToString(), FormatKey)).IsUndefined)
+        {
+            constructor.prototype.FastAddProperty(FormatKey,
+                new JSFunction(static (in Arguments _) =>
+                    new JSFunction(static (in Arguments inner) => JSValue.CreateString((inner[0] ?? JSUndefined.Value).ToString()), "format", "function format() { [native code] }", createPrototype: false, length: 1),
+                    "get format",
+                    "function get format() { [native code] }",
+                    createPrototype: false,
+                    length: 0),
+                null,
+                JSPropertyAttributes.ConfigurableProperty);
+        }
         return constructor;
     }
 }

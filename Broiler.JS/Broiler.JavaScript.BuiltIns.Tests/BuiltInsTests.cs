@@ -56,6 +56,58 @@ public class BuiltInsTests
         Assert.NotNull(DefaultBuiltInRegistry.AdditionalRegistrations);
     }
 
+    [Fact]
+    public void PropertyDescriptor_Accessors_Exist_For_Compatibility_BuiltIns()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            var descriptors = [
+              Object.getOwnPropertyDescriptor(Array, Symbol.species),
+              Object.getOwnPropertyDescriptor(Promise, Symbol.species),
+              Object.getOwnPropertyDescriptor(Map, Symbol.species),
+              Object.getOwnPropertyDescriptor(Set, Symbol.species),
+              Object.getOwnPropertyDescriptor(RegExp, Symbol.species),
+              Object.getOwnPropertyDescriptor(ArrayBuffer, Symbol.species),
+              Object.getOwnPropertyDescriptor(TypedArray, Symbol.species),
+              Object.getOwnPropertyDescriptor(Symbol.prototype, "description"),
+              Object.getOwnPropertyDescriptor(RegExp.prototype, "dotAll"),
+              Object.getOwnPropertyDescriptor(TypedArray.prototype, Symbol.toStringTag),
+              Object.getOwnPropertyDescriptor(Intl.NumberFormat.prototype, "format")
+            ];
+
+            descriptors.every(function(desc) {
+              return desc
+                && typeof desc.get === "function"
+                && desc.set === undefined
+                && desc.enumerable === false
+                && desc.configurable === true;
+            });
+            """);
+
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void PropertyDescriptor_Accessors_Exist_For_Legacy_RegExp_Statics()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            var names = ["lastMatch", "$&", "lastParen", "$+", "leftContext", "$`", "rightContext", "$'", "$1", "$2", "$9"];
+            names.every(function(name) {
+              var desc = Object.getOwnPropertyDescriptor(RegExp, name);
+              return desc
+                && typeof desc.get === "function"
+                && desc.set === undefined
+                && desc.enumerable === false
+                && desc.configurable === true;
+            });
+            """);
+
+        Assert.True(result.BooleanValue);
+    }
+
     // ── M2: JSMath tests ─────────────────────────────────────────────
 
     [Fact]
