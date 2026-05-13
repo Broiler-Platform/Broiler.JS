@@ -3254,7 +3254,11 @@ public class BuiltInsTests
                 }),
                 (function () {
                     var reg = new FinalizationRegistry(function() {});
-                    return typeof reg.register(Symbol('a description'));
+                    try {
+                        return reg.register(Symbol('a description')) === undefined ? 'undefined' : 'wrong-value';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
                 })(),
                 thrownCtor(function () {
                     'use strict';

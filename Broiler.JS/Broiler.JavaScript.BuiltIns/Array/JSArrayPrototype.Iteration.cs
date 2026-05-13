@@ -57,15 +57,18 @@ public partial class JSArray
         throw JSEngine.NewTypeError("Cannot convert object to primitive value");
     }
 
+    private static JSValue ThrowIfSymbolToString(JSValue value)
+    {
+        if (value.IsSymbol)
+            throw JSEngine.NewTypeError("Cannot convert a Symbol value to a string");
+
+        return value;
+    }
+
     private static JSValue ToStringPrimitive(JSValue value)
     {
         if (!value.IsObject)
-        {
-            if (value.IsSymbol)
-                throw JSEngine.NewTypeError("Cannot convert a Symbol value to a string");
-
-            return value;
-        }
+            return ThrowIfSymbolToString(value);
 
         var @object = (JSObject)value;
         var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
@@ -75,34 +78,21 @@ public partial class JSArray
             if (primitive.IsObject)
                 throw JSEngine.NewTypeError("Cannot convert object to primitive value");
 
-            if (primitive.IsSymbol)
-                throw JSEngine.NewTypeError("Cannot convert a Symbol value to a string");
-
-            return primitive;
+            return ThrowIfSymbolToString(primitive);
         }
 
         if (@object[KeyStrings.toString] is IJSFunction toString)
         {
             var primitive = toString.InvokeFunction(new Arguments(@object));
             if (!primitive.IsObject)
-            {
-                if (primitive.IsSymbol)
-                    throw JSEngine.NewTypeError("Cannot convert a Symbol value to a string");
-
-                return primitive;
-            }
+                return ThrowIfSymbolToString(primitive);
         }
 
         if (@object[KeyStrings.valueOf] is IJSFunction valueOf)
         {
             var primitive = valueOf.InvokeFunction(new Arguments(@object));
             if (!primitive.IsObject)
-            {
-                if (primitive.IsSymbol)
-                    throw JSEngine.NewTypeError("Cannot convert a Symbol value to a string");
-
-                return primitive;
-            }
+                return ThrowIfSymbolToString(primitive);
         }
 
         throw JSEngine.NewTypeError("Cannot convert object to primitive value");
