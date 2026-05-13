@@ -57,6 +57,57 @@ public partial class JSArray
         throw JSEngine.NewTypeError("Cannot convert object to primitive value");
     }
 
+    private static JSValue ToStringPrimitive(JSValue value)
+    {
+        if (!value.IsObject)
+        {
+            if (value.IsSymbol)
+                throw JSEngine.NewTypeError("Cannot convert a Symbol value to a string");
+
+            return value;
+        }
+
+        var @object = (JSObject)value;
+        var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
+        if (!toPrimitive.IsUndefined)
+        {
+            var primitive = toPrimitive.InvokeFunction(new Arguments(@object, JSConstants.String));
+            if (primitive.IsObject)
+                throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+
+            if (primitive.IsSymbol)
+                throw JSEngine.NewTypeError("Cannot convert a Symbol value to a string");
+
+            return primitive;
+        }
+
+        if (@object[KeyStrings.toString] is IJSFunction toString)
+        {
+            var primitive = toString.InvokeFunction(new Arguments(@object));
+            if (!primitive.IsObject)
+            {
+                if (primitive.IsSymbol)
+                    throw JSEngine.NewTypeError("Cannot convert a Symbol value to a string");
+
+                return primitive;
+            }
+        }
+
+        if (@object[KeyStrings.valueOf] is IJSFunction valueOf)
+        {
+            var primitive = valueOf.InvokeFunction(new Arguments(@object));
+            if (!primitive.IsObject)
+            {
+                if (primitive.IsSymbol)
+                    throw JSEngine.NewTypeError("Cannot convert a Symbol value to a string");
+
+                return primitive;
+            }
+        }
+
+        throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+    }
+
     private static double ToNumber(JSValue value) => ToNumberPrimitive(value).DoubleValue;
 
     private static double ToLength(JSValue value)
