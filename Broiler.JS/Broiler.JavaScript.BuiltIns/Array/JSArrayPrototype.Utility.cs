@@ -61,53 +61,39 @@ public partial class JSArray
 
     [JSPrototypeMethod]
     [JSExport("slice", Length = 2)]
-    public static JSArray Slice(in Arguments a)
+    public static JSValue Slice(in Arguments a)
     {
-        var start = a.TryGetAt(0, out var a1) ? a1.IntegerValue : 0;
-        var end = a.TryGetAt(1, out var a2)
-            ? (a2.IsUndefined ? int.MaxValue : a2.IntegerValue)
-            : int.MaxValue;
+        var @this = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLengthLong(@this);
+        var relativeStart = a.TryGetAt(0, out var start) ? ToIntegerOrInfinity(start) : 0;
+        var relativeEnd = a.TryGetAt(1, out var end)
+            ? (end.IsUndefined ? length : ToIntegerOrInfinity(end, length))
+            : length;
 
-        var @this = a.This;
+        var actualStart = relativeStart < 0
+            ? Math.Max(length + relativeStart, 0)
+            : Math.Min(relativeStart, length);
+        var actualEnd = relativeEnd < 0
+            ? Math.Max(length + relativeEnd, 0)
+            : Math.Min(relativeEnd, length);
+        var count = Math.Max(actualEnd - actualStart, 0);
+        var resultLength = (uint)Math.Min(count, uint.MaxValue);
 
-        // Fix the arguments so they are positive and within the bounds of the array.
-        if (start < 0)
-            start += @this.Length;
+        var result = CreateArraySpecies(@this, resultLength);
+        uint resultIndex = 0;
 
-        if (end < 0)
-            end += @this.Length;
-
-        // return empty array
-        if (end <= start)
-            return new JSArray();
-
-        start = Math.Min(Math.Max(start, 0), @this.Length);
-        end = Math.Min(Math.Max(end, 0), @this.Length);
-
-        var resultLength = end - start;
-        JSArray r = new((uint)resultLength);
-        ref var rElements = ref r.CreateElements();
-        uint ni;
-
-        ni = 0;
-        //r.length is int
-        for (uint i = 0; i < r.Length; i++)
+        for (long sourceIndex = actualStart; sourceIndex < actualEnd; sourceIndex++)
         {
-            var index = (uint)start + i;
+            if (!TryGetArrayLikeElement(@this, (uint)sourceIndex, out var value))
+            {
+                resultIndex++;
+                continue;
+            }
 
-            if (@this.TryGetValue(index, out var val))
-            {
-                rElements.Put(ni++) = val;
-            }
-            else
-            {
-                ni++;
-            }
+            CreateDataPropertyOrThrow(result, resultIndex++, value);
         }
 
-        //_length is uint for internal calculation
-        r._length = ni;
-        return r;
+        return result;
     }
 
     [JSPrototypeMethod]

@@ -148,6 +148,18 @@ public partial class JSArray
         target.DefineProperty(index, descriptor);
     }
 
+    private static bool TryGetArrayLikeElement(JSObject @object, uint index, out JSValue value)
+    {
+        if (@object.GetInternalProperty(index).IsEmpty)
+        {
+            value = JSUndefined.Value;
+            return false;
+        }
+
+        value = @object[index];
+        return true;
+    }
+
     private struct ArrayLikeEntryEnumerator(JSObject @object, uint length) : IElementEnumerator
     {
         private int index = -1;
@@ -478,25 +490,28 @@ public partial class JSArray
     [JSExport("reduce", Length = 1)]
     public static JSValue Reduce(in Arguments a)
     {
-        var r = new JSArray();
-        var @this = a.This;
+        var @this = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(@this);
         var (callback, initialValue) = a.Get2();
 
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.reduce");
-
-        var en = @this.GetElementEnumerator();
         uint index = 0;
 
         if (a.Length == 1)
         {
-            if (!en.MoveNext(out initialValue))
+            while (index < length && !TryGetArrayLikeElement(@this, index, out initialValue))
+                index++;
+
+            if (index >= length)
                 throw JSEngine.NewTypeError($"No initial value provided and array is empty");
+
+            index++;
         }
 
-        while (en.MoveNext(out var hasValue, out var item, out index))
+        for (; index < length; index++)
         {
-            if (!hasValue)
+            if (!TryGetArrayLikeElement(@this, index, out var item))
                 continue;
 
             var itemArgs = new Arguments(JSUndefined.Value, initialValue, item, new JSNumber(index), @this);
@@ -510,27 +525,31 @@ public partial class JSArray
     [JSExport("reduceRight", Length = 1)]
     public static JSValue ReduceRight(in Arguments a)
     {
-        var r = new JSArray();
-        var @this = a.This;
+        var @this = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(@this);
         var (callback, initialValue) = a.Get2();
 
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.reduce");
 
-        var start = @this.Length - 1;
+        long start = length - 1;
 
         if (a.Length == 1)
         {
-            if (@this.Length == 0)
+            while (start >= 0 && !TryGetArrayLikeElement(@this, (uint)start, out initialValue))
+                start--;
+
+            if (start < 0)
                 throw JSEngine.NewTypeError($"No initial value provided and array is empty");
 
-            initialValue = @this[(uint)start];
             start--;
         }
 
-        for (int i = start; i >= 0; i--)
+        for (long i = start; i >= 0; i--)
         {
-            var item = @this[(uint)i];
+            if (!TryGetArrayLikeElement(@this, (uint)i, out var item))
+                continue;
+
             var itemArgs = new Arguments(JSUndefined.Value, initialValue, item, new JSNumber(i), @this);
             initialValue = fn.f(itemArgs);
         }
@@ -542,17 +561,16 @@ public partial class JSArray
     [JSExport("some", Length = 1)]
     public static JSValue Some(in Arguments a)
     {
-        var array = a.This;
+        var array = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(array);
         var (first, thisArg) = a.Get2();
 
         if (first is not JSFunction fn)
             throw JSEngine.NewTypeError($"First argument is not function");
 
-        var en = array.GetElementEnumerator();
-
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+        for (uint index = 0; index < length; index++)
         {
-            if (!hasValue)
+            if (!TryGetArrayLikeElement(array, index, out var item))
                 continue;
 
             var itemArgs = new Arguments(thisArg, item, new JSNumber(index), array);

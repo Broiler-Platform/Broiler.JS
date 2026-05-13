@@ -17,6 +17,16 @@ public partial class JSArray : JSObject
 {
     internal uint _length;
 
+    private bool IsLengthReadOnly()
+    {
+        ref var ownProperties = ref GetOwnProperties(false);
+        if (ownProperties.IsEmpty)
+            return false;
+
+        ref var lengthProperty = ref ownProperties.GetValue(KeyStrings.length.Key);
+        return !lengthProperty.IsEmpty && lengthProperty.IsReadOnly;
+    }
+
     public JSArray() : base((JSObject)null) { }
 
     public JSArray(params JSValue[] items) : this((IEnumerable<JSValue>)items) { }
@@ -93,6 +103,9 @@ public partial class JSArray : JSObject
         get => _length;
         set
         {
+            if (IsLengthReadOnly())
+                throw JSEngine.NewTypeError("Cannot modify property length");
+
             if (IsSealedOrFrozen())
                 throw JSEngine.NewTypeError("Cannot modify property length");
             var prev = _length;
@@ -267,9 +280,17 @@ public partial class JSArray : JSObject
 
     public override bool SetValue(uint name, JSValue value, JSValue receiver, bool throwError = true)
     {
+        if (_length <= name && IsLengthReadOnly())
+        {
+            if (throwError)
+                throw JSEngine.NewTypeError("Cannot modify property length");
+
+            return false;
+        }
+
         if (base.SetValue(name, value, receiver, throwError))
         {
-            if (_length <= name)
+            if (_length <= name && !GetInternalProperty(name, false).IsEmpty)
             {
                 _length = name + 1;
             }

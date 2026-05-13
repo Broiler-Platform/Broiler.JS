@@ -269,6 +269,17 @@ public partial class JSObject
                 return true;
             }
 
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {this} which has only a getter");
+
+            return false;
+        }
+
+        if (p.IsReadOnly)
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {this}");
+
             return false;
         }
 
@@ -280,8 +291,17 @@ public partial class JSObject
             return false;
         }
 
+        if (p.IsEmpty && !IsExtensible())
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot add property {name} to {this}");
+
+            return false;
+        }
+
+        var attributes = !p.IsEmpty ? p.Attributes : JSPropertyAttributes.EnumerableConfigurableValue;
         ref var elements = ref CreateElements();
-        elements.Put(name, value);
+        elements.Put(name, value, attributes);
         PropertyChanged?.Invoke(this, (uint.MaxValue, name, null));
         return true;
     }
@@ -406,6 +426,13 @@ public partial class JSObject
 
     public JSValue DefineProperty(in KeyString name, JSObject pd)
     {
+        if (name.Key == KeyStrings.length.Key && pd.GetInternalProperty(KeyStrings.value, false).IsEmpty)
+        {
+            var currentLength = Length;
+            if (currentLength >= 0)
+                pd.FastAddValue(KeyStrings.value, JSValue.CreateNumber(currentLength), JSPropertyAttributes.EnumerableConfigurableValue);
+        }
+
         var key = name.Key;
         ref var ownProperties = ref GetOwnProperties();
         ref var old = ref ownProperties.GetValue(name.Key);

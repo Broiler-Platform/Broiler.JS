@@ -2857,6 +2857,105 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_Prototype_TypeError_Regressions_For_Length_Species_And_Reduction_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            function thrownCtor(fn) {
+                try {
+                    return fn();
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            }
+
+            function nonPrimitiveNumberLike() {
+                return {
+                    valueOf: function() { return {}; },
+                    toString: function() { return {}; }
+                };
+            }
+
+            return [
+                (function() {
+                    var array = [];
+                    Object.defineProperty(array, 'length', { writable: false });
+
+                    return [
+                        thrownCtor(function() { array.push(1); }),
+                        Object.prototype.hasOwnProperty.call(array, '0')
+                    ].join('|');
+                })(),
+                thrownCtor(function() {
+                    var array = [];
+                    Object.defineProperty(array, 'length', { writable: false });
+                    return array.shift();
+                }),
+                (function() {
+                    var array = new Array(1);
+                    var getterCalls = 0;
+                    Object.defineProperty(Array.prototype, '0', {
+                        configurable: true,
+                        get: function() {
+                            Object.defineProperty(array, 'length', { writable: false });
+                            getterCalls++;
+                        }
+                    });
+
+                    try {
+                        return [
+                            thrownCtor(function() { array.shift(); }),
+                            array.length,
+                            getterCalls
+                        ].join('|');
+                    } finally {
+                        delete Array.prototype[0];
+                    }
+                })(),
+                thrownCtor(function() { Array.prototype.some.call({ 0: 11, length: nonPrimitiveNumberLike() }, function() { return true; }); }),
+                thrownCtor(function() { Array.prototype.reduce.call({ 0: 11, length: nonPrimitiveNumberLike() }, function() { return true; }, 1); }),
+                thrownCtor(function() { Array.prototype.reduceRight.call({ 0: 11, length: nonPrimitiveNumberLike() }, function() { return true; }, 1); }),
+                thrownCtor(function() {
+                    var source = [1];
+                    source.constructor = {};
+                    source.constructor[Symbol.species] = function() {
+                        this.length = 0;
+                        Object.preventExtensions(this);
+                    };
+                    return source.slice(0, 1);
+                }),
+                thrownCtor(function() {
+                    var source = [1];
+                    source.constructor = {};
+                    source.constructor[Symbol.species] = function() {
+                        Object.defineProperty(this, '0', {
+                            set: function(_value) {},
+                            configurable: false
+                        });
+                    };
+                    return source.slice(0, 1);
+                }),
+                thrownCtor(function() {
+                    var revoked = Proxy.revocable([], {});
+                    revoked.revoke();
+                    return Array.prototype.slice.call(revoked.proxy);
+                }),
+                thrownCtor(function() {
+                    var revoked = Proxy.revocable([], {});
+                    revoked.revoke();
+                    return Array.prototype.splice.call(revoked.proxy);
+                })
+            ].join('|');
+        })();");
+
+        Assert.Equal(
+            "TypeError|false|TypeError|TypeError|1|1|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError",
+            result.ToString());
+    }
+
+    [Fact]
     public void RegExp_Prototype_Compile_TypeError_Scenarios_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();

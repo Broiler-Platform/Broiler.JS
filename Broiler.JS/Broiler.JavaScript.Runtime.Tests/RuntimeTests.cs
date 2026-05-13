@@ -83,7 +83,7 @@ public class RuntimeTests
     }
 
     [Fact]
-    public void SetValue_UintKey_NonFunctionSetter_DoesNotThrow()
+    public void SetValue_UintKey_NonFunctionSetter_ThrowsTypeError()
     {
         // Arrange: create a JSObject and add an accessor property (getter/setter descriptor)
         // at uint key 0 where the setter slot contains a JSString (not IJSFunction).
@@ -95,11 +95,8 @@ public class RuntimeTests
             nonFunctionSetter,
             JSPropertyAttributes.EnumerableConfigurableProperty);
 
-        // Act & Assert: should not throw InvalidCastException
-        var result = obj.SetValue(0u, JSUndefined.Value, obj);
-
-        // Setter is not a function, so SetValue should return false
-        Assert.False(result);
+        var exception = Assert.Throws<JSException>(() => obj.SetValue(0u, JSUndefined.Value, obj));
+        Assert.Contains("only a getter", exception.Message);
     }
 
     [Fact]

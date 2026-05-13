@@ -179,30 +179,33 @@ public partial class JSArray
     [JSExport("shift", Length = 0)]
     public static JSValue Shift(in Arguments a)
     {
-        var @this = a.This;
+        var @this = ToArrayLikeObject(a.This);
         JSValue first = JSUndefined.Value;
-
-        if (@this is not JSObject @object)
-            return first;
+        var @object = @this;
 
         if (@object.IsSealedOrFrozen())
             throw JSEngine.NewTypeError("Cannot modify property length");
 
-        var n = (uint)@this.Length;
+        var n = GetArrayLikeLength(@object);
         if (n == 0)
+        {
+            @object[KeyStrings.length] = JSNumber.Zero;
             return first;
+        }
 
         ref var oe = ref @object.GetElements();
-        if (oe.IsNull)
-            return first;
-
         first = @this[0];
         var last = n - 1;
-        for (uint i = 1; i < n; i++)
-            oe.Put(i - 1) = oe[i];
 
-        oe.RemoveAt(last);
-        @this.Length = (int)last;
+        if (!oe.IsNull)
+        {
+            for (uint i = 1; i < n; i++)
+                oe.Put(i - 1) = oe[i];
+
+            oe.RemoveAt(last);
+        }
+
+        @object[KeyStrings.length] = new JSNumber(last);
 
         return first;
     }
@@ -343,20 +346,18 @@ public partial class JSArray
         ref var elements = ref @this.GetElements();
 
         // Get the deleted items.
-        var deletedItems = new JSArray((uint)deleteCount);
-        ref var deletedItemsElements = ref deletedItems.GetElements();
+        var deletedItems = CreateArraySpecies(@this, (uint)deleteCount);
 
         for (uint i = 0; i < deleteCount; i++)
         {
             ref var property = ref elements.Get((uint)(start + i));
 
-            if (property.IsProperty)
-            {
-                deletedItemsElements.Put(i, @this.GetValue(in property));
+            if (property.IsEmpty)
                 continue;
-            }
 
-            deletedItemsElements.Put(i) = property;
+            CreateDataPropertyOrThrow(deletedItems, i, property.IsProperty
+                ? @this.GetValue(in property)
+                : (JSValue)property.value);
         }
 
         var itemsLength = a.Length > 1 ? a.Length - 2 : 0;
