@@ -20,7 +20,7 @@ public partial class JSMap : JSObject
 
     public JSMap(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
-        var iterable = a[0];
+        var iterable = a.Get1();
         if (iterable.IsNullOrUndefined)
             return;
 
