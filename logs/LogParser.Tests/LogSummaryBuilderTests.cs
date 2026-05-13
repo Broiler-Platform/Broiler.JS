@@ -511,7 +511,7 @@ public class LogSummaryBuilderTests
     }
 
     [Fact]
-    public void FormatMostCommonProblem_IncludesStructuredProblemDetails()
+    public void FormatMostCommonProblem_EmitsGithubIssueMarkdown()
     {
         using var fixture = TempLogFile.Create("""
         {
@@ -556,15 +556,64 @@ public class LogSummaryBuilderTests
             LogSummaryBuilder.ParseAndSummarize(fixture.Path)
         ]);
 
-        Assert.Contains("Most common problem:", formatted, StringComparison.Ordinal);
-        Assert.Contains("type: Broiler.JavaScript.Runtime.JSException", formatted, StringComparison.Ordinal);
-        Assert.Contains("context: Throw", formatted, StringComparison.Ordinal);
-        Assert.Contains("message: Common failure", formatted, StringComparison.Ordinal);
-        Assert.Contains("count: 2", formatted, StringComparison.Ordinal);
-        Assert.Contains("occurrenceRate:", formatted, StringComparison.Ordinal);
-        Assert.Contains("path: test/annexB/alpha.js", formatted, StringComparison.Ordinal);
-        Assert.Contains("lineNumber: 114", formatted, StringComparison.Ordinal);
-        Assert.Contains("logLine: Unhandled exception. Broiler.JavaScript.Runtime.JSException: Common failure", formatted, StringComparison.Ordinal);
+        Assert.Contains("### Description", formatted, StringComparison.Ordinal);
+        Assert.Contains("Most common exception detected in recent logs.", formatted, StringComparison.Ordinal);
+        Assert.Contains("- **Exception type:** Broiler.JavaScript.Runtime.JSException", formatted, StringComparison.Ordinal);
+        Assert.Contains("- **Line number:** 114", formatted, StringComparison.Ordinal);
+        Assert.Contains("- **Context:** Throw", formatted, StringComparison.Ordinal);
+        Assert.Contains("- **Message:** Common failure", formatted, StringComparison.Ordinal);
+        Assert.Contains("- **Sample filenames/paths:**", formatted, StringComparison.Ordinal);
+        Assert.Contains("  - test/annexB/alpha.js", formatted, StringComparison.Ordinal);
+        Assert.Contains("  - test/annexB/beta.js", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("count:", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("logLine:", formatted, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FormatMostCommonProblem_LimitsSamplePathsToTwentyUniqueFiles()
+    {
+        var results = Enumerable.Range(1, 25)
+            .Select(index => $$"""
+            {
+              "path": "test/generated/file-{{index:D2}}.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Common failure\nat Throw in /repo/JSException.cs:line 114\n"
+            }
+            """)
+            .Concat(
+            [
+                """
+                {
+                  "path": "test/generated/file-01.js",
+                  "status": "failed",
+                  "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Common failure\nat Throw in /repo/JSException.cs:line 114\n"
+                }
+                """
+            ]);
+
+        using var fixture = TempLogFile.Create($$"""
+        {
+          "suiteRef": "fixture-most-common-problem-many-files",
+          "broilerDll": "fixture/BroilerJS.dll",
+          "executed": 26,
+          "passed": 0,
+          "failed": 26,
+          "skipped": 0,
+          "results": [
+            {{string.Join(",\n", results)}}
+          ]
+        }
+        """);
+
+        var formatted = LogReportFormatter.FormatMostCommonProblem(
+        [
+            LogSummaryBuilder.ParseAndSummarize(fixture.Path)
+        ]);
+
+        Assert.Equal(20, formatted.Split('\n').Count(line => line.StartsWith("  - test/generated/file-", StringComparison.Ordinal)));
+        Assert.Contains("  - test/generated/file-01.js", formatted, StringComparison.Ordinal);
+        Assert.Contains("  - test/generated/file-20.js", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("  - test/generated/file-21.js", formatted, StringComparison.Ordinal);
     }
 
     [Fact]

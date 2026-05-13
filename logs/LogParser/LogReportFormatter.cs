@@ -42,36 +42,37 @@ public static class LogReportFormatter
         var report = CreateMostCommonProblemReport(fileSummaries, outputFormat: "text");
         var builder = new StringBuilder();
 
-        builder.AppendLine("Most common problem:");
         if (report.Problem is null)
         {
-            builder.AppendLine("  (no parsed exceptions)");
-            return builder.ToString().TrimEnd();
+            return "### Description\nMost common exception detected in recent logs.\n\n- No parsed exceptions were found.";
         }
 
-        builder.AppendLine($"  type: {report.Problem.Type}");
-        builder.AppendLine($"  context: {report.Problem.Context}");
-        builder.AppendLine($"  message: {report.Problem.Message}");
-        builder.AppendLine($"  count: {report.Problem.Count}");
-        builder.AppendLine($"  occurrenceRate: {report.Problem.OccurrenceRate:P1}");
-        builder.AppendLine("  example:");
-        builder.AppendLine($"    path: {report.Problem.Example.Path}");
-        builder.AppendLine($"    type: {report.Problem.Example.Type}");
-        builder.AppendLine($"    context: {report.Problem.Example.Context ?? "(unknown context)"}");
-        builder.AppendLine($"    message: {report.Problem.Example.Message}");
-        builder.AppendLine($"    lineNumber: {FormatLineNumber(report.Problem.Example.LineNumber)}");
-        builder.AppendLine($"    logLine: {report.Problem.Example.LogLine}");
-        builder.AppendLine("  occurrences:");
+        builder.AppendLine("### Description");
+        builder.AppendLine("Most common exception detected in recent logs.");
+        builder.AppendLine();
+        builder.AppendLine($"- **Exception type:** {report.Problem.Type}");
+        builder.AppendLine($"- **Line number:** {FormatLineNumber(report.Problem.Example.LineNumber)}");
+        builder.AppendLine($"- **Context:** {report.Problem.Context}");
+        builder.AppendLine($"- **Message:** {report.Problem.Message}");
+        builder.AppendLine("- **Sample filenames/paths:**");
 
-        foreach (var occurrence in report.Problem.Occurrences)
+        var samplePaths = report.Problem.Occurrences
+            .Select(occurrence => occurrence.Path)
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(20)
+            .ToArray();
+
+        if (samplePaths.Length == 0)
         {
-            builder.AppendLine("    -");
-            builder.AppendLine($"      path: {occurrence.Path}");
-            builder.AppendLine($"      type: {occurrence.Type}");
-            builder.AppendLine($"      context: {occurrence.Context ?? "(unknown context)"}");
-            builder.AppendLine($"      message: {occurrence.Message}");
-            builder.AppendLine($"      lineNumber: {FormatLineNumber(occurrence.LineNumber)}");
-            builder.AppendLine($"      logLine: {occurrence.LogLine}");
+            builder.AppendLine("  - (no sample files available)");
+        }
+        else
+        {
+            foreach (var samplePath in samplePaths)
+            {
+                builder.AppendLine($"  - {samplePath}");
+            }
         }
 
         return builder.ToString().TrimEnd();
