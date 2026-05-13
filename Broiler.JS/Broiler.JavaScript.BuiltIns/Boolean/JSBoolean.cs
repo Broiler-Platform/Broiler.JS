@@ -1,5 +1,6 @@
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
+using System.Runtime.CompilerServices;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
@@ -11,6 +12,18 @@ namespace Broiler.JavaScript.BuiltIns.Boolean;
 [JSFunctionGenerator("Boolean")]
 public partial class JSBoolean : JSPrimitive
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static JSBoolean ToBoolean(JSValue target, [CallerMemberName] string name = null)
+    {
+        if (target is JSBoolean boolean)
+            return boolean;
+
+        if (target is JSPrimitiveObject { value: JSBoolean primitiveBoolean })
+            return primitiveBoolean;
+
+        throw JSEngine.NewTypeError($"Boolean.prototype.{name} requires that 'this' be a Boolean");
+    }
+
     public static JSBoolean True = new(true);
     public static JSBoolean False = new(false);
 
@@ -38,6 +51,14 @@ public partial class JSBoolean : JSPrimitive
     public override JSValue TypeOf() => JSConstants.Boolean;
 
     public override JSValue Negate() => _value ? JSNumber.MinusOne : JSNumber.NegativeZero;
+
+    [JSPrototypeMethod]
+    [JSExport("toString")]
+    public static JSValue ToString(in Arguments a) => JSValue.CreateString(ToBoolean(a.This).ToString());
+
+    [JSPrototypeMethod]
+    [JSExport("valueOf")]
+    public static JSValue ValueOf(in Arguments a) => ToBoolean(a.This);
 
     public override bool ConvertTo(Type type, out object value)
     {

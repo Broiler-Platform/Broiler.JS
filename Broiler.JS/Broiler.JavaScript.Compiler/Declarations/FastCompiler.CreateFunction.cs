@@ -154,7 +154,7 @@ partial class FastCompiler
                 lambda = GeneratorRewriter.Rewrite(in scriptFunctionName, block, cs.ReturnLabel, cs.Generator, replaceArgs: cs.Arguments, replaceStackItem: cs.StackItem,
                     replaceContext: cs.Context, replaceScriptInfo: scriptInfo);
 
-                jsf = JSGeneratorFunctionBuilderV2.New(lambda, fxName, code);
+                jsf = JSGeneratorFunctionBuilderV2.New(lambda, fxName, code, functionDeclaration.Async);
             }
             else if (functionDeclaration.Async)
             {
