@@ -3218,6 +3218,59 @@ public class BuiltInsTests
         Assert.Equal("TypeError||TypeError|1|1||TypeError||TypeError", result.ToString());
     }
 
+    [Fact]
+    public void Array_FinalizationRegistry_And_Function_TypeError_Regressions_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            function thrownCtor(fn) {
+                try {
+                    fn();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            }
+
+            return [
+                thrownCtor(function () {
+                    var object = {
+                        valueOf() {
+                            return {};
+                        },
+                        toString() {
+                            return {};
+                        }
+                    };
+
+                    [object].toString();
+                }),
+                thrownCtor(function () {
+                    var finalizationRegistry = new FinalizationRegistry(function() {});
+                    var target = {};
+                    finalizationRegistry.register(target, target);
+                }),
+                (function () {
+                    var reg = new FinalizationRegistry(function() {});
+                    try {
+                        return reg.register(Symbol('a description')) === undefined ? 'undefined' : 'wrong-value';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                })(),
+                thrownCtor(function () {
+                    'use strict';
+                    function fn() {}
+                    return fn.caller;
+                })
+            ].join('|');
+        })();");
+
+        Assert.Equal("TypeError|TypeError|undefined|TypeError", result.ToString());
+    }
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured

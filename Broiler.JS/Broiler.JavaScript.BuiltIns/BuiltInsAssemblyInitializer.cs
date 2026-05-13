@@ -502,6 +502,11 @@ internal static class BuiltInsAssemblyInitializer
         if (context[KeyStrings.Function] is not JSFunction functionCtor)
             return;
 
+        EnsureAccessorProperty(functionCtor.prototype, KeyStrings.GetOrCreate("caller"), "caller", static (in Arguments a)
+            => throw JSEngine.NewTypeError("Cannot access caller in strict mode"));
+        EnsureAccessorProperty(functionCtor.prototype, KeyStrings.arguments, "arguments", static (in Arguments a)
+            => throw JSEngine.NewTypeError("Cannot access arguments in strict mode"));
+
         ref var symbols = ref functionCtor.prototype.GetSymbols();
         symbols.Put(JSSymbol.hasInstance.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {

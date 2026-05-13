@@ -53,7 +53,7 @@ public partial class JSArray
             if (item.IsNullOrUndefined)
                 continue;
 
-            sb.Append(item.ToString());
+            sb.Append(ToStringPrimitive(item).ToString());
         }
 
         return new JSString(sb.ToString());

@@ -23,56 +23,72 @@ public partial class JSFinalizationRegistry : JSObject
         finalizer = fx;
     }
 
-    internal class WeakObject(JSFinalizationRegistry registry, JSValue token) : JSObject
+    internal class WeakObject(JSFinalizationRegistry registry, JSValue holdings) : JSObject
     {
         ~WeakObject()
         {
-            registry.FinalizeReference(token);
+            registry.FinalizeReference(holdings);
         }
     }
 
-    private void FinalizeReference(JSValue token)
+    private void FinalizeReference(JSValue holdings)
     {
-        token.Delete((IJSSymbol)finalizationToken);
-        finalizer.InvokeFunction(new Arguments(this, token));
+        finalizer.InvokeFunction(new Arguments(this, holdings));
     }
 
     [JSExport]
     public JSValue Unregister(in Arguments a)
     {
-        if (a[0] is not JSObject)
-            throw JSEngine.NewTypeError($"Argument is not an object");
+        if (!CanBeHeldWeakly(a[0]))
+            throw JSEngine.NewTypeError("Argument must be an object or symbol");
 
-        Unregister(a[0]);
-        return JSUndefined.Value;
+        return Unregister(a[0]) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }
 
     [JSExport]
     public JSValue Register(in Arguments a)
     {
-        if (a[0] is not JSObject obj)
-            throw JSEngine.NewTypeError($"Argument is not an object");
+        var target = a[0];
+        if (!CanBeHeldWeakly(target))
+            throw JSEngine.NewTypeError("Argument must be an object or symbol");
 
-        var token = a[1];
-        if (token is null || token.IsNullOrUndefined)
-            throw JSEngine.NewTypeError($"Token is required");
+        var holdings = a[1] ?? JSUndefined.Value;
+        if (target.Is(holdings).BooleanValue)
+            throw JSEngine.NewTypeError("target and holdings must not be the same");
 
-        Register(obj, token);
+        var unregisterToken = a[2] ?? JSUndefined.Value;
+        if (!unregisterToken.IsUndefined && !CanBeHeldWeakly(unregisterToken))
+            throw JSEngine.NewTypeError("Argument must be an object or symbol");
+
+        Register(target, holdings, unregisterToken);
         return JSUndefined.Value;
     }
 
-    private void Register(JSValue target, JSValue token)
+    private static bool CanBeHeldWeakly(JSValue value) => value is JSObject || value.IsSymbol;
+
+    private void Register(JSValue target, JSValue holdings, JSValue unregisterToken)
     {
-        var weakRef = new WeakObject(this, token);
-        target[(IJSSymbol)finalizationSymbol] = weakRef;
-        token[(IJSSymbol)finalizationToken] = weakRef;
+        var weakRef = new WeakObject(this, holdings);
+
+        if (target is JSObject targetObject)
+            targetObject[(IJSSymbol)finalizationSymbol] = weakRef;
+
+        if (unregisterToken is JSObject unregisterTokenObject)
+            unregisterTokenObject[(IJSSymbol)finalizationToken] = weakRef;
     }
 
-    private void Unregister(JSValue token)
+    private bool Unregister(JSValue token)
     {
-        var weakRef = token[(IJSSymbol)finalizationSymbol];
-        token.Delete((IJSSymbol)finalizationSymbol);
+        if (token is not JSObject tokenObject)
+            return false;
+
+        var weakRef = tokenObject[(IJSSymbol)finalizationToken];
+        if (weakRef.IsUndefined)
+            return false;
+
+        tokenObject.Delete((IJSSymbol)finalizationToken);
         GC.SuppressFinalize(weakRef);
+        return true;
     }
 }
 
