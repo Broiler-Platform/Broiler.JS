@@ -221,6 +221,21 @@ jobs:
     if: always() && needs.run.result != 'skipped'
     runs-on: ubuntu-latest
     steps:
+      - name: Check out Broiler.JS
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Download shard logs into one directory
+        uses: actions/download-artifact@v4.1.3
+        with:
+          pattern: test262-full-script-host-shard-*
+          path: ${{ github.workspace }}/.artifacts/test262/full-script-host/merged
+          merge-multiple: true
+
       - name: Merge shard logs into one artifact
         uses: actions/upload-artifact/merge@v4
         with:
@@ -228,3 +243,112 @@ jobs:
           pattern: test262-full-script-host-shard-*
           separate-directories: false
           delete-merged: true
+
+      - name: Generate LogParser issue content
+        id: logparser
+        shell: bash
+        env:
+          ISSUE_TOKEN: ${{ secrets.ISSUE_TOKEN }}
+          LOGPARSER_LOGS_DIR: ${{ github.workspace }}/.artifacts/test262/full-script-host/merged
+          LOGPARSER_OUTPUT_DIR: ${{ github.workspace }}/.artifacts/test262/full-script-host/logparser
+        run: |
+          set -euo pipefail
+          mkdir -p "$LOGPARSER_OUTPUT_DIR"
+          issue_body_path="$LOGPARSER_OUTPUT_DIR/issue.md"
+          issue_json_path="$LOGPARSER_OUTPUT_DIR/issue.json"
+
+          # --most-common-problem narrows the report to the highest-frequency
+          # type/context/message combination so the emitted markdown can be
+          # posted directly as a focused GitHub issue body.
+          dotnet run --project logs/LogParser -- \
+            "$LOGPARSER_LOGS_DIR" \
+            --most-common-problem > "$issue_body_path"
+
+          dotnet run --project logs/LogParser -- \
+            "$LOGPARSER_LOGS_DIR" \
+            --most-common-problem \
+            --output json > "$issue_json_path"
+
+          ISSUE_JSON_PATH="$issue_json_path" python <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          MAX_ISSUE_TITLE_LENGTH = 256
+
+          issue_json = json.loads(Path(os.environ["ISSUE_JSON_PATH"]).read_text(encoding="utf-8"))
+          problem = issue_json.get("problem")
+          should_create_issue = problem is not None
+          issue_token_available = bool(os.environ.get("ISSUE_TOKEN", "").strip())
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write(f"create_issue={'true' if should_create_issue else 'false'}\n")
+              handle.write(f"issue_token_available={'true' if issue_token_available else 'false'}\n")
+
+              if should_create_issue:
+                  problem_type = (problem.get("type") or "unknown type").strip()
+                  context = (problem.get("context") or "unknown context").strip()
+                  message = (problem.get("message") or "").strip()
+                  title = f"test262 full script-host common failure: {problem_type} @ {context}"
+                  if message:
+                      title = f"{title} - {message}"
+
+                  # Keep titles within a conservative 256-character cap by trimming the
+                  # normalized title text on a word boundary when possible.
+                  normalized_title = " ".join(title.split())
+                  if len(normalized_title) > MAX_ISSUE_TITLE_LENGTH:
+                      normalized_title = normalized_title[:MAX_ISSUE_TITLE_LENGTH].rstrip()
+                      last_space = normalized_title.rfind(" ")
+                      if last_space >= 0:
+                          normalized_title = normalized_title[:last_space]
+                  handle.write(f"issue_title={normalized_title}\n")
+          PY
+
+      - name: Report when no common parsed exception was found
+        if: steps.logparser.outputs.create_issue != 'true'
+        shell: bash
+        run: |
+          {
+            echo "### LogParser issue creation"
+            echo "- No parsed exceptions were found in the merged shard logs."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report missing ISSUE_TOKEN secret
+        if: steps.logparser.outputs.create_issue == 'true' && steps.logparser.outputs.issue_token_available != 'true'
+        shell: bash
+        run: |
+          {
+            echo "### LogParser issue creation"
+            echo "- LogParser found a common problem, but \`ISSUE_TOKEN\` is not configured, so no issue was created."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create GitHub issue for common problem
+        if: steps.logparser.outputs.create_issue == 'true' && steps.logparser.outputs.issue_token_available == 'true'
+        uses: actions/github-script@v7
+        env:
+          ISSUE_BODY_PATH: ${{ github.workspace }}/.artifacts/test262/full-script-host/logparser/issue.md
+          ISSUE_TITLE: ${{ steps.logparser.outputs.issue_title }}
+          TEST262_REF: ${{ inputs.suite_ref || 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e' }}
+        with:
+          github-token: ${{ secrets.ISSUE_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const issueBody = fs.readFileSync(process.env.ISSUE_BODY_PATH, 'utf8').trim();
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            const body = [
+              issueBody,
+              '',
+              '### CI metadata',
+              `- Workflow run: ${runUrl}`,
+              `- Suite ref: \`${process.env.TEST262_REF}\``,
+              '- Artifact: `test262-full-script-host-logs`',
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: process.env.ISSUE_TITLE,
+              body,
+            });
+
+            core.info(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
