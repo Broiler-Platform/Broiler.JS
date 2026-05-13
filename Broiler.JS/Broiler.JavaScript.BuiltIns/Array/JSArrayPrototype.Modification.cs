@@ -70,10 +70,10 @@ public partial class JSArray
     [JSExport("fill", Length = 1)]
     public static JSValue Fill(in Arguments a)
     {
-        var @this = a.This;
+        var @this = ToArrayLikeObject(a.This);
         var (value, start, end) = a.Get3();
 
-        var len = @this.Length;
+        var len = (int)GetArrayLikeLength(@this);
         var relativeStart = start.AsInt32OrDefault();
         var relativeEnd = end.AsInt32OrDefault(len);
 

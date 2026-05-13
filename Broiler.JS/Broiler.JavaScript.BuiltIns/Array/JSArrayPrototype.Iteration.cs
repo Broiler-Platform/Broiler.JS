@@ -2,6 +2,7 @@
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.Generator;
 using Broiler.JavaScript.BuiltIns.Number;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
@@ -34,6 +35,52 @@ public partial class JSArray
         return length >= uint.MaxValue
             ? uint.MaxValue
             : (uint)length;
+    }
+
+    private static JSObject CreateArraySpecies(JSObject source, uint length)
+    {
+        if (source is not JSArray)
+            return new JSArray(length);
+
+        var constructor = source[KeyStrings.constructor];
+        if (constructor.IsObject)
+        {
+            var species = constructor[(IJSSymbol)JSSymbol.species];
+            if (species.IsNull)
+                return new JSArray(length);
+
+            if (!species.IsUndefined)
+            {
+                var created = species.CreateInstance(new Arguments(JSUndefined.Value, new JSNumber(length)));
+                if (created is not JSObject createdObject)
+                    throw JSEngine.NewTypeError("Array species constructor did not return an object");
+
+                return createdObject;
+            }
+        }
+
+        return new JSArray(length);
+    }
+
+    private static void CreateDataPropertyOrThrow(JSObject target, uint index, JSValue value)
+    {
+        var current = target.GetOwnPropertyDescriptor(JSValue.CreateNumber(index));
+        if (current.IsUndefined)
+        {
+            if (!target.IsExtensible())
+                throw JSEngine.NewTypeError($"Cannot add property {index} to {target}");
+        }
+        else if (!current[KeyStrings.configurable].BooleanValue)
+        {
+            throw JSEngine.NewTypeError("Cannot redefine property");
+        }
+
+        var descriptor = new JSObject();
+        descriptor.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.writable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.enumerable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.configurable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
+        target.DefineProperty(index, descriptor);
     }
 
     private struct ArrayLikeEntryEnumerator(JSObject @object, uint length) : IElementEnumerator
@@ -125,7 +172,8 @@ public partial class JSArray
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.filter");
 
-        var r = new JSArray();
+        var r = CreateArraySpecies(@this, 0);
+        uint resultIndex = 0;
 
         for (uint index = 0; index < length; index++)
         {
@@ -135,7 +183,7 @@ public partial class JSArray
             var itemParams = new Arguments(thisArg, item, new JSNumber(index), @this);
 
             if (fn.f(itemParams).BooleanValue)
-                r.Add(item);
+                CreateDataPropertyOrThrow(r, resultIndex++, item);
         }
         return r;
     }
@@ -176,9 +224,11 @@ public partial class JSArray
     [JSExport("flat", Length = 0)]
     public static JSValue Flat(in Arguments a)
     {
-        var result = new JSArray();
+        var @this = ToArrayLikeObject(a.This);
+        var result = CreateArraySpecies(@this, 0);
         int depth = a[0]?.IntegerValue ?? 1;
-        FlattenTo(result, a.This, null, null, depth);
+        uint resultIndex = 0;
+        FlattenTo(result, @this, null, null, depth, ref resultIndex);
         return result;
     }
 
@@ -195,19 +245,22 @@ public partial class JSArray
     [JSExport("flatMap", Length = 1)]
     public static JSValue FlatMap(in Arguments a)
     {
-        var result = new JSArray();
+        var @this = ToArrayLikeObject(a.This);
+        var result = CreateArraySpecies(@this, 0);
         int depth = 1;
         var (callback, thisArg) = a.Get2();
-        FlattenTo(result, a.This, callback, thisArg, depth);
+        uint resultIndex = 0;
+        FlattenTo(result, @this, callback, thisArg, depth, ref resultIndex);
         return result;
     }
 
-    private static void FlattenTo(JSArray result, JSValue @this, JSValue callback, JSValue thisArg, int depth)
+    private static void FlattenTo(JSObject result, JSObject @this, JSValue callback, JSValue thisArg, int depth, ref uint resultIndex)
     {
-        for (int i = 0; i < @this.Length; i++)
+        var length = GetArrayLikeLength(@this);
+        for (uint i = 0; i < length; i++)
         {
             // TryGetElement - to check for holes in array
-            if (@this.TryGetElement((uint)i, out var elementValue))
+            if (@this.TryGetElement(i, out var elementValue))
             {
                 // Transform the value using the mapping function.
                 if (callback != null)
@@ -215,9 +268,9 @@ public partial class JSArray
 
                 // If the element is an array, flatten it.
                 if (depth > 0 && elementValue is JSArray childArray)
-                    FlattenTo(result, childArray, callback, thisArg, depth - 1);
+                    FlattenTo(result, childArray, callback, thisArg, depth - 1, ref resultIndex);
                 else
-                    result.Add(elementValue);
+                    CreateDataPropertyOrThrow(result, resultIndex++, elementValue);
             }
         }
     }
@@ -302,18 +355,16 @@ public partial class JSArray
     [JSExport("forEach", Length = 1)]
     public static JSValue ForEach(in Arguments a)
     {
-        var @this = a.This;
+        var @this = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(@this);
         var (callback, thisArg) = a.Get2();
 
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.find");
 
-        var en = @this.GetElementEnumerator();
-
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+        for (uint index = 0; index < length; index++)
         {
-            // ignore holes...
-            if (!hasValue)
+            if (!@this.TryGetElement(index, out var item))
                 continue;
 
             var n = new JSNumber(index);
@@ -329,8 +380,9 @@ public partial class JSArray
     [JSExport("keys")]
     public new static JSValue Keys(in Arguments a)
     {
-        var @this = a.This;
-        return new JSGenerator(new IntKeyEnumerator(@this.Length), "Array Iterator");
+        var @this = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(@this);
+        return new JSGenerator(new IntKeyEnumerator((int)length), "Array Iterator");
     }
 
     [JSPrototypeMethod]
