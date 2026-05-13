@@ -197,29 +197,31 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public override string ToDetailString() => source.Value;
     public override JSValue CreateInstance(in Arguments a)
     {
+        static void ValidateProxyNewTarget(JSProxy proxy) => _ = proxy.RequireTarget();
+
+        JSObject ResolveInstancePrototype(JSValue newTargetValue)
+        {
+            if (newTargetValue is IJSFunction newTargetFunction)
+                return newTargetFunction.Prototype as JSObject ?? prototype;
+
+            var newTargetPrototype = newTargetValue[KeyStrings.prototype];
+            if (newTargetPrototype is JSObject newTargetPrototypeObject)
+                return newTargetPrototypeObject;
+
+            if (newTargetValue is JSProxy proxy)
+                ValidateProxyNewTarget(proxy);
+
+            return prototype;
+        }
+
         if (prototype == null)
             throw JSEngine.NewTypeError($"{name} is not a constructor");
 
         var ec = JSEngine.Current as IJSExecutionContext;
         var previousNewTarget = ec?.CurrentNewTarget;
-        var instancePrototype = prototype;
-
-        if (previousNewTarget is IJSFunction newTargetFunction)
-        {
-            instancePrototype = newTargetFunction.Prototype as JSObject ?? prototype;
-        }
-        else if (previousNewTarget != null)
-        {
-            var newTargetPrototype = previousNewTarget[KeyStrings.prototype];
-            if (newTargetPrototype is JSObject newTargetPrototypeObject)
-            {
-                instancePrototype = newTargetPrototypeObject;
-            }
-            else
-            {
-                (previousNewTarget as JSProxy)?.RequireTarget();
-            }
-        }
+        var instancePrototype = previousNewTarget != null
+            ? ResolveInstancePrototype(previousNewTarget)
+            : prototype;
 
         JSValue obj = new JSObject { BasePrototypeObject = instancePrototype };
         var a1 = a.OverrideThis(obj);

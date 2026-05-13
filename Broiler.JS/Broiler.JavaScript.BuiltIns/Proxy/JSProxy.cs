@@ -159,14 +159,15 @@ public partial class JSProxy : JSObject
     public override JSValue CreateInstance(in Arguments a)
     {
         var target = RequireTarget();
-        var fx = handler[ConstructTrapKey];
-        if (fx is JSFunction fxFunction)
+        var ec = JSEngine.Current as IJSExecutionContext;
+        var newTarget = ec?.CurrentNewTarget ?? this;
+        var constructTrap = handler[ConstructTrapKey];
+        if (constructTrap is JSFunction fxFunction)
         {
             var args = new JSArray(a.ToArray());
-            return fxFunction.Call(this, target, args, this);
+            return fxFunction.Call(this, target, args, newTarget);
         }
 
-        var ec = JSEngine.Current as IJSExecutionContext;
         var previousNewTarget = ec?.CurrentNewTarget;
 
         if (ec != null && previousNewTarget == null)

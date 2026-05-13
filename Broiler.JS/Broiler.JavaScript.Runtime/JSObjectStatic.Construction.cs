@@ -31,13 +31,14 @@ public partial class JSObject
             if (value.IsNullOrUndefined)
                 throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
 
-            return CreatePrimitiveObject(value) as JSObject ?? throw NewTypeError(Parameter_is_not_an_object);
+            return CreatePrimitiveObject(value) as JSObject
+                ?? throw new InvalidOperationException("CreatePrimitiveObject returned a non-object value.");
         }
 
-        static void SetSymbolValue(JSObject target, uint key, JSValue value)
+        static void SetSymbolValue(JSObject target, uint symbolKey, JSValue value)
         {
             ref var symbols = ref target.GetSymbols();
-            ref var existing = ref symbols.GetRefOrDefault(key, ref JSProperty.Empty);
+            ref var existing = ref symbols.GetRefOrDefault(symbolKey, ref JSProperty.Empty);
 
             if (!existing.IsEmpty)
             {
@@ -49,29 +50,27 @@ public partial class JSObject
                         return;
                     }
 
-                    throw NewTypeError($"Cannot modify property {key} of {target} which has only a getter");
+                    throw NewTypeError($"Cannot modify property {symbolKey} of {target} which has only a getter");
                 }
 
                 if (existing.IsReadOnly)
-                    throw NewTypeError($"Cannot modify property {key} of {target}");
+                    throw NewTypeError($"Cannot modify property {symbolKey} of {target}");
             }
 
             if (target.IsFrozen())
-                throw NewTypeError($"Cannot modify property {key} of {target}");
+                throw NewTypeError($"Cannot modify property {symbolKey} of {target}");
 
             if (existing.IsEmpty && !target.IsExtensible())
-                throw NewTypeError($"Cannot add property {key} to {target}");
+                throw NewTypeError($"Cannot add property {symbolKey} to {target}");
 
-            symbols.Put(key) = new JSProperty(
-                key,
+            symbols.Put(symbolKey) = new JSProperty(
+                symbolKey,
                 value,
                 !existing.IsEmpty ? existing.Attributes : JSPropertyAttributes.EnumerableConfigurableValue);
             target.PropertyChanged?.Invoke(target, (uint.MaxValue, uint.MaxValue, null));
         }
 
         var target = ToObject(a.Get1());
-        if (target == null)
-            throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
 
         for (var i = 1; i < a.Length; i++)
         {
