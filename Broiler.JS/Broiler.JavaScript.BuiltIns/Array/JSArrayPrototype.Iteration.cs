@@ -102,7 +102,6 @@ public partial class JSArray
 
     private static long GetArrayLikeLengthLong(JSObject @object) => (long)ToLength(@object[KeyStrings.length]);
 
-
     private static JSObject CreateArraySpecies(JSObject source, uint length)
     {
         if (!IsArrayValue(source))
