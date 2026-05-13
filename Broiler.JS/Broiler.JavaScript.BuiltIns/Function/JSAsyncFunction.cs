@@ -4,11 +4,30 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Function;
 
 public class JSAsyncFunction
 {
+    private static JSObject CreateAsyncFunctionPrototype()
+    {
+        var prototype = new JSObject();
+        if ((JSEngine.Current as IJSExecutionContext)?.FunctionPrototype is JSObject functionPrototype)
+            prototype.BasePrototypeObject = functionPrototype;
+
+        prototype.FastAddValue(KeyStrings.constructor, JSValue.CreateFunction((in Arguments a) =>
+        {
+            var created = JSFunction.Constructor(in a);
+            if (created is JSFunction function)
+                function.prototype = null;
+
+            return created;
+        }, "AsyncFunction", "function AsyncFunction() { [native code] }", 1, createPrototype: false), JSPropertyAttributes.ConfigurableValue);
+
+        return prototype;
+    }
+
     public static JSValue Create(JSValue gf)
     {
         JSValue ToAsync(in Arguments a)
@@ -18,7 +37,11 @@ public class JSAsyncFunction
         }
 
         var fn = gf as JSFunction;
-        return JSValue.CreateFunction(ToAsync, fn?.name.Value, null, gf.Length);
+        var asyncFunction = JSValue.CreateFunction(ToAsync, fn?.name.Value, null, gf.Length, createPrototype: false);
+        if (asyncFunction is JSObject asyncObject)
+            asyncObject.BasePrototypeObject = CreateAsyncFunctionPrototype();
+
+        return asyncFunction;
     }
 
     private static JSValue ToPromise(IJSGenerator gen, JSValue lastResult)

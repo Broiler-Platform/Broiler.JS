@@ -2956,6 +2956,147 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void TypeError_Regressions_For_Array_ArrayBuffer_Boolean_And_Async_Functions_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            function thrownCtor(fn) {
+                try {
+                    fn();
+                    return 'no-throw';
+                } catch (e) {
+                    return e && e.constructor ? e.constructor.name : typeof e;
+                }
+            }
+
+            return [
+                thrownCtor(function() { Array.prototype.toReversed.call(null); }),
+                thrownCtor(function() { Array.prototype.toReversed.call(undefined); }),
+                (function() {
+                    var array = [];
+                    var calls = 0;
+                    Object.defineProperty(Array.prototype, '0', {
+                        configurable: true,
+                        set: function(_value) {
+                            Object.freeze(array);
+                            calls++;
+                        }
+                    });
+
+                    try {
+                        return [
+                            thrownCtor(function() { array.unshift(1); }),
+                            Object.prototype.hasOwnProperty.call(array, '0'),
+                            array.length,
+                            calls
+                        ].join(',');
+                    } finally {
+                        delete Array.prototype[0];
+                    }
+                })(),
+                (function() {
+                    var array = [];
+                    var calls = 0;
+                    Object.defineProperty(Array.prototype, '0', {
+                        configurable: true,
+                        set: function(_value) {
+                            Object.defineProperty(array, 'length', { writable: false });
+                            calls++;
+                        }
+                    });
+
+                    try {
+                        return [
+                            thrownCtor(function() { array.unshift(1); }),
+                            Object.prototype.hasOwnProperty.call(array, '0'),
+                            array.length,
+                            calls
+                        ].join(',');
+                    } finally {
+                        delete Array.prototype[0];
+                    }
+                })(),
+                thrownCtor(function() {
+                    var speciesConstructor = {};
+                    speciesConstructor[Symbol.species] = function() { return {}; };
+                    var arrayBuffer = new ArrayBuffer(8);
+                    arrayBuffer.constructor = speciesConstructor;
+                    arrayBuffer.slice();
+                }),
+                thrownCtor(function() {
+                    var speciesConstructor = {};
+                    var arrayBuffer = new ArrayBuffer(8);
+                    speciesConstructor[Symbol.species] = function() { return arrayBuffer; };
+                    arrayBuffer.constructor = speciesConstructor;
+                    arrayBuffer.slice();
+                }),
+                thrownCtor(function() {
+                    var speciesConstructor = {};
+                    speciesConstructor[Symbol.species] = function() { return new ArrayBuffer(4); };
+                    var arrayBuffer = new ArrayBuffer(8);
+                    arrayBuffer.constructor = speciesConstructor;
+                    arrayBuffer.slice();
+                }),
+                (function() {
+                    var log = [];
+                    var newLength = {
+                        toString: function() {
+                            log.push('toString');
+                            return {};
+                        },
+                        valueOf: function() {
+                            log.push('valueOf');
+                            return {};
+                        }
+                    };
+                    var arrayBuffer = new ArrayBuffer(0);
+                    return [thrownCtor(function() { arrayBuffer.transfer(newLength); }), log.join(',')].join(',');
+                })(),
+                (function() {
+                    var log = [];
+                    var newLength = {
+                        toString: function() {
+                            log.push('toString');
+                            return {};
+                        },
+                        valueOf: function() {
+                            log.push('valueOf');
+                            return {};
+                        }
+                    };
+                    var arrayBuffer = new ArrayBuffer(0);
+                    return [thrownCtor(function() { arrayBuffer.transferToFixedLength(newLength); }), log.join(',')].join(',');
+                })(),
+                thrownCtor(function() {
+                    var boxed = new String();
+                    boxed.toString = Boolean.prototype.toString;
+                    boxed.toString();
+                }),
+                thrownCtor(function() {
+                    var boxed = new String();
+                    boxed.valueOf = Boolean.prototype.valueOf;
+                    boxed.valueOf();
+                }),
+                thrownCtor(function() {
+                    async function foo() {}
+                    new foo();
+                }),
+                thrownCtor(function() {
+                    var AsyncGeneratorFunction = Object.getPrototypeOf(async function* () {}).constructor;
+                    var instance = AsyncGeneratorFunction();
+                    new instance();
+                })
+            ].join('|');
+        })();");
+
+        Assert.Equal(
+            "TypeError|TypeError|TypeError,false,0,1|TypeError,false,0,1|TypeError|TypeError|TypeError|TypeError,valueOf,toString|TypeError,valueOf,toString|TypeError|TypeError|TypeError|TypeError",
+            result.ToString());
+    }
+
+    [Fact]
     public void RegExp_Prototype_Compile_TypeError_Scenarios_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();

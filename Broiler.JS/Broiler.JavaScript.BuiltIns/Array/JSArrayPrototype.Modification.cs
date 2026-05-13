@@ -397,34 +397,34 @@ public partial class JSArray
     [JSExport("unshift", Length = 1)]
     public static JSValue Unshift(in Arguments a)
     {
-        var @this = a.This as JSObject;
-        if (@this == null)
-            return JSUndefined.Value;
+        var @this = ToArrayLikeObject(a.This);
+        var argCount = (uint)a.Length;
+        var length = GetArrayLikeLength(@this);
 
-        if (@this.IsSealedOrFrozen())
-            throw JSEngine.NewTypeError("Cannot modify property length");
+        if (length + argCount > MaxArrayLikeLength)
+            throw JSEngine.NewTypeError("Invalid array length");
 
-        var l = a.This.Length;
-        if (l > 0)
+        for (var index = length; index > 0; index--)
         {
-            // move existing elements to the right; MoveElements updates Length
-            @this.MoveElements(0, a.Length);
-        }
-        else
-        {
-            // No existing elements — set length explicitly since MoveElements
-            // is not called.  Length can be 0 or -1 (missing length property).
-            @this.Length = a.Length;
-        }
+            var fromIndex = index - 1;
+            var toIndex = fromIndex + argCount;
 
-        // insert the new elements at the front
-        ref var elements = ref @this.GetElements();
-        for (uint i = 0; i < a.Length; i++)
-        {
-            elements.Put(i, a.GetAt((int)i));
+            if (@this.TryGetElement(fromIndex, out var value))
+            {
+                @this.SetValue(toIndex, value, @this);
+            }
+            else if (!@this.Delete(toIndex).BooleanValue)
+            {
+                throw JSEngine.NewTypeError($"Cannot delete property {toIndex}");
+            }
         }
 
-        return new JSNumber(a.This.Length);
+        for (uint index = 0; index < argCount; index++)
+            @this.SetValue(index, a.GetAt((int)index), @this);
+
+        var newLength = new JSNumber(length + argCount);
+        @this[KeyStrings.length] = newLength;
+        return newLength;
     }
 
 }

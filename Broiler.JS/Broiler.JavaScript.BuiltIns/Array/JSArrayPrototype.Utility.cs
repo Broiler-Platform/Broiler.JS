@@ -147,9 +147,9 @@ public partial class JSArray
     [JSExport("toReversed", Length = 0)]
     internal static JSValue ToReversed(in Arguments a)
     {
-        var source = a.This as JSObject;
-        var result = new JSArray((uint)Math.Max(source?.Length ?? 0, 0));
-        var length = (uint)Math.Max(source?.Length ?? 0, 0);
+        var source = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(source);
+        var result = new JSArray(length);
         for (uint i = 0; i < length; i++)
             result[i] = source[length - i - 1];
         return result;
