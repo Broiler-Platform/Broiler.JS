@@ -46,7 +46,7 @@ public partial class JSArray
             }
             else if (!@this.Delete((uint)target).BooleanValue)
             {
-                throw JSEngine.NewTypeError($"Cannot delete property {target} of {@this}");
+                throw JSEngine.NewTypeError($"Cannot delete property {target}");
             }
 
             // Progress to the next element.
