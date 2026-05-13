@@ -1,6 +1,9 @@
 name: test262-full-script-host
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       suite_ref:
@@ -32,7 +35,7 @@ env:
   RESULTS_DIR: ${{ github.workspace }}/.artifacts/test262/full-script-host
   BROILER_DLL: ${{ github.workspace }}/Broiler.JS/Broiler.JavaScript/bin/Release/net8.0/BroilerJS.dll
   SHARD_COUNT: 8
-  SELECTED_SHARD_INDEX: ${{ inputs.shard_index }}
+  SELECTED_SHARD_INDEX: ${{ inputs.shard_index || -1 }}
   TEST_TIMEOUT_SECONDS: ${{ inputs.test_timeout_seconds || 30 }}
   MEMORY_LIMIT_MB: ${{ inputs.memory_limit_mb || 0 }}
 
