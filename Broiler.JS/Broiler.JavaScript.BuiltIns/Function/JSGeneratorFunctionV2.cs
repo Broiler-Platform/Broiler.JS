@@ -29,12 +29,12 @@ public class JSGeneratorFunctionV2 : JSFunction
         return prototype;
     }
 
-    public JSGeneratorFunctionV2(JSGeneratorDelegateV2 @delegate, in StringSpan name, in StringSpan code) : base(null, name, code)
+    public JSGeneratorFunctionV2(JSGeneratorDelegateV2 @delegate, in StringSpan name, in StringSpan code, bool asyncGenerator) : base(null, name, code)
     {
         this.@delegate = @delegate;
         CoerceThisOnInvoke = true;
         f = InvokeFunction;
-        BasePrototypeObject = CreateGeneratorFunctionPrototype(code.Value.TrimStart().StartsWith("async function*"));
+        BasePrototypeObject = CreateGeneratorFunctionPrototype(asyncGenerator);
     }
 
     public override JSValue InvokeFunction(in Arguments a)

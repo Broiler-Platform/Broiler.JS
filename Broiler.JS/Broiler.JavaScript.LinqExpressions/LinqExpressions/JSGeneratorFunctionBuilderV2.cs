@@ -1,5 +1,6 @@
 using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
 using Broiler.JavaScript.LinqExpressions.LambdaGen;
+using System.Linq.Expressions;
 
 namespace Broiler.JavaScript.LinqExpressions.LinqExpressions;
 
@@ -16,6 +17,6 @@ public class JSGeneratorFunctionBuilderV2
         type = generatorFunctionType;
     }
 
-    public static Expression New(Expression @delegate, Expression name, Expression code) =>
-        NewLambdaExpression.NewExpression(type, @delegate, name, code);
+    public static Expression New(Expression @delegate, Expression name, Expression code, bool asyncGenerator = false) =>
+        NewLambdaExpression.NewExpression(type, @delegate, name, code, Expression.Constant(asyncGenerator));
 }
