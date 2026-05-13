@@ -2664,6 +2664,73 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_Prototype_TypeError_Regressions_Cover_ArrayLike_And_Species_Scenarios()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            function thrownCtor(fn) {
+                try {
+                    fn();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            }
+
+            function nonExtensibleSpecies() {
+                var target = [];
+                Object.preventExtensions(target);
+                return function() { return target; };
+            }
+
+            function nonConfigurableSpecies() {
+                var target = [];
+                Object.defineProperty(target, '0', {
+                    value: 0,
+                    writable: true,
+                    configurable: false,
+                    enumerable: true
+                });
+                return function() { return target; };
+            }
+
+            function withSpecies(factory) {
+                var source = [1];
+                source.constructor = {};
+                source.constructor[Symbol.species] = factory();
+                return source;
+            }
+
+            var lengthThrows = {};
+            Object.defineProperty(lengthThrows, 'length', {
+                get: function() { throw new RangeError('length'); },
+                configurable: true
+            });
+
+            return [
+                thrownCtor(function () { Array.prototype.fill.call(undefined, 0); }),
+                thrownCtor(function () { Array.prototype.forEach.call(lengthThrows, undefined); }),
+                thrownCtor(function () { Array.prototype.includes.call({ length: Symbol('x') }, 0); }),
+                thrownCtor(function () { Array.prototype.indexOf.call(lengthThrows, 0); }),
+                thrownCtor(function () { Array.prototype.keys.call(null); }),
+                thrownCtor(function () { Array.prototype.lastIndexOf.call(lengthThrows, 0); }),
+                thrownCtor(function () { withSpecies(nonExtensibleSpecies).filter(function () { return true; }); }),
+                thrownCtor(function () { withSpecies(nonConfigurableSpecies).filter(function () { return true; }); }),
+                thrownCtor(function () { withSpecies(nonExtensibleSpecies).flat(); }),
+                thrownCtor(function () { withSpecies(nonConfigurableSpecies).flat(); }),
+                thrownCtor(function () { withSpecies(nonExtensibleSpecies).flatMap(function (x) { return [x]; }); }),
+                thrownCtor(function () { withSpecies(nonConfigurableSpecies).flatMap(function (x) { return [x]; }); })
+            ].join('|');
+        })();");
+
+        Assert.Equal(
+            "TypeError|RangeError|TypeError|RangeError|TypeError|RangeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError",
+            result.ToString());
+    }
+
+    [Fact]
     public void RegExp_Prototype_Compile_TypeError_Scenarios_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();

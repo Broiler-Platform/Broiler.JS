@@ -35,22 +35,21 @@ public partial class JSArray
     [JSExport("includes", Length = 1)]
     public static JSValue Includes(in Arguments a)
     {
-        var @this = a.This;
+        var @this = ToArrayLikeObject(a.This);
         var first = a.Get1();
+        var length = GetArrayLikeLength(@this);
 
-        var fromIndex = a[1]?.IntValue ?? 0;
+        long fromIndex = a[1]?.IntValue ?? 0;
         if (fromIndex < 0)
-            fromIndex += @this.Length;
+            fromIndex += length;
+
+        if (fromIndex < 0)
+            fromIndex = 0;
 
         bool isUndefined = first.IsUndefined;
-        var en = @this.GetElementEnumerator();
-
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+        for (uint index = (uint)fromIndex; index < length; index++)
         {
-            if (fromIndex > index)
-                continue;
-
-            if (hasValue)
+            if (@this.TryGetElement(index, out var item))
             {
                 if (item.SameValueZero(first))
                     return JSBoolean.True;
@@ -69,26 +68,20 @@ public partial class JSArray
     [JSExport("indexOf", Length = 1)]
     public static JSValue IndexOf(in Arguments a)
     {
-        var @this = a.This;
+        var @this = ToArrayLikeObject(a.This);
         var first = a.Get1();
-        var fromIndex = a[1]?.IntValue ?? 0;
+        var length = GetArrayLikeLength(@this);
+        long fromIndex = a[1]?.IntValue ?? 0;
 
         if (fromIndex < 0)
-            fromIndex += @this.Length;
+            fromIndex += length;
 
-        var en = @this.GetElementEnumerator();
+        if (fromIndex < 0)
+            fromIndex = 0;
 
-        while (en.MoveNext(out var hasValue, out var item, out var index))
-        {
-            if (fromIndex > index)
-                continue;
-
-            if (!hasValue)
-                continue;
-
-            if (first.StrictEquals(item))
+        for (uint index = (uint)fromIndex; index < length; index++)
+            if (@this.TryGetElement(index, out var item) && first.StrictEquals(item))
                 return new JSNumber(index);
-        }
 
         return JSNumber.MinusOne;
     }
@@ -97,18 +90,18 @@ public partial class JSArray
     [JSExport("lastIndexOf", Length = 1)]
     public static JSValue LastIndexOf(in Arguments a)
     {
-        var @this = a.This;
+        var @this = ToArrayLikeObject(a.This);
         var first = a.Get1();
-        var n = @this.Length;
+        var n = GetArrayLikeLength(@this);
         var fromIndex = a[1]?.IntValue ?? int.MaxValue;
 
         if (fromIndex < 0)
-            fromIndex += @this.Length;
+            fromIndex += (int)n;
 
         if (n == 0)
             return JSNumber.MinusOne;
 
-        for (int i = Math.Min(n - 1, fromIndex); i >= 0; i--)
+        for (long i = Math.Min((long)n - 1, fromIndex); i >= 0; i--)
         {
             if (!@this.TryGetElement((uint)i, out var item))
                 continue;
