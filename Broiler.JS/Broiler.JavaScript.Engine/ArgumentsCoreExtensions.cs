@@ -1,3 +1,4 @@
+using System;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Runtime;
 
@@ -12,10 +13,13 @@ internal static class ArgumentsCoreExtensions
 {
     internal static Arguments ForApplyCore(JSValue @this, JSValue args)
     {
+        if (args.IsNullOrUndefined)
+            return new Arguments(@this);
+
         if (args.IsArray)
         {
-            var length = (uint)args.Length;
-            switch (length)
+            var arrayLength = (uint)args.Length;
+            switch (arrayLength)
             {
                 case 0:
                     return new Arguments(@this);
@@ -28,7 +32,7 @@ internal static class ArgumentsCoreExtensions
                 case 4:
                     return new Arguments(@this, args[0u], args[1u], args[2u], args[3u]);
                 default:
-                    var argList = new JSValue[length];
+                    var argList = new JSValue[arrayLength];
                     var ee = args.GetElementEnumerator();
                     while (ee.MoveNext(out var hasValue, out var value, out var index))
                         argList[index] = hasValue ? value : JSUndefined.Value;
@@ -38,8 +42,8 @@ internal static class ArgumentsCoreExtensions
 
         if (args.TypeOf() == JSConstants.Arguments)
         {
-            var length = args.Length;
-            switch (length)
+            var argumentsLength = args.Length;
+            switch (argumentsLength)
             {
                 case 0:
                     return new Arguments(@this);
@@ -60,7 +64,28 @@ internal static class ArgumentsCoreExtensions
             }
         }
 
-        return new Arguments(@this);
+        if (args is not JSObject @object)
+            throw JSValue.NewTypeError("CreateListFromArrayLike called on non-object");
+
+        var length = Math.Max(@object.Length, 0);
+        switch (length)
+        {
+            case 0:
+                return new Arguments(@this);
+            case 1:
+                return new Arguments(@this, @object[0u]);
+            case 2:
+                return new Arguments(@this, @object[0u], @object[1u]);
+            case 3:
+                return new Arguments(@this, @object[0u], @object[1u], @object[2u]);
+            case 4:
+                return new Arguments(@this, @object[0u], @object[1u], @object[2u], @object[3u]);
+            default:
+                var argList = new JSValue[length];
+                for (uint i = 0; i < length; i++)
+                    argList[i] = @object[i];
+                return new Arguments(@this, argList);
+        }
     }
 
     internal static JSValue RestFromCore(Arguments self, uint index)

@@ -17,6 +17,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
 
     internal JSValue value;
     internal bool done;
+    private bool executing;
 
     public JSGenerator(in Arguments a) : base(JSEngine.NewTargetPrototype) => throw new NotImplementedException();
 
@@ -40,6 +41,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
 
     public JSValue Return(JSValue value)
     {
+        ThrowIfExecuting();
         done = true;
         this.value = JSUndefined.Value;
 
@@ -48,6 +50,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
 
     public JSValue Throw(JSValue value)
     {
+        ThrowIfExecuting();
         cg.InjectException(JSException.FromValue(value));
         return value;
     }
@@ -58,9 +61,18 @@ public partial class JSGenerator : JSObject, IJSGenerator
     {
         var c = JSEngine.Current as IJSExecutionContext;
         var top = c?.Top;
+        ThrowIfExecuting();
+
+        if (done)
+        {
+            item = JSUndefined.Value;
+            value = item;
+            return false;
+        }
 
         try
         {
+            executing = true;
             // c.Top = cg.StackItem;
             cg.Next(replaceOld, out item, out done);
             value = item;
@@ -75,12 +87,21 @@ public partial class JSGenerator : JSObject, IJSGenerator
         }
         finally
         {
+            executing = false;
             if (c != null) c.Top = top;
         }
     }
 
     public JSValue Next(JSValue replaceOld = null)
     {
+        ThrowIfExecuting();
+
+        if (done)
+        {
+            value = JSUndefined.Value;
+            return ValueObject;
+        }
+
         if (en != null)
         {
             if (en.MoveNext(out JSValue item))
@@ -100,13 +121,25 @@ public partial class JSGenerator : JSObject, IJSGenerator
         
         try
         {
+            executing = true;
             cg.Next(replaceOld, out value, out done);
             return ValueObject;
         }
         finally
         {
+            executing = false;
             if (c != null) c.Top = top;
         }
+    }
+
+    private void ThrowIfExecuting()
+    {
+        if (!executing)
+            return;
+
+        done = true;
+        value = JSUndefined.Value;
+        throw JSEngine.NewTypeError("Generator is already running");
     }
 
     public override IElementEnumerator GetElementEnumerator() => new ElementEnumerator(this);

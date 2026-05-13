@@ -20,6 +20,38 @@ namespace Broiler.JavaScript.Globals;
 [JSFunctionGenerator("Globals", Globals = true)]
 public partial class JSGlobalStatic
 {
+    private static JSValue ToNumberPrimitive(JSValue value)
+    {
+        if (value is not JSObject @object)
+            return value;
+
+        var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
+        if (!toPrimitive.IsUndefined)
+        {
+            var primitive = toPrimitive.InvokeFunction(new Arguments(@object, JSConstants.Number));
+            if (primitive.IsObject)
+                throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+
+            return primitive;
+        }
+
+        if (@object[KeyStrings.valueOf] is IJSFunction valueOf)
+        {
+            var primitive = valueOf.InvokeFunction(new Arguments(@object));
+            if (!primitive.IsObject)
+                return primitive;
+        }
+
+        if (@object[KeyStrings.toString] is IJSFunction toString)
+        {
+            var primitive = toString.InvokeFunction(new Arguments(@object));
+            if (!primitive.IsObject)
+                return primitive;
+        }
+
+        throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+    }
+
     private static string CoerceLegacyUriString(JSValue value)
     {
         if (value is JSObject @object)
@@ -105,18 +137,14 @@ public partial class JSGlobalStatic
     [JSExport("isFinite", Length = 1)]
     public static JSValue IsFinite(in Arguments a)
     {
-        var first = a.Get1();
-        if (first.IsNumber)
-        {
-            var v = first.DoubleValue;
-            if (!double.IsNaN(v) && v > double.NegativeInfinity && v < double.PositiveInfinity)
-                return JSValue.BooleanTrue;
-        }
-        return JSValue.BooleanFalse;
+        var value = ToNumberPrimitive(a.Get1()).DoubleValue;
+        return !double.IsNaN(value) && !double.IsInfinity(value)
+            ? JSValue.BooleanTrue
+            : JSValue.BooleanFalse;
     }
 
     [JSExport("isNaN", Length = 1)]
-    public static JSValue IsNaN(in Arguments a) => double.IsNaN(a.Get1().DoubleValue)
+    public static JSValue IsNaN(in Arguments a) => double.IsNaN(ToNumberPrimitive(a.Get1()).DoubleValue)
             ? JSValue.BooleanTrue
             : JSValue.BooleanFalse;
 

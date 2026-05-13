@@ -1,5 +1,6 @@
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Extensions;
 using Broiler.JavaScript.Runtime;
@@ -75,7 +76,24 @@ public partial class JSIteratorObject : JSObject
         if (obj is JSIteratorObject)
             return obj;
 
-        return new JSIteratorObject(obj.GetElementEnumerator());
+        if (obj.IsString)
+            return new JSIteratorObject(obj.GetElementEnumerator());
+
+        if (obj is not JSObject @object)
+            throw JSEngine.NewTypeError("Iterator.from requires an iterable or iterator argument");
+
+        var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];
+        if (iteratorMethod.IsNull || iteratorMethod.IsUndefined)
+            return new JSIteratorObject(GetDirectEnumerator(@object));
+
+        if (!iteratorMethod.IsFunction)
+            throw JSEngine.NewTypeError("Iterator.from requires a callable @@iterator");
+
+        var iterator = iteratorMethod.InvokeFunction(new Arguments(@object));
+        if (!iterator.IsObject)
+            throw JSEngine.NewTypeError("Iterator.from requires an object iterator result");
+
+        return new JSIteratorObject(new JSIterator(iterator));
     }
 
     // ---------------------------------------------------------------
@@ -92,7 +110,7 @@ public partial class JSIteratorObject : JSObject
             if (item.IsNullOrUndefined)
                 throw JSEngine.NewTypeError("Iterator.concat requires iterable arguments");
 
-            iterables[i] = item;
+            iterables[i] = From(new Arguments(JSUndefined.Value, item));
         }
 
         return new JSIteratorObject(new ConcatEnumerator(iterables));
@@ -108,7 +126,18 @@ public partial class JSIteratorObject : JSObject
         if (value is JSIteratorObject ito && ito._enumerator != null)
             return ito._enumerator;
 
-        return value.GetElementEnumerator();
+        if (value is not JSObject @object)
+            throw JSEngine.NewTypeError("Iterator helper requires an object receiver");
+
+        return GetDirectEnumerator(@object);
+    }
+
+    private static IElementEnumerator GetDirectEnumerator(JSObject @object)
+    {
+        if (!@object[KeyStrings.next].IsFunction)
+            throw JSEngine.NewTypeError("Iterator helper requires a callable next method");
+
+        return new JSIterator(@object);
     }
 
     internal static JSValue StaticMap(in Arguments a)

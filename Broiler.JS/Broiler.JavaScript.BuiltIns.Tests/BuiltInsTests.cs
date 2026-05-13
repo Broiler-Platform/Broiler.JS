@@ -3271,6 +3271,105 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|undefined|TypeError", result.ToString());
     }
 
+    [Fact]
+    public void Function_Iterator_Global_And_Generator_TypeError_Regressions_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval(@"(function () {
+            function thrownCtor(fn) {
+                try {
+                    fn();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            }
+
+            return [
+                thrownCtor(function () {
+                    (function () {}).apply(null, true);
+                }),
+                (function () {
+                    return (function (a, b) {
+                        return a + ',' + b;
+                    }).apply(null, { 0: 'x', 1: 'y', length: 2 });
+                })(),
+                thrownCtor(function () {
+                    var f = function () {};
+                    f.prototype = 1;
+                    f[Symbol.hasInstance]({});
+                }),
+                thrownCtor(function () {
+                    isFinite({
+                        [Symbol.toPrimitive]() {
+                            return {};
+                        }
+                    });
+                }),
+                thrownCtor(function () {
+                    isNaN({
+                        [Symbol.toPrimitive]() {
+                            return Symbol.iterator;
+                        }
+                    });
+                }),
+                thrownCtor(function () {
+                    Iterator.from(0);
+                }),
+                (function () {
+                    let n = [0, 1, 2][Symbol.iterator]();
+                    let iter = {
+                        [Symbol.iterator]: null,
+                        next() {
+                            return n.next();
+                        }
+                    };
+                    return Array.from(Iterator.from(iter)).join(',');
+                })(),
+                thrownCtor(function () {
+                    Iterator.from({
+                        [Symbol.iterator]: 0,
+                        next() {
+                            return { done: true };
+                        }
+                    });
+                }),
+                thrownCtor(function () {
+                    Iterator.prototype.every.call({ next: 0 }, function () { return true; });
+                }),
+                thrownCtor(function () {
+                    var iter = Iterator.prototype.drop.call({ next: 0 }, 1);
+                    iter.next();
+                }),
+                thrownCtor(function () {
+                    Iterator.concat({
+                        [Symbol.iterator]() {
+                            return {
+                                next() {
+                                    return null;
+                                }
+                            };
+                        }
+                    }).next();
+                })
+            ].join('|');
+        })();");
+
+        Assert.Equal("TypeError|x,y|TypeError|TypeError|TypeError|TypeError|0,1,2|TypeError|TypeError|TypeError|TypeError", result.ToString());
+
+        ctx.Eval("var iterReturn; function* gReturn() { iterReturn.return(42); } iterReturn = gReturn();");
+        var returnEx = Assert.Throws<JSException>(() => ctx.Eval("iterReturn.next();"));
+        Assert.Equal("TypeError", returnEx.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("true|true", ctx.Eval("var result = iterReturn.next(); String(result.done) + '|' + String(result.value === undefined);").ToString());
+
+        ctx.Eval("var iterThrow; function* gThrow() { iterThrow.throw(42); } iterThrow = gThrow();");
+        var throwEx = Assert.Throws<JSException>(() => ctx.Eval("iterThrow.next();"));
+        Assert.Equal("TypeError", throwEx.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("true|true", ctx.Eval("var result = iterThrow.next(); String(result.done) + '|' + String(result.value === undefined);").ToString());
+    }
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured

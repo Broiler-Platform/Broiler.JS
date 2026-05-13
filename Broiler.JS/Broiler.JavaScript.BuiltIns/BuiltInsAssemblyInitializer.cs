@@ -510,8 +510,28 @@ internal static class BuiltInsAssemblyInitializer
         ref var symbols = ref functionCtor.prototype.GetSymbols();
         symbols.Put(JSSymbol.hasInstance.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
+            var constructor = a.This;
+            if (!constructor.IsFunction)
+                return JSValue.BooleanFalse;
+
             var value = a.Get1();
-            return value.InstanceOf(a.This);
+            if (!value.IsObject)
+                return JSValue.BooleanFalse;
+
+            var prototype = constructor[KeyStrings.prototype];
+            if (!prototype.IsObject)
+                throw JSEngine.NewTypeError("Function has non-object prototype in instanceof check");
+
+            var current = value.GetPrototypeOf();
+            while (current is JSObject currentObject)
+            {
+                if (ReferenceEquals(currentObject, prototype))
+                    return JSValue.BooleanTrue;
+
+                current = currentObject.GetPrototypeOf();
+            }
+
+            return JSValue.BooleanFalse;
         }, "[Symbol.hasInstance]", 1), JSPropertyAttributes.ConfigurableValue);
     }
 

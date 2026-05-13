@@ -9,6 +9,8 @@ public struct JSIterator(JSValue iterator) : IElementEnumerator
     public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
     {
         value = JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next);
+        if (!value.IsObject)
+            throw JSValue.NewTypeError("Iterator result is not an object");
         var done = value[KeyStrings.done];
         value = value[KeyStrings.value];
         
@@ -27,6 +29,8 @@ public struct JSIterator(JSValue iterator) : IElementEnumerator
     public readonly bool MoveNext(out JSValue value)
     {
         value = JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next);
+        if (!value.IsObject)
+            throw JSValue.NewTypeError("Iterator result is not an object");
         var done = value[KeyStrings.done];
         value = value[KeyStrings.value];
         
@@ -39,6 +43,8 @@ public struct JSIterator(JSValue iterator) : IElementEnumerator
     public readonly bool MoveNextOrDefault(out JSValue value, JSValue @default)
     {
         value = JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next);
+        if (!value.IsObject)
+            throw JSValue.NewTypeError("Iterator result is not an object");
         var done = value[KeyStrings.done];
 
         if (done.BooleanValue)
@@ -54,6 +60,8 @@ public struct JSIterator(JSValue iterator) : IElementEnumerator
     public readonly JSValue NextOrDefault(JSValue @default)
     {
         var value = JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next);
+        if (!value.IsObject)
+            throw JSValue.NewTypeError("Iterator result is not an object");
         var done = value[KeyStrings.done];
 
         if (done.BooleanValue)
