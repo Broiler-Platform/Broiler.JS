@@ -25,7 +25,7 @@ public partial class JSMap : JSObject
             return;
 
         if (this[KeyStrings.set] is not IJSFunction adder)
-            throw JSEngine.NewTypeError("Map.prototype.set is not callable");
+            throw JSEngine.NewTypeError("Map instance 'set' property is not callable");
 
         var en = iterable.GetIterableEnumerator();
         while (en.MoveNext(out var item))

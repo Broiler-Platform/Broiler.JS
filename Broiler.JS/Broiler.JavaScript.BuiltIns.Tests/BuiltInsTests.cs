@@ -3427,7 +3427,7 @@ public class BuiltInsTests
     }
 
     [Fact]
-    public void Iterable_And_Object_TypeError_Regresions_Match_Test262_Expectations()
+    public void Iterable_And_Object_TypeError_Regressions_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
