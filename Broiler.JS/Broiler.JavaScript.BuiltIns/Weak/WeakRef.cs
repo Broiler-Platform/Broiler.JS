@@ -40,7 +40,7 @@ public partial class JSFinalizationRegistry : JSObject
     public JSValue Unregister(in Arguments a)
     {
         if (!CanBeHeldWeakly(a[0]))
-            throw JSEngine.NewTypeError($"Argument is not an object");
+            throw JSEngine.NewTypeError("Argument must be an object or symbol");
 
         return Unregister(a[0]) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }
@@ -50,7 +50,7 @@ public partial class JSFinalizationRegistry : JSObject
     {
         var target = a[0];
         if (!CanBeHeldWeakly(target))
-            throw JSEngine.NewTypeError($"Argument is not an object");
+            throw JSEngine.NewTypeError("Argument must be an object or symbol");
 
         var holdings = a[1] ?? JSUndefined.Value;
         if (target.Is(holdings).BooleanValue)
@@ -58,7 +58,7 @@ public partial class JSFinalizationRegistry : JSObject
 
         var unregisterToken = a[2] ?? JSUndefined.Value;
         if (!unregisterToken.IsUndefined && !CanBeHeldWeakly(unregisterToken))
-            throw JSEngine.NewTypeError($"Argument is not an object");
+            throw JSEngine.NewTypeError("Argument must be an object or symbol");
 
         Register(target, holdings, unregisterToken);
         return JSUndefined.Value;
