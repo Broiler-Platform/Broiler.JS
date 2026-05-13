@@ -328,6 +328,17 @@ public partial class JSObject
                 return true;
             }
 
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {this} which has only a getter");
+
+            return false;
+        }
+
+        if (p.IsReadOnly)
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {this}");
+
             return false;
         }
 
@@ -339,7 +350,18 @@ public partial class JSObject
             return false;
         }
 
-        symbols.Put(name.Key) = new JSProperty(name.Key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+        if (p.IsEmpty && !IsExtensible())
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot add property {name} to {this}");
+
+            return false;
+        }
+
+        symbols.Put(name.Key) = new JSProperty(
+            name.Key,
+            value,
+            !p.IsEmpty ? p.Attributes : JSPropertyAttributes.EnumerableConfigurableValue);
         PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, name));
         return true;
     }

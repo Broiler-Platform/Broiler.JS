@@ -15,6 +15,7 @@ namespace Broiler.JavaScript.BuiltIns.Proxy;
 [JSFunctionGenerator("Proxy")]
 public partial class JSProxy : JSObject
 {
+    private static readonly KeyString ConstructTrapKey = KeyStrings.GetOrCreate("construct");
     readonly JSObject target;
     private readonly JSObject handler;
     private readonly bool callable;
@@ -158,14 +159,29 @@ public partial class JSProxy : JSObject
     public override JSValue CreateInstance(in Arguments a)
     {
         var target = RequireTarget();
-        var fx = handler[KeyStrings.constructor];
-        if (fx is JSFunction fxFunction)
+        var ec = JSEngine.Current as IJSExecutionContext;
+        var newTarget = ec?.CurrentNewTarget ?? this;
+        var constructTrap = handler[ConstructTrapKey];
+        if (constructTrap is JSFunction fxFunction)
         {
             var args = new JSArray(a.ToArray());
-            return fxFunction.Call(this, target, args);
+            return fxFunction.Call(this, target, args, newTarget);
         }
 
-        return target.CreateInstance(a);
+        var previousNewTarget = ec?.CurrentNewTarget;
+
+        if (ec != null && previousNewTarget == null)
+            ec.CurrentNewTarget = this;
+
+        try
+        {
+            return target.CreateInstance(a);
+        }
+        finally
+        {
+            if (ec != null)
+                ec.CurrentNewTarget = previousNewTarget;
+        }
     }
 
     public override JSValue DefineProperty(JSValue key, JSObject propertyDescription)

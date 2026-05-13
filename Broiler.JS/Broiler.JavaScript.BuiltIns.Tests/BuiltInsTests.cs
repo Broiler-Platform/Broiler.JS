@@ -442,6 +442,30 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Proxy_Revoked_Construct_Throws_TypeError_When_NewTarget_Prototype_Is_Resolved()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var handlers = {
+                get: function() {
+                    handle.revoke();
+                }
+            };
+            var handle = Proxy.revocable(function() {}, handlers);
+            var f = handle.proxy;
+            try {
+                new f();
+                return 'no-throw';
+            } catch (e) {
+                return e.constructor.name;
+            }
+        ");
+
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Proxy_GetTrap_Cannot_Lie_About_NonConfigurable_Readonly_Data_Properties()
     {
         EnsureBuiltInsLoaded();
@@ -1630,6 +1654,38 @@ public class BuiltInsTests
             }
         })();");
         Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
+    public void Object_Assign_Throws_TypeError_For_Primitive_Frozen_And_NonExtensible_Targets()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            function thrownCtor(fn) {
+                try {
+                    fn();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            }
+
+            var sym = Symbol();
+            var frozen = { [sym]: 1 };
+            Object.freeze(frozen);
+
+            var nonExtensible = {};
+            Object.preventExtensions(nonExtensible);
+
+            return [
+                thrownCtor(function () { Object.assign('a', [1]); }),
+                thrownCtor(function () { Object.assign(frozen, { [sym]: 1 }); }),
+                thrownCtor(function () { Object.assign(nonExtensible, { bar: 1 }); })
+            ].join('|');
+        })();");
+
+        Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
     [Fact]

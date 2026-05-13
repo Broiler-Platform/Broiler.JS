@@ -68,6 +68,19 @@ public class JSPrimitiveObject : JSObject
         }
     }
 
+    public override bool SetValue(uint name, JSValue value, JSValue receiver, bool throwError = true)
+    {
+        if (this.value.IsString && name < this.value.Length)
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {this}");
+
+            return false;
+        }
+
+        return base.SetValue(name, value, receiver, throwError);
+    }
+
     /// <summary> Added for below TCs in ExpressionTests.cs
     /// Assert.AreEqual(false, Evaluate("var x = new Number(10); x == new Number(10)"));
     // Assert.AreEqual(true, Evaluate("var x = new Number(10); x == x"));
