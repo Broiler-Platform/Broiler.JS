@@ -379,7 +379,7 @@ public partial class JSObject
         if (!old.IsEmpty)
         {
             if (!old.IsConfigurable)
-                throw new UnauthorizedAccessException();
+                throw NewTypeError("Cannot redefine property");
         }
 
         symbols.Put(key) = pd.ToProperty(key);
@@ -394,7 +394,7 @@ public partial class JSObject
         if (!old.IsEmpty)
         {
             if (!old.IsConfigurable)
-                throw new UnauthorizedAccessException();
+                throw NewTypeError("Cannot redefine property");
         }
 
         elements.Put(key) = pd.ToProperty(key);
@@ -414,7 +414,7 @@ public partial class JSObject
         {
             if (!old.IsConfigurable)
             {
-                throw new UnauthorizedAccessException();
+                throw NewTypeError("Cannot redefine property");
             }
         }
         // p.key = name;

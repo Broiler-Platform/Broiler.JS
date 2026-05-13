@@ -16,17 +16,18 @@ public partial class JSArray
     public static JSValue CopyWithin(in Arguments a)
     {
         var (t, s) = a.Get2();
+        var @this = ToArrayLikeObject(a.This);
+        var length = (int)GetArrayLikeLength(@this);
         var target = t.IntValue;
         var start = s.IntValue;
         var end = a.TryGetAt(2, out var e) ? e.IntValue : int.MaxValue;
-        var @this = a.This as JSArray;
 
-        target = target < 0 ? Math.Max(@this.Length + target, 0) : Math.Min(target, @this.Length);
-        start = start < 0 ? Math.Max(@this.Length + start, 0) : Math.Min(start, @this.Length);
-        end = end < 0 ? Math.Max(@this.Length + end, 0) : Math.Min(end, @this.Length);
+        target = target < 0 ? Math.Max(length + target, 0) : Math.Min(target, length);
+        start = start < 0 ? Math.Max(length + start, 0) : Math.Min(start, length);
+        end = end < 0 ? Math.Max(length + end, 0) : Math.Min(end, length);
 
         // Calculate the number of values to copy.
-        int count = Math.Min(end - start, @this.Length - target);
+        int count = Math.Min(end - start, length - target);
 
         // Check if we need to copy in reverse due to an overlap.
         int direction = 1;
@@ -37,23 +38,15 @@ public partial class JSArray
             target += count - 1;
         }
 
-        ref var elements = ref @this.GetElements(true);
-
         while (count > 0)
         {
-            // Get the value of the array element.
-            var elementValue = elements[(uint)start];
-
-            if (!elementValue.IsEmpty)
+            if (@this.TryGetElement((uint)start, out var elementValue))
             {
-                // Copy the value to the new position.
-                elements.Put((uint)target) = elementValue;
+                @this.SetValue((uint)target, elementValue, @this);
             }
-            else
+            else if (!@this.Delete((uint)target).BooleanValue)
             {
-                // Delete the element at the new position.
-                // Delete((uint)target);
-                elements.RemoveAt((uint)target);
+                throw JSEngine.NewTypeError($"Cannot delete property {target}");
             }
 
             // Progress to the next element.

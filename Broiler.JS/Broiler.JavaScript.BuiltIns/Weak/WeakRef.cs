@@ -54,7 +54,7 @@ public partial class JSFinalizationRegistry : JSObject
             throw JSEngine.NewTypeError($"Argument is not an object");
 
         var token = a[1];
-        if (token?.IsNullOrUndefined ?? false)
+        if (token is null || token.IsNullOrUndefined)
             throw JSEngine.NewTypeError($"Token is required");
 
         Register(obj, token);

@@ -10,7 +10,10 @@ public partial class JSRegExp
     public JSValue Compile(in Arguments a)
     {
         var patternValue = a.Get1();
-        var flagsValue = a[1];
+        var flagsValue = a.TryGetAt(1, out var second) ? second : JSValue.UndefinedValue;
+
+        if (!ReferenceEquals(GetPrototypeOf(), GetCurrentPrototype()))
+            throw JSEngine.NewTypeError("RegExp.prototype.compile called on incompatible receiver");
 
         string nextPattern;
         string nextFlags;
@@ -31,7 +34,7 @@ public partial class JSRegExp
 
         pattern = nextPattern;
         (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, flags) = CreateRegex(nextPattern, nextFlags);
-        lastIndex = 0;
+        this[KeyStrings.lastIndex] = JSValue.NumberZero;
         return this;
     }
 

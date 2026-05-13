@@ -173,7 +173,7 @@ public partial class JSArray : JSObject
                         ? null
                         : (property.IsValue
                         ? (JSValue)property.value
-                        : ((JSFunction)property.set).InvokeFunction(new Arguments(array)));
+                        : ((JSFunction)property.get).InvokeFunction(new Arguments(array)));
                     hasValue = true;
                 }
                 else

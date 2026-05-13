@@ -36,6 +36,51 @@ public partial class JSArray
             : (uint)length;
     }
 
+    private struct ArrayLikeEntryEnumerator(JSObject @object, uint length) : IElementEnumerator
+    {
+        private int index = -1;
+
+        public bool MoveNext(out JSValue value)
+        {
+            if (++index < length)
+            {
+                var entry = JSValue.CreateArray();
+                entry.AddArrayItem(JSValue.CreateNumber(index));
+                entry.AddArrayItem(@object[(uint)index]);
+                value = entry;
+                return true;
+            }
+
+            value = JSValue.UndefinedValue;
+            return false;
+        }
+
+        public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
+        {
+            if (MoveNext(out value))
+            {
+                hasValue = true;
+                index = (uint)this.index;
+                return true;
+            }
+
+            hasValue = false;
+            index = 0;
+            return false;
+        }
+
+        public bool MoveNextOrDefault(out JSValue value, JSValue @default)
+        {
+            if (MoveNext(out value))
+                return true;
+
+            value = @default;
+            return false;
+        }
+
+        public JSValue NextOrDefault(JSValue @default) => MoveNext(out var value) ? value : @default;
+    }
+
     [JSPrototypeMethod]
     [JSExport("every", Length = 1)]
     public static JSValue Every(in Arguments a)
@@ -64,8 +109,9 @@ public partial class JSArray
     [JSExport("entries")]
     public new static JSValue Entries(in Arguments a)
     {
-        var array = a.This as JSArray;
-        return new JSGenerator(array.GetEntries(), "Array Iterator");
+        var array = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLength(array);
+        return new JSGenerator(new ArrayLikeEntryEnumerator(array, length), "Array Iterator");
     }
 
     [JSPrototypeMethod]

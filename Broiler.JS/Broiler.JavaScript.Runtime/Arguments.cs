@@ -62,11 +62,12 @@ public readonly partial struct Arguments
     {
         // need to append a's parameter to self...
         var @this = this[0]!;
-        var total = Length - 1 + a.Length;
-        var list = new JSValue[total + a.Length];
+        var boundLength = Math.Max(Length - 1, 0);
+        var total = boundLength + a.Length;
+        var list = new JSValue[total];
         int i;
 
-        for (i = 0; i < Length - 1; i++)
+        for (i = 0; i < boundLength; i++)
             list[i] = this[i + 1]!;
 
         var start = i;

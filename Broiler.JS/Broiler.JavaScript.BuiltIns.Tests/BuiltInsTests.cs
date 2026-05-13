@@ -2599,6 +2599,192 @@ public class BuiltInsTests
         Assert.False(JSBoolean.False.BooleanValue);
     }
 
+    [Fact]
+    public void Array_Prototype_TypeError_Scenarios_Match_Test262_Expectations()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"[
+            (function () {
+                try {
+                    Array.prototype.copyWithin.call(undefined, 0, 0);
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })(),
+            (function () {
+                var o = { length: 43 };
+                Object.defineProperty(o, '42', { configurable: false, writable: true });
+
+                try {
+                    Array.prototype.copyWithin.call(o, 42, 0);
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })(),
+            (function () {
+                try {
+                    Array.prototype.entries.call(null);
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })(),
+            (function () {
+                var accessed = false;
+                var arr = [];
+
+                Object.defineProperty(arr, '0', {
+                    get: function() {
+                        throw new TypeError('boom');
+                    },
+                    configurable: true
+                });
+                Object.defineProperty(arr, '1', {
+                    get: function() {
+                        accessed = true;
+                        return true;
+                    },
+                    configurable: true
+                });
+
+                try {
+                    arr.indexOf(true);
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name + '|' + accessed;
+                }
+            })()
+        ].join('||');");
+
+        Assert.Equal("TypeError||TypeError||TypeError||TypeError|false", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Prototype_Compile_TypeError_Scenarios_Match_Test262_Expectations()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            function thrownCtor(fn) {
+                try {
+                    fn();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            }
+
+            var subject = /initial/;
+            Object.defineProperty(subject, 'lastIndex', { value: 45, writable: false });
+
+            return [
+                (function () { /./.compile(); return 'ok'; })(),
+                thrownCtor(function () {
+                    var subclassRegExp = new (class extends RegExp {})('');
+                    subclassRegExp.compile();
+                }),
+                thrownCtor(function () {
+                    var subclassRegExp = new (class extends RegExp {})('');
+                    RegExp.prototype.compile.call(subclassRegExp);
+                }),
+                thrownCtor(function () {
+                    subject.compile(/updated/gi);
+                }),
+                subject.source + '/' + subject.flags,
+                String(subject.lastIndex)
+            ].join('|');
+        })();");
+
+        Assert.Equal("ok|TypeError|TypeError|TypeError|updated/gi|45", result.ToString());
+    }
+
+    [Fact]
+    public void Object_WeakRef_And_Function_TypeError_Scenarios_Match_Test262_Expectations()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"[
+            (function () {
+                var obj = {};
+                Object.defineProperty(obj, 'prop', {
+                    value: 11,
+                    configurable: false
+                });
+
+                try {
+                    Object.defineProperties(obj, {
+                        prop: {
+                            value: 12,
+                            configurable: true
+                        }
+                    });
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })(),
+            (function () {
+                var array = new Array(1);
+                var calls = 0;
+                var proto = Object.create(Array.prototype);
+
+                Object.defineProperty(proto, '0', {
+                    configurable: true,
+                    get() {
+                        Object.freeze(array);
+                        calls++;
+                    }
+                });
+                Object.setPrototypeOf(array, proto);
+
+                try {
+                    array.shift();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name + '|' + array.length + '|' + calls;
+                } finally {
+                    Object.setPrototypeOf(array, Array.prototype);
+                }
+            })(),
+            (function () {
+                try {
+                    let fr = new FinalizationRegistry(() => {});
+                    let token = {};
+                    fr.register(token);
+                    new fr.unregister(token);
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })(),
+            (function () {
+                function f() {
+                    'use strict';
+                    gNonStrict();
+                }
+
+                function gNonStrict() {
+                    return gNonStrict.caller || gNonStrict.caller.throwTypeError;
+                }
+
+                try {
+                    f.bind()();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })()
+        ].join('||');");
+
+        Assert.Equal("TypeError||TypeError|1|1||TypeError||TypeError", result.ToString());
+    }
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured
