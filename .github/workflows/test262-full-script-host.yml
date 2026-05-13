@@ -158,28 +158,28 @@ jobs:
           python <<'PY'
           import json
           import os
-           from pathlib import Path
- 
-           shard_index = "${{ matrix.shard-index }}"
-           results_dir = Path(os.environ["RESULTS_DIR"])
-           result_path = results_dir / f"shard-{shard_index}.json"
- 
-           if not result_path.exists():
-               exit_code_path = results_dir / f"shard-{shard_index}.exit-code.txt"
-               exit_code = exit_code_path.read_text(encoding="utf-8").strip() if exit_code_path.exists() else "unknown"
-               Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
-                   "\n".join(
-                       [
-                           f"## test262 full script-host shard {int(shard_index) + 1}/{os.environ['SHARD_COUNT']}",
-                           "",
-                           "- Runner did not produce a JSON summary.",
-                           f"- Exit code: {exit_code}",
-                           f"- Captured log: available in the uploaded artifact at `shard-{shard_index}.log`",
-                       ]
-                   ) + "\n",
-                   encoding="utf-8",
-               )
-               raise SystemExit(0)
+          from pathlib import Path
+
+          shard_index = "${{ matrix.shard-index }}"
+          results_dir = Path(os.environ["RESULTS_DIR"])
+          result_path = results_dir / f"shard-{shard_index}.json"
+
+          if not result_path.exists():
+              exit_code_path = results_dir / f"shard-{shard_index}.exit-code.txt"
+              exit_code = exit_code_path.read_text(encoding="utf-8").strip() if exit_code_path.exists() else "unknown"
+              Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
+                  "\n".join(
+                      [
+                          f"## test262 full script-host shard {int(shard_index) + 1}/{os.environ['SHARD_COUNT']}",
+                          "",
+                          "- Runner did not produce a JSON summary.",
+                          f"- Exit code: {exit_code}",
+                          f"- Captured log: available in the uploaded artifact at `shard-{shard_index}.log`",
+                      ]
+                  ) + "\n",
+                  encoding="utf-8",
+              )
+              raise SystemExit(0)
 
           summary = json.loads(result_path.read_text(encoding="utf-8"))
 
