@@ -4,10 +4,12 @@ using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.Number;
+using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Proxy;
 
@@ -18,6 +20,7 @@ public partial class JSProxy : JSObject
     private static readonly KeyString ConstructTrapKey = KeyStrings.GetOrCreate("construct");
     private static readonly KeyString IsExtensibleTrapKey = KeyStrings.GetOrCreate("isExtensible");
     private static readonly KeyString PreventExtensionsTrapKey = KeyStrings.GetOrCreate("preventExtensions");
+    private static readonly KeyString GetOwnPropertyDescriptorTrapKey = KeyStrings.GetOrCreate("getOwnPropertyDescriptor");
     readonly JSObject target;
     private readonly JSObject handler;
     private readonly bool callable;
@@ -136,6 +139,153 @@ public partial class JSProxy : JSObject
             throw JSEngine.NewTypeError("Proxy set trap violated an invariant for a non-configurable accessor without a setter");
     }
 
+    private static bool HasDescriptorField(JSObject descriptor, KeyString key)
+        => !descriptor.GetInternalProperty(key, false).IsEmpty;
+
+    private static bool IsAccessorDescriptor(JSObject descriptor)
+        => HasDescriptorField(descriptor, KeyStrings.get) || HasDescriptorField(descriptor, KeyStrings.set);
+
+    private static bool IsDataDescriptor(JSObject descriptor)
+        => HasDescriptorField(descriptor, KeyStrings.value) || HasDescriptorField(descriptor, KeyStrings.writable);
+
+    private static bool IsCompatibleDescriptor(JSObject descriptor, JSObject target, in JSProperty property)
+    {
+        if (!property.IsConfigurable)
+        {
+            if (HasDescriptorField(descriptor, KeyStrings.configurable) && descriptor[KeyStrings.configurable].BooleanValue)
+                return false;
+
+            if (HasDescriptorField(descriptor, KeyStrings.enumerable)
+                && descriptor[KeyStrings.enumerable].BooleanValue != property.IsEnumerable)
+            {
+                return false;
+            }
+        }
+
+        var descriptorIsAccessor = IsAccessorDescriptor(descriptor);
+        var descriptorIsData = IsDataDescriptor(descriptor);
+
+        if (property.IsProperty)
+        {
+            if (descriptorIsData)
+                return false;
+
+            if (!property.IsConfigurable)
+            {
+                if (HasDescriptorField(descriptor, KeyStrings.get)
+                    && !descriptor[KeyStrings.get].StrictEquals(property.get as JSValue ?? JSUndefined.Value))
+                {
+                    return false;
+                }
+
+                if (HasDescriptorField(descriptor, KeyStrings.set)
+                    && !descriptor[KeyStrings.set].StrictEquals(property.set as JSValue ?? JSUndefined.Value))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        if (descriptorIsAccessor)
+            return false;
+
+        if (!property.IsConfigurable)
+        {
+            if (HasDescriptorField(descriptor, KeyStrings.writable))
+            {
+                var writable = descriptor[KeyStrings.writable].BooleanValue;
+                if (property.IsReadOnly && writable)
+                    return false;
+            }
+
+            if (property.IsReadOnly && HasDescriptorField(descriptor, KeyStrings.value))
+            {
+                var targetValue = target.GetValue(property);
+                if (!descriptor[KeyStrings.value].StrictEquals(targetValue))
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static void ValidateDefinePropertyInvariant(JSObject target, in PropertyKey key, JSObject descriptor)
+    {
+        var property = GetOwnTargetProperty(target, in key);
+        var extensibleTarget = target.IsExtensible();
+        var settingConfigFalse = HasDescriptorField(descriptor, KeyStrings.configurable)
+            && !descriptor[KeyStrings.configurable].BooleanValue;
+
+        if (property.IsEmpty)
+        {
+            if (!extensibleTarget || settingConfigFalse)
+                throw JSEngine.NewTypeError("Proxy defineProperty trap violated target invariants");
+
+            return;
+        }
+
+        if (!IsCompatibleDescriptor(descriptor, target, in property))
+            throw JSEngine.NewTypeError("Proxy defineProperty trap returned an incompatible descriptor");
+
+        if (settingConfigFalse && property.IsConfigurable)
+            throw JSEngine.NewTypeError("Proxy defineProperty trap cannot report a configurable target property as non-configurable");
+
+        if (!property.IsConfigurable
+            && !property.IsProperty
+            && !property.IsReadOnly
+            && HasDescriptorField(descriptor, KeyStrings.writable)
+            && !descriptor[KeyStrings.writable].BooleanValue)
+        {
+            throw JSEngine.NewTypeError("Proxy defineProperty trap cannot make a non-configurable writable property non-writable");
+        }
+    }
+
+    private static void ValidateDeleteInvariant(JSObject target, in PropertyKey key)
+    {
+        var property = GetOwnTargetProperty(target, in key);
+        if (property.IsEmpty)
+            return;
+
+        if (!property.IsConfigurable || !target.IsExtensible())
+            throw JSEngine.NewTypeError("Proxy deleteProperty trap violated target invariants");
+    }
+
+    private static void ValidateGetOwnPropertyDescriptorInvariant(JSObject target, in PropertyKey key, JSValue trapResult)
+    {
+        var property = GetOwnTargetProperty(target, in key);
+        var extensibleTarget = target.IsExtensible();
+
+        if (trapResult.IsUndefined)
+        {
+            if (!property.IsEmpty && (!property.IsConfigurable || !extensibleTarget))
+                throw JSEngine.NewTypeError("Proxy getOwnPropertyDescriptor trap cannot hide an existing property");
+
+            return;
+        }
+
+        if (trapResult is not JSObject descriptor)
+            throw JSEngine.NewTypeError("Proxy getOwnPropertyDescriptor trap must return an object or undefined");
+
+        var settingConfigFalse = HasDescriptorField(descriptor, KeyStrings.configurable)
+            && !descriptor[KeyStrings.configurable].BooleanValue;
+
+        if (property.IsEmpty)
+        {
+            if (!extensibleTarget || settingConfigFalse)
+                throw JSEngine.NewTypeError("Proxy getOwnPropertyDescriptor trap returned an incompatible descriptor");
+
+            return;
+        }
+
+        if (!IsCompatibleDescriptor(descriptor, target, in property))
+            throw JSEngine.NewTypeError("Proxy getOwnPropertyDescriptor trap returned an incompatible descriptor");
+
+        if (settingConfigFalse && property.IsConfigurable)
+            throw JSEngine.NewTypeError("Proxy getOwnPropertyDescriptor trap cannot report a configurable target property as non-configurable");
+    }
+
     private static void ValidateOwnKeysInvariant(JSObject target, HashSet<string> seenKeys)
     {
         void ValidateOwnKey(string identity, in JSProperty property)
@@ -219,7 +369,14 @@ public partial class JSProxy : JSObject
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.defineProperty);
         if (!fx.IsUndefined)
-            return fx.InvokeFunction(new Arguments(target, target, key, propertyDescription));
+        {
+            var result = fx.InvokeFunction(new Arguments(target, target, key, propertyDescription));
+            if (!result.BooleanValue)
+                return JSBoolean.False;
+
+            ValidateDefinePropertyInvariant(target, key.ToKey(false), propertyDescription);
+            return JSBoolean.True;
+        }
 
         return target.DefineProperty(key, propertyDescription);
     }
@@ -229,9 +386,30 @@ public partial class JSProxy : JSObject
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.deleteProperty);
         if (!fx.IsUndefined)
-            return fx.InvokeFunction(new Arguments(target, target, index));
+        {
+            var result = fx.InvokeFunction(new Arguments(target, target, index));
+            if (!result.BooleanValue)
+                return JSBoolean.False;
+
+            ValidateDeleteInvariant(target, index.ToKey(false));
+            return JSBoolean.True;
+        }
 
         return target.Delete(index);
+    }
+
+    public override JSValue GetOwnPropertyDescriptor(JSValue name)
+    {
+        var target = RequireTarget();
+        var fx = GetTrap(GetOwnPropertyDescriptorTrapKey);
+        if (!fx.IsUndefined)
+        {
+            var result = fx.InvokeFunction(new Arguments(target, target, name));
+            ValidateGetOwnPropertyDescriptorInvariant(target, name.ToKey(false), result);
+            return result;
+        }
+
+        return target.GetOwnPropertyDescriptor(name);
     }
 
     internal protected override JSValue GetValue(IJSSymbol key, JSValue receiver, bool throwError = true)

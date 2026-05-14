@@ -287,7 +287,10 @@ public partial class JSObject
         if (desc is not JSObject pd)
             throw NewTypeError("Property Description must be an object");
 
-        targetObject.DefineProperty(key, pd);
+        var result = targetObject.DefineProperty(key, pd);
+        if (result.IsBoolean && !result.BooleanValue)
+            throw NewTypeError($"Cannot define property {key}");
+
         return targetObject;
     }
 

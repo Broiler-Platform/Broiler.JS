@@ -840,6 +840,72 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Proxy_Define_Delete_And_GetOwnPropertyDescriptor_Invariants_Throw_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var defineResult = (function () {
+                    var proxy = new Proxy({}, {
+                        defineProperty: function(target, prop, desc) {
+                            Object.defineProperty(target, prop, {
+                                configurable: false,
+                                writable: true
+                            });
+                            return true;
+                        }
+                    });
+
+                    return thrownCtor(function () {
+                        Reflect.defineProperty(proxy, 'prop', { writable: false });
+                    });
+                })();
+
+                var deleteResult = (function () {
+                    var proxy = new Proxy({ prop: 1 }, {
+                        deleteProperty: function(target, prop) {
+                            Object.preventExtensions(target);
+                            return true;
+                        }
+                    });
+
+                    return thrownCtor(function () {
+                        Reflect.deleteProperty(proxy, 'prop');
+                    });
+                })();
+
+                var getOwnPropertyDescriptorResult = (function () {
+                    var target = { foo: 1 };
+                    var proxy = new Proxy(target, {
+                        getOwnPropertyDescriptor: function() {
+                            return;
+                        }
+                    });
+
+                    Object.preventExtensions(target);
+                    return thrownCtor(function () {
+                        Object.getOwnPropertyDescriptor(proxy, 'foo');
+                    });
+                })();
+
+                return [defineResult, deleteResult, getOwnPropertyDescriptorResult].join('|');
+            })();
+        ");
+
+        Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Proxy_Created_With_Revoked_Proxy_Target_Preserves_Typeof_Metadata()
     {
         EnsureBuiltInsLoaded();
@@ -1693,6 +1759,8 @@ public class BuiltInsTests
                 promise.constructor = null;
 
                 return [
+                    thrownCtor(function () { Promise(function () {}); }),
+                    thrownCtor(function () { Promise.call(null, function () {}); }),
                     thrownCtor(function () { new Promise({}); }),
                     thrownCtor(function () { Promise.resolve.call(1, 0); }),
                     thrownCtor(function () { Promise.resolve.call({}, 0); }),
@@ -1706,7 +1774,7 @@ public class BuiltInsTests
             })();
         ");
 
-        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
     [Fact]

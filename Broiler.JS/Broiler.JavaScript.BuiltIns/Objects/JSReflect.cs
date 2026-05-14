@@ -6,6 +6,7 @@ using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Extensions;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.BuiltIns.Proxy;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
@@ -59,14 +60,14 @@ public partial class JSReflect : JSObject
         if (target is not JSObject targetObject)
             return JSBoolean.False;
 
-        if (!targetObject.IsExtensible())
+        if (targetObject is not JSProxy && !targetObject.IsExtensible())
             return JSBoolean.False;
 
         if (attributes is not JSObject pd)
             return JSBoolean.False;
 
-        targetObject.DefineProperty(propertyKey, pd);
-        return JSBoolean.True;
+        var result = targetObject.DefineProperty(propertyKey, pd);
+        return result.IsBoolean ? result : JSBoolean.True;
     }
 
     [JSExport(Length = 2)]
@@ -76,21 +77,8 @@ public partial class JSReflect : JSObject
         if (target is not JSObject @object)
             return JSBoolean.False;
 
-        var key = propertyKey.ToKey();
-        if (key.IsSymbol)
-        {
-            ref var symbols = ref @object.GetSymbols();
-            return symbols.RemoveAt(key.Index) ? JSBoolean.True : JSBoolean.False;
-        }
-
-        if (key.IsUInt)
-        {
-            ref var elements = ref @object.GetElements();
-            return elements.RemoveAt(key.Index) ? JSBoolean.True : JSBoolean.False;
-        }
-
-        ref var properties = ref @object.GetOwnProperties();
-        return properties.RemoveAt(key.Index) ? JSBoolean.True : JSBoolean.False;
+        var result = @object.Delete(propertyKey);
+        return result.IsBoolean ? result : JSBoolean.True;
     }
 
     [JSExport(Length = 2)]
@@ -111,27 +99,7 @@ public partial class JSReflect : JSObject
         if (target is not JSObject @object)
             throw JSEngine.NewTypeError($"Not an object");
 
-        var key = propertyKey.ToKey();
-        JSProperty p;
-
-        if (key.IsSymbol)
-        {
-            p = @object.GetInternalProperty(key.Symbol);
-        }
-        else
-        {
-            if (key.IsUInt)
-            {
-                p = @object.GetInternalProperty(key.Index);
-            }
-            else
-            {
-                p = @object.GetInternalProperty(in key.KeyString);
-            }
-        }
-        if (p.IsEmpty)
-            return JSUndefined.Value;
-        return p.ToJSValue();
+        return @object.GetOwnPropertyDescriptor(propertyKey);
     }
 
     [Static("getPrototypeOf")]
