@@ -5,6 +5,7 @@ using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
+using System.Collections.Generic;
 using System;
 using System.CodeDom.Compiler;
 using System.IO;
@@ -16,56 +17,206 @@ using Broiler.JavaScript.BuiltIns.Function;
 
 namespace Broiler.JavaScript.BuiltIns.Json;
 
-public delegate JSValue JsonParserReceiver((string key, JSValue value) property);
+public delegate JSValue JsonParserReceiver((JSObject holder, string key, JSValue value) property);
 
 /// <summary>
 /// Delegate for reviver with source text access (ES2026 §4.7).
 /// </summary>
-public delegate JSValue JsonParserReceiverWithSource((string key, JSValue value, string source) property);
+public delegate JSValue JsonParserReceiverWithSource((JSObject holder, string key, JSValue value, string source) property);
 
 [JSClassGenerator("JSON"), JSInternalObject]
 public partial class JSJSON : JSObject
 {
+    private static void RecordSource(
+        Dictionary<JSObject, Dictionary<string, string>> sourceMap,
+        JSObject holder,
+        string key,
+        string source)
+    {
+        if (source == null)
+            return;
+
+        if (!sourceMap.TryGetValue(holder, out var holderSources))
+        {
+            holderSources = [];
+            sourceMap[holder] = holderSources;
+        }
+
+        holderSources[key] = source;
+    }
+
+    private static bool TryGetSource(
+        Dictionary<JSObject, Dictionary<string, string>> sourceMap,
+        JSObject holder,
+        string key,
+        out string source)
+    {
+        if (sourceMap.TryGetValue(holder, out var holderSources)
+            && holderSources.TryGetValue(key, out source))
+        {
+            return true;
+        }
+
+        source = null;
+        return false;
+    }
+
+    private static bool IsPrimitiveJsonValue(JSValue value)
+        => value is JSNumber || value is JSString || value == JSBoolean.True || value == JSBoolean.False || value == JSNull.Value;
+
+    private static JSValue InternalizeJsonProperty(
+        JSObject holder,
+        string key,
+        JSFunction reviver,
+        Dictionary<JSObject, Dictionary<string, string>> sourceMap,
+        string rootSource)
+    {
+        var value = holder[key];
+        if (value is JSObject valueObject)
+        {
+            if (valueObject.IsArray)
+            {
+                var length = (uint)Math.Max(valueObject.Length, 0);
+                for (uint index = 0; index < length; index++)
+                {
+                    var revived = InternalizeJsonProperty(valueObject, index, reviver, sourceMap);
+                    if (revived.IsUndefined)
+                        valueObject.Delete(index);
+                    else
+                        valueObject[index] = revived;
+                }
+            }
+            else
+            {
+                List<KeyString> propertyKeys = [];
+                var properties = valueObject.GetOwnProperties(false).GetEnumerator();
+                while (properties.MoveNext(out var keyString, out var property))
+                {
+                    if (!property.IsEmpty)
+                        propertyKeys.Add(keyString);
+                }
+
+                foreach (var propertyKey in propertyKeys)
+                {
+                    var revived = InternalizeJsonProperty(valueObject, propertyKey.ToString(), reviver, sourceMap, null);
+                    if (revived.IsUndefined)
+                        valueObject.Delete(propertyKey);
+                    else
+                        valueObject[propertyKey] = revived;
+                }
+            }
+
+            value = holder[key];
+        }
+
+        if (sourceMap != null)
+        {
+            var context = new JSObject();
+            if (key.Length == 0)
+            {
+                if (rootSource != null && IsPrimitiveJsonValue(value))
+                    context["source"] = new JSString(rootSource);
+            }
+            else if (TryGetSource(sourceMap, holder, key, out var source))
+            {
+                context["source"] = new JSString(source);
+            }
+
+            return reviver.f(new Arguments(holder, new JSString(key), value, context));
+        }
+
+        return reviver.f(new Arguments(holder, new JSString(key), value));
+    }
+
+    private static JSValue InternalizeJsonProperty(
+        JSObject holder,
+        uint index,
+        JSFunction reviver,
+        Dictionary<JSObject, Dictionary<string, string>> sourceMap)
+    {
+        var value = holder[index];
+        if (value is JSObject valueObject)
+        {
+            if (valueObject.IsArray)
+            {
+                var length = (uint)Math.Max(valueObject.Length, 0);
+                for (uint childIndex = 0; childIndex < length; childIndex++)
+                {
+                    var revived = InternalizeJsonProperty(valueObject, childIndex, reviver, sourceMap);
+                    if (revived.IsUndefined)
+                        valueObject.Delete(childIndex);
+                    else
+                        valueObject[childIndex] = revived;
+                }
+            }
+            else
+            {
+                List<KeyString> propertyKeys = [];
+                var properties = valueObject.GetOwnProperties(false).GetEnumerator();
+                while (properties.MoveNext(out var keyString, out var property))
+                {
+                    if (!property.IsEmpty)
+                        propertyKeys.Add(keyString);
+                }
+
+                foreach (var propertyKey in propertyKeys)
+                {
+                    var revived = InternalizeJsonProperty(valueObject, propertyKey.ToString(), reviver, sourceMap, null);
+                    if (revived.IsUndefined)
+                        valueObject.Delete(propertyKey);
+                    else
+                        valueObject[propertyKey] = revived;
+                }
+            }
+
+            value = holder[index];
+        }
+
+        var key = index.ToString();
+        if (sourceMap != null)
+        {
+            var context = new JSObject();
+            if (TryGetSource(sourceMap, holder, key, out var source))
+                context["source"] = new JSString(source);
+
+            return reviver.f(new Arguments(holder, new JSString(key), value, context));
+        }
+
+        return reviver.f(new Arguments(holder, new JSString(key), value));
+    }
+
     [JSExport]
     public static JSValue Parse(in Arguments a)
     {
         var (text, receiver) = a.Get2();
 
+        Dictionary<JSObject, Dictionary<string, string>> sourceMap = null;
+        var sourceTextAccessEnabled = JSEngine.Current is JSContext context
+            && context.HasExperimentalFeature(JavaScriptFeatureFlags.JsonParseSourceTextAccess);
+
+        var parsed = sourceTextAccessEnabled
+            ? JSJsonParser.ParseWithSource(
+                text.ToString(),
+                p =>
+                {
+                    RecordSource(sourceMap ??= [], p.holder, p.key, p.source);
+                    return p.value;
+                })
+            : JSJsonParser.Parse(text.ToString(), null);
+
+        parsed ??= JSNull.Value;
+
         if (receiver is not JSFunction function)
-            return JSJsonParser.Parse(text.ToString(), null) ?? JSNull.Value;
+            return parsed;
 
-        var t = a.This;
-        if (JSEngine.Current is not JSContext context ||
-            !context.HasExperimentalFeature(JavaScriptFeatureFlags.JsonParseSourceTextAccess))
-        {
-            return JSJsonParser.Parse(text.ToString(),
-                p => function.f(new Arguments(t, new JSString(p.key), p.value))) ?? JSNull.Value;
-        }
-
-        // ES2026 §4.7 — reviver receives (key, value, context) where
-        // context = { source: rawSourceText } for primitive values.
-        JSValue rws((string key, JSValue value, string source) p)
-        {
-            var context = new JSObject();
-            if (p.source != null)
-                context["source"] = new JSString(p.source);
-            return function.f(new Arguments(t, new JSString(p.key), p.value, context));
-        }
-
-        var parsed = JSJsonParser.ParseWithSource(text.ToString(), rws) ?? JSNull.Value;
-
-        // Apply reviver to root value (key = "").
-        // For bare primitives, the source is the entire text.
-        string rootSource = null;
-        if (parsed is JSNumber || parsed is JSString || parsed == JSBoolean.True || parsed == JSBoolean.False || parsed == JSNull.Value)
-            rootSource = text.ToString();
-
-        var rootCtx = new JSObject();
-        if (rootSource != null)
-            rootCtx["source"] = new JSString(rootSource);
-
-        parsed = function.f(new Arguments(t, new JSString(""), parsed, rootCtx));
-        return parsed ?? JSNull.Value;
+        var root = new JSObject();
+        root[""] = parsed;
+        return InternalizeJsonProperty(
+                root,
+                "",
+                function,
+                sourceMap,
+                text.ToString()) ?? JSNull.Value;
 
     }
 
@@ -99,7 +250,7 @@ public partial class JSJSON : JSObject
             {
                 replacer = (item) => rf.f(new Arguments(item.target, item.key, item.value));
             }
-            else if (r is JSArray ra)
+            else if (r.IsArray && r is JSObject ra)
             {
                 StringMap<int> map = new();
 

@@ -75,6 +75,113 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void JSON_Revoked_Proxy_Array_Checks_Throw_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            [
+              (() => {
+                var handle = Proxy.revocable([], {});
+                handle.revoke();
+                try {
+                  JSON.stringify({}, handle.proxy);
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })(),
+              (() => {
+                var handle = Proxy.revocable([], {});
+                var calls = 0;
+                handle.revoke();
+                try {
+                  JSON.parse('[null, null]', function() {
+                    this[1] = handle.proxy;
+                    calls += 1;
+                  });
+                  return 'no error';
+                } catch (e) {
+                  return e.name + ':' + calls;
+                }
+              })()
+            ].join('|');
+            """);
+
+        Assert.Equal("TypeError|TypeError:1", result.ToString());
+    }
+
+    [Fact]
+    public void Strict_Global_Readonly_Value_Assignments_Throw_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            "use strict";
+            [
+              (() => { try { NaN = 12; return 'no error'; } catch (e) { return e.name; } })(),
+              (() => { try { Infinity = 12; return 'no error'; } catch (e) { return e.name; } })(),
+              (() => { try { undefined = 12; return 'no error'; } catch (e) { return e.name; } })()
+            ].join('|');
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Object_Create_Applies_Property_Descriptors_And_Rejects_Invalid_Accessors()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            [
+              (() => {
+                try {
+                  Object.create({}, { prop: { get: null } });
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })(),
+              (() => {
+                try {
+                  Object.create({}, { prop: { set: false } });
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })(),
+              Object.create({}, { prop: { value: 1, enumerable: true } }).prop
+            ].join('|');
+            """);
+
+        Assert.Equal("TypeError|TypeError|1", result.ToString());
+    }
+
+    [Fact]
+    public void Object_Seal_Prevents_Object_Assign_From_Adding_New_Properties()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            [
+              (() => {
+                var target = Object.seal({ foo: 1 });
+                try {
+                  Object.assign(target, { get bar() {} });
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })(),
+              Object.isExtensible(Object.seal({}))
+            ].join('|');
+            """);
+
+        Assert.Equal("TypeError|false", result.ToString());
+    }
+
+    [Fact]
     public void WeakRef_TypeOf_IsObject()
     {
         EnsureBuiltInsLoaded();
@@ -645,7 +752,7 @@ public class BuiltInsTests
             });
             seen.join(',');
             """);
-        Assert.Equal("missing", result.ToString());
+        Assert.Equal("missing,missing", result.ToString());
     }
 
     [Fact]

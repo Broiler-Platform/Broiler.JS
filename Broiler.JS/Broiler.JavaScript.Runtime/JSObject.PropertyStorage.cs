@@ -481,6 +481,8 @@ public partial class JSObject
         var value = this[KeyStrings.value];
         var get = this[KeyStrings.get];
         var set = this[KeyStrings.set];
+        var hasValue = !GetInternalProperty(KeyStrings.value, false).IsEmpty;
+        var hasWritable = !GetInternalProperty(KeyStrings.writable, false).IsEmpty;
         var pt = JSPropertyAttributes.Empty;
 
         if (this[KeyStrings.configurable].BooleanValue)
@@ -492,17 +494,26 @@ public partial class JSObject
         if (!this[KeyStrings.writable].BooleanValue)
             pt |= JSPropertyAttributes.Readonly;
 
-        if (get is IJSFunction)
+        if (!get.IsUndefined)
         {
+            if (get is not IJSFunction)
+                throw NewTypeError("Getter must be a function");
+
             pt |= JSPropertyAttributes.Property;
             pget = get;
         }
 
-        if (set is IJSFunction)
+        if (!set.IsUndefined)
         {
+            if (set is not IJSFunction)
+                throw NewTypeError("Setter must be a function");
+
             pt |= JSPropertyAttributes.Property;
             pset = set;
         }
+
+        if ((pget != null || pset != null) && (hasValue || hasWritable))
+            throw NewTypeError("Invalid property.  Cannot both specify accessors and a value or writable attribute");
 
         if (pget == null && pset == null)
         {

@@ -109,13 +109,16 @@ internal class JSJsonParser(JsonParserReceiver r) : System.Text.Json.Serializati
             if (reviverWithSource != null)
             {
                 var (value, source) = ReadWithSource(ref reader, options);
-                value = reviverWithSource((j.Length.ToString(), value, source));
+                value = reviverWithSource((j, j.Length.ToString(), value, source));
                 if (!value.IsUndefined)
                     j.Add(value);
             }
             else
             {
-                j.Add(Read(ref reader, typeof(JSValue), options));
+                var value = Read(ref reader, typeof(JSValue), options);
+                value = r?.Invoke((j, j.Length.ToString(), value)) ?? value;
+                if (!value.IsUndefined)
+                    j.Add(value);
             }
         }
 
@@ -143,7 +146,7 @@ internal class JSJsonParser(JsonParserReceiver r) : System.Text.Json.Serializati
                     if (reviverWithSource != null)
                     {
                         var (value, source) = ReadWithSource(ref reader, options);
-                        value = reviverWithSource((name, value, source));
+                        value = reviverWithSource((j, name, value, source));
 
                         if (value.IsUndefined)
                             continue;
@@ -153,7 +156,7 @@ internal class JSJsonParser(JsonParserReceiver r) : System.Text.Json.Serializati
                     else
                     {
                         var value = Read(ref reader, typeof(JSValue), options);
-                        value = r?.Invoke((name, value)) ?? value;
+                        value = r?.Invoke((j, name, value)) ?? value;
                         if (value.IsUndefined)
                             continue;
 

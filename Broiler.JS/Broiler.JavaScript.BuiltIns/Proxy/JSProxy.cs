@@ -33,6 +33,7 @@ public partial class JSProxy : JSObject
     }
 
     public override bool BooleanValue => target.BooleanValue;
+    public override bool IsArray => RequireTarget().IsArray;
 
     public override bool Equals(JSValue value) => target.Equals(value);
 

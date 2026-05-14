@@ -73,10 +73,13 @@ public partial class JSGlobalStatic
     }
 
     [JSExport("Infinity")]
-    public static JSValue Infinity = JSValue.NumberPositiveInfinity;
+    public static readonly JSValue Infinity = JSValue.NumberPositiveInfinity;
 
     [JSExport("NaN")]
-    public static JSValue NaN = JSValue.NumberNaN;
+    public static readonly JSValue NaN = JSValue.NumberNaN;
+
+    [JSExport("undefined")]
+    public static readonly JSValue Undefined = JSUndefined.Value;
 
     [JSExport("Intl")]
     public static JSValue Intl => DefaultBuiltInRegistry.IntlFactory?.Invoke() ?? JSUndefined.Value;

@@ -8,18 +8,28 @@ public partial class JSObject
     [JSExport("create")]
     internal static JSValue StaticCreate(in Arguments a)
     {
-        var p = a.Get1();
-        if (p.IsNull)
+        static JSObject CreateObject(JSValue prototype)
         {
-            var result = new JSObject();
-            result.BasePrototypeObject = null;
-            return result;
+            if (prototype.IsNull)
+            {
+                var result = new JSObject();
+                result.BasePrototypeObject = null;
+                return result;
+            }
+
+            if (prototype is not JSObject proto)
+                throw NewTypeError("Object prototype may only be an Object or null");
+
+            return new JSObject(proto);
         }
 
-        if (p is not JSObject proto)
-            throw NewTypeError("Object prototype may only be an Object or null");
+        var (prototype, properties) = a.Get2();
+        var created = CreateObject(prototype);
 
-        return new JSObject(proto);
+        if (!properties.IsUndefined)
+            DefineProperties(new Arguments(a.This, created, properties));
+
+        return created;
     }
 
     [JSExport("assign")]
@@ -132,9 +142,11 @@ public partial class JSObject
         var properties = pdObject.GetOwnProperties(false).GetEnumerator();
         while (properties.MoveNext(out var keyString, out var property))
         {
-            var item = target.GetValue(property);
-            if (item is JSObject itemObject)
-                target.DefineProperty(keyString, itemObject);
+            var item = pdObject.GetValue(property);
+            if (item is not JSObject itemObject)
+                throw NewTypeError("Property Description must be an object");
+
+            target.DefineProperty(keyString, itemObject);
         }
 
         return target;
@@ -266,8 +278,16 @@ public partial class JSObject
         if (first is not JSObject @object)
             return first;
 
-        @object.status |= ObjectStatus.Sealed;
+        @object.status |= ObjectStatus.Sealed | ObjectStatus.NonExtensible;
         @object.GetOwnProperties().Update((uint x, ref JSProperty v) => v = new JSProperty(x, v.get, v.set, v.value, v.Attributes & (~JSPropertyAttributes.Configurable)));
+        ref var elements = ref @object.GetElements();
+        foreach (var (key, property) in elements.AllValues())
+            elements.Put(key) = new JSProperty(key, property.get, property.set, property.value, property.Attributes & (~JSPropertyAttributes.Configurable));
+
+        ref var symbols = ref @object.GetSymbols();
+        foreach (var entry in symbols.All)
+            symbols.Put(entry.Key) = new JSProperty(entry.Key, entry.Value.get, entry.Value.set, entry.Value.value, entry.Value.Attributes & (~JSPropertyAttributes.Configurable));
+
         return first;
     }
 
