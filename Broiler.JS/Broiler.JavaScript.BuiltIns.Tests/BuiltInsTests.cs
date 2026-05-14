@@ -755,6 +755,41 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Proxy_NonCallable_And_Invalid_Construct_Traps_Throw_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var applyProxy = new Proxy(function () {}, { apply: 1 });
+                var constructProxy = new Proxy(function () {}, { construct: 1 });
+                var badReturnProxy = new Proxy(function () {}, {
+                    construct: function () {
+                        return true;
+                    }
+                });
+
+                return [
+                    thrownCtor(function () { applyProxy(); }),
+                    thrownCtor(function () { new constructProxy(); }),
+                    thrownCtor(function () { new badReturnProxy(); })
+                ].join('|');
+            })();
+        ");
+
+        Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Proxy_GetTrap_Cannot_Lie_About_NonConfigurable_Readonly_Data_Properties()
     {
         EnsureBuiltInsLoaded();
@@ -1636,6 +1671,42 @@ public class BuiltInsTests
             [instance.constructor === CustomPromise, calls, typeof captured].join('|');
         ");
         Assert.Equal("true|1|function", result.ToString());
+    }
+
+    [Fact]
+    public void Promise_Invalid_Executors_Receivers_And_Then_Constructors_Throw_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var promise = Promise.resolve(1);
+                promise.constructor = null;
+
+                return [
+                    thrownCtor(function () { new Promise({}); }),
+                    thrownCtor(function () { Promise.resolve.call(1, 0); }),
+                    thrownCtor(function () { Promise.resolve.call({}, 0); }),
+                    thrownCtor(function () { Promise.all.call(1, []); }),
+                    thrownCtor(function () { Promise.allSettled.call({}, []); }),
+                    thrownCtor(function () { Promise.allSettledKeyed.call({}, {}); }),
+                    thrownCtor(function () { Promise.any.call(true, []); }),
+                    thrownCtor(function () { Promise.reject.call(undefined, 1); }),
+                    thrownCtor(function () { promise.then(function (value) { return value; }); })
+                ].join('|');
+            })();
+        ");
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
     [Fact]

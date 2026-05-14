@@ -104,8 +104,11 @@ public partial class JSPromise : JSObject, IJSPromise
 
     public JSPromise(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
-        InitPromise();
         JSValue @delegate = a[0];
+        if (!@delegate.IsFunction)
+            throw JSEngine.NewTypeError("Promise resolver is not a function");
+
+        InitPromise();
         try
         {
             @delegate.InvokeFunction(new Arguments(this, resolveFunction, rejectFunction));
@@ -304,6 +307,23 @@ public partial class JSPromise : JSObject, IJSPromise
         }
 
         return @return;
+    }
+
+    internal static void ValidatePromiseSpeciesConstructor(JSValue promise)
+    {
+        var constructor = promise[KeyStrings.constructor];
+        if (constructor.IsUndefined)
+            return;
+
+        if (!constructor.IsObject)
+            throw JSEngine.NewTypeError("Promise constructor must be an object");
+
+        var species = constructor[(IJSSymbol)BuiltIns.Symbol.JSSymbol.species];
+        if (species.IsNullOrUndefined)
+            return;
+
+        if (species is not IJSFunction)
+            throw JSEngine.NewTypeError("Promise species constructor is not a constructor");
     }
 
     private void Post(Reaction reaction) => Post(() =>

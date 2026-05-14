@@ -11,6 +11,8 @@ public partial class JSPromise
     [JSExport("then")]
     public JSValue Then(in Arguments a)
     {
+        ValidatePromiseSpeciesConstructor(a.This);
+
         var (success, fail) = a.Get2();
 
         JSFunctionDelegate successHandler = null;
