@@ -63,7 +63,7 @@ public partial class JSProxy : JSObject
             return JSUndefined.Value;
 
         if (!trap.IsFunction)
-            throw JSEngine.NewTypeError($"Proxy trap '{trapKey}' is not callable");
+            throw JSEngine.NewTypeError($"Proxy trap '{trapKey}' is not callable (received {trap.TypeOf()})");
 
         return trap;
     }
