@@ -15,6 +15,7 @@ public class JSFunctionBuilder
 
     private static FieldInfo _f;
     private static PropertyInfo _coerceThisOnInvoke;
+    private static PropertyInfo _isStrictMode;
 
     private static MethodInfo invokeFunction;
 
@@ -33,6 +34,8 @@ public class JSFunctionBuilder
             ?? throw new InvalidOperationException($"f field not found on {type.FullName}");
         _coerceThisOnInvoke = type.GetProperty("CoerceThisOnInvoke")
             ?? throw new InvalidOperationException($"CoerceThisOnInvoke property not found on {type.FullName}");
+        _isStrictMode = type.GetProperty("IsStrictMode")
+            ?? throw new InvalidOperationException($"IsStrictMode property not found on {type.FullName}");
         invokeFunction = typeof(JSValue).InternalMethod("InvokeFunction", ArgumentsBuilder.refType)
             ?? throw new InvalidOperationException("InvokeFunction method not found on JSValue");
         _invokeSuperConstructor = type.PublicMethod("InvokeSuperConstructor",
@@ -79,6 +82,16 @@ public class JSFunctionBuilder
             temp.AsSequence(),
             Expression.Assign(temp, target),
             Expression.Assign(Expression.Property(temp, _coerceThisOnInvoke), Expression.Constant(true)),
+            temp);
+    }
+
+    public static Expression EnableStrictMode(Expression target)
+    {
+        var temp = Expression.Parameter(type, "#function");
+        return Expression.Block(
+            temp.AsSequence(),
+            Expression.Assign(temp, target),
+            Expression.Assign(Expression.Property(temp, _isStrictMode), Expression.Constant(true)),
             temp);
     }
 }

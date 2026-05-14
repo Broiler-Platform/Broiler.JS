@@ -43,7 +43,7 @@ public abstract class JSPrimitive: JSValue
             }
             return this.GetValue(px);
         }
-        set => base[symbol] = value;
+        set => ThrowOnStrictPrimitiveAssignment(symbol);
     }
 
     public override JSValue this[KeyString name]
@@ -61,10 +61,7 @@ public abstract class JSPrimitive: JSValue
             }
             return this.GetValue(px);
         }
-        set
-        {
-            // throw new NotSupportedException();
-        }
+        set => ThrowOnStrictPrimitiveAssignment(name);
     }
 
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)

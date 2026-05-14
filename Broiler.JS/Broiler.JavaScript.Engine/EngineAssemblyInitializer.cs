@@ -36,11 +36,13 @@ internal static class EngineAssemblyInitializer
 
         // ── JSVariable delegate ─────────────────────────────────────
         JSVariable.GetCurrentContext = static () => JSEngine.Current;
+        JSVariable.IsStrictMode = static () => JSEngine.IsStrictMode;
 
         // ── UriHelper delegate ──────────────────────────────────────
         UriHelper.NewURIError = static message => JSEngine.NewURIError(message);
 
         // ── JSValue.MarshalObject delegate ──────────────────────────
+        JSValue.IsStrictModeEnabled = static () => JSEngine.IsStrictMode;
         JSValue.MarshalObject = static obj => JSEngine.ClrInterop.Marshal(obj);
 
         // ── new.target access delegates ─────────────────────────────

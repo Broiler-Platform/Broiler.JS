@@ -129,6 +129,75 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Strict_Functions_Preserve_This_And_Throw_On_Strict_Only_Assignments()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            [
+              (() => {
+                function f() {
+                  "use strict";
+                  return !this;
+                }
+
+                return f.call(null) ? 'true' : 'false';
+              })(),
+              (() => {
+                function strict() {
+                  "use strict";
+                  this.insert = function() {};
+                }
+
+                try {
+                  strict.call(undefined);
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })(),
+              (() => {
+                try {
+                  (function() {
+                    "use strict";
+                    var value = 10;
+                    value.x = 5;
+                  })();
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })(),
+              (() => {
+                var value = 10;
+                value.x = 5;
+                return value.x === undefined ? 'undefined' : 'defined';
+              })(),
+              (() => {
+                try {
+                  (function assignSelfStrict() {
+                    "use strict";
+                    assignSelfStrict = 12;
+                  })();
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })(),
+              (() => {
+                var assignSelf = 42;
+                (function assignSelf() {
+                  assignSelf = 12;
+                })();
+                return assignSelf;
+              })()
+            ].join('|');
+            """);
+
+        Assert.Equal("true|TypeError|TypeError|undefined|TypeError|42", result.ToString());
+    }
+
+    [Fact]
     public void Object_Create_Applies_Property_Descriptors_And_Rejects_Invalid_Accessors()
     {
         EnsureBuiltInsLoaded();

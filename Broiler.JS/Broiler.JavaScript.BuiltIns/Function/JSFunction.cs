@@ -28,6 +28,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     internal JSFunctionDelegate f;
     public bool CoerceThisOnInvoke { get; set; }
+    public bool IsStrictMode { get; set; }
 
     /// <summary>
     /// Gets or sets the underlying <see cref="JSFunctionDelegate"/> that implements
@@ -258,7 +259,10 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     }
 
     public override JSValue InvokeFunction(in Arguments a)
-        => f(CoerceThisOnInvoke ? a.OverrideThis(CoerceNonStrictThis(a.This)) : a);
+    {
+        using var _ = JSEngine.EnterStrictMode(IsStrictMode);
+        return f(CoerceThisOnInvoke ? a.OverrideThis(CoerceNonStrictThis(a.This)) : a);
+    }
 
     [JSPrototypeMethod]
     [JSExport("valueOf", Length = 1)]

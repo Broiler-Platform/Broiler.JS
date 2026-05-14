@@ -51,6 +51,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     internal static Func<string, KeyString, JSValue> CreateStringWithKey;
 
     internal static Func<string, Exception> NewTypeError;
+    internal static Func<bool> IsStrictModeEnabled;
     internal static Func<object, JSValue> MarshalObject;
     internal static Func<JSValue, object, bool, object> ForceConvertHelper;
     internal static Func<Expression, JSValue, DynamicMetaObject> CreateDynamicMetaObject;
@@ -643,22 +644,19 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     public virtual JSValue this[KeyString name]
     {
         get => GetValue(name, this);
-        set
-        {
-            // throw new NotSupportedException();
-        }
+        set => ThrowOnStrictPrimitiveAssignment(name);
     }
 
     public virtual JSValue this[uint key]
     {
         get => GetValue(key, this);
-        set { }
+        set => ThrowOnStrictPrimitiveAssignment(key);
     }
 
     public virtual JSValue this[IJSSymbol symbol]
     {
         get => GetValue(symbol, this);
-        set { }
+        set => ThrowOnStrictPrimitiveAssignment(symbol);
     }
 
     public JSValue this[JSValue key]
@@ -775,6 +773,14 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     public static bool StaticEquals(JSValue left, JSValue right) => left.Equals(right);
 
     public abstract bool StrictEquals(JSValue value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected void ThrowOnStrictPrimitiveAssignment(object key)
+    {
+        if (IsStrictModeEnabled?.Invoke() == true)
+            throw NewTypeError?.Invoke($"Cannot create property {key} on {this}")
+                ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
+    }
 
     /// <summary>
     /// 1. NaN is considered equal to NaN.

@@ -1,7 +1,9 @@
 ﻿using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using System.Reflection;
 using Broiler.JavaScript.ExpressionCompiler.Core;
+using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Expressions;
+using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.Runtime;
@@ -149,6 +151,8 @@ partial class FastCompiler
             YLambdaExpression lambda;
             YExpression jsf;
 
+            var isStrictFunction = HasUseStrictDirective(functionDeclaration.Body);
+
             if (functionDeclaration.Generator)
             {
                 lambda = GeneratorRewriter.Rewrite(in scriptFunctionName, block, cs.ReturnLabel, cs.Generator, replaceArgs: cs.Arguments, replaceStackItem: cs.StackItem,
@@ -167,7 +171,11 @@ partial class FastCompiler
             else
             {
                 lambda = YExpression.Lambda(typeof(JSFunctionDelegate), block, in scriptFunctionName, [cs.Arguments]);
-                jsf = JSFunctionBuilder.EnableNonStrictThis(JSFunctionBuilder.New(ToDelegate(lambda), fxName, code, functionDeclaration.Params.Count));
+                jsf = JSFunctionBuilder.New(ToDelegate(lambda), fxName, code, functionDeclaration.Params.Count);
+                if (!isStrictFunction)
+                    jsf = JSFunctionBuilder.EnableNonStrictThis(jsf);
+                else
+                    jsf = JSFunctionBuilder.EnableStrictMode(jsf);
             }
 
             cs.Dispose();
@@ -193,6 +201,28 @@ partial class FastCompiler
             }
 
             return jsf;
+        }
+
+        static bool HasUseStrictDirective(AstStatement body)
+        {
+            if (body is not AstBlock block)
+                return false;
+
+            // "use strict" is recognized only within the initial directive prologue.
+            var statements = block.Statements.GetFastEnumerator();
+            while (statements.MoveNext(out var statement))
+            {
+                if (statement is not AstExpressionStatement { Expression: var expression })
+                    return false;
+
+                if (!expression.IsStringLiteral(out var literal))
+                    return false;
+
+                if (literal == "use strict")
+                    return true;
+            }
+
+            return false;
         }
     }
 

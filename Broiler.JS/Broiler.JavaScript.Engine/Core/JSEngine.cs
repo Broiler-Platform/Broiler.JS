@@ -170,6 +170,31 @@ public static class JSEngine
 
     public static JSObject NewTargetPrototype => GetNewTargetPrototypeFromTop?.Invoke(Current);
 
+    private static readonly AsyncLocal<int> _strictModeDepth = new();
+
+    internal static bool IsStrictMode => _strictModeDepth.Value > 0;
+
+    internal static StrictModeScope EnterStrictMode(bool enabled) => new(enabled);
+
+    internal readonly struct StrictModeScope : IDisposable
+    {
+        private readonly bool enabled;
+
+        public StrictModeScope(bool enabled)
+        {
+            this.enabled = enabled;
+
+            if (enabled)
+                _strictModeDepth.Value++;
+        }
+
+        public void Dispose()
+        {
+            if (enabled)
+                _strictModeDepth.Value--;
+        }
+    }
+
     // ── Stack trace helpers ─────────────────────────────────────────
 
     /// <summary>
