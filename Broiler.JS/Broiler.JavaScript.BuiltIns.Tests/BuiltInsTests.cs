@@ -159,6 +159,39 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Object_Create_And_DefineProperties_Coerce_Primitive_Properties_Arguments()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            [
+              (() => {
+                try {
+                  Object.create({}, "x");
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })(),
+              (() => {
+                try {
+                  Object.defineProperties({}, "x");
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })(),
+              (() => {
+                var target = {};
+                return Object.defineProperties(target, true) === target ? 'same' : 'different';
+              })()
+            ].join('|');
+            """);
+
+        Assert.Equal("TypeError|TypeError|same", result.ToString());
+    }
+
+    [Fact]
     public void Object_Seal_Prevents_Object_Assign_From_Adding_New_Properties()
     {
         EnsureBuiltInsLoaded();
