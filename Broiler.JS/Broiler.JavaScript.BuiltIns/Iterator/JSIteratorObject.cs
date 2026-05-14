@@ -78,7 +78,7 @@ public partial class JSIteratorObject : JSObject
     private void ThrowIfExecuting()
     {
         if (_executing)
-            throw JSEngine.NewTypeError("Generator is already running");
+            throw JSEngine.NewTypeError("Iterator is already executing");
     }
 
     // ---------------------------------------------------------------
