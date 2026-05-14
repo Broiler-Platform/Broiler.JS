@@ -25,8 +25,9 @@ public class JSVariable
             }
 
             if (IsStrictMode?.Invoke() == true)
-                throw JSException.NewTypeErrorFactory?.Invoke("Cannot assign to read only variable")
-                    ?? new InvalidOperationException("JSException.NewTypeErrorFactory delegate is not initialized. Ensure the Core assembly module initializer has run.");
+                throw (JSException.NewTypeErrorFactory
+                    ?? throw new InvalidOperationException("JSException.NewTypeErrorFactory delegate is not initialized. Ensure the Core assembly module initializer has run."))
+                    ("Cannot assign to read only variable");
         }
     }
     internal bool IsReadOnly;

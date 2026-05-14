@@ -51,7 +51,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     internal static Func<string, KeyString, JSValue> CreateStringWithKey;
 
     internal static Func<string, Exception> NewTypeError;
-    internal static Func<bool> IsStrictMode;
+    internal static Func<bool> IsStrictModeEnabled;
     internal static Func<object, JSValue> MarshalObject;
     internal static Func<JSValue, object, bool, object> ForceConvertHelper;
     internal static Func<Expression, JSValue, DynamicMetaObject> CreateDynamicMetaObject;
@@ -777,7 +777,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected void ThrowOnStrictPrimitiveAssignment(object key)
     {
-        if (IsStrictMode?.Invoke() == true)
+        if (IsStrictModeEnabled?.Invoke() == true)
             throw NewTypeError?.Invoke($"Cannot create property {key} on {this}")
                 ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
     }
