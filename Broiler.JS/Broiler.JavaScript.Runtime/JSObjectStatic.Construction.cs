@@ -5,6 +5,124 @@ namespace Broiler.JavaScript.Runtime;
 
 public partial class JSObject
 {
+    private static JSProperty GetArrayLengthProperty(JSObject target)
+    {
+        ref var ownProperties = ref target.GetOwnProperties(false);
+        if (!ownProperties.IsEmpty)
+        {
+            ref var existing = ref ownProperties.GetValue(KeyStrings.length.Key);
+            if (!existing.IsEmpty)
+                return existing;
+        }
+
+        return new JSProperty(KeyStrings.length, JSValue.CreateNumber(target.Length), JSPropertyAttributes.Value);
+    }
+
+    private static void SetArrayLengthWritable(JSObject target, bool writable)
+    {
+        ref var ownProperties = ref target.GetOwnProperties();
+        ownProperties.Put(KeyStrings.length.Key) = new JSProperty(
+            KeyStrings.length,
+            JSValue.CreateNumber(target.Length),
+            writable ? JSPropertyAttributes.Value : JSPropertyAttributes.ReadonlyValue);
+        target.PropertyChanged?.Invoke(target, (KeyStrings.length.Key, uint.MaxValue, null));
+    }
+
+    private static void DefineArrayProperty(JSObject target, uint index, JSObject descriptor)
+    {
+        var lengthProperty = GetArrayLengthProperty(target);
+        if (index >= target.Length && lengthProperty.IsReadOnly)
+            throw NewTypeError("Cannot redefine property");
+
+        target.DefineProperty(index, descriptor);
+    }
+
+    private static void DefineArrayLength(JSObject target, JSObject descriptor)
+    {
+        var currentLength = (uint)Math.Max(target.Length, 0);
+        var currentLengthProperty = GetArrayLengthProperty(target);
+        var currentWritable = !currentLengthProperty.IsReadOnly;
+
+        var hasValue = !descriptor.GetInternalProperty(KeyStrings.value, false).IsEmpty;
+        var hasWritable = !descriptor.GetInternalProperty(KeyStrings.writable, false).IsEmpty;
+        var hasEnumerable = !descriptor.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty;
+        var hasConfigurable = !descriptor.GetInternalProperty(KeyStrings.configurable, false).IsEmpty;
+
+        if (!descriptor[KeyStrings.get].IsUndefined
+            || !descriptor[KeyStrings.set].IsUndefined
+            || (hasEnumerable && descriptor[KeyStrings.enumerable].BooleanValue)
+            || (hasConfigurable && descriptor[KeyStrings.configurable].BooleanValue))
+        {
+            throw NewTypeError("Cannot redefine property");
+        }
+
+        var newWritable = hasWritable ? descriptor[KeyStrings.writable].BooleanValue : currentWritable;
+        if (!currentWritable && newWritable)
+            throw NewTypeError("Cannot redefine property");
+
+        if (!hasValue)
+        {
+            SetArrayLengthWritable(target, newWritable);
+            return;
+        }
+
+        var newLengthNumber = descriptor[KeyStrings.value].DoubleValue;
+        if (double.IsNaN(newLengthNumber)
+            || newLengthNumber < 0
+            || newLengthNumber > uint.MaxValue
+            || newLengthNumber != Math.Truncate(newLengthNumber))
+        {
+            throw NewTypeError("Invalid length");
+        }
+
+        var newLength = (uint)newLengthNumber;
+        if (newLength >= currentLength)
+        {
+            target[KeyStrings.length] = JSValue.CreateNumber(newLength);
+            SetArrayLengthWritable(target, newWritable);
+            return;
+        }
+
+        if (!currentWritable)
+            throw NewTypeError("Cannot redefine property");
+
+        for (uint i = currentLength; i > newLength; i--)
+        {
+            var index = i - 1;
+            if (!target.Delete(index).BooleanValue)
+            {
+                target[KeyStrings.length] = JSValue.CreateNumber(index + 1);
+                SetArrayLengthWritable(target, newWritable);
+                throw NewTypeError("Cannot redefine property");
+            }
+        }
+
+        target[KeyStrings.length] = JSValue.CreateNumber(newLength);
+        SetArrayLengthWritable(target, newWritable);
+    }
+
+    private static void DefineOwnProperty(JSObject target, uint index, JSObject descriptor)
+    {
+        if (target.IsArray)
+        {
+            DefineArrayProperty(target, index, descriptor);
+            return;
+        }
+
+        target.DefineProperty(index, descriptor);
+    }
+
+    private static void DefineOwnProperty(JSObject target, KeyString key, JSObject descriptor)
+    {
+        if (target.IsArray && key.Key == KeyStrings.length.Key)
+        {
+            DefineArrayLength(target, descriptor);
+            return;
+        }
+
+        target.DefineProperty(key, descriptor);
+    }
+
     [JSExport("create")]
     internal static JSValue StaticCreate(in Arguments a)
     {
@@ -139,7 +257,7 @@ public partial class JSObject
             if (item is not JSObject itemObject)
                 throw NewTypeError("Property Description must be an object");
 
-            target.DefineProperty(index, itemObject);
+            DefineOwnProperty(target, index, itemObject);
         }
 
         var properties = pdObject.GetOwnProperties(false).GetEnumerator();
@@ -149,7 +267,7 @@ public partial class JSObject
             if (item is not JSObject itemObject)
                 throw NewTypeError("Property Description must be an object");
 
-            target.DefineProperty(keyString, itemObject);
+            DefineOwnProperty(target, keyString, itemObject);
         }
 
         return target;

@@ -190,6 +190,25 @@ public partial class JSIteratorObject : JSObject
         return new JSIteratorObject(new FlatMapEnumerator(EnumeratorFrom(a.This), fn));
     }
 
+    private static IElementEnumerator GetFlattenableEnumerator(JSValue value)
+    {
+        if (value.IsString || value is not JSObject @object)
+            throw JSEngine.NewTypeError("Iterator.prototype.flatMap mapper must return an object");
+
+        var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];
+        if (iteratorMethod.IsNull || iteratorMethod.IsUndefined)
+            return GetDirectEnumerator(@object);
+
+        if (!iteratorMethod.IsFunction)
+            throw JSEngine.NewTypeError("Iterator helper requires a callable @@iterator");
+
+        var iterator = iteratorMethod.InvokeFunction(new Arguments(@object));
+        if (iterator is not JSObject iteratorObject)
+            throw JSEngine.NewTypeError("Iterator helper requires an object iterator result");
+
+        return new JSIterator(iteratorObject);
+    }
+
     internal static JSValue StaticReduce(in Arguments a)
     {
         var (fn, initialValue) = a.Get2();
@@ -519,7 +538,7 @@ public partial class JSIteratorObject : JSObject
                 if (!source.MoveNext(out var item))
                 { value = JSUndefined.Value; hasValue = false; index = 0; return false; }
 
-                _inner = fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))).GetElementEnumerator();
+                _inner = GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))));
             }
         }
 
@@ -531,7 +550,7 @@ public partial class JSIteratorObject : JSObject
                 if (!source.MoveNext(out var item))
                 { value = JSUndefined.Value; return false; }
 
-                _inner = fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))).GetElementEnumerator();
+                _inner = GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))));
             }
         }
 
@@ -542,8 +561,7 @@ public partial class JSIteratorObject : JSObject
                 if (_inner != null && _inner.MoveNext(out value)) return true;
                 if (!source.MoveNext(out var item))
                 { value = @default; return false; }
-                _inner = fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++)))
-                    .GetElementEnumerator();
+                _inner = GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))));
             }
         }
 
@@ -554,7 +572,7 @@ public partial class JSIteratorObject : JSObject
                 if (_inner != null && _inner.MoveNext(out var v)) return v;
                 if (!source.MoveNext(out var item)) return @default;
 
-                _inner = fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))).GetElementEnumerator();
+                _inner = GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))));
             }
         }
     }

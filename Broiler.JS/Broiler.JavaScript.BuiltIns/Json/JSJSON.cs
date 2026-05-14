@@ -273,11 +273,11 @@ public partial class JSJSON : JSObject
         if (indent != null)
         {
             var writer = new IndentedTextWriter(sb, indent);
-            Stringify(writer, f, replacer, writer);
+            Stringify(writer, f, replacer, writer, []);
         }
         else
         {
-            Stringify(sb, f, replacer, null);
+            Stringify(sb, f, replacer, null, []);
         }
 
         return new JSString(sb.ToString());
@@ -286,11 +286,16 @@ public partial class JSJSON : JSObject
     public static string Stringify(JSValue value)
     {
         var sb = new StringWriter();
-        Stringify(sb, value, null, null);
+        Stringify(sb, value, null, null, []);
         return sb.ToString();
     }
 
-    private static void Stringify(TextWriter sb, JSValue target, Func<(JSValue, JSValue, JSValue), JSValue> replacer, IndentedTextWriter indent)
+    private static void Stringify(
+        TextWriter sb,
+        JSValue target,
+        Func<(JSValue, JSValue, JSValue), JSValue> replacer,
+        IndentedTextWriter indent,
+        HashSet<JSObject> stack)
     {
         if (target == null || target.IsNullOrUndefined)
         {
@@ -327,6 +332,11 @@ public partial class JSJSON : JSObject
                 return;
 
             case JSArray a:
+                if (!stack.Add(a))
+                    throw JSEngine.NewTypeError("Converting circular structure to JSON");
+
+                try
+                {
                 sb.Write('[');
                 if (indent != null)
                     indent.Indent++;
@@ -343,7 +353,14 @@ public partial class JSJSON : JSObject
                     if (indent != null)
                         sb.WriteLine();
 
-                    Stringify(sb, ToJson(item), replacer, indent);
+                    var jsValue = ToJson(item);
+                    if (replacer != null)
+                        jsValue = replacer((a, JSValue.CreateString(index.ToString()), jsValue));
+
+                    if (jsValue.IsUndefined || jsValue is JSFunction)
+                        jsValue = JSNull.Value;
+
+                    Stringify(sb, jsValue, replacer, indent, stack);
                 }
 
                 if (indent != null)
@@ -354,8 +371,18 @@ public partial class JSJSON : JSObject
 
                 sb.Write(']');
                 return;
+                }
+                finally
+                {
+                    stack.Remove(a);
+                }
         }
 
+        if (!stack.Add((JSObject)target))
+            throw JSEngine.NewTypeError("Converting circular structure to JSON");
+
+        try
+        {
         sb.Write('{');
 
         if (indent != null)
@@ -410,7 +437,7 @@ public partial class JSJSON : JSObject
             if (indent != null)
                 sb.Write(' ');
 
-            Stringify(sb, jsValue, replacer, indent);
+            Stringify(sb, jsValue, replacer, indent, stack);
 
         }
 
@@ -421,6 +448,11 @@ public partial class JSJSON : JSObject
         }
 
         sb.Write('}');
+        }
+        finally
+        {
+            stack.Remove((JSObject)target);
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

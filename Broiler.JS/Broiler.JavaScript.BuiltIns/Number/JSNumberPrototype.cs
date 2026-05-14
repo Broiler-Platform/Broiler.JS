@@ -187,23 +187,20 @@ partial class JSNumber
 
         if (a.Length > 0)
         {
-            if (a.Get1() is JSNumber n1)
+            var v = a.Get1().DoubleValue;
+
+            if (double.IsNaN(v) || v > 20 || v < 0)
+                throw JSEngine.NewRangeError("toExponential() digitis argument must be between 0 and 100");
+
+            var m = (int)v;
+            if (m == 0)
             {
-                var v = n1.value;
-
-                if (double.IsNaN(v) || v > 20 || v < 0)
-                    throw JSEngine.NewRangeError("toExponential() digitis argument must be between 0 and 100");
-
-                var m = (int)v;
-                if (m == 0)
-                {
-                    // round..
-                    return new JSString(nv.ToString("0e+0"));
-                }
-
-                var fx = $"#.{new string('0', m)}{new string('#', m != 0 ? 0 : 16 - m)}e+0";
-                return new JSString(nv.ToString(fx));
+                // round..
+                return new JSString(nv.ToString("0e+0"));
             }
+
+            var fx = $"#.{new string('0', m)}{new string('#', m != 0 ? 0 : 16 - m)}e+0";
+            return new JSString(nv.ToString(fx));
         }
 
         var text = n.value.ToString("#.################e+0");

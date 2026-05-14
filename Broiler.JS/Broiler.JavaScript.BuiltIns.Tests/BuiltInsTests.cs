@@ -75,6 +75,27 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void JSON_Stringify_Circular_Replacer_Value_Throws_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              var circular = [{}];
+              try {
+                JSON.stringify(circular, function () { return circular; });
+                return "no-throw";
+              } catch (e) {
+                return e.constructor.name;
+              }
+            })();
+            """);
+
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
     public void JSON_Revoked_Proxy_Array_Checks_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -258,6 +279,48 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("TypeError|TypeError|same", result.ToString());
+    }
+
+    [Fact]
+    public void Object_DefineProperties_Array_Length_Regressions_Throw_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              function thrownCtor(fn) {
+                try {
+                  fn();
+                  return 'no-throw';
+                } catch (e) {
+                  return e.constructor.name;
+                }
+              }
+
+              var arr1 = [0, 1];
+              Object.defineProperty(arr1, '1', { value: 1, configurable: false });
+
+              var arr2 = [];
+
+              var arr3 = [1, 2, 3];
+              Object.defineProperty(arr3, 'length', { writable: false });
+
+              return [
+                thrownCtor(function () {
+                  Object.defineProperties(arr1, { length: { value: 1 } });
+                }) + ':' + arr1.length,
+                thrownCtor(function () {
+                  Object.defineProperties(arr2, { length: { configurable: true } });
+                }),
+                thrownCtor(function () {
+                  Object.defineProperties(arr3, { '3': { value: 'abc' } });
+                }) + ':' + arr3.hasOwnProperty('3')
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError:2|TypeError|TypeError:false", result.ToString());
     }
 
     [Fact]
@@ -2667,6 +2730,57 @@ public class BuiltInsTests
             [map, filterCounts.join(','), flatMapCounts.join(','), forEachCounts.join(','), reduceCounts.join(',')].join('|');
         ");
         Assert.Equal("a0,b1,c2|0,1,2|0,1,2|0,1,2|1,2", result.ToString());
+    }
+
+    [Fact]
+    public void Iterator_FlatMap_And_Number_ToExponential_TypeErrors_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              function* g() { yield 0; }
+              function* h() { yield 0; yield 1; yield 2; }
+
+              function thrownCtor(fn) {
+                try {
+                  fn();
+                  return 'no-throw';
+                } catch (e) {
+                  return e.constructor.name;
+                }
+              }
+
+              var fallback = Array.from(g().flatMap(function () {
+                var n = h();
+                return {
+                  [Symbol.iterator]: null,
+                  next: function () { return n.next(); }
+                };
+              })).join(',');
+
+              return [
+                thrownCtor(function () {
+                  for (var unused of g().flatMap(function () { return 'string'; })) { }
+                }),
+                thrownCtor(function () {
+                  var iter = g().flatMap(function () {
+                    var n = h();
+                    return {
+                      [Symbol.iterator]: 0,
+                      next: function () { return n.next(); }
+                    };
+                  });
+                  iter.next();
+                }),
+                fallback,
+                thrownCtor(function () { NaN.toExponential(Symbol('1')); })
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|0,1,2|TypeError", result.ToString());
     }
 
     // ── M3: JSWeakSet tests ──────────────────────────────────────────
