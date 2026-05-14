@@ -11,6 +11,9 @@ namespace Broiler.JavaScript.BuiltIns.Promise;
 
 public partial class JSPromise
 {
+    private static bool IsDefaultPromiseConstructor(JSValue constructor)
+        => ReferenceEquals(constructor, (JSEngine.Current as JSObject)?[KeyStrings.Promise]);
+
     private static JSValue CreatePromiseFromConstructor(JSValue constructor, Action<JSValue, JSValue> executor)
     {
         var executorFunction = new JSFunction((in Arguments executorArgs) =>
@@ -94,6 +97,9 @@ public partial class JSPromise
     public static JSValue Resolve(in Arguments a)
     {
         var value = a.Get1();
+        if (IsDefaultPromiseConstructor(a.This))
+            return new JSPromise(value, PromiseState.Resolved);
+
         return CreatePromiseFromConstructor(a.This, (resolve, _) =>
         {
             resolve.InvokeFunction(new Arguments(JSUndefined.Value, value));
@@ -104,6 +110,9 @@ public partial class JSPromise
     public static JSValue Reject(in Arguments a)
     {
         var reason = a.Get1();
+        if (IsDefaultPromiseConstructor(a.This))
+            return new JSPromise(reason, PromiseState.Rejected);
+
         return CreatePromiseFromConstructor(a.This, (_, reject) =>
         {
             reject.InvokeFunction(new Arguments(JSUndefined.Value, reason));
