@@ -22,7 +22,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         if (!input.IsString)
             throw JSEngine.NewTypeError("RegExp.escape requires a string argument");
 
-        var str = input.ToString();
+        var str = input.StringValue;
         var sb = new StringBuilder(str.Length + 4);
 
         for (int i = 0; i < str.Length; i++)
@@ -195,7 +195,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         SetObservableLastIndex(0);
 
         // Otherwise, find all matches.
-        var matches = value.Matches(input.ToString());
+        var matches = value.Matches(input.StringValue);
         if (matches.Count == 0)
             return JSValue.NullValue;
 

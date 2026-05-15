@@ -133,15 +133,7 @@ public partial class JSObject : JSValue
         {
             try
             {
-                var fx = this[KeyStrings.valueOf];
-                if (fx.IsUndefined)
-                    return CoerceToNumber(ToString());
-
-                var v = fx.InvokeFunction(new Arguments(this));
-                if (v == this)
-                    return double.NaN;
-
-                return v.DoubleValue;
+                return ToPrimitive(preferString: false).DoubleValue;
             }
             catch (JSException)
             {
@@ -151,6 +143,26 @@ public partial class JSObject : JSValue
             {
                 System.Diagnostics.Debug.WriteLine(ex);
                 return double.NaN;
+            }
+        }
+    }
+
+    public override string StringValue
+    {
+        get
+        {
+            try
+            {
+                return ToPrimitive(preferString: true).StringValue;
+            }
+            catch (JSException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+                throw;
             }
         }
     }
@@ -194,5 +206,49 @@ public partial class JSObject : JSValue
             ownp.Put(KeyStrings.length, JSValue.CreateNumber(value));
             PropertyChanged?.Invoke(this, (KeyStrings.length.Key, uint.MaxValue, null));
         }
+    }
+
+    private JSValue ToPrimitive(bool preferString)
+    {
+        var toPrimitiveSymbol = GetGlobalSymbolFactory?.Invoke("toPrimitive");
+        if (toPrimitiveSymbol != null)
+        {
+            var exoticToPrimitive = this[toPrimitiveSymbol];
+            if (!exoticToPrimitive.IsUndefined)
+            {
+                if (!exoticToPrimitive.IsFunction)
+                    throw NewTypeError("@@toPrimitive is not a function");
+
+                var hint = CreateString(preferString ? "string" : "number");
+                var primitive = exoticToPrimitive.InvokeFunction(new Arguments(this, hint));
+                if (!primitive.IsObject)
+                    return primitive;
+
+                throw NewTypeError("Cannot convert object to primitive value");
+            }
+        }
+
+        var firstMethod = preferString ? KeyStrings.toString : KeyStrings.valueOf;
+        var secondMethod = preferString ? KeyStrings.valueOf : KeyStrings.toString;
+
+        var first = TryCallPrimitiveMethod(firstMethod);
+        if (first != null)
+            return first;
+
+        var second = TryCallPrimitiveMethod(secondMethod);
+        if (second != null)
+            return second;
+
+        throw NewTypeError("Cannot convert object to primitive value");
+    }
+
+    private JSValue TryCallPrimitiveMethod(in KeyString key)
+    {
+        var method = this[key];
+        if (!method.IsFunction)
+            return null;
+
+        var primitive = method.InvokeFunction(new Arguments(this));
+        return primitive.IsObject ? null : primitive;
     }
 }

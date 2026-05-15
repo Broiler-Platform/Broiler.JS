@@ -595,7 +595,7 @@ internal static class BuiltInsAssemblyInitializer
                 throw JSEngine.NewTypeError("RegExp.prototype[Symbol.split] called on incompatible receiver");
 
             var limit = a.TryGetAt(1, out var second) ? second.UIntValue : uint.MaxValue;
-            return regExp.Split(a.Get1().ToString(), limit);
+            return regExp.Split(a.Get1().StringValue, limit);
         }, "[Symbol.split]", 2), JSPropertyAttributes.ConfigurableValue);
 
         EnsureAccessorProperty(regExpCtor.prototype, KeyStrings.GetOrCreate("dotAll"), "dotAll", static (in Arguments a) =>

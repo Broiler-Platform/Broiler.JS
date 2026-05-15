@@ -27,6 +27,6 @@ internal static class JSStringExtensions
         if (v.IsNullOrUndefined)
             throw JSEngine.NewTypeError($"String.prototype.{helper} called on null or undefined");
 
-        return v.ToString();
+        return v.StringValue;
     }
 }

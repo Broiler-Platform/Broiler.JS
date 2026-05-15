@@ -4778,6 +4778,47 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
+    [Fact]
+    public void Date_String_And_RegExp_Coercions_Propagate_TypeErrors_Like_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    (function () {
+                        var value = {};
+                        value[Symbol.toPrimitive] = function () {
+                            return Symbol.toPrimitive;
+                        };
+
+                        return thrownCtor(function () {
+                            new Date(value);
+                        });
+                    })(),
+                    thrownCtor(function () { ''.charAt(Object.create(null)); }),
+                    thrownCtor(function () { ''.charCodeAt(Object.create(null)); }),
+                    thrownCtor(function () { String.prototype.codePointAt.call(Symbol(), 1); }),
+                    thrownCtor(function () { ''.endsWith(Symbol()); }),
+                    thrownCtor(function () { /./[Symbol.search](Symbol.search); }),
+                    thrownCtor(function () { /./[Symbol.split](Symbol.split); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
+    }
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured

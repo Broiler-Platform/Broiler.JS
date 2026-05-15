@@ -14,7 +14,7 @@ public partial class JSString
     internal static JSValue Contains(in Arguments a)
     {
         var @this = a.This.AsString();
-        var arg = a.Get1().ToString();
+        var arg = a.Get1().StringValue;
         int position = a.GetIntAt(1, 0);
 
         position = Math.Min(Math.Max(0, position), @this.Length);
@@ -36,7 +36,7 @@ public partial class JSString
             throw JSEngine.NewTypeError("Substring argument must not be a regular expression.");
 
         var endPosition = a[1]?.IntegerValue ?? int.MaxValue;
-        var fs = f.ToString();
+        var fs = f.StringValue;
 
         if (endPosition == int.MaxValue)
             return @this.EndsWith(fs) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
@@ -63,7 +63,7 @@ public partial class JSString
         if (searchStr is JSRegExp)
             throw JSEngine.NewTypeError("Substring argument must not be a regular expression.");
 
-        var search = searchStr.ToString();
+        var search = searchStr.StringValue;
         if (pos == 0)
             return @this.StartsWith(search) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
 
@@ -90,7 +90,7 @@ public partial class JSString
             throw JSEngine.NewTypeError("Substring argument must not be a regular expression.");
 
         pos = Math.Min(Math.Max(pos, 0), @this.Length);
-        return @this.IndexOf(searchStr.ToString(), pos) >= 0 ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return @this.IndexOf(searchStr.StringValue, pos) >= 0 ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }
 
     [JSPrototypeMethod]
@@ -103,7 +103,7 @@ public partial class JSString
 
         pos = Math.Min(Math.Max(pos, 0), @this.Length);
 
-        var index = @this.IndexOf(searchStr.ToString(), pos);
+        var index = @this.IndexOf(searchStr.StringValue, pos);
         return JSValue.CreateNumber(index);
     }
 
@@ -127,7 +127,7 @@ public partial class JSString
             return JSValue.NumberMinusOne;
         }
 
-        return JSValue.CreateNumber(@this.LastIndexOf(searchStr.ToString(), startIndex, StringComparison.Ordinal));
+        return JSValue.CreateNumber(@this.LastIndexOf(searchStr.StringValue, startIndex, StringComparison.Ordinal));
     }
 
     [JSPrototypeMethod]
@@ -139,9 +139,9 @@ public partial class JSString
             throw JSEngine.NewTypeError("String.prototype.localeCompare called on null or undefined");
 
         var (compareString, locale, options) = a.Get3();
-        var str = compareString.ToString();
+        var str = compareString.StringValue;
 
-        CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.ToString());
+        CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.StringValue);
 
         return JSValue.CreateNumber(string.Compare(@this.ToString(), str, culture, 0));
     }
@@ -168,7 +168,7 @@ public partial class JSString
         }
 
         //is String
-        var index = @this.IndexOf(search.ToString());
+        var index = @this.IndexOf(search.StringValue);
         return JSValue.CreateNumber(index);
     }
 }

@@ -21,7 +21,7 @@ public partial class JSString
         if (reg is JSRegExp jSRegExp)
             return jSRegExp.Match(@this);
 
-        var pattern = reg.IsNullOrUndefined ? "" : reg.ToString();
+        var pattern = reg.IsNullOrUndefined ? "" : reg.StringValue;
         return new JSRegExp(pattern, "").Match(@this);
     }
 
@@ -35,8 +35,8 @@ public partial class JSString
             return new JSString(jSRegExp.Replace(@this, s));
 
         // Find the first occurrance of substr.
-        var substr = f.ToString();
-        var replaceText = s.IsFunction ? s.InvokeFunction(Arguments.Empty).ToString() : s.ToString();
+        var substr = f.StringValue;
+        var replaceText = s.IsFunction ? s.InvokeFunction(Arguments.Empty).StringValue : s.StringValue;
         int start = @this.IndexOf(substr, StringComparison.Ordinal);
         if (start == -1)
             return a.This;
@@ -74,7 +74,7 @@ public partial class JSString
         if (_separator is JSRegExp jSRegExp)
             return jSRegExp.Split(@this, limitMax);
 
-        var separator = _separator.ToString();
+        var separator = _separator.StringValue;
         var result = JSValue.CreateArray();
         if (string.IsNullOrEmpty(separator))
         {

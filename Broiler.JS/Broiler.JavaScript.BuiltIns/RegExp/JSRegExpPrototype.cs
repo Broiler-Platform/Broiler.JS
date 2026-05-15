@@ -68,7 +68,7 @@ public partial class JSRegExp
     [JSExport("test")]
     public JSValue Test(in Arguments a)
     {
-        var text = a.Get1().ToString();
+        var text = a.Get1().StringValue;
         var startPosition = CalculateStartPosition(text);
         var match = value.Match(text, startPosition);
 
@@ -92,7 +92,7 @@ public partial class JSRegExp
     [JSExport("exec")]
     public JSValue Exec(in Arguments a)
     {
-        var input = a.Get1().ToString();
+        var input = a.Get1().StringValue;
         // Perform the regular expression matching.
         var startPosition = CalculateStartPosition(input);
         var match = value.Match(input, startPosition);

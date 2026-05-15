@@ -26,23 +26,7 @@ public partial class JSObject
 
     internal override PropertyKey ToKey(bool create = true)
     {
-        var toString = GetMethod(KeyStrings.toString);
-        if (toString != null)
-        {
-            var primitive = toString(new Arguments(this));
-            if (!primitive.IsObject)
-                return primitive.ToKey(create);
-        }
-
-        var valueOf = GetMethod(KeyStrings.valueOf);
-        if (valueOf != null)
-        {
-            var primitive = valueOf(new Arguments(this));
-            if (!primitive.IsObject)
-                return primitive.ToKey(create);
-        }
-
-        throw NewTypeError("Cannot convert object to primitive value");
+        return CreateString(StringValue).ToKey(create);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

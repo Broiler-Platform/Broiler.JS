@@ -98,7 +98,7 @@ public partial class JSDate
                 return;
             }
 
-            date = DateParser.Parse(primitive.ToString());
+            date = DateParser.Parse(primitive.StringValue);
 
             if (date == DateTimeOffset.MinValue)
             {
