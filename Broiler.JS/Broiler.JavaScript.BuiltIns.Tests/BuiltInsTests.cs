@@ -904,6 +904,47 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Proxy_Set_Forwards_ThrowError_To_Proxy_Targets()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var target = {};
+                Object.defineProperty(target, 'value', {
+                    value: 1,
+                    writable: false,
+                    configurable: true
+                });
+
+                var inner = new Proxy(target, {});
+                var outer = new Proxy(inner, {});
+
+                return [
+                    thrownCtor(function () {
+                        (function () {
+                            'use strict';
+                            outer.value = 2;
+                        })();
+                    }),
+                    Reflect.set(outer, 'value', 2) ? 'true' : 'false'
+                ].join('|');
+            })();
+        ");
+
+        Assert.Equal("TypeError|false", result.ToString());
+    }
+
+    [Fact]
     public void Proxy_Revoked_Construct_Throws_TypeError_When_NewTarget_Prototype_Is_Resolved()
     {
         EnsureBuiltInsLoaded();
@@ -3086,6 +3127,44 @@ public class BuiltInsTests
             [first, afterFirst, second, afterSecond, third, re.lastIndex].join('|');
         ");
         Assert.Equal("false|0|true|2|false|0", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Observable_LastIndex_Writes_Throw_For_Exec_And_Match()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    (function () {
+                        var re = /b/y;
+                        Object.defineProperty(re, 'lastIndex', { value: 1, writable: false });
+                        return thrownCtor(function () {
+                            re.exec('ab');
+                        });
+                    })(),
+                    (function () {
+                        var re = /a/g;
+                        Object.defineProperty(re, 'lastIndex', { value: 0, writable: false });
+                        return thrownCtor(function () {
+                            'a'.match(re);
+                        });
+                    })()
+                ].join('|');
+            })();
+        ");
+
+        Assert.Equal("TypeError|TypeError", result.ToString());
     }
 
     [Fact]

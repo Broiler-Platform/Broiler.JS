@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.Engine.Core;
+﻿using System;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using System.Runtime.CompilerServices;
 
@@ -6,6 +7,26 @@ namespace Broiler.JavaScript.BuiltIns.RegExp;
 
 public partial class JSRegExp
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int GetObservableLastIndex()
+    {
+        var observableLastIndex = this[KeyStrings.lastIndex].DoubleValue;
+        if (double.IsNaN(observableLastIndex) || observableLastIndex <= 0)
+            return 0;
+
+        if (observableLastIndex >= int.MaxValue)
+            return int.MaxValue;
+
+        return (int)observableLastIndex;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void SetObservableLastIndex(int value)
+    {
+        this[KeyStrings.lastIndex] = JSValue.CreateNumber(value);
+        lastIndex = value;
+    }
+
     [JSExport("compile", Length = 2)]
     public JSValue Compile(in Arguments a)
     {
@@ -57,13 +78,13 @@ public partial class JSRegExp
         if (match.Success)
         {
             if (globalSearch || sticky)
-                lastIndex = match.Index + match.Length;
+                SetObservableLastIndex(match.Index + match.Length);
 
             return JSValue.BooleanTrue;
         }
 
         if (globalSearch || sticky)
-            lastIndex = 0;
+            SetObservableLastIndex(0);
 
         return JSValue.BooleanFalse;
     }
@@ -84,13 +105,13 @@ public partial class JSRegExp
         {
             // Reset the lastIndex property.
             if (globalSearch || sticky)
-                lastIndex = 0;
+                SetObservableLastIndex(0);
 
             return JSValue.NullValue;
         }
 
         if (globalSearch || sticky)
-            lastIndex = match.Index + match.Length;
+            SetObservableLastIndex(match.Index + match.Length);
 
         var groups = match.Groups;
         var c = groups.Count;
@@ -151,7 +172,7 @@ public partial class JSRegExp
         if (!globalSearch && !sticky)
             return 0;
 
-        var maxIndex = lastIndex > 0 ? lastIndex : 0;
+        var maxIndex = GetObservableLastIndex();
         var minIndex = maxIndex < input.Length ? maxIndex : input.Length;
 
         return minIndex;

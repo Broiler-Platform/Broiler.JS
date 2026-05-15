@@ -192,6 +192,8 @@ public partial class JSRegExp : JSObject, IJSRegExp
             return Exec(arg);
         }
 
+        SetObservableLastIndex(0);
+
         // Otherwise, find all matches.
         var matches = value.Matches(input.ToString());
         if (matches.Count == 0)

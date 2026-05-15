@@ -479,7 +479,7 @@ public partial class JSProxy : JSObject
             return true;
         }
 
-        return target.SetValue(name, value, receiver, false);
+        return target.SetValue(name, value, receiver, throwError);
     }
 
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
@@ -496,7 +496,7 @@ public partial class JSProxy : JSObject
             return true;
         }
 
-        return target.SetValue(name, value, receiver, false);
+        return target.SetValue(name, value, receiver, throwError);
     }
 
     public override bool SetValue(uint name, JSValue value, JSValue receiver, bool throwError = true)
@@ -513,7 +513,7 @@ public partial class JSProxy : JSObject
             return true;
         }
 
-        return target.SetValue(name, value, receiver, false);
+        return target.SetValue(name, value, receiver, throwError);
     }
 
     public override JSValue GetPrototypeOf()
