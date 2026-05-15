@@ -594,6 +594,40 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Reflect_DefineProperty_And_DeleteProperty_Throw_TypeError_For_Invalid_Arguments()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () { Reflect.defineProperty(1, 'p', {}); }),
+                    thrownCtor(function () { Reflect.defineProperty(null, 'p', {}); }),
+                    thrownCtor(function () { Reflect.defineProperty(undefined, 'p', {}); }),
+                    thrownCtor(function () { Reflect.defineProperty('', 'p', {}); }),
+                    thrownCtor(function () { Reflect.defineProperty(Symbol(), 'p', {}); }),
+                    thrownCtor(function () { Reflect.defineProperty({}, 'p', 1); }),
+                    thrownCtor(function () { Reflect.deleteProperty(1, 'p'); }),
+                    thrownCtor(function () { Reflect.deleteProperty(null, 'p'); }),
+                    thrownCtor(function () { Reflect.deleteProperty(undefined, 'p'); }),
+                    thrownCtor(function () { Reflect.deleteProperty('', 'p'); })
+                ].join('|');
+            })();
+        ");
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Reflect_PreventExtensions_Works()
     {
         EnsureBuiltInsLoaded();
