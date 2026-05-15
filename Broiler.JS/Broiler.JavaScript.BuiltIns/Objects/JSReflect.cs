@@ -128,7 +128,7 @@ public partial class JSReflect : JSObject
         if (target is not JSObject)
             throw JSEngine.NewTypeError($"Not an object");
 
-        return propertyKey.IsIn(target);
+        return target.HasProperty(propertyKey);
     }
 
     [JSExport(Length = 1)]

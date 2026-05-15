@@ -512,6 +512,20 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue GetOwnPropertyDescriptor(JSValue name) => throw new NotImplementedException();
 
+    public virtual JSValue HasProperty(JSValue propertyKey)
+    {
+        if (this is not JSObject target)
+            throw NewTypeError($"Cannot use 'in' operator to search for '{propertyKey}' in {this}");
+
+        for (JSValue prototype = target; prototype is JSObject prototypeObject; prototype = prototypeObject.GetPrototypeOf())
+        {
+            if (!prototypeObject.GetOwnPropertyDescriptor(propertyKey).IsUndefined)
+                return BooleanTrue;
+        }
+
+        return BooleanFalse;
+    }
+
     /// <summary>
     /// Resolves a <see cref="JSProperty"/> to its runtime value, invoking
     /// getters via the <see cref="InvokePropertyGetter"/> factory delegate.

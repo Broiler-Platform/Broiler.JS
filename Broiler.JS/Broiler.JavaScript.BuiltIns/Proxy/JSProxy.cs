@@ -18,6 +18,7 @@ namespace Broiler.JavaScript.BuiltIns.Proxy;
 public partial class JSProxy : JSObject
 {
     private static readonly KeyString ConstructTrapKey = KeyStrings.GetOrCreate("construct");
+    private static readonly KeyString HasTrapKey = KeyStrings.GetOrCreate("has");
     private static readonly KeyString IsExtensibleTrapKey = KeyStrings.GetOrCreate("isExtensible");
     private static readonly KeyString PreventExtensionsTrapKey = KeyStrings.GetOrCreate("preventExtensions");
     private static readonly KeyString GetOwnPropertyDescriptorTrapKey = KeyStrings.GetOrCreate("getOwnPropertyDescriptor");
@@ -250,6 +251,16 @@ public partial class JSProxy : JSObject
 
         if (!property.IsConfigurable || !target.IsExtensible())
             throw JSEngine.NewTypeError("Proxy deleteProperty trap violated target invariants");
+    }
+
+    private static void ValidateHasInvariant(JSObject target, in PropertyKey key)
+    {
+        var property = GetOwnTargetProperty(target, in key);
+        if (property.IsEmpty)
+            return;
+
+        if (!property.IsConfigurable || !target.IsExtensible())
+            throw JSEngine.NewTypeError("Proxy has trap violated target invariants");
     }
 
     private static void ValidateGetOwnPropertyDescriptorInvariant(JSObject target, in PropertyKey key, JSValue trapResult)
@@ -524,6 +535,23 @@ public partial class JSProxy : JSObject
         return target.GetPrototypeOf();
     }
 
+    public override JSValue HasProperty(JSValue propertyKey)
+    {
+        var target = RequireTarget();
+        var fx = GetTrap(HasTrapKey);
+        if (!fx.IsUndefined)
+        {
+            var result = fx.InvokeFunction(new Arguments(handler, target, propertyKey));
+            if (result.BooleanValue)
+                return JSBoolean.True;
+
+            ValidateHasInvariant(target, propertyKey.ToKey(false));
+            return JSBoolean.False;
+        }
+
+        return target.HasProperty(propertyKey);
+    }
+
     public override bool IsExtensible()
     {
         var target = RequireTarget();
@@ -599,7 +627,10 @@ public partial class JSProxy : JSObject
                 if (!hasValue)
                     continue;
 
-                var key = value.ToKey();
+                if (!value.IsString && !value.IsSymbol)
+                    throw JSEngine.NewTypeError("Proxy ownKeys trap must return only string and symbol keys");
+
+                var key = value.ToKey(false);
                 var identity = CreateKeyIdentity(key);
                 if (!seenKeys.Add(identity))
                     throw JSEngine.NewTypeError("Proxy ownKeys trap cannot report duplicate keys");

@@ -709,6 +709,64 @@ public class BuiltInsTests
         Assert.Equal("ok:true|throw:TypeError", result.ToString());
     }
 
+    [Fact]
+    public void Proxy_Has_Trap_Is_Used_And_Enforces_Target_Invariants()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        return 'ok:' + fn();
+                    } catch (e) {
+                        return 'throw:' + e.constructor.name;
+                    }
+                }
+
+                var intercepted = [];
+                var interceptedHandler = {
+                    has: function(target, key) {
+                        intercepted.push(String(this === interceptedHandler) + ':' + key);
+                        return key === 'virtual';
+                    }
+                };
+                var interceptedProxy = new Proxy({}, interceptedHandler);
+
+                var nonCallableTrap = new Proxy({}, { has: 1 });
+
+                var fixedTarget = {};
+                Object.defineProperty(fixedTarget, 'fixed', {
+                    value: 1,
+                    configurable: false
+                });
+                var fixedProxy = new Proxy(fixedTarget, {
+                    has: function() {
+                        return false;
+                    }
+                });
+
+                var sealedTarget = { missing: 1 };
+                Object.preventExtensions(sealedTarget);
+                var sealedProxy = new Proxy(sealedTarget, {
+                    has: function() {
+                        return false;
+                    }
+                });
+
+                return [
+                    thrownCtor(function () { return 'virtual' in interceptedProxy; }),
+                    intercepted.join(','),
+                    thrownCtor(function () { return Reflect.has(nonCallableTrap, 'x'); }),
+                    thrownCtor(function () { return Reflect.has(fixedProxy, 'fixed'); }),
+                    thrownCtor(function () { return Reflect.has(sealedProxy, 'missing'); })
+                ].join('|');
+            })();
+        ");
+
+        Assert.Equal("ok:true|true:virtual|throw:TypeError|throw:TypeError|throw:TypeError", result.ToString());
+    }
+
     // ── M2: JSProxy tests ────────────────────────────────────────────
 
     [Fact]
@@ -918,6 +976,46 @@ public class BuiltInsTests
             }
         ");
         Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Proxy_OwnKeys_Trap_Rejects_Non_String_And_Non_Symbol_Entries()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                function ownKeysResult(value) {
+                    return thrownCtor(function () {
+                        Reflect.ownKeys(new Proxy({}, {
+                            ownKeys: function () {
+                                return [value];
+                            }
+                        }));
+                    });
+                }
+
+                return [
+                    ownKeysResult([]),
+                    ownKeysResult(true),
+                    ownKeysResult(null),
+                    ownKeysResult({}),
+                    ownKeysResult(undefined),
+                    ownKeysResult(1)
+                ].join('|');
+            })();
+        ");
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
     [Fact]
