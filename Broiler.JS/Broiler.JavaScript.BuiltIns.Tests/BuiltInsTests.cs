@@ -4414,6 +4414,24 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Numeric_String_Property_Access_Resolves_Element_Backed_Object_Properties()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                return [
+                    String(({ 0: null })['0']),
+                    String((new Proxy({ 0: null }, {}))['0'])
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("null|null", result.ToString());
+    }
+
+    [Fact]
     public void Generator_Throw_Propagates_And_Resumes_Like_Test262()
     {
         EnsureBuiltInsLoaded();

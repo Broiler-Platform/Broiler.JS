@@ -381,6 +381,10 @@ public partial class JSObject
         if (!p.IsEmpty)
             return (receiver ?? this).GetValue(p);
 
+        var propertyKey = JSObjectCoreExtensions.KeyStringToJSValue(key).ToKey(false);
+        if (propertyKey.Type == KeyType.UInt)
+            return GetValue(propertyKey.Index, receiver, throwError);
+
         return base.GetValue(key, receiver, throwError);
     }
 
