@@ -4182,6 +4182,181 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void CopyWithin_Date_Bind_And_Json_Parse_Preserve_Test262_Abrupt_Completions()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var copyWithinHas = thrownCtor(function () {
+                    var proxy = new Proxy({ 0: 42, length: 1 }, {
+                        has: function () {
+                            throw new Test262Error();
+                        }
+                    });
+                    Array.prototype.copyWithin.call(proxy, 0, 0);
+                });
+
+                var dateToPrimitiveGet = thrownCtor(function () {
+                    var value = Object.defineProperty({}, Symbol.toPrimitive, {
+                        get: function () {
+                            throw new Test262Error();
+                        }
+                    });
+                    new Date(value);
+                });
+
+                var dateToPrimitiveCall = thrownCtor(function () {
+                    var value = {};
+                    value[Symbol.toPrimitive] = function () {
+                        throw new Test262Error();
+                    };
+                    new Date(value);
+                });
+
+                var copiedDate = (function () {
+                    var poisonedDate = new Date(1234);
+                    Object.defineProperty(poisonedDate, Symbol.toPrimitive, {
+                        get: function () {
+                            throw new Test262Error();
+                        }
+                    });
+                    return String(new Date(poisonedDate).valueOf() === 1234);
+                })();
+
+                var bindName = thrownCtor(function () {
+                    var target = Object.defineProperty(function () {}, 'name', {
+                        get: function () {
+                            throw new Test262Error();
+                        }
+                    });
+                    target.bind();
+                });
+
+                var jsonArrayLength = thrownCtor(function () {
+                    var badLength = new Proxy([], {
+                        get: function (_, name) {
+                            if (name === 'length') {
+                                throw new Test262Error();
+                            }
+                        }
+                    });
+
+                    JSON.parse('[0,0]', function () {
+                        this[1] = badLength;
+                    });
+                });
+
+                var jsonArrayDefine = thrownCtor(function () {
+                    var badDefine = new Proxy([null], {
+                        defineProperty: function () {
+                            throw new Test262Error();
+                        }
+                    });
+
+                    JSON.parse('["first", null]', function (_, value) {
+                        if (value === 'first') {
+                            this[1] = badDefine;
+                        }
+                        return value;
+                    });
+                });
+
+                var jsonObjectKeys = thrownCtor(function () {
+                    var badKeys = new Proxy({}, {
+                        ownKeys: function () {
+                            throw new Test262Error();
+                        }
+                    });
+
+                    JSON.parse('[0,0]', function () {
+                        this[1] = badKeys;
+                    });
+                });
+
+                return [
+                    copyWithinHas,
+                    dateToPrimitiveGet,
+                    dateToPrimitiveCall,
+                    copiedDate,
+                    bindName,
+                    jsonArrayLength,
+                    jsonArrayDefine,
+                    jsonObjectKeys
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("Test262Error|Test262Error|Test262Error|true|Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
+    }
+
+    [Fact]
+    public void Generator_Throw_Propagates_And_Resumes_Like_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                var uncaught = (function () {
+                    var unreachable = 0;
+                    function* g() {
+                        yield 1;
+                        unreachable += 1;
+                        try {
+                            yield 2;
+                        } catch (e) {
+                            yield e;
+                        }
+                    }
+
+                    var iter = g();
+                    iter.next();
+
+                    try {
+                        iter.throw(new Test262Error());
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name + '|' + unreachable;
+                    }
+                })();
+
+                var caught = (function () {
+                    function* g() {
+                        try {
+                            yield 1;
+                        } catch (e) {
+                            return e.constructor.name;
+                        }
+                    }
+
+                    var iter = g();
+                    iter.next();
+                    var result = iter.throw(new Test262Error());
+                    return result.value + '|' + result.done;
+                })();
+
+                return uncaught + '||' + caught;
+            })();
+            """);
+
+        Assert.Equal("Test262Error|0||Test262Error|true", result.ToString());
+    }
+
+    [Fact]
     public void Array_FinalizationRegistry_And_Function_TypeError_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();

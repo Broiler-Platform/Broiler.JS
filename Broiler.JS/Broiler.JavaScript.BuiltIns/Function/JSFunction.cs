@@ -291,6 +291,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         if (a.This is not JSFunction fOriginal)
             throw JSEngine.NewTypeError($"{a.This} is not a function");
 
+        var targetName = fOriginal[KeyStrings.name];
+        var boundName = targetName.IsString ? $"bound {targetName.StringValue}" : "bound";
         var copy = a;
         var fx = new JSFunction((in Arguments a2) => { return fOriginal.InvokeFunction(copy.CopyForBind(a2)); })
         {
@@ -299,6 +301,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             prototype = fOriginal.prototype,
             constructor = fOriginal.constructor
         };
+        fx.FastAddValue(KeyStrings.name, JSValue.CreateString(boundName), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         return fx;
     }

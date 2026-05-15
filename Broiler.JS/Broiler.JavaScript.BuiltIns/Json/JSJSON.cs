@@ -14,6 +14,8 @@ using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.BuiltIns.Proxy;
+using Broiler.JavaScript.BuiltIns.Symbol;
 
 namespace Broiler.JavaScript.BuiltIns.Json;
 
@@ -27,6 +29,88 @@ public delegate JSValue JsonParserReceiverWithSource((JSObject holder, string ke
 [JSClassGenerator("JSON"), JSInternalObject]
 public partial class JSJSON : JSObject
 {
+    private const double MaxArrayLikeLength = 9007199254740991d;
+
+    private static JSValue ToNumberPrimitive(JSValue value)
+    {
+        if (value is not JSObject @object)
+            return value;
+
+        var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
+        if (!toPrimitive.IsUndefined)
+        {
+            var primitive = toPrimitive.InvokeFunction(new Arguments(@object, JSConstants.Number));
+            if (primitive.IsObject)
+                throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+
+            return primitive;
+        }
+
+        if (@object[KeyStrings.valueOf] is IJSFunction valueOf)
+        {
+            var primitive = valueOf.InvokeFunction(new Arguments(@object));
+            if (!primitive.IsObject)
+                return primitive;
+        }
+
+        if (@object[KeyStrings.toString] is IJSFunction toString)
+        {
+            var primitive = toString.InvokeFunction(new Arguments(@object));
+            if (!primitive.IsObject)
+                return primitive;
+        }
+
+        throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+    }
+
+    private static long ToLength(JSValue value)
+    {
+        if (value == null || value.IsUndefined)
+            return 0;
+
+        var length = ToNumberPrimitive(value).DoubleValue;
+        if (double.IsNaN(length) || length <= 0)
+            return 0;
+
+        if (double.IsPositiveInfinity(length) || length >= MaxArrayLikeLength)
+            return (long)MaxArrayLikeLength;
+
+        return (long)Math.Floor(length);
+    }
+
+    private static long GetArrayLength(JSObject valueObject)
+    {
+        if (valueObject is JSProxy proxy && proxy.IsArray && !proxy.HasTrap(KeyStrings.get))
+            return proxy.Target.Length;
+
+        return ToLength(valueObject[KeyStrings.length]);
+    }
+
+    private static List<string> EnumerableOwnPropertyNames(JSObject valueObject)
+    {
+        List<string> propertyKeys = [];
+        var properties = valueObject.GetAllKeys(showEnumerableOnly: true, inherited: false);
+        while (properties.MoveNext(out var hasValue, out var propertyKey, out var _))
+        {
+            if (!hasValue || propertyKey.IsSymbol)
+                continue;
+
+            propertyKeys.Add(propertyKey.ToString());
+        }
+
+        return propertyKeys;
+    }
+
+    private static void CreateDataPropertyOrThrow(JSObject target, JSValue key, JSValue value)
+    {
+        var descriptor = new JSObject();
+        descriptor.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.writable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.enumerable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.configurable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
+        target.DefineProperty(key, descriptor);
+    }
+
     private static void RecordSource(
         Dictionary<JSObject, Dictionary<string, string>> sourceMap,
         JSObject holder,
@@ -76,33 +160,25 @@ public partial class JSJSON : JSObject
         {
             if (valueObject.IsArray)
             {
-                var length = (uint)Math.Max(valueObject.Length, 0);
+                var length = GetArrayLength(valueObject);
                 for (uint index = 0; index < length; index++)
                 {
                     var revived = InternalizeJsonProperty(valueObject, index, reviver, sourceMap);
                     if (revived.IsUndefined)
                         valueObject.Delete(index);
                     else
-                        valueObject[index] = revived;
+                        CreateDataPropertyOrThrow(valueObject, JSValue.CreateNumber(index), revived);
                 }
             }
             else
             {
-                List<KeyString> propertyKeys = [];
-                var properties = valueObject.GetOwnProperties(false).GetEnumerator();
-                while (properties.MoveNext(out var keyString, out var property))
+                foreach (var propertyKey in EnumerableOwnPropertyNames(valueObject))
                 {
-                    if (!property.IsEmpty)
-                        propertyKeys.Add(keyString);
-                }
-
-                foreach (var propertyKey in propertyKeys)
-                {
-                    var revived = InternalizeJsonProperty(valueObject, propertyKey.ToString(), reviver, sourceMap, null);
+                    var revived = InternalizeJsonProperty(valueObject, propertyKey, reviver, sourceMap, null);
                     if (revived.IsUndefined)
                         valueObject.Delete(propertyKey);
                     else
-                        valueObject[propertyKey] = revived;
+                        CreateDataPropertyOrThrow(valueObject, JSValue.CreateString(propertyKey), revived);
                 }
             }
 
@@ -139,33 +215,25 @@ public partial class JSJSON : JSObject
         {
             if (valueObject.IsArray)
             {
-                var length = (uint)Math.Max(valueObject.Length, 0);
+                var length = GetArrayLength(valueObject);
                 for (uint childIndex = 0; childIndex < length; childIndex++)
                 {
                     var revived = InternalizeJsonProperty(valueObject, childIndex, reviver, sourceMap);
                     if (revived.IsUndefined)
                         valueObject.Delete(childIndex);
                     else
-                        valueObject[childIndex] = revived;
+                        CreateDataPropertyOrThrow(valueObject, JSValue.CreateNumber(childIndex), revived);
                 }
             }
             else
             {
-                List<KeyString> propertyKeys = [];
-                var properties = valueObject.GetOwnProperties(false).GetEnumerator();
-                while (properties.MoveNext(out var keyString, out var property))
+                foreach (var propertyKey in EnumerableOwnPropertyNames(valueObject))
                 {
-                    if (!property.IsEmpty)
-                        propertyKeys.Add(keyString);
-                }
-
-                foreach (var propertyKey in propertyKeys)
-                {
-                    var revived = InternalizeJsonProperty(valueObject, propertyKey.ToString(), reviver, sourceMap, null);
+                    var revived = InternalizeJsonProperty(valueObject, propertyKey, reviver, sourceMap, null);
                     if (revived.IsUndefined)
                         valueObject.Delete(propertyKey);
                     else
-                        valueObject[propertyKey] = revived;
+                        CreateDataPropertyOrThrow(valueObject, JSValue.CreateString(propertyKey), revived);
                 }
             }
 
