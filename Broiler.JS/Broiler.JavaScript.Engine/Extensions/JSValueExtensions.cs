@@ -240,14 +240,14 @@ public static partial class JSValueExtensions
         return p.InstanceOf(value);
     }
 
-    public static JSValue IsIn(this JSValue target, JSValue value)
+    public static JSValue IsIn(this JSValue propertyKey, JSValue value)
     {
         if (value is not JSObject tx)
-            throw JSEngine.NewTypeError($"Cannot use 'in' operator to search for '{target}' in {value}");
+            throw JSEngine.NewTypeError($"Cannot use 'in' operator to search for '{propertyKey}' in {value}");
 
         for (JSValue prototype = tx; prototype is JSObject @object; prototype = @object.GetPrototypeOf())
         {
-            if (!@object.GetOwnPropertyDescriptor(target).IsUndefined)
+            if (!@object.GetOwnPropertyDescriptor(propertyKey).IsUndefined)
                 return JSValue.BooleanTrue;
         }
 
