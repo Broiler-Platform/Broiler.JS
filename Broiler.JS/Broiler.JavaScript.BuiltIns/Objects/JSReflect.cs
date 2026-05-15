@@ -67,7 +67,7 @@ public partial class JSReflect : JSObject
     {
         var (target, propertyKey, attributes) = a.Get3();
         if (target is not JSObject targetObject)
-            throw JSEngine.NewTypeError($"Not an object");
+            throw JSEngine.NewTypeError("Reflect.defineProperty called on non-object");
 
         if (targetObject is not JSProxy && !targetObject.IsExtensible())
             return JSBoolean.False;
@@ -84,7 +84,7 @@ public partial class JSReflect : JSObject
     {
         var (target, propertyKey) = a.Get2();
         if (target is not JSObject @object)
-            throw JSEngine.NewTypeError($"Not an object");
+            throw JSEngine.NewTypeError("Reflect.deleteProperty called on non-object");
 
         var result = @object.Delete(propertyKey);
         return result.IsBoolean ? result : JSBoolean.True;
