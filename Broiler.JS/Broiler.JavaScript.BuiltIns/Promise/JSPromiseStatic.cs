@@ -28,7 +28,6 @@ public partial class JSPromise
         {
             resolve = executorArgs.Get1();
             reject = executorArgs.GetAt(1);
-            executor(resolve, reject);
             return JSUndefined.Value;
         }, "executor", "function executor() { [native] }", length: 2, createPrototype: false);
 
@@ -36,6 +35,7 @@ public partial class JSPromise
         if (!resolve.IsFunction || !reject.IsFunction)
             throw JSEngine.NewTypeError("Promise capability executor did not provide callable resolve and reject functions");
 
+        executor(resolve, reject);
         return promise;
     }
 

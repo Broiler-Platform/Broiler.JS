@@ -4302,6 +4302,118 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void GroupBy_Object_Assign_Object_Prototype_Promise_And_RegExp_Preserve_Test262_Abrupt_Completions()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext(JavaScriptFeatureFlags.ObjectMapGroupBy);
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var objectGroupBy = thrownCtor(function () {
+                    Object.groupBy({
+                        [Symbol.iterator]: function () { return this; },
+                        next: function () { throw new Test262Error(); }
+                    }, function () {
+                        return 'group';
+                    });
+                });
+
+                var mapGroupBy = thrownCtor(function () {
+                    Map.groupBy({
+                        [Symbol.iterator]: function () { return this; },
+                        next: function () { throw new Test262Error(); }
+                    }, function () {
+                        return 'group';
+                    });
+                });
+
+                var assignOwnKeys = thrownCtor(function () {
+                    Object.assign({}, new Proxy({}, {
+                        ownKeys: function () {
+                            throw new Test262Error();
+                        }
+                    }));
+                });
+
+                var objectToString = thrownCtor(function () {
+                    Object.defineProperty({}, Symbol.toStringTag, {
+                        get: function () {
+                            throw new Test262Error();
+                        }
+                    }).toString();
+                });
+
+                var protoGet = thrownCtor(function () {
+                    var get = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__').get;
+                    var subject = new Proxy({}, {
+                        getPrototypeOf: function () {
+                            throw new Test262Error();
+                        }
+                    });
+                    get.call(subject);
+                });
+
+                var promiseResolve = thrownCtor(function () {
+                    var P = function (executor) {
+                        return new Promise(function () {
+                            executor(function () {
+                                throw new Test262Error();
+                            }, function () {});
+                        });
+                    };
+
+                    Promise.resolve.call(P);
+                });
+
+                var regExpFlags = thrownCtor(function () {
+                    var obj = {};
+                    Object.defineProperty(obj, 'flags', {
+                        get: function () {
+                            throw new Test262Error();
+                        }
+                    });
+                    obj[Symbol.match] = true;
+                    new RegExp(obj);
+                });
+
+                var regExpMatch = thrownCtor(function () {
+                    var re = /./;
+                    Object.defineProperty(re, 'global', {
+                        get: function () {
+                            throw new Test262Error();
+                        }
+                    });
+
+                    RegExp.prototype[Symbol.match].call(re);
+                });
+
+                return [
+                    objectGroupBy,
+                    mapGroupBy,
+                    assignOwnKeys,
+                    objectToString,
+                    protoGet,
+                    promiseResolve,
+                    regExpFlags,
+                    regExpMatch
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
+    }
+
+    [Fact]
     public void Generator_Throw_Propagates_And_Resumes_Like_Test262()
     {
         EnsureBuiltInsLoaded();

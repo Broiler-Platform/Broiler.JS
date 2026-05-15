@@ -15,6 +15,19 @@ public partial class JSRegExp : JSObject, IJSRegExp
     string IJSRegExp.Flags => flags;
     Regex IJSRegExp.Value => value;
 
+    private static bool IsRegExpLike(JSValue value)
+    {
+        if (value is JSRegExp)
+            return true;
+
+        var matchSymbol = GetGlobalSymbolFactory?.Invoke("match");
+        if (value is not JSObject @object || matchSymbol == null)
+            return false;
+
+        var matcher = @object[matchSymbol];
+        return !matcher.IsUndefined && matcher.BooleanValue;
+    }
+
     [JSExport("escape", Length = 1)]
     internal static JSValue Escape(in Arguments a)
     {
@@ -159,12 +172,28 @@ public partial class JSRegExp : JSObject, IJSRegExp
     {
         var pattern = "";
         var flags = "";
+        var patternValue = a.GetAt(0);
 
         if (a.Length > 0)
-            pattern = a.GetAt(0).StringValue;
+        {
+            if (IsRegExpLike(patternValue))
+            {
+                var regExpLike = (JSObject)patternValue;
+                var sourceKey = KeyStrings.GetOrCreate("source");
+                var flagsKey = KeyStrings.GetOrCreate("flags");
+                pattern = regExpLike[sourceKey].IsUndefined ? string.Empty : regExpLike[sourceKey].StringValue;
+                flags = a.Length > 1 && !a.GetAt(1).IsUndefined
+                    ? a.GetAt(1).StringValue
+                    : (regExpLike[flagsKey].IsUndefined ? string.Empty : regExpLike[flagsKey].StringValue);
+            }
+            else
+            {
+                pattern = patternValue.StringValue;
 
-        if (a.Length > 1)
-            flags = a.GetAt(1).StringValue;
+                if (a.Length > 1)
+                    flags = a.GetAt(1).StringValue;
+            }
+        }
 
         this.pattern = pattern;
 
@@ -185,8 +214,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// <returns> An array containing the matched strings. </returns>
     public JSValue Match(JSValue input)
     {
+        var isGlobal = this[KeyStrings.GetOrCreate("global")].BooleanValue;
+
         // If the global flag is not set, returns a single match.
-        if (globalSearch == false)
+        if (!isGlobal)
         {
             var arg = new Arguments(this, input);
             return Exec(arg);

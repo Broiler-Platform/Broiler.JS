@@ -142,7 +142,7 @@ public partial class JSObject : JSValue
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex);
-                return double.NaN;
+                throw JSException.From(ex);
             }
         }
     }
@@ -194,7 +194,7 @@ public partial class JSObject : JSValue
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex);
-                return -1;
+                throw JSException.From(ex);
             }
         }
         set

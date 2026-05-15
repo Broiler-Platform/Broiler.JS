@@ -57,6 +57,14 @@ public partial class JSObject
         if (a.This.IsArray)
             return JSValue.CreateString("[object Array]");
 
+        var toStringTag = GetGlobalSymbolFactory?.Invoke("toStringTag");
+        if (toStringTag != null && a.This is JSObject @object)
+        {
+            var tag = @object[toStringTag];
+            if (tag.IsString)
+                return JSValue.CreateString($"[object {tag}]");
+        }
+
         return JSValue.CreateString(a.This?.TypeOf() == JSConstants.Function ? "[object Function]" : "[object Object]");
     }
 
@@ -72,13 +80,14 @@ public partial class JSObject
     [JSExport("__proto__")]
     internal JSValue ObjectPrototype
     {
-        get => (prototypeChain as IJSPrototype)?.Object ?? JSValue.NullValue;
+        get => GetPrototypeOf();
         set
         {
             if (!value.IsObject && !value.IsNull)
                 return;
 
-            SetPrototypeOf(value);
+            var @object = this;
+            @object.SetPrototypeOf(value);
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.Storage;
+﻿using System.Collections.Generic;
+using Broiler.JavaScript.Storage;
 using System;
 
 namespace Broiler.JavaScript.Runtime;
@@ -225,20 +226,32 @@ public partial class JSObject
                 continue;
 
             var source = ToObject(ai);
-            var elements = source.GetElementEnumerator();
-            while (elements.MoveNext(out var hasValue, out var value, out var index))
+            HashSet<uint> copiedSymbols = null;
+            var keys = source.GetAllKeys(showEnumerableOnly: true, inherited: false);
+            while (keys.MoveNext(out var hasValue, out var propertyKey, out var _))
             {
-                if (hasValue)
-                    target[index] = value;
-            }
+                if (!hasValue)
+                    continue;
 
-            var properties = new PropertyEnumerator(source, true, false);
-            while (properties.MoveNext(out var key, out var value))
-                target[key] = value;
+                if (propertyKey.IsSymbol)
+                {
+                    var symbol = (IJSSymbol)propertyKey;
+                    SetSymbolValue(target, symbol.Key, source[symbol]);
+                    copiedSymbols ??= [];
+                    copiedSymbols.Add(symbol.Key);
+                    continue;
+                }
+
+                var key = propertyKey.ToKey(false);
+                if (key.Type == KeyType.UInt)
+                    target[key.Index] = source[key.Index];
+                else
+                    target[key.KeyString] = source[key.KeyString];
+            }
 
             foreach (var (key, property) in source.GetSymbols().AllValues())
             {
-                if (!property.IsEmpty && property.IsEnumerable)
+                if (!property.IsEmpty && property.IsEnumerable && (copiedSymbols == null || !copiedSymbols.Contains(key)))
                     SetSymbolValue(target, key, source.GetValue(property));
             }
         }
@@ -475,7 +488,7 @@ public partial class JSObject
             throw NewTypeError("CallbackFn must be a function");
 
         var result = new JSObject();
-        var en = items.GetElementEnumerator();
+        var en = items.GetIterableEnumerator();
         int index = 0;
 
         while (en.MoveNext(out var hasValue, out var item, out var _))

@@ -48,7 +48,7 @@ public partial class JSMap : JSObject
             throw JSEngine.NewTypeError("CallbackFn must be a function");
 
         var result = new JSMap(Arguments.Empty);
-        var en = items.GetElementEnumerator();
+        var en = items.GetIterableEnumerator();
         int index = 0;
 
         while (en.MoveNext(out var hasValue, out var item, out var _))

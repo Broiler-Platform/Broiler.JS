@@ -71,7 +71,7 @@ public partial class JSObject
             ref var p = ref ownProperties.GetValue(key.Key);
             if (p.IsValue)
             {
-                if (p.get is IJSFunction g)
+                if (p.value is IJSFunction g)
                     return g.Delegate;
             }
 
