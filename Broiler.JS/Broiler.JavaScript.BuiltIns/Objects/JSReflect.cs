@@ -9,19 +9,24 @@ using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Proxy;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Engine.Extensions;
 
 namespace Broiler.JavaScript.BuiltIns.Objects;
 
 [JSClassGenerator("Reflect"), JSInternalObject]
 public partial class JSReflect : JSObject
 {
+    private static bool IsCallable(JSValue value)
+        => value is JSObject && value.TypeOf() == JSConstants.Function;
+
     [JSExport(Length = 3)]
     public static JSValue Apply(in Arguments a)
     {
         var (target, thisArgument, arguments) = a.Get3();
-        var fx = target as JSFunction;
+        if (!IsCallable(target) || target is not JSObject targetObject)
+            throw JSEngine.NewTypeError("target is not a function");
 
-        return fx.InvokeFunction(Arguments.ForApply(thisArgument, arguments));
+        return targetObject.InvokeFunction(Arguments.ForApply(thisArgument, arguments));
     }
 
     [JSExport(Length = 2)]
@@ -30,21 +35,25 @@ public partial class JSReflect : JSObject
         var (target, arguments, newTarget) = a.Get3();
         newTarget = newTarget.IsUndefined ? target : newTarget;
 
-        if (target is not JSFunction fx)
+        if (!IsCallable(target) || target is not JSObject targetObject)
             throw JSEngine.NewTypeError("target is not a constructor");
 
-        if (newTarget is not IJSFunction { Prototype: JSObject } newTargetFunction)
+        if (!IsCallable(newTarget)
+            || newTarget is not JSObject newTargetObject
+            || newTargetObject[KeyStrings.prototype] is not JSObject)
+        {
             throw JSEngine.NewTypeError("newTarget is not a constructor");
+        }
 
         var ec = JSEngine.Current as IJSExecutionContext;
         var previousNewTarget = ec?.CurrentNewTarget;
 
         if (ec != null)
-            ec.CurrentNewTarget = (JSValue)newTargetFunction;
+            ec.CurrentNewTarget = newTargetObject;
 
         try
         {
-            return fx.CreateInstance(Arguments.ForApply(new JSObject(), arguments));
+            return targetObject.CreateInstance(Arguments.ForApply(new JSObject(), arguments));
         }
         finally
         {
@@ -106,45 +115,20 @@ public partial class JSReflect : JSObject
     public new static JSValue GetPrototypeOf(in Arguments a)
     {
         var target = a.Get1();
-        if (target is not JSObject)
+        if (target is not JSObject @object)
             throw JSEngine.NewTypeError($"Not an object");
 
-        var p = target.prototypeChain?.Object;
-        if (p == target || p == null)
-            return JSNull.Value;
-
-        return p;
+        return @object.GetPrototypeOf();
     }
 
     [JSExport(Length = 2)]
     public static JSValue Has(in Arguments a)
     {
-        var (target, propertyKey, receiver) = a.Get3();
-        if (target is not JSObject @object)
+        var (target, propertyKey, _) = a.Get3();
+        if (target is not JSObject)
             throw JSEngine.NewTypeError($"Not an object");
 
-        var key = propertyKey.ToKey();
-        JSProperty p;
-        if (key.IsSymbol)
-        {
-            p = @object.GetInternalProperty(key.Symbol);
-        }
-        else
-        {
-            if (key.IsUInt)
-            {
-                p = @object.GetInternalProperty(key.Index);
-            }
-            else
-            {
-                p = @object.GetInternalProperty(in key.KeyString);
-            }
-        }
-
-        if (p.IsEmpty)
-            return JSBoolean.False;
-
-        return JSBoolean.True;
+        return propertyKey.IsIn(target);
     }
 
     [JSExport(Length = 1)]
@@ -165,20 +149,12 @@ public partial class JSReflect : JSObject
             throw JSEngine.NewTypeError($"Not an object");
         
         var r = new JSArray();
-        var een = @object.GetElementEnumerator();
-        while (een.MoveNext(out var hasValue, out var value, out var index))
+        var en = @object.GetAllKeys(false, false);
+        while (en.MoveNext(out var hasValue, out var value, out var _))
         {
             if (hasValue)
-                r.Add(new JSNumber(index));
+                r.Add(value);
         }
-        
-        var en = @object.GetOwnProperties(false).GetEnumerator();
-        while (en.MoveNext(out var property))
-            r.Add(property.ToJSValue());
-        
-        ref var symbols = ref @object.GetSymbols();
-        foreach (var (_, Value) in symbols.AllValues())
-            r.Add(Value.ToJSValue());
 
         return r;
     }
@@ -201,64 +177,22 @@ public partial class JSReflect : JSObject
             throw JSEngine.NewTypeError($"Not an object");
 
         receiver = receiver.IsUndefined ? target : receiver;
-        var key = propertyKey.ToKey();
-        if (key.IsSymbol)
-        {
-            var symbol = key.Symbol;
-            var p = @object.GetInternalProperty(symbol, false);
-        
-            if (p.IsProperty)
-            {
-                ((JSFunction)p.set).InvokeFunction(new Arguments(receiver, value));
-                return JSBoolean.True;
-            }
-            
-            ref var symbols = ref @object.GetSymbols();
-            symbols.Save(symbol.Key, JSProperty.Property(value));
-            return JSBoolean.True;
-        }
-        else
-        {
-            if (key.IsUInt)
-            {
-                var p = @object.GetInternalProperty(key.Index, false);
-                if (p.IsProperty)
-                {
-                    ((JSFunction)p.set).InvokeFunction(new Arguments(receiver, value));
-                    return JSBoolean.True;
-                }
-                
-                ref var elements = ref @object.GetElements(true);
-                elements.Put(key.Index, value);
-                return JSBoolean.True;
-            }
-            else
-            {
-                var p = @object.GetInternalProperty(in key.KeyString, false);
-                if (p.IsProperty)
-                {
-                    ((JSFunction)p.set).InvokeFunction(new Arguments(receiver, value));
-                    return JSBoolean.True;
-                }
-
-                ref var properties = ref @object.GetOwnProperties(true);
-                properties.Put(in key.KeyString, value);
-                return JSBoolean.True;
-            }
-        }
+        return @object.SetValue(propertyKey, value, receiver, false)
+            ? JSBoolean.True
+            : JSBoolean.False;
     }
 
     [JSExport]
     public new static JSValue SetPrototypeOf(in Arguments a)
     {
         var (target, p) = a.Get2();
-        if (target is not JSObject)
+        if (target is not JSObject @object)
             throw JSEngine.NewTypeError($"Not an object");
 
-        if (p is not JSObject prototype)
+        if (!p.IsObject && !p.IsNull)
             throw JSEngine.NewTypeError($"Not an object");
 
-        target.BasePrototypeObject = prototype;
-        return p;
+        @object.SetPrototypeOf(p);
+        return JSBoolean.True;
     }
 }

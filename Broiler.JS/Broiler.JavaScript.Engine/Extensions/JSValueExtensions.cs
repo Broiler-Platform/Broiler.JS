@@ -240,24 +240,16 @@ public static partial class JSValueExtensions
         return p.InstanceOf(value);
     }
 
-    public static JSValue IsIn(this JSValue target, JSValue value)
+    public static JSValue IsIn(this JSValue propertyKey, JSValue value)
     {
         if (value is not JSObject tx)
-            throw JSEngine.NewTypeError($"Cannot use 'in' operator to search for '{target}' in {value}");
+            throw JSEngine.NewTypeError($"Cannot use 'in' operator to search for '{propertyKey}' in {value}");
 
-        var key = target.ToKey(false);
-        if (key.IsUInt)
+        for (JSValue prototype = tx; prototype is JSObject @object; prototype = @object.GetPrototypeOf())
         {
-            var p = tx.GetInternalProperty(key.Index);
-            if (!p.IsEmpty)
+            if (!@object.GetOwnPropertyDescriptor(propertyKey).IsUndefined)
                 return JSValue.BooleanTrue;
-
-            return JSValue.BooleanFalse;
         }
-
-        var p1 = tx.GetInternalProperty(in key.KeyString);
-        if (!p1.IsEmpty)
-            return JSValue.BooleanTrue;
 
         return JSValue.BooleanFalse;
     }

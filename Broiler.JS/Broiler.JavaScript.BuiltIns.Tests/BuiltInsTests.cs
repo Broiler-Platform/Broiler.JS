@@ -628,6 +628,87 @@ public class BuiltInsTests
         Assert.Equal(99.0, result.DoubleValue);
     }
 
+    [Fact]
+    public void Reflect_Operations_Forward_To_Proxy_Target_Internal_Methods()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                function thrown(fn) {
+                    try {
+                        return 'ok:' + fn();
+                    } catch (e) {
+                        return 'throw:' + e.constructor.name;
+                    }
+                }
+
+                var callableTarget = function () { return 1; };
+                var callableHandle = Proxy.revocable(callableTarget, {});
+                var callableProxy = new Proxy(callableHandle.proxy, {});
+
+                var valueTarget = { foo: 1 };
+                var valueHandle = Proxy.revocable(valueTarget, {});
+                var valueProxy = new Proxy(valueHandle.proxy, {});
+
+                var setTarget = {};
+                var setHandle = Proxy.revocable(setTarget, {});
+                var setProxy = new Proxy(setHandle.proxy, {});
+
+                var before = [
+                    thrown(function () { return Reflect.apply(callableProxy, undefined, []); }),
+                    thrown(function () { return typeof Reflect.construct(callableProxy, []); }),
+                    thrown(function () { return Reflect.has(valueProxy, 'foo'); }),
+                    thrown(function () { return Reflect.ownKeys(valueProxy).join(','); }),
+                    thrown(function () { return Reflect.set(setProxy, 'bar', 2); }),
+                    setTarget.bar
+                ].join('|');
+
+                callableHandle.revoke();
+                valueHandle.revoke();
+                setHandle.revoke();
+
+                var after = [
+                    thrown(function () { return Reflect.apply(callableProxy, undefined, []); }),
+                    thrown(function () { return Reflect.has(valueProxy, 'foo'); }),
+                    thrown(function () { return Reflect.ownKeys(valueProxy).length; }),
+                    thrown(function () { return Reflect.set(setProxy, 'bar', 3); })
+                ].join('|');
+
+                return before + '|' + after;
+            })();
+        ");
+
+        Assert.Equal("ok:1|ok:object|ok:true|ok:foo|ok:true|2|throw:TypeError|throw:TypeError|throw:TypeError|throw:TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void In_Operator_Uses_Proxy_Has_When_Target_Is_A_Proxy()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                function thrown(fn) {
+                    try {
+                        return 'ok:' + fn();
+                    } catch (e) {
+                        return 'throw:' + e.constructor.name;
+                    }
+                }
+
+                var handle = Proxy.revocable({ foo: 1 }, {});
+                var proxy = new Proxy(handle.proxy, {});
+                var before = thrown(function () { return 'foo' in proxy; });
+                handle.revoke();
+                var after = thrown(function () { return 'foo' in proxy; });
+                return before + '|' + after;
+            })();
+        ");
+
+        Assert.Equal("ok:true|throw:TypeError", result.ToString());
+    }
+
     // ── M2: JSProxy tests ────────────────────────────────────────────
 
     [Fact]
