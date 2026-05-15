@@ -204,7 +204,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
         for (int i = 0; i < matches.Count; i++)
             matchValues[(uint)i] = JSValue.CreateString(matches[i].Value);
 
-        SetObservableLastIndex(0);
         return matchValues;
     }
 
