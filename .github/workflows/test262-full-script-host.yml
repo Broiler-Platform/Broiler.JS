@@ -274,7 +274,6 @@ jobs:
     env:
       RUN_PHASE: full
       RUN_PREFIX: full-
-      EFFECTIVE_SHARD_COUNT: ${{ env.SHARD_COUNT }}
 
     steps:
       - name: Check out Broiler.JS
@@ -333,7 +332,7 @@ jobs:
             --suite-root "$TEST262_ROOT" \
             --broiler-dll "$BROILER_DLL" \
             --all-script-host-verifiable \
-            --shard-count "$EFFECTIVE_SHARD_COUNT" \
+            --shard-count "$SHARD_COUNT" \
             --shard-index "${{ matrix.shard-index }}" \
             --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
             --memory-limit-mb "$MEMORY_LIMIT_MB" \
@@ -363,7 +362,7 @@ jobs:
               Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
                   "\n".join(
                       [
-                          f"## test262 {os.environ['RUN_PHASE']} shard {int(shard_index) + 1}/{os.environ['EFFECTIVE_SHARD_COUNT']}",
+                          f"## test262 {os.environ['RUN_PHASE']} shard {int(shard_index) + 1}/{os.environ['SHARD_COUNT']}",
                           "",
                           "- Runner did not produce a JSON summary.",
                           f"- Exit code: {exit_code}",
