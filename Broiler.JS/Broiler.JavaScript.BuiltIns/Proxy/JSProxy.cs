@@ -337,7 +337,7 @@ public partial class JSProxy : JSObject
         if (!fx.IsUndefined)
         {
             var args = new JSArray(a.ToArray());
-            return fx.InvokeFunction(new Arguments(this, target, a.This, args));
+            return fx.InvokeFunction(new Arguments(handler, target, a.This, args));
         }
 
         return target.InvokeFunction(a);
@@ -352,7 +352,7 @@ public partial class JSProxy : JSObject
         if (!constructTrap.IsUndefined)
         {
             var args = new JSArray(a.ToArray());
-            var result = constructTrap.InvokeFunction(new Arguments(this, target, args, newTarget));
+            var result = constructTrap.InvokeFunction(new Arguments(handler, target, args, newTarget));
             if (!result.IsObject)
                 throw JSEngine.NewTypeError("Proxy construct trap must return an object");
 
@@ -381,7 +381,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.defineProperty);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(target, target, key, propertyDescription));
+            var result = fx.InvokeFunction(new Arguments(handler, target, key, propertyDescription));
             if (!result.BooleanValue)
                 return JSBoolean.False;
 
@@ -398,7 +398,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.deleteProperty);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(target, target, index));
+            var result = fx.InvokeFunction(new Arguments(handler, target, index));
             if (!result.BooleanValue)
                 return JSBoolean.False;
 
@@ -409,13 +409,19 @@ public partial class JSProxy : JSObject
         return target.Delete(index);
     }
 
+    public override JSValue Delete(in KeyString key) => Delete(key.ToJSValue());
+
+    public override JSValue Delete(uint key) => Delete(new JSNumber(key));
+
+    public override JSValue Delete(IJSSymbol symbol) => Delete((JSValue)(JSSymbol)symbol);
+
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
         var target = RequireTarget();
         var fx = GetTrap(GetOwnPropertyDescriptorTrapKey);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(target, target, name));
+            var result = fx.InvokeFunction(new Arguments(handler, target, name));
             ValidateGetOwnPropertyDescriptorInvariant(target, name.ToKey(false), result);
             return result;
         }
@@ -429,7 +435,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.get);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(target, target, (JSValue)(JSSymbol)key, receiver));
+            var result = fx.InvokeFunction(new Arguments(handler, target, (JSValue)(JSSymbol)key, receiver));
             ValidateGetInvariant(target, PropertyKey.FromSymbol(key), result);
             return result;
         }
@@ -443,7 +449,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.get);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(target, target, key.ToJSValue(), receiver));
+            var result = fx.InvokeFunction(new Arguments(handler, target, key.ToJSValue(), receiver));
             ValidateGetInvariant(target, key, result);
             return result;
         }
@@ -457,7 +463,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.get);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(target, target, new JSNumber(key), receiver));
+            var result = fx.InvokeFunction(new Arguments(handler, target, new JSNumber(key), receiver));
             ValidateGetInvariant(target, key, result);
             return result;
         }
@@ -471,7 +477,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.set);
         if (!fx.IsUndefined)
         {
-            var setResult = fx.InvokeFunction(new Arguments(target, target, (JSValue)(JSSymbol)name, value, receiver));
+            var setResult = fx.InvokeFunction(new Arguments(handler, target, (JSValue)(JSSymbol)name, value, receiver));
             if (!setResult.BooleanValue)
                 return false;
 
@@ -488,7 +494,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.set);
         if (!fx.IsUndefined)
         {
-            var setResult = fx.InvokeFunction(new Arguments(target, target, name.ToJSValue(), value, receiver));
+            var setResult = fx.InvokeFunction(new Arguments(handler, target, name.ToJSValue(), value, receiver));
             if (!setResult.BooleanValue)
                 return false;
 
@@ -505,7 +511,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.set);
         if (!fx.IsUndefined)
         {
-            var setResult = fx.InvokeFunction(new Arguments(target, target, new JSNumber(name), value, receiver));
+            var setResult = fx.InvokeFunction(new Arguments(handler, target, new JSNumber(name), value, receiver));
             if (!setResult.BooleanValue)
                 return false;
 
@@ -522,7 +528,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.getPrototypeOf);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(target));
+            var result = fx.InvokeFunction(new Arguments(handler, target));
             if (!result.IsObject && !result.IsNull)
                 throw JSEngine.NewTypeError("Proxy getPrototypeOf trap must return an object or null");
 
@@ -558,7 +564,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(IsExtensibleTrapKey);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(target));
+            var result = fx.InvokeFunction(new Arguments(handler, target));
             var isExtensible = result.BooleanValue;
             if (isExtensible != target.IsExtensible())
                 throw JSEngine.NewTypeError("Proxy isExtensible trap returned an inconsistent result");
@@ -575,7 +581,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(PreventExtensionsTrapKey);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(target));
+            var result = fx.InvokeFunction(new Arguments(handler, target));
             if (!result.BooleanValue)
                 return false;
 
@@ -599,7 +605,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.setPrototypeOf);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(target, proto));
+            var result = fx.InvokeFunction(new Arguments(handler, target, proto));
             if (!result.BooleanValue)
                 throw JSEngine.NewTypeError("Proxy setPrototypeOf trap returned false");
 
@@ -618,7 +624,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.ownKeys);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(target));
+            var result = fx.InvokeFunction(new Arguments(handler, target));
             var array = new JSArray();
             var seenKeys = new HashSet<string>();
             var en = result.GetElementEnumerator();
@@ -654,6 +660,9 @@ public partial class JSProxy : JSObject
     [JSExport(IsConstructor = true)]
     public new static JSValue Constructor(in Arguments a)
     {
+        if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
+            throw JSEngine.NewTypeError("Proxy constructor requires 'new'");
+
         var (f, s) = a.Get2();
         return new JSProxy((f as JSObject, s as JSObject));
     }

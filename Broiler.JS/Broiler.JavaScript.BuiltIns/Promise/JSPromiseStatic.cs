@@ -14,15 +14,29 @@ public partial class JSPromise
     private static bool IsDefaultPromiseConstructor(JSValue constructor)
         => ReferenceEquals(constructor, (JSEngine.Current as JSObject)?[KeyStrings.Promise]);
 
+    private static bool IsConstructor(JSValue value)
+        => value is JSFunction function && function.prototype != null;
+
     private static JSValue CreatePromiseFromConstructor(JSValue constructor, Action<JSValue, JSValue> executor)
     {
+        if (!IsConstructor(constructor))
+            throw JSEngine.NewTypeError("Promise receiver must be a constructor");
+
+        JSValue resolve = JSUndefined.Value;
+        JSValue reject = JSUndefined.Value;
         var executorFunction = new JSFunction((in Arguments executorArgs) =>
         {
-            executor(executorArgs.Get1(), executorArgs.GetAt(1));
+            resolve = executorArgs.Get1();
+            reject = executorArgs.GetAt(1);
+            executor(resolve, reject);
             return JSUndefined.Value;
         }, "executor", "function executor() { [native] }", length: 2, createPrototype: false);
 
-        return constructor.CreateInstance(new Arguments(JSUndefined.Value, executorFunction));
+        var promise = constructor.CreateInstance(new Arguments(JSUndefined.Value, executorFunction));
+        if (!resolve.IsFunction || !reject.IsFunction)
+            throw JSEngine.NewTypeError("Promise capability executor did not provide callable resolve and reject functions");
+
+        return promise;
     }
 
     public static Task Await(JSValue value)
@@ -57,8 +71,10 @@ public partial class JSPromise
         if (!receiver.IsObject)
             throw JSEngine.NewTypeError("Promise.try receiver must be an object");
 
-        if (receiver is not JSFunction constructor || constructor.prototype == null)
+        if (!IsConstructor(receiver))
             throw JSEngine.NewTypeError("Promise.try receiver must be a constructor");
+
+        var constructor = (JSFunction)receiver;
 
         var callbackfn = a.Get1();
         if (!callbackfn.IsFunction)

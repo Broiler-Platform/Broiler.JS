@@ -281,15 +281,24 @@ public partial class JSObject
         if (target is not JSObject targetObject)
             throw NewTypeError("Object.defineProperty called on non-object");
 
-        if (!targetObject.IsExtensible())
-            throw NewTypeError("Object is not extensible");
-
         if (desc is not JSObject pd)
             throw NewTypeError("Property Description must be an object");
 
-        var result = targetObject.DefineProperty(key, pd);
-        if (result.IsBoolean && !result.BooleanValue)
-            throw NewTypeError($"Cannot define property {key}");
+        var propertyKey = key.ToKey();
+        switch (propertyKey.Type)
+        {
+            case KeyType.UInt:
+                DefineOwnProperty(targetObject, propertyKey.Index, pd);
+                break;
+            case KeyType.String:
+                DefineOwnProperty(targetObject, propertyKey.KeyString, pd);
+                break;
+            case KeyType.Symbol:
+                targetObject.DefineProperty(propertyKey.Symbol, pd);
+                break;
+            default:
+                throw NewTypeError($"Cannot define property {key}");
+        }
 
         return targetObject;
     }
