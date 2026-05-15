@@ -72,6 +72,10 @@ public partial class JSProxy : JSObject
         return trap;
     }
 
+    internal bool HasTrap(KeyString trapKey) => !GetTrap(trapKey).IsUndefined;
+
+    internal JSObject Target => RequireTarget();
+
     private static JSProperty GetOwnTargetProperty(JSObject target, in PropertyKey key)
     {
         if (key.IsSymbol)

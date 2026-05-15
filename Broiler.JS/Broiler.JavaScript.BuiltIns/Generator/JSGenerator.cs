@@ -52,7 +52,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
     {
         ThrowIfExecuting();
         cg.InjectException(JSException.FromValue(value));
-        return value;
+        return Next();
     }
 
     public JSValue ValueObject => NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, done ? JSValue.BooleanTrue : JSValue.BooleanFalse);

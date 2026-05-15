@@ -18,9 +18,9 @@ public partial class JSArray
         var (t, s) = a.Get2();
         var @this = ToArrayLikeObject(a.This);
         var length = (int)GetArrayLikeLength(@this);
-        var target = t.IntValue;
-        var start = s.IntValue;
-        var end = a.TryGetAt(2, out var e) ? e.IntValue : int.MaxValue;
+        var target = (int)ToIntegerOrInfinity(t);
+        var start = (int)ToIntegerOrInfinity(s);
+        var end = a.TryGetAt(2, out var e) ? (int)ToIntegerOrInfinity(e) : int.MaxValue;
 
         target = target < 0 ? Math.Max(length + target, 0) : Math.Min(target, length);
         start = start < 0 ? Math.Max(length + start, 0) : Math.Min(start, length);
@@ -40,9 +40,10 @@ public partial class JSArray
 
         while (count > 0)
         {
-            if (@this.TryGetElement((uint)start, out var elementValue))
+            var fromKey = JSValue.CreateNumber(start);
+            if (@this.HasProperty(fromKey).BooleanValue)
             {
-                @this.SetValue((uint)target, elementValue, @this);
+                @this.SetValue((uint)target, @this.GetValue(fromKey, @this), @this);
             }
             else if (!@this.Delete((uint)target).BooleanValue)
             {
