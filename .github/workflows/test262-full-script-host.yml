@@ -10,6 +10,11 @@ on:
         description: Optional test262 ref or commit SHA to execute
         required: false
         default: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+      rerun_failed_only:
+        description: When true (default), rerun paths from scripts/compliance/test262-full-script-host-failures.txt before falling back to the full suite
+        type: boolean
+        required: false
+        default: true
       shard_index:
         description: Zero-based shard index to execute, or -1 to run all shards
         type: number
@@ -27,7 +32,7 @@ on:
         default: 0
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   TEST262_REF: ${{ inputs.suite_ref || 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e' }}
@@ -38,53 +43,238 @@ env:
   SELECTED_SHARD_INDEX: ${{ inputs.shard_index || -1 }}
   TEST_TIMEOUT_SECONDS: ${{ inputs.test_timeout_seconds || 30 }}
   MEMORY_LIMIT_MB: ${{ inputs.memory_limit_mb || 0 }}
+  FAILED_TESTS_FILE: ${{ github.workspace }}/scripts/compliance/test262-full-script-host-failures.txt
 
 jobs:
   plan:
     runs-on: ubuntu-latest
     outputs:
-      shard-matrix: ${{ steps.shards.outputs.matrix }}
+      full-shard-matrix: ${{ steps.shards.outputs.full-matrix }}
+      failed-shard-matrix: ${{ steps.shards.outputs.failed-matrix }}
+      failed-shard-count: ${{ steps.shards.outputs.failed-shard-count }}
+      should-rerun-failed: ${{ steps.shards.outputs.should-rerun-failed }}
+      failed-path-count: ${{ steps.shards.outputs.failed-path-count }}
     steps:
+      - name: Check out Broiler.JS
+        uses: actions/checkout@v4
+
       - name: Resolve shard matrix
         id: shards
         shell: bash
+        env:
+          RERUN_FAILED_ONLY: ${{ github.event_name != 'workflow_dispatch' || inputs.rerun_failed_only }}
         run: |
           python <<'PY'
           import json
           import os
           import sys
+          from pathlib import Path
 
-          shard_count = int(os.environ["SHARD_COUNT"])
+          max_shard_count = int(os.environ["SHARD_COUNT"])
           requested_shard_index = os.environ["SELECTED_SHARD_INDEX"]
+          failed_tests_file = Path(os.environ["FAILED_TESTS_FILE"])
+          rerun_failed_only = os.environ["RERUN_FAILED_ONLY"].strip().lower() == "true"
 
-          try:
-              shard_index = int(requested_shard_index)
-          except ValueError:
-              sys.exit(
-                  f"shard_index must be an integer value: -1 or between 0 and "
-                  f"{shard_count - 1}, got {requested_shard_index!r}"
-              )
+          def resolve_matrix(shard_count: int) -> list[dict[str, int]]:
+              try:
+                  shard_index = int(requested_shard_index)
+              except ValueError:
+                  sys.exit(
+                      f"shard_index must be an integer value: -1 or between 0 and "
+                      f"{shard_count - 1}, got {requested_shard_index!r}"
+                  )
 
-          if shard_index == -1:
-              matrix = [{"shard-index": index} for index in range(shard_count)]
-          elif 0 <= shard_index < shard_count:
-              matrix = [{"shard-index": shard_index}]
-          else:
+              if shard_index == -1:
+                  return [{"shard-index": index} for index in range(shard_count)]
+              if 0 <= shard_index < shard_count:
+                  return [{"shard-index": shard_index}]
               sys.exit(
                   f"shard_index must be -1 or between 0 and {shard_count - 1}, got {shard_index}"
               )
 
+          failed_paths = []
+          if failed_tests_file.exists():
+              failed_paths = [
+                  line.strip()
+                  for line in failed_tests_file.read_text(encoding="utf-8").splitlines()
+                  if line.strip() and not line.lstrip().startswith("#")
+              ]
+
+          should_rerun_failed = rerun_failed_only and bool(failed_paths)
+          failed_shard_count = max_shard_count
+          if should_rerun_failed and requested_shard_index == "-1":
+              failed_shard_count = max(1, min(max_shard_count, len(failed_paths)))
+
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
-              handle.write(f"matrix={json.dumps(matrix)}\n")
+              handle.write(f"full-matrix={json.dumps(resolve_matrix(max_shard_count))}\n")
+              handle.write(f"failed-matrix={json.dumps(resolve_matrix(failed_shard_count))}\n")
+              handle.write(f"failed-shard-count={failed_shard_count}\n")
+              handle.write(
+                  f"should-rerun-failed={'true' if should_rerun_failed else 'false'}\n"
+              )
+              handle.write(f"failed-path-count={len(failed_paths)}\n")
           PY
 
-  run:
+  rerun-failed:
     needs: plan
+    if: needs.plan.outputs.should-rerun-failed == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.plan.outputs.shard-matrix) }}
+        include: ${{ fromJson(needs.plan.outputs.failed-shard-matrix) }}
+    env:
+      RUN_PHASE: rerun
+      RUN_PREFIX: rerun-
+      EFFECTIVE_SHARD_COUNT: ${{ needs.plan.outputs.failed-shard-count }}
+
+    steps:
+      - name: Check out Broiler.JS
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache test262 checkout
+        id: cache-test262
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.TEST262_ROOT }}
+          key: test262-${{ runner.os }}-${{ env.TEST262_REF }}
+
+      - name: Download selected test262 suite
+        if: steps.cache-test262.outputs.cache-hit != 'true'
+        run: |
+          rm -rf "$TEST262_ROOT"
+          git clone --filter=blob:none https://github.com/tc39/test262.git "$TEST262_ROOT"
+          git -C "$TEST262_ROOT" checkout --force "$TEST262_REF"
+
+      - name: Restore Broiler.JS
+        run: dotnet restore Broiler.JS.slnx
+
+      - name: Build Broiler.JS CLI
+        run: dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release
+
+      - name: Run saved failed testcase shard
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RESULTS_DIR"
+          output_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.json"
+          log_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.log"
+          exit_code_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.exit-code.txt"
+          # Temporarily relax errexit so the shard log is still captured when the runner fails.
+          set +e
+          python scripts/compliance/run_test262.py \
+            --suite-ref "$TEST262_REF" \
+            --suite-root "$TEST262_ROOT" \
+            --broiler-dll "$BROILER_DLL" \
+            --path-file "$FAILED_TESTS_FILE" \
+            --shard-count "$EFFECTIVE_SHARD_COUNT" \
+            --shard-index "${{ matrix.shard-index }}" \
+            --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
+            --memory-limit-mb "$MEMORY_LIMIT_MB" \
+            --output "$output_path" 2>&1 | tee "$log_path"
+          # Preserve the Python exit status rather than tee's exit status.
+          status=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "$status" > "$exit_code_path"
+          exit "$status"
+
+      - name: Publish shard summary
+        if: always()
+        shell: bash
+        run: |
+          python <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          shard_index = "${{ matrix.shard-index }}"
+          results_dir = Path(os.environ["RESULTS_DIR"])
+          result_path = results_dir / f"{os.environ['RUN_PREFIX']}shard-{shard_index}.json"
+
+          if not result_path.exists():
+              exit_code_path = results_dir / f"{os.environ['RUN_PREFIX']}shard-{shard_index}.exit-code.txt"
+              exit_code = exit_code_path.read_text(encoding="utf-8").strip() if exit_code_path.exists() else "unknown"
+              Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
+                  "\n".join(
+                      [
+                          f"## test262 {os.environ['RUN_PHASE']} shard {int(shard_index) + 1}/{os.environ['EFFECTIVE_SHARD_COUNT']}",
+                          "",
+                          "- Runner did not produce a JSON summary.",
+                          f"- Exit code: {exit_code}",
+                          f"- Captured log: available in the uploaded artifact at `{os.environ['RUN_PREFIX']}shard-{shard_index}.log`",
+                      ]
+                  ) + "\n",
+                  encoding="utf-8",
+              )
+              raise SystemExit(0)
+
+          summary = json.loads(result_path.read_text(encoding="utf-8"))
+
+          lines = [
+              f"## test262 {os.environ['RUN_PHASE']} shard {int(shard_index) + 1}/{summary['shardCount']}",
+              "",
+              f"- Suite ref: `{summary['suiteRef']}`",
+              f"- Selection mode: `{summary['selectionMode']}`",
+              f"- Candidate paths discovered: {summary['candidateCount']}",
+              f"- Runnable paths before sharding: {summary['selectedCountBeforeSharding']}",
+              f"- Paths executed in this shard: {len(summary['expandedPaths'])}",
+              f"- Per-test timeout: {summary['testTimeoutSeconds']}s",
+              (
+                  f"- Per-test memory cap: {summary['memoryLimitMb']} MiB"
+                  if summary['memoryLimitMb']
+                  else "- Per-test memory cap: 0 MiB (disabled)"
+              ),
+              f"- Passed: {summary['passed']}",
+              f"- Failed: {summary['failed']}",
+              f"- Skipped: {summary['skipped']}",
+              f"- Timed out: {summary['timedOut']}",
+          ]
+
+          Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
+              "\n".join(lines) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload shard logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test262-full-script-host-rerun-shard-${{ matrix.shard-index }}
+          path: ${{ env.RESULTS_DIR }}
+
+  run-full:
+    needs:
+      - plan
+      - rerun-failed
+    if: needs.plan.outputs.should-rerun-failed != 'true' || needs.rerun-failed.result == 'success'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.plan.outputs.full-shard-matrix) }}
+    env:
+      RUN_PHASE: full
+      RUN_PREFIX: full-
+      EFFECTIVE_SHARD_COUNT: ${{ env.SHARD_COUNT }}
 
     steps:
       - name: Check out Broiler.JS
@@ -133,9 +323,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RESULTS_DIR"
-          output_path="$RESULTS_DIR/shard-${{ matrix.shard-index }}.json"
-          log_path="$RESULTS_DIR/shard-${{ matrix.shard-index }}.log"
-          exit_code_path="$RESULTS_DIR/shard-${{ matrix.shard-index }}.exit-code.txt"
+          output_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.json"
+          log_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.log"
+          exit_code_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.exit-code.txt"
           # Temporarily relax errexit so the shard log is still captured when the runner fails.
           set +e
           python scripts/compliance/run_test262.py \
@@ -143,7 +333,7 @@ jobs:
             --suite-root "$TEST262_ROOT" \
             --broiler-dll "$BROILER_DLL" \
             --all-script-host-verifiable \
-            --shard-count "$SHARD_COUNT" \
+            --shard-count "$EFFECTIVE_SHARD_COUNT" \
             --shard-index "${{ matrix.shard-index }}" \
             --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
             --memory-limit-mb "$MEMORY_LIMIT_MB" \
@@ -165,19 +355,19 @@ jobs:
 
           shard_index = "${{ matrix.shard-index }}"
           results_dir = Path(os.environ["RESULTS_DIR"])
-          result_path = results_dir / f"shard-{shard_index}.json"
+          result_path = results_dir / f"{os.environ['RUN_PREFIX']}shard-{shard_index}.json"
 
           if not result_path.exists():
-              exit_code_path = results_dir / f"shard-{shard_index}.exit-code.txt"
+              exit_code_path = results_dir / f"{os.environ['RUN_PREFIX']}shard-{shard_index}.exit-code.txt"
               exit_code = exit_code_path.read_text(encoding="utf-8").strip() if exit_code_path.exists() else "unknown"
               Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
                   "\n".join(
                       [
-                          f"## test262 full script-host shard {int(shard_index) + 1}/{os.environ['SHARD_COUNT']}",
+                          f"## test262 {os.environ['RUN_PHASE']} shard {int(shard_index) + 1}/{os.environ['EFFECTIVE_SHARD_COUNT']}",
                           "",
                           "- Runner did not produce a JSON summary.",
                           f"- Exit code: {exit_code}",
-                          f"- Captured log: available in the uploaded artifact at `shard-{shard_index}.log`",
+                          f"- Captured log: available in the uploaded artifact at `{os.environ['RUN_PREFIX']}shard-{shard_index}.log`",
                       ]
                   ) + "\n",
                   encoding="utf-8",
@@ -187,7 +377,7 @@ jobs:
           summary = json.loads(result_path.read_text(encoding="utf-8"))
 
           lines = [
-              f"## test262 full script-host shard {int(shard_index) + 1}/{summary['shardCount']}",
+              f"## test262 {os.environ['RUN_PHASE']} shard {int(shard_index) + 1}/{summary['shardCount']}",
               "",
               f"- Suite ref: `{summary['suiteRef']}`",
               f"- Selection mode: `{summary['selectionMode']}`",
@@ -216,12 +406,88 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test262-full-script-host-shard-${{ matrix.shard-index }}
+          name: test262-full-script-host-full-shard-${{ matrix.shard-index }}
           path: ${{ env.RESULTS_DIR }}
 
+  persist-failed-tests:
+    needs:
+      - plan
+      - rerun-failed
+      - run-full
+    if: always() && (needs.rerun-failed.result != 'skipped' || needs.run-full.result != 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Broiler.JS
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Download rerun summaries
+        if: needs.rerun-failed.result != 'skipped' && needs.run-full.result == 'skipped'
+        uses: actions/download-artifact@v4.1.3
+        with:
+          pattern: test262-full-script-host-rerun-shard-*
+          path: ${{ github.workspace }}/.artifacts/test262/full-script-host/persist
+          merge-multiple: true
+
+      - name: Download full summaries
+        if: needs.run-full.result != 'skipped'
+        uses: actions/download-artifact@v4.1.3
+        with:
+          pattern: test262-full-script-host-full-shard-*
+          path: ${{ github.workspace }}/.artifacts/test262/full-script-host/persist
+          merge-multiple: true
+
+      - name: Write failed testcase list
+        shell: bash
+        run: |
+          python <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          summaries_dir = Path(os.environ["GITHUB_WORKSPACE"]) / ".artifacts" / "test262" / "full-script-host" / "persist"
+          failed_tests_file = Path(os.environ["FAILED_TESTS_FILE"])
+          header_lines = [
+              "# Auto-generated by .github/workflows/test262-full-script-host.yml.",
+              "# When workflow_dispatch input rerun_failed_only is enabled (the default),",
+              "# these paths are rerun before the workflow falls back to the full suite.",
+              "",
+          ]
+          failed_paths: set[str] = set()
+
+          for summary_path in sorted(summaries_dir.glob("*.json")):
+              summary = json.loads(summary_path.read_text(encoding="utf-8"))
+              failed_paths.update(summary.get("failedPaths", []))
+              failed_paths.update(summary.get("timedOutPaths", []))
+
+          body_lines = header_lines + sorted(failed_paths)
+          failed_tests_file.parent.mkdir(parents=True, exist_ok=True)
+          failed_tests_file.write_text("\n".join(body_lines) + "\n", encoding="utf-8")
+          PY
+
+      - name: Commit failed testcase list
+        shell: bash
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- "$FAILED_TESTS_FILE"; then
+            echo "No failed testcase list changes to commit."
+            exit 0
+          fi
+          git add "$FAILED_TESTS_FILE"
+          git commit -m "ci: update test262 failed testcase list [skip ci]"
+          git push origin "HEAD:$BRANCH_NAME"
+
   combine-logs:
-    needs: run
-    if: always() && needs.run.result != 'skipped'
+    needs:
+      - rerun-failed
+      - run-full
+      - persist-failed-tests
+    if: always() && (needs.rerun-failed.result != 'skipped' || needs.run-full.result != 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Check out Broiler.JS
@@ -235,7 +501,7 @@ jobs:
       - name: Download shard logs into one directory
         uses: actions/download-artifact@v4.1.3
         with:
-          pattern: test262-full-script-host-shard-*
+          pattern: test262-full-script-host-*-shard-*
           path: ${{ github.workspace }}/.artifacts/test262/full-script-host/merged
           merge-multiple: true
 
@@ -243,7 +509,7 @@ jobs:
         uses: actions/upload-artifact/merge@v4
         with:
           name: test262-full-script-host-logs
-          pattern: test262-full-script-host-shard-*
+          pattern: test262-full-script-host-*-shard-*
           separate-directories: false
           delete-merged: true
 
