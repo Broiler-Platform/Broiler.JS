@@ -23,12 +23,16 @@ public partial class JSSet : JSObject
 
     public JSSet(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
-        if (a[0] is not JSArray array)
+        var iterable = a.Get1();
+        if (iterable.IsNullOrUndefined)
             return;
 
-        var en = array.GetElementEnumerator();
+        if (this[KeyStrings.GetOrCreate("add")] is not IJSFunction adder)
+            throw JSEngine.NewTypeError("Set instance 'add' property is not callable");
+
+        var en = iterable.GetIterableEnumerator();
         while (en.MoveNext(out var item))
-            Add(item);
+            adder.InvokeFunction(new Arguments(this, item));
     }
 
     [JSExport("add")]

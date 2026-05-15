@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.Engine.Core;
+﻿using System;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using System.Text;
 
@@ -60,28 +61,33 @@ public partial class JSString
     internal static JSValue Raw(in Arguments a)
     {
         var template = a.Get1();
-        if (template is not JSObject)
-            throw JSEngine.NewTypeError($"Cannot convert undefined or null to object");
+        if (template.IsNullOrUndefined)
+            throw JSEngine.NewTypeError("Cannot convert undefined or null to object");
 
-        var raw = template[KeyStrings.raw];
-        if (!(raw.IsString || raw.IsArray))
-            throw JSEngine.NewTypeError($"Cannot convert undefined or null to object");
+        var templateObject = template as JSObject ?? JSObject.CreatePrimitiveObject(template) as JSObject
+            ?? throw new InvalidOperationException("CreatePrimitiveObject returned a non-object value.");
+        var raw = templateObject[KeyStrings.raw];
+        if (raw.IsNullOrUndefined)
+            throw JSEngine.NewTypeError("Cannot convert undefined or null to object");
 
-        var len = raw.Length;
+        var rawObject = raw as JSObject ?? JSObject.CreatePrimitiveObject(raw) as JSObject
+            ?? throw new InvalidOperationException("CreatePrimitiveObject returned a non-object value.");
+
+        var len = rawObject.Length;
         if (len <= 0)
             return new JSString(string.Empty);
 
         var result = new StringBuilder(len);
         for (uint i = 0; i < len; i++)
         {
-            var item = raw[i];
-            result.Append(item.ToString());
+            var item = rawObject[i];
+            result.Append(item.StringValue);
 
             var substitutionIndex = i + 1;
             if (i < len - 1 && substitutionIndex < a.Length)
             {
                 item = a.GetAt((int)substitutionIndex);
-                result.Append(item.ToString());
+                result.Append(item.StringValue);
             }
         }
 

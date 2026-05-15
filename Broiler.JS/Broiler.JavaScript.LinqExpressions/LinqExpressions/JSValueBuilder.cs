@@ -191,19 +191,25 @@ public class JSValueBuilder
     private static MethodInfo _DeleteKeyString = type.InternalMethod(nameof(JSValue.Delete), KeyStringsBuilder.RefType);
     private static MethodInfo _DeleteUInt = type.InternalMethod(nameof(JSValue.Delete), typeof(uint));
     private static MethodInfo _DeleteJSValue = type.InternalMethod(nameof(JSValue.Delete), typeof(JSValue));
+    private static MethodInfo _ThrowOnStrictDeleteFailureKeyString = type.InternalMethod(nameof(JSValue.ThrowOnStrictDeleteFailure), typeof(JSValue), KeyStringsBuilder.RefType, typeof(JSValue));
+    private static MethodInfo _ThrowOnStrictDeleteFailureUInt = type.InternalMethod(nameof(JSValue.ThrowOnStrictDeleteFailure), typeof(JSValue), typeof(uint), typeof(JSValue));
+    private static MethodInfo _ThrowOnStrictDeleteFailureJSValue = type.InternalMethod(nameof(JSValue.ThrowOnStrictDeleteFailure), typeof(JSValue), typeof(JSValue), typeof(JSValue));
 
     public static Expression Delete(Expression target, Expression method)
     {
         if (method.Type == typeof(KeyString))
-            return Expression.Call(target, _DeleteKeyString, method);
+            return Expression.Call(null, _ThrowOnStrictDeleteFailureKeyString, target, method, Expression.Call(target, _DeleteKeyString, method));
 
         if (method.Type == typeof(uint))
-            return Expression.Call(target, _DeleteUInt, method);
+            return Expression.Call(null, _ThrowOnStrictDeleteFailureUInt, target, method, Expression.Call(target, _DeleteUInt, method));
 
         if (method.Type == typeof(int))
-            return Expression.Call(target, _DeleteUInt, Expression.Convert(method, typeof(uint)));
+        {
+            var converted = Expression.Convert(method, typeof(uint));
+            return Expression.Call(null, _ThrowOnStrictDeleteFailureUInt, target, converted, Expression.Call(target, _DeleteUInt, converted));
+        }
 
-        return Expression.Call(target, _DeleteJSValue, method);
+        return Expression.Call(null, _ThrowOnStrictDeleteFailureJSValue, target, method, Expression.Call(target, _DeleteJSValue, method));
     }
 
     internal static MethodInfo _CreateInstance = type.GetMethod(nameof(JSValue.CreateInstance));

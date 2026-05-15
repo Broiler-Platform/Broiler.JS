@@ -1,8 +1,10 @@
 using System.Text;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.RegExp;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Engine.Extensions;
 
 namespace Broiler.JavaScript.BuiltIns.String;
 
@@ -82,8 +84,30 @@ public partial class JSString
             ? throw JSEngine.NewTypeError("String.prototype.matchAll called on null or undefined")
             : a.This.ToString();
 
-        if (pattern is JSRegExp regExp)
-            return regExp.Match(JSValue.CreateString(text));
+        if (!pattern.IsNullOrUndefined)
+        {
+            if (pattern is JSRegExp)
+            {
+                var flags = pattern[KeyStrings.GetOrCreate("flags")];
+                if (flags.IsNullOrUndefined)
+                    throw JSEngine.NewTypeError("String.prototype.matchAll requires a non-null flags value");
+
+                if (!flags.StringValue.Contains('g'))
+                    throw JSEngine.NewTypeError("String.prototype.matchAll requires a global regular expression");
+            }
+
+            var matcher = pattern[(IJSSymbol)JSSymbol.matchAll];
+            if (!matcher.IsUndefined)
+            {
+                if (!matcher.IsFunction)
+                    throw JSEngine.NewTypeError("String.prototype.matchAll requires @@matchAll to be callable");
+
+                return matcher.Call(pattern, JSValue.CreateString(text));
+            }
+
+            if (pattern is JSRegExp)
+                throw JSEngine.NewTypeError("String.prototype.matchAll requires RegExp.prototype[@@matchAll]");
+        }
 
         return new JSRegExp(pattern.IsUndefined ? "" : pattern.ToString(), "g").Match(JSValue.CreateString(text));
     }

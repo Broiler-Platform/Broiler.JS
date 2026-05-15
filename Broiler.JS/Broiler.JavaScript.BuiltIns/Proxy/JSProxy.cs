@@ -299,6 +299,15 @@ public partial class JSProxy : JSObject
 
         if (settingConfigFalse && property.IsConfigurable)
             throw JSEngine.NewTypeError("Proxy getOwnPropertyDescriptor trap cannot report a configurable target property as non-configurable");
+
+        if (settingConfigFalse
+            && !property.IsProperty
+            && HasDescriptorField(descriptor, KeyStrings.writable)
+            && !descriptor[KeyStrings.writable].BooleanValue
+            && !property.IsReadOnly)
+        {
+            throw JSEngine.NewTypeError("Proxy getOwnPropertyDescriptor trap cannot report a writable target property as non-writable");
+        }
     }
 
     private static void ValidateOwnKeysInvariant(JSObject target, HashSet<string> seenKeys)

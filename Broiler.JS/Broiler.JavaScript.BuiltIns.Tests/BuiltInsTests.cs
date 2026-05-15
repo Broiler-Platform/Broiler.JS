@@ -4819,6 +4819,108 @@ public class BuiltInsTests
         Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
+    [Fact]
+    public void MatchAll_Set_Delete_RegExp_And_Proxy_TypeErrors_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () {
+                        var toString = RegExp.prototype.toString;
+                        toString();
+                    }),
+                    thrownCtor(function () {
+                        String.raw({ raw: ['a', 'b', 'c'] }, '', Symbol(''));
+                    }),
+                    thrownCtor(function () {
+                        var regex = /a/g;
+                        Object.defineProperty(regex, 'flags', { value: undefined });
+                        ''.matchAll(regex);
+                    }),
+                    (function () {
+                        var regex = /./g;
+                        regex[Symbol.matchAll] = 1;
+                        return thrownCtor(function () {
+                            ''.matchAll(regex);
+                        });
+                    })(),
+                    (function () {
+                        var original = Object.getOwnPropertyDescriptor(RegExp.prototype, Symbol.matchAll);
+                        try {
+                            delete RegExp.prototype[Symbol.matchAll];
+                            return thrownCtor(function () {
+                                ''.matchAll(/./g);
+                            });
+                        } finally {
+                            Object.defineProperty(RegExp.prototype, Symbol.matchAll, original);
+                        }
+                    })(),
+                    (function () {
+                        var sym = Symbol();
+                        var obj = {};
+                        Object.defineProperty(obj, sym, { value: 1 });
+                        return thrownCtor(function () {
+                            'use strict';
+                            delete obj[sym];
+                        });
+                    })(),
+                    (function () {
+                        var original = Object.getOwnPropertyDescriptor(Set.prototype, 'add');
+                        try {
+                            Object.defineProperty(Set.prototype, 'add', { value: null, configurable: true });
+                            return thrownCtor(function () {
+                                new Set([1, 2]);
+                            });
+                        } finally {
+                            Object.defineProperty(Set.prototype, 'add', original);
+                        }
+                    })(),
+                    thrownCtor(function () {
+                        var string = new String('str');
+                        var stringTarget = new Proxy(string, {});
+                        var stringProxy = new Proxy(stringTarget, {});
+                        Object.defineProperty(stringProxy, '0', { value: 'x' });
+                    }),
+                    thrownCtor(function () {
+                        var trapCalls = 0;
+                        var proxy = new Proxy({}, {
+                            getOwnPropertyDescriptor: function (target, prop) {
+                                Object.defineProperty(target, prop, {
+                                    configurable: false,
+                                    writable: true
+                                });
+
+                                trapCalls++;
+                                return {
+                                    configurable: false,
+                                    writable: false
+                                };
+                            }
+                        });
+
+                        Object.getOwnPropertyDescriptor(proxy, 'prop');
+                    })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal(
+            "TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError",
+            result.ToString());
+    }
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured

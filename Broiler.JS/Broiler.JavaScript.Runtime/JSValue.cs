@@ -818,6 +818,33 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
                 ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
     }
 
+    internal static JSValue ThrowOnStrictDeleteFailure(JSValue target, in KeyString key, JSValue result)
+    {
+        if (result.BooleanValue || IsStrictModeEnabled?.Invoke() != true)
+            return result;
+
+        throw NewTypeError?.Invoke($"Cannot delete property {key} of {target}")
+            ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
+    }
+
+    internal static JSValue ThrowOnStrictDeleteFailure(JSValue target, uint key, JSValue result)
+    {
+        if (result.BooleanValue || IsStrictModeEnabled?.Invoke() != true)
+            return result;
+
+        throw NewTypeError?.Invoke($"Cannot delete property {key} of {target}")
+            ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
+    }
+
+    internal static JSValue ThrowOnStrictDeleteFailure(JSValue target, JSValue key, JSValue result)
+    {
+        if (result.BooleanValue || IsStrictModeEnabled?.Invoke() != true)
+            return result;
+
+        throw NewTypeError?.Invoke($"Cannot delete property {key} of {target}")
+            ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
+    }
+
     /// <summary>
     /// 1. NaN is considered equal to NaN.
     /// 2. +0 and -0 are considered to be equal.

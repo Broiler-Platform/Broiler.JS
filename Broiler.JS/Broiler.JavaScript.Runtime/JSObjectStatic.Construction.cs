@@ -109,6 +109,14 @@ public partial class JSObject
             return;
         }
 
+        if (target.GetType() != typeof(JSObject))
+        {
+            var result = target.DefineProperty(JSValue.CreateNumber(index), descriptor);
+            if (result.IsBoolean && !result.BooleanValue)
+                throw NewTypeError("Cannot define property");
+            return;
+        }
+
         target.DefineProperty(index, descriptor);
     }
 
@@ -117,6 +125,14 @@ public partial class JSObject
         if (target.IsArray && key.Key == KeyStrings.length.Key)
         {
             DefineArrayLength(target, descriptor);
+            return;
+        }
+
+        if (target.GetType() != typeof(JSObject))
+        {
+            var result = target.DefineProperty(key.ToJSValue(), descriptor);
+            if (result.IsBoolean && !result.BooleanValue)
+                throw NewTypeError("Cannot define property");
             return;
         }
 
@@ -294,7 +310,16 @@ public partial class JSObject
                 DefineOwnProperty(targetObject, propertyKey.KeyString, pd);
                 break;
             case KeyType.Symbol:
-                targetObject.DefineProperty(propertyKey.Symbol, pd);
+                if (targetObject.GetType() == typeof(JSObject))
+                {
+                    targetObject.DefineProperty(propertyKey.Symbol, pd);
+                }
+                else
+                {
+                    var result = targetObject.DefineProperty(key, pd);
+                    if (result.IsBoolean && !result.BooleanValue)
+                        throw NewTypeError("Cannot define property");
+                }
                 break;
             default:
                 throw NewTypeError($"Cannot define property {key}");

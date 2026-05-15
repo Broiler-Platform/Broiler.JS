@@ -1,4 +1,5 @@
 ﻿using System;
+using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using System.Runtime.CompilerServices;
@@ -159,6 +160,16 @@ public partial class JSRegExp
         }
 
         return result;
+    }
+
+    [JSPrototypeMethod]
+    [JSExport("toString")]
+    public static JSValue ToString(in Arguments a)
+    {
+        if (a.This is not JSRegExp regExp)
+            throw JSEngine.NewTypeError("RegExp.prototype.toString called on incompatible receiver");
+
+        return JSValue.CreateString($"/{regExp.pattern}/{regExp.flags}");
     }
 
     /// <summary>

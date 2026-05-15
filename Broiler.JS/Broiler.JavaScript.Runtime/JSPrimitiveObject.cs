@@ -81,6 +81,47 @@ public class JSPrimitiveObject : JSObject
         return base.SetValue(name, value, receiver, throwError);
     }
 
+    public override JSValue DefineProperty(JSValue key, JSObject propertyDescription)
+    {
+        var propertyKey = key.ToKey();
+        if (value.IsString && propertyKey.IsUInt && propertyKey.Index < value.Length)
+        {
+            if (!propertyDescription.GetInternalProperty(KeyStrings.configurable, false).IsEmpty
+                && propertyDescription[KeyStrings.configurable].BooleanValue)
+            {
+                return BooleanFalse;
+            }
+
+            if (!propertyDescription.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty
+                && !propertyDescription[KeyStrings.enumerable].BooleanValue)
+            {
+                return BooleanFalse;
+            }
+
+            if (!propertyDescription.GetInternalProperty(KeyStrings.writable, false).IsEmpty
+                && propertyDescription[KeyStrings.writable].BooleanValue)
+            {
+                return BooleanFalse;
+            }
+
+            if (!propertyDescription.GetInternalProperty(KeyStrings.get, false).IsEmpty
+                || !propertyDescription.GetInternalProperty(KeyStrings.set, false).IsEmpty)
+            {
+                return BooleanFalse;
+            }
+
+            if (!propertyDescription.GetInternalProperty(KeyStrings.value, false).IsEmpty
+                && !propertyDescription[KeyStrings.value].StrictEquals(value[propertyKey.Index]))
+            {
+                return BooleanFalse;
+            }
+
+            return JSUndefined.Value;
+        }
+
+        return base.DefineProperty(key, propertyDescription);
+    }
+
     /// <summary> Added for below TCs in ExpressionTests.cs
     /// Assert.AreEqual(false, Evaluate("var x = new Number(10); x == new Number(10)"));
     // Assert.AreEqual(true, Evaluate("var x = new Number(10); x == x"));
