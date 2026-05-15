@@ -4378,14 +4378,10 @@ test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_ZWJ_Sequence.
 test/built-ins/RegExp/property-escapes/special-property-value-Script_Extensions-Unknown.js
 test/built-ins/RegExp/prototype/S15.10.5.1_A3.js
 test/built-ins/RegExp/prototype/S15.10.5.1_A4.js
-test/built-ins/RegExp/prototype/Symbol.match/builtin-failure-g-set-lastindex-err.js
-test/built-ins/RegExp/prototype/Symbol.match/builtin-failure-g-set-lastindex.js
-test/built-ins/RegExp/prototype/Symbol.match/builtin-failure-y-set-lastindex-err.js
 test/built-ins/RegExp/prototype/Symbol.match/builtin-infer-unicode.js
 test/built-ins/RegExp/prototype/Symbol.match/builtin-success-g-set-lastindex-err.js
 test/built-ins/RegExp/prototype/Symbol.match/builtin-success-g-set-lastindex.js
 test/built-ins/RegExp/prototype/Symbol.match/builtin-success-u-return-val-groups.js
-test/built-ins/RegExp/prototype/Symbol.match/builtin-success-y-set-lastindex-err.js
 test/built-ins/RegExp/prototype/Symbol.match/builtin-y-coerce-lastindex-err.js
 test/built-ins/RegExp/prototype/Symbol.match/coerce-global.js
 test/built-ins/RegExp/prototype/Symbol.match/exec-err.js
@@ -4396,7 +4392,6 @@ test/built-ins/RegExp/prototype/Symbol.match/flags-tostring-error.js
 test/built-ins/RegExp/prototype/Symbol.match/g-coerce-result-err.js
 test/built-ins/RegExp/prototype/Symbol.match/g-get-exec-err.js
 test/built-ins/RegExp/prototype/Symbol.match/g-get-result-err.js
-test/built-ins/RegExp/prototype/Symbol.match/g-init-lastindex-err.js
 test/built-ins/RegExp/prototype/Symbol.match/g-match-empty-coerce-lastindex-err.js
 test/built-ins/RegExp/prototype/Symbol.match/g-match-empty-set-lastindex-err.js
 test/built-ins/RegExp/prototype/Symbol.match/get-exec-err.js
@@ -4406,7 +4401,6 @@ test/built-ins/RegExp/prototype/Symbol.match/get-unicode-error.js
 test/built-ins/RegExp/prototype/Symbol.match/this-val-non-regexp.js
 test/built-ins/RegExp/prototype/Symbol.match/u-advance-after-empty.js
 test/built-ins/RegExp/prototype/Symbol.match/y-fail-global-return.js
-test/built-ins/RegExp/prototype/Symbol.match/y-fail-lastindex-no-write.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/isregexp-called-once.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/isregexp-this-throws.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/regexpcreate-this-throws.js
@@ -4569,7 +4563,6 @@ test/built-ins/RegExp/prototype/exec/success-lastindex-access.js
 test/built-ins/RegExp/prototype/exec/u-captured-value.js
 test/built-ins/RegExp/prototype/exec/u-lastindex-adv.js
 test/built-ins/RegExp/prototype/exec/u-lastindex-value.js
-test/built-ins/RegExp/prototype/exec/y-fail-lastindex-no-write.js
 test/built-ins/RegExp/prototype/flags/coercion-dotall.js
 test/built-ins/RegExp/prototype/flags/coercion-global.js
 test/built-ins/RegExp/prototype/flags/coercion-hasIndices.js
@@ -4602,7 +4595,6 @@ test/built-ins/RegExp/prototype/sticky/prop-desc.js
 test/built-ins/RegExp/prototype/sticky/this-val-regexp-prototype.js
 test/built-ins/RegExp/prototype/test/S15.10.6.3_A11.js
 test/built-ins/RegExp/prototype/test/S15.10.6.3_A1_T8.js
-test/built-ins/RegExp/prototype/test/y-fail-lastindex-no-write.js
 test/built-ins/RegExp/prototype/toString/called-as-function.js
 test/built-ins/RegExp/prototype/unicode/prop-desc.js
 test/built-ins/RegExp/prototype/unicode/this-val-regexp-prototype.js
@@ -20318,8 +20310,6 @@ test/staging/sm/String/fromCodePoint.js
 test/staging/sm/String/internalUsage.js
 test/staging/sm/String/match-GetMethod.js
 test/staging/sm/String/match-defines-match-elements.js
-test/staging/sm/String/match-throws-nonwritable-lastIndex-global.js
-test/staging/sm/String/match-updates-global-lastIndex.js
 test/staging/sm/String/match.js
 test/staging/sm/String/raw.js
 test/staging/sm/String/replace-GetMethod.js
