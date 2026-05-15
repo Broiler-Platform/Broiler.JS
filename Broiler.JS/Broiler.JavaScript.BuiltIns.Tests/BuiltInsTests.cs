@@ -92,6 +92,43 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Proxy_Delete_Uses_Handler_Context_And_Enforces_Revocation_And_New()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var handler = {
+                    deleteProperty: function(target, prop) {
+                        return this === handler && prop === 'attr';
+                    }
+                };
+
+                var revoked = Proxy.revocable({ attr: 1 }, {});
+                revoked.revoke();
+
+                return [
+                    delete new Proxy({ attr: 1 }, handler).attr,
+                    thrownCtor(function () { delete new Proxy({}, { deleteProperty: {} }).attr; }),
+                    thrownCtor(function () { delete revoked.proxy.attr; }),
+                    thrownCtor(function () { Proxy({}, {}); })
+                ].join('|');
+            })();
+        ");
+
+        Assert.Equal("true|TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void JSON_Stringify_Circular_Replacer_Value_Throws_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -2019,16 +2056,18 @@ public class BuiltInsTests
                     thrownCtor(function () { Promise.resolve.call(1, 0); }),
                     thrownCtor(function () { Promise.resolve.call({}, 0); }),
                     thrownCtor(function () { Promise.all.call(1, []); }),
+                    thrownCtor(function () { Promise.all.call(function ZeroArgConstructor() {}, []); }),
                     thrownCtor(function () { Promise.allSettled.call({}, []); }),
                     thrownCtor(function () { Promise.allSettledKeyed.call({}, {}); }),
                     thrownCtor(function () { Promise.any.call(true, []); }),
                     thrownCtor(function () { Promise.reject.call(undefined, 1); }),
+                    thrownCtor(function () { Promise.reject.call(function ZeroArgConstructor() {}, 1); }),
                     thrownCtor(function () { promise.then(function (value) { return value; }); })
                 ].join('|');
             })();
         ");
 
-        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
     [Fact]
@@ -2428,6 +2467,43 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("TypeError|TypeError|TypeError|TypeError:true:true|TypeError:2|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Object_DefineProperty_Uses_Array_Length_Invariants()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              function thrownCtor(fn) {
+                try {
+                  fn();
+                  return 'no-throw';
+                } catch (e) {
+                  return e.constructor.name;
+                }
+              }
+
+              var arr = [];
+              var first = thrownCtor(function () {
+                Object.defineProperty(arr, 'length', {
+                  get: function () {
+                    return 2;
+                  }
+                });
+              });
+
+              Object.defineProperty(arr, 'length', { writable: false });
+              var second = thrownCtor(function () {
+                Object.defineProperty(arr, 'length', { writable: true });
+              });
+
+              return [first, second].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError", result.ToString());
     }
 
     [Fact]
