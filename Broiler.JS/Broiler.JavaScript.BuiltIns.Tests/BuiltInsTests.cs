@@ -2056,12 +2056,12 @@ public class BuiltInsTests
                     thrownCtor(function () { Promise.resolve.call(1, 0); }),
                     thrownCtor(function () { Promise.resolve.call({}, 0); }),
                     thrownCtor(function () { Promise.all.call(1, []); }),
-                    thrownCtor(function () { Promise.all.call(function ZeroArgConstructor() {}, []); }),
+                    thrownCtor(function () { Promise.all.call(function InvalidPromiseConstructor() {}, []); }),
                     thrownCtor(function () { Promise.allSettled.call({}, []); }),
                     thrownCtor(function () { Promise.allSettledKeyed.call({}, {}); }),
                     thrownCtor(function () { Promise.any.call(true, []); }),
                     thrownCtor(function () { Promise.reject.call(undefined, 1); }),
-                    thrownCtor(function () { Promise.reject.call(function ZeroArgConstructor() {}, 1); }),
+                    thrownCtor(function () { Promise.reject.call(function InvalidPromiseConstructor() {}, 1); }),
                     thrownCtor(function () { promise.then(function (value) { return value; }); })
                 ].join('|');
             })();

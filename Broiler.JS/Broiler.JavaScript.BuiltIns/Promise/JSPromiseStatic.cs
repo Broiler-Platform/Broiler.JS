@@ -71,8 +71,10 @@ public partial class JSPromise
         if (!receiver.IsObject)
             throw JSEngine.NewTypeError("Promise.try receiver must be an object");
 
-        if (!IsConstructor(receiver) || receiver is not JSFunction constructor)
+        if (!IsConstructor(receiver))
             throw JSEngine.NewTypeError("Promise.try receiver must be a constructor");
+
+        var constructor = (JSFunction)receiver;
 
         var callbackfn = a.Get1();
         if (!callbackfn.IsFunction)
