@@ -666,10 +666,8 @@ def build_summary(
     failed = sum(1 for result in results if result["status"] == "failed")
     skipped = sum(1 for result in results if result["status"] == "skipped")
     timed_out = sum(1 for result in results if result["status"] == "timedOut")
-    failed_paths = [str(result["path"]) for result in results if result["status"] == "failed"]
-    timed_out_paths = [
-        str(result["path"]) for result in results if result["status"] == "timedOut"
-    ]
+    failed_paths = [result["path"] for result in results if result["status"] == "failed"]
+    timed_out_paths = [result["path"] for result in results if result["status"] == "timedOut"]
     executed = passed + failed + timed_out
     return {
         "suiteRef": suite_ref,
