@@ -265,7 +265,7 @@ jobs:
     needs:
       - plan
       - rerun-failed
-    if: needs.plan.outputs.should-rerun-failed != 'true' || needs.rerun-failed.result == 'success'
+    if: always() && (needs.plan.outputs.should-rerun-failed != 'true' || needs.rerun-failed.result == 'success')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
