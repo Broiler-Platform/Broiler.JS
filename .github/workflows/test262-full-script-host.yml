@@ -331,6 +331,7 @@ jobs:
         env:
           ISSUE_BODY_PATH: ${{ github.workspace }}/.artifacts/test262/full-script-host/logparser/issue.md
           ISSUE_TITLE: ${{ steps.logparser.outputs.issue_title }}
+          ISSUE_ASSIGNEE: app/copilot-swe-agent
           TEST262_REF: ${{ inputs.suite_ref || 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e' }}
         with:
           github-token: ${{ secrets.ISSUE_TOKEN }}
@@ -347,11 +348,14 @@ jobs:
               '- Artifact: `test262-full-script-host-logs`',
             ].join('\n');
 
+            // Keep the auto-generated workflow issue routed to the Copilot SWE agent
+            // so this workflow's triage path stays consistent without changing other workflows.
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: process.env.ISSUE_TITLE,
               body,
+              assignees: [process.env.ISSUE_ASSIGNEE],
             });
 
             core.info(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
