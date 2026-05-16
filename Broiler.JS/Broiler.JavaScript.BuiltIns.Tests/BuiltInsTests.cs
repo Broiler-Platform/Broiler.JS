@@ -4731,6 +4731,48 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Generator_And_AsyncGenerator_Parameter_Abrupt_Completions_Throw_On_Call()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var generatorCallCount = 0;
+                var asyncGeneratorCallCount = 0;
+
+                var generator = function*(_ = (function () { throw new Test262Error(); }())) {
+                    generatorCallCount += 1;
+                };
+
+                var asyncGenerator = async function*({ x = (function () { throw new Test262Error(); }()) } = {}) {
+                    asyncGeneratorCallCount += 1;
+                };
+
+                return [
+                    thrownCtor(function () { generator(); }),
+                    String(generatorCallCount),
+                    thrownCtor(function () { asyncGenerator(); }),
+                    String(asyncGeneratorCallCount)
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("Test262Error|0|Test262Error|0", result.ToString());
+    }
+
+    [Fact]
     public void Array_FinalizationRegistry_And_Function_TypeError_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();

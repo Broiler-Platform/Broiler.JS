@@ -9,6 +9,7 @@ namespace Broiler.JavaScript.BuiltIns.Function;
 public class JSGeneratorFunctionV2 : JSFunction
 {
     readonly JSGeneratorDelegateV2 @delegate;
+    readonly bool primeOnInvoke;
 
     private static JSObject CreateGeneratorFunctionPrototype(bool asyncGenerator)
     {
@@ -29,9 +30,10 @@ public class JSGeneratorFunctionV2 : JSFunction
         return prototype;
     }
 
-    public JSGeneratorFunctionV2(JSGeneratorDelegateV2 @delegate, in StringSpan name, in StringSpan code, bool asyncGenerator) : base(null, name, code)
+    public JSGeneratorFunctionV2(JSGeneratorDelegateV2 @delegate, in StringSpan name, in StringSpan code, bool asyncGenerator, bool primeOnInvoke = false) : base(null, name, code)
     {
         this.@delegate = @delegate;
+        this.primeOnInvoke = primeOnInvoke;
         CoerceThisOnInvoke = true;
         f = InvokeFunction;
         BasePrototypeObject = CreateGeneratorFunctionPrototype(asyncGenerator);
@@ -43,7 +45,12 @@ public class JSGeneratorFunctionV2 : JSFunction
             ? a.OverrideThis(JSFunction.CoerceNonStrictThis(a.This))
             : a;
 
-        return JSGeneratorBuilder.CreateFromClrV2(new ClrGeneratorV2(this, @delegate, args));
+        var generator = JSGeneratorBuilder.CreateFromClrV2(new ClrGeneratorV2(this, @delegate, args));
+
+        if (primeOnInvoke && generator is IJSGenerator jsGenerator)
+            jsGenerator.MoveNext(JSUndefined.Value, out _);
+
+        return generator;
     }
 
     public override JSValue CreateInstance(in Arguments a)

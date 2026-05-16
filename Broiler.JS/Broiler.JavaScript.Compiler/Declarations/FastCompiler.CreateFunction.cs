@@ -131,6 +131,9 @@ partial class FastCompiler
             if (s.MemberInits != null)
                 InitMembers(sList, s);
 
+            if (functionDeclaration.Generator)
+                sList.Add(YExpression.Yield(JSUndefinedBuilder.Value));
+
             sList.Add(lambdaBody);
 
             if (createClass)
@@ -161,7 +164,7 @@ partial class FastCompiler
                 lambda = GeneratorRewriter.Rewrite(in scriptFunctionName, block, cs.ReturnLabel, cs.Generator, replaceArgs: cs.Arguments, replaceStackItem: cs.StackItem,
                     replaceContext: cs.Context, replaceScriptInfo: scriptInfo);
 
-                jsf = JSGeneratorFunctionBuilderV2.New(lambda, fxName, code, functionDeclaration.Async);
+                jsf = JSGeneratorFunctionBuilderV2.New(lambda, fxName, code, functionDeclaration.Async, primeOnInvoke: true);
             }
             else if (functionDeclaration.Async)
             {
