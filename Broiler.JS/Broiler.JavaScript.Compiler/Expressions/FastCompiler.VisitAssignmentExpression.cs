@@ -16,6 +16,9 @@ partial class FastCompiler
     private static readonly MethodInfo RequireObjectCoercibleMethod = typeof(JSObjectStatic)
         .InternalMethod(nameof(JSObjectStatic.RequireObjectCoercible), typeof(JSValue))
         ?? throw new InvalidOperationException("JSObjectStatic.RequireObjectCoercible(JSValue) not found");
+    private static readonly MethodInfo ReturnableEnumeratorReturnMethod = typeof(IReturnableEnumerator)
+        .GetMethod(nameof(IReturnableEnumerator.Return), [typeof(JSValue)])
+        ?? throw new InvalidOperationException("IReturnableEnumerator.Return(JSValue) not found");
 
     private YExpression VisitAssignmentExpression(AstExpression left, TokenTypes assignmentOperator, AstExpression right)
     {
@@ -164,10 +167,14 @@ partial class FastCompiler
             case FastNodeType.ArrayPattern:
                 var arrayPattern = pattern as AstArrayPattern;
                 using (var enVar = scope.Top.GetTempVariable(typeof(IElementEnumerator)))
+                using (var returnableVar = scope.Top.GetTempVariable(typeof(IReturnableEnumerator)))
                 {
                     var destExp = enVar.Expression;
                     inits.Add(YExpression.Assign(destExp, IElementEnumeratorBuilder.Get(init)));
+                    inits.Add(YExpression.Assign(returnableVar.Expression, YExpression.TypeAs(destExp, typeof(IReturnableEnumerator))));
                     var en = arrayPattern.Elements.GetFastEnumerator();
+                    var arrayInits = new Sequence<YExpression>();
+                    var hasSpread = false;
 
                     while (en.MoveNext(out var element))
                     {
@@ -177,7 +184,7 @@ partial class FastCompiler
                                 // Elision: advance iterator without assigning
                                 using (var skipTemp = scope.Top.GetTempVariable(typeof(JSValue)))
                                 {
-                                    inits.Add(IElementEnumeratorBuilder.MoveNext(destExp, skipTemp.Expression));
+                                    arrayInits.Add(IElementEnumeratorBuilder.MoveNext(destExp, skipTemp.Expression));
                                 }
                                 break;
                             case FastNodeType.Identifier:
@@ -186,17 +193,17 @@ partial class FastCompiler
                                     scope.Top.CreateVariable(id.Name.Value, null, newScope);
 
                                 var assignee = VisitIdentifierReference(id);
-                                inits.Add(IElementEnumeratorBuilder.AssignMoveNext(assignee, destExp));
+                                arrayInits.Add(IElementEnumeratorBuilder.AssignMoveNext(assignee, destExp));
                                 break;
                             case FastNodeType.BinaryExpression:
                                 var be = element as AstBinaryExpression;
                                 if (be.Left.Type != FastNodeType.Identifier)
                                 {
                                     using var te = scope.Top.GetTempVariable(typeof(JSValue));
-                                    inits.Add(IElementEnumeratorBuilder.MoveNext(destExp, te.Expression));
-                                    inits.Add(JSValueExtensionsBuilder.AssignCoalesce(te.Expression, Visit(be.Right)));
+                                    arrayInits.Add(IElementEnumeratorBuilder.MoveNext(destExp, te.Expression));
+                                    arrayInits.Add(JSValueExtensionsBuilder.AssignCoalesce(te.Expression, Visit(be.Right)));
 
-                                    CreateAssignment(inits, be.Left, te.Expression, true, newScope);
+                                    CreateAssignment(arrayInits, be.Left, te.Expression, true, newScope);
 
                                     break;
                                 }
@@ -206,18 +213,19 @@ partial class FastCompiler
                                     scope.Top.CreateVariable(id.Name.Value, null, newScope);
 
                                 assignee = VisitIdentifierReference(id);
-                                inits.Add(IElementEnumeratorBuilder.AssignMoveNext(assignee, destExp));
-                                inits.Add(JSValueExtensionsBuilder.AssignCoalesce(assignee, Visit(be.Right)));
+                                arrayInits.Add(IElementEnumeratorBuilder.AssignMoveNext(assignee, destExp));
+                                arrayInits.Add(JSValueExtensionsBuilder.AssignCoalesce(assignee, Visit(be.Right)));
                                 break;
 
                             case FastNodeType.SpreadElement:
                                 var spe = element as AstSpreadElement;
+                                hasSpread = true;
                                 // loop...
                                 if (createVariable && spe.Argument is AstIdentifier id2)
                                     scope.Top.CreateVariable(id2.Name.Value, null, newScope);
 
                                 var spid = Visit(spe.Argument);
-                                inits.Add(YExpression.Assign(spid, JSArrayBuilder.NewFromElementEnumerator(destExp)));
+                                arrayInits.Add(YExpression.Assign(spid, JSArrayBuilder.NewFromElementEnumerator(destExp)));
                                 break;
 
                             case FastNodeType.ObjectPattern:
@@ -228,14 +236,32 @@ partial class FastCompiler
                                 using (var te = scope.Top.GetTempVariable(typeof(JSValue)))
                                 {
                                     var check = IElementEnumeratorBuilder.MoveNext(destExp, te.Expression);
-                                    inits.Add(check);
-                                    CreateAssignment(inits, ape, te.Expression, true, newScope);
+                                    arrayInits.Add(check);
+                                    CreateAssignment(arrayInits, ape, te.Expression, true, newScope);
                                 }
                                 break;
 
                             default:
                                 throw new NotSupportedException($"{element.Type}");
                         }
+                    }
+
+                    var arrayInitBlock = YExpression.Block(arrayInits);
+                    if (hasSpread)
+                    {
+                        inits.Add(arrayInitBlock);
+                    }
+                    else
+                    {
+                        var closeIterator = YExpression.Condition(
+                            YExpression.NotEqual(YExpression.Convert(returnableVar.Expression, typeof(object)), YExpression.Null),
+                            YExpression.Block(
+                                YExpression.Call(returnableVar.Expression, ReturnableEnumeratorReturnMethod, JSUndefinedBuilder.Value),
+                                JSUndefinedBuilder.Value),
+                            JSUndefinedBuilder.Value,
+                            typeof(JSValue));
+
+                        inits.Add(YExpression.TryFinally(arrayInitBlock, closeIterator));
                     }
                 }
 

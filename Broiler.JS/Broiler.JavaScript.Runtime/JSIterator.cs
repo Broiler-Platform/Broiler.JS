@@ -72,8 +72,8 @@ public struct JSIterator(JSValue iterator) : IElementEnumerator, IReturnableEnum
 
     public readonly JSValue Return(JSValue value)
     {
-        var fx = iterator.GetMethod(KeyStrings.@return);
-        if (fx == null)
+        var method = iterator[KeyStrings.@return];
+        if (method.IsUndefined || method.IsNull)
         {
             var iteratorResult = JSObject.NewWithProperties();
             iteratorResult.FastAddValue(KeyStrings.value, value, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
@@ -81,7 +81,7 @@ public struct JSIterator(JSValue iterator) : IElementEnumerator, IReturnableEnum
             return iteratorResult;
         }
 
-        var result = fx(new Arguments(iterator, value));
+        var result = method.InvokeFunction(new Arguments(iterator, value));
         if (!result.IsObject)
             throw JSValue.NewTypeError("Iterator return result is not an object");
 

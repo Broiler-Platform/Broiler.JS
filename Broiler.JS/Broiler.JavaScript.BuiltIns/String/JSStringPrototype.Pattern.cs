@@ -89,8 +89,22 @@ public partial class JSString
     [JSExport("split", Length = 2)]
     internal static JSValue Split(in Arguments a)
     {
-        var @this = a.This.AsString();
+        var @thisValue = a.This;
+        var @this = @thisValue.AsString();
         var (_separator, limit) = a.Get2();
+
+        if (!_separator.IsNullOrUndefined)
+        {
+            var splitter = _separator[(IJSSymbol)JSSymbol.split];
+            if (!splitter.IsUndefined)
+            {
+                if (!splitter.IsFunction)
+                    throw JSEngine.NewTypeError("@@split is not callable");
+
+                return splitter.InvokeFunction(new Arguments(_separator, @thisValue, limit));
+            }
+        }
+
         // Limit defaults to unlimited.  Note the ToUint32() conversion.
         var limitMax = uint.MaxValue;
 
