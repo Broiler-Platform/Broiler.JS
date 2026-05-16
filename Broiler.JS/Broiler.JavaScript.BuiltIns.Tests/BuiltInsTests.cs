@@ -3550,6 +3550,45 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
+    [Fact]
+    public void WeakSet_TypeError_Regressions_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    (function () {
+                        var original = WeakSet.prototype.add;
+                        try {
+                            Object.defineProperty(WeakSet.prototype, 'add', { value: null, configurable: true });
+                            return thrownCtor(function () {
+                                new WeakSet([]);
+                            });
+                        } finally {
+                            Object.defineProperty(WeakSet.prototype, 'add', { value: original, configurable: true });
+                        }
+                    })(),
+                    thrownCtor(function () {
+                        new WeakSet({});
+                    })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError", result.ToString());
+    }
+
     // ── M3: StructuredClone with Map/Set ─────────────────────────────
 
     [Fact]
@@ -5154,6 +5193,37 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("Symbol(66)|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_TypeError_Regressions_Match_Test262_Basics()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () { Intl.DisplayNames(); }),
+                    thrownCtor(function () { new Intl.DisplayNames([], null); }),
+                    thrownCtor(function () { new Intl.DisplayNames([], Symbol()); }),
+                    thrownCtor(function () { Intl.DurationFormat(); }),
+                    thrownCtor(function () { new Intl.DurationFormat([], null); }),
+                    thrownCtor(function () { Intl.supportedValuesOf(Symbol()); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
     [Fact]

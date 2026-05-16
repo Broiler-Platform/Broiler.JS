@@ -15,11 +15,17 @@ public partial class JSWeakSet : JSObject
 
     public JSWeakSet(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
-        if (a[0] is JSArray array)
+        var iterable = a.Get1();
+        if (iterable.IsNullOrUndefined)
+            return;
+
+        if (this[KeyStrings.GetOrCreate("add")] is not IJSFunction adder)
+            throw JSEngine.NewTypeError("WeakSet instance 'add' property is not callable");
+
+        var en = iterable.GetIterableEnumerator();
+        while (en.MoveNext(out var item))
         {
-            var en = array.GetElementEnumerator();
-            while (en.MoveNext(out var value))
-                Add((JSObject)value);
+            adder.InvokeFunction(new Arguments(this, item));
         }
     }
 

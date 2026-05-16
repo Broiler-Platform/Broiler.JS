@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
@@ -42,13 +43,27 @@ public static class JSIntl
         intl.FastAddValue(DurationFormatKey, CreateSimpleConstructor("DurationFormat", 0), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(PluralRulesKey, CreateSimpleConstructor("PluralRules", 0), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(SupportedValuesOfKey,
-            new JSFunction(static (in Arguments _) => JSValue.CreateArray(), "supportedValuesOf", "function supportedValuesOf() { [native code] }", length: 1, createPrototype: false),
+            new JSFunction(static (in Arguments a) =>
+            {
+                _ = a.Get1().StringValue;
+                return JSValue.CreateArray();
+            }, "supportedValuesOf", "function supportedValuesOf() { [native code] }", length: 1, createPrototype: false),
             JSPropertyAttributes.ConfigurableValue);
         return intl;
     }
 
     private static JSFunction CreateSimpleConstructor(string name, int length)
-        => new(static (in Arguments _) => new JSObject(), name, $"function {name}() {{ [native code] }}", length: length);
+        => new((in Arguments a) =>
+        {
+            if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
+                throw JSEngine.NewTypeError($"Intl.{name} requires 'new'");
+
+            var options = a.GetAt(1);
+            if (!options.IsUndefined && options is not JSObject)
+                throw JSEngine.NewTypeError("Options must be an object");
+
+            return new JSObject();
+        }, name, $"function {name}() {{ [native code] }}", length: length);
 
     private static JSFunction CreateDateTimeFormatConstructor()
     {
