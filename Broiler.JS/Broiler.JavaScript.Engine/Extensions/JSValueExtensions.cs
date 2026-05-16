@@ -54,8 +54,11 @@ public static partial class JSValueExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static JSValue InvokeMethod(this JSValue @this, in KeyString name, in Arguments a)
     {
-        var fx = @this.GetMethod(in name);
-        return fx == null ? throw JSEngine.NewTypeError($"Method {name} not found in {@this}") : fx(a.OverrideThis(@this));
+        var fx = @this[name];
+        if (fx.IsUndefined)
+            throw JSEngine.NewTypeError($"Method {name} not found in {@this}");
+
+        return fx.InvokeFunction(a.OverrideThis(@this));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

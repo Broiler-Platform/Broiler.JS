@@ -5398,6 +5398,141 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void String_Intl_And_Iterator_Abrupt_Getters_Are_Preserved()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () {
+                        var obj = {};
+                        Object.defineProperty(obj, Symbol.search, {
+                            get: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        ''.search(obj);
+                    }),
+                    thrownCtor(function () {
+                        var obj = {};
+                        Object.defineProperty(obj, Symbol.split, {
+                            get: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        ''.split(obj);
+                    }),
+                    thrownCtor(function () {
+                        var iterable = {
+                            [Symbol.iterator]: function () {
+                                var iterator = {
+                                    next: function () {
+                                        return { done: false, value: 1 };
+                                    },
+                                    return: function () {
+                                        throw new Test262Error();
+                                    }
+                                };
+
+                                return iterator;
+                            }
+                        };
+
+                        var value;
+                        [value] = iterable;
+                    }),
+                    thrownCtor(function () {
+                        new Intl.DisplayNames('en', {
+                            type: 'language',
+                            get fallback() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        new Intl.DisplayNames('en', {
+                            type: 'language',
+                            get languageDisplay() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        new Intl.DisplayNames('en', {
+                            type: 'language',
+                            get localeMatcher() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        new Intl.DisplayNames('en', {
+                            type: 'language',
+                            get style() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        new Intl.DisplayNames('en', {
+                            get type() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        new Intl.NumberFormat('en', {
+                            get roundingIncrement() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        new Intl.NumberFormat('en', {
+                            get roundingMode() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        new Intl.NumberFormat('en', {
+                            get roundingPriority() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        new Intl.NumberFormat('en', {
+                            get trailingZeroDisplay() {
+                                throw new Test262Error();
+                            }
+                        });
+                    })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal(
+            "Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error",
+            result.ToString());
+    }
+
+    [Fact]
     public void MatchAll_Set_Delete_RegExp_And_Proxy_TypeErrors_Match_Test262()
     {
         EnsureBuiltInsLoaded();

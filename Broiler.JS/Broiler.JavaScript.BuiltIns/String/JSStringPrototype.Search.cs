@@ -166,6 +166,18 @@ public partial class JSString
         var @this = a.This.AsString();
         var search = a.Get1();
 
+        if (!search.IsNullOrUndefined)
+        {
+            var searcher = search[(IJSSymbol)JSSymbol.search];
+            if (!searcher.IsUndefined)
+            {
+                if (!searcher.IsFunction)
+                    throw JSEngine.NewTypeError("@@search is not callable");
+
+                return searcher.InvokeFunction(new Arguments(search, a.This));
+            }
+        }
+
         //search string not defined
         if (search.IsUndefined)
             return JSValue.NumberZero;

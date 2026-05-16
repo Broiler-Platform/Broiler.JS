@@ -77,9 +77,11 @@ internal static class JSObjectCoreExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static JSValue InvokeMethodOn(JSValue @this, in KeyString name)
     {
-        var fx = @this.GetMethod(name) ?? throw JSValue.NewTypeError($"Method {name} not found in {@this}");
-        var a = new Arguments(@this);
-        return fx(a);
+        var fx = @this[name];
+        if (fx.IsUndefined)
+            throw JSValue.NewTypeError($"Method {name} not found in {@this}");
+
+        return fx.InvokeFunction(new Arguments(@this));
     }
 
     // ── JSValue.GetAllEntries ───────────────────────────────────────

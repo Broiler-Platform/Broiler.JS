@@ -27,6 +27,14 @@ public static class JSIntl
     private static readonly KeyString StyleKey = KeyStrings.GetOrCreate("style");
     private static readonly KeyString CurrencyKey = KeyStrings.GetOrCreate("currency");
     private static readonly KeyString UnitKey = KeyStrings.GetOrCreate("unit");
+    private static readonly KeyString TypeKey = KeyStrings.GetOrCreate("type");
+    private static readonly KeyString LocaleMatcherKey = KeyStrings.GetOrCreate("localeMatcher");
+    private static readonly KeyString FallbackKey = KeyStrings.GetOrCreate("fallback");
+    private static readonly KeyString LanguageDisplayKey = KeyStrings.GetOrCreate("languageDisplay");
+    private static readonly KeyString RoundingIncrementKey = KeyStrings.GetOrCreate("roundingIncrement");
+    private static readonly KeyString RoundingModeKey = KeyStrings.GetOrCreate("roundingMode");
+    private static readonly KeyString RoundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
+    private static readonly KeyString TrailingZeroDisplayKey = KeyStrings.GetOrCreate("trailingZeroDisplay");
 
     public static JSValue GetIntlObject()
     {
@@ -42,7 +50,7 @@ public static class JSIntl
         intl.FastAddValue(DateTimeFormatKey, CreateDateTimeFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(RelativeTimeFormatKey, CreateRelativeTimeFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(NumberFormatKey, CreateNumberFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
-        intl.FastAddValue(DisplayNamesKey, CreateSimpleConstructor("DisplayNames", 2), JSPropertyAttributes.ConfigurableValue);
+        intl.FastAddValue(DisplayNamesKey, CreateDisplayNamesConstructor(), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(DurationFormatKey, CreateSimpleConstructor("DurationFormat", 0), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(PluralRulesKey, CreateSimpleConstructor("PluralRules", 0), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(SupportedValuesOfKey,
@@ -62,6 +70,13 @@ public static class JSIntl
 
             return new JSObject();
         }, name, $"function {name}() {{ [native code] }}", length: length);
+
+    private static JSFunction CreateDisplayNamesConstructor()
+        => new((in Arguments a) =>
+        {
+            ObserveOptions(ValidateConstructorArguments("DisplayNames", in a), FallbackKey, LanguageDisplayKey, LocaleMatcherKey, StyleKey, TypeKey);
+            return new JSObject();
+        }, "DisplayNames", "function DisplayNames() { [native code] }", length: 2);
 
     private static JSFunction CreateDateTimeFormatConstructor()
     {
@@ -129,13 +144,13 @@ public static class JSIntl
         return constructor;
     }
 
-    internal static void ValidateConstructorArguments(string name, in Arguments a)
+    internal static JSObject ValidateConstructorArguments(string name, in Arguments a)
     {
         if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
             throw JSEngine.NewTypeError($"Intl.{name} requires 'new'");
 
         ValidateLocalesArgument(a.Get1());
-        ValidateOptionsArgument(a.GetAt(1));
+        return ValidateOptionsArgument(a.GetAt(1));
     }
 
     internal static JSObject ValidateOptionsArgument(JSValue options)
@@ -205,6 +220,17 @@ public static class JSIntl
         var unitValue = options[UnitKey];
         if (style == "unit" && unitValue.IsUndefined)
             throw JSEngine.NewTypeError("Intl.NumberFormat unit style requires a unit option");
+
+        ObserveOptions(options, RoundingIncrementKey, RoundingModeKey, RoundingPriorityKey, TrailingZeroDisplayKey);
+    }
+
+    private static void ObserveOptions(JSObject options, params KeyString[] keys)
+    {
+        if (options == null)
+            return;
+
+        foreach (var key in keys)
+            _ = options[key];
     }
 
     private static bool IsWellFormedCurrencyCode(string currency)
@@ -253,8 +279,7 @@ public class JSIntlNumberFormat : JSObject
 {
     public JSIntlNumberFormat(in Arguments a) : this()
     {
-        JSIntl.ValidateConstructorArguments("NumberFormat", in a);
-        JSIntl.ValidateNumberFormatOptions(JSIntl.ValidateOptionsArgument(a.GetAt(1)));
+        JSIntl.ValidateNumberFormatOptions(JSIntl.ValidateConstructorArguments("NumberFormat", in a));
     }
 
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
