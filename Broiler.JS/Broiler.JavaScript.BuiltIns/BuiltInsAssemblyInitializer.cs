@@ -411,6 +411,9 @@ internal static class BuiltInsAssemblyInitializer
     private static JSFunction CreateNativeGetter(JSFunctionDelegate fx, string name)
         => new(fx, $"get {name}", $"function get {name}() {{ [native code] }}", createPrototype: false, length: 0);
 
+    private static JSFunction CreateNativeSetter(JSFunctionDelegate fx, string name)
+        => new(fx, $"set {name}", $"function set {name}() {{ [native code] }}", createPrototype: false, length: 1);
+
     private static void EnsureAccessorProperty(JSObject target, JSValue key, string name, JSFunctionDelegate getter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
     {
         if (!target.GetOwnPropertyDescriptor(key).IsUndefined)
@@ -463,6 +466,29 @@ internal static class BuiltInsAssemblyInitializer
             return;
 
         var prototype = objectCtor.prototype;
+        prototype.FastAddProperty(
+            KeyStrings.__proto__,
+            CreateNativeGetter(static (in Arguments a) =>
+            {
+                if (!a.This.TryAsObjectThrowIfNullOrUndefined(out var @object))
+                    return JSUndefined.Value;
+
+                return @object.GetPrototypeOf();
+            }, "__proto__"),
+            CreateNativeSetter(static (in Arguments a) =>
+            {
+                if (!a.This.TryAsObjectThrowIfNullOrUndefined(out var @object))
+                    return JSUndefined.Value;
+
+                var value = a.Get1();
+                if (!value.IsObject && !value.IsNull)
+                    return JSUndefined.Value;
+
+                @object.SetPrototypeOf(value);
+                return JSUndefined.Value;
+            }, "__proto__"),
+            JSPropertyAttributes.ConfigurableProperty);
+
         var toLocaleStringKey = KeyStrings.GetOrCreate("toLocaleString");
         if (prototype[toLocaleStringKey].IsUndefined)
         {
@@ -579,6 +605,14 @@ internal static class BuiltInsAssemblyInitializer
             if (a.This is not JSRegExp regExp)
                 throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] called on incompatible receiver");
 
+            var flags = regExp[KeyStrings.GetOrCreate("flags")];
+            if (!flags.IsUndefined)
+                _ = flags.ToString();
+
+            var constructor = regExp[KeyStrings.constructor];
+            if (!constructor.IsNullOrUndefined && constructor.IsObject)
+                _ = constructor[(IJSSymbol)JSSymbol.species];
+
             return regExp.Match(a.Get1());
         }, "[Symbol.matchAll]", 1), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.search.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
@@ -593,6 +627,10 @@ internal static class BuiltInsAssemblyInitializer
         {
             if (a.This is not JSRegExp regExp)
                 throw JSEngine.NewTypeError("RegExp.prototype[Symbol.split] called on incompatible receiver");
+
+            var constructor = regExp[KeyStrings.constructor];
+            if (!constructor.IsNullOrUndefined && constructor.IsObject)
+                _ = constructor[(IJSSymbol)JSSymbol.species];
 
             var limit = a.TryGetAt(1, out var second) ? second.UIntValue : uint.MaxValue;
             return regExp.Split(a.Get1().StringValue, limit);

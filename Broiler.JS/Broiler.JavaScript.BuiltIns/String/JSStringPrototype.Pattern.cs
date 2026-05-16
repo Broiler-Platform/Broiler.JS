@@ -1,9 +1,11 @@
-﻿using Broiler.JavaScript.BuiltIns.RegExp;
+using Broiler.JavaScript.BuiltIns.RegExp;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using System;
 using System.Text;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Engine.Extensions;
 
 namespace Broiler.JavaScript.BuiltIns.String;
 
@@ -18,6 +20,18 @@ public partial class JSString
             throw JSEngine.NewTypeError("String.prototype.match called on null or undefined");
         
         var reg = a.Get1();
+        if (!reg.IsNullOrUndefined)
+        {
+            var matcher = reg[(IJSSymbol)JSSymbol.match];
+            if (!matcher.IsUndefined)
+            {
+                if (!matcher.IsFunction)
+                    throw JSEngine.NewTypeError("@@match is not callable");
+
+                return matcher.Call(reg, @this);
+            }
+        }
+
         if (reg is JSRegExp jSRegExp)
             return jSRegExp.Match(@this);
 
@@ -31,6 +45,18 @@ public partial class JSString
     {
         var @this = a.This.AsString();
         var (f, s) = a.Get2();
+        if (!f.IsNullOrUndefined)
+        {
+            var replacer = f[(IJSSymbol)JSSymbol.replace];
+            if (!replacer.IsUndefined)
+            {
+                if (!replacer.IsFunction)
+                    throw JSEngine.NewTypeError("@@replace is not callable");
+
+                return replacer.Call(f, a.This, s);
+            }
+        }
+
         if (f is JSRegExp jSRegExp)
             return new JSString(jSRegExp.Replace(@this, s));
 

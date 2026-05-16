@@ -2723,6 +2723,168 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Test262_Abrupt_Completions_For_Json_Object_RegExp_And_String_BuiltIns_Are_Preserved()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () {
+                        var badDefine = new Proxy({ 0: null }, {
+                            defineProperty: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        JSON.parse('["first", null]', function (_, value) {
+                            if (value === 'first') {
+                                this[1] = badDefine;
+                            }
+                            return value;
+                        });
+                    }),
+                    thrownCtor(function () {
+                        var abruptLength = new Proxy([], {
+                            get: function (_target, key) {
+                                if (key === 'length') {
+                                    throw new Test262Error();
+                                }
+                            }
+                        });
+
+                        JSON.stringify(null, abruptLength);
+                    }),
+                    thrownCtor(function () {
+                        JSON.stringify({}, function () {
+                            throw new Test262Error();
+                        });
+                    }),
+                    thrownCtor(function () {
+                        var abruptLength = new Proxy([], {
+                            get: function (_target, key) {
+                                if (key === 'length') {
+                                    throw new Test262Error();
+                                }
+                            }
+                        });
+
+                        JSON.stringify(abruptLength);
+                    }),
+                    thrownCtor(function () {
+                        var source = new Proxy({ attr: null }, {
+                            getOwnPropertyDescriptor: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        Object.assign({}, source);
+                    }),
+                    thrownCtor(function () {
+                        var subject = new Proxy({}, {
+                            setPrototypeOf: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        subject.__proto__ = {};
+                    }),
+                    thrownCtor(function () {
+                        var r = /./g;
+                        r.exec = function () {
+                            return {
+                                0: {
+                                    toString: function () {
+                                        throw new Test262Error();
+                                    }
+                                }
+                            };
+                        };
+
+                        r[Symbol.match]('');
+                    }),
+                    thrownCtor(function () {
+                        var regexp = /./;
+                        Object.defineProperty(regexp, 'constructor', {
+                            get: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        regexp[Symbol.matchAll]('');
+                    }),
+                    thrownCtor(function () {
+                        var obj = {};
+                        Object.defineProperty(obj, Symbol.match, {
+                            get: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        ''.endsWith(obj);
+                    }),
+                    thrownCtor(function () {
+                        var obj = {};
+                        Object.defineProperty(obj, Symbol.match, {
+                            get: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        ''.includes(obj);
+                    }),
+                    thrownCtor(function () {
+                        var obj = {};
+                        Object.defineProperty(obj, Symbol.match, {
+                            get: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        ''.startsWith(obj);
+                    }),
+                    thrownCtor(function () {
+                        var obj = {};
+                        Object.defineProperty(obj, Symbol.match, {
+                            get: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        ''.match(obj);
+                    }),
+                    thrownCtor(function () {
+                        var obj = {};
+                        Object.defineProperty(obj, Symbol.replace, {
+                            get: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        ''.replace(obj);
+                    })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal(
+            "Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error",
+            result.ToString());
+    }
+
+    [Fact]
     public void Unresolved_Identifier_Reads_Throw_ReferenceError_In_Binary_Expressions()
     {
         EnsureBuiltInsLoaded();

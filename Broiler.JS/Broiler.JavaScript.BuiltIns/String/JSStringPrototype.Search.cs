@@ -3,12 +3,25 @@ using System;
 using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.String;
 
 public partial class JSString
 {
+    private static bool IsRegExpArgument(JSValue value)
+    {
+        if (value is not JSObject @object)
+            return false;
+
+        var matcher = @object[(IJSSymbol)JSSymbol.match];
+        if (!matcher.IsUndefined)
+            return matcher.BooleanValue;
+
+        return value is JSRegExp;
+    }
+
     [JSPrototypeMethod]
     [JSExport("contains", Length = 1)]
     internal static JSValue Contains(in Arguments a)
@@ -32,7 +45,7 @@ public partial class JSString
         var @this = a.This.AsString();
         var f = a.Get1();
 
-        if (f is JSRegExp)
+        if (IsRegExpArgument(f))
             throw JSEngine.NewTypeError("Substring argument must not be a regular expression.");
 
         var endPosition = a[1]?.IntegerValue ?? int.MaxValue;
@@ -60,7 +73,7 @@ public partial class JSString
         var searchStr = a[0] ?? JSUndefined.Value;
         var pos = a[1]?.IntegerValue ?? 0;
 
-        if (searchStr is JSRegExp)
+        if (IsRegExpArgument(searchStr))
             throw JSEngine.NewTypeError("Substring argument must not be a regular expression.");
 
         var search = searchStr.StringValue;
@@ -86,7 +99,7 @@ public partial class JSString
         var searchStr = a[0] ?? JSUndefined.Value;
         var pos = a[1]?.IntegerValue ?? 0;
 
-        if (searchStr is JSRegExp)
+        if (IsRegExpArgument(searchStr))
             throw JSEngine.NewTypeError("Substring argument must not be a regular expression.");
 
         pos = Math.Min(Math.Max(pos, 0), @this.Length);

@@ -503,6 +503,15 @@ public partial class JSProxy : JSObject
 
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
     {
+        if (name.Key == KeyStrings.__proto__.Key)
+        {
+            if (!value.IsObject && !value.IsNull)
+                return true;
+
+            SetPrototypeOf(value);
+            return true;
+        }
+
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.set);
         if (!fx.IsUndefined)

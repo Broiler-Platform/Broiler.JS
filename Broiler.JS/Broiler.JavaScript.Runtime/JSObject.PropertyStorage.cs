@@ -204,6 +204,15 @@ public partial class JSObject
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
     {
         var start = this;
+        if (name.Key == KeyStrings.__proto__.Key && GetInternalProperty(name, false).IsEmpty)
+        {
+            if (!value.IsObject && !value.IsNull)
+                return true;
+
+            (receiver as JSObject ?? this).SetPrototypeOf(value);
+            return true;
+        }
+
         var p = GetInternalProperty(name, true);
         if (p.IsProperty)
         {

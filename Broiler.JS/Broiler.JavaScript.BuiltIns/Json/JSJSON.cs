@@ -16,6 +16,7 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Proxy;
 using Broiler.JavaScript.BuiltIns.Symbol;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Json;
 
@@ -84,6 +85,55 @@ public partial class JSJSON : JSObject
             return proxy.Target.Length;
 
         return ToLength(valueObject[KeyStrings.length]);
+    }
+
+    private static void StringifyArray(
+        TextWriter sb,
+        JSObject array,
+        Func<(JSValue, JSValue, JSValue), JSValue> replacer,
+        IndentedTextWriter indent,
+        HashSet<JSObject> stack)
+    {
+        if (!stack.Add(array))
+            throw JSEngine.NewTypeError("Converting circular structure to JSON");
+
+        try
+        {
+            sb.Write('[');
+            if (indent != null)
+                indent.Indent++;
+
+            var length = GetArrayLength(array);
+            for (uint index = 0; index < length; index++)
+            {
+                if (index > 0)
+                    sb.Write(',');
+
+                if (indent != null)
+                    sb.WriteLine();
+
+                var jsValue = ToJson(array[index]);
+                if (replacer != null)
+                    jsValue = replacer((array, JSValue.CreateString(index.ToString()), jsValue));
+
+                if (jsValue.IsUndefined || jsValue is JSFunction)
+                    jsValue = JSNull.Value;
+
+                Stringify(sb, jsValue, replacer, indent, stack);
+            }
+
+            if (indent != null)
+            {
+                sb.WriteLine();
+                indent.Indent--;
+            }
+
+            sb.Write(']');
+        }
+        finally
+        {
+            stack.Remove(array);
+        }
     }
 
     private static List<string> EnumerableOwnPropertyNames(JSObject valueObject)
@@ -155,6 +205,13 @@ public partial class JSJSON : JSObject
         Dictionary<JSObject, Dictionary<string, string>> sourceMap,
         string rootSource)
     {
+        if (key.Length > 0)
+        {
+            var propertyKey = JSValue.CreateString(key).ToKey(false);
+            if (propertyKey.Type == KeyType.UInt)
+                return InternalizeJsonProperty(holder, propertyKey.Index, reviver, sourceMap);
+        }
+
         var value = holder[key];
         if (value is JSObject valueObject)
         {
@@ -295,8 +352,6 @@ public partial class JSJSON : JSObject
         if (f.IsUndefined)
             return f;
 
-        f = ToJson(f);
-
         TextWriter sb = new StringWriter();
         Func<(JSValue target, JSValue key, JSValue value), JSValue> replacer = null;
         string indent = null;
@@ -323,22 +378,28 @@ public partial class JSJSON : JSObject
             else if (r.IsArray && r is JSObject ra)
             {
                 StringMap<int> map = new();
+                var replacerLength = GetArrayLength(ra);
+
+                for (uint index = 0; index < replacerLength; index++)
+                    map.Put(ra[index].ToString()) = 1;
 
                 replacer = (item) =>
                 {
-                    var en = ra.GetElementEnumerator();
-                    while (en.MoveNext(out var hasValue, out var ri, out var index))
-                    {
-                        map.Put(ri.ToString()) = 1;
-                    }
-
-                    if (map.TryGetValue(item.key.ToString(), out var a1))
+                    if (map.TryGetValue(item.key.ToString(), out var _))
                         return item.value;
 
                     return JSUndefined.Value;
                 };
             }
         }
+
+        var root = new JSObject();
+        var emptyKey = KeyStrings.GetOrCreate(string.Empty);
+        root[emptyKey] = f;
+
+        f = ToJson(f);
+        if (replacer != null)
+            f = replacer((root, JSValue.EmptyString, f));
 
         if (indent != null)
         {
@@ -402,51 +463,12 @@ public partial class JSJSON : JSObject
             case JSFunction _:
                 return;
 
-            case JSArray a:
-                if (!stack.Add(a))
-                    throw JSEngine.NewTypeError("Converting circular structure to JSON");
+        }
 
-                try
-                {
-                sb.Write('[');
-                if (indent != null)
-                    indent.Indent++;
-
-                bool f = true;
-                var ae = a.GetElementEnumerator();
-
-                while (ae.MoveNext(out var hasValue, out var item, out var index))
-                {
-                    if (!f)
-                        sb.Write(',');
-
-                    f = false;
-                    if (indent != null)
-                        sb.WriteLine();
-
-                    var jsValue = ToJson(item);
-                    if (replacer != null)
-                        jsValue = replacer((a, JSValue.CreateString(index.ToString()), jsValue));
-
-                    if (jsValue.IsUndefined || jsValue is JSFunction)
-                        jsValue = JSNull.Value;
-
-                    Stringify(sb, jsValue, replacer, indent, stack);
-                }
-
-                if (indent != null)
-                {
-                    sb.WriteLine();
-                    indent.Indent--;
-                }
-
-                sb.Write(']');
-                return;
-                }
-                finally
-                {
-                    stack.Remove(a);
-                }
+        if (target is JSObject arrayObject && arrayObject.IsArray)
+        {
+            StringifyArray(sb, arrayObject, replacer, indent, stack);
+            return;
         }
 
         if (!stack.Add((JSObject)target))

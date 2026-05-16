@@ -221,18 +221,29 @@ public partial class JSRegExp : JSObject, IJSRegExp
             return ExecuteMatch(input);
 
         SetObservableLastIndex(0);
+        var inputString = input.StringValue;
+        var matchValues = JSValue.CreateArray();
+        uint matchCount = 0;
 
-        // Otherwise, find all matches.
-        var matches = value.Matches(input.StringValue);
-        if (matches.Count == 0)
-            return JSValue.NullValue;
+        while (true)
+        {
+            var result = ExecuteMatch(JSValue.CreateString(inputString));
+            if (result.IsNull)
+                return matchCount == 0 ? JSValue.NullValue : matchValues;
 
-        // Construct the array to return.
-        var matchValues = JSValue.CreateArray((uint)matches.Count);
-        for (int i = 0; i < matches.Count; i++)
-            matchValues[(uint)i] = JSValue.CreateString(matches[i].Value);
+            var match = result[0].StringValue;
+            matchValues[matchCount++] = JSValue.CreateString(match);
 
-        return matchValues;
+            if (match.Length != 0)
+                continue;
+
+            _ = this[KeyStrings.GetOrCreate("unicode")].BooleanValue;
+            var nextLastIndex = GetObservableLastIndex();
+            if (nextLastIndex >= inputString.Length)
+                return matchValues;
+
+            SetObservableLastIndex(nextLastIndex + 1);
+        }
     }
 
     private JSValue ExecuteMatch(JSValue input)

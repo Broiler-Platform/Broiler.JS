@@ -227,10 +227,14 @@ public partial class JSObject
 
             var source = ToObject(ai);
             HashSet<uint> copiedSymbols = null;
-            var keys = source.GetAllKeys(showEnumerableOnly: true, inherited: false);
+            var keys = source.GetAllKeys(showEnumerableOnly: false, inherited: false);
             while (keys.MoveNext(out var hasValue, out var propertyKey, out var _))
             {
                 if (!hasValue)
+                    continue;
+
+                var descriptor = source.GetOwnPropertyDescriptor(propertyKey);
+                if (descriptor.IsUndefined || !descriptor[KeyStrings.enumerable].BooleanValue)
                     continue;
 
                 if (propertyKey.IsSymbol)
