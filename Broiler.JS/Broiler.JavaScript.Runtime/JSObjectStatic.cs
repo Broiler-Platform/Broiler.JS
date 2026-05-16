@@ -25,4 +25,13 @@ public static class JSObjectStatic
         @object = value as JSObject;
         return @object != null;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static JSValue RequireObjectCoercible(this JSValue value)
+    {
+        if (value.IsNullOrUndefined)
+            throw JSObject.NewTypeError(JSObject.Cannot_convert_undefined_or_null_to_object);
+
+        return value;
+    }
 }

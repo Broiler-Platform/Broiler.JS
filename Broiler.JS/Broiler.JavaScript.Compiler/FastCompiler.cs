@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Ast.Statements;
@@ -15,6 +16,12 @@ namespace Broiler.JavaScript.Compiler;
 
 public partial class FastCompiler : AstMapVisitor<YExpression>
 {
+    private static readonly MethodInfo EnterStrictModeDisposableMethod = typeof(JSEngine)
+        .InternalMethod(nameof(JSEngine.EnterStrictModeDisposable), typeof(bool))
+        ?? throw new InvalidOperationException("JSEngine.EnterStrictModeDisposable(bool) not found");
+    private static readonly MethodInfo DisposeMethod = typeof(IDisposable)
+        .GetMethod(nameof(IDisposable.Dispose))
+        ?? throw new InvalidOperationException("IDisposable.Dispose() not found");
     private readonly FastPool pool;
 
     readonly LinkedStack<FastFunctionScope> scope = new();
@@ -40,6 +47,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         var parser = new FastParser(new FastTokenStream(parserPool, code));
         var jScript = parser.ParseProgram();
         parserPool.Dispose();
+        var isStrictProgram = HasUseStrictDirective(jScript);
 
         using var fx = scope.Push(new FastFunctionScope(pool, null, isAsync: jScript.IsAsync));
 
@@ -79,7 +87,12 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         }
 
         var l = fx.ReturnLabel;
+        var previousStrictMode = IsStrictMode;
+        IsStrictMode = isStrictProgram;
         var script = Visit(jScript);
+        IsStrictMode = previousStrictMode;
+        if (isStrictProgram)
+            script = WrapInStrictMode(script);
         var sList = new Sequence<YExpression>()
         {
             YExpression.Assign(scriptInfo, ScriptInfoBuilder.New(location,code.Value)),
@@ -128,6 +141,36 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
         var lambda = YExpression.Lambda<JSFunctionDelegate>("body", script, fx.Arguments);
         Method = lambda;
+    }
+
+    private static bool HasUseStrictDirective(AstStatement body)
+    {
+        if (body is not AstBlock block)
+            return false;
+
+        var statements = block.Statements.GetFastEnumerator();
+        while (statements.MoveNext(out var statement))
+        {
+            if (statement is not AstExpressionStatement { Expression: var expression })
+                return false;
+
+            if (!expression.IsStringLiteral(out var literal))
+                return false;
+
+            if (literal == "use strict")
+                return true;
+        }
+
+        return false;
+    }
+
+    private static YExpression WrapInStrictMode(YExpression body)
+    {
+        var strictScope = YExpression.Parameter(typeof(IDisposable), "#strictScope");
+        return YExpression.Block(
+            new Sequence<YParameterExpression> { strictScope },
+            YExpression.Assign(strictScope, YExpression.Call(null, EnterStrictModeDisposableMethod, YExpression.Constant(true))),
+            YExpression.TryFinally(body, YExpression.Call(strictScope, DisposeMethod)));
     }
 
     private YExpression VisitExpression(AstExpression exp) => Visit(exp);

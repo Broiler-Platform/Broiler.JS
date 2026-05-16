@@ -273,6 +273,57 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Strict_Scripts_Propagate_To_Nested_Functions_And_Indirect_Eval_Global_Definitions()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            "use strict";
+            (function () {
+              function thrownCtor(fn) {
+                try {
+                  fn();
+                  return 'no-throw';
+                } catch (e) {
+                  return e.constructor.name;
+                }
+              }
+
+              var symbolResult = thrownCtor(function () {
+                (function () {
+                  var sym = Symbol('66');
+                  sym.a = 0;
+                })();
+              });
+
+              var deleteResult = thrownCtor(function () {
+                var target = function () {};
+                var proxy = new Proxy(new Proxy(target, {}), {});
+                (function () {
+                  delete proxy.prototype;
+                })();
+              });
+
+              var nonExtensible = false;
+              try {
+                Object.preventExtensions(this);
+                nonExtensible = !Object.isExtensible(this);
+              } catch (e) {
+                nonExtensible = false;
+              }
+
+              var evalResult = nonExtensible
+                ? thrownCtor(function () { (0, eval)('var unlikelyVariableName;'); })
+                : 'setup-failed';
+
+              return [symbolResult, deleteResult, evalResult].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Object_Create_Applies_Property_Descriptors_And_Rejects_Invalid_Accessors()
     {
         EnsureBuiltInsLoaded();
@@ -5073,6 +5124,68 @@ public class BuiltInsTests
         Assert.Equal(
             "TypeError|true|TypeError|true|TypeError|true|TypeError|TypeError|TypeError|TypeError|TypeError",
             result.ToString());
+    }
+
+    [Fact]
+    public void Object_Binding_Patterns_Require_Object_Coercible_Input()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              function thrownCtor(fn) {
+                try {
+                  fn();
+                  return 'no-throw';
+                } catch (e) {
+                  return e.constructor.name;
+                }
+              }
+
+              function bindingTarget({}) {}
+              var arrowNull = ({ } = null) => 0;
+              var arrowUndefined = ({ } = undefined) => 0;
+
+              return [
+                thrownCtor(function () { bindingTarget(null); }),
+                thrownCtor(function () { bindingTarget(undefined); }),
+                thrownCtor(function () { arrowNull(); }),
+                thrownCtor(function () { arrowUndefined(); })
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Class_Static_Prototype_Members_Throw_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              function thrownCtor(source) {
+                try {
+                  eval(source);
+                  return 'no-throw';
+                } catch (e) {
+                  return e.constructor.name;
+                }
+              }
+
+              return [
+                thrownCtor("class C { static ['prototype']() {} }"),
+                thrownCtor("class C { static get ['prototype']() { return 1; } }"),
+                thrownCtor("class C { static set ['prototype'](value) {} }"),
+                thrownCtor("class C { static *['prototype']() {} }")
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
     }
 
     [Fact]

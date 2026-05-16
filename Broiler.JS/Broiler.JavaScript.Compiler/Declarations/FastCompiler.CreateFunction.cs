@@ -13,7 +13,7 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private YExpression CreateFunction(AstFunctionExpression functionDeclaration, YExpression super = null, bool createClass = false, string className = null,
-        IFastEnumerable<AstClassProperty> memberInits = null)
+        IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false)
     {
         var node = functionDeclaration;
 
@@ -151,7 +151,10 @@ partial class FastCompiler
             YLambdaExpression lambda;
             YExpression jsf;
 
-            var isStrictFunction = HasUseStrictDirective(functionDeclaration.Body);
+            var inheritedStrictMode = IsStrictMode || forceStrictMode || createClass;
+            var isStrictFunction = inheritedStrictMode || HasUseStrictDirective(functionDeclaration.Body);
+            var previousStrictMode = IsStrictMode;
+            IsStrictMode = isStrictFunction;
 
             if (functionDeclaration.Generator)
             {
@@ -178,6 +181,8 @@ partial class FastCompiler
                     jsf = JSFunctionBuilder.EnableStrictMode(jsf);
             }
 
+            IsStrictMode = previousStrictMode;
+
             cs.Dispose();
 
             if (jsFVarScope != null)
@@ -201,28 +206,6 @@ partial class FastCompiler
             }
 
             return jsf;
-        }
-
-        static bool HasUseStrictDirective(AstStatement body)
-        {
-            if (body is not AstBlock block)
-                return false;
-
-            // "use strict" is recognized only within the initial directive prologue.
-            var statements = block.Statements.GetFastEnumerator();
-            while (statements.MoveNext(out var statement))
-            {
-                if (statement is not AstExpressionStatement { Expression: var expression })
-                    return false;
-
-                if (!expression.IsStringLiteral(out var literal))
-                    return false;
-
-                if (literal == "use strict")
-                    return true;
-            }
-
-            return false;
         }
     }
 
