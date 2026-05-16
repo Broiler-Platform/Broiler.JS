@@ -592,6 +592,19 @@ internal static class BuiltInsAssemblyInitializer
         if (context[KeyStrings.RegExp] is not JSFunction regExpCtor)
             return;
 
+        static void ValidateSpeciesConstructor(JSValue constructor)
+        {
+            if (constructor.IsUndefined)
+                return;
+
+            if (constructor is not JSObject constructorObject)
+                throw JSEngine.NewTypeError("RegExp constructor must be an object");
+
+            var species = constructorObject[(IJSSymbol)JSSymbol.species];
+            if (!species.IsNullOrUndefined && species is not IJSFunction)
+                throw JSEngine.NewTypeError("RegExp species constructor is not a constructor");
+        }
+
         ref var symbols = ref regExpCtor.prototype.GetSymbols();
         symbols.Put(JSSymbol.match.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
@@ -609,9 +622,7 @@ internal static class BuiltInsAssemblyInitializer
             if (!flags.IsUndefined)
                 _ = flags.ToString();
 
-            var constructor = regExp[KeyStrings.constructor];
-            if (!constructor.IsNullOrUndefined && constructor.IsObject)
-                _ = constructor[(IJSSymbol)JSSymbol.species];
+            ValidateSpeciesConstructor(regExp[KeyStrings.constructor]);
 
             return regExp.Match(a.Get1());
         }, "[Symbol.matchAll]", 1), JSPropertyAttributes.ConfigurableValue);
@@ -628,9 +639,7 @@ internal static class BuiltInsAssemblyInitializer
             if (a.This is not JSRegExp regExp)
                 throw JSEngine.NewTypeError("RegExp.prototype[Symbol.split] called on incompatible receiver");
 
-            var constructor = regExp[KeyStrings.constructor];
-            if (!constructor.IsNullOrUndefined && constructor.IsObject)
-                _ = constructor[(IJSSymbol)JSSymbol.species];
+            ValidateSpeciesConstructor(regExp[KeyStrings.constructor]);
 
             var limit = a.TryGetAt(1, out var second) ? second.UIntValue : uint.MaxValue;
             return regExp.Split(a.Get1().StringValue, limit);

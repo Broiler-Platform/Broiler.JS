@@ -5227,6 +5227,72 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Intl_NumberFormat_RelativeTimeFormat_DurationFormat_And_RegExp_Split_TypeErrors_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var numberFormatNoInstanceof = (function () {
+                    var original = Object.getOwnPropertyDescriptor(Intl.NumberFormat, Symbol.hasInstance);
+                    Object.defineProperty(Intl.NumberFormat, Symbol.hasInstance, {
+                        get: function () {
+                            throw new Test262Error();
+                        },
+                        configurable: true
+                    });
+
+                    try {
+                        return thrownCtor(function () {
+                            return Object.create(Intl.NumberFormat.prototype).format;
+                        });
+                    } finally {
+                        if (original) {
+                            Object.defineProperty(Intl.NumberFormat, Symbol.hasInstance, original);
+                        } else {
+                            delete Intl.NumberFormat[Symbol.hasInstance];
+                        }
+                    }
+                })();
+
+                var splitSpecies = (function () {
+                    var re = /./;
+                    re.constructor = function () {};
+                    re[Symbol.split]();
+
+                    re.constructor[Symbol.species] = {};
+                    return thrownCtor(function () {
+                        re[Symbol.split]();
+                    });
+                })();
+
+                return [
+                    thrownCtor(function () { new Intl.NumberFormat([], { style: 'unit' }); }),
+                    thrownCtor(function () { new Intl.NumberFormat([], { style: 'currency', unit: 'test' }); }),
+                    numberFormatNoInstanceof,
+                    thrownCtor(function () { Intl.RelativeTimeFormat(); }),
+                    thrownCtor(function () { new Intl.RelativeTimeFormat([], null); }),
+                    thrownCtor(function () { new Intl.RelativeTimeFormat('en-US').format(Symbol(), 'second'); }),
+                    thrownCtor(function () { new Intl.DurationFormat([undefined]); }),
+                    splitSpecies
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void MatchAll_Set_Delete_RegExp_And_Proxy_TypeErrors_Match_Test262()
     {
         EnsureBuiltInsLoaded();

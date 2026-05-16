@@ -24,6 +24,9 @@ public static class JSIntl
     private static readonly KeyString FormatRangeToPartsKey = KeyStrings.GetOrCreate("formatRangeToParts");
     private static readonly KeyString SupportedValuesOfKey = KeyStrings.GetOrCreate("supportedValuesOf");
     private static readonly KeyString SupportedLocalesOfKey = KeyStrings.GetOrCreate("supportedLocalesOf");
+    private static readonly KeyString StyleKey = KeyStrings.GetOrCreate("style");
+    private static readonly KeyString CurrencyKey = KeyStrings.GetOrCreate("currency");
+    private static readonly KeyString UnitKey = KeyStrings.GetOrCreate("unit");
 
     public static JSValue GetIntlObject()
     {
@@ -55,12 +58,7 @@ public static class JSIntl
     private static JSFunction CreateSimpleConstructor(string name, int length)
         => new((in Arguments a) =>
         {
-            if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
-                throw JSEngine.NewTypeError($"Intl.{name} requires 'new'");
-
-            var options = a.GetAt(1);
-            if (!options.IsUndefined && options is not JSObject)
-                throw JSEngine.NewTypeError("Options must be an object");
+            ValidateConstructorArguments(name, in a);
 
             return new JSObject();
         }, name, $"function {name}() {{ [native code] }}", length: length);
@@ -104,15 +102,23 @@ public static class JSIntl
 
     private static JSFunction CreateNumberFormatConstructor()
     {
-        var constructor = CreateSimpleConstructor("NumberFormat", 0);
+        var constructor = new JSFunction(static (in Arguments a) => new JSIntlNumberFormat(in a),
+            "NumberFormat",
+            "function NumberFormat() { [native code] }",
+            length: 0);
         constructor.FastAddValue(SupportedLocalesOfKey,
             new JSFunction(static (in Arguments a) => a.Get1().IsNullOrUndefined ? JSValue.CreateArray() : a.Get1(), "supportedLocalesOf", "function supportedLocalesOf() { [native code] }", createPrototype: false, length: 1),
             JSPropertyAttributes.ConfigurableValue);
         if (constructor.prototype.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(FormatKey.ToString(), FormatKey)).IsUndefined)
         {
             constructor.prototype.FastAddProperty(FormatKey,
-                new JSFunction(static (in Arguments _) =>
-                    new JSFunction(static (in Arguments inner) => JSValue.CreateString((inner[0] ?? JSUndefined.Value).ToString()), "format", "function format() { [native code] }", createPrototype: false, length: 1),
+                new JSFunction(static (in Arguments a) =>
+                {
+                    if (a.This is not JSIntlNumberFormat @this)
+                        throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.format called on incompatible receiver");
+
+                    return new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
+                },
                     "get format",
                     "function get format() { [native code] }",
                     createPrototype: false,
@@ -122,20 +128,142 @@ public static class JSIntl
         }
         return constructor;
     }
+
+    internal static void ValidateConstructorArguments(string name, in Arguments a)
+    {
+        if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
+            throw JSEngine.NewTypeError($"Intl.{name} requires 'new'");
+
+        ValidateLocalesArgument(a.Get1());
+        ValidateOptionsArgument(a.GetAt(1));
+    }
+
+    internal static JSObject ValidateOptionsArgument(JSValue options)
+    {
+        if (options.IsUndefined)
+            return null;
+
+        if (options is not JSObject optionsObject)
+            throw JSEngine.NewTypeError("Options must be an object");
+
+        return optionsObject;
+    }
+
+    private static void ValidateLocalesArgument(JSValue locales)
+    {
+        if (locales.IsUndefined)
+            return;
+
+        if (locales.IsNull)
+            throw JSEngine.NewTypeError("Cannot convert undefined or null to object");
+
+        if (locales.IsString)
+            return;
+
+        if (locales is not JSObject localesObject)
+        {
+            if (locales.IsSymbol)
+                _ = locales.StringValue;
+
+            return;
+        }
+
+        var lengthValue = localesObject[KeyStrings.length];
+        if (lengthValue.IsUndefined)
+            return;
+
+        var length = lengthValue.UIntValue;
+        for (uint i = 0; i < length; i++)
+        {
+            var locale = localesObject[i];
+            if (locale.IsUndefined || locale.IsNull || locale.IsBoolean || locale.IsNumber || locale.IsSymbol)
+                throw JSEngine.NewTypeError("Locale list entries must be strings or objects");
+
+            _ = locale.StringValue;
+        }
+    }
+
+    internal static void ValidateNumberFormatOptions(JSObject options)
+    {
+        if (options == null)
+            return;
+
+        var styleValue = options[StyleKey];
+        var style = styleValue.IsUndefined ? null : styleValue.StringValue;
+
+        var currencyValue = options[CurrencyKey];
+        if (!currencyValue.IsUndefined)
+        {
+            var currency = currencyValue.StringValue;
+            if (!IsWellFormedCurrencyCode(currency))
+                throw JSEngine.NewRangeError("Invalid currency option");
+        }
+
+        if (style == "currency" && currencyValue.IsUndefined)
+            throw JSEngine.NewTypeError("Intl.NumberFormat currency style requires a currency option");
+
+        var unitValue = options[UnitKey];
+        if (style == "unit" && unitValue.IsUndefined)
+            throw JSEngine.NewTypeError("Intl.NumberFormat unit style requires a unit option");
+    }
+
+    private static bool IsWellFormedCurrencyCode(string currency)
+    {
+        if (currency.Length != 3)
+            return false;
+
+        foreach (var ch in currency)
+        {
+            if ((ch < 'A' || ch > 'Z') && (ch < 'a' || ch > 'z'))
+                return false;
+        }
+
+        return true;
+    }
 }
 
-public class JSIntlRelativeTimeFormat(in Arguments a) : JSObject(CurrentPrototype("RelativeTimeFormat"))
+public class JSIntlRelativeTimeFormat : JSObject
 {
-    public JSValue Format(in Arguments args) => args[0] ?? JSUndefined.Value;
+    public JSValue Format(in Arguments args)
+    {
+        var value = args[0] ?? JSUndefined.Value;
+        _ = value.DoubleValue;
+        return value;
+    }
 
     public static JSValue FormatPrototype(in Arguments a)
         => a.This is JSIntlRelativeTimeFormat @this
             ? @this.Format(in a)
             : throw JSEngine.NewTypeError("Intl.RelativeTimeFormat.prototype.format called on incompatible receiver");
 
+    public JSIntlRelativeTimeFormat(in Arguments a) : this()
+    {
+        JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a);
+    }
+
+    private JSIntlRelativeTimeFormat() : base(CurrentPrototype("RelativeTimeFormat")) { }
+
     private static JSObject CurrentPrototype(string name)
         => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
             ? (intl[KeyStrings.GetOrCreate(name)] as JSFunction)?.prototype
+            : null;
+}
+
+public class JSIntlNumberFormat : JSObject
+{
+    public JSIntlNumberFormat(in Arguments a) : this()
+    {
+        JSIntl.ValidateConstructorArguments("NumberFormat", in a);
+        JSIntl.ValidateNumberFormatOptions(JSIntl.ValidateOptionsArgument(a.GetAt(1)));
+    }
+
+    private JSIntlNumberFormat() : base(CurrentPrototype()) { }
+
+    public JSValue Format(in Arguments a) => JSValue.CreateString((a[0] ?? JSUndefined.Value).ToString());
+
+    private static JSObject CurrentPrototype()
+        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
+            ? (intl[KeyStrings.GetOrCreate("NumberFormat")] as JSFunction)?.prototype
             : null;
 }
 
