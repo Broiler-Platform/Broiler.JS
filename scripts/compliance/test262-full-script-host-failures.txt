@@ -11149,7 +11149,6 @@ test/language/expressions/class/elements/syntax/valid/grammar-field-classelement
 test/language/expressions/class/elements/syntax/valid/grammar-field-identifier-alt.js
 test/language/expressions/class/elements/syntax/valid/grammar-field-identifier.js
 test/language/expressions/class/elements/syntax/valid/grammar-fields-multi-line.js
-test/language/expressions/class/elements/syntax/valid/grammar-privatemeth-duplicate-get-set.js
 test/language/expressions/class/elements/syntax/valid/grammar-privatemeth-duplicate-meth-nestedclassmeth.js
 test/language/expressions/class/elements/syntax/valid/grammar-privatename-classelementname-initializer-alt.js
 test/language/expressions/class/elements/syntax/valid/grammar-privatename-classelementname-initializer.js
@@ -11161,10 +11160,6 @@ test/language/expressions/class/elements/syntax/valid/grammar-static-ctor-async-
 test/language/expressions/class/elements/syntax/valid/grammar-static-ctor-async-meth-valid.js
 test/language/expressions/class/elements/syntax/valid/grammar-static-ctor-gen-meth-valid.js
 test/language/expressions/class/elements/syntax/valid/grammar-static-ctor-meth-valid.js
-test/language/expressions/class/elements/syntax/valid/grammar-static-private-async-gen-meth-prototype.js
-test/language/expressions/class/elements/syntax/valid/grammar-static-private-async-meth-prototype.js
-test/language/expressions/class/elements/syntax/valid/grammar-static-private-gen-meth-prototype.js
-test/language/expressions/class/elements/syntax/valid/grammar-static-private-meth-prototype.js
 test/language/expressions/class/elements/wrapped-in-sc-computed-names.js
 test/language/expressions/class/elements/wrapped-in-sc-computed-symbol-names.js
 test/language/expressions/class/elements/wrapped-in-sc-grammar-privatename-identifier-semantics-stringvalue.js
@@ -15976,7 +15971,6 @@ test/language/statements/class/elements/syntax/valid/grammar-field-identifier.js
 test/language/statements/class/elements/syntax/valid/grammar-field-named-get-followed-by-generator-asi.js
 test/language/statements/class/elements/syntax/valid/grammar-field-named-set-followed-by-generator-asi.js
 test/language/statements/class/elements/syntax/valid/grammar-fields-multi-line.js
-test/language/statements/class/elements/syntax/valid/grammar-privatemeth-duplicate-get-set.js
 test/language/statements/class/elements/syntax/valid/grammar-privatemeth-duplicate-meth-nestedclassmeth.js
 test/language/statements/class/elements/syntax/valid/grammar-privatename-classelementname-initializer-alt.js
 test/language/statements/class/elements/syntax/valid/grammar-privatename-classelementname-initializer.js
@@ -15988,10 +15982,6 @@ test/language/statements/class/elements/syntax/valid/grammar-static-ctor-async-g
 test/language/statements/class/elements/syntax/valid/grammar-static-ctor-async-meth-valid.js
 test/language/statements/class/elements/syntax/valid/grammar-static-ctor-gen-meth-valid.js
 test/language/statements/class/elements/syntax/valid/grammar-static-ctor-meth-valid.js
-test/language/statements/class/elements/syntax/valid/grammar-static-private-async-gen-meth-prototype.js
-test/language/statements/class/elements/syntax/valid/grammar-static-private-async-meth-prototype.js
-test/language/statements/class/elements/syntax/valid/grammar-static-private-gen-meth-prototype.js
-test/language/statements/class/elements/syntax/valid/grammar-static-private-meth-prototype.js
 test/language/statements/class/elements/wrapped-in-sc-computed-names.js
 test/language/statements/class/elements/wrapped-in-sc-computed-symbol-names.js
 test/language/statements/class/elements/wrapped-in-sc-grammar-privatename-identifier-semantics-stringvalue.js
