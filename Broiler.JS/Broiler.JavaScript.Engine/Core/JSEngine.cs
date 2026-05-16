@@ -176,6 +176,8 @@ public static class JSEngine
 
     internal static StrictModeScope EnterStrictMode(bool enabled) => new(enabled);
 
+    internal static IDisposable EnterStrictModeDisposable(bool enabled) => EnterStrictMode(enabled);
+
     internal readonly struct StrictModeScope : IDisposable
     {
         private readonly bool enabled;

@@ -6,11 +6,19 @@ using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
+using System.Reflection;
 
 namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
+    private static readonly MethodInfo ValidateClassStaticPropertyNameKeyStringMethod = typeof(JSClassStaticPropertyValidator)
+        .PublicMethod(nameof(JSClassStaticPropertyValidator.Validate), KeyStringsBuilder.RefType)
+        ?? throw new InvalidOperationException("JSClassStaticPropertyValidator.Validate(KeyString) not found");
+    private static readonly MethodInfo ValidateClassStaticPropertyNameJSValueMethod = typeof(JSClassStaticPropertyValidator)
+        .PublicMethod(nameof(JSClassStaticPropertyValidator.Validate), typeof(JSValue))
+        ?? throw new InvalidOperationException("JSClassStaticPropertyValidator.Validate(JSValue) not found");
+
     private YExpression GetName(AstClassProperty property)
     {
         var exp = property.Key;
@@ -29,6 +37,18 @@ partial class FastCompiler
             default:
                 return Visit(exp);
         }
+    }
+
+    private static YExpression ValidateStaticPropertyName(AstClassProperty property, YExpression name)
+    {
+        if (!property.IsStatic)
+            return name;
+
+        return property.Key.Type switch
+        {
+            FastNodeType.Identifier or FastNodeType.Literal => YExpression.Call(null, ValidateClassStaticPropertyNameKeyStringMethod, name),
+            _ => YExpression.Call(null, ValidateClassStaticPropertyNameJSValueMethod, name),
+        };
     }
 
     private YExpression CreateClass(AstIdentifier id, AstExpression super, AstClassExpression body)
@@ -75,7 +95,7 @@ partial class FastCompiler
                 case AstPropertyKind.Data:
                     if (property.IsStatic)
                     {
-                        name = GetName(property);
+                        name = ValidateStaticPropertyName(property, GetName(property));
                         var value = property.Init == null ? JSUndefinedBuilder.Value : Visit(property.Init);
                         staticElements.Add(JSObjectBuilder.AddValue(name, value, JSPropertyAttributes.ConfigurableValue));
                         break;
@@ -84,30 +104,30 @@ partial class FastCompiler
                     break;
 
                 case AstPropertyKind.Get:
-                    name = GetName(property);
+                    name = ValidateStaticPropertyName(property, GetName(property));
                     if (property.IsStatic)
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true);
                         staticElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                         break;
                     }
                     else
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true);
                         prototypeElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     break;
 
                 case AstPropertyKind.Set:
-                    name = GetName(property);
+                    name = ValidateStaticPropertyName(property, GetName(property));
                     if (property.IsStatic)
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true);
                         staticElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     else
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true);
                         prototypeElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     break;
@@ -117,15 +137,15 @@ partial class FastCompiler
                     break;
 
                 case AstPropertyKind.Method:
-                    name = GetName(property);
+                    name = ValidateStaticPropertyName(property, GetName(property));
                     if (property.IsStatic)
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true);
                         staticElements.Add(JSObjectBuilder.AddValue(name, fx, JSPropertyAttributes.ConfigurableValue));
                     }
                     else
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true);
                         prototypeElements.Add(JSObjectBuilder.AddValue(name, fx, JSPropertyAttributes.ConfigurableValue));
                     }
                     break;
@@ -139,7 +159,7 @@ partial class FastCompiler
 
         if (constructor != null)
         {
-            var fx = CreateFunction(constructor, superVar, true, className, memberInits);
+            var fx = CreateFunction(constructor, superVar, true, className, memberInits, true);
             staticElements.Add(JSClassBuilder.AddConstructor(fx));
         }
         else

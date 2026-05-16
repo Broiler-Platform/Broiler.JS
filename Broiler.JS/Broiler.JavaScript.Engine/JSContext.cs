@@ -77,6 +77,9 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
         if (!hasOwnProperty)
         {
+            if (!IsExtensible())
+                throw JSEngine.NewTypeError($"Cannot define global variable {variable.Name} on a non-extensible global object");
+
             FastAddValue(variable.Name, v, JSPropertyAttributes.Value | JSPropertyAttributes.Enumerable);
         }
         else if (oldV != v)

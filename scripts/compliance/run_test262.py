@@ -571,7 +571,10 @@ def run_test(
             harness_cache[name] = repo.read_text(f"harness/{name}")
         return harness_cache[name]
 
-    parts = [harness_text("assert.js"), harness_text("sta.js")]
+    parts = []
+    if is_only_strict:
+        parts.append('"use strict";')
+    parts.extend([harness_text("assert.js"), harness_text("sta.js")])
     for include in metadata["includes"]:
         parts.append(harness_text(include))
     if is_async:
@@ -594,8 +597,6 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
 });
 """.strip()
         )
-    if is_only_strict:
-        parts.append('"use strict";')
     parts.append(body)
     if is_async:
         parts.append("__broilerDonePromise")

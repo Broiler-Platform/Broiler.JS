@@ -697,7 +697,18 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public JSValue this[JSValue key]
     {
-        get => GetValue(key, this); set => SetValue(key, value, this);
+        get => GetValue(key, this);
+        set
+        {
+            if (SetValue(key, value, this))
+                return;
+
+            if (IsNullOrUndefined)
+                throw NewTypeError?.Invoke($"Cannot set property {key} of {this}")
+                    ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
+
+            ThrowOnStrictPrimitiveAssignment(key);
+        }
     }
 
     internal virtual JSValue this[KeyString name, JSValue @this]

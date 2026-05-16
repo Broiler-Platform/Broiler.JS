@@ -7,11 +7,16 @@ using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.LinqExpressions.Utils;
 using Broiler.JavaScript.Runtime;
 using System;
+using System.Reflection;
 
 namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
+    private static readonly MethodInfo RequireObjectCoercibleMethod = typeof(JSObjectStatic)
+        .InternalMethod(nameof(JSObjectStatic.RequireObjectCoercible), typeof(JSValue))
+        ?? throw new InvalidOperationException("JSObjectStatic.RequireObjectCoercible(JSValue) not found");
+
     private YExpression VisitAssignmentExpression(AstExpression left, TokenTypes assignmentOperator, AstExpression right)
     {
         switch (left.Type)
@@ -100,6 +105,10 @@ partial class FastCompiler
             case FastNodeType.ObjectPattern:
                 var objectPattern = pattern as AstObjectPattern;
                 {
+                    using var tempValue = scope.Top.GetTempVariable(typeof(JSValue));
+                    inits.Add(YExpression.Assign(tempValue.Variable, YExpression.Call(null, RequireObjectCoercibleMethod, init)));
+                    init = tempValue.Expression;
+
                     var en = objectPattern.Properties.GetFastEnumerator();
 
                     while (en.MoveNext(out var property))

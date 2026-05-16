@@ -77,7 +77,11 @@ class RunTest262Tests(unittest.TestCase):
 
         self.assertEqual({"path": path, "status": "passed"}, result)
         self.assertEqual(12.5, captured_script["timeout"])
-        self.assertIn('"use strict";\n\nthis;\n', captured_script["contents"])
+        lines = [line for line in captured_script["contents"].splitlines() if line]
+        self.assertEqual('"use strict";', lines[0])
+        self.assertEqual("// assert harness", lines[1])
+        self.assertEqual("// sta harness", lines[2])
+        self.assertIn("this;", lines)
 
     def test_run_test_times_out_and_kills_process_group(self) -> None:
         path = self.write_test("test/language/timeout.js", "for (;;) {}\n")
