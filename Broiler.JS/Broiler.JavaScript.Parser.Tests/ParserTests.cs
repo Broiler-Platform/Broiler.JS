@@ -97,6 +97,29 @@ public class ParserTests
         AssertAsyncMethod(properties[1], "set");
     }
 
+    [Theory]
+    [InlineData("class C { static *#m([]) { return 1; } }", false)]
+    [InlineData("class C { static async *#m([]) { return 1; } }", true)]
+    public void ParseProgram_ClassBody_Allows_StaticPrivateGeneratorMethods(string source, bool isAsync)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements.ToArray()));
+        var classExpression = Assert.IsType<AstClassExpression>(statement.Expression);
+        var property = Assert.IsType<AstClassProperty>(Assert.Single(classExpression.Members.ToArray()));
+        var key = Assert.IsType<AstIdentifier>(property.Key);
+        var function = Assert.IsType<AstFunctionExpression>(property.Init);
+
+        Assert.Equal(AstPropertyKind.Method, property.Kind);
+        Assert.Equal("#m", key.ToString());
+        Assert.True(property.IsStatic);
+        Assert.True(property.IsPrivate);
+        Assert.True(function.Generator);
+        Assert.Equal(isAsync, function.Async);
+    }
+
     [Fact]
     public void ParseProgram_ForAwaitOf_In_AsyncFunction_Succeeds()
     {

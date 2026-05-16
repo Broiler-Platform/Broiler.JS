@@ -29,7 +29,7 @@ partial class FastParser
                 if (property.Kind == AstPropertyKind.Get || property.Kind == AstPropertyKind.Set)
                     throw stream.Unexpected();
 
-                property = new AstClassProperty(current, property.End, AstPropertyKind.Method, isAsync, isStatic, property.Key, property.Computed, property.Init, property.UsesColon, property.UsesAssign);
+                property = new AstClassProperty(current, property.End, AstPropertyKind.Method, property.IsPrivate, isStatic, property.Key, property.Computed, property.Init, property.UsesColon, property.UsesAssign);
                 return true;
             }
 
@@ -43,13 +43,13 @@ partial class FastParser
         var isSet = sc.ContextualKeyword == FastKeywords.set;
 
         bool isGenerator = stream.CheckAndConsume(TokenTypes.Multiply);
-        if (PropertyName(out var key, out var computed, acceptKeywords: true))
+        if (PropertyName(out var key, out var computed, out var isPrivate, acceptKeywords: true))
         {
             if (checkContextualKeyword && (isSet || isGet))
             {
                 if (ObjectProperty(out property, isClass: isClass, isAsync: isAsync))
                 {
-                    property = new AstClassProperty(current, property.End, isSet ? AstPropertyKind.Set : AstPropertyKind.Get, false, isStatic, property.Key, property.Computed, property.Init, property.UsesColon, property.UsesAssign);
+                    property = new AstClassProperty(current, property.End, isSet ? AstPropertyKind.Set : AstPropertyKind.Get, property.IsPrivate, isStatic, property.Key, property.Computed, property.Init, property.UsesColon, property.UsesAssign);
                     return true;
                 }
             }
@@ -64,7 +64,7 @@ partial class FastParser
                 if (!Expression(out var value))
                     throw stream.Unexpected();
 
-                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, false, false, key, computed, value, usesAssign: true);
+                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, isPrivate, false, key, computed, value, usesAssign: true);
                 stream.CheckAndConsume(TokenTypes.SemiColon);
 
                 return true;
@@ -78,7 +78,7 @@ partial class FastParser
                 if (!Expression(out var value))
                     throw stream.Unexpected();
 
-                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, false, false, key, computed, value, usesColon: true);
+                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, isPrivate, false, key, computed, value, usesColon: true);
                 return true;
             }
             else if (stream.CheckAndConsume(TokenTypes.BracketStart))
@@ -97,7 +97,7 @@ partial class FastParser
                     var fx = new AstFunctionExpression(current, PreviousToken, false, isAsync, isGenerator, null, parameters, body);
 
                     property = new AstClassProperty(current, PreviousToken, key.Start.ContextualKeyword == FastKeywords.constructor ? AstPropertyKind.Constructor : AstPropertyKind.Method,
-                        false, isStatic, key, computed, fx);
+                        isPrivate, isStatic, key, computed, fx);
                     return true;
                 }
                 finally
@@ -107,7 +107,7 @@ partial class FastParser
             }
             else if (stream.Current.Type == TokenTypes.Comma || stream.Current.Type == TokenTypes.CurlyBracketEnd || stream.Current.Type == TokenTypes.EOF)
             {
-                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, false, isStatic, key, computed, key);
+                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, isPrivate, isStatic, key, computed, key);
                 return true;
             }
             else throw stream.Unexpected();

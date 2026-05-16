@@ -8,9 +8,10 @@ namespace Broiler.JavaScript.Parser;
 
 partial class FastParser
 {
-    bool PropertyName(out AstExpression node, out bool computed, bool acceptKeywords = false)
+    bool PropertyName(out AstExpression node, out bool computed, out bool isPrivate, bool acceptKeywords = false)
     {
         var begin = BeginUndo();
+        isPrivate = false;
 
         if (acceptKeywords)
         {
@@ -29,12 +30,14 @@ partial class FastParser
                     {
                         node = new AstIdentifier(token);
                         computed = false;
+                        isPrivate = false;
 
                         return true;
                     }
 
                     node = new AstIdentifier(token.AsString());
                     computed = false;
+                    isPrivate = false;
 
                     return true;
             }
@@ -44,6 +47,19 @@ partial class FastParser
         {
             node = id;
             computed = false;
+            isPrivate = false;
+
+            return true;
+        }
+
+        if (stream.CheckAndConsume(TokenTypes.Hash, out var hashToken))
+        {
+            if (!Identitifer(out var privateIdentifier))
+                throw stream.Unexpected();
+
+            node = new AstIdentifier(hashToken, $"#{privateIdentifier.Name.Value}");
+            computed = false;
+            isPrivate = true;
 
             return true;
         }
@@ -51,12 +67,14 @@ partial class FastParser
         if (StringLiteral(out node))
         {
             computed = false;
+            isPrivate = false;
             return true;
         }
 
         if (NumberLiteral(out node))
         {
             computed = false;
+            isPrivate = false;
             return true;
         }
 
@@ -67,13 +85,15 @@ partial class FastParser
 
             stream.Expect(TokenTypes.SquareBracketEnd);
             computed = true;
-            
+            isPrivate = false;
+
             return true;
         }
 
         node = null;
         computed = false;
-        
+        isPrivate = false;
+
         return begin.Reset();
     }
 }
