@@ -155,7 +155,7 @@ partial class FastCompiler
             }
         }
 
-        var className = id?.Name.Value ?? "Unnamed";
+        var className = id?.Name.Value;
 
         if (constructor != null)
         {
