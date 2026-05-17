@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Broiler.JavaScript.BuiltIns.Array;
@@ -832,6 +834,112 @@ internal static class BuiltInsAssemblyInitializer
             species.CreateInstance(new Arguments(species, regExp, flags));
         }
 
+        static JSValue RegExpExec(JSValue rx, JSValue input)
+        {
+            var exec = rx[KeyStrings.GetOrCreate("exec")];
+            if (exec.IsUndefined)
+            {
+                if (rx is not JSRegExp regExp)
+                    throw JSEngine.NewTypeError("RegExp.prototype[Symbol.replace] called on incompatible receiver");
+
+                return regExp.Exec(new Arguments(rx, input));
+            }
+
+            if (!exec.IsFunction)
+                throw JSEngine.NewTypeError("RegExp exec property is not callable");
+
+            var result = exec.InvokeFunction(new Arguments(rx, input));
+            if (!result.IsObject && !result.IsNull)
+                throw JSEngine.NewTypeError("RegExp exec result must be an object or null");
+
+            return result;
+        }
+
+        static string GetSubstitution(string matched, string input, int position, IReadOnlyList<JSValue> captures, JSValue namedCaptures, string replacement)
+        {
+            if (replacement.IndexOf('$') < 0)
+                return replacement;
+
+            var replacementBuilder = new StringBuilder();
+            for (int i = 0; i < replacement.Length; i++)
+            {
+                var c = replacement[i];
+                if (c != '$' || i >= replacement.Length - 1)
+                {
+                    replacementBuilder.Append(c);
+                    continue;
+                }
+
+                c = replacement[++i];
+                switch (c)
+                {
+                    case '$':
+                        replacementBuilder.Append('$');
+                        break;
+                    case '&':
+                        replacementBuilder.Append(matched);
+                        break;
+                    case '`':
+                        replacementBuilder.Append(input.AsSpan(0, Math.Max(position, 0)));
+                        break;
+                    case '\'':
+                        replacementBuilder.Append(input.AsSpan(Math.Min(position + matched.Length, input.Length)));
+                        break;
+                    case '<':
+                    {
+                        var end = replacement.IndexOf('>', i + 1);
+                        if (end < 0)
+                        {
+                            replacementBuilder.Append("$<");
+                            break;
+                        }
+
+                        if (!namedCaptures.IsUndefined)
+                        {
+                            if (namedCaptures is not JSObject namedCapturesObject)
+                                throw JSEngine.NewTypeError("RegExp replacement named captures must be an object");
+
+                            var groupName = replacement.Substring(i + 1, end - i - 1);
+                            var capture = namedCapturesObject[KeyStrings.GetOrCreate(groupName)];
+                            if (!capture.IsUndefined)
+                                replacementBuilder.Append(capture.ToString());
+                        }
+
+                        i = end;
+                        break;
+                    }
+                    default:
+                        if (c is >= '0' and <= '9')
+                        {
+                            var captureIndex = c - '0';
+                            if (i < replacement.Length - 1 && replacement[i + 1] is >= '0' and <= '9')
+                            {
+                                var twoDigitIndex = (captureIndex * 10) + (replacement[i + 1] - '0');
+                                if (twoDigitIndex > 0 && twoDigitIndex <= captures.Count)
+                                {
+                                    captureIndex = twoDigitIndex;
+                                    i++;
+                                }
+                            }
+
+                            if (captureIndex > 0 && captureIndex <= captures.Count)
+                            {
+                                var capture = captures[captureIndex - 1];
+                                if (!capture.IsUndefined)
+                                    replacementBuilder.Append(capture.ToString());
+                                break;
+                            }
+                        }
+
+                        replacementBuilder.Append('$');
+                        replacementBuilder.Append(c);
+                        break;
+                }
+            }
+
+            return replacementBuilder.ToString();
+        }
+
         ref var symbols = ref regExpCtor.prototype.GetSymbols();
         symbols.Put(JSSymbol.match.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
@@ -865,6 +973,86 @@ internal static class BuiltInsAssemblyInitializer
 
             return new JSRegExp(new Arguments(JSUndefined.Value, a.This, JSValue.CreateString("g"))).Match(a.Get1());
         }, "[Symbol.matchAll]", 1), JSPropertyAttributes.ConfigurableValue);
+        symbols.Put(JSSymbol.replace.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
+        {
+            var rx = a.This;
+            if (rx is not JSObject)
+                throw JSEngine.NewTypeError("RegExp.prototype[Symbol.replace] called on incompatible receiver");
+
+            var input = a.Get1().ToString();
+            var replaceValue = a.TryGetAt(1, out var second) ? second : JSUndefined.Value;
+            var functionalReplace = replaceValue.IsFunction;
+            var replacementText = functionalReplace ? null : replaceValue.ToString();
+            var flags = GetObservableFlags(rx).ToString();
+            var global = flags.Contains('g');
+
+            if (global)
+                rx[KeyStrings.lastIndex] = JSValue.NumberZero;
+
+            List<JSValue> results = [];
+            while (true)
+            {
+                var result = RegExpExec(rx, JSValue.CreateString(input));
+                if (result.IsNull)
+                    break;
+
+                results.Add(result);
+                if (!global)
+                    break;
+
+                var matchString = result[0].ToString();
+                if (matchString.Length != 0)
+                    continue;
+
+                var nextIndex = (int)rx[KeyStrings.lastIndex].DoubleValue;
+                rx[KeyStrings.lastIndex] = JSValue.CreateNumber(nextIndex + 1);
+            }
+
+            if (results.Count == 0)
+                return JSValue.CreateString(input);
+
+            var accumulatedResult = new StringBuilder();
+            var nextSourcePosition = 0;
+            foreach (var result in results)
+            {
+                var matched = result[0].ToString();
+                var position = (int)result[KeyStrings.index].DoubleValue;
+                var capturesLength = Math.Max((int)result[KeyStrings.length].DoubleValue, 0);
+                var namedCaptures = result[KeyStrings.GetOrCreate("groups")];
+
+                List<JSValue> captures = [];
+                for (var i = 1; i < capturesLength; i++)
+                    captures.Add(result[(uint)i]);
+
+                string replacement;
+                if (functionalReplace)
+                {
+                    List<JSValue> replacerArgs = [JSValue.CreateString(matched)];
+                    replacerArgs.AddRange(captures);
+                    replacerArgs.Add(JSValue.CreateNumber(position));
+                    replacerArgs.Add(JSValue.CreateString(input));
+                    if (!namedCaptures.IsUndefined)
+                        replacerArgs.Add(namedCaptures);
+
+                    replacement = replaceValue.InvokeFunction(new Arguments(JSUndefined.Value, replacerArgs.ToArray())).ToString();
+                }
+                else
+                {
+                    replacement = GetSubstitution(matched, input, position, captures, namedCaptures, replacementText);
+                }
+
+                if (position > nextSourcePosition)
+                    accumulatedResult.Append(input.AsSpan(nextSourcePosition, position - nextSourcePosition));
+
+                accumulatedResult.Append(replacement);
+                nextSourcePosition = Math.Min(position + matched.Length, input.Length);
+            }
+
+            if (nextSourcePosition < input.Length)
+                accumulatedResult.Append(input.AsSpan(nextSourcePosition));
+
+            return JSValue.CreateString(accumulatedResult.ToString());
+        }, "[Symbol.replace]", 2), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.search.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
             if (a.This is not JSRegExp regExp)

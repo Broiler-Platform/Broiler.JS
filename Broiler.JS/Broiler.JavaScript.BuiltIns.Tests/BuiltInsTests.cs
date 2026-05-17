@@ -6117,6 +6117,88 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Script_Host_Test262_Style_BuiltIns_Preserve_Abrupt_Completions_And_Are_Exposed()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function Test262Error(message) {
+                    this.message = message || '';
+                }
+
+                Test262Error.prototype.toString = function () {
+                    return 'Test262Error: ' + this.message;
+                };
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e && e.constructor && e.constructor.name;
+                    }
+                }
+
+                var copyWithinPropType = 'unreached';
+                var proxy = new Proxy({ 42: true, length: 43 }, {
+                    deleteProperty: function (_target, prop) {
+                        copyWithinPropType = typeof prop + ':' + prop;
+                        throw new Test262Error();
+                    }
+                });
+
+                var genericReplace = {
+                    flags: 'g',
+                    global: true
+                };
+                Object.defineProperty(genericReplace, 'exec', {
+                    get: function () {
+                        throw new Test262Error();
+                    }
+                });
+
+                return [
+                    typeof Reflect.getPrototypeOf,
+                    thrownCtor(function () {
+                        Reflect.getPrototypeOf(new Proxy({}, {
+                            getPrototypeOf: function () {
+                                throw new Test262Error();
+                            }
+                        }));
+                    }),
+                    typeof Promise.race,
+                    thrownCtor(function () {
+                        Promise.race.call(function () {
+                            throw new Test262Error();
+                        });
+                    }),
+                    thrownCtor(function () {
+                        Array.prototype.copyWithin.call(proxy, 42, 0);
+                    }),
+                    copyWithinPropType,
+                    typeof RegExp.prototype[Symbol.replace],
+                    thrownCtor(function () {
+                        /./[Symbol.replace]({
+                            toString: function () {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        RegExp.prototype[Symbol.replace].call(genericReplace, '', '');
+                    })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal(
+            "function|Test262Error|function|Test262Error|Test262Error|string:42|function|Test262Error|Test262Error",
+            result.ToString());
+    }
+
+    [Fact]
     public void MatchAll_Set_Delete_RegExp_And_Proxy_TypeErrors_Match_Test262()
     {
         EnsureBuiltInsLoaded();

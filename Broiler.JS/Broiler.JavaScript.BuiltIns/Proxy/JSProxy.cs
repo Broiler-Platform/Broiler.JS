@@ -72,6 +72,18 @@ public partial class JSProxy : JSObject
         return trap;
     }
 
+    private static JSValue NormalizeTrapPropertyKey(JSValue key)
+    {
+        var propertyKey = key.ToKey(false);
+        return propertyKey.Type switch
+        {
+            KeyType.UInt => JSValue.CreateString(propertyKey.Index.ToString()),
+            KeyType.String => JSValue.CreateString(propertyKey.KeyString.ToString()),
+            KeyType.Symbol => (JSValue)(JSSymbol)propertyKey.Symbol,
+            _ => key
+        };
+    }
+
     internal bool HasTrap(KeyString trapKey) => !GetTrap(trapKey).IsUndefined;
 
     internal JSObject Target => RequireTarget();
@@ -394,7 +406,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.defineProperty);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(handler, target, key, propertyDescription));
+            var result = fx.InvokeFunction(new Arguments(handler, target, NormalizeTrapPropertyKey(key), propertyDescription));
             if (!result.BooleanValue)
                 return JSBoolean.False;
 
@@ -411,7 +423,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.deleteProperty);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(handler, target, index));
+            var result = fx.InvokeFunction(new Arguments(handler, target, NormalizeTrapPropertyKey(index)));
             if (!result.BooleanValue)
                 return JSBoolean.False;
 
@@ -424,7 +436,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue Delete(in KeyString key) => Delete(key.ToJSValue());
 
-    public override JSValue Delete(uint key) => Delete(new JSNumber(key));
+    public override JSValue Delete(uint key) => Delete(JSValue.CreateString(key.ToString()));
 
     public override JSValue Delete(IJSSymbol symbol) => Delete((JSValue)(JSSymbol)symbol);
 
@@ -434,7 +446,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(GetOwnPropertyDescriptorTrapKey);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(handler, target, name));
+            var result = fx.InvokeFunction(new Arguments(handler, target, NormalizeTrapPropertyKey(name)));
             ValidateGetOwnPropertyDescriptorInvariant(target, name.ToKey(false), result);
             return result;
         }
@@ -476,7 +488,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.get);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(handler, target, new JSNumber(key), receiver));
+            var result = fx.InvokeFunction(new Arguments(handler, target, JSValue.CreateString(key.ToString()), receiver));
             ValidateGetInvariant(target, key, result);
             return result;
         }
@@ -533,7 +545,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.set);
         if (!fx.IsUndefined)
         {
-            var setResult = fx.InvokeFunction(new Arguments(handler, target, new JSNumber(name), value, receiver));
+            var setResult = fx.InvokeFunction(new Arguments(handler, target, JSValue.CreateString(name.ToString()), value, receiver));
             if (!setResult.BooleanValue)
                 return false;
 
