@@ -206,12 +206,12 @@ public partial class JSPromise
     public static JSValue AllSettled(in Arguments a)
     {
         var iterable = a.Get1();
-        var en = iterable.GetElementEnumerator();
         var result = JSValue.CreateArray();
         uint index = 0;
 
         return CreatePromiseFromConstructor(a.This, (resolve, reject) =>
         {
+            var en = iterable.GetElementEnumerator();
             var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
                 ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
 
@@ -307,12 +307,12 @@ public partial class JSPromise
     public static JSValue Any(in Arguments a)
     {
         var iterable = a.Get1();
-        var en = iterable.GetElementEnumerator();
         var errors = JSValue.CreateArray();
         uint errorIndex = 0;
 
         return CreatePromiseFromConstructor(a.This, (resolve, reject) =>
         {
+            var en = iterable.GetElementEnumerator();
             var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
                 ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
 

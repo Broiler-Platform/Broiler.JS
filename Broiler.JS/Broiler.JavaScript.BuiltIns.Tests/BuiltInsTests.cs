@@ -2947,6 +2947,151 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Test262_Abrupt_Completions_For_Date_Error_Object_And_Promise_BuiltIns_Are_Preserved()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var coercibleKey = {
+                    toString: function () {
+                        throw new Test262Error();
+                    }
+                };
+
+                var poisonedThen = Object.defineProperty({}, 'then', {
+                    get: function () {
+                        throw new Test262Error();
+                    }
+                });
+
+                function CustomPromise() {
+                    throw new Test262Error();
+                }
+
+                return [
+                    thrownCtor(function () {
+                        Date.prototype.toJSON.call({
+                            get valueOf() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        Date.prototype.toJSON.call({
+                            toString: function () {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        Error.prototype.toString.call({
+                            get name() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        Error.prototype.toString.call({
+                            get message() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () {
+                        Object.prototype.hasOwnProperty.call(null, coercibleKey);
+                    }),
+                    thrownCtor(function () {
+                        Promise.prototype.catch.call(poisonedThen);
+                    }),
+                    thrownCtor(function () {
+                        Promise.allSettled.call(CustomPromise);
+                    }),
+                    thrownCtor(function () {
+                        Promise.any.call(CustomPromise);
+                    })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal(
+            "Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error",
+            result.ToString());
+    }
+
+    [Fact]
+    public void Legacy_Object_Prototype_Helpers_Preserve_Abrupt_Completions_And_Key_Coercion()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var key = {
+                    toString: function () {
+                        throw new Test262Error();
+                    }
+                };
+                var noop = function () {};
+                var root = Object.defineProperty({}, 'target', { get: function () {} });
+                var thrower = function () {
+                    throw new Test262Error();
+                };
+                var lookupSubject = new Proxy(root, { getOwnPropertyDescriptor: thrower });
+                var defineSubject = new Proxy({}, { defineProperty: thrower });
+
+                return [
+                    thrownCtor(function () {
+                        ({}).__defineGetter__(key, noop);
+                    }),
+                    thrownCtor(function () {
+                        ({}).__defineSetter__(key, noop);
+                    }),
+                    thrownCtor(function () {
+                        ({}).__lookupGetter__(key);
+                    }),
+                    thrownCtor(function () {
+                        ({}).__lookupSetter__(key);
+                    }),
+                    thrownCtor(function () {
+                        lookupSubject.__lookupGetter__('target');
+                    }),
+                    thrownCtor(function () {
+                        defineSubject.__defineSetter__('attr', noop);
+                    })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal(
+            "Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error",
+            result.ToString());
+    }
+
+    [Fact]
     public void Unresolved_Identifier_Reads_Throw_ReferenceError_In_Binary_Expressions()
     {
         EnsureBuiltInsLoaded();

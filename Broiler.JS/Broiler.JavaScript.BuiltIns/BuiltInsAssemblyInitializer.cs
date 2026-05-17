@@ -375,6 +375,38 @@ internal static class BuiltInsAssemblyInitializer
 
     private static void PatchLegacyDatePrototype(JSContext context)
     {
+        static JSValue ToNumberPrimitive(JSValue value)
+        {
+            if (value is not JSObject @object)
+                return value;
+
+            var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
+            if (!toPrimitive.IsUndefined)
+            {
+                var primitive = toPrimitive.InvokeFunction(new Arguments(@object, JSConstants.Number));
+                if (primitive.IsObject)
+                    throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+
+                return primitive;
+            }
+
+            if (@object[KeyStrings.valueOf] is IJSFunction valueOf)
+            {
+                var primitive = valueOf.InvokeFunction(new Arguments(@object));
+                if (!primitive.IsObject)
+                    return primitive;
+            }
+
+            if (@object[KeyStrings.toString] is IJSFunction toString)
+            {
+                var primitive = toString.InvokeFunction(new Arguments(@object));
+                if (!primitive.IsObject)
+                    return primitive;
+            }
+
+            throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+        }
+
         if (context[KeyStrings.Date] is not JSFunction dateCtor)
             return;
 
@@ -387,16 +419,42 @@ internal static class BuiltInsAssemblyInitializer
         var setYear = new JSFunction(JSDate.SetYearLegacy, "setYear", "function setYear() { [native code] }", length: 1, createPrototype: false);
         prototype.FastAddValue(setYearKey, setYear, JSPropertyAttributes.ConfigurableValue);
         prototype.FastAddValue(getYearKey, new JSFunction(JSDate.GetYearLegacy, "getYear", "function getYear() { [native code] }", length: 0, createPrototype: false), JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue(KeyStrings.GetOrCreate("toJSON"), CreateNativeFunction(static (in Arguments a) =>
+        {
+            var receiver = a.This;
+            var @object = receiver as JSObject;
+            if (@object == null)
+            {
+                if (receiver.IsNullOrUndefined)
+                    throw JSEngine.NewTypeError(JSException.Cannot_convert_undefined_or_null_to_object);
+
+                @object = (JSObject)JSObject.CreatePrimitiveObject(receiver);
+            }
+
+            var primitive = ToNumberPrimitive(@object);
+            if (primitive.IsNumber)
+            {
+                var number = primitive.DoubleValue;
+                if (double.IsNaN(number) || double.IsInfinity(number))
+                    return JSNull.Value;
+            }
+
+            var toISOString = @object[KeyStrings.GetOrCreate("toISOString")];
+            return toISOString.InvokeFunction(new Arguments(@object));
+        }, "toJSON", 1), JSPropertyAttributes.ConfigurableValue);
 
         var toUTCString = prototype[toUTCStringKey];
         if (!toUTCString.IsUndefined)
             prototype.FastAddValue(toGMTStringKey, toUTCString, JSPropertyAttributes.ConfigurableValue);
+        prototype.Dirty();
     }
 
     private static void PatchCompatibilityBuiltIns(JSContext context)
     {
         PatchStringPrototype(context);
+        PatchErrorPrototype(context);
         PatchObjectPrototype(context);
+        PatchPromisePrototype(context);
         PatchFunctionPrototype(context);
         PatchSpeciesConstructors(context);
         PatchSymbolPrototype(context);
@@ -461,12 +519,103 @@ internal static class BuiltInsAssemblyInitializer
             prototype.FastAddValue(KeyStrings.GetOrCreate("trimLeft"), trimStart, JSPropertyAttributes.ConfigurableValue);
     }
 
+    private static void PatchErrorPrototype(JSContext context)
+    {
+        if (context[KeyStrings.Error] is not JSFunction errorCtor)
+            return;
+
+        var prototype = errorCtor.prototype;
+        prototype.FastAddValue(KeyStrings.toString, CreateNativeFunction(static (in Arguments a) =>
+        {
+            if (a.This is not JSObject @object)
+                throw JSEngine.NewTypeError("Error.prototype.toString called on non-object");
+
+            var name = @object[KeyStrings.name];
+            var message = @object[KeyStrings.message];
+
+            var nameString = name.IsUndefined ? "Error" : name.ToString();
+            var messageString = message.IsUndefined ? string.Empty : message.ToString();
+
+            if (nameString.Length == 0)
+                return JSValue.CreateString(messageString);
+
+            if (messageString.Length == 0)
+                return JSValue.CreateString(nameString);
+
+            return JSValue.CreateString($"{nameString}: {messageString}");
+        }, "toString", 0), JSPropertyAttributes.ConfigurableValue);
+        prototype.Dirty();
+    }
+
+    private static void PatchPromisePrototype(JSContext context)
+    {
+        if (context[KeyStrings.Promise] is not JSFunction promiseCtor)
+            return;
+
+        var prototype = promiseCtor.prototype;
+        prototype.FastAddValue(KeyStrings.GetOrCreate("catch"), CreateNativeFunction(static (in Arguments a) =>
+        {
+            var then = a.This[KeyStrings.then];
+            return then.InvokeFunction(new Arguments(a.This, JSUndefined.Value, a.Get1()));
+        }, "catch", 1), JSPropertyAttributes.ConfigurableValue);
+        prototype.Dirty();
+    }
+
     private static void PatchObjectPrototype(JSContext context)
     {
+        static JSObject CoerceObject(JSValue value)
+        {
+            if (value is JSObject @object)
+                return @object;
+
+            if (value.IsNullOrUndefined)
+                throw JSEngine.NewTypeError(JSException.Cannot_convert_undefined_or_null_to_object);
+
+            return (JSObject)JSObject.CreatePrimitiveObject(value);
+        }
+
+        static JSValue ToPropertyKeyValue(JSValue value)
+        {
+            var key = value.ToKey(false);
+            if (key.IsSymbol)
+                return (JSSymbol)key.Symbol;
+
+            if (key.IsUInt)
+                return JSValue.CreateNumber(key.Index);
+
+            return key.KeyString.ToJSValue();
+        }
+
+        static JSValue LookupAccessor(JSValue thisValue, JSValue propertyName, KeyString accessorKey)
+        {
+            var key = ToPropertyKeyValue(propertyName);
+            var current = CoerceObject(thisValue);
+            while (true)
+            {
+                var descriptor = current.GetOwnPropertyDescriptor(key);
+                if (!descriptor.IsUndefined)
+                {
+                    var accessor = descriptor[accessorKey];
+                    return accessor.IsUndefined ? JSUndefined.Value : accessor;
+                }
+
+                if (current.GetPrototypeOf() is not JSObject next)
+                    return JSUndefined.Value;
+
+                current = next;
+            }
+        }
+
         if (context[KeyStrings.Object] is not JSFunction objectCtor)
             return;
 
         var prototype = objectCtor.prototype;
+        prototype.FastAddValue(KeyStrings.GetOrCreate("hasOwnProperty"), CreateNativeFunction(static (in Arguments a) =>
+        {
+            var key = ToPropertyKeyValue(a.Get1());
+            var @object = CoerceObject(a.This);
+            return @object.GetOwnPropertyDescriptor(key).IsUndefined ? JSValue.BooleanFalse : JSValue.BooleanTrue;
+        }, "hasOwnProperty", 1), JSPropertyAttributes.ConfigurableValue);
         prototype.FastAddProperty(
             KeyStrings.__proto__,
             CreateNativeGetter(static (in Arguments a) =>
@@ -502,26 +651,41 @@ internal static class BuiltInsAssemblyInitializer
             }, "toLocaleString"), JSPropertyAttributes.ConfigurableValue);
         }
 
-        var defineGetterKey = KeyStrings.GetOrCreate("__defineGetter__");
-        if (prototype[defineGetterKey].IsUndefined)
+        prototype.FastAddValue(KeyStrings.GetOrCreate("__defineGetter__"), CreateNativeFunction(static (in Arguments a) =>
         {
-            prototype.FastAddValue(defineGetterKey, CreateNativeFunction((in Arguments a) =>
-            {
-                if (a.This is not JSObject target)
-                    throw JSEngine.NewTypeError(JSException.Cannot_convert_undefined_or_null_to_object);
+            var key = ToPropertyKeyValue(a.Get1());
+            var target = CoerceObject(a.This);
+            var getter = a.GetAt(1);
+            if (getter is not IJSFunction)
+                throw JSEngine.NewTypeError("Getter must be a function");
 
-                var (propertyName, getter) = a.Get2();
-                if (getter is not IJSFunction)
-                    throw JSEngine.NewTypeError("Getter must be a function");
+            var descriptor = new JSObject();
+            descriptor[KeyStrings.get] = getter;
+            descriptor[KeyStrings.enumerable] = JSValue.BooleanTrue;
+            descriptor[KeyStrings.configurable] = JSValue.BooleanTrue;
+            target.DefineProperty(key, descriptor);
+            return JSUndefined.Value;
+        }, "__defineGetter__", 2), JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue(KeyStrings.GetOrCreate("__defineSetter__"), CreateNativeFunction(static (in Arguments a) =>
+        {
+            var key = ToPropertyKeyValue(a.Get1());
+            var target = CoerceObject(a.This);
+            var setter = a.GetAt(1);
+            if (setter is not IJSFunction)
+                throw JSEngine.NewTypeError("Setter must be a function");
 
-                var descriptor = new JSObject();
-                descriptor[KeyStrings.get] = getter;
-                descriptor[KeyStrings.enumerable] = JSValue.BooleanTrue;
-                descriptor[KeyStrings.configurable] = JSValue.BooleanTrue;
-                target.DefineProperty(propertyName, descriptor);
-                return JSUndefined.Value;
-            }, "__defineGetter__", 2), JSPropertyAttributes.ConfigurableValue);
-        }
+            var descriptor = new JSObject();
+            descriptor[KeyStrings.set] = setter;
+            descriptor[KeyStrings.enumerable] = JSValue.BooleanTrue;
+            descriptor[KeyStrings.configurable] = JSValue.BooleanTrue;
+            target.DefineProperty(key, descriptor);
+            return JSUndefined.Value;
+        }, "__defineSetter__", 2), JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue(KeyStrings.GetOrCreate("__lookupGetter__"), CreateNativeFunction(static (in Arguments a) =>
+            LookupAccessor(a.This, a.Get1(), KeyStrings.get), "__lookupGetter__", 1), JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue(KeyStrings.GetOrCreate("__lookupSetter__"), CreateNativeFunction(static (in Arguments a) =>
+            LookupAccessor(a.This, a.Get1(), KeyStrings.set), "__lookupSetter__", 1), JSPropertyAttributes.ConfigurableValue);
+        prototype.Dirty();
     }
 
     private static void PatchFunctionPrototype(JSContext context)

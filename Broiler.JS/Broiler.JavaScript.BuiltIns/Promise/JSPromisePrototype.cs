@@ -37,10 +37,10 @@ public partial class JSPromise
     }
 
     [JSExport("catch")]
-    public JSValue Catch(JSFunction fx)
+    public JSValue Catch(in Arguments a)
     {
-        Then(null, fx.f);
-        return this;
+        var then = a.This[KeyStrings.then];
+        return then.InvokeFunction(new Arguments(a.This, JSUndefined.Value, a.Get1()));
     }
 
     [JSExport("finally")]
