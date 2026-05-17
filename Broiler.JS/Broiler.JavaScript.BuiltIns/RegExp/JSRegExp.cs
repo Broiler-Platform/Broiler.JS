@@ -15,7 +15,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     string IJSRegExp.Flags => flags;
     Regex IJSRegExp.Value => value;
 
-    private static bool IsRegExpLike(JSValue value)
+    internal static bool IsRegExpLike(JSValue value)
     {
         if (value is JSRegExp)
             return true;
@@ -179,6 +179,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if (IsRegExpLike(patternValue))
             {
                 var regExpLike = (JSObject)patternValue;
+                if (a.Length < 2 || a.GetAt(1).IsUndefined)
+                    _ = regExpLike[KeyStrings.constructor];
+
                 var sourceKey = KeyStrings.GetOrCreate("source");
                 var flagsKey = KeyStrings.GetOrCreate("flags");
                 pattern = regExpLike[sourceKey].IsUndefined ? string.Empty : regExpLike[sourceKey].StringValue;

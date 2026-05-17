@@ -757,6 +757,33 @@ internal static class BuiltInsAssemblyInitializer
         if (context[KeyStrings.RegExp] is not JSFunction regExpCtor)
             return;
 
+        if (regExpCtor is JSClassFunction originalCtor)
+        {
+            JSFunction replacement = null;
+            replacement = new JSFunction((in Arguments a) =>
+            {
+                var (pattern, flags) = a.Get2();
+                if (flags.IsUndefined && JSRegExp.IsRegExpLike(pattern))
+                {
+                    var constructor = pattern[KeyStrings.constructor];
+                    if (ReferenceEquals(constructor, replacement) || ReferenceEquals(constructor, originalCtor))
+                        return pattern;
+                }
+
+                return originalCtor.CreateInstance(a);
+            }, "RegExp", "function RegExp() { [native code] }", length: 2, createPrototype: false)
+            {
+                prototype = originalCtor.prototype
+            };
+            var functionMetadata = new JSFunction(JSFunction.empty, "Function", "function Function() { [native code] }", length: 1, createPrototype: false);
+
+            replacement.FastAddValue(KeyStrings.prototype, originalCtor.prototype, JSPropertyAttributes.ConfigurableValue);
+            replacement.FastAddValue(KeyStrings.constructor, functionMetadata, JSPropertyAttributes.ConfigurableValue);
+            originalCtor.prototype[KeyStrings.constructor] = replacement;
+            context.FastAddValue(KeyStrings.RegExp, replacement, JSPropertyAttributes.ConfigurableValue);
+            regExpCtor = replacement;
+        }
+
         static JSValue GetSpeciesConstructor(JSValue constructor)
         {
             if (constructor.IsUndefined)
@@ -816,13 +843,27 @@ internal static class BuiltInsAssemblyInitializer
         }, "[Symbol.match]", 1), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.matchAll.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
-            if (a.This is not JSRegExp regExp)
-                throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] called on incompatible receiver");
+            if (a.This is JSRegExp regExp)
+            {
+                var flags = GetObservableFlags(regExp);
+                InvokeSpeciesConstructor(regExp, flags);
 
-            var flags = GetObservableFlags(regExp);
-            InvokeSpeciesConstructor(regExp, flags);
+                return regExp.Match(a.Get1());
+            }
 
-            return regExp.Match(a.Get1());
+            if (JSRegExp.IsRegExpLike(a.This))
+            {
+                var flags = a.This[KeyStrings.GetOrCreate("flags")];
+                if (flags.IsNullOrUndefined)
+                    throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] requires a non-null flags value");
+
+                if (!flags.ToString().Contains('g'))
+                    throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] requires a global regular expression");
+
+                return new JSRegExp(new Arguments(JSUndefined.Value, a.This, flags)).Match(a.Get1());
+            }
+
+            return new JSRegExp(new Arguments(JSUndefined.Value, a.This, JSValue.CreateString("g"))).Match(a.Get1());
         }, "[Symbol.matchAll]", 1), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.search.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {

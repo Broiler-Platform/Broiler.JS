@@ -69,13 +69,21 @@ public partial class JSReflect : JSObject
         if (target is not JSObject targetObject)
             throw JSEngine.NewTypeError("Reflect.defineProperty called on non-object");
 
-        if (targetObject is not JSProxy && !targetObject.IsExtensible())
-            return JSBoolean.False;
+        var key = propertyKey.ToKey();
 
         if (attributes is not JSObject pd)
             throw JSEngine.NewTypeError("Property description must be an object");
 
-        var result = targetObject.DefineProperty(propertyKey, pd);
+        if (targetObject is not JSProxy && !targetObject.IsExtensible())
+            return JSBoolean.False;
+
+        var result = key.Type switch
+        {
+            KeyType.UInt => targetObject.DefineProperty(key.Index, pd),
+            KeyType.String => targetObject.DefineProperty(key.KeyString, pd),
+            KeyType.Symbol => targetObject.DefineProperty(key.Symbol, pd),
+            _ => throw JSEngine.NewTypeError($"Cannot define property {propertyKey}")
+        };
         return result.IsBoolean ? result : JSBoolean.True;
     }
 

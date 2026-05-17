@@ -6053,6 +6053,70 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Reflect_And_RegExp_Abrupt_Completions_From_Test262_Are_Preserved()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () {
+                        var key = {
+                            toString: function () {
+                                throw new Test262Error();
+                            }
+                        };
+
+                        Reflect.defineProperty({}, key);
+                    }),
+                    thrownCtor(function () {
+                        var pattern = Object.defineProperty({}, 'constructor', {
+                            get: function () {
+                                throw new Test262Error();
+                            }
+                        });
+
+                        pattern[Symbol.match] = true;
+                        RegExp(pattern);
+                    }),
+                    thrownCtor(function () {
+                        var obj = {
+                            get [Symbol.match]() {
+                                throw new Test262Error();
+                            }
+                        };
+
+                        RegExp.prototype[Symbol.matchAll].call(obj, '');
+                    }),
+                    thrownCtor(function () {
+                        var obj = {
+                            toString: function () {
+                                throw new Test262Error();
+                            }
+                        };
+
+                        RegExp.prototype[Symbol.matchAll].call(obj, '');
+                    })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
+    }
+
+    [Fact]
     public void MatchAll_Set_Delete_RegExp_And_Proxy_TypeErrors_Match_Test262()
     {
         EnsureBuiltInsLoaded();
