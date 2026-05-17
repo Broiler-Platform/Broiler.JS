@@ -119,7 +119,7 @@ public partial class JSReflect : JSObject
         return @object.GetOwnPropertyDescriptor(propertyKey);
     }
 
-    [Static("getPrototypeOf")]
+    [JSExport("getPrototypeOf", Length = 1)]
     public new static JSValue GetPrototypeOf(in Arguments a)
     {
         var target = a.Get1();

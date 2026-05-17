@@ -202,6 +202,52 @@ public partial class JSPromise
         });
     }
 
+    [JSExport("race", Length = 1)]
+    public static JSValue Race(in Arguments a)
+    {
+        var iterable = a.Get1();
+        return CreatePromiseFromConstructor(a.This, (resolve, reject) =>
+        {
+            var en = iterable.GetElementEnumerator();
+            var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
+                ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
+
+            while (en.MoveNext(out var hasValue, out var item, out var _))
+            {
+                if (!hasValue)
+                    continue;
+
+                var resolveElement = new JSFunction((in Arguments args) =>
+                {
+                    var value = args.Get1();
+                    sc.Post(o => resolve.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), value);
+                    return JSUndefined.Value;
+                }, "", "function () { [native] }", length: 1, createPrototype: false);
+                var rejectElement = new JSFunction((in Arguments args) =>
+                {
+                    var value = args.Get1();
+                    sc.Post(o => reject.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), value);
+                    return JSUndefined.Value;
+                }, "", "function () { [native] }", length: 1, createPrototype: false);
+
+                if (item is JSPromise promise)
+                {
+                    promise.Then(resolveElement.Delegate, rejectElement.Delegate);
+                    continue;
+                }
+
+                var then = item[KeyStrings.then];
+                if (then.IsFunction)
+                {
+                    then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
+                    continue;
+                }
+
+                sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, item)), null);
+            }
+        });
+    }
+
     [JSExport("allSettled", Length = 1)]
     public static JSValue AllSettled(in Arguments a)
     {
