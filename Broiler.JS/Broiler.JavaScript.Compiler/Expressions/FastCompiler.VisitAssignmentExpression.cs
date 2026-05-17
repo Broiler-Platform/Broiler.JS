@@ -78,15 +78,17 @@ partial class FastCompiler
         return BinaryOperation.Assign(exp, Visit(right), assignmentOperator);
     }
 
-    private YExpression CreateAssignment(AstExpression pattern, YExpression init, bool createVariable = false, bool newScope = false, bool suppressAnonymousFunctionNameInference = false)
+    private YExpression CreateAssignment(AstExpression pattern, YExpression init, bool createVariable = false, bool newScope = false,
+        bool suppressAnonymousFunctionNameInference = false, bool initializeVariable = true)
     {
         var inits = new Sequence<YExpression>();
-        CreateAssignment(inits, pattern, init, createVariable, newScope, suppressAnonymousFunctionNameInference);
+        CreateAssignment(inits, pattern, init, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
 
         return YExpression.Block(inits);
     }
 
-    private void CreateAssignment(Sequence<YExpression> inits, AstExpression pattern, YExpression init, bool createVariable = false, bool newScope = false, bool suppressAnonymousFunctionNameInference = false)
+    private void CreateAssignment(Sequence<YExpression> inits, AstExpression pattern, YExpression init, bool createVariable = false, bool newScope = false,
+        bool suppressAnonymousFunctionNameInference = false, bool initializeVariable = true)
     {
         YExpression target;
 
@@ -97,7 +99,7 @@ partial class FastCompiler
                     var id = pattern as AstIdentifier;
                     if (createVariable)
                     {
-                        var v = scope.Top.CreateVariable(id.Name.Value, JSVariableBuilder.New(id.Name.Value), newScope);
+                        var v = scope.Top.CreateVariable(id.Name.Value, null, newScope, initialize: initializeVariable);
                         target = v.Expression;
                     }
                     else
@@ -168,7 +170,7 @@ partial class FastCompiler
                             case FastNodeType.MemberExpression:
                             case FastNodeType.ArrayPattern:
                             case FastNodeType.ObjectPattern:
-                                CreateAssignment(inits, property.Value, start, true, newScope, suppressAnonymousFunctionNameInference);
+                                CreateAssignment(inits, property.Value, start, true, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
                                 break;
                             // TODO
                             case FastNodeType.BinaryExpression:
@@ -182,7 +184,8 @@ partial class FastCompiler
                                     YExpression.Coalesce(
                                         JSValueExtensionsBuilder.NullIfUndefined(start),
                                         defaultValue),
-                                    suppressAnonymousFunctionNameInference: suppressAnonymousFunctionNameInference);
+                                    suppressAnonymousFunctionNameInference: suppressAnonymousFunctionNameInference,
+                                    initializeVariable: initializeVariable);
                                 break;
                             default:
                                 throw new NotImplementedException();
@@ -236,7 +239,7 @@ partial class FastCompiler
 
                                     arrayInits.Add(JSValueExtensionsBuilder.AssignCoalesce(te.Expression, defaultValue));
 
-                                    CreateAssignment(arrayInits, be.Left, te.Expression, true, newScope, suppressAnonymousFunctionNameInference);
+                                    CreateAssignment(arrayInits, be.Left, te.Expression, true, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
 
                                     break;
                                 }
@@ -276,7 +279,7 @@ partial class FastCompiler
                                 {
                                     var check = IElementEnumeratorBuilder.MoveNext(destExp, te.Expression);
                                     arrayInits.Add(check);
-                                    CreateAssignment(arrayInits, ape, te.Expression, true, newScope, suppressAnonymousFunctionNameInference);
+                                    CreateAssignment(arrayInits, ape, te.Expression, true, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
                                 }
                                 break;
 

@@ -1,8 +1,10 @@
 ﻿using Broiler.JavaScript.ExpressionCompiler.Expressions;
+using System.Collections.Generic;
 using System.Reflection;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Expressions;
+using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
@@ -80,6 +82,11 @@ partial class FastCompiler
             var stackItem = cs.StackItem;
             var r = s.ReturnLabel;
 
+            var parameterNames = new List<StringSpan>();
+            CollectParameterNames(functionDeclaration.Params, parameterNames);
+            foreach (var parameterName in parameterNames)
+                cs.CreateVariable(parameterName, null, true, initialize: false);
+
             YExpression fxName;
             YExpression localFxName;
             int nameOffset;
@@ -115,11 +122,13 @@ partial class FastCompiler
             {
                 if (v.Identifier.IsSpreadElement(out var spe))
                 {
-                    CreateAssignment(bodyInits, spe.Argument, ArgumentsBuilder.RestFrom(argumentElements, (uint)i), true, true, suppressAnonymousFunctionNameInference: true);
+                    CreateAssignment(bodyInits, spe.Argument, ArgumentsBuilder.RestFrom(argumentElements, (uint)i), false, true,
+                        suppressAnonymousFunctionNameInference: true);
                     continue;
                 }
 
-                CreateAssignment(bodyInits, v.Identifier, JSVariableBuilder.FromArgumentOptional(argumentElements, i, VisitExpression(v.Init)), true, true, suppressAnonymousFunctionNameInference: true);
+                CreateAssignment(bodyInits, v.Identifier, JSVariableBuilder.FromArgumentOptional(argumentElements, i, VisitExpression(v.Init)), false, true,
+                    suppressAnonymousFunctionNameInference: true);
             }
 
             YExpression lambdaBody = VisitStatement(functionDeclaration.Body);

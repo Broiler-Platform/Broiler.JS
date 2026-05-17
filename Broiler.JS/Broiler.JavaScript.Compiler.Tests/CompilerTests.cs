@@ -1,6 +1,8 @@
 using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Compiler.Tests;
 
@@ -161,5 +163,54 @@ public class CompilerTests
             """);
 
         Assert.Equal("false|false|false|true|function", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_Strict_Function_Unresolved_Assignment_Throws_ReferenceError()
+    {
+        using var ctx = new JSContext();
+
+        var ex = Assert.Throws<JSException>(() => ctx.Eval("""
+            (function () {
+                "use strict";
+                missing = 1;
+            })();
+            """));
+
+        Assert.Equal("ReferenceError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("missing is not defined", ex.Error[KeyStrings.message].ToString());
+    }
+
+    [Fact]
+    public void Compile_Eval_Strict_Directive_And_Top_Level_Lexical_Tdz_Throw_ReferenceError()
+    {
+        using var ctx = new JSContext();
+
+        var strictEval = Assert.Throws<JSException>(() => ctx.Eval("""eval('"use strict"; missing = 1;');"""));
+        Assert.Equal("ReferenceError", strictEval.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("missing is not defined", strictEval.Error[KeyStrings.message].ToString());
+
+        var lexicalEval = Assert.Throws<JSException>(() => ctx.Eval("""eval('typeof x; let x;');"""));
+        Assert.Equal("ReferenceError", lexicalEval.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("Cannot access 'x' before initialization", lexicalEval.Error[KeyStrings.message].ToString());
+
+        var indirectLexicalEval = Assert.Throws<JSException>(() => ctx.Eval("""(0, eval)('typeof y; class y {}');"""));
+        Assert.Equal("ReferenceError", indirectLexicalEval.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("Cannot access 'y' before initialization", indirectLexicalEval.Error[KeyStrings.message].ToString());
+    }
+
+    [Fact]
+    public void Compile_Default_Parameter_Self_Reference_Throws_ReferenceError()
+    {
+        using var ctx = new JSContext();
+
+        var ex = Assert.Throws<JSException>(() => ctx.Eval("""
+            var f;
+            f = (x = x) => x;
+            f();
+            """));
+
+        Assert.Equal("ReferenceError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("Cannot access 'x' before initialization", ex.Error[KeyStrings.message].ToString());
     }
 }

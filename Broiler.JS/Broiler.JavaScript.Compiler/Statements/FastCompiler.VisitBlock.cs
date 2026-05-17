@@ -15,12 +15,13 @@ partial class FastCompiler
         var blockList = new Sequence<YExpression>(count);
         var hoistingScope = block.HoistingScope;
         var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
+        var lexicalBindings = CollectTopLevelLexicalBindings(block.Statements);
         
         if (hoistingScope != null)
         {
             var en = hoistingScope.GetFastEnumerator();
             while (en.MoveNext(out var v))
-                scope.CreateVariable(v, null, true);
+                scope.CreateVariable(v, null, true, initialize: lexicalBindings.Contains(v.Value) == false);
         }
 
         var se = block.Statements.GetFastEnumerator();

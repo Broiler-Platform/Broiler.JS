@@ -118,6 +118,9 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
         if (!hasVariable && !hasProperty)
         {
+            if (JSEngine.IsStrictMode)
+                throw JSEngine.NewReferenceError($"{name} is not defined");
+
             FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);
             return value;
         }
