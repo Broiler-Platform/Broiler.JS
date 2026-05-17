@@ -12697,7 +12697,6 @@ test/language/statements/async-generator/yield-star-normal-notdone-iter-value-th
 test/language/statements/async-generator/yield-star-promise-not-unwrapped.js
 test/language/statements/async-generator/yield-star-return-missing-value-is-awaited.js
 test/language/statements/async-generator/yield-star-return-notdone-iter-value-throws.js
-test/language/statements/async-generator/yield-star-return-then-getter-ticks.js
 test/language/statements/async-generator/yield-star-sync-next.js
 test/language/statements/async-generator/yield-star-sync-return.js
 test/language/statements/async-generator/yield-star-sync-throw.js
