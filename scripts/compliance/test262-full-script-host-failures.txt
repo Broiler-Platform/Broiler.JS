@@ -7625,11 +7625,7 @@ test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-id-init-fn-name-clas
 test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-prop-eval-err.js
-test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-rest-getter.js
 test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/arrow-function/dstr/dflt-obj-ptrn-rest-val-obj.js
@@ -7638,11 +7634,7 @@ test/language/expressions/arrow-function/dstr/obj-ptrn-id-init-fn-name-class.js
 test/language/expressions/arrow-function/dstr/obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/arrow-function/dstr/obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/arrow-function/dstr/obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/arrow-function/dstr/obj-ptrn-id-init-skipped.js
-test/language/expressions/arrow-function/dstr/obj-ptrn-prop-ary-value-null.js
 test/language/expressions/arrow-function/dstr/obj-ptrn-prop-eval-err.js
-test/language/expressions/arrow-function/dstr/obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/arrow-function/dstr/obj-ptrn-prop-obj-value-null.js
 test/language/expressions/arrow-function/dstr/obj-ptrn-rest-getter.js
 test/language/expressions/arrow-function/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/arrow-function/dstr/obj-ptrn-rest-val-obj.js
@@ -8056,7 +8048,6 @@ test/language/expressions/async-generator/dstr/dflt-obj-ptrn-id-init-skipped.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-id-trailing-comma.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-ary-init.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-ary-trailing-comma.js
-test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-ary.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-eval-err.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-id-init-skipped.js
@@ -8064,7 +8055,6 @@ test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-id-init.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-id-trailing-comma.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-id.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-obj-init.js
-test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-prop-obj.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-rest-getter.js
 test/language/expressions/async-generator/dstr/dflt-obj-ptrn-rest-skip-non-enumerable.js
@@ -8163,7 +8153,6 @@ test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-id-init-skipp
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-id-trailing-comma.js
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-ary-init.js
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-ary-trailing-comma.js
-test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-ary.js
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-eval-err.js
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-id-init-skipped.js
@@ -8171,7 +8160,6 @@ test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-id-init.
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-id-trailing-comma.js
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-id.js
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-obj-init.js
-test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-prop-obj.js
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/async-generator/dstr/named-dflt-obj-ptrn-rest-skip-non-enumerable.js
@@ -8186,7 +8174,6 @@ test/language/expressions/async-generator/dstr/named-obj-ptrn-id-init-skipped.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-id-trailing-comma.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-ary-init.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-ary-trailing-comma.js
-test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-ary.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-eval-err.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-id-init-skipped.js
@@ -8194,7 +8181,6 @@ test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-id-init.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-id-trailing-comma.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-id.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-obj-init.js
-test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-prop-obj.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-rest-getter.js
 test/language/expressions/async-generator/dstr/named-obj-ptrn-rest-skip-non-enumerable.js
@@ -8209,7 +8195,6 @@ test/language/expressions/async-generator/dstr/obj-ptrn-id-init-skipped.js
 test/language/expressions/async-generator/dstr/obj-ptrn-id-trailing-comma.js
 test/language/expressions/async-generator/dstr/obj-ptrn-prop-ary-init.js
 test/language/expressions/async-generator/dstr/obj-ptrn-prop-ary-trailing-comma.js
-test/language/expressions/async-generator/dstr/obj-ptrn-prop-ary-value-null.js
 test/language/expressions/async-generator/dstr/obj-ptrn-prop-ary.js
 test/language/expressions/async-generator/dstr/obj-ptrn-prop-eval-err.js
 test/language/expressions/async-generator/dstr/obj-ptrn-prop-id-init-skipped.js
@@ -8217,7 +8202,6 @@ test/language/expressions/async-generator/dstr/obj-ptrn-prop-id-init.js
 test/language/expressions/async-generator/dstr/obj-ptrn-prop-id-trailing-comma.js
 test/language/expressions/async-generator/dstr/obj-ptrn-prop-id.js
 test/language/expressions/async-generator/dstr/obj-ptrn-prop-obj-init.js
-test/language/expressions/async-generator/dstr/obj-ptrn-prop-obj-value-null.js
 test/language/expressions/async-generator/dstr/obj-ptrn-prop-obj.js
 test/language/expressions/async-generator/dstr/obj-ptrn-rest-getter.js
 test/language/expressions/async-generator/dstr/obj-ptrn-rest-skip-non-enumerable.js
@@ -8795,7 +8779,6 @@ test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-id-init-skippe
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-id-trailing-comma.js
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary-init.js
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary-trailing-comma.js
-test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary.js
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-eval-err.js
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-id-init-skipped.js
@@ -8803,7 +8786,6 @@ test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-id-init.j
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-id-trailing-comma.js
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-id.js
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-obj-init.js
-test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-obj.js
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/async-gen-meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
@@ -8818,7 +8800,6 @@ test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-id-init-skipped.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-id-trailing-comma.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-ary-init.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-ary-trailing-comma.js
-test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-ary.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-eval-err.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-id-init-skipped.js
@@ -8826,7 +8807,6 @@ test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-id-init.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-id-trailing-comma.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-id.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-obj-init.js
-test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-prop-obj.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/async-gen-meth-obj-ptrn-rest-skip-non-enumerable.js
@@ -8925,7 +8905,6 @@ test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-id-init
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-id-trailing-comma.js
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-ary-init.js
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-ary-trailing-comma.js
-test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-ary.js
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-eval-err.js
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-id-init-skipped.js
@@ -8933,7 +8912,6 @@ test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-id
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-id-trailing-comma.js
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-id.js
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-obj-init.js
-test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-obj.js
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/async-gen-meth-static-dflt-obj-ptrn-rest-skip-non-enumerable.js
@@ -8948,7 +8926,6 @@ test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-id-init-skip
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-id-trailing-comma.js
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-ary-init.js
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-ary-trailing-comma.js
-test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-ary.js
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-eval-err.js
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-id-init-skipped.js
@@ -8956,7 +8933,6 @@ test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-id-init
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-id-trailing-comma.js
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-id.js
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-obj-init.js
-test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-prop-obj.js
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/async-gen-meth-static-obj-ptrn-rest-skip-non-enumerable.js
@@ -9238,11 +9214,7 @@ test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-clas
 test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-prop-eval-err.js
-test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/gen-meth-dflt-obj-ptrn-rest-val-obj.js
@@ -9251,11 +9223,7 @@ test/language/expressions/class/dstr/gen-meth-obj-ptrn-id-init-fn-name-class.js
 test/language/expressions/class/dstr/gen-meth-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/gen-meth-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/gen-meth-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/gen-meth-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/gen-meth-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/gen-meth-obj-ptrn-prop-eval-err.js
-test/language/expressions/class/dstr/gen-meth-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/class/dstr/gen-meth-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/gen-meth-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/gen-meth-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/gen-meth-obj-ptrn-rest-val-obj.js
@@ -9292,11 +9260,7 @@ test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-id-init-fn-na
 test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-prop-eval-err.js
-test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/gen-meth-static-dflt-obj-ptrn-rest-val-obj.js
@@ -9305,11 +9269,7 @@ test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-id-init-fn-name-cl
 test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-prop-eval-err.js
-test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/gen-meth-static-obj-ptrn-rest-val-obj.js
@@ -9346,11 +9306,7 @@ test/language/expressions/class/dstr/meth-dflt-obj-ptrn-id-init-fn-name-class.js
 test/language/expressions/class/dstr/meth-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/meth-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/meth-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/meth-dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/meth-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/meth-dflt-obj-ptrn-prop-eval-err.js
-test/language/expressions/class/dstr/meth-dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/class/dstr/meth-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/meth-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/meth-dflt-obj-ptrn-rest-val-obj.js
@@ -9359,11 +9315,7 @@ test/language/expressions/class/dstr/meth-obj-ptrn-id-init-fn-name-class.js
 test/language/expressions/class/dstr/meth-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/meth-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/meth-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/meth-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/meth-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/meth-obj-ptrn-prop-eval-err.js
-test/language/expressions/class/dstr/meth-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/class/dstr/meth-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/meth-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/meth-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/meth-obj-ptrn-rest-val-obj.js
@@ -9400,11 +9352,7 @@ test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-id-init-fn-name-c
 test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-prop-eval-err.js
-test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/meth-static-dflt-obj-ptrn-rest-val-obj.js
@@ -9413,11 +9361,7 @@ test/language/expressions/class/dstr/meth-static-obj-ptrn-id-init-fn-name-class.
 test/language/expressions/class/dstr/meth-static-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/meth-static-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/meth-static-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/meth-static-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/meth-static-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/class/dstr/meth-static-obj-ptrn-prop-eval-err.js
-test/language/expressions/class/dstr/meth-static-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/class/dstr/meth-static-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/class/dstr/meth-static-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/meth-static-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/meth-static-obj-ptrn-rest-val-obj.js
@@ -9460,8 +9404,6 @@ test/language/expressions/class/dstr/private-gen-meth-dflt-obj-ptrn-id-init-fn-n
 test/language/expressions/class/dstr/private-gen-meth-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/private-gen-meth-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/private-gen-meth-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/private-gen-meth-dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/private-gen-meth-dflt-obj-ptrn-prop-id-init-skipped.js
 test/language/expressions/class/dstr/private-gen-meth-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/private-gen-meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/private-gen-meth-dflt-obj-ptrn-rest-val-obj.js
@@ -9470,8 +9412,6 @@ test/language/expressions/class/dstr/private-gen-meth-obj-ptrn-id-init-fn-name-c
 test/language/expressions/class/dstr/private-gen-meth-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/private-gen-meth-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/private-gen-meth-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/private-gen-meth-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/private-gen-meth-obj-ptrn-prop-id-init-skipped.js
 test/language/expressions/class/dstr/private-gen-meth-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/private-gen-meth-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/private-gen-meth-obj-ptrn-rest-val-obj.js
@@ -9514,8 +9454,6 @@ test/language/expressions/class/dstr/private-gen-meth-static-dflt-obj-ptrn-id-in
 test/language/expressions/class/dstr/private-gen-meth-static-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/private-gen-meth-static-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/private-gen-meth-static-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/private-gen-meth-static-dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/private-gen-meth-static-dflt-obj-ptrn-prop-id-init-skipped.js
 test/language/expressions/class/dstr/private-gen-meth-static-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/private-gen-meth-static-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/private-gen-meth-static-dflt-obj-ptrn-rest-val-obj.js
@@ -9524,8 +9462,6 @@ test/language/expressions/class/dstr/private-gen-meth-static-obj-ptrn-id-init-fn
 test/language/expressions/class/dstr/private-gen-meth-static-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/private-gen-meth-static-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/private-gen-meth-static-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/private-gen-meth-static-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/private-gen-meth-static-obj-ptrn-prop-id-init-skipped.js
 test/language/expressions/class/dstr/private-gen-meth-static-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/private-gen-meth-static-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/private-gen-meth-static-obj-ptrn-rest-val-obj.js
@@ -9568,8 +9504,6 @@ test/language/expressions/class/dstr/private-meth-dflt-obj-ptrn-id-init-fn-name-
 test/language/expressions/class/dstr/private-meth-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/private-meth-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/private-meth-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/private-meth-dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/private-meth-dflt-obj-ptrn-prop-id-init-skipped.js
 test/language/expressions/class/dstr/private-meth-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/private-meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/private-meth-dflt-obj-ptrn-rest-val-obj.js
@@ -9578,8 +9512,6 @@ test/language/expressions/class/dstr/private-meth-obj-ptrn-id-init-fn-name-class
 test/language/expressions/class/dstr/private-meth-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/private-meth-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/private-meth-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/private-meth-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/private-meth-obj-ptrn-prop-id-init-skipped.js
 test/language/expressions/class/dstr/private-meth-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/private-meth-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/private-meth-obj-ptrn-rest-val-obj.js
@@ -9622,8 +9554,6 @@ test/language/expressions/class/dstr/private-meth-static-dflt-obj-ptrn-id-init-f
 test/language/expressions/class/dstr/private-meth-static-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/private-meth-static-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/private-meth-static-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/private-meth-static-dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/private-meth-static-dflt-obj-ptrn-prop-id-init-skipped.js
 test/language/expressions/class/dstr/private-meth-static-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/private-meth-static-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/private-meth-static-dflt-obj-ptrn-rest-val-obj.js
@@ -9632,8 +9562,6 @@ test/language/expressions/class/dstr/private-meth-static-obj-ptrn-id-init-fn-nam
 test/language/expressions/class/dstr/private-meth-static-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/class/dstr/private-meth-static-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/class/dstr/private-meth-static-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/class/dstr/private-meth-static-obj-ptrn-id-init-skipped.js
-test/language/expressions/class/dstr/private-meth-static-obj-ptrn-prop-id-init-skipped.js
 test/language/expressions/class/dstr/private-meth-static-obj-ptrn-rest-getter.js
 test/language/expressions/class/dstr/private-meth-static-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/class/dstr/private-meth-static-obj-ptrn-rest-val-obj.js
@@ -11003,11 +10931,7 @@ test/language/expressions/function/dstr/dflt-obj-ptrn-id-init-fn-name-class.js
 test/language/expressions/function/dstr/dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/function/dstr/dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/function/dstr/dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/function/dstr/dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/function/dstr/dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/function/dstr/dflt-obj-ptrn-prop-eval-err.js
-test/language/expressions/function/dstr/dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/function/dstr/dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/function/dstr/dflt-obj-ptrn-rest-getter.js
 test/language/expressions/function/dstr/dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/function/dstr/dflt-obj-ptrn-rest-val-obj.js
@@ -11016,11 +10940,7 @@ test/language/expressions/function/dstr/obj-ptrn-id-init-fn-name-class.js
 test/language/expressions/function/dstr/obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/function/dstr/obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/function/dstr/obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/function/dstr/obj-ptrn-id-init-skipped.js
-test/language/expressions/function/dstr/obj-ptrn-prop-ary-value-null.js
 test/language/expressions/function/dstr/obj-ptrn-prop-eval-err.js
-test/language/expressions/function/dstr/obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/function/dstr/obj-ptrn-prop-obj-value-null.js
 test/language/expressions/function/dstr/obj-ptrn-rest-getter.js
 test/language/expressions/function/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/function/dstr/obj-ptrn-rest-val-obj.js
@@ -11078,11 +10998,7 @@ test/language/expressions/generators/dstr/dflt-obj-ptrn-id-init-fn-name-class.js
 test/language/expressions/generators/dstr/dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/generators/dstr/dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/generators/dstr/dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/generators/dstr/dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/generators/dstr/dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/generators/dstr/dflt-obj-ptrn-prop-eval-err.js
-test/language/expressions/generators/dstr/dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/generators/dstr/dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/generators/dstr/dflt-obj-ptrn-rest-getter.js
 test/language/expressions/generators/dstr/dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/generators/dstr/dflt-obj-ptrn-rest-val-obj.js
@@ -11091,11 +11007,7 @@ test/language/expressions/generators/dstr/obj-ptrn-id-init-fn-name-class.js
 test/language/expressions/generators/dstr/obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/generators/dstr/obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/generators/dstr/obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/generators/dstr/obj-ptrn-id-init-skipped.js
-test/language/expressions/generators/dstr/obj-ptrn-prop-ary-value-null.js
 test/language/expressions/generators/dstr/obj-ptrn-prop-eval-err.js
-test/language/expressions/generators/dstr/obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/generators/dstr/obj-ptrn-prop-obj-value-null.js
 test/language/expressions/generators/dstr/obj-ptrn-rest-getter.js
 test/language/expressions/generators/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/generators/dstr/obj-ptrn-rest-val-obj.js
@@ -11397,7 +11309,6 @@ test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-id-init-skipp
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-id-trailing-comma.js
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary-init.js
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary-trailing-comma.js
-test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary.js
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-eval-err.js
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-id-init-skipped.js
@@ -11405,7 +11316,6 @@ test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-id-init.
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-id-trailing-comma.js
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-id.js
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-obj-init.js
-test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-prop-obj.js
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/object/dstr/async-gen-meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
@@ -11420,7 +11330,6 @@ test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-id-init-skipped.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-id-trailing-comma.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-ary-init.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-ary-trailing-comma.js
-test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-ary.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-eval-err.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-id-init-skipped.js
@@ -11428,7 +11337,6 @@ test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-id-init.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-id-trailing-comma.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-id.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-obj-init.js
-test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-prop-obj.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-rest-getter.js
 test/language/expressions/object/dstr/async-gen-meth-obj-ptrn-rest-skip-non-enumerable.js
@@ -11466,11 +11374,7 @@ test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-cla
 test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-prop-eval-err.js
-test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/object/dstr/gen-meth-dflt-obj-ptrn-rest-val-obj.js
@@ -11479,11 +11383,7 @@ test/language/expressions/object/dstr/gen-meth-obj-ptrn-id-init-fn-name-class.js
 test/language/expressions/object/dstr/gen-meth-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/object/dstr/gen-meth-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/object/dstr/gen-meth-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/object/dstr/gen-meth-obj-ptrn-id-init-skipped.js
-test/language/expressions/object/dstr/gen-meth-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/object/dstr/gen-meth-obj-ptrn-prop-eval-err.js
-test/language/expressions/object/dstr/gen-meth-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/object/dstr/gen-meth-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/object/dstr/gen-meth-obj-ptrn-rest-getter.js
 test/language/expressions/object/dstr/gen-meth-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/object/dstr/gen-meth-obj-ptrn-rest-val-obj.js
@@ -11520,11 +11420,7 @@ test/language/expressions/object/dstr/meth-dflt-obj-ptrn-id-init-fn-name-class.j
 test/language/expressions/object/dstr/meth-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/object/dstr/meth-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/object/dstr/meth-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/object/dstr/meth-dflt-obj-ptrn-id-init-skipped.js
-test/language/expressions/object/dstr/meth-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/object/dstr/meth-dflt-obj-ptrn-prop-eval-err.js
-test/language/expressions/object/dstr/meth-dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/object/dstr/meth-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/object/dstr/meth-dflt-obj-ptrn-rest-getter.js
 test/language/expressions/object/dstr/meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/object/dstr/meth-dflt-obj-ptrn-rest-val-obj.js
@@ -11533,11 +11429,7 @@ test/language/expressions/object/dstr/meth-obj-ptrn-id-init-fn-name-class.js
 test/language/expressions/object/dstr/meth-obj-ptrn-id-init-fn-name-cover.js
 test/language/expressions/object/dstr/meth-obj-ptrn-id-init-fn-name-fn.js
 test/language/expressions/object/dstr/meth-obj-ptrn-id-init-fn-name-gen.js
-test/language/expressions/object/dstr/meth-obj-ptrn-id-init-skipped.js
-test/language/expressions/object/dstr/meth-obj-ptrn-prop-ary-value-null.js
 test/language/expressions/object/dstr/meth-obj-ptrn-prop-eval-err.js
-test/language/expressions/object/dstr/meth-obj-ptrn-prop-id-init-skipped.js
-test/language/expressions/object/dstr/meth-obj-ptrn-prop-obj-value-null.js
 test/language/expressions/object/dstr/meth-obj-ptrn-rest-getter.js
 test/language/expressions/object/dstr/meth-obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/object/dstr/meth-obj-ptrn-rest-val-obj.js
@@ -12442,7 +12334,6 @@ test/language/statements/async-generator/dstr/dflt-obj-ptrn-id-init-skipped.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-id-trailing-comma.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-ary-init.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-ary-trailing-comma.js
-test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-ary-value-null.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-ary.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-eval-err.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-id-init-skipped.js
@@ -12450,7 +12341,6 @@ test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-id-init.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-id-trailing-comma.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-id.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-obj-init.js
-test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-obj-value-null.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-prop-obj.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-rest-getter.js
 test/language/statements/async-generator/dstr/dflt-obj-ptrn-rest-skip-non-enumerable.js
@@ -12465,7 +12355,6 @@ test/language/statements/async-generator/dstr/obj-ptrn-id-init-skipped.js
 test/language/statements/async-generator/dstr/obj-ptrn-id-trailing-comma.js
 test/language/statements/async-generator/dstr/obj-ptrn-prop-ary-init.js
 test/language/statements/async-generator/dstr/obj-ptrn-prop-ary-trailing-comma.js
-test/language/statements/async-generator/dstr/obj-ptrn-prop-ary-value-null.js
 test/language/statements/async-generator/dstr/obj-ptrn-prop-ary.js
 test/language/statements/async-generator/dstr/obj-ptrn-prop-eval-err.js
 test/language/statements/async-generator/dstr/obj-ptrn-prop-id-init-skipped.js
@@ -12473,7 +12362,6 @@ test/language/statements/async-generator/dstr/obj-ptrn-prop-id-init.js
 test/language/statements/async-generator/dstr/obj-ptrn-prop-id-trailing-comma.js
 test/language/statements/async-generator/dstr/obj-ptrn-prop-id.js
 test/language/statements/async-generator/dstr/obj-ptrn-prop-obj-init.js
-test/language/statements/async-generator/dstr/obj-ptrn-prop-obj-value-null.js
 test/language/statements/async-generator/dstr/obj-ptrn-prop-obj.js
 test/language/statements/async-generator/dstr/obj-ptrn-rest-getter.js
 test/language/statements/async-generator/dstr/obj-ptrn-rest-skip-non-enumerable.js
@@ -12960,7 +12848,6 @@ test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-id-init-skipped
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-id-trailing-comma.js
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary-init.js
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary-trailing-comma.js
-test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-ary.js
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-eval-err.js
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-id-init-skipped.js
@@ -12968,7 +12855,6 @@ test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-id-init.js
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-id-trailing-comma.js
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-id.js
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-obj-init.js
-test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-prop-obj.js
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/async-gen-meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
@@ -12983,7 +12869,6 @@ test/language/statements/class/dstr/async-gen-meth-obj-ptrn-id-init-skipped.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-id-trailing-comma.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-ary-init.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-ary-trailing-comma.js
-test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-ary.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-eval-err.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-id-init-skipped.js
@@ -12991,7 +12876,6 @@ test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-id-init.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-id-trailing-comma.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-id.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-obj-init.js
-test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-prop-obj.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/async-gen-meth-obj-ptrn-rest-skip-non-enumerable.js
@@ -13090,7 +12974,6 @@ test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-id-init-
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-id-trailing-comma.js
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-ary-init.js
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-ary-trailing-comma.js
-test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-ary.js
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-eval-err.js
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-id-init-skipped.js
@@ -13098,7 +12981,6 @@ test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-id-
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-id-trailing-comma.js
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-id.js
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-obj-init.js
-test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-prop-obj.js
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/async-gen-meth-static-dflt-obj-ptrn-rest-skip-non-enumerable.js
@@ -13113,7 +12995,6 @@ test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-id-init-skipp
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-id-trailing-comma.js
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-ary-init.js
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-ary-trailing-comma.js
-test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-ary.js
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-eval-err.js
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-id-init-skipped.js
@@ -13121,7 +13002,6 @@ test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-id-init.
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-id-trailing-comma.js
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-id.js
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-obj-init.js
-test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-prop-obj.js
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/async-gen-meth-static-obj-ptrn-rest-skip-non-enumerable.js
@@ -13403,11 +13283,7 @@ test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-class
 test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-prop-eval-err.js
-test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/gen-meth-dflt-obj-ptrn-rest-val-obj.js
@@ -13416,11 +13292,7 @@ test/language/statements/class/dstr/gen-meth-obj-ptrn-id-init-fn-name-class.js
 test/language/statements/class/dstr/gen-meth-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/gen-meth-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/gen-meth-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/gen-meth-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/gen-meth-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/gen-meth-obj-ptrn-prop-eval-err.js
-test/language/statements/class/dstr/gen-meth-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/class/dstr/gen-meth-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/gen-meth-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/gen-meth-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/gen-meth-obj-ptrn-rest-val-obj.js
@@ -13457,11 +13329,7 @@ test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-id-init-fn-nam
 test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-prop-eval-err.js
-test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/gen-meth-static-dflt-obj-ptrn-rest-val-obj.js
@@ -13470,11 +13338,7 @@ test/language/statements/class/dstr/gen-meth-static-obj-ptrn-id-init-fn-name-cla
 test/language/statements/class/dstr/gen-meth-static-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/gen-meth-static-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/gen-meth-static-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/gen-meth-static-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/gen-meth-static-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/gen-meth-static-obj-ptrn-prop-eval-err.js
-test/language/statements/class/dstr/gen-meth-static-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/class/dstr/gen-meth-static-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/gen-meth-static-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/gen-meth-static-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/gen-meth-static-obj-ptrn-rest-val-obj.js
@@ -13511,11 +13375,7 @@ test/language/statements/class/dstr/meth-dflt-obj-ptrn-id-init-fn-name-class.js
 test/language/statements/class/dstr/meth-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/meth-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/meth-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/meth-dflt-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/meth-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/meth-dflt-obj-ptrn-prop-eval-err.js
-test/language/statements/class/dstr/meth-dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/class/dstr/meth-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/meth-dflt-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/meth-dflt-obj-ptrn-rest-val-obj.js
@@ -13524,11 +13384,7 @@ test/language/statements/class/dstr/meth-obj-ptrn-id-init-fn-name-class.js
 test/language/statements/class/dstr/meth-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/meth-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/meth-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/meth-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/meth-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/meth-obj-ptrn-prop-eval-err.js
-test/language/statements/class/dstr/meth-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/class/dstr/meth-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/meth-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/meth-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/meth-obj-ptrn-rest-val-obj.js
@@ -13565,11 +13421,7 @@ test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-id-init-fn-name-cl
 test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-prop-eval-err.js
-test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/meth-static-dflt-obj-ptrn-rest-val-obj.js
@@ -13578,11 +13430,7 @@ test/language/statements/class/dstr/meth-static-obj-ptrn-id-init-fn-name-class.j
 test/language/statements/class/dstr/meth-static-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/meth-static-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/meth-static-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/meth-static-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/meth-static-obj-ptrn-prop-ary-value-null.js
 test/language/statements/class/dstr/meth-static-obj-ptrn-prop-eval-err.js
-test/language/statements/class/dstr/meth-static-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/class/dstr/meth-static-obj-ptrn-prop-obj-value-null.js
 test/language/statements/class/dstr/meth-static-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/meth-static-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/meth-static-obj-ptrn-rest-val-obj.js
@@ -13625,8 +13473,6 @@ test/language/statements/class/dstr/private-gen-meth-dflt-obj-ptrn-id-init-fn-na
 test/language/statements/class/dstr/private-gen-meth-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/private-gen-meth-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/private-gen-meth-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/private-gen-meth-dflt-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/private-gen-meth-dflt-obj-ptrn-prop-id-init-skipped.js
 test/language/statements/class/dstr/private-gen-meth-dflt-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/private-gen-meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/private-gen-meth-dflt-obj-ptrn-rest-val-obj.js
@@ -13635,8 +13481,6 @@ test/language/statements/class/dstr/private-gen-meth-obj-ptrn-id-init-fn-name-cl
 test/language/statements/class/dstr/private-gen-meth-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/private-gen-meth-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/private-gen-meth-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/private-gen-meth-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/private-gen-meth-obj-ptrn-prop-id-init-skipped.js
 test/language/statements/class/dstr/private-gen-meth-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/private-gen-meth-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/private-gen-meth-obj-ptrn-rest-val-obj.js
@@ -13679,8 +13523,6 @@ test/language/statements/class/dstr/private-gen-meth-static-dflt-obj-ptrn-id-ini
 test/language/statements/class/dstr/private-gen-meth-static-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/private-gen-meth-static-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/private-gen-meth-static-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/private-gen-meth-static-dflt-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/private-gen-meth-static-dflt-obj-ptrn-prop-id-init-skipped.js
 test/language/statements/class/dstr/private-gen-meth-static-dflt-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/private-gen-meth-static-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/private-gen-meth-static-dflt-obj-ptrn-rest-val-obj.js
@@ -13689,8 +13531,6 @@ test/language/statements/class/dstr/private-gen-meth-static-obj-ptrn-id-init-fn-
 test/language/statements/class/dstr/private-gen-meth-static-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/private-gen-meth-static-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/private-gen-meth-static-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/private-gen-meth-static-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/private-gen-meth-static-obj-ptrn-prop-id-init-skipped.js
 test/language/statements/class/dstr/private-gen-meth-static-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/private-gen-meth-static-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/private-gen-meth-static-obj-ptrn-rest-val-obj.js
@@ -13733,8 +13573,6 @@ test/language/statements/class/dstr/private-meth-dflt-obj-ptrn-id-init-fn-name-c
 test/language/statements/class/dstr/private-meth-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/private-meth-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/private-meth-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/private-meth-dflt-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/private-meth-dflt-obj-ptrn-prop-id-init-skipped.js
 test/language/statements/class/dstr/private-meth-dflt-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/private-meth-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/private-meth-dflt-obj-ptrn-rest-val-obj.js
@@ -13743,8 +13581,6 @@ test/language/statements/class/dstr/private-meth-obj-ptrn-id-init-fn-name-class.
 test/language/statements/class/dstr/private-meth-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/private-meth-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/private-meth-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/private-meth-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/private-meth-obj-ptrn-prop-id-init-skipped.js
 test/language/statements/class/dstr/private-meth-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/private-meth-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/private-meth-obj-ptrn-rest-val-obj.js
@@ -13787,8 +13623,6 @@ test/language/statements/class/dstr/private-meth-static-dflt-obj-ptrn-id-init-fn
 test/language/statements/class/dstr/private-meth-static-dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/private-meth-static-dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/private-meth-static-dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/private-meth-static-dflt-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/private-meth-static-dflt-obj-ptrn-prop-id-init-skipped.js
 test/language/statements/class/dstr/private-meth-static-dflt-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/private-meth-static-dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/private-meth-static-dflt-obj-ptrn-rest-val-obj.js
@@ -13797,8 +13631,6 @@ test/language/statements/class/dstr/private-meth-static-obj-ptrn-id-init-fn-name
 test/language/statements/class/dstr/private-meth-static-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/class/dstr/private-meth-static-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/class/dstr/private-meth-static-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/class/dstr/private-meth-static-obj-ptrn-id-init-skipped.js
-test/language/statements/class/dstr/private-meth-static-obj-ptrn-prop-id-init-skipped.js
 test/language/statements/class/dstr/private-meth-static-obj-ptrn-rest-getter.js
 test/language/statements/class/dstr/private-meth-static-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/class/dstr/private-meth-static-obj-ptrn-rest-val-obj.js
@@ -15029,11 +14861,7 @@ test/language/statements/const/dstr/obj-ptrn-id-init-fn-name-class.js
 test/language/statements/const/dstr/obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/const/dstr/obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/const/dstr/obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/const/dstr/obj-ptrn-id-init-skipped.js
-test/language/statements/const/dstr/obj-ptrn-prop-ary-value-null.js
 test/language/statements/const/dstr/obj-ptrn-prop-eval-err.js
-test/language/statements/const/dstr/obj-ptrn-prop-id-init-skipped.js
-test/language/statements/const/dstr/obj-ptrn-prop-obj-value-null.js
 test/language/statements/const/dstr/obj-ptrn-rest-getter.js
 test/language/statements/const/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/const/dstr/obj-ptrn-rest-val-obj.js
@@ -16168,11 +15996,7 @@ test/language/statements/for-of/dstr/const-obj-ptrn-id-init-fn-name-class.js
 test/language/statements/for-of/dstr/const-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/for-of/dstr/const-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/for-of/dstr/const-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/for-of/dstr/const-obj-ptrn-id-init-skipped.js
-test/language/statements/for-of/dstr/const-obj-ptrn-prop-ary-value-null.js
 test/language/statements/for-of/dstr/const-obj-ptrn-prop-eval-err.js
-test/language/statements/for-of/dstr/const-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/for-of/dstr/const-obj-ptrn-prop-obj-value-null.js
 test/language/statements/for-of/dstr/const-obj-ptrn-rest-getter.js
 test/language/statements/for-of/dstr/const-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/for-of/dstr/const-obj-ptrn-rest-val-obj.js
@@ -16197,11 +16021,7 @@ test/language/statements/for-of/dstr/let-obj-ptrn-id-init-fn-name-class.js
 test/language/statements/for-of/dstr/let-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/for-of/dstr/let-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/for-of/dstr/let-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/for-of/dstr/let-obj-ptrn-id-init-skipped.js
-test/language/statements/for-of/dstr/let-obj-ptrn-prop-ary-value-null.js
 test/language/statements/for-of/dstr/let-obj-ptrn-prop-eval-err.js
-test/language/statements/for-of/dstr/let-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/for-of/dstr/let-obj-ptrn-prop-obj-value-null.js
 test/language/statements/for-of/dstr/let-obj-ptrn-rest-getter.js
 test/language/statements/for-of/dstr/let-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/for-of/dstr/let-obj-ptrn-rest-val-obj.js
@@ -16528,13 +16348,11 @@ test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-class.js
 test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/for/dstr/const-obj-ptrn-id-init-skipped.js
 test/language/statements/for/dstr/const-obj-ptrn-id-init-throws.js
 test/language/statements/for/dstr/const-obj-ptrn-id-init-unresolvable.js
 test/language/statements/for/dstr/const-obj-ptrn-list-err.js
 test/language/statements/for/dstr/const-obj-ptrn-prop-eval-err.js
 test/language/statements/for/dstr/const-obj-ptrn-prop-id-get-value-err.js
-test/language/statements/for/dstr/const-obj-ptrn-prop-id-init-skipped.js
 test/language/statements/for/dstr/const-obj-ptrn-prop-id-init-throws.js
 test/language/statements/for/dstr/const-obj-ptrn-prop-id-init-unresolvable.js
 test/language/statements/for/dstr/const-obj-ptrn-rest-getter.js
@@ -16590,13 +16408,11 @@ test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-class.js
 test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/for/dstr/let-obj-ptrn-id-init-skipped.js
 test/language/statements/for/dstr/let-obj-ptrn-id-init-throws.js
 test/language/statements/for/dstr/let-obj-ptrn-id-init-unresolvable.js
 test/language/statements/for/dstr/let-obj-ptrn-list-err.js
 test/language/statements/for/dstr/let-obj-ptrn-prop-eval-err.js
 test/language/statements/for/dstr/let-obj-ptrn-prop-id-get-value-err.js
-test/language/statements/for/dstr/let-obj-ptrn-prop-id-init-skipped.js
 test/language/statements/for/dstr/let-obj-ptrn-prop-id-init-throws.js
 test/language/statements/for/dstr/let-obj-ptrn-prop-id-init-unresolvable.js
 test/language/statements/for/dstr/let-obj-ptrn-rest-getter.js
@@ -16623,11 +16439,7 @@ test/language/statements/for/dstr/var-obj-ptrn-id-init-fn-name-class.js
 test/language/statements/for/dstr/var-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/for/dstr/var-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/for/dstr/var-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/for/dstr/var-obj-ptrn-id-init-skipped.js
-test/language/statements/for/dstr/var-obj-ptrn-prop-ary-value-null.js
 test/language/statements/for/dstr/var-obj-ptrn-prop-eval-err.js
-test/language/statements/for/dstr/var-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/for/dstr/var-obj-ptrn-prop-obj-value-null.js
 test/language/statements/for/dstr/var-obj-ptrn-rest-getter.js
 test/language/statements/for/dstr/var-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/for/dstr/var-obj-ptrn-rest-val-obj.js
@@ -16711,11 +16523,7 @@ test/language/statements/function/dstr/dflt-obj-ptrn-id-init-fn-name-class.js
 test/language/statements/function/dstr/dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/function/dstr/dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/function/dstr/dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/function/dstr/dflt-obj-ptrn-id-init-skipped.js
-test/language/statements/function/dstr/dflt-obj-ptrn-prop-ary-value-null.js
 test/language/statements/function/dstr/dflt-obj-ptrn-prop-eval-err.js
-test/language/statements/function/dstr/dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/function/dstr/dflt-obj-ptrn-prop-obj-value-null.js
 test/language/statements/function/dstr/dflt-obj-ptrn-rest-getter.js
 test/language/statements/function/dstr/dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/function/dstr/dflt-obj-ptrn-rest-val-obj.js
@@ -16724,11 +16532,7 @@ test/language/statements/function/dstr/obj-ptrn-id-init-fn-name-class.js
 test/language/statements/function/dstr/obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/function/dstr/obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/function/dstr/obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/function/dstr/obj-ptrn-id-init-skipped.js
-test/language/statements/function/dstr/obj-ptrn-prop-ary-value-null.js
 test/language/statements/function/dstr/obj-ptrn-prop-eval-err.js
-test/language/statements/function/dstr/obj-ptrn-prop-id-init-skipped.js
-test/language/statements/function/dstr/obj-ptrn-prop-obj-value-null.js
 test/language/statements/function/dstr/obj-ptrn-rest-getter.js
 test/language/statements/function/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/function/dstr/obj-ptrn-rest-val-obj.js
@@ -16784,11 +16588,7 @@ test/language/statements/generators/dstr/dflt-obj-ptrn-id-init-fn-name-class.js
 test/language/statements/generators/dstr/dflt-obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/generators/dstr/dflt-obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/generators/dstr/dflt-obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/generators/dstr/dflt-obj-ptrn-id-init-skipped.js
-test/language/statements/generators/dstr/dflt-obj-ptrn-prop-ary-value-null.js
 test/language/statements/generators/dstr/dflt-obj-ptrn-prop-eval-err.js
-test/language/statements/generators/dstr/dflt-obj-ptrn-prop-id-init-skipped.js
-test/language/statements/generators/dstr/dflt-obj-ptrn-prop-obj-value-null.js
 test/language/statements/generators/dstr/dflt-obj-ptrn-rest-getter.js
 test/language/statements/generators/dstr/dflt-obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/generators/dstr/dflt-obj-ptrn-rest-val-obj.js
@@ -16797,11 +16597,7 @@ test/language/statements/generators/dstr/obj-ptrn-id-init-fn-name-class.js
 test/language/statements/generators/dstr/obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/generators/dstr/obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/generators/dstr/obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/generators/dstr/obj-ptrn-id-init-skipped.js
-test/language/statements/generators/dstr/obj-ptrn-prop-ary-value-null.js
 test/language/statements/generators/dstr/obj-ptrn-prop-eval-err.js
-test/language/statements/generators/dstr/obj-ptrn-prop-id-init-skipped.js
-test/language/statements/generators/dstr/obj-ptrn-prop-obj-value-null.js
 test/language/statements/generators/dstr/obj-ptrn-rest-getter.js
 test/language/statements/generators/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/generators/dstr/obj-ptrn-rest-val-obj.js
@@ -16861,11 +16657,7 @@ test/language/statements/let/dstr/obj-ptrn-id-init-fn-name-class.js
 test/language/statements/let/dstr/obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/let/dstr/obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/let/dstr/obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/let/dstr/obj-ptrn-id-init-skipped.js
-test/language/statements/let/dstr/obj-ptrn-prop-ary-value-null.js
 test/language/statements/let/dstr/obj-ptrn-prop-eval-err.js
-test/language/statements/let/dstr/obj-ptrn-prop-id-init-skipped.js
-test/language/statements/let/dstr/obj-ptrn-prop-obj-value-null.js
 test/language/statements/let/dstr/obj-ptrn-rest-getter.js
 test/language/statements/let/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/let/dstr/obj-ptrn-rest-val-obj.js
@@ -17074,11 +16866,7 @@ test/language/statements/variable/dstr/obj-ptrn-id-init-fn-name-class.js
 test/language/statements/variable/dstr/obj-ptrn-id-init-fn-name-cover.js
 test/language/statements/variable/dstr/obj-ptrn-id-init-fn-name-fn.js
 test/language/statements/variable/dstr/obj-ptrn-id-init-fn-name-gen.js
-test/language/statements/variable/dstr/obj-ptrn-id-init-skipped.js
-test/language/statements/variable/dstr/obj-ptrn-prop-ary-value-null.js
 test/language/statements/variable/dstr/obj-ptrn-prop-eval-err.js
-test/language/statements/variable/dstr/obj-ptrn-prop-id-init-skipped.js
-test/language/statements/variable/dstr/obj-ptrn-prop-obj-value-null.js
 test/language/statements/variable/dstr/obj-ptrn-rest-getter.js
 test/language/statements/variable/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/variable/dstr/obj-ptrn-rest-val-obj.js
