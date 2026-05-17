@@ -121,7 +121,11 @@ public partial class JSObject
         ref var op = ref @object.GetOwnProperties(false);
         ref var ownProperty = ref op.GetValue(key.KeyString.Key);
         if (!ownProperty.IsEmpty)
+        {
+            if (JSObject.IsPrivateName(in key.KeyString))
+                return JSValue.BooleanFalse;
             return JSValue.BooleanTrue;
+        }
 
         return JSValue.BooleanFalse;
     }

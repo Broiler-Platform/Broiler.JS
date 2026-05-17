@@ -33,6 +33,9 @@ public partial class JSObject
         var en = (target as JSObject).GetOwnProperties(false).GetEnumerator();
         while (en.MoveNext(out var key, out var property))
         {
+            if (IsPrivateName(in key))
+                continue;
+
             var entry = JSValue.CreateArray();
             entry.AddArrayItem(JSObjectCoreExtensions.KeyStringToJSValue(key));
             entry.AddArrayItem(target.GetValue(property));
@@ -122,8 +125,13 @@ public partial class JSObject
         }
 
         var en = target.GetOwnProperties(false).GetEnumerator();
-        while (en.MoveNext(out var property))
+        while (en.MoveNext(out var key, out var property))
+        {
+            if (IsPrivateName(in key))
+                continue;
+
             r.AddArrayItem(target.GetValue(property));
+        }
 
         return r;
     }
@@ -158,7 +166,12 @@ public partial class JSObject
         var en = jobj.GetOwnProperties(false).GetEnumerator();
 
         while (en.MoveNext(out var key, out var property))
+        {
+            if (IsPrivateName(in key))
+                continue;
+
             p.Put(key.Key) = property;
+        }
 
         return r;
     }

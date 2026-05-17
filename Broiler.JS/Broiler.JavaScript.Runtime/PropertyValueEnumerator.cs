@@ -44,6 +44,11 @@ public struct PropertyValueEnumerator
             }
 
             key = KeyStrings.GetName(start);
+            if (JSObject.IsPrivateName(in key))
+            {
+                start = objP.Next;
+                continue;
+            }
             start = objP.Next;
             return true;
         }
@@ -71,8 +76,14 @@ public struct PropertyValueEnumerator
                 continue;
             }
 
-            value = target.GetValue(in p);
             key = KeyStrings.GetName(start);
+            if (JSObject.IsPrivateName(in key))
+            {
+                start = objP.Next;
+                continue;
+            }
+
+            value = target.GetValue(in p);
             start = objP.Next;
             return true;
         }
@@ -101,8 +112,14 @@ public struct PropertyValueEnumerator
                 continue;
             }
 
-            value = p;
             key = KeyStrings.GetName(start);
+            if (JSObject.IsPrivateName(in key))
+            {
+                start = objP.Next;
+                continue;
+            }
+
+            value = p;
             start = objP.Next;
             return true;
         }

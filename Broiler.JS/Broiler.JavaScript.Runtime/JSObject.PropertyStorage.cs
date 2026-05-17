@@ -10,6 +10,13 @@ public partial class JSObject
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref PropertySequence GetOwnProperties(bool create = true) => ref ownProperties;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static bool IsPrivateName(in KeyString key)
+    {
+        var value = key.Value.Value;
+        return !string.IsNullOrEmpty(value) && value[0] == '#';
+    }
+
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
         var key = name.ToKey(false);
@@ -17,6 +24,9 @@ public partial class JSObject
         switch (key.Type)
         {
             case KeyType.String:
+                if (IsPrivateName(in key.KeyString))
+                    return JSValue.UndefinedValue;
+
                 if (ownProperties.TryGetValue(key.KeyString.Key, out var p))
                     return JSObjectCoreExtensions.PropertyToJSValue(in p);
                 return JSValue.UndefinedValue;

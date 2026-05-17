@@ -118,6 +118,10 @@ internal static class JSObjectCoreExtensions
                     continue;
             }
 
+            var key = KeyStrings.GetName(p.key);
+            if (JSObject.IsPrivateName(in key))
+                continue;
+
             yield return (GetJSString(p.key), value.GetValue(in p));
         }
 
