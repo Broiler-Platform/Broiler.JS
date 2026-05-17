@@ -85,6 +85,12 @@ public partial class JSGenerator : JSObject, IJSGenerator
 
             return false;
         }
+        catch
+        {
+            done = true;
+            value = JSUndefined.Value;
+            throw;
+        }
         finally
         {
             executing = false;
@@ -125,6 +131,12 @@ public partial class JSGenerator : JSObject, IJSGenerator
             cg.Next(replaceOld, out value, out done);
             return ValueObject;
         }
+        catch
+        {
+            done = true;
+            value = JSUndefined.Value;
+            throw;
+        }
         finally
         {
             executing = false;
@@ -143,6 +155,25 @@ public partial class JSGenerator : JSObject, IJSGenerator
     }
 
     public override IElementEnumerator GetElementEnumerator() => new ElementEnumerator(this);
+
+    public override IElementEnumerator GetAsyncIterableEnumerator()
+        => IsAsyncGenerator
+            ? new ElementEnumerator(this)
+            : base.GetAsyncIterableEnumerator();
+
+    private bool IsAsyncGenerator => cg?.IsAsyncGenerator == true;
+
+    private JSValue AsAsyncIteratorResult(Func<JSValue> operation)
+    {
+        try
+        {
+            return JSEngine.CreateResolvedOrRejectedPromise(operation(), true);
+        }
+        catch (Exception ex)
+        {
+            return JSEngine.CreateResolvedOrRejectedPromise(JSException.ErrorFrom(ex), false);
+        }
+    }
 
     private struct ElementEnumerator(JSGenerator generator) : IElementEnumerator
     {
@@ -212,11 +243,29 @@ public partial class JSGenerator : JSObject, IJSGenerator
     }
 
     [JSExport("next", Length = 1)]
-    public JSValue Next(in Arguments a) => Next(a.Length == 0 ? null : a.Get1());
+    public JSValue Next(in Arguments a)
+    {
+        var nextValue = a.Length == 0 ? null : a.Get1();
+        return IsAsyncGenerator
+            ? AsAsyncIteratorResult(() => Next(nextValue))
+            : Next(nextValue);
+    }
 
     [JSExport("return", Length = 1)]
-    public JSValue Return(in Arguments a) => Return(a.Get1());
+    public JSValue Return(in Arguments a)
+    {
+        var returnValue = a.Get1();
+        return IsAsyncGenerator
+            ? AsAsyncIteratorResult(() => Return(returnValue))
+            : Return(returnValue);
+    }
 
     [JSExport("throw", Length = 1)]
-    public JSValue Throw(in Arguments a) => Throw(a.Get1());
+    public JSValue Throw(in Arguments a)
+    {
+        var throwValue = a.Get1();
+        return IsAsyncGenerator
+            ? AsAsyncIteratorResult(() => Throw(throwValue))
+            : Throw(throwValue);
+    }
 }

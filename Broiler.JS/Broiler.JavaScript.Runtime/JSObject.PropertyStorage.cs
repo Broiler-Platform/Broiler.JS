@@ -698,7 +698,7 @@ public partial class JSObject
             && (HasAsyncIterator || symbols.TryGetValue(JSValue.SymbolAsyncIterator.Key, out _)))
         {
             var v = this.GetValue(symbols[JSValue.SymbolAsyncIterator.Key]);
-            return new JSIterator(v.InvokeFunction(new Arguments(this)));
+            return new JSIterator(v.InvokeFunction(new Arguments(this)), awaitResult: true);
         }
 
         return GetElementEnumerator();
@@ -710,7 +710,7 @@ public partial class JSObject
         {
             var asyncIterator = this[JSValue.SymbolAsyncIterator];
             if (!asyncIterator.IsUndefined)
-                return new JSIterator(asyncIterator.InvokeFunction(new Arguments(this)));
+                return new JSIterator(asyncIterator.InvokeFunction(new Arguments(this)), awaitResult: true);
         }
 
         return GetIterableEnumerator();
