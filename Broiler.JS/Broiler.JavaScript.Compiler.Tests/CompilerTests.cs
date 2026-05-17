@@ -91,4 +91,19 @@ public class CompilerTests
 
         Assert.Equal("arrow|arrow", result.ToString());
     }
+
+    [Fact]
+    public void Compile_DestructuringDefaults_Infer_Anonymous_Class_Names()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var arrayName = (([cls = class {}] = []) => cls.name)();
+                var objectName = (({ cls = class {} } = {}) => cls.name)();
+                return arrayName + '|' + objectName;
+            })()
+            """);
+
+        Assert.Equal("cls|cls", result.ToString());
+    }
 }
