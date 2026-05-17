@@ -178,7 +178,17 @@ public partial class JSPromise : JSObject, IJSPromise
         // get then...
         if (value.IsObject)
         {
-            var then = value[KeyStrings.then];
+            JSValue then;
+            try
+            {
+                then = value[KeyStrings.then];
+            }
+            catch (Exception ex)
+            {
+                Reject(JSException.ErrorFrom(ex));
+                return;
+            }
+
             if (then.IsFunction)
             {
                 // do what....
@@ -190,7 +200,7 @@ public partial class JSPromise : JSObject, IJSPromise
                     }
                     catch (Exception ex)
                     {
-                        Reject(JSException.JSErrorFrom(ex));
+                        Reject(JSException.ErrorFrom(ex));
                     }
                 });
                 return;

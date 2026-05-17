@@ -42,6 +42,8 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
     public IJSExecutionContext Context = JSEngine.Current as IJSExecutionContext;
 
+    internal bool IsAsyncGenerator => asyncGenerator;
+
     public bool IsFinished;
     public int NextJump;
 

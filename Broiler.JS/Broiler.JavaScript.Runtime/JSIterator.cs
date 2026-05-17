@@ -1,16 +1,27 @@
-﻿using Broiler.JavaScript.Storage;
+using System;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Runtime;
 
-public struct JSIterator(JSValue iterator) : IElementEnumerator, IReturnableEnumerator
+public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementEnumerator, IReturnableEnumerator
 {
     private uint index = 0;
 
+    private readonly JSValue GetIteratorResult()
+    {
+        var result = JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next);
+        if (awaitResult && result is IJSPromise promise)
+            result = promise.Task.GetAwaiter().GetResult();
+
+        if (!result.IsObject)
+            throw JSValue.NewTypeError("Iterator result is not an object");
+
+        return result;
+    }
+
     public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
     {
-        value = JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next);
-        if (!value.IsObject)
-            throw JSValue.NewTypeError("Iterator result is not an object");
+        value = GetIteratorResult();
         var done = value[KeyStrings.done];
         value = value[KeyStrings.value];
         
@@ -28,9 +39,7 @@ public struct JSIterator(JSValue iterator) : IElementEnumerator, IReturnableEnum
 
     public readonly bool MoveNext(out JSValue value)
     {
-        value = JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next);
-        if (!value.IsObject)
-            throw JSValue.NewTypeError("Iterator result is not an object");
+        value = GetIteratorResult();
         var done = value[KeyStrings.done];
         value = value[KeyStrings.value];
         
@@ -42,9 +51,7 @@ public struct JSIterator(JSValue iterator) : IElementEnumerator, IReturnableEnum
 
     public readonly bool MoveNextOrDefault(out JSValue value, JSValue @default)
     {
-        value = JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next);
-        if (!value.IsObject)
-            throw JSValue.NewTypeError("Iterator result is not an object");
+        value = GetIteratorResult();
         var done = value[KeyStrings.done];
 
         if (done.BooleanValue)
@@ -59,9 +66,7 @@ public struct JSIterator(JSValue iterator) : IElementEnumerator, IReturnableEnum
 
     public readonly JSValue NextOrDefault(JSValue @default)
     {
-        var value = JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next);
-        if (!value.IsObject)
-            throw JSValue.NewTypeError("Iterator result is not an object");
+        var value = GetIteratorResult();
         var done = value[KeyStrings.done];
 
         if (done.BooleanValue)

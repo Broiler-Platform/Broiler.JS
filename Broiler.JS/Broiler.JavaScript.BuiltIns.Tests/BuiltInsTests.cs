@@ -4864,6 +4864,95 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void AsyncGenerator_Next_Rejects_With_Original_Object_On_YieldStar_Abrupt_Completions()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Execute("""
+            (function () {
+                var exprReason = {};
+                var getIterReason = {};
+
+                async function* exprAbrupt() {
+                    yield* (function () {
+                        throw exprReason;
+                    })();
+                }
+
+                async function* getIterAbrupt() {
+                    yield* {
+                        get [Symbol.asyncIterator]() {
+                            throw getIterReason;
+                        }
+                    };
+                }
+
+                function inspect(iter, expectedReason) {
+                    return iter.next().then(
+                        function () { return 'fulfilled'; },
+                        function (reason) {
+                            return (reason === expectedReason ? 'same' : 'different');
+                        }
+                    ).then(function (status) {
+                        return iter.next().then(function (result) {
+                            return status + '|' + result.done + '|' + (result.value === undefined);
+                        });
+                    });
+                }
+
+                return Promise.all([
+                    inspect(exprAbrupt(), exprReason),
+                    inspect(getIterAbrupt(), getIterReason)
+                ]).then(function (results) {
+                    return results.join('|');
+                });
+            })();
+            """);
+
+        Assert.Equal("same|true|true|same|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void Promise_Resolve_Poisoned_Then_Rejects_With_Thrown_Object()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Execute("""
+            (function () {
+                var reason = {};
+                var resolve;
+                var poisonedThen = Object.defineProperty({}, 'then', {
+                    get: function () {
+                        throw reason;
+                    }
+                });
+
+                var promise = new Promise(function (_resolve) {
+                    resolve = _resolve;
+                });
+
+                var returnValue = resolve(poisonedThen);
+
+                return promise.then(
+                    function () {
+                        return 'fulfilled';
+                    },
+                    function (value) {
+                        return [
+                            value === reason ? 'same' : 'different',
+                            returnValue === undefined ? 'undefined' : 'wrong'
+                        ].join('|');
+                    }
+                );
+            })();
+            """);
+
+        Assert.Equal("same|undefined", result.ToString());
+    }
+
+    [Fact]
     public void Array_FinalizationRegistry_And_Function_TypeError_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
