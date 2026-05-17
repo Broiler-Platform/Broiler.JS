@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Broiler.JavaScript.Storage;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
@@ -68,6 +69,89 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     public JavaScriptFeatureFlags ExperimentalFeatures { get; }
 
     SAUint32Map<JSVariable> globalVars = new();
+
+    private sealed class DirectEvalScope : IDisposable
+    {
+        private readonly JSContext context;
+        private readonly List<Entry> entries = [];
+
+        private sealed class Entry
+        {
+            public KeyString Name;
+            public JSVariable OverlayVariable;
+            public JSVariable PreviousVariable;
+            public bool HadPreviousVariable;
+            public bool HadOwnProperty;
+            public JSValue PreviousValue;
+        }
+
+        public DirectEvalScope(JSContext context, JSVariable[] variables)
+        {
+            this.context = context;
+            if (variables == null || variables.Length == 0)
+                return;
+
+            var seen = new HashSet<uint>();
+            foreach (var variable in variables)
+            {
+                if (variable == null)
+                    continue;
+
+                var name = variable.Name;
+                if (name.IsEmpty)
+                    continue;
+
+                var key = KeyStrings.GetOrCreate(name);
+                if (!seen.Add(key.Key))
+                    continue;
+
+                var entry = new Entry
+                {
+                    Name = key,
+                    OverlayVariable = variable,
+                    HadPreviousVariable = context.globalVars.TryGetValue(key.Key, out var previousVariable),
+                    PreviousVariable = previousVariable
+                };
+
+                var property = context.GetInternalProperty(key, false);
+                entry.HadOwnProperty = !property.IsEmpty;
+                if (entry.HadOwnProperty)
+                    entry.PreviousValue = context[key];
+
+                entries.Add(entry);
+                context.Register(variable);
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var entry in entries)
+            {
+                if (entry.HadPreviousVariable)
+                {
+                    context.globalVars.Put(entry.Name.Key) = entry.PreviousVariable;
+
+                    if (!ReferenceEquals(entry.PreviousVariable, entry.OverlayVariable))
+                    {
+                        if (entry.HadOwnProperty)
+                            context[entry.Name] = entry.PreviousValue;
+                        else
+                            context.Delete(entry.Name);
+                    }
+
+                    continue;
+                }
+
+                context.globalVars.RemoveAt(entry.Name.Key);
+                if (entry.HadOwnProperty)
+                    context[entry.Name] = entry.PreviousValue;
+                else
+                    context.Delete(entry.Name);
+            }
+        }
+    }
+
+    public IDisposable PushDirectEvalScope(JSVariable[] variables) => new DirectEvalScope(this, variables);
 
     public JSValue Register(JSVariable variable)
     {

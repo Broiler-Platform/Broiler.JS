@@ -195,7 +195,51 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
     protected override YExpression VisitEmptyExpression(AstEmptyExpression emptyExpression) => YExpression.Empty;
 
-    protected override YExpression VisitExpressionStatement(AstExpressionStatement expressionStatement) => Visit(expressionStatement.Expression);
+    protected override YExpression VisitExpressionStatement(AstExpressionStatement expressionStatement)
+    {
+        var result = Visit(expressionStatement.Expression);
+        if (IsStrictMode
+            || scope.Top == scope.Top.RootScope
+            || expressionStatement.Expression is not AstFunctionExpression { IsStatement: true, Id: { } id })
+        {
+            return result;
+        }
+
+        var outerBinding = scope.Top.RootScope.CreateVariable(id.Name, null, true);
+        if (outerBinding == null || outerBinding == scope.Top.GetVariable(id.Name))
+            return result;
+
+        using var temp = scope.Top.GetTempVariable(typeof(JSValue));
+        return YExpression.Block(
+            new Sequence<YParameterExpression> { temp.Variable },
+            YExpression.Assign(temp.Variable, result),
+            YExpression.Assign(outerBinding.Expression, temp.Variable),
+            temp.Variable);
+    }
+
+    private YExpression VisitRuntimeFunctionDeclaration(AstFunctionExpression functionDeclaration)
+    {
+        var currentBinding = scope.Top.GetVariable(functionDeclaration.Id!.Name);
+        var result = CreateFunction(functionDeclaration, hoistStatementDeclaration: false);
+
+        using var temp = scope.Top.GetTempVariable(typeof(JSValue));
+        var variables = new Sequence<YParameterExpression> { temp.Variable };
+        var statements = new Sequence<YExpression>
+        {
+            YExpression.Assign(temp.Variable, result),
+            YExpression.Assign(currentBinding.Expression, temp.Variable)
+        };
+
+        if (!IsStrictMode && scope.Top != scope.Top.RootScope)
+        {
+            var outerBinding = scope.Top.RootScope.CreateVariable(functionDeclaration.Id.Name, null, true);
+            if (outerBinding != null && outerBinding != currentBinding)
+                statements.Add(YExpression.Assign(outerBinding.Expression, temp.Variable));
+        }
+
+        statements.Add(temp.Variable);
+        return YExpression.Block(variables, statements);
+    }
 
     protected override YExpression VisitFunctionExpression(AstFunctionExpression functionExpression) => CreateFunction(functionExpression);
 

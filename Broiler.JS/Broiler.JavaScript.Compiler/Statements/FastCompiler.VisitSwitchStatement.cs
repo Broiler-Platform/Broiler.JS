@@ -48,6 +48,10 @@ partial class FastCompiler
                 {
                     switch (es)
                     {
+                        case AstExpressionStatement { Expression: AstFunctionExpression functionDeclaration }:
+                            body.Add(VisitRuntimeFunctionDeclaration(functionDeclaration));
+                            break;
+
                         case AstStatement stmt:
                             body.Add(VisitStatement(stmt));
                             break;

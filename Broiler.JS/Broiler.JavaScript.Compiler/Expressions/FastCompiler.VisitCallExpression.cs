@@ -11,8 +11,8 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private static readonly System.Reflection.MethodInfo DirectEvalMethod = typeof(DirectEvalSupport)
-        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(bool), typeof(bool)])
-        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, bool, bool) not found");
+        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(bool), typeof(bool), typeof(JSVariable[])])
+        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, bool, bool, JSVariable[]) not found");
 
     protected override YExpression VisitCallExpression(AstCallExpression callExpression)
     {
@@ -90,7 +90,8 @@ partial class FastCompiler
             && identifier.Name.Equals("eval"))
         {
             var paramArray = VisitArguments(null, arguments);
-            return YExpression.Call(null, DirectEvalMethod, paramArray, YExpression.Constant(IsStrictMode), YExpression.Constant(scope.Top.Function != null));
+            var capturedBindings = CaptureDirectEvalBindings();
+            return YExpression.Call(null, DirectEvalMethod, paramArray, YExpression.Constant(IsStrictMode), YExpression.Constant(scope.Top.Function != null), capturedBindings);
         }
 
         if (callee.Type == FastNodeType.MemberExpression && callee is AstMemberExpression me)
@@ -173,5 +174,14 @@ partial class FastCompiler
             var target = VisitExpression(callee);
             return JSFunctionBuilder.InvokeFunction(target, paramArray, coalesce);
         }
+    }
+
+    private YExpression CaptureDirectEvalBindings()
+    {
+        var bindings = new Sequence<YExpression>();
+        foreach (var variable in scope.Top.GetVisibleVariables())
+            bindings.Add(variable.Variable);
+
+        return YExpression.NewArrayInit(typeof(JSVariable), bindings);
     }
 }

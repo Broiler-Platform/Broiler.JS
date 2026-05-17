@@ -338,6 +338,33 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public YExpression this[string name] => GetVariable(name).Expression;
 
+    public IEnumerable<VariableScope> GetVisibleVariables()
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var current = this;
+
+        while (current != null)
+        {
+            var variables = current.variableScopeList.AllValues;
+            while (variables.MoveNext(out var entry))
+            {
+                var variable = entry.Value;
+                if (variable.Variable == null
+                    || variable.Variable.Type != typeof(JSVariable)
+                    || variable.IsTemp
+                    || variable.Name == "this"
+                    || !seen.Add(variable.Name))
+                {
+                    continue;
+                }
+
+                yield return variable;
+            }
+
+            current = current.Parent;
+        }
+    }
+
     public VariableScope CreateException(string name)
     {
         var v = new VariableScope { Variable = YExpression.Parameter(typeof(Exception), name + "Exp") };

@@ -15,7 +15,7 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private YExpression CreateFunction(AstFunctionExpression functionDeclaration, YExpression super = null, bool createClass = false, string className = null,
-        IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false)
+        IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true)
     {
         var node = functionDeclaration;
 
@@ -55,11 +55,11 @@ partial class FastCompiler
             // to bind the function. For function expressions, the name is local to
             // the function body and must not leak to the parent scope (ES3 §13).
             YParameterExpression fexprNameParam = null;
-            if (functionName != null && functionDeclaration.IsStatement)
+            if (functionName != null && functionDeclaration.IsStatement && hoistStatementDeclaration)
             {
                 jsFVarScope = previousScope.GetVariable(functionName);
             }
-            else if (functionName != null && !functionDeclaration.IsStatement)
+            else if (functionName != null && (!functionDeclaration.IsStatement || !hoistStatementDeclaration))
             {
                 // BROILER-PATCH: For function expressions, create a closure variable
                 // in the parent scope that the function body captures. This variable

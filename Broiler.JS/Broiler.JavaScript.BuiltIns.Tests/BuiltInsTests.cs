@@ -1844,6 +1844,48 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Direct_Eval_Can_Read_And_Update_Function_Local_Bindings()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              var value = 1;
+              var inner = eval('value = 2; typeof value + "|" + value;');
+              return inner + "|" + value;
+            }())
+            """);
+
+        Assert.Equal("number|2|2", result.ToString());
+    }
+
+    [Fact]
+    public void Direct_Eval_Block_Function_Declarations_Update_Visible_Bindings()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              eval('{ function f() { return "declaration"; } } typeof f + "|" + f();'),
+              (function () {
+                var after;
+                eval('{ function g() { return "inner declaration"; } } after = g;');
+                return typeof after + "|" + after();
+              }()),
+              (function () {
+                var updated;
+                eval('{ function h() { return "first declaration"; } }if (true) function h() { return "second declaration"; } else function _h() {}updated = h;');
+                return typeof updated + "|" + updated();
+              }())
+            ].join("||")
+            """);
+
+        Assert.Equal("function|declaration||function|inner declaration||function|second declaration", result.ToString());
+    }
+
+    [Fact]
     public void Direct_Eval_In_Function_Context_Rejects_Arguments_Declaration()
     {
         EnsureBuiltInsLoaded();
