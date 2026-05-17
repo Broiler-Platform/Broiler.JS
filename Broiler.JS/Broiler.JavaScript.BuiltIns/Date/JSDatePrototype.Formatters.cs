@@ -2,6 +2,7 @@
 using System;
 using System.Globalization;
 using Broiler.JavaScript.BuiltIns.Number;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 
@@ -9,6 +10,38 @@ namespace Broiler.JavaScript.BuiltIns.Date;
 
 public partial class JSDate
 {
+    private static JSValue ToNumberPrimitive(JSValue value)
+    {
+        if (value is not JSObject @object)
+            return value;
+
+        var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
+        if (!toPrimitive.IsUndefined)
+        {
+            var primitive = toPrimitive.InvokeFunction(new Arguments(@object, JSConstants.Number));
+            if (primitive.IsObject)
+                throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+
+            return primitive;
+        }
+
+        if (@object[KeyStrings.valueOf] is IJSFunction valueOf)
+        {
+            var primitive = valueOf.InvokeFunction(new Arguments(@object));
+            if (!primitive.IsObject)
+                return primitive;
+        }
+
+        if (@object[KeyStrings.toString] is IJSFunction toString)
+        {
+            var primitive = toString.InvokeFunction(new Arguments(@object));
+            if (!primitive.IsObject)
+                return primitive;
+        }
+
+        throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+    }
+
     [JSExport("toDateString", Length = 0)]
     internal JSValue ToDateString(in Arguments a)
     {
@@ -32,12 +65,26 @@ public partial class JSDate
     [JSExport("toJSON", Length = 1)]
     internal JSValue ToJSON(in Arguments a)
     {
-        if (value == InvalidDate)
-            return JSNull.Value;
+        var receiver = a.This;
+        var @object = receiver as JSObject;
+        if (@object == null)
+        {
+            if (receiver.IsNullOrUndefined)
+                throw JSEngine.NewTypeError(JSException.Cannot_convert_undefined_or_null_to_object);
 
-        var date = value.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", DateTimeFormatInfo.InvariantInfo);
-        return new JSString(date);
+            @object = (JSObject)JSObject.CreatePrimitiveObject(receiver);
+        }
 
+        var primitive = ToNumberPrimitive(@object);
+        if (primitive.IsNumber)
+        {
+            var number = primitive.DoubleValue;
+            if (double.IsNaN(number) || double.IsInfinity(number))
+                return JSNull.Value;
+        }
+
+        var toISOString = @object[KeyStrings.GetOrCreate("toISOString")];
+        return toISOString.InvokeFunction(new Arguments(@object));
     }
 
     [JSExport("toLocaleDateString", Length = 0)]
