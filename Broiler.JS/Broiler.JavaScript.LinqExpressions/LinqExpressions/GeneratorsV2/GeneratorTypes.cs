@@ -26,7 +26,7 @@ public class TryBlock
     public TryBlock Parent;
 }
 
-public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, Arguments arguments)
+public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, Arguments arguments, bool asyncGenerator = false)
 {
     public CallStackItem StackItem;
 
@@ -47,6 +47,11 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
     // this is null...
     public TryBlock Root;
+
+    private IElementEnumerator GetDelegatedEnumerator(JSValue value)
+        => asyncGenerator
+            ? value.GetAsyncIterableEnumerator()
+            : value.GetIterableEnumerator();
 
     public void InitVariables(int i) => Variables ??= new Box[i];
 
@@ -84,7 +89,7 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
         {
             if (v.IsValueDelegate)
             {
-                delegatedEnumerator = v.Value.GetIterableEnumerator();
+                delegatedEnumerator = GetDelegatedEnumerator(v.Value);
                 Next(next, out value, out done);
                 return;
             }
@@ -99,7 +104,7 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
                     v = GetNext(Root.Finally, value);
                     if (v.IsValueDelegate)
                     {
-                        delegatedEnumerator = v.Value.GetIterableEnumerator();
+                        delegatedEnumerator = GetDelegatedEnumerator(v.Value);
                         Next(next, out value, out done);
                         return;
                     }

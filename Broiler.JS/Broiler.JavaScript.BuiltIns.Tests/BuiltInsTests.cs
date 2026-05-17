@@ -3143,6 +3143,41 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public async Task AsyncGenerator_YieldStar_Prefers_SymbolAsyncIterator_Over_SymbolIterator()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Execute(@"
+            async function run() {
+                class Test262Error extends Error {}
+
+                async function* delegated() {
+                    yield* {
+                        get [Symbol.iterator]() {
+                            throw new Test262Error('it should not get Symbol.iterator');
+                        },
+                        [Symbol.asyncIterator]() {
+                            return [Promise.resolve('x'), Promise.resolve('y')][Symbol.iterator]();
+                        }
+                    };
+                }
+
+                var values = [];
+                for await (var value of delegated()) {
+                    values.push(value);
+                }
+
+                return values.join('|');
+            }
+
+            run();
+        ");
+
+        Assert.Equal("x|y", result.ToString());
+    }
+
+    [Fact]
     public void Object_Symbol_Wrapper_Uses_Symbol_Coercion_Path()
     {
         EnsureBuiltInsLoaded();
