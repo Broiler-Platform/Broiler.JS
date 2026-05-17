@@ -176,6 +176,27 @@ public class ParserTests
         Assert.Equal(expectedName, key.Name.Value);
     }
 
+    [Fact]
+    public void ParseProgram_ClassBody_Allows_PrivateMemberAccess()
+    {
+        var stream = new FastTokenStream(new StringSpan("class C { #m() { return 1; } get method() { return this.#m; } }"));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements.ToArray()));
+        var classExpression = Assert.IsType<AstClassExpression>(statement.Expression);
+        var properties = classExpression.Members.ToArray();
+        var getter = Assert.IsType<AstClassProperty>(properties[1]);
+        var function = Assert.IsType<AstFunctionExpression>(getter.Init);
+        var body = Assert.IsType<AstBlock>(function.Body);
+        var returnStatement = Assert.IsType<AstReturnStatement>(Assert.Single(body.Statements.ToArray()));
+        var member = Assert.IsType<AstMemberExpression>(returnStatement.Argument);
+        var property = Assert.IsType<AstIdentifier>(member.Property);
+
+        Assert.False(member.Computed);
+        Assert.Equal("#m", property.Name.Value);
+    }
+
     private static void AssertAsyncMethod(AstNode node, string expectedName)
     {
         var property = Assert.IsType<AstClassProperty>(node);

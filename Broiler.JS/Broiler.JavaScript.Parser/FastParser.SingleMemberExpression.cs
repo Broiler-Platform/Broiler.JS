@@ -86,6 +86,18 @@ partial class FastParser
                     stream.Consume();
                     stream.SkipNewLines();
 
+                    if (token.Type == TokenTypes.Dot && stream.CheckAndConsume(TokenTypes.Hash, out var hashToken))
+                    {
+                        if (!Identitifer(out var privateIdentifier))
+                            throw stream.Unexpected();
+
+                        node = node.Member(
+                            new AstIdentifier(hashToken, $"#{privateIdentifier.Name.Value}"),
+                            false,
+                            false);
+                        break;
+                    }
+
                     var next = stream.Current;
                     switch (next.Type)
                     {
