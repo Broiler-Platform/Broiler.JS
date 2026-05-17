@@ -37,6 +37,7 @@ internal static class EngineAssemblyInitializer
         // ── JSVariable delegate ─────────────────────────────────────
         JSVariable.GetCurrentContext = static () => JSEngine.Current;
         JSVariable.IsStrictMode = static () => JSEngine.IsStrictMode;
+        JSVariable.NewReferenceErrorFactory = static msg => JSEngine.NewReferenceError(msg);
 
         // ── UriHelper delegate ──────────────────────────────────────
         UriHelper.NewURIError = static message => JSEngine.NewURIError(message);

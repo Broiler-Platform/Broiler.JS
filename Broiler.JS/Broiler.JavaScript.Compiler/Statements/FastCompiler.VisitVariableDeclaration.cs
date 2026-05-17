@@ -27,7 +27,7 @@ partial class FastCompiler
                     var v = top.CreateVariable(id.Name, JSVariableBuilder.New(id.Name.Value), newScope);
                     if (d.Init == null)
                     {
-                        list.Add(v.Expression);
+                        list.Add(newScope ? YExpression.Assign(v.Expression, JSUndefinedBuilder.Value) : v.Expression);
                     }
                     else
                     {

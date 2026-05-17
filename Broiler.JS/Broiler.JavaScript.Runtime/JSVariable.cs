@@ -37,16 +37,29 @@ public class JSVariable
     }
 
     private JSValue _value;
+    private bool _isInitialized = true;
+
+    private string ReferenceErrorMessage
+        => Name.IsEmpty ? "Cannot access variable before initialization" : $"Cannot access '{Name.Value}' before initialization";
+
     public JSValue Value
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _value;
+        get
+        {
+            if (!_isInitialized)
+                throw (NewReferenceErrorFactory ?? throw new InvalidOperationException("JSVariable.NewReferenceErrorFactory delegate is not initialized. Ensure the Engine assembly module initializer has run."))
+                    (ReferenceErrorMessage);
+
+            return _value;
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             if (!IsReadOnly)
             {
                 _value = InferAnonymousFunctionName(value);
+                _isInitialized = true;
                 return;
             }
 
@@ -68,12 +81,21 @@ public class JSVariable
     /// </summary>
     internal static Func<object> GetCurrentContext;
     internal static Func<bool> IsStrictMode;
+    internal static Func<string, JSException> NewReferenceErrorFactory;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public JSVariable(JSValue v, string name)
     {
         _value = v;
         Name = name;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public JSVariable(JSValue v, string name, bool initialized)
+    {
+        _value = v;
+        Name = name;
+        _isInitialized = initialized;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -93,12 +115,13 @@ public class JSVariable
     public JSValue GlobalValue
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _value;
+        get => Value;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             value = InferAnonymousFunctionName(value);
             _value = value;
+            _isInitialized = true;
             if (key.Value == null)
                 key = KeyStrings.GetOrCreate(Name);
 

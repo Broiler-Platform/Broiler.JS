@@ -153,7 +153,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             PostInit = YExpression.Assign(Expression, exp);
         }
 
-        public void SetInit(YExpression exp)
+        public void SetInit(YExpression exp, bool initialize = true)
         {
             if (Variable.Type == typeof(JSVariable))
             {
@@ -170,7 +170,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
                 }
                 else
                 {
-                    Init = YExpression.Assign(Variable, JSVariableBuilder.New(Name));
+                    Init = YExpression.Assign(Variable, initialize ? JSVariableBuilder.New(Name) : JSVariableBuilder.NewUninitialized(Name));
                 }
             }
             else
@@ -382,7 +382,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public bool IsFunctionScope => Parent?.Function != Function;
 
-    public VariableScope CreateVariable(in StringSpan name, YExpression init = null, bool newScope = false, Type type = null)
+    public VariableScope CreateVariable(in StringSpan name, YExpression init = null, bool newScope = false, Type type = null, bool initialize = true)
     {
         var v = variableScopeList[name];
         if (v != null)
@@ -414,7 +414,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             Create = true
         };
         
-        v.SetInit(init);
+        v.SetInit(init, initialize);
         variableScopeList[name] = v;
         
         return v;

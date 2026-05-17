@@ -1,7 +1,11 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
+using Broiler.JavaScript.Ast.Expressions;
+using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.LinqExpressions.LambdaGen;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Runtime;
@@ -57,6 +61,7 @@ partial class FastCompiler
         var blockList = new Sequence<YExpression>(program.Statements.Count);
         ref var hoistingScope = ref program.HoistingScope;
         var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
+        var lexicalBindings = CollectTopLevelLexicalBindings(program.Statements);
 
         if (hoistingScope != null)
         {
@@ -65,6 +70,12 @@ partial class FastCompiler
         
             while (en.MoveNext(out var v))
             {
+                if (lexicalBindings.Contains(v.Value))
+                {
+                    scope.CreateVariable(v, null, true, initialize: false);
+                    continue;
+                }
+
                 var g = JSValueBuilder.Index(top.Context, KeyOfName(v));
                 var vs = scope.CreateVariable(v, null, true);
                 scope.Parent?.AddExternalVariable(v, vs);
@@ -89,5 +100,62 @@ partial class FastCompiler
 
         scope.Dispose();
         return r;
+    }
+
+    private static HashSet<string> CollectTopLevelLexicalBindings(IFastEnumerable<AstStatement> statements)
+    {
+        var lexicalBindings = new HashSet<string>(StringComparer.Ordinal);
+        var enumerator = statements.GetFastEnumerator();
+
+        while (enumerator.MoveNext(out var statement))
+        {
+            switch (statement)
+            {
+                case AstVariableDeclaration { Kind: FastVariableKind.Let or FastVariableKind.Const } declaration:
+                    var declarators = declaration.Declarators.GetFastEnumerator();
+                    while (declarators.MoveNext(out var declarator))
+                        CollectBindingNames(declarator.Identifier, lexicalBindings);
+                    break;
+
+                case AstExpressionStatement { Expression: AstClassExpression { Identifier: { } identifier } }:
+                    lexicalBindings.Add(identifier.Name.Value);
+                    break;
+            }
+        }
+
+        return lexicalBindings;
+    }
+
+    private static void CollectBindingNames(AstExpression expression, HashSet<string> names)
+    {
+        switch (expression)
+        {
+            case AstIdentifier identifier:
+                names.Add(identifier.Name.Value);
+                break;
+
+            case AstBinaryExpression assignment:
+                CollectBindingNames(assignment.Left, names);
+                break;
+
+            case AstSpreadElement spread:
+                CollectBindingNames(spread.Argument, names);
+                break;
+
+            case AstArrayPattern array:
+                var elements = array.Elements.GetFastEnumerator();
+                while (elements.MoveNext(out var element))
+                {
+                    if (element != null)
+                        CollectBindingNames(element, names);
+                }
+                 break;
+
+            case AstObjectPattern @object:
+                var properties = @object.Properties.GetFastEnumerator();
+                while (properties.MoveNext(out var property))
+                    CollectBindingNames(property.Value, names);
+                break;
+        }
     }
 }

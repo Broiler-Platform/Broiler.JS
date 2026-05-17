@@ -29,5 +29,8 @@ public class JSVariableBuilder
     public static Expression New(string name) => NewLambdaExpression.NewExpression<JSVariable>(() => () =>
     new JSVariable(null as JSValue, ""), JSUndefinedBuilder.Value, Expression.Constant(name));
 
+    public static Expression NewUninitialized(string name) => NewLambdaExpression.NewExpression<JSVariable>(() => () =>
+    new JSVariable(null as JSValue, "", false), JSUndefinedBuilder.Value, Expression.Constant(name), Expression.Constant(false));
+
     public static Expression Property(Expression target) => target.PropertyExpression<JSVariable, JSValue>(() => (x) => x.GlobalValue);
 }
