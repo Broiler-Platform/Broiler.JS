@@ -23,6 +23,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     private StringSpan source;
 
     internal JSFunction constructor;
+    internal JSFunction BoundTargetFunction;
 
     public readonly StringSpan name;
 
@@ -299,7 +300,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             // need to set prototypeChain...
             prototypeChain = fOriginal.prototypeChain,
             prototype = fOriginal.prototype,
-            constructor = fOriginal.constructor
+            constructor = fOriginal.constructor,
+            BoundTargetFunction = fOriginal.BoundTargetFunction ?? fOriginal
         };
         fx.FastAddValue(KeyStrings.name, JSValue.CreateString(boundName), JSPropertyAttributes.ConfigurableReadonlyValue);
 

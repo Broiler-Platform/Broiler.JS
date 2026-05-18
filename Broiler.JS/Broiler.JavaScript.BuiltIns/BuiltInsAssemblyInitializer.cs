@@ -707,6 +707,9 @@ internal static class BuiltInsAssemblyInitializer
             if (!constructor.IsFunction)
                 return JSValue.BooleanFalse;
 
+            if (constructor is JSFunction { BoundTargetFunction: JSFunction boundTargetFunction })
+                constructor = boundTargetFunction;
+
             var value = a.Get1();
             if (!value.IsObject)
                 return JSValue.BooleanFalse;

@@ -161,22 +161,16 @@ public partial class JSObject
     [JSPrototypeMethod][JSExport("isPrototypeOf")]
     internal static JSValue IsPrototypeOf(in Arguments a)
     {
-        var first = a.Get1();
-        if (!first.IsObject)
+        if (a.Get1() is not JSObject candidate)
             return JSValue.BooleanFalse;
 
         if (!a.This.TryAsObjectThrowIfNullOrUndefined(out var @this))
             return JSValue.BooleanFalse;
 
-        while (true)
+        for (var current = candidate.GetPrototypeOf(); current is JSObject currentObject; current = currentObject.GetPrototypeOf())
         {
-            if (@this == (first.prototypeChain as IJSPrototype)?.Object)
+            if (ReferenceEquals(@this, currentObject))
                 return JSValue.BooleanTrue;
-
-            if ((first.prototypeChain as IJSPrototype)?.Object == first || (first.prototypeChain as IJSPrototype)?.Object == null)
-                break;
-
-            first = (first.prototypeChain as IJSPrototype)?.Object;
         }
 
         return JSValue.BooleanFalse;
