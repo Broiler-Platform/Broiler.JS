@@ -1631,7 +1631,6 @@ test/built-ins/Function/prototype/S15.3.4_A4.js
 test/built-ins/Function/prototype/S15.3.5.2_A1_T1.js
 test/built-ins/Function/prototype/S15.3.5.2_A1_T2.js
 test/built-ins/Function/prototype/Symbol.hasInstance/prop-desc.js
-test/built-ins/Function/prototype/Symbol.hasInstance/this-val-bound-target.js
 test/built-ins/Function/prototype/apply/S15.3.4.3_A7_T1.js
 test/built-ins/Function/prototype/apply/S15.3.4.3_A7_T10.js
 test/built-ins/Function/prototype/apply/S15.3.4.3_A7_T2.js
@@ -1795,7 +1794,6 @@ test/built-ins/Iterator/from/get-return-method-when-call-return.js
 test/built-ins/Iterator/from/iterable-primitives.js
 test/built-ins/Iterator/from/result-proto.js
 test/built-ins/Iterator/from/return-method-calls-base-return-method.js
-test/built-ins/Iterator/from/return-method-returns-iterator-result.js
 test/built-ins/Iterator/from/return-method-throws-for-invalid-this.js
 test/built-ins/Iterator/from/supports-iterable.js
 test/built-ins/Iterator/prop-desc.js
@@ -1819,7 +1817,6 @@ test/built-ins/Iterator/prototype/drop/next-method-returns-throwing-value.js
 test/built-ins/Iterator/prototype/drop/next-method-throws.js
 test/built-ins/Iterator/prototype/drop/return-is-forwarded.js
 test/built-ins/Iterator/prototype/drop/return-is-not-forwarded-after-exhaustion.js
-test/built-ins/Iterator/prototype/drop/this-non-callable-next.js
 test/built-ins/Iterator/prototype/drop/this-non-object.js
 test/built-ins/Iterator/prototype/drop/this-plain-iterator.js
 test/built-ins/Iterator/prototype/drop/throws-typeerror-when-generator-is-running.js
@@ -1834,8 +1831,6 @@ test/built-ins/Iterator/prototype/every/next-method-returns-throwing-done.js
 test/built-ins/Iterator/prototype/every/next-method-returns-throwing-value-done.js
 test/built-ins/Iterator/prototype/every/next-method-returns-throwing-value.js
 test/built-ins/Iterator/prototype/every/next-method-throws.js
-test/built-ins/Iterator/prototype/every/predicate-returns-falsey.js
-test/built-ins/Iterator/prototype/every/predicate-returns-truthy-then-falsey.js
 test/built-ins/Iterator/prototype/every/predicate-throws-then-closing-iterator-also-throws.js
 test/built-ins/Iterator/prototype/every/predicate-throws.js
 test/built-ins/Iterator/prototype/every/this-plain-iterator.js
@@ -1854,7 +1849,6 @@ test/built-ins/Iterator/prototype/filter/predicate-throws-then-closing-iterator-
 test/built-ins/Iterator/prototype/filter/predicate-throws.js
 test/built-ins/Iterator/prototype/filter/return-is-forwarded.js
 test/built-ins/Iterator/prototype/filter/return-is-not-forwarded-after-exhaustion.js
-test/built-ins/Iterator/prototype/filter/this-non-callable-next.js
 test/built-ins/Iterator/prototype/filter/this-plain-iterator.js
 test/built-ins/Iterator/prototype/filter/throws-typeerror-when-generator-is-running.js
 test/built-ins/Iterator/prototype/find/argument-validation-failure-closes-underlying.js
@@ -1868,8 +1862,6 @@ test/built-ins/Iterator/prototype/find/next-method-returns-throwing-done.js
 test/built-ins/Iterator/prototype/find/next-method-returns-throwing-value-done.js
 test/built-ins/Iterator/prototype/find/next-method-returns-throwing-value.js
 test/built-ins/Iterator/prototype/find/next-method-throws.js
-test/built-ins/Iterator/prototype/find/predicate-returns-falsey-then-truthy.js
-test/built-ins/Iterator/prototype/find/predicate-returns-truthy.js
 test/built-ins/Iterator/prototype/find/predicate-throws-then-closing-iterator-also-throws.js
 test/built-ins/Iterator/prototype/find/predicate-throws.js
 test/built-ins/Iterator/prototype/find/this-plain-iterator.js
@@ -1891,7 +1883,6 @@ test/built-ins/Iterator/prototype/flatMap/return-is-forwarded-to-mapper-result.j
 test/built-ins/Iterator/prototype/flatMap/return-is-forwarded-to-underlying-iterator.js
 test/built-ins/Iterator/prototype/flatMap/return-is-not-forwarded-after-exhaustion.js
 test/built-ins/Iterator/prototype/flatMap/strings-are-not-flattened.js
-test/built-ins/Iterator/prototype/flatMap/this-non-callable-next.js
 test/built-ins/Iterator/prototype/flatMap/this-plain-iterator.js
 test/built-ins/Iterator/prototype/flatMap/throws-typeerror-when-generator-is-running.js
 test/built-ins/Iterator/prototype/forEach/argument-validation-failure-closes-underlying.js
@@ -1921,10 +1912,8 @@ test/built-ins/Iterator/prototype/map/next-method-returns-throwing-value.js
 test/built-ins/Iterator/prototype/map/next-method-throws.js
 test/built-ins/Iterator/prototype/map/return-is-forwarded-to-underlying-iterator.js
 test/built-ins/Iterator/prototype/map/return-is-not-forwarded-after-exhaustion.js
-test/built-ins/Iterator/prototype/map/this-non-callable-next.js
 test/built-ins/Iterator/prototype/map/this-plain-iterator.js
 test/built-ins/Iterator/prototype/map/throws-typeerror-when-generator-is-running.js
-test/built-ins/Iterator/prototype/reduce/argument-effect-order.js
 test/built-ins/Iterator/prototype/reduce/argument-validation-failure-closes-underlying.js
 test/built-ins/Iterator/prototype/reduce/get-next-method-only-once.js
 test/built-ins/Iterator/prototype/reduce/get-next-method-throws.js
@@ -1947,8 +1936,6 @@ test/built-ins/Iterator/prototype/some/next-method-returns-throwing-done.js
 test/built-ins/Iterator/prototype/some/next-method-returns-throwing-value-done.js
 test/built-ins/Iterator/prototype/some/next-method-returns-throwing-value.js
 test/built-ins/Iterator/prototype/some/next-method-throws.js
-test/built-ins/Iterator/prototype/some/predicate-returns-falsey-then-truthy.js
-test/built-ins/Iterator/prototype/some/predicate-returns-truthy.js
 test/built-ins/Iterator/prototype/some/predicate-throws-then-closing-iterator-also-throws.js
 test/built-ins/Iterator/prototype/some/predicate-throws.js
 test/built-ins/Iterator/prototype/some/this-plain-iterator.js
@@ -1967,7 +1954,6 @@ test/built-ins/Iterator/prototype/take/next-method-returns-throwing-value.js
 test/built-ins/Iterator/prototype/take/next-method-throws.js
 test/built-ins/Iterator/prototype/take/return-is-forwarded.js
 test/built-ins/Iterator/prototype/take/return-is-not-forwarded-after-exhaustion.js
-test/built-ins/Iterator/prototype/take/this-non-callable-next.js
 test/built-ins/Iterator/prototype/take/this-non-object.js
 test/built-ins/Iterator/prototype/take/throws-typeerror-when-generator-is-running.js
 test/built-ins/Iterator/prototype/toArray/get-next-method-only-once.js
@@ -2151,7 +2137,6 @@ test/built-ins/JSON/stringify/value-tojson-arguments.js
 test/built-ins/JSON/stringify/value-tojson-result.js
 test/built-ins/Map/bigint-number-same-value.js
 test/built-ins/Map/groupBy/length.js
-test/built-ins/Map/groupBy/negativeZero.js
 test/built-ins/Map/groupBy/string.js
 test/built-ins/Map/iterator-close-after-set-failure.js
 test/built-ins/Map/iterator-item-first-entry-returns-abrupt.js
@@ -2179,24 +2164,16 @@ test/built-ins/Map/prototype/forEach/second-parameter-as-callback-context.js
 test/built-ins/Map/prototype/get/length.js
 test/built-ins/Map/prototype/get/name.js
 test/built-ins/Map/prototype/get/returns-undefined.js
-test/built-ins/Map/prototype/get/returns-value-normalized-zero-key.js
-test/built-ins/Map/prototype/getOrInsert/append-new-values-normalizes-zero-key.js
 test/built-ins/Map/prototype/getOrInsert/append-new-values.js
-test/built-ins/Map/prototype/getOrInsert/returns-value-normalized-zero-key.js
-test/built-ins/Map/prototype/getOrInsertComputed/append-new-values-normalizes-zero-key.js
 test/built-ins/Map/prototype/getOrInsertComputed/append-new-values.js
 test/built-ins/Map/prototype/getOrInsertComputed/canonical-key-passed-to-callback.js
 test/built-ins/Map/prototype/getOrInsertComputed/getOrInsertComputed.js
-test/built-ins/Map/prototype/getOrInsertComputed/returns-value-normalized-zero-key.js
 test/built-ins/Map/prototype/has/length.js
-test/built-ins/Map/prototype/has/normalizes-zero-key.js
 test/built-ins/Map/prototype/keys/name.js
-test/built-ins/Map/prototype/set/append-new-values-normalizes-zero-key.js
 test/built-ins/Map/prototype/set/append-new-values-return-map.js
 test/built-ins/Map/prototype/set/append-new-values.js
 test/built-ins/Map/prototype/set/length.js
 test/built-ins/Map/prototype/set/name.js
-test/built-ins/Map/prototype/set/replaces-a-value-normalizes-zero-key.js
 test/built-ins/Map/prototype/set/replaces-a-value-returns-map.js
 test/built-ins/Map/prototype/values/name.js
 test/built-ins/Map/valid-keys.js
@@ -3011,7 +2988,6 @@ test/built-ins/Object/prototype/__lookupGetter__/this-non-obj.js
 test/built-ins/Object/prototype/__lookupSetter__/this-non-obj.js
 test/built-ins/Object/prototype/hasOwnProperty/symbol_property_toPrimitive.js
 test/built-ins/Object/prototype/hasOwnProperty/symbol_property_valueOf.js
-test/built-ins/Object/prototype/isPrototypeOf/arg-is-proxy.js
 test/built-ins/Object/prototype/isPrototypeOf/length.js
 test/built-ins/Object/prototype/propertyIsEnumerable/S15.2.4.7_A11.js
 test/built-ins/Object/prototype/propertyIsEnumerable/symbol_own_property.js
@@ -4150,9 +4126,7 @@ test/built-ins/Set/prototype/add/name.js
 test/built-ins/Set/prototype/add/preserves-insertion-order.js
 test/built-ins/Set/prototype/add/returns-this-when-ignoring-duplicate.js
 test/built-ins/Set/prototype/add/returns-this.js
-test/built-ins/Set/prototype/add/will-not-add-duplicate-entry-normalizes-zero.js
 test/built-ins/Set/prototype/clear/clears-all-contents.js
-test/built-ins/Set/prototype/delete/delete-entry-normalizes-zero.js
 test/built-ins/Set/prototype/delete/length.js
 test/built-ins/Set/prototype/difference/allows-set-like-class.js
 test/built-ins/Set/prototype/difference/converts-negative-zero.js
@@ -4191,7 +4165,6 @@ test/built-ins/Set/prototype/isSubsetOf/receiver-not-set.js
 test/built-ins/Set/prototype/isSubsetOf/set-like-class-mutation.js
 test/built-ins/Set/prototype/isSubsetOf/set-like-class-order.js
 test/built-ins/Set/prototype/isSubsetOf/size-is-a-number.js
-test/built-ins/Set/prototype/isSupersetOf/converts-negative-zero.js
 test/built-ins/Set/prototype/isSupersetOf/length.js
 test/built-ins/Set/prototype/isSupersetOf/receiver-not-set.js
 test/built-ins/Set/prototype/isSupersetOf/set-like-class-order.js
@@ -13860,11 +13833,9 @@ test/staging/sm/Iterator/prototype/lazy-methods-return-new-iterator-result.js
 test/staging/sm/Iterator/prototype/lazy-methods-throw-next-done-throws.js
 test/staging/sm/Iterator/prototype/lazy-methods-throw-next-not-object.js
 test/staging/sm/Iterator/prototype/map/mutate-iterator.js
-test/staging/sm/Iterator/prototype/map/proxy-abrupt-completion-in-iteratorValue.js
 test/staging/sm/Iterator/prototype/map/proxy-abrupt-completion-in-yield.js
 test/staging/sm/Iterator/prototype/map/proxy-abrupt-completion.js
 test/staging/sm/Iterator/prototype/map/proxy-accesses.js
-test/staging/sm/Iterator/prototype/map/this-value-array-throws.js
 test/staging/sm/Iterator/prototype/reduce/check-fn-after-getting-iterator.js
 test/staging/sm/Iterator/prototype/reduce/iterator-next-return-non-object-throws.js
 test/staging/sm/Iterator/prototype/reduce/next-throws-iterator-not-closed.js
