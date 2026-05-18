@@ -1779,7 +1779,6 @@ test/built-ins/Iterator/prototype/drop/return-is-not-forwarded-after-exhaustion.
 test/built-ins/Iterator/prototype/drop/this-non-object.js
 test/built-ins/Iterator/prototype/drop/this-plain-iterator.js
 test/built-ins/Iterator/prototype/drop/throws-typeerror-when-generator-is-running.js
-test/built-ins/Iterator/prototype/every/argument-validation-failure-closes-underlying.js
 test/built-ins/Iterator/prototype/every/get-next-method-only-once.js
 test/built-ins/Iterator/prototype/every/get-next-method-throws.js
 test/built-ins/Iterator/prototype/every/get-return-method-throws.js
@@ -1793,7 +1792,6 @@ test/built-ins/Iterator/prototype/every/next-method-throws.js
 test/built-ins/Iterator/prototype/every/predicate-throws-then-closing-iterator-also-throws.js
 test/built-ins/Iterator/prototype/every/predicate-throws.js
 test/built-ins/Iterator/prototype/every/this-plain-iterator.js
-test/built-ins/Iterator/prototype/filter/argument-validation-failure-closes-underlying.js
 test/built-ins/Iterator/prototype/filter/exhaustion-does-not-call-return.js
 test/built-ins/Iterator/prototype/filter/get-next-method-only-once.js
 test/built-ins/Iterator/prototype/filter/get-next-method-throws.js
@@ -1810,7 +1808,6 @@ test/built-ins/Iterator/prototype/filter/return-is-forwarded.js
 test/built-ins/Iterator/prototype/filter/return-is-not-forwarded-after-exhaustion.js
 test/built-ins/Iterator/prototype/filter/this-plain-iterator.js
 test/built-ins/Iterator/prototype/filter/throws-typeerror-when-generator-is-running.js
-test/built-ins/Iterator/prototype/find/argument-validation-failure-closes-underlying.js
 test/built-ins/Iterator/prototype/find/get-next-method-only-once.js
 test/built-ins/Iterator/prototype/find/get-next-method-throws.js
 test/built-ins/Iterator/prototype/find/get-return-method-throws.js
@@ -1824,7 +1821,6 @@ test/built-ins/Iterator/prototype/find/next-method-throws.js
 test/built-ins/Iterator/prototype/find/predicate-throws-then-closing-iterator-also-throws.js
 test/built-ins/Iterator/prototype/find/predicate-throws.js
 test/built-ins/Iterator/prototype/find/this-plain-iterator.js
-test/built-ins/Iterator/prototype/flatMap/argument-validation-failure-closes-underlying.js
 test/built-ins/Iterator/prototype/flatMap/exhaustion-does-not-call-return.js
 test/built-ins/Iterator/prototype/flatMap/get-next-method-only-once.js
 test/built-ins/Iterator/prototype/flatMap/get-next-method-throws.js
@@ -1844,7 +1840,6 @@ test/built-ins/Iterator/prototype/flatMap/return-is-not-forwarded-after-exhausti
 test/built-ins/Iterator/prototype/flatMap/strings-are-not-flattened.js
 test/built-ins/Iterator/prototype/flatMap/this-plain-iterator.js
 test/built-ins/Iterator/prototype/flatMap/throws-typeerror-when-generator-is-running.js
-test/built-ins/Iterator/prototype/forEach/argument-validation-failure-closes-underlying.js
 test/built-ins/Iterator/prototype/forEach/fn-throws-then-closing-iterator-also-throws.js
 test/built-ins/Iterator/prototype/forEach/fn-throws.js
 test/built-ins/Iterator/prototype/forEach/get-next-method-only-once.js
@@ -1856,7 +1851,6 @@ test/built-ins/Iterator/prototype/forEach/next-method-returns-throwing-value.js
 test/built-ins/Iterator/prototype/forEach/next-method-throws.js
 test/built-ins/Iterator/prototype/forEach/this-plain-iterator.js
 test/built-ins/Iterator/prototype/initial-value.js
-test/built-ins/Iterator/prototype/map/argument-validation-failure-closes-underlying.js
 test/built-ins/Iterator/prototype/map/exhaustion-does-not-call-return.js
 test/built-ins/Iterator/prototype/map/get-next-method-only-once.js
 test/built-ins/Iterator/prototype/map/get-next-method-throws.js
@@ -1873,7 +1867,6 @@ test/built-ins/Iterator/prototype/map/return-is-forwarded-to-underlying-iterator
 test/built-ins/Iterator/prototype/map/return-is-not-forwarded-after-exhaustion.js
 test/built-ins/Iterator/prototype/map/this-plain-iterator.js
 test/built-ins/Iterator/prototype/map/throws-typeerror-when-generator-is-running.js
-test/built-ins/Iterator/prototype/reduce/argument-validation-failure-closes-underlying.js
 test/built-ins/Iterator/prototype/reduce/get-next-method-only-once.js
 test/built-ins/Iterator/prototype/reduce/get-next-method-throws.js
 test/built-ins/Iterator/prototype/reduce/next-method-returns-non-object.js
@@ -1884,7 +1877,6 @@ test/built-ins/Iterator/prototype/reduce/next-method-throws.js
 test/built-ins/Iterator/prototype/reduce/reducer-throws-then-closing-iterator-also-throws.js
 test/built-ins/Iterator/prototype/reduce/reducer-throws.js
 test/built-ins/Iterator/prototype/reduce/this-plain-iterator.js
-test/built-ins/Iterator/prototype/some/argument-validation-failure-closes-underlying.js
 test/built-ins/Iterator/prototype/some/get-next-method-only-once.js
 test/built-ins/Iterator/prototype/some/get-next-method-throws.js
 test/built-ins/Iterator/prototype/some/get-return-method-throws.js
@@ -9252,11 +9244,6 @@ test/language/expressions/new/spread-obj-getter-descriptor.js
 test/language/expressions/new/spread-obj-mult-spread-getter.js
 test/language/expressions/new/spread-obj-spread-order.js
 test/language/expressions/new/spread-obj-with-overrides.js
-test/language/expressions/object/__proto__-duplicate-computed.js
-test/language/expressions/object/__proto__-poisoned-object-prototype.js
-test/language/expressions/object/__proto__-value-non-object.js
-test/language/expressions/object/__proto__-value-null.js
-test/language/expressions/object/__proto__-value-obj.js
 test/language/expressions/object/accessor-name-computed-in.js
 test/language/expressions/object/accessor-name-computed-yield-expr.js
 test/language/expressions/object/accessor-name-computed-yield-id.js
@@ -14115,8 +14102,6 @@ test/staging/sm/extensions/nested-delete-name-in-evalcode.js
 test/staging/sm/extensions/newer-type-functions-caller-arguments.js
 test/staging/sm/extensions/proxy-array-target-length-definition.js
 test/staging/sm/extensions/quote-string-for-nul-character.js
-test/staging/sm/extensions/regress-480579.js
-test/staging/sm/extensions/regress-481516.js
 test/staging/sm/extensions/reviver-mutates-holder-object-nonnative.js
 test/staging/sm/extensions/reviver-mutates-holder-object.js
 test/staging/sm/extensions/set-property-non-extensible.js
