@@ -378,6 +378,24 @@ internal static class BuiltInsAssemblyInitializer
 
     private static void PatchLegacyDatePrototype(JSContext context)
     {
+        static JSValue OrdinaryToPrimitive(JSObject @object, bool preferString)
+        {
+            var first = preferString ? KeyStrings.toString : KeyStrings.valueOf;
+            var second = preferString ? KeyStrings.valueOf : KeyStrings.toString;
+
+            foreach (var key in new[] { first, second })
+            {
+                if (@object[key] is not IJSFunction method)
+                    continue;
+
+                var primitive = method.InvokeFunction(new Arguments(@object));
+                if (!primitive.IsObject)
+                    return primitive;
+            }
+
+            throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+        }
+
         static JSValue ToNumberPrimitive(JSValue value)
         {
             if (value is not JSObject @object)
@@ -445,6 +463,23 @@ internal static class BuiltInsAssemblyInitializer
             var toISOString = @object[KeyStrings.GetOrCreate("toISOString")];
             return toISOString.InvokeFunction(new Arguments(@object));
         }, "toJSON", 1), JSPropertyAttributes.ConfigurableValue);
+
+        if (prototype.GetOwnPropertyDescriptor(JSSymbol.toPrimitive).IsUndefined)
+        {
+            ref var symbols = ref prototype.GetSymbols();
+            symbols.Put(JSSymbol.toPrimitive.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
+            {
+                if (a.This is not JSObject @object)
+                    throw JSEngine.NewTypeError("Date.prototype[Symbol.toPrimitive] requires an object receiver");
+
+                return a.Get1().StringValue switch
+                {
+                    "string" or "default" => OrdinaryToPrimitive(@object, preferString: true),
+                    "number" => OrdinaryToPrimitive(@object, preferString: false),
+                    _ => throw JSEngine.NewTypeError("Date.prototype[Symbol.toPrimitive] requires a valid hint")
+                };
+            }, "[Symbol.toPrimitive]", 1), JSPropertyAttributes.ConfigurableValue);
+        }
 
         var toUTCString = prototype[toUTCStringKey];
         if (!toUTCString.IsUndefined)
@@ -516,9 +551,36 @@ internal static class BuiltInsAssemblyInitializer
             return;
 
         var prototype = stringCtor.prototype;
+        var atKey = KeyStrings.GetOrCreate("at");
         var trimStart = prototype[KeyStrings.GetOrCreate("trimStart")];
+        if (prototype[atKey].IsUndefined)
+        {
+            prototype.FastAddValue(atKey, CreateNativeFunction(static (in Arguments a) =>
+            {
+                var text = a.This.AsString();
+                var index = a.Get1().IntegerValue;
+                if (index < 0)
+                    index += text.Length;
+
+                if (index < 0 || index >= text.Length)
+                    return JSUndefined.Value;
+
+                return JSValue.CreateString(text[index].ToString());
+            }, "at", 1), JSPropertyAttributes.ConfigurableValue);
+        }
+
+        if (prototype.GetOwnPropertyDescriptor(JSSymbol.iterator).IsUndefined)
+        {
+            prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, CreateNativeFunction(static (in Arguments a) =>
+            {
+                var text = a.This.AsString();
+                return new JSGenerator(new JSString(text).GetElementEnumerator(), "String Iterator");
+            }, "[Symbol.iterator]"), JSPropertyAttributes.ConfigurableValue);
+        }
+
         if (!trimStart.IsUndefined)
             prototype.FastAddValue(KeyStrings.GetOrCreate("trimLeft"), trimStart, JSPropertyAttributes.ConfigurableValue);
+        prototype.Dirty();
     }
 
     private static void PatchErrorPrototype(JSContext context)
@@ -612,6 +674,17 @@ internal static class BuiltInsAssemblyInitializer
             return;
 
         var prototype = objectCtor.prototype;
+        var hasOwnKey = KeyStrings.GetOrCreate("hasOwn");
+        if (objectCtor[hasOwnKey].IsUndefined)
+        {
+            objectCtor.FastAddValue(hasOwnKey, CreateNativeFunction(static (in Arguments a) =>
+            {
+                var @object = CoerceObject(a.Get1());
+                var key = ToPropertyKeyValue(a.GetAt(1));
+                return @object.GetOwnPropertyDescriptor(key).IsUndefined ? JSValue.BooleanFalse : JSValue.BooleanTrue;
+            }, "hasOwn", 2), JSPropertyAttributes.ConfigurableValue);
+        }
+
         prototype.FastAddValue(KeyStrings.GetOrCreate("hasOwnProperty"), CreateNativeFunction(static (in Arguments a) =>
         {
             var key = ToPropertyKeyValue(a.Get1());
@@ -1273,10 +1346,59 @@ internal static class BuiltInsAssemblyInitializer
         if (context[KeyStrings.GetOrCreate("TypedArray")] is not JSFunction typedArrayCtor)
             return;
 
-        EnsureAccessorProperty(typedArrayCtor.prototype, JSSymbol.toStringTag, "[Symbol.toStringTag]", static (in Arguments a) =>
+        static JSTypedArray RequireTypedArray(JSValue value)
+            => value as JSTypedArray ?? throw JSEngine.NewTypeError("Failed to convert this to JSTypedArray");
+
+        var prototype = typedArrayCtor.prototype;
+
+        EnsureAccessorProperty(prototype, JSSymbol.toStringTag, "[Symbol.toStringTag]", static (in Arguments a) =>
         {
             return GetTypedArrayTag(a.This);
         });
+
+        var findLastKey = KeyStrings.GetOrCreate("findLast");
+        if (prototype[findLastKey].IsUndefined)
+        {
+            prototype.FastAddValue(findLastKey, CreateNativeFunction(static (in Arguments a) =>
+            {
+                var typedArray = RequireTypedArray(a.This);
+                var (callback, thisArg) = a.Get2();
+                if (callback is not IJSFunction fn)
+                    throw JSEngine.NewTypeError($"{callback} is not a function in TypedArray.prototype.findLast");
+
+                for (var index = typedArray.Length - 1; index >= 0; index--)
+                {
+                    var item = typedArray[(uint)index];
+                    if (fn.InvokeFunction(new Arguments(thisArg, item, JSValue.CreateNumber(index), typedArray)).BooleanValue)
+                        return item;
+                }
+
+                return JSUndefined.Value;
+            }, "findLast", 1), JSPropertyAttributes.ConfigurableValue);
+        }
+
+        var findLastIndexKey = KeyStrings.GetOrCreate("findLastIndex");
+        if (prototype[findLastIndexKey].IsUndefined)
+        {
+            prototype.FastAddValue(findLastIndexKey, CreateNativeFunction(static (in Arguments a) =>
+            {
+                var typedArray = RequireTypedArray(a.This);
+                var (callback, thisArg) = a.Get2();
+                if (callback is not IJSFunction fn)
+                    throw JSEngine.NewTypeError($"{callback} is not a function in TypedArray.prototype.findLastIndex");
+
+                for (var index = typedArray.Length - 1; index >= 0; index--)
+                {
+                    var item = typedArray[(uint)index];
+                    if (fn.InvokeFunction(new Arguments(thisArg, item, JSValue.CreateNumber(index), typedArray)).BooleanValue)
+                        return JSValue.CreateNumber(index);
+                }
+
+                return JSNumber.MinusOne;
+            }, "findLastIndex", 1), JSPropertyAttributes.ConfigurableValue);
+        }
+
+        prototype.Dirty();
     }
 
     private static JSValue GetTypedArrayTag(JSValue value) => value switch

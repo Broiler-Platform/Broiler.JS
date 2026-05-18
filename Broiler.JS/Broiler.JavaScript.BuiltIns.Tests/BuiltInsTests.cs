@@ -1971,6 +1971,63 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Common_Test262_ScriptHost_BuiltIns_Are_Exposed_And_Callable()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            function snapshot(target, key) {
+              var descriptor = Object.getOwnPropertyDescriptor(target, key);
+              return [typeof descriptor.value, descriptor.writable, descriptor.enumerable, descriptor.configurable].join(',');
+            }
+
+            var dateLike = {
+              valueOf: function () { return 1; },
+              toString: function () { return '2'; }
+            };
+
+            var invalidHint;
+            try {
+              Date.prototype[Symbol.toPrimitive].call(dateLike, 'bogus');
+              invalidHint = 'no-throw';
+            } catch (e) {
+              invalidHint = e.constructor.name;
+            }
+
+            var invalidThis;
+            try {
+              Date.prototype[Symbol.toPrimitive].call(undefined, 'number');
+              invalidThis = 'no-throw';
+            } catch (e) {
+              invalidThis = e.constructor.name;
+            }
+
+            [
+              snapshot(Object, 'hasOwn'),
+              snapshot(String.prototype, 'at'),
+              snapshot(String.prototype, Symbol.iterator),
+              snapshot(Date.prototype, Symbol.toPrimitive),
+              snapshot(TypedArray.prototype, 'findLast'),
+              snapshot(TypedArray.prototype, 'findLastIndex'),
+              'abc'.at(-1),
+              Array.from(String.prototype[Symbol.iterator].call('ab')).join(','),
+              Date.prototype[Symbol.toPrimitive].call(dateLike, 'number'),
+              Date.prototype[Symbol.toPrimitive].call(dateLike, 'string'),
+              invalidHint,
+              invalidThis,
+              Object.hasOwn({ answer: 42 }, 'answer'),
+              new Uint8Array([1, 2, 3, 4]).findLast(function (value) { return value % 2 === 0; }),
+              new Uint8Array([1, 2, 3, 4]).findLastIndex(function (value) { return value % 2 === 0; })
+            ].join('|');
+            """);
+
+        Assert.Equal(
+            "function,true,false,true|function,true,false,true|function,true,false,true|function,true,false,true|function,true,false,true|function,true,false,true|c|a,b|1|2|TypeError|TypeError|true|4|3",
+            result.ToString());
+    }
+
+    [Fact]
     public void Direct_Eval_In_Function_Context_Rejects_Arguments_Declaration()
     {
         EnsureBuiltInsLoaded();
