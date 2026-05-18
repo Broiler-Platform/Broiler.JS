@@ -2858,9 +2858,6 @@ test/built-ins/Object/hasOwn/symbol_property_valueOf.js
 test/built-ins/Object/is/length.js
 test/built-ins/Object/isExtensible/15.2.3.13-0-2.js
 test/built-ins/Object/isFrozen/15.2.3.12-0-2.js
-test/built-ins/Object/isFrozen/15.2.3.12-2-1.js
-test/built-ins/Object/isFrozen/15.2.3.12-2-2.js
-test/built-ins/Object/isFrozen/15.2.3.12-3-28.js
 test/built-ins/Object/isFrozen/proxy-no-ownkeys-returned-keys-order.js
 test/built-ins/Object/isSealed/15.2.3.11-0-2.js
 test/built-ins/Object/isSealed/proxy-no-ownkeys-returned-keys-order.js
@@ -4368,9 +4365,6 @@ test/built-ins/Symbol/symbol.js
 test/built-ins/Symbol/toPrimitive/prop-desc.js
 test/built-ins/Symbol/toStringTag/prop-desc.js
 test/built-ins/Symbol/unscopables/prop-desc.js
-test/built-ins/ThrowTypeError/extensible.js
-test/built-ins/ThrowTypeError/frozen.js
-test/built-ins/ThrowTypeError/length.js
 test/built-ins/ThrowTypeError/name.js
 test/built-ins/ThrowTypeError/unique-per-realm-function-proto.js
 test/built-ins/ThrowTypeError/unique-per-realm-non-simple.js
@@ -13630,7 +13624,6 @@ test/staging/sm/Function/rest-has-duplicated.js
 test/staging/sm/Function/rest-parameter-names.js
 test/staging/sm/Function/return-finally.js
 test/staging/sm/Function/strict-arguments.js
-test/staging/sm/Function/throw-type-error.js
 test/staging/sm/Iterator/constructor-subclassable.js
 test/staging/sm/Iterator/from/call-from-with-different-this.js
 test/staging/sm/Iterator/from/modify-next.js
@@ -14198,11 +14191,8 @@ test/staging/sm/object/getOwnPropertyDescriptor.js
 test/staging/sm/object/getOwnPropertySymbols.js
 test/staging/sm/object/getPrototypeOf.js
 test/staging/sm/object/hasOwn.js
-test/staging/sm/object/isFrozen.js
-test/staging/sm/object/isSealed.js
 test/staging/sm/object/keys.js
 test/staging/sm/object/method-non-constructor.js
-test/staging/sm/object/mutation-prevention-methods.js
 test/staging/sm/object/object-toString-01.js
 test/staging/sm/object/property-descriptor-order.js
 test/staging/sm/object/propertyIsEnumerable-proxy.js
