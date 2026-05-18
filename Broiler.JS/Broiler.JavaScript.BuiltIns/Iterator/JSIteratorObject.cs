@@ -164,30 +164,41 @@ public partial class JSIteratorObject : JSObject
 
     private static IElementEnumerator GetDirectEnumerator(JSObject @object)
     {
-        if (!@object[KeyStrings.next].IsFunction)
-            throw JSEngine.NewTypeError("Iterator helper requires a callable next method");
-
         return new JSIterator(@object);
+    }
+
+    private static void CloseIteratorIfPossible(IElementEnumerator enumerator)
+    {
+        if (enumerator is IReturnableEnumerator returnable)
+            returnable.Return(JSUndefined.Value);
     }
 
     internal static JSValue StaticMap(in Arguments a)
     {
+        var en = EnumeratorFrom(a.This);
         var fn = a.Get1();
 
         if (!fn.IsFunction)
+        {
+            CloseIteratorIfPossible(en);
             throw JSEngine.NewTypeError("Iterator.prototype.map requires a callable argument");
+        }
 
-        return new JSIteratorObject(new MapEnumerator(EnumeratorFrom(a.This), fn));
+        return new JSIteratorObject(new MapEnumerator(en, fn));
     }
 
     internal static JSValue StaticFilter(in Arguments a)
     {
+        var en = EnumeratorFrom(a.This);
         var fn = a.Get1();
 
         if (!fn.IsFunction)
+        {
+            CloseIteratorIfPossible(en);
             throw JSEngine.NewTypeError("Iterator.prototype.filter requires a callable argument");
+        }
 
-        return new JSIteratorObject(new FilterEnumerator(EnumeratorFrom(a.This), fn));
+        return new JSIteratorObject(new FilterEnumerator(en, fn));
     }
 
     internal static JSValue StaticTake(in Arguments a)
@@ -212,12 +223,16 @@ public partial class JSIteratorObject : JSObject
 
     internal static JSValue StaticFlatMap(in Arguments a)
     {
+        var en = EnumeratorFrom(a.This);
         var fn = a.Get1();
 
         if (!fn.IsFunction)
+        {
+            CloseIteratorIfPossible(en);
             throw JSEngine.NewTypeError("Iterator.prototype.flatMap requires a callable argument");
+        }
 
-        return new JSIteratorObject(new FlatMapEnumerator(EnumeratorFrom(a.This), fn));
+        return new JSIteratorObject(new FlatMapEnumerator(en, fn));
     }
 
     private static IElementEnumerator GetFlattenableEnumerator(JSValue value)
@@ -241,12 +256,15 @@ public partial class JSIteratorObject : JSObject
 
     internal static JSValue StaticReduce(in Arguments a)
     {
+        var en = EnumeratorFrom(a.This);
         var (fn, initialValue) = a.Get2();
 
         if (!fn.IsFunction)
+        {
+            CloseIteratorIfPossible(en);
             throw JSEngine.NewTypeError("Iterator.prototype.reduce requires a callable argument");
+        }
 
-        var en = EnumeratorFrom(a.This);
         JSValue accumulator;
         uint count = 0;
 
@@ -264,7 +282,17 @@ public partial class JSIteratorObject : JSObject
         }
 
         while (en.MoveNext(out var value))
-            accumulator = fn.InvokeFunction(new Arguments(JSUndefined.Value, accumulator, value, JSValue.CreateNumber(count++)));
+        {
+            try
+            {
+                accumulator = fn.InvokeFunction(new Arguments(JSUndefined.Value, accumulator, value, JSValue.CreateNumber(count++)));
+            }
+            catch
+            {
+                CloseIteratorIfPossible(en);
+                throw;
+            }
+        }
 
         return accumulator;
     }
@@ -282,30 +310,60 @@ public partial class JSIteratorObject : JSObject
 
     internal static JSValue StaticForEach(in Arguments a)
     {
+        var en = EnumeratorFrom(a.This);
         var fn = a.Get1();
         if (!fn.IsFunction)
+        {
+            CloseIteratorIfPossible(en);
             throw JSEngine.NewTypeError("Iterator.prototype.forEach requires a callable argument");
+        }
 
-        var en = EnumeratorFrom(a.This);
         uint count = 0;
         while (en.MoveNext(out var value))
-            fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++)));
+        {
+            try
+            {
+                fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++)));
+            }
+            catch
+            {
+                CloseIteratorIfPossible(en);
+                throw;
+            }
+        }
 
         return JSUndefined.Value;
     }
 
     internal static JSValue StaticSome(in Arguments a)
     {
+        var en = EnumeratorFrom(a.This);
         var fn = a.Get1();
         if (!fn.IsFunction)
+        {
+            CloseIteratorIfPossible(en);
             throw JSEngine.NewTypeError("Iterator.prototype.some requires a callable argument");
+        }
 
-        var en = EnumeratorFrom(a.This);
         uint count = 0;
         while (en.MoveNext(out var value))
         {
-            if (fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++))).BooleanValue)
+            var result = false;
+            try
+            {
+                result = fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++))).BooleanValue;
+            }
+            catch
+            {
+                CloseIteratorIfPossible(en);
+                throw;
+            }
+
+            if (result)
+            {
+                CloseIteratorIfPossible(en);
                 return JSBoolean.True;
+            }
         }
 
         return JSBoolean.False;
@@ -313,17 +371,34 @@ public partial class JSIteratorObject : JSObject
 
     internal static JSValue StaticEvery(in Arguments a)
     {
+        var en = EnumeratorFrom(a.This);
         var fn = a.Get1();
         if (!fn.IsFunction)
+        {
+            CloseIteratorIfPossible(en);
             throw JSEngine.NewTypeError("Iterator.prototype.every requires a callable argument");
+        }
 
-        var en = EnumeratorFrom(a.This);
         uint count = 0;
 
         while (en.MoveNext(out var value))
         {
-            if (!fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++))).BooleanValue)
+            var result = false;
+            try
+            {
+                result = fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++))).BooleanValue;
+            }
+            catch
+            {
+                CloseIteratorIfPossible(en);
+                throw;
+            }
+
+            if (!result)
+            {
+                CloseIteratorIfPossible(en);
                 return JSBoolean.False;
+            }
         }
 
         return JSBoolean.True;
@@ -331,16 +406,33 @@ public partial class JSIteratorObject : JSObject
 
     internal static JSValue StaticFind(in Arguments a)
     {
+        var en = EnumeratorFrom(a.This);
         var fn = a.Get1();
         if (!fn.IsFunction)
+        {
+            CloseIteratorIfPossible(en);
             throw JSEngine.NewTypeError("Iterator.prototype.find requires a callable argument");
+        }
 
-        var en = EnumeratorFrom(a.This);
         uint count = 0;
         while (en.MoveNext(out var value))
         {
-            if (fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++))).BooleanValue)
+            var result = false;
+            try
+            {
+                result = fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++))).BooleanValue;
+            }
+            catch
+            {
+                CloseIteratorIfPossible(en);
+                throw;
+            }
+
+            if (result)
+            {
+                CloseIteratorIfPossible(en);
                 return value;
+            }
         }
 
         return JSUndefined.Value;

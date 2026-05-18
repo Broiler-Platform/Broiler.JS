@@ -5426,6 +5426,93 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Iterator_Helper_ShortCircuit_And_ArgumentValidation_Close_Underlying_Iterators()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+              function thrownCtor(fn) {
+                try {
+                  fn();
+                  return 'no-throw';
+                } catch (e) {
+                  return e.constructor.name;
+                }
+              }
+
+              function snapshot(method, predicateResult) {
+                function* g() {
+                  yield 0;
+                  yield 1;
+                }
+
+                var iter = g();
+                var value = iter[method](function () { return predicateResult; });
+                return String(value) + ',' + String(iter.next().done);
+              }
+
+              var closed = 0;
+              var closable = {
+                next: function () {
+                  throw new Test262Error('next should not be read');
+                },
+                return: function () {
+                  ++closed;
+                  return {};
+                }
+              };
+
+              return [
+                snapshot('some', true),
+                snapshot('every', false),
+                snapshot('find', true),
+                thrownCtor(function () {
+                  Iterator.prototype.map.call(closable);
+                }),
+                thrownCtor(function () {
+                  Iterator.prototype.reduce.call(closable, {});
+                }),
+                String(closed)
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true,true|false,true|0,true|TypeError|TypeError|2", result.ToString());
+    }
+
+    [Fact]
+    public void Bound_HasInstance_Zero_Normalization_And_Proxy_IsPrototypeOf_Regressions()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+              var BC = function () {};
+              var bc = new BC();
+              var bound = BC.bind();
+              var map = new Map();
+              map.set(-0, 42);
+              var proto = [];
+              var proxy = new Proxy({}, {
+                getPrototypeOf: function () {
+                  return proto;
+                }
+              });
+
+              return [
+                String(bound[Symbol.hasInstance](bc)),
+                String(map.has(+0)),
+                String(map.has(-0)),
+                String(proto.isPrototypeOf(proxy))
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Iterable_And_Object_TypeError_Regressions_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();
