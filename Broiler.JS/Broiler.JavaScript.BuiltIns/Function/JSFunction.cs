@@ -159,6 +159,23 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         constructor = this;
     }
 
+    public static JSFunction CreateFrozenThrowTypeErrorFunction(string name, string message)
+    {
+        var throwTypeError = new JSFunction(
+            empty,
+            name,
+            $"function {name}() {{ [native code] }}",
+            length: 0,
+            createPrototype: false);
+
+        ref var ownProperties = ref throwTypeError.GetOwnProperties();
+        ownProperties.Put(KeyStrings.length, JSValue.NumberZero, JSPropertyAttributes.ReadonlyValue);
+        ownProperties.Put(KeyStrings.name, JSValue.CreateString(name), JSPropertyAttributes.ReadonlyValue);
+        throwTypeError.f = (in Arguments a) => throw JSEngine.NewTypeError(message);
+        throwTypeError.PreventExtensions();
+        return throwTypeError;
+    }
+
     public override JSValue this[KeyString name]
     {
         get => base[name];

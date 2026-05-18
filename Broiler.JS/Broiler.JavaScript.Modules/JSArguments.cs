@@ -23,8 +23,9 @@ public class JSArguments: JSObject
     {
         // arguments = args;
         ref var properties = ref GetOwnProperties(true);
+        var throwTypeError = JSFunction.CreateFrozenThrowTypeErrorFunction("ThrowTypeError", "Cannot access callee in strict mode");
         properties.Put(KeyStrings.length, JSValue.CreateNumber(args.Length), JSPropertyAttributes.ConfigurableValue);
-        properties.Put(KeyStrings.callee, Callee, Callee, JSPropertyAttributes.Property);
+        properties.Put(KeyStrings.callee, throwTypeError, throwTypeError, JSPropertyAttributes.Property);
 
         ref var symbols = ref GetSymbols();
         symbols.Put(JSValue.SymbolIterator.Key) = JSProperty.Property(new JSFunction(Values), JSPropertyAttributes.ConfigurableValue);

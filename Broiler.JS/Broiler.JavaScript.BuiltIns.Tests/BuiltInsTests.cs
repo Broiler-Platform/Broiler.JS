@@ -2744,6 +2744,53 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Object_IsFrozen_And_IsSealed_Match_Test262_For_Primitives_And_NonExtensible_Objects()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              var frozenEmpty = Object.preventExtensions({});
+              var nonFrozenObject = { x: 1 };
+              Object.preventExtensions(nonFrozenObject);
+
+              return [
+                Object.isFrozen(),
+                Object.isFrozen(undefined),
+                Object.isFrozen(1),
+                Object.isFrozen(Symbol()),
+                Object.isFrozen(frozenEmpty),
+                Object.isFrozen(nonFrozenObject),
+                Object.isSealed(),
+                Object.isSealed(null),
+                Object.isSealed('foo'),
+                Object.isSealed(frozenEmpty),
+                Object.isSealed(nonFrozenObject)
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|true|true|true|false|true|true|true|true|false", result.ToString());
+    }
+
+    [Fact]
+    public void Strict_Arguments_Callee_Uses_Frozen_ThrowTypeError_Getter()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var throwTypeError = Broiler.JavaScript.BuiltIns.Function.JSFunction.CreateFrozenThrowTypeErrorFunction(
+            "ThrowTypeError",
+            "Cannot access callee in strict mode");
+        ref var ownProperties = ref throwTypeError.GetOwnProperties(false);
+        ref var lengthProperty = ref ownProperties.GetValue(KeyStrings.length.Key);
+
+        Assert.True(throwTypeError.IsFrozen());
+        Assert.False(throwTypeError.IsExtensible());
+        Assert.False(lengthProperty.IsConfigurable);
+        Assert.True(lengthProperty.IsReadOnly);
+    }
+
+    [Fact]
     public void Object_DefineProperty_Uses_Array_Length_Invariants()
     {
         EnsureBuiltInsLoaded();

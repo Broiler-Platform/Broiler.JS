@@ -64,19 +64,21 @@ public partial class JSObject
     [JSExport("isFrozen")]
     internal static JSValue IsFrozen(in Arguments a)
     {
-        if ((a.Get1() is JSObject @object) && @object.IsFrozen())
+        var value = a.Get1();
+        if (value is not JSObject @object)
             return JSValue.BooleanTrue;
 
-        return JSValue.BooleanFalse;
+        return @object.IsFrozen() ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }
 
     [JSExport("isSealed")]
     internal static JSValue IsSealed(in Arguments a)
     {
-        if ((a.Get1() is JSObject @object) && @object.IsSealed())
+        var value = a.Get1();
+        if (value is not JSObject @object)
             return JSValue.BooleanTrue;
 
-        return JSValue.BooleanFalse;
+        return @object.IsSealed() ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }
 
     [JSExport("keys")]

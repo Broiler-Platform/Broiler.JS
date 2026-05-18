@@ -5,7 +5,37 @@ namespace Broiler.JavaScript.Runtime;
 public partial class JSObject
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSealed() => (status & ObjectStatus.Sealed) > 0;
+    public bool IsSealed()
+    {
+        if ((status & ObjectStatus.Sealed) > 0)
+            return true;
+
+        if (IsExtensible())
+            return false;
+
+        ref var ownProperties = ref GetOwnProperties(false);
+        var ownEnumerator = ownProperties.GetEnumerator();
+        while (ownEnumerator.MoveNext(out var property))
+        {
+            if (property.IsConfigurable)
+                return false;
+        }
+
+        var elements = GetElements(false);
+        foreach (var (_, property) in elements.AllValues())
+        {
+            if (property.IsConfigurable)
+                return false;
+        }
+
+        foreach (var entry in GetSymbols().All)
+        {
+            if (entry.Value.IsConfigurable)
+                return false;
+        }
+
+        return true;
+    }
 
     public bool IsSealedOrFrozen() => (status & ObjectStatus.SealedOrFrozen) > 0;
 
@@ -16,7 +46,37 @@ public partial class JSObject
     public bool IsSealedOrFrozenOrNonExtensible() => (status & ObjectStatus.SealedFrozenNonExtensible) > 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsFrozen() => (status & ObjectStatus.Frozen) > 0;
+    public bool IsFrozen()
+    {
+        if ((status & ObjectStatus.Frozen) > 0)
+            return true;
+
+        if (IsExtensible())
+            return false;
+
+        ref var ownProperties = ref GetOwnProperties(false);
+        var ownEnumerator = ownProperties.GetEnumerator();
+        while (ownEnumerator.MoveNext(out var property))
+        {
+            if (property.IsConfigurable || (property.IsValue && !property.IsReadOnly))
+                return false;
+        }
+
+        var elements = GetElements(false);
+        foreach (var (_, property) in elements.AllValues())
+        {
+            if (property.IsConfigurable || (property.IsValue && !property.IsReadOnly))
+                return false;
+        }
+
+        foreach (var entry in GetSymbols().All)
+        {
+            if (entry.Value.IsConfigurable || (entry.Value.IsValue && !entry.Value.IsReadOnly))
+                return false;
+        }
+
+        return true;
+    }
 
     public virtual bool PreventExtensions()
     {
