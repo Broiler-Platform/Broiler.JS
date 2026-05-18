@@ -1886,6 +1886,67 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void AnnexB_Block_Function_Declarations_Update_Function_Scope_Bindings()
+    {
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              var value = 1;
+              { function value() { return "block"; } }
+              return typeof value + "|" + value();
+            }())
+            """);
+
+        Assert.Equal("function|block", result.ToString());
+    }
+
+    [Fact]
+    public void AggregateError_Has_Global_Function_Descriptor()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var descriptor = Object.getOwnPropertyDescriptor(this, 'AggregateError');
+            [
+              typeof descriptor.value,
+              descriptor.writable,
+              descriptor.enumerable,
+              descriptor.configurable,
+              new AggregateError([1, 2], 'boom').errors.join(',')
+            ].join('|');
+            """);
+
+        Assert.Equal("function|true|false|true|1,2", result.ToString());
+    }
+
+    [Fact]
+    public void AsyncIteratorPrototype_Exposes_SymbolAsyncIterator()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var prototype = Object.getPrototypeOf(
+              Object.getPrototypeOf(
+                Object.getPrototypeOf((async function* () {})())
+              )
+            );
+            var descriptor = Object.getOwnPropertyDescriptor(prototype, Symbol.asyncIterator);
+            [
+              typeof descriptor.value,
+              descriptor.writable,
+              descriptor.enumerable,
+              descriptor.configurable,
+              descriptor.value.call(42)
+            ].join('|');
+            """);
+
+        Assert.Equal("function|true|false|true|42", result.ToString());
+    }
+
+    [Fact]
     public void Direct_Eval_In_Function_Context_Rejects_Arguments_Declaration()
     {
         EnsureBuiltInsLoaded();

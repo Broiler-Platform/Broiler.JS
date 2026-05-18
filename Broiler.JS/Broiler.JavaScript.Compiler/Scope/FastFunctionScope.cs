@@ -464,4 +464,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
         return null;
     }
+
+    public bool TryGetOwnVariable(in StringSpan name, out VariableScope variable)
+        => variableScopeList.TryGetValue(name, out variable);
 }

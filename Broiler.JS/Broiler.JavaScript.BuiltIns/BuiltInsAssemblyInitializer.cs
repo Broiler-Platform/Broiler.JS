@@ -373,6 +373,7 @@ internal static class BuiltInsAssemblyInitializer
         PatchErrorConstructor(context, KeyStrings.RangeError, static (in Arguments a) => new JSRangeError(in a));
         PatchErrorConstructor(context, KeyStrings.ReferenceError, static (in Arguments a) => new JSReferenceError(in a));
         PatchErrorConstructor(context, KeyStrings.EvalError, static (in Arguments a) => new JSEvalError(in a));
+        PatchErrorConstructor(context, KeyStrings.GetOrCreate("AggregateError"), static (in Arguments a) => new JSAggregateError(in a));
     }
 
     private static void PatchLegacyDatePrototype(JSContext context)
@@ -463,7 +464,6 @@ internal static class BuiltInsAssemblyInitializer
         PatchRegExpPrototype(context);
         PatchArrayPrototype(context);
         PatchTypedArrayBuiltIns(context);
-        PatchAsyncIteratorPrototype(context);
     }
 
     private static JSFunction CreateNativeFunction(JSFunctionDelegate fx, string name, int length = 0)
@@ -1177,9 +1177,31 @@ internal static class BuiltInsAssemblyInitializer
         _ => JSUndefined.Value
     };
 
-    private static void PatchAsyncIteratorPrototype(JSContext context)
+    internal static void PatchAsyncIteratorPrototype(JSContext context)
     {
-        _ = context;
+        if (context[KeyStrings.GetOrCreate("Generator")] is not JSFunction generator)
+            return;
+
+        var generatorPrototype = generator.prototype as JSObject;
+        var currentAsyncGeneratorPrototype = generatorPrototype?.GetPrototypeOf() as JSObject;
+        var currentAsyncIteratorPrototype = currentAsyncGeneratorPrototype?.GetPrototypeOf() as JSObject;
+
+        if (generatorPrototype == null
+            || currentAsyncGeneratorPrototype == null
+            || (currentAsyncIteratorPrototype != null
+                && !currentAsyncIteratorPrototype.GetOwnPropertyDescriptor(JSSymbol.asyncIterator).IsUndefined))
+        {
+            return;
+        }
+
+        var asyncGeneratorPrototype = new JSObject();
+        var asyncIteratorPrototype = new JSObject
+        {
+            BasePrototypeObject = currentAsyncGeneratorPrototype
+        };
+        asyncIteratorPrototype.FastAddValue((IJSSymbol)JSSymbol.asyncIterator, CreateNativeFunction(static (in Arguments a) => a.This, "[Symbol.asyncIterator]"), JSPropertyAttributes.ConfigurableValue);
+        asyncGeneratorPrototype.BasePrototypeObject = asyncIteratorPrototype;
+        generator.prototype.BasePrototypeObject = asyncGeneratorPrototype;
     }
 
     private static void PatchErrorConstructor(JSContext context, KeyString key, JSFunctionDelegate factory)

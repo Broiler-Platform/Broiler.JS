@@ -205,16 +205,20 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             return result;
         }
 
-        var outerBinding = scope.Top.RootScope.CreateVariable(id.Name, null, true);
-        if (outerBinding == null || outerBinding == scope.Top.GetVariable(id.Name))
+        var currentBinding = scope.Top.GetVariable(id.Name);
+        if (currentBinding == null)
             return result;
 
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
-        return YExpression.Block(
-            new Sequence<YParameterExpression> { temp.Variable },
-            YExpression.Assign(temp.Variable, result),
-            YExpression.Assign(outerBinding.Expression, temp.Variable),
-            temp.Variable);
+        var statements = new Sequence<YExpression>
+        {
+            YExpression.Assign(temp.Variable, result)
+        };
+
+        AppendAnnexBOuterBindingAssignments(statements, currentBinding, id.Name, temp.Variable);
+        statements.Add(temp.Variable);
+
+        return YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, statements);
     }
 
     private YExpression VisitRuntimeFunctionDeclaration(AstFunctionExpression functionDeclaration)
@@ -230,15 +234,37 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             YExpression.Assign(currentBinding.Expression, temp.Variable)
         };
 
-        if (!IsStrictMode && scope.Top != scope.Top.RootScope)
-        {
-            var outerBinding = scope.Top.RootScope.CreateVariable(functionDeclaration.Id.Name, null, true);
-            if (outerBinding != null && outerBinding != currentBinding)
-                statements.Add(YExpression.Assign(outerBinding.Expression, temp.Variable));
-        }
+        AppendAnnexBOuterBindingAssignments(statements, currentBinding, functionDeclaration.Id.Name, temp.Variable);
 
         statements.Add(temp.Variable);
         return YExpression.Block(variables, statements);
+    }
+
+    private void AppendAnnexBOuterBindingAssignments(Sequence<YExpression> statements, FastFunctionScope.VariableScope currentBinding, in StringSpan name, YExpression value)
+    {
+        if (IsStrictMode || scope.Top == scope.Top.RootScope)
+            return;
+
+        var outerBinding = GetAnnexBOuterBinding(name, currentBinding);
+        if (outerBinding != null && outerBinding != currentBinding)
+            statements.Add(YExpression.Assign(outerBinding.Expression, value));
+
+        if (scope.Top.Function == null)
+            statements.Add(JSContextBuilder.AssignIdentifier(KeyOfName(name), value));
+    }
+
+    private FastFunctionScope.VariableScope GetAnnexBOuterBinding(in StringSpan name, FastFunctionScope.VariableScope currentBinding)
+    {
+        var parent = scope.Top.Parent;
+        while (parent != null && parent.Function == scope.Top.Function)
+        {
+            if (parent.TryGetOwnVariable(name, out var variable) && variable != currentBinding)
+                return variable;
+
+            parent = parent.Parent;
+        }
+
+        return scope.Top.RootScope.CreateVariable(name, null, true);
     }
 
     protected override YExpression VisitFunctionExpression(AstFunctionExpression functionExpression) => CreateFunction(functionExpression);

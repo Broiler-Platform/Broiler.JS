@@ -84,6 +84,7 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
 
         // Set up Iterator.prototype helpers and prototype chain (ES2025).
         SetupIteratorPrototypeChain(context);
+        BuiltInsAssemblyInitializer.PatchAsyncIteratorPrototype(context);
 
         // Register the console object via factory delegate (wired by BuiltIns assembly).
         if (ConsoleFactory != null)

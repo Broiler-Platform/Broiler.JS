@@ -5,6 +5,7 @@ using Broiler.JavaScript.Runtime;
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Broiler.JavaScript.BuiltIns.Array;
 
 namespace Broiler.JavaScript.BuiltIns.Error;
 
@@ -148,4 +149,16 @@ public partial class JSEvalError : JSError
     public JSEvalError(in Arguments a, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) :
         base(in a, function: function, filePath: filePath, line: line)
     { }
+}
+
+[JSClassGenerator("AggregateError"), JSBaseClass("Error")]
+public partial class JSAggregateError : JSError
+{
+    private static readonly KeyString ErrorsKey = KeyStrings.GetOrCreate("errors");
+
+    public JSAggregateError(in Arguments a, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) :
+        base(new Arguments(a.This, a[1]), function: function, filePath: filePath, line: line)
+    {
+        FastAddValue(ErrorsKey, JSArray.StaticFrom(new Arguments(JSUndefined.Value, a[0])), JSPropertyAttributes.ConfigurableValue);
+    }
 }
