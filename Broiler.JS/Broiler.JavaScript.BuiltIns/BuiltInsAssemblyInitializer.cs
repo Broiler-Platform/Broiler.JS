@@ -858,6 +858,56 @@ internal static class BuiltInsAssemblyInitializer
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool SameValue(JSValue left, JSValue right)
+        {
+            if (left.IsNumber && right.IsNumber)
+            {
+                var leftNumber = left.DoubleValue;
+                var rightNumber = right.DoubleValue;
+                if (double.IsNaN(leftNumber) && double.IsNaN(rightNumber))
+                    return true;
+
+                if (leftNumber != rightNumber)
+                    return false;
+
+                if (leftNumber == 0d)
+                    return BitConverter.DoubleToInt64Bits(leftNumber) == BitConverter.DoubleToInt64Bits(rightNumber);
+
+                return true;
+            }
+
+            return left.StrictEquals(right);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool IsPositiveZero(JSValue value) =>
+            value.IsNumber
+            && value.DoubleValue == 0d
+            && BitConverter.DoubleToInt64Bits(value.DoubleValue) == BitConverter.DoubleToInt64Bits(0d);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int ToLength(JSValue value)
+        {
+            var length = value.DoubleValue;
+            if (double.IsNaN(length) || length <= 0)
+                return 0;
+
+            if (length >= int.MaxValue)
+                return int.MaxValue;
+
+            return (int)length;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int AdvanceStringIndex(string input, int index, bool unicode)
+        {
+            if (!unicode || index + 1 >= input.Length || !char.IsHighSurrogate(input[index]) || !char.IsLowSurrogate(input[index + 1]))
+                return index + 1;
+
+            return index + 2;
+        }
+
         static string GetSubstitution(string matched, string input, int position, IReadOnlyList<JSValue> captures, JSValue namedCaptures, string replacement)
         {
             if (replacement.IndexOf('$') < 0)
@@ -1087,22 +1137,89 @@ internal static class BuiltInsAssemblyInitializer
         }, "[Symbol.replace]", 2), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.search.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
-            if (a.This is not JSRegExp regExp)
+            var rx = a.This;
+            if (rx is not JSObject)
                 throw JSEngine.NewTypeError("RegExp.prototype[Symbol.search] called on incompatible receiver");
 
-            var result = regExp.Match(a.Get1());
+            var previousLastIndex = rx[KeyStrings.lastIndex];
+            if (!IsPositiveZero(previousLastIndex))
+                rx[KeyStrings.lastIndex] = JSValue.NumberZero;
+
+            var result = RegExpExec(rx, JSValue.CreateString(a.Get1().StringValue));
+            var currentLastIndex = rx[KeyStrings.lastIndex];
+            if (!SameValue(currentLastIndex, previousLastIndex))
+                rx[KeyStrings.lastIndex] = previousLastIndex;
+
             return result.IsObject ? result[KeyStrings.index] : JSValue.NumberMinusOne;
         }, "[Symbol.search]", 1), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.split.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
-            if (a.This is not JSRegExp regExp)
+            var rx = a.This;
+            if (rx is not JSObject)
                 throw JSEngine.NewTypeError("RegExp.prototype[Symbol.split] called on incompatible receiver");
 
-            var flags = GetObservableFlags(regExp);
-            InvokeSpeciesConstructor(regExp, flags);
+            var input = a.Get1().StringValue;
+            var constructor = rx[KeyStrings.constructor];
+            var species = GetSpeciesConstructor(constructor);
+            var flags = rx[KeyStrings.GetOrCreate("flags")].ToString();
+            var unicodeMatching = flags.Contains('u') || flags.Contains('v');
+            var newFlags = flags.Contains('y') ? flags : $"{flags}y";
+            var splitter = species.IsNullOrUndefined
+                ? new JSRegExp(new Arguments(JSUndefined.Value, rx, JSValue.CreateString(newFlags)))
+                : species.CreateInstance(new Arguments(species, rx, JSValue.CreateString(newFlags)));
 
             var limit = a.TryGetAt(1, out var second) ? second.UIntValue : uint.MaxValue;
-            return regExp.Split(a.Get1().StringValue, limit);
+            var results = JSValue.CreateArray();
+            if (limit == 0)
+                return results;
+
+            if (input.Length == 0)
+            {
+                var emptyResult = RegExpExec(splitter, JSValue.CreateString(input));
+                if (!emptyResult.IsNull)
+                    return results;
+
+                results.AddArrayItem(JSValue.CreateString(input));
+                return results;
+            }
+
+            var p = 0;
+            var q = 0;
+            while (q < input.Length)
+            {
+                splitter[KeyStrings.lastIndex] = JSValue.CreateNumber(q);
+                var z = RegExpExec(splitter, JSValue.CreateString(input));
+                if (z.IsNull)
+                {
+                    q = AdvanceStringIndex(input, q, unicodeMatching);
+                    continue;
+                }
+
+                var e = ToLength(splitter[KeyStrings.lastIndex]);
+                if (e == p)
+                {
+                    q = AdvanceStringIndex(input, q, unicodeMatching);
+                    continue;
+                }
+
+                results.AddArrayItem(JSValue.CreateString(input.Substring(p, q - p)));
+                if (results.Length >= limit)
+                    return results;
+
+                p = Math.Min(e, input.Length);
+                var captureCount = ToLength(z[KeyStrings.length]);
+                for (var i = 1; i < captureCount; i++)
+                {
+                    results.AddArrayItem(z[(uint)i]);
+                    if (results.Length >= limit)
+                        return results;
+                }
+
+                q = p;
+            }
+
+            results.AddArrayItem(JSValue.CreateString(input.Substring(Math.Min(p, input.Length))));
+            return results;
         }, "[Symbol.split]", 2), JSPropertyAttributes.ConfigurableValue);
 
         EnsureAccessorProperty(regExpCtor.prototype, KeyStrings.GetOrCreate("dotAll"), "dotAll", static (in Arguments a) =>

@@ -6433,6 +6433,175 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RegExp_Search_And_Split_Generic_Observable_Steps_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var searchGetLastIndex = thrownCtor(function () {
+                    RegExp.prototype[Symbol.search].call({
+                        get lastIndex() {
+                            throw new Test262Error();
+                        }
+                    });
+                });
+
+                var searchExec = {
+                    lastIndex: 86,
+                    exec: function () {
+                        throw new Test262Error();
+                    }
+                };
+                var searchMatchErr = thrownCtor(function () {
+                    RegExp.prototype[Symbol.search].call(searchExec);
+                });
+
+                var searchRestore = (function () {
+                    var latestValue = 86;
+                    var callCount = 0;
+                    var fakeRe = {
+                        get lastIndex() {
+                            return latestValue;
+                        },
+                        set lastIndex(_) {
+                            latestValue = _;
+                        },
+                        exec: function () {
+                            callCount++;
+                            latestValue = null;
+                            return null;
+                        }
+                    };
+
+                    return [
+                        String(RegExp.prototype[Symbol.search].call(fakeRe)),
+                        String(latestValue),
+                        String(callCount)
+                    ].join(',');
+                })();
+
+                var splitSpeciesErr = thrownCtor(function () {
+                    var poisonedSpecies = function () {};
+                    Object.defineProperty(poisonedSpecies, Symbol.species, {
+                        get: function () {
+                            throw new Test262Error();
+                        }
+                    });
+
+                    RegExp.prototype[Symbol.split].call({ constructor: poisonedSpecies }, 'a');
+                });
+
+                var splitFlagsErr = thrownCtor(function () {
+                    RegExp.prototype[Symbol.split].call({
+                        constructor: function () {},
+                        flags: {
+                            toString: function () {
+                                throw new Test262Error();
+                            }
+                        }
+                    });
+                });
+
+                var splitMatchErr = thrownCtor(function () {
+                    var obj = {
+                        constructor: function () {}
+                    };
+                    obj.constructor[Symbol.species] = function () {
+                        return {
+                            exec: function () {
+                                throw new Test262Error();
+                            }
+                        };
+                    };
+
+                    RegExp.prototype[Symbol.split].call(obj, 'a');
+                });
+
+                var splitGetLastIndexErr = (function () {
+                    var obj = {
+                        constructor: function () {}
+                    };
+                    var callCount = 0;
+                    obj.constructor[Symbol.species] = function () {
+                        return {
+                            set lastIndex(_) {},
+                            get lastIndex() {
+                                throw new Test262Error();
+                            },
+                            exec: function () {
+                                callCount++;
+                                return [];
+                            }
+                        };
+                    };
+
+                    return [
+                        thrownCtor(function () {
+                            RegExp.prototype[Symbol.split].call(obj, 'abcd');
+                        }),
+                        String(callCount)
+                    ].join(',');
+                })();
+
+                var splitLastIndexSequence = (function () {
+                    var obj = {
+                        constructor: function () {}
+                    };
+                    var lastIndex = 0;
+                    var indices = '';
+                    obj.constructor[Symbol.species] = function () {
+                        return {
+                            set lastIndex(val) {
+                                lastIndex = val;
+                                indices += val + ',';
+                            },
+                            get lastIndex() {
+                                return lastIndex;
+                            },
+                            exec: function () {
+                                lastIndex += 1;
+                                return ['a'];
+                            }
+                        };
+                    };
+
+                    RegExp.prototype[Symbol.split].call(obj, 'abcd');
+                    return indices;
+                })();
+
+                return [
+                    searchGetLastIndex,
+                    searchMatchErr,
+                    String(searchExec.lastIndex),
+                    searchRestore,
+                    splitSpeciesErr,
+                    splitFlagsErr,
+                    splitMatchErr,
+                    splitGetLastIndexErr,
+                    splitLastIndexSequence
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal(
+            "Test262Error|Test262Error|0|-1,86,1|Test262Error|Test262Error|Test262Error|Test262Error,1|0,1,2,3,",
+            result.ToString());
+    }
+
+    [Fact]
     public void Script_Host_Test262_Style_BuiltIns_Preserve_Abrupt_Completions_And_Are_Exposed()
     {
         EnsureBuiltInsLoaded();
