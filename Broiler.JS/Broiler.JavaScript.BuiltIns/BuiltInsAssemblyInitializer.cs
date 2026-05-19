@@ -589,6 +589,8 @@ internal static class BuiltInsAssemblyInitializer
             return;
 
         var prototype = errorCtor.prototype;
+        if (prototype.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(KeyStrings.message.ToString(), KeyStrings.message)).IsUndefined)
+            prototype.FastAddValue(KeyStrings.message, JSValue.EmptyString, JSPropertyAttributes.ConfigurableValue);
         prototype.FastAddValue(KeyStrings.toString, CreateNativeFunction(static (in Arguments a) =>
         {
             if (a.This is not JSObject @object)

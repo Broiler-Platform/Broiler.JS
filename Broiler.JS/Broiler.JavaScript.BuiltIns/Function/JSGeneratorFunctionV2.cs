@@ -19,14 +19,16 @@ public class JSGeneratorFunctionV2 : JSFunction
             prototype.BasePrototypeObject = functionPrototype;
 
         var constructorName = asyncGenerator ? "AsyncGeneratorFunction" : "GeneratorFunction";
-        prototype.FastAddValue(KeyStrings.constructor, JSValue.CreateFunction((in Arguments a) =>
+        var constructor = (JSFunction)JSValue.CreateFunction((in Arguments a) =>
         {
             var created = JSFunction.Constructor(in a);
             if (created is JSFunction function)
                 function.prototype = null;
 
             return created;
-        }, constructorName, $"function {constructorName}() {{ [native code] }}", 1, createPrototype: false), JSPropertyAttributes.ConfigurableValue);
+        }, constructorName, $"function {constructorName}() {{ [native code] }}", 1, createPrototype: false);
+        constructor.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableValue);
 
         return prototype;
     }
