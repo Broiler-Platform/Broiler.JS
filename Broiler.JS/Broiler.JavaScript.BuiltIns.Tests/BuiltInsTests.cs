@@ -2918,6 +2918,33 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_Length_Remains_An_Own_Property_After_Prototype_Changes()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              var array = [1, 2, 3];
+              var descriptor = Object.getOwnPropertyDescriptor(array, 'length');
+              array.__proto__ = null;
+
+              return [
+                descriptor.value,
+                descriptor.writable,
+                descriptor.enumerable,
+                descriptor.configurable,
+                'length' in array,
+                Object.prototype.hasOwnProperty.call(array, 'length'),
+                array.length,
+                delete array.length
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("3|true|false|false|true|true|3|false", result.ToString());
+    }
+
+    [Fact]
     public void Array_IsArray_And_Name_Properties_Are_Actually_Configurable()
     {
         EnsureBuiltInsLoaded();
@@ -3438,6 +3465,37 @@ public class BuiltInsTests
         Assert.Equal(
             "Test262Error|Test262Error|Test262Error|Test262Error|Test262Error|Test262Error",
             result.ToString());
+    }
+
+    [Fact]
+    public void Legacy_Object_Prototype_Helpers_Handle_Uninterned_String_Property_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function getter() {}
+                function setter() {}
+                var subject = {};
+
+                subject.__defineGetter__('baz', getter);
+                subject.__defineSetter__('baz', setter);
+                Object.defineProperty(subject, 'baz', { enumerable: false });
+
+                var descriptor = Object.getOwnPropertyDescriptor(subject, 'baz');
+                return [
+                    Object.prototype.hasOwnProperty.call(subject, 'baz'),
+                    Object.prototype.hasOwnProperty.call(subject, 'undefined'),
+                    descriptor.get === getter,
+                    descriptor.set === setter,
+                    descriptor.enumerable,
+                    descriptor.configurable
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|false|true|true|false|true", result.ToString());
     }
 
     [Fact]

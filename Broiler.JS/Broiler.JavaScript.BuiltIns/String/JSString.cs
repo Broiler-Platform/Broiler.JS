@@ -129,7 +129,7 @@ public partial class JSString : JSPrimitive
         if (!create)
         {
             if (!KeyStrings.TryGet(value, out _keyString))
-                return KeyStrings.undefined;
+                _keyString = KeyStrings.GetOrCreate(value);
 
             return _keyString;
         }

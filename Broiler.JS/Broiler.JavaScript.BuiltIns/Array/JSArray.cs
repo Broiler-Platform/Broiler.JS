@@ -135,6 +135,49 @@ public partial class JSArray : JSObject
         set => ArrayLength = value;
     }
 
+    public override JSValue GetOwnPropertyDescriptor(JSValue name)
+    {
+        var key = name.ToKey(false);
+        if (key.Type == KeyType.String && key.KeyString.Key == KeyStrings.length.Key)
+        {
+            var descriptor = new JSObject();
+            descriptor.FastAddValue(KeyStrings.value, JSValue.CreateNumber(_length), JSPropertyAttributes.ConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.writable, IsLengthReadOnly() ? JSValue.BooleanFalse : JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.enumerable, JSValue.BooleanFalse, JSPropertyAttributes.ConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.configurable, JSValue.BooleanFalse, JSPropertyAttributes.ConfigurableValue);
+            return descriptor;
+        }
+
+        return base.GetOwnPropertyDescriptor(name);
+    }
+
+    internal protected override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
+    {
+        if (key.Key == KeyStrings.length.Key)
+            return JSValue.CreateNumber(_length);
+
+        return base.GetValue(key, receiver, throwError);
+    }
+
+    internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
+    {
+        if (name.Key == KeyStrings.length.Key)
+        {
+            ArrayLength = value.DoubleValue;
+            return true;
+        }
+
+        return base.SetValue(name, value, receiver, throwError);
+    }
+
+    public override JSValue Delete(in KeyString key)
+    {
+        if (key.Key == KeyStrings.length.Key)
+            return JSValue.BooleanFalse;
+
+        return base.Delete(key);
+    }
+
     public void Add(JSValue item)
     {
         if (item == null)

@@ -93,7 +93,7 @@ public sealed partial class JSNumber : JSPrimitive
             if (KeyStrings.TryGet(n.ToString(), out var k))
                 return k;
 
-            return KeyStrings.undefined;
+            return KeyStrings.GetOrCreate(n.ToString());
         }
 
         return KeyStrings.GetOrCreate(n.ToString());
