@@ -34,7 +34,7 @@ partial class FastCompiler
 
             case FastNodeType.Identifier:
                 var id = left as AstIdentifier;
-                id.VerifyIdentifierForUpdate();
+                id.VerifyIdentifierForUpdate(IsStrictMode);
                 break;
         }
 

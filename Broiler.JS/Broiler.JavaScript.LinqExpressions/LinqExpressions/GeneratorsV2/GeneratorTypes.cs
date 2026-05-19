@@ -37,6 +37,7 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
     public Box[] Variables;
     private IElementEnumerator delegatedEnumerator;
+    private JSValue delegatedCompletionValue;
 
     public JSValue LastValue;
 
@@ -46,6 +47,7 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
     public bool IsFinished;
     public int NextJump;
+    internal bool HasDelegatedEnumerator => delegatedEnumerator != null;
 
     // this is null...
     public TryBlock Root;
@@ -80,6 +82,8 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
             }
 
             delegatedEnumerator = null;
+            LastValue = delegatedCompletionValue ?? JSUndefined.Value;
+            delegatedCompletionValue = null;
         }
 
         LastValue = next ?? LastValue ?? JSUndefined.Value;
@@ -122,6 +126,24 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
         done = true;
         value = default;
+    }
+
+    internal bool TryThrowDelegated(JSValue value, out JSValue iteratorResult)
+    {
+        if (delegatedEnumerator is JSIterator iterator)
+        {
+            iteratorResult = iterator.Throw(value);
+            return true;
+        }
+
+        iteratorResult = default;
+        return false;
+    }
+
+    internal void EndDelegation(JSValue completionValue = null)
+    {
+        delegatedEnumerator = null;
+        delegatedCompletionValue = completionValue;
     }
 
     private GeneratorState GetNext(int nextJump, JSValue lastValue, Exception nextExp = null)
