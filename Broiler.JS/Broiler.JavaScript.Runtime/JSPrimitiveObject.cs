@@ -34,6 +34,21 @@ public class JSPrimitiveObject : JSObject
 
     public override JSValue AddValue(string value) => this.value.AddValue(value);
 
+    public override JSValue GetOwnPropertyDescriptor(JSValue name)
+    {
+        var key = name.ToKey(false);
+        if (value.IsString)
+        {
+            if (key.IsUInt && key.Index < value.Length)
+                return JSObjectCoreExtensions.PropertyToJSValue(new JSProperty(key.Index, value[key.Index], JSPropertyAttributes.EnumerableReadonlyValue));
+
+            if (key.Type == KeyType.String && key.KeyString.Key == KeyStrings.length.Key)
+                return JSObjectCoreExtensions.PropertyToJSValue(new JSProperty(KeyStrings.length.Key, JSValue.CreateNumber(value.Length), JSPropertyAttributes.ReadonlyValue));
+        }
+
+        return base.GetOwnPropertyDescriptor(name);
+    }
+
     protected internal override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
     {
         if (key.Key == KeyStrings.length.Key)

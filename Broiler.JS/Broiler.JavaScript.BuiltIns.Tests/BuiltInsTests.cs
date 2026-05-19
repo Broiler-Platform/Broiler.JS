@@ -661,6 +661,25 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Reflect_Has_Recognizes_Boxed_String_Index_Properties()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              var str = new String("hello");
+              return [
+                Reflect.has(str, "4"),
+                Reflect.has(str, "-0"),
+                Reflect.has(str, -0)
+              ].join("|");
+            })();
+            """);
+
+        Assert.Equal("true|false|true", result.ToString());
+    }
+
+    [Fact]
     public void Reflect_DefineProperty_Succeeds()
     {
         EnsureBuiltInsLoaded();
@@ -2962,6 +2981,59 @@ public class BuiltInsTests
             ].join('|');
         })();");
         Assert.Equal("true|false|true|false", result.ToString());
+    }
+
+    [Fact]
+    public void BuiltIn_Functions_Inherit_Length_From_FunctionPrototype_After_Delete()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              var fun = Math.sin;
+              delete fun.length;
+              return [
+                Function.prototype.hasOwnProperty('length'),
+                'length' in fun,
+                fun.length
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|0", result.ToString());
+    }
+
+    [Fact]
+    public void Sloppy_Assignment_To_Readonly_Indexed_Properties_Does_Not_Throw()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var sloppy = ctx.Eval("""
+            (function () {
+              var target = [];
+              Object.defineProperty(target, 1, { value: 1, writable: false });
+              try {
+                return 'ok:' + (target[1] = 42);
+              } catch (e) {
+                return 'throw:' + e.constructor.name;
+              }
+            })();
+            """);
+        var strict = ctx.Eval("""
+            "use strict";
+            (function () {
+              var target = [];
+              Object.defineProperty(target, 1, { value: 1, writable: false });
+              try {
+                return 'ok:' + (target[1] = 42);
+              } catch (e) {
+                return 'throw:' + e.constructor.name;
+              }
+            })();
+            """);
+
+        Assert.Equal("ok:42", sloppy.ToString());
+        Assert.Equal("throw:TypeError", strict.ToString());
     }
 
     [Fact]

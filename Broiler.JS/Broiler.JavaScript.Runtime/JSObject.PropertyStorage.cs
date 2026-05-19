@@ -208,7 +208,7 @@ public partial class JSObject
     public override JSValue this[KeyString name]
     {
         get => GetValue(name, this);
-        set => SetValue(name, value, null, true);
+        set => SetValue(name, value, null, IsStrictModeEnabled?.Invoke() == true);
     }
 
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
@@ -274,7 +274,7 @@ public partial class JSObject
     public override JSValue this[uint name]
     {
         get => GetValue(name, this);
-        set => SetValue(name, value, this, true);
+        set => SetValue(name, value, this, IsStrictModeEnabled?.Invoke() == true);
     }
 
     public override bool SetValue(uint name, JSValue value, JSValue receiver, bool throwError = true)
@@ -328,7 +328,7 @@ public partial class JSObject
     public override JSValue this[IJSSymbol name]
     {
         get => GetValue(name, this);
-        set => SetValue(name, value, null, true);
+        set => SetValue(name, value, null, IsStrictModeEnabled?.Invoke() == true);
     }
 
     internal protected override bool SetValue(IJSSymbol name, JSValue value, JSValue receiver, bool throwError = true)
