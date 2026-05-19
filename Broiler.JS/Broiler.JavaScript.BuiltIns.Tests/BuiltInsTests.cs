@@ -1510,6 +1510,39 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Function_Family_And_Error_Prototype_Metadata_Match_Test262_Expectations()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              var asyncPrototype = Object.getPrototypeOf(async function () {});
+              var generatorPrototype = Object.getPrototypeOf(function* () {});
+              var asyncGeneratorPrototype = Object.getPrototypeOf(async function* () {});
+              var AsyncFunction = asyncPrototype.constructor;
+              var GeneratorFunction = generatorPrototype.constructor;
+              var AsyncGeneratorFunction = asyncGeneratorPrototype.constructor;
+              var errorMessage = Object.getOwnPropertyDescriptor(Error.prototype, 'message');
+
+              return [
+                AsyncFunction.prototype === asyncPrototype,
+                Object.isExtensible(AsyncFunction.prototype),
+                GeneratorFunction.prototype === generatorPrototype,
+                Object.isExtensible(GeneratorFunction.prototype),
+                AsyncGeneratorFunction.prototype === asyncGeneratorPrototype,
+                Object.isExtensible(AsyncGeneratorFunction.prototype),
+                errorMessage.value === '',
+                errorMessage.writable,
+                errorMessage.enumerable,
+                errorMessage.configurable
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|true|true|true|true|true|true|false|true", result.ToString());
+    }
+
+    [Fact]
     public void Custom_Error_Subclass_Chains_Preserve_Instanceof_And_Message()
     {
         EnsureBuiltInsLoaded();

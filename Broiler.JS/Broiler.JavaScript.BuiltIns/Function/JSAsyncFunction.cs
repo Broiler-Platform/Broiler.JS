@@ -16,14 +16,16 @@ public class JSAsyncFunction
         if ((JSEngine.Current as IJSExecutionContext)?.FunctionPrototype is JSObject functionPrototype)
             prototype.BasePrototypeObject = functionPrototype;
 
-        prototype.FastAddValue(KeyStrings.constructor, JSValue.CreateFunction((in Arguments a) =>
+        var constructor = (JSFunction)JSValue.CreateFunction((in Arguments a) =>
         {
             var created = JSFunction.Constructor(in a);
             if (created is JSFunction function)
                 function.prototype = null;
 
             return created;
-        }, "AsyncFunction", "function AsyncFunction() { [native code] }", 1, createPrototype: false), JSPropertyAttributes.ConfigurableValue);
+        }, "AsyncFunction", "function AsyncFunction() { [native code] }", 1, createPrototype: false);
+        constructor.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableValue);
 
         return prototype;
     }
