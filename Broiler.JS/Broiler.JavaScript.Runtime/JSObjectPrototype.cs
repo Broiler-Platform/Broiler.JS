@@ -28,13 +28,31 @@ public partial class JSObject
         if(!a.This.TryAsObjectThrowIfNullOrUndefined(out var @object))
             return JSValue.BooleanFalse;
 
-        if (a.Length > 0)
+        var key = a.Get1().ToKey(false);
+        if (key.IsUInt)
         {
-            var text = a.Get1().ToString();
-            var px = @object.GetInternalProperty(text, false);
-            if (!px.IsEmpty && px.IsEnumerable)
+            ref var elements = ref @object.GetElements();
+            ref var property = ref elements.Get(key.Index);
+            if (!property.IsEmpty && property.IsEnumerable)
                 return JSValue.BooleanTrue;
+
+            return JSValue.BooleanFalse;
         }
+
+        if (key.IsSymbol)
+        {
+            ref var symbols = ref @object.GetSymbols();
+            ref var property = ref symbols.GetRefOrDefault(key.Symbol.Key, ref JSProperty.Empty);
+            if (!property.IsEmpty && property.IsEnumerable)
+                return JSValue.BooleanTrue;
+
+            return JSValue.BooleanFalse;
+        }
+
+        ref var ownProperties = ref @object.GetOwnProperties(false);
+        ref var ownProperty = ref ownProperties.GetValue(key.KeyString.Key);
+        if (!ownProperty.IsEmpty && !JSObject.IsPrivateName(in key.KeyString) && ownProperty.IsEnumerable)
+            return JSValue.BooleanTrue;
 
         return JSValue.BooleanFalse;
     }
