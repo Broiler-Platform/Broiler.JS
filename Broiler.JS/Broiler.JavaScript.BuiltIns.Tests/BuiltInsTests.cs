@@ -1314,6 +1314,39 @@ public class BuiltInsTests
         Assert.NotNull(DefaultBuiltInRegistry.ConsoleFactory);
     }
 
+    [Fact]
+    public void PropertyIsEnumerable_Supports_Index_And_Symbol_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              var indexTarget = [];
+              Object.defineProperties(indexTarget, { "0": { enumerable: true } });
+
+              var symbol = Symbol("enumerable");
+              var symbolTarget = {};
+              Object.defineProperty(symbolTarget, symbol, {
+                value: 1,
+                writable: true,
+                enumerable: true,
+                configurable: true
+              });
+
+              var accessorTarget = {};
+              accessorTarget.__defineSetter__("stringAcsr", function (_) {});
+
+              return [
+                Object.prototype.propertyIsEnumerable.call(indexTarget, "0"),
+                Object.prototype.propertyIsEnumerable.call(symbolTarget, symbol),
+                Object.prototype.propertyIsEnumerable.call(accessorTarget, "stringAcsr")
+              ].join("|");
+            })();
+            """);
+
+        Assert.Equal("true|true|true", result.ToString());
+    }
+
     // ── M3: JSJSON tests ─────────────────────────────────────────────
 
     [Fact]
