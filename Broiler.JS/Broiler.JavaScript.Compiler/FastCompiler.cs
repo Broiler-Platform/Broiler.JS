@@ -289,7 +289,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
     protected override YExpression VisitYieldExpression(AstYieldExpression yieldExpression)
     {
-        var target = VisitExpression(yieldExpression.Argument);
+        var target = yieldExpression.Argument == null ? JSUndefinedBuilder.Value : VisitExpression(yieldExpression.Argument);
         return YExpression.Yield(target, yieldExpression.Delegate);
     }
 }
