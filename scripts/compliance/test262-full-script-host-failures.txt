@@ -1748,7 +1748,6 @@ test/built-ins/Iterator/prototype/Symbol.toStringTag/weird-setter.js
 test/built-ins/Iterator/prototype/constructor/prop-desc.js
 test/built-ins/Iterator/prototype/constructor/weird-setter.js
 test/built-ins/Iterator/prototype/drop/argument-effect-order.js
-test/built-ins/Iterator/prototype/drop/argument-validation-failure-closes-underlying.js
 test/built-ins/Iterator/prototype/drop/exhaustion-does-not-call-return.js
 test/built-ins/Iterator/prototype/drop/get-next-method-only-once.js
 test/built-ins/Iterator/prototype/drop/get-next-method-throws.js
@@ -1762,7 +1761,6 @@ test/built-ins/Iterator/prototype/drop/next-method-returns-throwing-value.js
 test/built-ins/Iterator/prototype/drop/next-method-throws.js
 test/built-ins/Iterator/prototype/drop/return-is-forwarded.js
 test/built-ins/Iterator/prototype/drop/return-is-not-forwarded-after-exhaustion.js
-test/built-ins/Iterator/prototype/drop/this-non-object.js
 test/built-ins/Iterator/prototype/drop/this-plain-iterator.js
 test/built-ins/Iterator/prototype/drop/throws-typeerror-when-generator-is-running.js
 test/built-ins/Iterator/prototype/every/get-next-method-only-once.js
@@ -1876,7 +1874,6 @@ test/built-ins/Iterator/prototype/some/predicate-throws-then-closing-iterator-al
 test/built-ins/Iterator/prototype/some/predicate-throws.js
 test/built-ins/Iterator/prototype/some/this-plain-iterator.js
 test/built-ins/Iterator/prototype/take/argument-effect-order.js
-test/built-ins/Iterator/prototype/take/argument-validation-failure-closes-underlying.js
 test/built-ins/Iterator/prototype/take/exhaustion-calls-return.js
 test/built-ins/Iterator/prototype/take/get-next-method-only-once.js
 test/built-ins/Iterator/prototype/take/get-next-method-throws.js
@@ -1890,7 +1887,6 @@ test/built-ins/Iterator/prototype/take/next-method-returns-throwing-value.js
 test/built-ins/Iterator/prototype/take/next-method-throws.js
 test/built-ins/Iterator/prototype/take/return-is-forwarded.js
 test/built-ins/Iterator/prototype/take/return-is-not-forwarded-after-exhaustion.js
-test/built-ins/Iterator/prototype/take/this-non-object.js
 test/built-ins/Iterator/prototype/take/throws-typeerror-when-generator-is-running.js
 test/built-ins/Iterator/prototype/toArray/get-next-method-only-once.js
 test/built-ins/Iterator/prototype/toArray/get-next-method-throws.js
@@ -2071,10 +2067,6 @@ test/built-ins/JSON/stringify/value-tojson-arguments.js
 test/built-ins/JSON/stringify/value-tojson-result.js
 test/built-ins/Map/bigint-number-same-value.js
 test/built-ins/Map/groupBy/string.js
-test/built-ins/Map/iterator-close-after-set-failure.js
-test/built-ins/Map/iterator-item-first-entry-returns-abrupt.js
-test/built-ins/Map/iterator-item-second-entry-returns-abrupt.js
-test/built-ins/Map/iterator-items-are-not-object-close-iterator.js
 test/built-ins/Map/map.js
 test/built-ins/Map/prototype/Symbol.iterator.js
 test/built-ins/Map/prototype/Symbol.iterator/not-a-constructor.js
@@ -3960,7 +3952,6 @@ test/built-ins/Set/prototype/union/set-like-class-order.js
 test/built-ins/Set/prototype/union/size-is-a-number.js
 test/built-ins/Set/prototype/values/name.js
 test/built-ins/Set/prototype/values/values-iteration-mutable.js
-test/built-ins/Set/set-iterator-close-after-add-failure.js
 test/built-ins/Set/set.js
 test/built-ins/Set/valid-values.js
 test/built-ins/SetIteratorPrototype/Symbol.toStringTag.js
@@ -5392,9 +5383,6 @@ test/built-ins/Uint8Array/prototype/toBase64/alphabet.js
 test/built-ins/Uint8Array/prototype/toBase64/omit-padding.js
 test/built-ins/Uint8Array/prototype/toBase64/option-coercion.js
 test/built-ins/WeakMap/iterable-with-symbol-keys.js
-test/built-ins/WeakMap/iterator-close-after-set-failure.js
-test/built-ins/WeakMap/iterator-item-first-entry-returns-abrupt.js
-test/built-ins/WeakMap/iterator-item-second-entry-returns-abrupt.js
 test/built-ins/WeakMap/iterator-items-keys-cannot-be-held-weakly.js
 test/built-ins/WeakMap/prototype/Symbol.toStringTag.js
 test/built-ins/WeakMap/prototype/delete/delete-entry-with-object-key-initial-iterable.js
@@ -5433,7 +5421,6 @@ test/built-ins/WeakRef/prototype/Symbol.toStringTag.js
 test/built-ins/WeakRef/prototype/prop-desc.js
 test/built-ins/WeakRef/throws-when-target-cannot-be-held-weakly.js
 test/built-ins/WeakSet/iterable-with-symbol-values.js
-test/built-ins/WeakSet/iterator-close-after-add-failure.js
 test/built-ins/WeakSet/prototype/Symbol.toStringTag.js
 test/built-ins/WeakSet/prototype/add/adds-object-element.js
 test/built-ins/WeakSet/prototype/add/adds-symbol-element.js
