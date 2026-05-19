@@ -5446,6 +5446,189 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Generator_Delegated_Throw_Follows_Test262_For_InnerThrow_Methods()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function callErr() {
+                    var thrown = { marker: 'callErr' };
+                    var badIter = {};
+                    var caught;
+                    badIter[Symbol.iterator] = function() {
+                      return {
+                        next: function() { return { done: false }; },
+                        throw: function() { throw thrown; }
+                      };
+                    };
+
+                    function* g() {
+                      try {
+                        yield * badIter;
+                      } catch (err) {
+                        caught = err;
+                      }
+                    }
+
+                    var iter = g();
+                    iter.next();
+                    var result = iter.throw();
+                    return String(result.value) + '|' + result.done + '|' + String(caught === thrown);
+                }
+
+                function callNonObj() {
+                    var badIter = {};
+                    var caught;
+                    badIter[Symbol.iterator] = function() {
+                      return {
+                        next: function() { return { done: false }; },
+                        throw: function() { return 23; }
+                      };
+                    };
+
+                    function* g() {
+                      try {
+                        yield * badIter;
+                      } catch (err) {
+                        caught = err;
+                      }
+                    }
+
+                    var iter = g();
+                    iter.next();
+                    var result = iter.throw();
+                    return String(result.value) + '|' + result.done + '|' + typeof caught + '|' + caught.constructor.name;
+                }
+
+                function getErr() {
+                    var thrown = { marker: 'getErr' };
+                    var badIter = {};
+                    var caught;
+                    var poisonedThrow = {
+                      next: function() { return { done: false }; }
+                    };
+                    Object.defineProperty(poisonedThrow, 'throw', {
+                      get: function() { throw thrown; }
+                    });
+                    badIter[Symbol.iterator] = function() {
+                      return poisonedThrow;
+                    };
+
+                    function* g() {
+                      try {
+                        yield * badIter;
+                      } catch (err) {
+                        caught = err;
+                      }
+                    }
+
+                    var iter = g();
+                    iter.next();
+                    var before = String(caught === undefined);
+                    var result = iter.throw();
+                    return before + '|' + String(result.value) + '|' + result.done + '|' + String(caught === thrown);
+                }
+
+                return [callErr(), callNonObj(), getErr()].join('||');
+            })();
+            """);
+
+        Assert.Equal("undefined|true|true||undefined|true|object|TypeError||true|undefined|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void Function_Constructor_Only_Rejects_Arguments_And_Eval_Assignment_In_Strict_Mode()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              function parsesSuccessfully(code) {
+                try {
+                  Function(code);
+                  return true;
+                } catch (_error) {
+                  return false;
+                }
+              }
+
+              function parseRaisesException(exception) {
+                return function (code) {
+                  try {
+                    Function(code);
+                    return false;
+                  } catch (actual) {
+                    return exception.prototype.isPrototypeOf(actual);
+                  }
+                };
+              }
+
+              function testLenientAndStrict(code, lenient_pred, strict_pred) {
+                return strict_pred("'use strict'; " + code) && lenient_pred(code);
+              }
+
+              return [
+                testLenientAndStrict('arguments=1', parsesSuccessfully, parseRaisesException(SyntaxError)),
+                testLenientAndStrict('eval=1', parsesSuccessfully, parseRaisesException(SyntaxError)),
+                testLenientAndStrict('(arguments)=1', parsesSuccessfully, parseRaisesException(SyntaxError)),
+                testLenientAndStrict('(eval)=1', parsesSuccessfully, parseRaisesException(SyntaxError))
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void Array_Modification_Methods_Respect_Indexed_Setters_On_Prototype_Chain()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              function ensureSetterCalledOnce(fn, value, index) {
+                var setterCalled = false;
+                Object.defineProperty(Array.prototype, index, {
+                  configurable: true,
+                  set: function(v) {
+                    if (setterCalled || v !== value) {
+                      setterCalled = 'bad';
+                      return;
+                    }
+
+                    setterCalled = true;
+                  }
+                });
+
+                try {
+                  fn();
+                  return String(setterCalled);
+                } finally {
+                  delete Array.prototype[index];
+                }
+              }
+
+              return [
+                ensureSetterCalledOnce(function() { [/* hole */, 'reverse'].reverse(); }, 'reverse', 0),
+                ensureSetterCalledOnce(function() { ['reverse', /* hole */,].reverse(); }, 'reverse', 1),
+                ensureSetterCalledOnce(function() { [/* hole */, 'shift'].shift(); }, 'shift', 0),
+                ensureSetterCalledOnce(function() { [/* hole */, 'sort'].sort(); }, 'sort', 0),
+                ensureSetterCalledOnce(function() { [/* hole */, undefined].sort(); }, undefined, 0),
+                ensureSetterCalledOnce(function() { [].splice(0, 0, 'splice'); }, 'splice', 0),
+                ensureSetterCalledOnce(function() { [/* hole */, 'splice'].splice(0, 1); }, 'splice', 0),
+                ensureSetterCalledOnce(function() { ['splice', /* hole */,].splice(0, 0, 'item'); }, 'splice', 1)
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|true|true|true|true|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Generator_And_AsyncGenerator_Parameter_Abrupt_Completions_Throw_On_Call()
     {
         EnsureBuiltInsLoaded();

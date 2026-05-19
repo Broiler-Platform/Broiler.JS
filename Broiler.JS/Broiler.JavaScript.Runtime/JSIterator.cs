@@ -7,17 +7,25 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
 {
     private uint index = 0;
 
-    private readonly JSValue GetIteratorResult()
+    private readonly JSValue AwaitIfNeeded(JSValue result)
     {
-        var result = JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next);
         if (awaitResult && result is IJSPromise promise)
-            result = promise.Task.GetAwaiter().GetResult();
-
-        if (!result.IsObject)
-            throw JSValue.NewTypeError("Iterator result is not an object");
+            return promise.Task.GetAwaiter().GetResult();
 
         return result;
     }
+
+    private readonly JSValue ValidateIteratorResult(JSValue result, string methodName)
+    {
+        result = AwaitIfNeeded(result);
+        if (!result.IsObject)
+            throw JSValue.NewTypeError($"Iterator {methodName} result is not an object");
+
+        return result;
+    }
+
+    private readonly JSValue GetIteratorResult()
+        => ValidateIteratorResult(JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next), "next");
 
     public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
     {
@@ -86,10 +94,15 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
             return iteratorResult;
         }
 
-        var result = method.InvokeFunction(new Arguments(iterator, value));
-        if (!result.IsObject)
-            throw JSValue.NewTypeError("Iterator return result is not an object");
+        return ValidateIteratorResult(method.InvokeFunction(new Arguments(iterator, value)), "return");
+    }
 
-        return result;
+    public readonly JSValue Throw(JSValue value)
+    {
+        var method = iterator[KeyStrings.@throw];
+        if (method.IsUndefined || method.IsNull)
+            throw JSValue.NewTypeError("Iterator does not provide a throw method");
+
+        return ValidateIteratorResult(method.InvokeFunction(new Arguments(iterator, value)), "throw");
     }
 }

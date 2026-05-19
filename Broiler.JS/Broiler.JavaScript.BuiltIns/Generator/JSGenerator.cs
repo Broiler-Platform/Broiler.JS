@@ -51,8 +51,43 @@ public partial class JSGenerator : JSObject, IJSGenerator
     public JSValue Throw(JSValue value)
     {
         ThrowIfExecuting();
-        cg.InjectException(JSException.FromValue(value));
-        return Next();
+        if (cg != null && cg.HasDelegatedEnumerator)
+        {
+            try
+            {
+                if (!cg.TryThrowDelegated(value, out var delegatedResult))
+                {
+                    cg.InjectException(JSException.FromValue(value));
+                    return Next();
+                }
+
+                var delegatedDone = delegatedResult[KeyStrings.done].BooleanValue;
+                var delegatedValue = delegatedResult[KeyStrings.value];
+                if (!delegatedDone)
+                {
+                    done = false;
+                    this.value = delegatedValue;
+                    return ValueObject;
+                }
+
+                cg.EndDelegation(delegatedValue);
+                return Next(delegatedValue);
+            }
+            catch (Exception ex)
+            {
+                cg.EndDelegation();
+                cg.InjectException(JSException.From(ex));
+                return Next();
+            }
+        }
+
+        if (cg != null)
+        {
+            cg.InjectException(JSException.FromValue(value));
+            return Next();
+        }
+
+        throw JSException.FromValue(value);
     }
 
     public JSValue ValueObject => NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, done ? JSValue.BooleanTrue : JSValue.BooleanFalse);

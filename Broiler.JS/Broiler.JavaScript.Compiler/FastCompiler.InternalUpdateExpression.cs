@@ -11,7 +11,7 @@ partial class FastCompiler
     private YExpression InternalVisitUpdateExpression(AstUnaryExpression updateExpression)
     {
         // added support for a++, a--
-        updateExpression.Argument.VerifyIdentifierForUpdate();
+        updateExpression.Argument.VerifyIdentifierForUpdate(IsStrictMode);
 
         var list = new Sequence<YExpression>();
 

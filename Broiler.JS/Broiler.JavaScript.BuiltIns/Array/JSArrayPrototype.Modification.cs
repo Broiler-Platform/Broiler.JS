@@ -11,6 +11,21 @@ namespace Broiler.JavaScript.BuiltIns.Array;
 
 public partial class JSArray
 {
+    private static bool HasIndexedProperty(JSObject @object, uint index)
+        => @object.HasProperty(JSValue.CreateNumber(index)).BooleanValue;
+
+    private static JSValue GetIndexedValue(JSObject @object, uint index)
+        => @object[index];
+
+    private static void SetIndexedValue(JSObject @object, uint index, JSValue value)
+        => @object.SetValue(index, value, @object, true);
+
+    private static void DeleteIndexedValueOrThrow(JSObject @object, uint index)
+    {
+        if (!@object.Delete(index).BooleanValue)
+            throw JSEngine.NewTypeError($"Cannot delete property {index}");
+    }
+
     [JSPrototypeMethod]
     [JSExport("copyWithin", Length = 2)]
     public static JSValue CopyWithin(in Arguments a)
@@ -161,16 +176,38 @@ public partial class JSArray
     [JSExport("reverse")]
     public static JSValue Reverse(in Arguments a)
     {
-        var @this = a.This as JSObject;
-        var i = 0;
-        var j = @this.Length - 1;
-        ref var elements = ref @this.GetElements();
+        var @this = ToArrayLikeObject(a.This);
+        var lower = 0u;
+        var upper = GetArrayLikeLength(@this);
+        if (upper == 0)
+            return @this;
 
-        while (i < j)
+        upper--;
+        while (lower < upper)
         {
-            var swap = elements[(uint)i];
-            elements.Put((uint)i++) = elements[(uint)j];
-            elements.Put((uint)j--) = swap;
+            var lowerExists = HasIndexedProperty(@this, lower);
+            var upperExists = HasIndexedProperty(@this, upper);
+            var lowerValue = lowerExists ? GetIndexedValue(@this, lower) : JSUndefined.Value;
+            var upperValue = upperExists ? GetIndexedValue(@this, upper) : JSUndefined.Value;
+
+            if (lowerExists && upperExists)
+            {
+                SetIndexedValue(@this, lower, upperValue);
+                SetIndexedValue(@this, upper, lowerValue);
+            }
+            else if (!lowerExists && upperExists)
+            {
+                SetIndexedValue(@this, lower, upperValue);
+                DeleteIndexedValueOrThrow(@this, upper);
+            }
+            else if (lowerExists && !upperExists)
+            {
+                DeleteIndexedValueOrThrow(@this, lower);
+                SetIndexedValue(@this, upper, lowerValue);
+            }
+
+            lower++;
+            upper--;
         }
 
         return @this;
@@ -194,17 +231,17 @@ public partial class JSArray
             return first;
         }
 
-        ref var oe = ref @object.GetElements();
         first = @this[0];
         var last = n - 1;
-
-        if (!oe.IsNull)
+        for (uint i = 1; i < n; i++)
         {
-            for (uint i = 1; i < n; i++)
-                oe.Put(i - 1) = oe[i];
-
-            oe.RemoveAt(last);
+            if (HasIndexedProperty(@object, i))
+                SetIndexedValue(@object, i - 1, GetIndexedValue(@object, i));
+            else
+                DeleteIndexedValueOrThrow(@object, i - 1);
         }
+
+        DeleteIndexedValueOrThrow(@object, last);
 
         @object[KeyStrings.length] = new JSNumber(last);
 
@@ -302,8 +339,21 @@ public partial class JSArray
             };
         }
 
-        ref var elements = ref @this.GetElements();
-        elements.QuickSort((a, b) => cx((JSValue)a, (JSValue)b), 0, (uint)(length - 1));
+        var values = new System.Collections.Generic.List<JSValue>(length);
+        for (uint index = 0; index < length; index++)
+        {
+            if (HasIndexedProperty(@this, index))
+                values.Add(GetIndexedValue(@this, index));
+        }
+
+        values.Sort(cx);
+
+        uint writeIndex = 0;
+        foreach (var item in values)
+            SetIndexedValue(@this, writeIndex++, item);
+
+        while (writeIndex < length)
+            DeleteIndexedValueOrThrow(@this, writeIndex++);
 
         return @this;
     }
@@ -344,21 +394,16 @@ public partial class JSArray
 
         deleteCount = Math.Min(Math.Max(deleteCount, 0), arrayLength - start);
 
-        ref var elements = ref @this.GetElements();
-
         // Get the deleted items.
         var deletedItems = CreateArraySpecies(@this, (uint)deleteCount);
 
         for (uint i = 0; i < deleteCount; i++)
         {
-            ref var property = ref elements.Get((uint)(start + i));
-
-            if (property.IsEmpty)
+            var fromIndex = (uint)(start + i);
+            if (!HasIndexedProperty(@this, fromIndex))
                 continue;
 
-            CreateDataPropertyOrThrow(deletedItems, i, property.IsProperty
-                ? @this.GetValue(in property)
-                : (JSValue)property.value);
+            CreateDataPropertyOrThrow(deletedItems, i, GetIndexedValue(@this, fromIndex));
         }
 
         var itemsLength = a.Length > 1 ? a.Length - 2 : 0;
@@ -369,26 +414,38 @@ public partial class JSArray
 
         if (deleteCount > itemsLength)
         {
-            for (int i = start + itemsLength; i < newLength; i++)
-                elements.Put((uint)i) = elements.Get((uint)(i - offset));
+            for (int i = start; i < arrayLength - deleteCount; i++)
+            {
+                var fromIndex = (uint)(i + deleteCount);
+                var toIndex = (uint)(i + itemsLength);
+                if (HasIndexedProperty(@this, fromIndex))
+                    SetIndexedValue(@this, toIndex, GetIndexedValue(@this, fromIndex));
+                else
+                    DeleteIndexedValueOrThrow(@this, toIndex);
+            }
 
             // Delete the trailing elements.
-            for (int i = newLength; i < arrayLength; i++)
-                elements.RemoveAt((uint)i);
+            for (int i = arrayLength; i > newLength; i--)
+                DeleteIndexedValueOrThrow(@this, (uint)(i - 1));
         }
         else
         {
-            for (int i = newLength - 1; i >= start + itemsLength; i--)
-                elements.Put((uint)i) = elements.Get((uint)(i - offset));
+            for (int i = arrayLength - deleteCount; i > start; i--)
+            {
+                var fromIndex = (uint)(i + deleteCount - 1);
+                var toIndex = (uint)(i + itemsLength - 1);
+                if (HasIndexedProperty(@this, fromIndex))
+                    SetIndexedValue(@this, toIndex, GetIndexedValue(@this, fromIndex));
+                else
+                    DeleteIndexedValueOrThrow(@this, toIndex);
+            }
         }
 
         @this.Length = newLength;
 
         // Insert the new elements.
         for (int i = 0; i < itemsLength; i++)
-        {
-            elements.Put((uint)(start + i), a[i + 2]);
-        }
+            SetIndexedValue(@this, (uint)(start + i), a[i + 2]);
 
         // Return the deleted items.
         return deletedItems;
