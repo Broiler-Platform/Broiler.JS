@@ -104,7 +104,7 @@ partial class FastCompiler
                         var l = pKey as AstLiteral;
                         if (l.TokenType == TokenTypes.String)
                         {
-                            if (NumberParser.TryCoerceToUInt32(l.StringValue, out var ui))
+                            if (NumberParser.TryGetArrayIndex(l.StringValue, out var ui))
                             {
                                 key = YExpression.Constant(ui);
 
@@ -212,7 +212,7 @@ partial class FastCompiler
                     var l = pKey as AstLiteral;
                     if (l.TokenType == TokenTypes.String)
                     {
-                        if (NumberParser.TryCoerceToUInt32(l.StringValue, out var ui))
+                        if (NumberParser.TryGetArrayIndex(l.StringValue, out var ui))
                         {
                             key = YExpression.Constant(ui);
                         }

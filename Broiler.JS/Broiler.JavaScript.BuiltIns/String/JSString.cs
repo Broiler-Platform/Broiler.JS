@@ -123,12 +123,8 @@ public partial class JSString : JSPrimitive
         if (_keyString.HasValue)
             return _keyString;
 
-        var d = DoubleValue;
-        if (!double.IsNaN(d))
-        {
-            if (d >= 0 && (d % 1 == 0))
-                return (uint)d;
-        }
+        if (NumberParser.TryGetArrayIndex(value, out var index))
+            return index;
 
         if (!create)
         {
