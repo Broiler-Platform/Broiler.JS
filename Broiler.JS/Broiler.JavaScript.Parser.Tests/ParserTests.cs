@@ -45,6 +45,18 @@ public class ParserTests
         Assert.NotNull(program);
     }
 
+    [Theory]
+    [InlineData("const f = ([,]) => 1;")]
+    [InlineData("const f = ([[,] = []]) => 1;")]
+    [InlineData("const f = ([...[,]]) => 1;")]
+    public void ParseProgram_ArrowFunction_ArrayDestructuringElisions_Succeed(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+        Assert.NotNull(program);
+    }
+
     [Fact]
     public void ParseProgram_InvalidSyntax_ThrowsFastParseException()
     {

@@ -262,12 +262,8 @@ partial class FastCompiler
                             case FastNodeType.SpreadElement:
                                 var spe = element as AstSpreadElement;
                                 hasSpread = true;
-                                // loop...
-                                if (createVariable && spe.Argument is AstIdentifier id2)
-                                    scope.Top.CreateVariable(id2.Name.Value, null, newScope);
-
-                                var spid = Visit(spe.Argument);
-                                arrayInits.Add(YExpression.Assign(spid, JSArrayBuilder.NewFromElementEnumerator(destExp)));
+                                CreateAssignment(arrayInits, spe.Argument, JSArrayBuilder.NewFromElementEnumerator(destExp), createVariable, newScope,
+                                    suppressAnonymousFunctionNameInference, initializeVariable);
                                 break;
 
                             case FastNodeType.ObjectPattern:

@@ -33,6 +33,39 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_ArrowFunction_ArrayDestructuringElisions_Work()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var first = 0;
+                var second = 0;
+
+                function* g() {
+                    first += 1;
+                    yield 0;
+                    second += 1;
+                }
+
+                var parts = [];
+                (([,]) => { parts.push(first + '|' + second); })(g());
+
+                first = 0;
+                second = 0;
+                (([[,] = g()]) => { parts.push(first + '|' + second); })([]);
+
+                first = 0;
+                second = 0;
+                (([...[,]]) => { parts.push(first + '|' + second); })(g());
+
+                return parts.join(';');
+            })()
+            """);
+
+        Assert.Equal("1|0;1|0;1|1", result.ToString());
+    }
+
+    [Fact]
     public void Compile_ArgumentsObject_WorksWithoutExplicitModulesLoad()
     {
         using var ctx = new JSContext();

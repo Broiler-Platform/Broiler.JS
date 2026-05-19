@@ -15,10 +15,7 @@ public static class ExpressionPatternExtensions
         {
             case FastNodeType.SpreadElement:
                 var spe = exp as AstSpreadElement;
-                if (spe!.Argument.Type != FastNodeType.Identifier)
-                    throw new FastParseException(exp.Start, $"Invalid spread pattern at {exp.Start.Start}");
-
-                return spe;
+                return new AstSpreadElement(spe!.Start, spe.End, spe.Argument.ToPattern());
 
             case FastNodeType.ObjectLiteral:
                 var l = exp as AstObjectLiteral;
@@ -51,7 +48,7 @@ public static class ExpressionPatternExtensions
             var e = array.Elements.GetFastEnumerator();
 
             while (e.MoveNext(out var item))
-                pl.Add(item.ToPattern());
+                pl.Add(item == null ? new AstEmptyExpression(array.Start) : item.ToPattern());
 
             return new AstArrayPattern(array.Start, array.End, pl);
         }
