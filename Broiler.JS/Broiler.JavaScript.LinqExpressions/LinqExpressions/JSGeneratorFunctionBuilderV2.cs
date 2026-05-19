@@ -17,6 +17,6 @@ public class JSGeneratorFunctionBuilderV2
         type = generatorFunctionType;
     }
 
-    public static Expression New(Expression @delegate, Expression name, Expression code, bool asyncGenerator = false, bool primeOnInvoke = false) =>
-        NewLambdaExpression.NewExpression(type, @delegate, name, code, Expression.Constant(asyncGenerator), Expression.Constant(primeOnInvoke));
+    public static Expression New(Expression @delegate, Expression name, Expression code, int length = 0, bool asyncGenerator = false, bool primeOnInvoke = false) =>
+        NewLambdaExpression.NewExpression(type, @delegate, name, code, Expression.Constant(length), Expression.Constant(asyncGenerator), Expression.Constant(primeOnInvoke));
 }

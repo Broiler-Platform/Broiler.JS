@@ -31,7 +31,7 @@ public class JSGeneratorFunctionV2 : JSFunction
         return prototype;
     }
 
-    public JSGeneratorFunctionV2(JSGeneratorDelegateV2 @delegate, in StringSpan name, in StringSpan code, bool asyncGenerator, bool primeOnInvoke = false) : base(null, name, code)
+    public JSGeneratorFunctionV2(JSGeneratorDelegateV2 @delegate, in StringSpan name, in StringSpan code, int length = 0, bool asyncGenerator = false, bool primeOnInvoke = false) : base(null, name, code, length)
     {
         this.@delegate = @delegate;
         this.asyncGenerator = asyncGenerator;

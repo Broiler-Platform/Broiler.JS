@@ -18,6 +18,7 @@ partial class FastCompiler
         IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true)
     {
         var node = functionDeclaration;
+        var functionLength = GetExpectedArgumentCount(functionDeclaration.Params);
 
         // get text...
 
@@ -174,7 +175,7 @@ partial class FastCompiler
                 lambda = GeneratorRewriter.Rewrite(in scriptFunctionName, block, cs.ReturnLabel, cs.Generator, replaceArgs: cs.Arguments, replaceStackItem: cs.StackItem,
                     replaceContext: cs.Context, replaceScriptInfo: scriptInfo);
 
-                jsf = JSGeneratorFunctionBuilderV2.New(lambda, fxName, code, functionDeclaration.Async, primeOnInvoke: true);
+                jsf = JSGeneratorFunctionBuilderV2.New(lambda, fxName, code, functionLength, functionDeclaration.Async, primeOnInvoke: true);
             }
             else if (functionDeclaration.Async)
             {
@@ -182,12 +183,12 @@ partial class FastCompiler
                 lambda = GeneratorRewriter.Rewrite(in scriptFunctionName, block, cs.ReturnLabel, cs.Generator, replaceArgs: cs.Arguments, replaceStackItem: cs.StackItem,
                     replaceContext: cs.Context, replaceScriptInfo: scriptInfo);
 
-                jsf = JSAsyncFunctionBuilder.Create(JSGeneratorFunctionBuilderV2.New(lambda, fxName, code));
+                jsf = JSAsyncFunctionBuilder.Create(JSGeneratorFunctionBuilderV2.New(lambda, fxName, code, functionLength));
             }
             else
             {
                 lambda = YExpression.Lambda(typeof(JSFunctionDelegate), block, in scriptFunctionName, [cs.Arguments]);
-                jsf = JSFunctionBuilder.New(ToDelegate(lambda), fxName, code, functionDeclaration.Params.Count);
+                jsf = JSFunctionBuilder.New(ToDelegate(lambda), fxName, code, functionLength);
                 if (!isStrictFunction)
                     jsf = JSFunctionBuilder.EnableNonStrictThis(jsf);
                 else
@@ -220,6 +221,23 @@ partial class FastCompiler
 
             return jsf;
         }
+    }
+
+    private static int GetExpectedArgumentCount(IFastEnumerable<VariableDeclarator> parameters)
+    {
+        var count = 0;
+        var e = parameters.GetFastEnumerator();
+
+        while (e.MoveNext(out var parameter))
+        {
+            if (parameter.Identifier.IsSpreadElement(out _)
+                || parameter.Init != null)
+                break;
+
+            count++;
+        }
+
+        return count;
     }
 
     private void InitMembers(Sequence<YExpression> sList, FastFunctionScope s)
