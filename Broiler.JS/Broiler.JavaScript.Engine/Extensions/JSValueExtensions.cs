@@ -226,6 +226,24 @@ public static partial class JSValueExtensions
         if (value.IsNull)
             throw JSEngine.NewTypeError("Right side of instanceof is null");
 
+        if (!value.IsObject)
+            throw JSEngine.NewTypeError("Right side of instanceof is not an object");
+
+        var hasInstance = JSValue.GetGlobalSymbolFactory?.Invoke("hasInstance");
+        if (hasInstance != null)
+        {
+            var handler = value[hasInstance];
+            if (!handler.IsUndefined && !handler.IsNull)
+            {
+                if (!handler.IsFunction)
+                    throw JSEngine.NewTypeError("@@hasInstance is not a function");
+
+                return handler.InvokeFunction(new Arguments(value, target)).BooleanValue
+                    ? JSValue.BooleanTrue
+                    : JSValue.BooleanFalse;
+            }
+        }
+
         if (!value.IsFunction)
             throw JSEngine.NewTypeError("Right side of instanceof is not a function");
 

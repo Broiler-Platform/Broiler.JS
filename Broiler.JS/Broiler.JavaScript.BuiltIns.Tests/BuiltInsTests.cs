@@ -5929,6 +5929,39 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void InstanceOf_Uses_SymbolHasInstance_For_Callable_And_NonCallable_Targets()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+              var passed = false;
+              var obj = { foo: true };
+              var C = function () {};
+              Object.defineProperty(C, Symbol.hasInstance, {
+                value: function (inst) {
+                  passed = inst.foo;
+                  return false;
+                }
+              });
+              var custom = {
+                [Symbol.hasInstance]: function () {
+                  return true;
+                }
+              };
+
+              return [
+                String(obj instanceof C),
+                String(passed),
+                String(1 instanceof custom)
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("false|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Function_Bind_Name_Length_And_HasInstance_Descriptor_Regresions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -5936,6 +5969,38 @@ public class BuiltInsTests
         var result = ctx.Eval("String(Object.getOwnPropertyDescriptor(Function.prototype, Symbol.hasInstance).configurable);");
 
         Assert.Equal("false", result.ToString());
+    }
+
+    [Fact]
+    public void Property_Key_Canonicalization_Preserves_Empty_And_NonCanonical_String_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+              function* hasEmptyKey() {
+                return '' in (yield);
+              }
+
+              var iter = hasEmptyKey();
+              iter.next();
+
+              var weird = { '1.0': 4, ' 1 ': 5, '+0': 6, '-0': 7 };
+              return [
+                String(iter.next({ '': 0 }).value),
+                String(Object.hasOwn({ '': 1 }, '')),
+                String('' in { '': 1 }),
+                String(Object.hasOwn(weird, '1.0')),
+                String(Object.hasOwn(weird, 1)),
+                String(weird[1]),
+                String(weird['1.0']),
+                String(Object.hasOwn(weird, '+0')),
+                String(Object.hasOwn(weird, 0))
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|true|true|false|undefined|4|true|false", result.ToString());
     }
 
     [Fact]

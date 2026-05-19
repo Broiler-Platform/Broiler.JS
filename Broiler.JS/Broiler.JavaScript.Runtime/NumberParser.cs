@@ -98,6 +98,32 @@ public static class NumberParser
         return false;
     }
 
+    public static bool TryGetArrayIndex(in StringSpan input, out uint value)
+    {
+        value = 0;
+
+        if (input.Length == 0)
+            return false;
+
+        if (input[0] == '0')
+            return input.Length == 1;
+
+        ulong parsed = 0;
+        for (var i = 0; i < input.Length; i++)
+        {
+            var ch = input[i];
+            if (ch < '0' || ch > '9')
+                return false;
+
+            parsed = (parsed * 10) + (ulong)(ch - '0');
+            if (parsed >= uint.MaxValue)
+                return false;
+        }
+
+        value = (uint)parsed;
+        return true;
+    }
+
     /// <summary>
     /// Converts a string to a number (used in type coercion).
     /// </summary>

@@ -37,7 +37,7 @@ partial class FastCompiler
 
                     case TokenTypes.String:
                         var text = l.StringValue;
-                        if (NumberParser.TryCoerceToUInt32(text, out var d))
+                        if (NumberParser.TryGetArrayIndex(text, out var d))
                             return JSValueBuilder.Index(target, super, d, memberExpression.Coalesce);
 
                         return JSValueBuilder.Index(target, super, KeyOfName(text), memberExpression.Coalesce);
