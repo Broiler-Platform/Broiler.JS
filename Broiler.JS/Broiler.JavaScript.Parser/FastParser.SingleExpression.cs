@@ -213,6 +213,23 @@ partial class FastParser
             if (stream.CheckAndConsume(TokenTypes.Multiply))
                 star = true;
 
+            if (!star)
+            {
+                switch (stream.Current.Type)
+                {
+                    case TokenTypes.Comma:
+                    case TokenTypes.SemiColon:
+                    case TokenTypes.LineTerminator:
+                    case TokenTypes.EOF:
+                    case TokenTypes.CurlyBracketEnd:
+                    case TokenTypes.BracketEnd:
+                    case TokenTypes.SquareBracketEnd:
+                    case TokenTypes.Colon:
+                        statement = new AstYieldExpression(begin, PreviousToken, null);
+                        return true;
+                }
+            }
+
             if (Expression(out var target))
             {
                 statement = new AstYieldExpression(begin, PreviousToken, target, star);

@@ -58,6 +58,21 @@ public class ParserTests
     }
 
     [Fact]
+    public void ParseProgram_GeneratorFunction_BareYield_Succeeds()
+    {
+        var stream = new FastTokenStream(new StringSpan("""
+            function* g() {
+                yield;
+            }
+
+            var f = ([,]) => 1;
+            """));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+        Assert.NotNull(program);
+    }
+
+    [Fact]
     public void ParseProgram_InvalidSyntax_ThrowsFastParseException()
     {
         var stream = new FastTokenStream(new StringSpan("function { }"));
