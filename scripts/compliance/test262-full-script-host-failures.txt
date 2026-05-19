@@ -1591,7 +1591,6 @@ test/built-ins/Function/prototype/call/S15.3.4.4_A6_T8.js
 test/built-ins/Function/prototype/call/S15.3.4.4_A6_T9.js
 test/built-ins/Function/prototype/caller-arguments/accessor-properties.js
 test/built-ins/Function/prototype/caller/prop-desc.js
-test/built-ins/Function/prototype/length.js
 test/built-ins/Function/prototype/name.js
 test/built-ins/Function/prototype/property-order.js
 test/built-ins/Function/prototype/toString/AsyncFunction.js
@@ -1687,7 +1686,6 @@ test/built-ins/GeneratorPrototype/throw/name.js
 test/built-ins/GeneratorPrototype/throw/not-a-constructor.js
 test/built-ins/GeneratorPrototype/throw/property-descriptor.js
 test/built-ins/GeneratorPrototype/throw/try-finally-nested-try-catch-within-catch.js
-test/built-ins/Infinity/S15.1.1.2_A2_T2.js
 test/built-ins/Infinity/S15.1.1.2_A3_T2.js
 test/built-ins/Iterator/concat/arguments-checked-in-order.js
 test/built-ins/Iterator/concat/get-iterator-method-only-once.js
@@ -2081,7 +2079,6 @@ test/built-ins/Math/sqrt/results.js
 test/built-ins/Math/sumPrecise/sum-is-minus-zero.js
 test/built-ins/Math/sumPrecise/sum.js
 test/built-ins/Math/sumPrecise/throws-on-non-number.js
-test/built-ins/NaN/S15.1.1.1_A2_T2.js
 test/built-ins/NaN/S15.1.1.1_A3_T2.js
 test/built-ins/NativeErrors/EvalError/is-error-object.js
 test/built-ins/NativeErrors/EvalError/proto.js
@@ -2385,7 +2382,6 @@ test/built-ins/Object/defineProperty/15.2.3.6-4-234.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-236.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-240.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-242.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-243-1.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-243.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-252.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-254.js
@@ -2489,12 +2485,10 @@ test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-2-25.js
 test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-2-26.js
 test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-2-27.js
 test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-2-30.js
-test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-3-14.js
 test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-4-182.js
 test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-4-185.js
 test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-4-189.js
 test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-4-190.js
-test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-4-192.js
 test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-4-193.js
 test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-4-195.js
 test/built-ins/Object/getOwnPropertyDescriptor/15.2.3.3-4-198.js
@@ -3784,16 +3778,13 @@ test/built-ins/ShadowRealm/prototype/importValue/throws-if-exportname-not-string
 test/built-ins/ShadowRealm/prototype/importValue/validates-realm-object.js
 test/built-ins/ShadowRealm/prototype/proto.js
 test/built-ins/String/S15.5.2.1_A3.js
-test/built-ins/String/S15.5.5.1_A2.js
 test/built-ins/String/S15.5.5.1_A3.js
 test/built-ins/String/S15.5.5.1_A4_T1.js
-test/built-ins/String/S15.5.5.1_A4_T2.js
 test/built-ins/String/S15.5.5.1_A5.js
 test/built-ins/String/S15.5.5_A2_T2.js
 test/built-ins/String/fromCodePoint/argument-is-not-integer.js
 test/built-ins/String/fromCodePoint/return-string-value.js
 test/built-ins/String/fromCodePoint/to-number-conversions.js
-test/built-ins/String/length.js
 test/built-ins/String/numeric-properties.js
 test/built-ins/String/prop-desc.js
 test/built-ins/String/prototype/S15.5.3.1_A3.js
@@ -5206,7 +5197,6 @@ test/built-ins/WeakSet/prototype/has/returns-true-when-object-value-present.js
 test/built-ins/WeakSet/prototype/has/returns-true-when-symbol-value-present.js
 test/built-ins/WeakSet/prototype/prototype-attributes.js
 test/built-ins/WeakSet/weakset.js
-test/built-ins/decodeURI/S15.1.3.1_A5.2.js
 test/built-ins/decodeURI/S15.1.3.1_A5.5.js
 test/built-ins/decodeURI/S15.1.3.1_A6_T1.js
 test/built-ins/decodeURIComponent/S15.1.3.2_A1.10_T1.js
@@ -5241,7 +5231,6 @@ test/built-ins/decodeURIComponent/S15.1.3.2_A1.8_T2.js
 test/built-ins/decodeURIComponent/S15.1.3.2_A1.9_T1.js
 test/built-ins/decodeURIComponent/S15.1.3.2_A1.9_T2.js
 test/built-ins/decodeURIComponent/S15.1.3.2_A1.9_T3.js
-test/built-ins/decodeURIComponent/S15.1.3.2_A5.2.js
 test/built-ins/decodeURIComponent/S15.1.3.2_A5.5.js
 test/built-ins/decodeURIComponent/S15.1.3.2_A6_T1.js
 test/built-ins/decodeURIComponent/throw-URIError.js
@@ -5250,7 +5239,6 @@ test/built-ins/encodeURI/S15.1.3.3_A1.1_T2.js
 test/built-ins/encodeURI/S15.1.3.3_A1.2_T1.js
 test/built-ins/encodeURI/S15.1.3.3_A1.2_T2.js
 test/built-ins/encodeURI/S15.1.3.3_A1.3_T1.js
-test/built-ins/encodeURI/S15.1.3.3_A5.2.js
 test/built-ins/encodeURI/S15.1.3.3_A5.5.js
 test/built-ins/encodeURI/S15.1.3.3_A6_T1.js
 test/built-ins/encodeURIComponent/S15.1.3.4_A1.1_T1.js
@@ -5259,11 +5247,9 @@ test/built-ins/encodeURIComponent/S15.1.3.4_A1.2_T1.js
 test/built-ins/encodeURIComponent/S15.1.3.4_A1.2_T2.js
 test/built-ins/encodeURIComponent/S15.1.3.4_A1.3_T1.js
 test/built-ins/encodeURIComponent/S15.1.3.4_A3.2_T3.js
-test/built-ins/encodeURIComponent/S15.1.3.4_A5.2.js
 test/built-ins/encodeURIComponent/S15.1.3.4_A5.5.js
 test/built-ins/encodeURIComponent/S15.1.3.4_A6_T1.js
 test/built-ins/eval/length-enumerable.js
-test/built-ins/eval/length-non-configurable.js
 test/built-ins/global/S10.2.3_A2.1_T3.js
 test/built-ins/global/S10.2.3_A2.1_T4.js
 test/built-ins/global/S10.2.3_A2.3_T3.js
@@ -5276,8 +5262,6 @@ test/built-ins/parseInt/S15.1.2.2_A1_T2.js
 test/built-ins/parseInt/S15.1.2.2_A1_T7.js
 test/built-ins/parseInt/S15.1.2.2_A2_T10_U180E.js
 test/built-ins/parseInt/S15.1.2.2_A9.5.js
-test/built-ins/undefined/15.1.1.3-1.js
-test/built-ins/undefined/15.1.1.3-3.js
 test/built-ins/undefined/S15.1.1.3_A3_T2.js
 test/harness/compare-array-arguments.js
 test/harness/decimalToHexString.js
@@ -6342,7 +6326,6 @@ test/language/arguments-object/mapped/mapped-arguments-nonconfigurable-nonwritab
 test/language/arguments-object/mapped/mapped-arguments-nonconfigurable-strict-delete-2.js
 test/language/arguments-object/mapped/mapped-arguments-nonconfigurable-strict-delete-3.js
 test/language/arguments-object/mapped/mapped-arguments-nonconfigurable-strict-delete-4.js
-test/language/arguments-object/mapped/mapped-arguments-nonwritable-nonconfigurable-3.js
 test/language/arguments-object/mapped/nonconfigurable-descriptors-define-failure.js
 test/language/arguments-object/mapped/nonconfigurable-descriptors-set-value-by-arguments.js
 test/language/arguments-object/mapped/nonconfigurable-descriptors-set-value-with-define-property.js
@@ -6352,8 +6335,6 @@ test/language/arguments-object/mapped/nonconfigurable-nonenumerable-nonwritable-
 test/language/arguments-object/mapped/nonconfigurable-nonwritable-descriptors-define-property-consecutive.js
 test/language/arguments-object/mapped/nonconfigurable-nonwritable-descriptors-set-by-arguments.js
 test/language/arguments-object/mapped/nonconfigurable-nonwritable-descriptors-set-by-param.js
-test/language/arguments-object/mapped/nonwritable-nonconfigurable-descriptors-set-by-arguments.js
-test/language/arguments-object/mapped/nonwritable-nonenumerable-nonconfigurable-descriptors-set-by-arguments.js
 test/language/arguments-object/mapped/writable-enumerable-configurable-descriptor.js
 test/language/arguments-object/non-strict-arguments-object-is-immutable.js
 test/language/arguments-object/unmapped/Symbol.iterator.js
@@ -6524,7 +6505,6 @@ test/language/expressions/assignment/S11.13.1_A5_T3.js
 test/language/expressions/assignment/S11.13.1_A6_T1.js
 test/language/expressions/assignment/S11.13.1_A6_T2.js
 test/language/expressions/assignment/S11.13.1_A6_T3.js
-test/language/expressions/assignment/S8.12.4_A1.js
 test/language/expressions/assignment/assignment-operator-calls-putvalue-lref--rval-.js
 test/language/expressions/assignment/destructuring/default-expr-throws-iterator-return-get-throws.js
 test/language/expressions/assignment/destructuring/iterator-destructuring-property-reference-target-evaluation-order.js
@@ -8778,7 +8758,6 @@ test/language/expressions/super/prop-dot-cls-this-uninit.js
 test/language/expressions/super/prop-dot-cls-val-from-arrow.js
 test/language/expressions/super/prop-dot-cls-val-from-eval.js
 test/language/expressions/super/prop-dot-obj-null-proto.js
-test/language/expressions/super/prop-dot-obj-ref-non-strict.js
 test/language/expressions/super/prop-dot-obj-ref-this.js
 test/language/expressions/super/prop-dot-obj-val-from-arrow.js
 test/language/expressions/super/prop-dot-obj-val-from-eval.js
@@ -8793,7 +8772,6 @@ test/language/expressions/super/prop-expr-getsuperbase-before-topropertykey-putv
 test/language/expressions/super/prop-expr-getsuperbase-before-topropertykey-putvalue-increment.js
 test/language/expressions/super/prop-expr-getsuperbase-before-topropertykey-putvalue.js
 test/language/expressions/super/prop-expr-obj-null-proto.js
-test/language/expressions/super/prop-expr-obj-ref-non-strict.js
 test/language/expressions/super/prop-expr-obj-ref-this.js
 test/language/expressions/super/prop-expr-obj-val-from-arrow.js
 test/language/expressions/super/prop-expr-obj-val-from-eval.js
@@ -10600,7 +10578,6 @@ test/language/statements/class/subclass/builtin-objects/Proxy/no-prototype-throw
 test/language/statements/class/subclass/builtin-objects/RegExp/lastIndex.js
 test/language/statements/class/subclass/builtin-objects/RegExp/super-must-be-called.js
 test/language/statements/class/subclass/builtin-objects/Set/super-must-be-called.js
-test/language/statements/class/subclass/builtin-objects/String/length.js
 test/language/statements/class/subclass/builtin-objects/String/super-must-be-called.js
 test/language/statements/class/subclass/builtin-objects/Symbol/new-symbol-with-super-throws.js
 test/language/statements/class/subclass/builtin-objects/Symbol/symbol-valid-as-extends-value.js
@@ -12349,10 +12326,7 @@ test/language/statements/with/unscopables-get-err.js
 test/language/statements/with/unscopables-inc-dec.js
 test/language/statements/with/unscopables-not-referenced-for-undef.js
 test/language/statements/with/unscopables-prop-get-err.js
-test/language/types/number/S8.5_A10_T2.js
-test/language/types/number/S8.5_A4_T2.js
 test/language/types/number/S8.5_A9.js
-test/language/types/object/S8.6.1_A1.js
 test/language/types/object/S8.6.1_A2.js
 test/language/types/object/S8.6.1_A3.js
 test/language/types/object/S8.6.2_A5_T1.js
@@ -12367,7 +12341,6 @@ test/language/types/reference/put-value-prop-base-primitive.js
 test/language/types/string/S8.4_A7.2.js
 test/language/types/string/S8.4_A7.3.js
 test/language/types/string/S8.4_A7.4.js
-test/language/types/undefined/S8.1_A3_T2.js
 test/staging/Uint8Array/fromBase64/invalid-options.js
 test/staging/built-ins/RegExp/escape/surrogate-pair.js
 test/staging/built-ins/RegExp/named-groups/duplicate-named-groups-replace.js
@@ -12451,7 +12424,6 @@ test/staging/sm/Error/prototype-properties.js
 test/staging/sm/Exceptions/error-property-enumerability.js
 test/staging/sm/Function/10.2.1.1.6.js
 test/staging/sm/Function/15.3.4.3-01.js
-test/staging/sm/Function/Function-prototype.js
 test/staging/sm/Function/arguments-caller-callee.js
 test/staging/sm/Function/arguments-parameter-shadowing.js
 test/staging/sm/Function/arguments-property-attributes.js
@@ -12633,7 +12605,6 @@ test/staging/sm/Promise/for-of-iterator-uses-getv.js
 test/staging/sm/Proxy/getPrototypeOf.js
 test/staging/sm/Proxy/hasInstance.js
 test/staging/sm/Proxy/proxy-no-receiver-overwrite.js
-test/staging/sm/Proxy/regress-bug1037770.js
 test/staging/sm/Proxy/regress-bug1062349.js
 test/staging/sm/Proxy/revoke-as-side-effect.js
 test/staging/sm/Proxy/revoke-no-name.js
@@ -12644,7 +12615,6 @@ test/staging/sm/Reflect/argumentsList.js
 test/staging/sm/Reflect/deleteProperty.js
 test/staging/sm/Reflect/get.js
 test/staging/sm/Reflect/getOwnPropertyDescriptor.js
-test/staging/sm/Reflect/has.js
 test/staging/sm/Reflect/propertyKeys.js
 test/staging/sm/Reflect/setPrototypeOf.js
 test/staging/sm/Reflect/surfaces.js
@@ -12935,7 +12905,6 @@ test/staging/sm/expressions/short-circuit-compound-assignment-tdz.js
 test/staging/sm/expressions/short-circuit-compound-assignment.js
 test/staging/sm/expressions/string-literal-escape-sequences.js
 test/staging/sm/expressions/tagged-template-constant-folding.js
-test/staging/sm/extensions/8.12.5-01.js
 test/staging/sm/extensions/arguments-property-access-in-function.js
 test/staging/sm/extensions/builtin-function-arguments-caller.js
 test/staging/sm/extensions/censor-strict-caller.js
@@ -12948,7 +12917,6 @@ test/staging/sm/extensions/mutable-proto-special-form.js
 test/staging/sm/extensions/nested-delete-name-in-evalcode.js
 test/staging/sm/extensions/newer-type-functions-caller-arguments.js
 test/staging/sm/extensions/quote-string-for-nul-character.js
-test/staging/sm/extensions/set-property-non-extensible.js
 test/staging/sm/fields/await-identifier-script.js
 test/staging/sm/fields/bug1587574.js
 test/staging/sm/fields/init-order.js
@@ -13098,7 +13066,6 @@ test/staging/sm/statements/regress-642975.js
 test/staging/sm/statements/try-completion.js
 test/staging/sm/strict/10.4.2.js
 test/staging/sm/strict/10.4.3.js
-test/staging/sm/strict/10.6.js
 test/staging/sm/strict/11.13.1.js
 test/staging/sm/strict/11.13.2.js
 test/staging/sm/strict/11.3.1.js
@@ -13113,7 +13080,6 @@ test/staging/sm/strict/12.2.1.js
 test/staging/sm/strict/13.1.js
 test/staging/sm/strict/15.10.7.js
 test/staging/sm/strict/15.3.4.5.js
-test/staging/sm/strict/15.3.5.1.js
 test/staging/sm/strict/15.3.5.2.js
 test/staging/sm/strict/15.4.4.11.js
 test/staging/sm/strict/15.4.4.12.js
@@ -13142,7 +13108,6 @@ test/staging/sm/syntax/keyword-unescaped-requirement.js
 test/staging/sm/syntax/let-as-label.js
 test/staging/sm/syntax/linefeed-at-eof-in-unterminated-string-or-template.js
 test/staging/sm/syntax/omitted-catch-binding.js
-test/staging/sm/types/8.12.5-01.js
 test/staging/source-phase-imports/modules-import-source_FIXTURE.js
 test/staging/source-phase-imports/modules-simple_FIXTURE.js
 test/staging/top-level-await/grandparent-tla_FIXTURE.js
