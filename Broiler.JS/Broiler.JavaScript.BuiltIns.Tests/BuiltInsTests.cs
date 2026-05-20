@@ -316,6 +316,84 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Empty_Statements_Key_Coercion_And_Builtin_RegExp_Fallbacks_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        string Eval(string code)
+        {
+            using var ctx = new JSContext();
+            return ctx.Eval(code).ToString();
+        }
+
+        Assert.Equal("true", Eval("""
+            function foo() {
+                ; 'use strict';
+                return this !== undefined;
+            }
+
+            foo.call(undefined);
+            """));
+
+        Assert.Equal("true", Eval("""
+            (function () {
+                var evaluated = 0;
+                var base = {};
+                var key = {
+                    toString: function () {
+                        evaluated++;
+                        return '';
+                    }
+                };
+
+                base[key] ^= 0;
+                return evaluated === 1;
+            })();
+            """));
+
+        Assert.Equal("true", Eval("""
+            (function () {
+                var evaluated = 0;
+                var base = {};
+                var key = {
+                    toString: function () {
+                        evaluated++;
+                        return '';
+                    }
+                };
+
+                ++base[key];
+                return evaluated === 1;
+            })();
+            """));
+
+        Assert.Equal("true", Eval("""
+            (function () {
+                var evaluated = 0;
+                var base = {};
+                var key = {
+                    toString: function () {
+                        evaluated++;
+                        return '';
+                    }
+                };
+
+                base[key]--;
+                return evaluated === 1;
+            })();
+            """));
+
+        Assert.Equal("true|true|true:true:true", Eval("""
+            (function () {
+                var groups = /./.exec('a');
+                var descriptor = Object.getOwnPropertyDescriptor(groups, 'groups');
+                return groups.hasOwnProperty('groups')
+                    + '|' + (groups.groups === undefined)
+                    + '|' + descriptor.writable + ':' + descriptor.enumerable + ':' + descriptor.configurable;
+            })();
+            """));
+    }
+
+    [Fact]
     public void Object_Create_Applies_Property_Descriptors_And_Rejects_Invalid_Accessors()
     {
         EnsureBuiltInsLoaded();

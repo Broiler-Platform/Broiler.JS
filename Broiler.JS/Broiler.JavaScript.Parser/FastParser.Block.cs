@@ -33,10 +33,6 @@ partial class FastParser
 
                 if (Statement(out var stmt))
                 {
-                    // ignore empty expression statement...
-                    if (stmt.IsExpressionStatement(out var exp) && exp.Expression.Type == FastNodeType.EmptyExpression)
-                        continue;
-
                     list.Add(stmt);
                     continue;
                 }

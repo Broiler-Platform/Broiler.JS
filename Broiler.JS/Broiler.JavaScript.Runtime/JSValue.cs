@@ -472,6 +472,18 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     internal abstract PropertyKey ToKey(bool create = true);
 
+    internal static JSValue NormalizePropertyKey(JSValue key)
+    {
+        var normalized = key.ToKey(false);
+        return normalized.Type switch
+        {
+            KeyType.UInt => CreateNumber(normalized.Index),
+            KeyType.String => CreateString(normalized.KeyString.ToString()),
+            KeyType.Symbol => normalized.Symbol as JSValue ?? key,
+            _ => key,
+        };
+    }
+
     public virtual JSValue GetPrototypeOf() => prototypeChain?.Object ?? NullValue;
 
     public virtual void SetPrototypeOf(JSValue target)

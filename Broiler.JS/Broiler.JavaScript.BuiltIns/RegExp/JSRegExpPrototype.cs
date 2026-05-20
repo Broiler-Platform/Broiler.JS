@@ -134,6 +134,8 @@ public partial class JSRegExp
         result[KeyStrings.index] = JSValue.CreateNumber(match.Index);
         result[KeyStrings.input] = a.Get1();
 
+        var groupsKey = KeyStrings.GetOrCreate("groups");
+
         // Populate named groups (§2.7 — duplicate named capture groups support).
         var groupNames = value.GetGroupNames();
         if (groupNames.Length > 1) // First name is always "0" (the whole match)
@@ -156,8 +158,13 @@ public partial class JSRegExp
             }
             
             if (hasNamedGroups)
-                result[KeyStrings.GetOrCreate("groups")] = namedGroups;
+            {
+                result[groupsKey] = namedGroups;
+                return result;
+            }
         }
+
+        result[groupsKey] = JSUndefined.Value;
 
         return result;
     }
