@@ -26,7 +26,7 @@ partial class FastCompiler
             if (p.Type == FastNodeType.Literal)
             {
                 var l = p as AstLiteral;
-                if (l.TokenType == TokenTypes.TemplatePart)
+                if (l.TokenType == TokenTypes.TemplatePart || l.TokenType == TokenTypes.TemplateEnd)
                 {
                     var r = l.Start.Span.Value;
                     r = r.Trim('`');

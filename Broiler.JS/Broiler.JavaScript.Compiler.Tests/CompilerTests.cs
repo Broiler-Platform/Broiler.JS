@@ -265,6 +265,29 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_TaggedTemplate_NoSubstitution_Invokes_Tag_Function()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var calls = 0;
+                var cooked = '';
+                var raw = '';
+
+                (function(parts) {
+                    calls += 1;
+                    cooked = parts[0];
+                    raw = parts.raw[0];
+                })`\x41`;
+
+                return [calls, cooked, raw].join('|');
+            })()
+            """);
+
+        Assert.Equal(@"1|A|\x41", result.ToString());
+    }
+
+    [Fact]
     public void Compile_DestructuringAssignmentProperties_OnlyInfer_Direct_Anonymous_Function_Names()
     {
         using var ctx = new JSContext();

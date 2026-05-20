@@ -59,6 +59,14 @@ partial class FastParser
                     node = new AstTaggedTemplateExpression(node, template.Parts);
                     continue;
 
+                case TokenTypes.TemplateEnd:
+                    stream.Consume();
+                    node = new AstTaggedTemplateExpression(node, new Sequence<AstExpression>(1)
+                    {
+                        new AstLiteral(token.Type, token)
+                    });
+                    continue;
+
                 case TokenTypes.OptionalIndex:
                 case TokenTypes.SquareBracketStart:
                     stream.Consume();

@@ -513,6 +513,14 @@ public class FastScanner
                 }
                 throw Unexpected();
 
+            case 'x':
+                if (ScanHexEscape(next, out var hex))
+                {
+                    t.Append(hex);
+                    return true;
+                }
+                throw Unexpected();
+
             case 'n':
                 next = '\n';
                 break;

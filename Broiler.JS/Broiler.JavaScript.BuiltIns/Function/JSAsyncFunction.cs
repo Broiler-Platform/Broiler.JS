@@ -18,7 +18,7 @@ public class JSAsyncFunction
 
         var constructor = (JSFunction)JSValue.CreateFunction((in Arguments a) =>
         {
-            var created = JSFunction.Constructor(in a);
+            var created = JSFunction.CreateDynamicFunction(in a, "async function");
             if (created is JSFunction function)
                 function.prototype = null;
 

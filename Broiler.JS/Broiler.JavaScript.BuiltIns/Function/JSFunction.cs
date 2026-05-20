@@ -366,10 +366,13 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     [JSExport(IsConstructor = true, Length = 1)]
     internal new static JSValue Constructor(in Arguments args)
+        => CreateDynamicFunction(in args, "function");
+
+    internal static JSValue CreateDynamicFunction(in Arguments args, string functionKind)
     {
         var len = args.Length;
         if (len == 0)
-            return new JSFunction(empty, "anonymous", "function anonymous() {\n\n}");
+            return CoreScript.Evaluate($"({functionKind} anonymous() {{\n\n}})", "internal");
 
         JSValue body = null;
         var al = args.Length;
@@ -395,18 +398,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         var context = JSEngine.Current as IJSExecutionContext;
         context?.DispatchEvalEvent(ref bodyText, ref location);
         var parameterText = string.Join(",", sargs);
-
-        _ = CoreScript.Compile($"function anonymous({parameterText}\n) {{\n{bodyText}\n}}", "internal", codeCache: context?.CodeCache);
-
-        var fx = new JSFunction(empty, "internal", bodyText)
-        {
-            CoerceThisOnInvoke = true
-        };
-
-        // parse and create method...
-        var fx1 = CoreScript.Compile(bodyText, "internal", sargs, codeCache: context?.CodeCache);
-        fx.f = (in Arguments a) => fx1(a.OverrideThis(CoerceNonStrictThis(a.This)));
-        return fx;
+        var source = $"({functionKind} anonymous({parameterText}\n) {{\n{bodyText}\n}})";
+        return CoreScript.Evaluate(source, location ?? "internal", context?.CodeCache);
     }
 
     internal static JSValue CoerceNonStrictThis(JSValue value)

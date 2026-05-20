@@ -2800,6 +2800,36 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Dynamic_Function_Constructors_Preserve_Kind_And_Length_Metadata()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              var GeneratorFunction = Object.getPrototypeOf(function* () {}).constructor;
+              var AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+              var AsyncGeneratorFunction = Object.getPrototypeOf(async function* () {}).constructor;
+              var generator = GeneratorFunction('x, y', 'yield x + y;');
+              var asyncFunction = AsyncFunction('x', 'return x;');
+              var asyncGenerator = AsyncGeneratorFunction('x', 'yield x;');
+
+              return [
+                Function('x, y', 'return x + y;').length,
+                generator.length,
+                asyncFunction.length,
+                asyncGenerator.length,
+                typeof generator(1, 2).next,
+                generator(1, 2).next().value,
+                typeof asyncFunction(1).then,
+                typeof asyncGenerator(1).next
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("2|2|1|1|function|3|function|function", result.ToString());
+    }
+
+    [Fact]
     public void Array_Iteration_Methods_Preserve_Abrupt_Completions_From_Length_Property_And_Predicate()
     {
         EnsureBuiltInsLoaded();
