@@ -1522,6 +1522,7 @@ public class BuiltInsTests
               var AsyncFunction = asyncPrototype.constructor;
               var GeneratorFunction = generatorPrototype.constructor;
               var AsyncGeneratorFunction = asyncGeneratorPrototype.constructor;
+              var errorInstance = new Error();
               var errorMessage = Object.getOwnPropertyDescriptor(Error.prototype, 'message');
 
               return [
@@ -1534,12 +1535,14 @@ public class BuiltInsTests
                 errorMessage.value === '',
                 errorMessage.writable,
                 errorMessage.enumerable,
-                errorMessage.configurable
+                errorMessage.configurable,
+                !errorInstance.hasOwnProperty('message'),
+                errorInstance.message === Error.prototype.message
               ].join('|');
             })();
             """);
 
-        Assert.Equal("true|true|true|true|true|true|true|true|false|true", result.ToString());
+        Assert.Equal("true|true|true|true|true|true|true|true|false|true|true|true", result.ToString());
     }
 
     [Fact]

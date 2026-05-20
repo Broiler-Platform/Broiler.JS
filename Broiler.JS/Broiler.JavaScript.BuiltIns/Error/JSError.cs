@@ -46,12 +46,15 @@ public partial class JSError : JSObject, IJSError
         this(JSEngine.NewTargetPrototype)
     {
         Exception = new JSException(this, function: function, filePath: filePath, line: line);
-        var message = a[0]?.ToString() ?? "Internal Error";
+        var hasMessage = a.TryGetAt(0, out var messageValue);
+        var message = hasMessage ? messageValue.ToString() : string.Empty;
 
         Message = message;
         Stack = CreateStack();
 
-        FastAddValue(KeyStrings.message, JSValue.CreateString(message), JSPropertyAttributes.ConfigurableValue);
+        if (hasMessage)
+            FastAddValue(KeyStrings.message, JSValue.CreateString(message), JSPropertyAttributes.ConfigurableValue);
+
         FastAddValue(KeyStrings.stack, JSValue.CreateString(Stack), JSPropertyAttributes.ConfigurableValue);
     }
 

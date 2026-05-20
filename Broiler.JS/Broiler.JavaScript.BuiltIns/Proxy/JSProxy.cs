@@ -418,6 +418,12 @@ public partial class JSProxy : JSObject
         return target.DefineProperty(key, propertyDescription);
     }
 
+    public override JSValue DefineProperty(in KeyString name, JSObject pd) => DefineProperty(name.ToJSValue(), pd);
+
+    public override JSValue DefineProperty(uint key, JSObject pd) => DefineProperty(JSValue.CreateString(key.ToString()), pd);
+
+    public override JSValue DefineProperty(IJSSymbol name, JSObject pd) => DefineProperty((JSValue)(JSSymbol)name, pd);
+
     public override JSValue Delete(JSValue index)
     {
         var target = RequireTarget();

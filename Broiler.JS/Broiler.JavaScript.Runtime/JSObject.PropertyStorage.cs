@@ -437,7 +437,7 @@ public partial class JSObject
         };
     }
 
-    public JSValue DefineProperty(IJSSymbol name, JSObject pd)
+    public virtual JSValue DefineProperty(IJSSymbol name, JSObject pd)
     {
         var key = name.Key;
         var old = symbols[key];
@@ -454,7 +454,7 @@ public partial class JSObject
         return JSValue.UndefinedValue;
     }
 
-    public JSValue DefineProperty(uint key, JSObject pd)
+    public virtual JSValue DefineProperty(uint key, JSObject pd)
     {
         ref var elements = ref GetElements(true);
         var old = elements[key];
@@ -473,7 +473,7 @@ public partial class JSObject
         return JSValue.UndefinedValue;
     }
 
-    public JSValue DefineProperty(in KeyString name, JSObject pd)
+    public virtual JSValue DefineProperty(in KeyString name, JSObject pd)
     {
         if (name.Key == KeyStrings.length.Key && pd.GetInternalProperty(KeyStrings.value, false).IsEmpty)
         {
