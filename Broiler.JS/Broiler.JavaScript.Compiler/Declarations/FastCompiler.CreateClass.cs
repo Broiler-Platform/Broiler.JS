@@ -5,6 +5,7 @@ using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Storage;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using System.Reflection;
 
@@ -12,6 +13,42 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
+    private static string FormatLiteralPropertyName(AstLiteral literal)
+    {
+        if (literal.TokenType == TokenTypes.String)
+            return literal.StringValue;
+
+        var value = literal.NumericValue;
+        if (double.IsNaN(value))
+            return nameof(double.NaN);
+
+        if (value == 0)
+            return "0";
+
+        if (value > 0 && (uint)value == value)
+            return ((uint)value).ToString();
+
+        return value.ToString();
+    }
+
+    private static string GetClassMemberFunctionName(AstClassProperty property, string prefix = null)
+    {
+        if (property.Computed)
+            return null;
+
+        string name = property.Key switch
+        {
+            AstIdentifier id => id.Name.Value,
+            AstLiteral literal when literal.TokenType == TokenTypes.String || literal.TokenType == TokenTypes.Number => FormatLiteralPropertyName(literal),
+            _ => null
+        };
+
+        if (name == null)
+            return null;
+
+        return prefix == null ? name : $"{prefix} {name}";
+    }
+
     private static readonly MethodInfo ValidateClassStaticPropertyNameKeyStringMethod = typeof(JSClassStaticPropertyValidator)
         .PublicMethod(nameof(JSClassStaticPropertyValidator.Validate), KeyStringsBuilder.RefType)
         ?? throw new InvalidOperationException("JSClassStaticPropertyValidator.Validate(KeyString) not found");
@@ -32,7 +69,18 @@ partial class FastCompiler
                 return KeyOfName(id.Name);
 
             case (FastNodeType.Literal, AstLiteral l):
-                return KeyOfName(l.StringValue);
+                if (computed)
+                    return VisitLiteral(l);
+
+                if (l.TokenType == TokenTypes.String)
+                {
+                    if (NumberParser.TryGetArrayIndex(l.StringValue, out var ui))
+                        return YExpression.Constant(ui);
+
+                    return KeyOfName(l.StringValue);
+                }
+
+                return VisitLiteral(l);
 
             default:
                 return Visit(exp);
@@ -44,10 +92,11 @@ partial class FastCompiler
         if (!property.IsStatic)
             return name;
 
-        return property.Key.Type switch
+        return name.Type switch
         {
-            FastNodeType.Identifier or FastNodeType.Literal => YExpression.Call(null, ValidateClassStaticPropertyNameKeyStringMethod, name),
-            _ => YExpression.Call(null, ValidateClassStaticPropertyNameJSValueMethod, name),
+            var type when type == typeof(KeyString) => YExpression.Call(null, ValidateClassStaticPropertyNameKeyStringMethod, name),
+            var type when type == typeof(JSValue) => YExpression.Call(null, ValidateClassStaticPropertyNameJSValueMethod, name),
+            _ => name,
         };
     }
 
@@ -107,13 +156,15 @@ partial class FastCompiler
                     name = ValidateStaticPropertyName(property, GetName(property));
                     if (property.IsStatic)
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
+                            inferredFunctionName: GetClassMemberFunctionName(property, "get"));
                         staticElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                         break;
                     }
                     else
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
+                            inferredFunctionName: GetClassMemberFunctionName(property, "get"));
                         prototypeElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     break;
@@ -122,12 +173,14 @@ partial class FastCompiler
                     name = ValidateStaticPropertyName(property, GetName(property));
                     if (property.IsStatic)
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
+                            inferredFunctionName: GetClassMemberFunctionName(property, "set"));
                         staticElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     else
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
+                            inferredFunctionName: GetClassMemberFunctionName(property, "set"));
                         prototypeElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     break;

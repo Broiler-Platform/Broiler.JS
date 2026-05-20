@@ -15,7 +15,7 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private YExpression CreateFunction(AstFunctionExpression functionDeclaration, YExpression super = null, bool createClass = false, string className = null,
-        IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true)
+        IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true, string inferredFunctionName = null)
     {
         var node = functionDeclaration;
         var functionLength = GetExpectedArgumentCount(functionDeclaration.Params);
@@ -103,6 +103,14 @@ partial class FastCompiler
                 nameOffset = id.Name.Offset;
                 nameLength = id.Name.Length;
             }
+            else if (inferredFunctionName != null)
+            {
+                fxName = StringSpanBuilder.New(new StringSpan(inferredFunctionName));
+                localFxName = StringSpanBuilder.New(new StringSpan(inferredFunctionName));
+
+                nameOffset = 0;
+                nameLength = 0;
+            }
             else
             {
                 fxName = StringSpanBuilder.Empty;
@@ -155,7 +163,7 @@ partial class FastCompiler
 
             // adding lexical scope pending...
 
-            functionName = functionName ?? "inline";
+            functionName = functionName ?? inferredFunctionName ?? "inline";
 
             static YExpression ToDelegate(YLambdaExpression e1) => e1;
 
