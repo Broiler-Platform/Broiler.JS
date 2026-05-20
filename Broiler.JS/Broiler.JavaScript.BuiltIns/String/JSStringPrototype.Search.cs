@@ -192,8 +192,8 @@ public partial class JSString
             return JSValue.CreateNumber(reg.Index);
         }
 
-        //is String
-        var index = @this.IndexOf(search.StringValue);
-        return JSValue.CreateNumber(index);
+        var created = new JSRegExp(search.StringValue, "");
+        var builtinSearcher = created[(IJSSymbol)JSSymbol.search];
+        return builtinSearcher.InvokeFunction(new Arguments(created, a.This));
     }
 }

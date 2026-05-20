@@ -36,7 +36,9 @@ public partial class JSString
             return jSRegExp.Match(@this);
 
         var pattern = reg.IsNullOrUndefined ? "" : reg.StringValue;
-        return new JSRegExp(pattern, "").Match(@this);
+        var created = new JSRegExp(pattern, "");
+        var builtinMatcher = created[(IJSSymbol)JSSymbol.match];
+        return builtinMatcher.InvokeFunction(new Arguments(created, @this));
     }
 
     [JSPrototypeMethod]

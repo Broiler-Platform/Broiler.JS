@@ -23,6 +23,9 @@ partial class FastCompiler
     private static readonly MethodInfo PrepareAnonymousFunctionNameForDestructuringMethod = typeof(JSVariable)
         .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForDestructuring), [typeof(JSValue), typeof(string), typeof(bool)])
         ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForDestructuring(JSValue, string, bool) not found");
+    private static readonly MethodInfo NormalizePropertyKeyMethod = typeof(JSValue)
+        .GetMethod("NormalizePropertyKey", BindingFlags.NonPublic | BindingFlags.Static, [typeof(JSValue)])
+        ?? throw new InvalidOperationException("JSValue.NormalizePropertyKey(JSValue) not found");
 
     private YExpression VisitAssignmentExpression(AstExpression left, TokenTypes assignmentOperator, AstExpression right)
     {
@@ -42,13 +45,21 @@ partial class FastCompiler
         // we need to rewrite left side if it is computed expression with member assignment...
         if (assignmentOperator != TokenTypes.Assign && left.Type == FastNodeType.MemberExpression && left is AstMemberExpression mem)
         {
-            if (mem.Object.Type != FastNodeType.Identifier)
+            using var objectTemp = scope.Top.GetTempVariable(typeof(JSValue));
+            if (mem.Computed)
             {
-                // this needs to be computed...
-                var tmp = scope.Top.GetTempVariable();
-                var leftExp = CreateMemberExpression(tmp.Expression, mem.Property, mem.Computed);
-                return YExpression.Block(YExpression.Assign(tmp.Expression, Visit(mem.Object)), Assign(leftExp, right, assignmentOperator), tmp.Expression);
+                using var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                var leftExp = JSValueBuilder.Index(objectTemp.Expression, keyTemp.Expression);
+                return YExpression.Block(
+                    YExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
+                    YExpression.Assign(keyTemp.Expression, YExpression.Call(null, NormalizePropertyKeyMethod, Visit(mem.Property))),
+                    Assign(leftExp, right, assignmentOperator));
             }
+
+            var memberExp = CreateMemberExpression(objectTemp.Expression, mem.Property, false);
+            return YExpression.Block(
+                YExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
+                Assign(memberExp, right, assignmentOperator));
         }
 
         if (left.Type == FastNodeType.Identifier)
