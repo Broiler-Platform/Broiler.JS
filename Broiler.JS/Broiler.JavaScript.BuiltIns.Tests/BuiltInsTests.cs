@@ -6211,6 +6211,9 @@ public class BuiltInsTests
                 thrownCtor(function () { Math.sumPrecise([{}]); }),
                 thrownCtor(function () { Math.sumPrecise([0n]); }),
                 thrownCtor(function () { Math.sumPrecise([objectWithValueOf]); }),
+                thrownCtor(function () { Math.sumPrecise([objectWithValueOf, NaN]); }),
+                thrownCtor(function () { Math.sumPrecise([NaN, objectWithValueOf]); }),
+                thrownCtor(function () { Math.sumPrecise([-Infinity, Infinity, objectWithValueOf]); }),
                 coercions,
                 thrownCtor(function () {
                   Math.sumPrecise({
@@ -6225,7 +6228,7 @@ public class BuiltInsTests
             })();
             """);
 
-        Assert.Equal("TypeError|TypeError|TypeError|0|TypeError|1|1", result.ToString());
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|0|TypeError|1|1", result.ToString());
     }
 
     [Fact]

@@ -569,6 +569,7 @@ public partial class JSMath : JSObject
 
         double sum = 0.0;
         double compensation = 0.0;
+        bool hasNaN = false;
         bool hasPositiveInfinity = false;
         bool hasNegativeInfinity = false;
 
@@ -589,22 +590,19 @@ public partial class JSMath : JSObject
             var d = number.value;
 
             if (double.IsNaN(d))
-                return JSNumber.NaN;
+            {
+                hasNaN = true;
+                continue;
+            }
 
             if (double.IsPositiveInfinity(d))
             {
-                if (hasNegativeInfinity)
-                    return JSNumber.NaN;
-
                 hasPositiveInfinity = true;
                 continue;
             }
 
             if (double.IsNegativeInfinity(d))
             {
-                if (hasPositiveInfinity)
-                    return JSNumber.NaN;
-
                 hasNegativeInfinity = true;
                 continue;
             }
@@ -617,6 +615,9 @@ public partial class JSMath : JSObject
                 compensation += (d - t) + sum;
             sum = t;
         }
+
+        if (hasNaN || (hasPositiveInfinity && hasNegativeInfinity))
+            return JSNumber.NaN;
 
         if (hasPositiveInfinity)
             return JSNumber.PositiveInfinity;
