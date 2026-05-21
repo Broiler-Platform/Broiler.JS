@@ -7588,6 +7588,47 @@ public class BuiltInsTests
             result.ToString());
     }
 
+    [Fact]
+    public void RegExp_MatchAll_Iterator_Next_Preserves_Test262_Abrupt_Completions()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var originalExec = RegExp.prototype.exec;
+                var iteratorNextType = typeof /./g[Symbol.matchAll]('').next;
+
+                RegExp.prototype.exec = function () {
+                    throw new Test262Error();
+                };
+                var callThrows = (function () {
+                    var iter = /./[Symbol.matchAll]('');
+                    return thrownCtor(function () {
+                        iter.next();
+                    });
+                })();
+
+                RegExp.prototype.exec = originalExec;
+
+                return [iteratorNextType, callThrows].join('|');
+            })();
+            """);
+
+        Assert.Equal("function|Test262Error", result.ToString());
+    }
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured

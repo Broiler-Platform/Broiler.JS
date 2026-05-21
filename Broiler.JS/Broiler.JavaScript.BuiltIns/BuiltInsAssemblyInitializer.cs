@@ -1109,8 +1109,13 @@ internal static class BuiltInsAssemblyInitializer
             {
                 var flags = GetObservableFlags(regExp);
                 InvokeSpeciesConstructor(regExp, flags);
-
-                return regExp.Match(a.Get1());
+                var matcher = new JSRegExp(new Arguments(JSUndefined.Value, regExp, flags));
+                matcher[KeyStrings.lastIndex] = regExp[KeyStrings.lastIndex];
+                return new JSRegExpStringIterator(
+                    matcher,
+                    JSValue.CreateString(a.Get1().ToString()),
+                    matcher.globalSearch,
+                    matcher.unicode);
             }
 
             if (JSRegExp.IsRegExpLike(a.This))
@@ -1122,10 +1127,16 @@ internal static class BuiltInsAssemblyInitializer
                 if (!flags.ToString().Contains('g'))
                     throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] requires a global regular expression");
 
-                return new JSRegExp(new Arguments(JSUndefined.Value, a.This, flags)).Match(a.Get1());
+                var matcher = new JSRegExp(new Arguments(JSUndefined.Value, a.This, flags));
+                return new JSRegExpStringIterator(
+                    matcher,
+                    JSValue.CreateString(a.Get1().ToString()),
+                    matcher.globalSearch,
+                    matcher.unicode);
             }
 
-            return new JSRegExp(new Arguments(JSUndefined.Value, a.This, JSValue.CreateString("g"))).Match(a.Get1());
+            var defaultMatcher = new JSRegExp(new Arguments(JSUndefined.Value, a.This, JSValue.CreateString("g")));
+            return new JSRegExpStringIterator(defaultMatcher, JSValue.CreateString(a.Get1().ToString()), defaultMatcher.globalSearch, defaultMatcher.unicode);
         }, "[Symbol.matchAll]", 1), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.replace.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
