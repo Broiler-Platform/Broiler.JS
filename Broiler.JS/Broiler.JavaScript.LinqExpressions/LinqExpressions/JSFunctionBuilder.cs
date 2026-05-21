@@ -72,8 +72,8 @@ public class JSFunctionBuilder
         return Expression.Call(target, invokeFunction, args);
     }
 
-    public static Expression New(Expression del, Expression name, Expression code, int length) =>
-        NewLambdaExpression.NewExpression(type, del, name, code, Expression.Constant(length), Expression.Constant(true));
+    public static Expression New(Expression del, Expression name, Expression code, int length, bool createPrototype = true) =>
+        NewLambdaExpression.NewExpression(type, del, name, code, Expression.Constant(length), Expression.Constant(createPrototype));
 
     public static Expression EnableNonStrictThis(Expression target)
     {

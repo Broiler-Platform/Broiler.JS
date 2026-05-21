@@ -33,6 +33,24 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_ArrowFunction_Is_Not_A_Constructor()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                try {
+                    new (() => {});
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })()
+            """);
+
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Compile_ArrowFunction_ArrayDestructuringElisions_Work()
     {
         using var ctx = new JSContext();
