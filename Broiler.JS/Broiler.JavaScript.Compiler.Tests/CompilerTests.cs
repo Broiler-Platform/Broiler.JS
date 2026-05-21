@@ -288,6 +288,27 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_TemplateLiteral_WithSubstitution_Returns_Interpolated_String()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                function printCodePoint(codePoint) {
+                    var hex = codePoint
+                        .toString(16)
+                        .toUpperCase()
+                        .padStart(6, "0");
+                    return `U+${hex}`;
+                }
+
+                return printCodePoint(255);
+            })()
+            """);
+
+        Assert.Equal("U+0000FF", result.ToString());
+    }
+
+    [Fact]
     public void Compile_DestructuringAssignmentProperties_OnlyInfer_Direct_Anonymous_Function_Names()
     {
         using var ctx = new JSContext();

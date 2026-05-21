@@ -60,6 +60,12 @@ partial class FastParser
                     continue;
 
                 case TokenTypes.TemplateEnd:
+                    if (token.Span.Length > 0 && token.Span.Source[token.Span.Offset] == '}')
+                    {
+                        m.Undo();
+                        break;
+                    }
+
                     stream.Consume();
                     node = new AstTaggedTemplateExpression(node, new Sequence<AstExpression>(1)
                     {

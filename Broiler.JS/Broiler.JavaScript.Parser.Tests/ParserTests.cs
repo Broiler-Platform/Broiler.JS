@@ -237,6 +237,23 @@ public class ParserTests
         Assert.NotNull(program);
     }
 
+    [Fact]
+    public void ParseProgram_TemplateLiteral_WithSubstitution_DoesNotConsume_TemplateEnd_As_TaggedTemplate()
+    {
+        var stream = new FastTokenStream(new StringSpan("`U+${hex}`;"));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements.ToArray()));
+        var template = Assert.IsType<AstTemplateExpression>(statement.Expression);
+        var parts = template.Parts.ToArray();
+
+        Assert.Equal(3, parts.Length);
+        Assert.Equal("U+", Assert.IsType<AstLiteral>(parts[0]).Start.CookedText);
+        Assert.Equal("hex", Assert.IsType<AstIdentifier>(parts[1]).Name.Value);
+        Assert.Equal(string.Empty, Assert.IsType<AstLiteral>(parts[2]).Start.CookedText);
+    }
+
     private static void AssertAsyncMethod(AstNode node, string expectedName)
     {
         var property = Assert.IsType<AstClassProperty>(node);
