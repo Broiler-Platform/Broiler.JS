@@ -18,6 +18,8 @@ public static class JSIntl
     private static readonly KeyString NumberFormatKey = KeyStrings.GetOrCreate("NumberFormat");
     private static readonly KeyString DisplayNamesKey = KeyStrings.GetOrCreate("DisplayNames");
     private static readonly KeyString DurationFormatKey = KeyStrings.GetOrCreate("DurationFormat");
+    private static readonly KeyString ListFormatKey = KeyStrings.GetOrCreate("ListFormat");
+    private static readonly KeyString LocaleKey = KeyStrings.GetOrCreate("Locale");
     private static readonly KeyString PluralRulesKey = KeyStrings.GetOrCreate("PluralRules");
     private static readonly KeyString FormatKey = KeyStrings.GetOrCreate("format");
     private static readonly KeyString FormatRangeKey = KeyStrings.GetOrCreate("formatRange");
@@ -51,7 +53,9 @@ public static class JSIntl
         intl.FastAddValue(RelativeTimeFormatKey, CreateRelativeTimeFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(NumberFormatKey, CreateNumberFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(DisplayNamesKey, CreateDisplayNamesConstructor(), JSPropertyAttributes.ConfigurableValue);
-        intl.FastAddValue(DurationFormatKey, CreateSimpleConstructor("DurationFormat", 0), JSPropertyAttributes.ConfigurableValue);
+        intl.FastAddValue(DurationFormatKey, CreateDurationFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
+        intl.FastAddValue(ListFormatKey, CreateListFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
+        intl.FastAddValue(LocaleKey, CreateLocaleConstructor(), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(PluralRulesKey, CreateSimpleConstructor("PluralRules", 0), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(SupportedValuesOfKey,
             new JSFunction(static (in Arguments a) =>
@@ -70,6 +74,47 @@ public static class JSIntl
 
             return new JSObject();
         }, name, $"function {name}() {{ [native code] }}", length: length);
+
+    private static JSFunction CreateSupportedLocalesOfFunction()
+        => new(static (in Arguments a) => JSValue.CreateArray(), "supportedLocalesOf", "function supportedLocalesOf() { [native code] }", length: 1, createPrototype: false);
+
+    private static JSFunction CreateDurationFormatConstructor()
+    {
+        var constructor = new JSFunction(static (in Arguments a) =>
+            new JSIntlDurationFormat(ValidateConstructorArguments("DurationFormat", in a)),
+            "DurationFormat",
+            "function DurationFormat() { [native code] }",
+            length: 0);
+        constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(FormatKey,
+            new JSFunction(JSIntlDurationFormat.FormatPrototype, "format", "function format() { [native code] }", createPrototype: false, length: 1),
+            JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("formatToParts"),
+            new JSFunction(JSIntlDurationFormat.FormatToPartsPrototype, "formatToParts", "function formatToParts() { [native code] }", createPrototype: false, length: 1),
+            JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
+            new JSFunction(JSIntlDurationFormat.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
+            JSPropertyAttributes.ConfigurableValue);
+        return constructor;
+    }
+
+    private static JSFunction CreateListFormatConstructor()
+    {
+        var constructor = new JSFunction(static (in Arguments a) =>
+        {
+            ValidateConstructorArguments("ListFormat", in a);
+            return new JSIntlListFormat();
+        }, "ListFormat", "function ListFormat() { [native code] }", length: 0);
+        constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
+        return constructor;
+    }
+
+    private static JSFunction CreateLocaleConstructor()
+        => new(static (in Arguments a) =>
+        {
+            ValidateLocaleConstructorArguments(in a);
+            return new JSIntlLocale();
+        }, "Locale", "function Locale() { [native code] }", length: 1);
 
     private static JSFunction CreateDisplayNamesConstructor()
         => new((in Arguments a) =>
@@ -151,6 +196,18 @@ public static class JSIntl
 
         ValidateLocalesArgument(a.Get1());
         return ValidateOptionsArgument(a.GetAt(1));
+    }
+
+    internal static void ValidateLocaleConstructorArguments(in Arguments a)
+    {
+        if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
+            throw JSEngine.NewTypeError("Intl.Locale requires 'new'");
+
+        var tag = a.Get1();
+        if (!tag.IsString && !tag.IsObject)
+            throw JSEngine.NewTypeError("Locale tag must be a string or object");
+
+        _ = ValidateOptionsArgument(a.GetAt(1));
     }
 
     internal static JSObject ValidateOptionsArgument(JSValue options)
@@ -274,6 +331,37 @@ public class JSIntlRelativeTimeFormat : JSObject
             ? (intl[KeyStrings.GetOrCreate(name)] as JSFunction)?.prototype
             : null;
 }
+
+public sealed class JSIntlDurationFormat(JSObject _ = null) : JSObject
+{
+    public static JSValue FormatPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlDurationFormat)
+            throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.format called on incompatible receiver");
+
+        return JSValue.CreateString(string.Empty);
+    }
+
+    public static JSValue FormatToPartsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlDurationFormat)
+            throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.formatToParts called on incompatible receiver");
+
+        return JSValue.CreateArray();
+    }
+
+    public static JSValue ResolvedOptionsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlDurationFormat)
+            throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.resolvedOptions called on incompatible receiver");
+
+        return new JSObject();
+    }
+}
+
+public sealed class JSIntlListFormat : JSObject;
+
+public sealed class JSIntlLocale : JSObject;
 
 public class JSIntlNumberFormat : JSObject
 {

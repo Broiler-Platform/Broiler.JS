@@ -6950,6 +6950,56 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void ScriptHost_Compatibility_BuiltIns_Expose_Missing_Test262_Functions()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var regExpStringIteratorProto = Object.getPrototypeOf(/./[Symbol.matchAll](''));
+                var duration = new Intl.DurationFormat();
+                var format = duration.format;
+                var formatToParts = duration.formatToParts;
+                var resolvedOptions = duration.resolvedOptions;
+                var supportedLocalesOf = Intl.DurationFormat.supportedLocalesOf;
+
+                return [
+                    typeof Object.getOwnPropertyDescriptor(regExpStringIteratorProto, 'next').value,
+                    typeof BigInt64Array,
+                    typeof BigUint64Array,
+                    thrownCtor(function () { BigInt64Array.prototype.buffer; }),
+                    typeof Intl.ListFormat,
+                    thrownCtor(function () { Intl.ListFormat(); }),
+                    thrownCtor(function () { new Intl.ListFormat([], null); }),
+                    typeof Intl.Locale,
+                    thrownCtor(function () { Intl.Locale(); }),
+                    thrownCtor(function () { new Intl.Locale(true); }),
+                    typeof Intl.DurationFormat.prototype.format,
+                    typeof Intl.DurationFormat.prototype.formatToParts,
+                    typeof Intl.DurationFormat.prototype.resolvedOptions,
+                    typeof Intl.DurationFormat.supportedLocalesOf,
+                    thrownCtor(function () { format({ hours: 1 }); }),
+                    thrownCtor(function () { formatToParts({ hours: 1 }); }),
+                    thrownCtor(function () { resolvedOptions(); }),
+                    Array.isArray(supportedLocalesOf.call(null))
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("function|function|function|TypeError|function|TypeError|TypeError|function|TypeError|TypeError|function|function|function|function|TypeError|TypeError|TypeError|true", result.ToString());
+    }
+
+    [Fact]
     public void Intl_NumberFormat_RelativeTimeFormat_DurationFormat_And_RegExp_Split_TypeErrors_Match_Test262()
     {
         EnsureBuiltInsLoaded();

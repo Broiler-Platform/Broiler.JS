@@ -7,6 +7,8 @@ namespace Broiler.JavaScript.BuiltIns.RegExp;
 
 internal sealed class JSRegExpStringIterator : JSObject
 {
+    private static readonly JSObject Prototype = CreateIteratorPrototype();
+
     private readonly JSValue regexp;
     private readonly JSValue input;
     private readonly bool global;
@@ -15,16 +17,30 @@ internal sealed class JSRegExpStringIterator : JSObject
 
     public JSRegExpStringIterator(JSValue regexp, JSValue input, bool global, bool unicode)
     {
+        BasePrototypeObject = Prototype;
         this.regexp = regexp;
         this.input = input;
         this.global = global;
         this.unicode = unicode;
-
-        FastAddValue(KeyStrings.next, JSValue.CreateFunction(Next, "next"), JSPropertyAttributes.ConfigurableValue);
-        FastAddValue((IJSSymbol)JSSymbol.iterator, JSValue.CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false), JSPropertyAttributes.ConfigurableValue);
     }
 
-    private JSValue Next(in Arguments _)
+    private static JSObject CreateIteratorPrototype()
+    {
+        var prototype = new JSObject();
+        prototype.FastAddValue(KeyStrings.next, JSValue.CreateFunction(Next, "next", null, 0, false), JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, JSValue.CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false), JSPropertyAttributes.ConfigurableValue);
+        return prototype;
+    }
+
+    private static JSValue Next(in Arguments a)
+    {
+        if (a.This is not JSRegExpStringIterator iterator)
+            throw JSEngine.NewTypeError("RegExp String Iterator.prototype.next called on incompatible receiver");
+
+        return iterator.Next();
+    }
+
+    private JSValue Next()
     {
         if (done)
             return CreateIterResult(JSUndefined.Value, true);
