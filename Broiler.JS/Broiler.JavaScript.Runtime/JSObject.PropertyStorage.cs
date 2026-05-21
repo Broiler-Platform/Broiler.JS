@@ -228,7 +228,7 @@ public partial class JSObject
         {
             if (p.set is IJSFunction setter)
             {
-                setter.Delegate(new Arguments(receiver ?? this, value));
+                setter.InvokeFunction(new Arguments(receiver ?? this, value));
                 return true;
             }
 
@@ -284,7 +284,7 @@ public partial class JSObject
         {
             if (p.set is IJSFunction setter)
             {
-                setter.Delegate(new Arguments(receiver ?? this, value));
+                setter.InvokeFunction(new Arguments(receiver ?? this, value));
                 return true;
             }
 
@@ -343,7 +343,7 @@ public partial class JSObject
         {
             if (p.set is IJSFunction setter)
             {
-                setter.Delegate(new Arguments(receiver ?? this, value));
+                setter.InvokeFunction(new Arguments(receiver ?? this, value));
                 return true;
             }
 

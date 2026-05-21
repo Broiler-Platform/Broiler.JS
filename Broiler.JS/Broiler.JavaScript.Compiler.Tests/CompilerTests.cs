@@ -366,6 +366,53 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Compound_And_Destructuring_Assignment_Targets_Preserve_Reference_Errors()
+    {
+        using var ctx = new JSContext();
+
+        var compound = Assert.Throws<JSException>(() => ctx.Eval("""missing += 1;"""));
+        Assert.Equal("ReferenceError", compound.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("missing is not defined", compound.Error[KeyStrings.message].ToString());
+
+        var destructuring = Assert.Throws<JSException>(() => ctx.Eval("""
+            "use strict";
+            ({ missing } = { missing: 1 });
+            """));
+        Assert.Equal("ReferenceError", destructuring.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("missing is not defined", destructuring.Error[KeyStrings.message].ToString());
+
+        var tdz = Assert.Throws<JSException>(() => ctx.Eval("""
+            (function () {
+                0, { x } = {};
+            })();
+            let x;
+            """));
+        Assert.Equal("ReferenceError", tdz.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("Cannot access 'x' before initialization", tdz.Error[KeyStrings.message].ToString());
+    }
+
+    [Fact]
+    public void Compile_Strict_Accessor_Bodies_Invoke_With_Strict_Mode()
+    {
+        using var ctx = new JSContext();
+
+        var ex = Assert.Throws<JSException>(() => ctx.Eval("""
+            var obj = {};
+            Object.defineProperty(obj, "accProperty", {
+                set: function () {
+                    "use strict";
+                    test262unresolvable = null;
+                    return 11;
+                }
+            });
+            obj.accProperty = "overrideData";
+            """));
+
+        Assert.Equal("ReferenceError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("test262unresolvable is not defined", ex.Error[KeyStrings.message].ToString());
+    }
+
+    [Fact]
     public void Compile_Eval_Strict_Directive_And_Top_Level_Lexical_Tdz_Throw_ReferenceError()
     {
         using var ctx = new JSContext();

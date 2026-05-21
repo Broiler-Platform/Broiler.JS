@@ -189,13 +189,13 @@ public partial class JSObject
 
             if (!existing.IsEmpty)
             {
-                if (existing.IsProperty)
-                {
-                    if (existing.set is IJSFunction setter)
+                    if (existing.IsProperty)
                     {
-                        setter.Delegate(new Arguments(target, value));
-                        return;
-                    }
+                        if (existing.set is IJSFunction setter)
+                        {
+                            setter.InvokeFunction(new Arguments(target, value));
+                            return;
+                        }
 
                     throw NewTypeError($"Cannot modify property {symbolKey} of {target} which has only a getter");
                 }

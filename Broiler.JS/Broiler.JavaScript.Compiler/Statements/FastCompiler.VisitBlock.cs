@@ -21,7 +21,11 @@ partial class FastCompiler
         {
             var en = hoistingScope.GetFastEnumerator();
             while (en.MoveNext(out var v))
-                scope.CreateVariable(v, null, true, initialize: lexicalBindings.Contains(v.Value) == false);
+            {
+                var isLexical = lexicalBindings.Contains(v.Value);
+                var variable = scope.CreateVariable(v, null, true, initialize: isLexical == false);
+                variable.IsLexical = isLexical;
+            }
         }
 
         var se = block.Statements.GetFastEnumerator();

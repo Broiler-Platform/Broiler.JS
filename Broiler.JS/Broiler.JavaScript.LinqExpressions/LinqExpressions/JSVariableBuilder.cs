@@ -7,6 +7,9 @@ namespace Broiler.JavaScript.LinqExpressions.LinqExpressions;
 
 public class JSVariableBuilder
 {
+    public static Expression Assign(Expression target, Expression value)
+        => target.CallExpression<JSVariable, JSValue, JSValue>(() => (x, v) => x.Assign(v), value);
+
     public static Expression New(Expression value, string name) => NewLambdaExpression.NewExpression<JSVariable>(() => () =>
     new JSVariable(null as JSValue, ""), value, Expression.Constant(name));// return Expression.New(_New, value, Expression.Constant(name));
 

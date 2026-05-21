@@ -66,14 +66,34 @@ partial class FastCompiler
         {
             var identifier = (AstIdentifier)left;
             var variable = scope.Top.GetVariable(identifier.Name, true);
-            if (variable == null && assignmentOperator == TokenTypes.Assign)
-                return JSContextBuilder.AssignIdentifier(KeyOfName(identifier.Name), Visit(right));
+            if (variable == null)
+                return AssignIdentifier(identifier, right, assignmentOperator);
 
-            return Assign(variable?.Expression ?? JSContextBuilder.Index(KeyOfName(identifier.Name)), right, assignmentOperator);
+            if (assignmentOperator == TokenTypes.Assign && variable.IsLexical && variable.Variable?.Type == typeof(JSVariable))
+                return JSVariableBuilder.Assign(variable.Variable, Visit(right));
+
+            return Assign(variable.Expression, right, assignmentOperator);
         }
 
         return Assign(Visit(left), right, assignmentOperator);
     }
+
+    private YExpression AssignIdentifier(AstIdentifier identifier, AstExpression right, TokenTypes assignmentOperator)
+    {
+        if (assignmentOperator == TokenTypes.Assign)
+            return AssignIdentifier(identifier, Visit(right));
+
+        var key = KeyOfName(identifier.Name);
+        using var valueTemp = scope.Top.GetTempVariable(typeof(JSValue));
+        return YExpression.Block(
+            valueTemp.Variable.AsSequence(),
+            YExpression.Assign(valueTemp.Expression, JSContextBuilder.ResolveIdentifier(key)),
+            BinaryOperation.Assign(valueTemp.Expression, Visit(right), assignmentOperator),
+            JSContextBuilder.AssignIdentifier(key, valueTemp.Expression));
+    }
+
+    private YExpression AssignIdentifier(AstIdentifier identifier, YExpression value)
+        => JSContextBuilder.AssignIdentifier(KeyOfName(identifier.Name), value);
 
     private YExpression Assign(YExpression exp, AstExpression right, TokenTypes assignmentOperator)
     {
@@ -115,7 +135,30 @@ partial class FastCompiler
                     }
                     else
                     {
-                        target = VisitIdentifierReference(id);
+                        var variable = scope.Top.GetVariable(id.Name, true);
+                        if (variable == null)
+                        {
+                            if (suppressAnonymousFunctionNameInference)
+                            {
+                                init = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, YExpression.Constant(id.Name.Value), YExpression.Constant(false));
+                            }
+
+                            inits.Add(AssignIdentifier(id, init));
+                            return;
+                        }
+
+                        if (suppressAnonymousFunctionNameInference)
+                        {
+                            init = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, YExpression.Constant(id.Name.Value), YExpression.Constant(false));
+                        }
+
+                        if (!newScope && variable.IsLexical && variable.Variable?.Type == typeof(JSVariable))
+                        {
+                            inits.Add(JSVariableBuilder.Assign(variable.Variable, init));
+                            return;
+                        }
+
+                        target = variable.Expression;
                     }
 
                     if (suppressAnonymousFunctionNameInference)
@@ -181,7 +224,7 @@ partial class FastCompiler
                             case FastNodeType.MemberExpression:
                             case FastNodeType.ArrayPattern:
                             case FastNodeType.ObjectPattern:
-                                CreateAssignment(inits, property.Value, start, true, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
+                                CreateAssignment(inits, property.Value, start, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
                                 break;
                             // TODO
                             case FastNodeType.BinaryExpression:
@@ -250,7 +293,7 @@ partial class FastCompiler
 
                                     arrayInits.Add(JSValueExtensionsBuilder.AssignCoalesce(te.Expression, defaultValue));
 
-                                    CreateAssignment(arrayInits, be.Left, te.Expression, true, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
+                                    CreateAssignment(arrayInits, be.Left, te.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
 
                                     break;
                                 }
@@ -286,7 +329,7 @@ partial class FastCompiler
                                 {
                                     var check = IElementEnumeratorBuilder.MoveNext(destExp, te.Expression);
                                     arrayInits.Add(check);
-                                    CreateAssignment(arrayInits, ape, te.Expression, true, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
+                                    CreateAssignment(arrayInits, ape, te.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
                                 }
                                 break;
 

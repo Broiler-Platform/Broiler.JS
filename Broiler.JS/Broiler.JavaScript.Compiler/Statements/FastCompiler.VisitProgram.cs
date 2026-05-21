@@ -78,6 +78,7 @@ partial class FastCompiler
 
                 var g = JSValueBuilder.Index(top.Context, KeyOfName(v));
                 var vs = scope.CreateVariable(v, null, true);
+                vs.IsLexical = false;
                 scope.Parent?.AddExternalVariable(v, vs);
 
                 vs.Expression = JSVariableBuilder.Property(vs.Variable);

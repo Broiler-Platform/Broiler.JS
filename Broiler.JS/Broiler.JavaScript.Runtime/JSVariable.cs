@@ -69,6 +69,17 @@ public class JSVariable
                     ("Cannot assign to read only variable");
         }
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public JSValue Assign(JSValue value)
+    {
+        if (!_isInitialized)
+            throw (NewReferenceErrorFactory ?? throw new InvalidOperationException("JSVariable.NewReferenceErrorFactory delegate is not initialized. Ensure the Engine assembly module initializer has run."))
+                (ReferenceErrorMessage);
+
+        Value = value;
+        return _value;
+    }
     internal bool IsReadOnly;
 
     static readonly PropertyInfo _ValueProperty = typeof(JSVariable).GetProperty("Value");
