@@ -224,6 +224,19 @@ public class ParserTests
         Assert.Equal("#m", property.Name.Value);
     }
 
+    [Theory]
+    [InlineData(@"/^\p{Any}+$/u;")]
+    [InlineData(@"/\P{ASCII}/u;")]
+    [InlineData(@"/[\p{Alphabetic}\P{ASCII_Hex_Digit}]/v;")]
+    public void ParseProgram_RegExpLiteral_Allows_UnicodePropertyEscapes(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        Assert.NotNull(program);
+    }
+
     private static void AssertAsyncMethod(AstNode node, string expectedName)
     {
         var property = Assert.IsType<AstClassProperty>(node);

@@ -81,7 +81,12 @@ internal static class RegExpValidator
                 }
             }
 
-            _ = new Regex(NormalizeES3CharacterClasses(pattern), options);
+            pattern = NormalizeES3CharacterClasses(pattern);
+
+            if (unicode || unicodeSets)
+                pattern = NormalizeUnicodePropertyEscapes(pattern);
+
+            _ = new Regex(pattern, options);
             return true;
         }
         catch
@@ -153,6 +158,44 @@ internal static class RegExpValidator
             }
 
             sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Rewrites JavaScript Unicode property escapes into simple placeholders so
+    /// the lexer can validate their syntax without relying on the .NET regex
+    /// engine's property-name support.
+    /// </summary>
+    private static string NormalizeUnicodePropertyEscapes(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || (!pattern.Contains(@"\p{") && !pattern.Contains(@"\P{")))
+            return pattern;
+
+        var sb = new System.Text.StringBuilder(pattern.Length);
+
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            if (pattern[i] == '\\' && i + 2 < pattern.Length && (pattern[i + 1] == 'p' || pattern[i + 1] == 'P') && pattern[i + 2] == '{')
+            {
+                int end = pattern.IndexOf('}', i + 3);
+                if (end > i + 3)
+                {
+                    sb.Append('A');
+                    i = end;
+                    continue;
+                }
+            }
+
+            if (pattern[i] == '\\' && i + 1 < pattern.Length)
+            {
+                sb.Append(pattern[i]);
+                sb.Append(pattern[++i]);
+                continue;
+            }
+
+            sb.Append(pattern[i]);
         }
 
         return sb.ToString();
