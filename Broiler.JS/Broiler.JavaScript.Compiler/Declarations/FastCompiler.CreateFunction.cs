@@ -196,7 +196,7 @@ partial class FastCompiler
             else
             {
                 lambda = YExpression.Lambda(typeof(JSFunctionDelegate), block, in scriptFunctionName, [cs.Arguments]);
-                jsf = JSFunctionBuilder.New(ToDelegate(lambda), fxName, code, functionLength);
+                jsf = JSFunctionBuilder.New(ToDelegate(lambda), fxName, code, functionLength, createPrototype: !functionDeclaration.IsArrowFunction);
                 if (!isStrictFunction)
                     jsf = JSFunctionBuilder.EnableNonStrictThis(jsf);
                 else

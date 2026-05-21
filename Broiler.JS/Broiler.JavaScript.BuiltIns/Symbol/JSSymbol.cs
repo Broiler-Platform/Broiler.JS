@@ -55,13 +55,7 @@ public partial class JSSymbol: JSValue, IJSSymbol
     public override int GetHashCode() => (int)Key;
 
     public override JSValue InvokeFunction(in Arguments a)
-    {
-        var f = a.Get1();
-        if (f.IsUndefined)
-            return new JSSymbol((string)null);
-
-        return new JSSymbol(f.StringValue);
-    }
+        => throw JSEngine.NewTypeError($"{ToDescriptiveString()} is not a function");
 
     public override JSValue CreateInstance(in Arguments a) => throw JSEngine.NewTypeError("Symbol is not a constructor");
 

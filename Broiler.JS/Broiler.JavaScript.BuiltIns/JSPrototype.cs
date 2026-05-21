@@ -67,7 +67,7 @@ public class JSPrototype : IJSPrototype
         var ve = objectProperties.GetEnumerator(false);
         
         while(ve.MoveNext(out var key, out var value))
-            ps.properties.Put(key.Key) = (value.ToNotReadOnly(),target);
+            ps.properties.Put(key.Key) = (value, target);
         
 
         ref var objectElements = ref @object.GetElements(false);
@@ -76,7 +76,7 @@ public class JSPrototype : IJSPrototype
             foreach(var e in objectElements.AllValues())
             {
                 if (!e.Value.IsEmpty)
-                    ps.elements.Put(e.Key) = (e.Value.ToNotReadOnly(), target);
+                    ps.elements.Put(e.Key) = (e.Value, target);
             }
         }
 
@@ -86,7 +86,7 @@ public class JSPrototype : IJSPrototype
             foreach(var e in objectSymbols.AllValues())
             {
                 if (!e.Value.IsEmpty)
-                    ps.symbols.Put(e.Key) = (e.Value.ToNotReadOnly(), target);
+                    ps.symbols.Put(e.Key) = (e.Value, target);
             }
         }
     }

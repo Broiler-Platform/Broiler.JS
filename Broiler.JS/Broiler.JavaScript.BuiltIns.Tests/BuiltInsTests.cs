@@ -64,6 +64,65 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Symbol_Primitives_And_Wrappers_Are_Not_Callable()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var sym = Symbol('desc');
+                var symObj = Object(Symbol());
+
+                return [
+                    thrownCtor(function () { sym(); }),
+                    thrownCtor(function () { new sym(); }),
+                    thrownCtor(function () { symObj(); }),
+                    thrownCtor(function () { new symObj(); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Strict_Assignment_To_Inherited_Readonly_Property_Throws_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                'use strict';
+
+                function foo() {}
+                Object.defineProperty(foo.prototype, 'bar', { value: 'unwritable' });
+
+                var o = new foo();
+
+                try {
+                    o.bar = 'overridden';
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name + '|' + o.bar + '|' + o.hasOwnProperty('bar');
+                }
+            })();
+            """);
+
+        Assert.Equal("TypeError|unwritable|false", result.ToString());
+    }
+
+    [Fact]
     public void JSON_Stringify_BigInt_Throws_TypeError()
     {
         EnsureBuiltInsLoaded();
