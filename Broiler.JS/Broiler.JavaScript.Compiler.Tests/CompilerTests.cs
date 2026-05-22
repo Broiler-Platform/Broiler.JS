@@ -643,9 +643,10 @@ public class CompilerTests
 
                 var evalDelete = (function () {
                     var outerVar = eval("var x; (function() { return delete x; })");
+                    var outerFunction = eval("function x() {} (function() { return delete x; })");
                     var argumentShadow = eval("var x; (function(x) { return delete x; })");
                     var functionLocal = eval("(function() { var x; return delete x; })");
-                    return [outerVar(), outerVar(), argumentShadow(), functionLocal()].join('|');
+                    return [outerVar(), outerVar(), outerFunction(), outerFunction(), argumentShadow(), functionLocal()].join('|');
                 })();
 
                 return [
@@ -662,7 +663,7 @@ public class CompilerTests
             })();
             """);
 
-        Assert.Equal("true|true|true|true|true|true|true|true|true|true|false|false", result.ToString());
+        Assert.Equal("true|true|true|true|true|true|true|true|true|true|true|true|false|false", result.ToString());
     }
 
     [Fact]

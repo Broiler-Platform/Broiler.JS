@@ -151,6 +151,13 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
                     PostInit = YExpression.Assign(Variable, exp);
                     return;
                 }
+
+                if (IsDeletable
+                    && Expression is YPropertyExpression { PropertyInfo.Name: nameof(JSVariable.GlobalValue) })
+                {
+                    PostInit = YExpression.Assign(Variable, JSVariableBuilder.New(exp, Name));
+                    return;
+                }
             }
 
             PostInit = YExpression.Assign(Expression, exp);
