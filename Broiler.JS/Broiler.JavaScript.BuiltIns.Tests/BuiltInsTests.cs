@@ -2560,6 +2560,62 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Promise_And_Iterator_Validate_TypeErrors_Before_Observable_User_Code()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext(JavaScriptFeatureFlags.IteratorConcat);
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var prototypeGetterCalls = 0;
+                var bound = (function () {}).bind();
+                Object.defineProperty(bound, 'prototype', {
+                    get() {
+                        prototypeGetterCalls++;
+                        throw new Test262Error();
+                    }
+                });
+
+                var iteratorGetterCalls = 0;
+                var iterable1 = {
+                    get [Symbol.iterator]() {
+                        iteratorGetterCalls++;
+                        return function () {
+                            throw new Test262Error();
+                        };
+                    }
+                };
+                var iterable2 = {
+                    get [Symbol.iterator]() {
+                        throw new Test262Error();
+                    }
+                };
+
+                return [
+                    thrownCtor(function () {
+                        Reflect.construct(Promise, [], bound);
+                    }) + '|' + prototypeGetterCalls,
+                    thrownCtor(function () {
+                        Iterator.concat(iterable1, null, iterable2);
+                    }) + '|' + iteratorGetterCalls
+                ].join('||');
+            })();
+            """);
+
+        Assert.Equal("TypeError|0||TypeError|1", result.ToString());
+    }
+
+    [Fact]
     public void Promise_Reactions_Run_After_Synchronous_Code()
     {
         EnsureBuiltInsLoaded();

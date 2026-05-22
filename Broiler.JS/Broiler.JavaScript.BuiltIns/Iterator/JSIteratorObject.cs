@@ -132,15 +132,19 @@ public partial class JSIteratorObject : JSObject
     [JSExport("concat")]
     internal static JSValue Concat(in Arguments a)
     {
-        var iterables = new JSValue[a.Length];
+        var iterables = new ConcatSource[a.Length];
         for (int i = 0; i < a.Length; i++)
         {
             var item = a.GetAt(i);
 
-            if (item.IsNullOrUndefined)
+            if (item is not JSObject @object)
                 throw JSEngine.NewTypeError("Iterator.concat requires iterable arguments");
 
-            iterables[i] = From(new Arguments(JSUndefined.Value, item));
+            var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];
+            if (!iteratorMethod.IsNull && !iteratorMethod.IsUndefined && !iteratorMethod.IsFunction)
+                throw JSEngine.NewTypeError("Iterator.concat requires a callable @@iterator");
+
+            iterables[i] = new ConcatSource(@object, iteratorMethod);
         }
 
         return new JSIteratorObject(new ConcatEnumerator(iterables));
@@ -727,16 +731,30 @@ public partial class JSIteratorObject : JSObject
         }
     }
 
-    internal sealed class ConcatEnumerator(JSValue[] iterables) : IElementEnumerator, IReturnableEnumerator
+    private readonly record struct ConcatSource(JSObject Iterable, JSValue IteratorMethod);
+
+    private sealed class ConcatEnumerator(ConcatSource[] iterables) : IElementEnumerator, IReturnableEnumerator
     {
         private int _current = 0;
-        private IElementEnumerator _currentEnum = iterables.Length > 0 ? iterables[0].GetElementEnumerator() : null;
+        private IElementEnumerator _currentEnum = iterables.Length > 0 ? GetEnumerator(iterables[0]) : null;
+
+        private static IElementEnumerator GetEnumerator(ConcatSource iterable)
+        {
+            if (iterable.IteratorMethod == null || iterable.IteratorMethod.IsNull || iterable.IteratorMethod.IsUndefined)
+                return GetDirectEnumerator(iterable.Iterable);
+
+            var iterator = iterable.IteratorMethod.InvokeFunction(new Arguments(iterable.Iterable));
+            if (iterator is not JSObject iteratorObject)
+                throw JSEngine.NewTypeError("Iterator.concat requires an object iterator result");
+
+            return new JSIterator(iteratorObject);
+        }
 
         private bool Advance()
         {
             _current++;
             if (_current < iterables.Length)
-            { _currentEnum = iterables[_current].GetElementEnumerator(); return true; }
+            { _currentEnum = GetEnumerator(iterables[_current]); return true; }
 
             _currentEnum = null;
             return false;

@@ -95,6 +95,68 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_CompoundAssignment_ComputedMembers_Preserve_Nullish_Base_Evaluation_Order()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () {
+                        var base = null;
+                        var prop = function () {
+                            throw new RangeError();
+                        };
+                        var expr = function () {
+                            throw new Test262Error("right-hand side expression evaluated");
+                        };
+
+                        base[prop()] *= expr();
+                    }),
+                    thrownCtor(function () {
+                        var base = null;
+                        var prop = {
+                            toString() {
+                                throw new Test262Error("property key evaluated");
+                            }
+                        };
+                        var expr = function () {
+                            throw new Test262Error("right-hand side expression evaluated");
+                        };
+
+                        base[prop] *= expr();
+                    }),
+                    thrownCtor(function () {
+                        var base = undefined;
+                        var prop = {
+                            toString() {
+                                throw new Test262Error("property key evaluated");
+                            }
+                        };
+                        var expr = function () {
+                            throw new Test262Error("right-hand side expression evaluated");
+                        };
+
+                        base[prop] |= expr();
+                    })
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("RangeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Compile_ArrowFunction_ArrayDestructuringElisions_Work()
     {
         using var ctx = new JSContext();

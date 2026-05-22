@@ -48,11 +48,14 @@ partial class FastCompiler
             using var objectTemp = scope.Top.GetTempVariable(typeof(JSValue));
             if (mem.Computed)
             {
+                using var propertyTemp = scope.Top.GetTempVariable(typeof(JSValue));
                 using var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
                 var leftExp = JSValueBuilder.Index(objectTemp.Expression, keyTemp.Expression);
                 return YExpression.Block(
                     YExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
-                    YExpression.Assign(keyTemp.Expression, YExpression.Call(null, NormalizePropertyKeyMethod, Visit(mem.Property))),
+                    YExpression.Assign(propertyTemp.Expression, Visit(mem.Property)),
+                    YExpression.Call(null, RequireObjectCoercibleMethod, objectTemp.Expression),
+                    YExpression.Assign(keyTemp.Expression, YExpression.Call(null, NormalizePropertyKeyMethod, propertyTemp.Expression)),
                     Assign(leftExp, right, assignmentOperator));
             }
 

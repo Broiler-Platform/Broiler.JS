@@ -102,15 +102,16 @@ public partial class JSPromise : JSObject, IJSPromise
         });
     }
 
-    public JSPromise(in Arguments a) : base(JSEngine.NewTargetPrototype)
+    public JSPromise(in Arguments a) : base()
     {
         if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
             throw JSEngine.NewTypeError("Promise constructor requires 'new'");
 
-        JSValue @delegate = a[0];
+        JSValue @delegate = a.Get1();
         if (!@delegate.IsFunction)
             throw JSEngine.NewTypeError("Promise resolver is not a function");
 
+        BasePrototypeObject = JSEngine.NewTargetPrototype;
         InitPromise();
         try
         {

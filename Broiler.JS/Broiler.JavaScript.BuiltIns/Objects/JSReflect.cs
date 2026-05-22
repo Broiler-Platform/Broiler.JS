@@ -39,8 +39,7 @@ public partial class JSReflect : JSObject
             throw JSEngine.NewTypeError("target is not a constructor");
 
         if (!IsCallable(newTarget)
-            || newTarget is not JSObject newTargetObject
-            || newTargetObject[KeyStrings.prototype] is not JSObject)
+            || newTarget is not JSObject newTargetObject)
         {
             throw JSEngine.NewTypeError("newTarget is not a constructor");
         }
