@@ -2266,7 +2266,7 @@ public class BuiltInsTests
             """);
 
         Assert.Equal(
-            "function,true,false,true|function,true,false,true|function,true,false,true|function,true,false,true|function,true,false,true|function,true,false,true|c|a,b|1|2|TypeError|TypeError|true|4|3",
+            "function,true,false,true|function,true,false,true|function,true,false,true|function,false,false,true|function,true,false,true|function,true,false,true|c|a,b|1|2|TypeError|TypeError|true|4|3",
             result.ToString());
     }
 
@@ -2700,6 +2700,34 @@ public class BuiltInsTests
             Object(1n) == '1'
         ].join('|');");
         Assert.Equal("2|2|1|true", result.ToString());
+    }
+
+    [Fact]
+    public void Primitive_Wrappers_Respect_Overrides_And_Remain_Truthy()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            (function () {
+                var boxed = new Number();
+                boxed.valueOf = function () { return 17; };
+                return boxed == 17;
+            })(),
+            (function () {
+                var boxed = new Number();
+                boxed.valueOf = function () { return 17; };
+                return boxed + 3;
+            })(),
+            (function () {
+                var boxed = new String();
+                boxed.valueOf = function () { return 'foo'; };
+                return boxed == 'foo';
+            })(),
+            !!new Number(0),
+            !!new Boolean(false),
+            !!new String('')
+        ].join('|');");
+        Assert.Equal("true|20|true|true|true|true", result.ToString());
     }
 
     [Fact]

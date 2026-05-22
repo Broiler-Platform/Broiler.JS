@@ -14,25 +14,25 @@ public class JSPrimitiveObject : JSObject
         prototypeChain = value.prototypeChain;
     }
 
-    public override string ToString() => value.ToString();
+    public override string ToString() => CoerceOwnOverrides(preferString: true).ToString();
 
-    public override JSValue ValueOf() => value;
+    public override JSValue ValueOf() => CoerceOwnOverrides(preferString: false);
 
     public override double DoubleValue => value.DoubleValue;
 
     public override long BigIntValue => value.BigIntValue;
 
-    public override bool BooleanValue => value.BooleanValue;
+    public override bool BooleanValue => true;
 
     public override bool ConvertTo(Type type, out object value) => this.value.ConvertTo(type, out value);
 
     public override JSValue CreateInstance(in Arguments a) => throw NewTypeError($"Cannot create instance of {this}");
 
-    public override JSValue AddValue(JSValue value) => this.value.AddValue(value);
+    public override JSValue AddValue(JSValue value) => CoerceOwnOverrides(preferString: false).AddValue(value);
 
-    public override JSValue AddValue(double value) => this.value.AddValue(value);
+    public override JSValue AddValue(double value) => CoerceOwnOverrides(preferString: false).AddValue(value);
 
-    public override JSValue AddValue(string value) => this.value.AddValue(value);
+    public override JSValue AddValue(string value) => CoerceOwnOverrides(preferString: false).AddValue(value);
 
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
@@ -152,6 +152,34 @@ public class JSPrimitiveObject : JSObject
         if (value is JSPrimitiveObject)
             return false;
 
-        return base.Equals(value);
+        return CoerceOwnOverrides(preferString: false).Equals(value);
+    }
+
+    public override bool EqualsLiteral(double value) => CoerceOwnOverrides(preferString: false).EqualsLiteral(value);
+
+    public override bool EqualsLiteral(string value) => CoerceOwnOverrides(preferString: false).EqualsLiteral(value);
+
+    private JSValue CoerceOwnOverrides(bool preferString)
+    {
+        var methodKey = preferString ? KeyStrings.toString : KeyStrings.valueOf;
+        var overridden = TryInvokeOwnPrimitiveMethod(in methodKey);
+        if (overridden != null)
+            return overridden;
+
+        return value;
+    }
+
+    private JSValue TryInvokeOwnPrimitiveMethod(in KeyString key)
+    {
+        var descriptor = GetOwnPropertyDescriptor(JSValue.CreateString(key.Value.Value));
+        if (descriptor.IsUndefined)
+            return null;
+
+        var method = descriptor[KeyStrings.value];
+        if (!method.IsFunction)
+            return null;
+
+        var primitive = method.InvokeFunction(new Arguments(this));
+        return primitive.IsObject ? null : primitive;
     }
 }

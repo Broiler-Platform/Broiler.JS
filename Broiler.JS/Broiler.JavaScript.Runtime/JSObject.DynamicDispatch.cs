@@ -80,9 +80,9 @@ public partial class JSObject
         return ToPrimitiveDefault().Equals(value);
     }
 
-    public override bool EqualsLiteral(double value) => DoubleValue == value;
+    public override bool EqualsLiteral(double value) => Equals(JSValue.CreateNumber(value));
 
-    public override bool EqualsLiteral(string value) => ToString() == value;
+    public override bool EqualsLiteral(string value) => Equals(JSValue.CreateString(value));
 
     public override bool StrictEquals(JSValue value) => ReferenceEquals(this, value);
 

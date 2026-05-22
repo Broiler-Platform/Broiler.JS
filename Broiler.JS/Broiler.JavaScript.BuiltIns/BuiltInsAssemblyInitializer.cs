@@ -484,7 +484,7 @@ internal static class BuiltInsAssemblyInitializer
                     "number" => OrdinaryToPrimitive(@object, preferString: false),
                     _ => throw JSEngine.NewTypeError("Date.prototype[Symbol.toPrimitive] requires a valid hint")
                 };
-            }, "[Symbol.toPrimitive]", 1), JSPropertyAttributes.ConfigurableValue);
+            }, "[Symbol.toPrimitive]", 1), JSPropertyAttributes.ConfigurableReadonlyValue);
         }
 
         var toUTCString = prototype[toUTCStringKey];
