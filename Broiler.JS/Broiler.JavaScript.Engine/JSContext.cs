@@ -120,6 +120,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
                 entries.Add(entry);
                 context.Register(variable);
+                context.globalVars.Put(key.Key) = variable;
             }
         }
 

@@ -13,7 +13,7 @@ namespace Broiler.JavaScript.Compiler;
 
 public static class DirectEvalSupport
 {
-    public static JSValue Execute(Arguments arguments, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings)
+    public static JSValue Execute(Arguments arguments, JSValue @this, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings)
     {
         var value = arguments.Get1();
         if (!value.IsString)
@@ -34,7 +34,7 @@ public static class DirectEvalSupport
             using var _ = disallowArgumentsDeclaration
                 ? context.PushDirectEvalScope(capturedBindings)
                 : null;
-            return context.Eval(text, location, context);
+            return context.Eval(text, location, @this ?? context);
         }
 
         return CoreScript.Evaluate(text, location);

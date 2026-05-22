@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
+using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 
 namespace Broiler.JavaScript.Compiler;
@@ -16,6 +18,9 @@ partial class FastCompiler
 
         if (HasUseStrictDirective(functionDeclaration.Body) && !HasSimpleParameterList(functionDeclaration.Params))
             throw new FastParseException(functionDeclaration.Start, "Illegal 'use strict' directive in function with non-simple parameter list");
+
+        if (ContainsLegacyOctalLiteral(functionDeclaration.Body))
+            throw new FastParseException(functionDeclaration.Start, "Unexpected legacy octal literal in strict mode");
 
         var parameterNames = new List<StringSpan>();
         CollectParameterNames(functionDeclaration.Params, parameterNames);
@@ -74,5 +79,40 @@ partial class FastCompiler
                 return;
             }
         }
+    }
+
+    private static bool ContainsLegacyOctalLiteral(AstStatement body)
+    {
+        var found = false;
+        new LegacyOctalLiteralDetector(() => found = true).Visit(body);
+        return found;
+    }
+
+    private sealed class LegacyOctalLiteralDetector(Action onFound) : AstReduce
+    {
+        private readonly Action onFound = onFound;
+
+        protected override AstNode VisitLiteral(AstLiteral literal)
+        {
+            if (literal.TokenType == TokenTypes.Number
+                && TryGetLegacyOctalToken(literal.Start.Span.Value))
+            {
+                onFound();
+            }
+
+            return literal;
+        }
+    }
+
+    private static bool TryGetLegacyOctalToken(string tokenText)
+    {
+        if (string.IsNullOrEmpty(tokenText) || tokenText.Length < 2 || tokenText[0] != '0')
+            return false;
+
+        var second = tokenText[1];
+        if (second is 'x' or 'X' or 'b' or 'B' or 'o' or 'O' or '.')
+            return false;
+
+        return second is >= '0' and <= '7';
     }
 }

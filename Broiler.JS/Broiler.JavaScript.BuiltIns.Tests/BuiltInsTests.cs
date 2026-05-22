@@ -6026,6 +6026,66 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Direct_Eval_Preserves_Caller_This_And_Strict_Function_Constructor_Rejects_Legacy_Octal()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var callThis;
+            var evalThis;
+
+            function capture() {
+              eval('evalThis = this');
+              callThis = this;
+            }
+
+            function thrownCtor(fn) {
+              try {
+                fn();
+                return 'no-throw';
+              } catch (e) {
+                return e.constructor.name;
+              }
+            }
+
+            capture.call(true);
+
+            [
+              callThis === evalThis,
+              thrownCtor(function () { Function('"use strict"; 010'); })
+            ].join('|');
+            """);
+
+        Assert.Equal("true|SyntaxError", result.ToString());
+    }
+
+    [Fact]
+    public void ForIn_Skips_Array_Holes_After_Shift()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              var x = ['a', , 'b', , 'c', 'd', 'e', 'f', 'g'];
+
+              for (var p in x) {
+                if (!(p in x)) {
+                  return 'bad:' + p;
+                }
+
+                x.shift();
+              }
+
+              return 'ok';
+            })();
+            """);
+
+        Assert.Equal("ok", result.ToString());
+    }
+
+    [Fact]
     public void Array_Modification_Methods_Respect_Indexed_Setters_On_Prototype_Chain()
     {
         EnsureBuiltInsLoaded();

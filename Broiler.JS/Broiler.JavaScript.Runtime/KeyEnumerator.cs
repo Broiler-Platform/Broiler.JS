@@ -140,8 +140,11 @@ public class KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inhe
     {
         if (elements != null)
         {
-            if (elements.MoveNext(out var hasValueout, out var _, out var ui))
+            while (elements.MoveNext(out var hasValueout, out var _, out var ui))
             {
+                if (!hasValueout)
+                    continue;
+
                 value = JSValue.CreateString(ui.ToString());
                 return true;
             }
@@ -183,8 +186,11 @@ public class KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inhe
     {
         if (elements != null)
         {
-            if (elements.MoveNext(out _, out _, out var ui))
+            while (elements.MoveNext(out var hasValueout, out _, out var ui))
             {
+                if (!hasValueout)
+                    continue;
+
                 value = JSValue.CreateString(ui.ToString());
                 return true;
             }
@@ -226,8 +232,13 @@ public class KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inhe
     {
         if (elements != null)
         {
-            if (elements.MoveNext(out var hasValueout, out var _, out var ui))
+            while (elements.MoveNext(out var hasValueout, out var _, out var ui))
+            {
+                if (!hasValueout)
+                    continue;
+
                 return JSValue.CreateString(ui.ToString());
+            }
 
             elements = null;
         }
