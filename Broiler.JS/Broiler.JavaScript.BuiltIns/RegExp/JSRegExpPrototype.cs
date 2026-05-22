@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Storage;
 using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
@@ -26,6 +27,20 @@ public partial class JSRegExp
     {
         this[KeyStrings.lastIndex] = JSValue.CreateNumber(value);
         lastIndex = value;
+    }
+
+    internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
+    {
+        if (name.Key == KeyStrings.lastIndex.Key
+            && ReferenceEquals(receiver as JSObject ?? this, this)
+            && GetInternalProperty(name, false).IsEmpty)
+        {
+            ref var ownProperties = ref GetOwnProperties();
+            ownProperties.Put(name, value, JSPropertyAttributes.Value);
+            return true;
+        }
+
+        return base.SetValue(name, value, receiver, throwError);
     }
 
     [JSExport("compile", Length = 2)]

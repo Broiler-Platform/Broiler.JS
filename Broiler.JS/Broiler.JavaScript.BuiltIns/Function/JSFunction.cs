@@ -201,6 +201,28 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         return base.GetValue(key, receiver, throwError);
     }
 
+    internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
+    {
+        var result = base.SetValue(name, value, receiver, throwError);
+        if (result && name.Key == KeyStrings.prototype.Key && ReferenceEquals(receiver as JSObject ?? this, this))
+            prototype = value as JSObject;
+
+        return result;
+    }
+
+    public override JSValue DefineProperty(in KeyString name, JSObject pd)
+    {
+        var result = base.DefineProperty(name, pd);
+        if (result.BooleanValue
+            && name.Key == KeyStrings.prototype.Key
+            && pd.HasProperty(KeyStrings.value.ToJSValue()).BooleanValue)
+        {
+            prototype = pd[KeyStrings.value] as JSObject;
+        }
+
+        return result;
+    }
+
     internal override JSFunctionDelegate GetMethod(in KeyString key)
     {
         var method = base.GetMethod(in key);

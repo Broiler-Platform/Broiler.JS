@@ -1181,6 +1181,42 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Reflect_Set_Uses_Inherited_Proxy_Trap_And_Preserves_Function_Prototype_Assignment()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var func = function () {};
+                var funcTarget = new Proxy(func, {});
+                var funcProxy = new Proxy(funcTarget, { set: undefined });
+
+                Reflect.set(funcProxy, 'prototype', null);
+
+                var trapCalls = 0;
+                var target = new Proxy({}, {
+                  set: function (_target, key) {
+                    trapCalls++;
+                    return key === 'foo';
+                  }
+                });
+                var proxy = new Proxy(target, { set: undefined });
+                var receiver = Object.create(proxy);
+
+                return [
+                  func.prototype === null,
+                  Reflect.set(receiver, 'foo', 1),
+                  trapCalls,
+                  Reflect.set(proxy, 'bar', 2),
+                  trapCalls
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|1|false|2", result.ToString());
+    }
+
+    [Fact]
     public void Proxy_Revoked_Construct_Throws_TypeError_When_NewTarget_Prototype_Is_Resolved()
     {
         EnsureBuiltInsLoaded();
@@ -4603,6 +4639,80 @@ public class BuiltInsTests
         ");
 
         Assert.Equal("TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void MatchAll_RegExp_LastIndex_And_SetLike_Iterator_Return_Regressions()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var callCount = 0;
+                var arg;
+                var receiver = {
+                  [Symbol.toPrimitive]: function () {
+                    callCount++;
+                    return 'abc';
+                  }
+                };
+                RegExp.prototype[Symbol.matchAll] = function (string) {
+                  arg = string;
+                };
+
+                String.prototype.matchAll.call(receiver, null);
+
+                var lastIndexReads = 0;
+                var r = /a/g;
+                r.lastIndex = {
+                  valueOf: function () {
+                    lastIndexReads++;
+                    return -1;
+                  }
+                };
+                r.exec('nbc');
+
+                var iter = {
+                  a: [4, 5, 6],
+                  nextCalls: 0,
+                  returnCalls: 0,
+                  next() {
+                    var done = this.nextCalls >= this.a.length;
+                    var value = this.a[this.nextCalls];
+                    this.nextCalls++;
+                    return { done: done, value: value };
+                  },
+                  return() {
+                    this.returnCalls++;
+                    return this;
+                  }
+                };
+                var setlike = {
+                  size: iter.a.length,
+                  has(v) { return iter.a.includes(v); },
+                  keys() { return iter; }
+                };
+
+                var disjoint = new Set([4, 5, 6, 7]).isDisjointFrom(setlike);
+                var disjointSnapshot = iter.nextCalls + ',' + iter.returnCalls;
+                iter.nextCalls = iter.returnCalls = 0;
+                var superset = new Set([4, 5, 6, 7]).isSupersetOf(setlike);
+                var supersetSnapshot = iter.nextCalls + ',' + iter.returnCalls;
+
+                return [
+                  callCount,
+                  arg,
+                  r.lastIndex,
+                  lastIndexReads,
+                  disjoint,
+                  disjointSnapshot,
+                  superset,
+                  supersetSnapshot
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("1|abc|0|1|false|1,1|true|4,0", result.ToString());
     }
 
     [Fact]

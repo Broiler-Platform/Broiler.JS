@@ -123,7 +123,14 @@ public partial class JSSet : JSObject
         return new SetLikeRecord(
             (int)sizeValue.DoubleValue,
             value => hasMethod.Call(other, value).BooleanValue,
-            () => keysMethod.Call(other).GetElementEnumerator());
+            () =>
+            {
+                var iterator = keysMethod.Call(other);
+                if (iterator is not JSObject iteratorObject)
+                    throw JSEngine.NewTypeError($"Set.prototype.{methodName} requires keys() to return an object");
+
+                return new JSIterator(iteratorObject);
+            });
     }
 
     private sealed class StoreEnumerator(LinkedList<JSValue> source) : IElementEnumerator
@@ -336,7 +343,10 @@ public partial class JSSet : JSObject
         while (keys.MoveNext(out var item))
         {
             if (!Contains(item))
+            {
+                JSIteratorObject.CloseIteratorIfPossible(keys);
                 return JSBoolean.False;
+            }
         }
 
         return JSBoolean.True;
@@ -350,10 +360,14 @@ public partial class JSSet : JSObject
         if (store == null)
             return JSBoolean.True;
 
-        foreach (var item in store)
+        var keys = other.GetKeys();
+        while (keys.MoveNext(out var item))
         {
-            if (other.Has(item))
+            if (Contains(item))
+            {
+                JSIteratorObject.CloseIteratorIfPossible(keys);
                 return JSBoolean.False;
+            }
         }
 
         return JSBoolean.True;

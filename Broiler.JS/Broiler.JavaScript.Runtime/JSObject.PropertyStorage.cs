@@ -213,7 +213,6 @@ public partial class JSObject
 
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
     {
-        var start = this;
         if (name.Key == KeyStrings.__proto__.Key && GetInternalProperty(name, false).IsEmpty)
         {
             if (!value.IsObject && !value.IsNull)
@@ -223,7 +222,7 @@ public partial class JSObject
             return true;
         }
 
-        var p = GetInternalProperty(name, true);
+        var p = GetInternalProperty(name, false);
         if (p.IsProperty)
         {
             if (p.set is IJSFunction setter)
@@ -249,26 +248,13 @@ public partial class JSObject
             return false;
         }
 
-        if (IsFrozen())
-        {
-            if (throwError)
-                throw NewTypeError($"Cannot modify property {name} of {this}");
+        if (!p.IsEmpty)
+            return SetKeyStringOnReceiver(name, value, receiver, p.Attributes, throwError);
 
-            return false;
-        }
+        if (GetPrototypeOf() is JSObject prototypeObject)
+            return prototypeObject.SetValue(name, value, receiver ?? this, throwError);
 
-        if (p.IsEmpty && !IsExtensible())
-        {
-            if (throwError)
-                throw NewTypeError($"Cannot add property {name} to {this}");
-
-            return false;
-        }
-
-        ref var ownProperties = ref GetOwnProperties();
-        ownProperties.Put(name, value, !p.IsEmpty ? p.Attributes : JSPropertyAttributes.EnumerableConfigurableValue);
-        PropertyChanged?.Invoke(this, (name.Key, uint.MaxValue, null));
-        return true;
+        return SetKeyStringOnReceiver(name, value, receiver, JSPropertyAttributes.EnumerableConfigurableValue, throwError);
     }
 
     public override JSValue this[uint name]
@@ -279,7 +265,7 @@ public partial class JSObject
 
     public override bool SetValue(uint name, JSValue value, JSValue receiver, bool throwError = true)
     {
-        var p = GetInternalProperty(name);
+        var p = GetInternalProperty(name, false);
         if (p.IsProperty)
         {
             if (p.set is IJSFunction setter)
@@ -302,27 +288,13 @@ public partial class JSObject
             return false;
         }
 
-        if (IsFrozen())
-        {
-            if (throwError)
-                throw NewTypeError($"Cannot modify property {name} of {this}");
+        if (!p.IsEmpty)
+            return SetIndexOnReceiver(name, value, receiver, p.Attributes, throwError);
 
-            return false;
-        }
+        if (GetPrototypeOf() is JSObject prototypeObject)
+            return prototypeObject.SetValue(name, value, receiver ?? this, throwError);
 
-        if (p.IsEmpty && !IsExtensible())
-        {
-            if (throwError)
-                throw NewTypeError($"Cannot add property {name} to {this}");
-
-            return false;
-        }
-
-        var attributes = !p.IsEmpty ? p.Attributes : JSPropertyAttributes.EnumerableConfigurableValue;
-        ref var elements = ref CreateElements();
-        elements.Put(name, value, attributes);
-        PropertyChanged?.Invoke(this, (uint.MaxValue, name, null));
-        return true;
+        return SetIndexOnReceiver(name, value, receiver, JSPropertyAttributes.EnumerableConfigurableValue, throwError);
     }
 
     public override JSValue this[IJSSymbol name]
@@ -333,12 +305,7 @@ public partial class JSObject
 
     internal protected override bool SetValue(IJSSymbol name, JSValue value, JSValue receiver, bool throwError = true)
     {
-        if (name.Key == JSValue.SymbolIterator.Key)
-            HasIterator = true;
-        else if (JSValue.SymbolAsyncIterator != null && name.Key == JSValue.SymbolAsyncIterator.Key)
-            HasAsyncIterator = true;
-
-        var p = GetInternalProperty(name);
+        var p = GetInternalProperty(name, false);
         if (p.IsProperty)
         {
             if (p.set is IJSFunction setter)
@@ -361,28 +328,225 @@ public partial class JSObject
             return false;
         }
 
-        if (IsFrozen())
+        if (!p.IsEmpty)
+            return SetSymbolOnReceiver(name, value, receiver, p.Attributes, throwError);
+
+        if (GetPrototypeOf() is JSObject prototypeObject)
+            return prototypeObject.SetValue(name, value, receiver ?? this, throwError);
+
+        return SetSymbolOnReceiver(name, value, receiver, JSPropertyAttributes.EnumerableConfigurableValue, throwError);
+    }
+
+    private bool SetKeyStringOnReceiver(KeyString name, JSValue value, JSValue receiver, JSPropertyAttributes defaultAttributes, bool throwError)
+    {
+        var target = receiver as JSObject ?? this;
+        var p = target.GetInternalProperty(name, false);
+        if (p.IsProperty)
         {
+            if (p.set is IJSFunction setter)
+            {
+                setter.InvokeFunction(new Arguments(receiver ?? target, value));
+                return true;
+            }
+
             if (throwError)
-                throw NewTypeError($"Cannot modify property {name} of {this}");
+                throw NewTypeError($"Cannot modify property {name} of {target} which has only a getter");
 
             return false;
         }
 
-        if (p.IsEmpty && !IsExtensible())
+        if (p.IsReadOnly)
         {
             if (throwError)
-                throw NewTypeError($"Cannot add property {name} to {this}");
+                throw NewTypeError($"Cannot modify property {name} of {target}");
 
             return false;
         }
 
-        symbols.Put(name.Key) = new JSProperty(
-            name.Key,
-            value,
-            !p.IsEmpty ? p.Attributes : JSPropertyAttributes.EnumerableConfigurableValue);
-        PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, name));
-        return true;
+        if (target.IsFrozen())
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {target}");
+
+            return false;
+        }
+
+        if (p.IsEmpty && !target.IsExtensible())
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot add property {name} to {target}");
+
+            return false;
+        }
+
+        return DefineReceiverDataProperty(target, name, value, !p.IsEmpty ? p.Attributes : defaultAttributes, throwError);
+    }
+
+    private bool SetIndexOnReceiver(uint name, JSValue value, JSValue receiver, JSPropertyAttributes defaultAttributes, bool throwError)
+    {
+        var target = receiver as JSObject ?? this;
+        var p = target.GetInternalProperty(name, false);
+        if (p.IsProperty)
+        {
+            if (p.set is IJSFunction setter)
+            {
+                setter.InvokeFunction(new Arguments(receiver ?? target, value));
+                return true;
+            }
+
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {target} which has only a getter");
+
+            return false;
+        }
+
+        if (p.IsReadOnly)
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {target}");
+
+            return false;
+        }
+
+        if (target.IsFrozen())
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {target}");
+
+            return false;
+        }
+
+        if (p.IsEmpty && !target.IsExtensible())
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot add property {name} to {target}");
+
+            return false;
+        }
+
+        return DefineReceiverDataProperty(target, name, value, !p.IsEmpty ? p.Attributes : defaultAttributes, throwError);
+    }
+
+    private bool SetSymbolOnReceiver(IJSSymbol name, JSValue value, JSValue receiver, JSPropertyAttributes defaultAttributes, bool throwError)
+    {
+        var target = receiver as JSObject ?? this;
+        if (name.Key == JSValue.SymbolIterator.Key)
+            target.HasIterator = true;
+        else if (JSValue.SymbolAsyncIterator != null && name.Key == JSValue.SymbolAsyncIterator.Key)
+            target.HasAsyncIterator = true;
+
+        var p = target.GetInternalProperty(name, false);
+        if (p.IsProperty)
+        {
+            if (p.set is IJSFunction setter)
+            {
+                setter.InvokeFunction(new Arguments(receiver ?? target, value));
+                return true;
+            }
+
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {target} which has only a getter");
+
+            return false;
+        }
+
+        if (p.IsReadOnly)
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {target}");
+
+            return false;
+        }
+
+        if (target.IsFrozen())
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot modify property {name} of {target}");
+
+            return false;
+        }
+
+        if (p.IsEmpty && !target.IsExtensible())
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot add property {name} to {target}");
+
+            return false;
+        }
+
+        return DefineReceiverDataProperty(target, name, value, !p.IsEmpty ? p.Attributes : defaultAttributes, throwError);
+    }
+
+    private bool DefineReceiverDataProperty(JSObject target, KeyString name, JSValue value, JSPropertyAttributes attributes, bool throwError)
+    {
+        if (ReferenceEquals(target, this))
+        {
+            ref var own = ref target.GetOwnProperties();
+            own.Put(name, value, attributes);
+            target.PropertyChanged?.Invoke(target, (name.Key, uint.MaxValue, null));
+            return true;
+        }
+
+        var descriptor = CreateDataDescriptor(value, attributes);
+        var result = target.DefineProperty(name, descriptor);
+        if (!result.IsBoolean || result.BooleanValue)
+            return true;
+
+        if (throwError)
+            throw NewTypeError($"Cannot modify property {name} of {target}");
+
+        return false;
+    }
+
+    private bool DefineReceiverDataProperty(JSObject target, uint name, JSValue value, JSPropertyAttributes attributes, bool throwError)
+    {
+        if (ReferenceEquals(target, this))
+        {
+            ref var elements = ref target.CreateElements();
+            elements.Put(name, value, attributes);
+            target.PropertyChanged?.Invoke(target, (uint.MaxValue, name, null));
+            return true;
+        }
+
+        var descriptor = CreateDataDescriptor(value, attributes);
+        var result = target.DefineProperty(name, descriptor);
+        if (!result.IsBoolean || result.BooleanValue)
+            return true;
+
+        if (throwError)
+            throw NewTypeError($"Cannot modify property {name} of {target}");
+
+        return false;
+    }
+
+    private bool DefineReceiverDataProperty(JSObject target, IJSSymbol name, JSValue value, JSPropertyAttributes attributes, bool throwError)
+    {
+        if (ReferenceEquals(target, this))
+        {
+            target.symbols.Put(name.Key) = new JSProperty(name.Key, value, attributes);
+            target.PropertyChanged?.Invoke(target, (uint.MaxValue, uint.MaxValue, name));
+            return true;
+        }
+
+        var descriptor = CreateDataDescriptor(value, attributes);
+        var result = target.DefineProperty(name, descriptor);
+        if (!result.IsBoolean || result.BooleanValue)
+            return true;
+
+        if (throwError)
+            throw NewTypeError($"Cannot modify property {name} of {target}");
+
+        return false;
+    }
+
+    private static JSObject CreateDataDescriptor(JSValue value, JSPropertyAttributes attributes)
+    {
+        var descriptor = new JSObject();
+        descriptor.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.writable, attributes.HasFlag(JSPropertyAttributes.Readonly) ? JSValue.BooleanFalse : JSValue.BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.enumerable, attributes.HasFlag(JSPropertyAttributes.Enumerable) ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.configurable, attributes.HasFlag(JSPropertyAttributes.Configurable) ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+        return descriptor;
     }
 
     internal protected override JSValue GetValue(IJSSymbol key, JSValue receiver, bool throwError = true)
@@ -443,10 +607,9 @@ public partial class JSObject
         var old = symbols[key];
         if (!old.IsEmpty)
         {
-            if (!old.IsConfigurable)
-                throw NewTypeError("Cannot redefine property");
-
             CompletePropertyDescriptor(pd, in old);
+            if (!IsCompatiblePropertyRedefinition(in old, pd))
+                throw NewTypeError("Cannot redefine property");
         }
 
         symbols.Put(key) = pd.ToProperty(key);
@@ -460,10 +623,9 @@ public partial class JSObject
         var old = elements[key];
         if (!old.IsEmpty)
         {
-            if (!old.IsConfigurable)
-                throw NewTypeError("Cannot redefine property");
-
             CompletePropertyDescriptor(pd, in old);
+            if (!IsCompatiblePropertyRedefinition(in old, pd))
+                throw NewTypeError("Cannot redefine property");
         }
 
         elements.Put(key) = pd.ToProperty(key);
@@ -488,12 +650,9 @@ public partial class JSObject
 
         if (!old.IsEmpty)
         {
-            if (!old.IsConfigurable)
-            {
-                throw NewTypeError("Cannot redefine property");
-            }
-
             CompletePropertyDescriptor(pd, in old);
+            if (!IsCompatiblePropertyRedefinition(in old, pd))
+                throw NewTypeError("Cannot redefine property");
         }
         // p.key = name;
         ownProperties.Put(key) = pd.ToProperty(key);
@@ -534,6 +693,47 @@ public partial class JSObject
 
         if (!descriptorIsAccessor && !hasWritable)
             descriptor.FastAddValue(KeyStrings.writable, current.IsReadOnly ? JSValue.BooleanFalse : JSValue.BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
+    }
+
+    private static bool IsCompatiblePropertyRedefinition(in JSProperty current, JSObject descriptor)
+    {
+        if (current.IsConfigurable)
+            return true;
+
+        if (descriptor[KeyStrings.configurable].BooleanValue)
+            return false;
+
+        if (descriptor[KeyStrings.enumerable].BooleanValue != current.IsEnumerable)
+            return false;
+
+        var descriptorHasGet = !descriptor.GetInternalProperty(KeyStrings.get, false).IsEmpty;
+        var descriptorHasSet = !descriptor.GetInternalProperty(KeyStrings.set, false).IsEmpty;
+        var descriptorIsAccessor = descriptorHasGet || descriptorHasSet;
+        if (descriptorIsAccessor != current.IsProperty)
+            return false;
+
+        if (current.IsProperty)
+        {
+            if (!descriptor[KeyStrings.get].StrictEquals(current.get as JSValue ?? JSUndefined.Value))
+                return false;
+
+            if (!descriptor[KeyStrings.set].StrictEquals(current.set as JSValue ?? JSUndefined.Value))
+                return false;
+
+            return true;
+        }
+
+        var descriptorWritable = descriptor[KeyStrings.writable].BooleanValue;
+        if (current.IsReadOnly && descriptorWritable)
+            return false;
+
+        if (current.IsReadOnly
+            && !descriptor[KeyStrings.value].StrictEquals(current.value as JSValue ?? JSUndefined.Value))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) => new KeyEnumerator(this, showEnumerableOnly, inherited);//var elements = this.elements;//if (elements != null)//{//    foreach (var (Key, Value) in elements.AllValues)//    {//        if (showEnumerableOnly)//        {//            if (!Value.IsEnumerable)//                continue;//        }//        yield return new JSNumber(Key);//    }//}//var ownProperties = this.ownProperties;//if (ownProperties != null)//{//    var en = new PropertySequence.Enumerator(ownProperties);//    while(en.MoveNext())//    {//        var p = en.Current;//        if (showEnumerableOnly)//        {//            if (!p.IsEnumerable)//                continue;//        }//        yield return p.ToJSValue();//    }//}//if (inherited)//{//    var @base = this.prototypeChain;//    if (@base != this && @base != null)//    {//        foreach (var i in @base.GetAllKeys(showEnumerableOnly))//            yield return i;//    }//}

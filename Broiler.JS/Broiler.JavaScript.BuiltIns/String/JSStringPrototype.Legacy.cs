@@ -80,35 +80,24 @@ public partial class JSString
     internal static JSValue MatchAll(in Arguments a)
     {
         var pattern = a.Get1();
-        var text = a.This.IsNullOrUndefined
-            ? throw JSEngine.NewTypeError("String.prototype.matchAll called on null or undefined")
-            : a.This.ToString();
+        if (a.This.IsNullOrUndefined)
+            throw JSEngine.NewTypeError("String.prototype.matchAll called on null or undefined");
 
         if (!pattern.IsNullOrUndefined)
         {
-            if (pattern is JSRegExp)
-            {
-                var flags = pattern[KeyStrings.GetOrCreate("flags")];
-                if (flags.IsNullOrUndefined)
-                    throw JSEngine.NewTypeError("String.prototype.matchAll requires a non-null flags value");
-
-                if (!flags.StringValue.Contains('g'))
-                    throw JSEngine.NewTypeError("String.prototype.matchAll requires a global regular expression");
-            }
-
             var matcher = pattern[(IJSSymbol)JSSymbol.matchAll];
-            if (!matcher.IsUndefined)
+            if (!matcher.IsUndefined && !matcher.IsNull)
             {
                 if (!matcher.IsFunction)
                     throw JSEngine.NewTypeError("String.prototype.matchAll requires @@matchAll to be callable");
 
-                return matcher.Call(pattern, JSValue.CreateString(text));
+                return matcher.Call(pattern, JSValue.CreateString(a.This.StringValue));
             }
-
-            if (pattern is JSRegExp)
-                throw JSEngine.NewTypeError("String.prototype.matchAll requires RegExp.prototype[@@matchAll]");
         }
 
-        return new JSRegExp(pattern.IsUndefined ? "" : pattern.ToString(), "g").Match(JSValue.CreateString(text));
+        var text = JSValue.CreateString(a.This.StringValue);
+        var rx = new JSRegExp(pattern.IsUndefined ? string.Empty : pattern.StringValue, "g");
+        var matcherFunction = rx[(IJSSymbol)JSSymbol.matchAll];
+        return matcherFunction.InvokeFunction(new Arguments(rx, text));
     }
 }
