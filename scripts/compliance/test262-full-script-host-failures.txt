@@ -48,7 +48,6 @@ test/annexB/built-ins/String/prototype/trimRight/reference-trimEnd.js
 test/annexB/built-ins/escape/escape-above-astral.js
 test/annexB/built-ins/unescape/four-ignore-bad-u.js
 test/annexB/language/eval-code/direct/func-block-decl-eval-func-init.js
-test/annexB/language/eval-code/direct/func-block-decl-eval-func-no-skip-param.js
 test/annexB/language/eval-code/direct/func-block-decl-eval-func-skip-early-err-switch.js
 test/annexB/language/eval-code/direct/func-block-decl-eval-func-skip-early-err-try.js
 test/annexB/language/eval-code/direct/func-if-decl-else-decl-a-eval-func-block-scoping.js
@@ -5815,7 +5814,6 @@ test/language/eval-code/direct/switch-case-decl-onlystrict.js
 test/language/eval-code/direct/switch-dflt-decl-eval-source-is-strict-nostrict.js
 test/language/eval-code/direct/switch-dflt-decl-eval-source-is-strict-onlystrict.js
 test/language/eval-code/direct/switch-dflt-decl-onlystrict.js
-test/language/eval-code/direct/this-value-func-strict-caller.js
 test/language/eval-code/direct/var-env-func-init-global-new.js
 test/language/eval-code/direct/var-env-func-init-global-update-configurable.js
 test/language/eval-code/direct/var-env-func-init-local-new-delete.js
@@ -5886,8 +5884,6 @@ test/language/expressions/arrow-function/lexical-supercall-from-immediately-invo
 test/language/expressions/arrow-function/param-dflt-yield-id-non-strict.js
 test/language/expressions/arrow-function/scope-param-elem-var-close.js
 test/language/expressions/arrow-function/scope-param-elem-var-open.js
-test/language/expressions/arrow-function/scope-param-rest-elem-var-close.js
-test/language/expressions/arrow-function/scope-param-rest-elem-var-open.js
 test/language/expressions/arrow-function/syntax/arrowparameters-bindingidentifier-arguments.js
 test/language/expressions/arrow-function/syntax/arrowparameters-bindingidentifier-yield.js
 test/language/expressions/arrow-function/syntax/arrowparameters-cover-formalparameters-arguments.js
@@ -7541,8 +7537,6 @@ test/language/expressions/function/param-dflt-yield-non-strict.js
 test/language/expressions/function/param-duplicated-non-strict.js
 test/language/expressions/function/scope-param-elem-var-close.js
 test/language/expressions/function/scope-param-elem-var-open.js
-test/language/expressions/function/scope-param-rest-elem-var-close.js
-test/language/expressions/function/scope-param-rest-elem-var-open.js
 test/language/expressions/function/static-init-await-binding.js
 test/language/expressions/function/static-init-await-reference.js
 test/language/expressions/function/unscopables-with-in-nested-fn.js
@@ -7570,8 +7564,6 @@ test/language/expressions/generators/prototype-own-properties.js
 test/language/expressions/generators/prototype-value.js
 test/language/expressions/generators/scope-param-elem-var-close.js
 test/language/expressions/generators/scope-param-elem-var-open.js
-test/language/expressions/generators/scope-param-rest-elem-var-close.js
-test/language/expressions/generators/scope-param-rest-elem-var-open.js
 test/language/expressions/generators/static-init-await-binding.js
 test/language/expressions/generators/static-init-await-reference.js
 test/language/expressions/generators/unscopables-with-in-nested-fn.js
@@ -7807,12 +7799,8 @@ test/language/expressions/object/prop-def-id-eval-error-2.js
 test/language/expressions/object/prop-def-id-eval-error.js
 test/language/expressions/object/scope-gen-meth-param-elem-var-close.js
 test/language/expressions/object/scope-gen-meth-param-elem-var-open.js
-test/language/expressions/object/scope-gen-meth-param-rest-elem-var-close.js
-test/language/expressions/object/scope-gen-meth-param-rest-elem-var-open.js
 test/language/expressions/object/scope-meth-param-elem-var-close.js
 test/language/expressions/object/scope-meth-param-elem-var-open.js
-test/language/expressions/object/scope-meth-param-rest-elem-var-close.js
-test/language/expressions/object/scope-meth-param-rest-elem-var-open.js
 test/language/expressions/object/setter-super-prop.js
 test/language/expressions/object/yield-non-strict-access.js
 test/language/expressions/object/yield-non-strict-syntax.js
@@ -7984,8 +7972,6 @@ test/language/expressions/template-literal/tv-character-escape-sequence.js
 test/language/expressions/template-literal/tv-line-continuation.js
 test/language/expressions/template-literal/tv-template-character.js
 test/language/expressions/template-literal/tv-utf16-escape-sequence.js
-test/language/expressions/this/S11.1.1_A3.2.js
-test/language/expressions/this/S11.1.1_A4.2.js
 test/language/expressions/typeof/string.js
 test/language/expressions/unary-minus/S11.4.7_A1.js
 test/language/expressions/unary-minus/bigint-non-primitive.js
@@ -8027,7 +8013,6 @@ test/language/expressions/yield/star-rhs-iter-thrw-violation-rtrn-invoke.js
 test/language/expressions/yield/star-throw-is-null.js
 test/language/function-code/10.4.3-1-102-s.js
 test/language/function-code/10.4.3-1-102gs.js
-test/language/function-code/10.4.3-1-17-s.js
 test/language/function-code/10.4.3-1-36-s.js
 test/language/function-code/10.4.3-1-36gs.js
 test/language/function-code/10.4.3-1-37-s.js
@@ -9290,7 +9275,6 @@ test/language/statements/class/elements/private-static-method-shadowed-by-method
 test/language/statements/class/elements/private-static-method-shadowed-by-setter-on-nested-class.js
 test/language/statements/class/elements/private-static-method-usage-inside-nested-class.js
 test/language/statements/class/elements/private-static-method-visible-to-direct-eval.js
-test/language/statements/class/elements/private-static-setter-visible-to-direct-eval.js
 test/language/statements/class/elements/privatefield-on-proxy.js
 test/language/statements/class/elements/privatefieldadd-typeerror.js
 test/language/statements/class/elements/privatefieldget-primitive-receiver.js
@@ -10934,8 +10918,6 @@ test/language/statements/function/param-dflt-yield-non-strict.js
 test/language/statements/function/param-duplicated-non-strict.js
 test/language/statements/function/scope-param-elem-var-close.js
 test/language/statements/function/scope-param-elem-var-open.js
-test/language/statements/function/scope-param-rest-elem-var-close.js
-test/language/statements/function/scope-param-rest-elem-var-open.js
 test/language/statements/function/static-init-await-binding-valid.js
 test/language/statements/function/unscopables-with-in-nested-fn.js
 test/language/statements/function/unscopables-with.js
@@ -10961,8 +10943,6 @@ test/language/statements/generators/prototype-own-properties.js
 test/language/statements/generators/prototype-value.js
 test/language/statements/generators/scope-param-elem-var-close.js
 test/language/statements/generators/scope-param-elem-var-open.js
-test/language/statements/generators/scope-param-rest-elem-var-close.js
-test/language/statements/generators/scope-param-rest-elem-var-open.js
 test/language/statements/generators/unscopables-with-in-nested-fn.js
 test/language/statements/generators/unscopables-with.js
 test/language/statements/generators/yield-as-generator-declaration-binding-identifier.js
@@ -11347,7 +11327,6 @@ test/staging/decorators/private-auto-accessor.js
 test/staging/decorators/public-auto-accessor.js
 test/staging/set-is-subset-table-transition.js
 test/staging/set-methods/set-intersection-other-is-map.js
-test/staging/sm/Array/array-length-set-during-for-in.js
 test/staging/sm/Array/array-length-set-on-nonarray.js
 test/staging/sm/Array/at.js
 test/staging/sm/Array/concat-proxy.js
@@ -11378,13 +11357,11 @@ test/staging/sm/Array/redefine-nonwritable-length-custom-conversion-call-counts.
 test/staging/sm/Array/redefine-nonwritable-length-custom-conversion-throw.js
 test/staging/sm/Array/regress-599159.js
 test/staging/sm/Array/shift-no-has-trap.js
-test/staging/sm/Array/shift_for_in.js
 test/staging/sm/Array/sort-delete-ascending-order.js
 test/staging/sm/Array/sort-non-function.js
 test/staging/sm/Array/sort-typedarray-with-own-length.js
 test/staging/sm/Array/sort_holes.js
 test/staging/sm/Array/splice-species-changes-length.js
-test/staging/sm/Array/splice-suppresses-unvisited-indexes.js
 test/staging/sm/Array/to-length.js
 test/staging/sm/Array/toLocaleString-01.js
 test/staging/sm/Array/toLocaleString.js
@@ -11995,7 +11972,6 @@ test/staging/sm/regress/regress-551763-1.js
 test/staging/sm/regress/regress-554955-1.js
 test/staging/sm/regress/regress-554955-2.js
 test/staging/sm/regress/regress-554955-3.js
-test/staging/sm/regress/regress-554955-4.js
 test/staging/sm/regress/regress-554955-6.js
 test/staging/sm/regress/regress-560998-1.js
 test/staging/sm/regress/regress-569306.js
@@ -12026,7 +12002,6 @@ test/staging/sm/statements/for-of-iterator-close-throw.js
 test/staging/sm/statements/for-of-iterator-close.js
 test/staging/sm/statements/regress-642975.js
 test/staging/sm/statements/try-completion.js
-test/staging/sm/strict/10.4.2.js
 test/staging/sm/strict/10.4.3.js
 test/staging/sm/strict/11.3.1.js
 test/staging/sm/strict/11.3.2.js
@@ -12044,7 +12019,6 @@ test/staging/sm/strict/15.5.5.2.js
 test/staging/sm/strict/8.12.5.js
 test/staging/sm/strict/8.12.7-2.js
 test/staging/sm/strict/8.7.2.js
-test/staging/sm/strict/B.1.1.js
 test/staging/sm/strict/B.1.2.js
 test/staging/sm/strict/deprecated-octal-noctal-tokens.js
 test/staging/sm/strict/directive-prologue-01.js
