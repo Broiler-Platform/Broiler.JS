@@ -83,18 +83,24 @@ public partial class JSDate
             var primitive = ToPrimitive(dateString);
             if (primitive.IsNumber)
             {
-                var ticks = primitive.BigIntValue;
-                ticks = Math.Max(MinTime, ticks);
-                ticks = Math.Min(MaxTime, ticks);
-                date = DateTimeOffset.FromUnixTimeMilliseconds(ticks);
-
-                if (ticks == MinTime || ticks == MaxTime)
+                var time = JSDateMath.TimeClip(primitive.DoubleValue);
+                if (double.IsNaN(time))
                 {
-                    value = date;
+                    value = InvalidDate;
+                    rawTimeMs = double.NaN;
                     return;
                 }
 
+                if (time < MinTime || time > MaxTime)
+                {
+                    value = InvalidDate;
+                    rawTimeMs = time;
+                    return;
+                }
+
+                date = DateTimeOffset.FromUnixTimeMilliseconds((long)time);
                 value = date.ToOffset(Local);
+                rawTimeMs = double.NaN;
                 return;
             }
 

@@ -364,12 +364,12 @@ public partial class JSArray
     {
         var r = new JSArray();
 
-        var start = a.TryGetAt(0, out var startP)
-            ? startP.IntegerValue
+        long start = a.TryGetAt(0, out var startP)
+            ? ToIntegerOrInfinity(startP)
             : 0;
         var deleteCount = a.TryGetAt(1, out var deleteCountP)
-            ? deleteCountP.IntegerValue
-            : (a.Length == 0 ? 0 : int.MaxValue);
+            ? ToIntegerOrInfinity(deleteCountP)
+            : (a.Length == 0 ? 0 : long.MaxValue);
 
         var @this = a.This as JSObject;
 
@@ -379,12 +379,7 @@ public partial class JSArray
         if (@this.IsSealedOrFrozen())
             throw JSEngine.NewTypeError("Cannot modify property length");
 
-        // Get the length of the array.
-        int arrayLength = @this.Length;
-
-        // This method only supports arrays of length up to 2^31 - 1.
-        if (@this.Length > int.MaxValue)
-            throw JSEngine.NewRangeError("The array is too long");
+        var arrayLength = GetArrayLikeLengthLong(@this);
 
         // Fix the arguments so they are positive and within the bounds of the array.
         if (start < 0)
@@ -395,9 +390,16 @@ public partial class JSArray
         deleteCount = Math.Min(Math.Max(deleteCount, 0), arrayLength - start);
 
         // Get the deleted items.
-        var deletedItems = CreateArraySpecies(@this, (uint)deleteCount);
+        var deletedItems = CreateArraySpecies(@this, deleteCount);
 
-        for (uint i = 0; i < deleteCount; i++)
+        if (arrayLength > int.MaxValue)
+            throw JSEngine.NewRangeError("The array is too long");
+
+        var arrayLengthInt = (int)arrayLength;
+        var startInt = (int)start;
+        var deleteCountInt = (int)deleteCount;
+
+        for (uint i = 0; i < deleteCountInt; i++)
         {
             var fromIndex = (uint)(start + i);
             if (!HasIndexedProperty(@this, fromIndex))
@@ -409,14 +411,14 @@ public partial class JSArray
         var itemsLength = a.Length > 1 ? a.Length - 2 : 0;
 
         // Move the trailing elements.
-        int offset = itemsLength - deleteCount;
-        int newLength = arrayLength + offset;
+        int offset = itemsLength - deleteCountInt;
+        int newLength = arrayLengthInt + offset;
 
-        if (deleteCount > itemsLength)
+        if (deleteCountInt > itemsLength)
         {
-            for (int i = start; i < arrayLength - deleteCount; i++)
+            for (int i = startInt; i < arrayLengthInt - deleteCountInt; i++)
             {
-                var fromIndex = (uint)(i + deleteCount);
+                var fromIndex = (uint)(i + deleteCountInt);
                 var toIndex = (uint)(i + itemsLength);
                 if (HasIndexedProperty(@this, fromIndex))
                     SetIndexedValue(@this, toIndex, GetIndexedValue(@this, fromIndex));
@@ -425,14 +427,14 @@ public partial class JSArray
             }
 
             // Delete the trailing elements.
-            for (int i = arrayLength; i > newLength; i--)
+            for (int i = arrayLengthInt; i > newLength; i--)
                 DeleteIndexedValueOrThrow(@this, (uint)(i - 1));
         }
         else
         {
-            for (int i = arrayLength - deleteCount; i > start; i--)
+            for (int i = arrayLengthInt - deleteCountInt; i > startInt; i--)
             {
-                var fromIndex = (uint)(i + deleteCount - 1);
+                var fromIndex = (uint)(i + deleteCountInt - 1);
                 var toIndex = (uint)(i + itemsLength - 1);
                 if (HasIndexedProperty(@this, fromIndex))
                     SetIndexedValue(@this, toIndex, GetIndexedValue(@this, fromIndex));

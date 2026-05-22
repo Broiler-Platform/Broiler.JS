@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Broiler.JavaScript.BuiltIns.Date;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
@@ -37,6 +38,7 @@ public static class JSIntl
     private static readonly KeyString RoundingModeKey = KeyStrings.GetOrCreate("roundingMode");
     private static readonly KeyString RoundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
     private static readonly KeyString TrailingZeroDisplayKey = KeyStrings.GetOrCreate("trailingZeroDisplay");
+    private static readonly KeyString TimeZoneKey = KeyStrings.GetOrCreate("timeZone");
 
     public static JSValue GetIntlObject()
     {
@@ -281,6 +283,20 @@ public static class JSIntl
         ObserveOptions(options, RoundingIncrementKey, RoundingModeKey, RoundingPriorityKey, TrailingZeroDisplayKey);
     }
 
+    internal static void ValidateDateTimeFormatOptions(JSObject options)
+    {
+        if (options == null)
+            return;
+
+        var timeZoneValue = options[TimeZoneKey];
+        if (!timeZoneValue.IsUndefined)
+        {
+            var timeZone = timeZoneValue.StringValue;
+            if (timeZone.Contains('\u2212'))
+                throw JSEngine.NewRangeError("Invalid timeZone option");
+        }
+    }
+
     private static void ObserveOptions(JSObject options, params KeyString[] keys)
     {
         if (options == null)
@@ -388,7 +404,17 @@ public class JSIntlDateTimeFormat : JSObject
     public static JSIntlDateTimeFormat Get(CultureInfo culture)
         => formats.GetOrAdd(culture.Name, static key => new JSIntlDateTimeFormat(CultureInfo.GetCultureInfo(key)));
 
-    public JSValue Format(in Arguments a) => a[0] ?? JSUndefined.Value;
+    public JSValue Format(in Arguments a)
+    {
+        var value = a.Length == 0 || a[0] == null || a[0].IsUndefined
+            ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            : a.Get1().DoubleValue;
+        var clipped = JSDateMath.TimeClip(value);
+        if (double.IsNaN(clipped))
+            throw JSEngine.NewRangeError("Invalid time value");
+
+        return new JSString(clipped.ToString(CultureInfo.InvariantCulture));
+    }
 
     public static JSValue FormatPrototype(in Arguments a)
         => a.This is JSIntlDateTimeFormat @this
@@ -421,6 +447,7 @@ public class JSIntlDateTimeFormat : JSObject
 
     public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())
     {
+        JSIntl.ValidateDateTimeFormatOptions(JSIntl.ValidateConstructorArguments("DateTimeFormat", in a));
         locale = CultureInfo.CurrentCulture;
     }
 

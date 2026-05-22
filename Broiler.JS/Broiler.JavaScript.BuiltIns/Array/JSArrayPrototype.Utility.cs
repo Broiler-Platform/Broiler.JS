@@ -159,7 +159,12 @@ public partial class JSArray
     [JSExport("toSorted", Length = 1)]
     internal static JSValue ToSorted(in Arguments a)
     {
-        var copy = Slice(new Arguments(a.This, JSValue.NumberZero, JSValue.CreateNumber(a.This.Length)));
+        var source = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLengthLong(source);
+        if (length > uint.MaxValue)
+            throw JSEngine.NewRangeError("Invalid array length");
+
+        var copy = Slice(new Arguments(a.This, JSValue.NumberZero, JSValue.CreateNumber(length)));
         return copy.InvokeMethod(KeyStrings.GetOrCreate("sort"), a.Get1());
     }
 

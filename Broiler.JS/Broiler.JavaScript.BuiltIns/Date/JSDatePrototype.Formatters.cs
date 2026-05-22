@@ -55,11 +55,11 @@ public partial class JSDate
     [JSExport("toISOString", Length = 0)]
     internal JSValue ToISOString(in Arguments a)
     {
-        if (value == InvalidDate)
-            return new JSString("Invalid Date");
+        var time = GetTimeMs();
+        if (double.IsNaN(time))
+            throw JSEngine.NewRangeError("Invalid time value");
 
-        var date = value.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", DateTimeFormatInfo.InvariantInfo);
-        return new JSString(date);
+        return new JSString(ToIsoString(time));
     }
 
     [JSExport("toJSON", Length = 1)]
@@ -85,6 +85,35 @@ public partial class JSDate
 
         var toISOString = @object[KeyStrings.GetOrCreate("toISOString")];
         return toISOString.InvokeFunction(new Arguments(@object));
+    }
+
+    private static string ToIsoString(double time)
+    {
+        var year = JSDateMath.YearFromTime(time);
+        var month = JSDateMath.MonthFromTime(time) + 1;
+        var day = JSDateMath.DateFromTime(time);
+        var hour = JSDateMath.HourFromTime(time);
+        var minute = JSDateMath.MinFromTime(time);
+        var second = JSDateMath.SecFromTime(time);
+        var millisecond = JSDateMath.MsFromTime(time);
+        var yearText = year >= 0 && year <= 9999
+            ? year.ToString("D4", DateTimeFormatInfo.InvariantInfo)
+            : string.Format(
+                DateTimeFormatInfo.InvariantInfo,
+                "{0}{1:D6}",
+                year < 0 ? "-" : "+",
+                Math.Abs(year));
+
+        return string.Format(
+            DateTimeFormatInfo.InvariantInfo,
+            "{0}-{1:D2}-{2:D2}T{3:D2}:{4:D2}:{5:D2}.{6:D3}Z",
+            yearText,
+            month,
+            day,
+            hour,
+            minute,
+            second,
+            millisecond);
     }
 
     [JSExport("toLocaleDateString", Length = 0)]

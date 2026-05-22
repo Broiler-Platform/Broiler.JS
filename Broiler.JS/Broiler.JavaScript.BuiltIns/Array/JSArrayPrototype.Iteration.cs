@@ -143,21 +143,26 @@ public partial class JSArray
 
     private static long GetArrayLikeLengthLong(JSObject @object) => (long)ToLength(@object[KeyStrings.length]);
 
-    private static JSObject CreateArraySpecies(JSObject source, uint length)
+    private static JSObject CreateArraySpecies(JSObject source, long length)
     {
+        if (length < 0 || length > uint.MaxValue)
+            throw JSEngine.NewRangeError("Invalid array length");
+
+        var arrayLength = (uint)length;
+
         if (!IsArrayValue(source))
-            return new JSArray(length);
+            return new JSArray(arrayLength);
 
         var constructor = source[KeyStrings.constructor];
         if (constructor.IsObject)
         {
             var species = constructor[(IJSSymbol)JSSymbol.species];
             if (species.IsNull)
-                return new JSArray(length);
+                return new JSArray(arrayLength);
 
             if (!species.IsUndefined)
             {
-                var created = species.CreateInstance(new Arguments(JSUndefined.Value, new JSNumber(length)));
+                var created = species.CreateInstance(new Arguments(JSUndefined.Value, new JSNumber(arrayLength)));
                 if (created is not JSObject createdObject)
                     throw JSEngine.NewTypeError("Array species constructor did not return an object");
 
@@ -165,7 +170,7 @@ public partial class JSArray
             }
         }
 
-        return new JSArray(length);
+        return new JSArray(arrayLength);
     }
 
     private static void CreateDataPropertyOrThrow(JSObject target, uint index, JSValue value)
@@ -508,14 +513,15 @@ public partial class JSArray
     public static JSValue Map(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
-        var length = GetArrayLikeLength(@this);
+        var length = GetArrayLikeLengthLong(@this);
         var (callback, thisArg) = a.Get2();
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.find");
 
         var r = CreateArraySpecies(@this, length);
 
-        for (uint index = 0; index < length; index++)
+        var arrayLikeLength = (uint)length;
+        for (uint index = 0; index < arrayLikeLength; index++)
         {
             if (!@this.TryGetElement(index, out var item))
                 continue;

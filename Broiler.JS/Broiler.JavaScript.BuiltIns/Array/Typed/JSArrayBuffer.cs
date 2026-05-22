@@ -111,11 +111,7 @@ public partial class JSArrayBuffer : JSObject
     [JSExport(Length = 1)]
     public JSArrayBuffer(in Arguments a) : this(JSEngine.NewTargetPrototype)
     {
-        int length = a.Get1().AsInt32OrDefault();
-        if (length < 0 || length > JSNumber.MaxSafeInteger)
-        {
-            throw JSEngine.NewRangeError("Buffer length out of range");
-        }
+        int length = ToBufferLength(a.Get1(), 0);
         buffer = new byte[length];
     }
 

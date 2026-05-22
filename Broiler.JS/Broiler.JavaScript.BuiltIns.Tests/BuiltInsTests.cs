@@ -7000,6 +7000,73 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RangeError_Regressions_For_ArrayBuffer_BigInt_Date_And_Array_Creation_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var spliceTarget = Object.defineProperty({}, 'length', {
+                    get: function() {
+                        return 2 ** 32;
+                    }
+                });
+
+                return [
+                    thrownCtor(function () { Array.prototype.map.call({ length: Infinity }, function () { return 0; }); }),
+                    thrownCtor(function () { Array.prototype.splice.call(spliceTarget, 0); }),
+                    thrownCtor(function () { Array.prototype.toSorted.call({ length: 2 ** 32 }); }),
+                    thrownCtor(function () { new ArrayBuffer(-1.1); }),
+                    thrownCtor(function () { BigInt(1.1); }),
+                    thrownCtor(function () { new Date(8.64e15 + 1).toISOString(); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("RangeError|RangeError|RangeError|RangeError|RangeError|RangeError", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_DateTimeFormat_RangeError_Regressions_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var format = new Intl.DateTimeFormat().format;
+                return [
+                    thrownCtor(function () { new Intl.DateTimeFormat('en', { timeZone: '−10:00' }); }),
+                    thrownCtor(function () { format('2017-11-10T14:09:00.000Z'); }),
+                    thrownCtor(function () { format(8.64e15 + 1); }),
+                    typeof format(8.64e15)
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("RangeError|RangeError|RangeError|string", result.ToString());
+    }
+
+    [Fact]
     public void Intl_NumberFormat_RelativeTimeFormat_DurationFormat_And_RegExp_Split_TypeErrors_Match_Test262()
     {
         EnsureBuiltInsLoaded();

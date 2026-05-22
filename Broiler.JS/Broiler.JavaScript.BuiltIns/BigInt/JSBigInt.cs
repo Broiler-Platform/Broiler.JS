@@ -61,7 +61,7 @@ public partial class JSBigInt : JSPrimitive
         switch (f)
         {
             case JSNumber number:
-                return new JSBigInt((BigInteger)number.value);
+                return NumberToBigInt(number.value);
 
             case JSBigInt bigint:
                 return bigint;
@@ -77,6 +77,20 @@ public partial class JSBigInt : JSPrimitive
                 : JSEngine.NewTypeError($"{f} is not a valid big integer");
 
         return new JSBigInt(v);
+    }
+
+    private static JSValue NumberToBigInt(double number)
+    {
+        if (double.IsNaN(number)
+            || double.IsInfinity(number)
+            || Math.Truncate(number) != number
+            || number < JSNumber.MinSafeInteger
+            || number > JSNumber.MaxSafeInteger)
+        {
+            throw JSEngine.NewRangeError("The number cannot be converted to a BigInt because it is not an integer");
+        }
+
+        return new JSBigInt(new BigInteger(number));
     }
 
     public JSBigInt(BigInteger value) => this.value = value;
@@ -219,7 +233,7 @@ public partial class JSBigInt : JSPrimitive
             return bigint;
 
         if (value.IsNumber)
-            return new JSBigInt((long)value.DoubleValue);
+            return NumberToBigInt(value.DoubleValue);
 
         var v = long.Parse(value.ToString());
         return new JSBigInt(v);
