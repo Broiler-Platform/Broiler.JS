@@ -591,6 +591,135 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Strict_Update_Delete_With_And_Direct_Eval_Delete_Match_Test262()
+    {
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function parsesSuccessfully(code) {
+                    try {
+                        Function(code);
+                        return true;
+                    } catch (_error) {
+                        return false;
+                    }
+                }
+
+                function parseRaisesException(exception) {
+                    return function (code) {
+                        try {
+                            Function(code);
+                            return false;
+                        } catch (actual) {
+                            return exception.prototype.isPrototypeOf(actual);
+                        }
+                    };
+                }
+
+                function completesNormally(code) {
+                    try {
+                        eval(code);
+                        return true;
+                    } catch (_error) {
+                        return false;
+                    }
+                }
+
+                function raisesException(exception) {
+                    return function (code) {
+                        try {
+                            eval(code);
+                            return false;
+                        } catch (actual) {
+                            return actual instanceof exception;
+                        }
+                    };
+                }
+
+                function testLenientAndStrict(code, lenient_pred, strict_pred) {
+                    return strict_pred('"use strict"; ' + code) && lenient_pred(code);
+                }
+
+                var evalDelete = (function () {
+                    var outerVar = eval("var x; (function() { return delete x; })");
+                    var argumentShadow = eval("var x; (function(x) { return delete x; })");
+                    var functionLocal = eval("(function() { var x; return delete x; })");
+                    return [outerVar(), outerVar(), argumentShadow(), functionLocal()].join('|');
+                })();
+
+                return [
+                    testLenientAndStrict('arguments++', parsesSuccessfully, parseRaisesException(SyntaxError)),
+                    testLenientAndStrict('arguments--', parsesSuccessfully, parseRaisesException(SyntaxError)),
+                    testLenientAndStrict('++arguments', parsesSuccessfully, parseRaisesException(SyntaxError)),
+                    testLenientAndStrict('--arguments', parsesSuccessfully, parseRaisesException(SyntaxError)),
+                    testLenientAndStrict('delete x;', parsesSuccessfully, parseRaisesException(SyntaxError)),
+                    testLenientAndStrict('delete (x);', parsesSuccessfully, parseRaisesException(SyntaxError)),
+                    testLenientAndStrict('with (1) {}', completesNormally, raisesException(SyntaxError)),
+                    parsesSuccessfully('function f() { "use strict"; }; with (1) {}'),
+                    evalDelete
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|true|true|true|true|true|true|true|true|false|false", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_Map_And_Set_Constructors_Close_Iterators_When_Subclass_Mutators_Throw()
+    {
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function run(Ctor, valueFactory) {
+                    var iterable = {
+                        closed: false,
+                        [Symbol.iterator]: function () {
+                            var first = true;
+                            return {
+                                next: function () {
+                                    if (first) {
+                                        first = false;
+                                        return { value: valueFactory(), done: false };
+                                    }
+
+                                    return { value: undefined, done: true };
+                                },
+                                return: function () {
+                                    iterable.closed = true;
+                                    return {};
+                                }
+                            };
+                        }
+                    };
+
+                    try {
+                        new Ctor(iterable);
+                        return 'no-throw';
+                    } catch (e) {
+                        return String(iterable.closed) + '|' + e;
+                    }
+                }
+
+                class MyMap extends Map { set(_k, _v) { throw 'setter throws'; } }
+                class MyWeakMap extends WeakMap { set(_k, _v) { throw 'setter throws'; } }
+                class MySet extends Set { add(_v) { throw 'adder throws'; } }
+                class MyWeakSet extends WeakSet { add(_v) { throw 'adder throws'; } }
+
+                return [
+                    run(MyMap, function () { return [{}, {}]; }),
+                    run(MyWeakMap, function () { return [{}, {}]; }),
+                    run(MySet, function () { return {}; }),
+                    run(MyWeakSet, function () { return {}; })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|setter throws|true|setter throws|true|adder throws|true|adder throws", result.ToString());
+    }
+
+    [Fact]
     public void Compile_Default_Parameter_Self_Reference_Throws_ReferenceError()
     {
         using var ctx = new JSContext();

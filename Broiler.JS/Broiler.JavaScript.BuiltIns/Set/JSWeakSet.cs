@@ -20,7 +20,7 @@ public partial class JSWeakSet : JSObject
         if (iterable.IsNullOrUndefined)
             return;
 
-        if (this[KeyStrings.GetOrCreate("add")] is not IJSFunction adder)
+        if ((JSEngine.NewTargetPrototype ?? this)[KeyStrings.GetOrCreate("add")] is not IJSFunction adder)
             throw JSEngine.NewTypeError("WeakSet instance 'add' property is not callable");
 
         var en = iterable.GetIterableEnumerator();

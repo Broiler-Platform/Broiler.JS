@@ -28,7 +28,7 @@ public partial class JSSet : JSObject
         if (iterable.IsNullOrUndefined)
             return;
 
-        if (this[KeyStrings.GetOrCreate("add")] is not IJSFunction adder)
+        if ((JSEngine.NewTargetPrototype ?? this)[KeyStrings.GetOrCreate("add")] is not IJSFunction adder)
             throw JSEngine.NewTypeError("Set instance 'add' property is not callable");
 
         var en = iterable.GetIterableEnumerator();

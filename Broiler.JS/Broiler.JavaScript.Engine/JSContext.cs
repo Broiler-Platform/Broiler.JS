@@ -69,6 +69,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     public JavaScriptFeatureFlags ExperimentalFeatures { get; }
 
     SAUint32Map<JSVariable> globalVars = new();
+    private int directEvalDepth;
 
     private sealed class DirectEvalScope : IDisposable
     {
@@ -89,7 +90,10 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         {
             this.context = context;
             if (variables == null || variables.Length == 0)
+            {
+                context.directEvalDepth++;
                 return;
+            }
 
             var seen = new HashSet<uint>();
             foreach (var variable in variables)
@@ -122,6 +126,8 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 context.Register(variable);
                 context.globalVars.Put(key.Key) = variable;
             }
+
+            context.directEvalDepth++;
         }
 
         public void Dispose()
@@ -152,6 +158,8 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 else
                     context.Delete(entry.Name);
             }
+
+            context.directEvalDepth--;
         }
     }
 
@@ -170,14 +178,20 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             if (!IsExtensible())
                 throw JSEngine.NewTypeError($"Cannot define global variable {name} on a non-extensible global object");
 
-            FastAddValue(name, v, JSPropertyAttributes.Value | JSPropertyAttributes.Enumerable);
+            FastAddValue(
+                name,
+                v,
+                directEvalDepth > 0 && !hadExistingVariable
+                    ? JSPropertyAttributes.EnumerableConfigurableValue
+                    : JSPropertyAttributes.Value | JSPropertyAttributes.Enumerable);
         }
         else if (oldV != v)
         {
             this[name] = v;
         }
 
-        if (!hadExistingVariable || ReferenceEquals(existingVariable, variable))
+        if ((directEvalDepth <= 0 || hadExistingVariable)
+            && (!hadExistingVariable || ReferenceEquals(existingVariable, variable)))
             globalVars.Put(name.Key) = variable;
         return v;
     }

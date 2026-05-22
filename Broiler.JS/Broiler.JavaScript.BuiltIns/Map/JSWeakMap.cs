@@ -32,7 +32,7 @@ public partial class JSWeakMap: JSObject
         if (iterable.IsNullOrUndefined)
             return;
 
-        if (this[KeyStrings.set] is not IJSFunction adder)
+        if ((JSEngine.NewTargetPrototype ?? this)[KeyStrings.set] is not IJSFunction adder)
             throw JSEngine.NewTypeError("WeakMap instance 'set' property is not callable");
 
         var en = iterable.GetIterableEnumerator();

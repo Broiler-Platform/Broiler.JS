@@ -183,6 +183,36 @@ internal static class SyntaxValidation
 
             return base.VisitTryStatement(tryStatement);
         }
+
+        protected override AstNode VisitUnaryExpression(AstUnaryExpression unaryExpression)
+        {
+            if (IsStrictMode)
+            {
+                if ((unaryExpression.Operator == UnaryOperator.Increment || unaryExpression.Operator == UnaryOperator.Decrement)
+                    && unaryExpression.Argument is AstIdentifier updateIdentifier
+                    && IsRestrictedName(updateIdentifier.Name))
+                {
+                    throw new FastParseException(updateIdentifier.Start, "Invalid left-hand side expression for update");
+                }
+
+                if (unaryExpression.Operator == UnaryOperator.delete
+                    && unaryExpression.Argument is AstIdentifier deleteIdentifier
+                    && deleteIdentifier.Name != "this")
+                {
+                    throw new FastParseException(deleteIdentifier.Start, "Delete of an unqualified identifier in strict mode");
+                }
+            }
+
+            return base.VisitUnaryExpression(unaryExpression);
+        }
+
+        protected override AstNode VisitWithStatement(AstWithStatement withStatement)
+        {
+            if (IsStrictMode)
+                throw new FastParseException(withStatement.Start, "Strict mode code may not include a with statement");
+
+            return base.VisitWithStatement(withStatement);
+        }
     }
 
     private static bool ContainsRestrictedBinding(IFastEnumerable<VariableDeclarator> declarators)

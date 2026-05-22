@@ -91,6 +91,8 @@ partial class FastParser
                     break;
 
                 case FastKeywords.with:
+                    return WithStatement(out node);
+
                 case FastKeywords.@else:
                     throw stream.Unexpected();
 
