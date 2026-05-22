@@ -4,6 +4,7 @@ using Broiler.JavaScript.BuiltIns.Iterator;
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 
@@ -32,7 +33,11 @@ public partial class JSWeakMap: JSObject
         if (iterable.IsNullOrUndefined)
             return;
 
-        if (this[KeyStrings.set] is not IJSFunction adder)
+        var adderTarget =
+            (((JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget as IJSFunction)?.Prototype as JSValue)
+            ?? JSEngine.NewTargetPrototype
+            ?? this;
+        if (adderTarget[KeyStrings.set] is not IJSFunction adder)
             throw JSEngine.NewTypeError("WeakMap instance 'set' property is not callable");
 
         var en = iterable.GetIterableEnumerator();

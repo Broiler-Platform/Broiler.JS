@@ -3,6 +3,7 @@ using Broiler.JavaScript.Ast.Misc;
 using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler;
 
@@ -58,8 +59,18 @@ partial class FastCompiler
                         if (id.Name == "this")
                             return JSBooleanBuilder.True;
 
-                        if (scope.Top.GetVariable(id.Name, false) != null)
-                            return JSBooleanBuilder.False;
+                        var variable = scope.Top.GetVariable(id.Name);
+                        if (variable != null && !variable.IsDeletable)
+                        {
+                            var canDeleteCapturedDirectEvalBinding = isDirectEvalCompilation
+                                && variable.OwnerFunction != scope.Top.Function;
+                            if (canDeleteCapturedDirectEvalBinding)
+                                return JSBooleanBuilder.True;
+
+                            if (!canDeleteCapturedDirectEvalBinding
+                                && variable.Expression is not YPropertyExpression { PropertyInfo.Name: nameof(JSVariable.GlobalValue) })
+                                return JSBooleanBuilder.False;
+                        }
 
                         return JSContextBuilder.DeleteIdentifier(KeyOfName(id.Name));
 

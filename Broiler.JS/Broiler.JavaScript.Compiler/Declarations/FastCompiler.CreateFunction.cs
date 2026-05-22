@@ -60,6 +60,8 @@ partial class FastCompiler
             if (functionName != null && functionDeclaration.IsStatement && hoistStatementDeclaration)
             {
                 jsFVarScope = previousScope.GetVariable(functionName);
+                if (isDirectEvalCompilation && previousScope.RootScope.Function == null && jsFVarScope != null)
+                    jsFVarScope.IsDeletable = true;
             }
             else if (functionName != null && (!functionDeclaration.IsStatement || !hoistStatementDeclaration))
             {

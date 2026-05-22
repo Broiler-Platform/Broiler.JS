@@ -23,7 +23,9 @@ partial class FastCompiler
             while (en.MoveNext(out var v))
             {
                 var isLexical = lexicalBindings.Contains(v.Value);
-                var variable = scope.CreateVariable(v, null, true, initialize: isLexical == false);
+                var variable = isDirectEvalCompilation && !isLexical && scope.RootScope.Function == null
+                    ? GetOrCreateDirectEvalRootVariable(v)
+                    : scope.CreateVariable(v, null, true, initialize: isLexical == false);
                 variable.IsLexical = isLexical;
             }
         }

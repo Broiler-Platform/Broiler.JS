@@ -20,6 +20,38 @@ partial class FastCompiler
         // added support for a++, a--
         updateExpression.Argument.VerifyIdentifierForUpdate(IsStrictMode);
 
+        if (updateExpression.Argument is AstIdentifier identifier)
+        {
+            var variable = scope.Top.GetVariable(identifier.Name);
+            if (variable == null)
+            {
+                using var current = scope.Top.GetTempVariable(typeof(JSValue));
+                using var previous = updateExpression.Prefix ? null : scope.Top.GetTempVariable(typeof(JSValue));
+                var variables = new Sequence<YParameterExpression> { current.Variable };
+                var globalKey = KeyOfName(identifier.Name);
+                var statements = new Sequence<YExpression>
+                {
+                    YExpression.Assign(current.Variable, JSContextBuilder.ResolveIdentifier(globalKey))
+                };
+
+                if (previous != null)
+                {
+                    variables.Add(previous.Variable);
+                    statements.Add(YExpression.Assign(previous.Variable, current.Expression));
+                }
+
+                statements.Add(YExpression.Assign(
+                    current.Variable,
+                    JSValueBuilder.AddDouble(
+                        current.Expression,
+                        YExpression.Constant(updateExpression.Operator == UnaryOperator.Increment ? 1d : -1d))));
+                statements.Add(JSContextBuilder.AssignIdentifier(globalKey, current.Expression));
+                statements.Add(previous?.Expression ?? current.Expression);
+
+                return YExpression.Block(variables, statements);
+            }
+        }
+
         var list = new Sequence<YExpression>();
 
         FastFunctionScope.VariableScope target = null;

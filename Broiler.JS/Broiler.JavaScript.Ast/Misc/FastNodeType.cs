@@ -22,6 +22,7 @@ public enum FastNodeType
     ContinueStatement,
     ThrowStatement,
     TryStatement,
+    WithStatement,
     DebuggerStatement,
     Literal,
     MemberExpression,

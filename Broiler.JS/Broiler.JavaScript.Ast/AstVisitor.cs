@@ -442,6 +442,14 @@ public abstract class AstReduce : AstMapVisitor<AstNode>
         return tryStatement;
     }
 
+    protected override AstNode VisitWithStatement(AstWithStatement withStatement)
+    {
+        if (Modified(withStatement.Object, withStatement.Body, out var @object, out var body))
+            return new AstWithStatement(withStatement.Start, withStatement.End, @object, body);
+
+        return withStatement;
+    }
+
     protected override AstNode VisitUnaryExpression(AstUnaryExpression unaryExpression)
     {
         if (Modified(unaryExpression.Argument, out var argument))

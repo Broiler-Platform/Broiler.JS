@@ -41,6 +41,7 @@ public abstract class AstMapVisitor<T>
             FastNodeType.ContinueStatement => VisitContinueStatement(node as AstContinueStatement),
             FastNodeType.ThrowStatement => VisitThrowStatement(node as AstThrowStatement),
             FastNodeType.TryStatement => VisitTryStatement(node as AstTryStatement),
+            FastNodeType.WithStatement => VisitWithStatement(node as AstWithStatement),
             FastNodeType.DebuggerStatement => VisitDebuggerStatement(node as AstDebuggerStatement),
             FastNodeType.LabeledStatement => VisitLabeledStatement(node as AstLabeledStatement),
             FastNodeType.Literal => VisitLiteral(node as AstLiteral),
@@ -90,6 +91,7 @@ public abstract class AstMapVisitor<T>
     protected abstract T VisitMemberExpression(AstMemberExpression memberExpression);
     protected abstract T VisitLiteral(AstLiteral literal);
     protected abstract T VisitDebuggerStatement(AstDebuggerStatement debuggerStatement);
+    protected abstract T VisitWithStatement(AstWithStatement withStatement);
     protected abstract T VisitTryStatement(AstTryStatement tryStatement);
     protected abstract T VisitThrowStatement(AstThrowStatement throwStatement);
     protected abstract T VisitContinueStatement(AstContinueStatement continueStatement);

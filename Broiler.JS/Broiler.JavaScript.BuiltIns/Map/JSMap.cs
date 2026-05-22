@@ -5,6 +5,7 @@ using Broiler.JavaScript.ExpressionCompiler;
 using System.Collections.Generic;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 
@@ -25,7 +26,11 @@ public partial class JSMap : JSObject
         if (iterable.IsNullOrUndefined)
             return;
 
-        if (this[KeyStrings.set] is not IJSFunction adder)
+        var adderTarget =
+            (((JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget as IJSFunction)?.Prototype as JSValue)
+            ?? JSEngine.NewTargetPrototype
+            ?? this;
+        if (adderTarget[KeyStrings.set] is not IJSFunction adder)
             throw JSEngine.NewTypeError("Map instance 'set' property is not callable");
 
         var en = iterable.GetIterableEnumerator();

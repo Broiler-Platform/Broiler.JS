@@ -5,6 +5,7 @@ using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Ast.Expressions;
+using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.LinqExpressions.LambdaGen;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -79,6 +80,7 @@ partial class FastCompiler
                 var g = JSValueBuilder.Index(top.Context, KeyOfName(v));
                 var vs = scope.CreateVariable(v, null, true);
                 vs.IsLexical = false;
+                vs.IsDeletable = isDirectEvalCompilation;
                 scope.Parent?.AddExternalVariable(v, vs);
 
                 vs.Expression = JSVariableBuilder.Property(vs.Variable);
@@ -101,6 +103,29 @@ partial class FastCompiler
 
         scope.Dispose();
         return r;
+    }
+
+    private FastFunctionScope.VariableScope GetOrCreateDirectEvalRootVariable(in StringSpan name)
+    {
+        var top = scope.Top;
+        while (top.Parent != null && top.Parent.Function == top.Function)
+            top = top.Parent;
+
+        var existing = top.GetVariable(name);
+        if (existing != null)
+        {
+            existing.IsDeletable = true;
+            return existing;
+        }
+
+        var globalValue = JSValueBuilder.Index(top.Context, KeyOfName(name));
+        var variable = top.CreateVariable(name, null, true);
+        variable.IsLexical = false;
+        variable.IsDeletable = true;
+        top.Parent?.AddExternalVariable(name, variable);
+        variable.Expression = JSVariableBuilder.Property(variable.Variable);
+        variable.SetInit(JSVariableBuilder.New(globalValue, name.Value));
+        return variable;
     }
 
     private static HashSet<string> CollectTopLevelLexicalBindings(IFastEnumerable<AstStatement> statements)

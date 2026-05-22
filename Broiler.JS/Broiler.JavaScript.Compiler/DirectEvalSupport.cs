@@ -34,6 +34,7 @@ public static class DirectEvalSupport
             using var _ = disallowArgumentsDeclaration
                 ? context.PushDirectEvalScope(capturedBindings)
                 : null;
+            using var __ = context.PushDirectEvalCompilation();
             return context.Eval(text, location, @this ?? context);
         }
 

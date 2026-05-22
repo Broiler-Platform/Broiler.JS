@@ -10,6 +10,7 @@ using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.LinqExpressions.Utils;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.Compiler;
@@ -26,6 +27,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
     readonly LinkedStack<FastFunctionScope> scope = new();
     private readonly string location;
+    private readonly bool isDirectEvalCompilation;
 
     public LoopScope LoopScope => scope.Top.Loop.Top;
 
@@ -40,6 +42,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
         location = location ?? "vm.js";
         this.location = location;
+        isDirectEvalCompilation = (JSEngine.Current as JSContext)?.IsCompilingDirectEval ?? false;
 
         // add top level...
 
@@ -207,8 +210,13 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         }
 
         var currentBinding = scope.Top.GetVariable(id.Name);
+        if (isDirectEvalCompilation && scope.Top.RootScope.Function == null)
+            currentBinding ??= GetOrCreateDirectEvalRootVariable(id.Name);
         if (currentBinding == null)
             return result;
+
+        if (isDirectEvalCompilation && scope.Top.RootScope.Function == null)
+            currentBinding.IsDeletable = true;
 
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
         var statements = new Sequence<YExpression>
@@ -225,6 +233,10 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     private YExpression VisitRuntimeFunctionDeclaration(AstFunctionExpression functionDeclaration)
     {
         var currentBinding = scope.Top.GetVariable(functionDeclaration.Id!.Name);
+        if (currentBinding == null && isDirectEvalCompilation && scope.Top.RootScope.Function == null)
+            currentBinding = GetOrCreateDirectEvalRootVariable(functionDeclaration.Id.Name);
+        else if (currentBinding != null && isDirectEvalCompilation && scope.Top.RootScope.Function == null)
+            currentBinding.IsDeletable = true;
         var result = CreateFunction(functionDeclaration, hoistStatementDeclaration: false);
 
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));

@@ -5,6 +5,7 @@ using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using System.Collections.Generic;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 
@@ -28,7 +29,11 @@ public partial class JSSet : JSObject
         if (iterable.IsNullOrUndefined)
             return;
 
-        if (this[KeyStrings.GetOrCreate("add")] is not IJSFunction adder)
+        var adderTarget =
+            (((JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget as IJSFunction)?.Prototype as JSValue)
+            ?? JSEngine.NewTargetPrototype
+            ?? this;
+        if (adderTarget[KeyStrings.GetOrCreate("add")] is not IJSFunction adder)
             throw JSEngine.NewTypeError("Set instance 'add' property is not callable");
 
         var en = iterable.GetIterableEnumerator();

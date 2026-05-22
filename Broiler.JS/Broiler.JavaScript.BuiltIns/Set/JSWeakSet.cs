@@ -5,6 +5,7 @@ using Broiler.JavaScript.BuiltIns.Iterator;
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Set;
@@ -20,7 +21,11 @@ public partial class JSWeakSet : JSObject
         if (iterable.IsNullOrUndefined)
             return;
 
-        if (this[KeyStrings.GetOrCreate("add")] is not IJSFunction adder)
+        var adderTarget =
+            (((JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget as IJSFunction)?.Prototype as JSValue)
+            ?? JSEngine.NewTargetPrototype
+            ?? this;
+        if (adderTarget[KeyStrings.GetOrCreate("add")] is not IJSFunction adder)
             throw JSEngine.NewTypeError("WeakSet instance 'add' property is not callable");
 
         var en = iterable.GetIterableEnumerator();

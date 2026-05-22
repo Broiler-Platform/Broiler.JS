@@ -25,7 +25,9 @@ partial class FastCompiler
             {
                 case FastNodeType.Identifier:
                     var id = d.Identifier as AstIdentifier;
-                    var v = top.CreateVariable(id.Name, JSVariableBuilder.New(id.Name.Value), newScope);
+                    var v = isDirectEvalCompilation && !newScope && top.RootScope.Function == null
+                        ? GetOrCreateDirectEvalRootVariable(id.Name)
+                        : top.CreateVariable(id.Name, JSVariableBuilder.New(id.Name.Value), newScope);
                     if (d.Init == null)
                     {
                         list.Add(newScope ? YExpression.Assign(v.Expression, JSUndefinedBuilder.Value) : v.Expression);
