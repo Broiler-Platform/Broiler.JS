@@ -89,11 +89,16 @@ partial class FastCompiler
             && callee is AstIdentifier identifier
             && identifier.Name.Equals("eval"))
         {
+            if (TryGetStaticIdentifierVariable(identifier, out var evalVariable) && evalVariable != null)
+                goto skipDirectEval;
+
             var paramArray = VisitArguments(null, arguments);
             var lexicalBindings = CaptureDirectEvalLexicalBindings();
             var capturedBindings = CaptureDirectEvalBindings();
             return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), scope.Top.ThisExpression, YExpression.Constant(IsStrictMode), YExpression.Constant(scope.Top.Function != null), lexicalBindings, capturedBindings);
         }
+
+    skipDirectEval:
 
         if (callee.Type == FastNodeType.MemberExpression && callee is AstMemberExpression me)
         {

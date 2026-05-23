@@ -140,6 +140,18 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
         return false;
     }
 
+    internal bool TryReturnDelegated(JSValue value, out JSValue iteratorResult)
+    {
+        if (delegatedEnumerator is JSIterator iterator)
+        {
+            iteratorResult = iterator.Return(value);
+            return true;
+        }
+
+        iteratorResult = default;
+        return false;
+    }
+
     internal void EndDelegation(JSValue completionValue = null)
     {
         delegatedEnumerator = null;

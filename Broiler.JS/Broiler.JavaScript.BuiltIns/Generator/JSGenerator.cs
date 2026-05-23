@@ -42,6 +42,35 @@ public partial class JSGenerator : JSObject, IJSGenerator
     public JSValue Return(JSValue value)
     {
         ThrowIfExecuting();
+        if (cg != null && cg.HasDelegatedEnumerator)
+        {
+            var delegatedResult = cg.TryReturnDelegated(value, out var iteratorResult)
+                ? iteratorResult
+                : JSUndefined.Value;
+
+            if (!delegatedResult.IsUndefined)
+            {
+                var delegatedDone = delegatedResult[KeyStrings.done].BooleanValue;
+                var delegatedValue = delegatedResult[KeyStrings.value];
+                if (!delegatedDone)
+                {
+                    done = false;
+                    this.value = delegatedValue;
+                    return ValueObject;
+                }
+
+                cg.EndDelegation(delegatedValue);
+                done = true;
+                this.value = JSUndefined.Value;
+                return NewWithProperties().AddProperty(KeyStrings.value, delegatedValue).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
+            }
+
+            cg.EndDelegation(value);
+            done = true;
+            this.value = JSUndefined.Value;
+            return NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
+        }
+
         done = true;
         this.value = JSUndefined.Value;
 
