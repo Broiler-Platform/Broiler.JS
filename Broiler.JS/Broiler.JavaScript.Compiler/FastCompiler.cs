@@ -203,6 +203,13 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     protected override YExpression VisitExpressionStatement(AstExpressionStatement expressionStatement)
     {
         var result = Visit(expressionStatement.Expression);
+
+        var completionVar = scope.Top.Loop.Top?.FindCompletionVariable();
+        if (completionVar != null)
+        {
+            result = YExpression.Block(YExpression.Assign(completionVar, result), completionVar);
+        }
+
         if (IsStrictMode
             || scope.Top == scope.Top.RootScope
             || expressionStatement.Expression is not AstFunctionExpression { IsStatement: true, Id: { } id })

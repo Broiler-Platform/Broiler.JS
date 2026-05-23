@@ -137,6 +137,22 @@ public class JSPrimitiveObject : JSObject
         return base.DefineProperty(key, propertyDescription);
     }
 
+    public override JSValue Delete(in KeyString key)
+    {
+        if (value.IsString && key.Key == KeyStrings.length.Key)
+            return BooleanFalse;
+
+        return base.Delete(key);
+    }
+
+    public override JSValue Delete(uint key)
+    {
+        if (value.IsString && key < value.Length)
+            return BooleanFalse;
+
+        return base.Delete(key);
+    }
+
     /// <summary> Added for below TCs in ExpressionTests.cs
     /// Assert.AreEqual(false, Evaluate("var x = new Number(10); x == new Number(10)"));
     // Assert.AreEqual(true, Evaluate("var x = new Number(10); x == x"));

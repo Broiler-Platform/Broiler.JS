@@ -2,6 +2,9 @@
 using Broiler.JavaScript.Ast.Statements;
 using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
+using Broiler.JavaScript.ExpressionCompiler.Core;
+using Broiler.JavaScript.LinqExpressions.LinqExpressions;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler;
 
@@ -30,8 +33,16 @@ partial class FastCompiler
                 {
                     var breakTarget = YExpression.Label();
                     var label = labeledStatement.Label.Span.Value;
-                    using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, null, false, label));
-                    return YExpression.Block(VisitStatement(labeledStatement.Body), YExpression.Label(breakTarget));
+                    var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
+                    var loopScope = new LoopScope(breakTarget, null, false, label) { CompletionVariable = completionVar };
+                    using var s = scope.Top.Loop.Push(loopScope);
+                    var body = VisitStatement(labeledStatement.Body);
+                    return YExpression.Block(
+                        new Sequence<YParameterExpression> { completionVar },
+                        YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
+                        body,
+                        YExpression.Label(breakTarget),
+                        completionVar);
                 }
         }
 
