@@ -41,7 +41,9 @@ partial class FastParser
             return false;
         }
 
-        if (stream.CheckAndConsume(TokenTypes.Lambda))
+        // Per spec: no LineTerminator allowed between ArrowParameters and =>
+        // Use CheckAndConsumeNoLineTerminator to reject `(a) \n => {}`
+        if (stream.CheckAndConsumeNoLineTerminator(TokenTypes.Lambda))
         {
             var scope = variableScope.Push(token, FastNodeType.FunctionExpression);
             // create parameters now...

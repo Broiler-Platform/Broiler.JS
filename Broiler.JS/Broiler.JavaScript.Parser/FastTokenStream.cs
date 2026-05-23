@@ -130,6 +130,20 @@ public class FastTokenStream
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool CheckAndConsumeNoLineTerminator(TokenTypes type)
+    {
+        var c = Current;
+
+        if (c.Type == type)
+        {
+            Consume();
+            return true;
+        }
+
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool CheckAndConsume(TokenTypes type)
     {
         var m = SkipNewLines();

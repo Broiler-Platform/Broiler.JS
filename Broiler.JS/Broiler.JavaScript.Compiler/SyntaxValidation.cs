@@ -138,6 +138,28 @@ internal static class SyntaxValidation
             }
         }
 
+        protected override AstNode VisitClassProperty(AstClassProperty property)
+        {
+            if (property.Kind is AstPropertyKind.Method or AstPropertyKind.Constructor
+                or AstPropertyKind.Get or AstPropertyKind.Set)
+            {
+                var prev = _inMethodProperty;
+                _inMethodProperty = true;
+                try
+                {
+                    return base.VisitClassProperty(property);
+                }
+                finally
+                {
+                    _inMethodProperty = prev;
+                }
+            }
+
+            return base.VisitClassProperty(property);
+        }
+
+        private bool _inMethodProperty;
+
         protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
         {
             if (IsStrictMode && IsRestrictedName(functionExpression.Id?.Name))
@@ -147,11 +169,27 @@ internal static class SyntaxValidation
             var functionStrict = IsStrictMode || HasUseStrictDirective(bodyStatements);
             if (functionStrict && ContainsRestrictedBinding(functionExpression.Params))
                 throw new FastParseException(functionExpression.Start, "Invalid parameter name in strict mode");
-            if (functionStrict && ContainsDuplicateParameterNames(functionExpression.Params))
+
+            // Duplicate parameter names are always forbidden in:
+            // - strict mode
+            // - arrow functions
+            // - generators
+            // - async functions
+            // - method definitions (concise methods, getters, setters, constructors)
+            // - functions with non-simple parameters (rest, defaults, destructuring)
+            var alwaysRejectDuplicates = functionExpression.IsArrowFunction
+                || functionExpression.Generator
+                || functionExpression.Async
+                || _inMethodProperty
+                || HasNonSimpleParameters(functionExpression.Params);
+
+            if ((functionStrict || alwaysRejectDuplicates) && ContainsDuplicateParameterNames(functionExpression.Params))
                 throw new FastParseException(functionExpression.Start, "Duplicate parameter name not allowed in this context");
 
             var previous = IsStrictMode;
+            var prevMethod = _inMethodProperty;
             IsStrictMode = functionStrict;
+            _inMethodProperty = false;
             try
             {
                 return base.VisitFunctionExpression(functionExpression);
@@ -159,6 +197,7 @@ internal static class SyntaxValidation
             finally
             {
                 IsStrictMode = previous;
+                _inMethodProperty = prevMethod;
             }
         }
 
@@ -321,6 +360,30 @@ internal static class SyntaxValidation
             return false;
 
         return name.Value.Equals("arguments") || name.Value.Equals("eval");
+    }
+
+    private static bool HasNonSimpleParameters(IFastEnumerable<VariableDeclarator> parameters)
+    {
+        var enumerator = parameters.GetFastEnumerator();
+        while (enumerator.MoveNext(out var parameter))
+        {
+            if (IsNonSimpleParameter(parameter.Identifier))
+                return true;
+        }
+        return false;
+    }
+
+    private static bool IsNonSimpleParameter(AstExpression expression)
+    {
+        return expression switch
+        {
+            AstIdentifier => false,
+            AstBinaryExpression => true,   // default value
+            AstSpreadElement => true,       // rest parameter
+            AstArrayPattern => true,        // array destructuring
+            AstObjectPattern => true,       // object destructuring
+            _ => false,
+        };
     }
 
     private static bool ContainsDuplicateParameterNames(IFastEnumerable<VariableDeclarator> parameters)

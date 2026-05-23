@@ -25,7 +25,7 @@ partial class FastParser
                 return true;
 
             case TokenTypes.Identifier:
-                if (token.IsKeyword)
+                if (token.IsKeyword || token.IsEscapedReservedWord)
                     throw stream.Unexpected();
                 stream.Consume();
                 node = new AstIdentifier(token);
@@ -80,6 +80,8 @@ partial class FastParser
                 {
                     if (Identitifer(out var rid))
                     {
+                        if (rid.Start.IsEscapedReservedWord)
+                            throw new FastParseException(rid.Start, "Keyword must not contain escaped characters");
                         right = rid;
                         variableScope.Top.AddVariable(right.Start, right.Start.Span, kind);
                     }
