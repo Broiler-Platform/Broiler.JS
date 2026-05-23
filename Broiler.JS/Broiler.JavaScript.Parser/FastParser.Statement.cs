@@ -205,6 +205,7 @@ partial class FastParser
             if (stream.CheckAndConsume(FastKeywords.@catch))
             {
                 AstExpression catchParam = null;
+                FastScopeItem catchScope = null;
 
                 if (stream.CheckAndConsume(TokenTypes.BracketStart))
                 {
@@ -214,6 +215,12 @@ partial class FastParser
                     }
                     else if (stream.Current.Type == TokenTypes.SquareBracketStart || stream.Current.Type == TokenTypes.CurlyBracketStart)
                     {
+                        // Push a scope for destructured catch parameters so that
+                        // bound names do not leak into the enclosing scope's
+                        // HoistingScope.  This prevents Annex B hoisting of a
+                        // block-scoped function declaration whose name collides
+                        // with a destructured CatchParameter (B.3.5).
+                        catchScope = variableScope.Push(stream.Current, FastNodeType.Block);
                         if (!AssignmentLeftPattern(out catchParam, FastVariableKind.Let))
                             throw stream.Unexpected();
                     }
@@ -225,6 +232,8 @@ partial class FastParser
 
                 if (!Statement(out var @catch))
                     throw stream.Unexpected();
+
+                catchScope?.Dispose();
 
                 Finally(out var @finally);
                 statement = new AstTryStatement(begin, PreviousToken, body, catchParam, @catch, @finally);

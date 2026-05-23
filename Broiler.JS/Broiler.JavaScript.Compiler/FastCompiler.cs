@@ -266,6 +266,13 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         if (IsStrictMode)
             return;
 
+        // Per B.3.3.3 step ii: skip Annex B hoisting when replacing the
+        // FunctionDeclaration with a VariableStatement would produce an
+        // early error (e.g. name conflicts with a destructured CatchParameter
+        // per B.3.5, or with an enclosing lexical binding).
+        if (IsAnnexBHoistingBlocked(name))
+            return;
+
         if (scope.Top != scope.Top.RootScope)
         {
             var outerBinding = GetAnnexBOuterBinding(name, currentBinding);
@@ -275,6 +282,21 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
         if (scope.Top.Function == null)
             statements.Add(JSContextBuilder.AssignIdentifier(KeyOfName(name), value));
+    }
+
+    private bool IsAnnexBHoistingBlocked(in StringSpan name)
+    {
+        // Per B.3.3.3 step ii and B.3.5: Annex B var-hoisting is blocked when
+        // a lexical binding with the same name exists in an enclosing scope
+        // (e.g. a destructured CatchParameter or a let/const/class binding).
+        var parent = scope.Top.Parent;
+        while (parent != null && parent.Function == scope.Top.Function)
+        {
+            if (parent.TryGetOwnVariable(name, out var variable) && variable.IsLexical)
+                return true;
+            parent = parent.Parent;
+        }
+        return false;
     }
 
     private FastFunctionScope.VariableScope GetAnnexBOuterBinding(in StringSpan name, FastFunctionScope.VariableScope currentBinding)

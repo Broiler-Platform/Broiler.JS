@@ -1184,4 +1184,43 @@ public class CompilerTests
         // catch({x: eval}) should be rejected in strict mode
         Assert.ThrowsAny<Exception>(() => ctx.Eval("'use strict'; try {} catch({x: eval}) {}"));
     }
+
+    [Fact]
+    public void AnnexB_Eval_Block_Function_Skip_Early_Err_Try_Destructured_Catch()
+    {
+        using var ctx = new JSContext();
+
+        // Per B.3.3.3 and B.3.5: when a block-scoped function declaration
+        // appears inside a catch with a destructured CatchParameter that
+        // binds the same name, Annex B var-hoisting must be skipped.
+        // Accessing the name should throw ReferenceError.
+
+        // Function scope, direct eval
+        var ex1 = Assert.Throws<JSException>(() => ctx.Eval("""
+            (function() {
+              return eval('try { throw {}; } catch ({ f }) { { function f() {} } } f;');
+            }())
+            """));
+        Assert.Equal("ReferenceError", ex1.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+
+        // typeof should return "undefined" (no binding exists)
+        var typeof1 = ctx.Eval("""
+            (function() {
+              return eval('try { throw {}; } catch ({ f }) { { function f() {} } } typeof f;');
+            }())
+            """);
+        Assert.Equal("undefined", typeof1.ToString());
+
+        // Global scope, direct eval
+        var ex2 = Assert.Throws<JSException>(() => ctx.Eval("""
+            eval('try { throw {}; } catch ({ f }) { { function f() {} } } f;')
+            """));
+        Assert.Equal("ReferenceError", ex2.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+
+        // Global scope, indirect eval
+        var ex3 = Assert.Throws<JSException>(() => ctx.Eval("""
+            (0, eval)('try { throw {}; } catch ({ f }) { { function f() {} } } f;')
+            """));
+        Assert.Equal("ReferenceError", ex3.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+    }
 }
