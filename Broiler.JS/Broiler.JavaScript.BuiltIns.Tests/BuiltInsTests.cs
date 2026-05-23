@@ -8373,6 +8373,37 @@ public class BuiltInsTests
         Assert.Equal("function|Test262Error", result.ToString());
     }
 
+    [Fact]
+    public void BuiltIn_Function_Lengths_Bind_Call_Apply_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var parts = [];
+            var d1 = Object.getOwnPropertyDescriptor(Function.prototype.bind, 'length');
+            parts.push('bind.own=' + (d1 ? d1.value : 'none'));
+            parts.push('bind.get=' + Function.prototype.bind.length);
+
+            var d2 = Object.getOwnPropertyDescriptor(Function.prototype.call, 'length');
+            parts.push('call.own=' + (d2 ? d2.value : 'none'));
+            parts.push('call.get=' + Function.prototype.call.length);
+
+            var d3 = Object.getOwnPropertyDescriptor(Function.prototype.apply, 'length');
+            parts.push('apply.own=' + (d3 ? d3.value : 'none'));
+            parts.push('apply.get=' + Function.prototype.apply.length);
+
+            var d4 = Object.getOwnPropertyDescriptor(Object.keys, 'length');
+            parts.push('keys.own=' + (d4 ? d4.value : 'none'));
+            parts.push('keys.get=' + Object.keys.length);
+
+            parts.join(';');
+        ").ToString();
+        // Expected: all should have own length matching spec values
+        Assert.Equal(
+            "bind.own=1;bind.get=1;call.own=1;call.get=1;apply.own=2;apply.get=2;keys.own=1;keys.get=1",
+            result);
+    }
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured
