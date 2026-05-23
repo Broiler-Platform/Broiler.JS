@@ -162,6 +162,22 @@ public partial class JSString : JSPrimitive
 
     public override string ToLocaleString(string format, CultureInfo culture) => value;
 
+    public override JSValue Delete(in KeyString key)
+    {
+        if (key.Key == KeyStrings.length.Key)
+            return BooleanFalse;
+
+        return base.Delete(key);
+    }
+
+    public override JSValue Delete(uint key)
+    {
+        if (key < value.Length)
+            return BooleanFalse;
+
+        return base.Delete(key);
+    }
+
     public override JSValue GetValue(uint key, JSValue receiver, bool throwError = true)
     {
         if (key >= value.Length)

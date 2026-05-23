@@ -204,18 +204,30 @@ partial class FastParser
             // we may not have catch...
             if (stream.CheckAndConsume(FastKeywords.@catch))
             {
-                stream.Expect(TokenTypes.BracketStart);
+                AstExpression catchParam = null;
 
-                if (!Identitifer(out var id))
-                    throw stream.Unexpected();
+                if (stream.CheckAndConsume(TokenTypes.BracketStart))
+                {
+                    if (Identitifer(out var id))
+                    {
+                        catchParam = id;
+                    }
+                    else if (stream.Current.Type == TokenTypes.SquareBracketStart || stream.Current.Type == TokenTypes.CurlyBracketStart)
+                    {
+                        if (!AssignmentLeftPattern(out catchParam, FastVariableKind.Let))
+                            throw stream.Unexpected();
+                    }
+                    else
+                        throw stream.Unexpected();
 
-                stream.Expect(TokenTypes.BracketEnd);
+                    stream.Expect(TokenTypes.BracketEnd);
+                }
 
                 if (!Statement(out var @catch))
                     throw stream.Unexpected();
 
                 Finally(out var @finally);
-                statement = new AstTryStatement(begin, PreviousToken, body, id, @catch, @finally);
+                statement = new AstTryStatement(begin, PreviousToken, body, catchParam, @catch, @finally);
 
                 return true;
             }

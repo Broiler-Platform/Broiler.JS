@@ -1116,4 +1116,72 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval("({ set x(a, b) {} })"));
         Assert.ThrowsAny<Exception>(() => ctx.Eval("({ set x(...a) {} })"));
     }
+
+    [Fact]
+    public void Delete_String_Index_Returns_False()
+    {
+        using var ctx = new JSContext();
+        // delete on string index properties should return false in non-strict mode
+        var result = ctx.Eval("delete 'foo'[0]");
+        Assert.False(result.BooleanValue);
+
+        var result2 = ctx.Eval("delete 'hello'[4]");
+        Assert.False(result2.BooleanValue);
+
+        // delete on out-of-range index should return true
+        var result3 = ctx.Eval("delete 'foo'[10]");
+        Assert.True(result3.BooleanValue);
+
+        // delete on string 'length' should return false
+        var result4 = ctx.Eval("var s = 'foo'; delete s['length']");
+        Assert.False(result4.BooleanValue);
+    }
+
+    [Fact]
+    public void Reserved_Word_Shorthand_Destructuring_Throws()
+    {
+        using var ctx = new JSContext();
+        // Using reserved words as shorthand in destructuring should throw SyntaxError
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("var {if} = {'if': 1}"));
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("var {for} = {'for': 1}"));
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("var {while} = {'while': 1}"));
+
+        // But renamed destructuring with reserved words as source should work
+        var result = ctx.Eval("var {if: x} = {'if': 1}; x");
+        Assert.Equal(1.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void Catch_With_Array_Destructuring()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("var r; try { throw [1, 2, 3]; } catch([a, b, c]) { r = a + b + c; } r");
+        Assert.Equal(6.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void Catch_With_Object_Destructuring()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("var r; try { throw {x: 10, y: 20}; } catch({x, y}) { r = x + y; } r");
+        Assert.Equal(30.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void Catch_Without_Binding()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("var r = 0; try { throw 1; } catch { r = 42; } r");
+        Assert.Equal(42.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void Catch_Destructured_Eval_Binding_Rejected_In_Strict()
+    {
+        using var ctx = new JSContext();
+        // catch([eval]) should be rejected in strict mode
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("'use strict'; try {} catch([eval]) {}"));
+        // catch({x: eval}) should be rejected in strict mode
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("'use strict'; try {} catch({x: eval}) {}"));
+    }
 }

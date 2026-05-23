@@ -437,7 +437,7 @@ public abstract class AstReduce : AstMapVisitor<AstNode>
     protected override AstNode VisitTryStatement(AstTryStatement tryStatement)
     {
         if (Modified(tryStatement.Block, tryStatement.Catch, tryStatement.Finally, out var @try, out var @catch, out var @finally))
-            return new AstTryStatement(tryStatement.Start, tryStatement.End, @try, tryStatement.Identifier, @catch, @finally);
+            return new AstTryStatement(tryStatement.Start, tryStatement.End, @try, tryStatement.CatchParam, @catch, @finally);
 
         return tryStatement;
     }

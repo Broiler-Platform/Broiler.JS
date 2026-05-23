@@ -136,7 +136,9 @@ public static class DirectEvalSupport
             AstVariableDeclaration declaration => ContainsRestrictedDeclarator(declaration.Declarators, inheritStrictMode, disallowArgumentsDeclaration),
             AstExpressionStatement { Expression: AstFunctionExpression function } => IsRestrictedName(function.Id?.Name, inheritStrictMode, disallowArgumentsDeclaration),
             AstExpressionStatement { Expression: AstClassExpression @class } => IsRestrictedName(@class.Identifier?.Name, inheritStrictMode, disallowArgumentsDeclaration),
-            AstTryStatement @try => IsRestrictedName(@try.Identifier?.Name, inheritStrictMode, disallowArgumentsDeclaration),
+            AstTryStatement @try => @try.CatchParam is AstIdentifier catchId
+                ? IsRestrictedName(catchId.Name, inheritStrictMode, disallowArgumentsDeclaration)
+                : @try.CatchParam != null && ContainsRestrictedBinding(@try.CatchParam, inheritStrictMode, disallowArgumentsDeclaration),
             AstExportStatement { Declaration: AstVariableDeclaration declaration } => ContainsRestrictedDeclarator(declaration.Declarators, inheritStrictMode, disallowArgumentsDeclaration),
             AstExportStatement { Declaration: AstFunctionExpression function } => IsRestrictedName(function.Id?.Name, inheritStrictMode, disallowArgumentsDeclaration),
             AstExportStatement { Declaration: AstClassExpression @class } => IsRestrictedName(@class.Identifier?.Name, inheritStrictMode, disallowArgumentsDeclaration),

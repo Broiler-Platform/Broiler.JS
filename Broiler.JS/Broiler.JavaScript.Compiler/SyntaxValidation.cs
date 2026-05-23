@@ -244,8 +244,14 @@ internal static class SyntaxValidation
 
         protected override AstNode VisitTryStatement(AstTryStatement tryStatement)
         {
-            if (IsStrictMode && IsRestrictedName(tryStatement.Identifier?.Name))
-                throw new FastParseException(tryStatement.Start, "Invalid catch parameter name in strict mode");
+            if (IsStrictMode)
+            {
+                var catchParam = tryStatement.CatchParam;
+                if (catchParam is AstIdentifier catchId && IsRestrictedName(catchId.Name))
+                    throw new FastParseException(tryStatement.Start, "Invalid catch parameter name in strict mode");
+                if (catchParam != null && ContainsRestrictedBinding(catchParam))
+                    throw new FastParseException(tryStatement.Start, "Invalid catch parameter name in strict mode");
+            }
 
             return base.VisitTryStatement(tryStatement);
         }
