@@ -10852,7 +10852,6 @@ test/staging/sm/Function/15.3.4.3-01.js
 test/staging/sm/Function/arguments-caller-callee.js
 test/staging/sm/Function/arguments-parameter-shadowing.js
 test/staging/sm/Function/arguments-property-attributes.js
-test/staging/sm/Function/arrow-has-duplicated.js
 test/staging/sm/Function/bound-length-and-name.js
 test/staging/sm/Function/builtin-no-construct.js
 test/staging/sm/Function/builtin-no-prototype.js
@@ -10872,11 +10871,8 @@ test/staging/sm/Function/function-toString-builtin-name.js
 test/staging/sm/Function/function-toString-builtin.js
 test/staging/sm/Function/implicit-this-in-parameter-expression.js
 test/staging/sm/Function/invalid-parameter-list.js
-test/staging/sm/Function/line-terminator-before-arrow.js
-test/staging/sm/Function/method-has-duplicated.js
 test/staging/sm/Function/parameter-redeclaration.js
 test/staging/sm/Function/redefine-arguments-length.js
-test/staging/sm/Function/rest-has-duplicated.js
 test/staging/sm/Function/rest-parameter-names.js
 test/staging/sm/Function/return-finally.js
 test/staging/sm/Function/strict-arguments.js
@@ -10984,11 +10980,9 @@ test/staging/sm/Math/log2-approx.js
 test/staging/sm/Math/sign.js
 test/staging/sm/Math/sinh-approx.js
 test/staging/sm/Math/tanh-approx.js
-test/staging/sm/Number/0x-without-following-hexdigits.js
 test/staging/sm/Number/20.1.3.2-toExponential.js
 test/staging/sm/Number/20.1.3.2-toPrecision.js
 test/staging/sm/Number/20.1.3.3-toFixed.js
-test/staging/sm/Number/numericSeparator.js
 test/staging/sm/Number/parseFloat-01.js
 test/staging/sm/Number/parseInt-01.js
 test/staging/sm/Number/toExponential-values.js
@@ -11266,7 +11260,6 @@ test/staging/sm/eval/exhaustive-global-strictcaller-indirect-strictcode.js
 test/staging/sm/eval/redeclared-arguments-in-param-expression-eval.js
 test/staging/sm/expressions/11.1.5-01.js
 test/staging/sm/expressions/ToPropertyKey-symbols.js
-test/staging/sm/expressions/binary-literals.js
 test/staging/sm/expressions/destructuring-array-default-call.js
 test/staging/sm/expressions/destructuring-array-default-class.js
 test/staging/sm/expressions/destructuring-array-default-function-nested.js
@@ -11280,7 +11273,6 @@ test/staging/sm/expressions/destructuring-object-__proto__-2.js
 test/staging/sm/expressions/destructuring-pattern-parenthesized.js
 test/staging/sm/expressions/exponentiation-unparenthesised-unary.js
 test/staging/sm/expressions/object-literal-__proto__.js
-test/staging/sm/expressions/object-literal-accessor-arguments.js
 test/staging/sm/expressions/object-literal-computed-property-evaluation.js
 test/staging/sm/expressions/octal-literals.js
 test/staging/sm/expressions/optional-chain-first-expression.js
@@ -11353,7 +11345,6 @@ test/staging/sm/lexical-environment/unscopables-mutation-frozen.js
 test/staging/sm/lexical-environment/unscopables-proto.js
 test/staging/sm/lexical-environment/unscopables-proxy.js
 test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
-test/staging/sm/literals/numeric/idstart-after-numeric.js
 test/staging/sm/misc/builtin-methods-reject-null-undefined-this.js
 test/staging/sm/misc/error-undefined-message.js
 test/staging/sm/misc/explicit-undefined-optional-argument.js
@@ -11362,12 +11353,10 @@ test/staging/sm/misc/future-reserved-words.js
 test/staging/sm/misc/global-numeric-properties.js
 test/staging/sm/misc/line-paragraph-separator-parse-as-lineterminator.js
 test/staging/sm/misc/new-with-non-constructor.js
-test/staging/sm/misc/unicode-escaped-keyword.js
 test/staging/sm/module/bug1488117-import-namespace_FIXTURE.js
 test/staging/sm/object/15.2.3.12.js
 test/staging/sm/object/15.2.3.14-01.js
 test/staging/sm/object/15.2.3.4-02.js
-test/staging/sm/object/accessor-arguments-rest.js
 test/staging/sm/object/accessor-name.js
 test/staging/sm/object/defineProperties-order.js
 test/staging/sm/object/defineProperty-proxy.js
@@ -11392,7 +11381,6 @@ test/staging/sm/object/toPrimitive.js
 test/staging/sm/object/values-entries-lazy-props.js
 test/staging/sm/object/values.js
 test/staging/sm/regress/regress-428366.js
-test/staging/sm/regress/regress-499524.js
 test/staging/sm/regress/regress-551763-0.js
 test/staging/sm/regress/regress-554955-6.js
 test/staging/sm/regress/regress-560998-1.js
