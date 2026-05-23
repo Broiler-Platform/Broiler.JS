@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Broiler.JavaScript.BuiltIns.Date;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine;
@@ -42,6 +44,21 @@ public static class JSIntl
     private static readonly KeyString RoundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
     private static readonly KeyString TrailingZeroDisplayKey = KeyStrings.GetOrCreate("trailingZeroDisplay");
     private static readonly KeyString TimeZoneKey = KeyStrings.GetOrCreate("timeZone");
+    private static readonly KeyString CollationKey = KeyStrings.GetOrCreate("collation");
+    private static readonly KeyString LanguageKey = KeyStrings.GetOrCreate("language");
+    private static readonly KeyString ScriptKey = KeyStrings.GetOrCreate("script");
+    private static readonly KeyString RegionKey = KeyStrings.GetOrCreate("region");
+    private static readonly KeyString NumberingSystemKey = KeyStrings.GetOrCreate("numberingSystem");
+    private static readonly Regex StructurallyValidLanguageTagPattern = new(
+        @"^(?:(?:[A-Za-z]{2,3}(?:-[A-Za-z]{3}){0,3}|[A-Za-z]{4}|[A-Za-z]{5,8})(?:-[A-Za-z]{4})?(?:-(?:[A-Za-z]{2}|\d{3}))?(?:-(?:[0-9A-Za-z]{5,8}|\d[0-9A-Za-z]{3}))*(?:-(?:[0-9A-WY-Za-wy-z](?:-[0-9A-Za-z]{2,8})+))*(?:-x(?:-[0-9A-Za-z]{1,8})+)?|x(?:-[0-9A-Za-z]{1,8})+)$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+    private static readonly HashSet<string> InvalidGrandfatheredLanguageTags = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "no-bok",
+        "no-nyn",
+        "zh-min",
+        "zh-min-nan",
+    };
 
     public static JSValue GetIntlObject()
     {
@@ -228,7 +245,9 @@ public static class JSIntl
         if (!tag.IsString && !tag.IsObject)
             throw JSEngine.NewTypeError("Locale tag must be a string or object");
 
-        _ = ValidateOptionsArgument(a.GetAt(1));
+        var tagString = tag.StringValue;
+        ValidateLanguageTag(tagString);
+        ValidateLocaleOptions(tagString, ValidateOptionsArgument(a.GetAt(1)));
     }
 
     internal static JSObject ValidateOptionsArgument(JSValue options)
@@ -259,7 +278,7 @@ public static class JSIntl
 
         if (locales.IsString)
         {
-            result.AddArrayItem(JSValue.CreateString(locales.StringValue));
+            result.AddArrayItem(JSValue.CreateString(ValidateLanguageTag(locales.StringValue)));
             return result;
         }
 
@@ -268,7 +287,7 @@ public static class JSIntl
             if (locales.IsSymbol)
                 _ = locales.StringValue;
 
-            return result;
+            throw JSEngine.NewTypeError("Locale list must be a string or an object");
         }
 
         var lengthValue = localesObject[KeyStrings.length];
@@ -285,10 +304,63 @@ public static class JSIntl
             if (locale.IsUndefined || locale.IsNull || locale.IsBoolean || locale.IsNumber || locale.IsSymbol)
                 throw JSEngine.NewTypeError("Locale list entries must be strings or objects");
 
-            result.AddArrayItem(JSValue.CreateString(locale.StringValue));
+            result.AddArrayItem(JSValue.CreateString(ValidateLanguageTag(locale.StringValue)));
         }
 
         return result;
+    }
+
+    private static string ValidateLanguageTag(string tag)
+    {
+        if (!StructurallyValidLanguageTagPattern.IsMatch(tag) ||
+            InvalidGrandfatheredLanguageTags.Contains(tag) ||
+            HasInvalidUnicodeExtensionKey(tag))
+            throw JSEngine.NewRangeError("Invalid language tag");
+
+        return tag;
+    }
+
+    private static bool HasInvalidUnicodeExtensionKey(string tag)
+    {
+        var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        for (var i = 0; i < subtags.Length; i++)
+        {
+            if (!subtags[i].Equals("u", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            for (i++; i < subtags.Length; i++)
+            {
+                var subtag = subtags[i];
+                if (subtag.Length == 1)
+                    break;
+
+                if (subtag.Length == 2 && char.IsDigit(subtag[1]))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static void ValidateLocaleOptions(string tag, JSObject options)
+    {
+        if (options == null)
+            return;
+
+        var collation = options[CollationKey];
+        if (!collation.IsUndefined)
+        {
+            var collationValue = collation.StringValue;
+            if (!Regex.IsMatch(collationValue, @"^[0-9A-Za-z]{3,8}(?:-[0-9A-Za-z]{3,8})*$", RegexOptions.CultureInvariant))
+                throw JSEngine.NewRangeError("Invalid collation option");
+        }
+
+        if (tag.StartsWith("x-", StringComparison.OrdinalIgnoreCase) &&
+            (!options[LanguageKey].IsUndefined ||
+             !options[ScriptKey].IsUndefined ||
+             !options[RegionKey].IsUndefined ||
+             !options[NumberingSystemKey].IsUndefined))
+            throw JSEngine.NewRangeError("Invalid locale options for private use tag");
     }
 
     internal static void ValidateNumberFormatOptions(JSObject options)
@@ -389,6 +461,7 @@ public sealed class JSIntlDurationFormat(JSObject _ = null) : JSObject
         if (a.This is not JSIntlDurationFormat)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.format called on incompatible receiver");
 
+        ValidateDurationArgument(a.Get1());
         return JSValue.CreateString(string.Empty);
     }
 
@@ -397,6 +470,7 @@ public sealed class JSIntlDurationFormat(JSObject _ = null) : JSObject
         if (a.This is not JSIntlDurationFormat)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.formatToParts called on incompatible receiver");
 
+        ValidateDurationArgument(a.Get1());
         return JSValue.CreateArray();
     }
 
@@ -406,6 +480,26 @@ public sealed class JSIntlDurationFormat(JSObject _ = null) : JSObject
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.resolvedOptions called on incompatible receiver");
 
         return new JSObject();
+    }
+
+    private static void ValidateDurationArgument(JSValue duration)
+    {
+        if (duration is not JSObject durationObject)
+            return;
+
+        var hasPositive = false;
+        var hasNegative = false;
+        foreach (var (_, value) in durationObject.Entries)
+        {
+            var numericValue = value.DoubleValue;
+            if (double.IsNaN(numericValue))
+                continue;
+
+            hasPositive |= numericValue > 0;
+            hasNegative |= numericValue < 0;
+            if (hasPositive && hasNegative)
+                throw JSEngine.NewRangeError("Invalid duration");
+        }
     }
 }
 
@@ -457,7 +551,7 @@ public class JSIntlDateTimeFormat : JSObject
 
     public static JSValue FormatRangePrototype(in Arguments a)
         => a.This is JSIntlDateTimeFormat
-            ? JSValue.CreateString($"{a.Get1()}–{a.GetAt(1)}")
+            ? JSValue.CreateString($"{CoerceRangeTime(a.Get1())}–{CoerceRangeTime(a.GetAt(1))}")
             : throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatRange called on incompatible receiver");
 
     public static JSValue FormatRangeToPartsPrototype(in Arguments a)
@@ -465,13 +559,15 @@ public class JSIntlDateTimeFormat : JSObject
         if (a.This is not JSIntlDateTimeFormat)
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatRangeToParts called on incompatible receiver");
 
+        var startValue = CoerceRangeTime(a.Get1());
+        var endValue = CoerceRangeTime(a.GetAt(1));
         var parts = JSValue.CreateArray();
         var start = new JSObject();
         start[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("startRange");
-        start[KeyStrings.GetOrCreate("value")] = a.Get1();
+        start[KeyStrings.GetOrCreate("value")] = JSValue.CreateNumber(startValue);
         var end = new JSObject();
         end[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("endRange");
-        end[KeyStrings.GetOrCreate("value")] = a.GetAt(1);
+        end[KeyStrings.GetOrCreate("value")] = JSValue.CreateNumber(endValue);
         parts.AddArrayItem(start);
         parts.AddArrayItem(end);
         return parts;
@@ -494,4 +590,13 @@ public class JSIntlDateTimeFormat : JSObject
         => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
             ? (intl[KeyStrings.GetOrCreate("DateTimeFormat")] as JSFunction)?.prototype
             : null;
+
+    private static double CoerceRangeTime(JSValue value)
+    {
+        var clipped = JSDateMath.TimeClip(value.DoubleValue);
+        if (double.IsNaN(clipped))
+            throw JSEngine.NewRangeError("Invalid time value");
+
+        return clipped;
+    }
 }

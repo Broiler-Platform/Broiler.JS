@@ -116,6 +116,17 @@ public partial class JSDate
             return;
         }
 
+        for (var i = 0; i < Math.Min(a.Length, 7); i++)
+        {
+            var part = a.GetAt(i).DoubleValue;
+            if (double.IsNaN(part) || double.IsInfinity(part))
+            {
+                value = InvalidDate;
+                rawTimeMs = double.NaN;
+                return;
+            }
+        }
+
         var (year, month, day, hours, minutes, seconds, millis) = a.Get7Int();
 
         day = day - 1;

@@ -7573,6 +7573,47 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Date_And_Intl_RangeError_Regressions_Match_Test262_Samples()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var dtf = new Intl.DateTimeFormat();
+                var dateTimeString = '2017-11-10T14:09:00.000Z';
+                var date = new Date(dateTimeString);
+                var duration = new Intl.DurationFormat();
+
+                return [
+                    thrownCtor(function () { new Date(Infinity, 1, 70, 0, 0, 0).toISOString(); }),
+                    thrownCtor(function () { new Date(-Infinity, 1, 70, 0, 0, 0).toISOString(); }),
+                    thrownCtor(function () { Intl.getCanonicalLocales('en-us-'); }),
+                    thrownCtor(function () { Intl.getCanonicalLocales('en-u-c0'); }),
+                    thrownCtor(function () { dtf.formatRange(dateTimeString, date); }),
+                    thrownCtor(function () { dtf.formatRangeToParts(date, dateTimeString); }),
+                    thrownCtor(function () { new Intl.Locale('en', { collation: '' }); }),
+                    thrownCtor(function () { new Intl.Locale('x-default', { language: 'fr', script: 'Cyrl', region: 'DE', numberingSystem: 'latn' }); }),
+                    thrownCtor(function () { duration.format({ hours: -1, minutes: 10 }); }),
+                    thrownCtor(function () { duration.formatToParts({ hours: 2, minutes: -10 }); }),
+                    Intl.getCanonicalLocales('en-u-0c')[0]
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|en-u-0c", result.ToString());
+    }
+
+    [Fact]
     public void Intl_NumberFormat_RelativeTimeFormat_DurationFormat_And_RegExp_Split_TypeErrors_Match_Test262()
     {
         EnsureBuiltInsLoaded();
