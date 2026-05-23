@@ -47,11 +47,26 @@ partial class FastCompiler
 
         using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, continueTarget, false, label));
         var en = YExpression.Variable(typeof(IElementEnumerator));
-        var pList = en.AsSequence();
         var body = VisitStatement(forOfStatement.Body);
+        var right = VisitExpression(forOfStatement.Target);
+        var enumerator = forOfStatement.IsAwait ? IElementEnumeratorBuilder.GetAsync(right) : IElementEnumeratorBuilder.Get(right);
+
+        // Wrap loop in try-finally to call iterator.return() on abrupt
+        // completion (break/return/throw) per ECMAScript IteratorClose.
+        var returnableVar = YExpression.Variable(typeof(IReturnableEnumerator));
+        var iterDoneVar = YExpression.Variable(typeof(bool));
+
+        var pList = new Sequence<YParameterExpression> { en, returnableVar, iterDoneVar };
+
         var bodyListItems = new Sequence<YExpression>
         {
-            YExpression.IfThen(YExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)), YExpression.Goto(s.Break))
+            // When MoveNext returns false the iterator finished normally;
+            // mark it done so finally does NOT call return().
+            YExpression.IfThen(
+                YExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)),
+                YExpression.Block(
+                    YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                    YExpression.Goto(s.Break)))
         };
 
         if (forOfStatement.IsAwait)
@@ -59,9 +74,26 @@ partial class FastCompiler
 
         bodyListItems.Add(body);
         var bodyList = YExpression.Block(bodyListItems);
-        var right = VisitExpression(forOfStatement.Target);
-        var enumerator = forOfStatement.IsAwait ? IElementEnumeratorBuilder.GetAsync(right) : IElementEnumeratorBuilder.Get(right);
-        var r = YExpression.Block(pList, YExpression.Assign(en, enumerator), YExpression.Loop(bodyList, s.Break, s.Continue));
+
+        // Build a void finally body – must not leave values on the stack.
+        var closeIterator = YExpression.Block(
+            YExpression.IfThen(
+                YExpression.Not(iterDoneVar),
+                YExpression.IfThen(
+                    YExpression.NotEqual(YExpression.Convert(returnableVar, typeof(object)), YExpression.Null),
+                    YExpression.Block(
+                        YExpression.Call(returnableVar, ReturnableEnumeratorReturnMethod, JSUndefinedBuilder.Value),
+                        YExpression.Empty))),
+            YExpression.Empty);
+
+        var loop = YExpression.Loop(bodyList, s.Break, s.Continue);
+        var tryFinally = YExpression.TryFinally(loop, closeIterator);
+
+        var r = YExpression.Block(pList,
+            YExpression.Assign(en, enumerator),
+            YExpression.Assign(returnableVar, YExpression.TypeAs(en, typeof(IReturnableEnumerator))),
+            YExpression.Assign(iterDoneVar, YExpression.Constant(false)),
+            tryFinally);
 
         return r;
     }

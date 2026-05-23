@@ -193,6 +193,12 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         if (prototypeChain == null
             && (JSEngine.Current as IJSExecutionContext)?.FunctionPrototype is JSObject functionPrototype)
         {
+            // Check own properties first so they aren't shadowed by
+            // Function.prototype's own properties (e.g. length = 0).
+            var ownProp = GetInternalProperty(key, false);
+            if (!ownProp.IsEmpty)
+                return (receiver ?? this).GetValue(ownProp);
+
             var property = functionPrototype.GetInternalProperty(key, false);
             if (!property.IsEmpty)
                 return (receiver ?? this).GetValue(property);

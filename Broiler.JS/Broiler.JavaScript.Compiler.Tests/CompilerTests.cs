@@ -795,4 +795,70 @@ public class CompilerTests
         Assert.Equal("ReferenceError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
         Assert.Equal("Cannot access 'x' before initialization", ex.Error[KeyStrings.message].ToString());
     }
+
+    [Fact]
+    public void ForOf_Iterator_Close_On_Break_And_Throw()
+    {
+        using var ctx = new JSContext();
+
+        // Test 1: break triggers iterator.return()
+        var result1 = ctx.Eval("""
+            (function () {
+                var closed = false;
+                var it = {
+                    [Symbol.iterator]() {
+                        var i = 0;
+                        return {
+                            next() { return { value: i++, done: false }; },
+                            return() { closed = true; return { done: true }; }
+                        };
+                    }
+                };
+                for (var x of it) { break; }
+                return String(closed);
+            })();
+            """).ToString();
+        Assert.Equal("true", result1);
+
+        // Test 2: throw triggers iterator.return()
+        var result2 = ctx.Eval("""
+            (function () {
+                var closed = false;
+                var it = {
+                    [Symbol.iterator]() {
+                        var i = 0;
+                        return {
+                            next() { return { value: i++, done: false }; },
+                            return() { closed = true; return { done: true }; }
+                        };
+                    }
+                };
+                try { for (var y of it) { throw "err"; } } catch (e) {}
+                return String(closed);
+            })();
+            """).ToString();
+        Assert.Equal("true", result2);
+
+        // Test 3: normal completion does NOT call return()
+        var result3 = ctx.Eval("""
+            (function () {
+                var closed = false;
+                var it = {
+                    [Symbol.iterator]() {
+                        var done = false;
+                        return {
+                            next() {
+                                if (!done) { done = true; return { value: 1, done: false }; }
+                                return { value: undefined, done: true };
+                            },
+                            return() { closed = true; return { done: true }; }
+                        };
+                    }
+                };
+                for (var z of it) {}
+                return String(closed);
+            })();
+            """).ToString();
+        Assert.Equal("false", result3);
+    }
 }
