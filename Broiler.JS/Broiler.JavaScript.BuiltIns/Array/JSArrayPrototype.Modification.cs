@@ -110,7 +110,7 @@ public partial class JSArray
         long length = GetArrayLikeLengthLong(@this);
 
         if (length + a.Length > MaxArrayLikeLength)
-            throw JSEngine.NewTypeError("Invalid array length");
+            throw JSEngine.NewRangeError("Invalid array length");
 
         if (@this is JSArray array && length <= uint.MaxValue)
         {
@@ -462,7 +462,7 @@ public partial class JSArray
         var length = GetArrayLikeLength(@this);
 
         if (length + argCount > MaxArrayLikeLength)
-            throw JSEngine.NewTypeError("Invalid array length");
+            throw JSEngine.NewRangeError("Invalid array length");
 
         for (var index = length; index > 0; index--)
         {

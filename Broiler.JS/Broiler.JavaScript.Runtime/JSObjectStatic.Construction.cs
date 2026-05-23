@@ -73,7 +73,7 @@ public partial class JSObject
             || newLengthNumber > uint.MaxValue
             || newLengthNumber != Math.Truncate(newLengthNumber))
         {
-            throw NewTypeError("Invalid length");
+            throw NewRangeError("Invalid length");
         }
 
         var newLength = (uint)newLengthNumber;

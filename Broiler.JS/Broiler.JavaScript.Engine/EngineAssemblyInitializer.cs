@@ -22,6 +22,7 @@ internal static class EngineAssemblyInitializer
 
         // ── JSObject factory delegates ──────────────────────────────
         JSObject.NewTypeError = static msg => JSEngine.NewTypeError(msg);
+        JSObject.NewRangeError = static msg => JSEngine.NewRangeError(msg);
         JSObject.CoerceToNumber = static str => NumberParser.CoerceToNumber(str);
         JSObject.CreatePrimitiveObject ??= static p => p is JSPrimitive primitive
             ? new JSPrimitiveObject(primitive)

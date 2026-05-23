@@ -28,6 +28,7 @@ public static class JSIntl
     private static readonly KeyString FormatKey = KeyStrings.GetOrCreate("format");
     private static readonly KeyString FormatRangeKey = KeyStrings.GetOrCreate("formatRange");
     private static readonly KeyString FormatRangeToPartsKey = KeyStrings.GetOrCreate("formatRangeToParts");
+    private static readonly KeyString FormatToPartsKey = KeyStrings.GetOrCreate("formatToParts");
     private static readonly KeyString SupportedValuesOfKey = KeyStrings.GetOrCreate("supportedValuesOf");
     private static readonly KeyString GetCanonicalLocalesKey = KeyStrings.GetOrCreate("getCanonicalLocales");
     private static readonly KeyString SupportedLocalesOfKey = KeyStrings.GetOrCreate("supportedLocalesOf");
@@ -182,6 +183,9 @@ public static class JSIntl
             JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(FormatRangeToPartsKey,
             new JSFunction(JSIntlDateTimeFormat.FormatRangeToPartsPrototype, "formatRangeToParts", "function formatRangeToParts() { [native code] }", createPrototype: false, length: 2),
+            JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(FormatToPartsKey,
+            new JSFunction(JSIntlDateTimeFormat.FormatToPartsPrototype, "formatToParts", "function formatToParts() { [native code] }", createPrototype: false, length: 1),
             JSPropertyAttributes.ConfigurableValue);
         return constructor;
     }
@@ -570,6 +574,27 @@ public class JSIntlDateTimeFormat : JSObject
         end[KeyStrings.GetOrCreate("value")] = JSValue.CreateNumber(endValue);
         parts.AddArrayItem(start);
         parts.AddArrayItem(end);
+        return parts;
+    }
+
+    public static JSValue FormatToPartsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlDateTimeFormat @this)
+            throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatToParts called on incompatible receiver");
+
+        var value = a.Length == 0 || a[0] == null || a[0].IsUndefined
+            ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            : a.Get1().DoubleValue;
+        var clipped = JSDateMath.TimeClip(value);
+        if (double.IsNaN(clipped))
+            throw JSEngine.NewRangeError("Invalid time value");
+
+        var formatted = clipped.ToString(CultureInfo.InvariantCulture);
+        var parts = JSValue.CreateArray();
+        var part = new JSObject();
+        part[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("literal");
+        part[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(formatted);
+        parts.AddArrayItem(part);
         return parts;
     }
 

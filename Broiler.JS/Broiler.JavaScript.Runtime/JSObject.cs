@@ -35,6 +35,7 @@ public partial class JSObject : JSValue
     // These are wired by CoreAssemblyInitializer so that JSObject
     // (in Runtime) can access Core functionality without a direct reference.
     internal new static Func<string, Exception> NewTypeError;
+    internal static Func<string, Exception> NewRangeError;
     internal static Func<JSObject> GetCurrentObjectPrototype;
     internal static Func<string, double> CoerceToNumber;
     internal static Func<JSValue, JSValue> CreatePrimitiveObject;

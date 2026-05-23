@@ -8404,6 +8404,51 @@ public class BuiltInsTests
             result);
     }
 
+    [Fact]
+    public void Array_DefineProperty_Invalid_Length_Throws_RangeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try { fn(); return 'no-throw'; }
+                    catch (e) { return e.constructor.name; }
+                }
+                return [
+                    thrownCtor(function () { Object.defineProperty([], 'length', { value: -1 }); }),
+                    thrownCtor(function () { Object.defineProperty([], 'length', { value: 4294967296 }); }),
+                    thrownCtor(function () { Object.defineProperty([], 'length', { value: 1.5 }); }),
+                    thrownCtor(function () { Object.defineProperty([], 'length', { value: NaN }); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("RangeError|RangeError|RangeError|RangeError", result.ToString());
+    }
+
+    [Fact]
+    public void DateTimeFormat_FormatToParts_NaN_Throws_RangeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try { fn(); return 'no-throw'; }
+                    catch (e) { return e.constructor.name; }
+                }
+                var dtf = new Intl.DateTimeFormat();
+                return [
+                    thrownCtor(function () { dtf.formatToParts(NaN); }),
+                    typeof dtf.formatToParts
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("RangeError|function", result.ToString());
+    }
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured
