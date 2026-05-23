@@ -305,7 +305,7 @@ partial class FastParser
                     test = AstIdentifierReplacer.Replace(test, changes) as AstExpression;
             }
 
-            statementList[0] = new AstVariableDeclaration(declaration.Start, declaration.End, scopedDeclarations, FastVariableKind.Let);
+            statementList[0] = new AstVariableDeclaration(declaration.Start, declaration.End, scopedDeclarations, declaration.Kind);
 
             var r = new AstVariableDeclaration(declaration.Start, declaration.End, tempDeclarations);
             var last = body.Count == 0 ? declaration : body.Last();

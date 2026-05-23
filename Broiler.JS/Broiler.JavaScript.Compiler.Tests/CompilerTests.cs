@@ -895,4 +895,54 @@ public class CompilerTests
             """).ToString();
         Assert.Equal("false", result3);
     }
+
+    [Fact]
+    public void Compile_Const_ForOf_Throws_TypeError_On_Assignment()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                try {
+                    for (const x of [1]) { x = 2; }
+                    return 'no-throw';
+                } catch (e) {
+                    return e instanceof TypeError;
+                }
+            })()
+            """);
+        Assert.Equal(true, result.BooleanValue);
+    }
+
+    [Fact]
+    public void Compile_Delete_String_Wrapper_Length_Throws_In_Strict_Mode()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                try {
+                    (function() { "use strict"; var s = new String("abc"); delete s.length; })();
+                    return 'no-throw';
+                } catch (e) {
+                    return e instanceof TypeError;
+                }
+            })()
+            """);
+        Assert.Equal(true, result.BooleanValue);
+    }
+
+    [Fact]
+    public void Compile_Labeled_Block_Break_Preserves_Completion_Value()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""eval("L: { 'a'; break L; }")""");
+        Assert.Equal("a", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_Labeled_Block_Without_Break_Returns_Last_Expression()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""eval("L: { 42; }")""");
+        Assert.Equal(42.0, result.DoubleValue);
+    }
 }

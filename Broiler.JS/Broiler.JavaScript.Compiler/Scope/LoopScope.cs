@@ -9,6 +9,7 @@ public class LoopScope(YLabelTarget breakTarget, YLabelTarget continueTarget, bo
     public readonly YLabelTarget Continue = continueTarget;
     public readonly string Name = name;
     public readonly bool IsSwitch = isSwitch;
+    public YParameterExpression CompletionVariable;
 
     public LoopScope Get(string name)
     {
@@ -16,5 +17,17 @@ public class LoopScope(YLabelTarget breakTarget, YLabelTarget continueTarget, bo
         while (start != null && start.Name != name)
             start = start.Parent;
         return start;
+    }
+
+    public YParameterExpression FindCompletionVariable()
+    {
+        var start = this;
+        while (start != null)
+        {
+            if (start.CompletionVariable != null)
+                return start.CompletionVariable;
+            start = start.Parent;
+        }
+        return null;
     }
 }
