@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.ExpressionCompiler.Core;
+using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.BuiltIns;
@@ -127,16 +128,19 @@ public class JSPrototype : IJSPrototype
     {
         Build();
         var (p, _) = propertySet.properties[key.Key];
-        
-        if(p.IsValue)
+
+        if (!p.IsEmpty)
         {
-            if (p.get is IJSFunction valueGetter)
-                return valueGetter.Delegate;
+            var value = @object.GetValue(p);
+            if (value.IsUndefined || value.IsNull)
+                return null;
+
+            if (value is IJSFunction function)
+                return function.Delegate;
+
+            throw JSEngine.NewTypeError($"{key} is not a function");
         }
-        
-        if (p.IsProperty)
-            return (p.get as IJSFunction)?.Delegate;
-        
+
         return null;
     }
 

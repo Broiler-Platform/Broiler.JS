@@ -129,14 +129,17 @@ public partial class JSObject
         if (!ownProperties.IsEmpty)
         {
             ref var p = ref ownProperties.GetValue(key.Key);
-            if (p.IsValue)
+            if (!p.IsEmpty)
             {
-                if (p.value is IJSFunction g)
-                    return g.Delegate;
-            }
+                var value = GetValue(p);
+                if (value.IsUndefined || value.IsNull)
+                    return null;
 
-            if (p.IsProperty)
-                return (p.get as IJSFunction)?.Delegate;
+                if (value is IJSFunction g)
+                    return g.Delegate;
+
+                throw NewTypeError($"{key} is not a function");
+            }
         }
 
         return prototypeChain?.GetMethod(key);

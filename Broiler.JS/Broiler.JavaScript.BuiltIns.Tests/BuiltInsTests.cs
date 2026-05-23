@@ -4664,6 +4664,57 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RegExp_Exec_And_Iterator_Close_Read_Observable_Properties_Exactly_Once()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var lastIndexReads = 0;
+                var re = /./;
+                re.lastIndex = {
+                    valueOf: function () {
+                        lastIndexReads++;
+                        return 0;
+                    }
+                };
+                re.exec('abc');
+
+                var returnGets = 0;
+                var iterable = {
+                    next: function () {
+                        return { value: 1, done: false };
+                    },
+                    get return() {
+                        returnGets++;
+                        return null;
+                    }
+                };
+                iterable[Symbol.iterator] = function () {
+                    return iterable;
+                };
+
+                function* generator() {
+                    yield* iterable;
+                }
+
+                var iterator = generator();
+                iterator.next();
+                var completion = iterator.return(2);
+
+                return [
+                    lastIndexReads,
+                    completion.value,
+                    completion.done,
+                    returnGets
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("1|2|true|1", result.ToString());
+    }
+
+    [Fact]
     public void MatchAll_RegExp_LastIndex_And_SetLike_Iterator_Return_Regressions()
     {
         EnsureBuiltInsLoaded();

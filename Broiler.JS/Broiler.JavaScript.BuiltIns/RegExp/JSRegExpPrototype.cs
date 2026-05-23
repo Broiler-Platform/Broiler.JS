@@ -202,11 +202,11 @@ public partial class JSRegExp
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int CalculateStartPosition(string input)
     {
+        var observableLastIndex = GetObservableLastIndex();
         if (!globalSearch && !sticky)
             return 0;
 
-        var maxIndex = GetObservableLastIndex();
-        var minIndex = maxIndex < input.Length ? maxIndex : input.Length;
+        var minIndex = observableLastIndex < input.Length ? observableLastIndex : input.Length;
 
         return minIndex;
     }

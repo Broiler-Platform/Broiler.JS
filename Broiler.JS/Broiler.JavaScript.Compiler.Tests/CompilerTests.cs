@@ -591,6 +591,42 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Shadowed_Eval_Calls_Are_Not_Treated_As_Direct_Eval()
+    {
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var functionCalls = 0;
+                function run() {
+                    var eval = function (value) {
+                        functionCalls++;
+                        return value + 1;
+                    };
+
+                    return eval(1);
+                }
+
+                var withCalls = 0;
+                var scope = {
+                    eval: function (value) {
+                        withCalls++;
+                        return value + 2;
+                    }
+                };
+                var withResult;
+                with (scope) {
+                    withResult = eval(1);
+                }
+
+                return [run(), functionCalls, withResult, withCalls].join('|');
+            })();
+            """);
+
+        Assert.Equal("2|1|3|1", result.ToString());
+    }
+
+    [Fact]
     public void Compile_Strict_Update_Delete_With_And_Direct_Eval_Delete_Match_Test262()
     {
         using var ctx = new JSContext();
