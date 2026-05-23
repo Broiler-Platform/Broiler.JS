@@ -143,6 +143,31 @@ internal static class SyntaxValidation
             if (property.Kind is AstPropertyKind.Method or AstPropertyKind.Constructor
                 or AstPropertyKind.Get or AstPropertyKind.Set)
             {
+                // Validate getter/setter parameter counts per ECMAScript spec
+                if (property.Init is AstFunctionExpression func)
+                {
+                    var paramCount = 0;
+                    var hasRest = false;
+                    var en = func.Params.GetFastEnumerator();
+                    while (en.MoveNext(out var param))
+                    {
+                        paramCount++;
+                        if (param.Identifier is AstSpreadElement)
+                            hasRest = true;
+                    }
+
+                    if (property.Kind == AstPropertyKind.Get && paramCount > 0)
+                        throw new FastParseException(property.Start, "Getter must not have any formal parameters");
+
+                    if (property.Kind == AstPropertyKind.Set)
+                    {
+                        if (paramCount != 1)
+                            throw new FastParseException(property.Start, "Setter must have exactly one formal parameter");
+                        if (hasRest)
+                            throw new FastParseException(property.Start, "Setter function argument must not be a rest parameter");
+                    }
+                }
+
                 var prev = _inMethodProperty;
                 _inMethodProperty = true;
                 try
@@ -367,6 +392,8 @@ internal static class SyntaxValidation
         var enumerator = parameters.GetFastEnumerator();
         while (enumerator.MoveNext(out var parameter))
         {
+            if (parameter.Init != null)  // has default value
+                return true;
             if (IsNonSimpleParameter(parameter.Identifier))
                 return true;
         }

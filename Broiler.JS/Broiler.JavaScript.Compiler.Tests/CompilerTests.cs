@@ -1007,4 +1007,113 @@ public class CompilerTests
         var result3 = ctx.Eval(@"/^\S$/.test('\u2000')");
         Assert.False(result3.BooleanValue);
     }
+
+    [Fact]
+    public void Duplicate_Params_Rejected_In_Arrow_Functions()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("(x, x) => x"));
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("(a, b, a) => a"));
+    }
+
+    [Fact]
+    public void Duplicate_Params_Rejected_In_Generators()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("function* g(a, a) {}"));
+    }
+
+    [Fact]
+    public void Duplicate_Params_Rejected_In_Async_Functions()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("async function f(a, a) {}"));
+    }
+
+    [Fact]
+    public void Duplicate_Params_Rejected_In_Methods()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("({ m(a, a) {} })"));
+    }
+
+    [Fact]
+    public void Duplicate_Params_Rejected_With_Rest()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("function f(a, ...a) {}"));
+    }
+
+    [Fact]
+    public void Duplicate_Params_Rejected_With_Defaults()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("function f(a, a = 1) {}"));
+    }
+
+    [Fact]
+    public void Line_Terminator_Before_Arrow_Rejected()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("(x)\n=> x"));
+    }
+
+    [Fact]
+    public void Numeric_Literal_0x_Without_Digits_Rejected()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("0x"));
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("0b"));
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("0o"));
+    }
+
+    [Fact]
+    public void Numeric_Separator_Invalid_Positions_Rejected()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("100_"));
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("10__0"));
+    }
+
+    [Fact]
+    public void Identifier_Start_After_Numeric_Literal_Rejected()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("0xfz"));
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("1a"));
+    }
+
+    [Fact]
+    public void Unicode_Escaped_Reserved_Word_Rejected_As_Identifier()
+    {
+        using var ctx = new JSContext();
+        // Escaped reserved word in expression position
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("var x = \\u0076ar;"));
+    }
+
+    [Fact]
+    public void Unicode_Escaped_Keyword_Allowed_As_Property_Name()
+    {
+        using var ctx = new JSContext();
+        // Escaped reserved word as property key is valid
+        var result = ctx.Eval("({ bre\\u0061k: 7 }).break");
+        Assert.Equal(7.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void Getter_Must_Have_Zero_Params()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("({ get x(a) { return a; } })"));
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("class C { get x(a) { return a; } }"));
+    }
+
+    [Fact]
+    public void Setter_Must_Have_Exactly_One_Param()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("({ set x() {} })"));
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("({ set x(a, b) {} })"));
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("({ set x(...a) {} })"));
+    }
 }
