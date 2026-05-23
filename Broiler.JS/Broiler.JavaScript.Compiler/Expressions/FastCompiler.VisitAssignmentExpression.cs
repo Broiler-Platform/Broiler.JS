@@ -264,10 +264,13 @@ partial class FastCompiler
                 var arrayPattern = pattern as AstArrayPattern;
                 using (var enVar = scope.Top.GetTempVariable(typeof(IElementEnumerator)))
                 using (var returnableVar = scope.Top.GetTempVariable(typeof(IReturnableEnumerator)))
+                using (var iterDoneTemp = scope.Top.GetTempVariable(typeof(bool)))
                 {
                     var destExp = enVar.Expression;
+                    var iterDoneVar = iterDoneTemp.Expression;
                     inits.Add(YExpression.Assign(destExp, IElementEnumeratorBuilder.Get(init)));
                     inits.Add(YExpression.Assign(returnableVar.Expression, YExpression.TypeAs(destExp, typeof(IReturnableEnumerator))));
+                    inits.Add(YExpression.Assign(iterDoneVar, YExpression.Constant(false)));
                     var en = arrayPattern.Elements.GetFastEnumerator();
                     var arrayInits = new Sequence<YExpression>();
                     var hasSpread = false;
@@ -277,10 +280,16 @@ partial class FastCompiler
                         switch (element.Type)
                         {
                             case FastNodeType.EmptyExpression:
-                                // Elision: advance iterator without assigning
+                                // Elision: advance iterator without assigning, track done
                                 using (var skipTemp = scope.Top.GetTempVariable(typeof(JSValue)))
                                 {
-                                    arrayInits.Add(IElementEnumeratorBuilder.MoveNext(destExp, skipTemp.Expression));
+                                    arrayInits.Add(YExpression.IfThen(
+                                        YExpression.Not(iterDoneVar),
+                                        YExpression.IfThen(
+                                            YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, skipTemp.Expression)),
+                                            YExpression.Block(
+                                                YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                                                YExpression.Empty))));
                                 }
                                 break;
                             case FastNodeType.Identifier:
@@ -290,7 +299,19 @@ partial class FastCompiler
                                     variable = scope.Top.CreateVariable(id.Name.Value, null, newScope);
 
                                 var assignee = VisitIdentifierReference(id);
-                                arrayInits.Add(IElementEnumeratorBuilder.AssignMoveNext(assignee, destExp));
+                                using (var moveTemp = scope.Top.GetTempVariable(typeof(JSValue)))
+                                {
+                                    arrayInits.Add(YExpression.IfThen(
+                                        YExpression.OrElse(iterDoneVar,
+                                            YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp.Expression))),
+                                        YExpression.Block(
+                                            YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                                            YExpression.Assign(assignee, JSUndefinedBuilder.Value),
+                                            YExpression.Empty),
+                                        YExpression.Block(
+                                            YExpression.Assign(assignee, moveTemp.Expression),
+                                            YExpression.Empty)));
+                                }
                                 if (readOnlyAfterAssign && variable != null)
                                     arrayInits.Add(JSVariableBuilder.SetReadOnly(variable.Variable, true));
                                 break;
@@ -299,7 +320,13 @@ partial class FastCompiler
                                 if (be.Left.Type != FastNodeType.Identifier)
                                 {
                                     using var te = scope.Top.GetTempVariable(typeof(JSValue));
-                                    arrayInits.Add(IElementEnumeratorBuilder.MoveNext(destExp, te.Expression));
+                                    arrayInits.Add(YExpression.IfThen(
+                                        YExpression.OrElse(iterDoneVar,
+                                            YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, te.Expression))),
+                                        YExpression.Block(
+                                            YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                                            YExpression.Assign(te.Expression, JSUndefinedBuilder.Value),
+                                            YExpression.Empty)));
                                     var defaultValue = Visit(be.Right);
                                     if (suppressAnonymousFunctionNameInference)
                                     {
@@ -319,7 +346,19 @@ partial class FastCompiler
                                     variable = scope.Top.CreateVariable(id.Name.Value, null, newScope);
 
                                 assignee = VisitIdentifierReference(id);
-                                arrayInits.Add(IElementEnumeratorBuilder.AssignMoveNext(assignee, destExp));
+                                using (var moveTemp2 = scope.Top.GetTempVariable(typeof(JSValue)))
+                                {
+                                    arrayInits.Add(YExpression.IfThen(
+                                        YExpression.OrElse(iterDoneVar,
+                                            YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp2.Expression))),
+                                        YExpression.Block(
+                                            YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                                            YExpression.Assign(assignee, JSUndefinedBuilder.Value),
+                                            YExpression.Empty),
+                                        YExpression.Block(
+                                            YExpression.Assign(assignee, moveTemp2.Expression),
+                                            YExpression.Empty)));
+                                }
                                 var identifierDefaultValue = Visit(be.Right);
                                 if (suppressAnonymousFunctionNameInference)
                                 {
@@ -345,9 +384,14 @@ partial class FastCompiler
                                 // nested object ...
                                 using (var te = scope.Top.GetTempVariable(typeof(JSValue)))
                                 {
-                                    var check = IElementEnumeratorBuilder.MoveNext(destExp, te.Expression);
-                                    arrayInits.Add(check);
-                                CreateAssignment(arrayInits, ape, te.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign);
+                                    arrayInits.Add(YExpression.IfThen(
+                                        YExpression.OrElse(iterDoneVar,
+                                            YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, te.Expression))),
+                                        YExpression.Block(
+                                            YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                                            YExpression.Assign(te.Expression, JSUndefinedBuilder.Value),
+                                            YExpression.Empty)));
+                                    CreateAssignment(arrayInits, ape, te.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign);
                                 }
                                 break;
 
@@ -363,13 +407,16 @@ partial class FastCompiler
                     }
                     else
                     {
-                        var closeIterator = YExpression.Condition(
-                            YExpression.NotEqual(YExpression.Convert(returnableVar.Expression, typeof(object)), YExpression.Null),
-                            YExpression.Block(
-                                YExpression.Call(returnableVar.Expression, ReturnableEnumeratorReturnMethod, JSUndefinedBuilder.Value),
-                                JSUndefinedBuilder.Value),
-                            JSUndefinedBuilder.Value,
-                            typeof(JSValue));
+                        // Build a void finally body – only close iterator if NOT exhausted.
+                        var closeIterator = YExpression.Block(
+                            YExpression.IfThen(
+                                YExpression.Not(iterDoneVar),
+                                YExpression.IfThen(
+                                    YExpression.NotEqual(YExpression.Convert(returnableVar.Expression, typeof(object)), YExpression.Null),
+                                    YExpression.Block(
+                                        YExpression.Call(returnableVar.Expression, ReturnableEnumeratorReturnMethod, JSUndefinedBuilder.Value),
+                                        YExpression.Empty))),
+                            YExpression.Empty);
 
                         inits.Add(YExpression.TryFinally(arrayInitBlock, closeIterator));
                     }
