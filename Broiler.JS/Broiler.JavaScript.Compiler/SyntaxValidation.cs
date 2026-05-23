@@ -138,6 +138,53 @@ internal static class SyntaxValidation
             }
         }
 
+        protected override AstNode VisitClassProperty(AstClassProperty property)
+        {
+            if (property.Kind is AstPropertyKind.Method or AstPropertyKind.Constructor
+                or AstPropertyKind.Get or AstPropertyKind.Set)
+            {
+                // Validate getter/setter parameter counts per ECMAScript spec
+                if (property.Init is AstFunctionExpression func)
+                {
+                    var paramCount = 0;
+                    var hasRest = false;
+                    var en = func.Params.GetFastEnumerator();
+                    while (en.MoveNext(out var param))
+                    {
+                        paramCount++;
+                        if (param.Identifier is AstSpreadElement)
+                            hasRest = true;
+                    }
+
+                    if (property.Kind == AstPropertyKind.Get && paramCount > 0)
+                        throw new FastParseException(property.Start, "Getter must not have any formal parameters");
+
+                    if (property.Kind == AstPropertyKind.Set)
+                    {
+                        if (paramCount != 1)
+                            throw new FastParseException(property.Start, "Setter must have exactly one formal parameter");
+                        if (hasRest)
+                            throw new FastParseException(property.Start, "Setter function argument must not be a rest parameter");
+                    }
+                }
+
+                var prev = _inMethodProperty;
+                _inMethodProperty = true;
+                try
+                {
+                    return base.VisitClassProperty(property);
+                }
+                finally
+                {
+                    _inMethodProperty = prev;
+                }
+            }
+
+            return base.VisitClassProperty(property);
+        }
+
+        private bool _inMethodProperty;
+
         protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
         {
             if (IsStrictMode && IsRestrictedName(functionExpression.Id?.Name))
@@ -147,11 +194,27 @@ internal static class SyntaxValidation
             var functionStrict = IsStrictMode || HasUseStrictDirective(bodyStatements);
             if (functionStrict && ContainsRestrictedBinding(functionExpression.Params))
                 throw new FastParseException(functionExpression.Start, "Invalid parameter name in strict mode");
-            if (functionStrict && ContainsDuplicateParameterNames(functionExpression.Params))
+
+            // Duplicate parameter names are always forbidden in:
+            // - strict mode
+            // - arrow functions
+            // - generators
+            // - async functions
+            // - method definitions (concise methods, getters, setters, constructors)
+            // - functions with non-simple parameters (rest, defaults, destructuring)
+            var alwaysRejectDuplicates = functionExpression.IsArrowFunction
+                || functionExpression.Generator
+                || functionExpression.Async
+                || _inMethodProperty
+                || HasNonSimpleParameters(functionExpression.Params);
+
+            if ((functionStrict || alwaysRejectDuplicates) && ContainsDuplicateParameterNames(functionExpression.Params))
                 throw new FastParseException(functionExpression.Start, "Duplicate parameter name not allowed in this context");
 
             var previous = IsStrictMode;
+            var prevMethod = _inMethodProperty;
             IsStrictMode = functionStrict;
+            _inMethodProperty = false;
             try
             {
                 return base.VisitFunctionExpression(functionExpression);
@@ -159,6 +222,7 @@ internal static class SyntaxValidation
             finally
             {
                 IsStrictMode = previous;
+                _inMethodProperty = prevMethod;
             }
         }
 
@@ -321,6 +385,32 @@ internal static class SyntaxValidation
             return false;
 
         return name.Value.Equals("arguments") || name.Value.Equals("eval");
+    }
+
+    private static bool HasNonSimpleParameters(IFastEnumerable<VariableDeclarator> parameters)
+    {
+        var enumerator = parameters.GetFastEnumerator();
+        while (enumerator.MoveNext(out var parameter))
+        {
+            if (parameter.Init != null)  // has default value
+                return true;
+            if (IsNonSimpleParameter(parameter.Identifier))
+                return true;
+        }
+        return false;
+    }
+
+    private static bool IsNonSimpleParameter(AstExpression expression)
+    {
+        return expression switch
+        {
+            AstIdentifier => false,
+            AstBinaryExpression => true,   // default value
+            AstSpreadElement => true,       // rest parameter
+            AstArrayPattern => true,        // array destructuring
+            AstObjectPattern => true,       // object destructuring
+            _ => false,
+        };
     }
 
     private static bool ContainsDuplicateParameterNames(IFastEnumerable<VariableDeclarator> parameters)

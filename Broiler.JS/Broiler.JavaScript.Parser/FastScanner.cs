@@ -1205,10 +1205,35 @@ public class FastScanner
             char peek = Peek();
             if (!peek.IsDigitPart(hex, binary, octal))
                 return;
+            if (peek == '_')
+                throw Unexpected(); // leading numeric separator
+            bool lastWasSeparator = false;
             do
             {
+                if (peek == '_')
+                {
+                    if (lastWasSeparator)
+                        throw Unexpected(); // consecutive numeric separators
+                    lastWasSeparator = true;
+                }
+                else
+                {
+                    lastWasSeparator = false;
+                }
                 peek = Consume();
             } while (peek.IsDigitPart(hex, binary, octal));
+            if (lastWasSeparator)
+                throw Unexpected(); // trailing numeric separator
+        }
+
+        FastToken CommitNumberToken(State s, TokenTypes type = TokenTypes.Number)
+        {
+            var p = Peek();
+            if (p != char.MaxValue && p.IsIdentifierStart() && p != '$' && p != '@')
+                throw Unexpected(); // identifier start after numeric literal
+            return type == TokenTypes.BigInt
+                ? s.Commit(TokenTypes.BigInt)
+                : s.Commit(TokenTypes.Number, true);
         }
 
         if (Peek() == '0')
@@ -1218,32 +1243,38 @@ public class FastScanner
                 case 'x':
                 case 'X':
                     Consume();
+                    if (!Peek().IsDigitPart(true, false))
+                        throw Unexpected(); // 0x without hex digits
                     ConsumeDigits(hex: true);
                     if (CanConsume('n'))
-                        return state.Commit(TokenTypes.BigInt);
-                    return state.Commit(TokenTypes.Number, true);
+                        return CommitNumberToken(state, TokenTypes.BigInt);
+                    return CommitNumberToken(state);
 
                 case 'b':
                 case 'B':
                     Consume();
+                    if (!Peek().IsDigitPart(false, true))
+                        throw Unexpected(); // 0b without binary digits
                     ConsumeDigits(binary: true);
                     if (CanConsume('n'))
-                        return state.Commit(TokenTypes.BigInt);
-                    return state.Commit(TokenTypes.Number, true);
+                        return CommitNumberToken(state, TokenTypes.BigInt);
+                    return CommitNumberToken(state);
 
                 case 'o':
                 case 'O':
                     Consume();
+                    if (!Peek().IsDigitPart(false, false, true))
+                        throw Unexpected(); // 0o without octal digits
                     ConsumeDigits(octal: true);
                     if (CanConsume('n'))
-                        return state.Commit(TokenTypes.BigInt);
-                    return state.Commit(TokenTypes.Number, true);
+                        return CommitNumberToken(state, TokenTypes.BigInt);
+                    return CommitNumberToken(state);
             }
         }
 
         ConsumeDigits();
         if (CanConsume('n'))
-            return state.Commit(TokenTypes.BigInt);
+            return CommitNumberToken(state, TokenTypes.BigInt);
 
         // this logic is perfect
         // cannot be replaced with switch
@@ -1258,15 +1289,15 @@ public class FastScanner
             if (CanConsume('+', '-'))
             {
                 ConsumeDigits();
-                return state.Commit(TokenTypes.Number, true);
+                return CommitNumberToken(state);
             }
 
             ConsumeDigits();
-            return state.Commit(TokenTypes.Number, true);
+            return CommitNumberToken(state);
         }
 
         ConsumeDigits();
-        return state.Commit(TokenTypes.Number, true);
+        return CommitNumberToken(state);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1351,6 +1382,41 @@ public class FastScanner
             var keyword = k;
             var contextualKeyword = FastKeywords.none;
 
+            // Detect unicode-escaped reserved keywords:
+            // When cooked is non-null, the identifier used unicode escapes.
+            // Check if the cooked text resolves to a reserved keyword.
+            bool escapedReserved = false;
+            if (cooked != null && keywords.IsKeyword(span, out var ek))
+            {
+                switch (ek)
+                {
+                    // Contextual keywords are OK as identifiers when escaped
+                    case FastKeywords.get:
+                    case FastKeywords.set:
+                    case FastKeywords.of:
+                    case FastKeywords.constructor:
+                    case FastKeywords.from:
+                    case FastKeywords.@as:
+                    case FastKeywords.@async:
+                    case FastKeywords.@let:
+                    case FastKeywords.@yield:
+                    case FastKeywords.@static:
+                    case FastKeywords.@await:
+                    case FastKeywords.@implements:
+                    case FastKeywords.@interface:
+                    case FastKeywords.@package:
+                    case FastKeywords.@private:
+                    case FastKeywords.@public:
+                    case FastKeywords.@protected:
+                    case FastKeywords.@using:
+                        break;
+                    default:
+                        // Truly reserved words: mark for parser rejection in binding contexts
+                        escapedReserved = true;
+                        break;
+                }
+            }
+
             if (isKw)
             {
                 switch (k)
@@ -1394,7 +1460,7 @@ public class FastScanner
                 }
             }
 
-            var token = new FastToken(tokenType, scanner.Text.Source, cooked, null, start, cp - start, this.start, location, isKeyword: isKw, keyword: keyword, contextualKeyword: contextualKeyword);
+            var token = new FastToken(tokenType, scanner.Text.Source, cooked, null, start, cp - start, this.start, location, isKeyword: isKw, keyword: keyword, contextualKeyword: contextualKeyword, isEscapedReservedWord: escapedReserved);
             scanner = null;
             return token;
         }

@@ -82,6 +82,8 @@ partial class FastParser
 
         if (Identitifer(out var id))
         {
+            if (id.Start.IsEscapedReservedWord)
+                throw new FastParseException(id.Start, "Keyword must not contain escaped characters");
             node = id;
             return true;
         }
