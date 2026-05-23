@@ -1367,12 +1367,6 @@ test/built-ins/FinalizationRegistry/prototype/register/throws-when-target-cannot
 test/built-ins/FinalizationRegistry/prototype/register/throws-when-unregisterToken-not-undefined-and-cannot-be-held-weakly.js
 test/built-ins/FinalizationRegistry/prototype/unregister/throws-when-unregisterToken-cannot-be-held-weakly.js
 test/built-ins/FinalizationRegistry/prototype/unregister/unregister-symbol-token.js
-test/built-ins/Function/15.3.2.1-11-1.js
-test/built-ins/Function/15.3.2.1-11-2-s.js
-test/built-ins/Function/15.3.2.1-11-5.js
-test/built-ins/Function/15.3.2.1-11-6-s.js
-test/built-ins/Function/15.3.2.1-11-8-s.js
-test/built-ins/Function/15.3.2.1-11-9-s.js
 test/built-ins/Function/15.3.5.4_2-12gs.js
 test/built-ins/Function/15.3.5.4_2-14gs.js
 test/built-ins/Function/15.3.5.4_2-75gs.js
@@ -1397,9 +1391,6 @@ test/built-ins/Function/15.3.5.4_2-93gs.js
 test/built-ins/Function/S15.3.2.1_A1_T7.js
 test/built-ins/Function/internals/Construct/derived-return-val.js
 test/built-ins/Function/internals/Construct/derived-this-uninitialized.js
-test/built-ins/Function/length/S15.3.5.1_A1_T3.js
-test/built-ins/Function/length/S15.3.5.1_A2_T3.js
-test/built-ins/Function/length/S15.3.5.1_A3_T3.js
 test/built-ins/Function/length/S15.3.5.1_A4_T1.js
 test/built-ins/Function/length/S15.3.5.1_A4_T2.js
 test/built-ins/Function/length/S15.3.5.1_A4_T3.js
@@ -2459,7 +2450,6 @@ test/built-ins/Promise/withResolvers/result.js
 test/built-ins/Proxy/construct/trap-is-null-target-is-proxy.js
 test/built-ins/Proxy/construct/trap-is-undefined-target-is-proxy.js
 test/built-ins/Proxy/defineProperty/trap-is-missing-target-is-proxy.js
-test/built-ins/Proxy/deleteProperty/trap-is-null-target-is-proxy.js
 test/built-ins/Proxy/enumerate/removed-does-not-trigger.js
 test/built-ins/Proxy/get/trap-is-missing-target-is-proxy.js
 test/built-ins/Proxy/get/trap-is-null-target-is-proxy.js
@@ -2505,8 +2495,6 @@ test/built-ins/Reflect/set/receiver-is-not-object.js
 test/built-ins/Reflect/setPrototypeOf/return-false-if-target-and-proto-are-the-same.js
 test/built-ins/Reflect/setPrototypeOf/return-false-if-target-is-not-extensible.js
 test/built-ins/Reflect/setPrototypeOf/return-false-if-target-is-prototype-of-proto.js
-test/built-ins/RegExp/CharacterClassEscapes/character-class-non-whitespace-class-escape-negative-cases.js
-test/built-ins/RegExp/CharacterClassEscapes/character-class-whitespace-class-escape-positive-cases.js
 test/built-ins/RegExp/S15.10.2.5_A1_T4.js
 test/built-ins/RegExp/S15.10.4.1_A4_T1.js
 test/built-ins/RegExp/S15.10.4.1_A4_T2.js
@@ -2518,7 +2506,6 @@ test/built-ins/RegExp/S15.10.4.1_A8_T9.js
 test/built-ins/RegExp/S15.10.7_A2_T1.js
 test/built-ins/RegExp/S15.10.7_A2_T2.js
 test/built-ins/RegExp/call_with_regexp_match_falsy.js
-test/built-ins/RegExp/character-class-escape-non-whitespace.js
 test/built-ins/RegExp/dotall/with-dotall-unicode.js
 test/built-ins/RegExp/dotall/with-dotall.js
 test/built-ins/RegExp/dotall/without-dotall-unicode.js
@@ -2530,7 +2517,6 @@ test/built-ins/RegExp/early-err-modifiers-other-code-point-uppercase-I.js
 test/built-ins/RegExp/early-err-modifiers-should-not-case-fold-i.js
 test/built-ins/RegExp/early-err-modifiers-should-not-case-fold-m.js
 test/built-ins/RegExp/early-err-modifiers-should-not-case-fold-s.js
-test/built-ins/RegExp/lastIndex.js
 test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/lookahead-quantifier-match-groups.js
@@ -7180,7 +7166,6 @@ test/language/expressions/function/dstr/obj-ptrn-rest-val-obj.js
 test/language/expressions/function/eval-var-scope-syntax-err.js
 test/language/expressions/function/named-strict-error-reassign-fn-name-in-body-in-eval.js
 test/language/expressions/function/param-dflt-yield-non-strict.js
-test/language/expressions/function/param-duplicated-non-strict.js
 test/language/expressions/function/scope-param-elem-var-close.js
 test/language/expressions/function/scope-param-elem-var-open.js
 test/language/expressions/function/static-init-await-binding.js
@@ -7655,8 +7640,6 @@ test/language/function-code/10.4.3-1-44-s.js
 test/language/function-code/10.4.3-1-44gs.js
 test/language/function-code/10.4.3-1-76-s.js
 test/language/function-code/10.4.3-1-76gs.js
-test/language/function-code/S10.2.1_A2.js
-test/language/function-code/S10.2.1_A3.js
 test/language/function-code/S10.2.1_A4_T1.js
 test/language/function-code/eval-param-env-with-computed-key.js
 test/language/function-code/eval-param-env-with-prop-initializer.js
@@ -7823,7 +7806,6 @@ test/language/literals/regexp/S7.8.5_A2.3_T6.js
 test/language/literals/regexp/S7.8.5_A2.4_T2.js
 test/language/literals/regexp/S7.8.5_A2.5_T5.js
 test/language/literals/regexp/S7.8.5_A2.5_T6.js
-test/language/literals/regexp/lastIndex.js
 test/language/literals/regexp/u-astral.js
 test/language/literals/regexp/u-case-mapping.js
 test/language/literals/regexp/u-surrogate-pairs-atom-char-class.js
@@ -9234,7 +9216,6 @@ test/language/statements/class/subclass/builtin-objects/Number/super-must-be-cal
 test/language/statements/class/subclass/builtin-objects/Object/constructor-return-undefined-throws.js
 test/language/statements/class/subclass/builtin-objects/Object/constructor-returns-non-object.js
 test/language/statements/class/subclass/builtin-objects/Promise/super-must-be-called.js
-test/language/statements/class/subclass/builtin-objects/RegExp/lastIndex.js
 test/language/statements/class/subclass/builtin-objects/RegExp/super-must-be-called.js
 test/language/statements/class/subclass/builtin-objects/Set/super-must-be-called.js
 test/language/statements/class/subclass/builtin-objects/String/super-must-be-called.js
@@ -10508,7 +10489,6 @@ test/language/statements/function/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/function/dstr/obj-ptrn-rest-val-obj.js
 test/language/statements/function/eval-var-scope-syntax-err.js
 test/language/statements/function/param-dflt-yield-non-strict.js
-test/language/statements/function/param-duplicated-non-strict.js
 test/language/statements/function/scope-param-elem-var-close.js
 test/language/statements/function/scope-param-elem-var-open.js
 test/language/statements/function/static-init-await-binding-valid.js
@@ -11045,7 +11025,6 @@ test/staging/sm/Reflect/getOwnPropertyDescriptor.js
 test/staging/sm/Reflect/propertyKeys.js
 test/staging/sm/Reflect/setPrototypeOf.js
 test/staging/sm/Reflect/surfaces.js
-test/staging/sm/RegExp/15.10.7.5-01.js
 test/staging/sm/RegExp/7.8.5-01.js
 test/staging/sm/RegExp/RegExpExec-exec-type-check.js
 test/staging/sm/RegExp/RegExpExec-return.js
@@ -11059,7 +11038,6 @@ test/staging/sm/RegExp/flag-accessors.js
 test/staging/sm/RegExp/flags.js
 test/staging/sm/RegExp/ignoreCase-multiple.js
 test/staging/sm/RegExp/ignoreCase-non-latin1-to-latin1.js
-test/staging/sm/RegExp/instance-property-storage-introspection.js
 test/staging/sm/RegExp/lastIndex-exec.js
 test/staging/sm/RegExp/lastIndex-match-or-replace.js
 test/staging/sm/RegExp/lastIndex-nonwritable.js
@@ -11389,7 +11367,6 @@ test/staging/sm/module/bug1488117-import-namespace_FIXTURE.js
 test/staging/sm/object/15.2.3.12.js
 test/staging/sm/object/15.2.3.14-01.js
 test/staging/sm/object/15.2.3.4-02.js
-test/staging/sm/object/15.2.3.4-04.js
 test/staging/sm/object/accessor-arguments-rest.js
 test/staging/sm/object/accessor-name.js
 test/staging/sm/object/defineProperties-order.js
@@ -11445,7 +11422,6 @@ test/staging/sm/statements/try-completion.js
 test/staging/sm/strict/10.4.3.js
 test/staging/sm/strict/12.14.1.js
 test/staging/sm/strict/13.1.js
-test/staging/sm/strict/15.10.7.js
 test/staging/sm/strict/15.3.4.5.js
 test/staging/sm/strict/15.4.5.1.js
 test/staging/sm/strict/15.5.5.1.js
