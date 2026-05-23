@@ -3365,7 +3365,6 @@ test/built-ins/ShadowRealm/prototype/importValue/throws-if-exportname-not-string
 test/built-ins/ShadowRealm/prototype/importValue/validates-realm-object.js
 test/built-ins/ShadowRealm/prototype/proto.js
 test/built-ins/String/S15.5.2.1_A3.js
-test/built-ins/String/S15.5.5.1_A3.js
 test/built-ins/String/S15.5.5.1_A4_T1.js
 test/built-ins/String/S15.5.5_A2_T2.js
 test/built-ins/String/fromCodePoint/argument-is-not-integer.js
@@ -9291,8 +9290,6 @@ test/language/statements/const/fn-name-cover.js
 test/language/statements/const/global-closure-get-before-initialization.js
 test/language/statements/const/static-init-await-binding-valid.js
 test/language/statements/const/syntax/const-invalid-assignment-next-expression-for.js
-test/language/statements/const/syntax/const-invalid-assignment-statement-body-for-in.js
-test/language/statements/const/syntax/const-invalid-assignment-statement-body-for-of.js
 test/language/statements/const/syntax/with-initializer-default-statement-list.js
 test/language/statements/continue/S12.7_A7.js
 test/language/statements/continue/S12.7_A9_T1.js
@@ -10546,8 +10543,6 @@ test/language/statements/generators/yield-identifier-spread-non-strict.js
 test/language/statements/if/cptn-no-else-true-abrupt-empty.js
 test/language/statements/if/tco-else-body.js
 test/language/statements/if/tco-if-body.js
-test/language/statements/labeled/cptn-break.js
-test/language/statements/labeled/cptn-nrml.js
 test/language/statements/labeled/tco.js
 test/language/statements/let/cptn-value.js
 test/language/statements/let/dstr/ary-ptrn-rest-ary-empty.js
