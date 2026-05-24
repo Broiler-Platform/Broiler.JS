@@ -2022,6 +2022,41 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void DataView_Methods_Throw_RangeError_For_Negative_Infinite_ByteOffset()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var dv = new DataView(new ArrayBuffer(8));
+            [
+                'getFloat16', 'getFloat32', 'getFloat64', 'getInt16', 'getInt32', 'getInt8', 'getUint16', 'getUint32', 'getUint8',
+                'setFloat16', 'setFloat32', 'setFloat64', 'setInt16', 'setInt32', 'setInt8', 'setUint16', 'setUint32', 'setUint8'
+            ].map(function (name) {
+                try {
+                    dv[name](-Infinity, 0, true);
+                    return 'none';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            }).join('|');
+        ");
+        Assert.Equal("RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError", result.ToString());
+    }
+
+    [Fact]
+    public void DataView_Fractional_Negative_ByteOffset_Truncates_Toward_Zero()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var dv = new DataView(new ArrayBuffer(1));
+            dv.setInt8(-0.5, 42);
+            dv.getInt8(-0.5);
+        ");
+        Assert.Equal(42.0, result.DoubleValue);
+    }
+
+    [Fact]
     public void ArrayBuffer_And_DataView_Constructors_Expose_Spec_Length()
     {
         EnsureBuiltInsLoaded();

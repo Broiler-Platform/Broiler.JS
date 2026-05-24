@@ -75,6 +75,22 @@ public partial class DataView : JSObject
     [JSExport]
     public int ByteOffset => byteOffset;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int ToByteOffset(JSValue value)
+    {
+        var number = value.DoubleValue;
+        if (double.IsNaN(number) || number == 0)
+            return 0;
+
+        if (double.IsPositiveInfinity(number))
+            return int.MaxValue;
+
+        if (double.IsNegativeInfinity(number))
+            return int.MinValue;
+
+        return (int)number;
+    }
+
     /// <summary>
     /// Gets a signed 64-bit integer at the specified byte offset from the start of the
     /// DataView.
@@ -91,7 +107,7 @@ public partial class DataView : JSObject
     //internal method
     public unsafe long GetInt64(in Arguments a)
     {
-        var byteOffset = a[0]?.IntValue ?? throw JSEngine.NewTypeError($"offset is required");
+        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"offset is required");
         var littleEndian = a[1]?.BooleanValue ?? false;
 
         if (byteOffset < 0 || byteOffset > byteLength - 8)
@@ -121,7 +137,7 @@ public partial class DataView : JSObject
     public unsafe int GetInt32Int(in Arguments a)
     {
         var @this = this;
-        var byteOffset = a[0]?.IntValue ?? throw JSEngine.NewTypeError($"offset is required");
+        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"offset is required");
         var littleEndian = a[1]?.BooleanValue ?? false;
         
         if (byteOffset < 0 || byteOffset > @this.byteLength - 4)
@@ -192,7 +208,7 @@ public partial class DataView : JSObject
     public unsafe int GetInt16Int(in Arguments a)
     {
         var @this = this;
-        var byteOffset = a[0]?.IntValue ?? throw JSEngine.NewTypeError($"offset is required");
+        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"offset is required");
         var littleEndian = a[1]?.BooleanValue ?? false;
 
         if (byteOffset < 0 || byteOffset > @this.byteLength - 2)
@@ -255,7 +271,7 @@ public partial class DataView : JSObject
     public int GetInt8Int(in Arguments a)
     {
         var @this = this;
-        var byteOffset = a[0]?.IntValue ?? throw JSEngine.NewTypeError($"Offset is required");
+        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"Offset is required");
 
         if (byteOffset < 0 || byteOffset > @this.byteLength - 1)
             throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
@@ -305,7 +321,7 @@ public partial class DataView : JSObject
     public JSValue GetUint8(in Arguments a)
     {
         var @this = this;
-        var byteOffset = a[0]?.IntValue ?? throw JSEngine.NewTypeError($"offset is required");
+        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"offset is required");
         
         if (byteOffset < 0 || byteOffset > @this.byteLength - 1)
             throw JSEngine.NewRangeError($"{byteOffset} offset is outside the bounds of DataView");
@@ -444,7 +460,7 @@ public partial class DataView : JSObject
     private (int byteOffset, bool littleEndian, DataView dataView, JSValue value) GetSetArgs(in Arguments a, int length)
     {
         var @this = this;
-        var byteOffset = a[0]?.IntValue ?? throw JSEngine.NewTypeError($"offset is required");
+        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"offset is required");
         var value = a[1] ?? throw JSEngine.NewTypeError($"value is required");
 
         var littleEndian = a[2]?.BooleanValue ?? false;
