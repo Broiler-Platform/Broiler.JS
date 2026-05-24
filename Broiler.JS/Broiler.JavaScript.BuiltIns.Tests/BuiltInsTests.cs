@@ -8613,6 +8613,63 @@ public class BuiltInsTests
         Assert.Equal("function|function", result.ToString());
     }
 
+    [Fact]
+    public void Strict_Eval_Var_Does_Not_Leak()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var r = ctx.Eval("""
+            (function() {
+              eval("'use strict'; var strictEvalVar = 42;");
+              return typeof strictEvalVar;
+            })()
+            """);
+        Assert.Equal("undefined", r.ToString());
+    }
+
+    [Fact]
+    public void Strict_Mode_Delete_NonConfigurable_Throws()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var r = ctx.Eval("""
+            (function() {
+              var o2 = Object.freeze({noconfig: 'ow'});
+              try { eval("'use strict'; delete o2.noconfig"); return 'no-throw'; }
+              catch(e) { return e instanceof TypeError ? 'TypeError' : e.constructor.name; }
+            })()
+            """);
+        Assert.Equal("TypeError", r.ToString());
+    }
+
+    [Fact]
+    public void Strict_Function_In_If_Is_SyntaxError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var r = ctx.Eval("""
+            (function() {
+              try { eval("'use strict'; if (true) function f() {}"); return 'no-throw'; }
+              catch(e) { return e instanceof SyntaxError ? 'SyntaxError' : e.constructor.name; }
+            })()
+            """);
+        Assert.Equal("SyntaxError", r.ToString());
+    }
+
+    [Fact]
+    public void Strict_Assign_String_Length_Throws()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var r = ctx.Eval("""
+            (function() {
+              try { eval("'use strict'; var s = new String('foo'); s.length = 1;"); return 'no-throw'; }
+              catch(e) { return e instanceof TypeError ? 'TypeError' : e.constructor.name; }
+            })()
+            """);
+        Assert.Equal("TypeError", r.ToString());
+    }
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured
