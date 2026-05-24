@@ -1974,7 +1974,6 @@ test/built-ins/Object/defineProperty/15.2.3.6-4-595.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-625gs.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-63.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-85.js
-test/built-ins/Object/defineProperty/symbol-data-property-default-non-strict.js
 test/built-ins/Object/entries/observable-operations.js
 test/built-ins/Object/entries/primitive-strings.js
 test/built-ins/Object/entries/return-order.js
@@ -2025,9 +2024,6 @@ test/built-ins/Object/getOwnPropertyNames/15.2.3.4-4-44.js
 test/built-ins/Object/getOwnPropertyNames/15.2.3.4-4-49.js
 test/built-ins/Object/getOwnPropertyNames/non-object-argument-valid.js
 test/built-ins/Object/getOwnPropertyNames/order-after-define-property.js
-test/built-ins/Object/getOwnPropertySymbols/object-contains-symbol-property-with-description.js
-test/built-ins/Object/getOwnPropertySymbols/object-contains-symbol-property-without-description.js
-test/built-ins/Object/getOwnPropertySymbols/order-after-define-property.js
 test/built-ins/Object/getPrototypeOf/15.2.3.2-2-12.js
 test/built-ins/Object/getPrototypeOf/15.2.3.2-2-13.js
 test/built-ins/Object/getPrototypeOf/15.2.3.2-2-14.js
@@ -2050,7 +2046,6 @@ test/built-ins/Object/keys/property-traps-order-with-proxied-array.js
 test/built-ins/Object/keys/proxy-keys.js
 test/built-ins/Object/keys/proxy-non-enumerable-prop-invariant-3.js
 test/built-ins/Object/keys/return-order.js
-test/built-ins/Object/preventExtensions/symbol-object-contains-symbol-properties-non-strict.js
 test/built-ins/Object/prop-desc.js
 test/built-ins/Object/prototype/__defineSetter__/setter-non-callable.js
 test/built-ins/Object/prototype/__defineSetter__/this-non-obj.js
@@ -5167,11 +5162,9 @@ test/language/comments/S7.4_A6.js
 test/language/comments/hashbang/function-constructor.js
 test/language/comments/multi-line-asi-line-separator.js
 test/language/comments/multi-line-asi-paragraph-separator.js
-test/language/computed-property-names/basics/symbol.js
 test/language/computed-property-names/class/method/constructor-duplicate-1.js
 test/language/computed-property-names/class/method/constructor-duplicate-2.js
 test/language/computed-property-names/class/method/number.js
-test/language/computed-property-names/class/method/symbol.js
 test/language/computed-property-names/class/static/method-number-order.js
 test/language/computed-property-names/class/static/method-number.js
 test/language/computed-property-names/class/static/method-string-order.js
@@ -5179,7 +5172,6 @@ test/language/computed-property-names/class/static/method-symbol-order.js
 test/language/computed-property-names/object/accessor/getter-super.js
 test/language/computed-property-names/object/accessor/setter-super.js
 test/language/computed-property-names/object/method/super.js
-test/language/computed-property-names/object/method/symbol.js
 test/language/computed-property-names/object/property/number-duplicates.js
 test/language/computed-property-names/to-name-side-effects/numbers-class.js
 test/language/destructuring/binding/keyed-destructuring-property-reference-target-evaluation-order-with-bindings.js
@@ -10654,8 +10646,6 @@ test/staging/sm/Symbol/enumeration.js
 test/staging/sm/Symbol/for-in-order.js
 test/staging/sm/Symbol/json-stringify-values.js
 test/staging/sm/Symbol/property-accessor.js
-test/staging/sm/Symbol/property-nonwritable.js
-test/staging/sm/Symbol/property-reflection.js
 test/staging/sm/Symbol/species.js
 test/staging/sm/Symbol/surfaces.js
 test/staging/sm/Symbol/symbol-object-not-unboxed-for-value-to-id.js
@@ -10894,7 +10884,6 @@ test/staging/sm/misc/error-undefined-message.js
 test/staging/sm/misc/explicit-undefined-optional-argument.js
 test/staging/sm/misc/function-definition-eval.js
 test/staging/sm/misc/future-reserved-words.js
-test/staging/sm/misc/global-numeric-properties.js
 test/staging/sm/misc/line-paragraph-separator-parse-as-lineterminator.js
 test/staging/sm/misc/new-with-non-constructor.js
 test/staging/sm/module/bug1488117-import-namespace_FIXTURE.js
@@ -10949,7 +10938,6 @@ test/staging/sm/statements/for-of-iterator-close.js
 test/staging/sm/statements/regress-642975.js
 test/staging/sm/statements/try-completion.js
 test/staging/sm/strict/10.4.3.js
-test/staging/sm/strict/13.1.js
 test/staging/sm/strict/15.4.5.1.js
 test/staging/sm/strict/8.12.5.js
 test/staging/sm/strict/8.12.7-2.js
