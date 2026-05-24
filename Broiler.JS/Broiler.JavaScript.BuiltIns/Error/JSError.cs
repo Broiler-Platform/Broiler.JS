@@ -52,7 +52,7 @@ public partial class JSError : JSObject, IJSError
         Message = message;
         Stack = CreateStack();
 
-        if (hasMessage)
+        if (hasMessage && !messageValue.IsUndefined)
             FastAddValue(KeyStrings.message, JSValue.CreateString(message), JSPropertyAttributes.ConfigurableValue);
 
         FastAddValue(KeyStrings.stack, JSValue.CreateString(Stack), JSPropertyAttributes.ConfigurableValue);

@@ -7,6 +7,9 @@ public partial class JSObject
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSealed()
     {
+        if (this is IJSIntegerIndexedObject { HasIntegerIndexedElements: true })
+            return false;
+
         if ((status & ObjectStatus.Sealed) > 0)
             return true;
 
@@ -48,6 +51,9 @@ public partial class JSObject
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsFrozen()
     {
+        if (this is IJSIntegerIndexedObject { HasIntegerIndexedElements: true })
+            return false;
+
         if ((status & ObjectStatus.Frozen) > 0)
             return true;
 

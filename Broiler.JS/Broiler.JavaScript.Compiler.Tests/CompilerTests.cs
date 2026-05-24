@@ -310,6 +310,19 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_NonStrict_Delete_Arguments_Identifier_Returns_False()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                return delete arguments;
+            })();
+            """);
+
+        Assert.Equal("false", result.ToString());
+    }
+
+    [Fact]
     public void JSContext_LoadsClrInteropWithoutExplicitClrReference()
     {
         using var ctx = new JSContext();

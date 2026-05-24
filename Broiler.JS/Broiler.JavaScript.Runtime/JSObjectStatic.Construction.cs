@@ -411,6 +411,14 @@ public partial class JSObject
         if (first is not JSObject @object)
             return first;
 
+        if (@object is IJSIntegerIndexedObject { HasIntegerIndexedElements: true })
+        {
+            if (!@object.PreventExtensions())
+                throw NewTypeError("Cannot freeze object");
+
+            throw NewTypeError("Cannot freeze object");
+        }
+
         static JSProperty FreezeProperty(uint key, in JSProperty property)
         {
             var attributes = property.Attributes & (~JSPropertyAttributes.Configurable);
@@ -488,6 +496,14 @@ public partial class JSObject
         var first = a.Get1();
         if (first is not JSObject @object)
             return first;
+
+        if (@object is IJSIntegerIndexedObject { HasIntegerIndexedElements: true })
+        {
+            if (!@object.PreventExtensions())
+                throw NewTypeError("Cannot seal object");
+
+            throw NewTypeError("Cannot seal object");
+        }
 
         if (!@object.PreventExtensions())
             throw NewTypeError("Cannot seal object");
