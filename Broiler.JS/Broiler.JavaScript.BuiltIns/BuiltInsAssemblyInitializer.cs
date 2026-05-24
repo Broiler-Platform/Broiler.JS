@@ -750,7 +750,9 @@ internal static class BuiltInsAssemblyInitializer
             descriptor[KeyStrings.get] = getter;
             descriptor[KeyStrings.enumerable] = JSValue.BooleanTrue;
             descriptor[KeyStrings.configurable] = JSValue.BooleanTrue;
-            target.DefineProperty(key, descriptor);
+            var result = target.DefineProperty(key, descriptor);
+            if (result.IsBoolean && !result.BooleanValue)
+                throw JSEngine.NewTypeError($"Cannot define property {key}");
             return JSUndefined.Value;
         }, "__defineGetter__", 2), JSPropertyAttributes.ConfigurableValue);
         prototype.FastAddValue(KeyStrings.GetOrCreate("__defineSetter__"), CreateNativeFunction(static (in Arguments a) =>
@@ -765,7 +767,9 @@ internal static class BuiltInsAssemblyInitializer
             descriptor[KeyStrings.set] = setter;
             descriptor[KeyStrings.enumerable] = JSValue.BooleanTrue;
             descriptor[KeyStrings.configurable] = JSValue.BooleanTrue;
-            target.DefineProperty(key, descriptor);
+            var result = target.DefineProperty(key, descriptor);
+            if (result.IsBoolean && !result.BooleanValue)
+                throw JSEngine.NewTypeError($"Cannot define property {key}");
             return JSUndefined.Value;
         }, "__defineSetter__", 2), JSPropertyAttributes.ConfigurableValue);
         prototype.FastAddValue(KeyStrings.GetOrCreate("__lookupGetter__"), CreateNativeFunction(static (in Arguments a) =>

@@ -122,7 +122,7 @@ public static class JSIntl
     }
 
     private static JSFunction CreateSupportedLocalesOfFunction()
-        => new(static (in Arguments a) => JSValue.CreateArray(), "supportedLocalesOf", "function supportedLocalesOf() { [native code] }", length: 1, createPrototype: false);
+        => new(static (in Arguments a) => CanonicalizeLocaleList(a.Get1()), "supportedLocalesOf", "function supportedLocalesOf() { [native code] }", length: 1, createPrototype: false);
 
     private static JSFunction CreateGetCanonicalLocalesFunction()
         => new(static (in Arguments a) => CanonicalizeLocaleList(a.Get1()),

@@ -28,6 +28,8 @@ public partial class JSReflect : JSObject
         var (target, thisArgument, arguments) = a.Get3();
         if (!IsCallable(target) || target is not JSObject targetObject)
             throw JSEngine.NewTypeError("target is not a function");
+        if (arguments is not JSObject)
+            throw JSEngine.NewTypeError("argumentsList is not an object");
 
         return targetObject.InvokeFunction(Arguments.ForApply(thisArgument, arguments));
     }
@@ -46,6 +48,8 @@ public partial class JSReflect : JSObject
         {
             throw JSEngine.NewTypeError("newTarget is not a constructor");
         }
+        if (arguments is not JSObject)
+            throw JSEngine.NewTypeError("argumentsList is not an object");
 
         var ec = JSEngine.Current as IJSExecutionContext;
         var previousNewTarget = ec?.CurrentNewTarget;

@@ -605,6 +605,8 @@ public partial class JSObject
     {
         var key = name.Key;
         var old = symbols[key];
+        if (old.IsEmpty && !IsExtensible())
+            return JSValue.BooleanFalse;
         if (!old.IsEmpty)
         {
             CompletePropertyDescriptor(pd, in old);
@@ -621,6 +623,8 @@ public partial class JSObject
     {
         ref var elements = ref GetElements(true);
         var old = elements[key];
+        if (old.IsEmpty && !IsExtensible())
+            return JSValue.BooleanFalse;
         if (!old.IsEmpty)
         {
             CompletePropertyDescriptor(pd, in old);
@@ -647,6 +651,8 @@ public partial class JSObject
         var key = name.Key;
         ref var ownProperties = ref GetOwnProperties();
         ref var old = ref ownProperties.GetValue(name.Key);
+        if (old.IsEmpty && !IsExtensible())
+            return JSValue.BooleanFalse;
 
         if (!old.IsEmpty)
         {

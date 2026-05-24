@@ -2741,6 +2741,42 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Generator_Functions_Object_Literal_Constructor_Methods_And_Reflect_Argument_Lists_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var objectLiteral = { constructor() { } };
+                function* generator() {}
+                async function* asyncGenerator() {}
+
+                return [
+                    thrownCtor(function () { new objectLiteral.constructor; }),
+                    thrownCtor(function () { class A extends generator {} }),
+                    thrownCtor(function () { class B extends asyncGenerator {} }),
+                    thrownCtor(function () { Reflect.apply(Math.min, undefined); }),
+                    thrownCtor(function () { Reflect.construct(Object); }),
+                    thrownCtor(function () { Reflect.apply(Math.min, undefined, 1); }),
+                    thrownCtor(function () { Reflect.construct(Object, 1); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Promise_Reactions_Run_After_Synchronous_Code()
     {
         EnsureBuiltInsLoaded();
@@ -4135,6 +4171,39 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("true|false|true|true|false|true", result.ToString());
+    }
+
+    [Fact]
+    public void Legacy_Object_Prototype_Helpers_Throw_On_Non_Extensible_Targets()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var subject = Object.preventExtensions({ existing: null });
+                var noop = function () {};
+
+                subject.__defineGetter__('existing', noop);
+                subject.__defineSetter__('existing', noop);
+
+                return [
+                    thrownCtor(function () { subject.__defineGetter__('brand new getter', noop); }),
+                    thrownCtor(function () { subject.__defineSetter__('brand new setter', noop); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError", result.ToString());
     }
 
     [Fact]
@@ -7646,6 +7715,34 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("function|function|function|TypeError|function|TypeError|TypeError|function|TypeError|TypeError|function|function|function|function|TypeError|TypeError|TypeError|true", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_SupportedLocalesOf_Validates_Invalid_Locale_Arguments()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () { Intl.DurationFormat.supportedLocalesOf(Symbol()); }),
+                    thrownCtor(function () { Intl.ListFormat.supportedLocalesOf(Symbol()); }),
+                    thrownCtor(function () { Intl.RelativeTimeFormat.supportedLocalesOf(Symbol()); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError", result.ToString());
     }
 
     [Fact]

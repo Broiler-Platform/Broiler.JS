@@ -66,7 +66,7 @@ partial class FastCompiler
 
                 value = p.Kind switch
                 {
-                    AstPropertyKind.Method or AstPropertyKind.Get or AstPropertyKind.Set when p.Init is AstFunctionExpression function =>
+                    AstPropertyKind.Method or AstPropertyKind.Constructor or AstPropertyKind.Get or AstPropertyKind.Set when p.Init is AstFunctionExpression function =>
                         CreateFunction(function, createPrototype: false),
                     _ => VisitExpression(p.Init)
                 };
@@ -186,7 +186,7 @@ partial class FastCompiler
             YExpression key = null;
             YExpression value = p.Kind switch
             {
-                AstPropertyKind.Method or AstPropertyKind.Get or AstPropertyKind.Set when p.Init is AstFunctionExpression function =>
+                AstPropertyKind.Method or AstPropertyKind.Constructor or AstPropertyKind.Get or AstPropertyKind.Set when p.Init is AstFunctionExpression function =>
                     CreateFunction(function, createPrototype: false),
                 _ => VisitExpression(p.Init)
             };

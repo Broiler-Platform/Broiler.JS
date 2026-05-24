@@ -38,6 +38,7 @@ public class JSGeneratorFunctionV2 : JSFunction
         this.@delegate = @delegate;
         this.asyncGenerator = asyncGenerator;
         this.primeOnInvoke = primeOnInvoke;
+        prototype = null;
         CoerceThisOnInvoke = true;
         f = InvokeFunction;
         BasePrototypeObject = CreateGeneratorFunctionPrototype(asyncGenerator);
