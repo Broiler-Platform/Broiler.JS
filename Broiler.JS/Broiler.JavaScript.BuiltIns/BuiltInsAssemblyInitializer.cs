@@ -167,6 +167,7 @@ internal static class BuiltInsAssemblyInitializer
         JSValue.CreateSymbolClassFactory = static (ctx, register) =>
             JSSymbol.CreateClass((JSContext)ctx, register);
         JSValue.GetGlobalSymbolFactory = static name => JSSymbol.GlobalSymbol(name);
+        JSValue.GetSymbolByKeyFactory = static key => JSSymbol.FromKey(key);
 
         // Initialize JSSymbolBuilder with the concrete JSSymbol type so the
         // ClassGenerator can emit symbol lookups without a direct reference.

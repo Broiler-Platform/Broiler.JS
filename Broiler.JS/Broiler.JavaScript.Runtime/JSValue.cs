@@ -231,6 +231,12 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// </summary>
     internal static Func<string, IJSSymbol> GetGlobalSymbolFactory;
 
+    /// <summary>
+    /// Factory delegate for looking up an existing symbol instance by its internal key.
+    /// Wired by the BuiltIns assembly via <c>[ModuleInitializer]</c>.
+    /// </summary>
+    internal static Func<uint, IJSSymbol?> GetSymbolByKeyFactory;
+
     /// <summary>Gets whether this value is the <c>undefined</c> singleton.</summary>
     public bool IsUndefined
     {
@@ -712,7 +718,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         get => GetValue(key, this);
         set
         {
-            if (SetValue(key, value, this))
+            if (SetValue(key, value, this, IsStrictModeEnabled?.Invoke() == true))
                 return;
 
             if (IsNullOrUndefined)
@@ -803,19 +809,19 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     [EditorBrowsable(EditorBrowsableState.Never)]
     public JSValue this[JSValue super, KeyString name]
     {
-        get => super.GetValue(name, this); set => super.SetValue(name, value, this);
+        get => super.GetValue(name, this); set => super.SetValue(name, value, this, IsStrictModeEnabled?.Invoke() == true);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public JSValue this[JSValue super, uint index]
     {
-        get => super.GetValue(index, this); set => super.SetValue(index, value, this);
+        get => super.GetValue(index, this); set => super.SetValue(index, value, this, IsStrictModeEnabled?.Invoke() == true);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public JSValue this[JSValue super, JSValue name]
     {
-        get => super.GetValue(name, this); set => super.SetValue(name, value, this);
+        get => super.GetValue(name, this); set => super.SetValue(name, value, this, IsStrictModeEnabled?.Invoke() == true);
     }
 
 

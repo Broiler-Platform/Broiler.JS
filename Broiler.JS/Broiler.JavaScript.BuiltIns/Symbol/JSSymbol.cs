@@ -3,6 +3,7 @@ using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using System;
+using System.Collections.Concurrent;
 using System.Threading;
 
 namespace Broiler.JavaScript.BuiltIns.Symbol;
@@ -12,6 +13,7 @@ namespace Broiler.JavaScript.BuiltIns.Symbol;
 public partial class JSSymbol: JSValue, IJSSymbol
 {
     private static int SymbolID = 1;
+    private static readonly ConcurrentDictionary<uint, JSSymbol> SymbolsByKey = new();
     private readonly string description;
     public readonly uint Key;
 
@@ -39,7 +41,10 @@ public partial class JSSymbol: JSValue, IJSSymbol
     {
         this.description = description;
         Key = (uint)Interlocked.Increment(ref SymbolID);
+        SymbolsByKey[Key] = this;
     }
+
+    internal static IJSSymbol? FromKey(uint key) => SymbolsByKey.TryGetValue(key, out var symbol) ? symbol : null;
 
     public override JSValue TypeOf() => JSConstants.Symbol;
 

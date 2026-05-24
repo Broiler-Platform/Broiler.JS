@@ -140,6 +140,19 @@ public partial class JSObject
         target.DefineProperty(key, descriptor);
     }
 
+    private static void DefineOwnProperty(JSObject target, IJSSymbol key, JSObject descriptor)
+    {
+        if (target.GetType() != typeof(JSObject))
+        {
+            var result = target.DefineProperty((JSValue)key, descriptor);
+            if (result.IsBoolean && !result.BooleanValue)
+                throw NewTypeError("Cannot define property");
+            return;
+        }
+
+        target.DefineProperty(key, descriptor);
+    }
+
     [JSExport("create")]
     internal static JSValue StaticCreate(in Arguments a)
     {
@@ -301,6 +314,20 @@ public partial class JSObject
                 throw NewTypeError("Property Description must be an object");
 
             DefineOwnProperty(target, keyString, itemObject);
+        }
+
+        foreach (var (key, property) in pdObject.GetSymbols().AllValues())
+        {
+            if (property.IsEmpty)
+                continue;
+
+            var item = pdObject.GetValue(property);
+            if (item is not JSObject itemObject)
+                throw NewTypeError("Property Description must be an object");
+
+            var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(key)
+                ?? throw new InvalidOperationException($"Unknown symbol key {key}");
+            DefineOwnProperty(target, symbol, itemObject);
         }
 
         return target;

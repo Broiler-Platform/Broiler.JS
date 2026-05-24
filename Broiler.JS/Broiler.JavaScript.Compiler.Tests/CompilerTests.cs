@@ -690,6 +690,8 @@ public class CompilerTests
             "use strict";
             eval("try {} catch (arguments) { }");
             """);
+        AssertSyntaxError("""Function('function eval(){"use strict";}');""");
+        AssertSyntaxError("""Function('function arguments(){"use strict";}');""");
         AssertSyntaxError("""eval("/\\\rn/;");""");
         AssertSyntaxError("""
             "use strict";
