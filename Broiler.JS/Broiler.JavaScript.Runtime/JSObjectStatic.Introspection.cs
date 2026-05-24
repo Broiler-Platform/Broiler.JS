@@ -217,11 +217,13 @@ public partial class JSObject
             return JSValue.CreateArray();
 
         var r = JSValue.CreateArray();
-        var en = jobj.GetAllKeys(false, false);
-        while (en.MoveNext(out var hasValue, out var value, out var _))
+        foreach (var (key, property) in jobj.GetSymbols().AllValues())
         {
-            if (hasValue && ShouldIncludeOwnPropertyKey(value, includeSymbols: true))
-                r.AddArrayItem(value);
+            if (property.IsEmpty)
+                continue;
+
+            if (JSValue.GetSymbolByKeyFactory?.Invoke(key) is JSValue symbol)
+                r.AddArrayItem(symbol);
         }
 
         return r;

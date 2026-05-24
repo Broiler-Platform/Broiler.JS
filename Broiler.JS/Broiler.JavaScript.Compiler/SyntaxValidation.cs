@@ -231,11 +231,11 @@ internal static class SyntaxValidation
 
         protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
         {
-            if (IsStrictMode && IsRestrictedName(functionExpression.Id?.Name))
-                throw new FastParseException(functionExpression.Start, "Invalid function name in strict mode");
-
             var bodyStatements = functionExpression.Body is AstBlock block ? block.Statements : Sequence<AstStatement>.Empty;
             var functionStrict = IsStrictMode || HasUseStrictDirective(bodyStatements);
+            if (functionStrict && IsRestrictedName(functionExpression.Id?.Name))
+                throw new FastParseException(functionExpression.Start, "Invalid function name in strict mode");
+
             if (functionStrict && ContainsRestrictedBinding(functionExpression.Params))
                 throw new FastParseException(functionExpression.Start, "Invalid parameter name in strict mode");
 

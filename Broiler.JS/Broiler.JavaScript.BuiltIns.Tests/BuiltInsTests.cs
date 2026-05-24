@@ -1539,6 +1539,71 @@ public class BuiltInsTests
         Assert.Equal("true|true|true", result.ToString());
     }
 
+    [Fact]
+    public void Object_DefineProperties_And_GetOwnPropertySymbols_Support_Symbol_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              var target = {};
+              var first = Symbol("first");
+              var second = Symbol("second");
+              var descriptors = {};
+
+              descriptors[first] = {
+                value: 1,
+                writable: true,
+                enumerable: true,
+                configurable: true
+              };
+              descriptors[second] = {
+                get: function () { return 2; },
+                enumerable: false,
+                configurable: true
+              };
+
+              Object.defineProperties(target, descriptors);
+              var symbols = Object.getOwnPropertySymbols(target);
+
+              return [
+                first in target,
+                target[first],
+                second in target,
+                target[second],
+                symbols.length,
+                symbols[0] === first,
+                symbols[1] === second
+              ].join("|");
+            })();
+            """);
+
+        Assert.Equal("true|1|true|2|2|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void Symbol_Assignment_On_NonExtensible_Object_Is_Silent_Outside_Strict_Mode()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              var symbol = Symbol("blocked");
+              var obj = {};
+              Object.preventExtensions(obj);
+
+              try {
+                obj[symbol] = 1;
+                return String(symbol in obj);
+              } catch (e) {
+                return e.name;
+              }
+            })();
+            """);
+
+        Assert.Equal("false", result.ToString());
+    }
+
     // ── M3: JSJSON tests ─────────────────────────────────────────────
 
     [Fact]
