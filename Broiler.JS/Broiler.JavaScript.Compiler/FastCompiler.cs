@@ -241,9 +241,9 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     private YExpression VisitRuntimeFunctionDeclaration(AstFunctionExpression functionDeclaration)
     {
         var currentBinding = scope.Top.GetVariable(functionDeclaration.Id!.Name);
-        if (currentBinding == null && isDirectEvalCompilation && scope.Top.RootScope.Function == null)
+        if (currentBinding == null && isDirectEvalCompilation && !IsStrictMode && scope.Top.RootScope.Function == null)
             currentBinding = GetOrCreateDirectEvalRootVariable(functionDeclaration.Id.Name);
-        else if (currentBinding != null && isDirectEvalCompilation && scope.Top.RootScope.Function == null)
+        else if (currentBinding != null && isDirectEvalCompilation && !IsStrictMode && scope.Top.RootScope.Function == null)
             currentBinding.IsDeletable = true;
         var result = CreateFunction(functionDeclaration, hoistStatementDeclaration: false);
 

@@ -355,6 +355,71 @@ internal static class SyntaxValidation
 
             return base.VisitWithStatement(withStatement);
         }
+
+        protected override AstNode VisitIfStatement(AstIfStatement ifStatement)
+        {
+            if (IsStrictMode)
+            {
+                ThrowIfFunctionDeclarationBody(ifStatement.True);
+                ThrowIfFunctionDeclarationBody(ifStatement.False);
+            }
+
+            return base.VisitIfStatement(ifStatement);
+        }
+
+        protected override AstNode VisitWhileStatement(AstWhileStatement whileStatement, string label = null)
+        {
+            if (IsStrictMode)
+                ThrowIfFunctionDeclarationBody(whileStatement.Body);
+
+            return base.VisitWhileStatement(whileStatement, label);
+        }
+
+        protected override AstNode VisitDoWhileStatement(AstDoWhileStatement doWhileStatement, string label = null)
+        {
+            if (IsStrictMode)
+                ThrowIfFunctionDeclarationBody(doWhileStatement.Body);
+
+            return base.VisitDoWhileStatement(doWhileStatement, label);
+        }
+
+        protected override AstNode VisitForStatement(AstForStatement forStatement, string label = null)
+        {
+            if (IsStrictMode)
+                ThrowIfFunctionDeclarationBody(forStatement.Body);
+
+            return base.VisitForStatement(forStatement, label);
+        }
+
+        protected override AstNode VisitForInStatement(AstForInStatement forInStatement, string label = null)
+        {
+            if (IsStrictMode)
+                ThrowIfFunctionDeclarationBody(forInStatement.Body);
+
+            return base.VisitForInStatement(forInStatement, label);
+        }
+
+        protected override AstNode VisitForOfStatement(AstForOfStatement forOfStatement, string label = null)
+        {
+            if (IsStrictMode)
+                ThrowIfFunctionDeclarationBody(forOfStatement.Body);
+
+            return base.VisitForOfStatement(forOfStatement, label);
+        }
+
+        protected override AstNode VisitLabeledStatement(AstLabeledStatement labeledStatement)
+        {
+            if (IsStrictMode)
+                ThrowIfFunctionDeclarationBody(labeledStatement.Body);
+
+            return base.VisitLabeledStatement(labeledStatement);
+        }
+
+        private static void ThrowIfFunctionDeclarationBody(AstStatement body)
+        {
+            if (body is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true } func })
+                throw new FastParseException(func.Start, "In strict mode code, functions can only be declared at top level or inside a block");
+        }
     }
 
     private static bool ContainsRestrictedBinding(IFastEnumerable<VariableDeclarator> declarators)

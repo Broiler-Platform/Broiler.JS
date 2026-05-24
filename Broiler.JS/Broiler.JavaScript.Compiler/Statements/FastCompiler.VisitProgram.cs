@@ -77,6 +77,14 @@ partial class FastCompiler
                     continue;
                 }
 
+                if (isDirectEvalCompilation && IsStrictMode)
+                {
+                    // Strict eval: vars are local to the eval scope,
+                    // not linked to the enclosing/global context.
+                    scope.CreateVariable(v, null, true);
+                    continue;
+                }
+
                 var g = JSValueBuilder.Index(top.Context, KeyOfName(v));
                 var vs = scope.CreateVariable(v, null, true);
                 vs.IsLexical = false;
