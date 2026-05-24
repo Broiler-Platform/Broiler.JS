@@ -514,7 +514,6 @@ test/built-ins/Array/prototype/concat/is-concat-spreadable-is-array-proxy-revoke
 test/built-ins/Array/prototype/concat/is-concat-spreadable-proxy.js
 test/built-ins/Array/prototype/concat/is-concat-spreadable-val-falsey.js
 test/built-ins/Array/prototype/concat/is-concat-spreadable-val-truthy.js
-test/built-ins/Array/prototype/copyWithin/call-with-boolean.js
 test/built-ins/Array/prototype/copyWithin/length-near-integer-limit.js
 test/built-ins/Array/prototype/copyWithin/non-negative-out-of-bounds-end.js
 test/built-ins/Array/prototype/copyWithin/non-negative-out-of-bounds-target-and-start.js
@@ -530,7 +529,6 @@ test/built-ins/Array/prototype/every/15.4.4.16-1-8.js
 test/built-ins/Array/prototype/every/15.4.4.16-2-18.js
 test/built-ins/Array/prototype/every/15.4.4.16-2-4.js
 test/built-ins/Array/prototype/every/15.4.4.16-5-1.js
-test/built-ins/Array/prototype/every/15.4.4.16-5-22.js
 test/built-ins/Array/prototype/every/15.4.4.16-7-6.js
 test/built-ins/Array/prototype/every/15.4.4.16-7-b-12.js
 test/built-ins/Array/prototype/every/15.4.4.16-7-b-13.js
@@ -544,7 +542,6 @@ test/built-ins/Array/prototype/every/15.4.4.16-7-c-i-21.js
 test/built-ins/Array/prototype/every/15.4.4.16-7-c-i-22.js
 test/built-ins/Array/prototype/every/15.4.4.16-7-c-i-7.js
 test/built-ins/Array/prototype/every/15.4.4.16-7-c-i-8.js
-test/built-ins/Array/prototype/every/15.4.4.16-7-c-ii-16.js
 test/built-ins/Array/prototype/every/15.4.4.16-8-10.js
 test/built-ins/Array/prototype/every/15.4.4.16-8-2.js
 test/built-ins/Array/prototype/every/15.4.4.16-8-3.js
@@ -554,7 +551,6 @@ test/built-ins/Array/prototype/every/15.4.4.16-8-6.js
 test/built-ins/Array/prototype/every/15.4.4.16-8-7.js
 test/built-ins/Array/prototype/every/15.4.4.16-8-8.js
 test/built-ins/Array/prototype/exotic-array.js
-test/built-ins/Array/prototype/fill/call-with-boolean.js
 test/built-ins/Array/prototype/fill/length-near-integer-limit.js
 test/built-ins/Array/prototype/filter/15.4.4.20-1-10.js
 test/built-ins/Array/prototype/filter/15.4.4.20-1-13.js
@@ -567,7 +563,6 @@ test/built-ins/Array/prototype/filter/15.4.4.20-10-3.js
 test/built-ins/Array/prototype/filter/15.4.4.20-2-18.js
 test/built-ins/Array/prototype/filter/15.4.4.20-2-4.js
 test/built-ins/Array/prototype/filter/15.4.4.20-5-1.js
-test/built-ins/Array/prototype/filter/15.4.4.20-5-22.js
 test/built-ins/Array/prototype/filter/15.4.4.20-5-30.js
 test/built-ins/Array/prototype/filter/15.4.4.20-6-2.js
 test/built-ins/Array/prototype/filter/15.4.4.20-6-3.js
@@ -589,7 +584,6 @@ test/built-ins/Array/prototype/filter/15.4.4.20-9-c-i-21.js
 test/built-ins/Array/prototype/filter/15.4.4.20-9-c-i-22.js
 test/built-ins/Array/prototype/filter/15.4.4.20-9-c-i-7.js
 test/built-ins/Array/prototype/filter/15.4.4.20-9-c-i-8.js
-test/built-ins/Array/prototype/filter/15.4.4.20-9-c-ii-16.js
 test/built-ins/Array/prototype/filter/create-ctor-non-object.js
 test/built-ins/Array/prototype/find/array-altered-during-loop.js
 test/built-ins/Array/prototype/find/predicate-call-this-non-strict.js
@@ -624,7 +618,6 @@ test/built-ins/Array/prototype/forEach/15.4.4.18-1-8.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-2-18.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-2-4.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-5-1.js
-test/built-ins/Array/prototype/forEach/15.4.4.18-5-22.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-5-25.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-7-5.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-7-b-12.js
@@ -639,7 +632,6 @@ test/built-ins/Array/prototype/forEach/15.4.4.18-7-c-i-21.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-7-c-i-22.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-7-c-i-7.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-7-c-i-8.js
-test/built-ins/Array/prototype/forEach/15.4.4.18-7-c-ii-16.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-8-10.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-8-2.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-8-3.js
@@ -709,7 +701,6 @@ test/built-ins/Array/prototype/map/15.4.4.19-1-7.js
 test/built-ins/Array/prototype/map/15.4.4.19-1-8.js
 test/built-ins/Array/prototype/map/15.4.4.19-2-4.js
 test/built-ins/Array/prototype/map/15.4.4.19-5-1.js
-test/built-ins/Array/prototype/map/15.4.4.19-5-22.js
 test/built-ins/Array/prototype/map/15.4.4.19-8-6.js
 test/built-ins/Array/prototype/map/15.4.4.19-8-b-12.js
 test/built-ins/Array/prototype/map/15.4.4.19-8-b-13.js
@@ -723,7 +714,6 @@ test/built-ins/Array/prototype/map/15.4.4.19-8-c-i-21.js
 test/built-ins/Array/prototype/map/15.4.4.19-8-c-i-22.js
 test/built-ins/Array/prototype/map/15.4.4.19-8-c-i-7.js
 test/built-ins/Array/prototype/map/15.4.4.19-8-c-i-8.js
-test/built-ins/Array/prototype/map/15.4.4.19-8-c-ii-16.js
 test/built-ins/Array/prototype/map/15.4.4.19-9-10.js
 test/built-ins/Array/prototype/map/15.4.4.19-9-11.js
 test/built-ins/Array/prototype/map/15.4.4.19-9-12.js
@@ -748,7 +738,6 @@ test/built-ins/Array/prototype/push/throws-if-integer-limit-exceeded.js
 test/built-ins/Array/prototype/reduce/15.4.4.21-1-10.js
 test/built-ins/Array/prototype/reduce/15.4.4.21-1-13.js
 test/built-ins/Array/prototype/reduce/15.4.4.21-1-15.js
-test/built-ins/Array/prototype/reduce/15.4.4.21-1-3.js
 test/built-ins/Array/prototype/reduce/15.4.4.21-1-7.js
 test/built-ins/Array/prototype/reduce/15.4.4.21-1-8.js
 test/built-ins/Array/prototype/reduce/15.4.4.21-10-3.js
@@ -772,7 +761,6 @@ test/built-ins/Array/prototype/reduce/15.4.4.21-9-c-i-28.js
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-1-10.js
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-1-13.js
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-1-15.js
-test/built-ins/Array/prototype/reduceRight/15.4.4.22-1-3.js
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-1-7.js
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-1-8.js
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-10-3.js
@@ -820,7 +808,6 @@ test/built-ins/Array/prototype/reduceRight/15.4.4.22-9-c-i-28.js
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-9-c-ii-2.js
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-9-c-ii-5.js
 test/built-ins/Array/prototype/reduceRight/length-near-integer-limit.js
-test/built-ins/Array/prototype/reverse/call-with-boolean.js
 test/built-ins/Array/prototype/reverse/get_if_present_with_delete.js
 test/built-ins/Array/prototype/reverse/length-exceeding-integer-limit-with-object.js
 test/built-ins/Array/prototype/reverse/length-exceeding-integer-limit-with-proxy.js
@@ -834,16 +821,13 @@ test/built-ins/Array/prototype/slice/length-exceeding-integer-limit.js
 test/built-ins/Array/prototype/some/15.4.4.17-1-10.js
 test/built-ins/Array/prototype/some/15.4.4.17-1-13.js
 test/built-ins/Array/prototype/some/15.4.4.17-1-15.js
-test/built-ins/Array/prototype/some/15.4.4.17-1-3.js
 test/built-ins/Array/prototype/some/15.4.4.17-1-7.js
 test/built-ins/Array/prototype/some/15.4.4.17-1-8.js
 test/built-ins/Array/prototype/some/15.4.4.17-2-18.js
 test/built-ins/Array/prototype/some/15.4.4.17-2-4.js
 test/built-ins/Array/prototype/some/15.4.4.17-5-1.js
-test/built-ins/Array/prototype/some/15.4.4.17-5-22.js
 test/built-ins/Array/prototype/some/15.4.4.17-5-25.js
 test/built-ins/Array/prototype/some/15.4.4.17-7-b-16.js
-test/built-ins/Array/prototype/some/15.4.4.17-7-c-ii-16.js
 test/built-ins/Array/prototype/some/15.4.4.17-8-10.js
 test/built-ins/Array/prototype/some/15.4.4.17-8-2.js
 test/built-ins/Array/prototype/some/15.4.4.17-8-3.js
@@ -875,10 +859,8 @@ test/built-ins/Array/prototype/toLocaleString/invoke-element-tolocalestring.js
 test/built-ins/Array/prototype/toLocaleString/primitive_this_value.js
 test/built-ins/Array/prototype/toLocaleString/primitive_this_value_getter.js
 test/built-ins/Array/prototype/toReversed/length-exceeding-array-length-limit.js
-test/built-ins/Array/prototype/toReversed/this-value-boolean.js
 test/built-ins/Array/prototype/toSorted/comparefn-not-a-function.js
 test/built-ins/Array/prototype/toSorted/ignores-species.js
-test/built-ins/Array/prototype/toSorted/this-value-boolean.js
 test/built-ins/Array/prototype/toSpliced/deleteCount-clamped-between-zero-and-remaining-count.js
 test/built-ins/Array/prototype/toSpliced/deleteCount-missing.js
 test/built-ins/Array/prototype/toSpliced/deleteCount-undefined.js
@@ -1072,7 +1054,6 @@ test/built-ins/Boolean/prototype/toString/S15.6.4.2_A1_T1.js
 test/built-ins/Boolean/prototype/toString/S15.6.4.2_A1_T2.js
 test/built-ins/Boolean/prototype/valueOf/S15.6.4.3_A1_T1.js
 test/built-ins/Boolean/prototype/valueOf/S15.6.4.3_A1_T2.js
-test/built-ins/Boolean/symbol-coercion.js
 test/built-ins/DataView/byteoffset-is-negative-throws.js
 test/built-ins/DataView/dataview.js
 test/built-ins/DataView/defined-bytelength-and-byteoffset.js
@@ -1478,7 +1459,6 @@ test/built-ins/GeneratorPrototype/throw/try-finally-nested-try-catch-within-catc
 test/built-ins/Iterator/concat/get-iterator-method-only-once.js
 test/built-ins/Iterator/concat/get-value-after-done.js
 test/built-ins/Iterator/concat/inner-iterator-created-in-order.js
-test/built-ins/Iterator/concat/iterable-primitive-wrapper-objects.js
 test/built-ins/Iterator/concat/next-method-returns-throwing-value-done.js
 test/built-ins/Iterator/concat/return-is-forwarded.js
 test/built-ins/Iterator/concat/return-is-not-forwarded-before-initial-start.js
@@ -1972,8 +1952,6 @@ test/built-ins/Number/string-numeric-separator-literal-oil-ods-nsl-ods.js
 test/built-ins/Number/string-numeric-separator-literal-sign-minus-dds-nsl-dd.js
 test/built-ins/Number/string-numeric-separator-literal-sign-plus-dds-nsl-dd.js
 test/built-ins/Number/string-octal-literal-invald.js
-test/built-ins/Object/S15.2.1.1_A2_T1.js
-test/built-ins/Object/S15.2.1.1_A2_T13.js
 test/built-ins/Object/S15.2.2.1_A2_T1.js
 test/built-ins/Object/S15.2.2.1_A2_T2.js
 test/built-ins/Object/S15.2.2.1_A2_T3.js
@@ -1993,11 +1971,9 @@ test/built-ins/Object/S15.2.2.1_A5_T4.js
 test/built-ins/Object/S15.2.2.1_A6_T1.js
 test/built-ins/Object/S15.2.2.1_A6_T3.js
 test/built-ins/Object/S15.2.3_A3.js
-test/built-ins/Object/S9.9_A3.js
 test/built-ins/Object/assign/Override-notstringtarget.js
 test/built-ins/Object/assign/Override.js
 test/built-ins/Object/assign/Source-String.js
-test/built-ins/Object/assign/Target-Boolean.js
 test/built-ins/Object/assign/Target-Symbol.js
 test/built-ins/Object/bigint.js
 test/built-ins/Object/create/15.2.3.5-4-15.js
@@ -2126,7 +2102,6 @@ test/built-ins/Object/getOwnPropertyNames/order-after-define-property.js
 test/built-ins/Object/getOwnPropertySymbols/object-contains-symbol-property-with-description.js
 test/built-ins/Object/getOwnPropertySymbols/object-contains-symbol-property-without-description.js
 test/built-ins/Object/getOwnPropertySymbols/order-after-define-property.js
-test/built-ins/Object/getPrototypeOf/15.2.3.2-1-3.js
 test/built-ins/Object/getPrototypeOf/15.2.3.2-2-12.js
 test/built-ins/Object/getPrototypeOf/15.2.3.2-2-13.js
 test/built-ins/Object/getPrototypeOf/15.2.3.2-2-14.js
@@ -3322,7 +3297,6 @@ test/built-ins/String/prototype/indexOf/S15.5.4.7_A4_T5.js
 test/built-ins/String/prototype/indexOf/position-tointeger-toprimitive.js
 test/built-ins/String/prototype/indexOf/searchstring-tostring-bigint.js
 test/built-ins/String/prototype/indexOf/searchstring-tostring-toprimitive.js
-test/built-ins/String/prototype/indexOf/searchstring-tostring-wrapped-values.js
 test/built-ins/String/prototype/lastIndexOf/S15.5.4.8_A1_T1.js
 test/built-ins/String/prototype/lastIndexOf/S15.5.4.8_A1_T10.js
 test/built-ins/String/prototype/lastIndexOf/S15.5.4.8_A1_T2.js
@@ -7337,7 +7311,6 @@ test/language/expressions/prefix-increment/S11.4.4_A5_T3.js
 test/language/expressions/prefix-increment/S11.4.4_A6_T1.js
 test/language/expressions/prefix-increment/S11.4.4_A6_T2.js
 test/language/expressions/prefix-increment/bigint.js
-test/language/expressions/property-accessors/S11.2.1_A3_T1.js
 test/language/expressions/property-accessors/S11.2.1_A4_T3.js
 test/language/expressions/property-accessors/S11.2.1_A4_T5.js
 test/language/expressions/right-shift/bigint-non-primitive.js
@@ -10562,7 +10535,6 @@ test/staging/sm/Array/array-length-set-on-nonarray.js
 test/staging/sm/Array/at.js
 test/staging/sm/Array/concat-proxy.js
 test/staging/sm/Array/concat-spreadable-basic.js
-test/staging/sm/Array/concat-spreadable-primitive.js
 test/staging/sm/Array/for_of_3.js
 test/staging/sm/Array/for_of_4.js
 test/staging/sm/Array/from-iterator-close.js
@@ -10624,7 +10596,6 @@ test/staging/sm/Error/constructor-proto.js
 test/staging/sm/Error/prototype-properties.js
 test/staging/sm/Exceptions/error-property-enumerability.js
 test/staging/sm/Function/10.2.1.1.6.js
-test/staging/sm/Function/15.3.4.3-01.js
 test/staging/sm/Function/arguments-caller-callee.js
 test/staging/sm/Function/arguments-parameter-shadowing.js
 test/staging/sm/Function/arguments-property-attributes.js
@@ -10633,7 +10604,6 @@ test/staging/sm/Function/builtin-no-construct.js
 test/staging/sm/Function/builtin-no-prototype.js
 test/staging/sm/Function/create-function-parse-before-getprototype.js
 test/staging/sm/Function/function-bind.js
-test/staging/sm/Function/function-call.js
 test/staging/sm/Function/function-caller-restrictions.js
 test/staging/sm/Function/function-name-assignment.js
 test/staging/sm/Function/function-name-binding.js
@@ -11052,7 +11022,6 @@ test/staging/sm/expressions/object-literal-__proto__.js
 test/staging/sm/expressions/object-literal-computed-property-evaluation.js
 test/staging/sm/expressions/octal-literals.js
 test/staging/sm/expressions/optional-chain.js
-test/staging/sm/expressions/primitive-this-boxing-behavior.js
 test/staging/sm/expressions/short-circuit-compound-assignment-anon-fns.js
 test/staging/sm/expressions/short-circuit-compound-assignment-const.js
 test/staging/sm/expressions/short-circuit-compound-assignment-property-key-evaluation.js
@@ -11182,7 +11151,6 @@ test/staging/sm/statements/regress-642975.js
 test/staging/sm/statements/try-completion.js
 test/staging/sm/strict/10.4.3.js
 test/staging/sm/strict/13.1.js
-test/staging/sm/strict/15.3.4.5.js
 test/staging/sm/strict/15.4.5.1.js
 test/staging/sm/strict/15.5.5.1.js
 test/staging/sm/strict/8.12.5.js
