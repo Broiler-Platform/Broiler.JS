@@ -8670,6 +8670,87 @@ public class BuiltInsTests
         Assert.Equal("TypeError", r.ToString());
     }
 
+    [Fact]
+    public void NonStrict_Assign_String_Length_Silently_Fails()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var r = ctx.Eval("""
+            (function() {
+              var s = new String('foo');
+              s.length = 1;
+              return s.length;
+            })()
+            """);
+        Assert.Equal(3d, r.DoubleValue);
+    }
+
+    [Fact]
+    public void IsRegExpLike_Accesses_Symbol_Match()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var r = ctx.Eval("""
+            (function() {
+              var accessed = false;
+              var rx = /a/;
+              Object.defineProperty(rx, Symbol.match, {
+                get: function() { accessed = true; return undefined; }
+              });
+              rx[Symbol.split]("abba");
+              return accessed;
+            })()
+            """);
+        Assert.True(r.BooleanValue);
+    }
+
+    [Fact]
+    public void String_Keyed_Shorthand_Destructuring_Is_SyntaxError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var r = ctx.Eval("""
+            (function() {
+              try { new Function("({''})"); return 'no-error'; }
+              catch(e) { return e instanceof SyntaxError ? 'SyntaxError' : e.constructor.name; }
+            })()
+            """);
+        Assert.Equal("SyntaxError", r.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Unicode_Word_Boundary_Matches_Long_S()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var r = ctx.Eval("""
+            (function() { return /\b/iu.test('\u017F'); })()
+            """);
+        Assert.True(r.BooleanValue);
+    }
+
+    [Fact]
+    public void RegExp_IgnoreCase_Unicode_CaseFolding_Mu_Micro()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var r = ctx.Eval("""
+            (function() { return /\u039C/i.test('\xB5'); })()
+            """);
+        Assert.True(r.BooleanValue);
+    }
+
+    [Fact]
+    public void RegExp_IgnoreCase_Unicode_CaseFolding_Long_S()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var r = ctx.Eval("""
+            (function() { return /\u017F/iu.test('s'); })()
+            """);
+        Assert.True(r.BooleanValue);
+    }
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured

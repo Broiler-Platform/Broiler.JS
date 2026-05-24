@@ -18,15 +18,18 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
     internal static bool IsRegExpLike(JSValue value)
     {
-        if (value is JSRegExp)
-            return true;
-
-        var matchSymbol = GetGlobalSymbolFactory?.Invoke("match");
-        if (value is not JSObject @object || matchSymbol == null)
+        if (value is not JSObject @object)
             return false;
 
-        var matcher = @object[matchSymbol];
-        return !matcher.IsUndefined && matcher.BooleanValue;
+        var matchSymbol = GetGlobalSymbolFactory?.Invoke("match");
+        if (matchSymbol != null)
+        {
+            var matcher = @object[matchSymbol];
+            if (!matcher.IsUndefined)
+                return matcher.BooleanValue;
+        }
+
+        return value is JSRegExp;
     }
 
     [JSExport("escape", Length = 1)]
@@ -548,6 +551,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     throw JSEngine.NewSyntaxError("The 'u' flag cannot be specified twice");
                 if (unicodeSets)
                     throw JSEngine.NewSyntaxError("The 'u' and 'v' flags cannot be used together");
+                options &= ~RegexOptions.ECMAScript;
                 unicode = true;
             }
             else if (flag == 'v')
@@ -556,6 +560,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     throw JSEngine.NewSyntaxError("The 'v' flag cannot be specified twice");
                 if (unicode)
                     throw JSEngine.NewSyntaxError("The 'u' and 'v' flags cannot be used together");
+                options &= ~RegexOptions.ECMAScript;
                 unicodeSets = true;
             }
             else if (flag == 'y')
@@ -598,6 +603,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // ECMAScript \s must match all Unicode whitespace (Zs category + BOM + line terminators).
             // .NET's \s only covers ASCII whitespace, so expand to the full set.
             pattern = TransformUnicodeWhitespace(pattern);
+
+            // .NET IgnoreCase doesn't handle all Unicode CaseFolding pairs (e.g. µ↔μ, ſ↔s).
+            // Expand literal characters to include their missing case-fold equivalents.
+            if (ignoreCase)
+                pattern = TransformUnicodeCaseFolding(pattern);
 
             // §2.6 — Detect inline pattern modifiers (?i:...) / (?-i:...) / (?ims:...) etc.
             // .NET ECMAScript mode does not support them, so switch to default mode.
@@ -984,4 +994,127 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         return sb.ToString();
     }
+
+    /// <summary>
+    /// .NET IgnoreCase regex doesn't handle several Unicode CaseFolding pairs.
+    /// This method expands literal characters and \uNNNN escapes in the pattern
+    /// to include their missing case-fold equivalents so that case-insensitive
+    /// matching conforms to ECMAScript Canonicalize semantics.
+    /// </summary>
+    private static string TransformUnicodeCaseFolding(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern))
+            return pattern;
+
+        StringBuilder sb = null;
+        bool inClass = false;
+
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                char next = pattern[i + 1];
+
+                if (next == 'u' && i + 5 < pattern.Length
+                    && IsHexDigit(pattern[i + 2]) && IsHexDigit(pattern[i + 3])
+                    && IsHexDigit(pattern[i + 4]) && IsHexDigit(pattern[i + 5]))
+                {
+                    int cp = HexValue(pattern[i + 2]) << 12 | HexValue(pattern[i + 3]) << 8
+                           | HexValue(pattern[i + 4]) << 4 | HexValue(pattern[i + 5]);
+                    var equiv = GetCaseFoldEquivalents((char)cp);
+                    if (equiv != null)
+                    {
+                        sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
+                        AppendWithEquivalents(sb, (char)cp, equiv, inClass);
+                        i += 5;
+                        continue;
+                    }
+
+                    sb?.Append(pattern, i, 6);
+                    i += 5;
+                    continue;
+                }
+
+                // Pass through other escapes
+                sb?.Append(c);
+                sb?.Append(next);
+                i++;
+                continue;
+            }
+
+            if (!inClass && c == '[')
+            {
+                inClass = true;
+                sb?.Append(c);
+                continue;
+            }
+
+            if (inClass && c == ']')
+            {
+                inClass = false;
+                sb?.Append(c);
+                continue;
+            }
+
+            // Check literal characters
+            var litEquiv = GetCaseFoldEquivalents(c);
+            if (litEquiv != null)
+            {
+                sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
+                AppendWithEquivalents(sb, c, litEquiv, inClass);
+                continue;
+            }
+
+            sb?.Append(c);
+        }
+
+        return sb?.ToString() ?? pattern;
+    }
+
+    private static void AppendWithEquivalents(StringBuilder sb, char original, char[] equivalents, bool inClass)
+    {
+        if (inClass)
+        {
+            sb.Append(original);
+            foreach (var eq in equivalents)
+                sb.Append(eq);
+        }
+        else
+        {
+            sb.Append('[');
+            sb.Append(original);
+            foreach (var eq in equivalents)
+                sb.Append(eq);
+            sb.Append(']');
+        }
+    }
+
+    /// <summary>
+    /// Returns additional characters that should match case-insensitively with the given
+    /// character but that .NET's IgnoreCase doesn't handle. Returns null when .NET handles
+    /// the case folding natively.
+    /// </summary>
+    private static char[] GetCaseFoldEquivalents(char c) => c switch
+    {
+        // µ (U+00B5 MICRO SIGN) folds to μ (U+03BC GREEK SMALL MU) — .NET misses µ↔Μ
+        '\u00B5' => ['\u03BC', '\u039C'],
+        // Μ (U+039C GREEK CAPITAL MU) — .NET handles Μ↔μ but not Μ↔µ
+        '\u039C' => ['\u03BC', '\u00B5'],
+        // μ (U+03BC GREEK SMALL MU) — .NET handles μ↔Μ but not μ↔µ
+        '\u03BC' => ['\u039C', '\u00B5'],
+        // ſ (U+017F LATIN SMALL LETTER LONG S) folds to s — .NET misses entirely
+        '\u017F' => ['s', 'S'],
+        // s and S should also match ſ
+        's' => ['S', '\u017F'],
+        'S' => ['s', '\u017F'],
+        _ => null,
+    };
+
+    private static bool IsHexDigit(char c) =>
+        (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+
+    private static int HexValue(char c) =>
+        c >= '0' && c <= '9' ? c - '0' : (c >= 'a' ? c - 'a' + 10 : c - 'A' + 10);
 }
