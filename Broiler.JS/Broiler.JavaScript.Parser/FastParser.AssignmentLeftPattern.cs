@@ -92,6 +92,8 @@ partial class FastParser
                 }
                 else
                 {
+                    if (left is AstLiteral)
+                        throw stream.Unexpected();
                     if (left.Start.IsKeyword || left.Start.IsEscapedReservedWord)
                         throw stream.Unexpected();
                     variableScope.Top.AddVariable(left.Start, left.Start.Span, kind);

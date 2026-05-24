@@ -96,6 +96,19 @@ public class JSPrimitiveObject : JSObject
         return base.SetValue(name, value, receiver, throwError);
     }
 
+    internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
+    {
+        if (this.value.IsString && name.Key == KeyStrings.length.Key)
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot modify property length of {this}");
+
+            return false;
+        }
+
+        return base.SetValue(name, value, receiver, throwError);
+    }
+
     public override JSValue DefineProperty(JSValue key, JSObject propertyDescription)
     {
         var propertyKey = key.ToKey();

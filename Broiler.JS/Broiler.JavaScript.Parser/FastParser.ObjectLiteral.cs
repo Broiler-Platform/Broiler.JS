@@ -107,6 +107,8 @@ partial class FastParser
             }
             else if (stream.Current.Type == TokenTypes.Comma || stream.Current.Type == TokenTypes.CurlyBracketEnd || stream.Current.Type == TokenTypes.EOF)
             {
+                if (key is AstLiteral)
+                    throw stream.Unexpected();
                 property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, isPrivate, isStatic, key, computed, key);
                 return true;
             }
