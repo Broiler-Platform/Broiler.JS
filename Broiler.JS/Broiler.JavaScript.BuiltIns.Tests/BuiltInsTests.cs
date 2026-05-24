@@ -5146,6 +5146,28 @@ public class BuiltInsTests
         Assert.False(JSBoolean.False.BooleanValue);
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [Fact]
+    public void Object_Boolean_Wrapping_Produces_Correct_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // Object(true) must produce an object whose [[Prototype]] is Boolean.prototype
+        var result = ctx.Eval(@"[
+            Object(true) instanceof Boolean,
+            Object(false) instanceof Boolean,
+            Object.getPrototypeOf(Object(true)) === Boolean.prototype,
+            new Boolean(true) instanceof Boolean,
+            new Boolean(false) instanceof Boolean,
+            // Lenient-mode bind(true) should box to Boolean wrapper
+            (function lenient() { return this; }).bind(true)() instanceof Boolean
+        ]");
+        var arr = (JSArray)result;
+        for (int i = 0; i < 6; i++)
+            Assert.True(arr[(uint)i].BooleanValue, $"assertion {i} failed");
+    }
+
     [Fact]
     public void Array_Prototype_TypeError_Scenarios_Match_Test262_Expectations()
     {

@@ -1,3 +1,4 @@
+using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using System.Runtime.CompilerServices;
@@ -40,7 +41,7 @@ public partial class JSBoolean : JSPrimitive
             : new JSPrimitiveObject(value);
     }
 
-    protected override JSValue GetPrototype() => GetCurrentPrototype();
+    protected override JSValue GetPrototype() => ((JSEngine.Current as JSObject)?[Names.Boolean] as JSFunction)?.prototype;
 
     public override double DoubleValue => _value ? 1 : 0;
 
