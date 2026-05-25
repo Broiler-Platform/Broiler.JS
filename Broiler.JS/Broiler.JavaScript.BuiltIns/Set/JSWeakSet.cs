@@ -44,16 +44,20 @@ public partial class JSWeakSet : JSObject
     }
 
     [JSExport("add")]
-    public JSValue Add(JSObject a)
+    public JSValue Add(in Arguments a)
     {
-        HashedString key = a.ToUniqueID();
+        var value = a.Get1();
+        if (value is not JSObject keyObject)
+            throw JSEngine.NewTypeError("WeakSet value must be an object");
+
+        HashedString key = keyObject.ToUniqueID();
         lock (this)
         {
             if (!index.TryGetValue(key, out var w))
-                index.Put(key) = new(new (key, a, Unregister));
+                index.Put(key) = new(new (key, keyObject, Unregister));
         }
 
-        return a;
+        return keyObject;
     }
 
     private void Unregister(in HashedString key) => index.RemoveAt(key.Value);

@@ -59,8 +59,12 @@ public partial class JSWeakMap: JSObject
     }
 
     [JSExport("set")]
-    public JSValue Set(JSObject key, JSValue value)
+    public JSValue Set(in Arguments a)
     {
+        var (keyValue, value) = a.Get2();
+        if (keyValue is not JSObject key)
+            throw JSEngine.NewTypeError("WeakMap key must be an object");
+
         HashedString uk = key.ToUniqueID();
 
         lock (this)

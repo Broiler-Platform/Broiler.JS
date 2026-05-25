@@ -207,7 +207,7 @@ internal static class BuiltInsAssemblyInitializer
         // Wire factory delegates for JSError types so Core can create
         // error instances without referencing the concrete types directly.
         JSEngine.CreateTypeError = static (message, function, filePath, line) =>
-            new JSException(message, GetErrorPrototype(KeyStrings.TypeError), function: function, filePath: filePath, line: line);
+            new JSTypeError(new Arguments(JSUndefined.Value, JSValue.CreateString(message)), function: function, filePath: filePath, line: line).Exception;
         JSEngine.CreateSyntaxError = static (message, function, filePath, line) =>
             new JSException(message, GetErrorPrototype(KeyStrings.SyntaxError), function: function, filePath: filePath, line: line);
         JSEngine.CreateURIError = static (message, function, filePath, line) =>

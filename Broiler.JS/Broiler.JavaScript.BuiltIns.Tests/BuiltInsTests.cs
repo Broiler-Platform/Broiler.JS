@@ -64,6 +64,39 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Native_TypeErrors_Remain_TypeError_In_JavaScript_Catch()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () { Object.getPrototypeOf(); }),
+                    thrownCtor(function () { Array.prototype.toLocaleString.call(null); }),
+                    thrownCtor(function () { ''.padStart(1, Symbol()); }),
+                    thrownCtor(function () { ''.padEnd(1, Symbol()); }),
+                    thrownCtor(function () { WeakMap.prototype.set.call(new WeakMap(), 1, 1); }),
+                    thrownCtor(function () { WeakSet.prototype.add.call(new WeakSet(), 1); }),
+                    thrownCtor(function () { new WeakMap([[1, 1]]); }),
+                    thrownCtor(function () { new WeakSet([1]); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Symbol_Primitives_And_Wrappers_Are_Not_Callable()
     {
         EnsureBuiltInsLoaded();

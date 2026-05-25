@@ -35,7 +35,10 @@ public partial class JSString
         var @this = a.This.AsString();
         var (s, c) = a.Get2();
         var size = s.IntValue;
-        var ch = c.ToString().ToCharArray()[0];
+        var fillString = c.IsUndefined ? " " : c.StringValue;
+        if (fillString.Length == 0 || size <= @this.Length)
+            return new JSString(@this);
+        var ch = fillString[0];
 
         return new JSString(@this.PadRight(s.IntValue, ch));
     }
@@ -46,7 +49,10 @@ public partial class JSString
     {
         var @this = a.This.AsString();
         var (s, c) = a.Get2();
-        var ch = c.ToString().ToCharArray()[0];
+        var fillString = c.IsUndefined ? " " : c.StringValue;
+        if (fillString.Length == 0 || s.IntValue <= @this.Length)
+            return new JSString(@this);
+        var ch = fillString[0];
 
         return new JSString(@this.PadLeft(s.IntValue, ch));
     }
