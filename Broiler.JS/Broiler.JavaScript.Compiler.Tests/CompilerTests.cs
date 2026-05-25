@@ -1471,4 +1471,68 @@ public class CompilerTests
     }
 
     #endregion
+
+    #region FnNameCover
+
+    [Fact]
+    public void FnNameCover_VarDeclaration_CommaExpression_DoesNotInferName()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("var x = (0, function(){}); x.name");
+        Assert.Equal("", result.ToString());
+    }
+
+    [Fact]
+    public void FnNameCover_LetDeclaration_CommaExpression_DoesNotInferName()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("let x = (0, function(){}); x.name");
+        Assert.Equal("", result.ToString());
+    }
+
+    [Fact]
+    public void FnNameCover_Assignment_CommaExpression_DoesNotInferName()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("var x; x = (0, function(){}); x.name");
+        Assert.Equal("", result.ToString());
+    }
+
+    [Fact]
+    public void FnNameCover_DirectFunctionExpression_InfersName()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("var x = function(){}; x.name");
+        Assert.Equal("x", result.ToString());
+    }
+
+    #endregion
+
+    #region TaggedTemplateCaching
+
+    [Fact]
+    public void TaggedTemplate_SameSourcePosition_ReturnsSameObject()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            function tag(t) { return t; }
+            var results = [];
+            for (var i = 0; i < 2; i++) results.push(tag`hello`);
+            results[0] === results[1];
+        ");
+        Assert.Equal(true, result.BooleanValue);
+    }
+
+    [Fact]
+    public void TaggedTemplate_Object_IsFrozen()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            function tag(t) { return t; }
+            Object.isFrozen(tag`hello`);
+        ");
+        Assert.Equal(true, result.BooleanValue);
+    }
+
+    #endregion
 }

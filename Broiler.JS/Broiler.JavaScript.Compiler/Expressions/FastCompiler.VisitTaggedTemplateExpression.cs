@@ -14,6 +14,9 @@ partial class FastCompiler
     private static readonly MethodInfo FreezeObjectMethod = typeof(JSObject).GetMethod("FreezeObject", BindingFlags.Static | BindingFlags.NonPublic)
         ?? throw new InvalidOperationException("JSObject.FreezeObject not found");
 
+    private static readonly MethodInfo GetOrCreateTemplateObjectMethod = typeof(JSObject).GetMethod("GetOrCreateTemplateObject", BindingFlags.Static | BindingFlags.NonPublic)
+        ?? throw new InvalidOperationException("JSObject.GetOrCreateTemplateObject not found");
+
     protected override YExpression VisitTaggedTemplateExpression(AstTaggedTemplateExpression template)
     {
         var callee = template.Tag;
@@ -54,7 +57,11 @@ partial class FastCompiler
         var rawArray = YExpression.Call(null, FreezeObjectMethod, JSArrayBuilder.New(raw));
         parts.Add(new YElementInit(JSObjectBuilder._FastAddValueKeyString, KeyOfName("raw"), rawArray, JSPropertyAttributesBuilder.EnumerableConfigurableValue));
 
-        var partsArray = YExpression.Call(null, FreezeObjectMethod, JSArrayBuilder.New(parts));
+        var unfrozenArray = JSArrayBuilder.New(parts);
+
+        // Use source position as a stable cache key for template object identity (ES2015 §12.2.9.3)
+        var cacheKey = template.Start.Span.Offset;
+        var partsArray = YExpression.Call(null, GetOrCreateTemplateObjectMethod, YExpression.Constant(cacheKey), unfrozenArray);
         args[0] = partsArray;
 
         if (callee.Type == FastNodeType.MemberExpression && callee is AstMemberExpression me)

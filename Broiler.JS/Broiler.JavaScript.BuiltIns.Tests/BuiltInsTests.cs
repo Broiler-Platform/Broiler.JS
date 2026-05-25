@@ -9521,4 +9521,21 @@ public class BuiltInsTests
         RuntimeHelpers.RunClassConstructor(
             typeof(Weak.JSWeakRef).TypeHandle);
     }
+
+    #region RegExp_Unicode_Surrogate_Pairs
+
+    [Theory]
+    [InlineData("/^.$/u.test('\\uD83D\\uDCA9')", true, "dot with u flag matches surrogate pair")]
+    [InlineData("/^..$/u.test('\\uD83D\\uDCA9\\uD83D\\uDE00')", true, "two dots with u match two surrogate pairs")]
+    [InlineData("/\\uD834\\uDF06/u.test('\\uD834\\uDF06')", true, "surrogate pair escape matches with u")]
+    [InlineData("/[\\uD834\\uDF06]/u.test('\\uD834\\uDF06')", true, "surrogate pair in char class matches with u")]
+    public void RegExp_Unicode_SurrogatePairs(string expression, bool expected, string description)
+    {
+        _ = description;
+        using var ctx = new JSContext();
+        var result = ctx.Eval(expression);
+        Assert.Equal(expected, result.BooleanValue);
+    }
+
+    #endregion
 }

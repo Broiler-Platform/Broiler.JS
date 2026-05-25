@@ -69,10 +69,31 @@ partial class FastCompiler
         {
             var identifier = (AstIdentifier)left;
             if (!TryGetStaticIdentifierVariable(identifier, out var variable) || variable == null)
+            {
+                if (assignmentOperator == TokenTypes.Assign && !IsAnonymousFunctionDefinition(right))
+                {
+                    var initExpr = Visit(right);
+                    initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
+                    return AssignIdentifier(identifier, initExpr);
+                }
                 return AssignIdentifier(identifier, right, assignmentOperator);
+            }
 
             if (assignmentOperator == TokenTypes.Assign && variable.IsLexical && variable.Variable?.Type == typeof(JSVariable))
-                return JSVariableBuilder.Assign(variable.Variable, Visit(right));
+            {
+                var initExpr = Visit(right);
+                if (!IsAnonymousFunctionDefinition(right))
+                    initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
+                return JSVariableBuilder.Assign(variable.Variable, initExpr);
+            }
+
+            if (assignmentOperator == TokenTypes.Assign)
+            {
+                var initExpr = Visit(right);
+                if (!IsAnonymousFunctionDefinition(right))
+                    initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
+                return YExpression.Assign(variable.Expression, initExpr);
+            }
 
             return Assign(variable.Expression, right, assignmentOperator);
         }

@@ -34,7 +34,10 @@ partial class FastCompiler
                     }
                     else
                     {
-                        list.Add(YExpression.Assign(v.Expression, Visit(d.Init)));
+                        var initExpr = Visit(d.Init);
+                        if (!IsAnonymousFunctionDefinition(d.Init))
+                            initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
+                        list.Add(YExpression.Assign(v.Expression, initExpr));
                     }
 
                     if (readOnlyAfterAssign)

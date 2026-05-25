@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Concurrent;
 using Broiler.JavaScript.Storage;
 using System;
 
@@ -450,6 +451,13 @@ public partial class JSObject
     {
         Freeze(new Arguments(JSUndefined.Value, @object));
         return @object;
+    }
+
+    private static readonly ConcurrentDictionary<int, JSValue> _templateObjectCache = new();
+
+    internal static JSValue GetOrCreateTemplateObject(int cacheKey, JSObject templateArray)
+    {
+        return _templateObjectCache.GetOrAdd(cacheKey, _ => FreezeObject(templateArray));
     }
 
     [JSExport("fromEntries")]

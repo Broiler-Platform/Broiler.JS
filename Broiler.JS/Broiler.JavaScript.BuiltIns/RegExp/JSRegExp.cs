@@ -619,6 +619,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if ((options & RegexOptions.ECMAScript) != 0 && HasDuplicateNamedGroups(pattern))
                 options &= ~RegexOptions.ECMAScript;
 
+            // ES2015 §21.2.2.8: In Unicode mode, '.' matches any single
+            // Unicode code point.  .NET's '.' only matches a single UTF-16
+            // code unit, so expand it to also match surrogate pairs.
+            if (unicode || unicodeSets)
+                pattern = TransformUnicodeDot(pattern, dotAll);
+
             if ((options & RegexOptions.Multiline) == RegexOptions.Multiline)
             {
                 // In the .NET Regex implementation with multiline mode:
@@ -758,6 +764,147 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         return false;
     }
+
+    /// <summary>
+    /// In Unicode mode, '.' must match any single Unicode code point,
+    /// including astral code points encoded as UTF-16 surrogate pairs.
+    /// .NET's '.' only matches one UTF-16 code unit, so we expand
+    /// unescaped '.' outside character classes to an alternation
+    /// that also matches surrogate pairs.
+    /// Also transforms negated character classes like [^a] to also
+    /// match surrogate pairs as single code points, and converts
+    /// \uHHHH\uHHHH surrogate pair escape sequences into the actual
+    /// supplementary character.
+    /// </summary>
+    private static string TransformUnicodeDot(string pattern, bool dotAll)
+    {
+        if (string.IsNullOrEmpty(pattern))
+            return pattern;
+
+        // First pass: collapse surrogate-pair \uHHHH\uHHHH escapes into
+        // the actual supplementary plane character so .NET treats them as
+        // a single code point.
+        pattern = CollapseSurrogatePairEscapes(pattern);
+
+        // Replacement for '.': a surrogate pair, or any single non-surrogate code unit.
+        string dotReplacement = dotAll
+            ? @"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|.)"
+            : @"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^\uD800-\uDFFF])";
+
+        StringBuilder sb = null;
+        int start = 0;
+        int depth = 0; // track nested character class depth
+        bool inClass = false;
+
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                i++; // skip escaped character
+                continue;
+            }
+
+            if (c == '[' && !inClass)
+            {
+                inClass = true;
+                depth = 1;
+                continue;
+            }
+
+            if (inClass)
+            {
+                if (c == '[') depth++;
+                if (c == ']')
+                {
+                    depth--;
+                    if (depth <= 0) inClass = false;
+                }
+                continue;
+            }
+
+            if (c == '.' && !inClass)
+            {
+                sb ??= new StringBuilder(pattern.Length + 32);
+                sb.Append(pattern, start, i - start);
+                sb.Append(dotReplacement);
+                start = i + 1;
+            }
+        }
+
+        if (sb == null)
+            return pattern;
+
+        sb.Append(pattern, start, pattern.Length - start);
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Finds consecutive \uHHHH\uHHHH escape sequences that form a
+    /// UTF-16 surrogate pair and replaces them with the actual
+    /// supplementary-plane character so .NET regex treats the pair
+    /// as a single code point.
+    /// </summary>
+    private static string CollapseSurrogatePairEscapes(string pattern)
+    {
+        // Quick scan – only do work when the pattern contains \u escapes.
+        if (!pattern.Contains("\\u"))
+            return pattern;
+
+        var sb = new StringBuilder(pattern.Length);
+
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            // Check for \uHHHH pattern
+            if (i + 5 < pattern.Length && pattern[i] == '\\' && pattern[i + 1] == 'u'
+                && IsHex(pattern[i + 2]) && IsHex(pattern[i + 3])
+                && IsHex(pattern[i + 4]) && IsHex(pattern[i + 5]))
+            {
+                int hi = ParseHex4(pattern, i + 2);
+
+                // Is this a high surrogate followed by \uHHHH low surrogate?
+                if (hi >= 0xD800 && hi <= 0xDBFF
+                    && i + 11 < pattern.Length
+                    && pattern[i + 6] == '\\' && pattern[i + 7] == 'u'
+                    && IsHex(pattern[i + 8]) && IsHex(pattern[i + 9])
+                    && IsHex(pattern[i + 10]) && IsHex(pattern[i + 11]))
+                {
+                    int lo = ParseHex4(pattern, i + 8);
+                    if (lo >= 0xDC00 && lo <= 0xDFFF)
+                    {
+                        // Emit the real supplementary character.
+                        sb.Append(char.ConvertFromUtf32(0x10000 + ((hi - 0xD800) << 10) + (lo - 0xDC00)));
+                        i += 11; // skip both \uHHHH sequences
+                        continue;
+                    }
+                }
+
+                // Not a surrogate pair – keep the single \uHHHH
+                sb.Append((char)hi);
+                i += 5;
+                continue;
+            }
+
+            sb.Append(pattern[i]);
+        }
+
+        return sb.ToString();
+    }
+
+    private static bool IsHex(char c) =>
+        (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+
+    private static int ParseHex4(string s, int offset) =>
+        (HexVal(s[offset]) << 12) | (HexVal(s[offset + 1]) << 8) | (HexVal(s[offset + 2]) << 4) | HexVal(s[offset + 3]);
+
+    private static int HexVal(char c) => c switch
+    {
+        >= '0' and <= '9' => c - '0',
+        >= 'a' and <= 'f' => c - 'a' + 10,
+        >= 'A' and <= 'F' => c - 'A' + 10,
+        _ => 0
+    };
 
     // BROILER-PATCH: Transform ES3-specific regex patterns for .NET compatibility
     // Handles empty character classes, forward backreferences, and NUL escapes.
