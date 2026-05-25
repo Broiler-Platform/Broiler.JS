@@ -10833,7 +10833,6 @@ test/staging/sm/statements/try-completion.js
 test/staging/sm/strict/10.4.3.js
 test/staging/sm/strict/15.4.5.1.js
 test/staging/sm/strict/8.12.7-2.js
-test/staging/sm/strict/deprecated-octal-noctal-tokens.js
 test/staging/sm/strict/eval-variable-environment.js
 test/staging/sm/strict/primitive-assignment.js
 test/staging/sm/strict/primitive-this-getter.js
