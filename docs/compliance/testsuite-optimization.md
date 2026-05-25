@@ -168,6 +168,6 @@ mode, enabled buckets) to reproduce any reported failure.
 |---|----------------|--------|----------|----------------|
 | 1 | Parallel worker pool | ✅ Implemented | `--max-workers N` | `MAX_WORKERS` env in both workflows |
 | 2 | Seeded ordering | ✅ Implemented | `--shuffle-seed N` | `SHUFFLE_SEED` env in both workflows |
-| 3 | Fragile-area prioritization | 🔲 Planned | — | — |
+| 3 | Fragile-area prioritization | ✅ Implemented | `--prioritize-fragile` | `PRIORITIZE_FRAGILE` input in full-script-host |
 | 4 | Negative-metadata coverage | ✅ Implemented | `--include-negative` | `INCLUDE_NEGATIVE` input in full-script-host |
-| 5 | Property-based repository tests | 🔲 Planned | — | — |
+| 5 | Property-based repository tests | ✅ Implemented | — | xUnit `[Theory]` + `[MemberData]` in BuiltIns.Tests and Compiler.Tests |
