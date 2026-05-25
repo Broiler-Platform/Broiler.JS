@@ -10832,15 +10832,12 @@ test/staging/sm/statements/regress-642975.js
 test/staging/sm/statements/try-completion.js
 test/staging/sm/strict/10.4.3.js
 test/staging/sm/strict/15.4.5.1.js
-test/staging/sm/strict/8.12.5.js
 test/staging/sm/strict/8.12.7-2.js
-test/staging/sm/strict/B.1.2.js
 test/staging/sm/strict/deprecated-octal-noctal-tokens.js
 test/staging/sm/strict/eval-variable-environment.js
 test/staging/sm/strict/primitive-assignment.js
 test/staging/sm/strict/primitive-this-getter.js
 test/staging/sm/strict/regress-599159.js
-test/staging/sm/strict/strict-function-statements.js
 test/staging/sm/syntax/class-error.js
 test/staging/sm/syntax/escaped-let-static-identifier.js
 test/staging/sm/syntax/keyword-unescaped-requirement.js

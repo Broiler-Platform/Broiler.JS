@@ -1,4 +1,5 @@
 using Broiler.JavaScript.Ast;
+using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
@@ -1532,6 +1533,116 @@ public class CompilerTests
             Object.isFrozen(tag`hello`);
         ");
         Assert.Equal(true, result.BooleanValue);
+    }
+
+    #endregion
+
+    #region Prefix Update Expression
+
+    [Fact]
+    public void PrefixIncrement_NonWritableProperty_ReturnsNewValue()
+    {
+        using var ctx = new JSContext();
+        // Per spec, ++x returns the new computed value even when the
+        // write silently fails on a non-writable property in sloppy mode.
+        var result = ctx.Eval(@"
+            var o = {};
+            Object.defineProperty(o, 'x', { value: 1, writable: false });
+            ++o.x;
+        ");
+        Assert.Equal(2.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void PrefixDecrement_NonWritableProperty_ReturnsNewValue()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var o = {};
+            Object.defineProperty(o, 'x', { value: 1, writable: false });
+            --o.x;
+        ");
+        Assert.Equal(0.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void PrefixIncrement_NonWritableProperty_StrictMode_ThrowsTypeError()
+    {
+        using var ctx = new JSContext();
+        Assert.Throws<JSException>(() => ctx.Eval(@"
+            'use strict';
+            var o = {};
+            Object.defineProperty(o, 'x', { value: 1, writable: false });
+            ++o.x;
+        "));
+    }
+
+    #endregion
+
+    #region Octal Escapes in Strict Mode
+
+    [Fact]
+    public void OctalEscape_08_StrictMode_ThrowsSyntaxError()
+    {
+        using var ctx = new JSContext();
+        // \08 is a NonOctalDecimalEscape, forbidden in strict mode
+        Assert.Throws<JSException>(() => ctx.Eval(
+            "'use strict'; \"\\08\";"
+        ));
+    }
+
+    [Fact]
+    public void OctalEscape_8_StrictMode_ThrowsSyntaxError()
+    {
+        using var ctx = new JSContext();
+        // \8 is a NonOctalDecimalEscape, forbidden in strict mode
+        Assert.Throws<JSException>(() => ctx.Eval(
+            "'use strict'; \"\\8\";"
+        ));
+    }
+
+    [Fact]
+    public void OctalEscape_08_SloppyMode_Parses()
+    {
+        using var ctx = new JSContext();
+        // \08 in sloppy mode should parse without error
+        var result = ctx.Eval("\"\\08\".length;");
+        Assert.Equal(2.0, result.DoubleValue);
+    }
+
+    #endregion
+
+    #region Function Declarations in Statement Bodies
+
+    [Fact]
+    public void FunctionDeclaration_InIf_SloppyMode_Parses()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var r = 0;
+            if (true) function f() { r = 1; }
+            f();
+            r;
+        ");
+        Assert.Equal(1.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void FunctionDeclaration_InWhile_SloppyMode_Parses()
+    {
+        using var ctx = new JSContext();
+        // Should parse without error in sloppy mode (Annex B)
+        ctx.Eval("(function() { while (false) function f() {} })()");
+    }
+
+    [Fact]
+    public void FunctionDeclaration_InWhile_StrictMode_ThrowsSyntaxError()
+    {
+        using var ctx = new JSContext();
+        Assert.Throws<JSException>(() => ctx.Eval(@"
+            'use strict';
+            while (false) function f() {}
+        "));
     }
 
     #endregion
