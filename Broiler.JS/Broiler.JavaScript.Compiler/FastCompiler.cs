@@ -31,6 +31,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     private readonly Stack<FastFunctionScope> withBoundaries = new();
     private readonly string location;
     private readonly bool isDirectEvalCompilation;
+    private readonly bool usesDirectEvalLocalVarEnvironment;
 
     public LoopScope LoopScope => scope.Top.Loop.Top;
 
@@ -45,7 +46,9 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
         location = location ?? "vm.js";
         this.location = location;
-        isDirectEvalCompilation = (JSEngine.Current as JSContext)?.IsCompilingDirectEval ?? false;
+        var context = JSEngine.Current as JSContext;
+        isDirectEvalCompilation = context?.IsCompilingDirectEval ?? false;
+        usesDirectEvalLocalVarEnvironment = context?.UsesDirectEvalLocalVarEnvironment ?? false;
 
         // add top level...
 
@@ -257,12 +260,12 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         }
 
         var currentBinding = scope.Top.GetVariable(id.Name);
-        if (isDirectEvalCompilation && scope.Top.RootScope.Function == null)
+        if (isDirectEvalCompilation && !usesDirectEvalLocalVarEnvironment)
             currentBinding ??= GetOrCreateDirectEvalRootVariable(id.Name);
         if (currentBinding == null)
             return result;
 
-        if (isDirectEvalCompilation && scope.Top.RootScope.Function == null)
+        if (isDirectEvalCompilation && !usesDirectEvalLocalVarEnvironment)
             currentBinding.IsDeletable = true;
 
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
@@ -280,9 +283,9 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     private YExpression VisitRuntimeFunctionDeclaration(AstFunctionExpression functionDeclaration)
     {
         var currentBinding = scope.Top.GetVariable(functionDeclaration.Id!.Name);
-        if (currentBinding == null && isDirectEvalCompilation && !IsStrictMode && scope.Top.RootScope.Function == null)
+        if (currentBinding == null && isDirectEvalCompilation && !IsStrictMode && !usesDirectEvalLocalVarEnvironment)
             currentBinding = GetOrCreateDirectEvalRootVariable(functionDeclaration.Id.Name);
-        else if (currentBinding != null && isDirectEvalCompilation && !IsStrictMode && scope.Top.RootScope.Function == null)
+        else if (currentBinding != null && isDirectEvalCompilation && !IsStrictMode && !usesDirectEvalLocalVarEnvironment)
             currentBinding.IsDeletable = true;
         var result = CreateFunction(functionDeclaration, hoistStatementDeclaration: false);
 

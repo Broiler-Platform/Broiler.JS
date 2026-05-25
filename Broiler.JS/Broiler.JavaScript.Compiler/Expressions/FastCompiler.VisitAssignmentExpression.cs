@@ -112,12 +112,12 @@ partial class FastCompiler
     }
 
     private YExpression CreateAssignment(AstExpression pattern, YExpression init, bool createVariable = false, bool newScope = false,
-        bool suppressAnonymousFunctionNameInference = false, bool initializeVariable = true)
+        bool suppressAnonymousFunctionNameInference = false, bool initializeVariable = true, bool readOnlyAfterAssign = false)
     {
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
         var inits = new Sequence<YExpression>();
         inits.Add(YExpression.Assign(temp.Variable, init));
-        CreateAssignment(inits, pattern, temp.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
+        CreateAssignment(inits, pattern, temp.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign);
         inits.Add(temp.Expression);
 
         return YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, inits);
@@ -293,12 +293,6 @@ partial class FastCompiler
                                 }
                                 break;
                             case FastNodeType.Identifier:
-                                var id = element as AstIdentifier;
-                                FastFunctionScope.VariableScope variable = null;
-                                if (createVariable)
-                                    variable = scope.Top.CreateVariable(id.Name.Value, null, newScope);
-
-                                var assignee = VisitIdentifierReference(id);
                                 using (var moveTemp = scope.Top.GetTempVariable(typeof(JSValue)))
                                 {
                                     arrayInits.Add(YExpression.IfThen(
@@ -306,46 +300,17 @@ partial class FastCompiler
                                             YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp.Expression))),
                                         YExpression.Block(
                                             YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                                            YExpression.Assign(assignee, JSUndefinedBuilder.Value),
+                                            CreateAssignment(element, JSUndefinedBuilder.Value, createVariable, newScope,
+                                                suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign),
                                             YExpression.Empty),
                                         YExpression.Block(
-                                            YExpression.Assign(assignee, moveTemp.Expression),
+                                            CreateAssignment(element, moveTemp.Expression, createVariable, newScope,
+                                                suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign),
                                             YExpression.Empty)));
                                 }
-                                if (readOnlyAfterAssign && variable != null)
-                                    arrayInits.Add(JSVariableBuilder.SetReadOnly(variable.Variable, true));
                                 break;
                             case FastNodeType.BinaryExpression:
                                 var be = element as AstBinaryExpression;
-                                if (be.Left.Type != FastNodeType.Identifier)
-                                {
-                                    using var te = scope.Top.GetTempVariable(typeof(JSValue));
-                                    arrayInits.Add(YExpression.IfThen(
-                                        YExpression.OrElse(iterDoneVar,
-                                            YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, te.Expression))),
-                                        YExpression.Block(
-                                            YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                                            YExpression.Assign(te.Expression, JSUndefinedBuilder.Value),
-                                            YExpression.Empty)));
-                                    var defaultValue = Visit(be.Right);
-                                    if (suppressAnonymousFunctionNameInference)
-                                    {
-                                        defaultValue = PrepareDestructuringInitializer(be.Left, be.Right, defaultValue);
-                                    }
-
-                                    arrayInits.Add(JSValueExtensionsBuilder.AssignCoalesce(te.Expression, defaultValue));
-
-                                    CreateAssignment(arrayInits, be.Left, te.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable);
-
-                                    break;
-                                }
-
-                                id = be.Left as AstIdentifier;
-                                variable = null;
-                                if (createVariable)
-                                    variable = scope.Top.CreateVariable(id.Name.Value, null, newScope);
-
-                                assignee = VisitIdentifierReference(id);
                                 using (var moveTemp2 = scope.Top.GetTempVariable(typeof(JSValue)))
                                 {
                                     arrayInits.Add(YExpression.IfThen(
@@ -353,28 +318,25 @@ partial class FastCompiler
                                             YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp2.Expression))),
                                         YExpression.Block(
                                             YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                                            YExpression.Assign(assignee, JSUndefinedBuilder.Value),
-                                            YExpression.Empty),
-                                        YExpression.Block(
-                                            YExpression.Assign(assignee, moveTemp2.Expression),
+                                            YExpression.Assign(moveTemp2.Expression, JSUndefinedBuilder.Value),
                                             YExpression.Empty)));
-                                }
-                                var identifierDefaultValue = Visit(be.Right);
-                                if (suppressAnonymousFunctionNameInference)
-                                {
-                                    identifierDefaultValue = PrepareDestructuringInitializer(be.Left, be.Right, identifierDefaultValue);
-                                }
+                                    var identifierDefaultValue = Visit(be.Right);
+                                    if (suppressAnonymousFunctionNameInference)
+                                    {
+                                        identifierDefaultValue = PrepareDestructuringInitializer(be.Left, be.Right, identifierDefaultValue);
+                                    }
 
-                                arrayInits.Add(JSValueExtensionsBuilder.AssignCoalesce(assignee, identifierDefaultValue));
-                                if (readOnlyAfterAssign && variable != null)
-                                    arrayInits.Add(JSVariableBuilder.SetReadOnly(variable.Variable, true));
+                                    arrayInits.Add(JSValueExtensionsBuilder.AssignCoalesce(moveTemp2.Expression, identifierDefaultValue));
+                                    arrayInits.Add(CreateAssignment(be.Left, moveTemp2.Expression, createVariable, newScope,
+                                        suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign));
+                                }
                                 break;
 
                             case FastNodeType.SpreadElement:
                                 var spe = element as AstSpreadElement;
                                 hasSpread = true;
                                 CreateAssignment(arrayInits, spe.Argument, JSArrayBuilder.NewFromElementEnumerator(destExp), createVariable, newScope,
-                                    suppressAnonymousFunctionNameInference, initializeVariable);
+                                    suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign);
                                 break;
 
                             case FastNodeType.ObjectPattern:

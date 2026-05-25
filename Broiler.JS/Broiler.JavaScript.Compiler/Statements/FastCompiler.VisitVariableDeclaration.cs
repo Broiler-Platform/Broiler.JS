@@ -25,7 +25,7 @@ partial class FastCompiler
             {
                 case FastNodeType.Identifier:
                     var id = d.Identifier as AstIdentifier;
-                    var v = isDirectEvalCompilation && !IsStrictMode && !newScope && top.RootScope.Function == null
+                    var v = isDirectEvalCompilation && !IsStrictMode && !newScope && !usesDirectEvalLocalVarEnvironment
                         ? GetOrCreateDirectEvalRootVariable(id.Name)
                         : top.CreateVariable(id.Name, JSVariableBuilder.New(id.Name.Value), newScope);
                     if (d.Init == null)

@@ -2297,6 +2297,28 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Direct_Eval_Function_Local_Var_Declarations_Do_Not_Leak_To_Global()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var initial = "unset";
+            var postAssignment = "unset";
+            (function () {
+              eval('initial = localValue; localValue = 4; postAssignment = localValue; var localValue;');
+            }());
+            [
+              String(initial),
+              String(postAssignment),
+              typeof localValue
+            ].join('|')
+            """);
+
+        Assert.Equal("undefined|4|undefined", result.ToString());
+    }
+
+    [Fact]
     public void Direct_Eval_Block_Function_Declarations_Update_Visible_Bindings()
     {
         EnsureBuiltInsLoaded();
@@ -4606,6 +4628,75 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("1|2|2|x1", result.ToString());
+    }
+
+    [Fact]
+    public void With_Statement_Strict_Read_And_Write_Respect_Unscopables_Deletion()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              function capture(action) {
+                try {
+                  action();
+                  return "no throw";
+                } catch (e) {
+                  return e.name + "|" + e.message;
+                }
+              }
+
+              var readCalls = 0;
+              var readEnv = {
+                binding: 0,
+                get [Symbol.unscopables]() {
+                  readCalls++;
+                  delete readEnv.binding;
+                  return null;
+                }
+              };
+
+              var writeCalls = 0;
+              var writeEnv = {
+                binding: 0,
+                get [Symbol.unscopables]() {
+                  writeCalls++;
+                  delete writeEnv.binding;
+                  return null;
+                }
+              };
+
+              var readResult;
+              with (readEnv) {
+                readResult = capture(function () {
+                  "use strict";
+                  return binding;
+                });
+              }
+
+              var writeResult;
+              with (writeEnv) {
+                writeResult = capture(function () {
+                  "use strict";
+                  binding = 123;
+                });
+              }
+
+              return [
+                readResult,
+                writeResult,
+                readCalls,
+                writeCalls,
+                String(Object.getOwnPropertyDescriptor(readEnv, "binding")),
+                String(Object.getOwnPropertyDescriptor(writeEnv, "binding"))
+              ].join("||");
+            })();
+            """);
+
+        Assert.Equal(
+            "ReferenceError|binding is not defined||ReferenceError|binding is not defined||1||1||undefined||undefined",
+            result.ToString());
     }
 
     [Fact]

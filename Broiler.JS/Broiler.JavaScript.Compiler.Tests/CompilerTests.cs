@@ -601,6 +601,13 @@ public class CompilerTests
         Assert.Equal("ReferenceError", destructuring.Error[KeyStrings.constructor][KeyStrings.name].ToString());
         Assert.Equal("missing is not defined", destructuring.Error[KeyStrings.message].ToString());
 
+        var arrayDestructuring = Assert.Throws<JSException>(() => ctx.Eval("""
+            "use strict";
+            0, [ missing ] = [];
+            """));
+        Assert.Equal("ReferenceError", arrayDestructuring.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("missing is not defined", arrayDestructuring.Error[KeyStrings.message].ToString());
+
         var tdz = Assert.Throws<JSException>(() => ctx.Eval("""
             (function () {
                 0, { x } = {};
@@ -609,6 +616,13 @@ public class CompilerTests
             """));
         Assert.Equal("ReferenceError", tdz.Error[KeyStrings.constructor][KeyStrings.name].ToString());
         Assert.Equal("Cannot access 'x' before initialization", tdz.Error[KeyStrings.message].ToString());
+
+        var arrayTdz = Assert.Throws<JSException>(() => ctx.Eval("""
+            0, [ x ] = [];
+            let x;
+            """));
+        Assert.Equal("ReferenceError", arrayTdz.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("Cannot access 'x' before initialization", arrayTdz.Error[KeyStrings.message].ToString());
     }
 
     [Fact]

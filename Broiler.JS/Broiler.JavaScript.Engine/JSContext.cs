@@ -24,6 +24,7 @@ public class EvalEventArgs : EventArgs
 public class JSContext : JSObject, IJSExecutionContext, IDisposable
 {
     private static long contextId = 1;
+    private static readonly KeyString UnscopablesKey = KeyStrings.GetOrCreate("unscopables");
 
     public long ID { get; set; } = Interlocked.Increment(ref contextId);
 
@@ -71,6 +72,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     SAUint32Map<JSVariable> globalVars = new();
     private int directEvalDepth;
     private int directEvalCompilationDepth;
+    private int directEvalLocalVarEnvironmentDepth;
     private WithScope withScope;
 
     private sealed class WithScope : IDisposable
@@ -185,18 +187,27 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
     public IDisposable PushDirectEvalScope(JSVariable[] variables) => new DirectEvalScope(this, variables);
 
-    private sealed class DirectEvalCompilationScope(JSContext context) : IDisposable
+    private sealed class DirectEvalCompilationScope(JSContext context, bool usesLocalVarEnvironment) : IDisposable
     {
-        public void Dispose() => context.directEvalCompilationDepth--;
+        public void Dispose()
+        {
+            context.directEvalCompilationDepth--;
+            if (usesLocalVarEnvironment)
+                context.directEvalLocalVarEnvironmentDepth--;
+        }
     }
 
-    public IDisposable PushDirectEvalCompilation()
+    public IDisposable PushDirectEvalCompilation(bool usesLocalVarEnvironment = false)
     {
         directEvalCompilationDepth++;
-        return new DirectEvalCompilationScope(this);
+        if (usesLocalVarEnvironment)
+            directEvalLocalVarEnvironmentDepth++;
+
+        return new DirectEvalCompilationScope(this, usesLocalVarEnvironment);
     }
 
     public bool IsCompilingDirectEval => directEvalCompilationDepth > 0;
+    public bool UsesDirectEvalLocalVarEnvironment => directEvalLocalVarEnvironmentDepth > 0;
 
     public JSValue Register(JSVariable variable)
     {
@@ -254,11 +265,21 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         var propertyKey = name.ToJSValue();
         for (var current = withScope; current != null; current = current.Previous)
         {
-            if (current.Object.HasProperty(propertyKey).BooleanValue)
+            if (!current.Object.HasProperty(propertyKey).BooleanValue)
+                continue;
+
+            var unscopablesSymbol = this[KeyStrings.Symbol][UnscopablesKey];
+            var unscopables = unscopablesSymbol.IsUndefined
+                ? JSValue.UndefinedValue
+                : current.Object[unscopablesSymbol];
+            if (unscopables is JSObject unscopablesObject
+                && unscopablesObject[propertyKey].BooleanValue)
             {
-                @object = current.Object;
-                return true;
+                continue;
             }
+
+            @object = current.Object;
+            return true;
         }
 
         @object = null;
@@ -268,7 +289,12 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     public JSValue ResolveIdentifier(in KeyString name)
     {
         if (TryResolveWithObject(name, out var withObject))
+        {
+            if (!withObject.HasProperty(name.ToJSValue()).BooleanValue)
+                throw JSEngine.NewReferenceError($"{name} is not defined");
+
             return withObject[name];
+        }
 
         if (globalVars.TryGetValue(name.Key, out var variable))
             return variable.Value;
@@ -283,6 +309,9 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     {
         if (TryResolveWithObject(name, out var withObject))
         {
+            if (!withObject.HasProperty(name.ToJSValue()).BooleanValue && JSEngine.IsStrictMode)
+                throw JSEngine.NewReferenceError($"{name} is not defined");
+
             withObject[name] = value;
             return value;
         }

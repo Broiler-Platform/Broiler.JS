@@ -77,10 +77,10 @@ partial class FastCompiler
                     continue;
                 }
 
-                if (isDirectEvalCompilation && IsStrictMode)
+                if (isDirectEvalCompilation && (IsStrictMode || usesDirectEvalLocalVarEnvironment))
                 {
-                    // Strict eval: vars are local to the eval scope,
-                    // not linked to the enclosing/global context.
+                    // Strict eval, and non-strict eval inside a function var
+                    // environment, keep vars local to the eval scope.
                     scope.CreateVariable(v, null, true);
                     continue;
                 }
