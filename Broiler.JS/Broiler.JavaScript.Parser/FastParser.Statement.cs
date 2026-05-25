@@ -148,6 +148,20 @@ partial class FastParser
 
                 // has to be do/while/for...
                 var current = stream.Current;
+
+                // Lexical declarations, class declarations, and generator
+                // declarations are forbidden as the body of a labeled statement.
+                if (current.IsKeyword)
+                {
+                    switch (current.Keyword)
+                    {
+                        case FastKeywords.let:
+                        case FastKeywords.@const:
+                        case FastKeywords.@class:
+                            throw new FastParseException(current, "Lexical declaration cannot appear in a single-statement context");
+                    }
+                }
+
                 switch (current.Keyword)
                 {
                     case FastKeywords.@do:
@@ -168,6 +182,10 @@ partial class FastParser
                     default:
                         if (Statement(out statement))
                         {
+                            // Reject generator declarations: label: function* g() {}
+                            if (statement is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true, Generator: true } gen })
+                                throw new FastParseException(gen.Start, "Generator declarations cannot appear in a single-statement context");
+
                             statement = new AstLabeledStatement(id, statement);
                             return true;
                         }

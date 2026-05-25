@@ -363,6 +363,11 @@ internal static class SyntaxValidation
                 ThrowIfFunctionDeclarationBody(ifStatement.True);
                 ThrowIfFunctionDeclarationBody(ifStatement.False);
             }
+            else
+            {
+                ThrowIfLabeledFunctionInBody(ifStatement.True);
+                ThrowIfLabeledFunctionInBody(ifStatement.False);
+            }
 
             return base.VisitIfStatement(ifStatement);
         }
@@ -371,6 +376,8 @@ internal static class SyntaxValidation
         {
             if (IsStrictMode)
                 ThrowIfFunctionDeclarationBody(whileStatement.Body);
+            else
+                ThrowIfLabeledFunctionInBody(whileStatement.Body);
 
             return base.VisitWhileStatement(whileStatement, label);
         }
@@ -379,6 +386,8 @@ internal static class SyntaxValidation
         {
             if (IsStrictMode)
                 ThrowIfFunctionDeclarationBody(doWhileStatement.Body);
+            else
+                ThrowIfLabeledFunctionInBody(doWhileStatement.Body);
 
             return base.VisitDoWhileStatement(doWhileStatement, label);
         }
@@ -387,6 +396,8 @@ internal static class SyntaxValidation
         {
             if (IsStrictMode)
                 ThrowIfFunctionDeclarationBody(forStatement.Body);
+            else
+                ThrowIfLabeledFunctionInBody(forStatement.Body);
 
             return base.VisitForStatement(forStatement, label);
         }
@@ -395,6 +406,8 @@ internal static class SyntaxValidation
         {
             if (IsStrictMode)
                 ThrowIfFunctionDeclarationBody(forInStatement.Body);
+            else
+                ThrowIfLabeledFunctionInBody(forInStatement.Body);
 
             return base.VisitForInStatement(forInStatement, label);
         }
@@ -403,6 +416,8 @@ internal static class SyntaxValidation
         {
             if (IsStrictMode)
                 ThrowIfFunctionDeclarationBody(forOfStatement.Body);
+            else
+                ThrowIfLabeledFunctionInBody(forOfStatement.Body);
 
             return base.VisitForOfStatement(forOfStatement, label);
         }
@@ -418,6 +433,20 @@ internal static class SyntaxValidation
         private static void ThrowIfFunctionDeclarationBody(AstStatement body)
         {
             if (body is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true } func })
+                throw new FastParseException(func.Start, "In strict mode code, functions can only be declared at top level or inside a block");
+        }
+
+        private static void ThrowIfLabeledFunctionInBody(AstStatement body)
+        {
+            // Unwrap nested labels: label1: label2: ... function f() {} is invalid
+            // inside control flow bodies (if/while/for/do), even in sloppy mode.
+            var current = body;
+            while (current is AstLabeledStatement labeled)
+            {
+                current = labeled.Body;
+            }
+
+            if (current is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true } func })
                 throw new FastParseException(func.Start, "In strict mode code, functions can only be declared at top level or inside a block");
         }
     }
@@ -525,7 +554,13 @@ internal static class SyntaxValidation
         if (name == null)
             return false;
 
-        return name.Value.Equals("arguments") || name.Value.Equals("eval");
+        var v = name.Value;
+        return v.Equals("arguments") || v.Equals("eval")
+            || v.Equals("let") || v.Equals("static")
+            || v.Equals("yield")
+            || v.Equals("implements") || v.Equals("interface")
+            || v.Equals("package") || v.Equals("private")
+            || v.Equals("protected") || v.Equals("public");
     }
 
     private static bool HasNonSimpleParameters(IFastEnumerable<VariableDeclarator> parameters)

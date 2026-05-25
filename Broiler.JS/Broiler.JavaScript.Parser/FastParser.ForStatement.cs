@@ -44,6 +44,11 @@ partial class FastParser
 
             if (current.IsKeyword)
             {
+                // Disable `in`/`of` as binary operators while parsing the
+                // variable declaration so that `for (var x = 3 in obj)` is
+                // parsed as a for-in loop with a binding initializer, not
+                // as `for (var x = (3 in obj); …)`.
+                considerInOfAsOperators = false;
                 switch (current.Keyword)
                 {
                     case FastKeywords.let:
@@ -69,6 +74,7 @@ partial class FastParser
                     default:
                         throw stream.Unexpected();
                 }
+                considerInOfAsOperators = true;
             }
             else if (ExpressionList(out var expressions))
             {
@@ -87,6 +93,12 @@ partial class FastParser
                 if (awaitOf)
                     throw stream.Unexpected();
 
+                // Validate for-in binding restrictions
+                if (declaration != null)
+                {
+                    ValidateForInOfDeclaration(declaration, isOf: false);
+                }
+
                 @in = true;
 
                 if (!Expression(out inTarget))
@@ -96,6 +108,12 @@ partial class FastParser
             }
             else if (stream.CheckAndConsumeContextualKeyword(FastKeywords.of))
             {
+                // Validate for-of binding restrictions
+                if (declaration != null)
+                {
+                    ValidateForInOfDeclaration(declaration, isOf: true);
+                }
+
                 of = true;
 
                 if (!Expression(out ofTarget))
@@ -168,6 +186,30 @@ partial class FastParser
         }
 
         return true;
+
+        static void ValidateForInOfDeclaration(AstVariableDeclaration declaration, bool isOf)
+        {
+            int count = 0;
+            bool hasInit = false;
+            var en = declaration.Declarators.GetFastEnumerator();
+            while (en.MoveNext(out var d))
+            {
+                count++;
+                if (d.Init != null)
+                    hasInit = true;
+            }
+
+            // for-in/for-of must have exactly one binding
+            if (count != 1)
+                throw new FastParseException(declaration.Start, "Invalid left-hand side in for-in/for-of loop");
+
+            // Initializer is always forbidden in for-of; forbidden for let/const in for-in
+            if (isOf && hasInit)
+                throw new FastParseException(declaration.Start, "for-of loop variable declaration may not have an initializer");
+
+            if (!isOf && hasInit && declaration.Kind != FastVariableKind.Var)
+                throw new FastParseException(declaration.Start, "for-in loop variable declaration may not have an initializer");
+        }
 
         bool ExpressionList(out AstExpression? node)
         {

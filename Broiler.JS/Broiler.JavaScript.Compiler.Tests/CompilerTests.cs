@@ -1442,4 +1442,33 @@ public class CompilerTests
     }
 
     #endregion
+
+    #region SyntaxError_EarlyErrors
+
+    [Theory]
+    [InlineData("for (let x = 1 in {}) {}", "for-in let init")]
+    [InlineData("for (var x, y in {}) {}", "for-in multi-decl")]
+    [InlineData("label: let x = 1;", "labeled let")]
+    [InlineData("label: const x = 1;", "labeled const")]
+    [InlineData("label: class C {}", "labeled class")]
+    [InlineData("label: function* g() {}", "labeled function*")]
+    [InlineData("'use strict'; var l\\u0065t = 1;", "escaped let strict")]
+    [InlineData("(function(x) { let x = 1; })", "param redecl let")]
+    [InlineData("(function(x) { const x = 1; })", "param redecl const")]
+    [InlineData("var r = /\\A/u;", "regex identity escape /u")]
+    [InlineData("var r = /\\-/u;", "regex dash escape /u")]
+    [InlineData("if (0) label: function f() {}", "labeled fn in if")]
+    [InlineData("for (var x = 1 of []) {}", "for-of init")]
+    public void Syntax_ShouldThrowSyntaxError(string source, string description)
+    {
+        _ = description;
+        using var ctx = new JSContext();
+        var ex = Assert.ThrowsAny<Exception>(() => ctx.Eval(source));
+        // Accept JSException (SyntaxError) or FastParseException
+        Assert.True(
+            ex is JSException || ex is Broiler.JavaScript.Ast.Misc.FastParseException,
+            $"Expected SyntaxError but got {ex.GetType().Name}: {ex.Message}");
+    }
+
+    #endregion
 }

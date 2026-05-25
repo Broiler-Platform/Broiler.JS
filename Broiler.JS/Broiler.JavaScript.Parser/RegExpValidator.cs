@@ -84,7 +84,11 @@ internal static class RegExpValidator
             pattern = NormalizeES3CharacterClasses(pattern);
 
             if (unicode || unicodeSets)
+            {
+                if (!ValidateUnicodePattern(pattern))
+                    return false;
                 pattern = NormalizeUnicodePropertyEscapes(pattern);
+            }
 
             _ = new Regex(pattern, options);
             return true;
@@ -93,6 +97,190 @@ internal static class RegExpValidator
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Validates that a regex pattern uses only escapes permitted by the
+    /// ES2015+ Unicode mode.  Identity escapes (e.g. <c>\A</c>, <c>\-</c>
+    /// outside a character class) and invalid character class ranges (e.g.
+    /// <c>[\w-\d]</c>) are rejected.
+    /// </summary>
+    private static bool ValidateUnicodePattern(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern))
+            return true;
+
+        bool inClass = false;
+
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                char next = pattern[i + 1];
+
+                if (!IsAllowedUnicodeEscape(next, inClass, pattern, i))
+                    return false;
+
+                // Skip the escape sequence length
+                if (next == 'u' && i + 2 < pattern.Length && pattern[i + 2] == '{')
+                {
+                    // \u{NNNNN}
+                    int end = pattern.IndexOf('}', i + 3);
+                    if (end < 0) return false;
+                    i = end;
+                }
+                else if (next == 'u' && i + 5 < pattern.Length)
+                {
+                    i += 5; // \uNNNN
+                }
+                else if (next == 'x' && i + 3 < pattern.Length)
+                {
+                    i += 3; // \xNN
+                }
+                else if (next == 'c' && i + 2 < pattern.Length)
+                {
+                    i += 2; // \cA
+                }
+                else if ((next == 'p' || next == 'P') && i + 2 < pattern.Length && pattern[i + 2] == '{')
+                {
+                    int end = pattern.IndexOf('}', i + 3);
+                    if (end < 0) return false;
+                    i = end;
+                }
+                else
+                {
+                    i++; // simple two-char escape
+                }
+
+                continue;
+            }
+
+            if (!inClass && c == '[')
+            {
+                inClass = true;
+
+                // Validate character class ranges: in unicode mode,
+                // ranges like [\w-\d] are forbidden (class escape as range endpoint).
+                if (!ValidateUnicodeCharacterClass(pattern, i))
+                    return false;
+
+                continue;
+            }
+
+            if (inClass && c == ']')
+            {
+                inClass = false;
+                continue;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsAllowedUnicodeEscape(char next, bool inClass, string pattern, int backslashIndex)
+    {
+        switch (next)
+        {
+            // Assertion escapes
+            case 'b': case 'B':
+            // Character class escapes
+            case 'd': case 'D': case 'w': case 'W': case 's': case 'S':
+            // Character escapes
+            case 'f': case 'n': case 'r': case 't': case 'v':
+            case '0':
+            case 'x': case 'u': case 'c':
+            // Unicode property escapes
+            case 'p': case 'P':
+            // Syntax characters that can be escaped
+            case '^': case '$': case '.': case '*': case '+': case '?':
+            case '(': case ')': case '[': case ']': case '{': case '}':
+            case '|': case '\\': case '/':
+                return true;
+            case '-':
+                // \- is allowed inside character classes, not outside
+                return inClass;
+            default:
+                // Check for backreferences \1-\9
+                if (next >= '1' && next <= '9')
+                    return true;
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// Validates character class content for unicode mode.
+    /// Rejects ranges where either endpoint is a character class escape (\w, \d, etc.)
+    /// </summary>
+    private static bool ValidateUnicodeCharacterClass(string pattern, int classStart)
+    {
+        int i = classStart + 1;
+        if (i < pattern.Length && pattern[i] == '^')
+            i++;
+
+        bool prevIsClassEscape = false;
+
+        while (i < pattern.Length)
+        {
+            char c = pattern[i];
+
+            if (c == ']')
+                return true;
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                char next = pattern[i + 1];
+                bool isClassEscape = next is 'd' or 'D' or 'w' or 'W' or 's' or 'S';
+
+                // Check if this is the end of a range: prevChar-\w
+                if (isClassEscape && i >= 2 && pattern[i - 1] == '-' && !prevIsClassEscape)
+                {
+                    // The '-' before a class escape forms an invalid range
+                    return false;
+                }
+
+                prevIsClassEscape = isClassEscape;
+
+                // Check if next char is '-' forming range start: \w-nextChar
+                if (isClassEscape && i + 2 < pattern.Length && pattern[i + 2] == '-' && i + 3 < pattern.Length && pattern[i + 3] != ']')
+                {
+                    return false;
+                }
+
+                // Skip escape
+                if (next == 'u' && i + 2 < pattern.Length && pattern[i + 2] == '{')
+                {
+                    int end = pattern.IndexOf('}', i + 3);
+                    if (end < 0) return false;
+                    i = end + 1;
+                }
+                else if (next == 'u')
+                {
+                    i += 6;
+                }
+                else if (next == 'x')
+                {
+                    i += 4;
+                }
+                else if ((next == 'p' || next == 'P') && i + 2 < pattern.Length && pattern[i + 2] == '{')
+                {
+                    int end = pattern.IndexOf('}', i + 3);
+                    if (end < 0) return false;
+                    i = end + 1;
+                }
+                else
+                {
+                    i += 2;
+                }
+                continue;
+            }
+
+            prevIsClassEscape = false;
+            i++;
+        }
+
+        return true;
     }
 
     /// <summary>

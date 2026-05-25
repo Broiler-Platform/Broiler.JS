@@ -33,6 +33,20 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
             break;
         }
 
+        // Per spec, let/const declarations in a function body must not
+        // shadow parameters: VarDeclaredNames and LexicallyDeclaredNames
+        // must not overlap.  Parameters live in the parent function scope
+        // while body declarations live in the block scope just below it.
+        if (kind is FastVariableKind.Let or FastVariableKind.Const
+            && NodeType == FastNodeType.Block
+            && Parent is { NodeType: FastNodeType.FunctionExpression } parentScope
+            && parentScope.Variables.ContainsKey(name.Value))
+        {
+            if (throwError)
+                throw new FastParseException(token, $"{name} has already been declared");
+            return;
+        }
+
         n = this;
 
         // all `var` variables must be hoisted to
