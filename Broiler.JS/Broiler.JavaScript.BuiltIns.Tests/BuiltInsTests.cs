@@ -9591,4 +9591,72 @@ public class BuiltInsTests
     }
 
     #endregion
+
+    #region Not-A-Constructor Built-ins Exist As Functions
+
+    [Theory]
+    [InlineData("typeof Array.prototype.toSpliced", "function")]
+    [InlineData("typeof Array.prototype.with", "function")]
+    [InlineData("typeof ArrayBuffer.prototype.sliceToImmutable", "function")]
+    [InlineData("typeof DataView.prototype.getBigUint64", "function")]
+    [InlineData("typeof DataView.prototype.setBigUint64", "function")]
+    [InlineData("typeof JSON.rawJSON", "function")]
+    [InlineData("typeof JSON.isRawJSON", "function")]
+    [InlineData("typeof Promise.allKeyed", "function")]
+    [InlineData("typeof WeakSet.prototype.has", "function")]
+    [InlineData("typeof Map.prototype[Symbol.iterator]", "function")]
+    public void BuiltIn_Methods_Are_Functions(string expression, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(expression);
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Fact]
+    public void Array_ToSpliced_Returns_New_Array()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            var a = [1, 2, 3, 4, 5];
+            var b = a.toSpliced(1, 2, 'a', 'b');
+            [a.join(','), b.join(',')].join('|');
+            """);
+        Assert.Equal("1,2,3,4,5|1,a,b,4,5", result.ToString());
+    }
+
+    [Fact]
+    public void Array_With_Returns_New_Array()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            var a = [1, 2, 3];
+            var b = a.with(1, 'x');
+            [a.join(','), b.join(',')].join('|');
+            """);
+        Assert.Equal("1,2,3|1,x,3", result.ToString());
+    }
+
+    [Fact]
+    public void Generator_Prototype_Has_Next_Return_Throw()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function() {
+                function* g() { yield 1; }
+                var gen = g();
+                return [
+                    typeof gen.next,
+                    typeof gen.return,
+                    typeof gen.throw
+                ].join('|');
+            })();
+            """);
+        Assert.Equal("function|function|function", result.ToString());
+    }
+
+    #endregion
 }

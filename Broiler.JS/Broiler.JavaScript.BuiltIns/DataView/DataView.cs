@@ -130,7 +130,7 @@ public partial class DataView : JSObject
         }
     }
 
-    [JSExport(Length = 1)]
+    [JSExport("getBigUint64", Length = 1)]
     public JSValue GetBigUInt64(in Arguments a) => new JSNumber(GetInt64(in a));
 
     //internal method
@@ -349,7 +349,7 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
-    [JSExport(Length = 2)]
+    [JSExport("setBigUint64", Length = 2)]
     public JSValue SetBigUInt64(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 8);

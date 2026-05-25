@@ -76,7 +76,7 @@ public partial class JSWeakSet : JSObject
         return JSBoolean.False;
     }
 
-    [Prototype("has")]
+    [JSExport("has")]
     public JSValue Has(in Arguments a)
     {
         var key = a.Get1().ToUniqueID();

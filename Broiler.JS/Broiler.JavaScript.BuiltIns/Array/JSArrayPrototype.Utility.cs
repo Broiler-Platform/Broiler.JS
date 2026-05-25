@@ -168,4 +168,73 @@ public partial class JSArray
         return copy.InvokeMethod(KeyStrings.GetOrCreate("sort"), a.Get1());
     }
 
+    [JSPrototypeMethod]
+    [JSExport("toSpliced", Length = 2)]
+    internal static JSValue ToSpliced(in Arguments a)
+    {
+        var source = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLengthLong(source);
+        if (length > uint.MaxValue)
+            throw JSEngine.NewRangeError("Invalid array length");
+
+        var len = (uint)length;
+
+        long relativeStart = a.TryGetAt(0, out var startArg)
+            ? ToIntegerOrInfinity(startArg)
+            : 0;
+        uint actualStart = relativeStart < 0
+            ? (uint)Math.Max(len + relativeStart, 0)
+            : (uint)Math.Min(relativeStart, len);
+
+        uint insertCount = a.Length > 2 ? (uint)(a.Length - 2) : 0;
+
+        long actualSkipCount;
+        if (a.Length == 0)
+            actualSkipCount = 0;
+        else if (a.Length == 1)
+            actualSkipCount = len - actualStart;
+        else
+        {
+            var dc = ToIntegerOrInfinity(a[1]);
+            actualSkipCount = Math.Min(Math.Max(dc, 0), len - actualStart);
+        }
+
+        var newLen = len - (uint)actualSkipCount + insertCount;
+        var result = new JSArray(newLen);
+
+        uint i = 0;
+        for (; i < actualStart; i++)
+            result[i] = source[i];
+        for (uint j = 0; j < insertCount; j++)
+            result[i++] = a[(int)(j + 2)];
+        for (uint k = actualStart + (uint)actualSkipCount; k < len; k++)
+            result[i++] = source[k];
+
+        return result;
+    }
+
+    [JSPrototypeMethod]
+    [JSExport("with", Length = 2)]
+    internal static JSValue With(in Arguments a)
+    {
+        var source = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLengthLong(source);
+        if (length > uint.MaxValue)
+            throw JSEngine.NewRangeError("Invalid array length");
+
+        var len = (uint)length;
+        var (indexArg, value) = a.Get2();
+        var relativeIndex = ToIntegerOrInfinity(indexArg);
+        long actualIndex = relativeIndex >= 0 ? (long)relativeIndex : len + relativeIndex;
+
+        if (actualIndex < 0 || actualIndex >= len)
+            throw JSEngine.NewRangeError("Invalid index");
+
+        var result = new JSArray(len);
+        for (uint i = 0; i < len; i++)
+            result[i] = i == (uint)actualIndex ? value : source[i];
+
+        return result;
+    }
+
 }
