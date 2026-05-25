@@ -431,6 +431,56 @@ public partial class JSJSON : JSObject
         return sb.ToString();
     }
 
+    private static readonly KeyString rawJSONKey = KeyStrings.GetOrCreate("rawJSON");
+    private static readonly KeyString isRawJSONKey = KeyStrings.GetOrCreate("isRawJSON");
+
+    [JSExport("rawJSON", Length = 1)]
+    public static JSValue RawJSON(in Arguments a)
+    {
+        var text = a.Get1();
+        if (!text.IsString)
+            throw JSEngine.NewTypeError("JSON.rawJSON requires a string argument");
+
+        var str = text.ToString();
+        if (str.Length == 0)
+            throw JSEngine.NewSyntaxError("JSON.rawJSON requires a non-empty string");
+
+        JSValue parsed;
+        try
+        {
+            parsed = JSJsonParser.Parse(str, null);
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException or NotSupportedException)
+        {
+            throw JSEngine.NewSyntaxError(ex.Message);
+        }
+
+        if (parsed is JSObject)
+            throw JSEngine.NewSyntaxError("JSON.rawJSON cannot be called with a JSON object or array");
+
+        var result = new JSObject();
+        result.FastAddValue(rawJSONKey, text, JSPropertyAttributes.ConfigurableValue);
+        JSObject.FreezeObject(result);
+        return result;
+    }
+
+    [JSExport("isRawJSON", Length = 1)]
+    public static JSValue IsRawJSON(in Arguments a)
+    {
+        var value = a.Get1();
+        if (value is not JSObject obj)
+            return JSBoolean.False;
+
+        if (!obj.IsFrozen())
+            return JSBoolean.False;
+
+        ref var ownProps = ref obj.GetOwnProperties();
+        if (!ownProps.TryGetValue(rawJSONKey.Key, out var prop) || prop.IsEmpty)
+            return JSBoolean.False;
+
+        return prop.value is JSValue v && v.IsString ? JSBoolean.True : JSBoolean.False;
+    }
+
     private static void Stringify(
         TextWriter sb,
         JSValue target,

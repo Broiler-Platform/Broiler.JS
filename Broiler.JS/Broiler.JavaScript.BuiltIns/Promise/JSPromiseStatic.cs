@@ -5,6 +5,7 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Promise;
 
@@ -199,6 +200,77 @@ public partial class JSPromise
 
             if (empty)
                 sc.Post((o) => resolve.InvokeFunction(new Arguments(JSUndefined.Value, JSValue.CreateArray())), null);
+        });
+    }
+
+    [JSExport("allKeyed", Length = 1)]
+    public static JSValue AllKeyed(in Arguments a)
+    {
+        var input = a.Get1();
+        if (input is not JSObject obj)
+            return CreatePromiseFromConstructor(a.This, (resolve, _) =>
+            {
+                resolve.InvokeFunction(new Arguments(JSUndefined.Value, new JSObject()));
+            });
+
+        var result = new JSObject();
+        var keys = new System.Collections.Generic.List<KeyString>();
+        var en = obj.GetOwnProperties(false).GetEnumerator();
+        while (en.MoveNext(out var key, out var _))
+            keys.Add(key);
+
+        if (keys.Count == 0)
+            return CreatePromiseFromConstructor(a.This, (resolve, _) =>
+            {
+                resolve.InvokeFunction(new Arguments(JSUndefined.Value, new JSObject()));
+            });
+
+        return CreatePromiseFromConstructor(a.This, (resolve, reject) =>
+        {
+            var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
+                ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
+            int remaining = keys.Count;
+
+            foreach (var key in keys)
+            {
+                var value = obj[key];
+                var capturedKey = key;
+
+                var resolveElement = new JSFunction((in Arguments args) =>
+                {
+                    var r = args.Get1();
+                    sc.Post((_) =>
+                    {
+                        result[capturedKey] = r;
+                        remaining--;
+                        if (remaining <= 0)
+                            resolve.InvokeFunction(new Arguments(JSUndefined.Value, result));
+                    }, null);
+                    return JSUndefined.Value;
+                }, "", "function () { [native] }", length: 1, createPrototype: false);
+
+                var rejectElement = new JSFunction((in Arguments args) =>
+                {
+                    var v = args.Get1();
+                    sc.Post((o) => reject.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), v);
+                    return JSUndefined.Value;
+                }, "", "function () { [native] }", length: 1, createPrototype: false);
+
+                if (value is JSPromise p)
+                {
+                    p.Then(resolveElement.Delegate, rejectElement.Delegate);
+                    continue;
+                }
+
+                var then = value[KeyStrings.then];
+                if (then.IsFunction)
+                {
+                    then.InvokeFunction(new Arguments(value, resolveElement, rejectElement));
+                    continue;
+                }
+
+                resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, value));
+            }
         });
     }
 

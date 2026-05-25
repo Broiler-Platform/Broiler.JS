@@ -42,7 +42,22 @@ public class JSGeneratorFunctionV2 : JSFunction
         this.@delegate = @delegate;
         this.asyncGenerator = asyncGenerator;
         this.primeOnInvoke = primeOnInvoke;
+
+        // §27.3.4 / §27.4.4: The .prototype property of each generator
+        // function is a new ordinary object whose [[Prototype]] is
+        // %GeneratorPrototype% (or %AsyncGeneratorPrototype%).
+        // Save the prototype object created by the base constructor before
+        // nulling the field so IsConstructor returns false.
+        var protoObj = prototype;
+        if (protoObj != null)
+        {
+            var className = asyncGenerator ? "AsyncGenerator" : "Generator";
+            var generatorClassProto = ((Engine.Core.JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate(className)] as JSFunction)?.prototype;
+            if (generatorClassProto != null)
+                protoObj.BasePrototypeObject = generatorClassProto;
+        }
         prototype = null;
+
         CoerceThisOnInvoke = true;
         f = InvokeFunction;
         BasePrototypeObject = CreateGeneratorFunctionPrototype(asyncGenerator);

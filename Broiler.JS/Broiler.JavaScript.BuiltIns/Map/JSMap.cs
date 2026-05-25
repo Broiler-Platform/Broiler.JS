@@ -134,6 +134,7 @@ public partial class JSMap : JSObject
     }
 
     [JSExport("entries")]
+    [Symbol("@@iterator")]
     public IEnumerable<JSValue> GetEntries()
     {
         if (store == null)

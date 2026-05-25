@@ -1387,6 +1387,7 @@ internal static class BuiltInsAssemblyInitializer
         unscopables.FastAddValue(KeyStrings.GetOrCreate("toReversed"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
         unscopables.FastAddValue(KeyStrings.GetOrCreate("toSorted"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
         unscopables.FastAddValue(KeyStrings.GetOrCreate("toSpliced"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
+        unscopables.FastAddValue(KeyStrings.GetOrCreate("with"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
     }
 
     private static void PatchTypedArrayBuiltIns(JSContext context)

@@ -154,6 +154,33 @@ partial class JSTypedArray
         return result;
     }
 
+    [JSExport("toReversed", Length = 0)]
+    public JSValue ToReversed(in Arguments a)
+    {
+        var len = Length;
+        var result = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), len);
+        for (int i = 0; i < len; i++)
+            result[(uint)i] = this[(uint)(len - i - 1)];
+        return result;
+    }
+
+    [JSExport("with", Length = 2)]
+    public JSValue With(in Arguments a)
+    {
+        var len = Length;
+        var (indexArg, value) = a.Get2();
+        var relativeIndex = (long)indexArg.DoubleValue;
+        long actualIndex = relativeIndex >= 0 ? relativeIndex : len + relativeIndex;
+
+        if (actualIndex < 0 || actualIndex >= len)
+            throw JSEngine.NewRangeError("Invalid index");
+
+        var result = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), len);
+        for (int i = 0; i < len; i++)
+            result[(uint)i] = i == (int)actualIndex ? value : this[(uint)i];
+        return result;
+    }
+
 
     [JSExport("find", Length = 1)]
     public JSValue Find(in Arguments a)
@@ -608,6 +635,7 @@ partial class JSTypedArray
     }
 
     [JSExport("values", Length = 2)]
+    [Symbol("@@iterator")]
     public new JSValue Values(in Arguments a) => new JSGenerator(GetElementEnumerator(), "Array Iterator");
 
     [JSExport("toLocaleString", Length = 0)]

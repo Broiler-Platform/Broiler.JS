@@ -230,4 +230,33 @@ public partial class JSArrayBuffer : JSObject
         System.Array.Copy(source.buffer, begin, target.buffer, 0, newLen);
         return target;
     }
+
+    // ---------------------------------------------------------------
+    // ArrayBuffer.prototype.sliceToImmutable(begin, end)  [proposal]
+    // ---------------------------------------------------------------
+
+    [JSExport("sliceToImmutable")]
+    internal JSValue SliceToImmutable(in Arguments a)
+    {
+        var source = RequireArrayBuffer(a.This, "sliceToImmutable");
+        if (source.isDetached)
+            throw JSEngine.NewTypeError("Cannot sliceToImmutable a detached ArrayBuffer");
+
+        int len = source.buffer.Length;
+        var (beginVal, endVal) = a.Get2();
+
+        int begin = ToIntegerOrInfinity(beginVal, 0);
+        int end = ToIntegerOrInfinity(endVal, len);
+
+        if (begin < 0) begin = Math.Max(len + begin, 0);
+        else begin = Math.Min(begin, len);
+
+        if (end < 0) end = Math.Max(len + end, 0);
+        else end = Math.Min(end, len);
+
+        int newLen = Math.Max(end - begin, 0);
+        var result = new JSArrayBuffer(newLen);
+        System.Array.Copy(source.buffer, begin, result.buffer, 0, newLen);
+        return result;
+    }
 }
