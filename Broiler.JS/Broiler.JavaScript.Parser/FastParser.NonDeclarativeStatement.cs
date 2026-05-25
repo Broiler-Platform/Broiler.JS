@@ -17,7 +17,9 @@ partial class FastParser
         {
             switch (exp.Expression.Type)
             {
-                case FastNodeType.FunctionExpression:
+                // Function declarations are allowed as single-statement bodies
+                // in sloppy mode per Annex B (B.3.2, B.3.4). The strict-mode
+                // rejection is handled later by SyntaxValidation.
                 case FastNodeType.ClassStatement:
                     throw new FastParseException(exp.Start, $"Unexpected declaration");
             }

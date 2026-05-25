@@ -113,10 +113,16 @@ internal static class SyntaxValidation
             if (ch >= '1' && ch <= '7')
                 return true;
 
-            // \0 followed by an octal digit (0-7) is a legacy octal escape
+            // \8 and \9 are NonOctalDecimalEscapeSequence, forbidden in strict mode
+            if (ch == '8' || ch == '9')
+                return true;
+
+            // \0 followed by a decimal digit (0-9) is a legacy octal escape:
+            // \00..\07 are LegacyOctalEscapeSequence (ZeroToThree OctalDigit)
+            // \08, \09 are LegacyOctalEscapeSequence (0 [lookahead ∈ {8, 9}])
             if (ch == '0'
                 && i + 1 < rawSource.Length - 1
-                && rawSource[i + 1] >= '0' && rawSource[i + 1] <= '7')
+                && rawSource[i + 1] >= '0' && rawSource[i + 1] <= '9')
             {
                 return true;
             }
@@ -440,6 +446,10 @@ internal static class SyntaxValidation
         {
             // Unwrap nested labels: label1: label2: ... function f() {} is invalid
             // inside control flow bodies (if/while/for/do), even in sloppy mode.
+            // Bare function declarations without labels are allowed per Annex B.
+            if (body is not AstLabeledStatement)
+                return;
+
             var current = body;
             while (current is AstLabeledStatement labeled)
             {

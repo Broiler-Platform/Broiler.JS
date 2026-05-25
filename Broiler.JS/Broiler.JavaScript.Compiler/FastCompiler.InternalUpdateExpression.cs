@@ -94,25 +94,25 @@ partial class FastCompiler
             list.Add(YExpression.Assign(@return.Variable, right));
         }
 
-        switch (updateExpression.Operator)
-        {
-            case UnaryOperator.Increment:
-                list.Add(YExpression.Assign(right, JSValueBuilder.AddDouble(right, YExpression.Constant((double)1))));
-                break;
+        var newValue = updateExpression.Operator == UnaryOperator.Increment
+            ? JSValueBuilder.AddDouble(right, YExpression.Constant((double)1))
+            : JSValueBuilder.AddDouble(right, YExpression.Constant((double)-1));
 
-            case UnaryOperator.Decrement:
-                list.Add(YExpression.Assign(right, JSValueBuilder.AddDouble(right, YExpression.Constant((double)-1))));
-                break;
-        }
-
-        if (!updateExpression.Prefix)
+        if (updateExpression.Prefix)
         {
-            list.Add(@return.Variable);
+            // For prefix update on member expressions, save the computed new value
+            // before writing it back. The write may silently fail (e.g. non-writable
+            // property in sloppy mode), but the expression must return the new value.
+            @return = scope.Top.GetTempVariable(typeof(JSValue));
+            list.Add(YExpression.Assign(@return.Variable, newValue));
+            list.Add(YExpression.Assign(right, @return.Variable));
         }
         else
         {
-            list.Add(right);
+            list.Add(YExpression.Assign(right, newValue));
         }
+
+        list.Add(@return.Variable);
 
         var r = YExpression.Block(list);
         @return?.Dispose();
