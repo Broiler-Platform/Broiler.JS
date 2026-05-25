@@ -1330,4 +1330,116 @@ public class CompilerTests
             """));
         Assert.Equal("ReferenceError", ex3.Error[KeyStrings.constructor][KeyStrings.name].ToString());
     }
+
+    // ----------------------------------------------------------------
+    // Seeded property-based parameterized tests (recommendation #5 from
+    // docs/compliance/testsuite-optimization.md).  Each fixture generates
+    // inputs from a fixed seed so failures are reproducible and surface
+    // under the existing `dotnet test` evidence command.
+    // ----------------------------------------------------------------
+
+    #region Property-based: destructuring assignment return value
+
+    public static TheoryData<int, int> DestructuringInputs()
+    {
+        var data = new TheoryData<int, int>();
+        var rng = new Random(20260525);
+        for (int seed = 0; seed < 10; seed++)
+        {
+            data.Add(seed, rng.Next(2, 8));
+        }
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(DestructuringInputs))]
+    public void Destructuring_Assignment_Returns_RHS_Seeded(int seed, int propCount)
+    {
+        _ = seed;
+        using var ctx = new JSContext();
+        // Build an object with propCount properties, destructure it, and
+        // verify the overall expression returns the original RHS object.
+        var props = string.Join(", ", Enumerable.Range(0, propCount).Select(i => $"p{i}: {i}"));
+        var targets = string.Join(", ", Enumerable.Range(0, propCount).Select(i => $"p{i}"));
+        var script = $"(function() {{\nvar {targets};\nvar rhs = {{ {props} }};\nvar result = ({{ {targets} }} = rhs);\nreturn result === rhs ? 'ok' : 'returned different object';\n}})()";
+        var result = ctx.Eval(script);
+        Assert.Equal("ok", result.ToString());
+    }
+
+    #endregion
+
+    #region Property-based: binary expression type coercion
+
+    public static TheoryData<int, string, string, string> BinaryCoercionInputs()
+    {
+        var data = new TheoryData<int, string, string, string>();
+        var rng = new Random(20260525);
+        // Pairs of (jsExpr, expectedType) for addition coercion checks.
+        (string expr, string type)[] atoms =
+        [
+            ("42", "number"),
+            ("'hello'", "string"),
+            ("true", "boolean"),
+            ("null", "number"),
+            ("0", "number"),
+        ];
+        for (int seed = 0; seed < 15; seed++)
+        {
+            var left = atoms[rng.Next(atoms.Length)];
+            var right = atoms[rng.Next(atoms.Length)];
+            // When either operand is a string, result is string;
+            // otherwise result is number (booleans/null/undefined coerce to number).
+            string expectedType = (left.type == "string" || right.type == "string")
+                ? "string" : "number";
+            data.Add(seed, left.expr, right.expr, expectedType);
+        }
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(BinaryCoercionInputs))]
+    public void Addition_Coercion_Returns_Expected_Type_Seeded(int seed, string left, string right, string expectedType)
+    {
+        _ = seed;
+        using var ctx = new JSContext();
+        var result = ctx.Eval($"typeof ({left} + {right})");
+        Assert.Equal(expectedType, result.ToString());
+    }
+
+    #endregion
+
+    #region Property-based: function length with defaults/rest
+
+    public static TheoryData<int, int, int, int> FunctionLengthInputs()
+    {
+        var data = new TheoryData<int, int, int, int>();
+        var rng = new Random(20260525);
+        for (int seed = 0; seed < 10; seed++)
+        {
+            int requiredCount = rng.Next(0, 6);
+            int defaultCount = rng.Next(0, 4);
+            int hasRest = rng.Next(2); // 0 or 1
+            // ECMAScript: length = number of params before the first
+            // default/rest parameter.
+            data.Add(seed, requiredCount, defaultCount, hasRest);
+        }
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(FunctionLengthInputs))]
+    public void Function_Length_Stops_At_First_Default_Or_Rest_Seeded(int seed, int requiredCount, int defaultCount, int hasRest)
+    {
+        _ = seed;
+        using var ctx = new JSContext();
+        var required = string.Join(", ", Enumerable.Range(0, requiredCount).Select(i => $"a{i}"));
+        var defaults = string.Join(", ", Enumerable.Range(0, defaultCount).Select(i => $"d{i} = 0"));
+        var rest = hasRest == 1 ? "...r" : "";
+        var parts = new[] { required, defaults, rest }.Where(s => s.Length > 0);
+        var paramList = string.Join(", ", parts);
+        var result = ctx.Eval($"(function({paramList}) {{}}).length");
+        Assert.Equal((double)requiredCount, result.DoubleValue);
+    }
+
+    #endregion
 }

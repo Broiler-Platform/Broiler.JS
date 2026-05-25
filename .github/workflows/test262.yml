@@ -19,6 +19,8 @@ env:
   SHARD_COUNT: 8
   TEST_TIMEOUT_SECONDS: 30
   MEMORY_LIMIT_MB: 0
+  MAX_WORKERS: 1
+  SHUFFLE_SEED: ""
 
 jobs:
   test262:
@@ -85,6 +87,8 @@ jobs:
             --shard-index "${{ matrix.shard-index }}" \
             --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
             --memory-limit-mb "$MEMORY_LIMIT_MB" \
+            --max-workers "$MAX_WORKERS" \
+            ${SHUFFLE_SEED:+--shuffle-seed "$SHUFFLE_SEED"} \
             --output "$output_path"
 
       - name: Publish workflow summary

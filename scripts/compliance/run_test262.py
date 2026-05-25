@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import math
 import os
+import random
 import re
 import shutil
 import signal
@@ -14,6 +16,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import threading
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -500,12 +503,109 @@ def terminate_process_tree(process: subprocess.Popen[str]) -> None:
     process.kill()
 
 
+def _load_fragile_paths(failure_file: Path | None = None) -> set[str]:
+    """Return the set of test paths recorded as historically fragile.
+
+    Reads the saved failure manifest at *failure_file* (defaulting to the
+    repository-local ``test262-full-script-host-failures.txt``).  Lines
+    starting with ``#`` and blank lines are ignored.
+    """
+    if failure_file is None:
+        failure_file = REPO_ROOT / "scripts" / "compliance" / "test262-full-script-host-failures.txt"
+    if not failure_file.is_file():
+        return set()
+    paths: set[str] = set()
+    for line in failure_file.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#"):
+            paths.add(stripped)
+    return paths
+
+
+def _detect_recently_changed_directories() -> set[str]:
+    """Return test262 directory prefixes that map to recently changed Broiler source areas.
+
+    Runs ``git diff --name-only HEAD~1`` (or falls back to an empty set if
+    git is unavailable or there is no previous commit) and maps changed
+    ``Broiler.JavaScript.*`` project directories to likely test262 prefixes.
+    """
+    area_to_test_dirs: dict[str, list[str]] = {
+        "Broiler.JavaScript.Parser": [
+            "test/language/",
+            "test/staging/sm/syntax/",
+        ],
+        "Broiler.JavaScript.Compiler": [
+            "test/language/",
+        ],
+        "Broiler.JavaScript.Runtime": [
+            "test/language/",
+            "test/built-ins/",
+        ],
+        "Broiler.JavaScript.BuiltIns": [
+            "test/built-ins/",
+            "test/annexB/built-ins/",
+        ],
+        "Broiler.JavaScript.Modules": [
+            "test/language/",
+        ],
+        "Broiler.JavaScript.Engine": [
+            "test/language/",
+            "test/built-ins/",
+        ],
+    }
+
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD~1"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=REPO_ROOT,
+        )
+        if result.returncode != 0:
+            return set()
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        return set()
+
+    changed_files = result.stdout.strip().splitlines()
+    prefixes: set[str] = set()
+    for changed in changed_files:
+        for area, dirs in area_to_test_dirs.items():
+            if area in changed:
+                prefixes.update(dirs)
+    return prefixes
+
+
+def _prioritize_paths(
+    paths: list[str],
+    fragile_paths: set[str],
+    changed_prefixes: set[str],
+) -> tuple[list[str], int]:
+    """Reorder *paths* so historically fragile and recently-changed-area tests come first.
+
+    Returns the reordered list and the count of paths that were promoted.
+    The relative order within the priority group and within the remainder
+    is preserved.
+    """
+    priority: list[str] = []
+    rest: list[str] = []
+    for path in paths:
+        if path in fragile_paths or any(path.startswith(p) for p in changed_prefixes):
+            priority.append(path)
+        else:
+            rest.append(path)
+    return priority + rest, len(priority)
+
+
 def select_paths(
     repo: Test262Repository,
     requested_paths: list[str],
     all_script_host_verifiable: bool,
     shard_count: int,
     shard_index: int,
+    shuffle_seed: int | None = None,
+    include_negative: bool = False,
+    prioritize_fragile: bool = False,
 ) -> tuple[list[str], dict[str, object]]:
     """Select test paths plus metadata for requested or full script-host runs."""
     selection_mode = "requested"
@@ -515,16 +615,28 @@ def select_paths(
         expanded_paths = [
             path
             for path in candidate_paths
-            if classify_test(
+            if _is_selectable(
                 repo.read_text(path),
                 repo,
                 harness_dependency_cache,
-            )["isScriptHostVerifiable"]
+                include_negative,
+            )
         ]
         selection_mode = "all-script-host-verifiable"
     else:
         candidate_paths = repo.expand_paths(requested_paths)
         expanded_paths = list(candidate_paths)
+
+    promoted_count = 0
+    if prioritize_fragile:
+        fragile_paths = _load_fragile_paths()
+        changed_prefixes = _detect_recently_changed_directories()
+        expanded_paths, promoted_count = _prioritize_paths(
+            expanded_paths, fragile_paths, changed_prefixes,
+        )
+
+    if shuffle_seed is not None:
+        random.Random(shuffle_seed).shuffle(expanded_paths)
 
     sharded_paths = apply_shard(expanded_paths, shard_count, shard_index)
     selection = {
@@ -533,8 +645,33 @@ def select_paths(
         "selectedCountBeforeSharding": len(expanded_paths),
         "shardCount": shard_count,
         "shardIndex": shard_index,
+        "shuffleSeed": shuffle_seed,
+        "includeNegative": include_negative,
+        "prioritizeFragile": prioritize_fragile,
+        "promotedCount": promoted_count,
     }
     return sharded_paths, selection
+
+
+def _is_selectable(
+    source: str,
+    repo: Test262Repository | None,
+    harness_dependency_cache: dict[str, bool] | None,
+    include_negative: bool,
+) -> bool:
+    """Return True when the test file is eligible for the current selection."""
+    classification = classify_test(source, repo, harness_dependency_cache)
+    if classification["isScriptHostVerifiable"]:
+        return True
+    if include_negative and classification["negative"] is not None:
+        # Accept negative tests that are blocked only by negative metadata (not
+        # by unsupported flags/features or host-harness blockers).
+        return (
+            not classification["unsupportedFlags"]
+            and not classification["unsupportedFeatures"]
+            and not classification["hostHarnessBlockers"]
+        )
+    return False
 
 
 def run_test(
@@ -544,6 +681,7 @@ def run_test(
     harness_cache: dict[str, str],
     timeout_seconds: float,
     memory_limit_mb: int,
+    include_negative: bool = False,
 ) -> dict[str, object]:
     source = repo.read_text(path)
     metadata, body = parse_metadata(source)
@@ -563,6 +701,15 @@ def run_test(
             "status": "skipped",
             "reason": "; ".join(reasons),
         }
+
+    negative = parse_negative_metadata(source)
+    if negative is not None and not include_negative:
+        return {
+            "path": path,
+            "status": "skipped",
+            "reason": "negative metadata test (use --include-negative to run)",
+        }
+
     is_async = "async" in metadata["flags"]
     is_only_strict = "onlyStrict" in metadata["flags"]
 
@@ -642,6 +789,29 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
     finally:
         os.unlink(script_path)
 
+    if negative is not None:
+        # Negative tests expect an error.  If the engine exited with a
+        # non-zero status, check whether stderr mentions the expected
+        # error type; if it does, the test passes.
+        expected_type = negative.get("type", "")
+        if process.returncode != 0 and expected_type and expected_type in (stderr or ""):
+            return {"path": path, "status": "passed", "negative": True}
+        if process.returncode == 0:
+            return {
+                "path": path,
+                "status": "failed",
+                "reason": f"negative test expected {expected_type} but succeeded",
+                "stdout": stdout,
+                "stderr": stderr,
+            }
+        return {
+            "path": path,
+            "status": "failed",
+            "reason": f"negative test expected {expected_type} but got different error",
+            "stdout": stdout,
+            "stderr": stderr,
+        }
+
     if process.returncode == 0:
         return {"path": path, "status": "passed"}
 
@@ -662,6 +832,10 @@ def build_summary(
     selection: dict[str, object],
     test_timeout_seconds: float,
     memory_limit_mb: int,
+    max_workers: int = 1,
+    shuffle_seed: int | None = None,
+    include_negative: bool = False,
+    prioritize_fragile: bool = False,
 ) -> dict[str, object]:
     passed = sum(1 for result in results if result["status"] == "passed")
     failed = sum(1 for result in results if result["status"] == "failed")
@@ -675,6 +849,11 @@ def build_summary(
         "broilerDll": broiler_dll,
         "testTimeoutSeconds": test_timeout_seconds,
         "memoryLimitMb": memory_limit_mb,
+        "maxWorkers": max_workers,
+        "shuffleSeed": shuffle_seed,
+        "includeNegative": include_negative,
+        "prioritizeFragile": prioritize_fragile,
+        "promotedCount": selection.get("promotedCount", 0),
         "requestedPaths": requested_paths,
         "expandedPaths": expanded_paths,
         "selectionMode": selection["selectionMode"],
@@ -700,6 +879,8 @@ def run_selected_tests(
     selection: dict[str, object],
     timeout_seconds: float,
     memory_limit_mb: int,
+    max_workers: int = 1,
+    include_negative: bool = False,
 ) -> list[dict[str, object]]:
     total = len(expanded_paths)
     if total == 0:
@@ -715,8 +896,32 @@ def run_selected_tests(
     log_progress(
         f"Per-test timeout is {timeout_seconds:g}s; POSIX memory cap is {memory_limit_label}."
     )
+    if max_workers > 1:
+        log_progress(f"Using {max_workers} parallel worker(s).")
 
     interval = calculate_progress_log_interval(total)
+
+    if max_workers <= 1:
+        return _run_tests_serial(
+            repo, broiler_dll, expanded_paths, timeout_seconds,
+            memory_limit_mb, interval, total, include_negative,
+        )
+    return _run_tests_parallel(
+        repo, broiler_dll, expanded_paths, timeout_seconds,
+        memory_limit_mb, interval, total, max_workers, include_negative,
+    )
+
+
+def _run_tests_serial(
+    repo: Test262Repository,
+    broiler_dll: str,
+    expanded_paths: list[str],
+    timeout_seconds: float,
+    memory_limit_mb: int,
+    interval: int | None,
+    total: int,
+    include_negative: bool,
+) -> list[dict[str, object]]:
     harness_cache: dict[str, str] = {}
     results: list[dict[str, object]] = []
     passed = 0
@@ -732,6 +937,7 @@ def run_selected_tests(
             harness_cache,
             timeout_seconds,
             memory_limit_mb,
+            include_negative,
         )
         results.append(result)
 
@@ -752,6 +958,71 @@ def run_selected_tests(
                 f"Completed {index}/{total} test(s) "
                 f"(passed={passed}, failed={failed}, skipped={skipped}, timedOut={timed_out})."
             )
+
+    return results
+
+
+def _run_tests_parallel(
+    repo: Test262Repository,
+    broiler_dll: str,
+    expanded_paths: list[str],
+    timeout_seconds: float,
+    memory_limit_mb: int,
+    interval: int | None,
+    total: int,
+    max_workers: int,
+    include_negative: bool,
+) -> list[dict[str, object]]:
+    # Each worker gets its own harness cache to avoid contention.
+    results: list[dict[str, object]] = [{}] * total  # type: ignore[arg-type]
+    lock = threading.Lock()
+    completed = 0
+    passed = 0
+    failed = 0
+    skipped = 0
+    timed_out = 0
+
+    def _worker(index: int, path: str) -> tuple[int, dict[str, object]]:
+        harness_cache: dict[str, str] = {}
+        result = run_test(
+            repo, broiler_dll, path, harness_cache,
+            timeout_seconds, memory_limit_mb, include_negative,
+        )
+        return index, result
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(_worker, idx, path): idx
+            for idx, path in enumerate(expanded_paths)
+        }
+        for future in concurrent.futures.as_completed(futures):
+            idx, result = future.result()
+            results[idx] = result
+
+            with lock:
+                completed += 1
+                status = str(result["status"])
+                if status == "passed":
+                    passed += 1
+                elif status == "failed":
+                    failed += 1
+                    log_progress(f"Failure {failed} at {result['path']}")
+                elif status == "timedOut":
+                    timed_out += 1
+                    log_progress(
+                        f"Timeout {timed_out} at {result['path']} after {timeout_seconds:g}s"
+                    )
+                else:
+                    skipped += 1
+
+                if interval is not None and (
+                    completed % interval == 0 or completed == total
+                ):
+                    log_progress(
+                        f"Completed {completed}/{total} test(s) "
+                        f"(passed={passed}, failed={failed}, "
+                        f"skipped={skipped}, timedOut={timed_out})."
+                    )
 
     return results
 
@@ -814,7 +1085,31 @@ def main() -> int:
         default=0,
         help="Optional POSIX per-test address-space limit in MiB; pass 0 to disable",
     )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=1,
+        help="Number of parallel worker threads for running tests (default 1 = serial)",
+    )
+    parser.add_argument(
+        "--shuffle-seed",
+        type=int,
+        default=None,
+        help="Seed for deterministic random shuffling of test order before sharding; omit to keep upstream order",
+    )
+    parser.add_argument(
+        "--include-negative",
+        action="store_true",
+        help="Include negative-metadata tests and verify expected error types",
+    )
+    parser.add_argument(
+        "--prioritize-fragile",
+        action="store_true",
+        help="Prioritize historically fragile and recently changed areas to surface regressions earlier",
+    )
     args = parser.parse_args()
+
+    max_workers = max(1, args.max_workers)
 
     log_progress(
         f"Starting test262 run for suite ref {args.suite_ref}"
@@ -834,6 +1129,9 @@ def main() -> int:
             args.all_script_host_verifiable,
             args.shard_count,
             args.shard_index,
+            shuffle_seed=args.shuffle_seed,
+            include_negative=args.include_negative,
+            prioritize_fragile=args.prioritize_fragile,
         )
     except ValueError as exc:
         parser.error(str(exc))
@@ -846,6 +1144,11 @@ def main() -> int:
         f"using mode {selection['selectionMode']}."
     )
     log_progress(f"Using Broiler script host at {args.broiler_dll}")
+    if selection.get("promotedCount", 0) > 0:
+        log_progress(
+            f"Fragile-area prioritization promoted {selection['promotedCount']} "
+            f"test(s) to the front of the selection."
+        )
     if args.memory_limit_mb > 0 and (os.name != "posix" or resource is None):
         log_progress(
             "POSIX resource limits are unavailable on this platform; "
@@ -859,6 +1162,8 @@ def main() -> int:
         selection,
         args.test_timeout_seconds,
         args.memory_limit_mb,
+        max_workers=max_workers,
+        include_negative=args.include_negative,
     )
     summary = build_summary(
         args.suite_ref,
@@ -869,6 +1174,10 @@ def main() -> int:
         selection,
         args.test_timeout_seconds,
         args.memory_limit_mb,
+        max_workers=max_workers,
+        shuffle_seed=args.shuffle_seed,
+        include_negative=args.include_negative,
+        prioritize_fragile=args.prioritize_fragile,
     )
 
     if args.output:

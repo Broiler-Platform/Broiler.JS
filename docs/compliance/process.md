@@ -27,6 +27,14 @@ Broiler.JS compliance is measured with repository tests plus public JavaScript c
 12. File or update issues for failing feature areas and link them from `docs/compliance/known-gaps.md`.
 13. Treat any newly failing previously-passing test as a regression unless a suite update intentionally changed expected behavior.
 
+## Testsuite optimization opportunities
+
+See [`testsuite-optimization.md`](testsuite-optimization.md) for documented
+bottlenecks in the current pipeline and actionable recommendations (parallel
+in-shard execution, seeded ordering, fragile-area prioritization, script-host
+coverage of negative/module/raw buckets, and seeded property-based fixtures)
+aimed at raising the number of gaps and glitches discovered per execution cycle.
+
 ## Reporting format
 
 Each run should report:

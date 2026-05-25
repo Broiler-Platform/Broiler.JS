@@ -30,6 +30,26 @@ on:
         type: number
         required: false
         default: 0
+      max_workers:
+        description: Parallel worker count per shard (1 = serial)
+        type: number
+        required: false
+        default: 1
+      shuffle_seed:
+        description: Seed for deterministic random test ordering (empty = no shuffle)
+        type: string
+        required: false
+        default: ""
+      include_negative:
+        description: Include negative-metadata tests and verify expected error types
+        type: boolean
+        required: false
+        default: false
+      prioritize_fragile:
+        description: Prioritize historically fragile and recently changed areas to surface regressions earlier
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -43,6 +63,10 @@ env:
   SELECTED_SHARD_INDEX: ${{ inputs.shard_index || -1 }}
   TEST_TIMEOUT_SECONDS: ${{ inputs.test_timeout_seconds || 30 }}
   MEMORY_LIMIT_MB: ${{ inputs.memory_limit_mb || 0 }}
+  MAX_WORKERS: ${{ inputs.max_workers || 1 }}
+  SHUFFLE_SEED: ${{ inputs.shuffle_seed || '' }}
+  INCLUDE_NEGATIVE: ${{ inputs.include_negative || false }}
+  PRIORITIZE_FRAGILE: ${{ inputs.prioritize_fragile || false }}
   FAILED_TESTS_FILE: ${{ github.workspace }}/scripts/compliance/test262-full-script-host-failures.txt
 
 jobs:
@@ -189,6 +213,10 @@ jobs:
             --shard-index "${{ matrix.shard-index }}" \
             --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
             --memory-limit-mb "$MEMORY_LIMIT_MB" \
+            --max-workers "$MAX_WORKERS" \
+            ${SHUFFLE_SEED:+--shuffle-seed "$SHUFFLE_SEED"} \
+            $( [ "$INCLUDE_NEGATIVE" = "true" ] && echo "--include-negative" ) \
+            $( [ "$PRIORITIZE_FRAGILE" = "true" ] && echo "--prioritize-fragile" ) \
             --output "$output_path" 2>&1 | tee "$log_path"
           # Preserve the Python exit status rather than tee's exit status.
           status=${PIPESTATUS[0]}
@@ -336,6 +364,10 @@ jobs:
             --shard-index "${{ matrix.shard-index }}" \
             --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
             --memory-limit-mb "$MEMORY_LIMIT_MB" \
+            --max-workers "$MAX_WORKERS" \
+            ${SHUFFLE_SEED:+--shuffle-seed "$SHUFFLE_SEED"} \
+            $( [ "$INCLUDE_NEGATIVE" = "true" ] && echo "--include-negative" ) \
+            $( [ "$PRIORITIZE_FRAGILE" = "true" ] && echo "--prioritize-fragile" ) \
             --output "$output_path" 2>&1 | tee "$log_path"
           # Preserve the Python exit status rather than tee's exit status.
           status=${PIPESTATUS[0]}

@@ -9297,6 +9297,221 @@ public class BuiltInsTests
         Assert.True(r.BooleanValue);
     }
 
+    // ----------------------------------------------------------------
+    // Seeded property-based parameterized tests (recommendation #5 from
+    // docs/compliance/testsuite-optimization.md).  Each fixture generates
+    // inputs from a fixed seed so failures are reproducible and surface
+    // under the existing `dotnet test` evidence command.
+    // ----------------------------------------------------------------
+
+    #region Property-based: JSON.parse error mapping
+
+    public static TheoryData<int, string> JsonParseErrorInputs()
+    {
+        var data = new TheoryData<int, string>();
+        var rng = new Random(20260525);
+        // Deterministic corpus of malformed JSON strings.
+        string[] templates = [
+            "{0}",          // bare token
+            "{{\"a\": {0}}}", // value position
+            "[{0}]",        // array element
+            "{{\"a\": [{0}]}}", // nested array element
+        ];
+        for (int seed = 0; seed < 20; seed++)
+        {
+            // Generate a random bad token: control chars, truncated
+            // strings, unmatched braces, bare identifiers, etc.
+            string bad = (rng.Next(6)) switch
+            {
+                0 => new string((char)rng.Next(0, 32), rng.Next(1, 4)),
+                1 => "\"unterminated",
+                2 => "{\"a\":",
+                3 => "[,]",
+                4 => "undefined",
+                _ => "NaN",
+            };
+            string template = templates[rng.Next(templates.Length)];
+            data.Add(seed, string.Format(template, bad));
+        }
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(JsonParseErrorInputs))]
+    public void JsonParse_Malformed_Throws_SyntaxError_Seeded(int seed, string badJson)
+    {
+        _ = seed; // recorded in test name for reproducibility
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var escaped = badJson.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\n", "\\n").Replace("\r", "\\r");
+        var result = ctx.Eval($$"""
+            (function() {
+                try { JSON.parse('{{escaped}}'); return 'no-error'; }
+                catch (e) { return e.constructor.name; }
+            })()
+            """);
+        Assert.Equal("SyntaxError", result.ToString());
+    }
+
+    #endregion
+
+    #region Property-based: property-key interning
+
+    public static TheoryData<int, string, string> PropertyKeyInputs()
+    {
+        var data = new TheoryData<int, string, string>();
+        var rng = new Random(20260525);
+        for (int seed = 0; seed < 15; seed++)
+        {
+            // Generate varied property key names: numeric-like, unicode,
+            // short, long, with special chars.
+            string key = (rng.Next(5)) switch
+            {
+                0 => rng.Next(0, 1000).ToString(), // numeric string key
+                1 => $"prop_{seed}_{rng.Next(100)}", // normal identifier
+                2 => $"\u00e9_{seed}", // unicode key
+                3 => $"__proto{seed}__", // proto-like
+                _ => new string('x', rng.Next(1, 30)), // variable length
+            };
+            string value = rng.Next(1000).ToString();
+            data.Add(seed, key, value);
+        }
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(PropertyKeyInputs))]
+    public void PropertyKey_Roundtrip_Preserves_Value_Seeded(int seed, string key, string value)
+    {
+        _ = seed;
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var escapedKey = key.Replace("\\", "\\\\").Replace("'", "\\'");
+        var result = ctx.Eval($$"""
+            (function() {
+                var obj = {};
+                obj['{{escapedKey}}'] = {{value}};
+                return String(obj['{{escapedKey}}']);
+            })()
+            """);
+        Assert.Equal(value, result.ToString());
+    }
+
+    #endregion
+
+    #region Property-based: array mutator observable steps
+
+    public static TheoryData<int, int> ArrayReverseInputs()
+    {
+        var data = new TheoryData<int, int>();
+        var rng = new Random(20260525);
+        for (int seed = 0; seed < 10; seed++)
+        {
+            data.Add(seed, rng.Next(0, 20));
+        }
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(ArrayReverseInputs))]
+    public void Array_Reverse_Preserves_Elements_Seeded(int seed, int length)
+    {
+        _ = seed;
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval($$"""
+            (function() {
+                var arr = [];
+                for (var i = 0; i < {{length}}; i++) arr.push(i);
+                var original = arr.slice();
+                arr.reverse();
+                if (arr.length !== original.length) return 'length mismatch';
+                for (var j = 0; j < arr.length; j++) {
+                    if (arr[j] !== original[original.length - 1 - j]) return 'mismatch at ' + j;
+                }
+                return 'ok';
+            })()
+            """);
+        Assert.Equal("ok", result.ToString());
+    }
+
+    #endregion
+
+    #region Property-based: Object.keys/values roundtrip
+
+    public static TheoryData<int, int> ObjectKeysInputs()
+    {
+        var data = new TheoryData<int, int>();
+        var rng = new Random(20260525);
+        for (int seed = 0; seed < 10; seed++)
+        {
+            data.Add(seed, rng.Next(0, 15));
+        }
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(ObjectKeysInputs))]
+    public void Object_Keys_Returns_All_Own_Enumerable_Properties_Seeded(int seed, int propCount)
+    {
+        _ = seed;
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var assignments = string.Join(" ", Enumerable.Range(0, propCount).Select(i => $"obj['k{i}'] = {i};"));
+        var script = $"(function() {{ var obj = {{}}; {assignments} var keys = Object.keys(obj); return keys.length === {propCount} ? 'ok' : 'expected {propCount} got ' + keys.length; }})()";
+        var result = ctx.Eval(script);
+        Assert.Equal("ok", result.ToString());
+    }
+
+    #endregion
+
+    #region Property-based: RegExp matchAll iterator
+
+    public static TheoryData<int, string, string, int> MatchAllInputs()
+    {
+        var data = new TheoryData<int, string, string, int>();
+        var rng = new Random(20260525);
+        string[] patterns = ["a", "\\\\d+", "[bc]", "x"];
+        for (int seed = 0; seed < 10; seed++)
+        {
+            var pattern = patterns[rng.Next(patterns.Length)];
+            // Build a random haystack mixing matching and non-matching chars.
+            var chars = new char[rng.Next(5, 25)];
+            for (int i = 0; i < chars.Length; i++)
+                chars[i] = "abcd0123xyz"[rng.Next(11)];
+            var haystack = new string(chars);
+            // Count expected matches by running a simple scan — the test
+            // verifies that matchAll returns an iterable with .next().
+            data.Add(seed, pattern, haystack, -1); // -1 = don't assert count, just assert iterable
+        }
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(MatchAllInputs))]
+    public void RegExp_MatchAll_Returns_Iterable_Iterator_Seeded(int seed, string pattern, string haystack, int _expectedHint)
+    {
+        _ = seed;
+        _ = _expectedHint;
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var escapedHaystack = haystack.Replace("\\", "\\\\").Replace("'", "\\'");
+        var result = ctx.Eval($$"""
+            (function() {
+                var re = new RegExp('{{pattern}}', 'g');
+                var iter = '{{escapedHaystack}}'.matchAll(re);
+                if (typeof iter.next !== 'function') return 'next is not a function';
+                var count = 0;
+                var r = iter.next();
+                while (!r.done) { count++; r = iter.next(); }
+                return 'ok:' + count;
+            })()
+            """);
+        Assert.StartsWith("ok:", result.ToString());
+    }
+
+    #endregion
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured
