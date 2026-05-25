@@ -1,4 +1,5 @@
 using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.Runtime;
@@ -29,6 +30,9 @@ public class JSGeneratorFunctionV2 : JSFunction
         }, constructorName, $"function {constructorName}() {{ [native code] }}", 1, createPrototype: false);
         constructor.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
         prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableValue);
+
+        // §27.3.3.2 / §27.4.3.2: GeneratorFunction.prototype[@@toStringTag] / AsyncGeneratorFunction.prototype[@@toStringTag]
+        prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString(constructorName), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         return prototype;
     }
