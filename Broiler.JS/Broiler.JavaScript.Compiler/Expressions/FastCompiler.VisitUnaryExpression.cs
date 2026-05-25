@@ -59,6 +59,12 @@ partial class FastCompiler
                         if (id.Name == "this")
                             return JSBooleanBuilder.True;
 
+                        if (id.Name == "arguments"
+                            && scope.Top.RootScope.Function is { IsArrowFunction: false })
+                        {
+                            return JSBooleanBuilder.False;
+                        }
+
                         var hasStaticVariable = TryGetStaticIdentifierVariable(id, out var variable);
                         if (!hasStaticVariable || variable == null)
                             return JSContextBuilder.DeleteIdentifier(KeyOfName(id.Name));

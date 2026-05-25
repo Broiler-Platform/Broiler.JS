@@ -1802,6 +1802,22 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Error_Undefined_Does_Not_Create_Own_Message_Property()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            [
+              new Error().hasOwnProperty('message'),
+              new Error(undefined).hasOwnProperty('message'),
+              new Error(null).message
+            ].join('|');
+            """);
+
+        Assert.Equal("false|false|null", result.ToString());
+    }
+
+    [Fact]
     public void Built_In_Constructors_Expose_Non_Writable_Prototype_Descriptors_Without_Changing_User_Functions()
     {
         EnsureBuiltInsLoaded();
@@ -2519,6 +2535,28 @@ public class BuiltInsTests
             sum;
         ");
         Assert.Equal(3.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void Map_Delete_Removes_Number_BigInt_And_NaN_Keys_From_Lookup()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var number = 9007199254740991;
+            var bigint = 9007199254740991n;
+            var nanKey = -/a/g.missingProperty;
+            var map = new Map([[number, number], [bigint, bigint]]);
+            map.set(nanKey, 17);
+            map.delete(number);
+            var afterNumberDelete = [map.size, map.has(number), map.has(bigint)].join('|');
+            map.delete(NaN);
+            var afterNaNDelete = [map.has(nanKey), map.has(-nanKey), map.has(NaN)].join('|');
+            afterNumberDelete + ';' + afterNaNDelete;
+            """);
+
+        Assert.Equal("2|false|true;false|false|false", result.ToString());
     }
 
     // ── M3: JSWeakMap tests ──────────────────────────────────────────
@@ -3487,6 +3525,54 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("true|true|true|true|true|false|true|true|true|true|false", result.ToString());
+    }
+
+    [Fact]
+    public void TypedArray_Seal_And_Freeze_Follow_IntegerIndexed_Object_Rules()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            'use strict';
+            var sealedEmpty = Object.isSealed(Object.preventExtensions(new Int32Array(0)));
+            var nonEmpty = new Int32Array(1);
+            Object.preventExtensions(nonEmpty);
+            var sealedNonEmpty = Object.isSealed(nonEmpty);
+            var frozenNonEmpty = Object.isFrozen(nonEmpty);
+
+            var sealTarget = new Int32Array(2);
+            var sealError;
+            try {
+              Object.seal(sealTarget);
+              sealError = 'none';
+            } catch (e) {
+              sealError = e.name;
+            }
+
+            var freezeTarget = new Int32Array(1);
+            var freezeError;
+            try {
+              Object.freeze(freezeTarget);
+              freezeError = 'none';
+            } catch (e) {
+              freezeError = e.name;
+            }
+
+            [
+              sealedEmpty,
+              sealedNonEmpty,
+              frozenNonEmpty,
+              sealError,
+              Object.isExtensible(sealTarget),
+              Object.isSealed(sealTarget),
+              freezeError,
+              Object.isExtensible(freezeTarget),
+              Object.isFrozen(freezeTarget)
+            ].join('|');
+            """);
+
+        Assert.Equal("true|false|false|TypeError|false|false|TypeError|false|false", result.ToString());
     }
 
     [Fact]

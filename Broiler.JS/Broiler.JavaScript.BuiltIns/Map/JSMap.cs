@@ -126,6 +126,7 @@ public partial class JSMap : JSObject
         if (index.TryGetValue(in uk, out var i))
         {
             store.Remove(i);
+            index.TryRemove(uk.Value, out _);
             return JSBoolean.True;
         }
 

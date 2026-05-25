@@ -15,7 +15,7 @@ namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
 
 [JSClassGenerator("TypedArray")]
-public partial class JSTypedArray: JSObject
+public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 {
     [JSExport]
     private static JSValue From(in Arguments a) => a.This.InvokeMethod(Names.from, a);
@@ -38,6 +38,7 @@ public partial class JSTypedArray: JSObject
     internal int ByteLength => buffer.buffer.Length;
     
     public override int Length { get => length; set => throw new NotSupportedException(); }
+    public bool HasIntegerIndexedElements => length > 0;
 
     public JSTypedArray(in Arguments a) : this(JSEngine.NewTargetPrototype) => throw new NotSupportedException();
 
