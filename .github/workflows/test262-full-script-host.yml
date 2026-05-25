@@ -45,6 +45,11 @@ on:
         type: boolean
         required: false
         default: false
+      prioritize_fragile:
+        description: Prioritize historically fragile and recently changed areas to surface regressions earlier
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -61,6 +66,7 @@ env:
   MAX_WORKERS: ${{ inputs.max_workers || 1 }}
   SHUFFLE_SEED: ${{ inputs.shuffle_seed || '' }}
   INCLUDE_NEGATIVE: ${{ inputs.include_negative || false }}
+  PRIORITIZE_FRAGILE: ${{ inputs.prioritize_fragile || false }}
   FAILED_TESTS_FILE: ${{ github.workspace }}/scripts/compliance/test262-full-script-host-failures.txt
 
 jobs:
@@ -210,6 +216,7 @@ jobs:
             --max-workers "$MAX_WORKERS" \
             ${SHUFFLE_SEED:+--shuffle-seed "$SHUFFLE_SEED"} \
             $( [ "$INCLUDE_NEGATIVE" = "true" ] && echo "--include-negative" ) \
+            $( [ "$PRIORITIZE_FRAGILE" = "true" ] && echo "--prioritize-fragile" ) \
             --output "$output_path" 2>&1 | tee "$log_path"
           # Preserve the Python exit status rather than tee's exit status.
           status=${PIPESTATUS[0]}
@@ -360,6 +367,7 @@ jobs:
             --max-workers "$MAX_WORKERS" \
             ${SHUFFLE_SEED:+--shuffle-seed "$SHUFFLE_SEED"} \
             $( [ "$INCLUDE_NEGATIVE" = "true" ] && echo "--include-negative" ) \
+            $( [ "$PRIORITIZE_FRAGILE" = "true" ] && echo "--prioritize-fragile" ) \
             --output "$output_path" 2>&1 | tee "$log_path"
           # Preserve the Python exit status rather than tee's exit status.
           status=${PIPESTATUS[0]}

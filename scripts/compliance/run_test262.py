@@ -503,6 +503,100 @@ def terminate_process_tree(process: subprocess.Popen[str]) -> None:
     process.kill()
 
 
+def _load_fragile_paths(failure_file: Path | None = None) -> set[str]:
+    """Return the set of test paths recorded as historically fragile.
+
+    Reads the saved failure manifest at *failure_file* (defaulting to the
+    repository-local ``test262-full-script-host-failures.txt``).  Lines
+    starting with ``#`` and blank lines are ignored.
+    """
+    if failure_file is None:
+        failure_file = REPO_ROOT / "scripts" / "compliance" / "test262-full-script-host-failures.txt"
+    if not failure_file.is_file():
+        return set()
+    paths: set[str] = set()
+    for line in failure_file.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#"):
+            paths.add(stripped)
+    return paths
+
+
+def _detect_recently_changed_directories() -> set[str]:
+    """Return test262 directory prefixes that map to recently changed Broiler source areas.
+
+    Runs ``git diff --name-only HEAD~1`` (or falls back to an empty set if
+    git is unavailable or there is no previous commit) and maps changed
+    ``Broiler.JavaScript.*`` project directories to likely test262 prefixes.
+    """
+    area_to_test_dirs: dict[str, list[str]] = {
+        "Broiler.JavaScript.Parser": [
+            "test/language/",
+            "test/staging/sm/syntax/",
+        ],
+        "Broiler.JavaScript.Compiler": [
+            "test/language/",
+        ],
+        "Broiler.JavaScript.Runtime": [
+            "test/language/",
+            "test/built-ins/",
+        ],
+        "Broiler.JavaScript.BuiltIns": [
+            "test/built-ins/",
+            "test/annexB/built-ins/",
+        ],
+        "Broiler.JavaScript.Modules": [
+            "test/language/",
+        ],
+        "Broiler.JavaScript.Engine": [
+            "test/language/",
+            "test/built-ins/",
+        ],
+    }
+
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD~1"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=REPO_ROOT,
+        )
+        if result.returncode != 0:
+            return set()
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        return set()
+
+    changed_files = result.stdout.strip().splitlines()
+    prefixes: set[str] = set()
+    for changed in changed_files:
+        for area, dirs in area_to_test_dirs.items():
+            if area in changed:
+                prefixes.update(dirs)
+    return prefixes
+
+
+def _prioritize_paths(
+    paths: list[str],
+    fragile_paths: set[str],
+    changed_prefixes: set[str],
+) -> tuple[list[str], int]:
+    """Reorder *paths* so historically fragile and recently-changed-area tests come first.
+
+    Returns the reordered list and the count of paths that were promoted.
+    The relative order within the priority group and within the remainder
+    is preserved.
+    """
+    priority: list[str] = []
+    rest: list[str] = []
+    for path in paths:
+        if path in fragile_paths or any(path.startswith(p) for p in changed_prefixes):
+            priority.append(path)
+        else:
+            rest.append(path)
+    return priority + rest, len(priority)
+
+
 def select_paths(
     repo: Test262Repository,
     requested_paths: list[str],
@@ -511,6 +605,7 @@ def select_paths(
     shard_index: int,
     shuffle_seed: int | None = None,
     include_negative: bool = False,
+    prioritize_fragile: bool = False,
 ) -> tuple[list[str], dict[str, object]]:
     """Select test paths plus metadata for requested or full script-host runs."""
     selection_mode = "requested"
@@ -532,6 +627,14 @@ def select_paths(
         candidate_paths = repo.expand_paths(requested_paths)
         expanded_paths = list(candidate_paths)
 
+    promoted_count = 0
+    if prioritize_fragile:
+        fragile_paths = _load_fragile_paths()
+        changed_prefixes = _detect_recently_changed_directories()
+        expanded_paths, promoted_count = _prioritize_paths(
+            expanded_paths, fragile_paths, changed_prefixes,
+        )
+
     if shuffle_seed is not None:
         random.Random(shuffle_seed).shuffle(expanded_paths)
 
@@ -544,6 +647,8 @@ def select_paths(
         "shardIndex": shard_index,
         "shuffleSeed": shuffle_seed,
         "includeNegative": include_negative,
+        "prioritizeFragile": prioritize_fragile,
+        "promotedCount": promoted_count,
     }
     return sharded_paths, selection
 
@@ -730,6 +835,7 @@ def build_summary(
     max_workers: int = 1,
     shuffle_seed: int | None = None,
     include_negative: bool = False,
+    prioritize_fragile: bool = False,
 ) -> dict[str, object]:
     passed = sum(1 for result in results if result["status"] == "passed")
     failed = sum(1 for result in results if result["status"] == "failed")
@@ -746,6 +852,8 @@ def build_summary(
         "maxWorkers": max_workers,
         "shuffleSeed": shuffle_seed,
         "includeNegative": include_negative,
+        "prioritizeFragile": prioritize_fragile,
+        "promotedCount": selection.get("promotedCount", 0),
         "requestedPaths": requested_paths,
         "expandedPaths": expanded_paths,
         "selectionMode": selection["selectionMode"],
@@ -994,6 +1102,11 @@ def main() -> int:
         action="store_true",
         help="Include negative-metadata tests and verify expected error types",
     )
+    parser.add_argument(
+        "--prioritize-fragile",
+        action="store_true",
+        help="Prioritize historically fragile and recently changed areas to surface regressions earlier",
+    )
     args = parser.parse_args()
 
     max_workers = max(1, args.max_workers)
@@ -1018,6 +1131,7 @@ def main() -> int:
             args.shard_index,
             shuffle_seed=args.shuffle_seed,
             include_negative=args.include_negative,
+            prioritize_fragile=args.prioritize_fragile,
         )
     except ValueError as exc:
         parser.error(str(exc))
@@ -1030,6 +1144,11 @@ def main() -> int:
         f"using mode {selection['selectionMode']}."
     )
     log_progress(f"Using Broiler script host at {args.broiler_dll}")
+    if selection.get("promotedCount", 0) > 0:
+        log_progress(
+            f"Fragile-area prioritization promoted {selection['promotedCount']} "
+            f"test(s) to the front of the selection."
+        )
     if args.memory_limit_mb > 0 and (os.name != "posix" or resource is None):
         log_progress(
             "POSIX resource limits are unavailable on this platform; "
@@ -1058,6 +1177,7 @@ def main() -> int:
         max_workers=max_workers,
         shuffle_seed=args.shuffle_seed,
         include_negative=args.include_negative,
+        prioritize_fragile=args.prioritize_fragile,
     )
 
     if args.output:
