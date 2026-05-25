@@ -1688,7 +1688,6 @@ test/built-ins/JSON/stringify/value-string-object.js
 test/built-ins/JSON/stringify/value-symbol.js
 test/built-ins/JSON/stringify/value-tojson-arguments.js
 test/built-ins/JSON/stringify/value-tojson-result.js
-test/built-ins/Map/bigint-number-same-value.js
 test/built-ins/Map/groupBy/string.js
 test/built-ins/Map/map.js
 test/built-ins/Map/prototype/Symbol.iterator.js
@@ -1696,7 +1695,6 @@ test/built-ins/Map/prototype/Symbol.iterator/not-a-constructor.js
 test/built-ins/Map/prototype/Symbol.toStringTag.js
 test/built-ins/Map/prototype/clear/map-data-list-is-preserved.js
 test/built-ins/Map/prototype/delete/does-not-break-iterators.js
-test/built-ins/Map/prototype/delete/returns-false.js
 test/built-ins/Map/prototype/entries/name.js
 test/built-ins/Map/prototype/forEach/callback-parameters.js
 test/built-ins/Map/prototype/forEach/callback-this-non-strict.js
@@ -1707,7 +1705,6 @@ test/built-ins/Map/prototype/forEach/iterates-values-added-after-foreach-begins.
 test/built-ins/Map/prototype/forEach/iterates-values-deleted-then-readded.js
 test/built-ins/Map/prototype/forEach/second-parameter-as-callback-context.js
 test/built-ins/Map/prototype/get/name.js
-test/built-ins/Map/prototype/get/returns-undefined.js
 test/built-ins/Map/prototype/getOrInsert/append-new-values.js
 test/built-ins/Map/prototype/getOrInsertComputed/append-new-values.js
 test/built-ins/Map/prototype/getOrInsertComputed/canonical-key-passed-to-callback.js
@@ -1717,7 +1714,6 @@ test/built-ins/Map/prototype/set/append-new-values.js
 test/built-ins/Map/prototype/set/name.js
 test/built-ins/Map/prototype/set/replaces-a-value-returns-map.js
 test/built-ins/Map/prototype/values/name.js
-test/built-ins/Map/valid-keys.js
 test/built-ins/MapIteratorPrototype/Symbol.toStringTag.js
 test/built-ins/MapIteratorPrototype/next/does-not-have-mapiterator-internal-slots-map.js
 test/built-ins/MapIteratorPrototype/next/does-not-have-mapiterator-internal-slots.js
@@ -5153,7 +5149,6 @@ test/language/arguments-object/S10.6_A3_T3.js
 test/language/arguments-object/S10.6_A3_T4.js
 test/language/arguments-object/S10.6_A4.js
 test/language/arguments-object/mapped/Symbol.iterator.js
-test/language/arguments-object/non-strict-arguments-object-is-immutable.js
 test/language/arguments-object/unmapped/Symbol.iterator.js
 test/language/block-scope/syntax/function-declarations/in-statement-position-default-statement-list.js
 test/language/block-scope/syntax/redeclaration-global/allowed-to-redeclare-function-declaration-with-var.js
@@ -6712,7 +6707,6 @@ test/language/expressions/conditional/in-branch-1.js
 test/language/expressions/conditional/tco-cond.js
 test/language/expressions/conditional/tco-pos.js
 test/language/expressions/delete/11.4.1-4.a-11.js
-test/language/expressions/delete/11.4.1-4.a-16.js
 test/language/expressions/delete/super-property-method.js
 test/language/expressions/delete/super-property-null-base.js
 test/language/expressions/delete/super-property-topropertykey.js
@@ -10099,7 +10093,6 @@ test/language/statements/function/S13.2.2_A3_T1.js
 test/language/statements/function/S13.2.2_A3_T2.js
 test/language/statements/function/S13.2_A4_T1.js
 test/language/statements/function/S13.2_A4_T2.js
-test/language/statements/function/S13_A11_T1.js
 test/language/statements/function/S13_A11_T2.js
 test/language/statements/function/S13_A15_T2.js
 test/language/statements/function/S13_A15_T4.js
@@ -10508,7 +10501,6 @@ test/staging/sm/JSON/stringify-replacer.js
 test/staging/sm/JSON/stringify-special-escapes.js
 test/staging/sm/JSON/stringify-toJSON-arguments.js
 test/staging/sm/JSON/stringify.js
-test/staging/sm/Map/NaN-as-key.js
 test/staging/sm/Map/iterable.js
 test/staging/sm/Map/symbols.js
 test/staging/sm/Math/acosh-approx.js
@@ -10674,7 +10666,6 @@ test/staging/sm/TypedArray/has-property-op.js
 test/staging/sm/TypedArray/indexOf-and-lastIndexOf.js
 test/staging/sm/TypedArray/object-defineproperty.js
 test/staging/sm/TypedArray/prototype-constructor-identity.js
-test/staging/sm/TypedArray/seal-and-freeze.js
 test/staging/sm/TypedArray/set-negative-offset.js
 test/staging/sm/TypedArray/set-tointeger.js
 test/staging/sm/TypedArray/set-toobject.js
@@ -10687,7 +10678,6 @@ test/staging/sm/TypedArray/sort_modifications.js
 test/staging/sm/TypedArray/sort_sorted.js
 test/staging/sm/TypedArray/sorting_buffer_access.js
 test/staging/sm/TypedArray/subarray-species.js
-test/staging/sm/TypedArray/test-integrity-level.js
 test/staging/sm/TypedArray/toLocaleString-nointl.js
 test/staging/sm/TypedArray/toString.js
 test/staging/sm/TypedArray/write-out-of-bounds-tonumber.js
@@ -10880,7 +10870,6 @@ test/staging/sm/lexical-environment/unscopables-proto.js
 test/staging/sm/lexical-environment/unscopables-proxy.js
 test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
 test/staging/sm/misc/builtin-methods-reject-null-undefined-this.js
-test/staging/sm/misc/error-undefined-message.js
 test/staging/sm/misc/explicit-undefined-optional-argument.js
 test/staging/sm/misc/function-definition-eval.js
 test/staging/sm/misc/future-reserved-words.js
