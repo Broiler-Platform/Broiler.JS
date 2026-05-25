@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Broiler.JavaScript.BuiltIns.Date;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
@@ -89,6 +90,8 @@ public static class JSIntl
                 return JSValue.CreateArray();
             }, "supportedValuesOf", "function supportedValuesOf() { [native code] }", length: 1, createPrototype: false),
             JSPropertyAttributes.ConfigurableValue);
+        // Intl[@@toStringTag] = "Intl"
+        intl.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("Intl"), JSPropertyAttributes.ConfigurableReadonlyValue);
         return intl;
     }
 
@@ -99,6 +102,11 @@ public static class JSIntl
 
             return new JSObject();
         }, name, $"function {name}() {{ [native code] }}", length: length);
+
+    private static void SetIntlToStringTag(JSFunction constructor, string name)
+    {
+        constructor.prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString($"Intl.{name}"), JSPropertyAttributes.ConfigurableReadonlyValue);
+    }
 
     private static JSFunction CreatePluralRulesConstructor()
     {
@@ -118,6 +126,7 @@ public static class JSIntl
                 return JSValue.CreateString("other");
             }, "selectRange", "function selectRange() { [native code] }", createPrototype: false, length: 2),
             JSPropertyAttributes.ConfigurableValue);
+        SetIntlToStringTag(constructor, "PluralRules");
         return constructor;
     }
 
@@ -148,6 +157,7 @@ public static class JSIntl
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
             new JSFunction(JSIntlDurationFormat.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
             JSPropertyAttributes.ConfigurableValue);
+        SetIntlToStringTag(constructor, "DurationFormat");
         return constructor;
     }
 
@@ -168,6 +178,7 @@ public static class JSIntl
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
             new JSFunction(JSIntlListFormat.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
             JSPropertyAttributes.ConfigurableValue);
+        SetIntlToStringTag(constructor, "ListFormat");
         return constructor;
     }
 
@@ -205,22 +216,31 @@ public static class JSIntl
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("getWeekInfo"),
             new JSFunction(JSIntlLocale.GetWeekInfoPrototype, "getWeekInfo", "function getWeekInfo() { [native code] }", createPrototype: false, length: 0),
             JSPropertyAttributes.ConfigurableValue);
+        SetIntlToStringTag(constructor, "Locale");
         return constructor;
     }
 
     private static JSFunction CreateSegmenterConstructor()
-        => new((in Arguments a) =>
+    {
+        var constructor = new JSFunction((in Arguments a) =>
         {
             ObserveOptions(ValidateConstructorArguments("Segmenter", in a), LocaleMatcherKey, GranularityKey);
             return new JSObject();
         }, "Segmenter", "function Segmenter() { [native code] }", length: 0);
+        SetIntlToStringTag(constructor, "Segmenter");
+        return constructor;
+    }
 
     private static JSFunction CreateDisplayNamesConstructor()
-        => new((in Arguments a) =>
+    {
+        var constructor = new JSFunction((in Arguments a) =>
         {
             ObserveOptions(ValidateConstructorArguments("DisplayNames", in a), FallbackKey, LanguageDisplayKey, LocaleMatcherKey, StyleKey, TypeKey);
             return new JSObject();
         }, "DisplayNames", "function DisplayNames() { [native code] }", length: 2);
+        SetIntlToStringTag(constructor, "DisplayNames");
+        return constructor;
+    }
 
     private static JSFunction CreateDateTimeFormatConstructor()
     {
@@ -247,6 +267,7 @@ public static class JSIntl
         constructor.prototype.FastAddValue(FormatToPartsKey,
             new JSFunction(JSIntlDateTimeFormat.FormatToPartsPrototype, "formatToParts", "function formatToParts() { [native code] }", createPrototype: false, length: 1),
             JSPropertyAttributes.ConfigurableValue);
+        SetIntlToStringTag(constructor, "DateTimeFormat");
         return constructor;
     }
 
@@ -263,6 +284,7 @@ public static class JSIntl
         constructor.prototype.FastAddValue(FormatToPartsKey,
             new JSFunction(JSIntlRelativeTimeFormat.FormatToPartsPrototype, "formatToParts", "function formatToParts() { [native code] }", createPrototype: false, length: 2),
             JSPropertyAttributes.ConfigurableValue);
+        SetIntlToStringTag(constructor, "RelativeTimeFormat");
         return constructor;
     }
 
@@ -298,6 +320,7 @@ public static class JSIntl
         constructor.prototype.FastAddValue(FormatRangeToPartsKey,
             new JSFunction(JSIntlNumberFormat.FormatRangeToPartsPrototype, "formatRangeToParts", "function formatRangeToParts() { [native code] }", createPrototype: false, length: 2),
             JSPropertyAttributes.ConfigurableValue);
+        SetIntlToStringTag(constructor, "NumberFormat");
         return constructor;
     }
 

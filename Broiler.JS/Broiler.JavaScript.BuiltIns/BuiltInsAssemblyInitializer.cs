@@ -510,6 +510,7 @@ internal static class BuiltInsAssemblyInitializer
         PatchRegExpPrototype(context);
         PatchArrayPrototype(context);
         PatchTypedArrayBuiltIns(context);
+        PatchToStringTags(context);
     }
 
     private static JSFunction CreateNativeFunction(JSFunctionDelegate fx, string name, int length = 0)
@@ -1465,6 +1466,79 @@ internal static class BuiltInsAssemblyInitializer
         _ => JSUndefined.Value
     };
 
+    private static void SetToStringTag(JSObject target, string tag)
+    {
+        if (!target.GetOwnPropertyDescriptor(JSSymbol.toStringTag).IsUndefined)
+            return;
+
+        target.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString(tag), JSPropertyAttributes.ConfigurableReadonlyValue);
+    }
+
+    private static void PatchToStringTags(JSContext context)
+    {
+        // BigInt.prototype[@@toStringTag] = "BigInt"
+        if (context[KeyStrings.GetOrCreate("BigInt")] is JSFunction bigIntCtor && bigIntCtor.prototype is JSObject bigIntProto)
+            SetToStringTag(bigIntProto, "BigInt");
+
+        // WeakRef.prototype[@@toStringTag] = "WeakRef"
+        if (context[KeyStrings.GetOrCreate("WeakRef")] is JSFunction weakRefCtor && weakRefCtor.prototype is JSObject weakRefProto)
+            SetToStringTag(weakRefProto, "WeakRef");
+
+        // FinalizationRegistry.prototype[@@toStringTag] = "FinalizationRegistry"
+        if (context[KeyStrings.GetOrCreate("FinalizationRegistry")] is JSFunction finRegCtor && finRegCtor.prototype is JSObject finRegProto)
+            SetToStringTag(finRegProto, "FinalizationRegistry");
+
+        // Reflect[@@toStringTag] = "Reflect"
+        if (context[KeyStrings.GetOrCreate("Reflect")] is JSObject reflect)
+            SetToStringTag(reflect, "Reflect");
+
+        // Map.prototype[@@toStringTag] = "Map"
+        if (context[KeyStrings.Map] is JSFunction mapCtor && mapCtor.prototype is JSObject mapProto)
+            SetToStringTag(mapProto, "Map");
+
+        // Set.prototype[@@toStringTag] = "Set"
+        if (context[KeyStrings.Set] is JSFunction setCtor && setCtor.prototype is JSObject setProto)
+            SetToStringTag(setProto, "Set");
+
+        // WeakMap.prototype[@@toStringTag] = "WeakMap"
+        if (context[KeyStrings.GetOrCreate("WeakMap")] is JSFunction weakMapCtor && weakMapCtor.prototype is JSObject weakMapProto)
+            SetToStringTag(weakMapProto, "WeakMap");
+
+        // WeakSet.prototype[@@toStringTag] = "WeakSet"
+        if (context[KeyStrings.GetOrCreate("WeakSet")] is JSFunction weakSetCtor && weakSetCtor.prototype is JSObject weakSetProto)
+            SetToStringTag(weakSetProto, "WeakSet");
+
+        // Promise.prototype[@@toStringTag] = "Promise"
+        if (context[KeyStrings.Promise] is JSFunction promiseCtor && promiseCtor.prototype is JSObject promiseProto)
+            SetToStringTag(promiseProto, "Promise");
+
+        // Symbol.prototype[@@toStringTag] = "Symbol"
+        if (context[KeyStrings.Symbol] is JSFunction symbolCtor && symbolCtor.prototype is JSObject symbolProto)
+            SetToStringTag(symbolProto, "Symbol");
+
+        // ArrayBuffer.prototype[@@toStringTag] = "ArrayBuffer"
+        if (context[KeyStrings.GetOrCreate("ArrayBuffer")] is JSFunction abCtor && abCtor.prototype is JSObject abProto)
+            SetToStringTag(abProto, "ArrayBuffer");
+
+        // DataView.prototype[@@toStringTag] = "DataView"
+        if (context[KeyStrings.GetOrCreate("DataView")] is JSFunction dvCtor && dvCtor.prototype is JSObject dvProto)
+            SetToStringTag(dvProto, "DataView");
+
+        // Generator.prototype[@@toStringTag] = "Generator"
+        // GeneratorFunction.prototype[@@toStringTag] = "GeneratorFunction"
+        // AsyncGenerator.prototype[@@toStringTag] = "AsyncGenerator"
+        // AsyncGeneratorFunction.prototype[@@toStringTag] = "AsyncGeneratorFunction"
+        // (AsyncGeneratorFunction.prototype handled in JSGeneratorFunctionV2)
+        if (context[KeyStrings.GetOrCreate("Generator")] is JSFunction generatorCtor && generatorCtor.prototype is JSObject generatorProto)
+        {
+            SetToStringTag(generatorProto, "Generator");
+
+            // The GeneratorFunction.prototype is the [[Prototype]] of Generator.prototype
+            if (generatorProto.GetPrototypeOf() is JSObject generatorFuncProto)
+                SetToStringTag(generatorFuncProto, "GeneratorFunction");
+        }
+    }
+
     internal static void PatchAsyncIteratorPrototype(JSContext context)
     {
         if (context[KeyStrings.GetOrCreate("Generator")] is not JSFunction generator)
@@ -1483,6 +1557,7 @@ internal static class BuiltInsAssemblyInitializer
         }
 
         var asyncGeneratorPrototype = new JSObject();
+        asyncGeneratorPrototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("AsyncGenerator"), JSPropertyAttributes.ConfigurableReadonlyValue);
         var asyncIteratorPrototype = new JSObject
         {
             BasePrototypeObject = currentAsyncGeneratorPrototype

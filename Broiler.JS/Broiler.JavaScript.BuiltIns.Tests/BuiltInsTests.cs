@@ -9512,6 +9512,59 @@ public class BuiltInsTests
 
     #endregion
 
+    [Fact]
+    public void BuiltIn_Prototypes_Have_Symbol_ToStringTag_As_Own_Property()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function() {
+            function hasTag(obj, expected) {
+                var desc = Object.getOwnPropertyDescriptor(obj, Symbol.toStringTag);
+                if (!desc) return 'missing:' + expected;
+                if (desc.value !== expected) return 'wrong:' + expected + ':' + desc.value;
+                if (desc.writable !== false) return 'writable:' + expected;
+                if (desc.enumerable !== false) return 'enumerable:' + expected;
+                if (desc.configurable !== true) return 'not-configurable:' + expected;
+                return 'ok';
+            }
+            var results = [];
+            // Core built-ins
+            results.push(hasTag(BigInt.prototype, 'BigInt'));
+            results.push(hasTag(Reflect, 'Reflect'));
+            results.push(hasTag(WeakRef.prototype, 'WeakRef'));
+            results.push(hasTag(FinalizationRegistry.prototype, 'FinalizationRegistry'));
+            results.push(hasTag(Symbol.prototype, 'Symbol'));
+            results.push(hasTag(Map.prototype, 'Map'));
+            results.push(hasTag(Set.prototype, 'Set'));
+            results.push(hasTag(Promise.prototype, 'Promise'));
+            // Generator / AsyncGenerator
+            var GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
+            results.push(hasTag(GeneratorFunction.prototype, 'GeneratorFunction'));
+            var genProto = Object.getPrototypeOf((function*(){})());
+            results.push(hasTag(genProto, 'Generator'));
+            var AsyncGeneratorFunction = Object.getPrototypeOf(async function*(){}).constructor;
+            results.push(hasTag(AsyncGeneratorFunction.prototype, 'AsyncGeneratorFunction'));
+            // Intl
+            results.push(hasTag(Intl, 'Intl'));
+            results.push(hasTag(Intl.DateTimeFormat.prototype, 'Intl.DateTimeFormat'));
+            results.push(hasTag(Intl.NumberFormat.prototype, 'Intl.NumberFormat'));
+            results.push(hasTag(Intl.PluralRules.prototype, 'Intl.PluralRules'));
+            results.push(hasTag(Intl.RelativeTimeFormat.prototype, 'Intl.RelativeTimeFormat'));
+            results.push(hasTag(Intl.Locale.prototype, 'Intl.Locale'));
+            results.push(hasTag(Intl.ListFormat.prototype, 'Intl.ListFormat'));
+            results.push(hasTag(Intl.DurationFormat.prototype, 'Intl.DurationFormat'));
+            results.push(hasTag(Intl.DisplayNames.prototype, 'Intl.DisplayNames'));
+            results.push(hasTag(Intl.Segmenter.prototype, 'Intl.Segmenter'));
+            return results.join('|');
+        })();");
+
+        var parts = result.ToString().Split('|');
+        foreach (var part in parts)
+        {
+            Assert.Equal("ok", part);
+        }
+    }
+
     private static void EnsureBuiltInsLoaded()
     {
         // Load CLR assembly so JSEngine.ClrInterop is properly configured
