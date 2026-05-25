@@ -20,8 +20,15 @@ partial class FastParser
         
         var list = new Sequence<VariableDeclarator>();
         
-        while (!stream.CheckAndConsume(endsWith))
+        while (true)
         {
+            while (stream.CheckAndConsume(TokenTypes.LineTerminator))
+            {
+            }
+
+            if (stream.CheckAndConsume(endsWith))
+                break;
+
             if (!AssignmentLeftPattern(out var left, kind))
                 throw stream.Unexpected();
 
@@ -35,6 +42,10 @@ partial class FastParser
             else
             {
                 list.Add(new VariableDeclarator(left, null));
+            }
+
+            while (stream.CheckAndConsume(TokenTypes.LineTerminator))
+            {
             }
 
             if (stream.CheckAndConsumeAny(endsWith, TokenTypes.EOF))

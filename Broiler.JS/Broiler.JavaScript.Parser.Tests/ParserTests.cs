@@ -36,6 +36,27 @@ public class ParserTests
         Assert.NotNull(program);
     }
 
+    [Theory]
+    [InlineData("function f(){<!--\n}")]
+    [InlineData("function f(){\n-->\n}")]
+    [InlineData("function f(\n-->\n){ return 1; }")]
+    [InlineData("function f(<!--\n){ return 1; }")]
+    public void ParseProgram_FunctionSyntax_Allows_AnnexB_Html_Comments(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+        Assert.NotNull(program);
+    }
+
+    [Fact]
+    public void ParseProgram_FunctionParameters_Reject_HtmlCloseComment_Without_Preceding_LineTerminator()
+    {
+        var stream = new FastTokenStream(new StringSpan("function f(-->){ return 1; }"));
+        var parser = new FastParser(stream);
+        Assert.Throws<FastParseException>(() => parser.ParseProgram());
+    }
+
     [Fact]
     public void ParseProgram_ArrowFunction_Succeeds()
     {

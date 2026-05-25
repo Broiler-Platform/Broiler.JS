@@ -4512,6 +4512,41 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void NewFunction_AnnexB_Html_Comment_Parameters_Parse_Correctly()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        Assert.Equal(1.0, ctx.Eval("Function('<!--', 'return 1;')()").DoubleValue);
+        Assert.Equal(1.0, ctx.Eval("Function('\\n-->', 'return 1;')()").DoubleValue);
+        Assert.Equal("SyntaxError", ctx.Eval("""
+            try {
+              Function('-->', '');
+              'no error';
+            } catch (e) {
+              e.name;
+            }
+            """).ToString());
+    }
+
+    [Fact]
+    public void NewFunction_AnnexB_Html_Comment_Bodies_Parse_Correctly()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              typeof Function('<!--'),
+              typeof Function('-->'),
+              typeof Function('\n-->')
+            ].join('|');
+            """);
+
+        Assert.Equal("function|function|function", result.ToString());
+    }
+
+    [Fact]
     public void NewFunction_Strict_Body_Rejects_Eval_Parameter()
     {
         EnsureBuiltInsLoaded();

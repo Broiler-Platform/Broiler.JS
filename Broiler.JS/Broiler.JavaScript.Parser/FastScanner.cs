@@ -108,6 +108,16 @@ public class FastScanner
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private char Peek(int offset)
+    {
+        var index = position + offset;
+        if (index < 0 || index >= Text.Length)
+            return char.MaxValue;
+
+        return Text[index];
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool ConsumeAndNext(char ch)
     {
         var next = Consume();
@@ -246,7 +256,7 @@ public class FastScanner
 
             case '#':
                 if (Next() == '!' && IsHashbangStart())
-                    return SkipSingleLineComment(state);
+                    return SkipSingleLineComment(state, 2);
                 return ReadSymbol(state, TokenTypes.Hash);
 
             case '/':
@@ -318,6 +328,8 @@ public class FastScanner
                 return state.Commit(TokenTypes.Greater);
 
             case '<':
+                if (IsHtmlOpenCommentStart())
+                    return SkipSingleLineComment(state, 4);
                 switch (Consume())
                 {
                     case '<':
@@ -387,6 +399,8 @@ public class FastScanner
                 return state.Commit(TokenTypes.Plus);
 
             case '-':
+                if (IsHtmlCloseCommentStart())
+                    return SkipSingleLineComment(state, 3);
                 switch (Consume())
                 {
                     case '-':
@@ -481,6 +495,21 @@ public class FastScanner
         }
 
         return EOF;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool IsHtmlOpenCommentStart()
+    {
+        return Peek(0) == '<' && Peek(1) == '!' && Peek(2) == '-' && Peek(3) == '-';
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool IsHtmlCloseCommentStart()
+    {
+        if (Peek(0) != '-' || Peek(1) != '-' || Peek(2) != '>')
+            return false;
+
+        return lastToken.Type == TokenTypes.Empty || lastToken.Type == TokenTypes.LineTerminator;
     }
 
     private bool ScanEscaped(char next, StringBuilder t)
@@ -1050,13 +1079,21 @@ public class FastScanner
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private FastToken SkipSingleLineComment(State state)
+    private FastToken SkipSingleLineComment(State state, int prefixLength = 1)
     {
-        char ch;
-        do
+        for (var i = 0; i < prefixLength; i++)
+        {
+            if (Peek() == char.MaxValue)
+                break;
+
+            Consume();
+        }
+
+        var ch = Peek();
+        while (ch != '\n' && ch != char.MaxValue)
         {
             ch = Consume();
-        } while (ch != '\n' && ch != char.MaxValue);
+        }
 
         return ReadSymbol(state, TokenTypes.LineTerminator);
     }
