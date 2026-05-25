@@ -161,3 +161,13 @@ keeps the existing reproducibility guarantees from
 [`docs/compliance/process.md`](process.md): runs remain deterministic given a
 seed, JSON summaries gain enough metadata (worker count, seed, prioritization
 mode, enabled buckets) to reproduce any reported failure.
+
+## Implementation status
+
+| # | Recommendation | Status | CLI flag | Workflow wired |
+|---|----------------|--------|----------|----------------|
+| 1 | Parallel worker pool | ✅ Implemented | `--max-workers N` | `MAX_WORKERS` env in both workflows |
+| 2 | Seeded ordering | ✅ Implemented | `--shuffle-seed N` | `SHUFFLE_SEED` env in both workflows |
+| 3 | Fragile-area prioritization | 🔲 Planned | — | — |
+| 4 | Negative-metadata coverage | ✅ Implemented | `--include-negative` | `INCLUDE_NEGATIVE` input in full-script-host |
+| 5 | Property-based repository tests | 🔲 Planned | — | — |

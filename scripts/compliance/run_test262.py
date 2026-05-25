@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import math
 import os
+import random
 import re
 import shutil
 import signal
@@ -14,6 +16,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import threading
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -506,6 +509,8 @@ def select_paths(
     all_script_host_verifiable: bool,
     shard_count: int,
     shard_index: int,
+    shuffle_seed: int | None = None,
+    include_negative: bool = False,
 ) -> tuple[list[str], dict[str, object]]:
     """Select test paths plus metadata for requested or full script-host runs."""
     selection_mode = "requested"
@@ -515,16 +520,20 @@ def select_paths(
         expanded_paths = [
             path
             for path in candidate_paths
-            if classify_test(
+            if _is_selectable(
                 repo.read_text(path),
                 repo,
                 harness_dependency_cache,
-            )["isScriptHostVerifiable"]
+                include_negative,
+            )
         ]
         selection_mode = "all-script-host-verifiable"
     else:
         candidate_paths = repo.expand_paths(requested_paths)
         expanded_paths = list(candidate_paths)
+
+    if shuffle_seed is not None:
+        random.Random(shuffle_seed).shuffle(expanded_paths)
 
     sharded_paths = apply_shard(expanded_paths, shard_count, shard_index)
     selection = {
@@ -533,8 +542,31 @@ def select_paths(
         "selectedCountBeforeSharding": len(expanded_paths),
         "shardCount": shard_count,
         "shardIndex": shard_index,
+        "shuffleSeed": shuffle_seed,
+        "includeNegative": include_negative,
     }
     return sharded_paths, selection
+
+
+def _is_selectable(
+    source: str,
+    repo: Test262Repository | None,
+    harness_dependency_cache: dict[str, bool] | None,
+    include_negative: bool,
+) -> bool:
+    """Return True when the test file is eligible for the current selection."""
+    classification = classify_test(source, repo, harness_dependency_cache)
+    if classification["isScriptHostVerifiable"]:
+        return True
+    if include_negative and classification["negative"] is not None:
+        # Accept negative tests that are blocked only by negative metadata (not
+        # by unsupported flags/features or host-harness blockers).
+        return (
+            not classification["unsupportedFlags"]
+            and not classification["unsupportedFeatures"]
+            and not classification["hostHarnessBlockers"]
+        )
+    return False
 
 
 def run_test(
@@ -544,6 +576,7 @@ def run_test(
     harness_cache: dict[str, str],
     timeout_seconds: float,
     memory_limit_mb: int,
+    include_negative: bool = False,
 ) -> dict[str, object]:
     source = repo.read_text(path)
     metadata, body = parse_metadata(source)
@@ -563,6 +596,15 @@ def run_test(
             "status": "skipped",
             "reason": "; ".join(reasons),
         }
+
+    negative = parse_negative_metadata(source)
+    if negative is not None and not include_negative:
+        return {
+            "path": path,
+            "status": "skipped",
+            "reason": "negative metadata test (use --include-negative to run)",
+        }
+
     is_async = "async" in metadata["flags"]
     is_only_strict = "onlyStrict" in metadata["flags"]
 
@@ -642,6 +684,29 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
     finally:
         os.unlink(script_path)
 
+    if negative is not None:
+        # Negative tests expect an error.  If the engine exited with a
+        # non-zero status, check whether stderr mentions the expected
+        # error type; if it does, the test passes.
+        expected_type = negative.get("type", "")
+        if process.returncode != 0 and expected_type and expected_type in (stderr or ""):
+            return {"path": path, "status": "passed", "negative": True}
+        if process.returncode == 0:
+            return {
+                "path": path,
+                "status": "failed",
+                "reason": f"negative test expected {expected_type} but succeeded",
+                "stdout": stdout,
+                "stderr": stderr,
+            }
+        return {
+            "path": path,
+            "status": "failed",
+            "reason": f"negative test expected {expected_type} but got different error",
+            "stdout": stdout,
+            "stderr": stderr,
+        }
+
     if process.returncode == 0:
         return {"path": path, "status": "passed"}
 
@@ -662,6 +727,9 @@ def build_summary(
     selection: dict[str, object],
     test_timeout_seconds: float,
     memory_limit_mb: int,
+    max_workers: int = 1,
+    shuffle_seed: int | None = None,
+    include_negative: bool = False,
 ) -> dict[str, object]:
     passed = sum(1 for result in results if result["status"] == "passed")
     failed = sum(1 for result in results if result["status"] == "failed")
@@ -675,6 +743,9 @@ def build_summary(
         "broilerDll": broiler_dll,
         "testTimeoutSeconds": test_timeout_seconds,
         "memoryLimitMb": memory_limit_mb,
+        "maxWorkers": max_workers,
+        "shuffleSeed": shuffle_seed,
+        "includeNegative": include_negative,
         "requestedPaths": requested_paths,
         "expandedPaths": expanded_paths,
         "selectionMode": selection["selectionMode"],
@@ -700,6 +771,8 @@ def run_selected_tests(
     selection: dict[str, object],
     timeout_seconds: float,
     memory_limit_mb: int,
+    max_workers: int = 1,
+    include_negative: bool = False,
 ) -> list[dict[str, object]]:
     total = len(expanded_paths)
     if total == 0:
@@ -715,8 +788,32 @@ def run_selected_tests(
     log_progress(
         f"Per-test timeout is {timeout_seconds:g}s; POSIX memory cap is {memory_limit_label}."
     )
+    if max_workers > 1:
+        log_progress(f"Using {max_workers} parallel worker(s).")
 
     interval = calculate_progress_log_interval(total)
+
+    if max_workers <= 1:
+        return _run_tests_serial(
+            repo, broiler_dll, expanded_paths, timeout_seconds,
+            memory_limit_mb, interval, total, include_negative,
+        )
+    return _run_tests_parallel(
+        repo, broiler_dll, expanded_paths, timeout_seconds,
+        memory_limit_mb, interval, total, max_workers, include_negative,
+    )
+
+
+def _run_tests_serial(
+    repo: Test262Repository,
+    broiler_dll: str,
+    expanded_paths: list[str],
+    timeout_seconds: float,
+    memory_limit_mb: int,
+    interval: int | None,
+    total: int,
+    include_negative: bool,
+) -> list[dict[str, object]]:
     harness_cache: dict[str, str] = {}
     results: list[dict[str, object]] = []
     passed = 0
@@ -732,6 +829,7 @@ def run_selected_tests(
             harness_cache,
             timeout_seconds,
             memory_limit_mb,
+            include_negative,
         )
         results.append(result)
 
@@ -752,6 +850,71 @@ def run_selected_tests(
                 f"Completed {index}/{total} test(s) "
                 f"(passed={passed}, failed={failed}, skipped={skipped}, timedOut={timed_out})."
             )
+
+    return results
+
+
+def _run_tests_parallel(
+    repo: Test262Repository,
+    broiler_dll: str,
+    expanded_paths: list[str],
+    timeout_seconds: float,
+    memory_limit_mb: int,
+    interval: int | None,
+    total: int,
+    max_workers: int,
+    include_negative: bool,
+) -> list[dict[str, object]]:
+    # Each worker gets its own harness cache to avoid contention.
+    results: list[dict[str, object]] = [{}] * total  # type: ignore[arg-type]
+    lock = threading.Lock()
+    completed = 0
+    passed = 0
+    failed = 0
+    skipped = 0
+    timed_out = 0
+
+    def _worker(index: int, path: str) -> tuple[int, dict[str, object]]:
+        harness_cache: dict[str, str] = {}
+        result = run_test(
+            repo, broiler_dll, path, harness_cache,
+            timeout_seconds, memory_limit_mb, include_negative,
+        )
+        return index, result
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(_worker, idx, path): idx
+            for idx, path in enumerate(expanded_paths)
+        }
+        for future in concurrent.futures.as_completed(futures):
+            idx, result = future.result()
+            results[idx] = result
+
+            with lock:
+                completed += 1
+                status = str(result["status"])
+                if status == "passed":
+                    passed += 1
+                elif status == "failed":
+                    failed += 1
+                    log_progress(f"Failure {failed} at {result['path']}")
+                elif status == "timedOut":
+                    timed_out += 1
+                    log_progress(
+                        f"Timeout {timed_out} at {result['path']} after {timeout_seconds:g}s"
+                    )
+                else:
+                    skipped += 1
+
+                if interval is not None and (
+                    completed % interval == 0 or completed == total
+                ):
+                    log_progress(
+                        f"Completed {completed}/{total} test(s) "
+                        f"(passed={passed}, failed={failed}, "
+                        f"skipped={skipped}, timedOut={timed_out})."
+                    )
 
     return results
 
@@ -814,7 +977,26 @@ def main() -> int:
         default=0,
         help="Optional POSIX per-test address-space limit in MiB; pass 0 to disable",
     )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=1,
+        help="Number of parallel worker threads for running tests (default 1 = serial)",
+    )
+    parser.add_argument(
+        "--shuffle-seed",
+        type=int,
+        default=None,
+        help="Seed for deterministic random shuffling of test order before sharding; omit to keep upstream order",
+    )
+    parser.add_argument(
+        "--include-negative",
+        action="store_true",
+        help="Include negative-metadata tests and verify expected error types",
+    )
     args = parser.parse_args()
+
+    max_workers = max(1, args.max_workers)
 
     log_progress(
         f"Starting test262 run for suite ref {args.suite_ref}"
@@ -834,6 +1016,8 @@ def main() -> int:
             args.all_script_host_verifiable,
             args.shard_count,
             args.shard_index,
+            shuffle_seed=args.shuffle_seed,
+            include_negative=args.include_negative,
         )
     except ValueError as exc:
         parser.error(str(exc))
@@ -859,6 +1043,8 @@ def main() -> int:
         selection,
         args.test_timeout_seconds,
         args.memory_limit_mb,
+        max_workers=max_workers,
+        include_negative=args.include_negative,
     )
     summary = build_summary(
         args.suite_ref,
@@ -869,6 +1055,9 @@ def main() -> int:
         selection,
         args.test_timeout_seconds,
         args.memory_limit_mb,
+        max_workers=max_workers,
+        shuffle_seed=args.shuffle_seed,
+        include_negative=args.include_negative,
     )
 
     if args.output:

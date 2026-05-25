@@ -374,6 +374,180 @@ includes: [assert.js, sta.js]
             requested_paths,
         )
 
+    def test_shuffle_seed_reorders_paths_deterministically(self) -> None:
+        for name in ("a.js", "b.js", "c.js", "d.js", "e.js"):
+            self.write_test(f"test/language/{name}", "1;\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        paths_no_shuffle, sel_no = run_test262.select_paths(
+            repo, [], True, 1, 0, shuffle_seed=None,
+        )
+        paths_seed_42a, sel_42a = run_test262.select_paths(
+            repo, [], True, 1, 0, shuffle_seed=42,
+        )
+        paths_seed_42b, _ = run_test262.select_paths(
+            repo, [], True, 1, 0, shuffle_seed=42,
+        )
+        paths_seed_99, _ = run_test262.select_paths(
+            repo, [], True, 1, 0, shuffle_seed=99,
+        )
+
+        self.assertIsNone(sel_no["shuffleSeed"])
+        self.assertEqual(42, sel_42a["shuffleSeed"])
+        # Same seed => same order
+        self.assertEqual(paths_seed_42a, paths_seed_42b)
+        # Different seeds => (very likely) different order
+        self.assertNotEqual(paths_seed_42a, paths_seed_99)
+        # Shuffled order differs from the default sorted order
+        self.assertNotEqual(paths_no_shuffle, paths_seed_42a)
+        # All paths present
+        self.assertEqual(sorted(paths_no_shuffle), sorted(paths_seed_42a))
+
+    def test_select_paths_include_negative_adds_negative_tests(self) -> None:
+        positive_path = self.write_test("test/language/a.js", "1 + 1;\n")
+        negative_path = self.write_test(
+            "test/language/b-negative.js",
+            "/*---\nnegative:\n  phase: runtime\n  type: ReferenceError\n---*/\nmissing;\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        paths_default, sel_default = run_test262.select_paths(
+            repo, [], True, 1, 0, include_negative=False,
+        )
+        paths_neg, sel_neg = run_test262.select_paths(
+            repo, [], True, 1, 0, include_negative=True,
+        )
+
+        self.assertEqual([positive_path], paths_default)
+        self.assertFalse(sel_default["includeNegative"])
+        self.assertIn(positive_path, paths_neg)
+        self.assertIn(negative_path, paths_neg)
+        self.assertTrue(sel_neg["includeNegative"])
+
+    def test_run_test_negative_passes_on_matching_error(self) -> None:
+        path = self.write_test(
+            "test/language/neg.js",
+            "/*---\nnegative:\n  phase: runtime\n  type: ReferenceError\n---*/\nmissing;\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        process = mock.Mock()
+        process.pid = 9999
+        process.returncode = 1
+        process.communicate.return_value = ("", "ReferenceError: missing is not defined")
+
+        with mock.patch.object(run_test262.subprocess, "Popen", return_value=process):
+            result = run_test262.run_test(
+                repo, TEST_ENGINE_PATH, path, {}, 30.0, 0, include_negative=True,
+            )
+
+        self.assertEqual("passed", result["status"])
+        self.assertTrue(result.get("negative"))
+
+    def test_run_test_negative_fails_on_wrong_error(self) -> None:
+        path = self.write_test(
+            "test/language/neg.js",
+            "/*---\nnegative:\n  phase: runtime\n  type: ReferenceError\n---*/\nmissing;\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        process = mock.Mock()
+        process.pid = 9999
+        process.returncode = 1
+        process.communicate.return_value = ("", "TypeError: something else")
+
+        with mock.patch.object(run_test262.subprocess, "Popen", return_value=process):
+            result = run_test262.run_test(
+                repo, TEST_ENGINE_PATH, path, {}, 30.0, 0, include_negative=True,
+            )
+
+        self.assertEqual("failed", result["status"])
+        self.assertIn("expected ReferenceError", result["reason"])
+
+    def test_run_test_negative_fails_when_test_succeeds(self) -> None:
+        path = self.write_test(
+            "test/language/neg.js",
+            "/*---\nnegative:\n  phase: runtime\n  type: SyntaxError\n---*/\n1 + 1;\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        process = mock.Mock()
+        process.pid = 9999
+        process.returncode = 0
+        process.communicate.return_value = ("", "")
+
+        with mock.patch.object(run_test262.subprocess, "Popen", return_value=process):
+            result = run_test262.run_test(
+                repo, TEST_ENGINE_PATH, path, {}, 30.0, 0, include_negative=True,
+            )
+
+        self.assertEqual("failed", result["status"])
+        self.assertIn("expected SyntaxError but succeeded", result["reason"])
+
+    def test_run_test_negative_skipped_when_not_included(self) -> None:
+        path = self.write_test(
+            "test/language/neg.js",
+            "/*---\nnegative:\n  phase: runtime\n  type: ReferenceError\n---*/\nmissing;\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        result = run_test262.run_test(
+            repo, TEST_ENGINE_PATH, path, {}, 30.0, 0, include_negative=False,
+        )
+
+        self.assertEqual("skipped", result["status"])
+
+    def test_build_summary_includes_new_metadata_fields(self) -> None:
+        summary = run_test262.build_summary(
+            TEST_SUITE_REF,
+            TEST_ENGINE_PATH,
+            ["test/language"],
+            ["test/language/a.js"],
+            [{"path": "test/language/a.js", "status": "passed"}],
+            {
+                "selectionMode": "requested",
+                "candidateCount": 1,
+                "selectedCountBeforeSharding": 1,
+                "shardCount": 1,
+                "shardIndex": 0,
+            },
+            30.0,
+            0,
+            max_workers=4,
+            shuffle_seed=42,
+            include_negative=True,
+        )
+
+        self.assertEqual(4, summary["maxWorkers"])
+        self.assertEqual(42, summary["shuffleSeed"])
+        self.assertTrue(summary["includeNegative"])
+
+    def test_parallel_run_returns_results_in_path_order(self) -> None:
+        paths = [
+            self.write_test(f"test/language/{name}.js", "1;\n")
+            for name in ("a", "b", "c")
+        ]
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        selection = {
+            "selectionMode": "requested",
+            "candidateCount": 3,
+            "selectedCountBeforeSharding": 3,
+            "shardCount": 1,
+            "shardIndex": 0,
+        }
+
+        def fake_run_test(repo, dll, path, cache, timeout, mem, include_negative=False):
+            return {"path": path, "status": "passed"}
+
+        with mock.patch.object(run_test262, "run_test", side_effect=fake_run_test):
+            results = run_test262.run_selected_tests(
+                repo, TEST_ENGINE_PATH, paths, selection,
+                30.0, 0, max_workers=2,
+            )
+
+        self.assertEqual(3, len(results))
+        self.assertEqual(
+            paths,
+            [r["path"] for r in results],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
