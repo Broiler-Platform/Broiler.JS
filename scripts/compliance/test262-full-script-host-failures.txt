@@ -1256,7 +1256,6 @@ test/built-ins/Iterator/concat/get-iterator-method-only-once.js
 test/built-ins/Iterator/concat/get-value-after-done.js
 test/built-ins/Iterator/concat/inner-iterator-created-in-order.js
 test/built-ins/Iterator/concat/next-method-returns-throwing-value-done.js
-test/built-ins/Iterator/concat/return-is-forwarded.js
 test/built-ins/Iterator/concat/return-is-not-forwarded-before-initial-start.js
 test/built-ins/Iterator/concat/return-method-called-with-zero-arguments.js
 test/built-ins/Iterator/concat/throws-typeerror-when-iterator-not-an-object.js
@@ -1342,7 +1341,6 @@ test/built-ins/Iterator/prototype/flatMap/next-method-returns-throwing-done.js
 test/built-ins/Iterator/prototype/flatMap/next-method-returns-throwing-value-done.js
 test/built-ins/Iterator/prototype/flatMap/next-method-returns-throwing-value.js
 test/built-ins/Iterator/prototype/flatMap/next-method-throws.js
-test/built-ins/Iterator/prototype/flatMap/return-is-forwarded-to-mapper-result.js
 test/built-ins/Iterator/prototype/flatMap/return-is-forwarded-to-underlying-iterator.js
 test/built-ins/Iterator/prototype/flatMap/return-is-not-forwarded-after-exhaustion.js
 test/built-ins/Iterator/prototype/flatMap/this-plain-iterator.js
@@ -6953,7 +6951,6 @@ test/language/expressions/yield/star-rhs-iter-thrw-violation-no-rtrn.js
 test/language/expressions/yield/star-rhs-iter-thrw-violation-rtrn-call-err.js
 test/language/expressions/yield/star-rhs-iter-thrw-violation-rtrn-get-err.js
 test/language/expressions/yield/star-rhs-iter-thrw-violation-rtrn-invoke.js
-test/language/expressions/yield/star-throw-is-null.js
 test/language/function-code/10.4.3-1-102-s.js
 test/language/function-code/10.4.3-1-102gs.js
 test/language/function-code/10.4.3-1-36-s.js
@@ -10127,7 +10124,6 @@ test/staging/sm/JSON/stringify-replacer-array-skipped-element.js
 test/staging/sm/JSON/stringify-replacer-array-trailing-holes.js
 test/staging/sm/JSON/stringify-replacer.js
 test/staging/sm/JSON/stringify-special-escapes.js
-test/staging/sm/JSON/stringify-toJSON-arguments.js
 test/staging/sm/JSON/stringify.js
 test/staging/sm/Map/iterable.js
 test/staging/sm/Math/acosh-approx.js
@@ -10464,7 +10460,6 @@ test/staging/sm/generators/syntax.js
 test/staging/sm/generators/yield-error.js
 test/staging/sm/generators/yield-iterator-close.js
 test/staging/sm/generators/yield-non-regexp.js
-test/staging/sm/generators/yield-star-iterator-close.js
 test/staging/sm/global/bug-320887.js
 test/staging/sm/global/bug660612.js
 test/staging/sm/global/eval-01.js
