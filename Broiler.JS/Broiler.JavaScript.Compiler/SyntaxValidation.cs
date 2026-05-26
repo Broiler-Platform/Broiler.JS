@@ -31,6 +31,10 @@ internal static class SyntaxValidation
         new StrictModeValidator(inheritStrictMode).Visit(program);
     }
 
+    internal static bool IsUseStrictDirectiveLiteral(AstLiteral literal)
+        => literal.TokenType == TokenTypes.String
+            && (literal.Start.Span.Value == "\"use strict\"" || literal.Start.Span.Value == "'use strict'");
+
     private static bool HasUseStrictDirective(IFastEnumerable<AstStatement> statements)
     {
         var enumerator = statements.GetFastEnumerator();
@@ -39,7 +43,7 @@ internal static class SyntaxValidation
             if (statement is not AstExpressionStatement { Expression: AstLiteral { TokenType: TokenTypes.String } literal })
                 return false;
 
-            if (literal.Start.CookedText == "use strict")
+            if (IsUseStrictDirectiveLiteral(literal))
                 return true;
         }
 

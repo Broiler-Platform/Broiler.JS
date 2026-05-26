@@ -463,6 +463,8 @@ public class BuiltInsTests
             foo.call(undefined);
             """));
 
+        Assert.Equal("true", Eval("function foo() {\n    'use str\\\nict';\n    return this !== undefined;\n}\n\nfoo.call(undefined);"));
+
         Assert.Equal("true", Eval("""
             (function () {
                 var evaluated = 0;
