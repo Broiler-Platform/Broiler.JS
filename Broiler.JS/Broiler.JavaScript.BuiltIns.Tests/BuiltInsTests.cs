@@ -1934,6 +1934,38 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Intl_Constructors_Expose_Non_Writable_Prototype_Descriptors()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+              var descriptors = [
+                Object.getOwnPropertyDescriptor(Intl.DateTimeFormat, 'prototype'),
+                Object.getOwnPropertyDescriptor(Intl.DisplayNames, 'prototype'),
+                Object.getOwnPropertyDescriptor(Intl.DurationFormat, 'prototype'),
+                Object.getOwnPropertyDescriptor(Intl.ListFormat, 'prototype'),
+                Object.getOwnPropertyDescriptor(Intl.Locale, 'prototype'),
+                Object.getOwnPropertyDescriptor(Intl.NumberFormat, 'prototype'),
+                Object.getOwnPropertyDescriptor(Intl.PluralRules, 'prototype'),
+                Object.getOwnPropertyDescriptor(Intl.RelativeTimeFormat, 'prototype'),
+                Object.getOwnPropertyDescriptor(Intl.Segmenter, 'prototype')
+              ];
+
+              return descriptors.every(function (descriptor) {
+                return descriptor
+                  && descriptor.value
+                  && descriptor.writable === false
+                  && descriptor.enumerable === false
+                  && descriptor.configurable === false;
+              });
+            })();
+            """);
+
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
     public void Custom_Error_Subclass_Chains_Preserve_Instanceof_And_Message()
     {
         EnsureBuiltInsLoaded();
