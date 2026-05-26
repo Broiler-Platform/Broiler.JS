@@ -7049,6 +7049,112 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_Iteration_Methods_Recheck_Indexed_Presence_After_Mutation()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              function forEachVisitsPrototypeElementAfterOwnDelete() {
+                var seen = false;
+                var obj = { 0: 0, 1: 111, length: 10 };
+
+                Object.defineProperty(obj, '0', {
+                  get: function() {
+                    delete obj[1];
+                    return 0;
+                  },
+                  configurable: true
+                });
+
+                Object.prototype[1] = 1;
+
+                try {
+                  Array.prototype.forEach.call(obj, function(value, index) {
+                    if (index === 1 && value === 1) {
+                      seen = true;
+                    }
+                  });
+
+                  return seen;
+                } finally {
+                  delete Object.prototype[1];
+                }
+              }
+
+              function reduceKeepsNonConfigurableElementAfterLengthShrink() {
+                var seen = false;
+                var arr = [0, 1, 2, 3];
+
+                Object.defineProperty(arr, '2', {
+                  get: function() {
+                    return 'unconfigurable';
+                  },
+                  configurable: false
+                });
+
+                Object.defineProperty(arr, '0', {
+                  get: function() {
+                    arr.length = 2;
+                    return 1;
+                  },
+                  configurable: true
+                });
+
+                arr.reduce(function(accum, value, index) {
+                  if (index === 2 && value === 'unconfigurable') {
+                    seen = true;
+                  }
+
+                  return accum;
+                });
+
+                return seen;
+              }
+
+              function reduceRightKeepsNonConfigurableElementAfterLengthShrink() {
+                var seen = false;
+                var arr = [0, 1, 2, 3];
+
+                Object.defineProperty(arr, '2', {
+                  get: function() {
+                    return 'unconfigurable';
+                  },
+                  configurable: false
+                });
+
+                Object.defineProperty(arr, '3', {
+                  get: function() {
+                    arr.length = 2;
+                    return 1;
+                  },
+                  configurable: true
+                });
+
+                arr.reduceRight(function(accum, value, index) {
+                  if (index === 2 && value === 'unconfigurable') {
+                    seen = true;
+                  }
+
+                  return accum;
+                });
+
+                return seen;
+              }
+
+              return [
+                forEachVisitsPrototypeElementAfterOwnDelete(),
+                reduceKeepsNonConfigurableElementAfterLengthShrink(),
+                reduceRightKeepsNonConfigurableElementAfterLengthShrink()
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Generator_And_AsyncGenerator_Parameter_Abrupt_Completions_Throw_On_Call()
     {
         EnsureBuiltInsLoaded();

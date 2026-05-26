@@ -196,13 +196,13 @@ public partial class JSArray
 
     private static bool TryGetArrayLikeElement(JSObject @object, uint index, out JSValue value)
     {
-        if (@object.GetInternalProperty(index).IsEmpty)
+        if (!HasIndexedProperty(@object, index))
         {
             value = JSUndefined.Value;
             return false;
         }
 
-        value = @object[index];
+        value = GetIndexedValue(@object, index);
         return true;
     }
 
@@ -487,7 +487,7 @@ public partial class JSArray
 
         for (uint index = 0; index < length; index++)
         {
-            if (!@this.TryGetElement(index, out var item))
+            if (!TryGetArrayLikeElement(@this, index, out var item))
                 continue;
 
             var n = new JSNumber(index);

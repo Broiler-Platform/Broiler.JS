@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using Broiler.JavaScript.ExpressionCompiler;
+using Broiler.JavaScript.BuiltIns.Error;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Runtime;
@@ -101,32 +102,7 @@ public partial class JSArray : JSObject
     public double ArrayLength
     {
         get => _length;
-        set
-        {
-            if (IsLengthReadOnly())
-                throw JSEngine.NewTypeError("Cannot modify property length");
-
-            if (IsSealedOrFrozen())
-                throw JSEngine.NewTypeError("Cannot modify property length");
-            var prev = _length;
-            ref var elements = ref GetElements();
-            double n = value;
-            if (n < 0 || n > uint.MaxValue || double.IsNaN(n))
-                throw JSEngine.NewRangeError("Invalid length");
-            _length = (uint)n;
-            if (prev > _length)
-            {
-                // remove.. 
-                for (uint i = _length; i < prev; i++)
-                {
-                    elements.RemoveAt(i);
-                }
-            }
-            else
-            {
-                elements.Resize(_length);
-            }
-        }
+        set => SetLengthValue(JSValue.CreateNumber(value), true);
     }
 
     public override int Length
@@ -162,10 +138,7 @@ public partial class JSArray : JSObject
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
     {
         if (name.Key == KeyStrings.length.Key)
-        {
-            ArrayLength = value.DoubleValue;
-            return true;
-        }
+            return SetLengthValue(value, throwError);
 
         return base.SetValue(name, value, receiver, throwError);
     }
@@ -425,6 +398,22 @@ public partial class JSArray : JSObject
         _length = newLength;
         SetLengthWritable(newWritable);
         return JSUndefined.Value;
+    }
+
+    private bool SetLengthValue(JSValue value, bool throwError)
+    {
+        var propertyDescription = new JSObject();
+        propertyDescription.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);
+
+        try
+        {
+            DefineLengthProperty(propertyDescription);
+            return true;
+        }
+        catch (JSException ex) when (!throwError && ex.Error is JSTypeError)
+        {
+            return false;
+        }
     }
 
     private void SetLengthWritable(bool writable)
