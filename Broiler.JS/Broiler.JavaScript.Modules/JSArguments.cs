@@ -19,7 +19,7 @@ public class JSArguments: JSObject
 
     public override bool BooleanValue => true;
 
-    public override JSValue TypeOf() => JSConstants.Arguments;
+    public override JSValue TypeOf() => JSConstants.Object;
 
     internal override PropertyKey ToKey(bool create = false) => KeyStrings.arguments;
 

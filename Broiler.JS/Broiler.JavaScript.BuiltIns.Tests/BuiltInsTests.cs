@@ -7536,6 +7536,13 @@ public class BuiltInsTests
                     (function () {}).apply(null, true);
                 }),
                 (function () {
+                    return (function () {
+                        return (function (a, b) {
+                            return a + ',' + b;
+                        }).apply(null, arguments);
+                    })('x', 'y');
+                })(),
+                (function () {
                     return (function (a, b) {
                         return a + ',' + b;
                     }).apply(null, { 0: 'x', 1: 'y', length: 2 });
@@ -7601,7 +7608,7 @@ public class BuiltInsTests
             ].join('|');
         })();");
 
-        Assert.Equal("TypeError|x,y|TypeError|TypeError|TypeError|TypeError|0,1,2|TypeError|TypeError|TypeError|TypeError", result.ToString());
+        Assert.Equal("TypeError|x,y|x,y|TypeError|TypeError|TypeError|TypeError|0,1,2|TypeError|TypeError|TypeError|TypeError", result.ToString());
 
         ctx.Eval("var iterReturn; function* gReturn() { iterReturn.return(42); } iterReturn = gReturn();");
         var returnEx = Assert.Throws<JSException>(() => ctx.Eval("iterReturn.next();"));

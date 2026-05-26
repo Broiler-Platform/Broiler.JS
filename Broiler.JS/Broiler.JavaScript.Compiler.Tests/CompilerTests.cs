@@ -302,6 +302,14 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_ArgumentsObject_TypeOf_Is_Object()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("(function () { return typeof arguments; })();");
+        Assert.Equal("object", result.ToString());
+    }
+
+    [Fact]
     public void Compile_NonStrict_ArgumentsObject_Maps_NonConfigurable_Parameters()
     {
         using var ctx = new JSContext();

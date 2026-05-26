@@ -40,30 +40,6 @@ internal static class ArgumentsCoreExtensions
             }
         }
 
-        if (args.TypeOf() == JSConstants.Arguments)
-        {
-            var argumentsLength = args.Length;
-            switch (argumentsLength)
-            {
-                case 0:
-                    return new Arguments(@this);
-                case 1:
-                    return new Arguments(@this, args[0u]);
-                case 2:
-                    return new Arguments(@this, args[0u], args[1u]);
-                case 3:
-                    return new Arguments(@this, args[0u], args[1u], args[2u]);
-                case 4:
-                    return new Arguments(@this, args[0u], args[1u], args[2u], args[3u]);
-                default:
-                    var argList = new JSValue[args.Length];
-                    var ee = args.GetElementEnumerator();
-                    while (ee.MoveNext(out var hasValue, out var value, out var index))
-                        argList[index] = hasValue ? value : JSUndefined.Value;
-                    return new Arguments(@this, argList);
-            }
-        }
-
         if (args is not JSObject @object)
             throw JSValue.NewTypeError("CreateListFromArrayLike called on non-object");
 

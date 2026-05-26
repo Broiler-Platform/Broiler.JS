@@ -95,6 +95,12 @@ public abstract class AstReduce : AstMapVisitor<AstNode>
         var en = statements.GetFastEnumerator();
         while (en.MoveNext(out var item))
         {
+            if (item == null)
+            {
+                r?.Add(item);
+                continue;
+            }
+
             var visited = Visit(item) as T ?? throw new ArgumentNullException();
             if (visited == item)
             {
@@ -396,7 +402,7 @@ public abstract class AstReduce : AstMapVisitor<AstNode>
         if (Modified(spreadElement.Argument, out var argument))
             return new AstSpreadElement(spreadElement.Start, spreadElement.End, argument);
 
-        return argument;
+        return spreadElement;
     }
 
     protected override AstNode VisitSwitchStatement(AstSwitchStatement switchStatement)
