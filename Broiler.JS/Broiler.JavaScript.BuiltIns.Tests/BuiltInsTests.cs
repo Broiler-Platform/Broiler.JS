@@ -5271,6 +5271,116 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Generator_YieldStar_MissingThrow_Closes_Iterator_Without_Arguments()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var throwGets = 0;
+                var returnCount = 0;
+                var returnArgsLength = -1;
+                var iterable = {
+                    next: function() {
+                        return { value: 1, done: false };
+                    },
+                    get throw() {
+                        throwGets += 1;
+                        return null;
+                    },
+                    return: function(...args) {
+                        returnCount += 1;
+                        returnArgsLength = args.length;
+                        return { done: true };
+                    }
+                };
+
+                iterable[Symbol.iterator] = function() {
+                    return iterable;
+                };
+
+                function* generator() {
+                    yield* iterable;
+                }
+
+                var iterator = generator();
+                iterator.next();
+
+                try {
+                    iterator.throw('boom');
+                    return 'no-throw';
+                } catch (e) {
+                    return [e.constructor.name, throwGets, returnCount, returnArgsLength].join('|');
+                }
+            })();
+            """);
+
+        Assert.Equal("TypeError|1|1|0", result.ToString());
+    }
+
+    [Fact]
+    public void Iterator_FlatMap_Return_Forwards_To_Mapper_Result_Once()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var returnCount = 0;
+
+                function* source() {
+                    yield 0;
+                }
+
+                var iter = source().flatMap(function () {
+                    return {
+                        next: function () {
+                            return { done: false, value: 1 };
+                        },
+                        return: function () {
+                            returnCount += 1;
+                            return {};
+                        }
+                    };
+                });
+
+                iter.next();
+                iter.return();
+                iter.return();
+
+                return String(returnCount);
+            })();
+            """);
+
+        Assert.Equal("1", result.ToString());
+    }
+
+    [Fact]
+    public void JSON_Stringify_Passes_Property_Key_To_ToJSON()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var argsLength = -1;
+                var receivedKey = 'missing';
+                var obj = {
+                    p: {
+                        toJSON: function (...args) {
+                            argsLength = args.length;
+                            receivedKey = args[0];
+                            return 17;
+                        }
+                    }
+                };
+
+                return [JSON.stringify(obj), argsLength, receivedKey].join('|');
+            })();
+            """);
+
+        Assert.Equal("{\"p\":17}|1|p", result.ToString());
+    }
+
+    [Fact]
     public void MatchAll_RegExp_LastIndex_And_SetLike_Iterator_Return_Regressions()
     {
         EnsureBuiltInsLoaded();

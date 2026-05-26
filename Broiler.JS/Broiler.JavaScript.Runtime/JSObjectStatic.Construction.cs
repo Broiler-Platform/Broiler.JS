@@ -474,7 +474,7 @@ public partial class JSObject
             if (item is not JSObject entry)
             {
                 if (en is IReturnableEnumerator returnable)
-                    returnable.Return(JSUndefined.Value);
+                    returnable.Return();
 
                 throw NewTypeError(NotEntry(item));
             }

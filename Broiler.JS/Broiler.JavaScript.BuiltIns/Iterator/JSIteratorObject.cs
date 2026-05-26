@@ -23,6 +23,7 @@ namespace Broiler.JavaScript.BuiltIns.Iterator;
 public partial class JSIteratorObject : JSObject
 {
     internal readonly IElementEnumerator _enumerator;
+    private bool _done;
     private bool _executing;
 
     // ---------------------------------------------------------------
@@ -44,7 +45,7 @@ public partial class JSIteratorObject : JSObject
         try
         {
             _executing = true;
-            if (_enumerator != null && _enumerator.MoveNext(out var value))
+            if (!_done && _enumerator != null && _enumerator.MoveNext(out var value))
                 return IteratorResult(value, false);
         }
         finally
@@ -60,12 +61,20 @@ public partial class JSIteratorObject : JSObject
     {
         var value = a.Length > 0 ? a.Get1() : JSUndefined.Value;
         ThrowIfExecuting();
+        if (_done)
+            return IteratorResult(value, true);
 
         try
         {
             _executing = true;
+            _done = true;
             if (_enumerator is IReturnableEnumerator returnable)
-                return returnable.Return(value);
+            {
+                if (a.Length > 0)
+                    return returnable.Return(value);
+
+                return returnable.Return();
+            }
         }
         finally
         {
@@ -178,7 +187,7 @@ public partial class JSIteratorObject : JSObject
 
         try
         {
-            returnable.Return(JSUndefined.Value);
+            returnable.Return();
         }
         catch
         {
@@ -481,7 +490,7 @@ public partial class JSIteratorObject : JSObject
     // ===============================================================
     // Private enumerator wrappers for lazy methods
     // ===============================================================
-    internal sealed class MapEnumerator(IElementEnumerator source, JSValue fn) : IElementEnumerator
+    internal sealed class MapEnumerator(IElementEnumerator source, JSValue fn) : IElementEnumerator, IReturnableEnumerator
     {
         private uint _count;
 
@@ -528,9 +537,19 @@ public partial class JSIteratorObject : JSObject
 
             return @default;
         }
+
+        public JSValue Return()
+            => source is IReturnableEnumerator returnable
+                ? returnable.Return()
+                : IteratorResult(JSUndefined.Value, true);
+
+        public JSValue Return(JSValue value)
+            => source is IReturnableEnumerator returnable
+                ? returnable.Return(value)
+                : IteratorResult(value, true);
     }
 
-    internal sealed class FilterEnumerator(IElementEnumerator source, JSValue fn) : IElementEnumerator
+    internal sealed class FilterEnumerator(IElementEnumerator source, JSValue fn) : IElementEnumerator, IReturnableEnumerator
     {
         private uint index = 0;
         private uint predicateCount = 0;
@@ -595,9 +614,19 @@ public partial class JSIteratorObject : JSObject
 
             return @default;
         }
+
+        public JSValue Return()
+            => source is IReturnableEnumerator returnable
+                ? returnable.Return()
+                : IteratorResult(JSUndefined.Value, true);
+
+        public JSValue Return(JSValue value)
+            => source is IReturnableEnumerator returnable
+                ? returnable.Return(value)
+                : IteratorResult(value, true);
     }
 
-    internal sealed class TakeEnumerator(IElementEnumerator source, int limit) : IElementEnumerator
+    internal sealed class TakeEnumerator(IElementEnumerator source, int limit) : IElementEnumerator, IReturnableEnumerator
     {
         private int taken = 0;
 
@@ -647,9 +676,19 @@ public partial class JSIteratorObject : JSObject
 
             return @default;
         }
+
+        public JSValue Return()
+            => source is IReturnableEnumerator returnable
+                ? returnable.Return()
+                : IteratorResult(JSUndefined.Value, true);
+
+        public JSValue Return(JSValue value)
+            => source is IReturnableEnumerator returnable
+                ? returnable.Return(value)
+                : IteratorResult(value, true);
     }
 
-    internal sealed class DropEnumerator(IElementEnumerator source, int count) : IElementEnumerator
+    internal sealed class DropEnumerator(IElementEnumerator source, int count) : IElementEnumerator, IReturnableEnumerator
     {
         private bool _dropped;
 
@@ -675,9 +714,19 @@ public partial class JSIteratorObject : JSObject
 
         public JSValue NextOrDefault(JSValue @default)
         { EnsureDropped(); return source.NextOrDefault(@default); }
+
+        public JSValue Return()
+            => source is IReturnableEnumerator returnable
+                ? returnable.Return()
+                : IteratorResult(JSUndefined.Value, true);
+
+        public JSValue Return(JSValue value)
+            => source is IReturnableEnumerator returnable
+                ? returnable.Return(value)
+                : IteratorResult(value, true);
     }
 
-    internal sealed class FlatMapEnumerator(IElementEnumerator source, JSValue fn) : IElementEnumerator
+    internal sealed class FlatMapEnumerator(IElementEnumerator source, JSValue fn) : IElementEnumerator, IReturnableEnumerator
     {
         private IElementEnumerator _inner;
         private uint _count;
@@ -728,6 +777,28 @@ public partial class JSIteratorObject : JSObject
 
                 _inner = GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))));
             }
+        }
+
+        public JSValue Return()
+        {
+            if (_inner is IReturnableEnumerator innerReturnable)
+                return innerReturnable.Return();
+
+            if (source is IReturnableEnumerator sourceReturnable)
+                return sourceReturnable.Return();
+
+            return IteratorResult(JSUndefined.Value, true);
+        }
+
+        public JSValue Return(JSValue value)
+        {
+            if (_inner is IReturnableEnumerator innerReturnable)
+                return innerReturnable.Return(value);
+
+            if (source is IReturnableEnumerator sourceReturnable)
+                return sourceReturnable.Return(value);
+
+            return IteratorResult(value, true);
         }
     }
 
@@ -813,6 +884,14 @@ public partial class JSIteratorObject : JSObject
                 return returnable.Return(value);
 
             return IteratorResult(value, true);
+        }
+
+        public JSValue Return()
+        {
+            if (_currentEnum is IReturnableEnumerator returnable)
+                return returnable.Return();
+
+            return IteratorResult(JSUndefined.Value, true);
         }
     }
 }

@@ -82,12 +82,17 @@ public partial class JSGenerator : JSObject, IJSGenerator
         ThrowIfExecuting();
         if (cg != null && cg.HasDelegatedEnumerator)
         {
+            var missingThrow = false;
             try
             {
                 if (!cg.TryThrowDelegated(value, out var delegatedResult))
                 {
-                    cg.InjectException(JSException.FromValue(value));
-                    return Next();
+                    missingThrow = true;
+                    if (cg.DelegatedEnumerator is IReturnableEnumerator returnable)
+                        returnable.Return();
+
+                    cg.EndDelegation();
+                    throw JSEngine.NewTypeError("Iterator does not provide a throw method");
                 }
 
                 var delegatedDone = delegatedResult[KeyStrings.done].BooleanValue;
@@ -104,6 +109,13 @@ public partial class JSGenerator : JSObject, IJSGenerator
             }
             catch (Exception ex)
             {
+                if (missingThrow)
+                {
+                    done = true;
+                    this.value = JSUndefined.Value;
+                    throw;
+                }
+
                 cg.EndDelegation();
                 cg.InjectException(JSException.From(ex));
                 return Next();

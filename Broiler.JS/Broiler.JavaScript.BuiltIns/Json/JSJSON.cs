@@ -113,7 +113,7 @@ public partial class JSJSON : JSObject
                 if (indent != null)
                     sb.WriteLine();
 
-                var jsValue = ToJson(array[index]);
+                var jsValue = ToJson(array[index], JSValue.CreateString(index.ToString()));
                 if (replacer != null)
                     jsValue = replacer((array, JSValue.CreateString(index.ToString()), jsValue));
 
@@ -406,7 +406,7 @@ public partial class JSJSON : JSObject
         var emptyKey = KeyStrings.GetOrCreate(string.Empty);
         root[emptyKey] = f;
 
-        f = ToJson(f);
+        f = ToJson(f, JSValue.EmptyString);
         if (replacer != null)
             f = replacer((root, JSValue.EmptyString, f));
 
@@ -425,7 +425,7 @@ public partial class JSJSON : JSObject
 
     public static string Stringify(JSValue value)
     {
-        value = ToJson(value);
+        value = ToJson(value, JSValue.EmptyString);
         var sb = new StringWriter();
         Stringify(sb, value, null, null, []);
         return sb.ToString();
@@ -566,7 +566,7 @@ public partial class JSJSON : JSObject
             if (jsValue.IsUndefined || jsValue is JSFunction)
                 continue;
 
-            jsValue = ToJson(jsValue);
+            jsValue = ToJson(jsValue, KeyStringCoreExtensions.GetJSString(value.key));
 
             // check replacer...
             if (replacer != null)
@@ -608,7 +608,7 @@ public partial class JSJSON : JSObject
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static JSValue ToJson(JSValue value)
+    private static JSValue ToJson(JSValue value, JSValue key)
     {
         if (value is not JSObject jobj)
             return value;
@@ -621,7 +621,7 @@ public partial class JSJSON : JSObject
         if (p == null)
             return value;
 
-        return p(new Arguments(value));
+        return p(new Arguments(value, key));
     }
 
 

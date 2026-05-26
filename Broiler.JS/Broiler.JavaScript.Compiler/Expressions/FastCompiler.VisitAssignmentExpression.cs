@@ -18,8 +18,8 @@ partial class FastCompiler
         .InternalMethod(nameof(JSObjectStatic.RequireObjectCoercible), typeof(JSValue))
         ?? throw new InvalidOperationException("JSObjectStatic.RequireObjectCoercible(JSValue) not found");
     private static readonly MethodInfo ReturnableEnumeratorReturnMethod = typeof(IReturnableEnumerator)
-        .GetMethod(nameof(IReturnableEnumerator.Return), [typeof(JSValue)])
-        ?? throw new InvalidOperationException("IReturnableEnumerator.Return(JSValue) not found");
+        .GetMethod(nameof(IReturnableEnumerator.Return), Type.EmptyTypes)
+        ?? throw new InvalidOperationException("IReturnableEnumerator.Return() not found");
     private static readonly MethodInfo PrepareAnonymousFunctionNameForDestructuringMethod = typeof(JSVariable)
         .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForDestructuring), [typeof(JSValue), typeof(string), typeof(bool)])
         ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForDestructuring(JSValue, string, bool) not found");
@@ -294,7 +294,6 @@ partial class FastCompiler
                     inits.Add(YExpression.Assign(iterDoneVar, YExpression.Constant(false)));
                     var en = arrayPattern.Elements.GetFastEnumerator();
                     var arrayInits = new Sequence<YExpression>();
-                    var hasSpread = false;
 
                     while (en.MoveNext(out var element))
                     {
@@ -355,9 +354,9 @@ partial class FastCompiler
 
                             case FastNodeType.SpreadElement:
                                 var spe = element as AstSpreadElement;
-                                hasSpread = true;
                                 CreateAssignment(arrayInits, spe.Argument, JSArrayBuilder.NewFromElementEnumerator(destExp), createVariable, newScope,
                                     suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign);
+                                arrayInits.Add(YExpression.Assign(iterDoneVar, YExpression.Constant(true)));
                                 break;
 
                             case FastNodeType.ObjectPattern:
@@ -384,25 +383,18 @@ partial class FastCompiler
                     }
 
                     var arrayInitBlock = YExpression.Block(arrayInits);
-                    if (hasSpread)
-                    {
-                        inits.Add(arrayInitBlock);
-                    }
-                    else
-                    {
-                        // Build a void finally body – only close iterator if NOT exhausted.
-                        var closeIterator = YExpression.Block(
+                    // Build a void finally body – only close iterator if NOT exhausted.
+                    var closeIterator = YExpression.Block(
+                        YExpression.IfThen(
+                            YExpression.Not(iterDoneVar),
                             YExpression.IfThen(
-                                YExpression.Not(iterDoneVar),
-                                YExpression.IfThen(
-                                    YExpression.NotEqual(YExpression.Convert(returnableVar.Expression, typeof(object)), YExpression.Null),
-                                    YExpression.Block(
-                                        YExpression.Call(returnableVar.Expression, ReturnableEnumeratorReturnMethod, JSUndefinedBuilder.Value),
-                                        YExpression.Empty))),
-                            YExpression.Empty);
+                                YExpression.NotEqual(YExpression.Convert(returnableVar.Expression, typeof(object)), YExpression.Null),
+                                YExpression.Block(
+                                        YExpression.Call(returnableVar.Expression, ReturnableEnumeratorReturnMethod),
+                                    YExpression.Empty))),
+                        YExpression.Empty);
 
-                        inits.Add(YExpression.TryFinally(arrayInitBlock, closeIterator));
-                    }
+                    inits.Add(YExpression.TryFinally(arrayInitBlock, closeIterator));
                 }
 
                 return;

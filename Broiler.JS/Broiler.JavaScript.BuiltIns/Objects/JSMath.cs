@@ -582,7 +582,7 @@ public partial class JSMath : JSObject
             if (item is not JSNumber number)
             {
                 if (en is IReturnableEnumerator returnable)
-                    returnable.Return(JSUndefined.Value);
+                    returnable.Return();
 
                 throw JSEngine.NewTypeError("Math.sumPrecise only accepts Number values");
             }

@@ -44,6 +44,7 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
     public IJSExecutionContext Context = JSEngine.Current as IJSExecutionContext;
 
     internal bool IsAsyncGenerator => asyncGenerator;
+    internal IElementEnumerator DelegatedEnumerator => delegatedEnumerator;
 
     public bool IsFinished;
     public int NextJump;
@@ -131,10 +132,7 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
     internal bool TryThrowDelegated(JSValue value, out JSValue iteratorResult)
     {
         if (delegatedEnumerator is JSIterator iterator)
-        {
-            iteratorResult = iterator.Throw(value);
-            return true;
-        }
+            return iterator.TryThrow(value, out iteratorResult);
 
         iteratorResult = default;
         return false;

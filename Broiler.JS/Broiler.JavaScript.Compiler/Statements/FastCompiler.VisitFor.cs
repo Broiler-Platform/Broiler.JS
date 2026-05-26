@@ -89,7 +89,7 @@ partial class FastCompiler
                 YExpression.IfThen(
                     YExpression.NotEqual(YExpression.Convert(returnableVar, typeof(object)), YExpression.Null),
                     YExpression.Block(
-                        YExpression.Call(returnableVar, ReturnableEnumeratorReturnMethod, JSUndefinedBuilder.Value),
+                        YExpression.Call(returnableVar, ReturnableEnumeratorReturnMethod),
                         YExpression.Empty))),
             YExpression.Empty);
 

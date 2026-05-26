@@ -97,12 +97,38 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
         return ValidateIteratorResult(method.InvokeFunction(new Arguments(iterator, value)), "return");
     }
 
-    public readonly JSValue Throw(JSValue value)
+    public readonly JSValue Return()
+    {
+        var method = iterator[KeyStrings.@return];
+        if (method.IsUndefined || method.IsNull)
+        {
+            var iteratorResult = JSObject.NewWithProperties();
+            iteratorResult.FastAddValue(KeyStrings.value, JSUndefined.Value, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
+            iteratorResult.FastAddValue(KeyStrings.done, JSValue.BooleanTrue, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
+            return iteratorResult;
+        }
+
+        return ValidateIteratorResult(method.InvokeFunction(new Arguments(iterator)), "return");
+    }
+
+    public readonly bool TryThrow(JSValue value, out JSValue iteratorResult)
     {
         var method = iterator[KeyStrings.@throw];
         if (method.IsUndefined || method.IsNull)
+        {
+            iteratorResult = default;
+            return false;
+        }
+
+        iteratorResult = ValidateIteratorResult(method.InvokeFunction(new Arguments(iterator, value)), "throw");
+        return true;
+    }
+
+    public readonly JSValue Throw(JSValue value)
+    {
+        if (!TryThrow(value, out var iteratorResult))
             throw JSValue.NewTypeError("Iterator does not provide a throw method");
 
-        return ValidateIteratorResult(method.InvokeFunction(new Arguments(iterator, value)), "throw");
+        return iteratorResult;
     }
 }
