@@ -99,7 +99,7 @@ public partial class JSAssert : JSFunction
 
         try
         {
-            left.InvokeFunction(a);
+            left.InvokeFunction(in Arguments.Empty);
         }
         catch (Exception ex)
         {

@@ -29,4 +29,21 @@ public class ModulesTests
         var module = new JSModule(ctx, exports, "mymod");
         Assert.NotNull(module);
     }
+
+    [Fact]
+    public void JSAssertThrows_InvokesCallbackWithoutPassingAssertionArguments()
+    {
+        using var ctx = new JSModuleContext();
+
+        var result = ctx.Eval("""
+            var argc = -1;
+            assert.throws(function () {
+                argc = arguments.length;
+                throw 'boom';
+            }, undefined);
+            argc;
+            """);
+
+        Assert.Equal(0.0, result.DoubleValue);
+    }
 }
