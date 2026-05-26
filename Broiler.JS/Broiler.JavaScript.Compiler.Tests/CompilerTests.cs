@@ -1074,6 +1074,22 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Direct_Eval_Delete_Preserves_Lexical_Nondeletable_And_Removes_Deletable_Vars()
+    {
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var outerLet = eval("let x; (function() { return delete x; })");
+                var outerVarInForLet = eval("for (let q = 0; q < 1; q++) { var x; } (function() { return delete x; })");
+                return [outerLet(), outerVarInForLet(), outerVarInForLet()].join('|');
+            })();
+            """);
+
+        Assert.Equal("false|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Compile_Map_And_Set_Constructors_Close_Iterators_When_Subclass_Mutators_Throw()
     {
         using var ctx = new JSContext();

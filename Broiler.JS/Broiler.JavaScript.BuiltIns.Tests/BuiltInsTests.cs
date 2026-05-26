@@ -2527,6 +2527,34 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void BuiltIn_Globals_Are_NonEnumerable_And_Configurable()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              "Array",
+              "Reflect",
+              "Symbol"
+            ].map(function (name) {
+              var descriptor = Object.getOwnPropertyDescriptor(globalThis, name);
+              return [
+                name,
+                typeof descriptor.value,
+                descriptor.writable,
+                descriptor.enumerable,
+                descriptor.configurable
+              ].join("|");
+            }).join("||");
+            """);
+
+        Assert.Equal(
+            "Array|function|true|false|true||Reflect|object|true|false|true||Symbol|function|true|false|true",
+            result.ToString());
+    }
+
+    [Fact]
     public void AsyncIteratorPrototype_Exposes_SymbolAsyncIterator()
     {
         EnsureBuiltInsLoaded();

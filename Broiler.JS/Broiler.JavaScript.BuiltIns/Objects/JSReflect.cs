@@ -183,7 +183,7 @@ public partial class JSReflect : JSObject
         return @object.PreventExtensions() ? JSBoolean.True : JSBoolean.False;
     }
 
-    [JSExport(Length = 2)]
+    [JSExport(Length = 3)]
     public static JSValue Set(in Arguments a)
     {
         var (target, propertyKey, value, receiver) = a.Get4();
