@@ -4894,8 +4894,6 @@ test/language/directive-prologue/10.1.1-4-s.js
 test/language/directive-prologue/10.1.1-6-s.js
 test/language/directive-prologue/10.1.1-7-s.js
 test/language/directive-prologue/10.1.1-9-s.js
-test/language/directive-prologue/14.1-4-s.js
-test/language/directive-prologue/14.1-5-s.js
 test/language/eval-code/direct/arrow-fn-body-cntns-arguments-func-decl-arrow-func-declare-arguments-assign-incl-def-param-arrow-arguments.js
 test/language/eval-code/direct/arrow-fn-body-cntns-arguments-func-decl-arrow-func-declare-arguments-assign.js
 test/language/eval-code/direct/arrow-fn-body-cntns-arguments-lex-bind-arrow-func-declare-arguments-assign-incl-def-param-arrow-arguments.js
