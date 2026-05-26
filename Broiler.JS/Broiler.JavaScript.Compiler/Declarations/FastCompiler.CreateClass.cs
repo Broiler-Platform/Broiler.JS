@@ -211,12 +211,14 @@ partial class FastCompiler
                     name = ValidateStaticPropertyName(property, GetName(property));
                     if (property.IsStatic)
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true, createPrototype: false);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
+                            inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false);
                         staticElements.Add(JSObjectBuilder.AddValue(name, fx, isPrivateName ? JSPropertyAttributes.ConfigurableReadonlyValue : JSPropertyAttributes.ConfigurableValue));
                     }
                     else
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true, createPrototype: false);
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
+                            inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false);
                         prototypeElements.Add(JSObjectBuilder.AddValue(name, fx, isPrivateName ? JSPropertyAttributes.ConfigurableReadonlyValue : JSPropertyAttributes.ConfigurableValue));
                     }
                     break;
