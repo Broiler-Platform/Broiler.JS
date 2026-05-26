@@ -29,7 +29,8 @@ internal static class UriHelper
         return result;
     }
 
-    private static bool[] decodeURIComponentReservedSet;
+    private static readonly bool[] decodeURIReservedSet = CreateCharacterSetLookupTable(";/?:@&=+$,#");
+    private static readonly bool[] decodeURIComponentReservedSet = new bool[128];
 
 
     /// <summary>
@@ -83,16 +84,13 @@ internal static class UriHelper
     /// be escaped.  Alphanumeric characters should not be included. </param>
     /// <returns> A copy of the given string with the escape sequences decoded. </returns>
     internal static string DecodeURI(string input)
+        => Decode(input, decodeURIReservedSet);
+
+    internal static string DecodeURIComponent(string input)
+        => Decode(input, decodeURIComponentReservedSet);
+
+    private static string Decode(string input, bool[] reservedSet)
     {
-        if (decodeURIComponentReservedSet == null)
-        {
-            var lookupTable = CreateCharacterSetLookupTable(";/?:@&=+$,#");
-            System.Threading.Thread.MemoryBarrier();
-            decodeURIComponentReservedSet = lookupTable;
-        }
-
-        var reservedSet = decodeURIComponentReservedSet;
-
         var result = new StringBuilder(input.Length);
         for (int i = 0; i < input.Length; i++)
         {

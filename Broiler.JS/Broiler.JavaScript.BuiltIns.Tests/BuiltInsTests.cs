@@ -4017,6 +4017,32 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void DecodeURIComponent_Decodes_Reserved_Characters_And_Rejects_Malformed_Four_Byte_Sequences()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        Assert.Equal(";/?:@&=+$,#", ctx.Eval("decodeURIComponent('%3B%2F%3F%3A%40%26%3D%2B%24%2C%23');").ToString());
+
+        for (int index = 0xF0; index <= 0xF7; index++)
+        {
+            var hex = $"%{index:X2}";
+            foreach (var malformed in new[]
+            {
+                hex,
+                $"{hex}111%A0%A0",
+                $"{hex}%00%A0%A0",
+                $"{hex}%A0%00%A0",
+                $"{hex}%A0%A0%00"
+            })
+            {
+                var ex = Assert.Throws<JSException>(() => ctx.Eval($"decodeURIComponent('{malformed}');"));
+                Assert.Equal("URIError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+            }
+        }
+    }
+
+    [Fact]
     public void RegExp_Escape_Handles_Initial_Characters_And_Punctuators()
     {
         EnsureBuiltInsLoaded();

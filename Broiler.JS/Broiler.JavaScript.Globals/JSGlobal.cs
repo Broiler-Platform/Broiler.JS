@@ -95,7 +95,7 @@ public partial class JSGlobalStatic
     public static JSValue DecodeURIComponent(in Arguments a)
     {
         var f = a.Get1().ToString();
-        return JSValue.CreateString(Uri.UnescapeDataString(f));
+        return JSValue.CreateString(UriHelper.DecodeURIComponent(f));
     }
 
     [JSExport("eval", Length = 1)]
