@@ -1,7 +1,10 @@
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
+using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Promise;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Extensions;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
 using System.Runtime.CompilerServices;
@@ -3462,6 +3465,24 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("2|2|1|1|function|3|function|function", result.ToString());
+    }
+
+    [Fact]
+    public void Symbol_And_Generator_Instance_Prototype_Metadata_Match_Test262_Samples()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              return [
+                Symbol.length,
+                Object.getOwnPropertyNames(function* () {}.prototype).length,
+                Object.getOwnPropertyNames(async function* () {}.prototype).length
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("0|0|0", result.ToString());
     }
 
     [Fact]
@@ -7776,6 +7797,79 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("TypeError|1", concatReturnResult.ToString());
+    }
+
+    [Fact]
+    public void Iterator_Wrappers_Call_Underlying_Return_With_Zero_Arguments()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        static JSObject CreateIteratorResult(JSValue value, bool done)
+        {
+            var result = JSObject.NewWithProperties();
+            result.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            result.FastAddValue(KeyStrings.done, done ? JSBoolean.True : JSBoolean.False, JSPropertyAttributes.EnumerableConfigurableValue);
+            return result;
+        }
+
+        var wrapCallArgsLength = -1;
+        var wrapTarget = JSObject.NewWithProperties();
+        wrapTarget.FastAddValue(
+            KeyStrings.next,
+            new JSFunction((in Arguments a) => CreateIteratorResult(0.Marshal(), done: false), "next", 0),
+            JSPropertyAttributes.ConfigurableValue);
+        wrapTarget.FastAddValue(
+            KeyStrings.@return,
+            new JSFunction((in Arguments a) =>
+            {
+                wrapCallArgsLength = a.Length;
+                return CreateIteratorResult(a.Length.Marshal(), done: true);
+            }, "return", 0),
+            JSPropertyAttributes.ConfigurableValue);
+
+        var concatCallArgsLength = -1;
+        var iterable = JSObject.NewWithProperties();
+        iterable.FastAddValue(
+            (IJSSymbol)JSSymbol.iterator,
+            new JSFunction((in Arguments a) =>
+            {
+                var iterator = JSObject.NewWithProperties();
+                iterator.FastAddValue(
+                    KeyStrings.next,
+                    new JSFunction((in Arguments inner) => CreateIteratorResult(0.Marshal(), done: false), "next", 0),
+                    JSPropertyAttributes.ConfigurableValue);
+                iterator.FastAddValue(
+                    KeyStrings.@return,
+                    new JSFunction((in Arguments inner) =>
+                    {
+                        concatCallArgsLength = inner.Length;
+                        return CreateIteratorResult(inner.Length.Marshal(), done: true);
+                    }, "return", 0),
+                    JSPropertyAttributes.ConfigurableValue);
+                return iterator;
+            }, "Symbol.iterator", 0),
+            JSPropertyAttributes.ConfigurableValue);
+
+        ctx["wrapTarget"] = wrapTarget;
+        ctx["concatIterable"] = iterable;
+
+        var result = ctx.Eval("""
+            (function () {
+              var wrap = Iterator.from(wrapTarget);
+              wrap.next();
+              var wrapResult = wrap.return(1).value;
+
+              var concat = Iterator.concat(concatIterable);
+              concat.next();
+              var concatResult = concat.return(1).value;
+
+              return [wrapResult, concatResult].join('|');
+            })();
+            """);
+
+        Assert.Equal(0, wrapCallArgsLength);
+        Assert.Equal(0, concatCallArgsLength);
+        Assert.Equal("0|0", result.ToString());
     }
 
     [Fact]
