@@ -86,6 +86,13 @@ partial class FastCompiler
             var stackItem = cs.StackItem;
             var r = s.ReturnLabel;
 
+            var inheritedStrictMode = IsStrictMode || forceStrictMode || createClass;
+            var isStrictFunction = inheritedStrictMode || HasUseStrictDirective(functionDeclaration.Body);
+            ValidateFunctionEarlyErrors(functionDeclaration, isStrictFunction);
+
+            var previousStrictMode = IsStrictMode;
+            IsStrictMode = isStrictFunction;
+
             var parameterNames = new List<StringSpan>();
             CollectParameterNames(functionDeclaration.Params, parameterNames);
             foreach (var parameterName in parameterNames)
@@ -174,12 +181,6 @@ partial class FastCompiler
 
             YLambdaExpression lambda;
             YExpression jsf;
-
-            var inheritedStrictMode = IsStrictMode || forceStrictMode || createClass;
-            var isStrictFunction = inheritedStrictMode || HasUseStrictDirective(functionDeclaration.Body);
-            ValidateFunctionEarlyErrors(functionDeclaration, isStrictFunction);
-            var previousStrictMode = IsStrictMode;
-            IsStrictMode = isStrictFunction;
 
             if (functionDeclaration.Generator)
             {

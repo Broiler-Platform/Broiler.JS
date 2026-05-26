@@ -365,6 +365,43 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Strict_Functions_Propagate_To_Nested_Functions_And_Callbacks()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            [
+              (function () {
+                function f1() {
+                  "use strict";
+                  function f() {
+                    return typeof this;
+                  }
+
+                  return [f(), typeof this].join('|');
+                }
+
+                return f1();
+              })(),
+              (function () {
+                var value = 'unreplaced';
+                "ab".replace("b", (function () {
+                  "use strict";
+                  return function () {
+                    value = typeof this;
+                    return "a";
+                  };
+                })());
+
+                return value;
+              })()
+            ].join(';');
+            """);
+
+        Assert.Equal("undefined|undefined;undefined", result.ToString());
+    }
+
+    [Fact]
     public void Strict_Scripts_Propagate_To_Nested_Functions()
     {
         EnsureBuiltInsLoaded();
