@@ -588,9 +588,6 @@ test/built-ins/Array/prototype/forEach/15.4.4.18-1-15.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-2-4.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-5-1.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-5-25.js
-test/built-ins/Array/prototype/forEach/15.4.4.18-7-c-i-16.js
-test/built-ins/Array/prototype/forEach/15.4.4.18-7-c-i-22.js
-test/built-ins/Array/prototype/forEach/15.4.4.18-7-c-i-8.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-8-10.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-8-2.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-8-3.js
@@ -2026,7 +2023,6 @@ test/built-ins/Promise/race/same-resolve-function.js
 test/built-ins/Promise/race/species-get-error.js
 test/built-ins/Promise/reject-function-length.js
 test/built-ins/Promise/reject/capability-executor-called-twice.js
-test/built-ins/Promise/reject/capability-invocation.js
 test/built-ins/Promise/reject/ctx-ctor.js
 test/built-ins/Promise/resolve-function-length.js
 test/built-ins/Promise/resolve/S25.4.4.5_A2.1_T1.js
@@ -2034,7 +2030,6 @@ test/built-ins/Promise/resolve/S25.4.4.5_A2.2_T1.js
 test/built-ins/Promise/resolve/S25.4.4.5_A2.3_T1.js
 test/built-ins/Promise/resolve/capability-executor-called-twice.js
 test/built-ins/Promise/resolve/ctx-ctor.js
-test/built-ins/Promise/resolve/resolve-from-promise-capability.js
 test/built-ins/Promise/resolve/resolve-prms-cstm-then.js
 test/built-ins/Promise/resolve/resolve-self.js
 test/built-ins/Promise/try/ctx-ctor.js
@@ -6407,8 +6402,6 @@ test/language/expressions/exponentiation/bigint-wrapped-values.js
 test/language/expressions/exponentiation/bigint-zero-base-zero-exponent.js
 test/language/expressions/exponentiation/exp-operator-precedence-update-expression-semantics.js
 test/language/expressions/exponentiation/exp-operator.js
-test/language/expressions/function/arguments-with-arguments-fn.js
-test/language/expressions/function/arguments-with-arguments-lex.js
 test/language/expressions/function/dstr/ary-ptrn-rest-ary-empty.js
 test/language/expressions/function/dstr/dflt-ary-ptrn-rest-ary-empty.js
 test/language/expressions/function/dstr/dflt-obj-ptrn-prop-eval-err.js
@@ -6426,8 +6419,6 @@ test/language/expressions/function/scope-param-elem-var-open.js
 test/language/expressions/function/static-init-await-binding.js
 test/language/expressions/function/static-init-await-reference.js
 test/language/expressions/function/unscopables-with.js
-test/language/expressions/generators/arguments-with-arguments-fn.js
-test/language/expressions/generators/arguments-with-arguments-lex.js
 test/language/expressions/generators/default-proto.js
 test/language/expressions/generators/dstr/ary-ptrn-rest-ary-empty.js
 test/language/expressions/generators/dstr/dflt-ary-ptrn-rest-ary-empty.js
@@ -9623,15 +9614,11 @@ test/language/statements/function/S13.2.2_A3_T1.js
 test/language/statements/function/S13.2.2_A3_T2.js
 test/language/statements/function/S13.2_A4_T1.js
 test/language/statements/function/S13.2_A4_T2.js
-test/language/statements/function/S13_A11_T2.js
 test/language/statements/function/S13_A15_T2.js
-test/language/statements/function/S13_A15_T4.js
 test/language/statements/function/S13_A6_T1.js
 test/language/statements/function/S13_A6_T2.js
 test/language/statements/function/S14_A5_T1.js
 test/language/statements/function/S14_A5_T2.js
-test/language/statements/function/arguments-with-arguments-fn.js
-test/language/statements/function/arguments-with-arguments-lex.js
 test/language/statements/function/cptn-decl.js
 test/language/statements/function/dstr/ary-ptrn-rest-ary-empty.js
 test/language/statements/function/dstr/ary-ptrn-rest-obj-prop-id.js
@@ -9650,8 +9637,6 @@ test/language/statements/function/scope-param-elem-var-close.js
 test/language/statements/function/scope-param-elem-var-open.js
 test/language/statements/function/static-init-await-binding-valid.js
 test/language/statements/function/unscopables-with.js
-test/language/statements/generators/arguments-with-arguments-fn.js
-test/language/statements/generators/arguments-with-arguments-lex.js
 test/language/statements/generators/cptn-decl.js
 test/language/statements/generators/default-proto.js
 test/language/statements/generators/dstr/ary-ptrn-rest-ary-empty.js
@@ -9742,7 +9727,6 @@ test/language/statements/try/completion-values.js
 test/language/statements/try/dstr/ary-ptrn-elem-ary-empty-init.js
 test/language/statements/try/dstr/ary-ptrn-elem-ary-empty-iter.js
 test/language/statements/try/dstr/ary-ptrn-elem-id-init-fn-name-cover.js
-test/language/statements/try/dstr/ary-ptrn-elem-id-init-hole.js
 test/language/statements/try/dstr/ary-ptrn-empty.js
 test/language/statements/try/dstr/ary-ptrn-rest-ary-empty.js
 test/language/statements/try/dstr/obj-ptrn-id-init-fn-name-cover.js
@@ -10333,7 +10317,6 @@ test/staging/sm/global/bug-320887.js
 test/staging/sm/global/bug660612.js
 test/staging/sm/global/eval-01.js
 test/staging/sm/global/parseInt-01.js
-test/staging/sm/lexical-environment/block-scoped-functions-annex-b-arguments.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-if.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-label.js
