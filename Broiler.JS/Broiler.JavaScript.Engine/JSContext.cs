@@ -225,7 +225,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             FastAddValue(
                 name,
                 v,
-                directEvalDepth > 0 && !hadExistingVariable
+                (directEvalDepth > 0 || directEvalCompilationDepth > 0) && !hadExistingVariable
                     ? JSPropertyAttributes.EnumerableConfigurableValue
                     : JSPropertyAttributes.Value | JSPropertyAttributes.Enumerable);
         }

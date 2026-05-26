@@ -111,7 +111,10 @@ public partial class JSGlobalStatic
 
         (JSEngine.Current as IJSExecutionContext)?.DispatchEvalEvent(ref text, ref location);
         if (JSEngine.Current is JSContext context)
+        {
+            using var _ = context.PushDirectEvalCompilation();
             return context.Eval(text, location, context);
+        }
 
         return CoreScript.Evaluate(text, location);
     }

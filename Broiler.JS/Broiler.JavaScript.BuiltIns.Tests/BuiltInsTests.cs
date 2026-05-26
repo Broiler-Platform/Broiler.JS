@@ -2401,6 +2401,59 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Direct_Eval_Block_Function_Declarations_Create_Configurable_Global_Bindings()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            eval('var descriptor = Object.getOwnPropertyDescriptor(globalThis, "f");
+              var summary = [
+                typeof descriptor.value,
+                descriptor.writable,
+                descriptor.enumerable,
+                descriptor.configurable
+              ].join("|");
+              if (true) function f() { return 1; }
+              summary;');
+            """);
+
+        Assert.Equal("undefined|true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void Eval_Function_Declarations_Create_Configurable_Global_Bindings()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              eval('var descriptor = Object.getOwnPropertyDescriptor(globalThis, "f");
+                var summary = [
+                  typeof descriptor.value,
+                  descriptor.writable,
+                  descriptor.enumerable,
+                  descriptor.configurable
+                ].join("|");
+                function f() { return 234; }
+                summary;'),
+              (0, eval)('var descriptor = Object.getOwnPropertyDescriptor(globalThis, "g");
+                var summary = [
+                  typeof descriptor.value,
+                  descriptor.writable,
+                  descriptor.enumerable,
+                  descriptor.configurable
+                ].join("|");
+                if (true) function g() { return 1; }
+                summary;')
+            ].join("||")
+            """);
+
+        Assert.Equal("function|true|true|true||undefined|true|true|true", result.ToString());
+    }
+
+    [Fact]
     public void AnnexB_Block_Function_Declarations_Update_Function_Scope_Bindings()
     {
         using var ctx = CreateContext();
