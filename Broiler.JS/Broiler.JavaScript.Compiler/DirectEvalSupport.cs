@@ -13,7 +13,7 @@ namespace Broiler.JavaScript.Compiler;
 
 public static class DirectEvalSupport
 {
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] parameterBindings)
     {
         if (!IsDirectEval(callee))
             return callee.InvokeFunction(arguments);
@@ -30,7 +30,7 @@ public static class DirectEvalSupport
         if (inheritStrictMode)
             text = "\"use strict\";\n" + text;
 
-        Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings);
+        Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings);
 
         if (JSEngine.Current is JSContext context)
         {
@@ -50,7 +50,7 @@ public static class DirectEvalSupport
         return !globalEval.IsUndefined && callee.StrictEquals(globalEval);
     }
 
-    private static void Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings)
+    private static void Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings)
     {
         if (inheritStrictMode && ContainsStrictReservedWordUsage(text))
             throw JSEngine.NewSyntaxError("Unexpected strict mode reserved word");
@@ -61,6 +61,11 @@ public static class DirectEvalSupport
             var parser = new FastParser(new FastTokenStream(pool, text));
             var program = parser.ParseProgram();
             SyntaxValidation.ValidateProgram(program, text, inheritStrictMode, lexicalBindings);
+            if (parameterBindings?.Length > 0
+                && SyntaxValidation.ContainsDirectEvalVarConflict(program.Statements, parameterBindings))
+            {
+                throw new FastParseException(program.Start, "Invalid declaration in direct eval code");
+            }
 
             var statements = program.Statements.GetFastEnumerator();
             while (statements.MoveNext(out var statement))

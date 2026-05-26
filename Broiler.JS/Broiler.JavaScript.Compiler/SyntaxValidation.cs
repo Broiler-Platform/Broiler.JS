@@ -23,7 +23,7 @@ internal static class SyntaxValidation
 
         if (!strictProgram
             && directEvalLexicalBindings != null
-            && HasDirectEvalLexicalConflict(program.Statements, directEvalLexicalBindings))
+            && ContainsDirectEvalVarConflict(program.Statements, directEvalLexicalBindings))
         {
             throw new FastParseException(program.Start, "Invalid declaration in direct eval code");
         }
@@ -131,7 +131,7 @@ internal static class SyntaxValidation
         return false;
     }
 
-    private static bool HasDirectEvalLexicalConflict(IFastEnumerable<AstStatement> statements, IEnumerable<string> directEvalLexicalBindings)
+    internal static bool ContainsDirectEvalVarConflict(IFastEnumerable<AstStatement> statements, IEnumerable<string> directEvalLexicalBindings)
     {
         var bindings = new HashSet<string>(directEvalLexicalBindings, StringComparer.Ordinal);
         if (bindings.Count == 0)

@@ -925,6 +925,43 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Direct_Eval_In_Parameter_Defaults_Rejects_Var_Conflicts()
+    {
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var functionCallCount = 0;
+            var methodCallCount = 0;
+            var functionError = 'none';
+            var methodError = 'none';
+            var fn = function (a = eval("var a = 42")) {
+              functionCallCount++;
+            };
+            var obj = {
+              method(a = eval("var a = 42")) {
+                methodCallCount++;
+              }
+            };
+
+            try {
+              fn();
+            } catch (e) {
+              functionError = e.name;
+            }
+
+            try {
+              obj.method();
+            } catch (e) {
+              methodError = e.name;
+            }
+
+            [functionError, functionCallCount, methodError, methodCallCount].join("|");
+            """);
+
+        Assert.Equal("SyntaxError|0|SyntaxError|0", result.ToString());
+    }
+
+    [Fact]
     public void Compile_Shadowed_Eval_Calls_Are_Not_Treated_As_Direct_Eval()
     {
         using var ctx = new JSContext();

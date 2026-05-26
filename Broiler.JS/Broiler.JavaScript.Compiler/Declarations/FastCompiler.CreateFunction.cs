@@ -97,6 +97,9 @@ partial class FastCompiler
             CollectParameterNames(functionDeclaration.Params, parameterNames);
             foreach (var parameterName in parameterNames)
                 cs.CreateVariable(parameterName, null, true, initialize: false);
+            var directEvalParameterBindings = new string[parameterNames.Count];
+            for (var i = 0; i < parameterNames.Count; i++)
+                directEvalParameterBindings[i] = parameterNames[i].Value;
 
             YExpression fxName;
             YExpression localFxName;
@@ -146,7 +149,22 @@ partial class FastCompiler
                     continue;
                 }
 
-                CreateAssignment(bodyInits, v.Identifier, JSVariableBuilder.FromArgumentOptional(argumentElements, i, VisitExpression(v.Init)), false, true,
+                YExpression parameterInitializer = null;
+                if (v.Init != null)
+                {
+                    var previousDirectEvalParameterBindings = cs.CurrentDirectEvalParameterBindings;
+                    cs.CurrentDirectEvalParameterBindings = directEvalParameterBindings;
+                    try
+                    {
+                        parameterInitializer = VisitExpression(v.Init);
+                    }
+                    finally
+                    {
+                        cs.CurrentDirectEvalParameterBindings = previousDirectEvalParameterBindings;
+                    }
+                }
+
+                CreateAssignment(bodyInits, v.Identifier, JSVariableBuilder.FromArgumentOptional(argumentElements, i, parameterInitializer), false, true,
                     suppressAnonymousFunctionNameInference: true);
             }
 

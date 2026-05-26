@@ -215,6 +215,8 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public YParameterExpression Arguments { get; }
 
+    public string[] CurrentDirectEvalParameterBindings { get; set; }
+
     public YParameterExpression Context { get; }
 
     public YParameterExpression StackItem { get; }
