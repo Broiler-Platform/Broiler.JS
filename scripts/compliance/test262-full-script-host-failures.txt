@@ -4997,7 +4997,6 @@ test/language/expressions/arrow-function/dstr/obj-ptrn-prop-eval-err.js
 test/language/expressions/arrow-function/dstr/obj-ptrn-rest-getter.js
 test/language/expressions/arrow-function/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/arrow-function/dstr/obj-ptrn-rest-val-obj.js
-test/language/expressions/arrow-function/eval-var-scope-syntax-err.js
 test/language/expressions/arrow-function/lexical-bindings-overriden-by-formal-parameters-non-strict.js
 test/language/expressions/arrow-function/lexical-new.target-closure-returned.js
 test/language/expressions/arrow-function/lexical-new.target.js
@@ -5188,8 +5187,6 @@ test/language/expressions/async-generator/dstr/obj-ptrn-prop-eval-err.js
 test/language/expressions/async-generator/dstr/obj-ptrn-rest-getter.js
 test/language/expressions/async-generator/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/async-generator/dstr/obj-ptrn-rest-val-obj.js
-test/language/expressions/async-generator/eval-var-scope-syntax-err.js
-test/language/expressions/async-generator/named-eval-var-scope-syntax-err.js
 test/language/expressions/async-generator/named-unscopables-with.js
 test/language/expressions/async-generator/named-yield-identifier-non-strict.js
 test/language/expressions/async-generator/named-yield-identifier-spread-non-strict.js
@@ -6512,7 +6509,6 @@ test/language/expressions/function/dstr/obj-ptrn-prop-eval-err.js
 test/language/expressions/function/dstr/obj-ptrn-rest-getter.js
 test/language/expressions/function/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/function/dstr/obj-ptrn-rest-val-obj.js
-test/language/expressions/function/eval-var-scope-syntax-err.js
 test/language/expressions/function/named-strict-error-reassign-fn-name-in-body-in-eval.js
 test/language/expressions/function/param-dflt-yield-non-strict.js
 test/language/expressions/function/scope-param-elem-var-close.js
@@ -6533,7 +6529,6 @@ test/language/expressions/generators/dstr/obj-ptrn-prop-eval-err.js
 test/language/expressions/generators/dstr/obj-ptrn-rest-getter.js
 test/language/expressions/generators/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/expressions/generators/dstr/obj-ptrn-rest-val-obj.js
-test/language/expressions/generators/eval-var-scope-syntax-err.js
 test/language/expressions/generators/has-instance.js
 test/language/expressions/generators/named-strict-error-reassign-fn-name-in-body-in-eval.js
 test/language/expressions/generators/named-yield-identifier-non-strict.js
@@ -6728,12 +6723,10 @@ test/language/expressions/object/identifier-shorthand-static-init-await-valid.js
 test/language/expressions/object/let-non-strict-access.js
 test/language/expressions/object/let-non-strict-syntax.js
 test/language/expressions/object/literal-property-name-bigint.js
-test/language/expressions/object/method-definition/async-gen-meth-eval-var-scope-syntax-err.js
 test/language/expressions/object/method-definition/async-gen-yield-identifier-non-strict.js
 test/language/expressions/object/method-definition/async-gen-yield-identifier-spread-non-strict.js
 test/language/expressions/object/method-definition/fn-name-fn.js
 test/language/expressions/object/method-definition/fn-name-gen.js
-test/language/expressions/object/method-definition/gen-meth-eval-var-scope-syntax-err.js
 test/language/expressions/object/method-definition/gen-yield-identifier-non-strict.js
 test/language/expressions/object/method-definition/gen-yield-identifier-spread-non-strict.js
 test/language/expressions/object/method-definition/generator-invoke-fn-strict.js
@@ -6744,7 +6737,6 @@ test/language/expressions/object/method-definition/generator-prototype-prop.js
 test/language/expressions/object/method-definition/generator-prototype.js
 test/language/expressions/object/method-definition/generator-super-prop-body.js
 test/language/expressions/object/method-definition/generator-super-prop-param.js
-test/language/expressions/object/method-definition/meth-eval-var-scope-syntax-err.js
 test/language/expressions/object/method-definition/name-name-prop-symbol.js
 test/language/expressions/object/method-definition/name-param-id-yield.js
 test/language/expressions/object/method-definition/name-param-init-yield.js
@@ -7295,7 +7287,6 @@ test/language/statements/async-generator/dstr/obj-ptrn-prop-eval-err.js
 test/language/statements/async-generator/dstr/obj-ptrn-rest-getter.js
 test/language/statements/async-generator/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/async-generator/dstr/obj-ptrn-rest-val-obj.js
-test/language/statements/async-generator/eval-var-scope-syntax-err.js
 test/language/statements/async-generator/unscopables-with.js
 test/language/statements/async-generator/yield-identifier-non-strict.js
 test/language/statements/async-generator/yield-identifier-spread-non-strict.js
@@ -9745,7 +9736,6 @@ test/language/statements/function/dstr/obj-ptrn-prop-eval-err.js
 test/language/statements/function/dstr/obj-ptrn-rest-getter.js
 test/language/statements/function/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/function/dstr/obj-ptrn-rest-val-obj.js
-test/language/statements/function/eval-var-scope-syntax-err.js
 test/language/statements/function/param-dflt-yield-non-strict.js
 test/language/statements/function/scope-param-elem-var-close.js
 test/language/statements/function/scope-param-elem-var-open.js
@@ -9767,7 +9757,6 @@ test/language/statements/generators/dstr/obj-ptrn-prop-eval-err.js
 test/language/statements/generators/dstr/obj-ptrn-rest-getter.js
 test/language/statements/generators/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/generators/dstr/obj-ptrn-rest-val-obj.js
-test/language/statements/generators/eval-var-scope-syntax-err.js
 test/language/statements/generators/has-instance.js
 test/language/statements/generators/prototype-own-properties.js
 test/language/statements/generators/prototype-value.js
