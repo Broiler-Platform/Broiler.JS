@@ -51,6 +51,7 @@ public class JSGeneratorFunctionV2 : JSFunction
         var protoObj = prototype;
         if (protoObj != null)
         {
+            protoObj.Delete(KeyStrings.constructor);
             var className = asyncGenerator ? "AsyncGenerator" : "Generator";
             var generatorClassProto = ((Engine.Core.JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate(className)] as JSFunction)?.prototype;
             if (generatorClassProto != null)

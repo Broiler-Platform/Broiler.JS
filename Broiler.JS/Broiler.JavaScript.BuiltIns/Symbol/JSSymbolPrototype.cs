@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.BuiltIns.Symbol;
 
 public partial class JSSymbol
 {
-    [JSExport(IsConstructor = true)]
+    [JSExport(IsConstructor = true, Length = 0)]
     public static JSValue Constructor(in Arguments a)
     {
         if ((JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget != null)

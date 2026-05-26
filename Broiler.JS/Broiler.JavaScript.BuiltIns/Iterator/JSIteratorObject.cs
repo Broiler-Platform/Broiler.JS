@@ -69,12 +69,7 @@ public partial class JSIteratorObject : JSObject
             _executing = true;
             _done = true;
             if (_enumerator is IReturnableEnumerator returnable)
-            {
-                if (a.Length > 0)
-                    return returnable.Return(value);
-
                 return returnable.Return();
-            }
         }
         finally
         {
@@ -545,7 +540,7 @@ public partial class JSIteratorObject : JSObject
 
         public JSValue Return(JSValue value)
             => source is IReturnableEnumerator returnable
-                ? returnable.Return(value)
+                ? returnable.Return()
                 : IteratorResult(value, true);
     }
 
@@ -622,7 +617,7 @@ public partial class JSIteratorObject : JSObject
 
         public JSValue Return(JSValue value)
             => source is IReturnableEnumerator returnable
-                ? returnable.Return(value)
+                ? returnable.Return()
                 : IteratorResult(value, true);
     }
 
@@ -684,7 +679,7 @@ public partial class JSIteratorObject : JSObject
 
         public JSValue Return(JSValue value)
             => source is IReturnableEnumerator returnable
-                ? returnable.Return(value)
+                ? returnable.Return()
                 : IteratorResult(value, true);
     }
 
@@ -722,7 +717,7 @@ public partial class JSIteratorObject : JSObject
 
         public JSValue Return(JSValue value)
             => source is IReturnableEnumerator returnable
-                ? returnable.Return(value)
+                ? returnable.Return()
                 : IteratorResult(value, true);
     }
 
@@ -793,10 +788,10 @@ public partial class JSIteratorObject : JSObject
         public JSValue Return(JSValue value)
         {
             if (_inner is IReturnableEnumerator innerReturnable)
-                return innerReturnable.Return(value);
+                return innerReturnable.Return();
 
             if (source is IReturnableEnumerator sourceReturnable)
-                return sourceReturnable.Return(value);
+                return sourceReturnable.Return();
 
             return IteratorResult(value, true);
         }
@@ -881,7 +876,7 @@ public partial class JSIteratorObject : JSObject
         public JSValue Return(JSValue value)
         {
             if (_currentEnum is IReturnableEnumerator returnable)
-                return returnable.Return(value);
+                return returnable.Return();
 
             return IteratorResult(value, true);
         }
