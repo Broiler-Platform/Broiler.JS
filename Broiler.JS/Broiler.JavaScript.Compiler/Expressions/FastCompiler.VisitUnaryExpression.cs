@@ -72,7 +72,8 @@ partial class FastCompiler
                         if (variable != null && !variable.IsDeletable)
                         {
                             var canDeleteCapturedDirectEvalBinding = isDirectEvalCompilation
-                                && variable.OwnerFunction != scope.Top.Function;
+                                && variable.OwnerFunction != scope.Top.Function
+                                && variable.Expression is YPropertyExpression { PropertyInfo.Name: nameof(JSVariable.GlobalValue) };
                             if (canDeleteCapturedDirectEvalBinding)
                                 return JSBooleanBuilder.True;
 

@@ -97,7 +97,7 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                 sb.AppendLine($@"
                     var @class = new JSObject();
                     if (register) {{
-                        context[Names.{className}] = @class;
+                        context.FastAddValue(Names.{className}, @class, JSPropertyAttributes.ConfigurableValue);
                     }}
                 ");
             }
@@ -126,7 +126,7 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                             , ""{fxToString}""
                             {l});
                         if (register) {{
-                            context[Names.{className}] = @class;
+                            context.FastAddValue(Names.{className}, @class, JSPropertyAttributes.ConfigurableValue);
                         }}
                         var prototype = @class.prototype;
                         ");

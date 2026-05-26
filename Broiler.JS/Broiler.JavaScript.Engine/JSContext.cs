@@ -350,9 +350,14 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             if (property.IsEmpty)
                 return JSValue.BooleanFalse;
 
-            return property.IsConfigurable
-                ? Delete(name)
-                : JSValue.BooleanFalse;
+            if (!property.IsConfigurable)
+                return JSValue.BooleanFalse;
+
+            var deleted = Delete(name);
+            if (deleted.BooleanValue)
+                globalVars.RemoveAt(name.Key);
+
+            return deleted;
         }
 
         if (!property.IsEmpty)
