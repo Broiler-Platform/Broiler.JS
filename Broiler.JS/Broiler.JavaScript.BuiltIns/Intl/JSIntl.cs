@@ -105,6 +105,7 @@ public static class JSIntl
 
     private static void SetIntlToStringTag(JSFunction constructor, string name)
     {
+        constructor.FastAddValue(KeyStrings.prototype, constructor.prototype, JSPropertyAttributes.ReadonlyValue);
         constructor.prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString($"Intl.{name}"), JSPropertyAttributes.ConfigurableReadonlyValue);
     }
 
