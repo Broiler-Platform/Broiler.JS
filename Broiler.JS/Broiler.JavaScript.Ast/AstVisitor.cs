@@ -95,6 +95,12 @@ public abstract class AstReduce : AstMapVisitor<AstNode>
         var en = statements.GetFastEnumerator();
         while (en.MoveNext(out var item))
         {
+            if (item == null)
+            {
+                r?.Add(item);
+                continue;
+            }
+
             var visited = Visit(item) as T ?? throw new ArgumentNullException();
             if (visited == item)
             {

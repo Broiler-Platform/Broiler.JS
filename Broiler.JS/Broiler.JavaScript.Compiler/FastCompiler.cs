@@ -260,12 +260,12 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         }
 
         var currentBinding = scope.Top.GetVariable(id.Name);
-        if (isDirectEvalCompilation && !usesDirectEvalLocalVarEnvironment)
+        if (isDirectEvalCompilation && !IsStrictMode && !usesDirectEvalLocalVarEnvironment)
             currentBinding ??= GetOrCreateDirectEvalRootVariable(id.Name);
         if (currentBinding == null)
             return result;
 
-        if (isDirectEvalCompilation && !usesDirectEvalLocalVarEnvironment)
+        if (isDirectEvalCompilation && !IsStrictMode)
             currentBinding.IsDeletable = true;
 
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
@@ -285,7 +285,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         var currentBinding = scope.Top.GetVariable(functionDeclaration.Id!.Name);
         if (currentBinding == null && isDirectEvalCompilation && !IsStrictMode && !usesDirectEvalLocalVarEnvironment)
             currentBinding = GetOrCreateDirectEvalRootVariable(functionDeclaration.Id.Name);
-        else if (currentBinding != null && isDirectEvalCompilation && !IsStrictMode && !usesDirectEvalLocalVarEnvironment)
+        else if (currentBinding != null && isDirectEvalCompilation && !IsStrictMode)
             currentBinding.IsDeletable = true;
         var result = CreateFunction(functionDeclaration, hoistStatementDeclaration: false);
 

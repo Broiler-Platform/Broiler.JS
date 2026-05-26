@@ -81,7 +81,8 @@ partial class FastCompiler
                 {
                     // Strict eval, and non-strict eval inside a function var
                     // environment, keep vars local to the eval scope.
-                    scope.CreateVariable(v, null, true);
+                    var localVariable = scope.CreateVariable(v, null, true);
+                    localVariable.IsDeletable = !IsStrictMode && isDirectEvalCompilation;
                     continue;
                 }
 
