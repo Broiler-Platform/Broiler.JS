@@ -83,8 +83,8 @@ public readonly struct TypedArrayParameters
         if (a1 is JSArrayBuffer arrayBuffer)
         {
             buffer = arrayBuffer;
-            byteOffset = a2.AsInt32OrDefault();
-            length = a3.AsInt32OrDefault(arrayBuffer.Length);
+            byteOffset = JSTypedArray.ToIntegerOrInfinity(a2);
+            length = a3.IsUndefined ? -1 : ToTypedArrayLength(a3);
             return;
         }
 
@@ -109,10 +109,10 @@ public readonly struct TypedArrayParameters
     private static int ToTypedArrayLength(JSValue value)
     {
         var numberLength = value.DoubleValue;
-        if (double.IsNaN(numberLength) || numberLength <= 0)
+        if (double.IsNaN(numberLength) || numberLength == 0)
             return 0;
 
-        if (double.IsInfinity(numberLength) || numberLength > int.MaxValue)
+        if (double.IsInfinity(numberLength) || numberLength < 0 || numberLength > int.MaxValue)
             throw JSEngine.NewRangeError("Invalid typed array length");
 
         return (int)Math.Floor(numberLength);

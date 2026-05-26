@@ -130,8 +130,7 @@ public static class NumberParser
     /// <returns> The result of parsing the string as a number. </returns>
     public static double CoerceToNumber(in StringSpan input)
     {
-        // supporting ES2021 _ number separator
-        var reader = new StringReader(input.Value.Replace("_", ""));
+        var reader = new StringReader(input.Value);
 
         // Skip whitespace and line terminators.
         while (IsWhiteSpaceOrLineTerminator(reader.Peek()))

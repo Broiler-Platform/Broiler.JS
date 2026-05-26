@@ -17,6 +17,24 @@ namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 [JSClassGenerator("TypedArray")]
 public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 {
+    internal static int ToIntegerOrInfinity(JSValue value, int defaultValue = 0)
+    {
+        if (value == null || value.IsUndefined)
+            return defaultValue;
+
+        var number = value.DoubleValue;
+        if (double.IsNaN(number) || number == 0)
+            return 0;
+
+        if (double.IsPositiveInfinity(number) || number > int.MaxValue)
+            return int.MaxValue;
+
+        if (double.IsNegativeInfinity(number) || number < int.MinValue)
+            return int.MinValue;
+
+        return (int)Math.Truncate(number);
+    }
+
     [JSExport]
     private static JSValue From(in Arguments a) => a.This.InvokeMethod(Names.from, a);
 
@@ -57,24 +75,29 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             } 
             else 
             {
-                var l = length;
-                if (l == -1)
+                var byteLength = length;
+                if (byteLength == -1)
                 {
-                    l = buffer.buffer.Length - byteOffset;
-                    length = l / bytesPerElement;
+                    byteLength = buffer.buffer.Length - byteOffset;
+                    if (byteLength % bytesPerElement != 0)
+                        throw JSEngine.NewRangeError($"byte length of TypedArray should be multiple of {bytesPerElement}");
+
+                    length = byteLength / bytesPerElement;
                 }
                 else
                 {
-                    length = l / bytesPerElement;
+                    var requestedByteLength = (long)byteLength * bytesPerElement;
+                    if (requestedByteLength > int.MaxValue)
+                        throw JSEngine.NewRangeError($"Start offset {byteOffset} is outside the bounds of the buffer");
+
+                    byteLength = (int)requestedByteLength;
                 }
 
-                if (l < 0 || ((byteOffset + l) > buffer.buffer.Length))
+                if (byteOffset < 0 || (byteOffset % bytesPerElement) != 0)
                     throw JSEngine.NewRangeError($"Start offset {byteOffset} is outside the bounds of the buffer");
 
-                if (((l - byteOffset) % bytesPerElement) != 0)
-                {
-                    throw JSEngine.NewRangeError($"byte length of TypedArray should be multiple of {bytesPerElement}");
-                }
+                if (byteLength < 0 || ((long)byteOffset + byteLength) > buffer.buffer.Length)
+                    throw JSEngine.NewRangeError($"Start offset {byteOffset} is outside the bounds of the buffer");
 
             }
             return;

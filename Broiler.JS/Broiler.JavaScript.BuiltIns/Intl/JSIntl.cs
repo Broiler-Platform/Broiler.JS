@@ -411,10 +411,37 @@ public static class JSIntl
     {
         if (!StructurallyValidLanguageTagPattern.IsMatch(tag) ||
             InvalidGrandfatheredLanguageTags.Contains(tag) ||
+            HasDuplicateVariantSubtag(tag) ||
             HasInvalidUnicodeExtensionKey(tag))
             throw JSEngine.NewRangeError("Invalid language tag");
 
         return tag;
+    }
+
+    private static bool HasDuplicateVariantSubtag(string tag)
+    {
+        var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        HashSet<string> variants = null;
+
+        for (var i = 1; i < subtags.Length; i++)
+        {
+            var subtag = subtags[i];
+            if (subtag.Length == 1)
+                break;
+
+            var isVariant =
+                (subtag.Length >= 5 && subtag.Length <= 8) ||
+                (subtag.Length == 4 && char.IsDigit(subtag[0]));
+
+            if (!isVariant)
+                continue;
+
+            variants ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (!variants.Add(subtag))
+                return true;
+        }
+
+        return false;
     }
 
     private static bool HasInvalidUnicodeExtensionKey(string tag)
@@ -732,6 +759,8 @@ public class JSIntlNumberFormat : JSObject
 
         var start = (a[0] ?? JSUndefined.Value).DoubleValue;
         var end = (a.GetAt(1) ?? JSUndefined.Value).DoubleValue;
+        if (double.IsNaN(start) || double.IsNaN(end))
+            throw JSEngine.NewRangeError("Invalid number range");
         return JSValue.CreateString($"{start}–{end}");
     }
 
@@ -740,8 +769,10 @@ public class JSIntlNumberFormat : JSObject
         if (a.This is not JSIntlNumberFormat)
             throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatRangeToParts called on incompatible receiver");
 
-        _ = (a[0] ?? JSUndefined.Value).DoubleValue;
-        _ = (a.GetAt(1) ?? JSUndefined.Value).DoubleValue;
+        var start = (a[0] ?? JSUndefined.Value).DoubleValue;
+        var end = (a.GetAt(1) ?? JSUndefined.Value).DoubleValue;
+        if (double.IsNaN(start) || double.IsNaN(end))
+            throw JSEngine.NewRangeError("Invalid number range");
         return JSValue.CreateArray();
     }
 

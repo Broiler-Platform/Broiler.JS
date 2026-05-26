@@ -8618,6 +8618,46 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RangeError_Regressions_For_String_Number_Intl_And_TypedArray_Match_Test262_Samples()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var nf = new Intl.NumberFormat();
+
+                return [
+                    thrownCtor(function () { String.fromCodePoint('_1'); }),
+                    thrownCtor(function () { 'foo'.normalize(null); }),
+                    thrownCtor(function () { Intl.DurationFormat.supportedLocalesOf(['de-gregory-gregory']); }),
+                    thrownCtor(function () { Intl.ListFormat.supportedLocalesOf(['de-gregory-gregory']); }),
+                    thrownCtor(function () { Intl.RelativeTimeFormat.supportedLocalesOf(['de-gregory-gregory']); }),
+                    thrownCtor(function () { nf.formatRange(NaN, 1); }),
+                    thrownCtor(function () { nf.formatRangeToParts(1, NaN); }),
+                    thrownCtor(function () { Number.prototype.toFixed.call(Infinity, 555); }),
+                    thrownCtor(function () { (5).toString(Math.pow(2, 32) + 10); }),
+                    thrownCtor(function () { new Int32Array(new ArrayBuffer(12), 2); }),
+                    thrownCtor(function () { new Int32Array(new ArrayBuffer(12), 0, 4); }),
+                    thrownCtor(function () { new Uint8Array().set([], -1); }),
+                    thrownCtor(function () { new Int32Array(4).set([0], 2147483648); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError|RangeError", result.ToString());
+    }
+
+    [Fact]
     public void Intl_NumberFormat_RelativeTimeFormat_DurationFormat_And_RegExp_Split_TypeErrors_Match_Test262()
     {
         EnsureBuiltInsLoaded();

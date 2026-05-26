@@ -460,16 +460,18 @@ partial class JSTypedArray
     public JSValue Set(in Arguments a)
     {
         var (source, offset) = a.Get2();
-        var relativeStart = offset.AsInt32OrDefault();
+        var relativeStart = ToIntegerOrInfinity(offset);
         int length = Length;
+
+        if (relativeStart < 0)
+            throw JSEngine.NewRangeError("Offset is out of bounds");
         if (length == 0)
         {
             return JSNumber.MinusOne;
         }
-
-        if (relativeStart < 0)
+        if (relativeStart > length)
             throw JSEngine.NewRangeError("Offset is out of bounds");
-        var targetArrayLength = source.Length + relativeStart;
+        var targetArrayLength = (long)source.Length + relativeStart;
         if (targetArrayLength > length)
             throw JSEngine.NewRangeError("Offset is out of bounds");
         if (source is JSTypedArray typedArray)

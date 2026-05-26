@@ -150,15 +150,17 @@ partial class JSNumber
         string result;
         var value = n.value;
         var arg = a.Get1();
-        int radix = 0;
-        var culture = CultureInfo.GetCultureInfo("en-US");
 
         if (!arg.IsNullOrUndefined)
         {
-            radix = arg.IntValue;
-            if (radix < 2 || radix > 36)
+            var integerRadix = Math.Truncate(arg.DoubleValue);
+            if (double.IsInfinity(integerRadix) || (integerRadix != 0 && (integerRadix < 2 || integerRadix > 36)))
                 throw JSEngine.NewRangeError("The radix must be between 2 and 36, inclusive.");
 
+            if (integerRadix == 0)
+                return new JSString(ToECMAString(value));
+
+            var radix = (int)integerRadix;
             result = DecimalToBase(value, radix);
             return new JSString(result);
         }
@@ -213,6 +215,22 @@ partial class JSNumber
     {
         var n = a.This.ToNumber();
         var nv = n.value;
+        var digitsValue = a.Get1();
+        var hasDigits = !digitsValue.IsUndefined;
+        var digits = 0;
+
+        if (hasDigits)
+        {
+            var digitsNumber = digitsValue.DoubleValue;
+            if (double.IsNaN(digitsNumber) || double.IsInfinity(digitsNumber))
+                throw JSEngine.NewRangeError("toFixed() digits argument must be between 0 and 100");
+
+            var integerDigits = Math.Truncate(digitsNumber);
+            if (integerDigits < 0 || integerDigits > 100)
+                throw JSEngine.NewRangeError("toFixed() digits argument must be between 0 and 100");
+
+            digits = (int)integerDigits;
+        }
 
         // Per ECMAScript spec, -0 should produce "0" (not "-0")
         if (nv == 0.0 && double.IsNegative(nv))
@@ -224,17 +242,12 @@ partial class JSNumber
         if (double.IsNegativeInfinity(nv))
             return JSConstants.NegativeInfinity;
 
-        if (a.Get1() is JSNumber n1)
+        if (hasDigits)
         {
-            if (double.IsNaN(n1.value) || n1.value > 20 || n1.value < 0)
-                throw JSEngine.NewRangeError("toFixed() digitis argument must be between 0 and 100");
-
-            var i = (int)n1.value;
-
-            if (nv > 999999999999999.0 && i <= 15)
+            if (nv > 999999999999999.0 && digits <= 15)
                 return new JSString(nv.ToString("g21"));
 
-            return new JSString(nv.ToString($"F{i}"));
+            return new JSString(nv.ToString($"F{digits}"));
         }
 
         if (nv > 999999999999999.0)

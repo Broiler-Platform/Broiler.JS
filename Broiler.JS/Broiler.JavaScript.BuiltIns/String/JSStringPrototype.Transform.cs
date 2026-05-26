@@ -16,7 +16,7 @@ public partial class JSString
         var @this = a.This.AsString();
         var input = a.Get1();
 
-        string form = input.IsNullOrUndefined ? "NFC" : input.ToString();
+        string form = input.IsUndefined ? "NFC" : input.ToString();
 
         return form switch
         {
