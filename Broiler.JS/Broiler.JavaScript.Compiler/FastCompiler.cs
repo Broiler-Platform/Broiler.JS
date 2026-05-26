@@ -167,7 +167,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             if (!expression.IsStringLiteral(out var literal))
                 return false;
 
-            if (literal == "use strict")
+            if (SyntaxValidation.IsUseStrictDirectiveLiteral((AstLiteral)expression))
                 return true;
         }
 
