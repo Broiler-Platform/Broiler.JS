@@ -102,6 +102,7 @@ public partial class JSPromise : JSObject, IJSPromise
         });
     }
 
+    [JSExport(Length = 1)]
     public JSPromise(in Arguments a) : base()
     {
         if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)

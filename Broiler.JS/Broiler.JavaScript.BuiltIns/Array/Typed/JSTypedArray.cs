@@ -35,7 +35,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return (int)Math.Truncate(number);
     }
 
-    [JSExport]
+    [JSExport(Length = 1)]
     private static JSValue From(in Arguments a) => a.This.InvokeMethod(Names.from, a);
 
     [JSExport]

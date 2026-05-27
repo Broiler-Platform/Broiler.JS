@@ -55,7 +55,7 @@ public partial class JSUInt8Array : JSTypedArray
     /// ES2026 §4.3.1 — Uint8Array.fromBase64(str)
     /// Creates a new Uint8Array from a Base64-encoded string.
     /// </summary>
-    [JSExport("fromBase64")]
+    [JSExport("fromBase64", Length = 1)]
     public static JSValue FromBase64(in Arguments a)
     {
         var str = a.Get1();
@@ -119,7 +119,7 @@ public partial class JSUInt8Array : JSTypedArray
     /// Decodes a Base64 string and writes bytes into this typed array.
     /// Returns an object { read, written }.
     /// </summary>
-    [JSExport("setFromBase64")]
+    [JSExport("setFromBase64", Length = 1)]
     public JSValue SetFromBase64(in Arguments a)
     {
         var str = a.Get1();
