@@ -423,7 +423,6 @@ jobs:
   rerun-failed:
     needs:
       - plan
-      - incremental
     # On PRs: skip rerun-failed (incremental handles the fast-feedback path).
     # On push/dispatch: run when the plan says to rerun previously failed paths.
     if: >-
