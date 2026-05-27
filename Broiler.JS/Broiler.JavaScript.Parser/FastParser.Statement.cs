@@ -17,6 +17,9 @@ partial class FastParser
         var begin = BeginUndo();
         var token = begin.Token;
 
+        if (token.IsEscapedReservedWord)
+            throw new FastParseException(token, "Keyword must not contain escaped characters");
+
         switch (token.Type)
         {
             case TokenTypes.CurlyBracketStart:
@@ -134,6 +137,9 @@ partial class FastParser
 
         if (ExpressionSequence(out var expression, TokenTypes.SemiColon))
         {
+            if (!EndOfStatement())
+                throw stream.Unexpected();
+
             node = new AstExpressionStatement(token, PreviousToken, expression);
             return true;
         }

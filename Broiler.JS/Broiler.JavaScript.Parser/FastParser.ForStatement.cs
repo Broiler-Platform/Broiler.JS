@@ -88,6 +88,9 @@ partial class FastParser
             AstExpression? test = null;
             AstExpression? update = null;
 
+            if (IsEscapedKeyword(stream.Current, "in") || IsEscapedKeyword(stream.Current, "of"))
+                throw new FastParseException(stream.Current, "Keyword must not contain escaped characters");
+
             if (stream.CheckAndConsume(TokenTypes.In))
             {
                 if (awaitOf)
@@ -153,6 +156,9 @@ partial class FastParser
                 {
                     statement = block;
                 }
+
+                private static bool IsEscapedKeyword(FastToken token, string keyword)
+                    => token.CookedText == keyword && token.Span.Value != keyword;
             }
             else if (NonDeclarativeStatement(out statement))
             {

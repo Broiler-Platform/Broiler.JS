@@ -35,6 +35,9 @@ partial class FastParser
             if (!stream.CheckAndConsume(TokenTypes.Identifier, out var id))
                 throw stream.Unexpected();
 
+            if (id.CookedText != null || !id.Span.Equals("target"))
+                throw stream.Unexpected();
+
             node = new AstMeta(new AstIdentifier(current.AsString()), new AstIdentifier(id));
         }
         else if (!SingleExpression(out node))

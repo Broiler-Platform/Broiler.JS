@@ -1456,6 +1456,60 @@ public class CompilerTests
         Assert.ThrowsAny<Exception>(() => ctx.Eval("var x = \\u0076ar;"));
     }
 
+    [Theory]
+    [InlineData("Function(\"for (var foo o\\\\u0066 [1]) ;\")")]
+    [InlineData("Function(\"for (var foo i\\\\u006e [1]) ;\")")]
+    [InlineData("Function(\"\\\\u0064o { } while (0)\")")]
+    [InlineData("Function(\"class { st\\\\u0061tic m() { return 0; } }\")")]
+    [InlineData("Function(\"({ g\\\\u0065t foo() { return 0; } })\")")]
+    [InlineData("Function(\"({ s\\\\u0065t foo(v) {} })\")")]
+    [InlineData("Function(\"function f() { return new.\\\\u0074arget }\")")]
+    public void Unicode_Escaped_Grammar_Keywords_Are_Rejected(string source)
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval(source));
+    }
+
+    [Theory]
+    [InlineData("(function(){ 'use strict'; l\\u0065t: 42; })()")]
+    [InlineData("(function(){ 'use strict'; st\\u0061tic: 42; })()")]
+    public void Strict_Mode_Rejects_Escaped_Let_And_Static_Labels(string source)
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval(source));
+    }
+
+    [Fact]
+    public void Function_Constructor_Rejects_Block_Method_Definition_Syntax()
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("Function(\"{a(){}}\")"));
+    }
+
+    [Theory]
+    [InlineData("Function(\"var a, b; ([a, b]) = [1, 2];\")")]
+    [InlineData("Function(\"var a, b; ({a, b}) = { a: 1, b: 2 };\")")]
+    [InlineData("Function(\"var a, b; ({ a: ([b]) } = { a: [42] });\")")]
+    [InlineData("Function(\"var a, b; ({ a: (b = 7)} = { b: 1 });\")")]
+    public void Function_Constructor_Rejects_Parenthesized_Destructuring_Patterns(string source)
+    {
+        using var ctx = new JSContext();
+        Assert.ThrowsAny<Exception>(() => ctx.Eval(source));
+    }
+
+    [Fact]
+    public void Function_Constructor_Allows_Parenthesized_Assignment_Targets_Inside_Destructuring()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                return Function("var a, b; [(a), b] = [1, 2]; return [a, b].join(',');")();
+            })()
+            """);
+
+        Assert.Equal("1,2", result.ToString());
+    }
+
     [Fact]
     public void Unicode_Escaped_Keyword_Allowed_As_Property_Name()
     {

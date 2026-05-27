@@ -197,6 +197,15 @@ internal static class SyntaxValidation
             if (property.Kind is AstPropertyKind.Method or AstPropertyKind.Constructor
                 or AstPropertyKind.Get or AstPropertyKind.Set)
             {
+                if (property.IsStatic && IsEscapedKeyword(property.Start, "static"))
+                    throw new FastParseException(property.Start, "Keyword must not contain escaped characters");
+
+                if (property.Kind == AstPropertyKind.Get && IsEscapedKeyword(property.Start, "get"))
+                    throw new FastParseException(property.Start, "Keyword must not contain escaped characters");
+
+                if (property.Kind == AstPropertyKind.Set && IsEscapedKeyword(property.Start, "set"))
+                    throw new FastParseException(property.Start, "Keyword must not contain escaped characters");
+
                 // Validate getter/setter parameter counts per ECMAScript spec
                 if (property.Init is AstFunctionExpression func)
                 {
@@ -334,6 +343,12 @@ internal static class SyntaxValidation
 
         protected override AstNode VisitBinaryExpression(AstBinaryExpression binaryExpression)
         {
+            if (binaryExpression.Operator == TokenTypes.Assign
+                && ContainsInvalidParenthesizedPattern(binaryExpression.Left))
+            {
+                throw new FastParseException(binaryExpression.Left.Start, "Invalid parenthesized destructuring pattern");
+            }
+
             if (IsStrictMode
                 && binaryExpression.Operator > TokenTypes.BeginAssignTokens
                 && binaryExpression.Operator < TokenTypes.EndAssignTokens
@@ -435,7 +450,12 @@ internal static class SyntaxValidation
         protected override AstNode VisitLabeledStatement(AstLabeledStatement labeledStatement)
         {
             if (IsStrictMode)
+            {
+                if (IsRestrictedName(GetTokenValue(labeledStatement.Label)))
+                    throw new FastParseException(labeledStatement.Label, "Invalid label name in strict mode");
+
                 ThrowIfFunctionDeclarationBody(labeledStatement.Body);
+            }
 
             return base.VisitLabeledStatement(labeledStatement);
         }
@@ -576,6 +596,56 @@ internal static class SyntaxValidation
             || v.Equals("package") || v.Equals("private")
             || v.Equals("protected") || v.Equals("public");
     }
+
+    private static bool IsRestrictedName(string? name)
+        => !string.IsNullOrEmpty(name) && IsRestrictedName(new StringSpan(name));
+
+    private static string GetTokenValue(FastToken token)
+        => token.CookedText ?? token.Span.Value;
+
+    private static bool IsEscapedKeyword(FastToken token, string keyword)
+        => token.CookedText == keyword && token.Span.Value != keyword;
+
+    private static bool ContainsInvalidParenthesizedPattern(AstExpression expression, bool withinPattern = false)
+    {
+        return expression switch
+        {
+            AstArrayPattern arrayPattern => IsParenthesized(arrayPattern) || ContainsInvalidParenthesizedPattern(arrayPattern.Elements, true),
+            AstObjectPattern objectPattern => IsParenthesized(objectPattern) || ContainsInvalidParenthesizedPattern(objectPattern.Properties, true),
+            AstBinaryExpression { Operator: TokenTypes.Assign } assignment =>
+                (withinPattern && IsParenthesized(assignment)) || ContainsInvalidParenthesizedPattern(assignment.Left, true),
+            AstSpreadElement spread => ContainsInvalidParenthesizedPattern(spread.Argument, true),
+            _ => false,
+        };
+    }
+
+    private static bool ContainsInvalidParenthesizedPattern(IFastEnumerable<AstExpression> expressions, bool withinPattern)
+    {
+        var enumerator = expressions.GetFastEnumerator();
+        while (enumerator.MoveNext(out var expression))
+        {
+            if (expression != null && ContainsInvalidParenthesizedPattern(expression, withinPattern))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool ContainsInvalidParenthesizedPattern(IFastEnumerable<ObjectProperty> properties, bool withinPattern)
+    {
+        var enumerator = properties.GetFastEnumerator();
+        while (enumerator.MoveNext(out var property))
+        {
+            if (ContainsInvalidParenthesizedPattern(property.Value, withinPattern))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsParenthesized(AstNode node)
+        => node.Start.Previous?.Type == TokenTypes.BracketStart
+            && node.End.Next?.Type == TokenTypes.BracketEnd;
 
     private static bool HasNonSimpleParameters(IFastEnumerable<VariableDeclarator> parameters)
     {
