@@ -10298,8 +10298,6 @@ test/staging/sm/strict/primitive-assignment.js
 test/staging/sm/strict/primitive-this-getter.js
 test/staging/sm/strict/regress-599159.js
 test/staging/sm/syntax/class-error.js
-test/staging/sm/syntax/escaped-let-static-identifier.js
-test/staging/sm/syntax/keyword-unescaped-requirement.js
 test/staging/sm/syntax/let-as-label.js
 test/staging/sm/syntax/linefeed-at-eof-in-unterminated-string-or-template.js
 test/staging/source-phase-imports/modules-import-source_FIXTURE.js
