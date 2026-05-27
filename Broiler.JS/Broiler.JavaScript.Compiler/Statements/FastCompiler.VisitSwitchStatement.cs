@@ -2,6 +2,7 @@
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
+using System.Collections.Generic;
 using System;
 using System.Linq;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -26,11 +27,23 @@ partial class FastCompiler
         bool allNumbers = true;
         bool allIntegers = true;
 
-        var scope = pool.NewScope();
+        var switchLexicalScope = this.scope.Push(new FastFunctionScope(this.scope.Top));
+        var lexicalBindings = CollectSwitchLexicalBindings(switchStatement.Cases);
+        var hoistingScope = switchStatement.HoistingScope;
+        if (hoistingScope != null)
+        {
+            var hoisted = hoistingScope.GetFastEnumerator();
+            while (hoisted.MoveNext(out var name))
+            {
+                var variable = switchLexicalScope.CreateVariable(name, null, true, initialize: lexicalBindings.Contains(name.Value) == false);
+                variable.IsLexical = true;
+            }
+        }
+
+        var switchPoolScope = pool.NewScope();
 
         try
         {
-
             Sequence<YExpression> defBody = null;
             var @continue = this.scope.Top.Loop?.Top?.Continue;
             var @break = YExpression.Label();
@@ -38,9 +51,10 @@ partial class FastCompiler
             var outerCompletionVars = GetCompletionVariables();
             var ls = new LoopScope(@break, @continue, true) { CompletionVariable = completionVar };
             var cases = new Sequence<SwitchInfo>(switchStatement.Cases.Count + 2);
+            var functionInitializers = new Sequence<YExpression>();
             using var completion = completionScopes.Push(completionVar);
             using var bt = this.scope.Top.Loop.Push(ls);
-            SwitchInfo lastCase = new(scope);
+            SwitchInfo lastCase = new(switchPoolScope);
             var casesEn = switchStatement.Cases.GetFastEnumerator();
 
             while (casesEn.MoveNext(out var c))
@@ -52,8 +66,8 @@ partial class FastCompiler
                 {
                     switch (es)
                     {
-                        case AstExpressionStatement { Expression: AstFunctionExpression functionDeclaration }:
-                            body.Add(VisitRuntimeFunctionDeclaration(functionDeclaration));
+                        case AstExpressionStatement { Expression: AstFunctionExpression { Id: { } } functionDeclaration }:
+                            functionInitializers.Add(CreateSwitchFunctionInitializer(functionDeclaration));
                             break;
 
                         case AstStatement stmt:
@@ -68,7 +82,7 @@ partial class FastCompiler
                 if (c.Test == null)
                 {
                     defBody = body;
-                    lastCase = new SwitchInfo(scope);
+                    lastCase = new SwitchInfo(switchPoolScope);
 
                     continue;
                 }
@@ -171,8 +185,18 @@ partial class FastCompiler
                     cases.Add(lastCase);
                     body.Insert(0, YExpression.Label(lastCase.Label));
                     lastCase.Body = body;
-                    lastCase = new SwitchInfo(scope);
+                    lastCase = new SwitchInfo(switchPoolScope);
                 }
+            }
+
+            if (lastCase.Tests.Any())
+            {
+                lastCase.Body =
+                [
+                    YExpression.Label(lastCase.Label),
+                    YExpression.Empty
+                ];
+                cases.Add(lastCase);
             }
 
             System.Reflection.MethodInfo equalsMethod = null;
@@ -188,12 +212,12 @@ partial class FastCompiler
                 {
                     if (allIntegers)
                     {
-                        @case.Tests = @case.Tests.ConvertToInteger(scope);
+                        @case.Tests = @case.Tests.ConvertToInteger(switchPoolScope);
                     }
                     else
                     {
                         // convert every case to double..
-                        @case.Tests = @case.Tests.ConvertToNumber(scope);
+                        @case.Tests = @case.Tests.ConvertToNumber(switchPoolScope);
                     }
                 }
                 else
@@ -201,11 +225,11 @@ partial class FastCompiler
                     if (allStrings)
                     {
                         // force everything to string if it isn't
-                        @case.Tests = @case.Tests.ConvertToString(scope);
+                        @case.Tests = @case.Tests.ConvertToString(switchPoolScope);
                     }
                     else
                     {
-                        @case.Tests = @case.Tests.ConvertToJSValue(scope);
+                        @case.Tests = @case.Tests.ConvertToJSValue(switchPoolScope);
                         equalsMethod = JSValueBuilder.StaticEquals;
                     }
                 }
@@ -247,20 +271,72 @@ partial class FastCompiler
                 d = YExpression.Block(defBody);
             }
 
-            var r = YExpression.Block(
-                new Sequence<YParameterExpression> { completionVar },
-                YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
+            var statements = new Sequence<YExpression>
+            {
+                YExpression.Assign(completionVar, JSUndefinedBuilder.Value)
+            };
+            if (functionInitializers.Any())
+                statements.Add(YExpression.Block(functionInitializers));
+            statements.Add(
                 YExpression.TryFinally(
                     YExpression.Switch(testTarget, d.ToJSValue() ?? JSUndefinedBuilder.Value, equalsMethod, [.. cases.Select(x =>
                     YExpression.SwitchCase(YExpression.Block(x.Body).ToJSValue(), x.Tests))]),
-                    PropagateCompletion(completionVar, outerCompletionVars)),
-                YExpression.Label(@break),
-                completionVar);
-            return r;
+                    PropagateCompletion(completionVar, outerCompletionVars)));
+            statements.Add(YExpression.Label(@break));
+            statements.Add(completionVar);
+
+            var r = YExpression.Block(new Sequence<YParameterExpression> { completionVar }, statements);
+            return Scoped(switchLexicalScope, new Sequence<YExpression> { r });
         }
         finally
         {
-            scope.Dispose();
+            switchPoolScope.Dispose();
+            switchLexicalScope.Dispose();
         }
+    }
+
+    private YExpression CreateSwitchFunctionInitializer(AstFunctionExpression functionDeclaration)
+    {
+        var currentBinding = scope.Top.GetVariable(functionDeclaration.Id!.Name)!;
+        var result = CreateFunction(functionDeclaration, hoistStatementDeclaration: false);
+
+        using var temp = scope.Top.GetTempVariable(typeof(JSValue));
+        var variables = new Sequence<YParameterExpression> { temp.Variable };
+        var statements = new Sequence<YExpression>
+        {
+            YExpression.Assign(temp.Variable, result),
+            YExpression.Assign(currentBinding.Expression, temp.Variable)
+        };
+
+        AppendAnnexBOuterBindingAssignments(statements, currentBinding, functionDeclaration.Id.Name, temp.Variable);
+        return YExpression.Block(variables, statements);
+    }
+
+    private static HashSet<string> CollectSwitchLexicalBindings(IFastEnumerable<Case> cases)
+    {
+        var lexicalBindings = new HashSet<string>(StringComparer.Ordinal);
+        var casesEn = cases.GetFastEnumerator();
+
+        while (casesEn.MoveNext(out var @case))
+        {
+            var statements = @case.Statements.GetFastEnumerator();
+            while (statements.MoveNext(out var statement))
+            {
+                switch (statement)
+                {
+                    case AstVariableDeclaration { Kind: FastVariableKind.Let or FastVariableKind.Const } declaration:
+                        var declarators = declaration.Declarators.GetFastEnumerator();
+                        while (declarators.MoveNext(out var declarator))
+                            CollectBindingNames(declarator.Identifier, lexicalBindings);
+                        break;
+
+                    case AstExpressionStatement { Expression: AstClassExpression { Identifier: { } identifier } }:
+                        lexicalBindings.Add(identifier.Name.Value);
+                        break;
+                }
+            }
+        }
+
+        return lexicalBindings;
     }
 }

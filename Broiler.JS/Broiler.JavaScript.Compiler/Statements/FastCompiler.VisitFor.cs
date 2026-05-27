@@ -12,6 +12,18 @@ partial class FastCompiler
 {
     protected override YExpression VisitForInStatement(AstForInStatement forInStatement, string? label = null)
     {
+        FastFunctionScope? tdzScope = null;
+        if (forInStatement.HeadTdzNames != null)
+        {
+            tdzScope = this.scope.Push(new FastFunctionScope(this.scope.Top));
+            var tdzNames = forInStatement.HeadTdzNames.GetFastEnumerator();
+            while (tdzNames.MoveNext(out var name))
+            {
+                var variable = tdzScope.CreateVariable(name, null, true, initialize: false);
+                variable.IsLexical = true;
+            }
+        }
+
         var breakTarget = YExpression.Label();
         var continueTarget = YExpression.Label();
         var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
@@ -33,11 +45,29 @@ partial class FastCompiler
         var right = VisitExpression(forInStatement.Target);
         var loop = YExpression.Loop(bodyList, s.Break, s.Continue);
 
-        return YExpression.Block(pList, YExpression.Assign(completionVar, JSUndefinedBuilder.Value), YExpression.Assign(en, JSValueBuilder.GetAllKeys(right)), YExpression.TryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)), completionVar);
+        var result = YExpression.Block(pList, YExpression.Assign(completionVar, JSUndefinedBuilder.Value), YExpression.Assign(en, JSValueBuilder.GetAllKeys(right)), YExpression.TryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)), completionVar);
+        if (tdzScope == null)
+            return result;
+
+        var scoped = Scoped(tdzScope, new Sequence<YExpression> { result });
+        tdzScope.Dispose();
+        return scoped;
     }
 
     protected override YExpression VisitForOfStatement(AstForOfStatement forOfStatement, string? label = null)
     {
+        FastFunctionScope? tdzScope = null;
+        if (forOfStatement.HeadTdzNames != null)
+        {
+            tdzScope = this.scope.Push(new FastFunctionScope(this.scope.Top));
+            var tdzNames = forOfStatement.HeadTdzNames.GetFastEnumerator();
+            while (tdzNames.MoveNext(out var name))
+            {
+                var variable = tdzScope.CreateVariable(name, null, true, initialize: false);
+                variable.IsLexical = true;
+            }
+        }
+
         var breakTarget = YExpression.Label();
         var continueTarget = YExpression.Label();
         var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
@@ -104,7 +134,12 @@ partial class FastCompiler
             YExpression.TryFinally(tryFinally, PropagateCompletion(completionVar, outerCompletionVars)),
             completionVar);
 
-        return r;
+        if (tdzScope == null)
+            return r;
+
+        var scoped = Scoped(tdzScope, new Sequence<YExpression> { r });
+        tdzScope.Dispose();
+        return scoped;
     }
 
     protected override YExpression VisitForStatement(AstForStatement forStatement, string? label = null)
