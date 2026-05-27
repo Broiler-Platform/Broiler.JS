@@ -16,7 +16,7 @@ around three layers:
    [`scripts/compliance/run_test262.py`](../../scripts/compliance/run_test262.py),
    driven by per-area manifests and by the
    `--all-script-host-verifiable` full-suite mode that is sharded by the
-   `.github/workflows/test262-full-script-host.yml` workflow.
+   `.github/workflows/test262.yml` workflow.
 3. The cross-engine matrix at
    [`scripts/compliance/compare_engines.py`](../../scripts/compliance/compare_engines.py).
 
@@ -39,7 +39,7 @@ is where most new gaps surface.
   manually re-runs with a different selection.
 - **Failure list is rerun-first but never re-prioritized inside the full run.**
   The full-script-host workflow saves failing paths to
-  `scripts/compliance/test262-full-script-host-failures.txt` and reruns them
+  `scripts/compliance/test262-failures.txt` and reruns them
   first (`docs/compliance/process.md:23`), which is great for regression
   triage, but the subsequent full pass still walks every test in upstream
   order. New regressions in historically fragile areas are therefore not
@@ -66,7 +66,7 @@ produced by `run_test262.py` or from CI wall-clock data.
 
 - **Where to change.** `run_selected_tests` and `main` in
   `scripts/compliance/run_test262.py`; the workflow inputs in
-  `.github/workflows/test262-full-script-host.yml` and `.github/workflows/test262.yml`.
+  `.github/workflows/test262.yml`.
 - **What to do.** Replace the inner `for` loop with a `concurrent.futures`
   process pool sized by a new `--max-workers` flag (default `1` to preserve
   current behavior, `os.cpu_count()` when opted in). Keep `run_test` itself
@@ -78,7 +78,7 @@ produced by `run_test262.py` or from CI wall-clock data.
   the same wall-clock window, so the existing nightly workflow can lift either
   the per-shard size or the per-test timeout without spending more CI minutes.
   Measurable signals: shard wall-clock time reported by
-  `.github/workflows/test262-full-script-host.yml`, and the `executed` total in
+  `.github/workflows/test262.yml`, and the `executed` total in
   the JSON summary growing for a fixed shard budget.
 
 ### 2. Add seeded ordering and a `--shuffle-seed` mode
@@ -100,7 +100,7 @@ produced by `run_test262.py` or from CI wall-clock data.
 ### 3. Prioritize historically fragile and recently changed areas
 
 - **Where to change.** New helper in `scripts/compliance/run_test262.py` that
-  reads `scripts/compliance/test262-full-script-host-failures.txt` and the
+  reads `scripts/compliance/test262-failures.txt` and the
   `git diff` of `Broiler.JS/Broiler.JavaScript.*` since the previous green
   commit; integrate into `select_paths` via an opt-in `--prioritize-fragile`
   flag.

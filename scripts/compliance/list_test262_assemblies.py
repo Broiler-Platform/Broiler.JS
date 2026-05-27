@@ -4,7 +4,7 @@
 The mapping from a Broiler.JS assembly name (e.g. ``parser``, ``compiler``,
 ``runtime``, ``builtins``, ``intl``, ``annexb``) to a list of test262 path
 prefixes lives in ``scripts/compliance/test262-assemblies.json``. This helper
-exposes that mapping in two forms used by ``.github/workflows/test262-by-assembly.yml``
+exposes that mapping in two forms used by ``.github/workflows/test262.yml``
 and by contributors who want to run ``run_test262.py`` for a single assembly
 locally:
 

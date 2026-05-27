@@ -507,11 +507,11 @@ def _load_fragile_paths(failure_file: Path | None = None) -> set[str]:
     """Return the set of test paths recorded as historically fragile.
 
     Reads the saved failure manifest at *failure_file* (defaulting to the
-    repository-local ``test262-full-script-host-failures.txt``).  Lines
+    repository-local ``test262-failures.txt``).  Lines
     starting with ``#`` and blank lines are ignored.
     """
     if failure_file is None:
-        failure_file = REPO_ROOT / "scripts" / "compliance" / "test262-full-script-host-failures.txt"
+        failure_file = REPO_ROOT / "scripts" / "compliance" / "test262-failures.txt"
     if not failure_file.is_file():
         return set()
     paths: set[str] = set()

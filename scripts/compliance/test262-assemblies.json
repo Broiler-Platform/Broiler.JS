@@ -1,5 +1,5 @@
 {
-  "_comment": "Maps each Broiler.JS assembly to the test262 path prefixes that exercise its responsibilities. Used by .github/workflows/test262-by-assembly.yml so each assembly can be tested independently. To add an assembly, add an entry with its test262 path globs/prefixes (relative to the test262 checkout root).",
+  "_comment": "Maps each Broiler.JS assembly to the test262 path prefixes that exercise its responsibilities. Consumed by the unified .github/workflows/test262.yml workflow so each assembly can be tested in isolation through the `assembly` workflow_dispatch input. To add an assembly, add an entry with its test262 path globs/prefixes (relative to the test262 checkout root).",
   "assemblies": {
     "parser": {
       "project": "Broiler.JS/Broiler.JavaScript.Parser",
