@@ -196,41 +196,6 @@ public partial class JSObject
                 ?? throw new InvalidOperationException("CreatePrimitiveObject returned a non-object value.");
         }
 
-        static void SetSymbolValue(JSObject target, uint symbolKey, JSValue value)
-        {
-            ref var symbols = ref target.GetSymbols();
-            ref var existing = ref symbols.GetRefOrDefault(symbolKey, ref JSProperty.Empty);
-
-            if (!existing.IsEmpty)
-            {
-                    if (existing.IsProperty)
-                    {
-                        if (existing.set is IJSFunction setter)
-                        {
-                            setter.InvokeFunction(new Arguments(target, value));
-                            return;
-                        }
-
-                    throw NewTypeError($"Cannot modify property {symbolKey} of {target} which has only a getter");
-                }
-
-                if (existing.IsReadOnly)
-                    throw NewTypeError($"Cannot modify property {symbolKey} of {target}");
-            }
-
-            if (target.IsFrozen())
-                throw NewTypeError($"Cannot modify property {symbolKey} of {target}");
-
-            if (existing.IsEmpty && !target.IsExtensible())
-                throw NewTypeError($"Cannot add property {symbolKey} to {target}");
-
-            symbols.Put(symbolKey) = new JSProperty(
-                symbolKey,
-                value,
-                !existing.IsEmpty ? existing.Attributes : JSPropertyAttributes.EnumerableConfigurableValue);
-            target.PropertyChanged?.Invoke(target, (uint.MaxValue, uint.MaxValue, null));
-        }
-
         var target = ToObject(a.Get1());
 
         for (var i = 1; i < a.Length; i++)
@@ -254,7 +219,7 @@ public partial class JSObject
                 if (propertyKey.IsSymbol)
                 {
                     var symbol = (IJSSymbol)propertyKey;
-                    SetSymbolValue(target, symbol.Key, source[symbol]);
+                    target.SetPropertyOrThrow((JSValue)symbol, source[symbol]);
                     copiedSymbols ??= [];
                     copiedSymbols.Add(symbol.Key);
                     continue;
@@ -262,15 +227,16 @@ public partial class JSObject
 
                 var key = propertyKey.ToKey(false);
                 if (key.Type == KeyType.UInt)
-                    target[key.Index] = source[key.Index];
+                    target.SetPropertyOrThrow(propertyKey, source[key.Index]);
                 else
-                    target[key.KeyString] = source[key.KeyString];
+                    target.SetPropertyOrThrow(propertyKey, source[key.KeyString]);
             }
 
             foreach (var (key, property) in source.GetSymbols().AllValues())
             {
                 if (!property.IsEmpty && property.IsEnumerable && (copiedSymbols == null || !copiedSymbols.Contains(key)))
-                    SetSymbolValue(target, key, source.GetValue(property));
+                    target.SetPropertyOrThrow((JSValue)(JSValue.GetSymbolByKeyFactory?.Invoke(key)
+                        ?? throw new InvalidOperationException($"Unknown symbol key {key}")), source.GetValue(property));
             }
         }
 

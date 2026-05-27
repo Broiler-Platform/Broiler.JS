@@ -97,7 +97,7 @@ public partial class JSArray
         relativeEnd = relativeEnd < 0 ? Math.Max(len + relativeEnd, 0) : Math.Min(relativeEnd, len);
 
         for (; relativeStart < relativeEnd; relativeStart++)
-            @this[(uint)relativeStart] = value;
+            SetIndexedValue(@this, (uint)relativeStart, value);
 
         return @this;
     }
@@ -124,7 +124,7 @@ public partial class JSArray
             }
 
             if (mustSetLengthThroughProperty)
-                array[KeyStrings.length] = new JSNumber(length);
+                array.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), new JSNumber(length));
             else
                 array.Length = (int)length;
 
@@ -136,16 +136,16 @@ public partial class JSArray
             var item = a.GetAt(index);
             if (length <= uint.MaxValue)
             {
-                @this[(uint)length] = item;
+                SetIndexedValue(@this, (uint)length, item);
             }
             else
             {
-                @this[KeyStrings.GetOrCreate(length.ToString())] = item;
+                @this.SetPropertyOrThrow(KeyStrings.GetOrCreate(length.ToString()).ToJSValue(), item);
             }
         }
 
         var newLength = new JSNumber(length);
-        @this[KeyStrings.length] = newLength;
+        @this.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), newLength);
         return newLength;
     }
 
@@ -158,7 +158,7 @@ public partial class JSArray
 
         if (length == 0)
         {
-            @this[KeyStrings.length] = JSNumber.Zero;
+            @this.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSNumber.Zero);
             return JSUndefined.Value;
         }
 
@@ -168,7 +168,7 @@ public partial class JSArray
         if (!@this.Delete(index).BooleanValue)
             throw JSEngine.NewTypeError($"Cannot delete property {index}");
 
-        @this[KeyStrings.length] = new JSNumber(index);
+        @this.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), new JSNumber(index));
         return element;
     }
 
@@ -227,7 +227,7 @@ public partial class JSArray
         var n = GetArrayLikeLength(@object);
         if (n == 0)
         {
-            @object[KeyStrings.length] = JSNumber.Zero;
+            @object.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSNumber.Zero);
             return first;
         }
 
@@ -243,7 +243,7 @@ public partial class JSArray
 
         DeleteIndexedValueOrThrow(@object, last);
 
-        @object[KeyStrings.length] = new JSNumber(last);
+        @object.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), new JSNumber(last));
 
         return first;
     }
@@ -483,7 +483,7 @@ public partial class JSArray
             @this.SetValue(index, a.GetAt((int)index), @this);
 
         var newLength = new JSNumber(length + argCount);
-        @this[KeyStrings.length] = newLength;
+        @this.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), newLength);
         return newLength;
     }
 

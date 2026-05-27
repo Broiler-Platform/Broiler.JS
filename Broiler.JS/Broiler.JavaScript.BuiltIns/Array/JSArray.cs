@@ -402,6 +402,23 @@ public partial class JSArray : JSObject
 
     private bool SetLengthValue(JSValue value, bool throwError)
     {
+        var newLengthNumber = value.DoubleValue;
+        if (double.IsNaN(newLengthNumber)
+            || newLengthNumber < 0
+            || newLengthNumber > uint.MaxValue
+            || newLengthNumber != System.Math.Truncate(newLengthNumber))
+        {
+            throw JSEngine.NewRangeError("Invalid length");
+        }
+
+        if (IsFrozen() || IsLengthReadOnly())
+        {
+            if (throwError)
+                throw JSEngine.NewTypeError("Cannot modify property length");
+
+            return false;
+        }
+
         var propertyDescription = new JSObject();
         propertyDescription.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);
 

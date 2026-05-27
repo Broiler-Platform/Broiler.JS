@@ -303,6 +303,25 @@ public partial class JSObject
         set => SetValue(name, value, null, IsStrictModeEnabled?.Invoke() == true);
     }
 
+    public void SetPropertyOrThrow(JSValue key, JSValue value)
+    {
+        var propertyKey = key.ToKey(false);
+        switch (propertyKey.Type)
+        {
+            case KeyType.UInt:
+                SetValue(propertyKey.Index, value, this, true);
+                return;
+            case KeyType.String:
+                SetValue(propertyKey.KeyString, value, this, true);
+                return;
+            case KeyType.Symbol:
+                SetValue(propertyKey.Symbol, value, this, true);
+                return;
+            default:
+                throw NewTypeError($"Cannot set property {key}");
+        }
+    }
+
     internal protected override bool SetValue(IJSSymbol name, JSValue value, JSValue receiver, bool throwError = true)
     {
         var p = GetInternalProperty(name, false);
