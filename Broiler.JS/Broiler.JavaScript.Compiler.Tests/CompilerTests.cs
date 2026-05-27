@@ -1971,6 +1971,116 @@ public class CompilerTests
         "));
     }
 
+    [Fact]
+    public void UpdateExpression_ComputedMembers_Null_Base_Throws_TypeError_Before_ToPropertyKey()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () {
+                        var base = null;
+                        var prop = {
+                            toString() {
+                                throw new Test262Error("property key evaluated");
+                            }
+                        };
+
+                        base[prop]++;
+                    }),
+                    thrownCtor(function () {
+                        var base = null;
+                        var prop = {
+                            toString() {
+                                throw new Test262Error("property key evaluated");
+                            }
+                        };
+
+                        base[prop]--;
+                    }),
+                    thrownCtor(function () {
+                        var base = undefined;
+                        var prop = {
+                            toString() {
+                                throw new Test262Error("property key evaluated");
+                            }
+                        };
+
+                        ++base[prop];
+                    }),
+                    thrownCtor(function () {
+                        var base = undefined;
+                        var prop = {
+                            toString() {
+                                throw new Test262Error("property key evaluated");
+                            }
+                        };
+
+                        --base[prop];
+                    })
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void ComputedMemberExpression_Null_Undefined_Throws_TypeError_Before_ToPropertyKey()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () {
+                        var base = null;
+                        var prop = {
+                            toString() {
+                                throw new Test262Error("property key evaluated");
+                            }
+                        };
+
+                        base[prop];
+                    }),
+                    thrownCtor(function () {
+                        var base = undefined;
+                        var prop = {
+                            toString() {
+                                throw new Test262Error("property key evaluated");
+                            }
+                        };
+
+                        base[prop];
+                    })
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("TypeError|TypeError", result.ToString());
+    }
+
     #endregion
 
     #region Octal Escapes in Strict Mode

@@ -725,7 +725,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
                 return;
 
             if (IsNullOrUndefined)
-                throw NewTypeError?.Invoke($"Cannot set property {key} of {this}")
+                throw NewTypeError?.Invoke($"Cannot set properties of {this}")
                     ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
 
             ThrowOnStrictPrimitiveAssignment(key);
@@ -779,6 +779,12 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     internal JSValue GetValue(JSValue key, JSValue receiver, bool throwError = true)
     {
+        // Per spec (6.2.5.5 GetValue), ToObject(base) must precede ToPropertyKey(key).
+        // For null/undefined, ToObject throws TypeError before the key is converted.
+        if (IsNullOrUndefined)
+            throw NewTypeError?.Invoke($"Cannot read properties of {this}")
+                ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
+
         var k = key.ToKey(false);
         return k.Type switch
         {
@@ -798,6 +804,12 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool SetValue(JSValue key, JSValue value, JSValue receiver, bool throwError = true)
     {
+        // Per spec (6.2.5.6 PutValue), ToObject(base) must precede ToPropertyKey(key).
+        // For null/undefined, the caller (this[JSValue] setter) handles the TypeError,
+        // but we must not call ToKey() here to avoid observable side effects.
+        if (IsNullOrUndefined)
+            return false;
+
         var k = key.ToKey();
         return k.Type switch
         {
