@@ -66,7 +66,12 @@ partial class FastCompiler
             if (memberExpression.Computed)
             {
                 key = scope.Top.GetTempVariable(typeof(JSValue));
-                list.Add(YExpression.Assign(key.Variable, YExpression.Call(null, NormalizeUpdatePropertyKeyMethod, VisitExpression(memberExpression.Property))));
+                list.Add(YExpression.Assign(key.Variable, VisitExpression(memberExpression.Property)));
+                // Per spec, ToObject(base) must precede ToPropertyKey(key).
+                // RequireObjectCoercible throws TypeError for null/undefined before
+                // NormalizePropertyKey can trigger observable side effects (e.g. toString).
+                list.Add(YExpression.Call(null, RequireObjectCoercibleMethod, target.Expression));
+                list.Add(YExpression.Assign(key.Variable, YExpression.Call(null, NormalizeUpdatePropertyKeyMethod, key.Expression)));
                 right = JSValueBuilder.Index(target.Expression, key.Expression);
             }
             else
