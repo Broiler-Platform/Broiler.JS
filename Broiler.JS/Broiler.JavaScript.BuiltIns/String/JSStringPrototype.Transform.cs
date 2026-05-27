@@ -29,7 +29,7 @@ public partial class JSString
     }
 
     [JSPrototypeMethod]
-    [JSExport("padEnd")]
+    [JSExport("padEnd", Length = 1)]
     internal static JSValue PadEnd(in Arguments a)
     {
         var @this = a.This.AsString();
@@ -44,7 +44,7 @@ public partial class JSString
     }
 
     [JSPrototypeMethod]
-    [JSExport("padStart")]
+    [JSExport("padStart", Length = 1)]
     internal static JSValue PadStart(in Arguments a)
     {
         var @this = a.This.AsString();

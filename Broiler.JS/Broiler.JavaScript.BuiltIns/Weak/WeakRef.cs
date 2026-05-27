@@ -98,6 +98,7 @@ public partial class JSWeakRef : JSObject
 {
     internal WeakReference<JSValue> weak;
     public JSWeakRef(JSValue value) : this() => weak = new WeakReference<JSValue>(value);
+    [JSExport(Length = 1)]
     public JSWeakRef(in Arguments a) : base(JSEngine.NewTargetPrototype) => weak = new WeakReference<JSValue>(a[0] ?? throw new JSException($"argument is missing"));
 
     [JSExport]

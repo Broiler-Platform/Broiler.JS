@@ -3423,6 +3423,33 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Additional_BuiltIn_Length_Metadata_Matches_Test262_Regression_Samples()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var parts = ctx.Eval(@"(function () {
+            function snapshot(fn) {
+                var descriptor = Object.getOwnPropertyDescriptor(fn, 'length');
+                return [descriptor.value, fn.length, descriptor.writable, descriptor.enumerable, descriptor.configurable].join(',');
+            }
+
+            return [
+                snapshot(Promise),
+                snapshot(Promise.resolve),
+                snapshot(Promise.reject),
+                snapshot(String.prototype.padEnd),
+                snapshot(String.prototype.padStart),
+                snapshot(TypedArray.from),
+                snapshot(Uint8Array.fromBase64),
+                snapshot(Uint8Array.prototype.setFromBase64),
+                snapshot(WeakRef)
+            ].join('|');
+        })();").ToString().Split('|');
+
+        Assert.All(parts, part => Assert.Equal("1,1,false,false,true", part));
+    }
+
+    [Fact]
     public void Generated_BuiltIn_Method_Length_Metadata_Matches_Map_And_Math_Samples()
     {
         EnsureBuiltInsLoaded();
