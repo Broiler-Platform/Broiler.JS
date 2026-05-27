@@ -1841,6 +1841,28 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Error_Constructors_Expose_Non_Writable_Prototype_Descriptors()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              var constructors = [Error, TypeError, SyntaxError, RangeError, ReferenceError, EvalError, URIError, AggregateError];
+              return constructors.every(function (C) {
+                var d = Object.getOwnPropertyDescriptor(C, 'prototype');
+                return d
+                  && d.value !== undefined
+                  && d.writable === false
+                  && d.enumerable === false
+                  && d.configurable === false;
+              });
+            })();
+            """);
+
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
     public void Function_Family_And_Error_Prototype_Metadata_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();

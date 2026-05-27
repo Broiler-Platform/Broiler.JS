@@ -1576,7 +1576,7 @@ internal static class BuiltInsAssemblyInitializer
         };
         var functionMetadata = new JSFunction(JSFunction.empty, "Function", "function Function() { [native code] }", length: 1, createPrototype: false);
 
-        replacement.FastAddValue(KeyStrings.prototype, existing.prototype, JSPropertyAttributes.ConfigurableValue);
+        replacement.FastAddValue(KeyStrings.prototype, existing.prototype, JSPropertyAttributes.ReadonlyValue);
         replacement.FastAddValue(KeyStrings.constructor, functionMetadata, JSPropertyAttributes.ConfigurableValue);
         existing.prototype.FastAddValue(KeyStrings.name, JSValue.CreateString(name.Value), JSPropertyAttributes.ConfigurableValue);
 
