@@ -191,7 +191,9 @@ public partial class JSArray
         descriptor.FastAddValue(KeyStrings.writable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
         descriptor.FastAddValue(KeyStrings.enumerable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
         descriptor.FastAddValue(KeyStrings.configurable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
-        target.DefineProperty(index, descriptor);
+        var result = target.DefineProperty(index, descriptor);
+        if (result.IsBoolean && !result.BooleanValue)
+            throw JSEngine.NewTypeError($"Cannot define property {index}");
     }
 
     private static bool TryGetArrayLikeElement(JSObject @object, uint index, out JSValue value)

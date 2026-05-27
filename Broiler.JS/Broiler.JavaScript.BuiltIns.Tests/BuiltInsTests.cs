@@ -7121,6 +7121,61 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Native_BuiltIn_Write_Failures_Throw_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var target = {};
+                Object.preventExtensions(target);
+
+                return [
+                    thrownCtor(function () {
+                        Object.assign(target, { x: 1 });
+                    }),
+                    thrownCtor(function () {
+                        var bad = new Proxy([null], {
+                            defineProperty: function () {
+                                return false;
+                            }
+                        });
+
+                        JSON.parse('["first", null]', function (_, value) {
+                            if (value === 'first') {
+                                this[1] = bad;
+                            }
+                            return value;
+                        });
+                    }),
+                    thrownCtor(function () {
+                        var array = [];
+                        Object.defineProperty(array, 'length', { writable: false });
+                        array.pop();
+                    }),
+                    thrownCtor(function () {
+                        var array = [];
+                        Object.defineProperty(array, 'length', { writable: false });
+                        array.push(1);
+                    })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Numeric_String_Property_Access_Resolves_Element_Backed_Object_Properties()
     {
         EnsureBuiltInsLoaded();

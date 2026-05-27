@@ -159,7 +159,9 @@ public partial class JSJSON : JSObject
         descriptor.FastAddValue(KeyStrings.writable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
         descriptor.FastAddValue(KeyStrings.enumerable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
         descriptor.FastAddValue(KeyStrings.configurable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
-        target.DefineProperty(key, descriptor);
+        var result = target.DefineProperty(key, descriptor);
+        if (result.IsBoolean && !result.BooleanValue)
+            throw JSEngine.NewTypeError($"Cannot define property {key}");
     }
 
     private static void RecordSource(
