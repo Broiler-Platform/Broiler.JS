@@ -10,12 +10,18 @@ name: test262
 #     `scripts/compliance/test262-failures.txt` are rerun first, and the full
 #     phase only executes once the saved failures (or the targeted assembly)
 #     pass.
+#   * On pull requests, detects which assemblies are affected by the changed
+#     files and runs test262 only for those scopes first.  The full suite
+#     executes only when the incremental job succeeds.
 #   * On completion merges shard logs and uses the LogParser
 #     `--highest-impact-problem` mode to file a focused GitHub issue for the
 #     most impactful failure category when `ISSUE_TOKEN` is configured.
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
   workflow_dispatch:
@@ -171,9 +177,258 @@ jobs:
               handle.write(f"failed-path-count={len(failed_paths)}\n")
           PY
 
+  # ---------------------------------------------------------------------------
+  # PR-only: detect which assemblies are affected by changed files and run
+  # test262 incrementally before the full suite.
+  # ---------------------------------------------------------------------------
+  detect-changes:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      assemblies: ${{ steps.map.outputs.assemblies }}
+      assembly-count: ${{ steps.map.outputs.assembly-count }}
+      run-all: ${{ steps.map.outputs.run-all }}
+    steps:
+      - name: Check out Broiler.JS
+        uses: actions/checkout@v4
+
+      - name: Get changed files
+        id: changed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+            const filenames = files.map(f => f.filename);
+            core.setOutput('files', JSON.stringify(filenames));
+
+      - name: Map changed files to assemblies
+        id: map
+        shell: bash
+        env:
+          CHANGED_FILES: ${{ steps.changed.outputs.files }}
+        run: |
+          python <<'PY'
+          import json
+          import os
+
+          changed_files = json.loads(os.environ["CHANGED_FILES"])
+
+          # Paths outside any assembly project that should trigger the full
+          # suite when modified (global config, runner scripts, workflow, etc.).
+          global_prefixes = [
+              ".github/workflows/",
+              "scripts/compliance/",
+              "Directory.Build.props",
+              "Broiler.JS.slnx",
+              "Broiler.JS/Directory.Build.props",
+              "Broiler.JS/Broiler.JavaScript/",
+              "Broiler.JS/Broiler.JavaScript.Engine/",
+              "Broiler.JS/Broiler.JavaScript.LinqExpressions/",
+              "Broiler.JS/Broiler.JavaScript.Modules/",
+              "Broiler.JS/Broiler.JavaScript.Globals/",
+          ]
+
+          # Map from project directory prefix to the assembly names it affects.
+          project_to_assemblies = {
+              "Broiler.JS/Broiler.JavaScript.Parser/": ["parser"],
+              "Broiler.JS/Broiler.JavaScript.Compiler/": ["compiler"],
+              "Broiler.JS/Broiler.JavaScript.Runtime/": ["runtime"],
+              "Broiler.JS/Broiler.JavaScript.BuiltIns/": ["builtins", "intl", "annexb"],
+          }
+
+          run_all = False
+          affected: set[str] = set()
+
+          for f in changed_files:
+              # Check for global-scope changes first.
+              if any(f == prefix or f.startswith(prefix) for prefix in global_prefixes):
+                  run_all = True
+                  break
+              # Map to specific assemblies.
+              for prefix, names in project_to_assemblies.items():
+                  if f.startswith(prefix):
+                      affected.update(names)
+
+          if run_all:
+              affected = {"parser", "compiler", "runtime", "builtins", "intl", "annexb"}
+
+          sorted_assemblies = sorted(affected)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"assemblies={json.dumps(sorted_assemblies)}\n")
+              fh.write(f"assembly-count={len(sorted_assemblies)}\n")
+              fh.write(f"run-all={'true' if run_all else 'false'}\n")
+          PY
+
+  incremental:
+    needs:
+      - plan
+      - detect-changes
+    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.assembly-count > 0
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        assembly: ${{ fromJson(needs.detect-changes.outputs.assemblies) }}
+    env:
+      RUN_PHASE: incremental
+      RUN_PREFIX: incr-
+
+    steps:
+      - name: Check out Broiler.JS
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache test262 checkout
+        id: cache-test262
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.TEST262_ROOT }}
+          key: test262-${{ runner.os }}-${{ env.TEST262_REF }}
+
+      - name: Download selected test262 suite
+        if: steps.cache-test262.outputs.cache-hit != 'true'
+        run: |
+          rm -rf "$TEST262_ROOT"
+          git clone --filter=blob:none https://github.com/tc39/test262.git "$TEST262_ROOT"
+          git -C "$TEST262_ROOT" checkout --force "$TEST262_REF"
+
+      - name: Restore Broiler.JS
+        run: dotnet restore Broiler.JS.slnx
+
+      - name: Build Broiler.JS CLI
+        run: dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release
+
+      - name: Resolve assembly paths
+        id: selection
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RESULTS_DIR"
+          manifest_path="$RESULTS_DIR/${{ matrix.assembly }}-paths.txt"
+          python scripts/compliance/list_test262_assemblies.py \
+            --manifest scripts/compliance/test262-assemblies.json \
+            --paths-for "${{ matrix.assembly }}" \
+            --output "$manifest_path"
+          echo "selection_args=--path-file $manifest_path" >> "$GITHUB_OUTPUT"
+
+      - name: Run incremental test262 for ${{ matrix.assembly }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RESULTS_DIR"
+          output_path="$RESULTS_DIR/${RUN_PREFIX}${{ matrix.assembly }}.json"
+          log_path="$RESULTS_DIR/${RUN_PREFIX}${{ matrix.assembly }}.log"
+          exit_code_path="$RESULTS_DIR/${RUN_PREFIX}${{ matrix.assembly }}.exit-code.txt"
+          set +e
+          python scripts/compliance/run_test262.py \
+            --suite-ref "$TEST262_REF" \
+            --suite-root "$TEST262_ROOT" \
+            --broiler-dll "$BROILER_DLL" \
+            ${{ steps.selection.outputs.selection_args }} \
+            --shard-count 1 \
+            --shard-index 0 \
+            --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
+            --memory-limit-mb "$MEMORY_LIMIT_MB" \
+            --max-workers "$MAX_WORKERS" \
+            ${SHUFFLE_SEED:+--shuffle-seed "$SHUFFLE_SEED"} \
+            $( [ "$INCLUDE_NEGATIVE" = "true" ] && echo "--include-negative" ) \
+            $( [ "$PRIORITIZE_FRAGILE" = "true" ] && echo "--prioritize-fragile" ) \
+            --output "$output_path" 2>&1 | tee "$log_path"
+          status=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "$status" > "$exit_code_path"
+          exit "$status"
+
+      - name: Publish incremental summary
+        if: always()
+        shell: bash
+        run: |
+          python <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          assembly = "${{ matrix.assembly }}"
+          results_dir = Path(os.environ["RESULTS_DIR"])
+          result_path = results_dir / f"{os.environ['RUN_PREFIX']}{assembly}.json"
+
+          if not result_path.exists():
+              exit_code_path = results_dir / f"{os.environ['RUN_PREFIX']}{assembly}.exit-code.txt"
+              exit_code = exit_code_path.read_text(encoding="utf-8").strip() if exit_code_path.exists() else "unknown"
+              Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
+                  "\n".join(
+                      [
+                          f"## test262 incremental — {assembly}",
+                          "",
+                          "- Runner did not produce a JSON summary.",
+                          f"- Exit code: {exit_code}",
+                      ]
+                  ) + "\n",
+                  encoding="utf-8",
+              )
+              raise SystemExit(0)
+
+          summary = json.loads(result_path.read_text(encoding="utf-8"))
+
+          lines = [
+              f"## test262 incremental — {assembly}",
+              "",
+              f"- Suite ref: `{summary['suiteRef']}`",
+              f"- Selection mode: `{summary['selectionMode']}`",
+              f"- Candidate paths discovered: {summary['candidateCount']}",
+              f"- Paths executed: {len(summary['expandedPaths'])}",
+              f"- Per-test timeout: {summary['testTimeoutSeconds']}s",
+              f"- Passed: {summary['passed']}",
+              f"- Failed: {summary['failed']}",
+              f"- Skipped: {summary['skipped']}",
+              f"- Timed out: {summary['timedOut']}",
+          ]
+
+          Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
+              "\n".join(lines) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload incremental logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test262-incr-${{ matrix.assembly }}
+          path: ${{ env.RESULTS_DIR }}
+
   rerun-failed:
-    needs: plan
-    if: needs.plan.outputs.should-rerun-failed == 'true'
+    needs:
+      - plan
+      - incremental
+    # On PRs: skip rerun-failed (incremental handles the fast-feedback path).
+    # On push/dispatch: run when the plan says to rerun previously failed paths.
+    if: >-
+      github.event_name != 'pull_request'
+      && needs.plan.outputs.should-rerun-failed == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -324,8 +579,20 @@ jobs:
   run-full:
     needs:
       - plan
+      - detect-changes
+      - incremental
       - rerun-failed
-    if: always() && (needs.plan.outputs.should-rerun-failed != 'true' || needs.rerun-failed.result == 'success')
+    # On PRs: run only when the incremental job succeeded (or was skipped
+    # because no assembly was affected — unlikely but defensive).
+    # On push/dispatch: preserve original gating on rerun-failed.
+    if: >-
+      always()
+      && (
+        (github.event_name == 'pull_request'
+          && (needs.incremental.result == 'success' || needs.incremental.result == 'skipped'))
+        || (github.event_name != 'pull_request'
+          && (needs.plan.outputs.should-rerun-failed != 'true' || needs.rerun-failed.result == 'success'))
+      )
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -496,13 +763,18 @@ jobs:
   persist-failed-tests:
     needs:
       - plan
+      - incremental
       - rerun-failed
       - run-full
-    # Only update the canonical failures manifest when the full suite ran.
-    # Targeted assembly runs intentionally cover a subset of the suite, so
-    # persisting their failure list would overwrite the broader manifest with
-    # narrower data.
-    if: always() && (inputs.assembly == '' || inputs.assembly == 'all') && (needs.rerun-failed.result != 'skipped' || needs.run-full.result != 'skipped')
+    # Only update the canonical failures manifest when the full suite ran on
+    # push/dispatch.  PR runs and targeted assembly runs intentionally cover a
+    # subset of the suite, so persisting their failure list would overwrite the
+    # broader manifest with narrower data.
+    if: >-
+      always()
+      && github.event_name != 'pull_request'
+      && (inputs.assembly == '' || inputs.assembly == 'all')
+      && (needs.rerun-failed.result != 'skipped' || needs.run-full.result != 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Check out Broiler.JS
@@ -572,10 +844,11 @@ jobs:
 
   combine-logs:
     needs:
+      - incremental
       - rerun-failed
       - run-full
       - persist-failed-tests
-    if: always() && (needs.rerun-failed.result != 'skipped' || needs.run-full.result != 'skipped')
+    if: always() && (needs.incremental.result != 'skipped' || needs.rerun-failed.result != 'skipped' || needs.run-full.result != 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Check out Broiler.JS
@@ -589,7 +862,7 @@ jobs:
       - name: Download shard logs into one directory
         uses: actions/download-artifact@v4.1.3
         with:
-          pattern: test262-*-shard-*
+          pattern: test262-*
           path: ${{ github.workspace }}/.artifacts/test262/full-script-host/merged
           merge-multiple: true
 
@@ -597,7 +870,7 @@ jobs:
         uses: actions/upload-artifact/merge@v4
         with:
           name: test262-logs
-          pattern: test262-*-shard-*
+          pattern: test262-*
           separate-directories: false
           delete-merged: true
 
