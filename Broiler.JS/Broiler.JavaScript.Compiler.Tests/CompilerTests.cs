@@ -895,6 +895,102 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Switch_Case_Declarations_Respect_Switch_Lexical_Scope()
+    {
+        using var ctx = new JSContext();
+
+        var strictResult = ctx.Eval("""
+            "use strict";
+            var before;
+            var after;
+            try { f; before = "value"; } catch (e) { before = e.name; }
+            switch (1) {
+              case 1:
+                function f() {}
+            }
+            try { f; after = "value"; } catch (e) { after = e.name; }
+            [before, after].join("|");
+            """);
+        Assert.Equal("ReferenceError|ReferenceError", strictResult.ToString());
+
+        var tdz = Assert.Throws<JSException>(() => ctx.Eval("""
+            switch (1) {
+              case 0:
+                let x;
+              case 1:
+                (function() { x; })();
+            }
+            """));
+        Assert.Equal("ReferenceError", tdz.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+    }
+
+    [Fact]
+    public void Compile_ForIn_Lexical_Head_Creates_Tdz_For_Target_Expression()
+    {
+        using var ctx = new JSContext();
+
+        var boundName = Assert.Throws<JSException>(() => ctx.Eval("""
+            let x = 1;
+            for (const x in { x }) {}
+            """));
+        Assert.Equal("ReferenceError", boundName.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+
+        var scopeOpen = ctx.Eval("""
+            let x = 'outside';
+            var probeBefore = function() { return x; };
+            var probeExpr;
+
+            for (let x in { i: probeExpr = function() { typeof x; }}) ;
+
+            [
+              probeBefore(),
+              (function() {
+                try {
+                  probeExpr();
+                  return 'no-throw';
+                } catch (e) {
+                  return e.name;
+                }
+              })()
+            ].join('|');
+            """);
+        Assert.Equal("outside|ReferenceError", scopeOpen.ToString());
+    }
+
+    [Fact]
+    public void Compile_ForOf_Lexical_Head_Creates_Tdz_For_Target_Expression()
+    {
+        using var ctx = new JSContext();
+
+        var boundName = Assert.Throws<JSException>(() => ctx.Eval("""
+            let x = 1;
+            for (let x of [x]) {}
+            """));
+        Assert.Equal("ReferenceError", boundName.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+
+        var scopeOpen = ctx.Eval("""
+            let x = 'outside';
+            var probeBefore = function() { return x; };
+            var probeExpr;
+
+            for (let x of (probeExpr = function() { typeof x; }, [])) ;
+
+            [
+              probeBefore(),
+              (function() {
+                try {
+                  probeExpr();
+                  return 'no-throw';
+                } catch (e) {
+                  return e.name;
+                }
+              })()
+            ].join('|');
+            """);
+        Assert.Equal("outside|ReferenceError", scopeOpen.ToString());
+    }
+
+    [Fact]
     public void Compile_Syntax_Errors_Are_Reported_For_Strict_And_Direct_Eval_Cases()
     {
         using var ctx = new JSContext();

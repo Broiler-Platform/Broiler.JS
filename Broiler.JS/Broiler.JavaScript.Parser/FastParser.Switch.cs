@@ -28,43 +28,55 @@ partial class FastParser
         var statements = new Sequence<AstStatement>();
         AstExpression test = null;
         bool hasDefault = false;
+        var scope = variableScope.Push(begin, FastNodeType.Block);
 
-        while (!stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
+        try
         {
-            if (stream.CheckAndConsume(FastKeywords.@case))
+            while (!stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
             {
-                if (test != null)
+                if (stream.CheckAndConsume(FastKeywords.@case))
                 {
-                    nodes.Add(new Case(test, statements));
-                    statements = [];
+                    if (test != null)
+                    {
+                        nodes.Add(new Case(test, statements));
+                        statements = [];
+                    }
+
+                    if (!Expression(out test))
+                        throw stream.Unexpected();
+
+                    stream.Expect(TokenTypes.Colon);
                 }
+                else if (stream.CheckAndConsume(FastKeywords.@default))
+                {
+                    stream.Expect(TokenTypes.Colon);
 
-                if (!Expression(out test))
-                    throw stream.Unexpected();
+                    if (test != null)
+                    {
+                        nodes.Add(new Case(test, statements));
+                        statements = [];
+                    }
 
-                stream.Expect(TokenTypes.Colon);
+                    test = null;
+                    hasDefault = true;
+                }
+                else if (Statement(out var stmt))
+                    statements.Add(stmt);
             }
-            else if (stream.CheckAndConsume(FastKeywords.@default))
+
+            if (test != null || hasDefault)
+                nodes.Add(new Case(test, statements));
+
+            node = new AstSwitchStatement(begin, PreviousToken, target, nodes)
             {
-                stream.Expect(TokenTypes.Colon);
-
-                if (test != null)
-                {
-                    nodes.Add(new Case(test, statements));
-                    statements = [];
-                }
-
-                test = null;
-                hasDefault = true;
-            }
-            else if (Statement(out var stmt))
-                statements.Add(stmt);
+                HoistingScope = scope.GetVariables()
+            };
+        }
+        finally
+        {
+            scope.Dispose();
         }
 
-        if (test != null || hasDefault)
-            nodes.Add(new Case(test, statements));
-
-        node = new AstSwitchStatement(begin, PreviousToken, target, nodes);
         return true;
     }
 }

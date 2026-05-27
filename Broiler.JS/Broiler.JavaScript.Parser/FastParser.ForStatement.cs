@@ -165,9 +165,16 @@ partial class FastParser
             }
             else throw stream.Unexpected();
 
+            IFastEnumerable<StringSpan>? headTdzNames = null;
+            if (newScope && declaration != null)
+                headTdzNames = GetBindingNames(declaration);
+
             if (@in)
             {
-                node = new AstForInStatement(begin, PreviousToken, beginNode, inTarget, statement);
+                node = new AstForInStatement(begin, PreviousToken, beginNode, inTarget, statement)
+                {
+                    HeadTdzNames = headTdzNames
+                };
                 scope.GetVariables();
 
                 return true;
@@ -175,7 +182,10 @@ partial class FastParser
 
             if (of)
             {
-                node = new AstForOfStatement(begin, PreviousToken, beginNode, ofTarget, statement, awaitOf);
+                node = new AstForOfStatement(begin, PreviousToken, beginNode, ofTarget, statement, awaitOf)
+                {
+                    HeadTdzNames = headTdzNames
+                };
                 scope.GetVariables();
 
                 return true;
@@ -213,6 +223,48 @@ partial class FastParser
 
             if (!isOf && hasInit && declaration.Kind != FastVariableKind.Var)
                 throw new FastParseException(declaration.Start, "for-in loop variable declaration may not have an initializer");
+        }
+
+        static IFastEnumerable<StringSpan> GetBindingNames(AstVariableDeclaration declaration)
+        {
+            var names = new Sequence<StringSpan>();
+            var en = declaration.Declarators.GetFastEnumerator();
+            while (en.MoveNext(out var d))
+                CollectBindingNames(d.Identifier, names);
+            return names;
+        }
+
+        static void CollectBindingNames(AstExpression expression, Sequence<StringSpan> names)
+        {
+            switch (expression.Type)
+            {
+                case FastNodeType.Identifier:
+                    names.Add((expression as AstIdentifier)!.Name);
+                    break;
+
+                case FastNodeType.BinaryExpression:
+                    CollectBindingNames((expression as AstBinaryExpression)!.Left, names);
+                    break;
+
+                case FastNodeType.SpreadElement:
+                    CollectBindingNames((expression as AstSpreadElement)!.Argument, names);
+                    break;
+
+                case FastNodeType.ArrayPattern:
+                    var elements = (expression as AstArrayPattern)!.Elements.GetFastEnumerator();
+                    while (elements.MoveNext(out var element))
+                    {
+                        if (element != null)
+                            CollectBindingNames(element, names);
+                    }
+                    break;
+
+                case FastNodeType.ObjectPattern:
+                    var properties = (expression as AstObjectPattern)!.Properties.GetFastEnumerator();
+                    while (properties.MoveNext(out var property))
+                        CollectBindingNames(property.Value, names);
+                    break;
+            }
         }
 
         bool ExpressionList(out AstExpression? node)
