@@ -10601,4 +10601,34 @@ public class BuiltInsTests
     }
 
     #endregion
+
+    #region Error_Constructor_Names
+
+    [Theory]
+    [InlineData("try { eval('???'); } catch(e) { e.constructor.name }", "SyntaxError")]
+    [InlineData("try { null.x } catch(e) { e.constructor.name }", "TypeError")]
+    [InlineData("try { decodeURIComponent('%'); } catch(e) { e.constructor.name }", "URIError")]
+    [InlineData("try { new Array(-1); } catch(e) { e.constructor.name }", "RangeError")]
+    [InlineData("try { undeclaredVar123; } catch(e) { e.constructor.name }", "ReferenceError")]
+    public void Error_Factory_Produces_Correct_Constructor_Name(string code, string expectedName)
+    {
+        using var ctx = CreateContext();
+        var result = ctx.Eval(code);
+        Assert.Equal(expectedName, result.ToString());
+    }
+
+    [Theory]
+    [InlineData("try { eval('???'); } catch(e) { e instanceof SyntaxError }", "true")]
+    [InlineData("try { null.x } catch(e) { e instanceof TypeError }", "true")]
+    [InlineData("try { decodeURIComponent('%'); } catch(e) { e instanceof URIError }", "true")]
+    [InlineData("try { new Array(-1); } catch(e) { e instanceof RangeError }", "true")]
+    [InlineData("try { undeclaredVar123; } catch(e) { e instanceof ReferenceError }", "true")]
+    public void Error_Factory_Produces_Correct_InstanceOf(string code, string expected)
+    {
+        using var ctx = CreateContext();
+        var result = ctx.Eval(code);
+        Assert.Equal(expected, result.ToString());
+    }
+
+    #endregion
 }
