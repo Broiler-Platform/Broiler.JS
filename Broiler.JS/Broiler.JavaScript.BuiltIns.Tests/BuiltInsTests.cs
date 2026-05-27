@@ -1939,7 +1939,12 @@ public class BuiltInsTests
               var asyncGeneratorPrototype = Object.getPrototypeOf(async function* () {});
               var descriptors = [
                 Object.getOwnPropertyDescriptor(Array, 'prototype'),
+                Object.getOwnPropertyDescriptor(BigInt, 'prototype'),
+                Object.getOwnPropertyDescriptor(DataView, 'prototype'),
+                Object.getOwnPropertyDescriptor(Date, 'prototype'),
+                Object.getOwnPropertyDescriptor(FinalizationRegistry, 'prototype'),
                 Object.getOwnPropertyDescriptor(Map, 'prototype'),
+                Object.getOwnPropertyDescriptor(Number, 'prototype'),
                 Object.getOwnPropertyDescriptor(Promise, 'prototype'),
                 Object.getOwnPropertyDescriptor(TypedArray, 'prototype'),
                 Object.getOwnPropertyDescriptor(Int8Array, 'prototype'),
