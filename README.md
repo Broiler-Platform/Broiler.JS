@@ -11,6 +11,9 @@ Broiler.JS is a modular JavaScript engine for .NET. The codebase is organized as
 - [Known compliance gaps](docs/compliance/known-gaps.md) records areas that need implementation work before claiming full ECMAScript compliance.
 - [Compliance roadmap to 100%](docs/compliance/roadmap-to-100-percent.md) breaks the remaining compliance work into small execution steps.
 - [LogParser usage](logs/README.md) documents the shard log summarizer, including structured text output and JSON export.
+- [Agent profiles](docs/agents/profiles.md) define standardized GitHub Copilot agent personas for the main workflow scenarios in this repository.
+- [Agent usage guide](docs/agents/usage-guide.md) explains how to invoke the profiles and how their effectiveness is measured.
+- [Repository-wide agent instructions](.github/copilot-instructions.md) summarize the build, test, and modularity rules that every automated agent must follow.
 
 ## Building and testing
 
