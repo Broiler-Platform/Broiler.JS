@@ -129,6 +129,7 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                             context.FastAddValue(Names.{className}, @class, JSPropertyAttributes.ConfigurableValue);
                         }}
                         var prototype = @class.prototype;
+                        @class.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
                         ");
                 }
                 else
@@ -142,6 +143,7 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                             context.FastAddValue(Names.{className}, @class, JSPropertyAttributes.ConfigurableValue);
                         }}
                         var prototype = @class.prototype;
+                        @class.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
                         ");
 
                 }
