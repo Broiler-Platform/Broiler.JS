@@ -2105,6 +2105,24 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void NativeError_Constructors_Have_Error_As_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            Object.getPrototypeOf(TypeError) === Error,
+            Object.getPrototypeOf(SyntaxError) === Error,
+            Object.getPrototypeOf(RangeError) === Error,
+            Object.getPrototypeOf(ReferenceError) === Error,
+            Object.getPrototypeOf(URIError) === Error,
+            Object.getPrototypeOf(EvalError) === Error,
+            Object.getPrototypeOf(AggregateError) === Error
+        ].join('|');");
+
+        Assert.Equal("true|true|true|true|true|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Intl_Constructors_Expose_Function_Metadata()
     {
         EnsureBuiltInsLoaded();

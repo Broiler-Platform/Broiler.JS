@@ -367,13 +367,16 @@ internal static class BuiltInsAssemblyInitializer
     private static void PatchErrorConstructors(JSContext context)
     {
         PatchErrorConstructor(context, KeyStrings.Error, static (in Arguments a) => new JSError(in a));
-        PatchErrorConstructor(context, KeyStrings.TypeError, static (in Arguments a) => new JSTypeError(in a));
-        PatchErrorConstructor(context, KeyStrings.SyntaxError, static (in Arguments a) => new JSSyntaxError(in a));
-        PatchErrorConstructor(context, KeyStrings.URIError, static (in Arguments a) => new JSURIError(in a));
-        PatchErrorConstructor(context, KeyStrings.RangeError, static (in Arguments a) => new JSRangeError(in a));
-        PatchErrorConstructor(context, KeyStrings.ReferenceError, static (in Arguments a) => new JSReferenceError(in a));
-        PatchErrorConstructor(context, KeyStrings.EvalError, static (in Arguments a) => new JSEvalError(in a));
-        PatchErrorConstructor(context, KeyStrings.GetOrCreate("AggregateError"), static (in Arguments a) => new JSAggregateError(in a));
+
+        // Per spec §20.5.6.1, the [[Prototype]] of each NativeError constructor is Error.
+        var errorCtor = context[KeyStrings.Error] as JSFunction;
+        PatchErrorConstructor(context, KeyStrings.TypeError, static (in Arguments a) => new JSTypeError(in a), errorCtor);
+        PatchErrorConstructor(context, KeyStrings.SyntaxError, static (in Arguments a) => new JSSyntaxError(in a), errorCtor);
+        PatchErrorConstructor(context, KeyStrings.URIError, static (in Arguments a) => new JSURIError(in a), errorCtor);
+        PatchErrorConstructor(context, KeyStrings.RangeError, static (in Arguments a) => new JSRangeError(in a), errorCtor);
+        PatchErrorConstructor(context, KeyStrings.ReferenceError, static (in Arguments a) => new JSReferenceError(in a), errorCtor);
+        PatchErrorConstructor(context, KeyStrings.EvalError, static (in Arguments a) => new JSEvalError(in a), errorCtor);
+        PatchErrorConstructor(context, KeyStrings.GetOrCreate("AggregateError"), static (in Arguments a) => new JSAggregateError(in a), errorCtor);
     }
 
     private static void PatchLegacyDatePrototype(JSContext context)
@@ -1563,7 +1566,7 @@ internal static class BuiltInsAssemblyInitializer
         generator.prototype.BasePrototypeObject = asyncGeneratorPrototype;
     }
 
-    private static void PatchErrorConstructor(JSContext context, KeyString key, JSFunctionDelegate factory)
+    private static void PatchErrorConstructor(JSContext context, KeyString key, JSFunctionDelegate factory, JSFunction baseConstructor = null)
     {
         if (context[key] is not JSFunction existing)
             return;
@@ -1574,6 +1577,10 @@ internal static class BuiltInsAssemblyInitializer
         {
             prototype = existing.prototype
         };
+
+        // Per spec, the [[Prototype]] of each NativeError constructor is the Error constructor.
+        if (baseConstructor != null)
+            replacement.BasePrototypeObject = baseConstructor;
         var functionMetadata = new JSFunction(JSFunction.empty, "Function", "function Function() { [native code] }", length: 1, createPrototype: false);
 
         replacement.FastAddValue(KeyStrings.prototype, existing.prototype, JSPropertyAttributes.ReadonlyValue);
