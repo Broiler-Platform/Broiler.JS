@@ -167,6 +167,10 @@ public class JSException : Exception
             case JSException direct:
                 jsException = direct;
                 return true;
+            case FastParseException parseException:
+                jsException = (NewSyntaxErrorFactory ?? throw new InvalidOperationException("JSException.NewSyntaxErrorFactory delegate is not initialized."))
+                    (parseException.Message);
+                return true;
             case AggregateException aggregateException:
                 foreach (var innerException in aggregateException.Flatten().InnerExceptions)
                 {

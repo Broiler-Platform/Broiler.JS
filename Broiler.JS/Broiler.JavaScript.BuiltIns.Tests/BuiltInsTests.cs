@@ -10630,5 +10630,46 @@ public class BuiltInsTests
         Assert.Equal(expected, result.ToString());
     }
 
+    [Fact]
+    public void SetFromHex_Invalid_Char_Throws_SyntaxError_With_Partial_Write()
+    {
+        using var ctx = CreateContext();
+
+        // Invalid hex character should produce SyntaxError
+        var result = ctx.Eval("""
+            var arr = new Uint8Array(4);
+            var error = null;
+            try { arr.setFromHex("deadXX00"); } catch(e) { error = e; }
+            [error instanceof SyntaxError, arr[0], arr[1]].join(",");
+            """);
+        Assert.Equal("true,222,173", result.ToString());
+    }
+
+    [Fact]
+    public void FromHex_Invalid_Char_Throws_SyntaxError()
+    {
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            var error = null;
+            try { Uint8Array.fromHex("deadXX"); } catch(e) { error = e; }
+            error instanceof SyntaxError;
+            """);
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
+    public void Indirect_Eval_Parse_Failure_Throws_SyntaxError()
+    {
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            var error = null;
+            try { (0, eval)('var \\n'); } catch(e) { error = e; }
+            error instanceof SyntaxError;
+            """);
+        Assert.Equal("true", result.ToString());
+    }
+
     #endregion
 }

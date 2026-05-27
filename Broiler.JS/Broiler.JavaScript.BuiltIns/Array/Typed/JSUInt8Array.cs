@@ -81,7 +81,9 @@ public partial class JSUInt8Array : JSTypedArray
         var bytes = new byte[hex.Length / 2];
         for (int i = 0; i < bytes.Length; i++)
         {
-            bytes[i] = System.Convert.ToByte(hex.Substring(i * 2, 2), 16);
+            if (!TryParseHexByte(hex, i * 2, out var b))
+                throw JSEngine.NewSyntaxError("Invalid hex string");
+            bytes[i] = b;
         }
         return new JSUInt8Array(bytes);
     }
@@ -218,15 +220,45 @@ public partial class JSUInt8Array : JSTypedArray
         if (hex.Length % 2 != 0)
             throw JSEngine.NewSyntaxError("Invalid hex string length");
         var bytes = new byte[hex.Length / 2];
+        int parsed = 0;
         for (int i = 0; i < bytes.Length; i++)
         {
-            bytes[i] = System.Convert.ToByte(hex.Substring(i * 2, 2), 16);
+            if (!TryParseHexByte(hex, i * 2, out var b))
+            {
+                // Write successfully parsed bytes before throwing
+                int written = Math.Min(parsed, length);
+                System.Array.Copy(bytes, 0, buffer.buffer, byteOffset, written);
+                throw JSEngine.NewSyntaxError("Invalid hex string");
+            }
+            bytes[i] = b;
+            parsed++;
         }
-        int written = Math.Min(bytes.Length, length);
-        System.Array.Copy(bytes, 0, buffer.buffer, byteOffset, written);
+        int totalWritten = Math.Min(parsed, length);
+        System.Array.Copy(bytes, 0, buffer.buffer, byteOffset, totalWritten);
         var result = new JSObject();
-        result["read"] = new JSNumber(written * 2);
-        result["written"] = new JSNumber(written);
+        result["read"] = new JSNumber(totalWritten * 2);
+        result["written"] = new JSNumber(totalWritten);
         return result;
     }
+
+    private static bool TryParseHexByte(string hex, int offset, out byte value)
+    {
+        var hi = HexDigitValue(hex[offset]);
+        var lo = HexDigitValue(hex[offset + 1]);
+        if (hi < 0 || lo < 0)
+        {
+            value = 0;
+            return false;
+        }
+        value = (byte)((hi << 4) | lo);
+        return true;
+    }
+
+    private static int HexDigitValue(char c) => c switch
+    {
+        >= '0' and <= '9' => c - '0',
+        >= 'a' and <= 'f' => c - 'a' + 10,
+        >= 'A' and <= 'F' => c - 'A' + 10,
+        _ => -1,
+    };
 }
