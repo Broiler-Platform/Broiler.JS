@@ -12,7 +12,12 @@ namespace Broiler.JavaScript.Compiler;
 
 internal static class SyntaxValidation
 {
-    public static void ValidateProgram(AstProgram program, string sourceText, bool inheritStrictMode = false, IEnumerable<string> directEvalLexicalBindings = null)
+public static void ValidateProgram(
+    AstProgram program,
+    string sourceText,
+    bool inheritStrictMode = false,
+    IEnumerable<string> directEvalLexicalBindings = null,
+    IEnumerable<string> directEvalPrivateNames = null)
     {
         if (program.IsAsync)
             throw new FastParseException(program.Start, "Unexpected await");
@@ -28,7 +33,7 @@ internal static class SyntaxValidation
             throw new FastParseException(program.Start, "Invalid declaration in direct eval code");
         }
 
-        new StrictModeValidator(inheritStrictMode).Visit(program);
+        new StrictModeValidator(inheritStrictMode, directEvalPrivateNames).Visit(program);
     }
 
     internal static bool IsUseStrictDirectiveLiteral(AstLiteral literal)
@@ -173,9 +178,13 @@ internal static class SyntaxValidation
 
     private sealed class StrictModeValidator : AstReduce
     {
-        public StrictModeValidator(bool inheritStrictMode)
+        private readonly Stack<HashSet<string>> privateNameScopes = new();
+
+        public StrictModeValidator(bool inheritStrictMode, IEnumerable<string> directEvalPrivateNames)
         {
             IsStrictMode = inheritStrictMode;
+            if (directEvalPrivateNames != null)
+                privateNameScopes.Push(new HashSet<string>(directEvalPrivateNames, StringComparer.Ordinal));
         }
 
         protected override AstNode VisitProgram(AstProgram program)
@@ -194,6 +203,9 @@ internal static class SyntaxValidation
 
         protected override AstNode VisitClassProperty(AstClassProperty property)
         {
+            if (property.IsPrivate && !HasPrivateName(property.Key as AstIdentifier))
+                throw new FastParseException(property.Start, "Private name is not declared in an enclosing class");
+
             if (property.Kind is AstPropertyKind.Method or AstPropertyKind.Constructor
                 or AstPropertyKind.Get or AstPropertyKind.Set)
             {
@@ -297,12 +309,34 @@ internal static class SyntaxValidation
             return base.VisitVariableDeclaration(variableDeclaration);
         }
 
+        protected override VariableDeclarator VisitVariableDeclarator(VariableDeclarator declarator)
+        {
+            Visit(declarator.Identifier);
+            Visit(declarator.Init);
+            return declarator;
+        }
+
         protected override AstNode VisitClassStatement(AstClassExpression classStatement)
         {
             if (IsStrictMode && IsRestrictedName(classStatement.Identifier?.Name))
                 throw new FastParseException(classStatement.Start, "Invalid class name in strict mode");
 
-            return base.VisitClassStatement(classStatement);
+            Visit(classStatement.Identifier);
+            Visit(classStatement.Base);
+
+            privateNameScopes.Push(CollectPrivateNames(classStatement.Members));
+            try
+            {
+                var members = classStatement.Members.GetFastEnumerator();
+                while (members.MoveNext(out var member))
+                    VisitClassProperty(member);
+            }
+            finally
+            {
+                privateNameScopes.Pop();
+            }
+
+            return classStatement;
         }
 
         protected override AstNode VisitTryStatement(AstTryStatement tryStatement)
@@ -460,6 +494,27 @@ internal static class SyntaxValidation
             return base.VisitLabeledStatement(labeledStatement);
         }
 
+        protected override AstNode VisitIdentifier(AstIdentifier identifier)
+        {
+            if (IsPrivateName(identifier) && !HasPrivateName(identifier))
+                throw new FastParseException(identifier.Start, "Private name is not declared in an enclosing class");
+
+            return base.VisitIdentifier(identifier);
+        }
+
+        protected override AstNode VisitMemberExpression(AstMemberExpression memberExpression)
+        {
+            if (!memberExpression.Computed
+                && memberExpression.Property is AstIdentifier identifier
+                && IsPrivateName(identifier)
+                && !HasPrivateName(identifier))
+            {
+                throw new FastParseException(identifier.Start, "Private name is not declared in an enclosing class");
+            }
+
+            return base.VisitMemberExpression(memberExpression);
+        }
+
         private static void ThrowIfFunctionDeclarationBody(AstStatement body)
         {
             if (body is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true } func })
@@ -483,6 +538,27 @@ internal static class SyntaxValidation
             if (current is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true } func })
                 throw new FastParseException(func.Start, "In strict mode code, functions can only be declared at top level or inside a block");
         }
+
+        private static HashSet<string> CollectPrivateNames(IFastEnumerable<AstClassProperty> members)
+        {
+            var privateNames = new HashSet<string>(StringComparer.Ordinal);
+            var enumerator = members.GetFastEnumerator();
+            while (enumerator.MoveNext(out var member))
+            {
+                if (member.IsPrivate && member.Key is AstIdentifier identifier)
+                    privateNames.Add(identifier.Name.Value);
+            }
+
+            return privateNames;
+        }
+
+        private bool HasPrivateName(AstIdentifier identifier)
+            => identifier != null
+                && privateNameScopes.Count > 0
+                && privateNameScopes.Peek().Contains(identifier.Name.Value);
+
+        private static bool IsPrivateName(AstIdentifier identifier)
+            => identifier != null && identifier.Name.Value.StartsWith("#", StringComparison.Ordinal);
     }
 
     private static bool ContainsRestrictedBinding(IFastEnumerable<VariableDeclarator> declarators)

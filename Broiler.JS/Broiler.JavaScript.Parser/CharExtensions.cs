@@ -87,7 +87,7 @@ public static class CharExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsIdentifierStart(this int codePoint)
     {
-        if (codePoint is '$' or '_' or '@' or 0x2118 or 0x212E or 0x309B or 0x309C)
+        if (codePoint is '$' or '_' or 0x2118 or 0x212E or 0x309B or 0x309C)
             return true;
 
         return char.GetUnicodeCategory(codePoint.FromCodePoint(), 0) switch

@@ -494,7 +494,7 @@ public class FastScanner
                 return state.Commit(TokenTypes.Assign);
         }
 
-        return EOF;
+        throw Unexpected();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1108,7 +1108,7 @@ public class FastScanner
                 first = Consume();
 
                 if (first == char.MaxValue)
-                    return state.Commit(TokenTypes.String, sb.Builder);
+                    throw Unexpected();
 
                 if (first == start)
                 {

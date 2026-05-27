@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Ast.Statements;
@@ -150,6 +151,7 @@ partial class FastCompiler
 
         var memberInits = new Sequence<AstClassProperty>();
         AstFunctionExpression constructor = null;
+        var directEvalPrivateNames = CollectPrivateNames(body.Members);
 
         var en = body.Members.GetFastEnumerator();
         while (en.MoveNext(out var property))
@@ -175,14 +177,14 @@ partial class FastCompiler
                     if (property.IsStatic)
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
-                            inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false);
+                            inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         staticElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                         break;
                     }
                     else
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
-                            inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false);
+                            inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         prototypeElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     break;
@@ -192,13 +194,13 @@ partial class FastCompiler
                     if (property.IsStatic)
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
-                            inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false);
+                            inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         staticElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     else
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
-                            inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false);
+                            inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         prototypeElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     break;
@@ -212,13 +214,13 @@ partial class FastCompiler
                     if (property.IsStatic)
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
-                            inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false);
+                            inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         staticElements.Add(JSObjectBuilder.AddValue(name, fx, isPrivateName ? JSPropertyAttributes.ConfigurableReadonlyValue : JSPropertyAttributes.ConfigurableValue));
                     }
                     else
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
-                            inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false);
+                            inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         prototypeElements.Add(JSObjectBuilder.AddValue(name, fx, isPrivateName ? JSPropertyAttributes.ConfigurableReadonlyValue : JSPropertyAttributes.ConfigurableValue));
                     }
                     break;
@@ -232,7 +234,7 @@ partial class FastCompiler
 
         if (constructor != null)
         {
-            var fx = CreateFunction(constructor, superVar, true, className, memberInits, true);
+            var fx = CreateFunction(constructor, superVar, true, className, memberInits, true, directEvalPrivateNames: directEvalPrivateNames);
             staticElements.Add(JSClassBuilder.AddConstructor(fx));
         }
         else
@@ -279,5 +281,18 @@ partial class FastCompiler
         var result = YExpression.Block(new Sequence<YParameterExpression> { superVar, superPrototypeVar }, stmts);
         scope.Dispose();
         return result;
+    }
+
+    private static string[] CollectPrivateNames(IFastEnumerable<AstClassProperty> members)
+    {
+        var privateNames = new List<string>();
+        var enumerator = members.GetFastEnumerator();
+        while (enumerator.MoveNext(out var member))
+        {
+            if (member.IsPrivate && member.Key is AstIdentifier identifier)
+                privateNames.Add(identifier.Name.Value);
+        }
+
+        return privateNames.Count == 0 ? null : [.. privateNames];
     }
 }

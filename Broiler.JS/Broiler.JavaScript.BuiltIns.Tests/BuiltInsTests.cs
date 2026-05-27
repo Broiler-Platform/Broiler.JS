@@ -4997,6 +4997,29 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void NewFunction_Rejects_Invalid_Source_And_Strict_Nested_Function_Early_Errors()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              (() => { try { Function('@error'); return 'no error'; } catch (e) { return e.name; } })(),
+              (() => {
+                try {
+                  Function("'use strict'; var f = function () { var o = {}; with (o) {}; };");
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })()
+            ].join('|');
+            """);
+
+        Assert.Equal("SyntaxError|SyntaxError", result.ToString());
+    }
+
+    [Fact]
     public void BigInt_Invalid_String_Syntax_Throws_SyntaxError()
     {
         EnsureBuiltInsLoaded();
@@ -10523,6 +10546,26 @@ public class BuiltInsTests
         using var ctx = new JSContext();
         var result = ctx.Eval(expression);
         Assert.Equal(expected, result.ToString());
+    }
+
+    [Fact]
+    public void JsonRawJson_Rejects_Empty_And_Whitespace_Bounded_Input()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            [
+              '', '\n123', '123\n', '\t123', '123\t', '\r123', '123\r', ' 123', '123 '
+            ].map(value => {
+              try {
+                JSON.rawJSON(value);
+                return 'no error';
+              } catch (e) {
+                return e.name;
+              }
+            }).join('|');
+            """);
+        Assert.Equal("SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError", result.ToString());
     }
 
     [Fact]

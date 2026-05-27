@@ -1020,7 +1020,9 @@ public class CompilerTests
             """);
         AssertSyntaxError("""Function('function eval(){"use strict";}');""");
         AssertSyntaxError("""Function('function arguments(){"use strict";}');""");
+        AssertSyntaxError("""eval('"use strict"; var _f = function (param, param) { };');""");
         AssertSyntaxError("""eval("/\\\rn/;");""");
+        AssertSyntaxError("eval(\"'foo\\\\\r\")");
         AssertSyntaxError("""
             "use strict";
             eval("a = 0x1; a = 01;");

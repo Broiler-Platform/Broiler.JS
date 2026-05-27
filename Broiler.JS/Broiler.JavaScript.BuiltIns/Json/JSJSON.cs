@@ -446,6 +446,8 @@ public partial class JSJSON : JSObject
         var str = text.ToString();
         if (str.Length == 0)
             throw JSEngine.NewSyntaxError("JSON.rawJSON requires a non-empty string");
+        if (IsIllegalRawJsonBoundaryChar(str[0]) || IsIllegalRawJsonBoundaryChar(str[^1]))
+            throw JSEngine.NewSyntaxError("JSON.rawJSON cannot start or end with whitespace");
 
         JSValue parsed;
         try
@@ -465,6 +467,9 @@ public partial class JSJSON : JSObject
         JSObject.FreezeObject(result);
         return result;
     }
+
+    private static bool IsIllegalRawJsonBoundaryChar(char ch)
+        => ch is '\t' or '\n' or '\r' or ' ';
 
     [JSExport("isRawJSON", Length = 1)]
     public static JSValue IsRawJSON(in Arguments a)

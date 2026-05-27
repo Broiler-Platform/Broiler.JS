@@ -217,6 +217,8 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public string[] CurrentDirectEvalParameterBindings { get; set; }
 
+    public string[] DirectEvalPrivateNames { get; }
+
     public YParameterExpression Context { get; }
 
     public YParameterExpression StackItem { get; }
@@ -288,12 +290,13 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     public readonly FastFunctionScope RootScope;
 
     public FastFunctionScope(FastPool pool, AstFunctionExpression fx, YExpression previousThis = null, YExpression super = null, bool isAsync = false,
-        IFastEnumerable<AstClassProperty> memberInits = null, FastFunctionScope previous = null)
+        IFastEnumerable<AstClassProperty> memberInits = null, FastFunctionScope previous = null, string[] directEvalPrivateNames = null)
     {
         RootScope = previous ?? this;
         TopScope = this;
         var sID = Interlocked.Increment(ref scopeID);
         MemberInits = memberInits;
+        DirectEvalPrivateNames = directEvalPrivateNames;
         Function = fx;
         Super = super;
 
@@ -337,6 +340,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         TopScope = p.TopScope;
         RootScope = p.RootScope;
         MemberInits = p.MemberInits;
+        DirectEvalPrivateNames = p.DirectEvalPrivateNames;
         ArgumentsExpression = p.ArgumentsExpression;
         Generator = p.Generator;
         Awaiter = p.Awaiter;

@@ -11,8 +11,8 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private static readonly System.Reflection.MethodInfo DirectEvalMethod = typeof(DirectEvalSupport)
-        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(string[])])
-        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, bool, bool, string[], JSVariable[], string[]) not found");
+        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(string[]), typeof(string[])])
+        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, bool, bool, string[], JSVariable[], string[], string[]) not found");
 
     protected override YExpression VisitCallExpression(AstCallExpression callExpression)
     {
@@ -96,7 +96,8 @@ partial class FastCompiler
             var lexicalBindings = CaptureDirectEvalLexicalBindings();
             var capturedBindings = CaptureDirectEvalBindings();
             var parameterBindings = CaptureDirectEvalParameterBindings();
-            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), scope.Top.ThisExpression, YExpression.Constant(IsStrictMode), YExpression.Constant(scope.Top.Function != null), lexicalBindings, capturedBindings, parameterBindings);
+            var privateNames = CaptureDirectEvalPrivateNames();
+            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), scope.Top.ThisExpression, YExpression.Constant(IsStrictMode), YExpression.Constant(scope.Top.Function != null), lexicalBindings, capturedBindings, parameterBindings, privateNames);
         }
 
     skipDirectEval:
@@ -209,6 +210,19 @@ partial class FastCompiler
 
         var bindings = new Sequence<YExpression>(parameterBindings.Length);
         foreach (var name in parameterBindings)
+            bindings.Add(YExpression.Constant(name));
+
+        return YExpression.NewArrayInit(typeof(string), bindings);
+    }
+
+    private YExpression CaptureDirectEvalPrivateNames()
+    {
+        var privateNames = scope.Top.DirectEvalPrivateNames;
+        if (privateNames == null || privateNames.Length == 0)
+            return YExpression.Constant(null, typeof(string[]));
+
+        var bindings = new Sequence<YExpression>(privateNames.Length);
+        foreach (var name in privateNames)
             bindings.Add(YExpression.Constant(name));
 
         return YExpression.NewArrayInit(typeof(string), bindings);

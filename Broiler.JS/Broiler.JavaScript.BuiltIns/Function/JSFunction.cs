@@ -441,6 +441,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         context?.DispatchEvalEvent(ref bodyText, ref location);
         var parameterText = string.Join(",", sargs);
         var source = $"({functionKind} anonymous({parameterText}\n) {{\n{bodyText}\n}})";
+        _ = CoreScript.Compile(source, location ?? "internal", codeCache: null);
         return CoreScript.Evaluate(source, location ?? "internal", context?.CodeCache);
     }
 

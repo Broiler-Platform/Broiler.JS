@@ -16,7 +16,7 @@ partial class FastCompiler
 {
     private YExpression CreateFunction(AstFunctionExpression functionDeclaration, YExpression super = null, bool createClass = false, string className = null,
         IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true, string inferredFunctionName = null,
-        bool createPrototype = true)
+        bool createPrototype = true, string[] directEvalPrivateNames = null)
     {
         var node = functionDeclaration;
         var functionLength = GetExpectedArgumentCount(functionDeclaration.Params);
@@ -43,7 +43,14 @@ partial class FastCompiler
         var vList = new Sequence<YParameterExpression>();
 
         var current = scope.Top.RootScope;
-        var cs = scope.Push(new FastFunctionScope(pool, functionDeclaration, previousThis, super, memberInits: memberInits, previous: functionDeclaration.IsArrowFunction ? current : null));
+        var cs = scope.Push(new FastFunctionScope(
+            pool,
+            functionDeclaration,
+            previousThis,
+            super,
+            memberInits: memberInits,
+            previous: functionDeclaration.IsArrowFunction ? current : null,
+            directEvalPrivateNames: directEvalPrivateNames ?? previousScope.DirectEvalPrivateNames));
         {
             var lexicalScopeVar = cs.Context;
 

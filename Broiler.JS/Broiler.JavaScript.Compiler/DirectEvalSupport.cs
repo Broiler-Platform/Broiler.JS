@@ -13,7 +13,7 @@ namespace Broiler.JavaScript.Compiler;
 
 public static class DirectEvalSupport
 {
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] parameterBindings)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] parameterBindings, string[] privateNamesInScope)
     {
         if (!IsDirectEval(callee))
             return callee.InvokeFunction(arguments);
@@ -30,7 +30,7 @@ public static class DirectEvalSupport
         if (inheritStrictMode)
             text = "\"use strict\";\n" + text;
 
-        Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings);
+        Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope);
 
         if (JSEngine.Current is JSContext context)
         {
@@ -50,7 +50,7 @@ public static class DirectEvalSupport
         return !globalEval.IsUndefined && callee.StrictEquals(globalEval);
     }
 
-    private static void Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings)
+    private static void Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope)
     {
         if (inheritStrictMode && ContainsStrictReservedWordUsage(text))
             throw JSEngine.NewSyntaxError("Unexpected strict mode reserved word");
@@ -60,7 +60,7 @@ public static class DirectEvalSupport
             var pool = new FastPool();
             var parser = new FastParser(new FastTokenStream(pool, text));
             var program = parser.ParseProgram();
-            SyntaxValidation.ValidateProgram(program, text, inheritStrictMode, lexicalBindings);
+            SyntaxValidation.ValidateProgram(program, text, inheritStrictMode, lexicalBindings, privateNamesInScope);
             if (parameterBindings?.Length > 0
                 && SyntaxValidation.ContainsDirectEvalVarConflict(program.Statements, parameterBindings))
             {
