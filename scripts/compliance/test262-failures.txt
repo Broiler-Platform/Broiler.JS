@@ -1923,7 +1923,6 @@ test/built-ins/Object/defineProperties/15.2.3.7-6-a-76.js
 test/built-ins/Object/defineProperties/15.2.3.7-6-a-77.js
 test/built-ins/Object/defineProperties/proxy-no-ownkeys-returned-keys-order.js
 test/built-ins/Object/defineProperty/15.2.3.6-3-138.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-1.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-116.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-117.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-162.js
@@ -2031,7 +2030,6 @@ test/built-ins/Object/keys/property-traps-order-with-proxied-array.js
 test/built-ins/Object/keys/proxy-keys.js
 test/built-ins/Object/keys/proxy-non-enumerable-prop-invariant-3.js
 test/built-ins/Object/keys/return-order.js
-test/built-ins/Object/preventExtensions/symbol-object-contains-symbol-properties-strict.js
 test/built-ins/Object/prop-desc.js
 test/built-ins/Object/prototype/S15.2.4_A2.js
 test/built-ins/Object/prototype/__defineGetter__/getter-non-callable.js
@@ -2447,7 +2445,6 @@ test/built-ins/Reflect/ownKeys/order-after-define-property.js
 test/built-ins/Reflect/ownKeys/return-non-enumerable-keys.js
 test/built-ins/Reflect/ownKeys/return-on-corresponding-order-large-index.js
 test/built-ins/Reflect/ownKeys/return-on-corresponding-order.js
-test/built-ins/Reflect/preventExtensions/prevent-extensions.js
 test/built-ins/Reflect/set/different-property-descriptors.js
 test/built-ins/Reflect/set/receiver-is-not-object.js
 test/built-ins/Reflect/setPrototypeOf/return-false-if-target-and-proto-are-the-same.js
@@ -2985,7 +2982,6 @@ test/built-ins/RegExp/prototype/Symbol.match/builtin-infer-unicode.js
 test/built-ins/RegExp/prototype/Symbol.match/exec-invocation.js
 test/built-ins/RegExp/prototype/Symbol.match/flags-tostring-error.js
 test/built-ins/RegExp/prototype/Symbol.match/g-match-empty-advance-lastindex.js
-test/built-ins/RegExp/prototype/Symbol.match/g-match-empty-set-lastindex-err.js
 test/built-ins/RegExp/prototype/Symbol.match/get-flags-err.js
 test/built-ins/RegExp/prototype/Symbol.match/u-advance-after-empty.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/isregexp-called-once.js
@@ -3009,8 +3005,6 @@ test/built-ins/RegExp/prototype/Symbol.replace/result-coerce-groups-err.js
 test/built-ins/RegExp/prototype/Symbol.replace/result-coerce-groups.js
 test/built-ins/RegExp/prototype/Symbol.replace/result-coerce-index-undefined.js
 test/built-ins/RegExp/prototype/Symbol.replace/u-advance-after-empty.js
-test/built-ins/RegExp/prototype/Symbol.search/set-lastindex-init-err.js
-test/built-ins/RegExp/prototype/Symbol.search/set-lastindex-restore-err.js
 test/built-ins/RegExp/prototype/Symbol.search/u-lastindex-advance.js
 test/built-ins/RegExp/prototype/Symbol.split/coerce-flags-err.js
 test/built-ins/RegExp/prototype/dotAll/this-val-regexp-prototype.js
@@ -3405,8 +3399,6 @@ test/built-ins/String/prototype/matchAll/cstm-matchall-on-bigint-primitive.js
 test/built-ins/String/prototype/matchAll/cstm-matchall-on-boolean-primitive.js
 test/built-ins/String/prototype/matchAll/cstm-matchall-on-number-primitive.js
 test/built-ins/String/prototype/matchAll/cstm-matchall-on-string-primitive.js
-test/built-ins/String/prototype/matchAll/flags-nonglobal-throws.js
-test/built-ins/String/prototype/matchAll/flags-undefined-throws.js
 test/built-ins/String/prototype/matchAll/regexp-is-undefined.js
 test/built-ins/String/prototype/matchAll/regexp-prototype-matchAll-v-u-flag.js
 test/built-ins/String/prototype/normalize/length.js
@@ -11420,7 +11412,6 @@ test/staging/sm/object/defineGetter-defineSetter.js
 test/staging/sm/object/defineProperties-order.js
 test/staging/sm/object/defineProperty-proxy.js
 test/staging/sm/object/entries.js
-test/staging/sm/object/extensibility-01.js
 test/staging/sm/object/freeze-proxy.js
 test/staging/sm/object/getOwnPropertyDescriptor.js
 test/staging/sm/object/getOwnPropertySymbols.js
