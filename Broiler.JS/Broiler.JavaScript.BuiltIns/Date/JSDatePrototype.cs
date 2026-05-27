@@ -4,6 +4,7 @@ using System.Globalization;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.String;
 using Broiler.JavaScript.BuiltIns.Symbol;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Date;
@@ -20,6 +21,12 @@ public partial class JSDate
     /// </summary>
     internal static Func<CultureInfo, DateTimeOffset, JSObject, JSValue> IntlDateFormatter { get; set; }
 
+    [JSExport(IsConstructor = true, Length = 7)]
+    public new static JSValue Constructor(in Arguments a)
+        => (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null
+            ? new JSDate(DateTimeOffset.Now).ToString(Arguments.Empty)
+            : new JSDate(a);
+
     [JSExport(Length = 7)]
     JSDate(in Arguments a)
     {
@@ -29,7 +36,7 @@ public partial class JSDate
                 return value;
 
             var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
-            if (!toPrimitive.IsUndefined)
+            if (!toPrimitive.IsUndefined && !toPrimitive.IsNull)
             {
                 var primitive = toPrimitive.InvokeFunction(new Arguments(@object, new JSString("default")));
                 if (primitive.IsObject)

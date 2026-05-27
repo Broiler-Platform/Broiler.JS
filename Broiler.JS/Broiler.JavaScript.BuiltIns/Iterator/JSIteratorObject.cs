@@ -802,7 +802,8 @@ public partial class JSIteratorObject : JSObject
     private sealed class ConcatEnumerator(ConcatSource[] iterables) : IElementEnumerator, IReturnableEnumerator
     {
         private int _current = 0;
-        private IElementEnumerator _currentEnum = iterables.Length > 0 ? GetEnumerator(iterables[0]) : null;
+        private bool _started;
+        private IElementEnumerator _currentEnum;
 
         private static IElementEnumerator GetEnumerator(ConcatSource iterable)
         {
@@ -826,8 +827,19 @@ public partial class JSIteratorObject : JSObject
             return false;
         }
 
+        private void EnsureStarted()
+        {
+            if (_started)
+                return;
+
+            _started = true;
+            if (iterables.Length > 0)
+                _currentEnum = GetEnumerator(iterables[0]);
+        }
+
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
+            EnsureStarted();
             while (_currentEnum != null)
             {
                 if (_currentEnum.MoveNext(out hasValue, out value, out index)) return true;
@@ -840,6 +852,7 @@ public partial class JSIteratorObject : JSObject
 
         public bool MoveNext(out JSValue value)
         {
+            EnsureStarted();
             while (_currentEnum != null)
             {
                 if (_currentEnum.MoveNext(out value)) return true;
@@ -852,6 +865,7 @@ public partial class JSIteratorObject : JSObject
 
         public bool MoveNextOrDefault(out JSValue value, JSValue @default)
         {
+            EnsureStarted();
             while (_currentEnum != null)
             {
                 if (_currentEnum.MoveNext(out value)) return true;
@@ -864,6 +878,7 @@ public partial class JSIteratorObject : JSObject
 
         public JSValue NextOrDefault(JSValue @default)
         {
+            EnsureStarted();
             while (_currentEnum != null)
             {
                 if (_currentEnum.MoveNext(out var v)) return v;
@@ -875,6 +890,9 @@ public partial class JSIteratorObject : JSObject
 
         public JSValue Return(JSValue value)
         {
+            if (!_started)
+                return IteratorResult(value, true);
+
             if (_currentEnum is IReturnableEnumerator returnable)
                 return returnable.Return();
 
@@ -883,6 +901,9 @@ public partial class JSIteratorObject : JSObject
 
         public JSValue Return()
         {
+            if (!_started)
+                return IteratorResult(JSUndefined.Value, true);
+
             if (_currentEnum is IReturnableEnumerator returnable)
                 return returnable.Return();
 

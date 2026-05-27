@@ -74,59 +74,79 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
     internal void Next(JSValue next, out JSValue value, out bool done)
     {
-        if (delegatedEnumerator != null)
+        GeneratorState v = null;
+        while (true)
         {
-            if (delegatedEnumerator.MoveNext(out value))
+            if (delegatedEnumerator != null)
             {
+                try
+                {
+                    if (delegatedEnumerator.MoveNext(out value))
+                    {
+                        done = false;
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    delegatedEnumerator = null;
+                    delegatedCompletionValue = null;
+                    InjectException(ex);
+                    continue;
+                }
+
+                delegatedEnumerator = null;
+                LastValue = delegatedCompletionValue ?? JSUndefined.Value;
+                delegatedCompletionValue = null;
+            }
+
+            LastValue = next ?? LastValue ?? JSUndefined.Value;
+            v = GetNext(NextJump, LastValue);
+            NextJump = v.NextJump;
+
+        ProcessState:
+            if (v.HasValue)
+            {
+                if (v.IsValueDelegate)
+                {
+                    try
+                    {
+                        delegatedEnumerator = GetDelegatedEnumerator(v.Value);
+                    }
+                    catch (Exception ex)
+                    {
+                        InjectException(ex);
+                        continue;
+                    }
+
+                    continue;
+                }
+
+                value = v.Value;
+
+                if (v.NextJump == 0 || v.NextJump == -1)
+                {
+                    // need to execute finally.. if it is there...
+                    if (Root != null && Root.Finally > 0)
+                    {
+                        v = GetNext(Root.Finally, value);
+                        NextJump = v.NextJump;
+                        if (v.IsValueDelegate)
+                            goto ProcessState;
+                    }
+
+                    done = true;
+                    return;
+                }
+
                 done = false;
                 return;
             }
 
-            delegatedEnumerator = null;
-            LastValue = delegatedCompletionValue ?? JSUndefined.Value;
-            delegatedCompletionValue = null;
-        }
-
-        LastValue = next ?? LastValue ?? JSUndefined.Value;
-
-        var v = GetNext(NextJump, LastValue);
-        NextJump = v.NextJump;
-
-        if (v.HasValue)
-        {
-            if (v.IsValueDelegate)
-            {
-                delegatedEnumerator = GetDelegatedEnumerator(v.Value);
-                Next(next, out value, out done);
-                return;
-            }
-
-            value = v.Value;
-
-            if (v.NextJump == 0 || v.NextJump == -1)
-            {
-                // need to execute finally.. if it is there...
-                if (Root != null && Root.Finally > 0)
-                {
-                    v = GetNext(Root.Finally, value);
-                    if (v.IsValueDelegate)
-                    {
-                        delegatedEnumerator = GetDelegatedEnumerator(v.Value);
-                        Next(next, out value, out done);
-                        return;
-                    }
-                }
-
-                done = true;
-                return;
-            }
-
-            done = false;
+            done = true;
+            value = default;
             return;
         }
-
-        done = true;
-        value = default;
     }
 
     internal bool TryThrowDelegated(JSValue value, out JSValue iteratorResult)

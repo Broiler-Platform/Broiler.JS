@@ -44,31 +44,40 @@ public partial class JSGenerator : JSObject, IJSGenerator
         ThrowIfExecuting();
         if (cg != null && cg.HasDelegatedEnumerator)
         {
-            var delegatedResult = cg.TryReturnDelegated(value, out var iteratorResult)
-                ? iteratorResult
-                : JSUndefined.Value;
-
-            if (!delegatedResult.IsUndefined)
+            try
             {
-                var delegatedDone = delegatedResult[KeyStrings.done].BooleanValue;
-                var delegatedValue = delegatedResult[KeyStrings.value];
-                if (!delegatedDone)
+                var delegatedResult = cg.TryReturnDelegated(value, out var iteratorResult)
+                    ? iteratorResult
+                    : JSUndefined.Value;
+
+                if (!delegatedResult.IsUndefined)
                 {
-                    done = false;
-                    this.value = delegatedValue;
-                    return ValueObject;
+                    var delegatedDone = delegatedResult[KeyStrings.done].BooleanValue;
+                    var delegatedValue = delegatedResult[KeyStrings.value];
+                    if (!delegatedDone)
+                    {
+                        done = false;
+                        this.value = delegatedValue;
+                        return ValueObject;
+                    }
+
+                    cg.EndDelegation(delegatedValue);
+                    done = true;
+                    this.value = JSUndefined.Value;
+                    return NewWithProperties().AddProperty(KeyStrings.value, delegatedValue).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
                 }
 
-                cg.EndDelegation(delegatedValue);
+                cg.EndDelegation(value);
                 done = true;
                 this.value = JSUndefined.Value;
-                return NewWithProperties().AddProperty(KeyStrings.value, delegatedValue).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
+                return NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
             }
-
-            cg.EndDelegation(value);
-            done = true;
-            this.value = JSUndefined.Value;
-            return NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
+            catch (Exception ex)
+            {
+                cg.EndDelegation();
+                cg.InjectException(JSException.From(ex));
+                return Next();
+            }
         }
 
         done = true;
@@ -82,12 +91,10 @@ public partial class JSGenerator : JSObject, IJSGenerator
         ThrowIfExecuting();
         if (cg != null && cg.HasDelegatedEnumerator)
         {
-            var missingThrow = false;
             try
             {
                 if (!cg.TryThrowDelegated(value, out var delegatedResult))
                 {
-                    missingThrow = true;
                     if (cg.DelegatedEnumerator is IReturnableEnumerator returnable)
                         returnable.Return();
 
@@ -109,13 +116,6 @@ public partial class JSGenerator : JSObject, IJSGenerator
             }
             catch (Exception ex)
             {
-                if (missingThrow)
-                {
-                    done = true;
-                    this.value = JSUndefined.Value;
-                    throw;
-                }
-
                 cg.EndDelegation();
                 cg.InjectException(JSException.From(ex));
                 return Next();

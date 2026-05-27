@@ -407,7 +407,7 @@ internal static class BuiltInsAssemblyInitializer
                 return value;
 
             var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
-            if (!toPrimitive.IsUndefined)
+            if (!toPrimitive.IsUndefined && !toPrimitive.IsNull)
             {
                 var primitive = toPrimitive.InvokeFunction(new Arguments(@object, JSConstants.Number));
                 if (primitive.IsObject)

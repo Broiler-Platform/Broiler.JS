@@ -26,7 +26,7 @@ public partial class JSGlobalStatic
             return value;
 
         var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
-        if (!toPrimitive.IsUndefined)
+        if (!toPrimitive.IsUndefined && !toPrimitive.IsNull)
         {
             var primitive = toPrimitive.InvokeFunction(new Arguments(@object, JSConstants.Number));
             if (primitive.IsObject)
@@ -59,7 +59,7 @@ public partial class JSGlobalStatic
             // Annex B escape/unescape first perform ToString, which must respect an
             // own Symbol.toPrimitive string hint before falling back to legacy object coercion.
             var toPrimitive = @object[(IJSSymbol)JSSymbol.toPrimitive];
-            if (!toPrimitive.IsUndefined)
+            if (!toPrimitive.IsUndefined && !toPrimitive.IsNull)
             {
                 var primitive = toPrimitive.InvokeFunction(new Arguments(@object, JSConstants.String));
                 if (primitive.IsObject)

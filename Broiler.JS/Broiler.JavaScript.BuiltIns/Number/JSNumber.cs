@@ -294,7 +294,7 @@ public sealed partial class JSNumber : JSPrimitive
 
     public override JSValue AddValue(JSValue value)
     {
-        value = value.IsObject ? value.ValueOf() : value;
+        value = value is JSObject obj ? obj.ToDefaultPrimitive() : value;
 
         if (value is JSPrimitiveObject po)
             value = po.value;

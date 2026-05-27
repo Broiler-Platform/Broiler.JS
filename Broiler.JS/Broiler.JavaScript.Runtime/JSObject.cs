@@ -215,7 +215,7 @@ public partial class JSObject : JSValue
         if (toPrimitiveSymbol != null)
         {
             var exoticToPrimitive = this[toPrimitiveSymbol];
-            if (!exoticToPrimitive.IsUndefined)
+            if (!exoticToPrimitive.IsUndefined && !exoticToPrimitive.IsNull)
             {
                 if (!exoticToPrimitive.IsFunction)
                     throw NewTypeError("@@toPrimitive is not a function");
@@ -249,7 +249,7 @@ public partial class JSObject : JSValue
         if (toPrimitiveSymbol != null)
         {
             var exoticToPrimitive = this[toPrimitiveSymbol];
-            if (!exoticToPrimitive.IsUndefined)
+            if (!exoticToPrimitive.IsUndefined && !exoticToPrimitive.IsNull)
             {
                 if (!exoticToPrimitive.IsFunction)
                     throw NewTypeError("@@toPrimitive is not a function");
@@ -264,6 +264,8 @@ public partial class JSObject : JSValue
 
         return ToPrimitive(preferString: false);
     }
+
+    internal JSValue ToDefaultPrimitive() => ToPrimitiveDefault();
 
     private JSValue TryCallPrimitiveMethod(in KeyString key)
     {

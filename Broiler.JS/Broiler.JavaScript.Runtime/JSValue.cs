@@ -432,8 +432,11 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <returns></returns>
     public virtual JSValue AddValue(JSValue value)
     {
-        var self = ValueOf();
-        value = value.IsObject ? value.ValueOf() : value;
+        var self = this is JSObject selfObject ? selfObject.ToDefaultPrimitive() : ValueOf();
+        value = value is JSObject valueObject ? valueObject.ToDefaultPrimitive() : value;
+
+        if (!ReferenceEquals(self, this))
+            return self.AddValue(value);
 
         if (self.CanBeNumber && value.CanBeNumber)
             return CreateNumber(self.DoubleValue + value.DoubleValue);

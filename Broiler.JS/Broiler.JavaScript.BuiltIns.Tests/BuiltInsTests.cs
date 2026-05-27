@@ -10358,5 +10358,220 @@ public class BuiltInsTests
         Assert.Equal("function|function|function", result.ToString());
     }
 
+    [Fact]
+    public void Date_BigInt_And_IteratorConcat_Regressions_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext(JavaScriptFeatureFlags.IteratorConcat);
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var dateCallIgnoresArgument = thrownCtor(function () {
+                    var poisonedObject = Object.defineProperty({}, Symbol.toPrimitive, {
+                        get: function () {
+                            throw new Test262Error();
+                        }
+                    });
+
+                    Date(poisonedObject);
+                });
+
+                var copiedDateSkipsToPrimitive = (function () {
+                    var poisonedDate = new Date(1234);
+                    Object.defineProperty(poisonedDate, Symbol.toPrimitive, {
+                        get: function () {
+                            throw new Test262Error();
+                        }
+                    });
+
+                    return String(new Date(poisonedDate).valueOf() === 1234);
+                })();
+
+                var bigintNullToPrimitiveFallsBack = (function () {
+                    return String(({
+                        [Symbol.toPrimitive]: null,
+                        valueOf: function () {
+                            return 2n;
+                        }
+                    } + 1n) === 3n);
+                })();
+
+                var concatReturnBeforeStart = thrownCtor(function () {
+                    var iterator = Iterator.concat({
+                        [Symbol.iterator]() {
+                            return {
+                                next() {
+                                    throw new Test262Error();
+                                },
+                                return() {
+                                    throw new Test262Error();
+                                }
+                            };
+                        }
+                    });
+
+                    iterator.return();
+                    iterator.next();
+                    iterator.return();
+                });
+
+                return [
+                    dateCallIgnoresArgument,
+                    copiedDateSkipsToPrimitive,
+                    bigintNullToPrimitiveFallsBack,
+                    concatReturnBeforeStart
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("no-throw|true|true|no-throw", result.ToString());
+    }
+
+    [Fact]
+    public void YieldStar_Abrupt_Completions_Are_Catchable_In_Sync_Generators()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+
+                function getIteratorAbrupt() {
+                    var thrown = new Test262Error();
+                    var poisonedIter = Object.defineProperty({}, Symbol.iterator, {
+                        get: function() {
+                            throw thrown;
+                        }
+                    });
+                    function* g() {
+                        try {
+                            yield * poisonedIter;
+                        } catch (err) {
+                            caught = err;
+                        }
+                    }
+                    var iter = g();
+                    var caught;
+
+                    var result = iter.next();
+                    return String(result.done && result.value === undefined && caught === thrown);
+                }
+
+                function nextMethodAbrupt() {
+                    var thrown = new Test262Error();
+                    var badIter = {};
+                    var poisonedNext = Object.defineProperty({}, 'next', {
+                        get: function() {
+                            throw thrown;
+                        }
+                    });
+                    badIter[Symbol.iterator] = function() {
+                        return poisonedNext;
+                    };
+                    function* g() {
+                        try {
+                            yield * badIter;
+                        } catch (err) {
+                            caught = err;
+                        }
+                    }
+                    var iter = g();
+                    var caught;
+
+                    var result = iter.next();
+                    return String(result.done && result.value === undefined && caught === thrown);
+                }
+
+                function returnMethodAbrupt() {
+                    var thrown = new Test262Error();
+                    var badIter = {};
+                    var poisonedReturn = {
+                        next: function() {
+                            return { done: false };
+                        }
+                    };
+                    Object.defineProperty(poisonedReturn, 'return', {
+                        get: function() {
+                            throw thrown;
+                        }
+                    });
+                    badIter[Symbol.iterator] = function() {
+                        return poisonedReturn;
+                    };
+                    function* g() {
+                        try {
+                            yield * badIter;
+                        } catch (err) {
+                            caught = err;
+                        }
+                    }
+                    var iter = g();
+                    var caught;
+
+                    iter.next();
+                    var result = iter.return();
+                    return String(result.done && result.value === undefined && caught === thrown);
+                }
+
+                function missingThrowCloseAbrupt() {
+                    var thrown = new Test262Error();
+                    var badIter = {};
+                    var callCount = 0;
+                    var poisonedReturn = {
+                        next: function() {
+                            return { done: false };
+                        }
+                    };
+                    Object.defineProperty(poisonedReturn, 'throw', {
+                        get: function() {
+                            callCount += 1;
+                        }
+                    });
+                    Object.defineProperty(poisonedReturn, 'return', {
+                        get: function() {
+                            throw thrown;
+                        }
+                    });
+                    badIter[Symbol.iterator] = function() {
+                        return poisonedReturn;
+                    };
+                    function* g() {
+                        try {
+                            yield * badIter;
+                        } catch (err) {
+                            caught = err;
+                        }
+                    }
+                    var iter = g();
+                    var caught;
+
+                    iter.next();
+                    var result = iter.throw();
+                    return String(result.done && result.value === undefined && caught === thrown && callCount === 1);
+                }
+
+                return [
+                    getIteratorAbrupt(),
+                    nextMethodAbrupt(),
+                    returnMethodAbrupt(),
+                    missingThrowCloseAbrupt()
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|true|true", result.ToString());
+    }
+
     #endregion
 }
