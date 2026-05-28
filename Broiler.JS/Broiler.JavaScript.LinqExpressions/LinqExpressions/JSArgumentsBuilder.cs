@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Broiler.JavaScript.Runtime;
 using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
 
@@ -23,7 +24,36 @@ public static class JSArgumentsBuilder
         _NewMapped = argumentsType.GetConstructor([typeof(Arguments).MakeByRefType(), typeof(JSVariable[])]);
     }
 
-    public static Expression New(Expression args) => Expression.New(_New, args);
+    private static void EnsureInitialized()
+    {
+        if (_New != null && _NewMapped != null)
+            return;
 
-    public static Expression NewMapped(Expression args, Expression mappedParameters) => Expression.New(_NewMapped, args, mappedParameters);
+        try
+        {
+            var assembly = Assembly.Load("Broiler.JavaScript.Modules");
+            RuntimeHelpers.RunModuleConstructor(assembly.ManifestModule.ModuleHandle);
+        }
+        catch (Exception ex) when (
+            ex is System.IO.FileNotFoundException
+            or System.IO.FileLoadException
+            or BadImageFormatException)
+        {
+        }
+
+        if (_New == null || _NewMapped == null)
+            throw new InvalidOperationException("JSArgumentsBuilder is not initialized. Ensure the Broiler.JavaScript.Modules assembly is available.");
+    }
+
+    public static Expression New(Expression args)
+    {
+        EnsureInitialized();
+        return Expression.New(_New, args);
+    }
+
+    public static Expression NewMapped(Expression args, Expression mappedParameters)
+    {
+        EnsureInitialized();
+        return Expression.New(_NewMapped, args, mappedParameters);
+    }
 }
