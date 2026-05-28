@@ -441,6 +441,29 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Parenthesized_Assignment_Does_Not_Infer_Anonymous_Function_Name()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                function snapshot(fn) {
+                    var descriptor = Object.getOwnPropertyDescriptor(fn, 'name');
+                    return JSON.stringify([descriptor.value, fn.name, descriptor.writable, descriptor.enumerable, descriptor.configurable]);
+                }
+
+                var direct;
+                var parenthesized;
+                direct = function () {};
+                (parenthesized) = function () {};
+
+                return snapshot(direct) + '|' + snapshot(parenthesized);
+            })()
+            """);
+
+        Assert.Equal("""["direct","direct",false,false,true]|["","",false,false,true]""", result.ToString());
+    }
+
+    [Fact]
     public void Compile_Class_Accessor_Literal_Names_Are_Canonicalized_And_Inferred()
     {
         using var ctx = new JSContext();

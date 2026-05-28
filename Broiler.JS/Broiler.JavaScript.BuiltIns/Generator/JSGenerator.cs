@@ -4,6 +4,7 @@ using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using System;
 using System.Collections.Concurrent;
+using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.Engine.Core;
@@ -30,7 +31,12 @@ public partial class JSGenerator : JSObject, IJSGenerator
         this.name = name;
 
         if (name.EndsWith("Iterator", StringComparison.Ordinal))
-            BasePrototypeObject = IteratorPrototypes.GetOrAdd(name, CreateIteratorPrototype);
+        {
+            var iteratorPrototype = GetIteratorPrototype();
+            BasePrototypeObject = iteratorPrototype == null
+                ? IteratorPrototypes.GetOrAdd(name, CreateIteratorPrototype)
+                : IteratorPrototypes.GetOrAdd($"{name}:{iteratorPrototype.UniqueID}", _ => CreateIteratorPrototype(name, iteratorPrototype));
+        }
     }
 
     public JSGenerator(ClrGeneratorV2 g) : this()
@@ -41,9 +47,18 @@ public partial class JSGenerator : JSObject, IJSGenerator
 
     public override string ToString() => $"[object {name}]";
 
+    private static JSObject GetIteratorPrototype()
+        => ((JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Iterator")] as JSFunction)?.prototype;
+
     private static JSObject CreateIteratorPrototype(string name)
+        => CreateIteratorPrototype(name, null);
+
+    private static JSObject CreateIteratorPrototype(string name, JSObject prototypeBase)
     {
-        var prototype = new JSObject();
+        var prototype = new JSObject
+        {
+            BasePrototypeObject = prototypeBase
+        };
         prototype.FastAddValue(KeyStrings.next, JSValue.CreateFunction(IteratorNext, "next", null, 0, false), JSPropertyAttributes.ConfigurableValue);
         prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, JSValue.CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false), JSPropertyAttributes.ConfigurableValue);
         prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString(name), JSPropertyAttributes.ConfigurableReadonlyValue);

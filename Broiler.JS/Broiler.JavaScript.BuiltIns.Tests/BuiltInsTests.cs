@@ -4276,11 +4276,58 @@ public class BuiltInsTests
             "Cannot access callee in strict mode");
         ref var ownProperties = ref throwTypeError.GetOwnProperties(false);
         ref var lengthProperty = ref ownProperties.GetValue(KeyStrings.length.Key);
+        ref var nameProperty = ref ownProperties.GetValue(KeyStrings.name.Key);
 
         Assert.True(throwTypeError.IsFrozen());
         Assert.False(throwTypeError.IsExtensible());
         Assert.False(lengthProperty.IsConfigurable);
         Assert.True(lengthProperty.IsReadOnly);
+        Assert.False(nameProperty.IsConfigurable);
+        Assert.True(nameProperty.IsReadOnly);
+        Assert.Equal(string.Empty, throwTypeError[KeyStrings.name].ToString());
+    }
+
+    [Fact]
+    public void Anonymous_BuiltIn_Helper_Functions_Expose_Empty_Name_Metadata()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                function snapshot(fn) {
+                    var descriptor = Object.getOwnPropertyDescriptor(fn, 'name');
+                    return JSON.stringify([descriptor.value, fn.name, descriptor.writable, descriptor.enumerable, descriptor.configurable]);
+                }
+
+                var executorFunction;
+                function NotPromise(executor) {
+                    executorFunction = executor;
+                    executor(function () {}, function () {});
+                }
+
+                Promise.resolve.call(NotPromise);
+
+                var resolveFunction;
+                var rejectFunction;
+                new Promise(function (resolve, reject) {
+                    resolveFunction = resolve;
+                    rejectFunction = reject;
+                });
+
+                return [
+                    snapshot(executorFunction),
+                    snapshot(resolveFunction),
+                    snapshot(rejectFunction),
+                    snapshot(Proxy.revocable({}, {}).revoke),
+                    snapshot(new Intl.NumberFormat().format),
+                    snapshot(new Intl.DateTimeFormat().format)
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal(
+            """["","",false,false,true]|["","",false,false,true]|["","",false,false,true]|["","",false,false,true]|["","",false,false,true]|["","",false,false,true]""",
+            result.ToString());
     }
 
     [Fact]

@@ -31,6 +31,7 @@ public partial class JSPromise
             reject = executorArgs.GetAt(1);
             return JSUndefined.Value;
         }, "executor", "function executor() { [native] }", length: 2, createPrototype: false);
+        executorFunction.SetNameProperty(string.Empty);
 
         var promise = constructor.CreateInstance(new Arguments(JSUndefined.Value, executorFunction));
         if (!resolve.IsFunction || !reject.IsFunction)
@@ -106,6 +107,7 @@ public partial class JSPromise
 
             return JSUndefined.Value;
         }, "executor", length: 2, createPrototype: false);
+        ((JSFunction)executor).SetNameProperty(string.Empty);
 
         return constructor.CreateInstance(new Arguments(JSUndefined.Value, executor));
     }

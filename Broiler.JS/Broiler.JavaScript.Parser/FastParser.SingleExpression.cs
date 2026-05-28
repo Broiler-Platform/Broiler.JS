@@ -140,6 +140,7 @@ partial class FastParser
                     node = new AstSequenceExpression(start, end, nodes);
                 }
 
+                node.WasParenthesized = true;
                 return true;
             }
 
