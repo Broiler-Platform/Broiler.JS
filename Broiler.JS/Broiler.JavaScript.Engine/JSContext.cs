@@ -372,13 +372,14 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     public JSValue Register(JSVariable variable)
     {
         KeyString name = variable.Name;
-        var v = variable.Value;
         if (directEvalLocalVarEnvironmentDepth > 0
             && TryGetCurrentDirectEvalActivationOwner(out var activationOwner))
         {
             activationOwner.RegisterDirectEvalBinding(variable);
-            return v;
+            return JSUndefined.Value;
         }
+
+        var v = variable.Value;
 
         var oldV = this[name];
         var hasOwnProperty = !GetInternalProperty(name, false).IsEmpty;

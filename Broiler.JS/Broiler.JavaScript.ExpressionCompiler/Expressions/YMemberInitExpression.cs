@@ -16,7 +16,7 @@ public class YMemberInitExpression(YNewExpression exp, IFastEnumerable<YBinding>
         var en = Bindings.GetFastEnumerator();
         while(en.MoveNext(out var b))
         {
-            writer.Write(b.Member.Name);
+            writer.Write(b.Member?.Name ?? "<null>");
             writer.Write(" = ");
             // b.Value.Print(writer);
             writer.WriteLine(",");

@@ -360,6 +360,14 @@ public partial class JSObject
 
     private bool SetKeyStringOnReceiver(KeyString name, JSValue value, JSValue receiver, JSPropertyAttributes defaultAttributes, bool throwError)
     {
+        if (receiver != null && receiver is not JSObject)
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot add property {name} to {receiver}");
+
+            return false;
+        }
+
         var target = receiver as JSObject ?? this;
         if (!ReferenceEquals(target, this))
         {
@@ -435,6 +443,14 @@ public partial class JSObject
 
     private bool SetIndexOnReceiver(uint name, JSValue value, JSValue receiver, JSPropertyAttributes defaultAttributes, bool throwError)
     {
+        if (receiver != null && receiver is not JSObject)
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot add property {name} to {receiver}");
+
+            return false;
+        }
+
         var target = receiver as JSObject ?? this;
         if (!ReferenceEquals(target, this))
         {
@@ -510,6 +526,14 @@ public partial class JSObject
 
     private bool SetSymbolOnReceiver(IJSSymbol name, JSValue value, JSValue receiver, JSPropertyAttributes defaultAttributes, bool throwError)
     {
+        if (receiver != null && receiver is not JSObject)
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot add property {name} to {receiver}");
+
+            return false;
+        }
+
         var target = receiver as JSObject ?? this;
         if (name.Key == JSValue.SymbolIterator.Key)
             target.HasIterator = true;

@@ -99,7 +99,12 @@ partial class FastParser
 
                     var fx = new AstFunctionExpression(current, PreviousToken, false, isAsync, isGenerator, null, parameters, body);
 
-                    property = new AstClassProperty(current, PreviousToken, key.Start.ContextualKeyword == FastKeywords.constructor ? AstPropertyKind.Constructor : AstPropertyKind.Method,
+                    var isConstructor = !computed
+                        && !isPrivate
+                        && !isStatic
+                        && (key is AstIdentifier keyIdentifier && keyIdentifier.Name.Value == "constructor"
+                            || key is AstLiteral { TokenType: TokenTypes.String, StringValue: "constructor" });
+                    property = new AstClassProperty(current, PreviousToken, isConstructor ? AstPropertyKind.Constructor : AstPropertyKind.Method,
                         isPrivate, isStatic, key, computed, fx);
                     return true;
                 }

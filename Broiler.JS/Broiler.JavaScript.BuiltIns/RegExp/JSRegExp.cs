@@ -671,6 +671,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // code unit, so expand it to also match surrogate pairs.
             if (unicode || unicodeSets)
             {
+                pattern = TransformUnicodeWordBoundaries(pattern, ignoreCase);
                 pattern = TransformUnicodeDot(pattern, dotAll);
                 // Transform character class escapes (\S, \W, \D) outside character
                 // classes so they also match supplementary-plane code points (surrogate pairs).
@@ -849,6 +850,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 inClass = true;
                 continue;
             }
+
             if (inClass && c == ']')
             {
                 inClass = false;
@@ -875,6 +877,65 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 }
                 i++; // skip escaped char
                 continue;
+            }
+        }
+
+        if (sb == null)
+            return pattern;
+
+        sb.Append(pattern, start, pattern.Length - start);
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// In Unicode mode, ECMAScript word boundaries still use ECMAScript word
+    /// characters, not .NET's broader Unicode categories. Replace \b and \B
+    /// outside character classes with lookarounds over the ECMAScript set.
+    /// </summary>
+    private static string TransformUnicodeWordBoundaries(string pattern, bool ignoreCase)
+    {
+        if (string.IsNullOrEmpty(pattern))
+            return pattern;
+
+        var wordChars = ignoreCase
+            ? @"A-Za-z0-9_\u017F\u212A"
+            : "A-Za-z0-9_";
+        var wordClass = $"[{wordChars}]";
+        var nonWordClass = $"[^{wordChars}]";
+        var boundary = $"(?:(?<=^)(?={wordClass})|(?<={nonWordClass})(?={wordClass})|(?<={wordClass})(?=$)|(?<={wordClass})(?={nonWordClass}))";
+        var nonBoundary = $"(?:(?<=^)(?=$)|(?<=^)(?={nonWordClass})|(?<={nonWordClass})(?=$)|(?<={nonWordClass})(?={nonWordClass})|(?<={wordClass})(?={wordClass}))";
+
+        StringBuilder sb = null;
+        int start = 0;
+        bool inClass = false;
+
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+            if (c == '[' && !inClass)
+            {
+                inClass = true;
+                continue;
+            }
+
+            if (c == ']' && inClass)
+            {
+                inClass = false;
+                continue;
+            }
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                var next = pattern[i + 1];
+                if (!inClass && (next == 'b' || next == 'B'))
+                {
+                    sb ??= new StringBuilder(pattern.Length + 64);
+                    sb.Append(pattern, start, i - start);
+                    sb.Append(next == 'b' ? boundary : nonBoundary);
+                    start = i + 2;
+                }
+
+                i++;
             }
         }
 

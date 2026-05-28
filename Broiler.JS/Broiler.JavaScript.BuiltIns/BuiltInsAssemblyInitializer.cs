@@ -857,6 +857,31 @@ internal static class BuiltInsAssemblyInitializer
         if (context[KeyStrings.Symbol] is not JSFunction symbolCtor)
             return;
 
+        static void RewriteWellKnownSymbol(JSFunction ctor, KeyString key, JSSymbol symbol)
+        {
+            ref var ownProperties = ref ctor.GetOwnProperties();
+            ownProperties.Put(key.Key) = JSProperty.Property(
+                key,
+                symbol,
+                JSPropertyAttributes.ReadonlyValue);
+        }
+
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("asyncDispose"), JSSymbol.asyncDispose);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("dispose"), JSSymbol.dispose);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("asyncIterator"), JSSymbol.asyncIterator);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("hasInstance"), JSSymbol.hasInstance);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("isConcatSpreadable"), JSSymbol.isConcatSpreadable);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("iterator"), JSSymbol.iterator);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("match"), JSSymbol.match);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("matchAll"), JSSymbol.matchAll);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("replace"), JSSymbol.replace);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("search"), JSSymbol.search);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("species"), JSSymbol.species);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("split"), JSSymbol.split);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("toPrimitive"), JSSymbol.toPrimitive);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("toStringTag"), JSSymbol.toStringTag);
+        RewriteWellKnownSymbol(symbolCtor, KeyStrings.GetOrCreate("unscopables"), JSSymbol.unscopables);
+
         ref var symbols = ref symbolCtor.prototype.GetSymbols();
         symbols.Put(JSSymbol.toPrimitive.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
@@ -1141,7 +1166,8 @@ internal static class BuiltInsAssemblyInitializer
             }
 
             rxObj.SetPropertyOrThrow(KeyStrings.lastIndex.ToJSValue(), JSValue.NumberZero);
-            var matches = JSValue.CreateArray();
+            var matches = JSValue.CreateArray() as JSObject
+                ?? throw new InvalidOperationException("Expected JS array object");
             uint matchCount = 0;
             while (true)
             {
@@ -1150,7 +1176,14 @@ internal static class BuiltInsAssemblyInitializer
                     return matchCount == 0 ? JSValue.NullValue : matches;
 
                 var matchString = result[0].ToString();
-                matches[matchCount++] = JSValue.CreateString(matchString);
+                var descriptor = new JSObject();
+                descriptor.FastAddValue(KeyStrings.value, JSValue.CreateString(matchString), JSPropertyAttributes.EnumerableConfigurableValue);
+                descriptor.FastAddValue(KeyStrings.writable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
+                descriptor.FastAddValue(KeyStrings.enumerable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
+                descriptor.FastAddValue(KeyStrings.configurable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
+                var defineResult = matches.DefineProperty(matchCount++, descriptor);
+                if (defineResult.IsBoolean && !defineResult.BooleanValue)
+                    throw JSEngine.NewTypeError("Cannot define match result");
                 if (matchString.Length != 0)
                     continue;
 

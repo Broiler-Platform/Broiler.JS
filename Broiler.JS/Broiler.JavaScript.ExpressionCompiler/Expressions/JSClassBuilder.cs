@@ -26,7 +26,8 @@ public static class JSClassBuilder
         var jsValueType = Type.GetType("Broiler.JavaScript.Runtime.JSValue, Broiler.JavaScript.Runtime")
             ?? throw new InvalidOperationException("JSValue type not found in BuiltIns assembly");
         _type = classType;
-        _addConstructor = classType.GetMethod(nameof(AddConstructorName), [functionType]);
+        _addConstructor = classType.GetMethod(nameof(AddConstructorName), [functionType])
+            ?? classType.GetMethod(AddConstructorName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         _ctor = classType.GetConstructor([delegateType, jsValueType, typeof(string), typeof(string)]);
         _resolveSuperclassPrototype = classType.GetMethod(
             ResolveSuperclassPrototypeName,

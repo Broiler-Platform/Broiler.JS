@@ -291,9 +291,23 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
     private YExpression VisitRuntimeFunctionDeclaration(AstFunctionExpression functionDeclaration)
     {
-        var currentBinding = scope.Top.GetVariable(functionDeclaration.Id!.Name);
+        var functionName = functionDeclaration.Id!.Name;
+        var rootFunction = scope.Top.RootScope.Function;
+        FastFunctionScope.VariableScope currentBinding;
+        if (rootFunction?.IsArrowFunction == true
+            && !HasSimpleParameterList(rootFunction.Params)
+            && (functionName.Equals("arguments") || functionName.Equals("eval"))
+            && !scope.Top.TryGetOwnVariable(functionName, out currentBinding))
+        {
+            currentBinding = scope.Top.CreateVariable(functionName, null, true);
+        }
+        else
+        {
+            currentBinding = scope.Top.GetVariable(functionName);
+        }
+
         if (currentBinding == null && isDirectEvalCompilation && !IsStrictMode)
-            currentBinding = GetOrCreateDirectEvalRootVariable(functionDeclaration.Id.Name);
+            currentBinding = GetOrCreateDirectEvalRootVariable(functionName);
         else if (currentBinding != null && isDirectEvalCompilation && !IsStrictMode)
             currentBinding.IsDeletable = true;
         var result = CreateFunction(functionDeclaration, hoistStatementDeclaration: false);
@@ -306,14 +320,14 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         };
 
         if (isDirectEvalCompilation && scope.Top.Function == null && !usesDirectEvalLocalVarEnvironment)
-            statements.Add(JSContextBuilder.EnsureCanDeclareGlobalFunction(KeyOfName(functionDeclaration.Id.Name)));
+            statements.Add(JSContextBuilder.EnsureCanDeclareGlobalFunction(KeyOfName(functionName)));
 
         statements.AddRange(
         [
             YExpression.Assign(currentBinding.Expression, temp.Variable)
         ]);
 
-        AppendAnnexBOuterBindingAssignments(statements, currentBinding, functionDeclaration.Id.Name, temp.Variable);
+        AppendAnnexBOuterBindingAssignments(statements, currentBinding, functionName, temp.Variable);
 
         statements.Add(temp.Variable);
         return YExpression.Block(variables, statements);
@@ -323,6 +337,14 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     {
         if (IsStrictMode)
             return;
+
+        var currentFunction = scope.Top.Function;
+        if (currentFunction?.IsArrowFunction == true
+            && !HasSimpleParameterList(currentFunction.Params)
+            && (name.Equals("arguments") || name.Equals("eval")))
+        {
+            return;
+        }
 
         // Per B.3.3.3 step ii: skip Annex B hoisting when replacing the
         // FunctionDeclaration with a VariableStatement would produce an

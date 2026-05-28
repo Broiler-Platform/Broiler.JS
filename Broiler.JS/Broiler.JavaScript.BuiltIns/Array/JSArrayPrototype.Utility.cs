@@ -14,24 +14,35 @@ public partial class JSArray
     [JSExport("concat", Length = 1)]
     public static JSValue Concat(in Arguments a)
     {
-        var r = new JSArray();
+        var @this = ToArrayLikeObject(a.This);
+        var result = CreateArraySpecies(@this, 0);
+        uint resultIndex = 0;
 
-        if (a.This.IsArray)
-            r.AddRange(a.This);
-        else
-            r.Add(a.This);
-
-        for (int i = 0; i < a.Length; i++)
+        void Append(JSValue item)
         {
-            var f = a.GetAt(i);
+            if (IsArrayValue(item) && item is JSObject spreadable)
+            {
+                var length = GetArrayLikeLength(spreadable);
+                for (uint sourceIndex = 0; sourceIndex < length; sourceIndex++)
+                {
+                    if (TryGetArrayLikeElement(spreadable, sourceIndex, out var value))
+                        CreateDataPropertyOrThrow(result, resultIndex, value);
 
-            if (f.IsArray)
-                r.AddRange(f);
-            else
-                r.Add(f);
+                    resultIndex++;
+                }
+
+                return;
+            }
+
+            CreateDataPropertyOrThrow(result, resultIndex++, item);
         }
 
-        return r;
+        Append(a.This);
+        for (int i = 0; i < a.Length; i++)
+            Append(a.GetAt(i));
+
+        result.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(resultIndex));
+        return result;
     }
 
     [JSPrototypeMethod]

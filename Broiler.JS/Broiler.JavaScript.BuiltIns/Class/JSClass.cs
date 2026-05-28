@@ -61,13 +61,13 @@ public class JSClass : JSFunction
         var ec = JSEngine.Current as IJSExecutionContext;
         if (ec != null) ec.CurrentNewTarget = this;
         var @this = f(ao);
-        
-        if (!@this.IsUndefined)
-        {
-            @this.BasePrototypeObject = prototype;
+
+        if (@this.IsUndefined)
+            return @object;
+
+        if (@this.IsObject)
             return @this;
-        }
-        
+
         return @object;
     }
 }

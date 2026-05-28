@@ -17,7 +17,7 @@ public partial class JSObject
             return false;
 
         ref var ownProperties = ref GetOwnProperties(false);
-        var ownEnumerator = ownProperties.GetEnumerator();
+        var ownEnumerator = ownProperties.GetEnumerator(false);
         while (ownEnumerator.MoveNext(out var property))
         {
             if (property.IsConfigurable)
@@ -61,7 +61,7 @@ public partial class JSObject
             return false;
 
         ref var ownProperties = ref GetOwnProperties(false);
-        var ownEnumerator = ownProperties.GetEnumerator();
+        var ownEnumerator = ownProperties.GetEnumerator(false);
         while (ownEnumerator.MoveNext(out var property))
         {
             if (property.IsConfigurable || (property.IsValue && !property.IsReadOnly))

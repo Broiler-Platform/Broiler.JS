@@ -162,7 +162,7 @@ public class LambdaRewriter: YExpressionMapVisitor
         }
         var parent = current.Parent;
         if (parent == null)
-            throw new InvalidProgramException();
+            return pe;
 
         var repository = current.Item.Root.GetClosureRepository();
         return repository.Setup(pe, () => CheckForClosure(parent,pe,true));

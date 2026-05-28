@@ -15,6 +15,8 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
+    private int parameterInitializerDepth;
+
     private YExpression CreateFunction(AstFunctionExpression functionDeclaration, YExpression super = null, bool createClass = false, string className = null,
         IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true, string inferredFunctionName = null,
         bool createPrototype = true, string[] directEvalPrivateNames = null)
@@ -53,6 +55,7 @@ partial class FastCompiler
             previous: functionDeclaration.IsArrowFunction ? current : null,
             directEvalPrivateNames: directEvalPrivateNames ?? previousScope.DirectEvalPrivateNames));
         {
+            cs.InParameterInitializer = previousScope.InParameterInitializer;
             var lexicalScopeVar = cs.Context;
 
             vList.Add(cs.Context);
@@ -159,13 +162,18 @@ partial class FastCompiler
                 if (v.Init != null)
                 {
                     var previousDirectEvalParameterBindings = cs.CurrentDirectEvalParameterBindings;
+                    var previousInParameterInitializer = cs.InParameterInitializer;
                     cs.CurrentDirectEvalParameterBindings = directEvalParameterBindings;
+                    cs.InParameterInitializer = true;
+                    parameterInitializerDepth++;
                     try
                     {
                         parameterInitializer = VisitExpression(v.Init);
                     }
                     finally
                     {
+                        parameterInitializerDepth--;
+                        cs.InParameterInitializer = previousInParameterInitializer;
                         cs.CurrentDirectEvalParameterBindings = previousDirectEvalParameterBindings;
                     }
                 }
@@ -319,7 +327,7 @@ partial class FastCompiler
         if (functionDeclaration.Body is not AstBlock body)
             return [.. bindings];
 
-        if (body.HoistingScope != null)
+        if (!functionDeclaration.IsArrowFunction && body.HoistingScope != null)
         {
             var hoistedNames = body.HoistingScope.GetFastEnumerator();
             while (hoistedNames.MoveNext(out var hoistedName))
@@ -329,10 +337,13 @@ partial class FastCompiler
             }
         }
 
-        foreach (var lexicalBinding in CollectTopLevelLexicalBindings(body.Statements))
+        if (!functionDeclaration.IsArrowFunction)
         {
-            if (lexicalBinding is "arguments" or "eval")
-                bindings.Add(lexicalBinding);
+            foreach (var lexicalBinding in CollectTopLevelLexicalBindings(body.Statements))
+            {
+                if (lexicalBinding is "arguments" or "eval")
+                    bindings.Add(lexicalBinding);
+            }
         }
 
         return [.. bindings];

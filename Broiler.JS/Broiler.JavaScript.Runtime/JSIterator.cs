@@ -6,6 +6,7 @@ namespace Broiler.JavaScript.Runtime;
 public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementEnumerator, IReturnableEnumerator
 {
     private uint index = 0;
+    private readonly JSValue nextMethod = iterator[KeyStrings.next];
 
     private readonly JSValue AwaitIfNeeded(JSValue result)
     {
@@ -25,10 +26,10 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
     }
 
     private readonly JSValue GetIteratorResult()
-        => ValidateIteratorResult(JSObjectCoreExtensions.InvokeMethodOn(iterator, KeyStrings.next), "next");
+        => ValidateIteratorResult(nextMethod.InvokeFunction(new Arguments(iterator)), "next");
 
     private readonly JSValue GetIteratorResult(JSValue value)
-        => ValidateIteratorResult(iterator[KeyStrings.next].InvokeFunction(new Arguments(iterator, value ?? JSUndefined.Value)), "next");
+        => ValidateIteratorResult(nextMethod.InvokeFunction(new Arguments(iterator, value ?? JSUndefined.Value)), "next");
 
     public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
     {
