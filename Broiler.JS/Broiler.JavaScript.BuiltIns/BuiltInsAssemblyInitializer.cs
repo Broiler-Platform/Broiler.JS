@@ -1303,7 +1303,7 @@ internal static class BuiltInsAssemblyInitializer
             var input = a.Get1().StringValue;
             var constructor = rx[KeyStrings.constructor];
             var species = GetSpeciesConstructor(constructor);
-            var flags = rx[KeyStrings.GetOrCreate("flags")].ToString();
+            var flags = rx[KeyStrings.GetOrCreate("flags")].StringValue;
             var unicodeMatching = flags.Contains('u') || flags.Contains('v');
             var newFlags = flags.Contains('y') ? flags : $"{flags}y";
             var splitter = species.IsNullOrUndefined
@@ -1363,6 +1363,17 @@ internal static class BuiltInsAssemblyInitializer
             results.AddArrayItem(JSValue.CreateString(input.Substring(Math.Min(p, input.Length))));
             return results;
         }, "[Symbol.split]", 2), JSPropertyAttributes.ConfigurableValue);
+        regExpCtor.prototype.FastAddProperty(
+            KeyStrings.GetOrCreate("flags"),
+            CreateNativeGetter(static (in Arguments a) =>
+            {
+                if (a.This is not JSObject receiver)
+                    throw JSEngine.NewTypeError("RegExp.prototype.flags called on incompatible receiver");
+
+                return GetObservableFlags(receiver);
+            }, "flags"),
+            null,
+            JSPropertyAttributes.ConfigurableProperty);
 
         EnsureAccessorProperty(regExpCtor.prototype, KeyStrings.GetOrCreate("dotAll"), "dotAll", static (in Arguments a) =>
         {

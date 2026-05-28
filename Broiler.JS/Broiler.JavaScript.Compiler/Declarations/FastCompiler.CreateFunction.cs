@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.ExpressionCompiler.Expressions;
+﻿using System;
+using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using System.Collections.Generic;
 using System.Reflection;
 using Broiler.JavaScript.ExpressionCompiler.Core;
@@ -104,9 +105,7 @@ partial class FastCompiler
             CollectParameterNames(functionDeclaration.Params, parameterNames);
             foreach (var parameterName in parameterNames)
                 cs.CreateVariable(parameterName, null, true, initialize: false);
-            var directEvalParameterBindings = new string[parameterNames.Count];
-            for (var i = 0; i < parameterNames.Count; i++)
-                directEvalParameterBindings[i] = parameterNames[i].Value;
+            var directEvalParameterBindings = CollectDirectEvalParameterBindings(functionDeclaration, parameterNames);
 
             YExpression fxName;
             YExpression localFxName;
@@ -290,5 +289,33 @@ partial class FastCompiler
 
             sList.Add(YExpression.Call(@this, init.Member as MethodInfo, init.Arguments));
         }
+    }
+
+    private static string[] CollectDirectEvalParameterBindings(AstFunctionExpression functionDeclaration, List<StringSpan> parameterNames)
+    {
+        var bindings = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var parameterName in parameterNames)
+            bindings.Add(parameterName.Value);
+
+        if (functionDeclaration.Body is not AstBlock body)
+            return [.. bindings];
+
+        if (body.HoistingScope != null)
+        {
+            var hoistedNames = body.HoistingScope.GetFastEnumerator();
+            while (hoistedNames.MoveNext(out var hoistedName))
+            {
+                if (hoistedName.Equals("arguments") || hoistedName.Equals("eval"))
+                    bindings.Add(hoistedName.Value);
+            }
+        }
+
+        foreach (var lexicalBinding in CollectTopLevelLexicalBindings(body.Statements))
+        {
+            if (lexicalBinding is "arguments" or "eval")
+                bindings.Add(lexicalBinding);
+        }
+
+        return [.. bindings];
     }
 }

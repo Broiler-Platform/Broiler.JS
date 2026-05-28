@@ -27,6 +27,21 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Math_Expm1_Remains_Monotonic_Around_Small_Negative_Inputs()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              return Math.expm1(-0.010000000000000002) <= Math.expm1(-0.01)
+                && Math.expm1(-0.01) <= Math.expm1(-0.009999999999999998);
+            })();
+            """);
+
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
     public void EventTarget_Construct_Succeeds()
     {
         EnsureBuiltInsLoaded();
@@ -710,6 +725,25 @@ public class BuiltInsTests
                 && desc.enumerable === false
                 && desc.configurable === true;
             });
+            """);
+
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void Async_Generator_Functions_Share_Their_Intrinsic_Constructor_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              async function* first() {}
+              async function* second() {}
+              var AsyncGeneratorFunction = (async function* () {}).constructor;
+              return first instanceof AsyncGeneratorFunction
+                && second instanceof AsyncGeneratorFunction
+                && Object.getPrototypeOf(first) === Object.getPrototypeOf(second);
+            })();
             """);
 
         Assert.True(result.BooleanValue);
@@ -2345,6 +2379,28 @@ public class BuiltInsTests
             }
         ");
         Assert.True(result.BooleanValue);
+        Assert.True(result.BooleanValue);
+    }
+    [Fact]
+    public void Object_Proto_Assignment_Falls_Back_To_Own_Data_Property_After_Accessor_Deletion()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              delete Object.prototype.__proto__;
+              var subject = {};
+              subject.__proto__ = 5;
+              var descriptor = Object.getOwnPropertyDescriptor(subject, '__proto__');
+              return descriptor.value === 5
+                && descriptor.writable === true
+                && descriptor.enumerable === true
+                && descriptor.configurable === true
+                && Object.prototype.hasOwnProperty.call(subject, '__proto__');
+            })();
+            """);
+
+        Assert.True(result.BooleanValue);
     }
 
     [Fact]
@@ -2763,6 +2819,48 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("SyntaxError", result.ToString());
+    }
+
+    [Fact]
+    public void Direct_Eval_In_Parameter_Defaults_Rejects_Function_Body_Arguments_And_Eval_Bindings()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            function getErrorName(run) {
+              try {
+                run();
+                return "no error";
+              } catch (e) {
+                return e.name;
+              }
+            }
+
+            [
+              getErrorName(function () {
+                async function * f(p = eval("var arguments = 'param'")) {
+                  function arguments() {}
+                }
+                f();
+              }),
+              getErrorName(function () {
+                ({
+                  method(p = eval("var eval = 'param'")) {
+                    let eval;
+                  }
+                }).method();
+              }),
+              getErrorName(function () {
+                function f(p = eval("var arguments = 'param'")) {
+                  var arguments;
+                }
+                f();
+              })
+            ].join("|");
+            """);
+
+        Assert.Equal("SyntaxError|SyntaxError|SyntaxError", result.ToString());
     }
 
     // ── M2: JSMap tests ──────────────────────────────────────────────
@@ -4474,6 +4572,31 @@ public class BuiltInsTests
 
                         'a'.replaceAll('a', custom);
                     }),
+                    (function () {
+                        var searchValue = {
+                            get [Symbol.match]() {
+                                throw new Test262Error();
+                            },
+                            toString() {
+                                throw new Error('unreachable');
+                            }
+                        };
+
+                        var poisoned = 0;
+                        var poison = {
+                            toString() {
+                                poisoned += 1;
+                                throw new Error('unreachable');
+                            }
+                        };
+
+                        return [
+                            thrownCtor(function () {
+                                ''.replaceAll.call(poison, searchValue, poison);
+                            }),
+                            String(poisoned)
+                        ].join(',');
+                    })(),
                     thrownCtor(function () {
                         var locales = {
                             '0': 'en-US',
@@ -4534,7 +4657,7 @@ public class BuiltInsTests
             })();
             """);
 
-        Assert.Equal("Test262Error|Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
+        Assert.Equal("Test262Error|Test262Error,0|Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
     }
 
     [Fact]
@@ -5487,6 +5610,20 @@ public class BuiltInsTests
             [re.flags, re.hasIndices, re.sticky, re.global, re.ignoreCase].join('|');
         ");
         Assert.Equal("dgiy|true|true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Prototype_Flags_Getter_Supports_Generic_HasIndices_Coercion()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var get = Object.getOwnPropertyDescriptor(RegExp.prototype, "flags").get;
+                return get.call({ hasIndices: Symbol() });
+            })();
+            """);
+        Assert.Equal("d", result.ToString());
     }
 
     [Fact]
@@ -9032,6 +9169,85 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Intl_DisplayNames_Exposes_Prototype_Methods_And_Resolved_Options()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var displayNames = new Intl.DisplayNames('fr', {
+                    type: 'language',
+                    style: 'short',
+                    fallback: 'none',
+                    languageDisplay: 'standard'
+                });
+                function Custom() {}
+                Custom.prototype = { marker: true };
+
+                var custom = Reflect.construct(Intl.DisplayNames, ['en', { type: 'region' }], Custom);
+                var resolved = displayNames.resolvedOptions();
+
+                return [
+                    typeof Intl.DisplayNames.prototype.of,
+                    typeof Intl.DisplayNames.prototype.resolvedOptions,
+                    Object.prototype.toString.call(displayNames),
+                    Object.getPrototypeOf(displayNames) === Intl.DisplayNames.prototype,
+                    Object.getPrototypeOf(custom) === Custom.prototype,
+                    displayNames.of('en-US'),
+                    resolved.locale,
+                    resolved.style,
+                    resolved.type,
+                    resolved.fallback,
+                    resolved.languageDisplay
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("function|function|[object Intl.DisplayNames]|true|true|en-US|fr|short|language|none|standard", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_DisplayNames_Validates_Options_Codes_And_Brands()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () { new Intl.DisplayNames('en'); }),
+                    thrownCtor(function () { new Intl.DisplayNames('en', { type: 'language', style: 'small' }); }),
+                    thrownCtor(function () { new Intl.DisplayNames('en', { type: 'language', fallback: 'err' }); }),
+                    thrownCtor(function () { new Intl.DisplayNames('en', { type: 'language', localeMatcher: 'bestfit' }); }),
+                    thrownCtor(function () {
+                        new Intl.DisplayNames('en', {
+                            get type() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () { Intl.DisplayNames.prototype.of.call({}, 'en'); }),
+                    thrownCtor(function () { new Intl.DisplayNames('en', { type: 'region' }).of(''); }),
+                    thrownCtor(function () { new Intl.DisplayNames('en', { type: 'dateTimeField' }).of(''); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|RangeError|RangeError|RangeError|Test262Error|TypeError|RangeError|RangeError", result.ToString());
+    }
+
+    [Fact]
     public void RangeError_Regressions_For_ArrayBuffer_BigInt_Date_And_Array_Creation_Match_Test262()
     {
         EnsureBuiltInsLoaded();
@@ -9600,6 +9816,13 @@ public class BuiltInsTests
                     });
                 });
 
+                var splitSymbolFlagsErr = thrownCtor(function () {
+                    RegExp.prototype[Symbol.split].call({
+                        constructor: function () {},
+                        flags: Symbol.split
+                    });
+                });
+
                 var splitMatchErr = thrownCtor(function () {
                     var obj = {
                         constructor: function () {}
@@ -9674,6 +9897,7 @@ public class BuiltInsTests
                     searchRestore,
                     splitSpeciesErr,
                     splitFlagsErr,
+                    splitSymbolFlagsErr,
                     splitMatchErr,
                     splitGetLastIndexErr,
                     splitLastIndexSequence
@@ -9682,7 +9906,7 @@ public class BuiltInsTests
             """);
 
         Assert.Equal(
-            "Test262Error|Test262Error|0|-1,86,1|Test262Error|Test262Error|Test262Error|Test262Error,1|0,1,2,3,",
+            "Test262Error|Test262Error|0|-1,86,1|Test262Error|Test262Error|TypeError|Test262Error|Test262Error,1|0,1,2,3,",
             result.ToString());
     }
 

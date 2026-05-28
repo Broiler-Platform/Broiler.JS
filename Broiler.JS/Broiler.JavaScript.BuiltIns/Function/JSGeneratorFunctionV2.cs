@@ -4,11 +4,21 @@ using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
+using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.BuiltIns.Function;
 
 public class JSGeneratorFunctionV2 : JSFunction
 {
+    private sealed class PrototypeCache
+    {
+        public JSObject GeneratorFunctionPrototype;
+        public JSObject AsyncGeneratorFunctionPrototype;
+    }
+
+    private static readonly ConditionalWeakTable<object, PrototypeCache> PrototypeCaches = [];
+    private static readonly object PrototypeCacheFallback = new();
+
     readonly JSGeneratorDelegateV2 @delegate;
     readonly bool asyncGenerator;
     readonly bool primeOnInvoke;
@@ -37,6 +47,17 @@ public class JSGeneratorFunctionV2 : JSFunction
         return prototype;
     }
 
+    private static JSObject GetGeneratorFunctionPrototype(bool asyncGenerator)
+    {
+        var cacheKey = Engine.Core.JSEngine.Current as object ?? PrototypeCacheFallback;
+        var cache = PrototypeCaches.GetOrCreateValue(cacheKey);
+        ref var prototype = ref asyncGenerator
+            ? ref cache.AsyncGeneratorFunctionPrototype
+            : ref cache.GeneratorFunctionPrototype;
+
+        return prototype ??= CreateGeneratorFunctionPrototype(asyncGenerator);
+    }
+
     public JSGeneratorFunctionV2(JSGeneratorDelegateV2 @delegate, in StringSpan name, in StringSpan code, int length = 0, bool asyncGenerator = false, bool primeOnInvoke = false) : base(null, name, code, length)
     {
         this.@delegate = @delegate;
@@ -61,7 +82,7 @@ public class JSGeneratorFunctionV2 : JSFunction
 
         CoerceThisOnInvoke = true;
         f = InvokeFunction;
-        BasePrototypeObject = CreateGeneratorFunctionPrototype(asyncGenerator);
+        BasePrototypeObject = GetGeneratorFunctionPrototype(asyncGenerator);
     }
 
     public override JSValue InvokeFunction(in Arguments a)
