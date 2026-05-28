@@ -9169,6 +9169,85 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Intl_DisplayNames_Exposes_Prototype_Methods_And_Resolved_Options()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var displayNames = new Intl.DisplayNames('fr', {
+                    type: 'language',
+                    style: 'short',
+                    fallback: 'none',
+                    languageDisplay: 'standard'
+                });
+                function Custom() {}
+                Custom.prototype = { marker: true };
+
+                var custom = Reflect.construct(Intl.DisplayNames, ['en', { type: 'region' }], Custom);
+                var resolved = displayNames.resolvedOptions();
+
+                return [
+                    typeof Intl.DisplayNames.prototype.of,
+                    typeof Intl.DisplayNames.prototype.resolvedOptions,
+                    Object.prototype.toString.call(displayNames),
+                    Object.getPrototypeOf(displayNames) === Intl.DisplayNames.prototype,
+                    Object.getPrototypeOf(custom) === Custom.prototype,
+                    displayNames.of('en-US'),
+                    resolved.locale,
+                    resolved.style,
+                    resolved.type,
+                    resolved.fallback,
+                    resolved.languageDisplay
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("function|function|[object Intl.DisplayNames]|true|true|en-US|fr|short|language|none|standard", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_DisplayNames_Validates_Options_Codes_And_Brands()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                class Test262Error extends Error {}
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () { new Intl.DisplayNames('en'); }),
+                    thrownCtor(function () { new Intl.DisplayNames('en', { type: 'language', style: 'small' }); }),
+                    thrownCtor(function () { new Intl.DisplayNames('en', { type: 'language', fallback: 'err' }); }),
+                    thrownCtor(function () { new Intl.DisplayNames('en', { type: 'language', localeMatcher: 'bestfit' }); }),
+                    thrownCtor(function () {
+                        new Intl.DisplayNames('en', {
+                            get type() {
+                                throw new Test262Error();
+                            }
+                        });
+                    }),
+                    thrownCtor(function () { Intl.DisplayNames.prototype.of.call({}, 'en'); }),
+                    thrownCtor(function () { new Intl.DisplayNames('en', { type: 'region' }).of(''); }),
+                    thrownCtor(function () { new Intl.DisplayNames('en', { type: 'dateTimeField' }).of(''); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|RangeError|RangeError|RangeError|Test262Error|TypeError|RangeError|RangeError", result.ToString());
+    }
+
+    [Fact]
     public void RangeError_Regressions_For_ArrayBuffer_BigInt_Date_And_Array_Creation_Match_Test262()
     {
         EnsureBuiltInsLoaded();

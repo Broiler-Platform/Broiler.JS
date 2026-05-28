@@ -242,11 +242,16 @@ public static class JSIntl
 
     private static JSFunction CreateDisplayNamesConstructor()
     {
-        var constructor = new JSFunction((in Arguments a) =>
-        {
-            ObserveOptions(ValidateConstructorArguments("DisplayNames", in a), FallbackKey, LanguageDisplayKey, LocaleMatcherKey, StyleKey, TypeKey);
-            return new JSObject();
-        }, "DisplayNames", "function DisplayNames() { [native code] }", length: 2);
+        var constructor = new JSFunction(static (in Arguments a) => new JSIntlDisplayNames(in a),
+            "DisplayNames",
+            "function DisplayNames() { [native code] }",
+            length: 2);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("of"),
+            new JSFunction(JSIntlDisplayNames.OfPrototype, "of", "function of() { [native code] }", createPrototype: false, length: 1),
+            JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
+            new JSFunction(JSIntlDisplayNames.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
+            JSPropertyAttributes.ConfigurableValue);
         SetIntlToStringTag(constructor, "DisplayNames");
         return constructor;
     }
@@ -417,7 +422,7 @@ public static class JSIntl
         return result;
     }
 
-    private static string ValidateLanguageTag(string tag)
+    internal static string ValidateLanguageTag(string tag)
     {
         if (!StructurallyValidLanguageTagPattern.IsMatch(tag) ||
             InvalidGrandfatheredLanguageTags.Contains(tag) ||
@@ -523,6 +528,53 @@ public static class JSIntl
         ObserveOptions(options, RoundingIncrementKey, RoundingModeKey, RoundingPriorityKey, TrailingZeroDisplayKey);
     }
 
+    internal static string ResolveLocale(JSValue locales)
+    {
+        var localeList = CanonicalizeLocaleList(locales);
+        if (localeList is JSObject array)
+        {
+            var first = array[0u];
+            if (!first.IsUndefined)
+                return first.StringValue;
+        }
+
+        return string.IsNullOrEmpty(CultureInfo.CurrentCulture.Name) ? "en-US" : CultureInfo.CurrentCulture.Name;
+    }
+
+    internal static JSIntlDisplayNamesOptions ValidateDisplayNamesOptions(JSObject options)
+    {
+        if (options == null)
+            throw JSEngine.NewTypeError("Intl.DisplayNames requires an options object");
+
+        _ = GetOption(options, LocaleMatcherKey, ["lookup", "best fit"], false, "best fit");
+        var style = GetOption(options, StyleKey, ["narrow", "short", "long"], false, "long");
+        var type = GetOption(options, TypeKey, ["language", "region", "script", "currency", "calendar", "dateTimeField"], true);
+        var fallback = GetOption(options, FallbackKey, ["code", "none"], false, "code");
+        var languageDisplay = GetOption(options, LanguageDisplayKey, ["dialect", "standard"], false, "dialect");
+        return new JSIntlDisplayNamesOptions(style, type, fallback, languageDisplay);
+    }
+
+    private static string GetOption(JSObject options, KeyString key, string[] allowedValues, bool required, string defaultValue = null)
+    {
+        var value = options[key];
+        if (value.IsUndefined)
+        {
+            if (required)
+                throw JSEngine.NewTypeError($"Missing required {key} option");
+
+            return defaultValue;
+        }
+
+        var stringValue = value.StringValue;
+        foreach (var allowedValue in allowedValues)
+        {
+            if (allowedValue == stringValue)
+                return stringValue;
+        }
+
+        throw JSEngine.NewRangeError($"Invalid {key} option");
+    }
+
     internal static void ValidateDateTimeFormatOptions(JSObject options)
     {
         if (options == null)
@@ -546,7 +598,7 @@ public static class JSIntl
             _ = options[key];
     }
 
-    private static bool IsWellFormedCurrencyCode(string currency)
+    internal static bool IsWellFormedCurrencyCode(string currency)
     {
         if (currency.Length != 3)
             return false;
@@ -684,6 +736,90 @@ public sealed class JSIntlListFormat : JSObject
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.resolvedOptions called on incompatible receiver");
 
         return new JSObject();
+    }
+}
+
+internal sealed record JSIntlDisplayNamesOptions(string Style, string Type, string Fallback, string LanguageDisplay);
+
+public sealed class JSIntlDisplayNames : JSObject
+{
+    private readonly string locale;
+    private readonly JSIntlDisplayNamesOptions options;
+
+    public JSIntlDisplayNames(in Arguments a) : base(JSEngine.NewTargetPrototype)
+    {
+        options = JSIntl.ValidateDisplayNamesOptions(JSIntl.ValidateConstructorArguments("DisplayNames", in a));
+        locale = JSIntl.ResolveLocale(a.Get1());
+    }
+
+    public static JSValue OfPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlDisplayNames @this)
+            throw JSEngine.NewTypeError("Intl.DisplayNames.prototype.of called on incompatible receiver");
+
+        return JSValue.CreateString(@this.ValidateCode(a.Get1()));
+    }
+
+    public static JSValue ResolvedOptionsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlDisplayNames @this)
+            throw JSEngine.NewTypeError("Intl.DisplayNames.prototype.resolvedOptions called on incompatible receiver");
+
+        var result = new JSObject();
+        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
+        result[KeyStrings.GetOrCreate("style")] = JSValue.CreateString(@this.options.Style);
+        result[KeyStrings.GetOrCreate("type")] = JSValue.CreateString(@this.options.Type);
+        result[KeyStrings.GetOrCreate("fallback")] = JSValue.CreateString(@this.options.Fallback);
+        if (@this.options.Type == "language")
+            result[KeyStrings.GetOrCreate("languageDisplay")] = JSValue.CreateString(@this.options.LanguageDisplay);
+        return result;
+    }
+
+    private string ValidateCode(JSValue codeValue)
+    {
+        var code = codeValue.StringValue;
+        switch (options.Type)
+        {
+            case "language":
+                return JSIntl.ValidateLanguageTag(code);
+            case "region":
+                if (Regex.IsMatch(code, "^(?:[A-Za-z]{2}|\\d{3})$", RegexOptions.CultureInvariant))
+                    return code;
+                break;
+            case "script":
+                if (Regex.IsMatch(code, "^[A-Za-z]{4}$", RegexOptions.CultureInvariant))
+                    return code;
+                break;
+            case "currency":
+                if (JSIntl.IsWellFormedCurrencyCode(code))
+                    return code.ToUpperInvariant();
+                break;
+            case "calendar":
+                if (Regex.IsMatch(code, "^[A-Za-z0-9]{3,8}(?:-[A-Za-z0-9]{3,8})*$", RegexOptions.CultureInvariant))
+                    return code;
+                break;
+            case "dateTimeField":
+                switch (code)
+                {
+                    case "era":
+                    case "year":
+                    case "quarter":
+                    case "month":
+                    case "weekOfYear":
+                    case "weekday":
+                    case "day":
+                    case "dayPeriod":
+                    case "hour":
+                    case "minute":
+                    case "second":
+                    case "timeZoneName":
+                        return code;
+                }
+
+                break;
+        }
+
+        throw JSEngine.NewRangeError($"Invalid code for Intl.DisplayNames type {options.Type}");
     }
 }
 
