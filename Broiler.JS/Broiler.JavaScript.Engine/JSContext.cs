@@ -407,6 +407,12 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return v;
     }
 
+    internal JSVariable RegisterDirectEvalVariable(JSVariable variable)
+    {
+        Register(variable);
+        return variable;
+    }
+
     public override JSValue this[KeyString name]
     {
         get
