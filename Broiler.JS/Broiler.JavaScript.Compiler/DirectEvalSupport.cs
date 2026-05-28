@@ -56,7 +56,7 @@ public static class DirectEvalSupport
                 {
                     Name = key,
                     HadOwnProperty = !property.IsEmpty,
-                    PreviousValue = property.IsEmpty ? JSUndefined.Value : context[key]
+                    PreviousValue = property.IsEmpty ? JSUndefined.Value : context.GetOwnPropertyValue(key)
                 });
             }
 
@@ -68,7 +68,7 @@ public static class DirectEvalSupport
             foreach (var entry in entries)
             {
                 if (entry.HadOwnProperty)
-                    context[entry.Name] = entry.PreviousValue;
+                    context.SetOwnPropertyValue(entry.Name, entry.PreviousValue);
                 else
                     context.Delete(entry.Name);
             }

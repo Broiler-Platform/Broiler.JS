@@ -430,6 +430,15 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         }
     }
 
+    internal JSValue GetOwnPropertyValue(in KeyString name) => base[name];
+
+    internal void SetOwnPropertyValue(in KeyString name, JSValue value)
+    {
+        base[name] = value;
+        if (globalVars.TryGetValue(name.Key, out var jsv))
+            jsv.Value = value;
+    }
+
     public IDisposable PushWithScope(JSValue value)
     {
         value.RequireObjectCoercible();
