@@ -929,7 +929,6 @@ test/built-ins/Array/prototype/unshift/clamps-to-integer-limit.js
 test/built-ins/Array/prototype/unshift/length-near-integer-limit.js
 test/built-ins/Array/prototype/unshift/throws-if-integer-limit-exceeded.js
 test/built-ins/Array/prototype/values/iteration-mutable.js
-test/built-ins/Array/prototype/values/length.js
 test/built-ins/ArrayBuffer/data-allocation-after-object-creation.js
 test/built-ins/ArrayBuffer/length-is-too-large-throws.js
 test/built-ins/ArrayBuffer/newtarget-prototype-is-not-object.js
@@ -950,22 +949,17 @@ test/built-ins/ArrayBuffer/prototype/transfer/from-fixed-to-larger-no-resizable.
 test/built-ins/ArrayBuffer/prototype/transfer/from-fixed-to-same-no-resizable.js
 test/built-ins/ArrayBuffer/prototype/transfer/from-fixed-to-smaller-no-resizable.js
 test/built-ins/ArrayBuffer/prototype/transfer/from-fixed-to-zero-no-resizable.js
-test/built-ins/ArrayBuffer/prototype/transfer/length.js
 test/built-ins/ArrayBuffer/prototype/transfer/this-is-immutable-arraybuffer.js
 test/built-ins/ArrayBuffer/prototype/transferToFixedLength/from-fixed-to-larger-no-resizable.js
 test/built-ins/ArrayBuffer/prototype/transferToFixedLength/from-fixed-to-same-no-resizable.js
 test/built-ins/ArrayBuffer/prototype/transferToFixedLength/from-fixed-to-smaller-no-resizable.js
 test/built-ins/ArrayBuffer/prototype/transferToFixedLength/from-fixed-to-zero-no-resizable.js
 test/built-ins/ArrayBuffer/prototype/transferToFixedLength/this-is-immutable-arraybuffer.js
-test/built-ins/ArrayIteratorPrototype/Symbol.toStringTag/property-descriptor.js
-test/built-ins/ArrayIteratorPrototype/Symbol.toStringTag/value-direct.js
-test/built-ins/ArrayIteratorPrototype/Symbol.toStringTag/value-from-to-string.js
 test/built-ins/ArrayIteratorPrototype/next/args-mapped-expansion-before-exhaustion.js
 test/built-ins/ArrayIteratorPrototype/next/args-mapped-truncation-before-exhaustion.js
 test/built-ins/ArrayIteratorPrototype/next/args-unmapped-expansion-before-exhaustion.js
 test/built-ins/ArrayIteratorPrototype/next/args-unmapped-truncation-before-exhaustion.js
 test/built-ins/ArrayIteratorPrototype/next/iteration-mutable.js
-test/built-ins/ArrayIteratorPrototype/next/length.js
 test/built-ins/AsyncFromSyncIteratorPrototype/next/next-result-poisoned-wrapper.js
 test/built-ins/AsyncFromSyncIteratorPrototype/next/yield-iterator-next-rejected-promise-close.js
 test/built-ins/AsyncFromSyncIteratorPrototype/next/yield-next-rejected-promise-close.js
@@ -1731,7 +1725,6 @@ test/built-ins/Map/prototype/set/replaces-a-value-returns-map.js
 test/built-ins/Map/prototype/values/name.js
 test/built-ins/MapIteratorPrototype/Symbol.toStringTag.js
 test/built-ins/MapIteratorPrototype/next/iteration-mutable.js
-test/built-ins/MapIteratorPrototype/next/length.js
 test/built-ins/Math/Symbol.toStringTag.js
 test/built-ins/Math/asinh/asinh-specialVals.js
 test/built-ins/Math/atanh/atanh-specialVals.js
@@ -1788,7 +1781,6 @@ test/built-ins/Number/prototype/toFixed/S15.7.4.5_A1.1_T02.js
 test/built-ins/Number/prototype/toFixed/S15.7.4.5_A1.3_T01.js
 test/built-ins/Number/prototype/toFixed/S15.7.4.5_A1.3_T02.js
 test/built-ins/Number/prototype/toFixed/S15.7.4.5_A1.4_T01.js
-test/built-ins/Number/prototype/toLocaleString/length.js
 test/built-ins/Number/prototype/toPrecision/exponential.js
 test/built-ins/Number/prototype/toPrecision/nan.js
 test/built-ins/Number/prototype/toPrecision/precision-cannot-be-coerced-to-a-number-in-range.js
@@ -3166,7 +3158,6 @@ test/built-ins/RegExp/unicode_restricted_incomplete_quantifier.js
 test/built-ins/RegExp/unicode_restricted_octal_escape.js
 test/built-ins/RegExp/unicode_restricted_quantifiable_assertion.js
 test/built-ins/RegExpStringIteratorPrototype/Symbol.toStringTag.js
-test/built-ins/RegExpStringIteratorPrototype/ancestry.js
 test/built-ins/RegExpStringIteratorPrototype/next/custom-regexpexec-not-callable.js
 test/built-ins/Set/prototype/add/name.js
 test/built-ins/Set/prototype/add/preserves-insertion-order.js
@@ -3232,7 +3223,6 @@ test/built-ins/Set/prototype/values/name.js
 test/built-ins/Set/prototype/values/values-iteration-mutable.js
 test/built-ins/SetIteratorPrototype/Symbol.toStringTag.js
 test/built-ins/SetIteratorPrototype/next/iteration-mutable.js
-test/built-ins/SetIteratorPrototype/next/length.js
 test/built-ins/ShadowRealm/WrappedFunction/length-throws-typeerror.js
 test/built-ins/ShadowRealm/WrappedFunction/length.js
 test/built-ins/ShadowRealm/WrappedFunction/name-throws-typeerror.js
@@ -3344,7 +3334,6 @@ test/built-ins/String/prototype/matchAll/cstm-matchall-on-number-primitive.js
 test/built-ins/String/prototype/matchAll/cstm-matchall-on-string-primitive.js
 test/built-ins/String/prototype/matchAll/regexp-is-undefined.js
 test/built-ins/String/prototype/matchAll/regexp-prototype-matchAll-v-u-flag.js
-test/built-ins/String/prototype/normalize/length.js
 test/built-ins/String/prototype/normalize/return-abrupt-from-form-as-symbol.js
 test/built-ins/String/prototype/padEnd/fill-string-non-strings.js
 test/built-ins/String/prototype/padEnd/normal-operation.js
@@ -3447,7 +3436,6 @@ test/built-ins/String/prototype/trim/15.5.4.20-2-51.js
 test/built-ins/String/prototype/trim/u180e.js
 test/built-ins/StringIteratorPrototype/Symbol.toStringTag.js
 test/built-ins/StringIteratorPrototype/ancestry.js
-test/built-ins/StringIteratorPrototype/next/length.js
 test/built-ins/StringIteratorPrototype/next/next-iteration-surrogate-pairs.js
 test/built-ins/StringIteratorPrototype/next/next-iteration.js
 test/built-ins/StringIteratorPrototype/next/next-missing-internal-slots.js
@@ -4085,7 +4073,6 @@ test/built-ins/TypedArray/prototype/toString.js
 test/built-ins/TypedArray/prototype/values/BigInt/iter-prototype.js
 test/built-ins/TypedArray/prototype/values/BigInt/return-itor.js
 test/built-ins/TypedArray/prototype/values/iter-prototype.js
-test/built-ins/TypedArray/prototype/values/length.js
 test/built-ins/TypedArray/prototype/with/BigInt/early-type-coercion-bigint.js
 test/built-ins/TypedArray/prototype/with/early-type-coercion.js
 test/built-ins/TypedArray/prototype/with/ignores-species.js
@@ -4314,7 +4301,6 @@ test/built-ins/Uint8Array/prototype/setFromBase64/trailing-garbage.js
 test/built-ins/Uint8Array/prototype/setFromBase64/whitespace.js
 test/built-ins/Uint8Array/prototype/setFromBase64/writes-up-to-error.js
 test/built-ins/Uint8Array/prototype/setFromHex/throws-when-target-is-backed-by-immutable-arraybuffer.js
-test/built-ins/Uint8Array/prototype/toBase64/length.js
 test/built-ins/Uint8Array/prototype/toBase64/omit-padding.js
 test/built-ins/WeakMap/iterable-with-symbol-keys.js
 test/built-ins/WeakMap/prototype/delete/delete-entry-with-object-key-initial-iterable.js
@@ -4836,7 +4822,6 @@ test/intl402/Locale/prototype/variants/prop-desc.js
 test/intl402/Locale/reject-duplicate-variants-in-tlang.js
 test/intl402/Locale/subclassing.js
 test/intl402/Number/prototype/toLocaleString/default-options-object-prototype.js
-test/intl402/Number/prototype/toLocaleString/length.js
 test/intl402/Number/prototype/toLocaleString/returns-same-results-as-NumberFormat.js
 test/intl402/Number/prototype/toLocaleString/throws-same-exceptions-as-NumberFormat.js
 test/intl402/NumberFormat/casing-numbering-system-options.js
