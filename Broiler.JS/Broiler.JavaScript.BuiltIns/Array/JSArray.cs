@@ -384,7 +384,7 @@ public partial class JSArray : JSObject
             {
                 _length = actualIndex + 1;
                 SetLengthWritable(newWritable);
-                throw JSEngine.NewTypeError("Cannot redefine array length");
+                return JSValue.BooleanFalse;
             }
 
             elements.RemoveAt(actualIndex);
@@ -419,7 +419,15 @@ public partial class JSArray : JSObject
 
         try
         {
-            DefineLengthProperty(propertyDescription);
+            var result = DefineLengthProperty(propertyDescription);
+            if (result.IsBoolean && !result.BooleanValue)
+            {
+                if (throwError)
+                    throw JSEngine.NewTypeError("Cannot redefine array length");
+
+                return false;
+            }
+
             return true;
         }
         catch (JSException ex) when (!throwError && ex.Error is JSTypeError)
