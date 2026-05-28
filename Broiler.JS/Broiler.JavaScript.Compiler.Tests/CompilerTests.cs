@@ -1196,6 +1196,30 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Indirect_Eval_Global_Vars_Remain_Deletable_And_Frozen_Delete_Uses_Strict_Mode_Rules()
+    {
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var ev = eval;
+                var deletable = ev("var y = 5; (function () { return delete y; })")();
+                var strictDelete;
+                try {
+                    eval('"use strict"; var o = Object.freeze({ noconfig: 1 }); delete o.noconfig;');
+                    strictDelete = 'no-throw';
+                } catch (e) {
+                    strictDelete = e.name;
+                }
+                var sloppyDelete = eval('var o = Object.freeze({ noconfig: 1 }); delete o.noconfig;');
+                return [deletable, sloppyDelete, strictDelete].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|false|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Compile_Map_And_Set_Constructors_Close_Iterators_When_Subclass_Mutators_Throw()
     {
         using var ctx = new JSContext();

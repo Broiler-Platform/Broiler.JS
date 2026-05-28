@@ -120,6 +120,7 @@ public partial class JSGlobalStatic
             // global environment.  Suspend any active direct-eval scope
             // overlays so the compiled code sees the true global bindings.
             using var suspension = context.SuspendDirectEvalOverlays();
+            using var evalScope = context.PushDirectEvalScope(Array.Empty<JSVariable>());
             return context.Eval(text, location, context);
         }
 

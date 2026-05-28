@@ -213,7 +213,9 @@ public partial class JSObject
 
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
     {
-        if (name.Key == KeyStrings.__proto__.Key && GetInternalProperty(name, false).IsEmpty)
+        if (name.Key == KeyStrings.__proto__.Key
+            && GetInternalProperty(name, false).IsEmpty
+            && !GetInternalProperty(name).IsEmpty)
         {
             if (!value.IsObject && !value.IsNull)
                 return true;
@@ -817,9 +819,6 @@ public partial class JSObject
 
     public override JSValue Delete(in KeyString key)
     {
-        if (IsSealedOrFrozen())
-            throw NewTypeError($"Cannot delete property {key} of {this}");
-
         var property = ownProperties.GetValue(key.Key);
         if (!property.IsEmpty && !property.IsConfigurable)
             return JSValue.BooleanFalse;
@@ -835,9 +834,6 @@ public partial class JSObject
 
     public override JSValue Delete(uint key)
     {
-        if (IsSealedOrFrozen())
-            throw NewTypeError($"Cannot delete property {key} of {this}");
-
         if (elements.TryGetValue(key, out var property) && !property.IsConfigurable)
             return JSValue.BooleanFalse;
 
@@ -854,9 +850,6 @@ public partial class JSObject
 
     public override JSValue Delete(IJSSymbol symbol)
     {
-        if (IsSealedOrFrozen())
-            throw NewTypeError($"Cannot delete property {symbol} of {this}");
-
         if (symbols.TryGetValue(symbol.Key, out var property) && !property.IsConfigurable)
             return JSValue.BooleanFalse;
 

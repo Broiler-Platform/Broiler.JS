@@ -159,6 +159,13 @@ public class JSVariable
                 var property = ctx.GetInternalProperty(key, false);
                 if (property.IsEmpty)
                 {
+                    var register = ctx.GetType().GetMethod("Register", [typeof(JSVariable)]);
+                    if (register != null)
+                    {
+                        register.Invoke(ctx, [this]);
+                        return;
+                    }
+
                     ctx.FastAddValue(key, value, JSPropertyAttributes.Value | JSPropertyAttributes.Enumerable);
                     return;
                 }

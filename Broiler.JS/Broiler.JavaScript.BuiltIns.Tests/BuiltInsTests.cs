@@ -2345,6 +2345,28 @@ public class BuiltInsTests
             }
         ");
         Assert.True(result.BooleanValue);
+        Assert.True(result.BooleanValue);
+    }
+    [Fact]
+    public void Object_Proto_Assignment_Falls_Back_To_Own_Data_Property_After_Accessor_Deletion()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              delete Object.prototype.__proto__;
+              var subject = {};
+              subject.__proto__ = 5;
+              var descriptor = Object.getOwnPropertyDescriptor(subject, '__proto__');
+              return descriptor.value === 5
+                && descriptor.writable === true
+                && descriptor.enumerable === true
+                && descriptor.configurable === true
+                && Object.prototype.hasOwnProperty.call(subject, '__proto__');
+            })();
+            """);
+
+        Assert.True(result.BooleanValue);
     }
 
     [Fact]
