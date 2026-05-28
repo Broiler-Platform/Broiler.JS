@@ -168,34 +168,6 @@ partial class FastCompiler
                     {
                         cs.CurrentDirectEvalParameterBindings = previousDirectEvalParameterBindings;
                     }
-
-                    private static string[] CollectDirectEvalParameterBindings(AstFunctionExpression functionDeclaration, List<StringSpan> parameterNames)
-                    {
-                        var bindings = new HashSet<string>(StringComparer.Ordinal);
-                        foreach (var parameterName in parameterNames)
-                            bindings.Add(parameterName.Value);
-
-                        if (functionDeclaration.Body is not AstBlock body)
-                            return [.. bindings];
-
-                        if (body.HoistingScope != null)
-                        {
-                            var hoistedNames = body.HoistingScope.GetFastEnumerator();
-                            while (hoistedNames.MoveNext(out var hoistedName))
-                            {
-                                if (hoistedName.Equals("arguments") || hoistedName.Equals("eval"))
-                                    bindings.Add(hoistedName.Value);
-                            }
-                        }
-
-                        foreach (var lexicalBinding in CollectTopLevelLexicalBindings(body.Statements))
-                        {
-                            if (lexicalBinding is "arguments" or "eval")
-                                bindings.Add(lexicalBinding);
-                        }
-
-                        return [.. bindings];
-                    }
                 }
 
                 CreateAssignment(bodyInits, v.Identifier, JSVariableBuilder.FromArgumentOptional(argumentElements, i, parameterInitializer), false, true,
@@ -317,5 +289,33 @@ partial class FastCompiler
 
             sList.Add(YExpression.Call(@this, init.Member as MethodInfo, init.Arguments));
         }
+    }
+
+    private static string[] CollectDirectEvalParameterBindings(AstFunctionExpression functionDeclaration, List<StringSpan> parameterNames)
+    {
+        var bindings = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var parameterName in parameterNames)
+            bindings.Add(parameterName.Value);
+
+        if (functionDeclaration.Body is not AstBlock body)
+            return [.. bindings];
+
+        if (body.HoistingScope != null)
+        {
+            var hoistedNames = body.HoistingScope.GetFastEnumerator();
+            while (hoistedNames.MoveNext(out var hoistedName))
+            {
+                if (hoistedName.Equals("arguments") || hoistedName.Equals("eval"))
+                    bindings.Add(hoistedName.Value);
+            }
+        }
+
+        foreach (var lexicalBinding in CollectTopLevelLexicalBindings(body.Statements))
+        {
+            if (lexicalBinding is "arguments" or "eval")
+                bindings.Add(lexicalBinding);
+        }
+
+        return [.. bindings];
     }
 }
