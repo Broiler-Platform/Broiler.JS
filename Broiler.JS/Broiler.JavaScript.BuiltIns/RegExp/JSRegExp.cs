@@ -146,8 +146,48 @@ public partial class JSRegExp : JSObject, IJSRegExp
         sb.Append(((int)c).ToString("x4"));
     }
 
-    [JSExport("source")]
+    private static string EscapePatternSource(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern))
+            return "(?:)";
+
+        var sb = new StringBuilder(pattern.Length);
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+            switch (c)
+            {
+                case '/':
+                    sb.Append(@"\/");
+                    continue;
+                case '\n':
+                    sb.Append(@"\n");
+                    continue;
+                case '\r':
+                    sb.Append(@"\r");
+                    continue;
+                case '\u2028':
+                case '\u2029':
+                    AppendUnicodeEscape(sb, c);
+                    continue;
+            }
+
+            if (char.IsSurrogate(c))
+            {
+                AppendUnicodeEscape(sb, c);
+                continue;
+            }
+
+            sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
+
     public string pattern;
+
+    [JSExport("source")]
+    public string Source => EscapePatternSource(pattern);
 
     [JSExport]
     public string flags;

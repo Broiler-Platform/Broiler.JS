@@ -615,6 +615,7 @@ public class FastScanner
                         return false;
                     }
                 }
+
                 else
                 {
                     result = char.MinValue;
@@ -649,6 +650,38 @@ public class FastScanner
 
             codePoint = checked(codePoint * 16 + ch.HexValue());
             ch = Consume();
+        }
+
+        if (ch != '}')
+            throw Unexpected();
+
+        try
+        {
+            return codePoint.FromCodePoint();
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            throw Unexpected();
+        }
+    }
+
+    private string ScanUnicodeCodePointEscapeContents()
+    {
+        var ch = Peek();
+
+        // At least one hex digit is required.
+        if (ch == '}')
+            throw Unexpected();
+
+        var codePoint = 0;
+        while (ch != char.MaxValue)
+        {
+            if (!ch.IsDigitPart(true, false))
+                break;
+
+            codePoint = checked(codePoint * 16 + ch.HexValue());
+            Consume();
+            ch = Peek();
         }
 
         if (ch != '}')
@@ -865,7 +898,7 @@ public class FastScanner
                                 first = Consume();
                                 if (CanConsume('{'))
                                 {
-                                    t.Append(ScanUnicodeCodePointEscape());
+                                    t.Append(ScanUnicodeCodePointEscapeContents());
                                     break;
                                 }
                                 t.Append('\\');

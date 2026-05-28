@@ -6821,6 +6821,21 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RegExp_Unicode_CodePoint_Literal_Source_RoundTrips_For_ScriptHost_Test262_Cases()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            var source = /\u{1d306}/u.source;
+            var recreated = eval('/' + source + '/u');
+            return [source, recreated.test('\ud834\udf06'), recreated.test('𝌆')].join('|');
+        })();");
+
+        Assert.Equal("\\ud834\\udf06|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Object_WeakRef_And_Function_TypeError_Scenarios_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();
