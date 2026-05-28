@@ -39,7 +39,12 @@ public class JSContextBuilder
     private static MethodInfo _CaptureWithScopes = typeof(JSContext).GetMethod(nameof(JSContext.CaptureWithScopes), Type.EmptyTypes);
     private static MethodInfo _ResolveIdentifier = typeof(JSContext).GetMethod(nameof(JSContext.ResolveIdentifier), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _EnsureCanDeclareGlobalFunction = typeof(JSContext).GetMethod(nameof(JSContext.EnsureCanDeclareGlobalFunction), [typeof(KeyString).MakeByRefType()]);
-    private static MethodInfo _RegisterDirectEvalVariable = typeof(JSContext).GetMethod(nameof(JSContext.RegisterDirectEvalVariable), [typeof(JSVariable)]);
+    private static MethodInfo _RegisterDirectEvalVariable = typeof(JSContext).GetMethod(
+        nameof(JSContext.RegisterDirectEvalVariable),
+        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+        null,
+        [typeof(JSVariable)],
+        null);
     public static Expression Index(Expression key) => Expression.MakeIndex(Expression.Convert(Current, typeof(JSObject)), _Index, [key]);
     public static Expression AssignIdentifier(Expression key, Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _AssignIdentifier, key, value);
     public static Expression DeleteIdentifier(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeleteIdentifier, key);
