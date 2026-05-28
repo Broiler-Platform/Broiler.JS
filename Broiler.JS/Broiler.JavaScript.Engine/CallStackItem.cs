@@ -100,6 +100,7 @@ public class CallStackItem
     public void Pop(IJSExecutionContext context)
     {
         context = context ?? JSEngine.Current as IJSExecutionContext;
+        directEvalBindings = null;
         context.Top = Parent;
         Parent = null;
     }
