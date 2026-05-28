@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Storage;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.Engine;
