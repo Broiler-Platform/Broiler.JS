@@ -264,9 +264,6 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
         JSObject ResolveInstancePrototype(JSValue newTargetValue)
         {
-            if (newTargetValue is IJSFunction newTargetFunction)
-                return newTargetFunction.Prototype as JSObject ?? prototype;
-
             var newTargetPrototype = newTargetValue[KeyStrings.prototype];
             if (newTargetPrototype is JSObject newTargetPrototypeObject)
                 return newTargetPrototypeObject;

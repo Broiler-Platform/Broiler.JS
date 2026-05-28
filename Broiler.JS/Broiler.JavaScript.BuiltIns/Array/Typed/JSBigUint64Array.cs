@@ -29,10 +29,9 @@ public partial class JSBigUint64Array : JSTypedArray
 
     public override bool SetValue(uint index, JSValue value, JSValue receiver, bool throwError = true)
     {
+        var ulongValue = (ulong)ToBigIntValue(value ?? JSUndefined.Value).value;
         if (index >= length)
             return false;
-
-        var ulongValue = (ulong)ToBigIntValue(value).value;
 
         System.Array.Copy(BitConverter.GetBytes(ulongValue), 0, buffer.buffer, byteOffset + index * 8, 8);
         return true;
@@ -58,6 +57,8 @@ public partial class JSBigUint64Array : JSTypedArray
 
         return result;
     }
+
+    internal override void ValidateElementValue(JSValue value) => _ = ToBigIntValue(value);
 
     private static JSBigInt ToBigIntValue(JSValue value)
     {

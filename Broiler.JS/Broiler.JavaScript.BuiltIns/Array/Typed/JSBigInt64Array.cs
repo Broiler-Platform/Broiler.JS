@@ -29,10 +29,9 @@ public partial class JSBigInt64Array : JSTypedArray
 
     public override bool SetValue(uint index, JSValue value, JSValue receiver, bool throwError = true)
     {
+        var longValue = (long)ToBigIntValue(value ?? JSUndefined.Value).value;
         if (index >= length)
             return false;
-
-        var longValue = (long)ToBigIntValue(value).value;
 
         System.Array.Copy(BitConverter.GetBytes(longValue), 0, buffer.buffer, byteOffset + index * 8, 8);
         return true;
@@ -58,6 +57,8 @@ public partial class JSBigInt64Array : JSTypedArray
 
         return result;
     }
+
+    internal override void ValidateElementValue(JSValue value) => _ = ToBigIntValue(value);
 
     private static JSBigInt ToBigIntValue(JSValue value)
     {

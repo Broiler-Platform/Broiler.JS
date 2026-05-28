@@ -2424,6 +2424,221 @@ public class BuiltInsTests
         Assert.True(result.BooleanValue);
     }
 
+    [Fact]
+    public void TypedArray_Construct_Propagates_NewTarget_Prototype_Getter_Exception()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var thrown = new Error('boom');
+            var newTarget = function() {}.bind(null);
+            Object.defineProperty(newTarget, 'prototype', {
+                get() {
+                    throw thrown;
+                }
+            });
+
+            try {
+                Reflect.construct(Float64Array, [], newTarget);
+                false;
+            } catch (e) {
+                e === thrown;
+            }
+        ");
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void TypedArray_From_Calls_Custom_Constructor()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var thrown = new Error('boom');
+            var called = 0;
+            function ctor() {
+                called++;
+                throw thrown;
+            }
+
+            try {
+                Float64Array.from.call(ctor, []);
+                false;
+            } catch (e) {
+                e === thrown && called === 1;
+            }
+        ");
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void TypedArray_Of_Calls_Custom_Constructor()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var thrown = new Error('boom');
+            var called = 0;
+            function ctor() {
+                called++;
+                throw thrown;
+            }
+
+            try {
+                Float64Array.of.call(ctor, 42);
+                false;
+            } catch (e) {
+                e === thrown && called === 1;
+            }
+        ");
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void TypedArray_ToLocaleString_Propagates_ValueOf_Coercion_Exception()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var thrown = new Error('boom');
+            Number.prototype.toLocaleString = function() {
+                return {
+                    toString: undefined,
+                    valueOf: function() {
+                        throw thrown;
+                    }
+                };
+            };
+
+            try {
+                new Float64Array([42]).toLocaleString();
+                false;
+            } catch (e) {
+                e === thrown;
+            }
+        ");
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void TypedArray_ToLocaleString_Visits_Next_Element()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var thrown = new Error('boom');
+            var calls = 0;
+            Number.prototype.toLocaleString = function() {
+                return {
+                    toString: function() {
+                        calls++;
+                        if (calls > 1) {
+                            throw thrown;
+                        }
+                        return '' + calls;
+                    }
+                };
+            };
+
+            try {
+                new Float64Array([42, 0]).toLocaleString();
+                false;
+            } catch (e) {
+                e === thrown && calls === 2;
+            }
+        ");
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void TypedArray_Set_Propagates_Value_Coercion_For_Invalid_Numeric_String_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var thrown = new Error('boom');
+            var value = {
+                valueOf: function() {
+                    throw thrown;
+                }
+            };
+            var sample = new Float64Array([42]);
+
+            try {
+                sample['1.1'] = value;
+                false;
+            } catch (e) {
+                e === thrown;
+            }
+        ");
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void TypedArray_Set_Propagates_Value_Coercion_For_Out_Of_Bounds_Integer_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var thrown = new Error('boom');
+            var value = {
+                valueOf: function() {
+                    throw thrown;
+                }
+            };
+            var sample = new Float64Array([42]);
+
+            try {
+                sample['1'] = value;
+                false;
+            } catch (e) {
+                e === thrown;
+            }
+        ");
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void TypedArray_DefineProperty_Propagates_Value_Coercion()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var thrown = new Error('boom');
+            var value = {
+                valueOf: function() {
+                    throw thrown;
+                }
+            };
+            var sample = new Float64Array([42]);
+
+            try {
+                Object.defineProperty(sample, '0', { value: value });
+                false;
+            } catch (e) {
+                e === thrown;
+            }
+        ");
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void TypedArray_Constructs_From_Iterable_Object()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var iterable = {};
+            iterable[Symbol.iterator] = function () {
+                return [42][Symbol.iterator]();
+            };
+
+            var sample = new Float64Array(iterable);
+            sample.length === 1 && sample[0] === 42;
+        ");
+        Assert.True(result.BooleanValue);
+    }
+
     // ── M2: ArrayBuffer transfer tests ───────────────────────────────
 
     [Fact]

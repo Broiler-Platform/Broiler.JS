@@ -100,7 +100,10 @@ public readonly struct TypedArrayParameters
 
     private static JSObject GetConstructorPrototype(JSValue constructor)
     {
-        if (constructor is IJSFunction { Prototype: JSObject prototype })
+        if (constructor is not IJSFunction)
+            throw JSEngine.NewTypeError("TypedArray constructor is not a constructor");
+
+        if (constructor[KeyStrings.prototype] is JSObject prototype)
             return prototype;
 
         throw JSEngine.NewTypeError("TypedArray constructor is not a constructor");

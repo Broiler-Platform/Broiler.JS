@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Engine.Internal;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Engine;
 
@@ -52,7 +53,7 @@ internal static class EngineAssemblyInitializer
             (ctx as IJSExecutionContext)?.Top?.NewTarget;
 
         JSEngine.GetNewTargetPrototypeFromTop = ctx =>
-            ((ctx as IJSExecutionContext)?.Top?.NewTarget as IJSFunction)?.Prototype as JSObject;
+            (ctx as IJSExecutionContext)?.Top?.NewTarget?[KeyStrings.prototype] as JSObject;
 
         // ── JSObject factory delegate for ObjectPrototype access ────
         JSObject.GetCurrentObjectPrototype = static () =>

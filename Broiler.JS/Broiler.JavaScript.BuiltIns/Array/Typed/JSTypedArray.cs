@@ -140,7 +140,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
          */
         if (length == -1)
         {
-            var en = source.GetElementEnumerator();
+            var en = source.GetIterableEnumerator();
             var elements = new List<JSValue>();
             while (en.MoveNext(out var hasValue, out var item, out var index))
             {
@@ -249,6 +249,8 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return numericIndex >= 0 && numericIndex < length;
     }
 
+    internal virtual void ValidateElementValue(JSValue value) => _ = (value ?? JSUndefined.Value).DoubleValue;
+
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
         var key = name.ToKey(false);
@@ -283,18 +285,60 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     public override JSValue DefineProperty(uint key, JSObject pd)
     {
+        var hasValue = !pd.GetInternalProperty(KeyStrings.value, false).IsEmpty;
+        if (hasValue)
+            ValidateElementValue(pd[KeyStrings.value]);
+
         if (key >= length)
             return JSBoolean.False;
 
-        return base.DefineProperty(key, pd);
+        if (!pd.GetInternalProperty(KeyStrings.get, false).IsEmpty
+            || !pd.GetInternalProperty(KeyStrings.set, false).IsEmpty)
+        {
+            return JSBoolean.False;
+        }
+
+        if (!pd.GetInternalProperty(KeyStrings.configurable, false).IsEmpty && pd[KeyStrings.configurable].BooleanValue)
+            return JSBoolean.False;
+
+        if (!pd.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty && !pd[KeyStrings.enumerable].BooleanValue)
+            return JSBoolean.False;
+
+        if (!pd.GetInternalProperty(KeyStrings.writable, false).IsEmpty && !pd[KeyStrings.writable].BooleanValue)
+            return JSBoolean.False;
+
+        if (hasValue)
+            SetValue(key, pd[KeyStrings.value], this, true);
+
+        return JSUndefined.Value;
     }
 
     public override JSValue DefineProperty(in KeyString name, JSObject pd)
     {
         if (TryGetCanonicalNumericIndex(name, out var numericIndex))
-            return IsValidIntegerIndex(numericIndex) ? base.DefineProperty((uint)numericIndex, pd) : JSBoolean.False;
+        {
+            var hasValue = !pd.GetInternalProperty(KeyStrings.value, false).IsEmpty;
+            if (hasValue)
+                ValidateElementValue(pd[KeyStrings.value]);
+
+            return IsValidIntegerIndex(numericIndex) ? DefineProperty((uint)numericIndex, pd) : JSBoolean.False;
+        }
 
         return base.DefineProperty(name, pd);
+    }
+
+    internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
+    {
+        if (TryGetCanonicalNumericIndex(name, out var numericIndex))
+        {
+            ValidateElementValue(value);
+            if (IsValidIntegerIndex(numericIndex))
+                return SetValue((uint)numericIndex, value, receiver, throwError);
+
+            return true;
+        }
+
+        return base.SetValue(name, value, receiver, throwError);
     }
     public override bool BooleanValue => true;
     public override double DoubleValue => double.NaN;

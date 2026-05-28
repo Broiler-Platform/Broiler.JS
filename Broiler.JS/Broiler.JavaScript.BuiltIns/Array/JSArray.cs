@@ -166,11 +166,6 @@ public partial class JSArray : JSObject
 
     public override IElementEnumerator GetElementEnumerator()
     {
-        if (HasIterator)
-        {
-            var v = this.GetValue(GetSymbols()[JSSymbol.iterator.Key]);
-            return v.InvokeFunction(Arguments.Empty).GetElementEnumerator();
-        }
         return new ElementEnumerator(this);
     }
 

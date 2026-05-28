@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Broiler.JavaScript.Runtime;
 
-public readonly struct ListElementEnumerator(List<JSValue>.Enumerator en) : IElementEnumerator
+public struct ListElementEnumerator(List<JSValue>.Enumerator en) : IElementEnumerator
 {
     public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
     {

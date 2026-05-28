@@ -25,10 +25,10 @@ public partial class JSUint8ClampedArray : JSTypedArray
 
     public override bool SetValue(uint index, JSValue value, JSValue receiver, bool throwError = true)
     {
-        if (index < 0 || index >= length)
+        double number = (value ?? JSUndefined.Value).DoubleValue;
+        if (index >= length)
             return false;
         // This algorithm is defined as ToUint8Clamp in the spec.
-        double number = value.DoubleValue;
         int result;
         if (number <= 0)
             result = 0;
@@ -51,12 +51,20 @@ public partial class JSUint8ClampedArray : JSTypedArray
     }
 
     [JSExport(Length = 1)]
-    public static JSValue From(in Arguments a) => new JSUint8ClampedArray(TypedArrayParameters.From(in a, BYTES_PER_ELENENT));
+    public static JSValue From(in Arguments a)
+    {
+        var temp = new JSUint8ClampedArray(TypedArrayParameters.From(in a, BYTES_PER_ELENENT));
+        var result = CreateTypedArrayFromConstructor(a.This, temp.Length);
+        for (uint i = 0; i < temp.Length; i++)
+            result[i] = temp[i];
+
+        return result;
+    }
 
     [JSExport]
     public static JSValue Of(in Arguments a)
     {
-        var r = new JSUint8ClampedArray(TypedArrayParameters.Of(in a, BYTES_PER_ELENENT));
+        var r = CreateTypedArrayFromConstructor(a.This, a.Length);
         for (int i = 0; i < a.Length; i++)
         {
             r[(uint)i] = a[i];

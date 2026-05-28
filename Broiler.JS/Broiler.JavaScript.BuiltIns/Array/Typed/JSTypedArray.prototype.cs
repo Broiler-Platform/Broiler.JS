@@ -672,7 +672,7 @@ partial class JSTypedArray
                 sb.Append(separator);
             }
             first = false;
-            sb.Append(n.ToLocaleString(strFormat, culture));
+            sb.Append(n.InvokeMethod(KeyStrings.GetOrCreate("toLocaleString"), locale, format).StringValue);
         }
 
         return new JSString(sb.ToString());
