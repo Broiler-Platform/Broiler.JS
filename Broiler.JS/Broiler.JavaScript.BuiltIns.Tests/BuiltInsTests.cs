@@ -9979,6 +9979,43 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void BuiltIn_Length_Metadata_Matches_Optional_Argument_Specs()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                function lengthOf(fn) {
+                    var descriptor = Object.getOwnPropertyDescriptor(fn, 'length');
+                    return String(descriptor && descriptor.value) + '/' + String(fn.length);
+                }
+
+                function nextLengthOf(iteratorFactory) {
+                    var proto = Object.getPrototypeOf(iteratorFactory());
+                    var next = Object.getOwnPropertyDescriptor(proto, 'next').value;
+                    var descriptor = Object.getOwnPropertyDescriptor(next, 'length');
+                    return String(descriptor && descriptor.value) + '/' + String(next.length);
+                }
+
+                return [
+                    lengthOf(Array.prototype.values),
+                    lengthOf(Uint8Array.prototype.values),
+                    lengthOf(ArrayBuffer.prototype.transfer),
+                    lengthOf(ArrayBuffer.prototype.transferToFixedLength),
+                    lengthOf(String.prototype.normalize),
+                    lengthOf(Number.prototype.toLocaleString),
+                    lengthOf(Uint8Array.prototype.toBase64),
+                    nextLengthOf(function () { return [][Symbol.iterator](); }),
+                    nextLengthOf(function () { return new Map([[1, 2]]).values(); }),
+                    nextLengthOf(function () { return new Set([1]).values(); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("0/0|0/0|0/0|0/0|0/0|0/0|0/0|0/0|0/0|0/0", result.ToString());
+    }
+
+    [Fact]
     public void DateTimeFormat_FormatToParts_NaN_Throws_RangeError()
     {
         EnsureBuiltInsLoaded();

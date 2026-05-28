@@ -360,7 +360,7 @@ partial class JSNumber
     }
 
     [JSPrototypeMethod]
-    [JSExport("toLocaleString")]
+    [JSExport("toLocaleString", Length = 0)]
     public static JSString ToLocaleString(in Arguments a)
     {
         var n = a.This.ToNumber();

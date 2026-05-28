@@ -632,7 +632,7 @@ public partial class JSArray
     }
 
     [JSPrototypeMethod]
-    [JSExport("values", Length = 2)]
+    [JSExport("values", Length = 0)]
     [Symbol("@@iterator")]
     public new static JSValue Values(in Arguments a) => new JSGenerator(a.This.GetElementEnumerator(), "Array Iterator");
 

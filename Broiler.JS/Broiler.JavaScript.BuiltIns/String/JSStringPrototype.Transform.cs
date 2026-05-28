@@ -10,7 +10,7 @@ namespace Broiler.JavaScript.BuiltIns.String;
 public partial class JSString
 {
     [JSPrototypeMethod]
-    [JSExport("normalize")]
+    [JSExport("normalize", Length = 0)]
     internal static JSValue Normalize(in Arguments a)
     {
         var @this = a.This.AsString();

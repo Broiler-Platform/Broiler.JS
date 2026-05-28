@@ -155,7 +155,7 @@ public partial class JSArrayBuffer : JSObject
     // §2.9.1  ArrayBuffer.prototype.transfer(newLength?)
     // ---------------------------------------------------------------
 
-    [JSExport("transfer")]
+    [JSExport("transfer", Length = 0)]
     internal JSValue Transfer(in Arguments a)
     {
         var source = RequireArrayBuffer(a.This, "transfer");
@@ -180,7 +180,7 @@ public partial class JSArrayBuffer : JSObject
     // §2.9.2  ArrayBuffer.prototype.transferToFixedLength(newLength?)
     // ---------------------------------------------------------------
 
-    [JSExport("transferToFixedLength")]
+    [JSExport("transferToFixedLength", Length = 0)]
     internal JSValue TransferToFixedLength(in Arguments a)
     {
         // In engines without resizable buffers the behaviour is identical

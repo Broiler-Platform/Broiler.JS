@@ -92,7 +92,7 @@ public partial class JSUInt8Array : JSTypedArray
     /// ES2026 §4.3.2 — Uint8Array.prototype.toBase64()
     /// Returns a Base64-encoded string of the typed array content.
     /// </summary>
-    [JSExport("toBase64")]
+    [JSExport("toBase64", Length = 0)]
     public JSValue ToBase64(in Arguments a)
     {
         var alphabet = GetBase64Alphabet(a.Length > 0 ? a[0] : JSUndefined.Value);

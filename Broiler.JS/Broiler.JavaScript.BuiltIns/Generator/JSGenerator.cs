@@ -3,6 +3,8 @@ using Broiler.JavaScript.Extensions;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using System;
+using System.Collections.Concurrent;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.Engine.Core;
 
@@ -11,6 +13,7 @@ namespace Broiler.JavaScript.BuiltIns.Generator;
 [JSClassGenerator("Generator")]
 public partial class JSGenerator : JSObject, IJSGenerator
 {
+    private static readonly ConcurrentDictionary<string, JSObject> IteratorPrototypes = new(StringComparer.Ordinal);
     readonly IElementEnumerator en;
     private ClrGeneratorV2 cg;
     private readonly string name;
@@ -25,6 +28,9 @@ public partial class JSGenerator : JSObject, IJSGenerator
     {
         this.en = en;
         this.name = name;
+
+        if (name.EndsWith("Iterator", StringComparison.Ordinal))
+            BasePrototypeObject = IteratorPrototypes.GetOrAdd(name, CreateIteratorPrototype);
     }
 
     public JSGenerator(ClrGeneratorV2 g) : this()
@@ -34,6 +40,23 @@ public partial class JSGenerator : JSObject, IJSGenerator
     }
 
     public override string ToString() => $"[object {name}]";
+
+    private static JSObject CreateIteratorPrototype(string name)
+    {
+        var prototype = new JSObject();
+        prototype.FastAddValue(KeyStrings.next, JSValue.CreateFunction(IteratorNext, "next", null, 0, false), JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, JSValue.CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false), JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString(name), JSPropertyAttributes.ConfigurableReadonlyValue);
+        return prototype;
+    }
+
+    private static JSValue IteratorNext(in Arguments a)
+    {
+        if (a.This is not JSGenerator generator)
+            throw JSEngine.NewTypeError("Iterator.prototype.next called on incompatible receiver");
+
+        return generator.Next();
+    }
 
     [JSExport("toString")]
     public new JSValue ToString(in Arguments a) => JSValue.CreateString(ToString());
