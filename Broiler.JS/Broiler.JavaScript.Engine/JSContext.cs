@@ -259,13 +259,13 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         }
     }
 
-    internal IDisposable PushDirectEvalActivation()
+    internal IDisposable PushDirectEvalActivation(CallStackItem owner)
     {
-        if (Top == null)
+        if (owner == null)
             return null;
 
-        directEvalActivationOwners.Add(Top);
-        return new DirectEvalActivationScope(this, Top);
+        directEvalActivationOwners.Add(owner);
+        return new DirectEvalActivationScope(this, owner);
     }
 
     private bool TryGetCurrentDirectEvalActivationOwner(out CallStackItem owner)
