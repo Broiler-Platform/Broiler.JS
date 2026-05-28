@@ -636,7 +636,6 @@ test/built-ins/Array/prototype/filter/15.4.4.20-9-c-i-21.js
 test/built-ins/Array/prototype/filter/15.4.4.20-9-c-i-22.js
 test/built-ins/Array/prototype/filter/15.4.4.20-9-c-i-7.js
 test/built-ins/Array/prototype/filter/15.4.4.20-9-c-i-8.js
-test/built-ins/Array/prototype/filter/create-ctor-non-object.js
 test/built-ins/Array/prototype/find/array-altered-during-loop.js
 test/built-ins/Array/prototype/find/predicate-call-this-non-strict.js
 test/built-ins/Array/prototype/find/predicate-called-for-each-array-property.js
@@ -650,7 +649,6 @@ test/built-ins/Array/prototype/findLastIndex/maximum-index.js
 test/built-ins/Array/prototype/findLastIndex/predicate-call-this-non-strict.js
 test/built-ins/Array/prototype/findLastIndex/predicate-called-for-each-array-property.js
 test/built-ins/Array/prototype/flat/non-numeric-depth-should-not-throw.js
-test/built-ins/Array/prototype/flat/non-object-ctor-throws.js
 test/built-ins/Array/prototype/flat/proxy-access-count.js
 test/built-ins/Array/prototype/flatMap/array-like-objects-typedarrays.js
 test/built-ins/Array/prototype/flatMap/array-like-objects.js
@@ -658,7 +656,6 @@ test/built-ins/Array/prototype/flatMap/bound-function-argument.js
 test/built-ins/Array/prototype/flatMap/depth-always-one.js
 test/built-ins/Array/prototype/flatMap/non-callable-argument-throws.js
 test/built-ins/Array/prototype/flatMap/proxy-access-count.js
-test/built-ins/Array/prototype/flatMap/this-value-ctor-non-object.js
 test/built-ins/Array/prototype/flatMap/thisArg-argument.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-1-10.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-1-13.js
@@ -754,7 +751,6 @@ test/built-ins/Array/prototype/map/15.4.4.19-9-6.js
 test/built-ins/Array/prototype/map/15.4.4.19-9-7.js
 test/built-ins/Array/prototype/map/15.4.4.19-9-8.js
 test/built-ins/Array/prototype/map/15.4.4.19-9-9.js
-test/built-ins/Array/prototype/map/create-ctor-non-object.js
 test/built-ins/Array/prototype/methods-called-as-functions.js
 test/built-ins/Array/prototype/pop/S15.4.4.6_A2_T2.js
 test/built-ins/Array/prototype/pop/S15.4.4.6_A3_T1.js
@@ -831,7 +827,6 @@ test/built-ins/Array/prototype/reverse/length-exceeding-integer-limit-with-objec
 test/built-ins/Array/prototype/reverse/length-exceeding-integer-limit-with-proxy.js
 test/built-ins/Array/prototype/slice/S15.4.4.10_A3_T1.js
 test/built-ins/Array/prototype/slice/S15.4.4.10_A3_T2.js
-test/built-ins/Array/prototype/slice/create-ctor-non-object.js
 test/built-ins/Array/prototype/slice/create-non-array-invalid-len.js
 test/built-ins/Array/prototype/slice/create-proxied-array-invalid-len.js
 test/built-ins/Array/prototype/slice/length-exceeding-integer-limit-proxied-array.js
@@ -858,7 +853,6 @@ test/built-ins/Array/prototype/sort/stability-513-elements.js
 test/built-ins/Array/prototype/splice/S15.4.4.12_A3_T1.js
 test/built-ins/Array/prototype/splice/S15.4.4.12_A6.1_T3.js
 test/built-ins/Array/prototype/splice/clamps-length-to-integer-limit.js
-test/built-ins/Array/prototype/splice/create-ctor-non-object.js
 test/built-ins/Array/prototype/splice/create-species-length-exceeding-integer-limit.js
 test/built-ins/Array/prototype/splice/length-and-deleteCount-exceeding-integer-limit.js
 test/built-ins/Array/prototype/splice/length-exceeding-integer-limit-shrink-array.js
@@ -2860,7 +2854,6 @@ test/built-ins/RegExp/prototype/Symbol.match/g-match-empty-advance-lastindex.js
 test/built-ins/RegExp/prototype/Symbol.match/get-flags-err.js
 test/built-ins/RegExp/prototype/Symbol.match/u-advance-after-empty.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/isregexp-called-once.js
-test/built-ins/RegExp/prototype/Symbol.matchAll/species-constructor.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/this-get-flags-throws.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/this-get-flags.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/this-not-object-throws.js
@@ -3293,22 +3286,8 @@ test/built-ins/String/prototype/slice/S15.5.4.13_A1_T1.js
 test/built-ins/String/prototype/slice/S15.5.4.13_A1_T2.js
 test/built-ins/String/prototype/slice/S15.5.4.13_A1_T7.js
 test/built-ins/String/prototype/slice/S15.5.4.13_A1_T8.js
-test/built-ins/String/prototype/split/argument-is-new-reg-exp-and-instance-is-string-hello.js
-test/built-ins/String/prototype/split/argument-is-reg-exp-a-z-and-instance-is-string-abc.js
-test/built-ins/String/prototype/split/argument-is-regexp-a-z-and-instance-is-string-abc.js
-test/built-ins/String/prototype/split/argument-is-regexp-and-instance-is-number.js
-test/built-ins/String/prototype/split/argument-is-regexp-d-and-instance-is-string-dfe23iu-34-65.js
-test/built-ins/String/prototype/split/argument-is-regexp-l-and-instance-is-string-hello.js
-test/built-ins/String/prototype/split/argument-is-regexp-reg-exp-d-and-instance-is-string-dfe23iu-34-65.js
-test/built-ins/String/prototype/split/argument-is-regexp-s-and-instance-is-string-a-b-c-de-f.js
-test/built-ins/String/prototype/split/argument-is-regexp-x-and-instance-is-string-a-b-c-de-f.js
 test/built-ins/String/prototype/split/argument-is-undefined-and-instance-is-string.js
 test/built-ins/String/prototype/split/argument-is-void-0-and-instance-is-string-object-object-have-overrided-to-string-function.js
-test/built-ins/String/prototype/split/arguments-are-new-reg-exp-and-undefined-and-instance-is-string-hello.js
-test/built-ins/String/prototype/split/arguments-are-new-reg-exp-and-void-0-and-instance-is-string-hello.js
-test/built-ins/String/prototype/split/arguments-are-regexp-l-and-undefined-and-instance-is-string-hello.js
-test/built-ins/String/prototype/split/arguments-are-regexp-l-and-void-0-and-instance-is-string-hello.js
-test/built-ins/String/prototype/split/call-split-new-reg-exp.js
 test/built-ins/String/prototype/split/call-split-void-0-instance-is-thisundefinedisundefinedaundefinedstringundefinedobject.js
 test/built-ins/String/prototype/split/cstm-split-is-null.js
 test/built-ins/String/prototype/split/cstm-split-on-bigint-primitive.js
@@ -3317,7 +3296,6 @@ test/built-ins/String/prototype/split/cstm-split-on-number-primitive.js
 test/built-ins/String/prototype/split/cstm-split-on-string-primitive.js
 test/built-ins/String/prototype/split/instance-is-math.js
 test/built-ins/String/prototype/split/separator-override-valueof.js
-test/built-ins/String/prototype/split/separator-regexp-comma-instance-is-string-one-1-two-2-four-4.js
 test/built-ins/String/prototype/split/separator-regexp.js
 test/built-ins/String/prototype/split/separator-undef-limit-custom.js
 test/built-ins/String/prototype/split/separator-undef.js
@@ -7313,8 +7291,6 @@ test/language/expressions/tco-pos.js
 test/language/expressions/template-literal/literal-expr-abrupt.js
 test/language/expressions/template-literal/middle-list-many-expr-abrupt.js
 test/language/expressions/template-literal/middle-list-one-expr-abrupt.js
-test/language/expressions/template-literal/tv-character-escape-sequence.js
-test/language/expressions/template-literal/tv-line-continuation.js
 test/language/expressions/template-literal/tv-template-character.js
 test/language/expressions/unary-minus/S11.4.7_A1.js
 test/language/expressions/unary-minus/bigint-non-primitive.js
@@ -7326,7 +7302,6 @@ test/language/expressions/yield/from-with.js
 test/language/expressions/yield/rhs-template-middle.js
 test/language/expressions/yield/star-in-rltn-expr.js
 test/language/expressions/yield/star-iterable.js
-test/language/expressions/yield/star-rhs-iter-nrml-next-invoke.js
 test/language/expressions/yield/star-rhs-iter-nrml-res-done-no-value.js
 test/language/expressions/yield/star-rhs-iter-nrml-res-value-final.js
 test/language/expressions/yield/star-rhs-iter-rtrn-no-rtrn.js
@@ -7517,8 +7492,6 @@ test/language/literals/regexp/u-astral.js
 test/language/literals/regexp/u-case-mapping.js
 test/language/literals/regexp/u-unicode-esc.js
 test/language/literals/string/legacy-octal-escape-sequence.js
-test/language/literals/string/line-continuation-double.js
-test/language/literals/string/line-continuation-single.js
 test/language/module-code/ambiguous-export-bindings/error-export-from-named-1_FIXTURE.js
 test/language/module-code/ambiguous-export-bindings/error-export-from-named-2_FIXTURE.js
 test/language/module-code/ambiguous-export-bindings/error-export-from-named_FIXTURE.js
@@ -10575,10 +10548,8 @@ test/staging/sm/Array/from-iterator-close.js
 test/staging/sm/Array/from_primitive.js
 test/staging/sm/Array/from_proxy.js
 test/staging/sm/Array/from_string.js
-test/staging/sm/Array/from_this.js
 test/staging/sm/Array/group.js
 test/staging/sm/Array/indexOf-packed-array.js
-test/staging/sm/Array/join-01.js
 test/staging/sm/Array/join-no-has-trap.js
 test/staging/sm/Array/length-truncate-nonconfigurable-sparse.js
 test/staging/sm/Array/length-truncate-with-indexed.js
@@ -10841,10 +10812,8 @@ test/staging/sm/String/match-GetMethod.js
 test/staging/sm/String/match-defines-match-elements.js
 test/staging/sm/String/replace-GetMethod.js
 test/staging/sm/String/search-GetMethod.js
-test/staging/sm/String/split-01.js
 test/staging/sm/String/split-GetMethod.js
 test/staging/sm/String/split-undefined-separator.js
-test/staging/sm/String/split-xregexp.js
 test/staging/sm/String/string-code-point-upper-lower-mapping.js
 test/staging/sm/String/string-pad-start-end.js
 test/staging/sm/String/string-upper-lower-mapping.js
@@ -10936,7 +10905,6 @@ test/staging/sm/class/fields-instance-class-name-binding-eval.js
 test/staging/sm/class/fields-instance-class-name-binding.js
 test/staging/sm/class/fields-static-class-name-binding-eval.js
 test/staging/sm/class/fields-static-class-name-binding.js
-test/staging/sm/class/geterNoExprClosure.js
 test/staging/sm/class/innerBinding.js
 test/staging/sm/class/methDefn.js
 test/staging/sm/class/methDefnGen.js
