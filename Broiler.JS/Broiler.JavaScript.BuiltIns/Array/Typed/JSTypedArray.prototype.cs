@@ -636,7 +636,7 @@ partial class JSTypedArray
 
     }
 
-    [JSExport("values", Length = 2)]
+    [JSExport("values", Length = 0)]
     [Symbol("@@iterator")]
     public new JSValue Values(in Arguments a) => new JSGenerator(GetElementEnumerator(), "Array Iterator");
 
