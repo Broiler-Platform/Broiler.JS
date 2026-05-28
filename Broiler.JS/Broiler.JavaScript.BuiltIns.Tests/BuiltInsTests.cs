@@ -10681,6 +10681,35 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Iterator_Prototype_Next_And_Return_Work_For_BuiltIn_Iterators()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                function* g() {
+                    yield 1;
+                    yield 2;
+                }
+
+                var arrayIterator = [1, 2][Symbol.iterator]();
+                var generator = g();
+                var nextResult = Iterator.prototype.next.call(arrayIterator);
+                var returnResult = Iterator.prototype.return.call(generator, 99);
+
+                return [
+                    nextResult.value,
+                    nextResult.done,
+                    returnResult.value,
+                    returnResult.done
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("1|false|99|true", result.ToString());
+    }
+
+    [Fact]
     public void Intl_ListFormat_Prototype_Methods_Exist()
     {
         EnsureBuiltInsLoaded();

@@ -1,5 +1,6 @@
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
+using Broiler.JavaScript.BuiltIns.Generator;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Extensions;
@@ -152,6 +153,27 @@ public partial class JSIteratorObject : JSObject
         }
 
         return new JSIteratorObject(new ConcatEnumerator(iterables));
+    }
+
+    internal static JSValue StaticNext(in Arguments a)
+    {
+        return a.This switch
+        {
+            JSIteratorObject iterator => iterator.Next(in a),
+            JSGenerator generator => generator.Next(in a),
+            _ => throw JSEngine.NewTypeError("Iterator.prototype.next called on incompatible receiver")
+        };
+    }
+
+    internal static JSValue StaticReturn(in Arguments a)
+    {
+        return a.This switch
+        {
+            JSIteratorObject iterator => iterator.Return(in a),
+            JSGenerator generator => generator.Return(in a),
+            JSObject => IteratorResult(a.Length > 0 ? a.Get1() : JSUndefined.Value, true),
+            _ => throw JSEngine.NewTypeError("Iterator.prototype.return called on incompatible receiver")
+        };
     }
 
     // ---------------------------------------------------------------

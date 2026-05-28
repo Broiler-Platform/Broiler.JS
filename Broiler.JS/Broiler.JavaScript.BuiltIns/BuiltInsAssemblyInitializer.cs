@@ -314,6 +314,8 @@ internal static class BuiltInsAssemblyInitializer
         // does not directly reference JSIteratorObject.
         DefaultBuiltInRegistry.IteratorPrototypeSetup = static proto =>
         {
+            DefaultBuiltInRegistry.AddProto(proto, "next", JSIteratorObject.StaticNext, 0);
+            DefaultBuiltInRegistry.AddProto(proto, "return", JSIteratorObject.StaticReturn, 1);
             DefaultBuiltInRegistry.AddProto(proto, "map", JSIteratorObject.StaticMap, 1);
             DefaultBuiltInRegistry.AddProto(proto, "filter", JSIteratorObject.StaticFilter, 1);
             DefaultBuiltInRegistry.AddProto(proto, "take", JSIteratorObject.StaticTake, 1);
