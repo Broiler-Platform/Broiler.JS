@@ -253,6 +253,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         if (isDirectEvalCompilation
             && !usesDirectEvalLocalVarEnvironment
             && scope.Top.Function == null
+            && scope.Top.Parent != scope.Top.RootScope
             && expressionStatement.Expression is AstFunctionExpression { IsStatement: true, Id: { } } directEvalFunctionDeclaration)
         {
             return TrackCompletion(VisitRuntimeFunctionDeclaration(directEvalFunctionDeclaration));
