@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Extensions;
 using Broiler.JavaScript.Runtime;
 
 // Moved from Broiler.JavaScript.Core to Broiler.JavaScript.BuiltIns.
@@ -163,8 +164,27 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
 
         var proto = iteratorCtor.prototype;
 
-        // Iterator.prototype.constructor = Iterator (§2.1.1).
-        proto.FastAddValue(KeyStrings.constructor, iteratorCtor, JSPropertyAttributes.ConfigurableValue);
+        // Iterator.prototype.constructor is an accessor property (§2.1.1).
+        JSObjectFastPropertyExtensions.FastAddGetter(
+            proto,
+            KeyStrings.constructor,
+            new JSFunction(
+                (in Arguments a) => iteratorCtor,
+                "get constructor",
+                "function get constructor() { [native code] }",
+                createPrototype: false,
+                length: 0),
+            JSPropertyAttributes.ConfigurableProperty);
+        JSObjectFastPropertyExtensions.FastAddSetter(
+            proto,
+            KeyStrings.constructor,
+            new JSFunction(
+                static (in Arguments a) => JSUndefined.Value,
+                "set constructor",
+                "function set constructor() { [native code] }",
+                createPrototype: false,
+                length: 1),
+            JSPropertyAttributes.ConfigurableProperty);
 
         // Iterator.prototype[Symbol.iterator] returns `this`.
         ref var symbols = ref proto.GetSymbols();

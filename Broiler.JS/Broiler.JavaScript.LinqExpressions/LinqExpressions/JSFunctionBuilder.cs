@@ -16,6 +16,7 @@ public class JSFunctionBuilder
     private static FieldInfo _f;
     private static PropertyInfo _coerceThisOnInvoke;
     private static PropertyInfo _isStrictMode;
+    private static MethodInfo _captureWithScopes;
 
     private static MethodInfo invokeFunction;
 
@@ -36,6 +37,8 @@ public class JSFunctionBuilder
             ?? throw new InvalidOperationException($"CoerceThisOnInvoke property not found on {type.FullName}");
         _isStrictMode = type.GetProperty("IsStrictMode")
             ?? throw new InvalidOperationException($"IsStrictMode property not found on {type.FullName}");
+        _captureWithScopes = type.PublicMethod("CaptureWithScopes", typeof(JSValue))
+            ?? throw new InvalidOperationException($"CaptureWithScopes(JSValue) not found on {type.FullName}");
         invokeFunction = typeof(JSValue).InternalMethod("InvokeFunction", ArgumentsBuilder.refType)
             ?? throw new InvalidOperationException("InvokeFunction method not found on JSValue");
         _invokeSuperConstructor = type.PublicMethod("InvokeSuperConstructor",
@@ -94,4 +97,7 @@ public class JSFunctionBuilder
             Expression.Assign(Expression.Property(temp, _isStrictMode), Expression.Constant(true)),
             temp);
     }
+
+    public static Expression CaptureWithScopes(Expression target)
+        => Expression.Convert(Expression.Call(null, _captureWithScopes, Expression.Convert(target, typeof(JSValue))), type);
 }

@@ -234,8 +234,15 @@ public static class JSIntl
         var constructor = new JSFunction((in Arguments a) =>
         {
             ObserveOptions(ValidateConstructorArguments("Segmenter", in a), LocaleMatcherKey, GranularityKey);
-            return new JSObject();
+            return new JSIntlSegmenter();
         }, "Segmenter", "function Segmenter() { [native code] }", length: 0);
+        constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
+            new JSFunction(JSIntlSegmenter.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
+            JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("segment"),
+            new JSFunction(JSIntlSegmenter.SegmentPrototype, "segment", "function segment() { [native code] }", createPrototype: false, length: 1),
+            JSPropertyAttributes.ConfigurableValue);
         SetIntlToStringTag(constructor, "Segmenter");
         return constructor;
     }
@@ -297,6 +304,9 @@ public static class JSIntl
             JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(FormatToPartsKey,
             new JSFunction(JSIntlRelativeTimeFormat.FormatToPartsPrototype, "formatToParts", "function formatToParts() { [native code] }", createPrototype: false, length: 2),
+            JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
+            new JSFunction(JSIntlRelativeTimeFormat.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
             JSPropertyAttributes.ConfigurableValue);
         SetIntlToStringTag(constructor, "RelativeTimeFormat");
         return constructor;
@@ -650,6 +660,14 @@ public class JSIntlRelativeTimeFormat : JSObject
         return JSValue.CreateArray();
     }
 
+    public static JSValue ResolvedOptionsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlRelativeTimeFormat)
+            throw JSEngine.NewTypeError("Intl.RelativeTimeFormat.prototype.resolvedOptions called on incompatible receiver");
+
+        return new JSObject();
+    }
+
     public JSIntlRelativeTimeFormat(in Arguments a) : this()
     {
         JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a);
@@ -660,6 +678,33 @@ public class JSIntlRelativeTimeFormat : JSObject
     private static JSObject CurrentPrototype(string name)
         => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
             ? (intl[KeyStrings.GetOrCreate(name)] as JSFunction)?.prototype
+            : null;
+}
+
+public sealed class JSIntlSegmenter : JSObject
+{
+    public JSIntlSegmenter() : base(CurrentPrototype()) { }
+
+    public static JSValue ResolvedOptionsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlSegmenter)
+            throw JSEngine.NewTypeError("Intl.Segmenter.prototype.resolvedOptions called on incompatible receiver");
+
+        return new JSObject();
+    }
+
+    public static JSValue SegmentPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlSegmenter)
+            throw JSEngine.NewTypeError("Intl.Segmenter.prototype.segment called on incompatible receiver");
+
+        _ = a.Get1().StringValue;
+        return new JSObject();
+    }
+
+    private static JSObject CurrentPrototype()
+        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
+            ? (intl[KeyStrings.GetOrCreate("Segmenter")] as JSFunction)?.prototype
             : null;
 }
 

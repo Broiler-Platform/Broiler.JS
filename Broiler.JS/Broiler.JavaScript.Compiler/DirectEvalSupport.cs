@@ -9,11 +9,73 @@ using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Parser;
 using Broiler.JavaScript.Runtime;
 
+using System;
+using System.Collections.Generic;
+
 namespace Broiler.JavaScript.Compiler;
 
 public static class DirectEvalSupport
 {
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] parameterBindings, string[] privateNamesInScope)
+    private sealed class DeclaredBindingSnapshot(JSContext context, string[] names, string[] excludedNames) : IDisposable
+    {
+        private readonly JSContext context = context;
+        private readonly Entry[] entries = names == null ? [] : CreateEntries(context, names, excludedNames);
+
+        private sealed class Entry
+        {
+            public required KeyString Name;
+            public required bool HadOwnProperty;
+            public required JSValue PreviousValue;
+        }
+
+        private static Entry[] CreateEntries(JSContext context, string[] names, string[] excludedNames)
+        {
+            var seen = new HashSet<uint>();
+            if (excludedNames != null)
+            {
+                foreach (var excludedName in excludedNames)
+                {
+                    if (string.IsNullOrWhiteSpace(excludedName))
+                        continue;
+
+                    seen.Add(KeyStrings.GetOrCreate(excludedName).Key);
+                }
+            }
+            var entries = new List<Entry>(names.Length);
+            foreach (var name in names)
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                    continue;
+
+                var key = KeyStrings.GetOrCreate(name);
+                if (!seen.Add(key.Key))
+                    continue;
+
+                var property = context.GetInternalProperty(key, false);
+                entries.Add(new Entry
+                {
+                    Name = key,
+                    HadOwnProperty = !property.IsEmpty,
+                    PreviousValue = property.IsEmpty ? JSUndefined.Value : context.GetOwnPropertyValue(key)
+                });
+            }
+
+            return [.. entries];
+        }
+
+        public void Dispose()
+        {
+            foreach (var entry in entries)
+            {
+                if (entry.HadOwnProperty)
+                    context.SetOwnPropertyValue(entry.Name, entry.PreviousValue);
+                else
+                    context.Delete(entry.Name);
+            }
+        }
+    }
+
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] parameterBindings, string[] privateNamesInScope)
     {
         if (!IsDirectEval(callee))
             return callee.InvokeFunction(arguments);
@@ -31,17 +93,57 @@ public static class DirectEvalSupport
             text = "\"use strict\";\n" + text;
 
         Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope);
+        var declaredBindings = disallowArgumentsDeclaration ? CollectProgramDeclaredBindings(text) : null;
 
         if (JSEngine.Current is JSContext context)
         {
             using var _ = disallowArgumentsDeclaration
                 ? context.PushDirectEvalScope(capturedBindings)
                 : null;
+            using var ____ = disallowArgumentsDeclaration
+                ? context.PushDirectEvalActivation(activationOwner)
+                : null;
+            using var ___ = disallowArgumentsDeclaration
+                ? new DeclaredBindingSnapshot(context, declaredBindings, ExtractBindingNames(capturedBindings))
+                : null;
             using var __ = context.PushDirectEvalCompilation(disallowArgumentsDeclaration);
             return context.Eval(text, location, @this ?? context);
         }
 
         return CoreScript.Evaluate(text, location);
+    }
+
+    private static string[] CollectProgramDeclaredBindings(string text)
+    {
+        var pool = new FastPool();
+        var parser = new FastParser(new FastTokenStream(pool, text));
+        var program = parser.ParseProgram();
+        if (program.HoistingScope == null)
+            return [];
+
+        var bindings = new HashSet<string>(StringComparer.Ordinal);
+        var hoisted = program.HoistingScope.GetFastEnumerator();
+        while (hoisted.MoveNext(out var name))
+            bindings.Add(name.Value);
+
+        return [.. bindings];
+    }
+
+    private static string[] ExtractBindingNames(JSVariable[] bindings)
+    {
+        if (bindings == null || bindings.Length == 0)
+            return [];
+
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var binding in bindings)
+        {
+            if (binding == null || binding.Name.IsEmpty)
+                continue;
+
+            names.Add(binding.Name.Value);
+        }
+
+        return [.. names];
     }
 
     private static bool IsDirectEval(JSValue callee)

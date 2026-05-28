@@ -137,11 +137,7 @@ public class JSVariable
                 key = KeyStrings.GetOrCreate(Name);
 
             if (GetCurrentContext?.Invoke() is JSObject ctx)
-            {
-                var property = ctx.GetInternalProperty(key, false);
-                if (!property.IsEmpty)
-                    return _value = ctx[key];
-            }
+                return _value = ctx[key];
 
             return _value;
         }

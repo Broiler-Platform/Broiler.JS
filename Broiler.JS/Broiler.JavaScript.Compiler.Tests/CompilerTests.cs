@@ -1115,6 +1115,36 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Functions_Created_Inside_With_Capture_With_Scope()
+    {
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var obj = { x: 1 };
+                var getter;
+                with (obj) {
+                    getter = function () { return [x, eval(1)].join("|"); };
+                    obj.eval = function (value) { return value + 2; };
+                }
+
+                return getter();
+            })();
+            """);
+
+        Assert.Equal("1|3", result.ToString());
+    }
+
+    [Fact]
+    public void Parse_Dot_Followed_By_Number_Is_Syntax_Error()
+    {
+        using var ctx = new JSContext();
+
+        var ex = Assert.Throws<JSException>(() => ctx.Eval("""Function("a.1");"""));
+        Assert.Equal("SyntaxError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+    }
+
+    [Fact]
     public void Compile_Update_Expressions_Modify_Captured_Variables()
     {
         using var ctx = new JSContext();

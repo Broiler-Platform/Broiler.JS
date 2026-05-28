@@ -251,6 +251,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     protected override YExpression VisitExpressionStatement(AstExpressionStatement expressionStatement)
     {
         if (isDirectEvalCompilation
+            && !usesDirectEvalLocalVarEnvironment
             && scope.Top.Function == null
             && expressionStatement.Expression is AstFunctionExpression { IsStatement: true, Id: { } } directEvalFunctionDeclaration)
         {
@@ -337,7 +338,18 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         }
 
         if (scope.Top.Function == null)
-            statements.Add(JSContextBuilder.AssignIdentifier(KeyOfName(name), value));
+        {
+            if (usesDirectEvalLocalVarEnvironment)
+            {
+                var evalProgramBinding = GetOrCreateDirectEvalProgramBinding(name);
+                if (evalProgramBinding != null && evalProgramBinding != currentBinding)
+                    statements.Add(YExpression.Assign(evalProgramBinding.Expression, value));
+            }
+            else
+            {
+                statements.Add(JSContextBuilder.AssignIdentifier(KeyOfName(name), value));
+            }
+        }
     }
 
     private bool IsAnnexBHoistingBlocked(in StringSpan name)
@@ -378,6 +390,20 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         }
 
         return scope.Top.RootScope.CreateVariable(name, null, true);
+    }
+
+    private FastFunctionScope.VariableScope GetOrCreateDirectEvalProgramBinding(in StringSpan name)
+    {
+        var current = scope.Top;
+        while (current.Parent != null && current.Parent != current.RootScope)
+            current = current.Parent;
+
+        if (current.TryGetOwnVariable(name, out var variable))
+            return variable;
+
+        variable = current.CreateVariable(name, null, true);
+        variable.IsDeletable = true;
+        return variable;
     }
 
     protected override YExpression VisitFunctionExpression(AstFunctionExpression functionExpression) => CreateFunction(functionExpression);

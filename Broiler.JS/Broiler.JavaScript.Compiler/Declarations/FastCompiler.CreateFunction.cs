@@ -193,7 +193,11 @@ partial class FastCompiler
 
             sList.Add(YExpression.Label(r, JSUndefinedBuilder.Value));
 
-            var block = YExpression.Block(vList, sList);
+            var block = YExpression.Block(
+                vList,
+                YExpression.TryFinally(
+                    YExpression.Block(sList),
+                    JSContextStackBuilder.Pop(stackItem, cs.Context)));
 
             // adding lexical scope pending...
 
@@ -229,6 +233,9 @@ partial class FastCompiler
                     jsf = JSFunctionBuilder.EnableNonStrictThis(jsf);
                 else
                     jsf = JSFunctionBuilder.EnableStrictMode(jsf);
+
+                if (withBoundaries.Count > 0 && !isDirectEvalCompilation)
+                    jsf = JSFunctionBuilder.CaptureWithScopes(jsf);
             }
 
             IsStrictMode = previousStrictMode;

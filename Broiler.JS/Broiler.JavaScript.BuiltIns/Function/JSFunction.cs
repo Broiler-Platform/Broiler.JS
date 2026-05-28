@@ -30,6 +30,15 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     internal JSFunctionDelegate f;
     public bool CoerceThisOnInvoke { get; set; }
     public bool IsStrictMode { get; set; }
+    public JSObject[] CapturedWithObjects { get; set; }
+
+    public static JSValue CaptureWithScopes(JSValue functionValue)
+    {
+        if (functionValue is JSFunction function)
+            function.CapturedWithObjects = (JSEngine.Current as JSContext)?.CaptureWithScopes();
+
+        return functionValue;
+    }
 
     /// <summary>
     /// Gets or sets the underlying <see cref="JSFunctionDelegate"/> that implements
@@ -289,6 +298,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             ec.CurrentNewTarget = previousNewTarget ?? this;
 
         JSValue r;
+        var context = JSEngine.Current as JSContext;
+        using var withScope = context?.PushWithScopes(CapturedWithObjects);
         try
         {
             r = f(a1);
@@ -310,6 +321,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     public JSValue InvokeSuper(in Arguments a)
     {
+        var context = JSEngine.Current as JSContext;
+        using var withScope = context?.PushWithScopes(CapturedWithObjects);
         var r = f(in a);
         if (r.IsObject)
             return r;
@@ -320,6 +333,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public override JSValue InvokeFunction(in Arguments a)
     {
         using var _ = JSEngine.EnterStrictMode(IsStrictMode);
+        var context = JSEngine.Current as JSContext;
+        using var withScope = context?.PushWithScopes(CapturedWithObjects);
         return f(CoerceThisOnInvoke ? a.OverrideThis(CoerceNonStrictThis(a.This)) : a);
     }
 

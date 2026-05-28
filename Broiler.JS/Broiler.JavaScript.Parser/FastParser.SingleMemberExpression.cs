@@ -136,6 +136,14 @@ partial class FastParser
                     continue;
 
                 default:
+                    if (token.Type == TokenTypes.Number
+                        && token.Span.Length > 0
+                        && token.Span.Source[token.Span.Offset] == '.'
+                        && node?.End.End.Line == token.Start.Line)
+                    {
+                        throw stream.Unexpected();
+                    }
+
                     m.Undo();
                     break;
             }

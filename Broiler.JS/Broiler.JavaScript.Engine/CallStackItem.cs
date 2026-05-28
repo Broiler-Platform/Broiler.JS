@@ -1,7 +1,9 @@
 using System.Runtime.CompilerServices;
 using System.ComponentModel;
+using System.Collections.Generic;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Storage;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.Engine;
@@ -61,6 +63,29 @@ public class CallStackItem
     public int Column;
     private readonly IJSExecutionContext context;
     public string FileName;
+    private Dictionary<uint, JSVariable> directEvalBindings;
+
+    internal bool TryGetDirectEvalBinding(in KeyString name, out JSVariable variable)
+    {
+        if (directEvalBindings?.TryGetValue(name.Key, out variable) == true)
+            return true;
+
+        variable = null;
+        return false;
+    }
+
+    internal void RegisterDirectEvalBinding(JSVariable variable)
+    {
+        if (variable == null || variable.Name.IsEmpty)
+            return;
+
+        directEvalBindings ??= [];
+        var key = KeyStrings.GetOrCreate(variable.Name);
+        directEvalBindings[key.Key] = variable;
+    }
+
+    internal bool DeleteDirectEvalBinding(in KeyString name)
+        => directEvalBindings?.Remove(name.Key) == true;
 
     public void Update() => System.Diagnostics.Debug.WriteLine($"{Function} at {Line}, {Column}");
 
@@ -75,6 +100,7 @@ public class CallStackItem
     public void Pop(IJSExecutionContext context)
     {
         context = context ?? JSEngine.Current as IJSExecutionContext;
+        directEvalBindings = null;
         context.Top = Parent;
         Parent = null;
     }

@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Clr")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Debugger")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Network")]
+[assembly: InternalsVisibleTo("Broiler.JavaScript.Compiler")]
 
 #if !WEB_ATOMS
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Core.Tests")]

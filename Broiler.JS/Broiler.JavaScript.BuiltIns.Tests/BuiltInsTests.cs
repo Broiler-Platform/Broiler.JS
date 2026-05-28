@@ -3078,6 +3078,26 @@ public class BuiltInsTests
         Assert.Equal("SyntaxError|SyntaxError|SyntaxError", result.ToString());
     }
 
+    [Fact]
+    public void Direct_Eval_In_Function_Activation_Persists_Local_Eval_Binding()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var originalEval = eval;
+
+            function run() {
+              eval("var eval = function (value) { return value + 1; }");
+              return [eval(1), eval(2), eval === originalEval].join("|");
+            }
+
+            [run(), eval === originalEval].join("||");
+            """);
+
+        Assert.Equal("2|3|false||true", result.ToString());
+    }
+
     // ── M2: JSMap tests ──────────────────────────────────────────────
 
     [Fact]
@@ -10664,12 +10684,31 @@ public class BuiltInsTests
             (function () {
                 return [
                     typeof Intl.RelativeTimeFormat.supportedLocalesOf,
-                    typeof Intl.RelativeTimeFormat.prototype.formatToParts
+                    typeof Intl.RelativeTimeFormat.prototype.formatToParts,
+                    typeof Intl.RelativeTimeFormat.prototype.resolvedOptions
                 ].join('|');
             })();
             """);
 
-        Assert.Equal("function|function", result.ToString());
+        Assert.Equal("function|function|function", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_Segmenter_Prototype_Methods_And_SupportedLocalesOf_Exist()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                return [
+                    typeof Intl.Segmenter.supportedLocalesOf,
+                    typeof Intl.Segmenter.prototype.resolvedOptions,
+                    typeof Intl.Segmenter.prototype.segment
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("function|function|function", result.ToString());
     }
 
     [Fact]
@@ -10718,6 +10757,31 @@ public class BuiltInsTests
             })()
             """);
         Assert.Equal("undefined", r.ToString());
+    }
+
+    [Fact]
+    public void Direct_Eval_Function_Local_Declarations_Are_Hoisted_And_Update_Existing_Bindings()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              (function() {
+                var after;
+                eval('{ function f() { return "inner declaration"; } }after = f; function f() { return "outer declaration"; }');
+                return typeof after + "|" + after();
+              }()),
+              (function() {
+                var f = 88;
+                var initial;
+                eval('initial = f; function f() { return 33; }');
+                return typeof initial + "|" + initial();
+              }())
+            ].join("||")
+            """);
+
+        Assert.Equal("function|inner declaration||function|33", result.ToString());
     }
 
     [Fact]
