@@ -149,12 +149,14 @@ public partial class JSPromise : JSObject, IJSPromise
             Resolve(a.Get1());
             return JSUndefined.Value;
         }, "resolve", "function resolve() { [native] }", createPrototype: false);
+        resolveFunction.SetNameProperty(string.Empty);
 
         rejectFunction = new JSFunction((in Arguments a) =>
         {
             Reject(a.Get1());
             return JSUndefined.Value;
         }, "reject", "function reject() { [native] }", createPrototype: false);
+        rejectFunction.SetNameProperty(string.Empty);
 
     }
 

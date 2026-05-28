@@ -68,9 +68,10 @@ partial class FastCompiler
         if (left.Type == FastNodeType.Identifier)
         {
             var identifier = (AstIdentifier)left;
+            var shouldSuppressAnonymousFunctionName = left.WasParenthesized && IsAnonymousFunctionDefinition(right);
             if (!TryGetStaticIdentifierVariable(identifier, out var variable) || variable == null)
             {
-                if (assignmentOperator == TokenTypes.Assign && !IsAnonymousFunctionDefinition(right))
+                if (assignmentOperator == TokenTypes.Assign && (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName))
                 {
                     var initExpr = Visit(right);
                     initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
@@ -82,7 +83,7 @@ partial class FastCompiler
             if (assignmentOperator == TokenTypes.Assign && variable.IsLexical && variable.Variable?.Type == typeof(JSVariable))
             {
                 var initExpr = Visit(right);
-                if (!IsAnonymousFunctionDefinition(right))
+                if (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName)
                     initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
                 return JSVariableBuilder.Assign(variable.Variable, initExpr);
             }
@@ -90,7 +91,7 @@ partial class FastCompiler
             if (assignmentOperator == TokenTypes.Assign)
             {
                 var initExpr = Visit(right);
-                if (!IsAnonymousFunctionDefinition(right))
+                if (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName)
                     initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
                 return YExpression.Assign(variable.Expression, initExpr);
             }

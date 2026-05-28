@@ -12,6 +12,8 @@ public abstract class AstNode(FastToken start, FastNodeType type, FastToken end,
 
     public readonly bool IsBinding = isBinding;
 
+    public bool WasParenthesized { get; set; }
+
     public StringSpan Code
     {
         get

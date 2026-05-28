@@ -179,11 +179,14 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
         ref var ownProperties = ref throwTypeError.GetOwnProperties();
         ownProperties.Put(KeyStrings.length, JSValue.NumberZero, JSPropertyAttributes.ReadonlyValue);
-        ownProperties.Put(KeyStrings.name, JSValue.CreateString(name), JSPropertyAttributes.ReadonlyValue);
+        ownProperties.Put(KeyStrings.name, JSValue.CreateString(string.Empty), JSPropertyAttributes.ReadonlyValue);
         throwTypeError.f = (in Arguments a) => throw JSEngine.NewTypeError(message);
         throwTypeError.PreventExtensions();
         return throwTypeError;
     }
+
+    internal void SetNameProperty(string name, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableReadonlyValue)
+        => GetOwnProperties().Put(KeyStrings.name, JSValue.CreateString(name), attributes);
 
     public override JSValue this[KeyString name]
     {

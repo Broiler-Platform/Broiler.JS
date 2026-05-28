@@ -791,16 +791,15 @@ public partial class JSProxy : JSObject
         var (target, handler) = a.Get2();
         var proxy = new JSProxy((target as JSObject, handler as JSObject));
         var result = new JSObject();
+        var revoke = JSValue.CreateFunction((in Arguments _) =>
+        {
+            proxy.Revoke();
+            return JSUndefined.Value;
+        }, "revoke", length: 0, createPrototype: false);
+        ((JSFunction)revoke).SetNameProperty(string.Empty);
 
         result.FastAddValue("proxy", proxy, JSPropertyAttributes.ConfigurableValue);
-        result.FastAddValue(
-            "revoke",
-            JSValue.CreateFunction((in Arguments _) =>
-            {
-                proxy.Revoke();
-                return JSUndefined.Value;
-            }, "revoke", length: 0, createPrototype: false),
-            JSPropertyAttributes.ConfigurableValue);
+        result.FastAddValue("revoke", revoke, JSPropertyAttributes.ConfigurableValue);
 
         return result;
     }

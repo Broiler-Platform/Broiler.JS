@@ -275,7 +275,9 @@ public static class JSIntl
                 if (a.This is not JSIntlDateTimeFormat @this)
                     throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.format called on incompatible receiver");
 
-                return new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
+                var format = new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
+                format.SetNameProperty(string.Empty);
+                return format;
             }, "get format", "function get format() { [native code] }", createPrototype: false, length: 0),
             null,
             JSPropertyAttributes.ConfigurableProperty);
@@ -329,7 +331,9 @@ public static class JSIntl
                     if (a.This is not JSIntlNumberFormat @this)
                         throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.format called on incompatible receiver");
 
-                    return new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
+                    var format = new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
+                    format.SetNameProperty(string.Empty);
+                    return format;
                 },
                     "get format",
                     "function get format() { [native code] }",
