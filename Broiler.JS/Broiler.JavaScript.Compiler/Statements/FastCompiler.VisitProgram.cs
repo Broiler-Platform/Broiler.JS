@@ -87,7 +87,6 @@ partial class FastCompiler
                     if (usesDirectEvalLocalVarEnvironment)
                     {
                         var currentValue = JSContextBuilder.Index(KeyOfName(v));
-                        localVariable.Expression = JSVariableBuilder.Property(localVariable.Variable);
                         localVariable.SetInit(JSVariableBuilder.New(currentValue, v.Value));
                         localVariable.SetPostInit(JSContextBuilder.RegisterDirectEvalVariable(localVariable.Variable));
                     }
