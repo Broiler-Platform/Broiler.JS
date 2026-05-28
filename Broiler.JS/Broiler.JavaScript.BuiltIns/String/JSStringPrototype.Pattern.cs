@@ -87,7 +87,6 @@ public partial class JSString
         if (@thisValue.IsNullOrUndefined)
             throw JSEngine.NewTypeError("String.prototype.replaceAll called on null or undefined");
 
-        var @this = @thisValue.ToString();
         var (searchValue, replaceValue) = a.Get2();
 
         if (!searchValue.IsNullOrUndefined)
@@ -110,6 +109,7 @@ public partial class JSString
             }
         }
 
+        var @this = @thisValue.ToString();
         var searchString = searchValue.IsUndefined ? "undefined" : searchValue.StringValue;
         var functionalReplace = replaceValue.IsFunction;
         var replacementText = functionalReplace ? null : replaceValue.StringValue;

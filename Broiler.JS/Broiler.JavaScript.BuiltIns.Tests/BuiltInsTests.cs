@@ -4572,6 +4572,31 @@ public class BuiltInsTests
 
                         'a'.replaceAll('a', custom);
                     }),
+                    (function () {
+                        var searchValue = {
+                            get [Symbol.match]() {
+                                throw new Test262Error();
+                            },
+                            toString() {
+                                throw new Error('unreachable');
+                            }
+                        };
+
+                        var poisoned = 0;
+                        var poison = {
+                            toString() {
+                                poisoned += 1;
+                                throw new Error('unreachable');
+                            }
+                        };
+
+                        return [
+                            thrownCtor(function () {
+                                ''.replaceAll.call(poison, searchValue, poison);
+                            }),
+                            String(poisoned)
+                        ].join(',');
+                    })(),
                     thrownCtor(function () {
                         var locales = {
                             '0': 'en-US',
@@ -4632,7 +4657,7 @@ public class BuiltInsTests
             })();
             """);
 
-        Assert.Equal("Test262Error|Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
+        Assert.Equal("Test262Error|Test262Error,0|Test262Error|Test262Error|Test262Error|Test262Error", result.ToString());
     }
 
     [Fact]
@@ -5585,6 +5610,20 @@ public class BuiltInsTests
             [re.flags, re.hasIndices, re.sticky, re.global, re.ignoreCase].join('|');
         ");
         Assert.Equal("dgiy|true|true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Prototype_Flags_Getter_Supports_Generic_HasIndices_Coercion()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var get = Object.getOwnPropertyDescriptor(RegExp.prototype, "flags").get;
+                return get.call({ hasIndices: Symbol() });
+            })();
+            """);
+        Assert.Equal("d", result.ToString());
     }
 
     [Fact]
@@ -9698,6 +9737,13 @@ public class BuiltInsTests
                     });
                 });
 
+                var splitSymbolFlagsErr = thrownCtor(function () {
+                    RegExp.prototype[Symbol.split].call({
+                        constructor: function () {},
+                        flags: Symbol.split
+                    });
+                });
+
                 var splitMatchErr = thrownCtor(function () {
                     var obj = {
                         constructor: function () {}
@@ -9772,6 +9818,7 @@ public class BuiltInsTests
                     searchRestore,
                     splitSpeciesErr,
                     splitFlagsErr,
+                    splitSymbolFlagsErr,
                     splitMatchErr,
                     splitGetLastIndexErr,
                     splitLastIndexSequence
@@ -9780,7 +9827,7 @@ public class BuiltInsTests
             """);
 
         Assert.Equal(
-            "Test262Error|Test262Error|0|-1,86,1|Test262Error|Test262Error|Test262Error|Test262Error,1|0,1,2,3,",
+            "Test262Error|Test262Error|0|-1,86,1|Test262Error|Test262Error|TypeError|Test262Error|Test262Error,1|0,1,2,3,",
             result.ToString());
     }
 
