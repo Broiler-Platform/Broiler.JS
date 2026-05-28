@@ -1363,13 +1363,17 @@ internal static class BuiltInsAssemblyInitializer
             results.AddArrayItem(JSValue.CreateString(input.Substring(Math.Min(p, input.Length))));
             return results;
         }, "[Symbol.split]", 2), JSPropertyAttributes.ConfigurableValue);
-        EnsureAccessorProperty(regExpCtor.prototype, KeyStrings.GetOrCreate("flags"), "flags", static (in Arguments a) =>
-        {
-            if (a.This is not JSObject receiver)
-                throw JSEngine.NewTypeError("RegExp.prototype.flags called on incompatible receiver");
+        regExpCtor.prototype.FastAddProperty(
+            KeyStrings.GetOrCreate("flags"),
+            CreateNativeGetter(static (in Arguments a) =>
+            {
+                if (a.This is not JSObject receiver)
+                    throw JSEngine.NewTypeError("RegExp.prototype.flags called on incompatible receiver");
 
-            return GetObservableFlags(receiver);
-        });
+                return GetObservableFlags(receiver);
+            }, "flags"),
+            null,
+            JSPropertyAttributes.ConfigurableProperty);
 
         EnsureAccessorProperty(regExpCtor.prototype, KeyStrings.GetOrCreate("dotAll"), "dotAll", static (in Arguments a) =>
         {
