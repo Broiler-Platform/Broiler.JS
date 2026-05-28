@@ -276,22 +276,8 @@ public partial class JSMath : JSObject
     public static JSValue Expm1(in Arguments args)
     {
         var first = args.Get1();
-        double r;
         var d = first.DoubleValue;
-
-        if (Math.Abs(d) < 0.01)
-        {
-            // For small numbers, use a taylor series approximation.
-            r = d * (1.0 + d * (1.0 / 2.0 + d * (1.0 / 6.0 + d *
-                (1.0 / 24.0 + d * (1.0 / 120.0 + d * (1.0 / 720.0 + d * (1.0 / 5040.0)))))));
-
-            return new JSNumber(r);
-        }
-
-        // Otherwise just use the normal exp function.
-        r = Math.Exp(d) - 1.0;
-        return new JSNumber(r);
-
+        return new JSNumber(Math.Exp(d) - 1.0);
     }
 
     [JSExport]

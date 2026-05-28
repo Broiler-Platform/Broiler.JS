@@ -27,6 +27,21 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Math_Expm1_Remains_Monotonic_Around_Small_Negative_Inputs()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              return Math.expm1(-0.010000000000000002) <= Math.expm1(-0.01)
+                && Math.expm1(-0.01) <= Math.expm1(-0.009999999999999998);
+            })();
+            """);
+
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
     public void EventTarget_Construct_Succeeds()
     {
         EnsureBuiltInsLoaded();
@@ -710,6 +725,25 @@ public class BuiltInsTests
                 && desc.enumerable === false
                 && desc.configurable === true;
             });
+            """);
+
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void Async_Generator_Functions_Share_Their_Intrinsic_Constructor_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              async function* first() {}
+              async function* second() {}
+              var AsyncGeneratorFunction = (async function* () {}).constructor;
+              return first instanceof AsyncGeneratorFunction
+                && second instanceof AsyncGeneratorFunction
+                && Object.getPrototypeOf(first) === Object.getPrototypeOf(second);
+            })();
             """);
 
         Assert.True(result.BooleanValue);
