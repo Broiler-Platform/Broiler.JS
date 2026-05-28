@@ -132,15 +132,9 @@ test/annexB/language/eval-code/direct/func-switch-dflt-eval-func-skip-early-err-
 test/annexB/language/eval-code/direct/func-switch-dflt-eval-func-skip-early-err.js
 test/annexB/language/eval-code/direct/func-switch-dflt-eval-func-update.js
 test/annexB/language/eval-code/direct/global-block-decl-eval-global-block-scoping.js
-test/annexB/language/eval-code/direct/global-block-decl-eval-global-existing-block-fn-no-init.js
-test/annexB/language/eval-code/direct/global-block-decl-eval-global-existing-fn-update.js
-test/annexB/language/eval-code/direct/global-block-decl-eval-global-existing-global-init.js
-test/annexB/language/eval-code/direct/global-block-decl-eval-global-existing-non-enumerable-global-init.js
-test/annexB/language/eval-code/direct/global-block-decl-eval-global-init.js
 test/annexB/language/eval-code/direct/global-block-decl-eval-global-no-skip-try.js
 test/annexB/language/eval-code/direct/global-block-decl-eval-global-skip-early-err-switch.js
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-a-eval-global-block-scoping.js
-test/annexB/language/eval-code/direct/global-if-decl-else-decl-a-eval-global-existing-block-fn-no-init.js
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-a-eval-global-existing-fn-no-init.js
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-a-eval-global-existing-fn-update.js
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-a-eval-global-no-skip-try.js
@@ -149,7 +143,6 @@ test/annexB/language/eval-code/direct/global-if-decl-else-decl-a-eval-global-ski
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-a-eval-global-skip-early-err-switch.js
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-a-eval-global-skip-early-err.js
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-b-eval-global-block-scoping.js
-test/annexB/language/eval-code/direct/global-if-decl-else-decl-b-eval-global-existing-block-fn-no-init.js
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-b-eval-global-existing-fn-no-init.js
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-b-eval-global-existing-fn-update.js
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-b-eval-global-no-skip-try.js
@@ -158,7 +151,6 @@ test/annexB/language/eval-code/direct/global-if-decl-else-decl-b-eval-global-ski
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-b-eval-global-skip-early-err-switch.js
 test/annexB/language/eval-code/direct/global-if-decl-else-decl-b-eval-global-skip-early-err.js
 test/annexB/language/eval-code/direct/global-if-decl-else-stmt-eval-global-block-scoping.js
-test/annexB/language/eval-code/direct/global-if-decl-else-stmt-eval-global-existing-block-fn-no-init.js
 test/annexB/language/eval-code/direct/global-if-decl-else-stmt-eval-global-existing-fn-no-init.js
 test/annexB/language/eval-code/direct/global-if-decl-else-stmt-eval-global-existing-fn-update.js
 test/annexB/language/eval-code/direct/global-if-decl-else-stmt-eval-global-no-skip-try.js
@@ -167,7 +159,6 @@ test/annexB/language/eval-code/direct/global-if-decl-else-stmt-eval-global-skip-
 test/annexB/language/eval-code/direct/global-if-decl-else-stmt-eval-global-skip-early-err-switch.js
 test/annexB/language/eval-code/direct/global-if-decl-else-stmt-eval-global-skip-early-err.js
 test/annexB/language/eval-code/direct/global-if-decl-no-else-eval-global-block-scoping.js
-test/annexB/language/eval-code/direct/global-if-decl-no-else-eval-global-existing-block-fn-no-init.js
 test/annexB/language/eval-code/direct/global-if-decl-no-else-eval-global-existing-fn-no-init.js
 test/annexB/language/eval-code/direct/global-if-decl-no-else-eval-global-existing-fn-update.js
 test/annexB/language/eval-code/direct/global-if-decl-no-else-eval-global-no-skip-try.js
@@ -176,7 +167,6 @@ test/annexB/language/eval-code/direct/global-if-decl-no-else-eval-global-skip-ea
 test/annexB/language/eval-code/direct/global-if-decl-no-else-eval-global-skip-early-err-switch.js
 test/annexB/language/eval-code/direct/global-if-decl-no-else-eval-global-skip-early-err.js
 test/annexB/language/eval-code/direct/global-if-stmt-else-decl-eval-global-block-scoping.js
-test/annexB/language/eval-code/direct/global-if-stmt-else-decl-eval-global-existing-block-fn-no-init.js
 test/annexB/language/eval-code/direct/global-if-stmt-else-decl-eval-global-existing-fn-no-init.js
 test/annexB/language/eval-code/direct/global-if-stmt-else-decl-eval-global-existing-fn-update.js
 test/annexB/language/eval-code/direct/global-if-stmt-else-decl-eval-global-no-skip-try.js
@@ -217,8 +207,6 @@ test/annexB/language/eval-code/indirect/global-if-decl-else-decl-a-eval-global-e
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-a-eval-global-existing-fn-update.js
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-a-eval-global-no-skip-try.js
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-a-eval-global-skip-early-err-block.js
-test/annexB/language/eval-code/indirect/global-if-decl-else-decl-a-eval-global-skip-early-err-for-in.js
-test/annexB/language/eval-code/indirect/global-if-decl-else-decl-a-eval-global-skip-early-err-for-of.js
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-a-eval-global-skip-early-err-for.js
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-a-eval-global-skip-early-err-switch.js
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-a-eval-global-skip-early-err.js
@@ -227,8 +215,6 @@ test/annexB/language/eval-code/indirect/global-if-decl-else-decl-b-eval-global-e
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-b-eval-global-existing-fn-update.js
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-b-eval-global-no-skip-try.js
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-b-eval-global-skip-early-err-block.js
-test/annexB/language/eval-code/indirect/global-if-decl-else-decl-b-eval-global-skip-early-err-for-in.js
-test/annexB/language/eval-code/indirect/global-if-decl-else-decl-b-eval-global-skip-early-err-for-of.js
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-b-eval-global-skip-early-err-for.js
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-b-eval-global-skip-early-err-switch.js
 test/annexB/language/eval-code/indirect/global-if-decl-else-decl-b-eval-global-skip-early-err.js
@@ -474,32 +460,17 @@ test/built-ins/AggregateError/message-undefined-no-prop.js
 test/built-ins/AggregateError/newtarget-proto-custom.js
 test/built-ins/AggregateError/newtarget-proto-fallback.js
 test/built-ins/AggregateError/newtarget-proto.js
-test/built-ins/AggregateError/order-of-args-evaluation.js
 test/built-ins/AggregateError/prototype/message.js
 test/built-ins/Array/15.4.5.1-5-2.js
 test/built-ins/Array/S15.4.1_A2.2_T1.js
 test/built-ins/Array/S15.4.2.1_A2.2_T1.js
 test/built-ins/Array/S15.4.5.2_A1_T2.js
 test/built-ins/Array/S15.4_A1.1_T5.js
-test/built-ins/Array/from/Array.from_forwards-length-for-array-likes.js
-test/built-ins/Array/from/array-like-has-length-but-no-indexes-with-values.js
-test/built-ins/Array/from/calling-from-valid-1-noStrict.js
-test/built-ins/Array/from/from-array.js
-test/built-ins/Array/from/get-iter-method-err.js
-test/built-ins/Array/from/iter-cstm-ctor-err.js
-test/built-ins/Array/from/iter-cstm-ctor.js
 test/built-ins/Array/from/iter-map-fn-err.js
-test/built-ins/Array/from/iter-map-fn-this-non-strict.js
 test/built-ins/Array/from/iter-set-elem-prop-err.js
 test/built-ins/Array/from/iter-set-elem-prop-non-writable.js
-test/built-ins/Array/from/mapfn-is-not-callable-typeerror.js
-test/built-ins/Array/from/mapfn-is-symbol-throws.js
-test/built-ins/Array/from/source-object-iterator-1.js
 test/built-ins/Array/from/source-object-length-set-elem-prop-err.js
 test/built-ins/Array/from/source-object-length-set-elem-prop-non-writable.js
-test/built-ins/Array/from/source-object-length.js
-test/built-ins/Array/from/source-object-missing.js
-test/built-ins/Array/from/source-object-without.js
 test/built-ins/Array/fromAsync/asyncitems-arraylike-promise.js
 test/built-ins/Array/fromAsync/asyncitems-asynciterator-exists.js
 test/built-ins/Array/fromAsync/asyncitems-asynciterator-null.js
@@ -681,8 +652,6 @@ test/built-ins/Array/prototype/findLastIndex/predicate-called-for-each-array-pro
 test/built-ins/Array/prototype/flat/non-numeric-depth-should-not-throw.js
 test/built-ins/Array/prototype/flat/non-object-ctor-throws.js
 test/built-ins/Array/prototype/flat/proxy-access-count.js
-test/built-ins/Array/prototype/flat/target-array-non-extensible.js
-test/built-ins/Array/prototype/flat/target-array-with-non-configurable-property.js
 test/built-ins/Array/prototype/flatMap/array-like-objects-typedarrays.js
 test/built-ins/Array/prototype/flatMap/array-like-objects.js
 test/built-ins/Array/prototype/flatMap/bound-function-argument.js
@@ -708,7 +677,6 @@ test/built-ins/Array/prototype/forEach/15.4.4.18-8-8.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-8-9.js
 test/built-ins/Array/prototype/includes/fromIndex-infinity.js
 test/built-ins/Array/prototype/includes/length-boundaries.js
-test/built-ins/Array/prototype/includes/length-zero-returns-false.js
 test/built-ins/Array/prototype/indexOf/15.4.4.14-1-3.js
 test/built-ins/Array/prototype/indexOf/15.4.4.14-1-5.js
 test/built-ins/Array/prototype/indexOf/15.4.4.14-1-7.js
@@ -868,8 +836,6 @@ test/built-ins/Array/prototype/slice/create-non-array-invalid-len.js
 test/built-ins/Array/prototype/slice/create-proxied-array-invalid-len.js
 test/built-ins/Array/prototype/slice/length-exceeding-integer-limit-proxied-array.js
 test/built-ins/Array/prototype/slice/length-exceeding-integer-limit.js
-test/built-ins/Array/prototype/slice/target-array-non-extensible.js
-test/built-ins/Array/prototype/slice/target-array-with-non-configurable-property.js
 test/built-ins/Array/prototype/some/15.4.4.17-1-10.js
 test/built-ins/Array/prototype/some/15.4.4.17-1-13.js
 test/built-ins/Array/prototype/some/15.4.4.17-1-15.js
@@ -887,7 +853,6 @@ test/built-ins/Array/prototype/some/15.4.4.17-8-8.js
 test/built-ins/Array/prototype/sort/S15.4.4.11_A4_T3.js
 test/built-ins/Array/prototype/sort/S15.4.4.11_A6_T2.js
 test/built-ins/Array/prototype/sort/call-with-primitive.js
-test/built-ins/Array/prototype/sort/comparefn-nonfunction-call-throws.js
 test/built-ins/Array/prototype/sort/stability-2048-elements.js
 test/built-ins/Array/prototype/sort/stability-513-elements.js
 test/built-ins/Array/prototype/splice/S15.4.4.12_A3_T1.js
@@ -900,8 +865,6 @@ test/built-ins/Array/prototype/splice/length-exceeding-integer-limit-shrink-arra
 test/built-ins/Array/prototype/splice/length-near-integer-limit-grow-array.js
 test/built-ins/Array/prototype/splice/property-traps-order-with-species.js
 test/built-ins/Array/prototype/splice/set_length_no_args.js
-test/built-ins/Array/prototype/splice/target-array-non-extensible.js
-test/built-ins/Array/prototype/splice/target-array-with-non-configurable-property.js
 test/built-ins/Array/prototype/splice/throws-if-integer-limit-exceeded.js
 test/built-ins/Array/prototype/toLocaleString/S15.4.4.3_A1_T1.js
 test/built-ins/Array/prototype/toLocaleString/S15.4.4.3_A3_T1.js
@@ -930,11 +893,7 @@ test/built-ins/ArrayBuffer/prototype/immutable/this-has-no-arraybufferdata-inter
 test/built-ins/ArrayBuffer/prototype/immutable/this-is-not-object.js
 test/built-ins/ArrayBuffer/prototype/slice/end-exceeds-length.js
 test/built-ins/ArrayBuffer/prototype/slice/species-constructor-is-not-object.js
-test/built-ins/ArrayBuffer/prototype/slice/species-returns-immutable-arraybuffer.js
 test/built-ins/ArrayBuffer/prototype/slice/species-returns-larger-arraybuffer.js
-test/built-ins/ArrayBuffer/prototype/slice/species-returns-not-arraybuffer.js
-test/built-ins/ArrayBuffer/prototype/slice/species-returns-same-arraybuffer.js
-test/built-ins/ArrayBuffer/prototype/slice/species-returns-smaller-arraybuffer.js
 test/built-ins/ArrayBuffer/prototype/slice/start-exceeds-length.js
 test/built-ins/ArrayBuffer/prototype/sliceToImmutable/argument-coercion.js
 test/built-ins/ArrayBuffer/prototype/transfer/from-fixed-to-larger-no-resizable.js
@@ -1213,9 +1172,6 @@ test/built-ins/Date/prototype/toString/negative-year.js
 test/built-ins/Date/prototype/toUTCString/negative-year.js
 test/built-ins/Date/prototype/valueOf/S9.4_A3_T1.js
 test/built-ins/Date/subclassing.js
-test/built-ins/Date/value-symbol-to-prim-return-obj.js
-test/built-ins/Date/value-symbol-to-prim-return-prim.js
-test/built-ins/Date/value-to-primitive-result-faulty.js
 test/built-ins/Date/value-to-primitive-result-non-string-prim.js
 test/built-ins/Error/cause_abrupt.js
 test/built-ins/Error/cause_property.js
@@ -1258,7 +1214,6 @@ test/built-ins/Function/15.3.5.4_2-91gs.js
 test/built-ins/Function/15.3.5.4_2-92gs.js
 test/built-ins/Function/15.3.5.4_2-93gs.js
 test/built-ins/Function/S15.3.2.1_A1_T7.js
-test/built-ins/Function/S15.3.2.1_A3_T10.js
 test/built-ins/Function/internals/Construct/derived-return-val.js
 test/built-ins/Function/internals/Construct/derived-this-uninitialized.js
 test/built-ins/Function/length/S15.3.5.1_A4_T1.js
@@ -1881,7 +1836,6 @@ test/built-ins/Object/defineProperty/15.2.3.6-3-138.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-116.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-117.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-184.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-198.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-205.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-217.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-218.js
@@ -2034,7 +1988,6 @@ test/built-ins/Promise/all/S25.4.4.1_A2.3_T3.js
 test/built-ins/Promise/all/S25.4.4.1_A3.1_T1.js
 test/built-ins/Promise/all/S25.4.4.1_A3.1_T2.js
 test/built-ins/Promise/all/S25.4.4.1_A3.1_T3.js
-test/built-ins/Promise/all/S25.4.4.1_A4.1_T1.js
 test/built-ins/Promise/all/S25.4.4.1_A5.1_T1.js
 test/built-ins/Promise/all/S25.4.4.1_A7.1_T1.js
 test/built-ins/Promise/all/S25.4.4.1_A7.2_T1.js
@@ -2045,7 +1998,6 @@ test/built-ins/Promise/all/call-resolve-element-after-return.js
 test/built-ins/Promise/all/call-resolve-element-items.js
 test/built-ins/Promise/all/call-resolve-element.js
 test/built-ins/Promise/all/capability-executor-called-twice.js
-test/built-ins/Promise/all/capability-executor-not-callable.js
 test/built-ins/Promise/all/capability-resolve-throws-no-close.js
 test/built-ins/Promise/all/capability-resolve-throws-reject.js
 test/built-ins/Promise/all/ctx-ctor.js
@@ -2100,7 +2052,6 @@ test/built-ins/Promise/allSettled/call-resolve-element-after-return.js
 test/built-ins/Promise/allSettled/call-resolve-element-items.js
 test/built-ins/Promise/allSettled/call-resolve-element.js
 test/built-ins/Promise/allSettled/capability-executor-called-twice.js
-test/built-ins/Promise/allSettled/capability-executor-not-callable.js
 test/built-ins/Promise/allSettled/capability-resolve-throws-no-close.js
 test/built-ins/Promise/allSettled/capability-resolve-throws-reject.js
 test/built-ins/Promise/allSettled/ctx-ctor.js
@@ -2173,7 +2124,6 @@ test/built-ins/Promise/allSettled/species-get-error.js
 test/built-ins/Promise/any/call-reject-element-after-return.js
 test/built-ins/Promise/any/call-reject-element-items.js
 test/built-ins/Promise/any/capability-executor-called-twice.js
-test/built-ins/Promise/any/capability-executor-not-callable.js
 test/built-ins/Promise/any/capability-reject-throws-no-close.js
 test/built-ins/Promise/any/capability-resolve-throws-no-close.js
 test/built-ins/Promise/any/capability-resolve-throws-reject.js
@@ -2263,8 +2213,6 @@ test/built-ins/Promise/race/S25.4.4.3_A2.1_T1.js
 test/built-ins/Promise/race/S25.4.4.3_A2.2_T1.js
 test/built-ins/Promise/race/S25.4.4.3_A2.2_T2.js
 test/built-ins/Promise/race/S25.4.4.3_A2.2_T3.js
-test/built-ins/Promise/race/S25.4.4.3_A3.1_T1.js
-test/built-ins/Promise/race/S25.4.4.3_A3.1_T2.js
 test/built-ins/Promise/race/S25.4.4.3_A4.1_T1.js
 test/built-ins/Promise/race/S25.4.4.3_A4.1_T2.js
 test/built-ins/Promise/race/S25.4.4.3_A5.1_T1.js
@@ -2277,7 +2225,6 @@ test/built-ins/Promise/race/S25.4.4.3_A7.2_T1.js
 test/built-ins/Promise/race/S25.4.4.3_A7.3_T1.js
 test/built-ins/Promise/race/S25.4.4.3_A7.3_T2.js
 test/built-ins/Promise/race/capability-executor-called-twice.js
-test/built-ins/Promise/race/capability-executor-not-callable.js
 test/built-ins/Promise/race/ctx-ctor.js
 test/built-ins/Promise/race/invoke-resolve-error-close.js
 test/built-ins/Promise/race/invoke-resolve-error-reject.js
@@ -2326,9 +2273,7 @@ test/built-ins/Promise/race/same-resolve-function.js
 test/built-ins/Promise/race/species-get-error.js
 test/built-ins/Promise/reject-function-length.js
 test/built-ins/Promise/reject-function-name.js
-test/built-ins/Promise/reject/S25.4.4.4_A3.1_T1.js
 test/built-ins/Promise/reject/capability-executor-called-twice.js
-test/built-ins/Promise/reject/capability-executor-not-callable.js
 test/built-ins/Promise/reject/ctx-ctor.js
 test/built-ins/Promise/resolve-function-length.js
 test/built-ins/Promise/resolve-function-name.js
@@ -2336,7 +2281,6 @@ test/built-ins/Promise/resolve/S25.4.4.5_A2.1_T1.js
 test/built-ins/Promise/resolve/S25.4.4.5_A2.2_T1.js
 test/built-ins/Promise/resolve/S25.4.4.5_A2.3_T1.js
 test/built-ins/Promise/resolve/capability-executor-called-twice.js
-test/built-ins/Promise/resolve/capability-executor-not-callable.js
 test/built-ins/Promise/resolve/ctx-ctor.js
 test/built-ins/Promise/resolve/resolve-prms-cstm-then.js
 test/built-ins/Promise/resolve/resolve-self.js
@@ -2367,7 +2311,6 @@ test/built-ins/Proxy/set/call-parameters.js
 test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls-index.js
 test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls.js
 test/built-ins/Proxy/set/trap-is-missing-target-is-proxy.js
-test/built-ins/Proxy/set/trap-is-null-receiver.js
 test/built-ins/Proxy/setPrototypeOf/toboolean-trap-result-false.js
 test/built-ins/Reflect/apply/arguments-list-is-not-array-like-but-still-valid.js
 test/built-ins/Reflect/apply/arguments-list-is-not-array-like.js
@@ -2390,7 +2333,6 @@ test/built-ins/RegExp/S15.10.4.1_A4_T2.js
 test/built-ins/RegExp/S15.10.4.1_A4_T3.js
 test/built-ins/RegExp/S15.10.4.1_A4_T4.js
 test/built-ins/RegExp/S15.10.4.1_A4_T5.js
-test/built-ins/RegExp/S15.10.4.1_A5_T9.js
 test/built-ins/RegExp/S15.10.4.1_A6_T1.js
 test/built-ins/RegExp/S15.10.4.1_A8_T9.js
 test/built-ins/RegExp/S15.10.7_A2_T1.js
@@ -3301,7 +3243,6 @@ test/built-ins/String/prototype/match/duplicate-named-indices-groups-properties.
 test/built-ins/String/prototype/match/regexp-prototype-match-v-u-flag.js
 test/built-ins/String/prototype/match/this-val-obj.js
 test/built-ins/String/prototype/matchAll/cstm-matchall-on-bigint-primitive.js
-test/built-ins/String/prototype/matchAll/cstm-matchall-on-boolean-primitive.js
 test/built-ins/String/prototype/matchAll/cstm-matchall-on-number-primitive.js
 test/built-ins/String/prototype/matchAll/cstm-matchall-on-string-primitive.js
 test/built-ins/String/prototype/matchAll/regexp-is-undefined.js
@@ -4122,7 +4063,6 @@ test/built-ins/TypedArrayConstructors/ctors/typedarray-arg/custom-proto-access-t
 test/built-ins/TypedArrayConstructors/ctors/typedarray-arg/same-ctor-returns-new-cloned-typedarray.js
 test/built-ins/TypedArrayConstructors/ctors/typedarray-arg/src-typedarray-big-throws.js
 test/built-ins/TypedArrayConstructors/ctors/typedarray-arg/use-default-proto-if-custom-proto-is-not-object.js
-test/built-ins/TypedArrayConstructors/from/BigInt/custom-ctor-does-not-instantiate-ta-throws.js
 test/built-ins/TypedArrayConstructors/from/BigInt/custom-ctor-returns-other-instance.js
 test/built-ins/TypedArrayConstructors/from/BigInt/custom-ctor-returns-smaller-instance-throws.js
 test/built-ins/TypedArrayConstructors/from/BigInt/inherited.js
@@ -4241,7 +4181,6 @@ test/built-ins/TypedArrayConstructors/internals/Set/key-is-valid-index-prototype
 test/built-ins/TypedArrayConstructors/internals/Set/key-is-valid-index-reflect-set.js
 test/built-ins/TypedArrayConstructors/internals/Set/tonumber-value-throws.js
 test/built-ins/TypedArrayConstructors/of/BigInt/argument-number-value-throws.js
-test/built-ins/TypedArrayConstructors/of/BigInt/custom-ctor-does-not-instantiate-ta-throws.js
 test/built-ins/TypedArrayConstructors/of/BigInt/custom-ctor-returns-other-instance.js
 test/built-ins/TypedArrayConstructors/of/BigInt/inherited.js
 test/built-ins/TypedArrayConstructors/of/BigInt/new-instance-using-custom-ctor.js
@@ -4314,18 +4253,8 @@ test/built-ins/decodeURI/S15.1.3.1_A6_T1.js
 test/built-ins/decodeURIComponent/S15.1.3.2_A5.5.js
 test/built-ins/decodeURIComponent/S15.1.3.2_A6_T1.js
 test/built-ins/decodeURIComponent/throw-URIError.js
-test/built-ins/encodeURI/S15.1.3.3_A1.1_T1.js
-test/built-ins/encodeURI/S15.1.3.3_A1.1_T2.js
-test/built-ins/encodeURI/S15.1.3.3_A1.2_T1.js
-test/built-ins/encodeURI/S15.1.3.3_A1.2_T2.js
-test/built-ins/encodeURI/S15.1.3.3_A1.3_T1.js
 test/built-ins/encodeURI/S15.1.3.3_A5.5.js
 test/built-ins/encodeURI/S15.1.3.3_A6_T1.js
-test/built-ins/encodeURIComponent/S15.1.3.4_A1.1_T1.js
-test/built-ins/encodeURIComponent/S15.1.3.4_A1.1_T2.js
-test/built-ins/encodeURIComponent/S15.1.3.4_A1.2_T1.js
-test/built-ins/encodeURIComponent/S15.1.3.4_A1.2_T2.js
-test/built-ins/encodeURIComponent/S15.1.3.4_A1.3_T1.js
 test/built-ins/encodeURIComponent/S15.1.3.4_A3.2_T3.js
 test/built-ins/encodeURIComponent/S15.1.3.4_A5.5.js
 test/built-ins/encodeURIComponent/S15.1.3.4_A6_T1.js
@@ -5201,8 +5130,6 @@ test/language/eval-code/direct/new.target-fn.js
 test/language/eval-code/direct/new.target.js
 test/language/eval-code/direct/non-definable-function-with-function.js
 test/language/eval-code/direct/non-definable-function-with-variable.js
-test/language/eval-code/direct/non-definable-global-function.js
-test/language/eval-code/direct/non-definable-global-generator.js
 test/language/eval-code/direct/parse-failure-3.js
 test/language/eval-code/direct/parse-failure-4.js
 test/language/eval-code/direct/parse-failure-5.js
@@ -5235,8 +5162,6 @@ test/language/eval-code/indirect/lex-env-heritage.js
 test/language/eval-code/indirect/new.target.js
 test/language/eval-code/indirect/non-definable-function-with-function.js
 test/language/eval-code/indirect/non-definable-function-with-variable.js
-test/language/eval-code/indirect/non-definable-global-function.js
-test/language/eval-code/indirect/non-definable-global-generator.js
 test/language/eval-code/indirect/parse-failure-3.js
 test/language/eval-code/indirect/parse-failure-4.js
 test/language/eval-code/indirect/parse-failure-5.js
@@ -5245,9 +5170,7 @@ test/language/eval-code/indirect/super-prop.js
 test/language/eval-code/indirect/switch-dflt-decl-strict.js
 test/language/eval-code/indirect/var-env-func-init-global-update-configurable.js
 test/language/eval-code/indirect/var-env-func-init-multi.js
-test/language/eval-code/indirect/var-env-func-strict.js
 test/language/eval-code/indirect/var-env-global-lex-non-strict.js
-test/language/eval-code/indirect/var-env-var-strict.js
 test/language/expressions/addition/S11.6.1_A4_T7.js
 test/language/expressions/addition/bigint-and-number.js
 test/language/expressions/addition/bigint-wrapped-values.js
@@ -7028,9 +6951,6 @@ test/language/expressions/in/private-field-rhs-non-object.js
 test/language/expressions/in/private-field-rhs-unresolvable.js
 test/language/expressions/in/private-field-rhs-yield-present.js
 test/language/expressions/in/rhs-yield-absent-non-strict.js
-test/language/expressions/instanceof/primitive-prototype-with-object.js
-test/language/expressions/instanceof/prototype-getter-with-object-throws.js
-test/language/expressions/instanceof/prototype-getter-with-object.js
 test/language/expressions/left-shift/bigint-non-primitive.js
 test/language/expressions/left-shift/bigint-toprimitive.js
 test/language/expressions/left-shift/bigint-wrapped-values.js
@@ -8756,7 +8676,6 @@ test/language/statements/class/elements/privatefieldset-typeerror-9.js
 test/language/statements/class/elements/privategetter-on-proxy.js
 test/language/statements/class/elements/privatemethods-on-proxy.js
 test/language/statements/class/elements/privatename-not-valid-eval-earlyerr-1.js
-test/language/statements/class/elements/privatename-not-valid-eval-earlyerr-2.js
 test/language/statements/class/elements/privatename-not-valid-eval-earlyerr-3.js
 test/language/statements/class/elements/privatename-not-valid-eval-earlyerr-4.js
 test/language/statements/class/elements/privatename-not-valid-eval-earlyerr-5.js
@@ -9069,7 +8988,6 @@ test/language/statements/class/static-init-scope-var-open.js
 test/language/statements/class/static-init-sequence.js
 test/language/statements/class/static-init-statement-list-optional.js
 test/language/statements/class/static-init-super-property.js
-test/language/statements/class/strict-mode/arguments-callee.js
 test/language/statements/class/subclass-builtins/subclass-AggregateError.js
 test/language/statements/class/subclass/binding.js
 test/language/statements/class/subclass/builtin-objects/Array/contructor-calls-super-multiple-arguments.js
@@ -9159,7 +9077,6 @@ test/language/statements/const/dstr/obj-ptrn-rest-skip-non-enumerable.js
 test/language/statements/const/dstr/obj-ptrn-rest-val-obj.js
 test/language/statements/const/global-closure-get-before-initialization.js
 test/language/statements/const/static-init-await-binding-valid.js
-test/language/statements/const/syntax/const-invalid-assignment-next-expression-for.js
 test/language/statements/const/syntax/with-initializer-default-statement-list.js
 test/language/statements/continue/S12.7_A7.js
 test/language/statements/continue/S12.7_A9_T1.js
@@ -10655,10 +10572,6 @@ test/staging/sm/Array/concat-spreadable-basic.js
 test/staging/sm/Array/for_of_3.js
 test/staging/sm/Array/for_of_4.js
 test/staging/sm/Array/from-iterator-close.js
-test/staging/sm/Array/from_basics.js
-test/staging/sm/Array/from_errors.js
-test/staging/sm/Array/from_iterable.js
-test/staging/sm/Array/from_mapping.js
 test/staging/sm/Array/from_primitive.js
 test/staging/sm/Array/from_proxy.js
 test/staging/sm/Array/from_string.js
@@ -10675,7 +10588,6 @@ test/staging/sm/Array/redefine-nonwritable-length-custom-conversion-throw.js
 test/staging/sm/Array/regress-599159.js
 test/staging/sm/Array/shift-no-has-trap.js
 test/staging/sm/Array/sort-delete-ascending-order.js
-test/staging/sm/Array/sort-non-function.js
 test/staging/sm/Array/sort-typedarray-with-own-length.js
 test/staging/sm/Array/sort_proxy.js
 test/staging/sm/Array/sort_small.js
@@ -10818,7 +10730,6 @@ test/staging/sm/JSON/stringify-replacer-array-trailing-holes.js
 test/staging/sm/JSON/stringify-replacer.js
 test/staging/sm/JSON/stringify-special-escapes.js
 test/staging/sm/JSON/stringify.js
-test/staging/sm/Map/constructor-iterator-primitive.js
 test/staging/sm/Map/iterable.js
 test/staging/sm/Math/acosh-approx.js
 test/staging/sm/Math/acosh-exact.js
@@ -10860,8 +10771,6 @@ test/staging/sm/Promise/bug-1288382.js
 test/staging/sm/Promise/for-of-iterator-uses-getv.js
 test/staging/sm/Proxy/getPrototypeOf.js
 test/staging/sm/Proxy/json-stringify-replacer-array-revocable-proxy.js
-test/staging/sm/Proxy/proxy-no-receiver-overwrite.js
-test/staging/sm/Proxy/revoke-as-side-effect.js
 test/staging/sm/Proxy/revoke-no-name.js
 test/staging/sm/Proxy/revoked-get-function-realm-typeerror.js
 test/staging/sm/Proxy/setPrototypeOf.js
@@ -10979,7 +10888,6 @@ test/staging/sm/TypedArray/set-toobject.js
 test/staging/sm/TypedArray/set.js
 test/staging/sm/TypedArray/slice-conversion.js
 test/staging/sm/TypedArray/slice-species.js
-test/staging/sm/TypedArray/sort-non-function.js
 test/staging/sm/TypedArray/sort_comparators.js
 test/staging/sm/TypedArray/sort_large_countingsort.js
 test/staging/sm/TypedArray/sort_modifications.js
@@ -11088,15 +10996,11 @@ test/staging/sm/destructuring/order-super.js
 test/staging/sm/destructuring/order.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-strictcode.js
-test/staging/sm/eval/exhaustive-fun-normalcaller-indirect-strictcode.js
 test/staging/sm/eval/exhaustive-fun-strictcaller-direct-normalcode.js
 test/staging/sm/eval/exhaustive-fun-strictcaller-direct-strictcode.js
-test/staging/sm/eval/exhaustive-fun-strictcaller-indirect-strictcode.js
 test/staging/sm/eval/exhaustive-global-normalcaller-direct-normalcode.js
 test/staging/sm/eval/exhaustive-global-normalcaller-indirect-normalcode.js
-test/staging/sm/eval/exhaustive-global-normalcaller-indirect-strictcode.js
 test/staging/sm/eval/exhaustive-global-strictcaller-indirect-normalcode.js
-test/staging/sm/eval/exhaustive-global-strictcaller-indirect-strictcode.js
 test/staging/sm/eval/redeclared-arguments-in-param-expression-eval.js
 test/staging/sm/eval/undeclared-name-in-nested-strict-eval.js
 test/staging/sm/expressions/ToPropertyKey-symbols.js
@@ -11175,7 +11079,6 @@ test/staging/sm/lexical-environment/block-scoped-functions-annex-b-with.js
 test/staging/sm/lexical-environment/block-scoped-functions-deprecated-redecl.js
 test/staging/sm/lexical-environment/bug-1216623.js
 test/staging/sm/lexical-environment/const-declaration-in-for-loop.js
-test/staging/sm/lexical-environment/eval-has-lexical-environment.js
 test/staging/sm/lexical-environment/for-loop-with-bindings-added-at-runtime.js
 test/staging/sm/lexical-environment/for-loop.js
 test/staging/sm/lexical-environment/unscopables-basics.js
@@ -11250,7 +11153,6 @@ test/staging/sm/statements/for-of-iterator-close.js
 test/staging/sm/statements/regress-642975.js
 test/staging/sm/statements/try-completion.js
 test/staging/sm/strict/10.4.3.js
-test/staging/sm/strict/8.12.7-2.js
 test/staging/sm/strict/directive-prologue-01.js
 test/staging/sm/strict/eval-variable-environment.js
 test/staging/sm/strict/primitive-assignment.js
