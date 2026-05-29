@@ -49,17 +49,24 @@ partial class FastParser
 
         try
         {
-            if (!Block(out var body))
-                throw stream.Unexpected();
+            functionDepth++;
+            try
+            {
+                if (!Block(out var body))
+                    throw stream.Unexpected();
 
-            node = new AstFunctionExpression(begin, PreviousToken, false, isAsync, generator, id, declarators, body, isStatement);
+                node = new AstFunctionExpression(begin, PreviousToken, false, isAsync, generator, id, declarators, body, isStatement);
+            }
+            finally
+            {
+                functionDepth--;
+            }
         }
         finally
         {
             scope.Dispose();
+            this.isAsync = isRootAsync;
         }
-
-        this.isAsync = isRootAsync;
         return true;
     }
 }

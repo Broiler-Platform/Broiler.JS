@@ -46,25 +46,37 @@ partial class FastParser
         if (stream.CheckAndConsumeNoLineTerminator(TokenTypes.Lambda))
         {
             var scope = variableScope.Push(token, FastNodeType.FunctionExpression);
-            // create parameters now...
-            var parameters = VariableDeclarator.From(node);
-            if (stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
+            try
             {
-                if (!Block(out var block))
-                    throw stream.Unexpected();
+                // create parameters now...
+                var parameters = VariableDeclarator.From(node);
+                functionDepth++;
+                try
+                {
+                    if (stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
+                    {
+                        if (!Block(out var block))
+                            throw stream.Unexpected();
 
-                node = new AstFunctionExpression(token, PreviousToken, true, isAsync, isGenerator, null, VariableDeclarator.From(node), block);
-                scope.Dispose();
+                        node = new AstFunctionExpression(token, PreviousToken, true, isAsync, isGenerator, null, VariableDeclarator.From(node), block);
+                        return true;
+                    }
 
-                return true;
+                    if (!Expression(out var r))
+                        throw stream.Unexpected();
+
+                    node = new AstFunctionExpression(token, PreviousToken, true, isAsync, isGenerator, null, parameters, new AstReturnStatement(r.Start, r.End, r));
+                    return true;
+                }
+                finally
+                {
+                    functionDepth--;
+                }
             }
-            if (!Expression(out var r))
-                throw stream.Unexpected();
-
-            node = new AstFunctionExpression(token, PreviousToken, true, isAsync, isGenerator, null, parameters, new AstReturnStatement(r.Start, r.End, r));
-            scope.Dispose();
-
-            return true;
+            finally
+            {
+                scope.Dispose();
+            }
         }
 
         if (node.End.Type == TokenTypes.SemiColon)

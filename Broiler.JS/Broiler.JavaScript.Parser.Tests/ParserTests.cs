@@ -93,6 +93,21 @@ public class ParserTests
         Assert.NotNull(program);
     }
 
+
+    [Theory]
+    [InlineData("async function run() { await value; }")]
+    [InlineData("var run = async value => await value;")]
+    [InlineData("var obj = { async run(value) { await value; } };")]
+    [InlineData("class C { async run(value) { await value; } }")]
+    public void ParseProgram_AwaitInsideFunctionLikeBody_DoesNotMarkProgramAsync(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        Assert.False(program.IsAsync);
+    }
+
     [Fact]
     public void ParseProgram_InvalidSyntax_ThrowsFastParseException()
     {

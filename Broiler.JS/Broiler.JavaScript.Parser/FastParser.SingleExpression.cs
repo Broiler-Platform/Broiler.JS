@@ -251,7 +251,8 @@ partial class FastParser
 
             if (Expression(out var target))
             {
-                isAsync = true;
+                if (functionDepth == 0)
+                    isAsync = true;
                 statement = new AstAwaitExpression(begin, PreviousToken, target);
                 EndOfStatement();
                 

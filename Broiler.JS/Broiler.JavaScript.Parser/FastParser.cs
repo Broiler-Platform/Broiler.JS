@@ -16,6 +16,7 @@ public partial class FastParser(FastTokenStream stream) : IParser
     /// </summary>
     private bool considerInOfAsOperators = true;
     private bool isAsync = false;
+    private int functionDepth = 0;
 
     public StreamLocation BeginUndo() => new(this, stream.Current);
 

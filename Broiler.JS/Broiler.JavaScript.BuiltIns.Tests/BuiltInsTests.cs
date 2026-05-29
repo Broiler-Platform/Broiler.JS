@@ -3585,6 +3585,37 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Async_Arrow_And_Method_Await_Do_Not_Mark_Program_As_Top_Level_Await()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var order = [];
+            var arrow = async value => {
+                order.push('arrow-start');
+                var awaited = await Promise.resolve(value + ':arrow');
+                order.push(awaited);
+            };
+            var obj = {
+                async method(value) {
+                    order.push('method-start');
+                    var awaited = await Promise.resolve(value + ':method');
+                    order.push(awaited);
+                }
+            };
+
+            var done = Promise.resolve()
+                .then(() => arrow('ok'))
+                .then(() => obj.method('ok'))
+                .then(() => order.join('|'));
+            order.push('sync');
+            done;
+        ");
+
+        Assert.Equal("sync|arrow-start|ok:arrow|method-start|ok:method", result.ToString());
+    }
+
+    [Fact]
     public void Promise_Rejection_Handlers_Run_In_Microtask_Order()
     {
         EnsureBuiltInsLoaded();
