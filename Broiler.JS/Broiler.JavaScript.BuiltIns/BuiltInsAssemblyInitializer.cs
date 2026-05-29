@@ -939,6 +939,7 @@ internal static class BuiltInsAssemblyInitializer
 
             replacement.FastAddValue(KeyStrings.prototype, originalCtor.prototype, JSPropertyAttributes.ConfigurableValue);
             replacement.FastAddValue(KeyStrings.constructor, functionMetadata, JSPropertyAttributes.ConfigurableValue);
+            EnsureAccessorProperty(replacement, JSSymbol.species, "[Symbol.species]", static (in Arguments a) => a.This);
             originalCtor.prototype[KeyStrings.constructor] = replacement;
             context.FastAddValue(KeyStrings.RegExp, replacement, JSPropertyAttributes.ConfigurableValue);
             regExpCtor = replacement;
