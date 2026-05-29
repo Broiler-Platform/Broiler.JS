@@ -68,6 +68,7 @@ partial class FastCompiler
         {
             var en = hoistingScope.GetFastEnumerator();
             var top = this.scope.Top;
+            var isDirectEvalProgramScope = isDirectEvalCompilation && top.Function == null;
         
             while (en.MoveNext(out var v))
             {
@@ -77,14 +78,14 @@ partial class FastCompiler
                     continue;
                 }
 
-                if (isDirectEvalCompilation && (IsStrictMode || usesDirectEvalLocalVarEnvironment))
+                if (isDirectEvalProgramScope && (IsStrictMode || usesDirectEvalLocalVarEnvironment))
                 {
                     // Strict eval, and non-strict eval inside a function var
                     // environment, keep vars local to the eval scope.
                     var localVariable = scope.CreateVariable(v, null, true);
                     localVariable.IsLexical = false;
-                    localVariable.IsDeletable = !IsStrictMode && isDirectEvalCompilation;
-                    if (usesDirectEvalLocalVarEnvironment)
+                    localVariable.IsDeletable = !IsStrictMode && isDirectEvalProgramScope;
+                    if (usesDirectEvalLocalVarEnvironment && !IsStrictMode)
                     {
                         var currentValue = JSContextBuilder.Index(KeyOfName(v));
                         localVariable.SetInit(JSVariableBuilder.New(currentValue, v.Value));
@@ -93,10 +94,12 @@ partial class FastCompiler
                     continue;
                 }
 
-                var g = JSValueBuilder.Index(top.Context, KeyOfName(v));
+                var g = isDirectEvalProgramScope
+                    ? JSContextBuilder.Index(KeyOfName(v))
+                    : JSValueBuilder.Index(top.Context, KeyOfName(v));
                 var vs = scope.CreateVariable(v, null, true);
                 vs.IsLexical = false;
-                vs.IsDeletable = isDirectEvalCompilation;
+                vs.IsDeletable = isDirectEvalProgramScope;
                 scope.Parent?.AddExternalVariable(v, vs);
 
                 vs.Expression = JSVariableBuilder.Property(vs.Variable);
@@ -134,7 +137,7 @@ partial class FastCompiler
             return existing;
         }
 
-        var globalValue = JSValueBuilder.Index(top.Context, KeyOfName(name));
+        var globalValue = JSContextBuilder.Index(KeyOfName(name));
         var variable = top.CreateVariable(name, null, true);
         variable.IsLexical = false;
         variable.IsDeletable = true;

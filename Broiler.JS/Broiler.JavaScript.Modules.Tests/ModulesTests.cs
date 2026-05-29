@@ -46,4 +46,16 @@ public class ModulesTests
 
         Assert.Equal(0.0, result.DoubleValue);
     }
+
+    [Fact]
+    public async Task JSModuleContext_RunScriptAsync_AllowsTopLevelAwait()
+    {
+        using var ctx = new JSModuleContext();
+
+        var result = await ctx.RunScriptAsync("""
+            await Promise.resolve('ready');
+            """, Environment.CurrentDirectory);
+
+        Assert.NotNull(result);
+    }
 }

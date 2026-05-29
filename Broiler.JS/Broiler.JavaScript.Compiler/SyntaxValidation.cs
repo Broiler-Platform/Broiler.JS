@@ -7,6 +7,7 @@ using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Parser;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler;
 
@@ -19,7 +20,7 @@ public static void ValidateProgram(
     IEnumerable<string> directEvalLexicalBindings = null,
     IEnumerable<string> directEvalPrivateNames = null)
     {
-        if (program.IsAsync)
+        if (program.IsAsync && !CoreScript.AllowTopLevelAwait)
             throw new FastParseException(program.Start, "Unexpected await");
 
         var strictProgram = inheritStrictMode || HasUseStrictDirective(program.Statements);

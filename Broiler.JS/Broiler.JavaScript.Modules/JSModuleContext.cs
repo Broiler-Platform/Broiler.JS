@@ -350,15 +350,19 @@ public class JSModuleContext : JSContext
             code = $"module.exports = {code};";
 
         // var factory = FastEval(code, filePath);
-        var factory = CoreScript.Compile(code, module.filePath,
-        [
-            "exports",
-            "require",
-            "module",
-            "import",
-            "__fileame",
-            "__dirname"
-        ], codeCache: CodeCache);
+        JSFunctionDelegate factory;
+        using (CoreScript.AllowTopLevelAwaitScope())
+        {
+            factory = CoreScript.Compile(code, module.filePath,
+            [
+                "exports",
+                "require",
+                "module",
+                "import",
+                "__fileame",
+                "__dirname"
+            ], codeCache: CodeCache);
+        }
 
         if (factory(new Arguments(module,
         [

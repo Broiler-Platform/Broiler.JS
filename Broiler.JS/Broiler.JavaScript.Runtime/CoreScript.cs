@@ -1,6 +1,7 @@
 using Broiler.JavaScript.Ast.Misc;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Broiler.JavaScript.Runtime;
@@ -51,6 +52,30 @@ public class CoreScript
     /// processing microtasks until completion.
     /// </summary>
     internal static Action<Func<Task>> RunAsyncPump;
+
+    private static readonly AsyncLocal<int> TopLevelAwaitScopeDepth = new();
+
+    internal static bool AllowTopLevelAwait => TopLevelAwaitScopeDepth.Value > 0;
+
+    internal static IDisposable AllowTopLevelAwaitScope()
+    {
+        TopLevelAwaitScopeDepth.Value++;
+        return new TopLevelAwaitScopeToken();
+    }
+
+    private sealed class TopLevelAwaitScopeToken : IDisposable
+    {
+        private bool disposed;
+
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            disposed = true;
+            TopLevelAwaitScopeDepth.Value = Math.Max(0, TopLevelAwaitScopeDepth.Value - 1);
+        }
+    }
 
     private static IJSCompiler _compiler;
 
