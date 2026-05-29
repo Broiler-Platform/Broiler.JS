@@ -56,17 +56,51 @@ public class JSClass : JSFunction
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override JSValue CreateInstance(in Arguments a)
     {
-        var @object = new JSObject() { BasePrototypeObject = prototype };
-        var ao = a.OverrideThis(@object);
+        static void ValidateProxyNewTarget(JSProxy proxy) => _ = proxy.RequireTarget();
+
+        JSObject ResolveInstancePrototype(JSValue newTargetValue)
+        {
+            var newTargetPrototype = newTargetValue[KeyStrings.prototype];
+            if (newTargetPrototype is JSObject newTargetPrototypeObject)
+                return newTargetPrototypeObject;
+
+            if (newTargetValue is JSProxy proxy)
+                ValidateProxyNewTarget(proxy);
+
+            return prototype;
+        }
+
         var ec = JSEngine.Current as IJSExecutionContext;
-        if (ec != null) ec.CurrentNewTarget = this;
-        var @this = f(ao);
+        var previousNewTarget = ec?.CurrentNewTarget;
+        var instancePrototype = previousNewTarget != null
+            ? ResolveInstancePrototype(previousNewTarget)
+            : prototype;
+
+        var @object = new JSObject() { BasePrototypeObject = instancePrototype };
+        var ao = a.OverrideThis(@object);
+
+        JSValue @this;
+        try
+        {
+            if (ec != null)
+                ec.CurrentNewTarget = previousNewTarget ?? this;
+
+            @this = f(ao);
+        }
+        finally
+        {
+            if (ec != null)
+                ec.CurrentNewTarget = previousNewTarget;
+        }
 
         if (@this.IsUndefined)
             return @object;
 
         if (@this.IsObject)
+        {
+            @this.BasePrototypeObject = instancePrototype;
             return @this;
+        }
 
         return @object;
     }
