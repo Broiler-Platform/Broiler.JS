@@ -84,7 +84,7 @@ partial class FastCompiler
                     var localVariable = scope.CreateVariable(v, null, true);
                     localVariable.IsLexical = false;
                     localVariable.IsDeletable = !IsStrictMode && isDirectEvalCompilation;
-                    if (usesDirectEvalLocalVarEnvironment)
+                    if (usesDirectEvalLocalVarEnvironment && !IsStrictMode)
                     {
                         var currentValue = JSContextBuilder.Index(KeyOfName(v));
                         localVariable.SetInit(JSVariableBuilder.New(currentValue, v.Value));
