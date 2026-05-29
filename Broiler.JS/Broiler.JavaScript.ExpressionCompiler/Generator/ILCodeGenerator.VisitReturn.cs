@@ -29,7 +29,13 @@ public partial class ILCodeGenerator
                     return true;
                 }
             }
-            using var temp = il.NewTemp(def.Type);
+            var temp = il.NewTemp(def.Type);
+            if (!il.IsTryBlock)
+            {
+                using (temp)
+                    return VisitReturn(def, label, temp.LocalIndex);
+            }
+
             return VisitReturn(def, label, temp.LocalIndex);
         }
         il.Branch(label);

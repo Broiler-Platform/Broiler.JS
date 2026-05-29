@@ -54,8 +54,6 @@ public partial class ILCodeGenerator
             {
                 tcb.BeginFinally();
                 Visit(tryCatchFinallyExpression.Finally);
-                if (tryCatchFinallyExpression.Finally.Type != typeof(void))
-                    il.Emit(OpCodes.Pop);
             }
             tcb.Dispose();
         }
