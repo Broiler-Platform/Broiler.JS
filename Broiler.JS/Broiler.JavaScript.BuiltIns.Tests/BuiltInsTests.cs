@@ -5871,6 +5871,27 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Finally_Normal_Completion_Preserves_Pending_Return_Value()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function() {
+                try {
+                    return 'try';
+                } finally {
+                    if (false) {
+                        'unused';
+                    } else {
+                        true;
+                    }
+                }
+            })();
+        ");
+        Assert.Equal("try", result.ToString());
+    }
+
+    [Fact]
     public void RegExp_V_Flag_Exposes_UnicodeSets_Metadata()
     {
         EnsureBuiltInsLoaded();

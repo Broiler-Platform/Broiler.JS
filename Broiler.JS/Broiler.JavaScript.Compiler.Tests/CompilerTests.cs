@@ -71,6 +71,27 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Proxy_GetTrap_Undefined_Forwards_Prototype_Get_With_Receiver()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var plainObject = {
+                    get x() {
+                        return this.y;
+                    }
+                };
+                var proxy = new Proxy(new Proxy(plainObject, {}), { get: undefined });
+                var derived = Object.create(proxy);
+                derived.y = 1;
+                return derived.x;
+            })()
+            """);
+
+        Assert.Equal(1.0, result.DoubleValue);
+    }
+
+    [Fact]
     public void Compile_ClassExtends_Proxy_Of_ArrowFunction_Throws_TypeError_Before_Prototype_Lookup()
     {
         using var ctx = new JSContext();
@@ -752,6 +773,32 @@ public class CompilerTests
             """);
 
         Assert.Equal("false|false|false|true|function", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_Class_Static_Fields_With_Initializers_Remain_On_The_Class()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                class C {
+                    *m() { return 42; } static x = 1; static #y = 1;
+                    static getX() { return this.x; }
+                    static getY() { return this.#y; }
+                }
+
+                var c = new C();
+                return [
+                    c.x === undefined,
+                    C.x,
+                    C.getX(),
+                    C.getY(),
+                    c.m().next().value
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("true|1|1|1|42", result.ToString());
     }
 
     [Fact]

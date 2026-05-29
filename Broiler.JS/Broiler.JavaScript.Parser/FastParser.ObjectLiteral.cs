@@ -64,7 +64,7 @@ partial class FastParser
                 if (!Expression(out var value))
                     throw stream.Unexpected();
 
-                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, isPrivate, false, key, computed, value, usesAssign: true);
+                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, isPrivate, isStatic, key, computed, value, usesAssign: true);
                 stream.CheckAndConsume(TokenTypes.SemiColon);
 
                 return true;
@@ -78,7 +78,7 @@ partial class FastParser
                 if (!Expression(out var value))
                     throw stream.Unexpected();
 
-                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, isPrivate, false, key, computed, value, usesColon: true);
+                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, isPrivate, isStatic, key, computed, value, usesColon: true);
                 return true;
             }
             else if (stream.CheckAndConsume(TokenTypes.BracketStart))

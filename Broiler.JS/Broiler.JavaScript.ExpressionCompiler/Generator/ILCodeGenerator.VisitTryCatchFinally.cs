@@ -16,6 +16,8 @@ public partial class ILCodeGenerator
             tcb.CollectLabels(tryCatchFinallyExpression, labels);
 
             var hasType = tryCatchFinallyExpression.Try.Type != typeof(void);
+            if (tryCatchFinallyExpression.Finally != null)
+                tcb.MarkHasFinally();
 
             var result = hasType ? tempVariables[tryCatchFinallyExpression.Try.Type] : null;
 

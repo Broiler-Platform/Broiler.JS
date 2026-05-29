@@ -168,6 +168,26 @@ public class ParserTests
         Assert.Equal(isAsync, function.Async);
     }
 
+    [Theory]
+    [InlineData("class C { static x = 1; }", "x", false)]
+    [InlineData("class C { static #x = 1; }", "#x", true)]
+    public void ParseProgram_ClassBody_Preserves_Static_Flag_For_Data_Fields(string source, string expectedName, bool isPrivate)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements.ToArray()));
+        var classExpression = Assert.IsType<AstClassExpression>(statement.Expression);
+        var property = Assert.IsType<AstClassProperty>(Assert.Single(classExpression.Members.ToArray()));
+        var key = Assert.IsType<AstIdentifier>(property.Key);
+
+        Assert.Equal(AstPropertyKind.Data, property.Kind);
+        Assert.True(property.IsStatic);
+        Assert.Equal(isPrivate, property.IsPrivate);
+        Assert.Equal(expectedName, key.Name.Value);
+    }
+
     [Fact]
     public void ParseProgram_ForAwaitOf_In_AsyncFunction_Succeeds()
     {

@@ -751,10 +751,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     public virtual JSValue GetValue(uint key, JSValue receiver, bool throwError = true)
     {
         if (prototypeChain != null)
-        {
-            var p = prototypeChain.GetInternalProperty(key);
-            return (receiver ?? this).GetValue(p);
-        }
+            return prototypeChain.Object.GetValue(key, receiver ?? this, throwError);
 
         return UndefinedValue;
     }
@@ -762,10 +759,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     internal protected virtual JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
     {
         if (prototypeChain != null)
-        {
-            var p = prototypeChain.GetInternalProperty(key);
-            return (receiver ?? this).GetValue(p);
-        }
+            return prototypeChain.Object.GetValue(key, receiver ?? this, throwError);
 
         return UndefinedValue;
     }
@@ -773,10 +767,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     internal protected virtual JSValue GetValue(IJSSymbol key, JSValue receiver, bool throwError = true)
     {
         if (prototypeChain != null)
-        {
-            var p = prototypeChain.GetInternalProperty(key);
-            return (receiver ?? this).GetValue(p);
-        }
+            return prototypeChain.Object.GetValue(key, receiver ?? this, throwError);
 
         return UndefinedValue;
     }
