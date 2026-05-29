@@ -945,6 +945,8 @@ internal static class BuiltInsAssemblyInitializer
             regExpCtor = replacement;
         }
 
+        EnsureRegExpEscape(regExpCtor);
+
         static JSValue GetSpeciesConstructor(JSValue constructor)
         {
             if (constructor.IsUndefined)
@@ -1434,6 +1436,15 @@ internal static class BuiltInsAssemblyInitializer
 
         for (var i = 1; i <= 9; i++)
             PatchLegacyRegExpAccessor(regExpCtor, $"${i}");
+    }
+
+    private static void EnsureRegExpEscape(JSObject regExpCtor)
+    {
+        var escapeKey = KeyStrings.GetOrCreate("escape");
+        if (!regExpCtor.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(escapeKey.ToString(), escapeKey)).IsUndefined)
+            return;
+
+        regExpCtor.FastAddValue(escapeKey, CreateNativeFunction(JSRegExp.Escape, "escape", 1), JSPropertyAttributes.ConfigurableValue);
     }
 
     private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, string alias)
