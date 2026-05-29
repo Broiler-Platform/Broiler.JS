@@ -5880,7 +5880,11 @@ public class BuiltInsTests
                 try {
                     return 'try';
                 } finally {
-                    true;
+                    if (false) {
+                        'unused';
+                    } else {
+                        true;
+                    }
                 }
             })();
         ");

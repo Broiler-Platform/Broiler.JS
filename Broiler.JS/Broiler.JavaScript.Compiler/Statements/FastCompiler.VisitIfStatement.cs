@@ -37,7 +37,9 @@ partial class FastCompiler
         return YExpression.Block(
             new Sequence<YParameterExpression> { completionVar },
             YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
-            YExpression.TryFinally(result, PropagateCompletion(completionVar, outerCompletionVars)),
+            outerCompletionVars.Length == 0
+                ? result
+                : YExpression.TryFinally(result, PropagateCompletion(completionVar, outerCompletionVars)),
             completionVar);
     }
 }
