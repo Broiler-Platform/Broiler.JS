@@ -23,6 +23,12 @@ public class ILTryBlock(ILWriter iLWriter, Label label) : LinkedStackItem<ILTryB
 
     internal void CollectLabels(YTryCatchFinallyExpression exp, LabelInfo labels) => TryCatchLabelMarker.Collect(exp, this, labels);
 
+    internal void MarkHasFinally()
+    {
+        hasFinally = true;
+        finallyJumpState ??= il.NewTemp(typeof(int));
+    }
+
     public void BeginCatch(Type type)
     {
         if (isFinally)
@@ -45,9 +51,6 @@ public class ILTryBlock(ILWriter iLWriter, Label label) : LinkedStackItem<ILTryB
         il.Emit(OpCodes.Leave, label);
 
         il.BeginFinallyBlock();
-        finallyJumpState = il.NewTemp(typeof(int));
-        il.Emit(OpCodes.Ldc_I4_0);
-        il.EmitSaveLocal(finallyJumpState.LocalIndex);
     }
 
     public override void Dispose()
@@ -65,6 +68,8 @@ public class ILTryBlock(ILWriter iLWriter, Label label) : LinkedStackItem<ILTryB
 
         // jump all pending
         il.EndExceptionBlock();
+
+        il.MarkLabel(label);
 
         if (finallyJumpState != null)
         {
@@ -88,8 +93,6 @@ public class ILTryBlock(ILWriter iLWriter, Label label) : LinkedStackItem<ILTryB
             il.Branch(jump, index);
         }
 
-        il.MarkLabel(label);
-
         if (SavedLocal >= 0)
             il.EmitLoadLocal(SavedLocal);
     }
@@ -107,9 +110,19 @@ public class ILTryBlock(ILWriter iLWriter, Label label) : LinkedStackItem<ILTryB
             return;
         }
 
-        if (label.TryBlock == this && !(hasFinally && index >= 0))
+        if (label.TryBlock == this)
         {
             il.Goto(label, index);
+            return;
+        }
+
+        if (hasFinally)
+        {
+            var state = pendingFinallyJumps.Count + 1;
+            pendingFinallyJumps.Add((state, label, index));
+            il.Emit(OpCodes.Ldc_I4, state);
+            il.EmitSaveLocal(finallyJumpState!.LocalIndex);
+            il.Emit(OpCodes.Leave, this.label);
             return;
         }
 
