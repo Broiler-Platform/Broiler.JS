@@ -1,4 +1,6 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+
 namespace Broiler.JavaScript.Runtime;
 
 public partial class JSObject
@@ -216,12 +218,31 @@ public partial class JSObject
         if (first is not JSObject jobj)
             return JSValue.CreateArray();
 
-        var en = jobj.GetAllKeys(false, false);
         var r = JSValue.CreateArray();
+        HashSet<uint> emittedSymbols = null;
+
+        var en = jobj.GetAllKeys(false, false);
         while (en.MoveNext(out var hasValue, out var value, out var index))
         {
-            if (hasValue && ShouldIncludeOwnPropertyKey(value, includeSymbols: true))
-                r.AddArrayItem(value);
+            if (!hasValue || !ShouldIncludeOwnPropertyKey(value, includeSymbols: true))
+                continue;
+
+            r.AddArrayItem(value);
+            if (value is IJSSymbol symbol)
+            {
+                emittedSymbols ??= [];
+                emittedSymbols.Add(symbol.Key);
+            }
+        }
+
+        foreach (var (key, property) in jobj.GetSymbols().AllValues())
+        {
+            if (property.IsEmpty || (emittedSymbols != null && emittedSymbols.Contains(key)))
+                continue;
+
+            var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(key)
+                ?? throw new InvalidOperationException($"Unknown symbol key {key}");
+            r.AddArrayItem((JSValue)symbol);
         }
 
         return r;

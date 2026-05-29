@@ -141,8 +141,7 @@ public partial class JSIteratorObject : JSObject
         for (int i = 0; i < a.Length; i++)
         {
             var item = a.GetAt(i);
-
-            if (item is not JSObject @object)
+            if (item is null || item.IsNullOrUndefined || item is not JSObject @object)
                 throw JSEngine.NewTypeError("Iterator.concat requires iterable arguments");
 
             var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];

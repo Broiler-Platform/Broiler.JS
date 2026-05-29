@@ -291,7 +291,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
         var ec = JSEngine.Current as IJSExecutionContext;
         var previousNewTarget = ec?.CurrentNewTarget;
-        var instancePrototype = previousNewTarget != null
+        var deferInstancePrototypeResolution = name.Value == "Promise";
+        var instancePrototype = !deferInstancePrototypeResolution && previousNewTarget != null
             ? ResolveInstancePrototype(previousNewTarget)
             : prototype;
 
@@ -315,6 +316,9 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
         if (r.IsObject)
         {
+            if (deferInstancePrototypeResolution && previousNewTarget != null)
+                instancePrototype = ResolveInstancePrototype(previousNewTarget);
+
             r.BasePrototypeObject = instancePrototype;
             return r;
         }

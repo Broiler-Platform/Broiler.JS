@@ -1,5 +1,6 @@
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 
 namespace Broiler.JavaScript.Parser;
@@ -91,8 +92,17 @@ partial class FastParser
                     if (!Parameters(out var parameters, checkForBracketStart: false))
                         throw stream.Unexpected();
 
-                    if (!Statement(out var body))
-                        throw stream.Unexpected();
+                    functionDepth++;
+                    AstStatement body;
+                    try
+                    {
+                        if (!Statement(out body))
+                            throw stream.Unexpected();
+                    }
+                    finally
+                    {
+                        functionDepth--;
+                    }
 
                     if (body.Type != FastNodeType.Block)
                         throw stream.Unexpected();

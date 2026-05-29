@@ -112,7 +112,6 @@ public partial class JSPromise : JSObject, IJSPromise
         if (!@delegate.IsFunction)
             throw JSEngine.NewTypeError("Promise resolver is not a function");
 
-        BasePrototypeObject = JSEngine.NewTargetPrototype;
         InitPromise();
         try
         {
