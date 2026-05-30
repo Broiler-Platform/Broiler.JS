@@ -368,7 +368,6 @@ test/built-ins/AggregateError/message-undefined-no-prop.js
 test/built-ins/AggregateError/newtarget-proto-custom.js
 test/built-ins/AggregateError/newtarget-proto-fallback.js
 test/built-ins/AggregateError/newtarget-proto.js
-test/built-ins/AggregateError/prototype/message.js
 test/built-ins/Array/S15.4.1_A2.2_T1.js
 test/built-ins/Array/S15.4.2.1_A2.2_T1.js
 test/built-ins/Array/S15.4_A1.1_T5.js
@@ -1177,12 +1176,6 @@ test/built-ins/Map/prototype/set/name.js
 test/built-ins/Map/prototype/values/name.js
 test/built-ins/MapIteratorPrototype/next/iteration-mutable.js
 test/built-ins/Math/Symbol.toStringTag.js
-test/built-ins/NativeErrors/EvalError/prototype/message.js
-test/built-ins/NativeErrors/RangeError/prototype/message.js
-test/built-ins/NativeErrors/ReferenceError/prototype/message.js
-test/built-ins/NativeErrors/SyntaxError/prototype/message.js
-test/built-ins/NativeErrors/TypeError/prototype/message.js
-test/built-ins/NativeErrors/URIError/prototype/message.js
 test/built-ins/NativeErrors/cause_property_native_error.js
 test/built-ins/Number/NEGATIVE_INFINITY/S15.7.3.5_A2.js
 test/built-ins/Number/NEGATIVE_INFINITY/prop-desc.js
