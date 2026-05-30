@@ -4232,12 +4232,6 @@ test/language/expressions/class/elements/derived-cls-indirect-eval-err-contains-
 test/language/expressions/class/elements/derived-cls-indirect-eval-err-contains-supercall.js
 test/language/expressions/class/elements/direct-eval-err-contains-arguments.js
 test/language/expressions/class/elements/direct-eval-err-contains-newtarget.js
-test/language/expressions/class/elements/evaluation-error/computed-name-referenceerror.js
-test/language/expressions/class/elements/evaluation-error/computed-name-toprimitive-err.js
-test/language/expressions/class/elements/evaluation-error/computed-name-toprimitive-returns-noncallable.js
-test/language/expressions/class/elements/evaluation-error/computed-name-toprimitive-returns-nonobject.js
-test/language/expressions/class/elements/evaluation-error/computed-name-tostring-err.js
-test/language/expressions/class/elements/evaluation-error/computed-name-valueof-err.js
 test/language/expressions/class/elements/field-declaration.js
 test/language/expressions/class/elements/field-definition-accessor-no-line-terminator.js
 test/language/expressions/class/elements/fields-anonymous-function-length.js
@@ -5798,8 +5792,6 @@ test/language/statements/class/elements/direct-eval-err-contains-arguments.js
 test/language/statements/class/elements/direct-eval-err-contains-newtarget.js
 test/language/statements/class/elements/fields-hash-constructor-is-a-valid-name.js
 test/language/statements/class/elements/grammar-private-field-optional-chaining.js
-test/language/statements/class/elements/init-value-defined-after-class.js
-test/language/statements/class/elements/init-value-incremental.js
 test/language/statements/class/elements/intercalated-static-non-static-computed-fields.js
 test/language/statements/class/elements/multiple-definitions-rs-static-async-generator-method-privatename-identifier-alt.js
 test/language/statements/class/elements/multiple-definitions-rs-static-async-generator-method-privatename-identifier.js
