@@ -440,7 +440,6 @@ test/built-ins/Array/prototype/Symbol.unscopables/array-find-from-last.js
 test/built-ins/Array/prototype/Symbol.unscopables/change-array-by-copy.js
 test/built-ins/Array/prototype/Symbol.unscopables/prop-desc.js
 test/built-ins/Array/prototype/Symbol.unscopables/value.js
-test/built-ins/Array/prototype/at/return-abrupt-from-this.js
 test/built-ins/Array/prototype/concat/15.4.4.4-5-c-i-1.js
 test/built-ins/Array/prototype/concat/Array.prototype.concat_array-like-negative-length.js
 test/built-ins/Array/prototype/concat/Array.prototype.concat_array-like-primitive-non-number-length.js
