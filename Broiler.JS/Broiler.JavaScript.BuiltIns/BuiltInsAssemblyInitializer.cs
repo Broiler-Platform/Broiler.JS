@@ -571,6 +571,7 @@ internal static class BuiltInsAssemblyInitializer
         var prototype = stringCtor.prototype;
         var atKey = KeyStrings.GetOrCreate("at");
         var trimStart = prototype[KeyStrings.GetOrCreate("trimStart")];
+        var trimEnd = prototype[KeyStrings.GetOrCreate("trimEnd")];
         if (prototype[atKey].IsUndefined)
         {
             prototype.FastAddValue(atKey, CreateNativeFunction(static (in Arguments a) =>
@@ -598,6 +599,10 @@ internal static class BuiltInsAssemblyInitializer
 
         if (!trimStart.IsUndefined)
             prototype.FastAddValue(KeyStrings.GetOrCreate("trimLeft"), trimStart, JSPropertyAttributes.ConfigurableValue);
+
+        if (!trimEnd.IsUndefined)
+            prototype.FastAddValue(KeyStrings.GetOrCreate("trimRight"), trimEnd, JSPropertyAttributes.ConfigurableValue);
+
         prototype.Dirty();
     }
 

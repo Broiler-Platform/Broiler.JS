@@ -40,7 +40,7 @@ public partial class JSString
     internal static JSValue Blink(in Arguments a) => CreateHtmlWrapper(in a, "blink");
 
     [JSPrototypeMethod]
-    [JSExport("@fixed", Length = 0)]
+    [JSExport("fixed", Length = 0)]
     internal static JSValue Fixed(in Arguments a) => CreateHtmlWrapper(in a, "tt");
 
     [JSPrototypeMethod]
