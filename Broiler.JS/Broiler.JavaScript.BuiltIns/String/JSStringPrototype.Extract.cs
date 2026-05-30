@@ -48,7 +48,7 @@ public partial class JSString
     }
 
     [JSPrototypeMethod]
-    [JSExport("substr")]
+    [JSExport("substr", Length = 2)]
     public static JSValue Substr(in Arguments a)
     {
         var @this = a.This.AsString();

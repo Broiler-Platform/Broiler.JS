@@ -10651,6 +10651,54 @@ public class BuiltInsTests
         Assert.Equal("function|Test262Error", result.ToString());
     }
 
+
+    [Fact]
+    public void AnnexB_String_Prototype_Metadata_Matches_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                function dataDescriptorSummary(object, key) {
+                    var descriptor = Object.getOwnPropertyDescriptor(object, key);
+                    return [
+                        descriptor && descriptor.writable,
+                        descriptor && descriptor.enumerable,
+                        descriptor && descriptor.configurable
+                    ].join(',');
+                }
+
+                function functionMetadata(fn) {
+                    var lengthDescriptor = Object.getOwnPropertyDescriptor(fn, 'length');
+                    var nameDescriptor = Object.getOwnPropertyDescriptor(fn, 'name');
+                    return [
+                        fn.length,
+                        lengthDescriptor && lengthDescriptor.writable,
+                        lengthDescriptor && lengthDescriptor.enumerable,
+                        lengthDescriptor && lengthDescriptor.configurable,
+                        fn.name,
+                        nameDescriptor && nameDescriptor.writable,
+                        nameDescriptor && nameDescriptor.enumerable,
+                        nameDescriptor && nameDescriptor.configurable
+                    ].join(',');
+                }
+
+                return [
+                    typeof String.prototype.fixed,
+                    functionMetadata(String.prototype.fixed),
+                    functionMetadata(String.prototype.substr),
+                    String.prototype.trimRight === String.prototype.trimEnd,
+                    dataDescriptorSummary(String.prototype, 'trimRight'),
+                    functionMetadata(String.prototype.trimRight)
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal(
+            "function|0,false,false,true,fixed,false,false,true|2,false,false,true,substr,false,false,true|true|true,false,true|0,false,false,true,trimEnd,false,false,true",
+            result.ToString());
+    }
+
     [Fact]
     public void BuiltIn_Function_Lengths_Bind_Call_Apply_Keys()
     {
