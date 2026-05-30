@@ -55,7 +55,9 @@ public class JSContextBuilder
     public static Expression EnsureCanDeclareGlobalFunction(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _EnsureCanDeclareGlobalFunction, key);
     public static Expression RegisterDirectEvalVariable(Expression variable) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _RegisterDirectEvalVariable, variable);
 
-    public static Expression NewTarget() => Current.PropertyExpression<IJSExecutionContext, CallStackItem>(() => (x) => x.Top).FieldExpression<CallStackItem, JSValue>(() => (x) => x.NewTarget);
+    public static Expression NewTarget() => Expression.Coalesce(
+        Current.PropertyExpression<IJSExecutionContext, CallStackItem>(() => (x) => x.Top).FieldExpression<CallStackItem, JSValue>(() => (x) => x.NewTarget),
+        JSUndefinedBuilder.Value);
 
     public static Expression Register(ParameterExpression lScope, ParameterExpression variable) => lScope.CallExpression<IJSExecutionContext, JSVariable, JSValue>(() => (x, a) => x.Register(a), variable);
 }

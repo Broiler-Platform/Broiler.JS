@@ -108,8 +108,12 @@ public class YBlockBuilder
 
     public YExpression Build()
     {
+        if (expressions.Count == 0)
+            return YExpression.Empty;
+
         if (variables.Count == 0 && expressions.Count == 1)
             return expressions.First();
+
         return new YBlockExpression(variables, expressions);
     }
 

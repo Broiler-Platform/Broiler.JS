@@ -259,8 +259,12 @@ public abstract class YExpression(YExpressionType nodeType, Type type)
 
     public static YExpression Block(IFastEnumerable<YExpression> expressions)
     {
+        if (expressions.Count == 0)
+            return Empty;
+
         if (expressions.Count == 1)
             return expressions.First();
+
         return new YBlockExpression(null, expressions);
     }
 

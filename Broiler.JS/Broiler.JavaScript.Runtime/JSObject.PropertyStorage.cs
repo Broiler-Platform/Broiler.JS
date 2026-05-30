@@ -1104,7 +1104,14 @@ public partial class JSObject
         if (HasIterator)
         {
             var v = this.GetValue(symbols[JSValue.SymbolIterator.Key]);
-            return new JSIterator(v.InvokeFunction(new Arguments(this)));
+            if (!v.IsFunction)
+                throw NewTypeError("@@iterator is not a function");
+
+            var iterator = v.InvokeFunction(new Arguments(this));
+            if (!iterator.IsObject)
+                throw NewTypeError("@@iterator result is not an object");
+
+            return new JSIterator(iterator);
         }
 
         return new ElementEnumerator(this);
@@ -1113,10 +1120,17 @@ public partial class JSObject
     public override IElementEnumerator GetIterableEnumerator()
     {
         var iterator = this[JSValue.SymbolIterator];
-        if (iterator.IsUndefined)
+        if (iterator.IsNullOrUndefined)
             throw NewTypeError(NotIterable(this));
 
-        return new JSIterator(iterator.InvokeFunction(new Arguments(this)));
+        if (!iterator.IsFunction)
+            throw NewTypeError("@@iterator is not a function");
+
+        var iteratorResult = iterator.InvokeFunction(new Arguments(this));
+        if (!iteratorResult.IsObject)
+            throw NewTypeError("@@iterator result is not an object");
+
+        return new JSIterator(iteratorResult);
     }
 
     public override IElementEnumerator GetAsyncElementEnumerator()
@@ -1125,7 +1139,14 @@ public partial class JSObject
             && (HasAsyncIterator || symbols.TryGetValue(JSValue.SymbolAsyncIterator.Key, out _)))
         {
             var v = this.GetValue(symbols[JSValue.SymbolAsyncIterator.Key]);
-            return new JSIterator(v.InvokeFunction(new Arguments(this)), awaitResult: true);
+            if (!v.IsFunction)
+                throw NewTypeError("@@asyncIterator is not a function");
+
+            var iterator = v.InvokeFunction(new Arguments(this));
+            if (!iterator.IsObject)
+                throw NewTypeError("@@asyncIterator result is not an object");
+
+            return new JSIterator(iterator, awaitResult: true);
         }
 
         return GetElementEnumerator();
@@ -1136,8 +1157,17 @@ public partial class JSObject
         if (JSValue.SymbolAsyncIterator != null)
         {
             var asyncIterator = this[JSValue.SymbolAsyncIterator];
-            if (!asyncIterator.IsUndefined)
-                return new JSIterator(asyncIterator.InvokeFunction(new Arguments(this)), awaitResult: true);
+            if (!asyncIterator.IsNullOrUndefined)
+            {
+                if (!asyncIterator.IsFunction)
+                    throw NewTypeError("@@asyncIterator is not a function");
+
+                var iterator = asyncIterator.InvokeFunction(new Arguments(this));
+                if (!iterator.IsObject)
+                    throw NewTypeError("@@asyncIterator result is not an object");
+
+                return new JSIterator(iterator, awaitResult: true);
+            }
         }
 
         return GetIterableEnumerator();

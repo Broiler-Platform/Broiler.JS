@@ -2507,4 +2507,70 @@ public class CompilerTests
     }
 
     #endregion
+    #region Issue 475 TypeError propagation
+
+    [Fact]
+    public void Compile_NewTarget_Call_Without_Constructor_Throws_TypeError()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                try {
+                    (function thunk() { new.target(); })();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })()
+            """);
+
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_ForOf_ArrayPattern_With_NonCallable_ArrayIterator_Throws_TypeError()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var saved = Array.prototype[Symbol.iterator];
+                try {
+                    Array.prototype[Symbol.iterator] = {};
+                    for (var [x, y, z] of [[1, 2, 3]]) {
+                        return 'no-throw';
+                    }
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                } finally {
+                    Array.prototype[Symbol.iterator] = saved;
+                }
+            })()
+            """);
+
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_Empty_Object_Destructuring_Null_ForOf_Throws_TypeError()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                try {
+                    for (var {} of [null]) {
+                        return 'no-throw';
+                    }
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })()
+            """);
+
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    #endregion
+
 }
