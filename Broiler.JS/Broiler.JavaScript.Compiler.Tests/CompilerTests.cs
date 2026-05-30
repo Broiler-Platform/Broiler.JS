@@ -1415,6 +1415,55 @@ public class CompilerTests
         Assert.Equal("true|true|true|true|true|true|true|true|true|true|true|true|false|false", result.ToString());
     }
 
+
+    [Fact]
+    public void Eval_Early_Errors_For_Invalid_Control_Flow_And_Super_Match_Test262()
+    {
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function errorName(callback) {
+                    try {
+                        callback();
+                        return 'no-error';
+                    } catch (error) {
+                        return error.constructor.name;
+                    }
+                }
+
+                var executed = false;
+                var superCallInFunction = errorName(function () {
+                    eval('executed = true; super();');
+                });
+
+                var indirectContinue = errorName(function () {
+                    (0, eval)('continue;');
+                });
+
+                var indirectSuperCall = errorName(function () {
+                    (0, eval)('executed = true; super();');
+                });
+
+                class Base {
+                    get test262() {
+                        return 262;
+                    }
+                }
+                class Derived extends Base {
+                    method() {
+                        return eval('super.test262;');
+                    }
+                }
+                var superPropInMethod = new Derived().method();
+
+                return [superCallInFunction, indirectContinue, indirectSuperCall, executed, superPropInMethod].join('|');
+            })();
+            """);
+
+        Assert.Equal("SyntaxError|SyntaxError|SyntaxError|false|262", result.ToString());
+    }
+
     [Fact]
     public void Compile_Direct_Eval_Delete_Preserves_Lexical_Nondeletable_And_Removes_Deletable_Vars()
     {

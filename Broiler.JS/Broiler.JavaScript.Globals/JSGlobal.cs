@@ -13,6 +13,7 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Symbol;
+using Broiler.JavaScript.Compiler;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.Globals;
@@ -110,6 +111,7 @@ public partial class JSGlobalStatic
         string location = null;
 
         (JSEngine.Current as IJSExecutionContext)?.DispatchEvalEvent(ref text, ref location);
+        DirectEvalSupport.ValidateIndirectEval(text);
         if (JSEngine.Current is JSContext context)
         {
             // This function is only reachable via indirect eval (e.g.

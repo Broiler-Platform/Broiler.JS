@@ -34,6 +34,7 @@ public static void ValidateProgram(
             throw new FastParseException(program.Start, "Invalid declaration in direct eval code");
         }
 
+        new ControlFlowValidator().Visit(program);
         new StrictModeValidator(inheritStrictMode, directEvalPrivateNames).Visit(program);
     }
 
@@ -175,6 +176,203 @@ public static void ValidateProgram(
         }
 
         return false;
+    }
+
+
+    private sealed class ControlFlowValidator : AstReduce
+    {
+        private int loopDepth;
+        private int switchDepth;
+        private readonly Stack<HashSet<string>> breakLabels = new();
+        private readonly Stack<HashSet<string>> continueLabels = new();
+
+        protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
+        {
+            Visit(functionExpression.Id);
+            var parameters = functionExpression.Params.GetFastEnumerator();
+            while (parameters.MoveNext(out var parameter))
+                VisitVariableDeclarator(parameter);
+
+            var previousLoopDepth = loopDepth;
+            var previousSwitchDepth = switchDepth;
+            var previousBreakLabels = breakLabels.ToArray();
+            var previousContinueLabels = continueLabels.ToArray();
+            breakLabels.Clear();
+            continueLabels.Clear();
+            loopDepth = 0;
+            switchDepth = 0;
+            try
+            {
+                Visit(functionExpression.Body);
+            }
+            finally
+            {
+                loopDepth = previousLoopDepth;
+                switchDepth = previousSwitchDepth;
+                RestoreLabels(breakLabels, previousBreakLabels);
+                RestoreLabels(continueLabels, previousContinueLabels);
+            }
+
+            return functionExpression;
+        }
+
+        protected override AstNode VisitBreakStatement(AstBreakStatement breakStatement)
+        {
+            var label = breakStatement.Label?.Name.Value;
+            if (label != null)
+            {
+                if (!HasLabel(breakLabels, label))
+                    throw new FastParseException(breakStatement.Start, $"No label found for {label}");
+                return breakStatement;
+            }
+
+            if (loopDepth == 0 && switchDepth == 0)
+                throw new FastParseException(breakStatement.Start, "Illegal break statement");
+
+            return breakStatement;
+        }
+
+        protected override AstNode VisitContinueStatement(AstContinueStatement continueStatement)
+        {
+            var label = continueStatement.Label?.Name.Value;
+            if (label != null)
+            {
+                if (!HasLabel(continueLabels, label))
+                    throw new FastParseException(continueStatement.Start, $"No label found for {label}");
+                return continueStatement;
+            }
+
+            if (loopDepth == 0)
+                throw new FastParseException(continueStatement.Start, "Illegal continue statement");
+
+            return continueStatement;
+        }
+
+        protected override AstNode VisitLabeledStatement(AstLabeledStatement labeledStatement)
+        {
+            var label = labeledStatement.Label.Span.Value;
+            var canContinue = labeledStatement.Body.Type is FastNodeType.WhileStatement
+                or FastNodeType.DoWhileStatement
+                or FastNodeType.ForStatement
+                or FastNodeType.ForInStatement
+                or FastNodeType.ForOfStatement;
+
+            PushLabel(breakLabels, label);
+            if (canContinue)
+                PushLabel(continueLabels, label);
+
+            try
+            {
+                return base.VisitLabeledStatement(labeledStatement);
+            }
+            finally
+            {
+                if (canContinue)
+                    continueLabels.Pop();
+                breakLabels.Pop();
+            }
+        }
+
+        protected override AstNode VisitWhileStatement(AstWhileStatement whileStatement, string label = null)
+            => VisitLoop(() => base.VisitWhileStatement(whileStatement, label));
+
+        protected override AstNode VisitDoWhileStatement(AstDoWhileStatement doWhileStatement, string label = null)
+            => VisitLoop(() => base.VisitDoWhileStatement(doWhileStatement, label));
+
+        protected override AstNode VisitForStatement(AstForStatement forStatement, string label = null)
+            => VisitLoop(() => base.VisitForStatement(forStatement, label));
+
+        protected override AstNode VisitForInStatement(AstForInStatement forInStatement, string label = null)
+            => VisitLoop(() => base.VisitForInStatement(forInStatement, label));
+
+        protected override AstNode VisitForOfStatement(AstForOfStatement forOfStatement, string label = null)
+            => VisitLoop(() => base.VisitForOfStatement(forOfStatement, label));
+
+        protected override AstNode VisitSwitchStatement(AstSwitchStatement switchStatement)
+        {
+            Visit(switchStatement.Target);
+            switchDepth++;
+            try
+            {
+                var cases = switchStatement.Cases.GetFastEnumerator();
+                while (cases.MoveNext(out var @case))
+                {
+                    Visit(@case.Test);
+                    var statements = @case.Statements.GetFastEnumerator();
+                    while (statements.MoveNext(out var statement))
+                        Visit(statement);
+                }
+            }
+            finally
+            {
+                switchDepth--;
+            }
+
+            return switchStatement;
+        }
+
+
+
+        protected override AstNode VisitCallExpression(AstCallExpression callExpression)
+        {
+            if (callExpression.Callee is AstSuper)
+            {
+                var arguments = callExpression.Arguments.GetFastEnumerator();
+                while (arguments.MoveNext(out var argument))
+                    Visit(argument);
+
+                return callExpression;
+            }
+
+            return base.VisitCallExpression(callExpression);
+        }
+
+        protected override AstNode VisitMemberExpression(AstMemberExpression memberExpression)
+        {
+            if (memberExpression.Object is AstSuper)
+            {
+                if (memberExpression.Computed)
+                    Visit(memberExpression.Property);
+
+                return memberExpression;
+            }
+
+            return base.VisitMemberExpression(memberExpression);
+        }
+
+        private AstNode VisitLoop(Func<AstNode> visit)
+        {
+            loopDepth++;
+            try
+            {
+                return visit();
+            }
+            finally
+            {
+                loopDepth--;
+            }
+        }
+
+        private static void PushLabel(Stack<HashSet<string>> labels, string label)
+            => labels.Push(new HashSet<string>(StringComparer.Ordinal) { label });
+
+        private static void RestoreLabels(Stack<HashSet<string>> labels, HashSet<string>[] snapshot)
+        {
+            labels.Clear();
+            for (var i = snapshot.Length - 1; i >= 0; i--)
+                labels.Push(snapshot[i]);
+        }
+
+        private static bool HasLabel(Stack<HashSet<string>> labels, string label)
+        {
+            foreach (var scope in labels)
+            {
+                if (scope.Contains(label))
+                    return true;
+            }
+
+            return false;
+        }
     }
 
     private sealed class StrictModeValidator : AstReduce
@@ -506,8 +704,32 @@ public static void ValidateProgram(
             return base.VisitIdentifier(identifier);
         }
 
+
+
+        protected override AstNode VisitCallExpression(AstCallExpression callExpression)
+        {
+            if (callExpression.Callee is AstSuper)
+            {
+                var arguments = callExpression.Arguments.GetFastEnumerator();
+                while (arguments.MoveNext(out var argument))
+                    Visit(argument);
+
+                return callExpression;
+            }
+
+            return base.VisitCallExpression(callExpression);
+        }
+
         protected override AstNode VisitMemberExpression(AstMemberExpression memberExpression)
         {
+            if (memberExpression.Object is AstSuper)
+            {
+                if (memberExpression.Computed)
+                    Visit(memberExpression.Property);
+
+                return memberExpression;
+            }
+
             if (!memberExpression.Computed
                 && memberExpression.Property is AstIdentifier identifier
                 && IsPrivateName(identifier)

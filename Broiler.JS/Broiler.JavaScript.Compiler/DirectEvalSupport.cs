@@ -75,7 +75,7 @@ public static class DirectEvalSupport
         }
     }
 
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] parameterBindings, string[] privateNamesInScope, bool useActivationBinding = false)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false)
     {
         if (!IsDirectEval(callee))
             return callee.InvokeFunction(arguments);
@@ -92,7 +92,7 @@ public static class DirectEvalSupport
         if (inheritStrictMode)
             text = "\"use strict\";\n" + text;
 
-        Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope);
+        Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall);
         var declaredBindings = disallowArgumentsDeclaration ? CollectProgramDeclaredBindings(text) : null;
 
         if (JSEngine.Current is JSContext context)
@@ -112,6 +112,60 @@ public static class DirectEvalSupport
         }
 
         return CoreScript.Evaluate(text, location);
+    }
+
+
+    private static void ValidateDirectEvalSuperUsage(AstProgram program, bool allowSuperProperty, bool allowSuperCall)
+        => new DirectEvalSuperValidator(allowSuperProperty, allowSuperCall).Visit(program);
+
+    private sealed class DirectEvalSuperValidator(bool allowSuperProperty, bool allowSuperCall) : AstReduce
+    {
+        protected override AstNode VisitCallExpression(AstCallExpression callExpression)
+        {
+            if (callExpression.Callee is AstSuper)
+            {
+                if (!allowSuperCall)
+                    throw new FastParseException(callExpression.Start, "Unexpected super call in eval code");
+
+                VisitArguments(callExpression.Arguments);
+                return callExpression;
+            }
+
+            return base.VisitCallExpression(callExpression);
+        }
+
+        protected override AstNode VisitMemberExpression(AstMemberExpression memberExpression)
+        {
+            if (memberExpression.Object is AstSuper)
+            {
+                if (!allowSuperProperty)
+                    throw new FastParseException(memberExpression.Start, "Unexpected super property in eval code");
+
+                if (memberExpression.Computed)
+                    Visit(memberExpression.Property);
+
+                return memberExpression;
+            }
+
+            return base.VisitMemberExpression(memberExpression);
+        }
+
+        protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
+        {
+            Visit(functionExpression.Id);
+            var parameters = functionExpression.Params.GetFastEnumerator();
+            while (parameters.MoveNext(out var parameter))
+                VisitVariableDeclarator(parameter);
+
+            return functionExpression;
+        }
+
+        private void VisitArguments(IFastEnumerable<AstExpression> arguments)
+        {
+            var enumerator = arguments.GetFastEnumerator();
+            while (enumerator.MoveNext(out var argument))
+                Visit(argument);
+        }
     }
 
     private static string[] CollectProgramDeclaredBindings(string text)
@@ -156,7 +210,10 @@ public static class DirectEvalSupport
         return !globalEval.IsUndefined && callee.StrictEquals(globalEval);
     }
 
-    private static void Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope)
+    public static void ValidateIndirectEval(string text)
+        => Validate(text, false, false, null, null, null, false, false);
+
+    private static void Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall)
     {
         if (inheritStrictMode && ContainsStrictReservedWordUsage(text))
             throw JSEngine.NewSyntaxError("Unexpected strict mode reserved word");
@@ -166,6 +223,7 @@ public static class DirectEvalSupport
             var pool = new FastPool();
             var parser = new FastParser(new FastTokenStream(pool, text));
             var program = parser.ParseProgram();
+            ValidateDirectEvalSuperUsage(program, allowSuperProperty, allowSuperCall);
             SyntaxValidation.ValidateProgram(program, text, inheritStrictMode, lexicalBindings, privateNamesInScope);
             if (parameterBindings?.Length > 0
                 && SyntaxValidation.ContainsDirectEvalVarConflict(program.Statements, parameterBindings))
