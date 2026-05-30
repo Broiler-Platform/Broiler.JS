@@ -86,55 +86,140 @@ internal static class ListExtensions
             && p.RefKind == RefKind.In
             && p.Type.Name == "Arguments";
 
-    public static unsafe string ToCamelCase(this string @this)
+    public static string ToCamelCase(this string @this)
     {
         var length = @this.Length;
         if (length == 0)
         {
             return string.Empty;
         }
+
         var d = new char[length];
-        fixed (char* start = @this)
+        var i = 0;
+        for (; i < length; i++)
         {
-            char* startOffset = start;
-            int i;
-            for (i = 0; i < length; i++)
+            var ch = @this[i];
+            d[i] = char.ToLower(ch);
+            if (!char.IsUpper(ch))
             {
-                var ch = *startOffset++;
-                d[i] = char.ToLower(ch);
-                if (!char.IsUpper(ch))
-                {
-                    i++;
-                    break;
-                }
-            }
-            for (; i < length; i++)
-            {
-                d[i] = *startOffset++;
-            }
-        }
-        return new string(d);
-    }
-    public static string GetOrCreateName(this List<string> list, string name, string className = "Names")
-    {
-        switch(name)
-        {
-            case "case":
-            case "catch":
-            case "finally":
-            case "return":
-            case "throw":
-            case "try":
-            case "is":
-            case "for":
-                name = "@" + name;
+                i++;
                 break;
+            }
         }
 
-        if (!list.Contains(name))
+        for (; i < length; i++)
         {
-            list.Add(name);
+            d[i] = @this[i];
         }
-        return className + "." + name;
+
+        return new string(d);
+    }
+
+    public static string GetOrCreateName(this List<string> list, string name, string className = "Names")
+    {
+        var identifier = name.ToCSharpIdentifier();
+
+        if (!list.Contains(identifier))
+        {
+            list.Add(identifier);
+        }
+        return className + "." + identifier;
+    }
+
+    public static string ToCSharpIdentifier(this string name)
+    {
+        return IsCSharpKeyword(name) ? "@" + name : name;
+    }
+
+    public static string ToUnescapedCSharpIdentifier(this string name)
+    {
+        return name.StartsWith("@") ? name.Substring(1) : name;
+    }
+
+    private static bool IsCSharpKeyword(string name)
+    {
+        switch (name)
+        {
+            case "abstract":
+            case "as":
+            case "base":
+            case "bool":
+            case "break":
+            case "byte":
+            case "case":
+            case "catch":
+            case "char":
+            case "checked":
+            case "class":
+            case "const":
+            case "continue":
+            case "decimal":
+            case "default":
+            case "delegate":
+            case "do":
+            case "double":
+            case "else":
+            case "enum":
+            case "event":
+            case "explicit":
+            case "extern":
+            case "false":
+            case "finally":
+            case "fixed":
+            case "float":
+            case "for":
+            case "foreach":
+            case "goto":
+            case "if":
+            case "implicit":
+            case "in":
+            case "int":
+            case "interface":
+            case "internal":
+            case "is":
+            case "lock":
+            case "long":
+            case "namespace":
+            case "new":
+            case "null":
+            case "object":
+            case "operator":
+            case "out":
+            case "override":
+            case "params":
+            case "private":
+            case "protected":
+            case "public":
+            case "readonly":
+            case "ref":
+            case "return":
+            case "sbyte":
+            case "sealed":
+            case "short":
+            case "sizeof":
+            case "stackalloc":
+            case "static":
+            case "string":
+            case "struct":
+            case "switch":
+            case "this":
+            case "throw":
+            case "true":
+            case "try":
+            case "typeof":
+            case "uint":
+            case "ulong":
+            case "unchecked":
+            case "unsafe":
+            case "ushort":
+            case "using":
+            case "virtual":
+            case "void":
+            case "volatile":
+            case "while":
+                return true;
+            default:
+                return false;
+        }
     }
 }

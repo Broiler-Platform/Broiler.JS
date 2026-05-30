@@ -54,12 +54,11 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
             sb = sb.AppendLine($"partial class {type.Name} {{");
 
             var className = type.JSClassName;
+            var classKeyName = type.Globals ? null : names.GetOrCreateName(className);
             var hasBaseClasse = type.BaseClrClassName != null;
 
             if (!type.Globals)
             {
-
-                names.GetOrCreateName(className);
 
                 if (IsPrimitive(className))
                 {
@@ -67,7 +66,7 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                 }
                 else
                 {
-                    sb = sb.AppendLine($"protected override JSValue GetCurrentPrototype() => ((JSEngine.Current as JSObject)?[{names.GetOrCreateName(className)}] as JSFunction)?.prototype;");
+                    sb = sb.AppendLine($"protected override JSValue GetCurrentPrototype() => ((JSEngine.Current as JSObject)?[{classKeyName}] as JSFunction)?.prototype;");
                 }
 
                 sb = sb.AppendLine($"internal protected {type.Name}(JSObject prototype = null): base(prototype) {{}}");
@@ -97,7 +96,7 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                 sb.AppendLine($@"
                     var @class = new JSObject();
                     if (register) {{
-                        context.FastAddValue(Names.{className}, @class, JSPropertyAttributes.ConfigurableValue);
+                        context.FastAddValue({classKeyName}, @class, JSPropertyAttributes.ConfigurableValue);
                     }}
                 ");
             }
@@ -126,7 +125,7 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                             , ""{fxToString}""
                             {l});
                         if (register) {{
-                            context.FastAddValue(Names.{className}, @class, JSPropertyAttributes.ConfigurableValue);
+                            context.FastAddValue({classKeyName}, @class, JSPropertyAttributes.ConfigurableValue);
                         }}
                         var prototype = @class.prototype;
                         @class.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
@@ -140,7 +139,7 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                             , ""{fxToString}""
                             {l});
                         if (register) {{
-                            context.FastAddValue(Names.{className}, @class, JSPropertyAttributes.ConfigurableValue);
+                            context.FastAddValue({classKeyName}, @class, JSPropertyAttributes.ConfigurableValue);
                         }}
                         var prototype = @class.prototype;
                         @class.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);

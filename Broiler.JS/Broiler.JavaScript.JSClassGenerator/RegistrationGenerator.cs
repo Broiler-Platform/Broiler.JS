@@ -38,7 +38,8 @@ internal class RegistrationGenerator(
 
         foreach (var name in names)
         {
-            if (type.GetMembers(name).Any(x => x.Name == name))
+            var memberName = name.ToUnescapedCSharpIdentifier();
+            if (type.GetMembers(memberName).Any(x => x.Name == memberName))
                 continue;
             sb.AppendLine($"public static readonly KeyString {name};");
         }
@@ -46,12 +47,7 @@ internal class RegistrationGenerator(
         sb.AppendLine($"static {type.Name}() {{");
         foreach (var name in names)
         {
-            if (name.StartsWith("@"))
-            {
-                sb.AppendLine($"{type.Name}.{name} = \"{name.Substring(1)}\";");
-                continue;
-            }
-            sb.AppendLine($"{type.Name}.{name} = \"{name}\";");
+            sb.AppendLine($"{type.Name}.{name} = \"{name.ToUnescapedCSharpIdentifier()}\";");
         }
         sb.AppendLine("}");
 
