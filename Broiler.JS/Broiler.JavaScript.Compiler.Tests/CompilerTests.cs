@@ -178,6 +178,16 @@ public class CompilerTests
         Assert.Equal("RangeError|TypeError|TypeError", result.ToString());
     }
 
+
+    [Fact]
+    public void Compile_ClassStaticBlock_RunsWithClassThis()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("class C { static { this.value = 42; } } C.value;");
+
+        Assert.Equal(42.0, result.DoubleValue);
+    }
+
     [Fact]
     public void Compile_ArrowFunction_ArrayDestructuringElisions_Work()
     {
