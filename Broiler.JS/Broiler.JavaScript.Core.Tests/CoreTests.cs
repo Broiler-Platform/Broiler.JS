@@ -62,4 +62,22 @@ public class CoreTests
         var result = ctx.Eval("(function(a, b) { return a + b; })(3, 4)");
         Assert.Equal(7.0, result.DoubleValue);
     }
+
+    [Fact]
+    public async Task JSContext_EvalWithTopLevelAwaitAsync_Allows_Standalone_Fixture_Await()
+    {
+        using var ctx = new JSContext();
+
+        var result = await ctx.EvalWithTopLevelAwaitAsync("await Promise.resolve('ready'); 42;");
+
+        Assert.Equal(42.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void JSContext_Eval_StillRejects_TopLevelAwait_ByDefault()
+    {
+        using var ctx = new JSContext();
+
+        Assert.ThrowsAny<Exception>(() => ctx.Eval("await Promise.resolve('ready');"));
+    }
 }
