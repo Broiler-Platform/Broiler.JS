@@ -23,7 +23,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
     internal bool done;
     private bool executing;
 
-    public JSGenerator(in Arguments a) : base(JSEngine.NewTargetPrototype) => throw new NotImplementedException();
+    public JSGenerator(in Arguments a) : base(JSEngine.NewTargetPrototype) => throw JSEngine.NewTypeError("Generator is not a constructor");
 
     public JSGenerator(IElementEnumerator en, string name) : this()
     {

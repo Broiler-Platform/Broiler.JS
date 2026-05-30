@@ -58,7 +58,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     public override int Length { get => length; set => throw new NotSupportedException(); }
     public bool HasIntegerIndexedElements => length > 0;
 
-    public JSTypedArray(in Arguments a) : this(JSEngine.NewTargetPrototype) => throw new NotSupportedException();
+    public JSTypedArray(in Arguments a) : this(JSEngine.NewTargetPrototype) => throw JSEngine.NewTypeError("TypedArray is not a constructor");
 
     public JSTypedArray(in TypedArrayParameters p): this(p.prototype) 
     {
