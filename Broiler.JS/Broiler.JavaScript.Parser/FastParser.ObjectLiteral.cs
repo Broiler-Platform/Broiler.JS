@@ -48,14 +48,21 @@ partial class FastParser
         {
             if (checkContextualKeyword && (isSet || isGet))
             {
+                var accessorNameStart = Location;
                 if (ObjectProperty(out property, isClass: isClass, isAsync: isAsync))
                 {
-                    property = new AstClassProperty(current, property.End, isSet ? AstPropertyKind.Set : AstPropertyKind.Get, property.IsPrivate, isStatic, property.Key, property.Computed, property.Init, property.UsesColon, property.UsesAssign);
-                    return true;
+                    if (property.Kind == AstPropertyKind.Method)
+                    {
+                        property = new AstClassProperty(current, property.End, isSet ? AstPropertyKind.Set : AstPropertyKind.Get, property.IsPrivate, isStatic, property.Key, property.Computed, property.Init, property.UsesColon, property.UsesAssign);
+                        return true;
+                    }
+
+                    accessorNameStart.Reset();
                 }
             }
 
-            stream.SkipNewLines();
+            var propertyNameEnd = PreviousToken;
+            var separator = stream.SkipNewLines();
 
             if (stream.CheckAndConsume(TokenTypes.Assign))
             {
@@ -125,6 +132,11 @@ partial class FastParser
                 {
                     scope.Dispose();
                 }
+            }
+            else if (isClass && (separator.LinesSkipped || stream.Current.Type == TokenTypes.SemiColon || stream.Current.Type == TokenTypes.CurlyBracketEnd || stream.Current.Type == TokenTypes.EOF))
+            {
+                property = new AstClassProperty(current, propertyNameEnd, AstPropertyKind.Data, isPrivate, isStatic, key, computed, null);
+                return true;
             }
             else if (stream.Current.Type == TokenTypes.Comma || stream.Current.Type == TokenTypes.CurlyBracketEnd || stream.Current.Type == TokenTypes.EOF)
             {

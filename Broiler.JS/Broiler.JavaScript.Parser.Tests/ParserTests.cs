@@ -160,6 +160,41 @@ public class ParserTests
         AssertAsyncMethod(properties[1], "set");
     }
 
+
+    [Fact]
+    public void ParseProgram_ClassBody_Allows_FieldDefinitions_Without_Initializers()
+    {
+        var stream = new FastTokenStream(new StringSpan("""
+            class C {
+                'a';
+                "b"
+                c = 39
+                #d;
+                static static;
+                static ["e"];
+                m() { return this.c; }
+            }
+            """));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements.ToArray()));
+        var classExpression = Assert.IsType<AstClassExpression>(statement.Expression);
+        var properties = classExpression.Members.ToArray();
+
+        Assert.Equal(7, properties.Length);
+        Assert.All(properties.Take(6), property => Assert.Equal(AstPropertyKind.Data, property.Kind));
+        Assert.Null(properties[0].Init);
+        Assert.Null(properties[1].Init);
+        Assert.NotNull(properties[2].Init);
+        Assert.Null(properties[3].Init);
+        Assert.True(properties[3].IsPrivate);
+        Assert.True(properties[4].IsStatic);
+        Assert.True(properties[5].IsStatic);
+        Assert.True(properties[5].Computed);
+        Assert.Equal(AstPropertyKind.Method, properties[6].Kind);
+    }
+
     [Theory]
     [InlineData("class C { static *#m([]) { return 1; } }", false)]
     [InlineData("class C { static async *#m([]) { return 1; } }", true)]
