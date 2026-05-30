@@ -113,18 +113,31 @@ partial class FastCompiler
         var bodyList = YExpression.Block(bodyListItems);
 
         // Build a void finally body – must not leave values on the stack.
+        // IteratorClose preserves an active throw completion even if return()
+        // itself throws; return() errors are only observable for non-throw
+        // abrupt completions such as break/return.
+        var caughtException = scope.Top.CreateException("#forOfIteratorClose");
         var closeIterator = YExpression.Block(
             YExpression.IfThen(
                 YExpression.Not(iterDoneVar),
-                YExpression.IfThen(
-                    YExpression.NotEqual(YExpression.Convert(returnableVar, typeof(object)), YExpression.Null),
-                    YExpression.Block(
-                        YExpression.Call(returnableVar, ReturnableEnumeratorReturnMethod),
-                        YExpression.Empty))),
+                YExpression.Block(
+                    YExpression.Call(null, CloseIteratorMethod, returnableVar),
+                    YExpression.Empty)),
             YExpression.Empty);
+        var closeIteratorAfterThrow = YExpression.Block(
+            YExpression.IfThen(
+                YExpression.Not(iterDoneVar),
+                YExpression.Block(
+                    YExpression.Call(null, CloseIteratorIgnoringErrorsMethod, returnableVar),
+                    YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                    YExpression.Empty)),
+            YExpression.Throw(caughtException.Expression));
 
         var loop = YExpression.Loop(bodyList, s.Break, s.Continue);
-        var tryFinally = YExpression.TryFinally(loop, closeIterator);
+        var tryFinally = YExpression.TryCatchFinally(
+            loop,
+            closeIterator,
+            YExpression.Catch(caughtException.Variable, closeIteratorAfterThrow));
 
         var r = YExpression.Block(pList,
             YExpression.Assign(completionVar, JSUndefinedBuilder.Value),

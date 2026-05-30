@@ -2571,6 +2571,69 @@ public class CompilerTests
         Assert.Equal("TypeError", result.ToString());
     }
 
+
+    [Fact]
+    public void Compile_ForOf_ArrayDestructuring_Preserves_TypeError_When_IteratorReturn_Throws()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var iterable = {};
+                iterable[Symbol.iterator] = function () {
+                    return {
+                        next() {
+                            return { value: [null], done: false };
+                        },
+                        return() {
+                            throw new Error('iterator return should not mask destructuring error');
+                        }
+                    };
+                };
+
+                try {
+                    for (var [[]] of iterable) {
+                        return 'no-throw';
+                    }
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })()
+            """);
+
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_ArrayDestructuring_Assignment_Preserves_TypeError_When_IteratorReturn_Throws()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var iterable = {};
+                iterable[Symbol.iterator] = function () {
+                    return {
+                        next() {
+                            return { value: null, done: false };
+                        },
+                        return() {
+                            throw new Error('iterator return should not mask destructuring error');
+                        }
+                    };
+                };
+
+                try {
+                    [[]] = iterable;
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })()
+            """);
+
+        Assert.Equal("TypeError", result.ToString());
+    }
+
     #endregion
 
 }

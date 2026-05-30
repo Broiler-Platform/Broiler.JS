@@ -17,15 +17,35 @@ partial class FastCompiler
     private static readonly MethodInfo RequireObjectCoercibleMethod = typeof(JSObjectStatic)
         .InternalMethod(nameof(JSObjectStatic.RequireObjectCoercible), typeof(JSValue))
         ?? throw new InvalidOperationException("JSObjectStatic.RequireObjectCoercible(JSValue) not found");
-    private static readonly MethodInfo ReturnableEnumeratorReturnMethod = typeof(IReturnableEnumerator)
-        .GetMethod(nameof(IReturnableEnumerator.Return), Type.EmptyTypes)
-        ?? throw new InvalidOperationException("IReturnableEnumerator.Return() not found");
+    private static readonly MethodInfo CloseIteratorMethod = typeof(FastCompiler)
+        .GetMethod(nameof(CloseIterator), BindingFlags.NonPublic | BindingFlags.Static, [typeof(IReturnableEnumerator)])
+        ?? throw new InvalidOperationException("FastCompiler.CloseIterator(IReturnableEnumerator) not found");
+    private static readonly MethodInfo CloseIteratorIgnoringErrorsMethod = typeof(FastCompiler)
+        .GetMethod(nameof(CloseIteratorIgnoringErrors), BindingFlags.NonPublic | BindingFlags.Static, [typeof(IReturnableEnumerator)])
+        ?? throw new InvalidOperationException("FastCompiler.CloseIteratorIgnoringErrors(IReturnableEnumerator) not found");
     private static readonly MethodInfo PrepareAnonymousFunctionNameForDestructuringMethod = typeof(JSVariable)
         .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForDestructuring), [typeof(JSValue), typeof(string), typeof(bool)])
         ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForDestructuring(JSValue, string, bool) not found");
     private static readonly MethodInfo NormalizePropertyKeyMethod = typeof(JSValue)
         .GetMethod("NormalizePropertyKey", BindingFlags.NonPublic | BindingFlags.Static, [typeof(JSValue)])
         ?? throw new InvalidOperationException("JSValue.NormalizePropertyKey(JSValue) not found");
+
+
+    private static void CloseIterator(IReturnableEnumerator returnable)
+    {
+        returnable?.Return();
+    }
+
+    private static void CloseIteratorIgnoringErrors(IReturnableEnumerator returnable)
+    {
+        try
+        {
+            returnable?.Return();
+        }
+        catch
+        {
+        }
+    }
 
     private YExpression VisitAssignmentExpression(AstExpression left, TokenTypes assignmentOperator, AstExpression right)
     {
@@ -385,17 +405,27 @@ partial class FastCompiler
 
                     var arrayInitBlock = YExpression.Block(arrayInits);
                     // Build a void finally body – only close iterator if NOT exhausted.
+                    var caughtException = scope.Top.CreateException("#arrayDestructuringIteratorClose");
                     var closeIterator = YExpression.Block(
                         YExpression.IfThen(
                             YExpression.Not(iterDoneVar),
-                            YExpression.IfThen(
-                                YExpression.NotEqual(YExpression.Convert(returnableVar.Expression, typeof(object)), YExpression.Null),
-                                YExpression.Block(
-                                        YExpression.Call(returnableVar.Expression, ReturnableEnumeratorReturnMethod),
-                                    YExpression.Empty))),
+                            YExpression.Block(
+                                YExpression.Call(null, CloseIteratorMethod, returnableVar.Expression),
+                                YExpression.Empty)),
                         YExpression.Empty);
+                    var closeIteratorAfterThrow = YExpression.Block(
+                        YExpression.IfThen(
+                            YExpression.Not(iterDoneVar),
+                            YExpression.Block(
+                                YExpression.Call(null, CloseIteratorIgnoringErrorsMethod, returnableVar.Expression),
+                                YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                                YExpression.Empty)),
+                        YExpression.Throw(caughtException.Expression));
 
-                    inits.Add(YExpression.TryFinally(arrayInitBlock, closeIterator));
+                    inits.Add(YExpression.TryCatchFinally(
+                        arrayInitBlock,
+                        closeIterator,
+                        YExpression.Catch(caughtException.Variable, closeIteratorAfterThrow)));
                 }
 
                 return;
