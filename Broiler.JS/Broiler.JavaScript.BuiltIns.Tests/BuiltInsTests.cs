@@ -115,6 +115,64 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void TypedArray_BaseConstructor_Throws_TypeError_When_Called_Or_Constructed()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var TypedArray = Object.getPrototypeOf(Int8Array);
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () { TypedArray(); }),
+                    thrownCtor(function () { new TypedArray(); }),
+                    thrownCtor(function () { TypedArray(1); }),
+                    thrownCtor(function () { new TypedArray(1); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Generator_BaseConstructor_Throws_TypeError_When_Called_Or_Constructed()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var Generator = Object.getPrototypeOf(function* () {});
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () { Generator(); }),
+                    thrownCtor(function () { new Generator(); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Symbol_Primitives_And_Wrappers_Are_Not_Callable()
     {
         EnsureBuiltInsLoaded();
