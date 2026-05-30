@@ -21,7 +21,10 @@ namespace BroilerJS
 
             // DictionaryCodeCache.Current = new AssemblyCodeCache();
 
-            ILCodeGenerator.GenerateLogs = true;
+            ILCodeGenerator.GenerateLogs = string.Equals(
+                Environment.GetEnvironmentVariable("BROILER_GENERATE_IL_LOGS"),
+                "1",
+                StringComparison.Ordinal);
 
             var recognizedOptions = new HashSet<string>(StringComparer.Ordinal)
             {
