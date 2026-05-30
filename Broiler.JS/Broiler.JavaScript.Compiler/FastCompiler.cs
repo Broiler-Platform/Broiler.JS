@@ -49,6 +49,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         var context = JSEngine.Current as JSContext;
         isDirectEvalCompilation = context?.IsCompilingDirectEval ?? false;
         usesDirectEvalLocalVarEnvironment = context?.UsesDirectEvalLocalVarEnvironment ?? false;
+        var directEvalPrivateNames = isDirectEvalCompilation ? context?.DirectEvalPrivateNamesInScope : null;
 
         // add top level...
 
@@ -56,7 +57,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         var parser = new FastParser(new FastTokenStream(parserPool, code));
         var jScript = parser.ParseProgram();
         parserPool.Dispose();
-        SyntaxValidation.ValidateProgram(jScript, code.Value);
+        SyntaxValidation.ValidateProgram(jScript, code.Value, directEvalPrivateNames: directEvalPrivateNames);
         var isStrictProgram = HasUseStrictDirective(jScript);
 
         using var fx = scope.Push(new FastFunctionScope(pool, null, isAsync: jScript.IsAsync));

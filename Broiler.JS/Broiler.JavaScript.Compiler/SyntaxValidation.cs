@@ -779,9 +779,18 @@ public static void ValidateProgram(
         }
 
         private bool HasPrivateName(AstIdentifier identifier)
-            => identifier != null
-                && privateNameScopes.Count > 0
-                && privateNameScopes.Peek().Contains(identifier.Name.Value);
+        {
+            if (identifier == null)
+                return false;
+
+            foreach (var scope in privateNameScopes)
+            {
+                if (scope.Contains(identifier.Name.Value))
+                    return true;
+            }
+
+            return false;
+        }
 
         private static bool IsPrivateName(AstIdentifier identifier)
             => identifier != null && identifier.Name.Value.StartsWith("#", StringComparison.Ordinal);
