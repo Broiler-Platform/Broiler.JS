@@ -125,6 +125,7 @@ partial class FastCompiler
 
         var prototypeElements = new Sequence<YElementInit>();
         var staticElements = new Sequence<YBinding>();
+        var staticBlocks = new Sequence<AstClassProperty>();
 
         // need to save super..
         // create a super variable...
@@ -161,6 +162,10 @@ partial class FastCompiler
             // var el = property.IsStatic ? staticElements : prototypeElements;
             switch (property.Kind)
             {
+                case AstPropertyKind.Init:
+                    staticBlocks.Add(property);
+                    break;
+
                 case AstPropertyKind.Data:
                     if (property.IsStatic)
                     {
@@ -273,10 +278,19 @@ partial class FastCompiler
             var v = this.scope.Top.CreateVariable(id.Name);
             stmts.Add(YExpression.Assign(v.Expression, retValue));
         }
-        else
+
+        if (staticBlocks.Any())
         {
-            stmts.Add(retValue);
+            var staticBlockEnumerator = staticBlocks.GetFastEnumerator();
+            while (staticBlockEnumerator.MoveNext(out var staticBlock))
+            {
+                var function = staticBlock.Init as AstFunctionExpression;
+                var fx = CreateFunction(function, superVar, forceStrictMode: true, createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
+                stmts.Add(JSFunctionBuilder.InvokeFunction(fx, ArgumentsBuilder.NewEmpty(retValue)));
+            }
         }
+
+        stmts.Add(retValue);
 
         var result = YExpression.Block(new Sequence<YParameterExpression> { superVar, superPrototypeVar }, stmts);
         scope.Dispose();

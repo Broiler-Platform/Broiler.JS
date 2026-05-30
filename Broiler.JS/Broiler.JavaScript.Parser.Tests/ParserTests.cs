@@ -195,6 +195,25 @@ public class ParserTests
         Assert.Equal(AstPropertyKind.Method, properties[6].Kind);
     }
 
+
+    [Fact]
+    public void ParseProgram_ClassBody_Allows_StaticBlocks()
+    {
+        var stream = new FastTokenStream(new StringSpan("class C { static { let value = 1; let await; await; } }"));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements.ToArray()));
+        var classExpression = Assert.IsType<AstClassExpression>(statement.Expression);
+        var property = Assert.IsType<AstClassProperty>(Assert.Single(classExpression.Members.ToArray()));
+
+        Assert.Equal(AstPropertyKind.Init, property.Kind);
+        Assert.True(property.IsStatic);
+        Assert.Null(property.Key);
+        var function = Assert.IsType<AstFunctionExpression>(property.Init);
+        Assert.IsType<AstBlock>(function.Body);
+    }
+
     [Theory]
     [InlineData("class C { static *#m([]) { return 1; } }", false)]
     [InlineData("class C { static async *#m([]) { return 1; } }", true)]

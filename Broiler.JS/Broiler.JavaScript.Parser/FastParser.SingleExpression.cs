@@ -74,7 +74,9 @@ partial class FastParser
                 break;
 
             case FastKeywords.await:
-                return AwaitExpression(out node);
+                if (classStaticBlockDepth == 0)
+                    return AwaitExpression(out node);
+                break;
 
             case FastKeywords.super:
                 stream.Consume();

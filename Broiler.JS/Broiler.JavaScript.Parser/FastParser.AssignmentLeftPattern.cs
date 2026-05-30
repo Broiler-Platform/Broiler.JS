@@ -25,7 +25,10 @@ partial class FastParser
                 return true;
 
             case TokenTypes.Identifier:
-                if ((token.IsKeyword && (token.Keyword != FastKeywords.yield || inGeneratorBody)) || token.IsEscapedReservedWord)
+                if ((token.IsKeyword && token.Keyword != FastKeywords.await && (token.Keyword != FastKeywords.yield || inGeneratorBody)) || token.IsEscapedReservedWord)
+                    throw stream.Unexpected();
+
+                if (token.Keyword == FastKeywords.await && classStaticBlockDepth == 0)
                     throw stream.Unexpected();
                 stream.Consume();
                 node = new AstIdentifier(token);

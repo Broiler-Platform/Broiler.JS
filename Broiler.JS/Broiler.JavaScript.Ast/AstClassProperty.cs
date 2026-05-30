@@ -24,6 +24,9 @@ public class AstClassProperty(FastToken begin, FastToken last, AstPropertyKind p
         if (Kind == AstPropertyKind.Constructor)
             return $"constructor: {Init}";
 
+        if (Kind == AstPropertyKind.Init)
+            return $"static {Init}";
+
         if (IsStatic)
         {
             if (Kind == AstPropertyKind.Get)

@@ -9,6 +9,7 @@ namespace Broiler.JavaScript.Parser;
 partial class FastParser
 {
     FastToken lastObjectPropertyIndex;
+    int classStaticBlockDepth;
 
     bool ObjectProperty(out AstClassProperty property, bool checkContextualKeyword = true, bool isAsync = false, bool isClass = false)
     {
@@ -19,6 +20,25 @@ partial class FastParser
 
         var isStatic = isClass ? stream.CheckAndConsume(FastKeywords.@static) : false;
 
+        if (isStatic && stream.Current.Type == TokenTypes.CurlyBracketStart)
+        {
+            stream.Consume();
+            AstBlock block = null;
+            classStaticBlockDepth++;
+            try
+            {
+                if (!Block(out block))
+                    throw stream.Unexpected();
+            }
+            finally
+            {
+                classStaticBlockDepth--;
+            }
+
+            var function = new AstFunctionExpression(current, PreviousToken, false, false, false, null, Sequence<VariableDeclarator>.Empty, block);
+            property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Init, isPrivate: false, isStatic: true, propertyName: null, computed: false, init: function);
+            return true;
+        }
 
         // Check for async methods first. `async get foo()` / `async set foo()` remain
         // invalid ECMAScript syntax; `async get()` / `async set()` are async methods
