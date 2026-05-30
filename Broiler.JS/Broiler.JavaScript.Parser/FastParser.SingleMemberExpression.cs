@@ -112,7 +112,7 @@ partial class FastParser
                             new AstIdentifier(hashToken, $"#{privateIdentifier.Name.Value}"),
                             false,
                             false);
-                        break;
+                        continue;
                     }
 
                     var next = stream.Current;

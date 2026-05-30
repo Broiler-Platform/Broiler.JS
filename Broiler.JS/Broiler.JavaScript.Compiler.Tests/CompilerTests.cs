@@ -873,6 +873,38 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Private_Method_Call_Allows_Following_Call_Chain()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                class C {
+                    static async #$(value) {
+                        return await value;
+                    }
+                    static async #_(value) {
+                        return await value + 1;
+                    }; m() { return 42; }
+
+                    static async $(value) {
+                        return await this.#$(value);
+                    }
+                    static async _(value) {
+                        return await this.#_(value);
+                    }
+                }
+
+                var c = new C();
+                return Promise.all([C.$(1), C._(1)]).then(results => {
+                    return [c.m(), results[0], results[1]].join('|');
+                });
+            })()
+            """);
+
+        Assert.Equal("42|1|2", result.ToString());
+    }
+
+    [Fact]
     public void Compile_Class_Private_Methods_Infer_Function_Names()
     {
         using var ctx = new JSContext();
