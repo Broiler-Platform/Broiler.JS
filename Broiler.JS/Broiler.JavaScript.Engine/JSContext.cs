@@ -870,6 +870,30 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     }
 
     /// <summary>
+    /// Evaluates JavaScript code with top-level <c>await</c> enabled, then waits
+    /// for the returned promise and any pending host tasks before returning.
+    /// </summary>
+    public async Task<JSValue> EvalWithTopLevelAwaitAsync(string code, string codeFilePath = null, JSValue @this = null)
+    {
+        @this ??= this;
+        JSValue result;
+
+        using (CoreScript.AllowTopLevelAwaitScope())
+        {
+            var fx = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache);
+            result = fx(new Arguments(@this));
+        }
+
+        result = await AwaitThenableResultAsync(result);
+
+        var wt = WaitTask;
+        if (wt != null)
+            await wt;
+
+        return result;
+    }
+
+    /// <summary>
     /// Evaluates the given code, waits for the promise and returns task that
     /// completes till all timeouts/intervals are completed.
     /// </summary>
@@ -880,6 +904,11 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         if (wt != null)
             await wt;
 
+        return await AwaitThenableResultAsync(r);
+    }
+
+    private static async Task<JSValue> AwaitThenableResultAsync(JSValue r)
+    {
         if (r is IJSPromise promise)
             return await promise.Task;
 
