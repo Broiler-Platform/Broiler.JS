@@ -12,23 +12,15 @@ public partial class JSArray
     [JSExport("at", Length = 1)]
     public static JSValue At(in Arguments a)
     {
-        var index = a[0];
-        var @this = a.This;
-        var length = a.Length;
-        var i = index.IntegerValue;
+        var @this = ToArrayLikeObject(a.This);
+        var length = GetArrayLikeLengthLong(@this);
+        var relativeIndex = ToIntegerOrInfinity(a[0]);
+        var index = relativeIndex >= 0 ? relativeIndex : length + relativeIndex;
 
-        if (i < 0)
-        {
-            if (i < -length)
-                return JSUndefined.Value;
-
-            i += length;
-        }
-
-        if (i >= length)
+        if (index < 0 || index >= length)
             return JSUndefined.Value;
 
-        return @this.GetOwnProperty((uint)i);
+        return @this[JSValue.CreateNumber(index)];
     }
 
     [JSPrototypeMethod]

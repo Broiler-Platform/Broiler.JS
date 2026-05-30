@@ -12053,6 +12053,89 @@ public class BuiltInsTests
 
     #endregion
 
+    #region Array abrupt completion regressions
+
+    [Fact]
+    public void Array_At_Uses_ArrayLike_Length_And_Propagates_TypeError()
+    {
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    Array.prototype.at.call({ 0: 'first', length: 1 }, 0),
+                    thrownCtor(function () { Array.prototype.at.call({ length: Symbol() }, 0); })
+                ].join('|');
+            })();
+        """);
+
+        Assert.Equal("first|TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Array_FlatMap_Throws_TypeError_For_NonCallable_Callback_Before_Species()
+    {
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var array = [];
+                array.constructor = {
+                    get [Symbol.species]() {
+                        throw new RangeError('species should not be read first');
+                    }
+                };
+
+                return thrownCtor(function () { array.flatMap(null); });
+            })();
+        """);
+
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Array_Fill_Propagates_TypeError_From_Start_And_End_Conversions()
+    {
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () { Array.prototype.fill.call({ length: 1 }, 0, Symbol()); }),
+                    thrownCtor(function () { Array.prototype.fill.call({ length: 1 }, 0, 0, Symbol()); })
+                ].join('|');
+            })();
+        """);
+
+        Assert.Equal("TypeError|TypeError", result.ToString());
+    }
+
+    #endregion
+
     #region RegExp Symbol.search lastIndex TypeError
 
     [Fact]
