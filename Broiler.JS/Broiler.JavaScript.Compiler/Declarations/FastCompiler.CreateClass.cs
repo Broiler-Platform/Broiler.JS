@@ -163,7 +163,7 @@ partial class FastCompiler
         var computedMemberNames = new Dictionary<AstClassProperty, YExpression>();
         var classScopeVariables = new Sequence<YParameterExpression> { superVar, superPrototypeVar };
         AstFunctionExpression constructor = null;
-        var directEvalPrivateNames = CollectPrivateNames(body.Members);
+        var directEvalPrivateNames = CombinePrivateNames(this.scope.Top.DirectEvalPrivateNames, CollectPrivateNames(body.Members));
 
         var en = body.Members.GetFastEnumerator();
         while (en.MoveNext(out var property))
@@ -317,6 +317,21 @@ partial class FastCompiler
         var result = YExpression.Block(classScopeVariables, stmts);
         scope.Dispose();
         return result;
+    }
+
+    private static string[] CombinePrivateNames(string[] outerPrivateNames, string[] ownPrivateNames)
+    {
+        if (outerPrivateNames == null || outerPrivateNames.Length == 0)
+            return ownPrivateNames;
+
+        if (ownPrivateNames == null || ownPrivateNames.Length == 0)
+            return outerPrivateNames;
+
+        var privateNames = new HashSet<string>(outerPrivateNames, StringComparer.Ordinal);
+        foreach (var privateName in ownPrivateNames)
+            privateNames.Add(privateName);
+
+        return [.. privateNames];
     }
 
     private static string[] CollectPrivateNames(IFastEnumerable<AstClassProperty> members)

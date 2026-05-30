@@ -74,6 +74,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     private int directEvalDepth;
     private int directEvalCompilationDepth;
     private int directEvalLocalVarEnvironmentDepth;
+    private readonly List<string[]> directEvalPrivateNameScopes = [];
     private readonly List<DirectEvalScope> activeDirectEvalScopes = [];
     private readonly List<CallStackItem> directEvalActivationOwners = [];
     private WithScope withScope;
@@ -314,6 +315,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         private readonly int savedCompilationDepth;
         private readonly int savedLocalVarDepth;
         private readonly int savedEvalDepth;
+        private readonly string[][] savedPrivateNameScopes;
         private readonly DirectEvalScope[] suspendedScopes;
 
         public DirectEvalSuspension(JSContext context)
@@ -324,9 +326,11 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             savedCompilationDepth = context.directEvalCompilationDepth;
             savedLocalVarDepth = context.directEvalLocalVarEnvironmentDepth;
             savedEvalDepth = context.directEvalDepth;
+            savedPrivateNameScopes = context.directEvalPrivateNameScopes.ToArray();
             context.directEvalCompilationDepth = 0;
             context.directEvalLocalVarEnvironmentDepth = 0;
             context.directEvalDepth = 0;
+            context.directEvalPrivateNameScopes.Clear();
 
             // Suspend all overlay scopes (innermost first)
             suspendedScopes = context.activeDirectEvalScopes.ToArray();
@@ -344,6 +348,8 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             context.directEvalCompilationDepth = savedCompilationDepth;
             context.directEvalLocalVarEnvironmentDepth = savedLocalVarDepth;
             context.directEvalDepth = savedEvalDepth;
+            context.directEvalPrivateNameScopes.Clear();
+            context.directEvalPrivateNameScopes.AddRange(savedPrivateNameScopes);
         }
     }
 
@@ -352,14 +358,17 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         public void Dispose()
         {
             context.directEvalCompilationDepth--;
+            if (context.directEvalPrivateNameScopes.Count > 0)
+                context.directEvalPrivateNameScopes.RemoveAt(context.directEvalPrivateNameScopes.Count - 1);
             if (usesLocalVarEnvironment)
                 context.directEvalLocalVarEnvironmentDepth--;
         }
     }
 
-    public IDisposable PushDirectEvalCompilation(bool usesLocalVarEnvironment = false)
+    public IDisposable PushDirectEvalCompilation(bool usesLocalVarEnvironment = false, string[] privateNamesInScope = null)
     {
         directEvalCompilationDepth++;
+        directEvalPrivateNameScopes.Add(privateNamesInScope);
         if (usesLocalVarEnvironment)
             directEvalLocalVarEnvironmentDepth++;
 
@@ -368,6 +377,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
     public bool IsCompilingDirectEval => directEvalCompilationDepth > 0;
     public bool UsesDirectEvalLocalVarEnvironment => directEvalLocalVarEnvironmentDepth > 0;
+    public string[] DirectEvalPrivateNamesInScope => directEvalPrivateNameScopes.Count == 0 ? null : directEvalPrivateNameScopes[^1];
 
     public JSValue Register(JSVariable variable)
     {

@@ -934,6 +934,27 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Nested_Class_Direct_Eval_Can_Access_Outer_Private_Method()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                class C {
+                    #m() { return 'test262'; }
+
+                    method() {
+                        return eval('this.#m()');
+                    }
+                }
+
+                return new C().method();
+            })()
+            """);
+
+        Assert.Equal("test262", result.ToString());
+    }
+
+    [Fact]
     public void Compile_Class_Private_Methods_Infer_Function_Names()
     {
         using var ctx = new JSContext();

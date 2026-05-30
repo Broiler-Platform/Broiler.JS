@@ -107,7 +107,7 @@ public static class DirectEvalSupport
             using var ___ = disallowArgumentsDeclaration
                 ? new DeclaredBindingSnapshot(context, declaredBindings, ExtractBindingNames(capturedBindings))
                 : null;
-            using var __ = context.PushDirectEvalCompilation(requiresActivation);
+            using var __ = context.PushDirectEvalCompilation(requiresActivation, privateNamesInScope);
             return context.Eval(text, location, @this ?? context);
         }
 
