@@ -372,17 +372,22 @@ public partial class JSArray
     public static JSValue FlatMap(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
-        var result = CreateArraySpecies(@this, 0);
-        int depth = 1;
+        var length = GetArrayLikeLength(@this);
         var (callback, thisArg) = a.Get2();
+        if (callback is not JSFunction fn)
+            throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.flatMap");
+
+        var result = CreateArraySpecies(@this, 0);
         uint resultIndex = 0;
-        FlattenTo(result, @this, callback, thisArg, depth, ref resultIndex);
+        FlattenTo(result, @this, fn, thisArg, 1, ref resultIndex, length);
         return result;
     }
 
     private static void FlattenTo(JSObject result, JSObject @this, JSValue callback, JSValue thisArg, int depth, ref uint resultIndex)
+        => FlattenTo(result, @this, callback, thisArg, depth, ref resultIndex, GetArrayLikeLength(@this));
+
+    private static void FlattenTo(JSObject result, JSObject @this, JSValue callback, JSValue thisArg, int depth, ref uint resultIndex, uint length)
     {
-        var length = GetArrayLikeLength(@this);
         for (uint i = 0; i < length; i++)
         {
             // TryGetElement - to check for holes in array

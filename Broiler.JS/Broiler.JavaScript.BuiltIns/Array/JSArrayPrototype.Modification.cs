@@ -4,7 +4,6 @@ using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
-using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
@@ -89,15 +88,15 @@ public partial class JSArray
         var @this = ToArrayLikeObject(a.This);
         var (value, start, end) = a.Get3();
 
-        var len = (int)GetArrayLikeLength(@this);
-        var relativeStart = start.AsInt32OrDefault();
-        var relativeEnd = end.AsInt32OrDefault(len);
+        var len = GetArrayLikeLengthLong(@this);
+        var relativeStart = ToIntegerOrInfinity(start);
+        var relativeEnd = ToIntegerOrInfinity(end, len);
 
-        relativeStart = relativeStart < 0 ? Math.Max(len + relativeStart, 0) : Math.Min(relativeStart, len);
-        relativeEnd = relativeEnd < 0 ? Math.Max(len + relativeEnd, 0) : Math.Min(relativeEnd, len);
+        var startIndex = relativeStart < 0 ? Math.Max(len + relativeStart, 0) : Math.Min(relativeStart, len);
+        var endIndex = relativeEnd < 0 ? Math.Max(len + relativeEnd, 0) : Math.Min(relativeEnd, len);
 
-        for (; relativeStart < relativeEnd; relativeStart++)
-            SetIndexedValue(@this, (uint)relativeStart, value);
+        for (var index = startIndex; index < endIndex; index++)
+            SetIndexedValue(@this, (uint)index, value);
 
         return @this;
     }
