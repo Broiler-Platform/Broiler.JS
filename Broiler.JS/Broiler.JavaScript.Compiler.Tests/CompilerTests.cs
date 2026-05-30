@@ -873,6 +873,35 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Class_Public_Fields_Are_Enumerable_Writable_Configurable()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                class C {
+                    foo = 1;
+                    static bar = 2;
+                }
+
+                var instanceDescriptor = Object.getOwnPropertyDescriptor(new C(), 'foo');
+                var staticDescriptor = Object.getOwnPropertyDescriptor(C, 'bar');
+                return [
+                    instanceDescriptor.value,
+                    instanceDescriptor.enumerable,
+                    instanceDescriptor.writable,
+                    instanceDescriptor.configurable,
+                    staticDescriptor.value,
+                    staticDescriptor.enumerable,
+                    staticDescriptor.writable,
+                    staticDescriptor.configurable
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("1|true|true|true|2|true|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Compile_Private_Method_Call_Allows_Following_Call_Chain()
     {
         using var ctx = new JSContext();

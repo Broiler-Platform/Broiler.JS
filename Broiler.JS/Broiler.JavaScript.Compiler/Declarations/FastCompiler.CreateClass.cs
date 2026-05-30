@@ -171,7 +171,10 @@ partial class FastCompiler
                     {
                         name = ValidateStaticPropertyName(property, GetName(property));
                         var value = property.Init == null ? JSUndefinedBuilder.Value : Visit(property.Init);
-                        staticElements.Add(JSObjectBuilder.AddValue(name, value, JSPropertyAttributes.ConfigurableValue));
+                        var attributes = isPrivateName
+                            ? JSPropertyAttributes.ConfigurableValue
+                            : JSPropertyAttributes.EnumerableConfigurableValue;
+                        staticElements.Add(JSObjectBuilder.AddValue(name, value, attributes));
                         break;
                     }
                     memberInits.Add(property);

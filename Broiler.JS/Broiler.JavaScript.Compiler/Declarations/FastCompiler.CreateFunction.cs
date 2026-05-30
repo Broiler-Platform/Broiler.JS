@@ -312,7 +312,10 @@ partial class FastCompiler
         {
             var name = GetName(member);
             var value = member.Init == null ? JSUndefinedBuilder.Value : Visit(member.Init);
-            var init = JSObjectBuilder.AddValue(name, value, JSPropertyAttributes.ConfigurableValue);
+            var attributes = member.IsPrivate
+                ? JSPropertyAttributes.ConfigurableValue
+                : JSPropertyAttributes.EnumerableConfigurableValue;
+            var init = JSObjectBuilder.AddValue(name, value, attributes);
 
             sList.Add(YExpression.Call(@this, init.Member as MethodInfo, init.Arguments));
         }
