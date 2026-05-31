@@ -12,6 +12,7 @@ using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.ClosureSeparator;
 using Broiler.JavaScript.Runtime;
+using CoreReferenceEqualityComparer = Broiler.JavaScript.ExpressionCompiler.Core.ReferenceEqualityComparer;
 
 namespace Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 
@@ -139,7 +140,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
 
     private sealed class NonYieldingCatchParameterFinder : YExpressionMapVisitor
     {
-        private readonly HashSet<ParameterExpression> parameters = new(ReferenceEqualityComparer.Instance);
+        private readonly HashSet<ParameterExpression> parameters = new(CoreReferenceEqualityComparer.Instance);
 
         public static HashSet<ParameterExpression> Find(YBlockExpression block)
         {
