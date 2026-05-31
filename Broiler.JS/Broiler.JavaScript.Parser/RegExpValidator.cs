@@ -83,7 +83,12 @@ internal static class RegExpValidator
 
             pattern = NormalizeES3CharacterClasses(pattern);
 
-            if (unicode || unicodeSets)
+            if (unicodeSets)
+            {
+                return ValidateUnicodeSetsPattern(pattern);
+            }
+
+            if (unicode)
             {
                 if (!ValidateUnicodePattern(pattern))
                     return false;
@@ -97,6 +102,96 @@ internal static class RegExpValidator
         {
             return false;
         }
+    }
+
+
+    /// <summary>
+    /// Performs lexer-time validation for regular expressions that use the
+    /// ES2024 <c>v</c> flag.  Unicode set notation intentionally accepts
+    /// constructs such as nested character classes, set subtraction, set
+    /// intersection, and <c>\q{...}</c> string literals that the .NET regex
+    /// engine cannot parse.  The lexer only needs to distinguish a regex
+    /// literal from division, so keep this check structural and leave full
+    /// semantic support to the RegExp implementation.
+    /// </summary>
+    private static bool ValidateUnicodeSetsPattern(string pattern)
+    {
+        if (pattern == null)
+            return false;
+
+        bool inClass = false;
+        int classDepth = 0;
+
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\')
+            {
+                if (++i >= pattern.Length)
+                    return false;
+
+                char escaped = pattern[i];
+                if (escaped == 'q' && i + 1 < pattern.Length && pattern[i + 1] == '{')
+                {
+                    i += 2;
+                    bool closed = false;
+                    for (; i < pattern.Length; i++)
+                    {
+                        if (pattern[i] == '\\')
+                        {
+                            if (++i >= pattern.Length)
+                                return false;
+                            continue;
+                        }
+
+                        if (pattern[i] == '}')
+                        {
+                            closed = true;
+                            break;
+                        }
+                    }
+
+                    if (!closed)
+                        return false;
+                }
+                else if ((escaped == 'p' || escaped == 'P') && i + 1 < pattern.Length && pattern[i + 1] == '{')
+                {
+                    int end = pattern.IndexOf('}', i + 2);
+                    if (end < 0)
+                        return false;
+                    i = end;
+                }
+                else if (escaped == 'u' && i + 1 < pattern.Length && pattern[i + 1] == '{')
+                {
+                    int end = pattern.IndexOf('}', i + 2);
+                    if (end < 0)
+                        return false;
+                    i = end;
+                }
+
+                continue;
+            }
+
+            if (c == '[')
+            {
+                inClass = true;
+                classDepth++;
+                continue;
+            }
+
+            if (c == ']' && inClass)
+            {
+                classDepth--;
+                if (classDepth <= 0)
+                {
+                    inClass = false;
+                    classDepth = 0;
+                }
+            }
+        }
+
+        return classDepth == 0;
     }
 
     /// <summary>

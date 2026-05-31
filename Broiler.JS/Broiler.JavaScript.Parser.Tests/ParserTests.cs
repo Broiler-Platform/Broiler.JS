@@ -369,6 +369,8 @@ public class ParserTests
     [InlineData(@"/^\p{Any}+$/u;")]
     [InlineData(@"/\P{ASCII}/u;")]
     [InlineData(@"/[\p{Alphabetic}\P{ASCII_Hex_Digit}]/v;")]
+    [InlineData(@"/^[[0-9]--\q{0|2|4|9\uFE0F\u20E3}]+$/v;")]
+    [InlineData(@"/[\q{/}--[a]]/v;")]
     public void ParseProgram_RegExpLiteral_Allows_UnicodePropertyEscapes(string source)
     {
         var stream = new FastTokenStream(new StringSpan(source));
