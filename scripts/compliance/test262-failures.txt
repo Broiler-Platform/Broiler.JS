@@ -2326,9 +2326,7 @@ test/built-ins/RegExp/unicodeSets/generated/character-class-difference-character
 test/built-ins/RegExp/unicodeSets/generated/character-class-difference-property-of-strings-escape.js
 test/built-ins/RegExp/unicodeSets/generated/character-class-difference-string-literal.js
 test/built-ins/RegExp/unicodeSets/generated/character-class-escape-difference-character-class-escape.js
-test/built-ins/RegExp/unicodeSets/generated/character-class-escape-difference-character-class.js
 test/built-ins/RegExp/unicodeSets/generated/character-class-escape-difference-character-property-escape.js
-test/built-ins/RegExp/unicodeSets/generated/character-class-escape-difference-character.js
 test/built-ins/RegExp/unicodeSets/generated/character-class-escape-difference-property-of-strings-escape.js
 test/built-ins/RegExp/unicodeSets/generated/character-class-escape-difference-string-literal.js
 test/built-ins/RegExp/unicodeSets/generated/character-class-escape-intersection-character-class.js
