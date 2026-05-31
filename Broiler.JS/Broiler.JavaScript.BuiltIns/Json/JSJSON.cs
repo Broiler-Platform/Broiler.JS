@@ -440,10 +440,7 @@ public partial class JSJSON : JSObject
     public static JSValue RawJSON(in Arguments a)
     {
         var text = a.Get1();
-        if (!text.IsString)
-            throw JSEngine.NewTypeError("JSON.rawJSON requires a string argument");
-
-        var str = text.ToString();
+        var str = text.StringValue;
         if (str.Length == 0)
             throw JSEngine.NewSyntaxError("JSON.rawJSON requires a non-empty string");
         if (IsIllegalRawJsonBoundaryChar(str[0]) || IsIllegalRawJsonBoundaryChar(str[^1]))
@@ -463,7 +460,7 @@ public partial class JSJSON : JSObject
             throw JSEngine.NewSyntaxError("JSON.rawJSON cannot be called with a JSON object or array");
 
         var result = new JSObject();
-        result.FastAddValue(rawJSONKey, text, JSPropertyAttributes.ConfigurableValue);
+        result.FastAddValue(rawJSONKey, JSValue.CreateString(str), JSPropertyAttributes.ConfigurableValue);
         JSObject.FreezeObject(result);
         return result;
     }

@@ -106,6 +106,121 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void DynamicFunction_Construct_Parses_Before_NewTarget_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var getProtoCalled = false;
+                var newTarget = Object.defineProperty(function () {}, 'prototype', {
+                    get: function () {
+                        getProtoCalled = true;
+                        return null;
+                    }
+                });
+
+                try {
+                    Reflect.construct(Function, ['@error'], newTarget);
+                    return 'no throw';
+                } catch (e) {
+                    return e.constructor.name + '|' + getProtoCalled;
+                }
+            })();
+            """);
+
+        Assert.Equal("SyntaxError|false", result.ToString());
+    }
+
+    [Fact]
+    public void GeneratorFunction_Construct_Parses_Before_NewTarget_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var getProtoCalled = false;
+                var newTarget = Object.defineProperty(function () {}, 'prototype', {
+                    get: function () {
+                        getProtoCalled = true;
+                        return null;
+                    }
+                });
+                var Generator = (function* () {}).constructor;
+
+                try {
+                    Reflect.construct(Generator, ['@error'], newTarget);
+                    return 'no throw';
+                } catch (e) {
+                    return e.constructor.name + '|' + getProtoCalled;
+                }
+            })();
+            """);
+
+        Assert.Equal("SyntaxError|false", result.ToString());
+    }
+
+    [Fact]
+    public void AsyncGeneratorFunction_Construct_Parses_Before_NewTarget_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var getProtoCalled = false;
+                var newTarget = Object.defineProperty(function () {}, 'prototype', {
+                    get: function () {
+                        getProtoCalled = true;
+                        return null;
+                    }
+                });
+                var AsyncGenerator = (async function* () {}).constructor;
+
+                try {
+                    Reflect.construct(AsyncGenerator, ['@error'], newTarget);
+                    return 'no throw';
+                } catch (e) {
+                    return e.constructor.name + '|' + getProtoCalled;
+                }
+            })();
+            """);
+
+        Assert.Equal("SyntaxError|false", result.ToString());
+    }
+
+    [Fact]
+    public void Json_RawJson_Coerces_Invalid_Primitive_Inputs_To_SyntaxError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function thrownCtor(fn) {
+                    try {
+                        fn();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                return [
+                    thrownCtor(function () { JSON.rawJSON(Symbol('123')); }),
+                    thrownCtor(function () { JSON.rawJSON(undefined); }),
+                    thrownCtor(function () { JSON.rawJSON({}); }),
+                    thrownCtor(function () { JSON.rawJSON([]); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("TypeError|SyntaxError|SyntaxError|SyntaxError", result.ToString());
+    }
+
+    [Fact]
     public void Native_TypeErrors_Remain_TypeError_In_JavaScript_Catch()
     {
         EnsureBuiltInsLoaded();

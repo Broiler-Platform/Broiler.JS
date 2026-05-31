@@ -39,6 +39,7 @@ public class JSGeneratorFunctionV2 : JSFunction
             return created;
         }, constructorName, $"function {constructorName}() {{ [native code] }}", 1, createPrototype: false);
         constructor.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
+        constructor.prototype = prototype;
         prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableValue);
 
         // §27.3.3.2 / §27.4.3.2: GeneratorFunction.prototype[@@toStringTag] / AsyncGeneratorFunction.prototype[@@toStringTag]

@@ -25,6 +25,7 @@ public class JSAsyncFunction
             return created;
         }, "AsyncFunction", "function AsyncFunction() { [native code] }", 1, createPrototype: false);
         constructor.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
+        constructor.prototype = prototype;
         prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableValue);
 
         return prototype;

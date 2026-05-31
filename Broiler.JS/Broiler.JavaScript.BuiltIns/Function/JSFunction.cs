@@ -291,7 +291,11 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
         var ec = JSEngine.Current as IJSExecutionContext;
         var previousNewTarget = ec?.CurrentNewTarget;
-        var deferInstancePrototypeResolution = name.Value == "Promise";
+        var deferInstancePrototypeResolution = name.Value is "Promise"
+            or "Function"
+            or "AsyncFunction"
+            or "GeneratorFunction"
+            or "AsyncGeneratorFunction";
         var instancePrototype = !deferInstancePrototypeResolution && previousNewTarget != null
             ? ResolveInstancePrototype(previousNewTarget)
             : prototype;
