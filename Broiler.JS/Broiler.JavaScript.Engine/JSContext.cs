@@ -564,6 +564,18 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
     public JSValue AssignIdentifier(in KeyString name, JSValue value) => AssignIdentifier(name, value, JSEngine.IsStrictMode);
 
+    public JSValue AssignWithObjectIdentifier(JSObject withObject, in KeyString name, JSValue value, bool strictMode)
+    {
+        if (withObject == null)
+            return AssignIdentifier(name, value, strictMode);
+
+        if (!withObject.HasProperty(name.ToJSValue()).BooleanValue && strictMode)
+            throw JSEngine.NewReferenceError($"{name} is not defined");
+
+        withObject[name] = value;
+        return value;
+    }
+
     public JSValue AssignIdentifier(in KeyString name, JSValue value, bool strictMode)
     {
         if (TryResolveWithObject(name, out var withObject))

@@ -132,7 +132,11 @@ partial class FastCompiler
         using var valueTemp = scope.Top.GetTempVariable(typeof(JSValue));
 
         var retainedWithReference = JSValueBuilder.Index(withObjectTemp.Expression, key);
-        var retainedWithAssignment = Assign(retainedWithReference, right, assignmentOperator);
+        var retainedWithAssignment = YExpression.Block(
+            valueTemp.Variable.AsSequence(),
+            YExpression.Assign(valueTemp.Expression, retainedWithReference),
+            BinaryOperation.Assign(valueTemp.Expression, Visit(right), assignmentOperator),
+            JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, valueTemp.Expression, IsStrictMode));
         var dynamicAssignment = YExpression.Block(
             valueTemp.Variable.AsSequence(),
             YExpression.Assign(valueTemp.Expression, JSContextBuilder.ResolveIdentifier(key)),
@@ -160,7 +164,7 @@ partial class FastCompiler
             YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
             YExpression.Condition(
                 YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject))),
-                YExpression.Assign(retainedWithReference, value),
+                JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, value, IsStrictMode),
                 JSContextBuilder.AssignIdentifier(key, value, IsStrictMode),
                 typeof(JSValue)));
     }

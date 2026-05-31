@@ -34,6 +34,7 @@ public class JSContextBuilder
     private static PropertyInfo _Index = typeof(JSObject).IndexProperty(typeof(KeyString));
     private static MethodInfo _AssignIdentifier = typeof(JSContext).GetMethod(nameof(JSContext.AssignIdentifier), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
     private static MethodInfo _AssignIdentifierStrict = typeof(JSContext).GetMethod(nameof(JSContext.AssignIdentifier), [typeof(KeyString).MakeByRefType(), typeof(JSValue), typeof(bool)]);
+    private static MethodInfo _AssignWithObjectIdentifier = typeof(JSContext).GetMethod(nameof(JSContext.AssignWithObjectIdentifier), [typeof(JSObject), typeof(KeyString).MakeByRefType(), typeof(JSValue), typeof(bool)]);
     private static MethodInfo _DeleteIdentifier = typeof(JSContext).GetMethod(nameof(JSContext.DeleteIdentifier), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _PushDirectEvalScope = typeof(JSContext).GetMethod(nameof(JSContext.PushDirectEvalScope), [typeof(JSVariable[])]);
     private static MethodInfo _PushWithScope = typeof(JSContext).GetMethod(nameof(JSContext.PushWithScope), [typeof(JSValue)]);
@@ -50,6 +51,7 @@ public class JSContextBuilder
     public static Expression Index(Expression key) => Expression.MakeIndex(Expression.Convert(Current, typeof(JSObject)), _Index, [key]);
     public static Expression AssignIdentifier(Expression key, Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _AssignIdentifier, key, value);
     public static Expression AssignIdentifier(Expression key, Expression value, bool strictMode) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _AssignIdentifierStrict, key, value, Expression.Constant(strictMode));
+    public static Expression AssignWithObjectIdentifier(Expression withObject, Expression key, Expression value, bool strictMode) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _AssignWithObjectIdentifier, withObject, key, value, Expression.Constant(strictMode));
     public static Expression DeleteIdentifier(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeleteIdentifier, key);
     public static Expression PushDirectEvalScope(Expression variables) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _PushDirectEvalScope, variables);
     public static Expression PushWithScope(Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _PushWithScope, value);

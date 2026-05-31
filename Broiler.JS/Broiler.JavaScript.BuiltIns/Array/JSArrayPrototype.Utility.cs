@@ -175,8 +175,62 @@ public partial class JSArray
         if (length > uint.MaxValue)
             throw JSEngine.NewRangeError("Invalid array length");
 
-        var copy = Slice(new Arguments(a.This, JSValue.NumberZero, JSValue.CreateNumber(length)));
-        return copy.InvokeMethod(KeyStrings.GetOrCreate("sort"), a.Get1());
+        var compareFn = a.Get1();
+        if (!compareFn.IsUndefined && !compareFn.IsFunction)
+            throw JSEngine.NewTypeError("Argument is not a function");
+
+        Comparison<JSValue> comparison;
+        if (compareFn.IsUndefined)
+            comparison = CompareArraySortValues;
+        else
+            comparison = (left, right) => CompareArraySortValues(left, right, compareFn);
+
+        var len = (uint)length;
+        var values = new System.Collections.Generic.List<JSValue>();
+        for (uint index = 0; index < len; index++)
+            values.Add(source[index]);
+
+        values.Sort(comparison);
+
+        var result = new JSArray(len);
+        for (uint index = 0; index < len; index++)
+            SetIndexedValue(result, index, values[(int)index]);
+
+        return result;
+    }
+
+    private static int CompareArraySortValues(JSValue left, JSValue right)
+    {
+        if (left.IsUndefined)
+        {
+            if (right.IsUndefined)
+                return 0;
+            return 1;
+        }
+
+        if (right.IsUndefined)
+            return -1;
+
+        return string.CompareOrdinal(left.ToString(), right.ToString());
+    }
+
+    private static int CompareArraySortValues(JSValue left, JSValue right, JSValue compareFn)
+    {
+        if (left.IsUndefined)
+        {
+            if (right.IsUndefined)
+                return 0;
+            return 1;
+        }
+
+        if (right.IsUndefined)
+            return -1;
+
+        var result = compareFn.InvokeFunction(new Arguments(JSUndefined.Value, left, right)).DoubleValue;
+        if (double.IsNaN(result))
+            return 0;
+
+        return Math.Sign(result);
     }
 
     [JSPrototypeMethod]

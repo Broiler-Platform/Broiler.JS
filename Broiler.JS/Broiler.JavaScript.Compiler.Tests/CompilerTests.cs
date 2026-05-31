@@ -2934,6 +2934,75 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Strict_WithScope_PutValue_Rechecks_Deleted_Bindings()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                function thrownName(callback) {
+                    try {
+                        callback();
+                        return 'no-throw';
+                    } catch (e) {
+                        return e.constructor.name;
+                    }
+                }
+
+                var assignmentCount = 0;
+                var assignmentScope = { x: 1 };
+                with (assignmentScope) {
+                    var assignmentError = thrownName(function () {
+                        'use strict';
+                        assignmentCount++;
+                        x = (delete assignmentScope.x, 2);
+                        assignmentCount++;
+                    });
+                }
+
+                var compoundCount = 0;
+                var compoundScope = {
+                    get x() {
+                        delete this.x;
+                        return 2;
+                    }
+                };
+                with (compoundScope) {
+                    var compoundError = thrownName(function () {
+                        'use strict';
+                        compoundCount++;
+                        x ^= 3;
+                        compoundCount++;
+                    });
+                }
+
+                var updateCount = 0;
+                var updateScope = {
+                    get x() {
+                        delete this.x;
+                        return 2;
+                    }
+                };
+                with (updateScope) {
+                    var updateError = thrownName(function () {
+                        'use strict';
+                        updateCount++;
+                        x++;
+                        updateCount++;
+                    });
+                }
+
+                return [
+                    assignmentError, assignmentCount, 'x' in assignmentScope,
+                    compoundError, compoundCount, 'x' in compoundScope,
+                    updateError, updateCount, 'x' in updateScope
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("ReferenceError|1|false|ReferenceError|1|false|ReferenceError|1|false", result.ToString());
+    }
+
+    [Fact]
     public void Compile_UpdateExpression_WithScope_Uses_Initial_ObjectReference()
     {
         using var ctx = new JSContext();

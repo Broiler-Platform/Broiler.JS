@@ -9942,6 +9942,34 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_ToSorted_Reads_Through_Holes_And_Creates_Undefined_Properties()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var arr = [3, , 4, , 1];
+                Array.prototype[3] = 2;
+                try {
+                    var sorted = arr.toSorted();
+                    return [
+                        sorted.join(','),
+                        sorted.hasOwnProperty(4),
+                        arr.hasOwnProperty(1),
+                        arr.hasOwnProperty(3),
+                        Array.prototype[3]
+                    ].join('|');
+                } finally {
+                    delete Array.prototype[3];
+                }
+            })();
+            """);
+
+        Assert.Equal("1,2,3,4,|true|false|false|2", result.ToString());
+    }
+
+    [Fact]
     public void RangeError_Regressions_For_ArrayBuffer_BigInt_Date_And_Array_Creation_Match_Test262()
     {
         EnsureBuiltInsLoaded();

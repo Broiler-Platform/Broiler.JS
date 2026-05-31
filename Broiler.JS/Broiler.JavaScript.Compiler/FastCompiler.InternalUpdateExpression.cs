@@ -71,7 +71,7 @@ partial class FastCompiler
                     withStatements.Add(YExpression.Assign(previous.Variable, current.Expression));
 
                 withStatements.Add(YExpression.Assign(current.Variable, JSValueBuilder.AddDouble(current.Expression, delta)));
-                withStatements.Add(YExpression.Assign(retainedWithReference, current.Expression));
+                withStatements.Add(JSContextBuilder.AssignWithObjectIdentifier(withObject.Expression, globalKey, current.Expression, IsStrictMode));
                 withStatements.Add(previous?.Expression ?? current.Expression);
 
                 return YExpression.Block(
