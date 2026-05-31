@@ -240,41 +240,57 @@ public partial class JSIteratorObject : JSObject
 
     internal static JSValue StaticTake(in Arguments a)
     {
+        var n = ReadIteratorLimitOrClose(a.This, a.Get1(), "Iterator.prototype.take");
         var en = EnumeratorFrom(a.This);
-
-        try
-        {
-            var n = a.Get1().DoubleValue;
-
-            if (double.IsNaN(n) || n < 0)
-                throw JSEngine.NewRangeError("Iterator.prototype.take requires a non-negative number");
-
-            return new JSIteratorObject(new TakeEnumerator(en, (int)n));
-        }
-        catch
-        {
-            CloseIteratorIfPossible(en);
-            throw;
-        }
+        return new JSIteratorObject(new TakeEnumerator(en, n));
     }
 
     internal static JSValue StaticDrop(in Arguments a)
     {
+        var n = ReadIteratorLimitOrClose(a.This, a.Get1(), "Iterator.prototype.drop");
         var en = EnumeratorFrom(a.This);
+        return new JSIteratorObject(new DropEnumerator(en, n));
+    }
 
+    private static int ReadIteratorLimitOrClose(JSValue iterator, JSValue limitValue, string methodName)
+    {
         try
         {
-            var n = a.Get1().DoubleValue;
+            var n = limitValue.DoubleValue;
 
             if (double.IsNaN(n) || n < 0)
-                throw JSEngine.NewRangeError("Iterator.prototype.drop requires a non-negative number");
+                throw JSEngine.NewRangeError($"{methodName} requires a non-negative number");
 
-            return new JSIteratorObject(new DropEnumerator(en, (int)n));
+            return (int)n;
         }
         catch
         {
-            CloseIteratorIfPossible(en);
+            CloseIteratorValueIfPossible(iterator);
             throw;
+        }
+    }
+
+    private static void CloseIteratorValueIfPossible(JSValue iterator)
+    {
+        try
+        {
+            switch (iterator)
+            {
+                case JSIteratorObject iteratorObject:
+                    iteratorObject.Return(Arguments.Empty);
+                    return;
+                case JSGenerator generator:
+                    generator.Return(Arguments.Empty);
+                    return;
+                case JSObject @object:
+                    var returnMethod = @object[KeyStrings.@return];
+                    if (!returnMethod.IsNullOrUndefined)
+                        returnMethod.InvokeFunction(new Arguments(@object));
+                    return;
+            }
+        }
+        catch
+        {
         }
     }
 
