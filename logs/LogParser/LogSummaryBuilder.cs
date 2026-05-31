@@ -129,7 +129,7 @@ public static class LogSummaryBuilder
         }
 
         var segments = path
-            .Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            .Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         return segments.Length <= depth
             ? path
@@ -562,7 +562,7 @@ public static class LogSummaryBuilder
             return null;
         }
 
-        var lines = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var lineIndex = 0;
         foreach (var line in lines)
         {
