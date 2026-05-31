@@ -74,7 +74,7 @@ partial class FastParser
                 break;
 
             case FastKeywords.await:
-                if (classStaticBlockDepth == 0)
+                if (ShouldParseAwaitAsExpression())
                     return AwaitExpression(out node);
                 break;
 
@@ -246,6 +246,28 @@ partial class FastParser
             }
 
             throw stream.Unexpected();
+        }
+
+        bool ShouldParseAwaitAsExpression()
+        {
+            if (classStaticBlockDepth != 0 && !inAsyncFunctionBody)
+                return false;
+
+            if (inAsyncFunctionBody)
+                return true;
+
+            if (functionDepth != 0)
+                return false;
+
+            var next = stream.Next;
+            return next.Type is not (TokenTypes.SemiColon
+                or TokenTypes.LineTerminator
+                or TokenTypes.EOF
+                or TokenTypes.Comma
+                or TokenTypes.BracketEnd
+                or TokenTypes.SquareBracketEnd
+                or TokenTypes.CurlyBracketEnd)
+                && (next.Type <= TokenTypes.BeginAssignTokens || next.Type >= TokenTypes.EndAssignTokens);
         }
 
         bool AwaitExpression(out AstExpression statement)

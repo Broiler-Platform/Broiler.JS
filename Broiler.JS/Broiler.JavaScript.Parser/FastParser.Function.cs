@@ -51,7 +51,9 @@ partial class FastParser
         {
             functionDepth++;
             var previousInGeneratorBody = inGeneratorBody;
+            var previousInAsyncFunctionBody = inAsyncFunctionBody;
             inGeneratorBody = generator;
+            inAsyncFunctionBody = isAsync;
             try
             {
                 if (!Block(out var body))
@@ -62,6 +64,7 @@ partial class FastParser
             finally
             {
                 inGeneratorBody = previousInGeneratorBody;
+                inAsyncFunctionBody = previousInAsyncFunctionBody;
                 functionDepth--;
             }
         }

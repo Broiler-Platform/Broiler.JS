@@ -1806,6 +1806,37 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_ScriptGoal_AllowsAwaitAsIdentifier()
+    {
+        using var ctx = new JSContext();
+
+        Assert.Equal(1.0, ctx.Eval("var await = 0; await = 1; await;").DoubleValue);
+        Assert.Equal(2.0, ctx.Eval("var await = 2; (function() { return await; })();").DoubleValue);
+    }
+
+    [Fact]
+    public void Compile_ClassStaticBlock_NestedFunctions_CanReferenceAwaitIdentifier()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            var await = 0;
+            var fromParam, fromBody;
+
+            class C {
+              static {
+                (function (x = fromParam = await) {
+                  fromBody = await;
+                })();
+              }
+            }
+
+            fromParam === 0 && fromBody === 0;
+            """);
+
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
     public void Duplicate_Params_Allowed_In_Non_Strict_Mode()
     {
         using var ctx = new JSContext();

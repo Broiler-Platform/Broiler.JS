@@ -121,7 +121,9 @@ partial class FastParser
 
                     functionDepth++;
                     var previousInGeneratorBody = inGeneratorBody;
+                    var previousInAsyncFunctionBody = inAsyncFunctionBody;
                     inGeneratorBody = isGenerator;
+                    inAsyncFunctionBody = isAsync;
                     AstStatement body;
                     try
                     {
@@ -131,6 +133,7 @@ partial class FastParser
                     finally
                     {
                         inGeneratorBody = previousInGeneratorBody;
+                        inAsyncFunctionBody = previousInAsyncFunctionBody;
                         functionDepth--;
                     }
 

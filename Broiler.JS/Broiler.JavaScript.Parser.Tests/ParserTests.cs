@@ -109,6 +109,20 @@ public class ParserTests
     }
 
 
+    [Theory]
+    [InlineData("var await;")]
+    [InlineData("var await = 0; await = 1;")]
+    [InlineData("function f() { return await; }")]
+    public void ParseProgram_ScriptGoal_AllowsAwaitIdentifierReferences(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        Assert.NotNull(program);
+        Assert.False(program.IsAsync);
+    }
+
     [Fact]
     public void ParseProgram_ExportNamespaceFrom_Succeeds()
     {

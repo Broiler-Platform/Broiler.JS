@@ -52,7 +52,9 @@ partial class FastParser
                 var parameters = VariableDeclarator.From(node);
                 functionDepth++;
                 var previousInGeneratorBody = inGeneratorBody;
+                var previousInAsyncFunctionBody = inAsyncFunctionBody;
                 inGeneratorBody = isGenerator;
+                inAsyncFunctionBody = isAsync;
                 try
                 {
                     if (stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
@@ -73,6 +75,7 @@ partial class FastParser
                 finally
                 {
                     inGeneratorBody = previousInGeneratorBody;
+                    inAsyncFunctionBody = previousInAsyncFunctionBody;
                     functionDepth--;
                 }
             }

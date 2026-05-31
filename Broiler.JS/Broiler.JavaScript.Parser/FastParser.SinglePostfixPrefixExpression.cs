@@ -46,8 +46,19 @@ partial class FastParser
         if (stream.CheckAndConsume(TokenTypes.Multiply))
             hasGenerator = true;
 
-        if (!SingleMemberExpression(out node, previous == UnaryOperator.@new))
-            return begin.Reset();
+        var previousInAsyncFunctionBody = inAsyncFunctionBody;
+        if (hasAsync)
+            inAsyncFunctionBody = true;
+
+        try
+        {
+            if (!SingleMemberExpression(out node, previous == UnaryOperator.@new))
+                return begin.Reset();
+        }
+        finally
+        {
+            inAsyncFunctionBody = previousInAsyncFunctionBody;
+        }
 
         if (previous != UnaryOperator.None)
         {
