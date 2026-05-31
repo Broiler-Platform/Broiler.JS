@@ -559,11 +559,16 @@ public static void ValidateProgram(
         {
             if (IsStrictMode)
             {
-                if ((unaryExpression.Operator == UnaryOperator.Increment || unaryExpression.Operator == UnaryOperator.Decrement)
-                    && unaryExpression.Argument is AstIdentifier updateIdentifier
-                    && IsRestrictedName(updateIdentifier.Name))
+                if (unaryExpression.Operator == UnaryOperator.Increment || unaryExpression.Operator == UnaryOperator.Decrement)
                 {
-                    throw new FastParseException(updateIdentifier.Start, "Invalid left-hand side expression for update");
+                    if (unaryExpression.Argument is AstIdentifier updateIdentifier
+                        && IsRestrictedName(updateIdentifier.Name))
+                    {
+                        throw new FastParseException(updateIdentifier.Start, "Invalid left-hand side expression for update");
+                    }
+
+                    if (unaryExpression.Argument is AstCallExpression)
+                        throw new FastParseException(unaryExpression.Argument.Start, "Invalid left-hand side expression for update");
                 }
 
                 if (unaryExpression.Operator == UnaryOperator.delete

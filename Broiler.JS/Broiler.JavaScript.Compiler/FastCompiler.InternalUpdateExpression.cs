@@ -1,5 +1,6 @@
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -15,10 +16,24 @@ partial class FastCompiler
         .GetMethod("NormalizePropertyKey", BindingFlags.NonPublic | BindingFlags.Static, [typeof(JSValue)])
         ?? throw new InvalidOperationException("JSValue.NormalizePropertyKey(JSValue) not found");
 
+    private static readonly MethodInfo ThrowInvalidUpdateReferenceMethod = typeof(FastCompiler)
+        .GetMethod(nameof(ThrowInvalidUpdateReference), BindingFlags.NonPublic | BindingFlags.Static)
+        ?? throw new InvalidOperationException("FastCompiler.ThrowInvalidUpdateReference() not found");
+
+    private static JSValue ThrowInvalidUpdateReference() =>
+        throw JSEngine.NewReferenceError("Invalid left-hand side expression for update");
+
     private YExpression InternalVisitUpdateExpression(AstUnaryExpression updateExpression)
     {
         // added support for a++, a--
         updateExpression.Argument.VerifyIdentifierForUpdate(IsStrictMode);
+
+        if (updateExpression.Argument is AstCallExpression)
+        {
+            return YExpression.Block(
+                VisitExpression(updateExpression.Argument),
+                YExpression.Call(null, ThrowInvalidUpdateReferenceMethod));
+        }
 
         if (updateExpression.Argument is AstIdentifier identifier)
         {
