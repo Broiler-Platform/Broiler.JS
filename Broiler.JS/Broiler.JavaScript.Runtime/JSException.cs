@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.Text;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Storage;
@@ -171,6 +172,8 @@ public class JSException : Exception
                 jsException = (NewSyntaxErrorFactory ?? throw new InvalidOperationException("JSException.NewSyntaxErrorFactory delegate is not initialized."))
                     (parseException.Message);
                 return true;
+            case TargetInvocationException { InnerException: not null } targetInvocationException:
+                return TryGetJSException(targetInvocationException.InnerException, out jsException);
             case AggregateException aggregateException:
                 foreach (var innerException in aggregateException.Flatten().InnerExceptions)
                 {

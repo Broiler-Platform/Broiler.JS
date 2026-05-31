@@ -955,10 +955,10 @@ public class CompilerTests
     }
 
     [Fact]
-    public void Compile_Private_Method_Call_Allows_Following_Call_Chain()
+    public async Task Compile_Private_Method_Call_Allows_Following_Call_Chain()
     {
         using var ctx = new JSContext();
-        var result = ctx.Eval("""
+        var result = await ctx.ExecuteAsync("""
             (function () {
                 class C {
                     static async #$(value) {
