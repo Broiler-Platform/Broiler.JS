@@ -630,10 +630,8 @@ test/built-ins/AsyncFunction/AsyncFunction-construct.js
 test/built-ins/AsyncFunction/AsyncFunction-name.js
 test/built-ins/AsyncFunction/AsyncFunctionPrototype-to-string.js
 test/built-ins/AsyncFunction/is-a-constructor.js
-test/built-ins/AsyncGeneratorFunction/has-instance.js
 test/built-ins/AsyncGeneratorFunction/instance-await-expr-in-param.js
 test/built-ins/AsyncGeneratorFunction/instance-yield-expr-in-param.js
-test/built-ins/AsyncGeneratorFunction/invoked-as-constructor-no-arguments.js
 test/built-ins/AsyncGeneratorFunction/is-a-constructor.js
 test/built-ins/AsyncGeneratorFunction/prototype/constructor.js
 test/built-ins/AsyncGeneratorFunction/prototype/prototype.js
@@ -864,9 +862,6 @@ test/built-ins/Function/prototype/toString/proxy-function-expression.js
 test/built-ins/Function/prototype/toString/proxy-generator-function.js
 test/built-ins/Function/prototype/toString/proxy-method-definition.js
 test/built-ins/Function/prototype/toString/symbol-named-builtins.js
-test/built-ins/GeneratorFunction/has-instance.js
-test/built-ins/GeneratorFunction/instance-restricted-properties.js
-test/built-ins/GeneratorFunction/invoked-as-constructor-no-arguments.js
 test/built-ins/GeneratorFunction/is-a-constructor.js
 test/built-ins/GeneratorFunction/prototype/constructor.js
 test/built-ins/GeneratorFunction/prototype/prototype.js
@@ -1138,7 +1133,6 @@ test/built-ins/Iterator/zipKeyed/suspended-start-iterator-close-calls-return.js
 test/built-ins/Iterator/zipKeyed/suspended-yield-iterator-close-calls-next.js
 test/built-ins/Iterator/zipKeyed/suspended-yield-iterator-close-calls-return.js
 test/built-ins/JSON/Symbol.toStringTag.js
-test/built-ins/JSON/isRawJSON/basic.js
 test/built-ins/JSON/parse/reviver-array-non-configurable-prop-create.js
 test/built-ins/JSON/parse/reviver-call-order.js
 test/built-ins/JSON/parse/reviver-context-source-array-literal.js
@@ -1149,10 +1143,7 @@ test/built-ins/JSON/parse/reviver-object-non-configurable-prop-create.js
 test/built-ins/JSON/parse/reviver-wrapper.js
 test/built-ins/JSON/parse/text-non-string-primitive.js
 test/built-ins/JSON/parse/text-object-abrupt.js
-test/built-ins/JSON/rawJSON/basic.js
 test/built-ins/JSON/rawJSON/bigint-raw-json-can-be-stringified.js
-test/built-ins/JSON/rawJSON/invalid-JSON-text.js
-test/built-ins/JSON/rawJSON/returns-expected-object.js
 test/built-ins/JSON/stringify/replacer-array-number-object.js
 test/built-ins/JSON/stringify/replacer-array-string-object.js
 test/built-ins/JSON/stringify/replacer-function-wrapper.js
@@ -1362,10 +1353,6 @@ test/built-ins/Object/prototype/toString/symbol-tag-string-builtin.js
 test/built-ins/Object/seal/proxy-no-ownkeys-returned-keys-order.js
 test/built-ins/Object/seal/proxy-with-defineProperty-handler.js
 test/built-ins/Object/seal/seal-aggregateerror.js
-test/built-ins/Object/seal/seal-asyncarrowfunction.js
-test/built-ins/Object/seal/seal-asyncfunction.js
-test/built-ins/Object/seal/seal-asyncgeneratorfunction.js
-test/built-ins/Object/seal/seal-generatorfunction.js
 test/built-ins/Object/seal/seal-promise.js
 test/built-ins/Object/values/order-after-define-property.js
 test/built-ins/Object/values/return-order.js
@@ -3491,7 +3478,6 @@ test/language/block-scope/syntax/function-declarations/in-statement-position-def
 test/language/block-scope/syntax/redeclaration-global/allowed-to-redeclare-function-declaration-with-var.js
 test/language/comments/S7.4_A5.js
 test/language/comments/S7.4_A6.js
-test/language/comments/hashbang/function-constructor.js
 test/language/comments/multi-line-asi-carriage-return.js
 test/language/comments/multi-line-asi-line-feed.js
 test/language/comments/multi-line-asi-line-separator.js
@@ -5854,10 +5840,6 @@ test/language/statements/class/subclass/builtin-objects/Boolean/super-must-be-ca
 test/language/statements/class/subclass/builtin-objects/DataView/super-must-be-called.js
 test/language/statements/class/subclass/builtin-objects/Date/super-must-be-called.js
 test/language/statements/class/subclass/builtin-objects/Function/super-must-be-called.js
-test/language/statements/class/subclass/builtin-objects/GeneratorFunction/instance-length.js
-test/language/statements/class/subclass/builtin-objects/GeneratorFunction/instance-name.js
-test/language/statements/class/subclass/builtin-objects/GeneratorFunction/instance-prototype.js
-test/language/statements/class/subclass/builtin-objects/GeneratorFunction/regular-subclassing.js
 test/language/statements/class/subclass/builtin-objects/GeneratorFunction/super-must-be-called.js
 test/language/statements/class/subclass/builtin-objects/Map/super-must-be-called.js
 test/language/statements/class/subclass/builtin-objects/Number/super-must-be-called.js
@@ -7647,7 +7629,6 @@ test/staging/sm/Array/unscopables.js
 test/staging/sm/Array/unshift-01.js
 test/staging/sm/Array/unshift-with-enumeration.js
 test/staging/sm/Array/with.js
-test/staging/sm/AsyncGenerators/create-function-parse-before-getprototype.js
 test/staging/sm/AsyncGenerators/for-await-of-error.js
 test/staging/sm/BigInt/Number-conversion-rounding.js
 test/staging/sm/BigInt/decimal.js
@@ -7853,7 +7834,6 @@ test/staging/sm/async-functions/async-contains-unicode-escape.js
 test/staging/sm/async-functions/async-property-name-error.js
 test/staging/sm/async-functions/await-in-arrow-parameters.js
 test/staging/sm/async-functions/await-in-parameters-of-async-func.js
-test/staging/sm/async-functions/constructor.js
 test/staging/sm/async-functions/inner-caller.js
 test/staging/sm/async-functions/property.js
 test/staging/sm/async-functions/toString.js
@@ -7947,7 +7927,6 @@ test/staging/sm/extensions/reviver-mutates-holder-object-nonnative.js
 test/staging/sm/fields/await-identifier-script.js
 test/staging/sm/fields/bug1587574.js
 test/staging/sm/fields/numeric-fields.js
-test/staging/sm/generators/create-function-parse-before-getprototype.js
 test/staging/sm/generators/delegating-yield-1.js
 test/staging/sm/generators/delegating-yield-11.js
 test/staging/sm/generators/delegating-yield-2.js
