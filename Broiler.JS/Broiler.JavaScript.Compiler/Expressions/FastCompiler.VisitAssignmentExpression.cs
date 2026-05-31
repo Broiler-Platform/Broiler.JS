@@ -137,7 +137,7 @@ partial class FastCompiler
             valueTemp.Variable.AsSequence(),
             YExpression.Assign(valueTemp.Expression, JSContextBuilder.ResolveIdentifier(key)),
             BinaryOperation.Assign(valueTemp.Expression, Visit(right), assignmentOperator),
-            JSContextBuilder.AssignIdentifier(key, valueTemp.Expression));
+            JSContextBuilder.AssignIdentifier(key, valueTemp.Expression, IsStrictMode));
 
         return YExpression.Block(
             withObjectTemp.Variable.AsSequence(),
@@ -161,7 +161,7 @@ partial class FastCompiler
             YExpression.Condition(
                 YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject))),
                 YExpression.Assign(retainedWithReference, value),
-                JSContextBuilder.AssignIdentifier(key, value),
+                JSContextBuilder.AssignIdentifier(key, value, IsStrictMode),
                 typeof(JSValue)));
     }
 

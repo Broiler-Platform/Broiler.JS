@@ -522,6 +522,11 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 continue;
             }
 
+            // @@unscopables lookup can run user code that deletes the binding.
+            // Re-check before resolving the object environment record.
+            if (!current.Object.HasProperty(propertyKey).BooleanValue)
+                continue;
+
             @object = current.Object;
             return true;
         }
@@ -557,11 +562,13 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         throw JSEngine.NewReferenceError($"{name} is not defined");
     }
 
-    public JSValue AssignIdentifier(in KeyString name, JSValue value)
+    public JSValue AssignIdentifier(in KeyString name, JSValue value) => AssignIdentifier(name, value, JSEngine.IsStrictMode);
+
+    public JSValue AssignIdentifier(in KeyString name, JSValue value, bool strictMode)
     {
         if (TryResolveWithObject(name, out var withObject))
         {
-            if (!withObject.HasProperty(name.ToJSValue()).BooleanValue && JSEngine.IsStrictMode)
+            if (!withObject.HasProperty(name.ToJSValue()).BooleanValue && strictMode)
                 throw JSEngine.NewReferenceError($"{name} is not defined");
 
             withObject[name] = value;
@@ -579,7 +586,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
         if (!hasVariable && !hasProperty)
         {
-            if (JSEngine.IsStrictMode)
+            if (strictMode)
                 throw JSEngine.NewReferenceError($"{name} is not defined");
 
             FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);

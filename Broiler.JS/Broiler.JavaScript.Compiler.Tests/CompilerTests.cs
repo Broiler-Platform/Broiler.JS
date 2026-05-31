@@ -1443,6 +1443,61 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_CallExpression_Update_Targets_Throw_ReferenceError_In_Sloppy_Mode()
+    {
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var fCalled = 0;
+                var valueOfCalled = 0;
+
+                function f() {
+                    fCalled++;
+                    return {
+                        valueOf: function () {
+                            valueOfCalled++;
+                            return 1;
+                        }
+                    };
+                }
+
+                function errorName(callback) {
+                    try {
+                        callback();
+                        return 'no-error';
+                    } catch (error) {
+                        return error.constructor.name;
+                    }
+                }
+
+                return [
+                    errorName(function () { f()++; }),
+                    fCalled,
+                    valueOfCalled,
+                    errorName(function () { ++f(); }),
+                    fCalled,
+                    valueOfCalled
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("ReferenceError|1|0|ReferenceError|2|0", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_CallExpression_Update_Targets_Are_SyntaxError_In_Strict_Mode()
+    {
+        using var ctx = new JSContext();
+
+        var postfix = Assert.Throws<JSException>(() => ctx.Eval("Function('\"use strict\"; function f() {} f()++;');"));
+        var prefix = Assert.Throws<JSException>(() => ctx.Eval("Function('\"use strict\"; function f() {} ++f();');"));
+
+        Assert.Equal("SyntaxError", postfix.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+        Assert.Equal("SyntaxError", prefix.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+    }
+
+    [Fact]
     public void Compile_Strict_Update_Delete_With_And_Direct_Eval_Delete_Match_Test262()
     {
         using var ctx = new JSContext();

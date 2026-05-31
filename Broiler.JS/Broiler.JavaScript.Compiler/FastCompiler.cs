@@ -255,7 +255,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     protected override YExpression VisitExpressionStatement(AstExpressionStatement expressionStatement)
     {
         if (isDirectEvalCompilation
-            && !usesDirectEvalLocalVarEnvironment
+            && !IsStrictMode
             && scope.Top.Function == null
             && scope.Top.Parent != scope.Top.RootScope
             && expressionStatement.Expression is AstFunctionExpression { IsStatement: true, Id: { } } directEvalFunctionDeclaration)

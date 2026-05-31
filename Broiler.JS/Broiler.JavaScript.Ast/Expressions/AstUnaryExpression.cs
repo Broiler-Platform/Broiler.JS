@@ -19,6 +19,7 @@ public class AstUnaryExpression : AstExpression
                 {
                     case FastNodeType.Identifier:
                     case FastNodeType.MemberExpression:
+                    case FastNodeType.CallExpression:
                         break;
                     default:
                         throw new FastParseException(token, $"Invalid expression for update");
