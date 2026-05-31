@@ -75,9 +75,17 @@ partial class FastCompiler
         // this will create a variable if needed...
         // desugar takes care of let so do not worry
 
+        var perIterationInits = new Sequence<YExpression>();
+        YParameterExpression? iterationValueVariable = null;
         YExpression? identifier = forOfStatement.Init.Type switch
         {
-            FastNodeType.Identifier or FastNodeType.VariableDeclaration => Visit(forOfStatement.Init),
+            FastNodeType.Identifier => Visit(forOfStatement.Init),
+            FastNodeType.VariableDeclaration when TryCreateForOfDestructuringAssignment(
+                (AstVariableDeclaration)forOfStatement.Init,
+                perIterationInits,
+                out iterationValueVariable)
+                => iterationValueVariable,
+            FastNodeType.VariableDeclaration => Visit(forOfStatement.Init),
             _ => throw new FastParseException(forOfStatement.Start, $"Unexpcted"),
         };
 
@@ -94,6 +102,8 @@ partial class FastCompiler
         var iterDoneVar = YExpression.Variable(typeof(bool));
 
         var pList = new Sequence<YParameterExpression> { en, returnableVar, iterDoneVar, completionVar };
+        if (iterationValueVariable != null)
+            pList.Add(iterationValueVariable);
 
         var bodyListItems = new Sequence<YExpression>
         {
@@ -109,6 +119,7 @@ partial class FastCompiler
         if (forOfStatement.IsAwait)
             bodyListItems.Add(YExpression.Assign(identifier, YExpression.Yield(identifier)));
 
+        bodyListItems.AddRange(perIterationInits);
         bodyListItems.Add(body);
         var bodyList = YExpression.Block(bodyListItems);
 
@@ -153,6 +164,34 @@ partial class FastCompiler
         var scoped = Scoped(tdzScope, new Sequence<YExpression> { r });
         tdzScope.Dispose();
         return scoped;
+    }
+
+    private bool TryCreateForOfDestructuringAssignment(
+        AstVariableDeclaration declaration,
+        Sequence<YExpression> perIterationInits,
+        out YParameterExpression? iterationValueVariable)
+    {
+        iterationValueVariable = null;
+
+        if (declaration.Declarators.Count != 1)
+            return false;
+
+        var declarator = declaration.Declarators[0];
+        if (declarator.Identifier.Type is not (FastNodeType.ArrayPattern or FastNodeType.ObjectPattern))
+            return false;
+
+        iterationValueVariable = YExpression.Variable(typeof(JSValue), "#forOfValue");
+        var newScope = declaration.Kind is FastVariableKind.Const or FastVariableKind.Let;
+        var readOnlyAfterAssign = declaration.Kind == FastVariableKind.Const;
+        CreateAssignment(
+            perIterationInits,
+            declarator.Identifier,
+            iterationValueVariable,
+            createVariable: true,
+            newScope: newScope,
+            suppressAnonymousFunctionNameInference: true,
+            readOnlyAfterAssign: readOnlyAfterAssign);
+        return true;
     }
 
     protected override YExpression VisitForStatement(AstForStatement forStatement, string? label = null)
