@@ -304,6 +304,23 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Generator_ArrayDestructuring_Parameter_Does_Not_Lose_IteratorClose_Catch_Local()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                function* f([a]) {
+                    yield a;
+                }
+
+                return f([42]).next().value;
+            })()
+            """);
+
+        Assert.Equal(42.0, result.DoubleValue);
+    }
+
+    [Fact]
     public void Compile_NonStrict_Yield_Identifier_In_Default_Parameter_Works()
     {
         using var ctx = new JSContext();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Exp = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
 using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
@@ -109,10 +110,18 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
             return base.VisitBlock(node);
 
         var list = new Sequence<Expression>(node.Variables.Count + node.Expressions.Count);
+        var retainedVariables = new Sequence<ParameterExpression>();
+        var nonYieldingCatchParameters = NonYieldingCatchParameterFinder.Find(node);
         var ve = node.Variables.GetFastEnumerator();
 
         while (ve.MoveNext(out var v))
         {
+            if (nonYieldingCatchParameters.Contains(v))
+            {
+                retainedVariables.Add(v);
+                continue;
+            }
+
             int index = lifted.Count;
             var box = Expression.Parameter(typeof(Box<>).MakeGenericType(v.Type));
             lifted.Add((v, box, index, Expression.Field(box, "Value")));
@@ -122,7 +131,35 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         while (vne.MoveNext(out var s))
             list.Add(Visit(s));
 
-        return Expression.Block(list);
+        return retainedVariables.Count == 0
+            ? Expression.Block(list)
+            : Expression.Block(retainedVariables, list);
+    }
+
+
+    private sealed class NonYieldingCatchParameterFinder : YExpressionMapVisitor
+    {
+        private readonly HashSet<ParameterExpression> parameters = new(ReferenceEqualityComparer.Instance);
+
+        public static HashSet<ParameterExpression> Find(YBlockExpression block)
+        {
+            var finder = new NonYieldingCatchParameterFinder();
+            var en = block.Expressions.GetFastEnumerator();
+            while (en.MoveNext(out var expression))
+                finder.Visit(expression);
+
+            return finder.parameters;
+        }
+
+        protected override Expression VisitTryCatchFinally(TryExpression node)
+        {
+            if (node.Catch?.Parameter != null && !node.HasYield())
+                parameters.Add(node.Catch.Parameter);
+
+            return base.VisitTryCatchFinally(node);
+        }
+
+        protected override Expression VisitLambda(LambdaExpression yLambdaExpression) => yLambdaExpression;
     }
 
     protected override Exp VisitReturn(YReturnExpression node)
