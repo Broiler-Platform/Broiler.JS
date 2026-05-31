@@ -530,6 +530,11 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return false;
     }
 
+    public JSObject ResolveWithObject(in KeyString name)
+    {
+        return TryResolveWithObject(name, out var withObject) ? withObject : null;
+    }
+
     public JSValue ResolveIdentifier(in KeyString name)
     {
         if (TryResolveWithObject(name, out var withObject))

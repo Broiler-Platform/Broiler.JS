@@ -128,16 +128,42 @@ partial class FastCompiler
             return AssignIdentifier(identifier, Visit(right));
 
         var key = KeyOfName(identifier.Name);
+        using var withObjectTemp = scope.Top.GetTempVariable(typeof(JSObject));
         using var valueTemp = scope.Top.GetTempVariable(typeof(JSValue));
-        return YExpression.Block(
+
+        var retainedWithReference = JSValueBuilder.Index(withObjectTemp.Expression, key);
+        var retainedWithAssignment = Assign(retainedWithReference, right, assignmentOperator);
+        var dynamicAssignment = YExpression.Block(
             valueTemp.Variable.AsSequence(),
             YExpression.Assign(valueTemp.Expression, JSContextBuilder.ResolveIdentifier(key)),
             BinaryOperation.Assign(valueTemp.Expression, Visit(right), assignmentOperator),
             JSContextBuilder.AssignIdentifier(key, valueTemp.Expression));
+
+        return YExpression.Block(
+            withObjectTemp.Variable.AsSequence(),
+            YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
+            YExpression.Condition(
+                YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject))),
+                retainedWithAssignment,
+                dynamicAssignment,
+                typeof(JSValue)));
     }
 
     private YExpression AssignIdentifier(AstIdentifier identifier, YExpression value)
-        => JSContextBuilder.AssignIdentifier(KeyOfName(identifier.Name), value);
+    {
+        var key = KeyOfName(identifier.Name);
+        using var withObjectTemp = scope.Top.GetTempVariable(typeof(JSObject));
+        var retainedWithReference = JSValueBuilder.Index(withObjectTemp.Expression, key);
+
+        return YExpression.Block(
+            withObjectTemp.Variable.AsSequence(),
+            YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
+            YExpression.Condition(
+                YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject))),
+                YExpression.Assign(retainedWithReference, value),
+                JSContextBuilder.AssignIdentifier(key, value),
+                typeof(JSValue)));
+    }
 
     private YExpression Assign(YExpression exp, AstExpression right, TokenTypes assignmentOperator)
     {

@@ -2728,4 +2728,61 @@ public class CompilerTests
 
     #endregion
 
+    [Fact]
+    public void Compile_Assignment_WithScope_Uses_Initial_ObjectReference()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var x = 0;
+                var scope = {
+                    get x() {
+                        delete this.x;
+                        return 2;
+                    }
+                };
+                var simpleScope = { x: 4 };
+
+                with (scope) {
+                    x ^= 3;
+                }
+                with (simpleScope) {
+                    x = (delete simpleScope.x, 5);
+                }
+
+                return [scope.x, simpleScope.x, x].join('|');
+            })()
+            """);
+
+        Assert.Equal("1|5|0", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_UpdateExpression_WithScope_Uses_Initial_ObjectReference()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var x = 0;
+                var scope = {
+                    get x() {
+                        delete this.x;
+                        return 2;
+                    }
+                };
+
+                var postfix;
+                var prefix;
+                with (scope) {
+                    postfix = x--;
+                    prefix = --x;
+                }
+
+                return [postfix, prefix, scope.x, x].join('|');
+            })()
+            """);
+
+        Assert.Equal("2|0|0|0", result.ToString());
+    }
+
 }

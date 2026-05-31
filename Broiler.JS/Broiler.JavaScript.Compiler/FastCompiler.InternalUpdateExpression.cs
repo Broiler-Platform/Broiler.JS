@@ -24,30 +24,49 @@ partial class FastCompiler
         {
             if (!TryGetStaticIdentifierVariable(identifier, out var variable) || variable == null)
             {
+                using var withObject = scope.Top.GetTempVariable(typeof(JSObject));
                 using var current = scope.Top.GetTempVariable(typeof(JSValue));
                 using var previous = updateExpression.Prefix ? null : scope.Top.GetTempVariable(typeof(JSValue));
-                var variables = new Sequence<YParameterExpression> { current.Variable };
+                var variables = new Sequence<YParameterExpression> { withObject.Variable, current.Variable };
                 var globalKey = KeyOfName(identifier.Name);
-                var statements = new Sequence<YExpression>
+
+                if (previous != null)
+                    variables.Add(previous.Variable);
+
+                var delta = YExpression.Constant(updateExpression.Operator == UnaryOperator.Increment ? 1d : -1d);
+                var dynamicStatements = new Sequence<YExpression>
                 {
                     YExpression.Assign(current.Variable, JSContextBuilder.ResolveIdentifier(globalKey))
                 };
 
                 if (previous != null)
+                    dynamicStatements.Add(YExpression.Assign(previous.Variable, current.Expression));
+
+                dynamicStatements.Add(YExpression.Assign(current.Variable, JSValueBuilder.AddDouble(current.Expression, delta)));
+                dynamicStatements.Add(JSContextBuilder.AssignIdentifier(globalKey, current.Expression));
+                dynamicStatements.Add(previous?.Expression ?? current.Expression);
+
+                var retainedWithReference = JSValueBuilder.Index(withObject.Expression, globalKey);
+                var withStatements = new Sequence<YExpression>
                 {
-                    variables.Add(previous.Variable);
-                    statements.Add(YExpression.Assign(previous.Variable, current.Expression));
-                }
+                    YExpression.Assign(current.Variable, retainedWithReference)
+                };
 
-                statements.Add(YExpression.Assign(
-                    current.Variable,
-                    JSValueBuilder.AddDouble(
-                        current.Expression,
-                        YExpression.Constant(updateExpression.Operator == UnaryOperator.Increment ? 1d : -1d))));
-                statements.Add(JSContextBuilder.AssignIdentifier(globalKey, current.Expression));
-                statements.Add(previous?.Expression ?? current.Expression);
+                if (previous != null)
+                    withStatements.Add(YExpression.Assign(previous.Variable, current.Expression));
 
-                return YExpression.Block(variables, statements);
+                withStatements.Add(YExpression.Assign(current.Variable, JSValueBuilder.AddDouble(current.Expression, delta)));
+                withStatements.Add(YExpression.Assign(retainedWithReference, current.Expression));
+                withStatements.Add(previous?.Expression ?? current.Expression);
+
+                return YExpression.Block(
+                    variables,
+                    YExpression.Assign(withObject.Expression, JSContextBuilder.ResolveWithObject(globalKey)),
+                    YExpression.Condition(
+                        YExpression.NotEqual(withObject.Expression, YExpression.Constant(null, typeof(JSObject))),
+                        YExpression.Block(withStatements),
+                        YExpression.Block(dynamicStatements),
+                        typeof(JSValue)));
             }
 
             if (variable.Variable?.Type == typeof(JSVariable) && !variable.IsDeletable)
