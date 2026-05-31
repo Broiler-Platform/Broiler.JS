@@ -626,7 +626,6 @@ test/built-ins/AsyncFromSyncIteratorPrototype/throw/throw-undefined-get-return-u
 test/built-ins/AsyncFromSyncIteratorPrototype/throw/throw-undefined-poisoned-return.js
 test/built-ins/AsyncFromSyncIteratorPrototype/throw/throw-undefined-return-not-object.js
 test/built-ins/AsyncFromSyncIteratorPrototype/throw/throw-undefined-return-object.js
-test/built-ins/AsyncFunction/AsyncFunction-construct.js
 test/built-ins/AsyncFunction/AsyncFunction-name.js
 test/built-ins/AsyncFunction/AsyncFunctionPrototype-to-string.js
 test/built-ins/AsyncFunction/is-a-constructor.js
@@ -3700,7 +3699,6 @@ test/language/expressions/assignment/target-super-computed-reference-null.js
 test/language/expressions/assignment/target-super-computed-reference.js
 test/language/expressions/assignment/target-super-identifier-reference-null.js
 test/language/expressions/assignment/white-space.js
-test/language/expressions/assignmenttargettype/simple-basic-identifierreference-await.js
 test/language/expressions/async-arrow-function/async-lineterminator-identifier-throws.js
 test/language/expressions/async-arrow-function/prototype.js
 test/language/expressions/async-arrow-function/try-return-finally-reject.js
@@ -3754,11 +3752,6 @@ test/language/expressions/await/async-generator-interleaved.js
 test/language/expressions/await/await-BindingIdentifier-in-global.js
 test/language/expressions/await/await-awaits-thenable-not-callable.js
 test/language/expressions/await/await-awaits-thenables-that-throw.js
-test/language/expressions/await/await-in-function.js
-test/language/expressions/await/await-in-generator.js
-test/language/expressions/await/await-in-global.js
-test/language/expressions/await/await-in-nested-function.js
-test/language/expressions/await/await-in-nested-generator.js
 test/language/expressions/await/await-monkey-patched-promise.js
 test/language/expressions/await/await-non-promise-thenable.js
 test/language/expressions/await/await-non-promise.js
@@ -4614,7 +4607,6 @@ test/language/expressions/class/private-static-field-multiple-evaluations-of-cla
 test/language/expressions/class/private-static-getter-multiple-evaluations-of-class-direct-eval.js
 test/language/expressions/class/private-static-method-brand-check-multiple-evaluations-of-class-direct-eval.js
 test/language/expressions/class/private-static-setter-multiple-evaluations-of-class-direct-eval.js
-test/language/expressions/class/static-init-await-reference.js
 test/language/expressions/class/subclass-builtins/subclass-AggregateError.js
 test/language/expressions/coalesce/abrupt-is-a-short-circuit.js
 test/language/expressions/coalesce/chainable.js
@@ -4740,7 +4732,6 @@ test/language/expressions/function/scope-param-elem-var-close.js
 test/language/expressions/function/scope-param-elem-var-open.js
 test/language/expressions/function/scope-param-rest-elem-var-close.js
 test/language/expressions/function/scope-param-rest-elem-var-open.js
-test/language/expressions/function/static-init-await-reference.js
 test/language/expressions/generators/dstr/ary-ptrn-elem-id-iter-val-array-prototype.js
 test/language/expressions/generators/dstr/dflt-ary-ptrn-elem-id-iter-val-array-prototype.js
 test/language/expressions/generators/dstr/dflt-obj-ptrn-prop-eval-err.js
@@ -4757,7 +4748,6 @@ test/language/expressions/generators/scope-param-elem-var-close.js
 test/language/expressions/generators/scope-param-elem-var-open.js
 test/language/expressions/generators/scope-param-rest-elem-var-close.js
 test/language/expressions/generators/scope-param-rest-elem-var-open.js
-test/language/expressions/generators/static-init-await-reference.js
 test/language/expressions/greater-than-or-equal/S11.8.4_A2.2_T1.js
 test/language/expressions/greater-than/S11.8.2_A2.2_T1.js
 test/language/expressions/greater-than/bigint-and-boolean.js
@@ -4894,7 +4884,6 @@ test/language/expressions/object/fn-name-cover.js
 test/language/expressions/object/fn-name-fn.js
 test/language/expressions/object/fn-name-gen.js
 test/language/expressions/object/getter-super-prop.js
-test/language/expressions/object/identifier-shorthand-await-strict-mode.js
 test/language/expressions/object/let-non-strict-access.js
 test/language/expressions/object/let-non-strict-syntax.js
 test/language/expressions/object/literal-property-name-bigint.js
@@ -4916,9 +4905,6 @@ test/language/expressions/object/method-definition/generator-name-prop-string.js
 test/language/expressions/object/method-definition/generator-name-prop-symbol.js
 test/language/expressions/object/method-definition/name-name-prop-string.js
 test/language/expressions/object/method-definition/name-name-prop-symbol.js
-test/language/expressions/object/method-definition/static-init-await-reference-accessor.js
-test/language/expressions/object/method-definition/static-init-await-reference-generator.js
-test/language/expressions/object/method-definition/static-init-await-reference-normal.js
 test/language/expressions/object/method.js
 test/language/expressions/object/object-spread-proxy-get-not-called-on-dontenum-keys.js
 test/language/expressions/object/object-spread-proxy-no-excluded-keys.js
@@ -5372,7 +5358,6 @@ test/language/module-code/top-level-await/unobservable-global-async-evaluation-c
 test/language/module-code/top-level-await/unobservable-global-async-evaluation-count-reset-setup_FIXTURE.js
 test/language/module-code/verify-dfs-a_FIXTURE.js
 test/language/module-code/verify-dfs-b_FIXTURE.js
-test/language/reserved-words/await-script.js
 test/language/reserved-words/unreserved-words.js
 test/language/rest-parameters/with-new-target.js
 test/language/statements/async-function/eval-var-scope-syntax-err.js
