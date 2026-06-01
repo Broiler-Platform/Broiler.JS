@@ -37,7 +37,24 @@ partial class FastCompiler
                         var initExpr = Visit(d.Init);
                         if (!IsAnonymousFunctionDefinition(d.Init))
                             initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
-                        list.Add(YExpression.Assign(v.Expression, initExpr));
+                        if (newScope)
+                        {
+                            list.Add(YExpression.Assign(v.Expression, initExpr));
+                        }
+                        else
+                        {
+                            var key = KeyOfName(id.Name);
+                            using var withObjectTemp = top.GetTempVariable(typeof(JSObject));
+                            list.Add(
+                                YExpression.Block(
+                                    withObjectTemp.Variable.AsSequence(),
+                                    YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
+                                    YExpression.Condition(
+                                        YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject))),
+                                        JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, initExpr, IsStrictMode),
+                                        YExpression.Assign(v.Expression, initExpr),
+                                        typeof(JSValue))));
+                        }
                     }
 
                     if (readOnlyAfterAssign)
