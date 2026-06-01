@@ -922,7 +922,7 @@ public partial class JSObject
             return false;
 
         if (current.IsReadOnly
-            && !descriptor[KeyStrings.value].StrictEquals(current.value as JSValue ?? JSUndefined.Value))
+            && !descriptor[KeyStrings.value].Is(current.value as JSValue ?? JSUndefined.Value).BooleanValue)
         {
             return false;
         }

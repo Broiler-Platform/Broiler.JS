@@ -160,7 +160,7 @@ public partial class JSProxy : JSObject
             if (property.IsReadOnly)
             {
                 var targetValue = target.GetValue(property);
-                if (!value.StrictEquals(targetValue))
+                if (!value.Is(targetValue).BooleanValue)
                     throw JSEngine.NewTypeError("Proxy set trap violated an invariant for a non-configurable, non-writable property");
             }
 
@@ -205,13 +205,13 @@ public partial class JSProxy : JSObject
             if (!property.IsConfigurable)
             {
                 if (HasDescriptorField(descriptor, KeyStrings.get)
-                    && !descriptor[KeyStrings.get].StrictEquals(property.get as JSValue ?? JSUndefined.Value))
+                    && !descriptor[KeyStrings.get].Is(property.get as JSValue ?? JSUndefined.Value).BooleanValue)
                 {
                     return false;
                 }
 
                 if (HasDescriptorField(descriptor, KeyStrings.set)
-                    && !descriptor[KeyStrings.set].StrictEquals(property.set as JSValue ?? JSUndefined.Value))
+                    && !descriptor[KeyStrings.set].Is(property.set as JSValue ?? JSUndefined.Value).BooleanValue)
                 {
                     return false;
                 }
@@ -235,7 +235,7 @@ public partial class JSProxy : JSObject
             if (property.IsReadOnly && HasDescriptorField(descriptor, KeyStrings.value))
             {
                 var targetValue = target.GetValue(property);
-                if (!descriptor[KeyStrings.value].StrictEquals(targetValue))
+                if (!descriptor[KeyStrings.value].Is(targetValue).BooleanValue)
                     return false;
             }
         }

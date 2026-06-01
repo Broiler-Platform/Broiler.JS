@@ -812,6 +812,40 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Object_DefineProperty_Uses_SameValue_For_Negative_Zero()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              (() => {
+                var arr = [];
+                Object.defineProperty(arr, '0', { value: -0 });
+                try {
+                  Object.defineProperty(arr, '0', { value: +0 });
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })(),
+              (() => {
+                var obj = {};
+                Object.defineProperty(obj, 'value', { value: -0 });
+                try {
+                  Object.defineProperty(obj, 'value', { value: +0 });
+                  return 'no error';
+                } catch (e) {
+                  return e.name;
+                }
+              })()
+            ].join('|');
+            """);
+
+        Assert.Equal("TypeError|TypeError", result.ToString());
+    }
+
+    [Fact]
     public void Object_DefineProperties_Array_Length_Regressions_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();

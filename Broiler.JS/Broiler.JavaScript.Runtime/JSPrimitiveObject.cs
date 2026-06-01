@@ -1,5 +1,6 @@
 ﻿using Broiler.JavaScript.Storage;
 using System;
+using System.Collections.Generic;
 
 namespace Broiler.JavaScript.Runtime;
 
@@ -139,7 +140,7 @@ public class JSPrimitiveObject : JSObject
             }
 
             if (!propertyDescription.GetInternalProperty(KeyStrings.value, false).IsEmpty
-                && !propertyDescription[KeyStrings.value].StrictEquals(value[propertyKey.Index]))
+                && !propertyDescription[KeyStrings.value].Is(value[propertyKey.Index]).BooleanValue)
             {
                 return BooleanFalse;
             }
@@ -148,6 +149,29 @@ public class JSPrimitiveObject : JSObject
         }
 
         return base.DefineProperty(key, propertyDescription);
+    }
+
+    public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)
+    {
+        if (!value.IsString)
+            return base.GetAllKeys(showEnumerableOnly, inherited);
+
+        var keys = new List<JSValue>();
+        var stringKeys = new IntKeyEnumerator(value.Length);
+        while (stringKeys.MoveNext(out var hasValue, out var key, out _))
+        {
+            if (hasValue)
+                keys.Add(key);
+        }
+
+        var ownKeys = base.GetAllKeys(showEnumerableOnly, inherited);
+        while (ownKeys.MoveNext(out var hasValue, out var key, out _))
+        {
+            if (hasValue)
+                keys.Add(key);
+        }
+
+        return new ListElementEnumerator(keys.GetEnumerator());
     }
 
     public override JSValue Delete(in KeyString key)
