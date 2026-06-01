@@ -1,3 +1,4 @@
+using System;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Generator;
@@ -6,6 +7,7 @@ using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Extensions;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
+using System.Collections.Generic;
 
 namespace Broiler.JavaScript.BuiltIns.Iterator;
 
@@ -152,6 +154,142 @@ public partial class JSIteratorObject : JSObject
         }
 
         return new JSIteratorObject(new ConcatEnumerator(iterables));
+    }
+
+    [JSExport("zip", Length = 1)]
+    internal static JSValue Zip(in Arguments a)
+    {
+        var (iterables, optionsValue) = a.Get2();
+        if (iterables is not JSObject iterablesObject)
+            throw JSEngine.NewTypeError("Iterator.zip requires an object iterable");
+
+        var options = GetOptionsObject(optionsValue);
+        var mode = ReadJointIterationMode(options);
+        JSValue padding = JSUndefined.Value;
+
+        if (mode == "longest")
+        {
+            padding = options[KeyStrings.GetOrCreate("padding")];
+            if (!padding.IsUndefined && padding is not JSObject)
+                throw JSEngine.NewTypeError("Iterator.zip requires an object padding option");
+        }
+
+        return new JSIteratorObject(new ZipEnumerator(iterablesObject, mode, padding));
+    }
+
+    [JSExport("zipKeyed", Length = 1)]
+    internal static JSValue ZipKeyed(in Arguments a)
+    {
+        var (iterables, optionsValue) = a.Get2();
+        if (iterables is not JSObject iterablesObject)
+            throw JSEngine.NewTypeError("Iterator.zipKeyed requires an object iterable");
+
+        var options = GetOptionsObject(optionsValue);
+        var mode = ReadJointIterationMode(options);
+        JSValue padding = JSUndefined.Value;
+
+        if (mode == "longest")
+        {
+            padding = options[KeyStrings.GetOrCreate("padding")];
+            if (!padding.IsUndefined && padding is not JSObject)
+                throw JSEngine.NewTypeError("Iterator.zipKeyed requires an object padding option");
+        }
+
+        return new JSIteratorObject(new ZipKeyedEnumerator(iterablesObject, mode, padding));
+    }
+
+    private static JSObject GetOptionsObject(JSValue options)
+    {
+        if (options.IsUndefined)
+            return JSObject.NewWithProperties();
+
+        if (options is JSObject optionObject)
+            return optionObject;
+
+        throw JSEngine.NewTypeError("Iterator options must be an object");
+    }
+
+    private static string ReadJointIterationMode(JSObject options)
+    {
+        var mode = options[KeyStrings.GetOrCreate("mode")];
+        if (mode.IsUndefined)
+            return "shortest";
+
+        if (!mode.IsString)
+            throw JSEngine.NewTypeError("Iterator mode must be a valid string");
+
+        return mode.ToString() switch
+        {
+            "shortest" => "shortest",
+            "longest" => "longest",
+            "strict" => "strict",
+            _ => throw JSEngine.NewTypeError("Iterator mode must be a valid string")
+        };
+    }
+
+    private static IElementEnumerator GetIterator(JSValue value)
+    {
+        if (value is not JSObject @object)
+            throw JSEngine.NewTypeError("Iterator.zip requires an object iterable");
+
+        var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];
+        if (!iteratorMethod.IsFunction)
+            throw JSEngine.NewTypeError("Iterator.zip requires a callable @@iterator");
+
+        var iterator = iteratorMethod.InvokeFunction(new Arguments(@object));
+        if (!iterator.IsObject)
+            throw JSEngine.NewTypeError("Iterator.zip requires an object iterator result");
+
+        return new JSIterator(iterator);
+    }
+
+    private static IElementEnumerator GetIteratorFlattenable(JSValue value)
+    {
+        if (value is not JSObject @object)
+            throw JSEngine.NewTypeError("Iterator.zip requires object iterables");
+
+        var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];
+        if (iteratorMethod.IsUndefined)
+            return new JSIterator(@object);
+
+        if (!iteratorMethod.IsFunction)
+            throw JSEngine.NewTypeError("Iterator.zip requires a callable @@iterator");
+
+        var iterator = iteratorMethod.InvokeFunction(new Arguments(@object));
+        if (!iterator.IsObject)
+            throw JSEngine.NewTypeError("Iterator.zip requires an object iterator result");
+
+        return new JSIterator(iterator);
+    }
+
+    private static void CloseIteratorReverse(IReadOnlyList<IElementEnumerator?> iterators)
+    {
+        for (int i = iterators.Count - 1; i >= 0; i--)
+            if (iterators[i] != null)
+                CloseIteratorIfPossible(iterators[i]);
+    }
+
+    private static void CloseIteratorForReturn(IElementEnumerator? enumerator, ref Exception? firstException)
+    {
+        if (enumerator is not IReturnableEnumerator returnable)
+            return;
+
+        try
+        {
+            returnable.Return();
+        }
+        catch (Exception ex)
+        {
+            firstException ??= ex;
+        }
+    }
+
+    private static JSValue CreateZipArrayResult(JSValue[] values)
+    {
+        var result = new JSArray();
+        for (int i = 0; i < values.Length; i++)
+            result.AddArrayItem(values[i]);
+        return result;
     }
 
     internal static JSValue StaticNext(in Arguments a)
@@ -472,6 +610,487 @@ public partial class JSIteratorObject : JSObject
         }
 
         return JSUndefined.Value;
+    }
+
+    private sealed class ZipEnumerator : IElementEnumerator, IReturnableEnumerator
+    {
+        private readonly List<IElementEnumerator?> _iterators = [];
+        private readonly List<JSValue> _paddingValues = [];
+        private readonly string _mode;
+        private bool _done;
+        private uint _index;
+
+        public ZipEnumerator(JSObject iterables, string mode, JSValue padding)
+        {
+            _mode = mode;
+
+            var inputIter = GetIterator(iterables);
+            while (true)
+            {
+                JSValue next;
+                try
+                {
+                    if (!inputIter.MoveNext(out next))
+                        break;
+                }
+                catch
+                {
+                    CloseIteratorReverse(_iterators);
+                    throw;
+                }
+
+                try
+                {
+                    _iterators.Add(GetIteratorFlattenable(next));
+                }
+                catch
+                {
+                    CloseIteratorReverse(_iterators);
+                    CloseIteratorIfPossible(inputIter);
+                    throw;
+                }
+            }
+
+            if (mode == "longest" && !padding.IsUndefined)
+            {
+                IElementEnumerator paddingIter;
+                try
+                {
+                    paddingIter = GetIterator(padding);
+                }
+                catch
+                {
+                    CloseIteratorReverse(_iterators);
+                    throw;
+                }
+
+                try
+                {
+                    for (int i = 0; i < _iterators.Count; i++)
+                    {
+                        if (paddingIter.MoveNext(out var paddingValue))
+                            _paddingValues.Add(paddingValue);
+                        else
+                            _paddingValues.Add(JSUndefined.Value);
+                    }
+                }
+                catch
+                {
+                    CloseIteratorReverse(_iterators);
+                    throw;
+                }
+
+                Exception? firstException = null;
+                CloseIteratorForReturn(paddingIter, ref firstException);
+                for (int i = _iterators.Count - 1; i >= 0; i--)
+                    CloseIteratorIfPossible(_iterators[i]);
+
+                if (firstException != null)
+                    throw firstException;
+            }
+        }
+
+        private JSValue GetPaddingValue(int index)
+        {
+            return index < _paddingValues.Count ? _paddingValues[index] : JSUndefined.Value;
+        }
+
+        private void CloseAllActive()
+        {
+            CloseIteratorReverse(_iterators);
+        }
+
+        public bool MoveNext(out JSValue value)
+        {
+            if (_done)
+            {
+                value = JSUndefined.Value;
+                return false;
+            }
+
+            var row = new JSValue[_iterators.Count];
+
+            for (int i = 0; i < _iterators.Count; i++)
+            {
+                var iter = _iterators[i];
+                if (iter == null)
+                {
+                    if (_mode == "longest")
+                        row[i] = GetPaddingValue(i);
+
+                    continue;
+                }
+
+                try
+                {
+                    if (!iter.MoveNext(out var item))
+                    {
+                        _iterators[i] = null;
+                        if (_mode == "longest")
+                        {
+                            row[i] = GetPaddingValue(i);
+                            continue;
+                        }
+
+                        if (_mode == "strict")
+                        {
+                            if (i != 0)
+                            {
+                                _done = true;
+                                CloseAllActive();
+                                throw JSEngine.NewTypeError("Iterator.zip requires all iterators to finish together");
+                            }
+
+                            for (int j = i + 1; j < _iterators.Count; j++)
+                            {
+                                var nextIter = _iterators[j];
+                                if (nextIter == null)
+                                    continue;
+
+                                try
+                                {
+                                    if (nextIter.MoveNext(out _))
+                                    {
+                                        _done = true;
+                                        CloseAllActive();
+                                        throw JSEngine.NewTypeError("Iterator.zip requires all iterators to finish together");
+                                    }
+
+                                    _iterators[j] = null;
+                                }
+                                catch
+                                {
+                                    _iterators[j] = null;
+                                    _done = true;
+                                    CloseAllActive();
+                                    throw;
+                                }
+                            }
+
+                            _done = true;
+                            CloseAllActive();
+                            value = JSUndefined.Value;
+                            return false;
+                        }
+
+                        _done = true;
+                        CloseAllActive();
+                        value = JSUndefined.Value;
+                        return false;
+                    }
+
+                    row[i] = item;
+                }
+                catch
+                {
+                    _iterators[i] = null;
+                    _done = true;
+                    CloseAllActive();
+                    throw;
+                }
+            }
+
+            if (_mode == "longest")
+            {
+                var anyActive = false;
+                for (int i = 0; i < _iterators.Count; i++)
+                {
+                    if (_iterators[i] != null)
+                    {
+                        anyActive = true;
+                        break;
+                    }
+                }
+
+                if (!anyActive)
+                {
+                    _done = true;
+                    CloseAllActive();
+                    value = JSUndefined.Value;
+                    return false;
+                }
+            }
+
+            value = CreateZipArrayResult(row);
+            _index++;
+            return true;
+        }
+
+        public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
+        {
+            if (MoveNext(out value))
+            {
+                hasValue = true;
+                index = _index - 1;
+                return true;
+            }
+
+            hasValue = false;
+            index = 0;
+            return false;
+        }
+
+        public bool MoveNextOrDefault(out JSValue value, JSValue @default)
+        {
+            if (MoveNext(out value))
+                return true;
+
+            value = @default;
+            return false;
+        }
+
+        public JSValue NextOrDefault(JSValue @default)
+        {
+            return MoveNext(out var value) ? value : @default;
+        }
+
+        public JSValue Return()
+        {
+            if (_done)
+                return IteratorResult(JSUndefined.Value, true);
+
+            _done = true;
+
+            Exception? firstException = null;
+            for (int i = _iterators.Count - 1; i >= 0; i--)
+                CloseIteratorForReturn(_iterators[i], ref firstException);
+
+            if (firstException != null)
+                throw firstException;
+
+            return IteratorResult(JSUndefined.Value, true);
+        }
+
+        public JSValue Return(JSValue value) => Return();
+    }
+
+    private sealed class ZipKeyedEnumerator : IElementEnumerator, IReturnableEnumerator
+    {
+        private readonly List<JSValue> _keys = [];
+        private readonly List<IElementEnumerator?> _iterators = [];
+        private readonly List<JSValue> _paddingValues = [];
+        private readonly string _mode;
+        private bool _done;
+        private uint _index;
+
+        public ZipKeyedEnumerator(JSObject iterables, string mode, JSValue padding)
+        {
+            _mode = mode;
+
+            var allKeys = iterables.GetAllKeys(false, false);
+            try
+            {
+                while (allKeys.MoveNext(out var key))
+                {
+                    var desc = iterables.GetOwnPropertyDescriptor(key);
+                    if (desc.IsUndefined)
+                        continue;
+
+                    if (!desc[KeyStrings.enumerable].BooleanValue)
+                        continue;
+
+                    var value = iterables[key];
+                    if (value.IsUndefined)
+                        continue;
+
+                    _keys.Add(key);
+                    _iterators.Add(GetIteratorFlattenable(value));
+                }
+            }
+            catch
+            {
+                CloseIteratorReverse(_iterators);
+                throw;
+            }
+
+            if (mode == "longest" && !padding.IsUndefined)
+            {
+                var paddingObject = (JSObject)padding;
+                try
+                {
+                    for (int i = 0; i < _keys.Count; i++)
+                        _paddingValues.Add(paddingObject[_keys[i]]);
+                }
+                catch
+                {
+                    CloseIteratorReverse(_iterators);
+                    throw;
+                }
+            }
+        }
+
+        private JSValue GetPaddingValue(int index)
+        {
+            return index < _paddingValues.Count ? _paddingValues[index] : JSUndefined.Value;
+        }
+
+        private void CloseAllActive()
+        {
+            CloseIteratorReverse(_iterators);
+        }
+
+        public bool MoveNext(out JSValue value)
+        {
+            if (_done)
+            {
+                value = JSUndefined.Value;
+                return false;
+            }
+
+            var result = JSObject.NewWithProperties();
+
+            for (int i = 0; i < _iterators.Count; i++)
+            {
+                var iter = _iterators[i];
+                if (iter == null)
+                {
+                    if (_mode == "longest")
+                        result.FastAddValue(_keys[i], GetPaddingValue(i), Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
+
+                    continue;
+                }
+
+                try
+                {
+                    if (!iter.MoveNext(out var item))
+                    {
+                        _iterators[i] = null;
+                        if (_mode == "longest")
+                        {
+                            result.FastAddValue(_keys[i], GetPaddingValue(i), Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
+                            continue;
+                        }
+
+                        if (_mode == "strict")
+                        {
+                            if (i != 0)
+                            {
+                                _done = true;
+                                CloseAllActive();
+                                throw JSEngine.NewTypeError("Iterator.zipKeyed requires all iterators to finish together");
+                            }
+
+                            for (int j = i + 1; j < _iterators.Count; j++)
+                            {
+                                var nextIter = _iterators[j];
+                                if (nextIter == null)
+                                    continue;
+
+                                try
+                                {
+                                    if (nextIter.MoveNext(out _))
+                                    {
+                                        _done = true;
+                                        CloseAllActive();
+                                        throw JSEngine.NewTypeError("Iterator.zipKeyed requires all iterators to finish together");
+                                    }
+
+                                    _iterators[j] = null;
+                                }
+                                catch
+                                {
+                                    _iterators[j] = null;
+                                    _done = true;
+                                    CloseAllActive();
+                                    throw;
+                                }
+                            }
+
+                            _done = true;
+                            CloseAllActive();
+                            value = JSUndefined.Value;
+                            return false;
+                        }
+
+                        _done = true;
+                        CloseAllActive();
+                        value = JSUndefined.Value;
+                        return false;
+                    }
+
+                    result.FastAddValue(_keys[i], item, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
+                }
+                catch
+                {
+                    _iterators[i] = null;
+                    _done = true;
+                    CloseAllActive();
+                    throw;
+                }
+            }
+
+            if (_mode == "longest")
+            {
+                var anyActive = false;
+                for (int i = 0; i < _iterators.Count; i++)
+                {
+                    if (_iterators[i] != null)
+                    {
+                        anyActive = true;
+                        break;
+                    }
+                }
+
+                if (!anyActive)
+                {
+                    _done = true;
+                    CloseAllActive();
+                    value = JSUndefined.Value;
+                    return false;
+                }
+            }
+
+            value = result;
+            _index++;
+            return true;
+        }
+
+        public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
+        {
+            if (MoveNext(out value))
+            {
+                hasValue = true;
+                index = _index - 1;
+                return true;
+            }
+
+            hasValue = false;
+            index = 0;
+            return false;
+        }
+
+        public bool MoveNextOrDefault(out JSValue value, JSValue @default)
+        {
+            if (MoveNext(out value))
+                return true;
+
+            value = @default;
+            return false;
+        }
+
+        public JSValue NextOrDefault(JSValue @default)
+        {
+            return MoveNext(out var value) ? value : @default;
+        }
+
+        public JSValue Return()
+        {
+            if (_done)
+                return IteratorResult(JSUndefined.Value, true);
+
+            _done = true;
+
+            Exception? firstException = null;
+            for (int i = _iterators.Count - 1; i >= 0; i--)
+                CloseIteratorForReturn(_iterators[i], ref firstException);
+
+            if (firstException != null)
+                throw firstException;
+
+            return IteratorResult(JSUndefined.Value, true);
+        }
+
+        public JSValue Return(JSValue value) => Return();
     }
 
     // ---------------------------------------------------------------
