@@ -1120,6 +1120,24 @@ public class BuiltInsTests
         Assert.Equal(-1.0, result.DoubleValue);
     }
 
+    [Fact]
+    public void Object_Prototype_ToString_UsesBuiltinBrands()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              var args = (function () { return arguments; }());
+              return [
+                Object.prototype.toString.call(Math),
+                Object.prototype.toString.call(JSON),
+                Object.prototype.toString.call(args)
+              ].join('|');
+            })()
+            """);
+        Assert.Equal("[object Math]|[object JSON]|[object Arguments]", result.ToString());
+    }
+
     // ── M2: JSReflect tests ──────────────────────────────────────────
 
     [Fact]
@@ -7439,6 +7457,38 @@ public class BuiltInsTests
         Assert.Equal(
             "TypeError|false|TypeError|TypeError|1|1|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError|TypeError",
             result.ToString());
+    }
+
+    [Fact]
+    public void Array_Prototype_ReduceRight_Returns_Initial_Value_For_Empty_ArrayLike_Length_Accessor()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            var accessed = false;
+
+            function callbackfn(prevVal, curVal, idx, obj) {
+                accessed = true;
+                return typeof obj.length === 'undefined';
+            }
+
+            var obj = {
+                0: 11,
+                1: 12
+            };
+            Object.defineProperty(obj, 'length', {
+                set: function() {},
+                configurable: true
+            });
+
+            return [
+                Array.prototype.reduceRight.call(obj, callbackfn, 111),
+                accessed
+            ].join('|');
+        })();");
+
+        Assert.Equal("111|false", result.ToString());
     }
 
     [Fact]

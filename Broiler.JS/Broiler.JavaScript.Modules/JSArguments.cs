@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Storage;
@@ -30,6 +31,7 @@ public class JSArguments: JSObject
         var throwTypeError = JSFunction.CreateFrozenThrowTypeErrorFunction("ThrowTypeError", "Cannot access callee in strict mode");
         properties.Put(KeyStrings.length, JSValue.CreateNumber(args.Length), JSPropertyAttributes.ConfigurableValue);
         properties.Put(KeyStrings.callee, throwTypeError, throwTypeError, JSPropertyAttributes.Property);
+        FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("Arguments"), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         ref var symbols = ref GetSymbols();
         symbols.Put(JSValue.SymbolIterator.Key) = JSProperty.Property(new JSFunction(Values), JSPropertyAttributes.ConfigurableValue);

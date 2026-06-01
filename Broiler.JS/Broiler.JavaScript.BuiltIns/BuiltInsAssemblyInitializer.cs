@@ -1572,6 +1572,14 @@ internal static class BuiltInsAssemblyInitializer
         if (context[KeyStrings.GetOrCreate("BigInt")] is JSFunction bigIntCtor && bigIntCtor.prototype is JSObject bigIntProto)
             SetToStringTag(bigIntProto, "BigInt");
 
+        // Math[@@toStringTag] = "Math"
+        if (context[KeyStrings.GetOrCreate("Math")] is JSObject mathObject)
+            SetToStringTag(mathObject, "Math");
+
+        // JSON[@@toStringTag] = "JSON"
+        if (context[KeyStrings.GetOrCreate("JSON")] is JSObject jsonObject)
+            SetToStringTag(jsonObject, "JSON");
+
         // WeakRef.prototype[@@toStringTag] = "WeakRef"
         if (context[KeyStrings.GetOrCreate("WeakRef")] is JSFunction weakRefCtor && weakRefCtor.prototype is JSObject weakRefProto)
             SetToStringTag(weakRefProto, "WeakRef");

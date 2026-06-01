@@ -570,7 +570,7 @@ public partial class JSArray
                 continue;
 
             var itemArgs = new Arguments(JSUndefined.Value, initialValue, item, new JSNumber(index), @this);
-            initialValue = fn.f(itemArgs);
+            initialValue = fn.InvokeFunction(itemArgs);
         }
 
         return initialValue;
@@ -587,7 +587,7 @@ public partial class JSArray
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.reduce");
 
-        long start = length - 1;
+        long start = (long)length - 1;
 
         if (a.Length == 1)
         {
@@ -605,8 +605,7 @@ public partial class JSArray
             if (!TryGetArrayLikeElement(@this, (uint)i, out var item))
                 continue;
 
-            var itemArgs = new Arguments(JSUndefined.Value, initialValue, item, new JSNumber(i), @this);
-            initialValue = fn.f(itemArgs);
+            initialValue = fn.f(new Arguments(JSUndefined.Value, initialValue, item, new JSNumber(i), @this));
         }
 
         return initialValue;
