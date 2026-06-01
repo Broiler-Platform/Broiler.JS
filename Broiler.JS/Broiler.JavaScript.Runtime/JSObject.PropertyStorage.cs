@@ -1,4 +1,5 @@
 ﻿using Broiler.JavaScript.Storage;
+using Broiler.JavaScript.Ast.Misc;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -165,13 +166,17 @@ public partial class JSObject
 
         var pe = target.ownProperties.GetEnumerator();
         while (pe.MoveNext(out var key, out var val) && !val.IsEmpty)
-            ownProperties.Put(key.Key) = val.IsValue ? JSProperty.Property(val.value) : JSProperty.Property(target.GetValue(val));
+            ownProperties.Put(key.Key) = val.IsValue
+                ? JSProperty.Property(key, val.value)
+                : JSProperty.Property(key, (IPropertyValue)target.GetValue(val));
 
         var en = target.elements.Length;
         for (uint i = 0; i < en; i++)
         {
             if (target.elements.TryGetValue(i, out var p) && !p.IsEmpty)
-                elements.Put(i) = p.IsValue ? JSProperty.Property(p.value) : JSProperty.Property(target.GetValue(p));
+                elements.Put(i) = p.IsValue
+                    ? JSProperty.Property(i, p.value)
+                    : JSProperty.Property(i, (IPropertyValue)target.GetValue(p));
         }
 
         foreach (var symbol in target.symbols.All)
@@ -182,7 +187,9 @@ public partial class JSObject
             if (sv.IsEmpty)
                 continue;
 
-            symbols.Put(key) = sv.IsValue ? JSProperty.Property(sv.value) : JSProperty.Property(target.GetValue(sv));
+            symbols.Put(key) = sv.IsValue
+                ? JSProperty.Property(key, sv.value)
+                : JSProperty.Property(key, (IPropertyValue)target.GetValue(sv));
         }
     }
 
