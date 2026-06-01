@@ -307,6 +307,11 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
         JSValue r;
         var context = JSEngine.Current as JSContext;
+        var scriptHostMode = string.Equals(
+            Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"),
+            "1",
+            StringComparison.Ordinal);
+        using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
         try
         {
@@ -333,6 +338,11 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public JSValue InvokeSuper(in Arguments a)
     {
         var context = JSEngine.Current as JSContext;
+        var scriptHostMode = string.Equals(
+            Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"),
+            "1",
+            StringComparison.Ordinal);
+        using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
         var r = f(in a);
         if (r.IsObject)
@@ -345,6 +355,11 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     {
         using var _ = JSEngine.EnterStrictMode(IsStrictMode);
         var context = JSEngine.Current as JSContext;
+        var scriptHostMode = string.Equals(
+            Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"),
+            "1",
+            StringComparison.Ordinal);
+        using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
         return f(CoerceThisOnInvoke ? a.OverrideThis(CoerceNonStrictThis(a.This)) : a);
     }

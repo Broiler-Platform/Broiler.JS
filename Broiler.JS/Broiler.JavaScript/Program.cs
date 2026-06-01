@@ -58,10 +58,18 @@ namespace BroilerJS
                 using var context = new JSContext(experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026);
                 var code = await File.ReadAllTextAsync(file.FullName);
                 // Pass the global context explicitly so top-level `this` resolves to
-                // the same host object that owns the evaluated script. Script-host
-                // runs standalone test262 fixtures too, so allow top-level await
-                // and drain the resulting promise before exiting.
-                await context.EvalWithTopLevelAwaitAsync(code, file.FullName, context);
+                // the same host object that owns the evaluated script. Prefer the
+                // synchronous evaluator for ordinary fixtures and fall back to the
+                // top-level-await path only when the parser rejects the script for
+                // using await at the top level.
+                try
+                {
+                    context.Eval(code, file.FullName, context);
+                }
+                catch (Exception ex) when (ex.Message.Contains("Unexpected await", StringComparison.Ordinal))
+                {
+                    await context.EvalWithTopLevelAwaitAsync(code, file.FullName, context);
+                }
                 return;
             }
 

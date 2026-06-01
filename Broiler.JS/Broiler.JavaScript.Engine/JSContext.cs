@@ -98,6 +98,21 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         public void Dispose() => context.withScope = Previous;
     }
 
+    private sealed class SuspendedWithScope : IDisposable
+    {
+        private readonly JSContext context;
+        private readonly WithScope previous;
+
+        public SuspendedWithScope(JSContext context)
+        {
+            this.context = context;
+            previous = context.withScope;
+            context.withScope = null;
+        }
+
+        public void Dispose() => context.withScope = previous;
+    }
+
     private sealed class DirectEvalScope : IDisposable
     {
         private readonly JSContext context;
@@ -499,6 +514,8 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             ?? throw new InvalidOperationException("CreatePrimitiveObject returned a non-object value.");
         return new WithScope(this, @object);
     }
+
+    public IDisposable SuspendWithScopes() => withScope == null ? null : new SuspendedWithScope(this);
 
     public JSObject[] CaptureWithScopes()
     {
