@@ -296,6 +296,21 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_ObjectSpread_Preserves_EnumerableKeyOrder()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var src = { z: 1, a: 2, 1: 3 };
+                var obj = { ...src };
+                return Object.keys(obj).join(",");
+            })()
+            """);
+
+        Assert.Equal("1,z,a", result.ToString());
+    }
+
+    [Fact]
     public void Compile_ArrowFunction_ArrayDestructuringElisions_Work_With_BareYield_Generator()
     {
         using var ctx = new JSContext();

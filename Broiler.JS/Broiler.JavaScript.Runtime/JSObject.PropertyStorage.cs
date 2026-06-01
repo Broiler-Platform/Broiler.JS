@@ -164,12 +164,6 @@ public partial class JSObject
         if (value is not JSObject target)
             return;
 
-        var pe = target.ownProperties.GetEnumerator();
-        while (pe.MoveNext(out var key, out var val) && !val.IsEmpty)
-            ownProperties.Put(key.Key) = val.IsValue
-                ? JSProperty.Property(key, val.value)
-                : JSProperty.Property(key, (IPropertyValue)target.GetValue(val));
-
         var en = target.elements.Length;
         for (uint i = 0; i < en; i++)
         {
@@ -178,6 +172,12 @@ public partial class JSObject
                     ? JSProperty.Property(i, p.value)
                     : JSProperty.Property(i, (IPropertyValue)target.GetValue(p));
         }
+
+        var pe = target.ownProperties.GetEnumerator();
+        while (pe.MoveNext(out var key, out var val) && !val.IsEmpty)
+            ownProperties.Put(key.Key) = val.IsValue
+                ? JSProperty.Property(key, val.value)
+                : JSProperty.Property(key, (IPropertyValue)target.GetValue(val));
 
         foreach (var symbol in target.symbols.All)
         {
