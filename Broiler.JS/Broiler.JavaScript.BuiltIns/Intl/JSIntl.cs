@@ -1029,10 +1029,8 @@ public class JSIntlNumberFormat : JSObject
         if (a.This is not JSIntlNumberFormat)
             throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatRange called on incompatible receiver");
 
-        var start = (a[0] ?? JSUndefined.Value).DoubleValue;
-        var end = (a.GetAt(1) ?? JSUndefined.Value).DoubleValue;
-        if (double.IsNaN(start) || double.IsNaN(end))
-            throw JSEngine.NewRangeError("Invalid number range");
+        var start = CoerceRangeValue(a[0]);
+        var end = CoerceRangeValue(a.GetAt(1));
         return JSValue.CreateString($"{start}–{end}");
     }
 
@@ -1041,11 +1039,21 @@ public class JSIntlNumberFormat : JSObject
         if (a.This is not JSIntlNumberFormat)
             throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatRangeToParts called on incompatible receiver");
 
-        var start = (a[0] ?? JSUndefined.Value).DoubleValue;
-        var end = (a.GetAt(1) ?? JSUndefined.Value).DoubleValue;
-        if (double.IsNaN(start) || double.IsNaN(end))
-            throw JSEngine.NewRangeError("Invalid number range");
+        var start = CoerceRangeValue(a[0]);
+        var end = CoerceRangeValue(a.GetAt(1));
         return JSValue.CreateArray();
+    }
+
+    private static double CoerceRangeValue(JSValue value)
+    {
+        if (value == null || value.IsUndefined)
+            throw JSEngine.NewTypeError("Invalid number range");
+
+        var number = value.DoubleValue;
+        if (double.IsNaN(number) || double.IsInfinity(number))
+            throw JSEngine.NewRangeError("Invalid number range");
+
+        return number;
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
