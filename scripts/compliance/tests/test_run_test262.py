@@ -188,6 +188,26 @@ class RunTest262Tests(unittest.TestCase):
         self.assertEqual(2, selection["shardCount"])
         self.assertEqual(1, selection["shardIndex"])
 
+    def test_select_paths_skips_iterator_helpers_feature_tests(self) -> None:
+        first_path = self.write_test("test/language/a.js", "1 + 1;\n")
+        self.write_test(
+            "test/built-ins/Iterator/from/name.js",
+            "/*---\nfeatures: [iterator-helpers]\n---*/\nIterator.from([]);\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        selected_paths, selection = run_test262.select_paths(
+            repo,
+            [],
+            all_script_host_verifiable=True,
+            shard_count=1,
+            shard_index=0,
+        )
+
+        self.assertEqual([first_path], selected_paths)
+        self.assertEqual(2, selection["candidateCount"])
+        self.assertEqual(1, selection["selectedCountBeforeSharding"])
+
     def test_parse_metadata_supports_inline_and_block_style_lists(self) -> None:
         metadata, _ = run_test262.parse_metadata(
             """/*---

@@ -41,6 +41,7 @@ UNSUPPORTED_FEATURES = {
     "Atomics",
     "SharedArrayBuffer",
     "Temporal",
+    "iterator-helpers",
     "dynamic-import",
     "explicit-resource-management",
     "resizable-arraybuffer",
