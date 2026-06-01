@@ -94,6 +94,7 @@ partial class FastCompiler
                     continue;
                 }
 
+                var isDirectEvalBinding = directEvalBindingNames?.Contains(v.Value) ?? false;
                 var g = isDirectEvalProgramScope
                     ? JSContextBuilder.Index(KeyOfName(v))
                     : JSValueBuilder.Index(top.Context, KeyOfName(v));
@@ -102,7 +103,11 @@ partial class FastCompiler
                 vs.IsDeletable = isDirectEvalProgramScope;
                 scope.Parent?.AddExternalVariable(v, vs);
 
-                vs.Expression = JSVariableBuilder.Property(vs.Variable);
+                vs.Expression = isDirectEvalProgramScope && isDirectEvalBinding
+                    ? JSContextBuilder.Index(KeyOfName(v))
+                    : isDirectEvalProgramScope
+                    ? JSContextBuilder.Index(KeyOfName(v))
+                    : JSVariableBuilder.Property(vs.Variable);
                 vs.SetInit(JSVariableBuilder.New(g, v.Value));
             }
         }
@@ -142,7 +147,9 @@ partial class FastCompiler
         variable.IsLexical = false;
         variable.IsDeletable = true;
         top.Parent?.AddExternalVariable(name, variable);
-        variable.Expression = JSVariableBuilder.Property(variable.Variable);
+        variable.Expression = directEvalBindingNames?.Contains(name.Value) == true
+            ? JSContextBuilder.Index(KeyOfName(name))
+            : JSValueBuilder.Index(top.RootScope.Context, KeyOfName(name));
         variable.SetInit(JSVariableBuilder.New(globalValue, name.Value));
         return variable;
     }

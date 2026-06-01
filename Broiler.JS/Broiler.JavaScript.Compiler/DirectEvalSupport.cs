@@ -108,7 +108,26 @@ public static class DirectEvalSupport
                 ? new DeclaredBindingSnapshot(context, declaredBindings, ExtractBindingNames(capturedBindings))
                 : null;
             using var __ = context.PushDirectEvalCompilation(requiresActivation, privateNamesInScope);
-            return context.Eval(text, location, @this ?? context);
+            var result = context.Eval(text, location, @this ?? context);
+            if (declaredBindings?.Length > 0 && capturedBindings?.Length > 0)
+            {
+                foreach (var declaredBinding in declaredBindings)
+                {
+                    if (string.IsNullOrWhiteSpace(declaredBinding))
+                        continue;
+
+                    foreach (var capturedBinding in capturedBindings)
+                    {
+                        if (capturedBinding == null || !capturedBinding.Name.Equals(declaredBinding))
+                            continue;
+
+                        capturedBinding.Value = context.ResolveIdentifier(KeyStrings.GetOrCreate(declaredBinding));
+                        break;
+                    }
+                }
+            }
+
+            return result;
         }
 
         return CoreScript.Evaluate(text, location);
@@ -176,15 +195,78 @@ public static class DirectEvalSupport
         var pool = new FastPool();
         var parser = new FastParser(new FastTokenStream(pool, text));
         var program = parser.ParseProgram();
-        if (program.HoistingScope == null)
-            return [];
-
         var bindings = new HashSet<string>(StringComparer.Ordinal);
-        var hoisted = program.HoistingScope.GetFastEnumerator();
-        while (hoisted.MoveNext(out var name))
-            bindings.Add(name.Value);
+        CollectDeclaredBindings(program.Statements, bindings);
 
         return [.. bindings];
+    }
+
+    private static void CollectDeclaredBindings(IFastEnumerable<AstStatement> statements, HashSet<string> bindings)
+    {
+        if (statements == null)
+            return;
+
+        var enumerator = statements.GetFastEnumerator();
+        while (enumerator.MoveNext(out var statement))
+            CollectDeclaredBindings(statement, bindings);
+    }
+
+    private static void CollectDeclaredBindings(AstStatement statement, HashSet<string> bindings)
+    {
+        switch (statement)
+        {
+            case AstBlock block:
+                CollectDeclaredBindings(block.Statements, bindings);
+                break;
+
+            case AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true, Id: { } id } }:
+                bindings.Add(id.Name.Value);
+                break;
+
+            case AstIfStatement ifStatement:
+                CollectDeclaredBindings(ifStatement.True, bindings);
+                if (ifStatement.False != null)
+                    CollectDeclaredBindings(ifStatement.False, bindings);
+                break;
+
+            case AstTryStatement tryStatement:
+                CollectDeclaredBindings(tryStatement.Block, bindings);
+                if (tryStatement.Catch != null)
+                    CollectDeclaredBindings(tryStatement.Catch, bindings);
+                if (tryStatement.Finally != null)
+                    CollectDeclaredBindings(tryStatement.Finally, bindings);
+                break;
+
+            case AstSwitchStatement switchStatement:
+                var cases = switchStatement.Cases.GetFastEnumerator();
+                while (cases.MoveNext(out var @case))
+                    CollectDeclaredBindings(@case.Statements, bindings);
+                break;
+
+            case AstWhileStatement whileStatement:
+                CollectDeclaredBindings(whileStatement.Body, bindings);
+                break;
+
+            case AstDoWhileStatement doWhileStatement:
+                CollectDeclaredBindings(doWhileStatement.Body, bindings);
+                break;
+
+            case AstForStatement forStatement:
+                CollectDeclaredBindings(forStatement.Body, bindings);
+                break;
+
+            case AstForInStatement forInStatement:
+                CollectDeclaredBindings(forInStatement.Body, bindings);
+                break;
+
+            case AstForOfStatement forOfStatement:
+                CollectDeclaredBindings(forOfStatement.Body, bindings);
+                break;
+
+            case AstLabeledStatement labeledStatement:
+                CollectDeclaredBindings(labeledStatement.Body, bindings);
+                break;
+        }
     }
 
     private static string[] ExtractBindingNames(JSVariable[] bindings)
