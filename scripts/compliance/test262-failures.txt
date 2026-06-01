@@ -1273,7 +1273,6 @@ test/built-ins/Object/defineProperties/15.2.3.7-6-a-46.js
 test/built-ins/Object/defineProperties/15.2.3.7-6-a-75.js
 test/built-ins/Object/defineProperties/15.2.3.7-6-a-76.js
 test/built-ins/Object/defineProperties/15.2.3.7-6-a-77.js
-test/built-ins/Object/defineProperties/proxy-no-ownkeys-returned-keys-order.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-116.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-117.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-163.js
@@ -1317,17 +1316,12 @@ test/built-ins/Object/defineProperty/15.2.3.6-4-87.js
 test/built-ins/Object/entries/primitive-strings.js
 test/built-ins/Object/entries/return-order.js
 test/built-ins/Object/freeze/15.2.3.9-2-a-12.js
-test/built-ins/Object/freeze/proxy-no-ownkeys-returned-keys-order.js
-test/built-ins/Object/freeze/proxy-with-defineProperty-handler.js
 test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-key-accessor.js
 test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-key-tostring.js
 test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-value-accessor.js
 test/built-ins/Object/getOwnPropertyDescriptor/primitive-string.js
-test/built-ins/Object/getOwnPropertyDescriptors/inherited-properties-omitted.js
 test/built-ins/Object/getOwnPropertyDescriptors/order-after-define-property.js
 test/built-ins/Object/getOwnPropertyDescriptors/primitive-strings.js
-test/built-ins/Object/getOwnPropertyDescriptors/proxy-no-ownkeys-returned-keys-order.js
-test/built-ins/Object/getOwnPropertyDescriptors/symbols-included.js
 test/built-ins/Object/getOwnPropertyNames/15.2.3.4-4-44.js
 test/built-ins/Object/getOwnPropertyNames/15.2.3.4-4-49.js
 test/built-ins/Object/getOwnPropertyNames/non-object-argument-valid.js
@@ -1339,8 +1333,6 @@ test/built-ins/Object/groupBy/toPropertyKey.js
 test/built-ins/Object/hasOwn/symbol_property_toPrimitive.js
 test/built-ins/Object/hasOwn/symbol_property_toString.js
 test/built-ins/Object/hasOwn/symbol_property_valueOf.js
-test/built-ins/Object/isFrozen/proxy-no-ownkeys-returned-keys-order.js
-test/built-ins/Object/isSealed/proxy-no-ownkeys-returned-keys-order.js
 test/built-ins/Object/keys/property-traps-order-with-proxied-array.js
 test/built-ins/Object/keys/proxy-keys.js
 test/built-ins/Object/keys/return-order.js
@@ -1353,8 +1345,6 @@ test/built-ins/Object/prototype/propertyIsEnumerable/symbol_property_toString.js
 test/built-ins/Object/prototype/propertyIsEnumerable/symbol_property_valueOf.js
 test/built-ins/Object/prototype/setPrototypeOf-with-different-values.js
 test/built-ins/Object/prototype/toString/symbol-tag-string-builtin.js
-test/built-ins/Object/seal/proxy-no-ownkeys-returned-keys-order.js
-test/built-ins/Object/seal/proxy-with-defineProperty-handler.js
 test/built-ins/Object/seal/seal-aggregateerror.js
 test/built-ins/Object/seal/seal-promise.js
 test/built-ins/Object/values/order-after-define-property.js
@@ -1651,8 +1641,6 @@ test/built-ins/Promise/prototype/finally/subclass-reject-count.js
 test/built-ins/Promise/prototype/finally/subclass-resolve-count.js
 test/built-ins/Promise/prototype/finally/this-value-proxy.js
 test/built-ins/Promise/prototype/finally/this-value-thenable.js
-test/built-ins/Promise/prototype/then/S25.4.4_A1.1_T1.js
-test/built-ins/Promise/prototype/then/S25.4.4_A2.1_T2.js
 test/built-ins/Promise/prototype/then/S25.4.5.3_A4.2_T1.js
 test/built-ins/Promise/prototype/then/S25.4.5.3_A4.2_T2.js
 test/built-ins/Promise/prototype/then/capability-executor-called-twice.js
@@ -7580,14 +7568,11 @@ test/staging/sm/object/15.2.3.4-02.js
 test/staging/sm/object/defineGetter-defineSetter.js
 test/staging/sm/object/defineProperty-proxy.js
 test/staging/sm/object/entries.js
-test/staging/sm/object/freeze-proxy.js
 test/staging/sm/object/getOwnPropertyDescriptor.js
-test/staging/sm/object/getOwnPropertySymbols.js
 test/staging/sm/object/keys.js
 test/staging/sm/object/property-descriptor-order.js
 test/staging/sm/object/propertyIsEnumerable-proxy.js
 test/staging/sm/object/propertyIsEnumerable.js
-test/staging/sm/object/seal-proxy.js
 test/staging/sm/object/toPrimitive.js
 test/staging/sm/object/values-entries-lazy-props.js
 test/staging/sm/object/values.js
