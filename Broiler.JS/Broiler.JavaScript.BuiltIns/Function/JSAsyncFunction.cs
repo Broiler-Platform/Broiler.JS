@@ -54,6 +54,9 @@ public class JSAsyncFunction
             if (!gen.MoveNext(lastResult, out var r))
                 return JSEngine.CreateResolvedOrRejectedPromise(r, true);
 
+            if (r.IsFunction)
+                return JSEngine.CreateResolvedOrRejectedPromise(r, true);
+
             var then = r[KeyStrings.then];
             if (then.IsUndefined)
                 return JSEngine.CreateResolvedOrRejectedPromise(r, true);
