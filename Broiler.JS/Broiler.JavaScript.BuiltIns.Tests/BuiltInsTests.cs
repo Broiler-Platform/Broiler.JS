@@ -7460,6 +7460,38 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_Prototype_ReduceRight_Returns_Initial_Value_For_Empty_ArrayLike_Length_Accessor()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            var accessed = false;
+
+            function callbackfn(prevVal, curVal, idx, obj) {
+                accessed = true;
+                return typeof obj.length === 'undefined';
+            }
+
+            var obj = {
+                0: 11,
+                1: 12
+            };
+            Object.defineProperty(obj, 'length', {
+                set: function() {},
+                configurable: true
+            });
+
+            return [
+                Array.prototype.reduceRight.call(obj, callbackfn, 111),
+                accessed
+            ].join('|');
+        })();");
+
+        Assert.Equal("111|false", result.ToString());
+    }
+
+    [Fact]
     public void Array_Prototype_Invalid_Species_Constructors_Throw_TypeError()
     {
         EnsureBuiltInsLoaded();

@@ -587,7 +587,7 @@ public partial class JSArray
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.reduce");
 
-        long start = length - 1;
+        long start = (long)length - 1;
 
         if (a.Length == 1)
         {
