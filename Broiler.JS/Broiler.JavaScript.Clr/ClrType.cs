@@ -181,7 +181,7 @@ public class ClrType : JSFunction
                 }
                 else
                 {
-                    target.FastAddValue(name, new JSFunction(jsm.GenerateMethod(), name), JSPropertyAttributes.EnumerableConfigurableValue);
+                    target.FastAddValue(name, new JSFunction(jsm.GenerateMethod(), name, length: jsm.Length), JSPropertyAttributes.EnumerableConfigurableValue);
                 }
             }
 
@@ -344,7 +344,11 @@ public class ClrType : JSFunction
         var name = this.name.Value;
         JSFunctionDelegate newDelegate = YExpression.Lambda<JSFunctionDelegate>(name, ClrProxyBuilder.From(YExpression.New(c, pe)), pe).Compile();
 
-        return new JSFunction(newDelegate, name);
+        var length = c.GetCustomAttribute<JSExportAttribute>()?.Length;
+        if (length == null)
+            length = c.GetParameters().Length > 0 && c.GetParameters()[0].ParameterType == typeof(Arguments).MakeByRefType() ? 1 : c.GetParameters().Length;
+
+        return new JSFunction(newDelegate, name, length: length.Value);
     }
 
     public JSValue Create(in Arguments a)

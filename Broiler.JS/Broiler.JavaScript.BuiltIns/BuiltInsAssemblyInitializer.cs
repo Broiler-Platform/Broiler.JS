@@ -384,7 +384,7 @@ internal static class BuiltInsAssemblyInitializer
         PatchErrorConstructor(context, KeyStrings.RangeError, static (in Arguments a) => new JSRangeError(in a), errorCtor);
         PatchErrorConstructor(context, KeyStrings.ReferenceError, static (in Arguments a) => new JSReferenceError(in a), errorCtor);
         PatchErrorConstructor(context, KeyStrings.EvalError, static (in Arguments a) => new JSEvalError(in a), errorCtor);
-        PatchErrorConstructor(context, KeyStrings.GetOrCreate("AggregateError"), static (in Arguments a) => new JSAggregateError(in a), errorCtor);
+        PatchErrorConstructor(context, KeyStrings.GetOrCreate("AggregateError"), static (in Arguments a) => new JSAggregateError(in a), errorCtor, 2);
     }
 
     private static void PatchLegacyDatePrototype(JSContext context)
@@ -1660,14 +1660,14 @@ internal static class BuiltInsAssemblyInitializer
         generator.prototype.BasePrototypeObject = asyncGeneratorPrototype;
     }
 
-    private static void PatchErrorConstructor(JSContext context, KeyString key, JSFunctionDelegate factory, JSFunction baseConstructor = null)
+    private static void PatchErrorConstructor(JSContext context, KeyString key, JSFunctionDelegate factory, JSFunction baseConstructor = null, int length = 1)
     {
         if (context[key] is not JSFunction existing)
             return;
 
         var name = key.Value;
         var isErrorKey = KeyStrings.GetOrCreate("isError");
-        var replacement = new JSFunction(factory, name, $"function {name}() {{ [native code] }}", length: 1, createPrototype: false)
+        var replacement = new JSFunction(factory, name, $"function {name}() {{ [native code] }}", length: length, createPrototype: false)
         {
             prototype = existing.prototype
         };

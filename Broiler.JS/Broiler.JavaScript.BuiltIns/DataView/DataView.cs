@@ -359,7 +359,7 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
-    [JSExport(Length = 3)]
+    [JSExport(Length = 2)]
     public JSValue SetFloat32(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 4);
@@ -373,7 +373,7 @@ public partial class DataView : JSObject
     /// Stores a 16-bit floating point (half-precision) value at the specified
     /// byte offset from the start of the DataView (ES2025 §2.8).
     /// </summary>
-    [JSExport(Length = 3)]
+    [JSExport(Length = 2)]
     public JSValue SetFloat16(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 2);
@@ -385,7 +385,7 @@ public partial class DataView : JSObject
     }
 
 
-    [JSExport(Length = 3)]
+    [JSExport(Length = 2)]
     public JSValue SetFloat64(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 8);
@@ -395,7 +395,7 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
-    [JSExport(Length = 3)]
+    [JSExport(Length = 2)]
     public JSValue SetInt16(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 2);
@@ -405,7 +405,7 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
-    [JSExport(Length = 3)]
+    [JSExport(Length = 2)]
     public JSValue SetInt32(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 4);
@@ -426,7 +426,7 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
-    [JSExport(Length = 3)]
+    [JSExport(Length = 2)]
     public JSValue SetUint16(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 2);
@@ -436,7 +436,7 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
-    [JSExport(Length = 3)]
+    [JSExport(Length = 2)]
     public JSValue SetUint32(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 4);

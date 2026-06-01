@@ -12,6 +12,7 @@ internal class JSMethodInfo
 
     public readonly string Name;
     public readonly bool Export;
+    public readonly int Length;
 
     public JSMethodInfo(ClrMemberNamingConvention namingConvention, MethodInfo method)
     {
@@ -19,6 +20,7 @@ internal class JSMethodInfo
         var (name, export) = ClrTypeExtensions.GetJSName(namingConvention, method);
         Name = name;
         Export = export;
+        Length = method.GetCustomAttribute<JSExportAttribute>()?.Length ?? 0;
     }
 
     internal JSValue GenerateInvokeJSFunction() => this.InvokeAs(Method.DeclaringType, ToInstanceJSFunctionDelegate<object>);
@@ -26,7 +28,7 @@ internal class JSMethodInfo
     public delegate JSValue InstanceDelegate<T>(T @this, in Arguments a);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public JSFunction ToInstanceJSFunctionDelegate<T>() => new(Method.CompileToJSFunctionDelegate(), Name);
+    public JSFunction ToInstanceJSFunctionDelegate<T>() => new(Method.CompileToJSFunctionDelegate(), Name, length: Length);
 
     public JSFunctionDelegate GenerateMethod() => Method.CompileToJSFunctionDelegate();
 
