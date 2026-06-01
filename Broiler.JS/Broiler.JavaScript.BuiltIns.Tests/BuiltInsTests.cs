@@ -12386,6 +12386,45 @@ public class BuiltInsTests
     #region String.prototype.matchAll flags check
 
     [Fact]
+    public void String_Prototype_Custom_Matchers_Are_Ignored_For_Primitives()
+    {
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                Object.defineProperty(Boolean.prototype, Symbol.match, {
+                    get: function () { throw new Error('match getter should not be called'); }
+                });
+                Object.defineProperty(Boolean.prototype, Symbol.split, {
+                    get: function () { throw new Error('split getter should not be called'); }
+                });
+                Object.defineProperty(Number.prototype, Symbol.replace, {
+                    get: function () { throw new Error('replace getter should not be called'); }
+                });
+                Object.defineProperty(BigInt.prototype, Symbol.replace, {
+                    get: function () { throw new Error('replaceAll getter should not be called'); }
+                });
+                Object.defineProperty(String.prototype, Symbol.search, {
+                    get: function () { throw new Error('search getter should not be called'); }
+                });
+                Object.defineProperty(String.prototype, Symbol.matchAll, {
+                    get: function () { throw new Error('matchAll getter should not be called'); }
+                });
+
+                return [
+                    JSON.stringify('atruebtruec'.match(true)),
+                    'a1b1c'.replace(1, 'X'),
+                    'a1b1c'.replaceAll(1n, 'X'),
+                    String('a1b1c'.search('1')),
+                    JSON.stringify('atruebtruec'.split(true)),
+                    Array.from('a1b1c'.matchAll('1')).map(function (m) { return m[0]; }).join(',')
+                ].join('|');
+            })();
+        """);
+
+        Assert.Equal("[\"true\"]|aXb1c|aXbXc|1|[\"a\",\"b\",\"c\"]|1,1", result.ToString());
+    }
+
+    [Fact]
     public void MatchAll_Throws_TypeError_On_NonGlobal_RegExp()
     {
         using var ctx = CreateContext();

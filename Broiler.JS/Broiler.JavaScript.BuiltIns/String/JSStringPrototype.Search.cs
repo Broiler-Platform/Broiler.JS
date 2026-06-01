@@ -166,7 +166,7 @@ public partial class JSString
         var @this = a.This.AsString();
         var search = a.Get1();
 
-        if (!search.IsNullOrUndefined)
+        if (!search.IsNullOrUndefined && search.IsObject)
         {
             var searcher = search[(IJSSymbol)JSSymbol.search];
             if (!searcher.IsUndefined)

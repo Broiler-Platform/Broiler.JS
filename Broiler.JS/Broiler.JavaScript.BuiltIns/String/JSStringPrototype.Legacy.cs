@@ -83,7 +83,7 @@ public partial class JSString
         if (a.This.IsNullOrUndefined)
             throw JSEngine.NewTypeError("String.prototype.matchAll called on null or undefined");
 
-        if (!pattern.IsNullOrUndefined)
+        if (!pattern.IsNullOrUndefined && pattern.IsObject)
         {
             if (JSRegExp.IsRegExpLike(pattern))
             {

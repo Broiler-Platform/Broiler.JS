@@ -20,7 +20,7 @@ public partial class JSString
             throw JSEngine.NewTypeError("String.prototype.match called on null or undefined");
         
         var reg = a.Get1();
-        if (!reg.IsNullOrUndefined)
+        if (!reg.IsNullOrUndefined && reg.IsObject)
         {
             var matcher = reg[(IJSSymbol)JSSymbol.match];
             if (!matcher.IsUndefined)
@@ -47,7 +47,7 @@ public partial class JSString
     {
         var @this = a.This.AsString();
         var (f, s) = a.Get2();
-        if (!f.IsNullOrUndefined)
+        if (!f.IsNullOrUndefined && f.IsObject)
         {
             var replacer = f[(IJSSymbol)JSSymbol.replace];
             if (!replacer.IsUndefined)
@@ -89,7 +89,7 @@ public partial class JSString
 
         var (searchValue, replaceValue) = a.Get2();
 
-        if (!searchValue.IsNullOrUndefined)
+        if (!searchValue.IsNullOrUndefined && searchValue.IsObject)
         {
             var isRegExp = searchValue[(IJSSymbol)JSSymbol.match];
             if (!isRegExp.IsUndefined && isRegExp.BooleanValue)
@@ -169,7 +169,7 @@ public partial class JSString
         var @this = @thisValue.AsString();
         var (_separator, limit) = a.Get2();
 
-        if (!_separator.IsNullOrUndefined)
+        if (!_separator.IsNullOrUndefined && _separator.IsObject)
         {
             var splitter = _separator[(IJSSymbol)JSSymbol.split];
             if (!splitter.IsUndefined)
