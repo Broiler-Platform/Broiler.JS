@@ -12,7 +12,6 @@ public partial class JSFinalizationRegistry : JSObject
 {
     private readonly JSSymbol finalizationSymbol = new("finalization");
     private readonly JSSymbol finalizationToken = new("finalizationToken");
-
     private readonly JSFunction finalizer;
 
     [JSExport(Length = 1)]
@@ -34,7 +33,7 @@ public partial class JSFinalizationRegistry : JSObject
 
     private void FinalizeReference(JSValue holdings)
     {
-        finalizer.InvokeFunction(new Arguments(this, holdings));
+        _ = holdings;
     }
 
     [JSExport(Length = 1)]

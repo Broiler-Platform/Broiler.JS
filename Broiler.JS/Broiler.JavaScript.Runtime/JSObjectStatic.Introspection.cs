@@ -12,7 +12,7 @@ public partial class JSObject
     private static List<JSValue> GetOwnPropertyKeysInListOrder(JSObject @object)
     {
         var keys = new List<JSValue>();
-        HashSet<uint> emittedSymbols = null;
+        List<(uint Key, JSValue Value)> symbolKeys = null;
 
         var en = @object.GetAllKeys(false, false);
         while (en.MoveNext(out var hasValue, out var value, out var _))
@@ -21,21 +21,24 @@ public partial class JSObject
                 continue;
 
             keys.Add(value);
-            if (value is IJSSymbol symbol)
-            {
-                emittedSymbols ??= [];
-                emittedSymbols.Add(symbol.Key);
-            }
         }
 
         foreach (var (key, property) in @object.GetSymbols().AllValues())
         {
-            if (property.IsEmpty || (emittedSymbols != null && emittedSymbols.Contains(key)))
+            if (property.IsEmpty)
                 continue;
 
             var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(key)
                 ?? throw new InvalidOperationException($"Unknown symbol key {key}");
-            keys.Add((JSValue)symbol);
+            symbolKeys ??= [];
+            symbolKeys.Add((key, (JSValue)symbol));
+        }
+
+        if (symbolKeys != null)
+        {
+            symbolKeys.Sort(static (left, right) => left.Key.CompareTo(right.Key));
+            for (var i = 0; i < symbolKeys.Count; i++)
+                keys.Add(symbolKeys[i].Value);
         }
 
         return keys;
@@ -129,6 +132,9 @@ public partial class JSObject
         if (value is not JSObject @object)
             return JSValue.BooleanTrue;
 
+        if (@object is IJSIntegerIndexedObject { HasIntegerIndexedElements: true })
+            return JSValue.BooleanFalse;
+
         return TestIntegrityLevel(@object, frozen: true) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }
 
@@ -138,6 +144,9 @@ public partial class JSObject
         var value = a.Get1();
         if (value is not JSObject @object)
             return JSValue.BooleanTrue;
+
+        if (@object is IJSIntegerIndexedObject { HasIntegerIndexedElements: true })
+            return JSValue.BooleanFalse;
 
         return TestIntegrityLevel(@object, frozen: false) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }

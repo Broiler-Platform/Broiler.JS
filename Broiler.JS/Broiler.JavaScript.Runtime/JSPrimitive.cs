@@ -11,10 +11,7 @@ namespace Broiler.JavaScript.Runtime;
 public abstract class JSPrimitive: JSValue
 {
     internal protected void ResolvePrototype() { 
-        if (prototypeChain == null)
-        {
-            BasePrototypeObject = GetPrototype();
-        }
+        BasePrototypeObject = GetPrototype();
     }
 
     protected abstract JSValue GetPrototype();
