@@ -26,6 +26,21 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_SloppyMode_Allows_Future_Reserved_Binding_Names()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                "use  strict";
+                var public = 1;
+                return public;
+            })()
+            """);
+
+        Assert.Equal(1.0, result.DoubleValue);
+    }
+
+    [Fact]
     public void Compile_ArrowFunction_Works()
     {
         using var ctx = new JSContext();
