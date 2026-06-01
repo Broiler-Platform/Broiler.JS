@@ -275,6 +275,27 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_ObjectSpread_Copies_Getter_As_Data_Property()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var o = {
+                    get a() {
+                        return 42;
+                    }
+                };
+
+                var obj = {...o, c: 4, d: 5};
+                var desc = Object.getOwnPropertyDescriptor(obj, "a");
+                return [obj.a, desc.value, desc.writable, desc.enumerable, desc.configurable, Object.keys(obj).join(",")].join("|");
+            })()
+            """);
+
+        Assert.Equal("42|42|true|true|true|a,c,d", result.ToString());
+    }
+
+    [Fact]
     public void Compile_ArrowFunction_ArrayDestructuringElisions_Work_With_BareYield_Generator()
     {
         using var ctx = new JSContext();
