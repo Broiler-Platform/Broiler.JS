@@ -157,6 +157,9 @@ public static class DirectEvalSupport
             while (parameters.MoveNext(out var parameter))
                 VisitVariableDeclarator(parameter);
 
+            if (functionExpression.IsArrowFunction)
+                Visit(functionExpression.Body);
+
             return functionExpression;
         }
 

@@ -1314,6 +1314,13 @@ public class CompilerTests
         AssertSyntaxError("""Function('function eval(){"use strict";}');""");
         AssertSyntaxError("""Function('function arguments(){"use strict";}');""");
         AssertSyntaxError("""eval('"use strict"; var _f = function (param, param) { };');""");
+        AssertSyntaxError("""eval('(() => super())();');""");
+        AssertSyntaxError("""
+            (function () {
+                var evalAlias = eval;
+                evalAlias('(() => super())();');
+            })();
+            """);
         AssertSyntaxError("""eval("/\\\rn/;");""");
         AssertSyntaxError("eval(\"'foo\\\\\r\")");
         AssertSyntaxError("""
