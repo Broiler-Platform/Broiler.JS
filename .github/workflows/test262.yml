@@ -14,7 +14,7 @@ name: test262
 #     files and runs test262 only for those scopes first.  The full suite
 #     executes only when the incremental job succeeds.
 #   * On completion merges shard logs and uses the LogParser
-#     `--highest-impact-problem` mode to file a focused GitHub issue for the
+#     `--most-common-problem` mode to file a focused GitHub issue for the
 #     most impactful failure category when `ISSUE_TOKEN` is configured.
 
 on:
@@ -883,16 +883,16 @@ jobs:
           issue_body_path="$LOGPARSER_OUTPUT_DIR/issue.md"
           issue_json_path="$LOGPARSER_OUTPUT_DIR/issue.json"
 
-          # --highest-impact-problem narrows the report to the highest-impact
+          # --most-common-problem narrows the report to the highest-impact
           # type/context/message combination so the emitted markdown can be
           # posted directly as a focused GitHub issue body.
           dotnet run --project logs/LogParser -- \
             "$LOGPARSER_LOGS_DIR" \
-            --highest-impact-problem > "$issue_body_path"
+            --most-common-problem > "$issue_body_path"
 
           dotnet run --project logs/LogParser -- \
             "$LOGPARSER_LOGS_DIR" \
-            --highest-impact-problem \
+            --most-common-problem \
             --output json > "$issue_json_path"
 
           ISSUE_JSON_PATH="$issue_json_path" python <<'PY'
