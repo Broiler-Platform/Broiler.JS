@@ -113,10 +113,12 @@ public static class JSIntl
     {
         var constructor = new JSFunction((in Arguments a) =>
         {
-            ValidateConstructorArguments("PluralRules", in a);
-            return new JSIntlPluralRules();
+            return new JSIntlPluralRules(in a);
         }, "PluralRules", "function PluralRules() { [native code] }", length: 0);
         constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
+            new JSFunction(JSIntlPluralRules.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
+            JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("selectRange"),
             new JSFunction(static (in Arguments a) =>
             {
@@ -269,6 +271,9 @@ public static class JSIntl
             "DateTimeFormat",
             "function DateTimeFormat() { [native code] }");
         constructor.FastAddValue(KeyStrings.length, JSValue.NumberZero, JSPropertyAttributes.ConfigurableReadonlyValue);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
+            new JSFunction(JSIntlDateTimeFormat.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
+            JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddProperty(FormatKey,
             new JSFunction(static (in Arguments a) =>
             {
@@ -322,6 +327,9 @@ public static class JSIntl
             length: 0);
         constructor.FastAddValue(SupportedLocalesOfKey,
             new JSFunction(static (in Arguments a) => a.Get1().IsNullOrUndefined ? JSValue.CreateArray() : a.Get1(), "supportedLocalesOf", "function supportedLocalesOf() { [native code] }", createPrototype: false, length: 1),
+            JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
+            new JSFunction(JSIntlNumberFormat.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
             JSPropertyAttributes.ConfigurableValue);
         if (constructor.prototype.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(FormatKey.ToString(), FormatKey)).IsUndefined)
         {
@@ -951,19 +959,65 @@ public sealed class JSIntlLocale : JSObject
 
 public sealed class JSIntlPluralRules : JSObject
 {
-    public JSIntlPluralRules() : base(CurrentPrototype()) { }
+    private readonly string locale;
+    private readonly string type;
+
+    public JSIntlPluralRules(in Arguments a) : base(CurrentPrototype())
+    {
+        var options = JSIntl.ValidateConstructorArguments("PluralRules", in a);
+        locale = JSIntl.ResolveLocale(a.Get1());
+        var typeKey = KeyStrings.GetOrCreate("type");
+        type = options is null || options[typeKey].IsUndefined ? "cardinal" : options[typeKey].StringValue;
+    }
 
     private static JSObject CurrentPrototype()
         => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
             ? (intl[KeyStrings.GetOrCreate("PluralRules")] as JSFunction)?.prototype
             : null;
+
+    public static JSValue ResolvedOptionsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlPluralRules @this)
+            throw JSEngine.NewTypeError("Intl.PluralRules.prototype.resolvedOptions called on incompatible receiver");
+
+        var result = new JSObject();
+        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
+        result[KeyStrings.GetOrCreate("type")] = JSValue.CreateString(@this.type);
+        result[KeyStrings.GetOrCreate("minimumIntegerDigits")] = JSValue.CreateNumber(1);
+        result[KeyStrings.GetOrCreate("minimumFractionDigits")] = JSValue.CreateNumber(0);
+        result[KeyStrings.GetOrCreate("maximumFractionDigits")] = JSValue.CreateNumber(0);
+        result[KeyStrings.GetOrCreate("pluralCategories")] = JSValue.CreateArray();
+        var categories = result[KeyStrings.GetOrCreate("pluralCategories")];
+        if (categories is JSObject array)
+        {
+            if (@this.type == "ordinal")
+            {
+                array.AddArrayItem(JSValue.CreateString("one"));
+                array.AddArrayItem(JSValue.CreateString("two"));
+                array.AddArrayItem(JSValue.CreateString("few"));
+                array.AddArrayItem(JSValue.CreateString("other"));
+            }
+            else
+            {
+                array.AddArrayItem(JSValue.CreateString("one"));
+                array.AddArrayItem(JSValue.CreateString("other"));
+            }
+        }
+
+        return result;
+    }
 }
 
 public class JSIntlNumberFormat : JSObject
 {
+    private readonly string locale;
+    private JSObject options;
+
     public JSIntlNumberFormat(in Arguments a) : this()
     {
-        JSIntl.ValidateNumberFormatOptions(JSIntl.ValidateConstructorArguments("NumberFormat", in a));
+        options = JSIntl.ValidateConstructorArguments("NumberFormat", in a);
+        JSIntl.ValidateNumberFormatOptions(options);
+        locale = JSIntl.ResolveLocale(a.Get1());
     }
 
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
@@ -994,6 +1048,90 @@ public class JSIntlNumberFormat : JSObject
         return JSValue.CreateArray();
     }
 
+    public static JSValue ResolvedOptionsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlNumberFormat @this)
+            throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.resolvedOptions called on incompatible receiver");
+
+        var result = new JSObject();
+        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
+        result[KeyStrings.GetOrCreate("numberingSystem")] = JSValue.CreateString("latn");
+
+        var styleKey = KeyStrings.GetOrCreate("style");
+        var style = @this.options is null || @this.options[styleKey].IsUndefined ? "decimal" : @this.options[styleKey].StringValue;
+        result[KeyStrings.GetOrCreate("style")] = JSValue.CreateString(style);
+
+        if (@this.options != null)
+        {
+            var currencyKey = KeyStrings.GetOrCreate("currency");
+            var unitKey = KeyStrings.GetOrCreate("unit");
+            var notationKey = KeyStrings.GetOrCreate("notation");
+            var compactDisplayKey = KeyStrings.GetOrCreate("compactDisplay");
+            var signDisplayKey = KeyStrings.GetOrCreate("signDisplay");
+            var useGroupingKey = KeyStrings.GetOrCreate("useGrouping");
+            var roundingIncrementKey = KeyStrings.GetOrCreate("roundingIncrement");
+            var roundingModeKey = KeyStrings.GetOrCreate("roundingMode");
+            var roundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
+            var trailingZeroDisplayKey = KeyStrings.GetOrCreate("trailingZeroDisplay");
+            var minimumIntegerDigitsKey = KeyStrings.GetOrCreate("minimumIntegerDigits");
+            var minimumFractionDigitsKey = KeyStrings.GetOrCreate("minimumFractionDigits");
+            var maximumFractionDigitsKey = KeyStrings.GetOrCreate("maximumFractionDigits");
+            var minimumSignificantDigitsKey = KeyStrings.GetOrCreate("minimumSignificantDigits");
+            var maximumSignificantDigitsKey = KeyStrings.GetOrCreate("maximumSignificantDigits");
+
+            if (!@this.options[currencyKey].IsUndefined)
+                result[currencyKey] = @this.options[currencyKey];
+            if (!@this.options[unitKey].IsUndefined)
+                result[unitKey] = @this.options[unitKey];
+            if (!@this.options[notationKey].IsUndefined)
+                result[notationKey] = @this.options[notationKey];
+            if (!@this.options[compactDisplayKey].IsUndefined)
+                result[compactDisplayKey] = @this.options[compactDisplayKey];
+            if (!@this.options[signDisplayKey].IsUndefined)
+                result[signDisplayKey] = @this.options[signDisplayKey];
+            if (!@this.options[useGroupingKey].IsUndefined)
+                result[useGroupingKey] = @this.options[useGroupingKey];
+            if (!@this.options[roundingIncrementKey].IsUndefined)
+                result[roundingIncrementKey] = @this.options[roundingIncrementKey];
+            if (!@this.options[roundingModeKey].IsUndefined)
+                result[roundingModeKey] = @this.options[roundingModeKey];
+            if (!@this.options[roundingPriorityKey].IsUndefined)
+                result[roundingPriorityKey] = @this.options[roundingPriorityKey];
+            if (!@this.options[trailingZeroDisplayKey].IsUndefined)
+                result[trailingZeroDisplayKey] = @this.options[trailingZeroDisplayKey];
+            if (!@this.options[minimumIntegerDigitsKey].IsUndefined)
+                result[minimumIntegerDigitsKey] = @this.options[minimumIntegerDigitsKey];
+            else
+                result[minimumIntegerDigitsKey] = JSValue.CreateNumber(1);
+
+            if (!@this.options[minimumFractionDigitsKey].IsUndefined)
+                result[minimumFractionDigitsKey] = @this.options[minimumFractionDigitsKey];
+            else
+                result[minimumFractionDigitsKey] = JSValue.CreateNumber(0);
+
+            if (!@this.options[maximumFractionDigitsKey].IsUndefined)
+                result[maximumFractionDigitsKey] = @this.options[maximumFractionDigitsKey];
+            else
+                result[maximumFractionDigitsKey] = JSValue.CreateNumber(3);
+
+            if (!@this.options[minimumSignificantDigitsKey].IsUndefined)
+                result[minimumSignificantDigitsKey] = @this.options[minimumSignificantDigitsKey];
+            if (!@this.options[maximumSignificantDigitsKey].IsUndefined)
+                result[maximumSignificantDigitsKey] = @this.options[maximumSignificantDigitsKey];
+        }
+        else
+        {
+            result[KeyStrings.GetOrCreate("minimumIntegerDigits")] = JSValue.CreateNumber(1);
+            result[KeyStrings.GetOrCreate("minimumFractionDigits")] = JSValue.CreateNumber(0);
+            result[KeyStrings.GetOrCreate("maximumFractionDigits")] = JSValue.CreateNumber(3);
+            result[KeyStrings.GetOrCreate("useGrouping")] = JSValue.BooleanTrue;
+            result[KeyStrings.GetOrCreate("notation")] = JSValue.CreateString("standard");
+            result[KeyStrings.GetOrCreate("signDisplay")] = JSValue.CreateString("auto");
+        }
+
+        return result;
+    }
+
     private static JSObject CurrentPrototype()
         => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
             ? (intl[KeyStrings.GetOrCreate("NumberFormat")] as JSFunction)?.prototype
@@ -1004,6 +1142,8 @@ public class JSIntlDateTimeFormat : JSObject
 {
     private static readonly ConcurrentDictionary<string, JSIntlDateTimeFormat> formats = new();
     private readonly CultureInfo locale;
+    private readonly string localeTag;
+    private JSObject options;
 
     public static JSIntlDateTimeFormat Get(CultureInfo culture)
         => formats.GetOrAdd(culture.Name, static key => new JSIntlDateTimeFormat(CultureInfo.GetCultureInfo(key)));
@@ -1070,17 +1210,56 @@ public class JSIntlDateTimeFormat : JSObject
         return parts;
     }
 
+    public static JSValue ResolvedOptionsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlDateTimeFormat @this)
+            throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.resolvedOptions called on incompatible receiver");
+
+        var result = new JSObject();
+        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.localeTag);
+        result[KeyStrings.GetOrCreate("calendar")] = JSValue.CreateString("gregory");
+        result[KeyStrings.GetOrCreate("numberingSystem")] = JSValue.CreateString("latn");
+        result[KeyStrings.GetOrCreate("timeZone")] = JSValue.CreateString(TimeZoneInfo.Local.Id);
+
+        if (@this.options != null)
+        {
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "calendar");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "numberingSystem");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeZone");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "hourCycle");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "hour12");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "dateStyle");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeStyle");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "weekday");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "era");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "year");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "month");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "day");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "dayPeriod");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "hour");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "minute");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "second");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "fractionalSecondDigits");
+            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeZoneName");
+        }
+
+        return result;
+    }
+
     internal JSValue Format(DateTimeOffset value, JSObject format) => new JSString(value.ToString(locale));
 
     public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())
     {
-        JSIntl.ValidateDateTimeFormatOptions(JSIntl.ValidateConstructorArguments("DateTimeFormat", in a));
+        options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a);
+        JSIntl.ValidateDateTimeFormatOptions(options);
+        localeTag = JSIntl.ResolveLocale(a.Get1());
         locale = CultureInfo.CurrentCulture;
     }
 
     internal JSIntlDateTimeFormat(CultureInfo locale) : base()
     {
         this.locale = locale;
+        localeTag = locale.Name;
     }
 
     private static JSObject CurrentPrototype()
@@ -1095,5 +1274,16 @@ public class JSIntlDateTimeFormat : JSObject
             throw JSEngine.NewRangeError("Invalid time value");
 
         return clipped;
+    }
+}
+
+internal static class JSIntlResolvedOptionsExtensions
+{
+    internal static void SetIfDefined(JSObject target, JSObject options, string name)
+    {
+        var key = KeyStrings.GetOrCreate(name);
+        var value = options?[key] ?? JSValue.UndefinedValue;
+        if (!value.IsUndefined)
+            target[key] = value;
     }
 }

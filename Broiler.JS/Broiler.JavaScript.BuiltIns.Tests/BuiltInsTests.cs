@@ -11331,6 +11331,23 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Intl_ResolvedOptions_Methods_Are_Exposed_And_Extensible()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            typeof Intl.DateTimeFormat.prototype.resolvedOptions,
+            typeof Intl.NumberFormat.prototype.resolvedOptions,
+            typeof Intl.PluralRules.prototype.resolvedOptions,
+            Object.isExtensible(Intl.DateTimeFormat.prototype.resolvedOptions),
+            Object.isExtensible(Intl.NumberFormat.prototype.resolvedOptions),
+            Object.isExtensible(Intl.PluralRules.prototype.resolvedOptions)
+        ].join('|');");
+
+        Assert.Equal("function|function|function|true|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Intl_NumberFormat_FormatRange_Methods_Exist()
     {
         EnsureBuiltInsLoaded();
