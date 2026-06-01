@@ -150,6 +150,16 @@ public partial class ILCodeGenerator
         using (tempVariables.Push())
         {
             body = ReWriteTryCatch(body);
+            if (body is YBlockExpression block)
+            {
+                foreach (var p in block.FlattenVariables)
+                {
+                    if (variables.TryGetValue(p, out _))
+                        continue;
+
+                    variables.Create(p);
+                }
+            }
             if(expressionWriter != null)
             {
                 var writer = new System.CodeDom.Compiler.IndentedTextWriter(expressionWriter, "\t");

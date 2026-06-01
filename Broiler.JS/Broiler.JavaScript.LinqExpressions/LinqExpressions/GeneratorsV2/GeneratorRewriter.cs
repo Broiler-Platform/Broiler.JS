@@ -130,6 +130,12 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
 
         while (ve.MoveNext(out var v))
         {
+            if (v == _replaceScriptInfo)
+            {
+                retainedVariables.Add(v);
+                continue;
+            }
+
             if (nonYieldingCatchParameters.Contains(v))
             {
                 retainedVariables.Add(v);

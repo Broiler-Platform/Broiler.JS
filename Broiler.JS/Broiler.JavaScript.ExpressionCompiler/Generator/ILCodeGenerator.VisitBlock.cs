@@ -10,6 +10,8 @@ public partial class ILCodeGenerator
         using var tvs = tempVariables.Push();
         foreach(var p in yBlockExpression.FlattenVariables)
         {
+            if (variables.TryGetValue(p, out _))
+                continue;
             variables.Create(p, tvs);
         }
         var expressions = yBlockExpression.FlattenExpressions;

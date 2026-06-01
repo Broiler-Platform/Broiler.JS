@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Reflection.Emit;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
@@ -12,8 +13,33 @@ public class VariableInfo(ILGenerator il)
 
     public Variable this[YParameterExpression exp]
     {
-        get => variables[exp];
+        get
+        {
+            if (variables.TryGetValue(exp, out var value))
+                return value;
+
+            return variables[exp];
+        }
     }
+
+    public bool TryFindByName(string name, out Variable value)
+    {
+        foreach (var candidate in variables.Values)
+        {
+            if (string.Equals(candidate.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                value = candidate;
+                return true;
+            }
+        }
+
+        value = null;
+        return false;
+    }
+
+    public bool TryGetValue(YParameterExpression exp, out Variable value) => variables.TryGetValue(exp, out value);
+
+    public IEnumerable<Variable> Values => variables.Values;
 
     public Variable Create(
         YParameterExpression exp, 
