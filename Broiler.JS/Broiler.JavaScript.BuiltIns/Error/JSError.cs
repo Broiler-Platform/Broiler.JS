@@ -159,6 +159,7 @@ public partial class JSAggregateError : JSError
 {
     private static readonly KeyString ErrorsKey = KeyStrings.GetOrCreate("errors");
 
+    [JSExport(Length = 2)]
     public JSAggregateError(in Arguments a, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) :
         base(new Arguments(a.This, a[1]), function: function, filePath: filePath, line: line)
     {

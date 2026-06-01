@@ -40,13 +40,13 @@ internal class JSPropertyInfo
     public JSFunction GeneratePropertyGetter()
     {
         var name = $"get {Name}";
-        return new JSFunction(Property.GetMethod.CompileToJSFunctionDelegate(name), name);
+        return new JSFunction(Property.GetMethod.CompileToJSFunctionDelegate(name), name, length: 0);
     }
 
     public JSFunction GeneratePropertySetter()
     {
         var name = $"set {Name}";
-        return new JSFunction(Property.SetMethod.CompileToJSFunctionDelegate(name), name);
+        return new JSFunction(Property.SetMethod.CompileToJSFunctionDelegate(name), name, length: 1);
     }
 
     internal Func<object, uint, JSValue> GenerateIndexedGetter()

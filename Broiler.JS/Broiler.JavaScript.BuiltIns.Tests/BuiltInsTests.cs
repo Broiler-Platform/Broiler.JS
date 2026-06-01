@@ -2265,6 +2265,23 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void AggregateError_And_DataView_Writer_Functions_Expose_Spec_Lengths()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            [
+              AggregateError.length,
+              DataView.prototype.setInt16.length,
+              DataView.prototype.setFloat16.length,
+              DataView.prototype.setUint32.length
+            ].join('|');
+            """);
+
+        Assert.Equal("2|2|2|2", result.ToString());
+    }
+
+    [Fact]
     public void Function_Family_And_Error_Prototype_Metadata_Match_Test262_Expectations()
     {
         EnsureBuiltInsLoaded();

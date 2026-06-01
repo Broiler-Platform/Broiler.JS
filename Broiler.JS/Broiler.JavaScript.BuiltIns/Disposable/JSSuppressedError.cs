@@ -15,6 +15,7 @@ public partial class JSSuppressedError : JSError
     [JSExport("suppressed")]
     public JSValue Suppressed { get; set; }
 
+    [JSExport(Length = 3)]
     public JSSuppressedError(in Arguments a, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) :
         base(new Arguments(JSUndefined.Value, a[2] ?? new JSString("Suppressed Error")), function: function, filePath: filePath, line: line)
     {
