@@ -1472,6 +1472,32 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Var_Initializer_Inside_With_Updates_With_Object_Property()
+    {
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                var obj = { value: "myObj_value" };
+                var result = "result";
+
+                try {
+                    with (obj) {
+                        var value = "value";
+                        throw value;
+                    }
+                } catch (e) {
+                    result = e;
+                }
+
+                return [result, obj.value].join("|");
+            })();
+            """);
+
+        Assert.Equal("value|value", result.ToString());
+    }
+
+    [Fact]
     public void Parse_Dot_Followed_By_Number_Is_Syntax_Error()
     {
         using var ctx = new JSContext();
