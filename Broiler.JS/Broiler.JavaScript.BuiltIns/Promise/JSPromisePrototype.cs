@@ -11,7 +11,10 @@ public partial class JSPromise
     [JSExport("then")]
     public JSValue Then(in Arguments a)
     {
-        var constructor = GetPromiseSpeciesConstructor(a.This);
+        if (a.This is not JSPromise promise)
+            throw JSEngine.NewTypeError("Promise.prototype.then receiver is not a Promise");
+
+        var constructor = GetPromiseSpeciesConstructor(promise);
 
         var (success, fail) = a.Get2();
 
@@ -34,11 +37,11 @@ public partial class JSPromise
         }
 
         if (IsDefaultPromiseConstructor(constructor))
-            return Then(successHandler, failHandler);
+            return promise.Then(successHandler, failHandler);
 
         return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
         {
-            Then(successHandler, failHandler, resolve, reject);
+            promise.Then(successHandler, failHandler, resolve, reject);
         });
     }
 
