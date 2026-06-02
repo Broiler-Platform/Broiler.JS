@@ -9936,6 +9936,42 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Date_Setters_Read_Receiver_Value_Before_ToNumber_Coercion()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+                function outcome(startValue, coercedValue, mutate, invoke) {
+                    var d = new Date(startValue);
+                    var result = invoke(d, {
+                        valueOf: function () {
+                            mutate(d);
+                            return coercedValue;
+                        }
+                    });
+
+                    return String(result !== result);
+                }
+
+                return [
+                    outcome(0, 1, function (d) { d.setTime(NaN); }, function (d, arg) { return d.setDate(arg); }),
+                    outcome(NaN, 1, function (d) { d.setYear(1970); }, function (d, arg) { return d.setDate(arg); }),
+                    outcome(0, 2001, function (d) { d.setTime(NaN); }, function (d, arg) { return d.setFullYear(arg); }),
+                    outcome(NaN, 2001, function (d) { d.setYear(1970); }, function (d, arg) { return d.setFullYear(arg); }),
+                    outcome(0, 1, function (d) { d.setTime(NaN); }, function (d, arg) { return d.setUTCDate(arg); }),
+                    outcome(NaN, 1, function (d) { d.setYear(1970); }, function (d, arg) { return d.setUTCDate(arg); }),
+                    outcome(0, 2001, function (d) { d.setTime(NaN); }, function (d, arg) { return d.setUTCFullYear(arg); }),
+                    outcome(NaN, 2001, function (d) { d.setYear(1970); }, function (d, arg) { return d.setUTCFullYear(arg); })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("false|true|false|true|false|true|false|true", result.ToString());
+    }
+
+    [Fact]
     public void String_Symbol_WeakMap_RegExp_And_Instanceof_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();

@@ -32,11 +32,14 @@ public partial class JSDate
     /// <param name="diff"></param>
     /// <param name="diffValue"></param>
     /// <returns></returns>
-    internal bool IsValid(JSValue diff, out double diffValue)
+    internal bool IsValid(JSValue diff, out double diffValue) =>
+        IsValid(value, diff, out diffValue);
+
+    internal bool IsValid(DateTimeOffset date, JSValue diff, out double diffValue)
     {
         diffValue = 0;
 
-        if (value == DateTimeOffset.MinValue)
+        if (date == DateTimeOffset.MinValue)
             return false;
 
         if (diff.IsUndefined)

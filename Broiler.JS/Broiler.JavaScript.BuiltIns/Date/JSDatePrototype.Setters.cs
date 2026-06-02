@@ -14,12 +14,13 @@ public partial class JSDate
     [JSExport("setDate", Length = 1)]
     internal JSValue SetDate(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var diffValue))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var diffValue))
             return JSNumber.NaN;
 
         try
         {
-            value = value.AddDays(-value.Day + diffValue);
+            value = date.AddDays(-date.Day + diffValue);
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -32,10 +33,10 @@ public partial class JSDate
     [JSExport("setFullYear", Length = 3)]
     internal JSValue SetFullYear(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var year))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var year))
             return JSNumber.NaN;
 
-        var date = value;
         var (_year, _month, _day) = a.Get3();
 
         var month = _month.IsUndefined ? date.Month - 1 : _month.IntValue;
@@ -77,10 +78,10 @@ public partial class JSDate
     [JSExport("setHours", Length = 4)]
     internal JSValue SetHours(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var hours))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var hours))
             return JSNumber.NaN;
 
-        var date = value;
         var (_hours, _mins, _seconds, _millis) = a.Get4();
 
         var hrs = _hours.IsUndefined ? date.Hour : _hours.IntValue;
@@ -108,15 +109,14 @@ public partial class JSDate
     [JSExport("setMilliseconds", Length = 1)]
     internal JSValue SetMilliseconds(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var _millis))
-            return JSNumber.NaN;
-
         var date = value;
+        if (!IsValid(date, a.Get1(), out var _millis))
+            return JSNumber.NaN;
 
         try
         {
             date = new DateTimeOffset(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second, 0, date.Offset);
-            date = value.AddMilliseconds(_millis);
+            date = date.AddMilliseconds(_millis);
             value = date;
         }
         catch (ArgumentOutOfRangeException)
@@ -130,10 +130,10 @@ public partial class JSDate
     [JSExport("setMinutes", Length = 3)]
     internal JSValue SetMinutes(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var minutes))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var minutes))
             return JSNumber.NaN;
 
-        var date = value;
         var (_mins, _seconds, _millis) = a.Get3();
         var mins = _mins.IsUndefined ? date.Minute : _mins.IntValue;
         var seconds = _seconds.IsUndefined ? date.Second : _seconds.IntValue;
@@ -158,10 +158,10 @@ public partial class JSDate
     [JSExport("setMonth", Length = 2)]
     internal JSValue SetMonth(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var mnth))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var mnth))
             return JSNumber.NaN;
 
-        var date = value;
         var (_month, _days) = a.Get2();
         var month = _month.IsUndefined ? date.Month : _month.IntValue;
         var days = (_days.IsUndefined ? date.Day : _days.IntValue) - 1;
@@ -185,10 +185,10 @@ public partial class JSDate
     [JSExport("setSeconds", Length = 2)]
     internal JSValue SetSeconds(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var secs))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var secs))
             return JSNumber.NaN;
 
-        var date = value;
         var (_seconds, _millis) = a.Get2();
         var seconds = _seconds.IsUndefined ? date.Second : _seconds.IntValue;
         var millis = _millis.IsUndefined ? date.Millisecond : _millis.IntValue;
@@ -281,12 +281,12 @@ public partial class JSDate
     [JSExport("setUTCDate", Length = 1)]
     internal JSValue setUTCDate(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var _date))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var _date))
             return JSNumber.NaN;
 
         try
         {
-            var date = value;
             var offset = date.Offset;
             var utc = date.ToUniversalTime();
 
@@ -303,7 +303,8 @@ public partial class JSDate
     [JSExport("setUTCFullYear", Length = 1)]
     internal JSValue setUTCFullYear(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var year))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var year))
             return JSNumber.NaN;
 
         if (year <= 0)
@@ -312,7 +313,6 @@ public partial class JSDate
             return JSNumber.NaN;
         }
 
-        var date = value;
         var (_year, _month, _day) = a.Get3();
 
         var offset = date.Offset;
@@ -340,10 +340,10 @@ public partial class JSDate
     [JSExport("setUTCHours", Length = 4)]
     internal JSValue SetUTCHours(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var hours))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var hours))
             return JSNumber.NaN;
 
-        var date = value;
         var (_hours, _mins, _seconds, _millis) = a.Get4();
 
         var offset = date.Offset;
@@ -374,10 +374,10 @@ public partial class JSDate
     [JSExport("setUTCMilliseconds", Length = 1)]
     internal JSValue SetUTCMilliseconds(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var _millis))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var _millis))
             return JSNumber.NaN;
 
-        var date = value;
         var offset = date.Offset;
         var utc = date.ToUniversalTime();
 
@@ -399,10 +399,10 @@ public partial class JSDate
     [JSExport("setUTCMinutes", Length = 3)]
     internal JSValue SetUTCMinutes(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var minutes))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var minutes))
             return JSNumber.NaN;
 
-        var date = value;
         var offset = date.Offset;
         var utc = date.ToUniversalTime();
 
@@ -432,10 +432,10 @@ public partial class JSDate
     [JSExport("setUTCMonth", Length = 2)]
     internal JSValue SetUTCMonth(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var mnth))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var mnth))
             return JSNumber.NaN;
 
-        var date = value;
         var offset = date.Offset;
         var utc = date.ToUniversalTime();
 
@@ -463,10 +463,10 @@ public partial class JSDate
     [JSExport("setUTCSeconds", Length = 2)]
     internal JSValue SetUTCSeconds(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var secs))
+        var date = value;
+        if (!IsValid(date, a.Get1(), out var secs))
             return JSNumber.NaN;
 
-        var date = value;
         var offset = date.Offset;
         var utc = date.ToUniversalTime();
 
