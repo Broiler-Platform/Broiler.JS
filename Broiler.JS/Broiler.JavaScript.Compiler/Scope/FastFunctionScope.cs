@@ -329,6 +329,20 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
         Context = YExpression.Parameter(typeof(JSContext), $"{nameof(Context)}{sID}");
         StackItem = YExpression.Parameter(typeof(CallStackItem), $"{nameof(StackItem)}{sID}");
+        variableScopeList[Context.Name] = new VariableScope
+        {
+            Name = Context.Name,
+            Expression = Context,
+            Variable = Context,
+            OwnerFunction = Function,
+        };
+        variableScopeList[StackItem.Name] = new VariableScope
+        {
+            Name = StackItem.Name,
+            Expression = StackItem,
+            Variable = StackItem,
+            OwnerFunction = Function,
+        };
 
         Loop = new LinkedStack<LoopScope>();
         TempVariables = [];
@@ -351,6 +365,10 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         Super = p.Super;
         Context = p.Context;
         StackItem = p.StackItem;
+        if (p.variableScopeList.TryGetValue(Context.Name, out var contextScope))
+            variableScopeList[Context.Name] = contextScope;
+        if (p.variableScopeList.TryGetValue(StackItem.Name, out var stackItemScope))
+            variableScopeList[StackItem.Name] = stackItemScope;
         Loop = p.Loop;
         ReturnLabel = p.ReturnLabel;
     }

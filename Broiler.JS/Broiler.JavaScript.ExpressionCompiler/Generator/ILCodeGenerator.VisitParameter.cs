@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -99,17 +100,20 @@ public partial class ILCodeGenerator
         if (string.IsNullOrEmpty(name))
             return false;
 
-        var resolvedName = name;
-        if (resolvedName.EndsWith('`'))
-            resolvedName = resolvedName[..^1];
-        var underscore = name.LastIndexOf('_');
-        if (underscore > 0 && int.TryParse(name[(underscore + 1)..], out _))
-            resolvedName = name[..underscore];
-
-        if (variables.TryFindByName(resolvedName, out variable))
+        if (variables.TryFindByName(name, out variable))
             return true;
 
-        return variables.TryFindByName(name, out variable);
+        var resolvedName = NormalizeGeneratedName(name);
+        foreach (var candidate in variables.Values)
+        {
+            if (string.Equals(NormalizeGeneratedName(candidate.Name), resolvedName, StringComparison.OrdinalIgnoreCase))
+            {
+                variable = candidate;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private bool TryResolveBoxByType(Type type, out Variable variable)
@@ -138,9 +142,10 @@ public partial class ILCodeGenerator
             return false;
         }
 
+        var resolvedName = NormalizeGeneratedName(name);
         foreach (var closure in closureRepository.Closures.Values)
         {
-            if (string.Equals(closure.local.Name, name, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(NormalizeGeneratedName(closure.local.Name), resolvedName, StringComparison.OrdinalIgnoreCase))
             {
                 exp = closure.value;
                 return true;
@@ -149,5 +154,28 @@ public partial class ILCodeGenerator
 
         exp = default!;
         return false;
+    }
+
+    private static string NormalizeGeneratedName(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return name;
+
+        var resolvedName = name;
+        if (resolvedName.EndsWith('`'))
+            resolvedName = resolvedName[..^1];
+
+        var underscore = resolvedName.LastIndexOf('_');
+        if (underscore > 0 && int.TryParse(resolvedName[(underscore + 1)..], out _))
+            return resolvedName[..underscore];
+
+        var end = resolvedName.Length;
+        while (end > 0 && char.IsDigit(resolvedName[end - 1]))
+            end--;
+
+        if (end > 0 && end < resolvedName.Length)
+            return resolvedName[..end];
+
+        return resolvedName;
     }
 }

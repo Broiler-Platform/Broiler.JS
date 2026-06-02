@@ -69,6 +69,18 @@ public static class RuntimeAssembly
         icg.Emit(exp);
 
         string il = sw.ToString();
+        if (ILCodeGenerator.GenerateLogs)
+        {
+            var safeName = string.IsNullOrEmpty(exp.Name.FullName)
+                ? "anonymous"
+                : exp.Name.FullName;
+            foreach (var invalid in Path.GetInvalidFileNameChars())
+                safeName = safeName.Replace(invalid, '_');
+            var dumpRoot = Path.Combine(Path.GetTempPath(), "broiler-il-dumps");
+            Directory.CreateDirectory(dumpRoot);
+            File.WriteAllText(Path.Combine(dumpRoot, $"{safeName}.il.txt"), il);
+            File.WriteAllText(Path.Combine(dumpRoot, $"{safeName}.exp.txt"), expWriter.ToString());
+        }
 
         return (method, il, expWriter.ToString());
 
