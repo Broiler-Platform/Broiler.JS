@@ -1103,9 +1103,14 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => CreateDynamicMetaObject(parameter, this);
 
-    public JSValue Power(JSValue a)
+    public virtual JSValue Power(JSValue a)
     {
-        var v = DoubleValue;
+        var self = ToNumericPrimitive(this);
+        a = ToNumericPrimitive(a);
+        if (!ReferenceEquals(self, this))
+            return self.Power(a);
+
+        var v = self.DoubleValue;
         var a1 = a.DoubleValue;
 
         if (a1 == 0)
@@ -1117,7 +1122,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
                 return NumberNaN;
         }
 
-        return CreateNumber(Math.Pow(DoubleValue, a1));
+        return CreateNumber(Math.Pow(v, a1));
     }
 
     internal virtual bool TryGetValue(uint i, out JSProperty value)

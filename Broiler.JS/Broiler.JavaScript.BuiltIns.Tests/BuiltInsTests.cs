@@ -4230,17 +4230,60 @@ public class BuiltInsTests
             (function () {
                 var i = 10n;
                 i++;
+                var remaining = 10n;
+                remaining -= 3n;
                 return [
                     Object(0b101n) & 0b011n,
                     0b011n & { valueOf: function () { return 0b101n; } },
                     ~Object(0n),
                     i,
-                    Number(10n)
+                    remaining,
+                    Number(10n),
+                    Number((2n ** 53n) + 1n)
                 ].join('|');
             })()
             """);
 
-        Assert.Equal("1|1|-1|11|10", result.ToString());
+        Assert.Equal("1|1|-1|11|7|10|9007199254740992", result.ToString());
+    }
+
+    [Fact]
+    public void DataView_BigInt64_Uses_BigInt_Values()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var buffer = new ArrayBuffer(8);
+                var view = new DataView(buffer);
+                var setResult = view.setBigInt64(0, -1n);
+                return [
+                    setResult === undefined,
+                    typeof view.getBigInt64(0),
+                    view.getBigInt64(0) === -1n
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("true|bigint|true", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_NumberFormat_Range_Accepts_BigInt_Arguments()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var nf = new Intl.NumberFormat();
+                return [
+                    typeof nf.formatRange(23n, 12n),
+                    Array.isArray(nf.formatRangeToParts(23n, 12n))
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("string|true", result.ToString());
     }
 
     [Fact]
