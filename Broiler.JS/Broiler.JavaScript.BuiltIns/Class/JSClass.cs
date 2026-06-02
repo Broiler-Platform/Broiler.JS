@@ -93,7 +93,7 @@ public class JSClass : JSFunction
                 ec.CurrentNewTarget = previousNewTarget;
         }
 
-        if (@this.IsUndefined)
+        if (@this == null || @this.IsUndefined)
             return @object;
 
         if (@this.IsObject)

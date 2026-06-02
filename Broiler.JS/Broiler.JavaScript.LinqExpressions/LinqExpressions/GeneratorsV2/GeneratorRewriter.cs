@@ -18,7 +18,7 @@ namespace Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 
 
 
-public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, ParameterExpression replaceArguments, ParameterExpression replaceContext, ParameterExpression replaceScriptInfo) : YExpressionMapVisitor
+public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, ParameterExpression replaceArguments, ParameterExpression replaceStackItem, ParameterExpression replaceContext, ParameterExpression replaceScriptInfo) : YExpressionMapVisitor
 {
     private readonly ParameterExpression args = Expression.Parameter(typeof(Arguments).MakeByRefType(), "args");
     private readonly ParameterExpression nextJump = Expression.Parameter(typeof(int), "nextJump");
@@ -27,6 +27,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
     private readonly YFieldExpression Context = Expression.Field(pe, "Context");
     private readonly ParameterExpression _replaceScriptInfo = replaceScriptInfo;
     private readonly ParameterExpression _scriptInfoBox = Expression.Parameter(typeof(Box<ScriptInfo>), "scriptInfo");
+    private readonly YFieldExpression StackItem = Expression.Field(pe, "StackItem");
     private readonly LabelTarget generatorReturn = Expression.Label(typeof(GeneratorState), "RETURN");
     private readonly Sequence<(ParameterExpression original, ParameterExpression box, int index, Expression boxField)> lifted = [];
 
@@ -36,7 +37,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
     public static LambdaExpression Rewrite(in FunctionName name, Expression body, LabelTarget r, ParameterExpression generator, ParameterExpression replaceArgs,
        ParameterExpression replaceStackItem, ParameterExpression replaceContext, ParameterExpression replaceScriptInfo)
     {
-       var gw = new GeneratorRewriter(generator, r, replaceArgs /*,replaceStackItem,*/, replaceContext, replaceScriptInfo);
+       var gw = new GeneratorRewriter(generator, r, replaceArgs, replaceStackItem, replaceContext, replaceScriptInfo);
        gw.AddScriptInfoCapture();
 
        body = MethodRewriter.Rewrite(body);
@@ -205,6 +206,9 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
 
         if (node == replaceContext)
             return Context;
+
+        if (node == replaceStackItem)
+            return StackItem;
 
         if (node == _replaceScriptInfo)
             return Expression.Field(_scriptInfoBox, "Value");

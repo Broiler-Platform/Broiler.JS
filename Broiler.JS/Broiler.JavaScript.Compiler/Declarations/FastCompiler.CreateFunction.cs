@@ -185,7 +185,9 @@ partial class FastCompiler
                     suppressAnonymousFunctionNameInference: true);
             }
 
-            YExpression lambdaBody = VisitStatement(functionDeclaration.Body);
+            YExpression lambdaBody;
+            using (completionScopes.Push(null))
+                lambdaBody = VisitStatement(functionDeclaration.Body);
 
             vList.AddRange(s.VariableParameters);
             sList.AddRange(s.InitList);

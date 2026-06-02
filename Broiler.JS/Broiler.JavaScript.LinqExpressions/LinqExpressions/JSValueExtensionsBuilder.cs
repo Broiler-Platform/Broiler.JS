@@ -81,6 +81,10 @@ public class JSValueExtensionsBuilder
             return Expression.Call(null, m, finalArgs);
         }
 
-        return Expression.Call(null, m, target, method, Expression.NewArray(typeof(JSValue), args));
+        var argsArray = Expression.Parameter(typeof(JSValue[]), "#invokeArgs");
+        return Expression.Block(
+            argsArray.AsSequence(),
+            Expression.Assign(argsArray, Expression.NewArray(typeof(JSValue), args)),
+            Expression.Call(null, m, target, method, argsArray));
     }
 }
