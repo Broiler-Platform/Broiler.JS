@@ -322,6 +322,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             currentBinding = GetOrCreateDirectEvalRootVariable(functionName);
         else if (currentBinding != null && isDirectEvalCompilation && !IsStrictMode)
             currentBinding.IsDeletable = true;
+        currentBinding ??= scope.Top.CreateVariable(functionName, null, true, initialize: false);
         var result = CreateFunction(functionDeclaration, hoistStatementDeclaration: false);
 
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));

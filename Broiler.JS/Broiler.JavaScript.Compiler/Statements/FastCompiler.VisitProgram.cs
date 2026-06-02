@@ -63,6 +63,8 @@ partial class FastCompiler
         ref var hoistingScope = ref program.HoistingScope;
         var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
         var lexicalBindings = CollectTopLevelLexicalBindings(program.Statements);
+        foreach (var lexicalBinding in lexicalBindings)
+            scope.CreateVariable(new StringSpan(lexicalBinding), null, true, initialize: false);
 
         if (hoistingScope != null)
         {
@@ -73,10 +75,7 @@ partial class FastCompiler
             while (en.MoveNext(out var v))
             {
                 if (lexicalBindings.Contains(v.Value))
-                {
-                    scope.CreateVariable(v, null, true, initialize: false);
                     continue;
-                }
 
                 if (isDirectEvalProgramScope && (IsStrictMode || usesDirectEvalLocalVarEnvironment))
                 {

@@ -140,8 +140,46 @@ public class LambdaRewriter: YExpressionMapVisitor
 
     protected override YExpression VisitBlock(YBlockExpression yBlockExpression)
     {
-        using var scope = Root.Register(yBlockExpression.Variables);
+        var variables = Root.Root.Name.Name == "body"
+            ? CollectBlockVariables(yBlockExpression)
+            : yBlockExpression.FlattenVariables.AsSequence();
+        using var scope = Root.Register(variables);
         return base.VisitBlock(yBlockExpression);
+    }
+
+    private static Sequence<YParameterExpression> CollectBlockVariables(YExpression expression)
+    {
+        var variables = new Sequence<YParameterExpression>();
+        CollectBlockVariables(expression, variables);
+        return variables;
+    }
+
+    private static void CollectBlockVariables(YExpression expression, Sequence<YParameterExpression> variables)
+    {
+        switch (expression)
+        {
+            case YBlockExpression block:
+                variables.AddRange(block.FlattenVariables);
+                foreach (var (child, _) in block.FlattenExpressions)
+                    CollectBlockVariables(child, variables);
+                break;
+
+            case YConvertExpression convert:
+                CollectBlockVariables(convert.Target, variables);
+                break;
+
+            case YReturnExpression @return when @return.Default != null:
+                CollectBlockVariables(@return.Default, variables);
+                break;
+
+            case YTryCatchFinallyExpression tryCatchFinally:
+                CollectBlockVariables(tryCatchFinally.Try, variables);
+                if (tryCatchFinally.Catch != null)
+                    CollectBlockVariables(tryCatchFinally.Catch.Body, variables);
+                if (tryCatchFinally.Finally != null)
+                    CollectBlockVariables(tryCatchFinally.Finally, variables);
+                break;
+        }
     }
 
     protected override YExpression VisitParameter(YParameterExpression yParameterExpression)
