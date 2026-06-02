@@ -455,7 +455,6 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
         var v = variable.Value;
 
-        var oldV = this[name];
         var hasOwnProperty = !GetInternalProperty(name, false).IsEmpty;
         var hadExistingVariable = globalVars.TryGetValue(name.Key, out var existingVariable);
 
@@ -474,7 +473,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             if (hadExistingVariable && !ReferenceEquals(existingVariable, variable))
                 existingVariable.Value = v;
         }
-        else if (oldV != v)
+        else
         {
             this[name] = v;
         }
@@ -483,6 +482,33 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             && (!hadExistingVariable || ReferenceEquals(existingVariable, variable)))
             globalVars.Put(name.Key) = variable;
         return v;
+    }
+
+    public JSValue DeclareGlobalFunction(in KeyString name, JSValue value)
+    {
+        var property = GetInternalProperty(name, false);
+        if (property.IsEmpty)
+        {
+            if (!IsExtensible())
+                throw JSEngine.NewTypeError($"Cannot define global function {name}");
+
+            FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            return value;
+        }
+
+        if (property.IsConfigurable)
+        {
+            FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            return value;
+        }
+
+        if (!property.IsProperty && !property.IsReadOnly && property.IsEnumerable)
+        {
+            this[name] = value;
+            return value;
+        }
+
+        throw JSEngine.NewTypeError($"Cannot define global function {name}");
     }
 
     internal JSVariable RegisterDirectEvalVariable(JSVariable variable)
