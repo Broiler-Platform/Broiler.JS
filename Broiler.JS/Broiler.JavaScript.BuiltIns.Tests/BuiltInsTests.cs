@@ -11274,6 +11274,40 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void DateTimeFormat_DayPeriod_Formatting_Matches_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var morning = new Date(2017, 11, 12, 0, 0, 0, 0);
+                var noon = new Date(2017, 11, 12, 12, 0, 0, 0);
+                var longFormatter = new Intl.DateTimeFormat('en', { dayPeriod: 'long' });
+                var narrowFormatter = new Intl.DateTimeFormat('en', { dayPeriod: 'narrow', hour: 'numeric' });
+                var dayPeriodParts = longFormatter.formatToParts(noon);
+                var numericParts = narrowFormatter.formatToParts(noon);
+                return [
+                    longFormatter.format(morning),
+                    longFormatter.format(noon),
+                    dayPeriodParts.length,
+                    dayPeriodParts[0].type,
+                    dayPeriodParts[0].value,
+                    narrowFormatter.format(noon),
+                    numericParts.length,
+                    numericParts[0].type,
+                    numericParts[0].value,
+                    numericParts[1].type,
+                    numericParts[1].value,
+                    numericParts[2].type,
+                    numericParts[2].value
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("in the morning|noon|1|dayPeriod|noon|12 n|3|hour|12|literal| |dayPeriod|n", result.ToString());
+    }
+
+    [Fact]
     public void Iterator_Prototype_Constructor_Is_Function()
     {
         EnsureBuiltInsLoaded();
