@@ -461,7 +461,20 @@ partial class FastCompiler
                                 YExpression.Call(null, CloseIteratorMethod, returnableVar.Expression),
                                 YExpression.Empty)),
                         YExpression.Empty);
-                    inits.Add(YExpression.TryFinally(arrayInitBlock, closeIterator));
+                    var caughtException = scope.Top.CreateException("#arrayDestructuringIteratorClose");
+                    var closeIteratorAfterThrow = YExpression.Block(
+                        YExpression.IfThen(
+                            YExpression.Not(iterDoneVar),
+                            YExpression.Block(
+                                YExpression.Call(null, CloseIteratorIgnoringErrorsMethod, returnableVar.Expression),
+                                YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                                YExpression.Empty)),
+                        YExpression.Throw(caughtException.Expression));
+
+                    inits.Add(YExpression.TryCatchFinally(
+                        arrayInitBlock,
+                        closeIterator,
+                        YExpression.Catch(caughtException.Variable, closeIteratorAfterThrow)));
                 }
 
                 return;
