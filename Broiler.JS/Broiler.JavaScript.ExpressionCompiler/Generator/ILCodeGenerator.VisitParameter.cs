@@ -31,10 +31,9 @@ public partial class ILCodeGenerator
             return Visit(ve);
         }
 
-        if (!variables.TryGetValue(yParameterExpression, out var v))
+        if (!TryResolveVariable(yParameterExpression, out var v))
         {
-            if (TryResolveVariableByName(yParameterExpression.Name, out v)
-                || TryResolveBoxByType(yParameterExpression.Type, out v))
+            if (TryResolveBoxByType(yParameterExpression.Type, out v))
             {
                 // resolved through the current scope
             }
@@ -49,11 +48,19 @@ public partial class ILCodeGenerator
             }
             else
             {
-                v = variables[yParameterExpression];
+                throw new InvalidOperationException($"Unable to resolve parameter '{yParameterExpression.Name}'.");
             }
         }
 
         il.Comment($"Load {v.Name}");
+        if (v.IsArgument)
+        {
+            // irrespective of RequiresAddress
+            // retype always load ref...
+            il.EmitLoadArg(v.Index);
+            return true;
+        }
+
         var localType = v.LocalBuilder.LocalType;
         if (localType.IsGenericType
             && localType.GetGenericTypeDefinition() == typeof(Broiler.JavaScript.ExpressionCompiler.ClosureSeparator.Box<>)
@@ -67,20 +74,7 @@ public partial class ILCodeGenerator
         var isValueType = yParameterExpression.Type.IsValueType;
         if (isValueType)
         {
-            if (v.IsArgument)
-            {
-                il.EmitLoadArg(v.Index);
-                return true;
-            }
-
             il.EmitLoadLocal(v.LocalBuilder.LocalIndex);
-            return true;
-        }
-        if (v.IsArgument)
-        {
-            // irrespective of RequiresAddress
-            // retype always load ref...
-            il.EmitLoadArg(v.Index);
             return true;
         }
 
@@ -91,6 +85,14 @@ public partial class ILCodeGenerator
         }
 
         return true;
+    }
+
+    private bool TryResolveVariable(YParameterExpression yParameterExpression, out Variable variable)
+    {
+        if (variables.TryGetValue(yParameterExpression, out variable))
+            return true;
+
+        return TryResolveVariableByName(yParameterExpression.Name, out variable);
     }
 
     private bool TryResolveVariableByName(string name, out Variable variable)
@@ -116,6 +118,9 @@ public partial class ILCodeGenerator
     {
         foreach (var candidate in variables.Values)
         {
+            if (candidate.IsArgument || candidate.LocalBuilder == null)
+                continue;
+
             var localType = candidate.LocalBuilder.LocalType;
             if (localType.IsGenericType
                 && localType.GetGenericTypeDefinition() == typeof(Broiler.JavaScript.ExpressionCompiler.ClosureSeparator.Box<>)

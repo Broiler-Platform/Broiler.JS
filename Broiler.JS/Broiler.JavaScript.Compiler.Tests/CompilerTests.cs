@@ -3296,4 +3296,76 @@ public class CompilerTests
         Assert.Equal("2|0|0|0", result.ToString());
     }
 
+    [Fact]
+    public void Compile_Test262_GlobalConstClosure_Tdz_Does_Not_Throw_Clr_KeyNotFound()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            function f() { return x + 1; }
+            var before;
+            try {
+                f();
+                before = 'no-throw';
+            } catch (e) {
+                before = e.constructor.name + ':' + e.message;
+            }
+            const x = 1;
+            before + '|' + f();
+            """);
+
+        Assert.Equal("ReferenceError:Cannot access 'x' before initialization|2", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_Test262_ArrayToLocaleString_InvokeElement_Does_Not_Emit_InvalidProgram()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var calls = 0;
+                var array = [{
+                    toLocaleString: function () {
+                        calls++;
+                        return 'item';
+                    }
+                }];
+
+                return array.toLocaleString() + '|' + calls;
+            })()
+            """);
+
+        Assert.Equal("item|1", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_Test262_PromiseThen_CapabilityExecutorCalledTwice_Does_Not_Throw_Clr_NullReference()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            var constructorFunction;
+            var promise = new class extends Promise {
+                constructor(executor) {
+                    if (constructorFunction) {
+                        constructorFunction(executor);
+                        return {};
+                    }
+                    return super(executor);
+                }
+            }(function () {});
+
+            var checkpoint = '';
+            constructorFunction = function (executor) {
+                checkpoint += 'a';
+                executor();
+                checkpoint += 'b';
+                executor(function () {}, function () {});
+                checkpoint += 'c';
+            };
+            promise.then();
+            checkpoint;
+            """);
+
+        Assert.Equal("abc", result.ToString());
+    }
+
 }

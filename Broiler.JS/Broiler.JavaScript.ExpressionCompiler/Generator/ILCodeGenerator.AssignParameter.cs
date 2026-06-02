@@ -18,12 +18,12 @@ public partial class ILCodeGenerator
 
 
         var pType = yParameterExpression.Type;
-        if (!variables.TryGetValue(yParameterExpression, out var varInfo))
+        if (!TryResolveVariable(yParameterExpression, out var varInfo))
         {
             if (TryResolveClosureByName(yParameterExpression.Name, out var closure))
                 return Assign(closure, exp, savedIndex);
 
-            varInfo = variables[yParameterExpression];
+            throw new InvalidOperationException($"Unable to resolve parameter '{yParameterExpression.Name}'.");
         }
 
         il.Comment($"save {varInfo.Name}");

@@ -35,18 +35,6 @@ public partial class ILCodeGenerator
 
         var type = yArrayIndexExpression.Type;
 
-        if (type.IsValueType)
-        {
-            il.Emit(OpCodes.Ldelema, type);
-            return true;
-        }
-        switch (Type.GetTypeCode(type))
-        {
-            case TypeCode.Object:
-            case TypeCode.String:
-                il.Emit(OpCodes.Ldelem_Ref);
-                return true;
-        }
         il.Emit(OpCodes.Ldelema, type);
         return true;
 
@@ -72,12 +60,12 @@ public partial class ILCodeGenerator
 
     private CodeInfo LoadParameterAddress(YParameterExpression yParameterExpression)
     {
-        if (!variables.TryGetValue(yParameterExpression, out var varInfo))
+        if (!TryResolveVariable(yParameterExpression, out var varInfo))
         {
             if (TryResolveClosureByName(yParameterExpression.Name, out var closure))
                 return LoadAddress(closure);
 
-            varInfo = variables[yParameterExpression];
+            throw new InvalidOperationException($"Unable to resolve parameter '{yParameterExpression.Name}'.");
         }
         if (varInfo.IsArgument) {
             if(varInfo.IsReference)
