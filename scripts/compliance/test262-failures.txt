@@ -967,18 +967,10 @@ test/built-ins/Object/defineProperty/15.2.3.6-4-268.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-270.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-271.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-272.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-404.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-409.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-414.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-419.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-430.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-439.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-448.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-457.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-580.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-585.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-590.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-595.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-625gs.js
 test/built-ins/Object/entries/primitive-strings.js
 test/built-ins/Object/entries/return-order.js
@@ -5270,8 +5262,6 @@ test/language/statements/for-in/S12.6.4_A3.1.js
 test/language/statements/for-in/S12.6.4_A3.js
 test/language/statements/for-in/S12.6.4_A4.1.js
 test/language/statements/for-in/S12.6.4_A4.js
-test/language/statements/for-in/S12.6.4_A6.1.js
-test/language/statements/for-in/S12.6.4_A6.js
 test/language/statements/for-in/head-decl-expr.js
 test/language/statements/for-in/head-expr-expr.js
 test/language/statements/for-in/head-lhs-let.js
@@ -5280,7 +5270,6 @@ test/language/statements/for-in/head-var-bound-names-dup.js
 test/language/statements/for-in/head-var-expr.js
 test/language/statements/for-in/identifier-let-allowed-as-lefthandside-expression-not-strict.js
 test/language/statements/for-in/order-property-added.js
-test/language/statements/for-in/order-property-on-prototype.js
 test/language/statements/for-in/order-simple-object.js
 test/language/statements/for-in/scope-body-lex-close.js
 test/language/statements/for-in/scope-body-lex-open.js
