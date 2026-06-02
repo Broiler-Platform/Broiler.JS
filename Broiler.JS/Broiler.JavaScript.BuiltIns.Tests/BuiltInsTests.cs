@@ -3091,6 +3091,28 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void TypedArray_Methods_Ignore_Shadowed_Length_Properties()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            Object.defineProperty(TypedArray.prototype, "length", { configurable: true });
+            Object.defineProperty(Int8Array.prototype, "length", { configurable: true });
+
+            var sample = new Int8Array([42, 43]);
+            Object.defineProperty(sample, "length", { configurable: true });
+
+            var seen = 0;
+            var found = sample.find(function (value) { seen++; return value === 43; });
+            var reduced = sample.reduce(function (acc, value) { return acc + value; }, 0);
+
+            found === 43 && seen === 2 && reduced === 85;
+            """);
+
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
     public void TypedArray_Constructs_From_Iterable_Object()
     {
         EnsureBuiltInsLoaded();
