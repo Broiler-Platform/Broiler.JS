@@ -81,7 +81,7 @@ public static class DirectEvalSupport
         }
     }
 
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false)
     {
         if (!IsDirectEval(callee))
             return callee.InvokeFunction(arguments);
@@ -106,6 +106,9 @@ public static class DirectEvalSupport
             var requiresActivation = disallowArgumentsDeclaration || useActivationBinding;
             using var _ = capturedBindings?.Length > 0
                 ? context.PushDirectEvalScope(capturedBindings)
+                : null;
+            using var lexicalBindingScope = capturedLexicalBindingNames?.Length > 0
+                ? context.PushDirectEvalLexicalBindingNames(capturedLexicalBindingNames)
                 : null;
             using var ____ = requiresActivation
                 ? context.PushDirectEvalActivation(activationOwner)

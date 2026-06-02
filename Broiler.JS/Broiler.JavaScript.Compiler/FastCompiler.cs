@@ -33,6 +33,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     private readonly bool isDirectEvalCompilation;
     private readonly bool usesDirectEvalLocalVarEnvironment;
     private readonly string[] directEvalBindingNames;
+    private readonly string[] directEvalLexicalBindingNames;
 
     public LoopScope LoopScope => scope.Top.Loop.Top;
 
@@ -51,6 +52,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         isDirectEvalCompilation = context?.IsCompilingDirectEval ?? false;
         usesDirectEvalLocalVarEnvironment = context?.UsesDirectEvalLocalVarEnvironment ?? false;
         directEvalBindingNames = isDirectEvalCompilation ? context?.DirectEvalBindingNamesInScope : null;
+        directEvalLexicalBindingNames = isDirectEvalCompilation ? context?.DirectEvalLexicalBindingNamesInScope : null;
         var directEvalPrivateNames = isDirectEvalCompilation ? context?.DirectEvalPrivateNamesInScope : null;
 
         // add top level...
@@ -123,6 +125,9 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         {
             if (v.Variable != null && v.Variable.Type == typeof(JSVariable))
             {
+                if (v.SkipRegistration)
+                    continue;
+
                 if (argsList?.Contains(v.Name) ?? false)
                     continue;
 

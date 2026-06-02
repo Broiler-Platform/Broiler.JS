@@ -134,6 +134,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         public YExpression PostInit { get; private set; }
         public bool InUse { get; internal set; }
         public bool IsTemp { get; internal set; }
+        public bool SkipRegistration { get; internal set; }
         public void Dispose() => InUse = false;
 
         public void SetPostInit(YExpression exp)

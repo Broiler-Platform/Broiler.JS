@@ -94,20 +94,24 @@ partial class FastCompiler
                     continue;
                 }
 
-                var isDirectEvalBinding = directEvalBindingNames?.Contains(v.Value) ?? false;
+                var isDirectEvalLexicalBinding = directEvalLexicalBindingNames?.Contains(v.Value) ?? false;
                 var g = isDirectEvalProgramScope
                     ? JSContextBuilder.Index(KeyOfName(v))
                     : JSValueBuilder.Index(top.Context, KeyOfName(v));
                 var vs = scope.CreateVariable(v, null, true);
                 vs.IsLexical = false;
                 vs.IsDeletable = isDirectEvalProgramScope;
+                if (isDirectEvalProgramScope && isDirectEvalLexicalBinding)
+                    vs.SkipRegistration = true;
                 scope.Parent?.AddExternalVariable(v, vs);
 
-                vs.Expression = isDirectEvalProgramScope && isDirectEvalBinding
-                    ? JSContextBuilder.Index(KeyOfName(v))
-                    : isDirectEvalProgramScope
-                    ? JSContextBuilder.Index(KeyOfName(v))
-                    : JSVariableBuilder.Property(vs.Variable);
+                if (isDirectEvalProgramScope)
+                {
+                    if (!isDirectEvalLexicalBinding)
+                        vs.Expression = JSContextBuilder.Index(KeyOfName(v));
+                }
+                else
+                    vs.Expression = JSVariableBuilder.Property(vs.Variable);
                 vs.SetInit(JSVariableBuilder.New(g, v.Value));
             }
         }
@@ -135,7 +139,10 @@ partial class FastCompiler
         while (top.Parent != null && top.Parent.Function == top.Function)
             top = top.Parent;
 
-        var existing = top.GetVariable(name);
+        var isLexicalDirectEvalBinding = directEvalLexicalBindingNames?.Contains(name.Value) == true;
+        var existing = isLexicalDirectEvalBinding
+            ? top.TryGetOwnVariable(name, out var ownVariable) ? ownVariable : null
+            : top.GetVariable(name);
         if (existing != null)
         {
             existing.IsDeletable = true;
@@ -146,10 +153,14 @@ partial class FastCompiler
         var variable = top.CreateVariable(name, null, true);
         variable.IsLexical = false;
         variable.IsDeletable = true;
+        if (isLexicalDirectEvalBinding)
+            variable.SkipRegistration = true;
         top.Parent?.AddExternalVariable(name, variable);
-        variable.Expression = directEvalBindingNames?.Contains(name.Value) == true
-            ? JSContextBuilder.Index(KeyOfName(name))
-            : JSValueBuilder.Index(top.RootScope.Context, KeyOfName(name));
+        variable.Expression = isLexicalDirectEvalBinding
+            ? JSVariable.ValueExpression(variable.Variable)
+            : directEvalBindingNames?.Contains(name.Value) == true
+                ? JSContextBuilder.Index(KeyOfName(name))
+                : JSValueBuilder.Index(top.RootScope.Context, KeyOfName(name));
         variable.SetInit(JSVariableBuilder.New(globalValue, name.Value));
         return variable;
     }

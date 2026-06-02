@@ -12,8 +12,8 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private static readonly System.Reflection.MethodInfo DirectEvalMethod = typeof(DirectEvalSupport)
-        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(CallStackItem), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool)])
-        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, CallStackItem, bool, bool, string[], JSVariable[], string[], string[], bool, bool, bool) not found");
+        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(CallStackItem), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool)])
+        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, CallStackItem, bool, bool, string[], JSVariable[], string[], string[], string[], bool, bool, bool) not found");
 
     protected override YExpression VisitCallExpression(AstCallExpression callExpression)
     {
@@ -96,13 +96,14 @@ partial class FastCompiler
             var paramArray = VisitArguments(null, arguments);
             var lexicalBindings = CaptureDirectEvalLexicalBindings();
             var capturedBindings = CaptureDirectEvalBindings();
+            var capturedBindingLexicalNames = CaptureDirectEvalBindingLexicalNames();
             var parameterBindings = CaptureDirectEvalParameterBindings();
             var privateNames = CaptureDirectEvalPrivateNames();
             var disallowArgumentsDeclaration = scope.Top.Function != null && !scope.Top.Function.IsArrowFunction;
             var allowSuperProperty = scope.Top.Super != null;
             var allowSuperCall = allowSuperProperty && scope.Top.MemberInits != null;
             var useActivationBinding = scope.Top.Function?.IsArrowFunction == true && parameterInitializerDepth > 0;
-            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), scope.Top.ThisExpression, scope.Top.StackItem, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding));
+            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), scope.Top.ThisExpression, scope.Top.StackItem, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding));
         }
 
     skipDirectEval:
@@ -198,6 +199,18 @@ partial class FastCompiler
             bindings.Add(variable.Variable);
 
         return YExpression.NewArrayInit(typeof(JSVariable), bindings);
+    }
+
+    private YExpression CaptureDirectEvalBindingLexicalNames()
+    {
+        var names = new Sequence<YExpression>();
+        foreach (var variable in scope.Top.GetVisibleVariables())
+        {
+            if (variable.IsLexical)
+                names.Add(YExpression.Constant(variable.Name));
+        }
+
+        return YExpression.NewArrayInit(typeof(string), names);
     }
 
     private YExpression CaptureDirectEvalLexicalBindings()

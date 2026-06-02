@@ -76,6 +76,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     private int directEvalLocalVarEnvironmentDepth;
     private readonly List<string[]> directEvalPrivateNameScopes = [];
     private readonly List<string[]> directEvalBindingNameScopes = [];
+    private readonly List<string[]> directEvalLexicalBindingNameScopes = [];
     private readonly List<DirectEvalScope> activeDirectEvalScopes = [];
     private readonly List<CallStackItem> directEvalActivationOwners = [];
     private WithScope withScope;
@@ -420,6 +421,22 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     public bool UsesDirectEvalLocalVarEnvironment => directEvalLocalVarEnvironmentDepth > 0;
     public string[] DirectEvalPrivateNamesInScope => directEvalPrivateNameScopes.Count == 0 ? null : directEvalPrivateNameScopes[^1];
     public string[] DirectEvalBindingNamesInScope => directEvalBindingNameScopes.Count == 0 ? null : directEvalBindingNameScopes[^1];
+    public string[] DirectEvalLexicalBindingNamesInScope => directEvalLexicalBindingNameScopes.Count == 0 ? null : directEvalLexicalBindingNameScopes[^1];
+
+    private sealed class DirectEvalLexicalBindingScope(JSContext context, string[] names) : IDisposable
+    {
+        public void Dispose()
+        {
+            if (context.directEvalLexicalBindingNameScopes.Count > 0)
+                context.directEvalLexicalBindingNameScopes.RemoveAt(context.directEvalLexicalBindingNameScopes.Count - 1);
+        }
+    }
+
+    public IDisposable PushDirectEvalLexicalBindingNames(string[] names)
+    {
+        directEvalLexicalBindingNameScopes.Add(names);
+        return new DirectEvalLexicalBindingScope(this, names);
+    }
 
     public JSValue Register(JSVariable variable)
     {
