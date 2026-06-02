@@ -183,12 +183,10 @@ public partial class ILCodeGenerator
             case YBlockExpression block:
                 foreach (var p in block.FlattenVariables)
                 {
-                    if (!variables.TryGetValue(p, out _)
-                        && !variables.Values.Any(candidate =>
-                            string.Equals(
-                                NormalizeGeneratedName(candidate.Name),
-                                NormalizeGeneratedName(p.Name),
-                                StringComparison.OrdinalIgnoreCase)))
+                    if (p.Name is "this" || p.Name.StartsWith("Context", StringComparison.Ordinal) || p.Name.StartsWith("StackItem", StringComparison.Ordinal))
+                        continue;
+
+                    if (!variables.TryGetValue(p, out _))
                         variables.Create(p);
                 }
                 foreach (var (child, _) in block.FlattenExpressions)

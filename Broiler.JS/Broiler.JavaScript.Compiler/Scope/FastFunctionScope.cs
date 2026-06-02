@@ -232,7 +232,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             var en = variableScopeList.AllValues;
             while (en.MoveNext(out var s))
             {
-                if (s.Value.Variable != null)
+                if (s.Value.Variable != null && s.Value.Variable.Type == typeof(JSVariable))
                     yield return s.Value;
             }
         }
@@ -245,7 +245,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             var en = variableScopeList.AllValues;
             while (en.MoveNext(out var s))
             {
-                if (s.Value.Variable != null)
+                if (s.Value.Variable != null && s.Value.Variable.Type == typeof(JSVariable))
                     yield return s.Value.Variable;
             }
         }

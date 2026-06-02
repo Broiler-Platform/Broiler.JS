@@ -276,7 +276,12 @@ partial class FastCompiler
                 var inits = new Sequence<YExpression>() { };
 
                 inits.AddRange(s.InitList);
-                inits.Add(YExpression.Assign(@this, JSFunctionBuilder.InvokeFunction(superVar, args)));
+                if (hasSuperClass)
+                {
+                    var superInstance = JSFunctionBuilder.InvokeFunction(superVar, args);
+                    inits.Add(YExpression.Assign(@this,
+                        YExpression.Condition(JSValueBuilder.IsObjectType(superInstance), superInstance, ArgumentsBuilder.This(args))));
+                }
 
                 InitMembers(inits, s);
                 inits.Add(@this);

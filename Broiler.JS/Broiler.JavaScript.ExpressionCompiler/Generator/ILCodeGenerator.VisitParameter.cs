@@ -35,6 +35,7 @@ public partial class ILCodeGenerator
         if (!variables.TryGetValue(yParameterExpression, out var v))
         {
             if (TryResolveVariableByName(yParameterExpression.Name, out v)
+                || TryResolveVariableByType(yParameterExpression.Type, out v)
                 || TryResolveBoxByType(yParameterExpression.Type, out v))
             {
                 // resolved through the current scope
@@ -50,7 +51,10 @@ public partial class ILCodeGenerator
             }
             else
             {
-                v = variables[yParameterExpression];
+                if (yParameterExpression.Type.IsByRef)
+                    throw new KeyNotFoundException($"Unsupported unresolved byref parameter {yParameterExpression.Name}");
+
+                v = variables.Create(yParameterExpression);
             }
         }
 
@@ -124,6 +128,21 @@ public partial class ILCodeGenerator
             if (localType.IsGenericType
                 && localType.GetGenericTypeDefinition() == typeof(Broiler.JavaScript.ExpressionCompiler.ClosureSeparator.Box<>)
                 && localType.GetGenericArguments()[0] == type)
+            {
+                variable = candidate;
+                return true;
+            }
+        }
+
+        variable = null;
+        return false;
+    }
+
+    private bool TryResolveVariableByType(Type type, out Variable variable)
+    {
+        foreach (var candidate in variables.Values)
+        {
+            if (candidate.LocalBuilder.LocalType == type)
             {
                 variable = candidate;
                 return true;
