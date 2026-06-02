@@ -84,6 +84,51 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_Join_Coerces_Primitive_Receivers()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("Array.prototype.join.call(true) + '|' + Array.prototype.join.call(false);");
+        Assert.Equal("|", result.ToString());
+    }
+
+    [Fact]
+    public void AggregateError_Uses_Custom_NewTarget_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            var custom = { x: 42 };
+            var newt = new Proxy(function() {}, {
+              get(t, p) {
+                if (p === 'prototype') {
+                  return custom;
+                }
+
+                return t[p];
+              }
+            });
+            var obj = Reflect.construct(AggregateError, [[]], newt);
+            Object.getPrototypeOf(obj) === custom && obj.x === 42;
+            """);
+
+        Assert.True(result.BooleanValue);
+    }
+
+    [Fact]
+    public void ShadowRealm_Constructs_And_Evaluates_Primitives()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            var realm = new ShadowRealm();
+            typeof ShadowRealm + '|' + (Object.getPrototypeOf(ShadowRealm) === Function.prototype) + '|' + realm.evaluate('1 + 2');
+            """);
+
+        Assert.Equal("function|true|3", result.ToString());
+    }
+
+    [Fact]
     public void Function_Prototype_Apply_With_Primitive_Receiver_Throws_TypeError()
     {
         EnsureBuiltInsLoaded();

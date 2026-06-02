@@ -26,6 +26,21 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Destructuring_Array_Defaults_Compile_To_Valid_IL()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            var v2, vNull, vHole, vUndefined, vOob;
+            var result;
+            var vals = [2, null, , undefined];
+            result = [v2 = 10, vNull = 11, vHole = 12, vUndefined = 13, vOob = 14] = vals;
+            [v2, vNull, vHole, vUndefined, vOob, result === vals].join('|');
+            """);
+
+        Assert.Equal("2||12|13|14|true", result.ToString());
+    }
+
+    [Fact]
     public void Compile_SloppyMode_Allows_Future_Reserved_Binding_Names()
     {
         using var ctx = new JSContext();

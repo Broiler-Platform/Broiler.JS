@@ -49,9 +49,9 @@ public partial class JSArray
     [JSExport("join", Length = 1)]
     public static JSValue Join(in Arguments a)
     {
-        var @this = a.This as JSObject;
+        var @this = ToArrayLikeObject(a.This);
         var first = a.Get1();
-        var length = (uint)@this.Length;
+        var length = GetArrayLikeLength(@this);
         var sep = first.IsUndefined ? "," : first.ToString();
         var sb = new StringBuilder();
 
