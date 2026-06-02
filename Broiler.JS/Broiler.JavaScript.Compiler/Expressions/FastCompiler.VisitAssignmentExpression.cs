@@ -113,6 +113,8 @@ partial class FastCompiler
                 var initExpr = Visit(right);
                 if (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName)
                     initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
+                if (IsDestructuringAssignmentExpression(right))
+                    return AssignMaterializedValue(variable.Expression, initExpr);
                 return YExpression.Assign(variable.Expression, initExpr);
             }
 
@@ -449,9 +451,9 @@ partial class FastCompiler
                         }
                     }
 
+                    arrayInits.Add(YExpression.Empty);
                     var arrayInitBlock = YExpression.Block(arrayInits);
                     // Build a void finally body – only close iterator if NOT exhausted.
-                    var caughtException = scope.Top.CreateException("#arrayDestructuringIteratorClose");
                     var closeIterator = YExpression.Block(
                         YExpression.IfThen(
                             YExpression.Not(iterDoneVar),
@@ -459,19 +461,7 @@ partial class FastCompiler
                                 YExpression.Call(null, CloseIteratorMethod, returnableVar.Expression),
                                 YExpression.Empty)),
                         YExpression.Empty);
-                    var closeIteratorAfterThrow = YExpression.Block(
-                        YExpression.IfThen(
-                            YExpression.Not(iterDoneVar),
-                            YExpression.Block(
-                                YExpression.Call(null, CloseIteratorIgnoringErrorsMethod, returnableVar.Expression),
-                                YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                                YExpression.Empty)),
-                        YExpression.Throw(caughtException.Expression));
-
-                    inits.Add(YExpression.TryCatchFinally(
-                        arrayInitBlock,
-                        closeIterator,
-                        YExpression.Catch(caughtException.Variable, closeIteratorAfterThrow)));
+                    inits.Add(YExpression.TryFinally(arrayInitBlock, closeIterator));
                 }
 
                 return;
@@ -502,6 +492,23 @@ partial class FastCompiler
             AstClassExpression { Identifier: null } => true,
             _ => false
         };
+
+    private static bool IsDestructuringAssignmentExpression(AstExpression expression) =>
+        expression is AstBinaryExpression
+        {
+            Operator: TokenTypes.Assign,
+            Left.Type: FastNodeType.ArrayPattern or FastNodeType.ObjectPattern
+        };
+
+    private YExpression AssignMaterializedValue(YExpression target, YExpression value)
+    {
+        using var temp = scope.Top.GetTempVariable(typeof(JSValue));
+        return YExpression.Block(
+            temp.Variable.AsSequence(),
+            YExpression.Assign(temp.Expression, value),
+            YExpression.Assign(target, temp.Expression),
+            temp.Expression);
+    }
 
     private static YExpression PrepareDestructuringInitializer(AstExpression target, AstExpression initializer, YExpression value)
     {

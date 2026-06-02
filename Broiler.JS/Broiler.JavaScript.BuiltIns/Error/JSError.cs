@@ -161,8 +161,8 @@ public partial class JSAggregateError : JSError
 
     [JSExport(Length = 2)]
     public JSAggregateError(in Arguments a, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) :
-        base(new Arguments(a.This, a[1]), function: function, filePath: filePath, line: line)
+        base(new Arguments(a.This, a.GetAt(1)), function: function, filePath: filePath, line: line)
     {
-        FastAddValue(ErrorsKey, JSArray.StaticFrom(new Arguments(JSUndefined.Value, a[0])), JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(ErrorsKey, JSArray.StaticFrom(new Arguments(JSUndefined.Value, a.GetAt(0))), JSPropertyAttributes.ConfigurableValue);
     }
 }

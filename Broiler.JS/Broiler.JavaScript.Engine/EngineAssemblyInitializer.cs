@@ -53,7 +53,8 @@ internal static class EngineAssemblyInitializer
             (ctx as IJSExecutionContext)?.Top?.NewTarget;
 
         JSEngine.GetNewTargetPrototypeFromTop = ctx =>
-            (ctx as IJSExecutionContext)?.Top?.NewTarget?[KeyStrings.prototype] as JSObject;
+            ((ctx as IJSExecutionContext)?.Top?.NewTarget
+                ?? (ctx as IJSExecutionContext)?.CurrentNewTarget)?[KeyStrings.prototype] as JSObject;
 
         // ── JSObject factory delegate for ObjectPrototype access ────
         JSObject.GetCurrentObjectPrototype = static () =>
