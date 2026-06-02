@@ -63,6 +63,7 @@ partial class FastCompiler
         ref var hoistingScope = ref program.HoistingScope;
         var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
         var lexicalBindings = CollectTopLevelLexicalBindings(program.Statements);
+        var functionDeclarations = CollectTopLevelFunctionDeclarations(program.Statements);
         foreach (var lexicalBinding in lexicalBindings)
             scope.CreateVariable(new StringSpan(lexicalBinding), null, true, initialize: false);
 
@@ -94,8 +95,9 @@ partial class FastCompiler
                 }
 
                 var isDirectEvalLexicalBinding = directEvalLexicalBindingNames?.Contains(v.Value) ?? false;
+                var isFunctionDeclaration = functionDeclarations.Contains(v.Value);
                 var g = isDirectEvalProgramScope
-                    ? JSContextBuilder.Index(KeyOfName(v))
+                    ? (isFunctionDeclaration ? JSUndefinedBuilder.Value : JSContextBuilder.Index(KeyOfName(v)))
                     : JSValueBuilder.Index(top.Context, KeyOfName(v));
                 var vs = scope.CreateVariable(v, null, true);
                 vs.IsLexical = false;
@@ -107,7 +109,9 @@ partial class FastCompiler
                 if (isDirectEvalProgramScope)
                 {
                     if (!isDirectEvalLexicalBinding)
-                        vs.Expression = JSContextBuilder.Index(KeyOfName(v));
+                        vs.Expression = isFunctionDeclaration
+                            ? JSVariable.ValueExpression(vs.Variable)
+                            : JSContextBuilder.Index(KeyOfName(v));
                 }
                 else
                     vs.Expression = JSVariableBuilder.Property(vs.Variable);
@@ -132,7 +136,23 @@ partial class FastCompiler
         return r;
     }
 
-    private FastFunctionScope.VariableScope GetOrCreateDirectEvalRootVariable(in StringSpan name)
+    private static HashSet<string> CollectTopLevelFunctionDeclarations(IFastEnumerable<AstStatement> statements)
+    {
+        var functionDeclarations = new HashSet<string>(StringComparer.Ordinal);
+        var enumerator = statements.GetFastEnumerator();
+
+        while (enumerator.MoveNext(out var statement))
+        {
+            if (statement is not AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true, Id: { } id } })
+                continue;
+
+            functionDeclarations.Add(id.Name.Value);
+        }
+
+        return functionDeclarations;
+    }
+
+    private FastFunctionScope.VariableScope GetOrCreateDirectEvalRootVariable(in StringSpan name, bool functionBinding = false)
     {
         var top = scope.Top;
         while (top.Parent != null && top.Parent.Function == top.Function)
@@ -157,10 +177,12 @@ partial class FastCompiler
         top.Parent?.AddExternalVariable(name, variable);
         variable.Expression = isLexicalDirectEvalBinding
             ? JSVariable.ValueExpression(variable.Variable)
-            : directEvalBindingNames?.Contains(name.Value) == true
+            : functionBinding
+                ? JSVariable.ValueExpression(variable.Variable)
+                : directEvalBindingNames?.Contains(name.Value) == true
                 ? JSContextBuilder.Index(KeyOfName(name))
                 : JSValueBuilder.Index(top.RootScope.Context, KeyOfName(name));
-        variable.SetInit(JSVariableBuilder.New(globalValue, name.Value));
+        variable.SetInit(JSVariableBuilder.New(functionBinding ? JSUndefinedBuilder.Value : globalValue, name.Value));
         return variable;
     }
 

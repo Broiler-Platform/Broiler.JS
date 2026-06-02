@@ -5876,6 +5876,38 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Direct_Eval_Function_Declaration_Replaces_Global_Accessors()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var getCalled = false;
+            var setCalled = false;
+            Object.defineProperty(this, 'acc', {
+              get: function () { getCalled = true; return 1; },
+              set: function () { setCalled = true; },
+              configurable: true,
+              enumerable: false
+            });
+
+            eval("function acc() { return 'ok'; }");
+
+            var descriptor = Object.getOwnPropertyDescriptor(this, 'acc');
+            [
+              getCalled,
+              setCalled,
+              typeof descriptor.value,
+              descriptor.writable,
+              descriptor.enumerable,
+              descriptor.configurable
+            ].join('|');
+            """);
+
+        Assert.Equal("false|false|function|true|true|true", result.ToString());
+    }
+
+    [Fact]
     public void NewFunction_AnnexB_Html_Comment_Parameters_Parse_Correctly()
     {
         EnsureBuiltInsLoaded();

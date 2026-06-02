@@ -319,7 +319,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         }
 
         if (currentBinding == null && isDirectEvalCompilation && !IsStrictMode)
-            currentBinding = GetOrCreateDirectEvalRootVariable(functionName);
+            currentBinding = GetOrCreateDirectEvalRootVariable(functionName, true);
         else if (currentBinding != null && isDirectEvalCompilation && !IsStrictMode)
             currentBinding.IsDeletable = true;
         currentBinding ??= scope.Top.CreateVariable(functionName, null, true, initialize: false);
@@ -383,7 +383,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             }
             else
             {
-                statements.Add(JSContextBuilder.AssignIdentifier(KeyOfName(name), value));
+                statements.Add(JSContextBuilder.DeclareGlobalFunction(KeyOfName(name), value));
             }
         }
     }

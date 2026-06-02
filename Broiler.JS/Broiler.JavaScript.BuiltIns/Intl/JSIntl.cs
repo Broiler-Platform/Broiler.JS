@@ -331,6 +331,9 @@ public static class JSIntl
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
             new JSFunction(JSIntlNumberFormat.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
             JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("formatToParts"),
+            new JSFunction(JSIntlNumberFormat.FormatToPartsPrototype, "formatToParts", "function formatToParts() { [native code] }", createPrototype: false, length: 1),
+            JSPropertyAttributes.ConfigurableValue);
         if (constructor.prototype.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(FormatKey.ToString(), FormatKey)).IsUndefined)
         {
             constructor.prototype.FastAddProperty(FormatKey,
@@ -1023,6 +1026,20 @@ public class JSIntlNumberFormat : JSObject
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
 
     public JSValue Format(in Arguments a) => JSValue.CreateString((a[0] ?? JSUndefined.Value).ToString());
+
+    public static JSValue FormatToPartsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlNumberFormat @this)
+            throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatToParts called on incompatible receiver");
+
+        var formatted = @this.Format(in a);
+        var part = new JSObject();
+        part.FastAddValue(KeyStrings.GetOrCreate("type"), JSValue.CreateString("integer"), JSPropertyAttributes.EnumerableConfigurableValue);
+        part.FastAddValue(KeyStrings.GetOrCreate("value"), JSValue.CreateString(formatted.ToString()), JSPropertyAttributes.EnumerableConfigurableValue);
+        var parts = JSValue.CreateArray();
+        parts.AddArrayItem(part);
+        return parts;
+    }
 
     public static JSValue FormatRangePrototype(in Arguments a)
     {
