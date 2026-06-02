@@ -121,6 +121,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         public string Name { get; internal set; }
         public bool Create { get; internal set; }
         public bool IsLexical { get; internal set; }
+        public bool IsSimpleCatchBinding { get; internal set; }
         public bool IsDeletable { get; internal set; }
         public AstFunctionExpression OwnerFunction { get; internal set; }
         public YExpression Init { get; private set; }

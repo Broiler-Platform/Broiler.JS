@@ -399,7 +399,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         var parent = scope.Top.Parent;
         while (parent != null && parent.Function == scope.Top.Function)
         {
-            if (parent.TryGetOwnVariable(name, out var variable) && variable.IsLexical)
+            if (parent.TryGetOwnVariable(name, out var variable) && variable.IsLexical && !variable.IsSimpleCatchBinding)
                 return true;
             parent = parent.Parent;
         }

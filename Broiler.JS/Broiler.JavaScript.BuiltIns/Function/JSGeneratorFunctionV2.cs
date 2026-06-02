@@ -14,6 +14,7 @@ public class JSGeneratorFunctionV2 : JSFunction
     {
         public JSObject GeneratorFunctionPrototype;
         public JSObject AsyncGeneratorFunctionPrototype;
+        public JSObject AsyncGeneratorPrototype;
     }
 
     private static readonly ConditionalWeakTable<object, PrototypeCache> PrototypeCaches = [];
@@ -42,10 +43,51 @@ public class JSGeneratorFunctionV2 : JSFunction
         constructor.prototype = prototype;
         prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableValue);
 
+        var generatorPrototype = GetGeneratorPrototype(asyncGenerator);
+        if (generatorPrototype != null)
+        {
+            prototype.FastAddValue(KeyStrings.prototype, generatorPrototype, JSPropertyAttributes.ConfigurableReadonlyValue);
+            generatorPrototype.FastAddValue(KeyStrings.constructor, prototype, JSPropertyAttributes.ConfigurableReadonlyValue);
+        }
+
         // §27.3.3.2 / §27.4.3.2: GeneratorFunction.prototype[@@toStringTag] / AsyncGeneratorFunction.prototype[@@toStringTag]
         prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString(constructorName), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         return prototype;
+    }
+
+    private static JSObject GetGeneratorPrototype(bool asyncGenerator)
+    {
+        if ((Engine.Core.JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Generator")] is not JSFunction generatorCtor
+            || generatorCtor.prototype is not JSObject generatorPrototype)
+            return null;
+
+        if (!asyncGenerator)
+            return generatorPrototype;
+
+        var cacheKey = Engine.Core.JSEngine.Current as object ?? PrototypeCacheFallback;
+        var cache = PrototypeCaches.GetOrCreateValue(cacheKey);
+        if (cache.AsyncGeneratorPrototype != null)
+            return cache.AsyncGeneratorPrototype;
+
+        var asyncGeneratorPrototype = new JSObject
+        {
+            BasePrototypeObject = generatorPrototype.GetPrototypeOf()
+        };
+
+        CopyGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.next);
+        CopyGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.GetOrCreate("return"));
+        CopyGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.GetOrCreate("throw"));
+
+        asyncGeneratorPrototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("AsyncGenerator"), JSPropertyAttributes.ConfigurableReadonlyValue);
+        return cache.AsyncGeneratorPrototype = asyncGeneratorPrototype;
+    }
+
+    private static void CopyGeneratorMethod(JSObject source, JSObject target, KeyString key)
+    {
+        var value = source[key];
+        if (!value.IsUndefined)
+            target.FastAddValue(key, value, JSPropertyAttributes.ConfigurableValue);
     }
 
     private static JSObject GetGeneratorFunctionPrototype(bool asyncGenerator)
@@ -74,10 +116,10 @@ public class JSGeneratorFunctionV2 : JSFunction
         if (protoObj != null)
         {
             protoObj.Delete(KeyStrings.constructor);
-            var className = asyncGenerator ? "AsyncGenerator" : "Generator";
-            var generatorClassProto = ((Engine.Core.JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate(className)] as JSFunction)?.prototype;
-            if (generatorClassProto != null)
-                protoObj.BasePrototypeObject = generatorClassProto;
+            var generatorPrototype = GetGeneratorPrototype(asyncGenerator);
+            if (generatorPrototype != null)
+                protoObj.BasePrototypeObject = generatorPrototype;
+            GetOwnProperties().Put(KeyStrings.prototype, protoObj, JSPropertyAttributes.Value);
         }
         prototype = null;
 
