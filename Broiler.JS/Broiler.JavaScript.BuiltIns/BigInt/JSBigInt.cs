@@ -14,7 +14,12 @@ static class JSBigIntExtensions
 {
     internal const int NaNComparison = int.MinValue;
 
-    public static BigInteger AsBigIntegerOnly(this JSValue @this) => @this is JSBigInt v ? v.value : throw JSBigInt.CannotMix();
+    public static BigInteger AsBigIntegerOnly(this JSValue @this)
+    {
+        @this = @this is JSPrimitiveObject primitiveObject ? primitiveObject.ValueOf() : @this;
+        @this = @this is JSObject @object ? @object.ToDefaultPrimitive() : @this;
+        return @this is JSBigInt v ? v.value : throw JSBigInt.CannotMix();
+    }
 
     public static JSValue UnwrapPrimitive(this JSValue value)
         => value is JSPrimitiveObject primitiveObject ? primitiveObject.ValueOf() : value;
@@ -322,6 +327,12 @@ public partial class JSBigInt : JSPrimitive
     }
 
     public override JSValue Negate() => new JSBigInt(-value);
+
+    public override JSValue Increment() => new JSBigInt(value + BigInteger.One);
+
+    public override JSValue Decrement() => new JSBigInt(value - BigInteger.One);
+
+    public override JSValue BitwiseNot() => new JSBigInt(~value);
 
     public override JSValue BitwiseAnd(JSValue value) => new JSBigInt(this.value & value.AsBigIntegerOnly());
 

@@ -4222,6 +4222,59 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void BigInt_Object_ToPrimitive_Works_For_Bitwise_Update_And_Number()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var i = 10n;
+                i++;
+                return [
+                    Object(0b101n) & 0b011n,
+                    0b011n & { valueOf: function () { return 0b101n; } },
+                    ~Object(0n),
+                    i,
+                    Number(10n)
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("1|1|-1|11|10", result.ToString());
+    }
+
+    [Fact]
+    public void Array_Index_Accessor_Without_Getter_Enumerates_As_Undefined()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var arr = [];
+                var setValue;
+                Object.defineProperty(arr, "0", {
+                    set: function (value) { setValue = value; },
+                    enumerable: true,
+                    configurable: true
+                });
+
+                var seen = false;
+                for (var key in arr) {
+                    if (key === "0") {
+                        seen = true;
+                    }
+                }
+
+                arr[0] = 42;
+                var desc = Object.getOwnPropertyDescriptor(arr, "0");
+                return [seen, setValue, desc.get === undefined, desc.set !== undefined].join('|');
+            })()
+            """);
+
+        Assert.Equal("true|42|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Array_IsArray_Recognizes_ArrayPrototype_And_Proxy_Targets()
     {
         EnsureBuiltInsLoaded();

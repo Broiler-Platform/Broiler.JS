@@ -403,7 +403,22 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <returns></returns>
     public virtual JSValue ValueOf() => this;
 
-    public virtual JSValue Negate() => CreateNumber(-DoubleValue);
+    private static JSValue ToNumericPrimitive(JSValue value) => value switch
+    {
+        JSPrimitiveObject primitiveObject => primitiveObject.ValueOf(),
+        JSObject @object => @object.ToDefaultPrimitive(),
+        _ => value.ValueOf()
+    };
+
+    public virtual JSValue Negate()
+    {
+        var self = ToNumericPrimitive(this);
+        return !ReferenceEquals(self, this) ? self.Negate() : CreateNumber(-DoubleValue);
+    }
+
+    public virtual JSValue Increment() => CreateNumber(DoubleValue + 1);
+
+    public virtual JSValue Decrement() => CreateNumber(DoubleValue - 1);
 
     public virtual JSValue Subtract(JSValue value) => CreateNumber(DoubleValue - value.DoubleValue);
 
@@ -412,17 +427,53 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <summary>
     public virtual JSValue Divide(JSValue value) => CreateNumber(DoubleValue / value.DoubleValue);
 
-    public virtual JSValue BitwiseAnd(JSValue value) => CreateNumber(IntValue & value.IntValue);
+    public virtual JSValue BitwiseAnd(JSValue value)
+    {
+        var self = ToNumericPrimitive(this);
+        value = ToNumericPrimitive(value);
+        return !ReferenceEquals(self, this) ? self.BitwiseAnd(value) : CreateNumber(IntValue & value.IntValue);
+    }
 
-    public virtual JSValue BitwiseOr(JSValue value) => CreateNumber(IntValue | value.IntValue);
+    public virtual JSValue BitwiseOr(JSValue value)
+    {
+        var self = ToNumericPrimitive(this);
+        value = ToNumericPrimitive(value);
+        return !ReferenceEquals(self, this) ? self.BitwiseOr(value) : CreateNumber(IntValue | value.IntValue);
+    }
 
-    public virtual JSValue BitwiseXor(JSValue value) => CreateNumber(IntValue ^ value.IntValue);
+    public virtual JSValue BitwiseXor(JSValue value)
+    {
+        var self = ToNumericPrimitive(this);
+        value = ToNumericPrimitive(value);
+        return !ReferenceEquals(self, this) ? self.BitwiseXor(value) : CreateNumber(IntValue ^ value.IntValue);
+    }
 
-    public virtual JSValue LeftShift(JSValue value) => CreateNumber(IntValue << value.IntValue);
+    public virtual JSValue BitwiseNot()
+    {
+        var self = ToNumericPrimitive(this);
+        return !ReferenceEquals(self, this) ? self.BitwiseNot() : CreateNumber(~IntValue);
+    }
 
-    public virtual JSValue RightShift(JSValue value) => CreateNumber(IntValue >> (value.IntValue & 0x1F));
+    public virtual JSValue LeftShift(JSValue value)
+    {
+        var self = ToNumericPrimitive(this);
+        value = ToNumericPrimitive(value);
+        return !ReferenceEquals(self, this) ? self.LeftShift(value) : CreateNumber(IntValue << value.IntValue);
+    }
 
-    public virtual JSValue UnsignedRightShift(JSValue value) => CreateNumber(UIntValue >> value.IntValue);
+    public virtual JSValue RightShift(JSValue value)
+    {
+        var self = ToNumericPrimitive(this);
+        value = ToNumericPrimitive(value);
+        return !ReferenceEquals(self, this) ? self.RightShift(value) : CreateNumber(IntValue >> (value.IntValue & 0x1F));
+    }
+
+    public virtual JSValue UnsignedRightShift(JSValue value)
+    {
+        var self = ToNumericPrimitive(this);
+        value = ToNumericPrimitive(value);
+        return !ReferenceEquals(self, this) ? self.UnsignedRightShift(value) : CreateNumber(UIntValue >> value.IntValue);
+    }
 
     public virtual JSValue Modulo(JSValue value) => CreateNumber(DoubleValue % value.DoubleValue);
 

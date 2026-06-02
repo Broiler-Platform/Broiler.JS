@@ -398,6 +398,46 @@ partial class FastCompiler
                                             YExpression.Empty)));
                                 }
                                 break;
+                            case FastNodeType.MemberExpression:
+                                var member = (AstMemberExpression)element;
+                                using (var objectTemp = scope.Top.GetTempVariable(typeof(JSValue)))
+                                using (var moveTemp = scope.Top.GetTempVariable(typeof(JSValue)))
+                                {
+                                    arrayInits.Add(YExpression.Assign(objectTemp.Variable, Visit(member.Object)));
+                                    YExpression memberTarget;
+                                    if (member.Computed)
+                                    {
+                                        var propertyTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                                        var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                                        arrayInits.Add(YExpression.Assign(propertyTemp.Variable, Visit(member.Property)));
+                                        memberTarget = JSValueBuilder.Index(objectTemp.Expression, keyTemp.Expression);
+                                        arrayInits.Add(YExpression.IfThen(
+                                            YExpression.OrElse(iterDoneVar,
+                                                YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp.Expression))),
+                                            YExpression.Block(
+                                                YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                                                YExpression.Assign(moveTemp.Expression, JSUndefinedBuilder.Value),
+                                                YExpression.Empty)));
+                                        arrayInits.Add(YExpression.Call(null, RequireObjectCoercibleMethod, objectTemp.Expression));
+                                        arrayInits.Add(YExpression.Assign(keyTemp.Variable, YExpression.Call(null, NormalizePropertyKeyMethod, propertyTemp.Expression)));
+                                        arrayInits.Add(BinaryOperation.Assign(memberTarget, moveTemp.Expression, TokenTypes.Assign));
+                                        keyTemp.Dispose();
+                                        propertyTemp.Dispose();
+                                    }
+                                    else
+                                    {
+                                        memberTarget = CreateMemberExpression(objectTemp.Expression, member.Property, false);
+                                        arrayInits.Add(YExpression.IfThen(
+                                            YExpression.OrElse(iterDoneVar,
+                                                YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp.Expression))),
+                                            YExpression.Block(
+                                                YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                                                YExpression.Assign(moveTemp.Expression, JSUndefinedBuilder.Value),
+                                                YExpression.Empty)));
+                                        arrayInits.Add(BinaryOperation.Assign(memberTarget, moveTemp.Expression, TokenTypes.Assign));
+                                    }
+                                }
+                                break;
                             case FastNodeType.BinaryExpression:
                                 var be = element as AstBinaryExpression;
                                 using (var moveTemp2 = scope.Top.GetTempVariable(typeof(JSValue)))

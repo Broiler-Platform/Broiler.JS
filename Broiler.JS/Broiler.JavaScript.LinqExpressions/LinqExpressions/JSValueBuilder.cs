@@ -58,6 +58,9 @@ public class JSValueBuilder
         exp.FieldExpression<JSValue, IJSPrototype>(() => (x) => x.prototypeChain).PropertyExpression<IJSPrototype, JSValue>(() => (x) => x.Object);
 
     public static Expression Negate(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.Negate());
+    public static Expression BitwiseNot(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.BitwiseNot());
+    public static Expression Increment(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.Increment());
+    public static Expression Decrement(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.Decrement());
 
     public static Expression Power(Expression left, Expression right) => left.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.Power(a), right);
 
