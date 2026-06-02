@@ -290,7 +290,7 @@ public class JSValueBuilder
 
     private static MethodInfo _GetEnumerator = typeof(IEnumerable<JSValue>).GetMethod(nameof(IEnumerable<JSValue>.GetEnumerator));
 
-    public static Expression GetAllKeys(Expression target) => Expression.Call(target, _GetAllKeys, Expression.Constant(true), Expression.Constant(false));
+    public static Expression GetAllKeys(Expression target) => Expression.Call(target, _GetAllKeys, Expression.Constant(true), Expression.Constant(true));
 
     public static Expression Coalesce(Expression target, Expression def) => Expression.Condition(IsNullOrUndefined(target), def, target);
 }

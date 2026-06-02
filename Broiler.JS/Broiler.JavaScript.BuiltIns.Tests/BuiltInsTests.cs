@@ -106,6 +106,56 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Enumerable_Inherited_Properties_Appear_On_Common_Builtins()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              Object.defineProperty(Boolean.prototype, 'prop', {
+                value: 1001,
+                writable: true,
+                enumerable: true,
+                configurable: true
+              });
+              Object.defineProperty(RegExp.prototype, 'prop', {
+                value: 1001,
+                writable: true,
+                enumerable: true,
+                configurable: true
+              });
+              Object.defineProperty(Function.prototype, 'prop', {
+                value: 1001,
+                writable: true,
+                enumerable: true,
+                configurable: true
+              });
+
+              var boolObj = new Boolean();
+              var regObj = new RegExp();
+              var fnObj = function () {}.bind({});
+
+              function hasEnumerable(obj) {
+                for (var p in obj) {
+                  if (p === 'prop') {
+                    return true;
+                  }
+                }
+                return false;
+              }
+
+              return [
+                !boolObj.hasOwnProperty('prop') && hasEnumerable(boolObj),
+                !regObj.hasOwnProperty('prop') && hasEnumerable(regObj),
+                !fnObj.hasOwnProperty('prop') && hasEnumerable(fnObj)
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|true", result.ToString());
+    }
+
+    [Fact]
     public void DynamicFunction_Construct_Parses_Before_NewTarget_Prototype()
     {
         EnsureBuiltInsLoaded();

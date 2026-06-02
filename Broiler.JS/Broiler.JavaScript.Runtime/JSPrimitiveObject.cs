@@ -153,6 +153,10 @@ public class JSPrimitiveObject : JSObject
 
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)
     {
+        ((JSPrimitive)value).ResolvePrototype();
+
+        prototypeChain = value.prototypeChain;
+
         if (!value.IsString)
             return base.GetAllKeys(showEnumerableOnly, inherited);
 
