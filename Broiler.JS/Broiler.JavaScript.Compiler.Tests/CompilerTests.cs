@@ -257,6 +257,35 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_ClassSuper_Method_And_Property_Access_Work()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                class Base {
+                    get value() {
+                        return 41;
+                    }
+
+                    method() {
+                        return 1;
+                    }
+                }
+
+                class Derived extends Base {
+                    method() {
+                        return super.value + super.method();
+                    }
+                }
+
+                return new Derived().method();
+            })()
+            """);
+
+        Assert.Equal(42.0, result.DoubleValue);
+    }
+
+    [Fact]
     public void Compile_ArrowFunction_ArrayDestructuringElisions_Work()
     {
         using var ctx = new JSContext();
@@ -323,6 +352,21 @@ public class CompilerTests
             """);
 
         Assert.Equal("1,z,a", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_ObjectDestructuring_Rest_Copies_Only_Remaining_Properties()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var source = { a: 1, b: 2, 1: 3 };
+                var { a, ...rest } = source;
+                return [a, Object.keys(rest).join(","), rest[1], rest.b].join("|");
+            })()
+            """);
+
+        Assert.Equal("1|1,b|3|2", result.ToString());
     }
 
     [Fact]

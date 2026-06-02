@@ -214,6 +214,8 @@ public abstract class AstReduce : AstMapVisitor<AstNode>
         return node;
     }
 
+    protected override AstNode VisitSuper(AstSuper super) => super;
+
     protected override AstNode VisitArrayExpression(AstArrayExpression arrayExpression)
     {
         if (Modified(arrayExpression.Elements, out var list))

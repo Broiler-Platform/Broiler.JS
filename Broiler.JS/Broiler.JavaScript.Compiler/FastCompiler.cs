@@ -438,6 +438,8 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
     protected override YExpression VisitFunctionExpression(AstFunctionExpression functionExpression) => CreateFunction(functionExpression);
 
+    protected override YExpression VisitSuper(AstSuper super) => scope.Top.ThisExpression;
+
     protected override YExpression VisitSpreadElement(AstSpreadElement spreadElement) => throw new NotImplementedException();
 
     protected override YExpression VisitThrowStatement(AstThrowStatement throwStatement) => JSExceptionBuilder.Throw(VisitExpression(throwStatement.Argument));

@@ -267,6 +267,7 @@ partial class FastCompiler
                     init = tempValue.Expression;
 
                     var en = objectPattern.Properties.GetFastEnumerator();
+                    var excludedKeys = new Sequence<YExpression>();
 
                     while (en.MoveNext(out var property))
                     {
@@ -276,29 +277,44 @@ partial class FastCompiler
                             case FastNodeType.Identifier:
                             case FastNodeType.Literal:
                                 var id = property.Key;
-                                 var propertyInit = property.Init;
-                                  if (propertyInit != null)
-                                  {
-                                      var defaultValue = Visit(propertyInit);
-                                      if (suppressAnonymousFunctionNameInference)
-                                      {
-                                          defaultValue = PrepareDestructuringInitializer(property.Value, propertyInit, defaultValue);
-                                      }
+                                var propertyInit = property.Init;
+                                var key = CreatePropertyKeyExpression(id, property.Computed);
+                                excludedKeys.Add(key);
+                                if (propertyInit != null)
+                                {
+                                   var defaultValue = Visit(propertyInit);
+                                   if (suppressAnonymousFunctionNameInference)
+                                   {
+                                       defaultValue = PrepareDestructuringInitializer(property.Value, propertyInit, defaultValue);
+                                   }
 
-                                      var piTemp = scope.Top.GetTempVariable(typeof(JSValue));
-                                      inits.Add(YExpression.Assign(
-                                          piTemp.Variable,
-                                          CreateMemberExpression(init, id, property.Computed)));
-                                      inits.Add(JSValueExtensionsBuilder.AssignCoalesce(
-                                          piTemp.Expression,
-                                          defaultValue));
-                                      start = piTemp.Expression;
-                                  }
-                                  else
-                                 {
-                                     start = CreateMemberExpression(init, id, property.Computed);
-                                 }
+                                   var piTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                                   inits.Add(YExpression.Assign(
+                                       piTemp.Variable,
+                                       CreateMemberExpression(init, id, property.Computed)));
+                                   inits.Add(JSValueExtensionsBuilder.AssignCoalesce(
+                                       piTemp.Expression,
+                                       defaultValue));
+                                   start = piTemp.Expression;
+                                }
+                                else
+                                {
+                                   start = CreateMemberExpression(init, id, property.Computed);
+                                }
                                 break;
+                            case FastNodeType.SpreadElement:
+                                var spread = (AstSpreadElement)property.Key;
+                                using (var restTemp = scope.Top.GetTempVariable(typeof(JSObject)))
+                                {
+                                   inits.Add(YExpression.Assign(restTemp.Variable, JSObjectBuilder.New()));
+                                   inits.Add(JSObjectBuilder.AddRange(restTemp.Expression, init));
+                                   var deleteKeys = excludedKeys.GetFastEnumerator();
+                                   while (deleteKeys.MoveNext(out var excludedKey))
+                                       inits.Add(JSValueBuilder.Delete(restTemp.Expression, excludedKey));
+
+                                   CreateAssignment(inits, spread.Argument, restTemp.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
+                                }
+                                continue;
                             default:
                                 throw new NotImplementedException();
                         }

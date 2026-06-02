@@ -3,51 +3,59 @@ using Broiler.JavaScript.Ast.Misc;
 using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
-
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    private YExpression CreateMemberExpression(YExpression target, AstExpression property, bool computed)
+    private YExpression CreatePropertyKeyExpression(AstExpression property, bool computed)
     {
         switch (property.Type)
         {
             case FastNodeType.Identifier:
-                var id = property as AstIdentifier;
-                if (!computed)
-                    return JSValueBuilder.Index(target, KeyOfName(id.Name));
-
-                return JSValueBuilder.Index(target, VisitIdentifier(id));
+                var id = (AstIdentifier)property;
+                return computed ? VisitIdentifier(id) : KeyOfName(id.Name);
 
             case FastNodeType.Literal:
-                var l = property as AstLiteral;
+                var l = (AstLiteral)property;
                 switch (l.TokenType)
                 {
                     case TokenTypes.True:
-                        return JSValueBuilder.Index(target, 1);
+                        return YExpression.Constant(1);
 
                     case TokenTypes.False:
-                        return JSValueBuilder.Index(target, 0);
+                        return YExpression.Constant(0);
 
                     case TokenTypes.String:
-                        return JSValueBuilder.Index(target, KeyOfName(l.Start.CookedText));
+                        return computed ? VisitLiteral(l) : KeyOfName(l.Start.CookedText);
 
                     case TokenTypes.Number:
                         if (l.NumericValue >= 0 && (l.NumericValue % 1 == 0))
-                            return JSValueBuilder.Index(target, (uint)l.NumericValue);
+                            return YExpression.Constant((uint)l.NumericValue);
 
-                        return JSValueBuilder.Index(target, VisitLiteral(l));
+                        return VisitLiteral(l);
+
+                    default:
+                        throw new NotImplementedException();
                 }
-                break;
 
             case FastNodeType.MemberExpression:
-                var se = property as AstMemberExpression;
-                return JSValueBuilder.Index(target, Visit(se.Property));
+                var se = (AstMemberExpression)property;
+                return Visit(se.Property);
         }
 
         if (computed)
-            return JSValueBuilder.Index(target, Visit(property));
+            return Visit(property);
+
+        throw new NotImplementedException();
+    }
+
+    private YExpression CreateMemberExpression(YExpression target, AstExpression property, bool computed)
+    {
+        var key = CreatePropertyKeyExpression(property, computed);
+        if (key.Type == typeof(KeyString) || key.Type == typeof(uint) || key.Type == typeof(int) || key.Type.IsJSValueType())
+            return JSValueBuilder.Index(target, key);
 
         throw new NotImplementedException();
     }
