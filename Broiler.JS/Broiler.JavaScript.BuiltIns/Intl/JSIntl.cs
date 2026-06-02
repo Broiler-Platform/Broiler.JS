@@ -1149,6 +1149,8 @@ public class JSIntlNumberFormat : JSObject
 public class JSIntlDateTimeFormat : JSObject
 {
     private static readonly ConcurrentDictionary<string, JSIntlDateTimeFormat> formats = new();
+    private static readonly KeyString HourKey = KeyStrings.GetOrCreate("hour");
+    private static readonly KeyString DayPeriodKey = KeyStrings.GetOrCreate("dayPeriod");
     private readonly CultureInfo locale;
     private readonly string localeTag;
     private JSObject options;
@@ -1164,6 +1166,16 @@ public class JSIntlDateTimeFormat : JSObject
         var clipped = JSDateMath.TimeClip(value);
         if (double.IsNaN(clipped))
             throw JSEngine.NewRangeError("Invalid time value");
+
+        if (SupportsEnglishDayPeriod())
+        {
+            var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
+            var dayPeriod = FormatEnglishDayPeriod(localTime, DayPeriodStyle());
+            if (UsesHourFormatting())
+                return new JSString($"{FormatEnglishHour(localTime)} {dayPeriod}");
+
+            return new JSString(dayPeriod);
+        }
 
         return new JSString(clipped.ToString(CultureInfo.InvariantCulture));
     }
@@ -1208,6 +1220,29 @@ public class JSIntlDateTimeFormat : JSObject
         var clipped = JSDateMath.TimeClip(value);
         if (double.IsNaN(clipped))
             throw JSEngine.NewRangeError("Invalid time value");
+
+        if (@this.SupportsEnglishDayPeriod())
+        {
+            var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
+            var dayPeriodParts = JSValue.CreateArray();
+            if (@this.UsesHourFormatting())
+            {
+                var hourPart = new JSObject();
+                hourPart[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("hour");
+                hourPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(FormatEnglishHour(localTime));
+                var literalPart = new JSObject();
+                literalPart[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("literal");
+                literalPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(" ");
+                dayPeriodParts.AddArrayItem(hourPart);
+                dayPeriodParts.AddArrayItem(literalPart);
+            }
+
+            var dayPeriodPart = new JSObject();
+            dayPeriodPart[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("dayPeriod");
+            dayPeriodPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(FormatEnglishDayPeriod(localTime, @this.DayPeriodStyle()));
+            dayPeriodParts.AddArrayItem(dayPeriodPart);
+            return dayPeriodParts;
+        }
 
         var formatted = clipped.ToString(CultureInfo.InvariantCulture);
         var parts = JSValue.CreateArray();
@@ -1255,6 +1290,38 @@ public class JSIntlDateTimeFormat : JSObject
     }
 
     internal JSValue Format(DateTimeOffset value, JSObject format) => new JSString(value.ToString(locale));
+
+    private bool SupportsEnglishDayPeriod()
+        => localeTag.StartsWith("en", StringComparison.OrdinalIgnoreCase)
+            && options != null
+            && !options[DayPeriodKey].IsUndefined;
+
+    private bool UsesHourFormatting()
+        => options != null && !options[HourKey].IsUndefined;
+
+    private string DayPeriodStyle()
+        => options?[DayPeriodKey]?.StringValue ?? string.Empty;
+
+    private static string FormatEnglishHour(DateTimeOffset value)
+        => ((value.Hour % 12) == 0 ? 12 : value.Hour % 12).ToString(CultureInfo.InvariantCulture);
+
+    private static string FormatEnglishDayPeriod(DateTimeOffset value, string style)
+    {
+        var hour = value.Hour;
+        if (hour < 12)
+            return "in the morning";
+
+        if (hour == 12)
+            return style == "narrow" ? "n" : "noon";
+
+        if (hour < 18)
+            return "in the afternoon";
+
+        if (hour < 22)
+            return "in the evening";
+
+        return "at night";
+    }
 
     public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())
     {
