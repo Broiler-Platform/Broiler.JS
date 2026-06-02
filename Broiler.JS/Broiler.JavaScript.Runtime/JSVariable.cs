@@ -1,6 +1,7 @@
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Storage;
 using System;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
@@ -21,6 +22,40 @@ public class JSVariable
 
         functionObject.FastAddValue(KeyStrings.name, JSValue.CreateString(assignName ? name : string.Empty), JSPropertyAttributes.ConfigurableReadonlyValue);
         return value;
+    }
+
+    private static JSValue PrepareAnonymousFunctionName(JSValue value, string name)
+    {
+        if (value is not JSObject functionObject || value is not IJSFunction)
+            return value;
+
+        if (functionObject[KeyStrings.name].ToString() != "native")
+            return value;
+
+        functionObject.FastAddValue(KeyStrings.name, JSValue.CreateString(name), JSPropertyAttributes.ConfigurableReadonlyValue);
+        return value;
+    }
+
+    public static JSValue PrepareAnonymousFunctionNameForProperty(JSValue value, uint name)
+        => PrepareAnonymousFunctionName(value, name.ToString(CultureInfo.InvariantCulture));
+
+    public static JSValue PrepareAnonymousFunctionNameForProperty(JSValue value, KeyString name)
+        => PrepareAnonymousFunctionName(value, name.ToString());
+
+    public static JSValue PrepareAnonymousFunctionNameForProperty(JSValue value, JSValue name)
+    {
+        if (name is IJSSymbol symbol)
+            return PrepareAnonymousFunctionName(value, symbol.ToString().Length == 0 ? string.Empty : $"[{symbol}]");
+
+        var propertyKey = name.ToKey(false);
+        return propertyKey.Type switch
+        {
+            KeyType.UInt => PrepareAnonymousFunctionName(value, propertyKey.Index.ToString(CultureInfo.InvariantCulture)),
+            KeyType.String => PrepareAnonymousFunctionName(value, propertyKey.KeyString.ToString()),
+            KeyType.Symbol => PrepareAnonymousFunctionName(value,
+                propertyKey.Symbol?.ToString() is { Length: > 0 } description ? $"[{description}]" : string.Empty),
+            _ => value,
+        };
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -711,6 +711,45 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Object_Property_Value_Names_Are_Inferred()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var namedSym = Symbol('test262');
+                var anonSym = Symbol();
+                var obj = {
+                    xId: function x() {},
+                    id: function() {},
+                    arrow: () => {},
+                    cls: class {},
+                    gen: function*() {},
+                    cover: (0, function() {}),
+                    method() {},
+                    *methodGen() {},
+                    [anonSym]: function() {},
+                    [namedSym]: function() {}
+                };
+
+                return [
+                    obj.xId.name,
+                    obj.id.name,
+                    obj.arrow.name,
+                    obj.cls.name,
+                    obj.gen.name,
+                    obj.cover.name === 'cover',
+                    obj.method.name,
+                    obj.methodGen.name,
+                    obj[anonSym].name,
+                    obj[namedSym].name
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("x|id|arrow|cls|gen|false|method|methodGen||[test262]", result.ToString());
+    }
+
+    [Fact]
     public void Compile_Object_Accessor_Literal_Names_Are_Canonicalized_And_Inferred()
     {
         using var ctx = new JSContext();

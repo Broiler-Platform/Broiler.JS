@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
@@ -10,6 +11,16 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
+    private static readonly MethodInfo PrepareAnonymousFunctionNameForPropertyUIntMethod = typeof(JSVariable)
+        .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForProperty), [typeof(JSValue), typeof(uint)])
+        ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForProperty(JSValue, uint) not found");
+    private static readonly MethodInfo PrepareAnonymousFunctionNameForPropertyKeyStringMethod = typeof(JSVariable)
+        .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForProperty), [typeof(JSValue), typeof(KeyString)])
+        ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForProperty(JSValue, KeyString) not found");
+    private static readonly MethodInfo PrepareAnonymousFunctionNameForPropertyJSValueMethod = typeof(JSVariable)
+        .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForProperty), [typeof(JSValue), typeof(JSValue)])
+        ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForProperty(JSValue, JSValue) not found");
+
     private static bool IsObjectLiteralProtoSetter(AstClassProperty property)
     {
         if (property.Computed || !property.UsesColon || property.Kind != AstPropertyKind.Data)
@@ -25,6 +36,17 @@ partial class FastCompiler
 
     protected override YExpression VisitObjectLiteral(AstObjectLiteral objectExpression)
     {
+        static YExpression PrepareAnonymousFunctionName(YExpression value, YExpression key)
+        {
+            if (key.Type == typeof(uint))
+                return YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyUIntMethod, value, key);
+
+            if (key.Type.IsJSValueType())
+                return YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, value, key);
+
+            return YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyKeyStringMethod, value, key);
+        }
+
         var properties = objectExpression.Properties;
         bool hasProtoSetter = false;
         var protoScan = properties.GetFastEnumerator();
@@ -79,6 +101,11 @@ partial class FastCompiler
                 {
                     // there is a possibility of numeric index
                     var keyExp = pKey.IsUIntLiteral(out var num) ? YExpression.Constant(num) : Visit(pKey);
+                    if (p.Kind is AstPropertyKind.Data or AstPropertyKind.Method or AstPropertyKind.Constructor
+                        && IsAnonymousFunctionDefinition(p.Init))
+                    {
+                        value = PrepareAnonymousFunctionName(value, keyExp);
+                    }
 
                     if (p.Kind == AstPropertyKind.Get)
                     {
@@ -119,10 +146,16 @@ partial class FastCompiler
                         throw new NotSupportedException();
                 }
 
-                switch (p.Kind)
-                {
-                    case AstPropertyKind.Get:
-                        elements.Add(JSObjectBuilder.AddGetter(key, value));
+                    if (p.Kind is AstPropertyKind.Data or AstPropertyKind.Method or AstPropertyKind.Constructor
+                        && IsAnonymousFunctionDefinition(p.Init))
+                    {
+                        value = PrepareAnonymousFunctionName(value, key);
+                    }
+
+                    switch (p.Kind)
+                    {
+                        case AstPropertyKind.Get:
+                            elements.Add(JSObjectBuilder.AddGetter(key, value));
                         break;
 
                     case AstPropertyKind.Set:
@@ -185,6 +218,11 @@ partial class FastCompiler
             if (p.Computed)
             {
                 var keyExp = pKey.IsUIntLiteral(out var num) ? YExpression.Constant(num) : Visit(pKey);
+                if (p.Kind is AstPropertyKind.Data or AstPropertyKind.Method or AstPropertyKind.Constructor
+                    && IsAnonymousFunctionDefinition(p.Init))
+                {
+                    value = PrepareAnonymousFunctionName(value, keyExp);
+                }
 
                 if (p.Kind == AstPropertyKind.Get)
                 {
@@ -222,6 +260,12 @@ partial class FastCompiler
             {
                 statements.Add(YExpression.Assign(JSValueBuilder.Index(temp.Variable, key), value));
                 continue;
+            }
+
+            if (p.Kind is AstPropertyKind.Data or AstPropertyKind.Method or AstPropertyKind.Constructor
+                && IsAnonymousFunctionDefinition(p.Init))
+            {
+                value = PrepareAnonymousFunctionName(value, key);
             }
 
             switch (p.Kind)
