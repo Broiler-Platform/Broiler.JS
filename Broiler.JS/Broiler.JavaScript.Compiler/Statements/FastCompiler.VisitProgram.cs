@@ -63,6 +63,8 @@ partial class FastCompiler
         ref var hoistingScope = ref program.HoistingScope;
         var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
         var lexicalBindings = CollectTopLevelLexicalBindings(program.Statements);
+        foreach (var lexicalBinding in lexicalBindings)
+            scope.CreateVariable(lexicalBinding, null, true, initialize: false);
 
         if (hoistingScope != null)
         {

@@ -11,9 +11,7 @@ public partial class ILCodeGenerator
     private static readonly Type KeyStringsType = Type.GetType("Broiler.JavaScript.Storage.KeyStrings, Broiler.JavaScript.Storage", true)!;
     private static readonly Type StringSpanType = Type.GetType("Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast", true)!;
     private static readonly Type KeyStringType = Type.GetType("Broiler.JavaScript.Storage.KeyString, Broiler.JavaScript.Storage", true)!;
-    private static readonly Type JsValueType = Type.GetType("Broiler.JavaScript.Runtime.JSValue, Broiler.JavaScript.Runtime", true)!;
     private static readonly Type ScriptInfoType = Type.GetType("Broiler.JavaScript.Runtime.ScriptInfo, Broiler.JavaScript.Runtime", true)!;
-    private static readonly Type JsEngineType = Type.GetType("Broiler.JavaScript.Engine.Core.JSEngine, Broiler.JavaScript.Engine", true)!;
     private static readonly Type ScriptInfoBoxType = typeof(Broiler.JavaScript.ExpressionCompiler.ClosureSeparator.Box<>).MakeGenericType(ScriptInfoType);
     private static readonly System.Reflection.ConstructorInfo ScriptInfoBoxCtor = ScriptInfoBoxType.GetConstructor(Type.EmptyTypes)!;
     private static readonly MethodInfo ResolveIdentifierMethod = JsContextType
@@ -22,12 +20,6 @@ public partial class ILCodeGenerator
     private static readonly MethodInfo KeyStringsGetOrCreateMethod = KeyStringsType
         .GetMethod("GetOrCreate", [StringSpanType.MakeByRefType()])
         ?? throw new InvalidOperationException("KeyStrings.GetOrCreate(StringSpan) not found");
-    private static readonly FieldInfo JsEngineCurrentField = JsEngineType
-        .GetField("Current", BindingFlags.Public | BindingFlags.Static)
-        ?? throw new InvalidOperationException("JSEngine.Current field not found");
-    private static readonly ConstructorInfo StringSpanStringCtor = StringSpanType
-        .GetConstructor([typeof(string)])
-        ?? throw new InvalidOperationException("StringSpan(string) constructor not found");
 
     protected override CodeInfo VisitParameter(YParameterExpression yParameterExpression)
     {
@@ -52,10 +44,6 @@ public partial class ILCodeGenerator
             else if (yParameterExpression.Type == ScriptInfoType)
             {
                 il.EmitNew(ScriptInfoBoxCtor);
-                return true;
-            }
-            else if (TryEmitRuntimeIdentifierResolution(yParameterExpression))
-            {
                 return true;
             }
             else
@@ -96,32 +84,6 @@ public partial class ILCodeGenerator
             throw new NotSupportedException();
         }
 
-        return true;
-    }
-
-    private bool TryEmitRuntimeIdentifierResolution(YParameterExpression yParameterExpression)
-    {
-        if (string.IsNullOrEmpty(yParameterExpression.Name)
-            || yParameterExpression.Type != JsValueType)
-        {
-            return false;
-        }
-
-        using var spanLocal = il.NewTemp(StringSpanType);
-        using var keyLocal = il.NewTemp(KeyStringType);
-
-        il.EmitConstant(yParameterExpression.Name);
-        il.EmitNew(StringSpanStringCtor);
-        il.EmitSaveLocal(spanLocal.LocalIndex);
-
-        il.EmitLoadLocalAddress(spanLocal.LocalIndex);
-        il.EmitCall(KeyStringsGetOrCreateMethod);
-        il.EmitSaveLocal(keyLocal.LocalIndex);
-
-        il.Emit(OpCodes.Ldsfld, JsEngineCurrentField);
-        il.Emit(OpCodes.Castclass, JsContextType);
-        il.EmitLoadLocalAddress(keyLocal.LocalIndex);
-        il.EmitCall(ResolveIdentifierMethod);
         return true;
     }
 
