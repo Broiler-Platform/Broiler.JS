@@ -58,6 +58,19 @@ public class JSValueBuilder
         exp.FieldExpression<JSValue, IJSPrototype>(() => (x) => x.prototypeChain).PropertyExpression<IJSPrototype, JSValue>(() => (x) => x.Object);
 
     public static Expression Negate(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.Negate());
+    public static Expression BitwiseNot(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.BitwiseNot());
+    public static Expression Increment(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.Increment());
+    public static Expression Decrement(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.Decrement());
+    public static Expression Subtract(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.Subtract(a), value);
+    public static Expression Multiply(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.Multiply(a), value);
+    public static Expression Divide(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.Divide(a), value);
+    public static Expression Modulo(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.Modulo(a), value);
+    public static Expression BitwiseAnd(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.BitwiseAnd(a), value);
+    public static Expression BitwiseOr(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.BitwiseOr(a), value);
+    public static Expression BitwiseXor(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.BitwiseXor(a), value);
+    public static Expression LeftShift(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.LeftShift(a), value);
+    public static Expression RightShift(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.RightShift(a), value);
+    public static Expression UnsignedRightShift(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.UnsignedRightShift(a), value);
 
     public static Expression Power(Expression left, Expression right) => left.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.Power(a), right);
 

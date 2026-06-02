@@ -42,7 +42,7 @@ partial class FastCompiler
                 return JSValueBuilder.Negate(Visit(target));
 
             case UnaryOperator.BitwiseNot:
-                return JSNumberBuilder.New(YExpression.OnesComplement(JSValueBuilder.IntValue(Visit(target))));
+                return JSValueBuilder.BitwiseNot(Visit(target));
 
             case UnaryOperator.Negate:
                 return YExpression.Condition(BooleanValue(target), JSBooleanBuilder.False, JSBooleanBuilder.True);

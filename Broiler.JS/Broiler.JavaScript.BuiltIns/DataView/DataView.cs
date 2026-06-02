@@ -2,6 +2,8 @@
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using System.Runtime.CompilerServices;
+using System.Numerics;
+using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
@@ -102,7 +104,7 @@ public partial class DataView : JSObject
     /// <returns> The signed 64-bit integer at the specified byte offset from the start
     /// of the DataView. </returns>
     [JSExport(Length = 1)]
-    public JSValue GetBigInt64(in Arguments a) => new JSNumber(GetInt64(in a));
+    public JSValue GetBigInt64(in Arguments a) => new JSBigInt(GetInt64(in a));
 
     //internal method
     public unsafe long GetInt64(in Arguments a)
@@ -131,7 +133,7 @@ public partial class DataView : JSObject
     }
 
     [JSExport("getBigUint64", Length = 1)]
-    public JSValue GetBigUInt64(in Arguments a) => new JSNumber(GetInt64(in a));
+    public JSValue GetBigUInt64(in Arguments a) => new JSBigInt(new BigInteger((ulong)GetInt64(in a)));
 
     //internal method
     public unsafe int GetInt32Int(in Arguments a)

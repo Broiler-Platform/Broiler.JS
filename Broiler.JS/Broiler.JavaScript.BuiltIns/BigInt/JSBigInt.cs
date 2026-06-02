@@ -14,7 +14,12 @@ static class JSBigIntExtensions
 {
     internal const int NaNComparison = int.MinValue;
 
-    public static BigInteger AsBigIntegerOnly(this JSValue @this) => @this is JSBigInt v ? v.value : throw JSBigInt.CannotMix();
+    public static BigInteger AsBigIntegerOnly(this JSValue @this)
+    {
+        @this = @this is JSPrimitiveObject primitiveObject ? primitiveObject.ValueOf() : @this;
+        @this = @this is JSObject @object ? @object.ToDefaultPrimitive() : @this;
+        return @this is JSBigInt v ? v.value : throw JSBigInt.CannotMix();
+    }
 
     public static JSValue UnwrapPrimitive(this JSValue value)
         => value is JSPrimitiveObject primitiveObject ? primitiveObject.ValueOf() : value;
@@ -51,7 +56,7 @@ public partial class JSBigInt : JSPrimitive
 
     public override double DoubleValue => throw CannotMix();
 
-    public override long BigIntValue => throw CannotMix();
+    public override long BigIntValue => (long)value;
 
     [JSExport(IsConstructor = true, Length = 1)]
     public static JSValue Constructor(in Arguments a)
@@ -85,9 +90,7 @@ public partial class JSBigInt : JSPrimitive
     {
         if (double.IsNaN(number)
             || double.IsInfinity(number)
-            || Math.Truncate(number) != number
-            || number < JSNumber.MinSafeInteger
-            || number > JSNumber.MaxSafeInteger)
+            || Math.Truncate(number) != number)
         {
             throw JSEngine.NewRangeError("The number cannot be converted to a BigInt because it is not an integer");
         }
@@ -296,7 +299,7 @@ public partial class JSBigInt : JSPrimitive
     {
         if (type == typeof(long))
         {
-            value = this.value;
+            value = (long)this.value;
             return true;
         }
 
@@ -323,6 +326,21 @@ public partial class JSBigInt : JSPrimitive
 
     public override JSValue Negate() => new JSBigInt(-value);
 
+    public override JSValue Increment() => new JSBigInt(value + BigInteger.One);
+
+    public override JSValue Decrement() => new JSBigInt(value - BigInteger.One);
+
+    public override JSValue BitwiseNot() => new JSBigInt(~value);
+
+    public override JSValue Power(JSValue a)
+    {
+        var exponent = a.AsBigIntegerOnly();
+        if (exponent.Sign < 0)
+            throw JSEngine.NewRangeError("Exponent must be positive");
+
+        return new JSBigInt(BigInteger.Pow(value, (int)exponent));
+    }
+
     public override JSValue BitwiseAnd(JSValue value) => new JSBigInt(this.value & value.AsBigIntegerOnly());
 
     public override JSValue BitwiseOr(JSValue value) => new JSBigInt(this.value | value.AsBigIntegerOnly());
@@ -340,6 +358,8 @@ public partial class JSBigInt : JSPrimitive
     public override JSValue Divide(JSValue value) => new JSBigInt(this.value / value.AsBigIntegerOnly());
 
     public override JSValue Subtract(JSValue value) => new JSBigInt(this.value - value.AsBigIntegerOnly());
+
+    public override JSValue Modulo(JSValue value) => new JSBigInt(this.value % value.AsBigIntegerOnly());
 
     public override JSValue AddValue(double value) => throw CannotMix();
 

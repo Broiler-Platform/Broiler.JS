@@ -1374,6 +1374,62 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_Array_Destructuring_Member_Target_Evaluation_Order()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var log = [];
+                function source() {
+                    log.push("source");
+                    var iterator = {
+                        next: function () {
+                            log.push("iterator-step");
+                            return {
+                                get done() {
+                                    log.push("iterator-done");
+                                    return true;
+                                },
+                                get value() {
+                                    log.push("iterator-value");
+                                }
+                            };
+                        }
+                    };
+                    var source = {};
+                    source[Symbol.iterator] = function () {
+                        log.push("iterator");
+                        return iterator;
+                    };
+                    return source;
+                }
+                function target() {
+                    log.push("target");
+                    return {
+                        set q(v) {
+                            log.push("set");
+                        }
+                    };
+                }
+                function targetKey() {
+                    log.push("target-key");
+                    return {
+                        toString: function () {
+                            log.push("target-key-tostring");
+                            return "q";
+                        }
+                    };
+                }
+
+                ([target()[targetKey()]] = source());
+                return log.join('|');
+            })()
+            """);
+
+        Assert.Equal("source|iterator|target|target-key|iterator-step|iterator-done|target-key-tostring|set", result.ToString());
+    }
+
+    [Fact]
     public void Compile_Strict_Accessor_Bodies_Invoke_With_Strict_Mode()
     {
         using var ctx = new JSContext();

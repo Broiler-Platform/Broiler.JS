@@ -197,7 +197,9 @@ public partial class JSArray : JSObject
                         ? null
                         : (property.IsValue
                         ? (JSValue)property.value
-                        : ((JSFunction)property.get).InvokeFunction(new Arguments(array)));
+                        : (property.get is IJSFunction getter
+                            ? getter.InvokeFunction(new Arguments(array))
+                            : JSUndefined.Value));
                     hasValue = true;
                 }
                 else
@@ -224,7 +226,9 @@ public partial class JSArray : JSObject
                         ? null
                         : (property.IsValue
                         ? (JSValue)property.value
-                        : ((JSFunction)property.set).InvokeFunction(new Arguments(array)));
+                        : (property.get is IJSFunction getter
+                            ? getter.InvokeFunction(new Arguments(array))
+                            : JSUndefined.Value));
                 }
                 else
                 {
@@ -247,7 +251,9 @@ public partial class JSArray : JSObject
                         ? null
                         : (property.IsValue
                         ? (JSValue)property.value
-                        : ((JSFunction)property.set).InvokeFunction(new Arguments(array)));
+                        : (property.get is IJSFunction getter
+                            ? getter.InvokeFunction(new Arguments(array))
+                            : JSUndefined.Value));
                 }
                 return @default;
             }

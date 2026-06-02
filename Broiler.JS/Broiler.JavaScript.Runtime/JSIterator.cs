@@ -35,15 +35,16 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
     {
         value = GetIteratorResult();
         var done = value[KeyStrings.done];
-        value = value[KeyStrings.value];
         
         if (done.BooleanValue)
         {
             index = 0;
+            value = JSUndefined.Value;
             hasValue = false;
             return false;
         }
         
+        value = value[KeyStrings.value];
         index = this.index++;
         hasValue = true;
         return true;
@@ -53,11 +54,14 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
     {
         value = GetIteratorResult();
         var done = value[KeyStrings.done];
-        value = value[KeyStrings.value];
         
         if (done.BooleanValue)
+        {
+            value = JSUndefined.Value;
             return false;
+        }
 
+        value = value[KeyStrings.value];
         return true;
     }
 
@@ -65,11 +69,14 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
     {
         value = GetIteratorResult(nextValue);
         var done = value[KeyStrings.done];
-        value = value[KeyStrings.value];
 
         if (done.BooleanValue)
+        {
+            value = JSUndefined.Value;
             return false;
+        }
 
+        value = value[KeyStrings.value];
         return true;
     }
 

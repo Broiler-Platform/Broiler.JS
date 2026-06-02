@@ -91,18 +91,27 @@ partial class JSNumber
     [JSExport(Length = 1, IsConstructor = true)]
     public static JSValue Constructor(in Arguments a)
     {
+        static JSNumber ToNumberValue(JSValue value)
+        {
+            value = value is JSPrimitiveObject primitiveObject ? primitiveObject.ValueOf() : value;
+            value = value is JSObject @object ? @object.ToDefaultPrimitive() : value;
+            return value is JSBigInt bigint
+                ? new JSNumber((double)bigint.value)
+                : new JSNumber(value.DoubleValue);
+        }
+
         if ((JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
         {
             if (a.Length == 0)
                 return Zero;
 
-            return new JSNumber(a[0].DoubleValue);
+            return ToNumberValue(a[0]);
         }
 
         if (a.Length == 0)
             return new JSPrimitiveObject(Zero);
 
-        return new JSPrimitiveObject(new JSNumber(a.Get1().DoubleValue));
+        return new JSPrimitiveObject(ToNumberValue(a.Get1()));
     }
 
     [JSPrototypeMethod]

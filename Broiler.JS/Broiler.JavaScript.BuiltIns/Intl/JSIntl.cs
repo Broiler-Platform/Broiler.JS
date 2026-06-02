@@ -1061,16 +1061,15 @@ public class JSIntlNumberFormat : JSObject
         return JSValue.CreateArray();
     }
 
-    private static double CoerceRangeValue(JSValue value)
+    private static string CoerceRangeValue(JSValue value)
     {
         if (value == null || value.IsUndefined)
             throw JSEngine.NewTypeError("Invalid number range");
 
-        var number = value.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number))
+        if (value.IsNumber && double.IsNaN(value.DoubleValue))
             throw JSEngine.NewRangeError("Invalid number range");
 
-        return number;
+        return value.ToString();
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)

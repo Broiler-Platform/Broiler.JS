@@ -4222,6 +4222,102 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void BigInt_Object_ToPrimitive_Works_For_Bitwise_Update_And_Number()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var i = 10n;
+                i++;
+                var remaining = 10n;
+                remaining -= 3n;
+                return [
+                    Object(0b101n) & 0b011n,
+                    0b011n & { valueOf: function () { return 0b101n; } },
+                    ~Object(0n),
+                    i,
+                    remaining,
+                    Number(10n),
+                    Number((2n ** 53n) + 1n)
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("1|1|-1|11|7|10|9007199254740992", result.ToString());
+    }
+
+    [Fact]
+    public void DataView_BigInt64_Uses_BigInt_Values()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var buffer = new ArrayBuffer(8);
+                var view = new DataView(buffer);
+                var setResult = view.setBigInt64(0, -1n);
+                return [
+                    setResult === undefined,
+                    typeof view.getBigInt64(0),
+                    view.getBigInt64(0) === -1n
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("true|bigint|true", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_NumberFormat_Range_Accepts_BigInt_Arguments()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var nf = new Intl.NumberFormat();
+                return [
+                    typeof nf.formatRange(23n, 12n),
+                    Array.isArray(nf.formatRangeToParts(23n, 12n))
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("string|true", result.ToString());
+    }
+
+    [Fact]
+    public void Array_Index_Accessor_Without_Getter_Enumerates_As_Undefined()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var arr = [];
+                var setValue;
+                Object.defineProperty(arr, "0", {
+                    set: function (value) { setValue = value; },
+                    enumerable: true,
+                    configurable: true
+                });
+
+                var seen = false;
+                for (var key in arr) {
+                    if (key === "0") {
+                        seen = true;
+                    }
+                }
+
+                arr[0] = 42;
+                var desc = Object.getOwnPropertyDescriptor(arr, "0");
+                return [seen, setValue, desc.get === undefined, desc.set !== undefined].join('|');
+            })()
+            """);
+
+        Assert.Equal("true|42|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Array_IsArray_Recognizes_ArrayPrototype_And_Proxy_Targets()
     {
         EnsureBuiltInsLoaded();

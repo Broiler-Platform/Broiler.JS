@@ -48,7 +48,6 @@ partial class FastCompiler
                 if (previous != null)
                     variables.Add(previous.Variable);
 
-                var delta = YExpression.Constant(updateExpression.Operator == UnaryOperator.Increment ? 1d : -1d);
                 var dynamicStatements = new Sequence<YExpression>
                 {
                     YExpression.Assign(current.Variable, JSContextBuilder.ResolveIdentifier(globalKey))
@@ -57,7 +56,11 @@ partial class FastCompiler
                 if (previous != null)
                     dynamicStatements.Add(YExpression.Assign(previous.Variable, current.Expression));
 
-                dynamicStatements.Add(YExpression.Assign(current.Variable, JSValueBuilder.AddDouble(current.Expression, delta)));
+                dynamicStatements.Add(YExpression.Assign(
+                    current.Variable,
+                    updateExpression.Operator == UnaryOperator.Increment
+                        ? JSValueBuilder.Increment(current.Expression)
+                        : JSValueBuilder.Decrement(current.Expression)));
                 dynamicStatements.Add(JSContextBuilder.AssignIdentifier(globalKey, current.Expression));
                 dynamicStatements.Add(previous?.Expression ?? current.Expression);
 
@@ -70,7 +73,11 @@ partial class FastCompiler
                 if (previous != null)
                     withStatements.Add(YExpression.Assign(previous.Variable, current.Expression));
 
-                withStatements.Add(YExpression.Assign(current.Variable, JSValueBuilder.AddDouble(current.Expression, delta)));
+                withStatements.Add(YExpression.Assign(
+                    current.Variable,
+                    updateExpression.Operator == UnaryOperator.Increment
+                        ? JSValueBuilder.Increment(current.Expression)
+                        : JSValueBuilder.Decrement(current.Expression)));
                 withStatements.Add(JSContextBuilder.AssignWithObjectIdentifier(withObject.Expression, globalKey, current.Expression, IsStrictMode));
                 withStatements.Add(previous?.Expression ?? current.Expression);
 
@@ -102,9 +109,9 @@ partial class FastCompiler
 
                 statements.Add(YExpression.Assign(
                     current.Variable,
-                    JSValueBuilder.AddDouble(
-                        current.Expression,
-                        YExpression.Constant(updateExpression.Operator == UnaryOperator.Increment ? 1d : -1d))));
+                    updateExpression.Operator == UnaryOperator.Increment
+                        ? JSValueBuilder.Increment(current.Expression)
+                        : JSValueBuilder.Decrement(current.Expression)));
                 statements.Add(YExpression.Assign(variable.Expression, current.Expression));
                 statements.Add(previous?.Expression ?? current.Expression);
 
@@ -161,8 +168,8 @@ partial class FastCompiler
         }
 
         var newValue = updateExpression.Operator == UnaryOperator.Increment
-            ? JSValueBuilder.AddDouble(right, YExpression.Constant((double)1))
-            : JSValueBuilder.AddDouble(right, YExpression.Constant((double)-1));
+            ? JSValueBuilder.Increment(right)
+            : JSValueBuilder.Decrement(right);
 
         if (updateExpression.Prefix)
         {
