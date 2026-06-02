@@ -1,5 +1,7 @@
 using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.ExpressionCompiler.Expressions;
+using Broiler.JavaScript.ExpressionCompiler.Runtime;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
@@ -64,6 +66,19 @@ public class CompilerTests
             """);
 
         Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void CompileWithNestedLambdas_Resolves_Captured_Parameters_By_Name()
+    {
+        var outerParameter = YExpression.Parameter(typeof(int), "x");
+        var capturedReference = YExpression.Parameter(typeof(int), "x");
+        var inner = YExpression.Lambda<Func<int>>("inner", capturedReference, []);
+        var outer = YExpression.Lambda<Func<int, Func<int>>>("outer", inner, [outerParameter]);
+
+        var compiled = outer.CompileWithNestedLambdas();
+
+        Assert.Equal(7, compiled(7)());
     }
 
     [Fact]

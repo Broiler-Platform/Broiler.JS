@@ -108,6 +108,59 @@ public class LambdaRewriter: YExpressionMapVisitor
     private YLambdaExpression RootExpression;
 
     public Scope Root => lambdaStack.TopItem;
+
+    private static string NormalizeName(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return name;
+
+        var resolvedName = name;
+        if (resolvedName.EndsWith('`'))
+            resolvedName = resolvedName[..^1];
+
+        return resolvedName;
+    }
+
+    private static bool TryFindScopeVariable(Scope scope, YParameterExpression pe, out YParameterExpression variable)
+    {
+        foreach (var candidate in scope.Variables)
+        {
+            if (candidate == pe)
+            {
+                variable = candidate;
+                return true;
+            }
+        }
+
+        var normalizedName = NormalizeName(pe.Name);
+        YParameterExpression matchedVariable = null;
+        var matches = new HashSet<YParameterExpression>(Core.ReferenceEqualityComparer.Instance);
+        foreach (var candidate in scope.Variables)
+        {
+            if (!string.Equals(NormalizeName(candidate.Name), normalizedName, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (!matches.Add(candidate))
+                continue;
+
+            if (matches.Count > 1)
+            {
+                variable = null;
+                return false;
+            }
+
+            matchedVariable = candidate;
+        }
+
+        if (matches.Count == 1)
+        {
+            variable = matchedVariable;
+            return true;
+        }
+
+        variable = null;
+        return false;
+    }
     
     public LambdaRewriter()
     {
@@ -152,20 +205,21 @@ public class LambdaRewriter: YExpressionMapVisitor
 
     private YParameterExpression CheckForClosure(ScopedStack<Scope>.ScopedItem current, YParameterExpression pe, bool setup = false)
     {
-        if (current.Item.Variables.Contains(pe))
+        if (TryFindScopeVariable(current.Item, pe, out var scopedVariable))
         {
             if (setup)
             {
-                return current.Item.Root.GetClosureRepository().Convert(pe);
+                return current.Item.Root.GetClosureRepository().Convert(scopedVariable);
             }
-            return pe;
+
+            return scopedVariable;
         }
         var parent = current.Parent;
         if (parent == null)
             return pe;
 
         var repository = current.Item.Root.GetClosureRepository();
-        return repository.Setup(pe, () => CheckForClosure(parent,pe,true));
+        return repository.Setup(pe, () => CheckForClosure(parent, pe, true));
     }
 
     public static YExpression Rewrite(YLambdaExpression convert)
