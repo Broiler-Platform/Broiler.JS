@@ -165,7 +165,8 @@ partial class FastCompiler
                 // check if there are pending member inits...
                 var paramArray1 = VisitArguments(@this, arguments);
                 FastFunctionScope top = scope.Top;
-                var members = top.MemberInits;
+                var root = top.RootScope;
+                var members = root.MemberInits;
                 var super = top.Super;
 
                 // we need to set this to null
@@ -175,6 +176,7 @@ partial class FastCompiler
                 {
                     var initList = new Sequence<YExpression>() { JSFunctionBuilder.InvokeSuperConstructor(super, @this, paramArray1) };
                     InitMembers(initList, top);
+                    root.MemberInits = null;
                     top.MemberInits = null;
 
                     return YExpression.Block(initList);

@@ -19,7 +19,8 @@ partial class FastCompiler
 
     private YExpression CreateFunction(AstFunctionExpression functionDeclaration, YExpression super = null, bool createClass = false, string className = null,
         IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true, string inferredFunctionName = null,
-        bool createPrototype = true, string[] directEvalPrivateNames = null, IReadOnlyDictionary<AstClassProperty, YExpression> computedMemberNames = null)
+        bool createPrototype = true, string[] directEvalPrivateNames = null, IReadOnlyDictionary<AstClassProperty, YExpression> computedMemberNames = null,
+        bool thisIsUninitialized = false)
     {
         var node = functionDeclaration;
         var functionLength = GetExpectedArgumentCount(functionDeclaration.Params);
@@ -54,7 +55,8 @@ partial class FastCompiler
             memberInits: memberInits,
             previous: functionDeclaration.IsArrowFunction ? current : null,
             directEvalPrivateNames: directEvalPrivateNames ?? previousScope.DirectEvalPrivateNames,
-            computedMemberNames: computedMemberNames));
+        computedMemberNames: computedMemberNames,
+        thisIsUninitialized: thisIsUninitialized));
         {
             cs.InParameterInitializer = previousScope.InParameterInitializer;
             var lexicalScopeVar = cs.Context;
@@ -189,13 +191,16 @@ partial class FastCompiler
             sList.AddRange(s.InitList);
             sList.AddRange(bodyInits);
 
-            if (s.MemberInits != null)
+            if (s.MemberInits != null && !thisIsUninitialized)
                 InitMembers(sList, s);
 
             if (functionDeclaration.Generator)
                 sList.Add(YExpression.Yield(JSUndefinedBuilder.Value));
 
             sList.Add(lambdaBody);
+
+            if (thisIsUninitialized && s.MemberInits != null)
+                InitMembers(sList, s);
 
             if (createClass)
                 sList.Add(YExpression.Return(r, YExpression.Coalesce(s.ThisExpression, JSExceptionBuilder.Throw("this cannot be null"))));

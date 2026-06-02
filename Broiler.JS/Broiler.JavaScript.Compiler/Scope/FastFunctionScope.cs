@@ -288,7 +288,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public FastFunctionScope(FastPool pool, AstFunctionExpression fx, YExpression previousThis = null, YExpression super = null, bool isAsync = false,
         IFastEnumerable<AstClassProperty> memberInits = null, FastFunctionScope previous = null, string[] directEvalPrivateNames = null,
-        IReadOnlyDictionary<AstClassProperty, YExpression> computedMemberNames = null)
+        IReadOnlyDictionary<AstClassProperty, YExpression> computedMemberNames = null, bool thisIsUninitialized = false)
     {
         RootScope = previous ?? this;
         TopScope = this;
@@ -322,7 +322,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         {
             // this is needed to fix closure over lambda
             // this can be improved
-            var t = CreateVariable("this", ArgumentsBuilder.This(Arguments));
+            var t = CreateVariable("this", thisIsUninitialized ? null : ArgumentsBuilder.This(Arguments), initialize: !thisIsUninitialized);
             ThisExpression = t.Expression;
         }
 

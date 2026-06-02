@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Broiler.JavaScript.Engine;
 using BroilerJS;
 using Broiler.JavaScript.ExpressionCompiler;
+using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Generator;
 using Broiler.JavaScript.Runtime;
 using BroilerJS.Utils;
@@ -16,6 +18,17 @@ namespace BroilerJS
 {
     public class Program
     {
+        private static IDisposable CreateSynchronizationContext()
+        {
+            if (SynchronizationContext.Current == null)
+            {
+                SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+                return new DisposableAction(() => SynchronizationContext.SetSynchronizationContext(null));
+            }
+
+            return DisposableAction.Empty;
+        }
+
         public static async Task Main(string[] args)
         {
 
@@ -55,7 +68,8 @@ namespace BroilerJS
             if (scriptHostMode)
             {
                 Environment.SetEnvironmentVariable("BROILER_SCRIPT_HOST", "1");
-                using var context = new JSContext(experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026);
+                using var sc = CreateSynchronizationContext();
+                using var context = new JSContext(SynchronizationContext.Current, experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026);
                 var code = await File.ReadAllTextAsync(file.FullName);
                 // Pass the global context explicitly so top-level `this` resolves to
                 // the same host object that owns the evaluated script. Prefer the

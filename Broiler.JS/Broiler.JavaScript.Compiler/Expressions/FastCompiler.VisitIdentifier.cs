@@ -76,7 +76,13 @@ partial class FastCompiler
             return JSUndefinedBuilder.Value;
 
         if (identifier.Name.Equals("this"))
-            return scope.Top.ThisExpression;
+        {
+            var thisExpression = scope.Top.ThisExpression;
+            if (scope.Top.RootScope.MemberInits != null)
+                return JSValueExtensionsBuilder.Coalesce(thisExpression, JSExceptionBuilder.Throw("Must call super constructor before accessing 'this'"));
+
+            return thisExpression;
+        }
 
         if (identifier.Name.Equals("arguments"))
         {
