@@ -34,6 +34,8 @@ public partial class JSPromise : JSObject, IJSPromise
     private class Reaction
     {
         public JSPromise Promise;
+        public JSValue CapabilityResolve;
+        public JSValue CapabilityReject;
         public ReactionType Type;
         public JSFunctionDelegate Handler;
     }
@@ -304,8 +306,19 @@ public partial class JSPromise : JSObject, IJSPromise
             @return.InitPromise();
         }
 
-        var resolved = new Reaction { Promise = @return, Type = ReactionType.Resolve, Handler = resolve };
-        var rejected = new Reaction { Promise = @return, Type = ReactionType.Reject, Handler = fail };
+        EnqueueThen(resolve, fail, @return, null, null);
+        return @return;
+    }
+
+    internal void Then(JSFunctionDelegate resolve, JSFunctionDelegate fail, JSValue capabilityResolve, JSValue capabilityReject)
+    {
+        EnqueueThen(resolve, fail, null, capabilityResolve, capabilityReject);
+    }
+
+    private void EnqueueThen(JSFunctionDelegate resolve, JSFunctionDelegate fail, JSPromise promise, JSValue capabilityResolve, JSValue capabilityReject)
+    {
+        var resolved = new Reaction { Promise = promise, CapabilityResolve = capabilityResolve, CapabilityReject = capabilityReject, Type = ReactionType.Resolve, Handler = resolve };
+        var rejected = new Reaction { Promise = promise, CapabilityResolve = capabilityResolve, CapabilityReject = capabilityReject, Type = ReactionType.Reject, Handler = fail };
 
         if (state == PromiseState.Pending)
         {
@@ -322,25 +335,43 @@ public partial class JSPromise : JSObject, IJSPromise
         {
             Post(rejected);
         }
-
-        return @return;
     }
 
-    internal static void ValidatePromiseSpeciesConstructor(JSValue promise)
+    internal static JSValue GetPromiseSpeciesConstructor(JSValue promise)
     {
         var constructor = promise[KeyStrings.constructor];
         if (constructor.IsUndefined)
-            return;
+            return (JSEngine.Current as JSObject)?[KeyStrings.Promise] ?? JSUndefined.Value;
 
         if (!constructor.IsObject)
             throw JSEngine.NewTypeError("Promise constructor must be an object");
 
         var species = constructor[(IJSSymbol)BuiltIns.Symbol.JSSymbol.species];
         if (species.IsNullOrUndefined)
-            return;
+            return (JSEngine.Current as JSObject)?[KeyStrings.Promise] ?? JSUndefined.Value;
 
         if (species is not IJSFunction)
             throw JSEngine.NewTypeError("Promise species constructor is not a constructor");
+
+        return species;
+    }
+
+    internal static void ValidatePromiseSpeciesConstructor(JSValue promise) => _ = GetPromiseSpeciesConstructor(promise);
+
+    private void ResolveReaction(Reaction reaction, JSValue value)
+    {
+        if (reaction.CapabilityResolve != null)
+            reaction.CapabilityResolve.InvokeFunction(new Arguments(JSUndefined.Value, value));
+        else
+            reaction.Promise?.Resolve(value);
+    }
+
+    private void RejectReaction(Reaction reaction, JSValue value)
+    {
+        if (reaction.CapabilityReject != null)
+            reaction.CapabilityReject.InvokeFunction(new Arguments(JSUndefined.Value, value));
+        else
+            reaction.Promise?.Reject(value);
     }
 
     private void Post(Reaction reaction) => Post(() =>
@@ -350,20 +381,20 @@ public partial class JSPromise : JSObject, IJSPromise
             try
             {
                 var handlerResult = reaction.Handler(new Arguments(JSUndefined.Value, result));
-                reaction.Promise?.Resolve(handlerResult);
+                ResolveReaction(reaction, handlerResult);
             }
             catch (Exception ex)
             {
-                reaction.Promise.Reject(JSException.JSErrorFrom(ex));
+                RejectReaction(reaction, JSException.JSErrorFrom(ex));
             }
         }
         else if (reaction.Type == ReactionType.Resolve)
         {
-            reaction.Promise?.Resolve(result ?? JSUndefined.Value);
+            ResolveReaction(reaction, result ?? JSUndefined.Value);
         }
         else
         {
-            reaction.Promise?.Reject(result ?? JSUndefined.Value);
+            RejectReaction(reaction, result ?? JSUndefined.Value);
         }
     });
 

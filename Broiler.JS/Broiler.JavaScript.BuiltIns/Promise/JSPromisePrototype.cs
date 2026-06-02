@@ -11,7 +11,7 @@ public partial class JSPromise
     [JSExport("then")]
     public JSValue Then(in Arguments a)
     {
-        ValidatePromiseSpeciesConstructor(a.This);
+        var constructor = GetPromiseSpeciesConstructor(a.This);
 
         var (success, fail) = a.Get2();
 
@@ -33,7 +33,13 @@ public partial class JSPromise
             failHandler = failFx.f;
         }
 
-        return Then(successHandler, failHandler);
+        if (IsDefaultPromiseConstructor(constructor))
+            return Then(successHandler, failHandler);
+
+        return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
+        {
+            Then(successHandler, failHandler, resolve, reject);
+        });
     }
 
     [JSExport("catch")]
