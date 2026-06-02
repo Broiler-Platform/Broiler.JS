@@ -461,6 +461,15 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_UnicodeIdentifierEscape_Surrogate_Is_SyntaxError_Not_ArgumentOutOfRange()
+    {
+        using var ctx = new JSContext();
+        var ex = Assert.ThrowsAny<Exception>(() => ctx.Eval("""var \u{D800} = 1;"""));
+
+        Assert.IsNotType<ArgumentOutOfRangeException>(ex);
+    }
+
+    [Fact]
     public void Compile_ArrowFunction_ArrayDestructuringElisions_Work_With_BareYield_Generator()
     {
         using var ctx = new JSContext();

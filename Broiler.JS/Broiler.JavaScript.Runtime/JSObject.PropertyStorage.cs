@@ -836,13 +836,6 @@ public partial class JSObject
 
     public virtual JSValue DefineProperty(in KeyString name, JSObject pd)
     {
-        if (name.Key == KeyStrings.length.Key && pd.GetInternalProperty(KeyStrings.value, false).IsEmpty)
-        {
-            var currentLength = Length;
-            if (currentLength >= 0)
-                pd.FastAddValue(KeyStrings.value, JSValue.CreateNumber(currentLength), JSPropertyAttributes.EnumerableConfigurableValue);
-        }
-
         var key = name.Key;
         ref var ownProperties = ref GetOwnProperties();
         ref var old = ref ownProperties.GetValue(name.Key);
@@ -851,6 +844,17 @@ public partial class JSObject
 
         if (!old.IsEmpty)
         {
+            if (name.Key == KeyStrings.length.Key
+                && old.IsValue
+                && pd.GetInternalProperty(KeyStrings.value, false).IsEmpty
+                && pd.GetInternalProperty(KeyStrings.get, false).IsEmpty
+                && pd.GetInternalProperty(KeyStrings.set, false).IsEmpty)
+            {
+                var currentLength = Length;
+                if (currentLength >= 0)
+                    pd.FastAddValue(KeyStrings.value, JSValue.CreateNumber(currentLength), JSPropertyAttributes.EnumerableConfigurableValue);
+            }
+
             CompletePropertyDescriptor(pd, in old);
             if (!IsCompatiblePropertyRedefinition(in old, pd))
                 throw NewTypeError("Cannot redefine property");
