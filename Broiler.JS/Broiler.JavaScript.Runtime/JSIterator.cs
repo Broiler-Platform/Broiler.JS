@@ -8,14 +8,6 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
     private uint index = 0;
     private readonly JSValue nextMethod = iterator[KeyStrings.next];
 
-    private readonly JSValue AwaitIfNeeded(JSValue result)
-    {
-        if (awaitResult && result is IJSPromise promise)
-            return promise.Task.GetAwaiter().GetResult();
-
-        return result;
-    }
-
     private readonly JSValue ValidateIteratorResult(JSValue result, string methodName)
     {
         result = AwaitIfNeeded(result);
@@ -23,6 +15,14 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
             throw JSValue.NewTypeError($"Iterator {methodName} result is not an object");
 
         return result;
+    }
+
+    private readonly JSValue AwaitIfNeeded(JSValue value)
+    {
+        if (awaitResult && value is IJSPromise promise)
+            return promise.Task.GetAwaiter().GetResult();
+
+        return value;
     }
 
     private readonly JSValue GetIteratorResult()
@@ -35,7 +35,7 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
     {
         value = GetIteratorResult();
         var done = value[KeyStrings.done];
-        value = value[KeyStrings.value];
+        value = AwaitIfNeeded(value[KeyStrings.value]);
         
         if (done.BooleanValue)
         {
@@ -53,7 +53,7 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
     {
         value = GetIteratorResult();
         var done = value[KeyStrings.done];
-        value = value[KeyStrings.value];
+        value = AwaitIfNeeded(value[KeyStrings.value]);
         
         if (done.BooleanValue)
             return false;
@@ -65,7 +65,7 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
     {
         value = GetIteratorResult(nextValue);
         var done = value[KeyStrings.done];
-        value = value[KeyStrings.value];
+        value = AwaitIfNeeded(value[KeyStrings.value]);
 
         if (done.BooleanValue)
             return false;
@@ -84,7 +84,7 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
             return false;
         }
 
-        value = value[KeyStrings.value];
+        value = AwaitIfNeeded(value[KeyStrings.value]);
         return true;
     }
 
@@ -96,7 +96,7 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
         if (done.BooleanValue)
             return @default;
 
-        return value[KeyStrings.value];
+        return AwaitIfNeeded(value[KeyStrings.value]);
     }
 
     public readonly JSValue Return(JSValue value)

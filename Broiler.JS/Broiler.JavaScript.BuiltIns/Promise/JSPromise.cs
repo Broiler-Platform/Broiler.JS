@@ -171,6 +171,8 @@ public partial class JSPromise : JSObject, IJSPromise
         if (state != PromiseState.Pending)
             return;
 
+        value ??= JSUndefined.Value;
+
         if (value == this)
         {
             Reject(JSEngine.NewTypeError("A promise cannot be resolved with itself").Error);
@@ -228,6 +230,8 @@ public partial class JSPromise : JSObject, IJSPromise
     {
         if (state != PromiseState.Pending)
             return;
+
+        value ??= JSUndefined.Value;
 
         state = PromiseState.Rejected;
         result = value;

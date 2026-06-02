@@ -5,6 +5,7 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Storage;
+using Broiler.JavaScript.BuiltIns.Promise;
 
 namespace Broiler.JavaScript.BuiltIns.Function;
 
@@ -52,13 +53,15 @@ public class JSAsyncFunction
         try
         {
             if (!gen.MoveNext(lastResult, out var r))
-                return JSEngine.CreateResolvedOrRejectedPromise(r, true);
+                return r ?? JSUndefined.Value;
 
             var then = r[KeyStrings.then];
             if (then.IsUndefined)
-                return JSEngine.CreateResolvedOrRejectedPromise(r, true);
+                return r ?? JSUndefined.Value;
 
             var continuationContext = (JSEngine.Current as JSContext)?.synchronizationContext;
+            var executionContext = JSEngine.Current as IJSExecutionContext;
+            var continuationTop = executionContext?.Top;
 
             return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
             {
@@ -76,13 +79,39 @@ public class JSAsyncFunction
                         var resumeValue = a.Get1();
                         Queue(() =>
                         {
+                            var previousTop = executionContext?.Top;
                             try
                             {
-                                resolve(ToPromise(gen, resumeValue));
+                                if (executionContext != null)
+                                    executionContext.Top = continuationTop;
+                                var awaited = ToPromise(gen, resumeValue);
+                                if (awaited is JSPromise awaitedPromise)
+                                {
+                                    awaitedPromise.Then(
+                                        (in Arguments a1) =>
+                                        {
+                                            resolve(a1.Get1());
+                                            return JSUndefined.Value;
+                                        },
+                                        (in Arguments a1) =>
+                                        {
+                                            reject(a1.Get1());
+                                            return JSUndefined.Value;
+                                        });
+                                }
+                                else
+                                {
+                                    resolve(awaited);
+                                }
                             }
                             catch (Exception ex)
                             {
                                 reject(JSException.JSErrorFrom(ex));
+                            }
+                            finally
+                            {
+                                if (executionContext != null)
+                                    executionContext.Top = previousTop;
                             }
                         });
                         return JSUndefined.Value;
@@ -92,14 +121,40 @@ public class JSAsyncFunction
                         var thrownValue = a.Get1();
                         Queue(() =>
                         {
+                            var previousTop = executionContext?.Top;
                             try
                             {
+                                if (executionContext != null)
+                                    executionContext.Top = continuationTop;
                                 var thrownResult = gen.Throw(thrownValue);
-                                resolve(ToPromise(gen, thrownResult));
+                                var awaited = ToPromise(gen, thrownResult);
+                                if (awaited is JSPromise awaitedPromise)
+                                {
+                                    awaitedPromise.Then(
+                                        (in Arguments a1) =>
+                                        {
+                                            resolve(a1.Get1());
+                                            return JSUndefined.Value;
+                                        },
+                                        (in Arguments a1) =>
+                                        {
+                                            reject(a1.Get1());
+                                            return JSUndefined.Value;
+                                        });
+                                }
+                                else
+                                {
+                                    resolve(awaited);
+                                }
                             }
                             catch (Exception ex)
                             {
                                 reject(JSException.JSErrorFrom(ex));
+                            }
+                            finally
+                            {
+                                if (executionContext != null)
+                                    executionContext.Top = previousTop;
                             }
                         });
                         return JSUndefined.Value;

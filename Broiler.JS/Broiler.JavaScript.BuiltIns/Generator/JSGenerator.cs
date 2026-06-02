@@ -8,6 +8,7 @@ using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.Engine.Core;
+using System.Threading;
 
 namespace Broiler.JavaScript.BuiltIns.Generator;
 
@@ -187,7 +188,8 @@ public partial class JSGenerator : JSObject, IJSGenerator
         try
         {
             executing = true;
-            // c.Top = cg.StackItem;
+            if (c != null && cg?.StackItem != null)
+                c.Top = cg.StackItem;
             cg.Next(replaceOld, out item, out done);
             value = item;
 
@@ -242,6 +244,8 @@ public partial class JSGenerator : JSObject, IJSGenerator
         try
         {
             executing = true;
+            if (c != null && cg?.StackItem != null)
+                c.Top = cg.StackItem;
             cg.Next(replaceOld, out value, out done);
             return ValueObject;
         }
@@ -360,26 +364,113 @@ public partial class JSGenerator : JSObject, IJSGenerator
     public JSValue Next(in Arguments a)
     {
         var nextValue = a.Length == 0 ? null : a.Get1();
-        return IsAsyncGenerator
-            ? AsAsyncIteratorResult(() => Next(nextValue))
-            : Next(nextValue);
+        if (!IsAsyncGenerator)
+            return Next(nextValue);
+
+        var synchronizationContext = SynchronizationContext.Current;
+        var executionContext = JSEngine.Current as IJSExecutionContext;
+        return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
+        {
+            void Complete()
+            {
+                var previousTop = executionContext?.Top;
+                try
+                {
+                    if (executionContext != null && cg?.StackItem != null)
+                        executionContext.Top = cg.StackItem;
+                    resolve(Next(nextValue));
+                }
+                catch (Exception ex)
+                {
+                    reject(JSException.JSErrorFrom(ex));
+                }
+                finally
+                {
+                    if (executionContext != null)
+                        executionContext.Top = previousTop;
+                }
+            }
+
+            if (synchronizationContext != null)
+                synchronizationContext.Post(_ => Complete(), null);
+            else
+                ThreadPool.QueueUserWorkItem(_ => Complete());
+        });
     }
 
     [JSExport("return", Length = 1)]
     public JSValue Return(in Arguments a)
     {
         var returnValue = a.Get1();
-        return IsAsyncGenerator
-            ? AsAsyncIteratorResult(() => Return(returnValue))
-            : Return(returnValue);
+        if (!IsAsyncGenerator)
+            return Return(returnValue);
+
+        var synchronizationContext = SynchronizationContext.Current;
+        var executionContext = JSEngine.Current as IJSExecutionContext;
+        return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
+        {
+            void Complete()
+            {
+                var previousTop = executionContext?.Top;
+                try
+                {
+                    if (executionContext != null && cg?.StackItem != null)
+                        executionContext.Top = cg.StackItem;
+                    resolve(Return(returnValue));
+                }
+                catch (Exception ex)
+                {
+                    reject(JSException.JSErrorFrom(ex));
+                }
+                finally
+                {
+                    if (executionContext != null)
+                        executionContext.Top = previousTop;
+                }
+            }
+
+            if (synchronizationContext != null)
+                synchronizationContext.Post(_ => Complete(), null);
+            else
+                ThreadPool.QueueUserWorkItem(_ => Complete());
+        });
     }
 
     [JSExport("throw", Length = 1)]
     public JSValue Throw(in Arguments a)
     {
         var throwValue = a.Get1();
-        return IsAsyncGenerator
-            ? AsAsyncIteratorResult(() => Throw(throwValue))
-            : Throw(throwValue);
+        if (!IsAsyncGenerator)
+            return Throw(throwValue);
+
+        var synchronizationContext = SynchronizationContext.Current;
+        var executionContext = JSEngine.Current as IJSExecutionContext;
+        return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
+        {
+            void Complete()
+            {
+                var previousTop = executionContext?.Top;
+                try
+                {
+                    if (executionContext != null && cg?.StackItem != null)
+                        executionContext.Top = cg.StackItem;
+                    resolve(Throw(throwValue));
+                }
+                catch (Exception ex)
+                {
+                    reject(JSException.JSErrorFrom(ex));
+                }
+                finally
+                {
+                    if (executionContext != null)
+                        executionContext.Top = previousTop;
+                }
+            }
+
+            if (synchronizationContext != null)
+                synchronizationContext.Post(_ => Complete(), null);
+            else
+                ThreadPool.QueueUserWorkItem(_ => Complete());
+        });
     }
 }
