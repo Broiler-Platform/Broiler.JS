@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Extensions;
@@ -112,33 +111,22 @@ public partial class JSArray
     internal static JSValue ToLocaleString(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
-        var (locale, format) = a.Get2();
-        StringBuilder sb = new();
+        var length = GetArrayLikeLength(@this);
+        var methodArguments = a.ToArray();
+        var toLocaleStringKey = KeyStrings.GetOrCreate("toLocaleString");
+        var sb = new StringBuilder();
 
-        var def = "N0";
-
-        string strFormat = format.IsNullOrUndefined ? def : (format.IsString ? format.ToString() :
-            throw JSEngine.NewTypeError("Options not supported, use .Net String Formats")
-            );
-
-        CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.ToString());
-
-        // Group separator based on Culture Info.
-        var separator = culture.TextInfo.ListSeparator;
-
-        bool first = true;
-        var en = @this.GetElementEnumerator();
-
-        while (en.MoveNext(out var n))
+        for (uint index = 0; index < length; index++)
         {
-            if (!first)
-            {
-                //sb.Append(',');
-                sb.Append(separator);
-            }
+            if (index != 0)
+                sb.Append(',');
 
-            first = false;
-            sb.Append(n.ToLocaleString(strFormat, culture));
+            var element = @this[index];
+            if (element.IsNullOrUndefined)
+                continue;
+
+            var localized = element.InvokeMethod(toLocaleStringKey, methodArguments);
+            sb.Append(ToStringPrimitive(localized).ToString());
         }
 
         return new JSString(sb.ToString());
