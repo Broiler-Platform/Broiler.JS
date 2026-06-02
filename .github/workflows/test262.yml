@@ -14,8 +14,8 @@ name: test262
 #     files and runs test262 only for those scopes first.  The full suite
 #     executes only when the incremental job succeeds.
 #   * On completion merges shard logs and uses the LogParser
-#     `--most-common-problem` mode to file a focused GitHub issue for the
-#     most impactful failure category when `ISSUE_TOKEN` is configured.
+#     `--most-common-problems` mode to file a focused GitHub issue for the
+#     three most common failure categories when `ISSUE_TOKEN` is configured.
 
 on:
   push:
@@ -883,16 +883,16 @@ jobs:
           issue_body_path="$LOGPARSER_OUTPUT_DIR/issue.md"
           issue_json_path="$LOGPARSER_OUTPUT_DIR/issue.json"
 
-          # --most-common-problem narrows the report to the highest-impact
-          # type/context/message combination so the emitted markdown can be
+          # --most-common-problems narrows the report to the three most common
+          # type/context/message combinations so the emitted markdown can be
           # posted directly as a focused GitHub issue body.
           dotnet run --project logs/LogParser -- \
             "$LOGPARSER_LOGS_DIR" \
-            --most-common-problem > "$issue_body_path"
+            --most-common-problems > "$issue_body_path"
 
           dotnet run --project logs/LogParser -- \
             "$LOGPARSER_LOGS_DIR" \
-            --most-common-problem \
+            --most-common-problems \
             --output json > "$issue_json_path"
 
           ISSUE_JSON_PATH="$issue_json_path" python <<'PY'
@@ -903,8 +903,8 @@ jobs:
           MAX_ISSUE_TITLE_LENGTH = 256
 
           issue_json = json.loads(Path(os.environ["ISSUE_JSON_PATH"]).read_text(encoding="utf-8"))
-          problem = issue_json.get("problem")
-          should_create_issue = problem is not None
+          problems = issue_json.get("problems") or []
+          should_create_issue = len(problems) > 0
           issue_token_available = bool(os.environ.get("ISSUE_TOKEN", "").strip())
 
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
@@ -912,10 +912,11 @@ jobs:
               handle.write(f"issue_token_available={'true' if issue_token_available else 'false'}\n")
 
               if should_create_issue:
+                  problem = problems[0]
                   problem_type = (problem.get("type") or "unknown type").strip()
                   context = (problem.get("context") or "unknown context").strip()
                   message = (problem.get("message") or "").strip()
-                  title = f"test262 full script-host common failure: {problem_type} @ {context}"
+                  title = f"test262 full script-host common failures: {problem_type} @ {context}"
                   if message:
                       title = f"{title} - {message}"
 

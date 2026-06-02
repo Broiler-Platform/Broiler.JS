@@ -372,6 +372,7 @@ public class LogSummaryBuilderTests
         Assert.Null(options.ContextFilter);
         Assert.Null(options.MessageFilter);
         Assert.False(options.MostCommonProblem);
+        Assert.False(options.MostCommonProblems);
     }
 
     [Fact]
@@ -381,6 +382,15 @@ public class LogSummaryBuilderTests
             Program.ParseOptions(["--most-common-problem", "--type", "System.Exception", "sample.json"]));
 
         Assert.Contains("--most-common-problem", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ParseOptions_RejectsCombiningMostCommonProblemsWithFilters()
+    {
+        var exception = Assert.Throws<ArgumentException>(() =>
+            Program.ParseOptions(["--most-common-problems", "--type", "System.Exception", "sample.json"]));
+
+        Assert.Contains("--most-common-problems", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -673,6 +683,137 @@ public class LogSummaryBuilderTests
     }
 
     [Fact]
+    public void FormatMostCommonProblems_EmitsGithubIssueMarkdownForTopThreeProblems()
+    {
+        using var fixture = TempLogFile.Create("""
+        {
+          "suiteRef": "fixture-most-common-problems",
+          "broilerDll": "fixture/BroilerJS.dll",
+          "executed": 6,
+          "passed": 0,
+          "failed": 6,
+          "skipped": 0,
+          "results": [
+            {
+              "path": "test/annexB/alpha.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Common failure\nat Throw in /repo/JSException.cs:line 114\n"
+            },
+            {
+              "path": "test/annexB/beta.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Common failure\nat Throw in /repo/JSException.cs:line 114\n"
+            },
+            {
+              "path": "test/annexB/gamma.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Common failure\nat Throw in /repo/JSException.cs:line 114\n"
+            },
+            {
+              "path": "test/built-ins/Array/from.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Other failure\nat Handle in /repo/JSException.cs:line 140\n"
+            },
+            {
+              "path": "test/built-ins/Array/map.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Other failure\nat Handle in /repo/JSException.cs:line 140\n"
+            },
+            {
+              "path": "test/language/expressions/assignment.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. System.InvalidOperationException: Third failure\nat Throw in /repo/Program.cs:line 10\n"
+            }
+          ]
+        }
+        """);
+
+        var formatted = LogReportFormatter.FormatMostCommonProblems(
+        [
+            LogSummaryBuilder.ParseAndSummarize(fixture.Path)
+        ]);
+
+        Assert.Contains("### Description", formatted, StringComparison.Ordinal);
+        Assert.Contains("Three most common exceptions detected in recent logs.", formatted, StringComparison.Ordinal);
+        Assert.Contains("#### Problem 1", formatted, StringComparison.Ordinal);
+        Assert.Contains("#### Problem 2", formatted, StringComparison.Ordinal);
+        Assert.Contains("#### Problem 3", formatted, StringComparison.Ordinal);
+        Assert.Contains("- **Exception type:** Broiler.JavaScript.Runtime.JSException", formatted, StringComparison.Ordinal);
+        Assert.Contains("- **Exception type:** System.InvalidOperationException", formatted, StringComparison.Ordinal);
+        Assert.Contains("- **Line number:** 114", formatted, StringComparison.Ordinal);
+        Assert.Contains("- **Line number:** 140", formatted, StringComparison.Ordinal);
+        Assert.Contains("- **Line number:** 10", formatted, StringComparison.Ordinal);
+        Assert.Contains("  - test/annexB/alpha.js", formatted, StringComparison.Ordinal);
+        Assert.Contains("  - test/built-ins/Array/from.js", formatted, StringComparison.Ordinal);
+        Assert.Contains("  - test/language/expressions/assignment.js", formatted, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FormatMostCommonProblemsJson_SerializesStructuredProblemReport()
+    {
+        using var fixture = TempLogFile.Create("""
+        {
+          "suiteRef": "fixture-most-common-problems",
+          "broilerDll": "fixture/BroilerJS.dll",
+          "executed": 6,
+          "passed": 0,
+          "failed": 6,
+          "skipped": 0,
+          "results": [
+            {
+              "path": "test/annexB/alpha.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Common failure\nat Throw in /repo/JSException.cs:line 114\n"
+            },
+            {
+              "path": "test/annexB/beta.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Common failure\nat Throw in /repo/JSException.cs:line 114\n"
+            },
+            {
+              "path": "test/annexB/gamma.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Common failure\nat Throw in /repo/JSException.cs:line 114\n"
+            },
+            {
+              "path": "test/built-ins/Array/from.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Other failure\nat Handle in /repo/JSException.cs:line 140\n"
+            },
+            {
+              "path": "test/built-ins/Array/map.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Other failure\nat Handle in /repo/JSException.cs:line 140\n"
+            },
+            {
+              "path": "test/language/expressions/assignment.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. System.InvalidOperationException: Third failure\nat Throw in /repo/Program.cs:line 10\n"
+            }
+          ]
+        }
+        """);
+
+        var json = LogReportFormatter.FormatMostCommonProblemsJson(
+        [
+            LogSummaryBuilder.ParseAndSummarize(fixture.Path)
+        ]);
+
+        Assert.Contains("\"outputFormat\": \"json\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"problems\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"type\": \"Broiler.JavaScript.Runtime.JSException\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"type\": \"System.InvalidOperationException\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"context\": \"Throw\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"context\": \"Handle\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"message\": \"Common failure\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"message\": \"Other failure\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"count\": 3", json, StringComparison.Ordinal);
+        Assert.Contains("\"count\": 2", json, StringComparison.Ordinal);
+        Assert.Contains("\"count\": 1", json, StringComparison.Ordinal);
+        Assert.Contains("\"occurrences\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void FindHighestImpactProblem_PrefersHigherAreaWeightOverRawCount()
     {
         // 3 annexB hits vs 2 language hits: language wins because area weight 3.0 * 2 = 6 > 1.0 * 3 = 3.
@@ -893,6 +1034,16 @@ public class LogSummaryBuilderTests
         Assert.False(options.MostCommonProblem);
     }
 
+    [Theory]
+    [InlineData("--most-common-problems", "sample.json")]
+    public void ParseOptions_ReadsMostCommonProblemsFlag(string flag, string input)
+    {
+        var options = Program.ParseOptions([flag, input]);
+
+        Assert.True(options.MostCommonProblems);
+        Assert.False(options.MostCommonProblem);
+    }
+
     [Fact]
     public void ParseOptions_RejectsCombiningHighestImpactWithFilters()
     {
@@ -910,6 +1061,16 @@ public class LogSummaryBuilderTests
 
         Assert.Contains("--highest-impact-problem", exception.Message, StringComparison.Ordinal);
         Assert.Contains("--most-common-problem", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ParseOptions_RejectsCombiningMostCommonFlags()
+    {
+        var exception = Assert.Throws<ArgumentException>(() =>
+            Program.ParseOptions(["--most-common-problem", "--most-common-problems", "sample.json"]));
+
+        Assert.Contains("--most-common-problem", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("--most-common-problems", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]

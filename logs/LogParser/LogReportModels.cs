@@ -29,6 +29,15 @@ public sealed class MostCommonProblemReport
 }
 
 /// <summary>
+/// Structured report emitted when the most common problems option is active.
+/// </summary>
+public sealed class MostCommonProblemsReport
+{
+    public required string OutputFormat { get; init; }
+    public required IReadOnlyList<MostCommonProblemMatch> Problems { get; init; }
+}
+
+/// <summary>
 /// The most frequently occurring problem after grouping by type, context, and message.
 /// </summary>
 public sealed class MostCommonProblemMatch

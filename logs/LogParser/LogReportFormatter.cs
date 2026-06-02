@@ -50,30 +50,7 @@ public static class LogReportFormatter
         builder.AppendLine("### Description");
         builder.AppendLine("Most common exception detected in recent logs.");
         builder.AppendLine();
-        builder.AppendLine($"- **Exception type:** {report.Problem.Type}");
-        builder.AppendLine($"- **Line number:** {FormatLineNumber(report.Problem.Example.LineNumber)}");
-        builder.AppendLine($"- **Context:** {report.Problem.Context}");
-        builder.AppendLine($"- **Message:** {report.Problem.Message}");
-        builder.AppendLine("- **Sample filenames/paths:**");
-
-        var samplePaths = report.Problem.Occurrences
-            .Select(occurrence => occurrence.Path)
-            .Where(path => !string.IsNullOrWhiteSpace(path))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(20)
-            .ToArray();
-
-        if (samplePaths.Length == 0)
-        {
-            builder.AppendLine("  - (no sample files available)");
-        }
-        else
-        {
-            foreach (var samplePath in samplePaths)
-            {
-                builder.AppendLine($"  - {samplePath}");
-            }
-        }
+        AppendMostCommonProblem(builder, report.Problem);
 
         return builder.ToString().TrimEnd();
     }
@@ -81,6 +58,34 @@ public static class LogReportFormatter
     public static string FormatMostCommonProblemJson(IEnumerable<LogFileSummary> fileSummaries)
     {
         return JsonSerializer.Serialize(CreateMostCommonProblemReport(fileSummaries, outputFormat: "json"), JsonOptions);
+    }
+
+    public static string FormatMostCommonProblems(IEnumerable<LogFileSummary> fileSummaries)
+    {
+        var report = CreateMostCommonProblemsReport(fileSummaries, outputFormat: "text");
+        var builder = new StringBuilder();
+
+        if (report.Problems.Count == 0)
+        {
+            return "### Description\nMost common exceptions detected in recent logs.\n\n- No parsed exceptions were found.";
+        }
+
+        builder.AppendLine("### Description");
+        builder.AppendLine("Three most common exceptions detected in recent logs.");
+
+        for (var i = 0; i < report.Problems.Count; i++)
+        {
+            builder.AppendLine();
+            builder.AppendLine($"#### Problem {i + 1}");
+            AppendMostCommonProblem(builder, report.Problems[i]);
+        }
+
+        return builder.ToString().TrimEnd();
+    }
+
+    public static string FormatMostCommonProblemsJson(IEnumerable<LogFileSummary> fileSummaries)
+    {
+        return JsonSerializer.Serialize(CreateMostCommonProblemsReport(fileSummaries, outputFormat: "json"), JsonOptions);
     }
 
     public static string FormatHighestImpactProblem(IEnumerable<LogFileSummary> fileSummaries)
@@ -279,6 +284,18 @@ public static class LogReportFormatter
         };
     }
 
+    internal static MostCommonProblemsReport CreateMostCommonProblemsReport(
+        IEnumerable<LogFileSummary> fileSummaries,
+        string outputFormat)
+    {
+        var summaries = fileSummaries.ToArray();
+        return new MostCommonProblemsReport
+        {
+            OutputFormat = outputFormat,
+            Problems = LogSummaryBuilder.FindMostCommonProblems(summaries.SelectMany(summary => summary.LogRun.Results))
+        };
+    }
+
     internal static HighestImpactProblemReport CreateHighestImpactProblemReport(
         IEnumerable<LogFileSummary> fileSummaries,
         string outputFormat)
@@ -344,6 +361,33 @@ public static class LogReportFormatter
             {
                 builder.AppendLine("        []");
             }
+        }
+    }
+
+    private static void AppendMostCommonProblem(StringBuilder builder, MostCommonProblemMatch problem)
+    {
+        builder.AppendLine($"- **Exception type:** {problem.Type}");
+        builder.AppendLine($"- **Line number:** {FormatLineNumber(problem.Example.LineNumber)}");
+        builder.AppendLine($"- **Context:** {problem.Context}");
+        builder.AppendLine($"- **Message:** {problem.Message}");
+        builder.AppendLine("- **Sample filenames/paths:**");
+
+        var samplePaths = problem.Occurrences
+            .Select(occurrence => occurrence.Path)
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(20)
+            .ToArray();
+
+        if (samplePaths.Length == 0)
+        {
+            builder.AppendLine("  - (no sample files available)");
+            return;
+        }
+
+        foreach (var samplePath in samplePaths)
+        {
+            builder.AppendLine($"  - {samplePath}");
         }
     }
 

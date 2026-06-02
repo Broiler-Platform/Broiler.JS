@@ -265,6 +265,45 @@ public static class LogSummaryBuilder
         };
     }
 
+    public static IReadOnlyList<MostCommonProblemMatch> FindMostCommonProblems(
+        IEnumerable<LogEntry> entries,
+        int limit = 3)
+    {
+        if (limit <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(limit), limit, "Limit must be greater than zero.");
+        }
+
+        var allEntries = entries.ToArray();
+        var exceptionEntries = allEntries
+            .Where(entry => entry.Exception is not null)
+            .Select(entry => (Entry: entry, Exception: entry.Exception!))
+            .ToArray();
+
+        if (exceptionEntries.Length == 0)
+        {
+            return [];
+        }
+
+        return exceptionEntries
+            .GroupBy(item => item.Exception.Type, StringComparer.OrdinalIgnoreCase)
+            .SelectMany(typeGroup => typeGroup
+                .GroupBy(item => item.Exception.Context ?? UnknownContext, StringComparer.OrdinalIgnoreCase)
+                .SelectMany(contextGroup => contextGroup
+                    .GroupBy(item => item.Exception.Message, StringComparer.OrdinalIgnoreCase)
+                    .Select(messageGroup => CreateMostCommonProblemMatch(
+                        allEntries.Length,
+                        typeGroup.Key,
+                        contextGroup.Key,
+                        messageGroup))))
+            .OrderByDescending(problem => problem.Count)
+            .ThenBy(problem => problem.Type, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(problem => problem.Context, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(problem => problem.Message, StringComparer.OrdinalIgnoreCase)
+            .Take(limit)
+            .ToArray();
+    }
+
     /// <summary>
     /// Path-area weight used to estimate the relative impact of a failure on
     /// the overall test surface.  The weights are intentionally simple proxy
@@ -583,6 +622,39 @@ public static class LogSummaryBuilder
         }
 
         return null;
+    }
+
+    private static MostCommonProblemMatch CreateMostCommonProblemMatch(
+        int totalEntryCount,
+        string type,
+        string context,
+        IEnumerable<(LogEntry Entry, ParsedException Exception)> entries)
+    {
+        var occurrences = entries
+            .Select(item => new LoggedException
+            {
+                Path = item.Entry.Path,
+                Type = item.Exception.Type,
+                Message = item.Exception.Message,
+                Context = item.Exception.Context,
+                LineNumber = item.Exception.LineNumber,
+                LogLine = item.Exception.LogLine
+            })
+            .OrderBy(exception => exception.Path, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(exception => exception.LineNumber ?? int.MaxValue)
+            .ThenBy(exception => exception.LogLine, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return new MostCommonProblemMatch
+        {
+            Type = type,
+            Context = context,
+            Message = occurrences[0].Message,
+            Count = occurrences.Length,
+            OccurrenceRate = totalEntryCount == 0 ? 0 : occurrences.Length / (double)totalEntryCount,
+            Example = occurrences[0],
+            Occurrences = occurrences
+        };
     }
 
     /// <summary>

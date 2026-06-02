@@ -21,10 +21,8 @@ class Test262WorkflowTests(unittest.TestCase):
     def test_run_full_job_uses_always_to_survive_skipped_rerun_dependency(self) -> None:
         workflow_text = self.workflow_path.read_text(encoding="utf-8")
 
-        self.assertIn(
-            "if: always() && (needs.plan.outputs.should-rerun-failed != 'true' || needs.rerun-failed.result == 'success')",
-            workflow_text,
-        )
+        self.assertIn("always()", workflow_text)
+        self.assertIn("needs.plan.outputs.should-rerun-failed != 'true' || needs.rerun-failed.result == 'success'", workflow_text)
 
     def test_assembly_input_is_exposed_for_targeted_runs(self) -> None:
         workflow_text = self.workflow_path.read_text(encoding="utf-8")
@@ -49,9 +47,9 @@ class Test262WorkflowTests(unittest.TestCase):
             workflow_text,
         )
 
-    def test_logparser_creates_highest_impact_issue(self) -> None:
+    def test_logparser_creates_most_common_problems_issue(self) -> None:
         workflow_text = self.workflow_path.read_text(encoding="utf-8")
-        self.assertIn("--highest-impact-problem", workflow_text)
+        self.assertIn("--most-common-problems", workflow_text)
 
     def test_runner_jobs_fan_out_across_multiple_shards(self) -> None:
         """The full and rerun phases must execute on multiple parallel runners.

@@ -36,6 +36,7 @@ internal static class Program
         var contextFilter = default(string);
         var messageFilter = default(string);
         var mostCommonProblem = false;
+        var mostCommonProblems = false;
         var highestImpactProblem = false;
         var pendingOption = string.Empty;
 
@@ -125,6 +126,12 @@ internal static class Program
                 continue;
             }
 
+            if (string.Equals(arg, "--most-common-problems", StringComparison.Ordinal))
+            {
+                mostCommonProblems = true;
+                continue;
+            }
+
             if (string.Equals(arg, "--highest-impact-problem", StringComparison.Ordinal)
                 || string.Equals(arg, "--highest-impact", StringComparison.Ordinal))
             {
@@ -154,6 +161,14 @@ internal static class Program
             throw new ArgumentException("--most-common-problem cannot be combined with --type, --context, or --message.");
         }
 
+        if (mostCommonProblems
+            && (!string.IsNullOrEmpty(typeFilter)
+                || !string.IsNullOrEmpty(contextFilter)
+                || !string.IsNullOrEmpty(messageFilter)))
+        {
+            throw new ArgumentException("--most-common-problems cannot be combined with --type, --context, or --message.");
+        }
+
         if (highestImpactProblem
             && (!string.IsNullOrEmpty(typeFilter)
                 || !string.IsNullOrEmpty(contextFilter)
@@ -167,7 +182,20 @@ internal static class Program
             throw new ArgumentException("--most-common-problem and --highest-impact-problem cannot be combined.");
         }
 
-        return new ProgramOptions(inputs, outputFormat, typeFilter, contextFilter, messageFilter, mostCommonProblem, highestImpactProblem);
+        if (mostCommonProblems && mostCommonProblem)
+        {
+            throw new ArgumentException("--most-common-problem and --most-common-problems cannot be combined.");
+        }
+
+        return new ProgramOptions(
+            inputs,
+            outputFormat,
+            typeFilter,
+            contextFilter,
+            messageFilter,
+            mostCommonProblem,
+            mostCommonProblems,
+            highestImpactProblem);
     }
 
     internal static IReadOnlyList<SummaryInput> ResolveSummaryInputs(IEnumerable<string> inputs)
@@ -196,6 +224,8 @@ internal static class Program
         {
             "json" when options.HighestImpactProblem => LogReportFormatter.FormatHighestImpactProblemJson(summaries),
             "text" when options.HighestImpactProblem => LogReportFormatter.FormatHighestImpactProblem(summaries),
+            "json" when options.MostCommonProblems => LogReportFormatter.FormatMostCommonProblemsJson(summaries),
+            "text" when options.MostCommonProblems => LogReportFormatter.FormatMostCommonProblems(summaries),
             "json" when options.MostCommonProblem => LogReportFormatter.FormatMostCommonProblemJson(summaries),
             "text" when options.MostCommonProblem => LogReportFormatter.FormatMostCommonProblem(summaries),
             "json" when HasActiveFilters(options) => LogReportFormatter.FormatFilteredExceptionsJson(summaries, options.TypeFilter, options.ContextFilter, options.MessageFilter),
@@ -278,6 +308,7 @@ internal static class Program
         string? ContextFilter,
         string? MessageFilter,
         bool MostCommonProblem,
+        bool MostCommonProblems,
         bool HighestImpactProblem);
     internal readonly record struct SummaryInput(string Path, bool IsDirectory);
 }
