@@ -25,6 +25,7 @@ partial class FastCompiler
                 var pe = this.scope.Top.CreateException(id.Name.Value);
                 using var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
                 var v = scope.CreateVariable(id.Name, newScope: true);
+                v.IsSimpleCatchBinding = true;
                 var catchBlock = YExpression.Block(v.Variable.AsSequence(), YExpression.Assign(v.Variable, JSVariableBuilder.NewFromException(pe.Variable, id.Name.Value)), VisitStatement(cb));
                 var cbExp = YExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 

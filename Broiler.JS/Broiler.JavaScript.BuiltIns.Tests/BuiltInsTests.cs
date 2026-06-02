@@ -2413,6 +2413,41 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Generator_Function_Prototype_Prototype_Descriptors_Match_Test262()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+              function desc(value, key) {
+                var d = Object.getOwnPropertyDescriptor(value, key);
+                return [d.writable, d.enumerable, d.configurable].join(',');
+              }
+
+              var GeneratorFunctionPrototype = Object.getPrototypeOf(function* () {});
+              var GeneratorPrototype = Object.getPrototypeOf(function* () {}.prototype);
+              var asyncGenerator = async function* () {};
+              var AsyncGeneratorFunctionPrototype = Object.getPrototypeOf(asyncGenerator);
+              var AsyncGeneratorPrototype = Object.getPrototypeOf(asyncGenerator.prototype);
+
+              return [
+                GeneratorFunctionPrototype.prototype === GeneratorPrototype,
+                AsyncGeneratorFunctionPrototype.prototype === AsyncGeneratorPrototype,
+                GeneratorPrototype.constructor === GeneratorFunctionPrototype,
+                AsyncGeneratorPrototype.constructor === AsyncGeneratorFunctionPrototype,
+                typeof GeneratorPrototype.next,
+                typeof AsyncGeneratorPrototype.next,
+                desc(GeneratorFunctionPrototype, 'prototype'),
+                desc(AsyncGeneratorFunctionPrototype, 'prototype'),
+                desc(AsyncGeneratorPrototype, 'constructor')
+              ].join('|');
+            })();
+            """);
+
+        Assert.Equal("true|true|true|true|function|function|false,false,true|false,false,true|false,false,true", result.ToString());
+    }
+
+    [Fact]
     public void Error_Undefined_Does_Not_Create_Own_Message_Property()
     {
         EnsureBuiltInsLoaded();

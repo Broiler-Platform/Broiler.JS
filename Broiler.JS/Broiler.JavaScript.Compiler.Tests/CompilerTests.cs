@@ -2654,6 +2654,20 @@ public class CompilerTests
         Assert.Equal("ReferenceError", ex3.Error[KeyStrings.constructor][KeyStrings.name].ToString());
     }
 
+    [Fact]
+    public void AnnexB_Eval_Block_Function_No_Skip_Try_Simple_Catch()
+    {
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function() {
+              return eval('var before = f === undefined; try { throw null; } catch (f) {{ function f() { return 123; } }} [before, typeof f, f()].join("|");');
+            }())
+            """);
+
+        Assert.Equal("true|function|123", result.ToString());
+    }
+
     // ----------------------------------------------------------------
     // Seeded property-based parameterized tests (recommendation #5 from
     // docs/compliance/testsuite-optimization.md).  Each fixture generates
