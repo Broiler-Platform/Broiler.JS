@@ -41,7 +41,8 @@ public partial class ILCodeGenerator
                 }
                 else
                 {
-                    var v = variables[tryCatchFinallyExpression.Catch.Parameter];
+                    if (!variables.TryGetValue(tryCatchFinallyExpression.Catch.Parameter, out var v))
+                        v = variables.Create(tryCatchFinallyExpression.Catch.Parameter);
                     il.EmitSaveLocal(v.LocalBuilder.LocalIndex);
                 }
 
