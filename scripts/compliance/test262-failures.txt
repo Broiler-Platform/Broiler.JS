@@ -705,14 +705,12 @@ test/built-ins/DataView/prototype/setUint8/toindex-byteoffset.js
 test/built-ins/DataView/return-instance.js
 test/built-ins/Date/UTC/length.js
 test/built-ins/Date/UTC/time-clip.js
-test/built-ins/Date/prototype/setDate/date-value-read-before-tonumber-when-date-is-valid.js
 test/built-ins/Date/prototype/setFullYear/date-value-read-before-tonumber-when-date-is-invalid.js
 test/built-ins/Date/prototype/setFullYear/date-value-read-before-tonumber-when-date-is-valid.js
 test/built-ins/Date/prototype/setHours/arg-coercion-order.js
 test/built-ins/Date/prototype/setMinutes/arg-coercion-order.js
 test/built-ins/Date/prototype/setMonth/arg-coercion-order.js
 test/built-ins/Date/prototype/setSeconds/arg-coercion-order.js
-test/built-ins/Date/prototype/setUTCDate/date-value-read-before-tonumber-when-date-is-valid.js
 test/built-ins/Date/prototype/setUTCFullYear/date-value-read-before-tonumber-when-date-is-invalid.js
 test/built-ins/Date/prototype/setUTCFullYear/date-value-read-before-tonumber-when-date-is-valid.js
 test/built-ins/Date/prototype/setUTCFullYear/length.js
