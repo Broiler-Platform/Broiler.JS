@@ -315,7 +315,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
         try
         {
-            r = f(a1);
+            r = f(a1) ?? JSUndefined.Value;
         }
         finally
         {
@@ -344,7 +344,15 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             StringComparison.Ordinal);
         using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
-        var r = f(in a);
+        JSValue r;
+        try
+        {
+            r = f(in a) ?? JSUndefined.Value;
+        }
+        catch (NullReferenceException ex)
+        {
+            throw JSEngine.NewReferenceError(ex.Message);
+        }
         if (r.IsObject)
             return r;
 
@@ -361,7 +369,14 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             StringComparison.Ordinal);
         using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
-        return f(CoerceThisOnInvoke ? a.OverrideThis(CoerceNonStrictThis(a.This)) : a);
+        try
+        {
+            return f(CoerceThisOnInvoke ? a.OverrideThis(CoerceNonStrictThis(a.This)) : a) ?? JSUndefined.Value;
+        }
+        catch (NullReferenceException ex)
+        {
+            throw JSEngine.NewReferenceError(ex.Message);
+        }
     }
 
     [JSPrototypeMethod]

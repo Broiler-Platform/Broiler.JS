@@ -29,7 +29,12 @@ public readonly struct StringSpan : IEquatable<StringSpan>, IEquatable<string>, 
     public StringSpan(string? buffer, int offset, int length)
     {
         if (buffer == null || (uint)offset > (uint)buffer.Length || (uint)length > (uint)(buffer.Length - offset))
-            throw new InvalidOperationException($"offset/length represents invalid string or string is null");
+        {
+            Source = string.Empty;
+            Offset = 0;
+            Length = 0;
+            return;
+        }
 
         Source = buffer;
         Offset = offset;

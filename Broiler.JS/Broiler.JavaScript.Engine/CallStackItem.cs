@@ -35,7 +35,9 @@ public class CallStackItem
         }
 
         FileName = scriptInfo.FileName;
-        Function = (nameLength > 0) ? new StringSpan(scriptInfo.Code, nameOffset, nameLength) : Inline;
+        Function = IsValidFunctionSpan(scriptInfo?.Code, nameOffset, nameLength)
+            ? new StringSpan(scriptInfo.Code, nameOffset, nameLength)
+            : Inline;
         Line = line;
         Column = column;
         Parent = context.Top;
@@ -106,4 +108,11 @@ public class CallStackItem
     }
 
     public override string ToString() => $"{Function} at {FileName} - {Line},{Column}";
+
+    private static bool IsValidFunctionSpan(string code, int offset, int length)
+        => code != null
+            && offset >= 0
+            && length > 0
+            && offset <= code.Length
+            && length <= code.Length - offset;
 }

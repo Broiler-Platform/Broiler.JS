@@ -131,6 +131,7 @@ partial class FastCompiler
     {
         var scope = pool.NewScope();
         var tempVar = this.scope.Top.GetTempVariable(JSClassBuilder.Type);
+        var hasSuperClass = super != null;
 
         var prototypeElements = new Sequence<YElementInit>();
         var staticElements = new Sequence<YBinding>();
@@ -139,7 +140,7 @@ partial class FastCompiler
         // need to save super..
         // create a super variable...
         YExpression superExp;
-        if (super != null)
+        if (hasSuperClass)
         {
             superExp = VisitExpression(super);
         }
@@ -261,14 +262,15 @@ partial class FastCompiler
 
         if (constructor != null)
         {
-            var fx = CreateFunction(constructor, superVar, true, className, memberInits, true, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames);
+            var fx = CreateFunction(constructor, superVar, true, className, memberInits, true, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames,
+                thisIsUninitialized: hasSuperClass);
             staticElements.Add(JSClassBuilder.AddConstructor(fx));
         }
         else
         {
             if (memberInits.Any())
             {
-                using var s = this.scope.Push(new FastFunctionScope(null, null, memberInits: memberInits, computedMemberNames: computedMemberNames));
+                using var s = this.scope.Push(new FastFunctionScope(null, null, memberInits: memberInits, computedMemberNames: computedMemberNames, thisIsUninitialized: hasSuperClass));
                 var args = s.Arguments;
                 var @this = s.ThisExpression;
                 var inits = new Sequence<YExpression>() { };
@@ -307,7 +309,8 @@ partial class FastCompiler
             while (staticBlockEnumerator.MoveNext(out var staticBlock))
             {
                 var function = staticBlock.Init as AstFunctionExpression;
-                var fx = CreateFunction(function, superVar, forceStrictMode: true, createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
+                var fx = CreateFunction(function, superVar, forceStrictMode: true, createPrototype: false, directEvalPrivateNames: directEvalPrivateNames,
+                    thisIsUninitialized: hasSuperClass);
                 stmts.Add(JSFunctionBuilder.InvokeFunction(fx, ArgumentsBuilder.NewEmpty(retValue)));
             }
         }

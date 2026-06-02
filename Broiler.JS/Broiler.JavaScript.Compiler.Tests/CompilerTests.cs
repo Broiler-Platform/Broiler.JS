@@ -3095,6 +3095,29 @@ public class CompilerTests
         Assert.Equal("TypeError|false", result.ToString());
     }
 
+    [Fact]
+    public void Compile_ClassComputedFieldNames_FromArrowFunctionExpressions_Are_Evaluated()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                let C = class {
+                  [() => { }] = 1;
+
+                  static [() => { }] = 1;
+                };
+
+                let c = new C();
+                return [
+                    c[() => { }],
+                    C[() => { }]
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("1|1", result.ToString());
+    }
+
     #endregion
 
     [Fact]

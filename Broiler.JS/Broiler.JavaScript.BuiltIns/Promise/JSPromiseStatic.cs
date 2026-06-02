@@ -27,8 +27,21 @@ public partial class JSPromise
         JSValue reject = JSUndefined.Value;
         var executorFunction = new JSFunction((in Arguments executorArgs) =>
         {
-            resolve = executorArgs.Get1();
-            reject = executorArgs.GetAt(1);
+            var nextResolve = executorArgs.Get1();
+            var nextReject = executorArgs.GetAt(1);
+
+            if (!nextResolve.IsUndefined && !resolve.IsUndefined)
+                throw JSEngine.NewTypeError("Promise capability executor already called");
+
+            if (!nextReject.IsUndefined && !reject.IsUndefined)
+                throw JSEngine.NewTypeError("Promise capability executor already called");
+
+            if (!nextResolve.IsUndefined)
+                resolve = nextResolve;
+
+            if (!nextReject.IsUndefined)
+                reject = nextReject;
+
             return JSUndefined.Value;
         }, "executor", "function executor() { [native] }", length: 2, createPrototype: false);
         executorFunction.SetNameProperty(string.Empty);

@@ -52,7 +52,8 @@ public partial class JSPromise : JSObject, IJSPromise
     ConcurrentDictionary<long, JSValue> pending;
 
     private static SynchronizationContext CaptureSynchronizationContext()
-        => (JSEngine.Current as JSContext)?.synchronizationContext;
+        => SynchronizationContext.Current
+            ?? (JSEngine.Current as JSContext)?.synchronizationContext;
 
     /// <summary>
     /// .Net removes promises aggressively via
