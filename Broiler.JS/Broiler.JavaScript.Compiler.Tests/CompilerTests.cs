@@ -395,6 +395,57 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_ObjectDestructuring_Assignment_Rest_Copies_Only_Remaining_Properties()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var rest;
+                ({ a: ignored, ...rest } = { a: 1, b: 2, 1: 3 });
+                return [Object.keys(rest).join(","), rest[1], rest.b].join("|");
+            })()
+            """);
+
+        Assert.Equal("1,b|3|2", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_Global_Lexical_Closure_Throws_TDZ_Before_Initialization()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            function f() { return x + 1; }
+            var result;
+            try {
+                f();
+                result = "no-error";
+            } catch (error) {
+                result = error.constructor.name;
+            }
+            const x = 1;
+            result;
+            """);
+
+        Assert.Equal("ReferenceError", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_AnnexB_Block_Function_Without_Preexisting_Binding_Does_Not_Throw()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                for (var key in { a: 1 }) {
+                    if (true) function f() { return key; }
+                    return f();
+                }
+            })()
+            """);
+
+        Assert.Equal("a", result.ToString());
+    }
+
+    [Fact]
     public void Compile_ArrowFunction_ArrayDestructuringElisions_Work_With_BareYield_Generator()
     {
         using var ctx = new JSContext();

@@ -272,6 +272,12 @@ partial class FastCompiler
                     while (en.MoveNext(out var property))
                     {
                         YExpression start = null;
+                        if (property.Spread || property.Key == null)
+                        {
+                            CreateAssignment(inits, property.Value, CreateObjectRest(init, excludedKeys), createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
+                            continue;
+                        }
+
                         switch (property.Key.Type)
                         {
                             case FastNodeType.Identifier:
@@ -304,16 +310,7 @@ partial class FastCompiler
                                 break;
                             case FastNodeType.SpreadElement:
                                 var spread = (AstSpreadElement)property.Key;
-                                using (var restTemp = scope.Top.GetTempVariable(typeof(JSObject)))
-                                {
-                                   inits.Add(YExpression.Assign(restTemp.Variable, JSObjectBuilder.New()));
-                                   inits.Add(JSObjectBuilder.AddRange(restTemp.Expression, init));
-                                   var deleteKeys = excludedKeys.GetFastEnumerator();
-                                   while (deleteKeys.MoveNext(out var excludedKey))
-                                       inits.Add(JSValueBuilder.Delete(restTemp.Expression, excludedKey));
-
-                                   CreateAssignment(inits, spread.Argument, restTemp.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
-                                }
+                                CreateAssignment(inits, spread.Argument, CreateObjectRest(init, excludedKeys), createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
                                 continue;
                             default:
                                 throw new NotImplementedException();
@@ -481,6 +478,21 @@ partial class FastCompiler
         }
 
         throw new NotImplementedException();
+    }
+
+    private YExpression CreateObjectRest(YExpression source, Sequence<YExpression> excludedKeys)
+    {
+        var restTemp = scope.Top.GetTempVariable(typeof(JSObject));
+        var restInits = new Sequence<YExpression>
+        {
+            YExpression.Assign(restTemp.Variable, JSObjectBuilder.New()),
+            JSObjectBuilder.AddRange(restTemp.Expression, source)
+        };
+        var deleteKeys = excludedKeys.GetFastEnumerator();
+        while (deleteKeys.MoveNext(out var excludedKey))
+            restInits.Add(JSValueBuilder.Delete(restTemp.Expression, excludedKey));
+        restInits.Add(restTemp.Expression);
+        return YExpression.Block(restTemp.Variable.AsSequence(), restInits);
     }
 
     private static bool IsAnonymousFunctionDefinition(AstExpression expression) =>

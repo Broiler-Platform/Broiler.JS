@@ -150,16 +150,7 @@ public partial class ILCodeGenerator
         using (tempVariables.Push())
         {
             body = ReWriteTryCatch(body);
-            if (body is YBlockExpression block)
-            {
-                foreach (var p in block.FlattenVariables)
-                {
-                    if (variables.TryGetValue(p, out _))
-                        continue;
-
-                    variables.Create(p);
-                }
-            }
+            RegisterBlockVariables(body);
             if(expressionWriter != null)
             {
                 var writer = new System.CodeDom.Compiler.IndentedTextWriter(expressionWriter, "\t");
@@ -183,6 +174,38 @@ public partial class ILCodeGenerator
 
         return;
 
+    }
+
+    private void RegisterBlockVariables(YExpression expression)
+    {
+        switch (expression)
+        {
+            case YBlockExpression block:
+                foreach (var p in block.FlattenVariables)
+                {
+                    if (!variables.TryGetValue(p, out _))
+                        variables.Create(p);
+                }
+                foreach (var (child, _) in block.FlattenExpressions)
+                    RegisterBlockVariables(child);
+                break;
+
+            case YConvertExpression convert:
+                RegisterBlockVariables(convert.Target);
+                break;
+
+            case YReturnExpression @return when @return.Default != null:
+                RegisterBlockVariables(@return.Default);
+                break;
+
+            case YTryCatchFinallyExpression tryCatchFinally:
+                RegisterBlockVariables(tryCatchFinally.Try);
+                if (tryCatchFinally.Catch != null)
+                    RegisterBlockVariables(tryCatchFinally.Catch.Body);
+                if (tryCatchFinally.Finally != null)
+                    RegisterBlockVariables(tryCatchFinally.Finally);
+                break;
+        }
     }
 
     private static YExpression ReWriteTryCatch(YExpression body)
