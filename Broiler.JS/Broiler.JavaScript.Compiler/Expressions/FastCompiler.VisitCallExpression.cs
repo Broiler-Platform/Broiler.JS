@@ -103,7 +103,10 @@ partial class FastCompiler
             var allowSuperProperty = scope.Top.Super != null;
             var allowSuperCall = allowSuperProperty && scope.Top.MemberInits != null;
             var useActivationBinding = scope.Top.Function?.IsArrowFunction == true && parameterInitializerDepth > 0;
-            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), scope.Top.ThisExpression, scope.Top.StackItem, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding));
+            var activationOwner = disallowArgumentsDeclaration || useActivationBinding
+                ? scope.Top.StackItem
+                : YExpression.Constant(null, typeof(CallStackItem));
+            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), scope.Top.ThisExpression, activationOwner, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding));
         }
 
     skipDirectEval:

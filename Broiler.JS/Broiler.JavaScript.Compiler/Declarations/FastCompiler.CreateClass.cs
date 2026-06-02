@@ -258,7 +258,7 @@ partial class FastCompiler
             }
         }
 
-        var className = id?.Name.Value;
+        var className = id?.Name.Value ?? string.Empty;
 
         if (constructor != null)
         {
@@ -276,7 +276,8 @@ partial class FastCompiler
                 var inits = new Sequence<YExpression>() { };
 
                 inits.AddRange(s.InitList);
-                inits.Add(YExpression.Assign(@this, JSFunctionBuilder.InvokeFunction(superVar, args)));
+                if (hasSuperClass)
+                    inits.Add(JSFunctionBuilder.InvokeSuperConstructor(superVar, @this, args));
 
                 InitMembers(inits, s);
                 inits.Add(@this);

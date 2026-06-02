@@ -112,33 +112,21 @@ public partial class JSArray
     internal static JSValue ToLocaleString(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
-        var (locale, format) = a.Get2();
         StringBuilder sb = new();
 
-        var def = "N0";
-
-        string strFormat = format.IsNullOrUndefined ? def : (format.IsString ? format.ToString() :
-            throw JSEngine.NewTypeError("Options not supported, use .Net String Formats")
-            );
-
-        CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.ToString());
-
-        // Group separator based on Culture Info.
-        var separator = culture.TextInfo.ListSeparator;
-
-        bool first = true;
-        var en = @this.GetElementEnumerator();
-
-        while (en.MoveNext(out var n))
+        var length = (uint)@this.Length;
+        var toLocaleString = KeyStrings.GetOrCreate("toLocaleString");
+        for (uint i = 0; i < length; i++)
         {
-            if (!first)
-            {
-                //sb.Append(',');
-                sb.Append(separator);
-            }
+            if (i != 0)
+                sb.Append(',');
 
-            first = false;
-            sb.Append(n.ToLocaleString(strFormat, culture));
+            var item = @this[i];
+            if (item.IsNullOrUndefined)
+                continue;
+
+            var method = item[toLocaleString];
+            sb.Append(method.Call(item).ToString());
         }
 
         return new JSString(sb.ToString());

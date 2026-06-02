@@ -45,14 +45,16 @@ partial class FastCompiler
                         {
                             var key = KeyOfName(id.Name);
                             using var withObjectTemp = top.GetTempVariable(typeof(JSObject));
+                            using var initTemp = top.GetTempVariable(typeof(JSValue));
                             list.Add(
                                 YExpression.Block(
-                                    withObjectTemp.Variable.AsSequence(),
+                                    new Sequence<YParameterExpression> { withObjectTemp.Variable, initTemp.Variable },
+                                    YExpression.Assign(initTemp.Expression, initExpr),
                                     YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
                                     YExpression.Condition(
                                         YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject))),
-                                        JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, initExpr, IsStrictMode),
-                                        YExpression.Assign(v.Expression, initExpr),
+                                        JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, initTemp.Expression, IsStrictMode),
+                                        YExpression.Assign(v.Expression, initTemp.Expression),
                                         typeof(JSValue))));
                         }
                     }

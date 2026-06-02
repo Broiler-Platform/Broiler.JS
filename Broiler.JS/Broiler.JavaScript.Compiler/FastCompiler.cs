@@ -221,6 +221,9 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         var current = completionScopes.Top;
         while (current != null)
         {
+            if (current.Item == null)
+                break;
+
             items.Add(current.Item);
             current = current.Parent;
         }

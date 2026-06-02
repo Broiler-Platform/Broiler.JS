@@ -140,7 +140,7 @@ public class LambdaRewriter: YExpressionMapVisitor
 
     protected override YExpression VisitBlock(YBlockExpression yBlockExpression)
     {
-        var variables = Root.Root.Name.Name == "body"
+        var variables = Root.Root.Name.Name == "body" || Root.Root.Name.Name == "body_outer"
             ? CollectBlockVariables(yBlockExpression)
             : yBlockExpression.FlattenVariables.AsSequence();
         using var scope = Root.Register(variables);
@@ -150,8 +150,19 @@ public class LambdaRewriter: YExpressionMapVisitor
     private static Sequence<YParameterExpression> CollectBlockVariables(YExpression expression)
     {
         var variables = new Sequence<YParameterExpression>();
-        CollectBlockVariables(expression, variables);
+        new BlockVariableCollector(variables).Visit(expression);
         return variables;
+    }
+
+    private sealed class BlockVariableCollector(Sequence<YParameterExpression> variables) : YExpressionMapVisitor
+    {
+        protected override YExpression VisitBlock(YBlockExpression yBlockExpression)
+        {
+            variables.AddRange(yBlockExpression.FlattenVariables);
+            return base.VisitBlock(yBlockExpression);
+        }
+
+        protected override YExpression VisitLambda(YLambdaExpression yLambdaExpression) => yLambdaExpression;
     }
 
     private static void CollectBlockVariables(YExpression expression, Sequence<YParameterExpression> variables)
@@ -170,6 +181,17 @@ public class LambdaRewriter: YExpressionMapVisitor
 
             case YReturnExpression @return when @return.Default != null:
                 CollectBlockVariables(@return.Default, variables);
+                break;
+
+            case YConditionalExpression conditional:
+                CollectBlockVariables(conditional.test, variables);
+                CollectBlockVariables(conditional.@true, variables);
+                if (conditional.@false != null)
+                    CollectBlockVariables(conditional.@false, variables);
+                break;
+
+            case YLoopExpression loop:
+                CollectBlockVariables(loop.Body, variables);
                 break;
 
             case YTryCatchFinallyExpression tryCatchFinally:

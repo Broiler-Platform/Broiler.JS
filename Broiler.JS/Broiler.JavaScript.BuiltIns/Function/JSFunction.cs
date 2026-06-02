@@ -456,7 +456,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     {
         var @this = a.This;
         var r = super.CreateInstance(a.OverrideThis(a.This));
-        return r.IsObject ? r : @this;
+        return r?.IsObject == true ? r : @this ?? new JSObject();
     }
 
     [JSExport(IsConstructor = true, Length = 1)]
