@@ -11,6 +11,8 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
+    private static int tempHomeId;
+
     private static readonly MethodInfo PrepareAnonymousFunctionNameForPropertyUIntMethod = typeof(JSVariable)
         .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForProperty), [typeof(JSValue), typeof(uint)])
         ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForProperty(JSValue, uint) not found");
@@ -182,10 +184,21 @@ partial class FastCompiler
         }
 
         using var temp = scope.Top.GetTempVariable(typeof(JSObject));
+
+        // Methods/accessors that reference super capture the home object as a
+        // closure. The pooled temp above is also declared at the function level
+        // (VariableParameters), and a doubly-declared variable cannot be captured
+        // reliably, leaving super null at call time. Mirror the class compiler and
+        // capture a dedicated, block-local home-object variable instead.
+        var homeObjectVar = usesSuper ? YExpression.Parameter(typeof(JSObject), "#home" + tempHomeId++) : null;
+
         var statements = new Sequence<YExpression>
         {
             YExpression.Assign(temp.Variable, JSObjectBuilder.New())
         };
+
+        if (usesSuper)
+            statements.Add(YExpression.Assign(homeObjectVar, temp.Variable));
 
         var enWithProto = properties.GetFastEnumerator();
         while (enWithProto.MoveNext(out var pn))
@@ -207,7 +220,7 @@ partial class FastCompiler
             AstClassProperty p = pn as AstClassProperty;
 
             // Home object prototype for super.x inside this object's methods/accessors.
-            YExpression MethodSuper() => usesSuper ? JSValueBuilder.SuperPrototypeOf(temp.Variable) : null;
+            YExpression MethodSuper() => usesSuper ? JSValueBuilder.SuperPrototypeOf(homeObjectVar) : null;
 
             YExpression key = null;
             YExpression value = p.Kind switch
@@ -292,7 +305,10 @@ partial class FastCompiler
         }
 
         statements.Add(temp.Variable);
-        return YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, statements);
+        var blockVariables = new Sequence<YParameterExpression> { temp.Variable };
+        if (usesSuper)
+            blockVariables.Add(homeObjectVar);
+        return YExpression.Block(blockVariables, statements);
     }
 
     // Detects whether any of the object literal's own methods/accessors reference
