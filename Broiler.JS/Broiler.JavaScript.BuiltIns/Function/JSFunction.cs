@@ -42,6 +42,22 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public bool IsOrdinaryUserFunction { get; set; }
     public JSObject[] CapturedWithObjects { get; set; }
 
+    /// <summary>
+    /// True for ordinary non-strict, non-arrow functions that expose the legacy
+    /// <c>caller</c>/<c>arguments</c> own data properties. Such functions get
+    /// their <c>caller</c> property updated to the currently executing caller
+    /// while they are running (web reality behaviour).
+    /// </summary>
+    internal bool HasLegacyCallerArguments;
+
+    private static readonly KeyString LegacyCallerKey = KeyStrings.GetOrCreate("caller");
+    private static JSFunction legacyCallerPoison;
+
+    private static JSFunction LegacyCallerPoison
+        => legacyCallerPoison ??= CreateFrozenThrowTypeErrorFunction(
+            "caller",
+            "Cannot access caller in strict mode");
+
     public static JSValue CaptureWithScopes(JSValue functionValue)
     {
         if (functionValue is JSFunction function)
@@ -59,9 +75,36 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     /// </summary>
     public JSValue AddLegacyCallerAndArguments()
     {
-        FastAddValue(KeyStrings.GetOrCreate("caller"), JSValue.NullValue, JSPropertyAttributes.ReadonlyValue);
+        FastAddValue(LegacyCallerKey, JSValue.NullValue, JSPropertyAttributes.ReadonlyValue);
         FastAddValue(KeyStrings.arguments, JSValue.NullValue, JSPropertyAttributes.ReadonlyValue);
+        HasLegacyCallerArguments = true;
         return this;
+    }
+
+    /// <summary>
+    /// Updates the legacy <c>caller</c> own property to reflect the function
+    /// that invoked this one. Non-strict callers are exposed as a data value,
+    /// strict-mode callers install the %ThrowTypeError% poison accessor so the
+    /// property throws on access, and native or absent callers expose
+    /// <c>null</c>.
+    /// </summary>
+    private void SetLegacyCaller(JSValue callerFunction)
+    {
+        if (callerFunction is JSFunction callerFn && callerFn.IsStrictMode)
+        {
+            FastAddProperty(
+                LegacyCallerKey,
+                LegacyCallerPoison,
+                LegacyCallerPoison,
+                JSPropertyAttributes.ConfigurableProperty);
+            return;
+        }
+
+        var value = callerFunction is JSFunction ordinary && ordinary.IsOrdinaryUserFunction
+            ? callerFunction
+            : JSValue.NullValue;
+
+        FastAddValue(LegacyCallerKey, value, JSPropertyAttributes.ReadonlyValue);
     }
 
     /// <summary>
@@ -127,7 +170,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         ref var ownProperties = ref GetOwnProperties();
         f = empty;
         this.name = name.IsEmpty ? "native" : name;
-        this.source = source.IsEmpty ? $"function {this.name}() {{ [native] }}" : source;
+        this.source = source.IsEmpty ? $"function {this.name}() {{ [native code] }}" : source;
 
         prototype = _prototype;
         prototype.GetOwnProperties(true).Put(KeyStrings.constructor, this);
@@ -151,7 +194,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         ref var ownProperties = ref GetOwnProperties();
         this.f = f;
         this.name = name.IsEmpty ? "native" : name;
-        this.source = source.IsEmpty ? $"function {this.name}() {{ [native] }}" : source;
+        this.source = source.IsEmpty ? $"function {this.name}() {{ [native code] }}" : source;
 
         if (createPrototype)
         {
@@ -174,7 +217,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         ref var ownProperties = ref GetOwnProperties();
         this.f = f;
         this.name = name.IsEmpty ? "native" : name;
-        this.source = source.IsEmpty ? $"function {this.name}() {{ [native] }}" : source;
+        this.source = source.IsEmpty ? $"function {this.name}() {{ [native code] }}" : source;
 
         if (createPrototype)
         {
@@ -394,38 +437,61 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     public override JSValue InvokeFunction(in Arguments a)
     {
+        var previousExecutingFunction = JSEngine.ExecutingFunction;
         var current = this;
         var currentArguments = a;
-        while (true)
+        try
         {
-            JSValue result;
-            using (JSEngine.EnterStrictMode(current.IsStrictMode))
+            while (true)
             {
-                var context = JSEngine.Current as JSContext;
-                var scriptHostMode = string.Equals(
-                    Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"),
-                    "1",
-                    StringComparison.Ordinal);
-                using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
-                using var withScope = context?.PushWithScopes(current.CapturedWithObjects);
-                try
+                JSValue result;
+                JSEngine.ExecutingFunction = current;
+
+                var trackLegacyCaller = current.HasLegacyCallerArguments;
+                if (trackLegacyCaller)
+                    current.SetLegacyCaller(previousExecutingFunction);
+
+                using (JSEngine.EnterStrictMode(current.IsStrictMode))
                 {
-                    result = current.f(current.CoerceThisOnInvoke ? currentArguments.OverrideThis(CoerceNonStrictThis(currentArguments.This)) : currentArguments) ?? JSUndefined.Value;
+                    var context = JSEngine.Current as JSContext;
+                    var scriptHostMode = string.Equals(
+                        Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"),
+                        "1",
+                        StringComparison.Ordinal);
+                    using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
+                    using var withScope = context?.PushWithScopes(current.CapturedWithObjects);
+                    try
+                    {
+                        result = current.f(current.CoerceThisOnInvoke ? currentArguments.OverrideThis(CoerceNonStrictThis(currentArguments.This)) : currentArguments) ?? JSUndefined.Value;
+                    }
+                    catch (NullReferenceException ex)
+                    {
+                        throw JSEngine.NewReferenceError(ex.Message);
+                    }
+                    finally
+                    {
+                        if (trackLegacyCaller)
+                            current.SetLegacyCaller(JSValue.NullValue);
+                    }
                 }
-                catch (NullReferenceException ex)
-                {
-                    throw JSEngine.NewReferenceError(ex.Message);
-                }
+
+                if (result is not JSTailCall tailCall)
+                    return result;
+
+                if (tailCall.Target is not JSFunction jsFunction)
+                    return tailCall.Target.InvokeFunction(tailCall.Arguments);
+
+                // The function that produced this tail call becomes the caller
+                // of the tail-called function, mirroring the stack-frame based
+                // legacy caller semantics of reference engines.
+                previousExecutingFunction = current;
+                current = jsFunction;
+                currentArguments = tailCall.Arguments;
             }
-
-            if (result is not JSTailCall tailCall)
-                return result;
-
-            if (tailCall.Target is not JSFunction jsFunction)
-                return tailCall.Target.InvokeFunction(tailCall.Arguments);
-
-            current = jsFunction;
-            currentArguments = tailCall.Arguments;
+        }
+        finally
+        {
+            JSEngine.ExecutingFunction = previousExecutingFunction;
         }
     }
 

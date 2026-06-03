@@ -26,6 +26,16 @@ public static class JSEngine
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static IJSContext Current;
 
+    /// <summary>
+    /// The JavaScript function currently executing on this thread. It is set by
+    /// <c>JSFunction.InvokeFunction</c> around the invocation of a function body
+    /// and is used to populate the non-strict mapped arguments object's
+    /// <c>callee</c> property with the function being invoked.
+    /// </summary>
+    [ThreadStatic]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static JSValue ExecutingFunction;
+
     private static readonly AsyncLocal<IJSContext> _current =
         new((e) => { Current = e.CurrentValue ?? e.PreviousValue; });
 

@@ -44,6 +44,18 @@ public class JSArguments: JSObject
     public JSArguments(in Arguments args, JSVariable[] mappedParametersByIndex)
         : this(args)
     {
+        // For non-strict functions with a simple parameter list, the arguments
+        // object is a mapped arguments object whose 'callee' is a writable,
+        // non-enumerable, configurable data property referencing the function
+        // being invoked (rather than the %ThrowTypeError% poison pill set by the
+        // unmapped/strict constructor).
+        var callee = JSEngine.ExecutingFunction;
+        if (callee != null && callee.IsFunction)
+        {
+            ref var properties = ref GetOwnProperties(true);
+            properties.Put(KeyStrings.callee, callee, JSPropertyAttributes.ConfigurableValue);
+        }
+
         if (mappedParametersByIndex == null || mappedParametersByIndex.Length == 0)
             return;
 
