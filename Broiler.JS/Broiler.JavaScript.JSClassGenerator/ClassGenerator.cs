@@ -161,6 +161,22 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                 }
             }
 
+            if (!type.Globals && !type.InternalClass && className == "Array")
+            {
+                // Per spec (22.1.3 Properties of the Array Prototype Object), the
+                // Array prototype object is itself an Array exotic object with an
+                // initial length of 0. Replace the ordinary prototype object created
+                // by the function constructor with a JSArray so that length and
+                // indexed access follow array (exotic) semantics.
+                sb.AppendLine($@"
+                        prototype = new {type.Name}();
+                        prototype.SetPrototypeOf((context[""Object""] as JSFunction)?.prototype);
+                        prototype.FastAddValue(KeyStrings.constructor, @class, JSPropertyAttributes.ConfigurableValue);
+                        @class.prototype = prototype;
+                        @class.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
+                        ");
+            }
+
             foreach (var member in type.Members)
             {
                 GenerateMember(sb, member);
