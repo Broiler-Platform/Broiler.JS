@@ -15,7 +15,7 @@ partial class FastCompiler
     {
         var test = JSValueBuilder.BooleanValue(VisitExpression(ifStatement.Test));
 
-        if (scope.Top.Generator != null)
+        if (scope.Top.Function?.Generator == true)
         {
             var generatorTrueCase = ifStatement.True is AstExpressionStatement { Expression: AstFunctionExpression generatorTrueFunctionDeclaration }
                 ? VisitRuntimeFunctionDeclaration(generatorTrueFunctionDeclaration).ToJSValue()

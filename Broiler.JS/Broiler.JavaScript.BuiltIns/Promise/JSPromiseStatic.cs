@@ -474,13 +474,13 @@ public partial class JSPromise
 
                 empty = false;
                 remaining++;
-                var promise = item as JSPromise ?? new JSPromise(item, JSPromise.PromiseState.Resolved);
-                promise.Then((in Arguments args) =>
+                var resolveElement = new JSFunction((in Arguments args) =>
                 {
                     var value = args.Get1();
                     sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, value)), null);
                     return JSUndefined.Value;
-                }, (in Arguments args) =>
+                }, "", "function () { [native] }", length: 1, createPrototype: false);
+                var rejectElement = new JSFunction((in Arguments args) =>
                 {
                     var currentIndex = errorIndex++;
                     var reason = args.Get1();
@@ -492,7 +492,22 @@ public partial class JSPromise
                             reject.InvokeFunction(new Arguments(JSUndefined.Value, errors));
                     }, null);
                     return JSUndefined.Value;
-                });
+                }, "", "function () { [native] }", length: 1, createPrototype: false);
+
+                if (item is JSPromise promise)
+                {
+                    promise.Then(resolveElement.Delegate, rejectElement.Delegate);
+                    continue;
+                }
+
+                var then = item[KeyStrings.then];
+                if (then.IsFunction)
+                {
+                    then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
+                    continue;
+                }
+
+                resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
             }
 
             if (empty)

@@ -23,4 +23,8 @@ public partial class JSShadowRealm : JSObject
 
         return result;
     }
+
+    [JSExport(Length = 2)]
+    public JSValue ImportValue(in Arguments a) =>
+        throw JSEngine.NewTypeError("ShadowRealm.prototype.importValue is not implemented");
 }

@@ -33,6 +33,15 @@ public partial class JSJSON : JSObject
 {
     private const double MaxArrayLikeLength = 9007199254740991d;
 
+    private sealed class JSObjectReferenceComparer : IEqualityComparer<JSObject>
+    {
+        internal static readonly JSObjectReferenceComparer Instance = new();
+
+        public bool Equals(JSObject x, JSObject y) => ReferenceEquals(x, y);
+
+        public int GetHashCode(JSObject obj) => RuntimeHelpers.GetHashCode(obj);
+    }
+
     private static JSValue ToNumberPrimitive(JSValue value)
     {
         if (value is not JSObject @object)
@@ -253,7 +262,7 @@ public partial class JSJSON : JSObject
                 if (rootSource != null && IsPrimitiveJsonValue(value))
                     context["source"] = new JSString(rootSource);
             }
-            else if (TryGetSource(sourceMap, holder, key, out var source))
+            else if (IsPrimitiveJsonValue(value) && TryGetSource(sourceMap, holder, key, out var source))
             {
                 context["source"] = new JSString(source);
             }
@@ -304,7 +313,7 @@ public partial class JSJSON : JSObject
         if (sourceMap != null)
         {
             var context = new JSObject();
-            if (TryGetSource(sourceMap, holder, key, out var source))
+            if (IsPrimitiveJsonValue(value) && TryGetSource(sourceMap, holder, key, out var source))
                 context["source"] = new JSString(source);
 
             return reviver.f(new Arguments(holder, new JSString(key), value, context));
@@ -330,7 +339,7 @@ public partial class JSJSON : JSObject
                     text.ToString(),
                     p =>
                     {
-                        RecordSource(sourceMap ??= [], p.holder, p.key, p.source);
+                        RecordSource(sourceMap ??= new Dictionary<JSObject, Dictionary<string, string>>(JSObjectReferenceComparer.Instance), p.holder, p.key, p.source);
                         return p.value;
                     })
                 : JSJsonParser.Parse(text.ToString(), null);
@@ -342,7 +351,7 @@ public partial class JSJSON : JSObject
 
         parsed ??= JSNull.Value;
         if (sourceTextAccessEnabled)
-            sourceMap ??= [];
+            sourceMap ??= new Dictionary<JSObject, Dictionary<string, string>>(JSObjectReferenceComparer.Instance);
 
         if (receiver is not JSFunction function)
             return parsed;

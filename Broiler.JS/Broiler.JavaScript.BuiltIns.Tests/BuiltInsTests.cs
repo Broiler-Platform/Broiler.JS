@@ -74,6 +74,71 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void JSON_Parse_Preserves_Numeric_Object_Property_Names()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var obj = JSON.parse('{"42":37}');
+                return Object.getOwnPropertyNames(obj).join(',') + '|' + obj[42];
+            })();
+            """);
+
+        Assert.Equal("42|37", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Match_Indices_Defines_Groups_Property()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var indices = /(?<x>.)/d.exec("a").indices;
+                return [
+                    Object.prototype.hasOwnProperty.call(indices, "groups"),
+                    indices.groups.x.join(","),
+                    Object.getPrototypeOf(indices.groups) === null
+                ].join("|");
+            })();
+            """);
+
+        Assert.Equal("true|0,1|true", result.ToString());
+    }
+
+    [Fact]
+    public void Promise_Any_Thenable_Reject_Element_Has_Builtin_Metadata()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var rejectElement;
+                var thenable = { then: function(resolve, reject) { rejectElement = reject; } };
+                function NotPromise(executor) { executor(function(){}, function(){}); }
+                NotPromise.resolve = function(value) { return value; };
+                Promise.any.call(NotPromise, [thenable]);
+                var name = Object.getOwnPropertyDescriptor(rejectElement, "name");
+                var length = Object.getOwnPropertyDescriptor(rejectElement, "length");
+                return [name.value, name.writable, name.enumerable, name.configurable, length.value, rejectElement.prototype === undefined].join("|");
+            })();
+            """);
+
+        Assert.Equal("|false|false|true|1|true", result.ToString());
+    }
+
+    [Fact]
+    public void ShadowRealm_ImportValue_Length_Is_Two()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("Object.getOwnPropertyDescriptor(ShadowRealm.prototype.importValue, 'length').value;");
+
+        Assert.Equal(2.0, result.DoubleValue);
+    }
+
+    [Fact]
     public void EventTarget_Construct_Succeeds()
     {
         EnsureBuiltInsLoaded();
