@@ -22,6 +22,8 @@ public partial class ILCodeGenerator
     private readonly TempVariables tempVariables;
     private readonly IMethodBuilder methodBuilder;
     private readonly TextWriter? expressionWriter;
+    private int tailCallTryDepth;
+    private int tailCallBlockedDepth;
 
     private readonly Dictionary<YParameterExpression,(Type type, int localIndex)> uninitialized
         = new(Core.ReferenceEqualityComparer.Instance);

@@ -53,7 +53,8 @@ public partial class ILCodeGenerator
 
             // tail call...
         }
-        Visit(exp);
+        if (exp is not YCallExpression call || !TryEmitJavaScriptTailCallValue(call))
+            Visit(exp);
         if(!il.IsTryBlock)
         {
             il.Emit(OpCodes.Ret);

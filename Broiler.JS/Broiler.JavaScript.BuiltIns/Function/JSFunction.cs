@@ -361,21 +361,38 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     public override JSValue InvokeFunction(in Arguments a)
     {
-        using var _ = JSEngine.EnterStrictMode(IsStrictMode);
-        var context = JSEngine.Current as JSContext;
-        var scriptHostMode = string.Equals(
-            Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"),
-            "1",
-            StringComparison.Ordinal);
-        using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
-        using var withScope = context?.PushWithScopes(CapturedWithObjects);
-        try
+        var current = this;
+        var currentArguments = a;
+        while (true)
         {
-            return f(CoerceThisOnInvoke ? a.OverrideThis(CoerceNonStrictThis(a.This)) : a) ?? JSUndefined.Value;
-        }
-        catch (NullReferenceException ex)
-        {
-            throw JSEngine.NewReferenceError(ex.Message);
+            JSValue result;
+            using (JSEngine.EnterStrictMode(current.IsStrictMode))
+            {
+                var context = JSEngine.Current as JSContext;
+                var scriptHostMode = string.Equals(
+                    Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"),
+                    "1",
+                    StringComparison.Ordinal);
+                using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
+                using var withScope = context?.PushWithScopes(current.CapturedWithObjects);
+                try
+                {
+                    result = current.f(current.CoerceThisOnInvoke ? currentArguments.OverrideThis(CoerceNonStrictThis(currentArguments.This)) : currentArguments) ?? JSUndefined.Value;
+                }
+                catch (NullReferenceException ex)
+                {
+                    throw JSEngine.NewReferenceError(ex.Message);
+                }
+            }
+
+            if (result is not JSTailCall tailCall)
+                return result;
+
+            if (tailCall.Target is not JSFunction jsFunction)
+                return tailCall.Target.InvokeFunction(tailCall.Arguments);
+
+            current = jsFunction;
+            currentArguments = tailCall.Arguments;
         }
     }
 
