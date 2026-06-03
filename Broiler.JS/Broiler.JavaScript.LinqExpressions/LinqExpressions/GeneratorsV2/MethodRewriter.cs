@@ -19,7 +19,20 @@ public class MethodRewriter : YExpressionMapVisitor
 
     protected override Exp VisitAssign(YAssignExpression yAssignExpression)
     {
+        var left = yAssignExpression.Left;
         var right = yAssignExpression.Right;
+
+        // A yield inside the assignment target (e.g. `obj[yield] = v`) must be
+        // hoisted into temporaries so the rewritten left stays a valid
+        // assignable reference instead of collapsing into a block.
+        if (left.NodeType != YExpressionType.Parameter && left.HasYield())
+        {
+            var bb = new YBlockBuilder();
+            var newLeft = RewriteAssignTarget(left, bb);
+            var newRight = bb.ConvertToVariable(Visit(right));
+            bb.AddExpression(Expression.Assign(newLeft, newRight));
+            return bb.Build();
+        }
 
         // nested assign should be converted to block if it contains yield...
         if (right.NodeType == YExpressionType.Assign && right.HasYield())
@@ -35,6 +48,42 @@ public class MethodRewriter : YExpressionMapVisitor
         }
 
         return base.VisitAssign(yAssignExpression);
+    }
+
+    // Rebuilds an assignment target that contains a yield expression, hoisting
+    // the target object and any index arguments into temporaries (preserving
+    // evaluation order) so the returned reference is still assignable.
+    private Exp RewriteAssignTarget(Exp left, YBlockBuilder bb)
+    {
+        switch (left.NodeType)
+        {
+            case YExpressionType.Index:
+                var index = (YIndexExpression)left;
+                var indexTarget = bb.ConvertToVariable(Visit(index.Target));
+                var args = new Sequence<Exp>(index.Arguments.Count);
+                var ae = index.Arguments.GetFastEnumerator();
+                while (ae.MoveNext(out var arg))
+                    args.Add(bb.ConvertToVariable(Visit(arg)));
+                return Expression.Index(indexTarget, index.Property, args);
+
+            case YExpressionType.Property:
+                var property = (YPropertyExpression)left;
+                var propertyTarget = bb.ConvertToVariable(Visit(property.Target));
+                return Expression.Property(propertyTarget, property.PropertyInfo);
+
+            case YExpressionType.Field:
+                var field = (YFieldExpression)left;
+                var fieldTarget = bb.ConvertToVariable(Visit(field.Target));
+                return Expression.Field(fieldTarget, field.FieldInfo);
+
+            case YExpressionType.ArrayIndex:
+                var arrayIndex = (YArrayIndexExpression)left;
+                var arrayTarget = bb.ConvertToVariable(Visit(arrayIndex.Target));
+                var arrayIdx = bb.ConvertToVariable(Visit(arrayIndex.Index));
+                return Expression.ArrayIndex(arrayTarget, arrayIdx);
+        }
+
+        return Visit(left);
     }
 
     private Exp BreakAssign(YAssignExpression assign)
