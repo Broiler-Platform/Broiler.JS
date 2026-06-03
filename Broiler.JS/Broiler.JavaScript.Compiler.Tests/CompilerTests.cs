@@ -3441,4 +3441,59 @@ public class CompilerTests
         Assert.Equal("2|0|0|0", result.ToString());
     }
 
+    [Fact]
+    public void Compile_TailPosition_Call_Uses_Trampoline()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                'use strict';
+                var callCount = 0;
+                (function f(n) {
+                    if (n === 0) {
+                        callCount += 1;
+                        return;
+                    }
+                    function getF() { return f; }
+                    return getF()(n - 1);
+                })(100000);
+                return callCount;
+            })()
+            """);
+
+        Assert.Equal(1.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void Compile_Generator_TryFinally_Propagates_Throw_After_Yield()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var out = [];
+                function* g() {
+                    try {
+                        yield 1;
+                        throw new Error('x');
+                    } finally {
+                        out.push('f');
+                        yield 2;
+                    }
+                }
+                var it = g();
+                out.push(it.next().value);
+                out.push(it.next().value);
+                try {
+                    it.next();
+                    out.push('no');
+                } catch (e) {
+                    out.push(e.message);
+                }
+                return out.join('|');
+            })()
+            """);
+
+        Assert.Equal("1|f|2|x", result.ToString());
+    }
+
 }

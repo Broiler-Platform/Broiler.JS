@@ -12962,5 +12962,36 @@ public class BuiltInsTests
         """));
     }
 
+    [Fact]
+    public void Intl_Collator_Constructs_And_Uses_Own_Options()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var defaultSensitivity = new Intl.Collator('en').resolvedOptions().sensitivity;
+                Object.prototype.sensitivity = 'base';
+                var collator = new Intl.Collator('en', {
+                    numeric: true,
+                    caseFirst: 'upper',
+                    ignorePunctuation: true
+                });
+                var options = collator.resolvedOptions();
+                var compare = collator.compare;
+                return [
+                    new Intl.Collator('en').resolvedOptions().sensitivity === defaultSensitivity,
+                    options.numeric,
+                    options.caseFirst,
+                    options.ignorePunctuation,
+                    Object.getOwnPropertyNames(options).join(','),
+                    Object.getOwnPropertyNames(compare).join(','),
+                    compare('a', 'a')
+                ].join('|');
+            })()
+            """);
+
+        Assert.Equal("true|true|upper|true|locale,usage,sensitivity,ignorePunctuation,collation,numeric,caseFirst|length,name|0", result.ToString());
+    }
+
     #endregion
 }

@@ -20,6 +20,7 @@ public static class JSIntl
     private static readonly KeyString DateTimeFormatKey = KeyStrings.GetOrCreate("DateTimeFormat");
     private static readonly KeyString RelativeTimeFormatKey = KeyStrings.GetOrCreate("RelativeTimeFormat");
     private static readonly KeyString NumberFormatKey = KeyStrings.GetOrCreate("NumberFormat");
+    private static readonly KeyString CollatorKey = KeyStrings.GetOrCreate("Collator");
     private static readonly KeyString DisplayNamesKey = KeyStrings.GetOrCreate("DisplayNames");
     private static readonly KeyString DurationFormatKey = KeyStrings.GetOrCreate("DurationFormat");
     private static readonly KeyString ListFormatKey = KeyStrings.GetOrCreate("ListFormat");
@@ -76,6 +77,7 @@ public static class JSIntl
         intl.FastAddValue(DateTimeFormatKey, CreateDateTimeFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(RelativeTimeFormatKey, CreateRelativeTimeFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(NumberFormatKey, CreateNumberFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
+        intl.FastAddValue(CollatorKey, CreateCollatorConstructor(), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(DisplayNamesKey, CreateDisplayNamesConstructor(), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(DurationFormatKey, CreateDurationFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
         intl.FastAddValue(ListFormatKey, CreateListFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
@@ -360,6 +362,36 @@ public static class JSIntl
             new JSFunction(JSIntlNumberFormat.FormatRangeToPartsPrototype, "formatRangeToParts", "function formatRangeToParts() { [native code] }", createPrototype: false, length: 2),
             JSPropertyAttributes.ConfigurableValue);
         SetIntlToStringTag(constructor, "NumberFormat");
+        return constructor;
+    }
+
+    private static JSFunction CreateCollatorConstructor()
+    {
+        var constructor = new JSFunction(static (in Arguments a) => new JSIntlCollator(in a),
+            "Collator",
+            "function Collator() { [native code] }",
+            length: 0);
+        constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddProperty(KeyStrings.GetOrCreate("compare"),
+            new JSFunction(static (in Arguments a) =>
+            {
+                if (a.This is not JSIntlCollator @this)
+                    throw JSEngine.NewTypeError("Intl.Collator.prototype.compare called on incompatible receiver");
+
+                var compare = new JSFunction((in Arguments inner) => @this.Compare(in inner), "compare", "function compare() { [native code] }", createPrototype: false, length: 2);
+                compare.SetNameProperty(string.Empty);
+                return compare;
+            },
+                "get compare",
+                "function get compare() { [native code] }",
+                createPrototype: false,
+                length: 0),
+            null,
+            JSPropertyAttributes.ConfigurableProperty);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
+            new JSFunction(JSIntlCollator.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
+            JSPropertyAttributes.ConfigurableValue);
+        SetIntlToStringTag(constructor, "Collator");
         return constructor;
     }
 
@@ -1159,6 +1191,123 @@ public class JSIntlNumberFormat : JSObject
     private static JSObject CurrentPrototype()
         => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
             ? (intl[KeyStrings.GetOrCreate("NumberFormat")] as JSFunction)?.prototype
+            : null;
+}
+
+public class JSIntlCollator : JSObject
+{
+    private readonly string locale;
+    private readonly string usage = "sort";
+    private readonly string sensitivity = "variant";
+    private readonly bool ignorePunctuation;
+    private readonly string collation = "default";
+    private readonly bool numeric;
+    private readonly string caseFirst = "false";
+    private readonly CompareInfo compareInfo;
+
+    public JSIntlCollator(in Arguments a) : this()
+    {
+        var options = JSIntl.ValidateConstructorArguments("Collator", in a);
+        locale = JSIntl.ResolveLocale(a.Get1());
+        compareInfo = CultureInfo.CurrentCulture.CompareInfo;
+
+        if (TryGetUnicodeExtension(locale, "kn", out var kn))
+            numeric = kn == "true";
+        if (TryGetUnicodeExtension(locale, "kf", out var kf) && (kf == "upper" || kf == "lower" || kf == "false"))
+            caseFirst = kf;
+        if (TryGetUnicodeExtension(locale, "co", out var co) && IsValidCollation(co))
+            collation = co;
+
+        if (TryGetOwnOption(options, "usage", out var usageValue))
+            usage = usageValue.StringValue;
+        if (TryGetOwnOption(options, "sensitivity", out var sensitivityValue))
+            sensitivity = sensitivityValue.StringValue;
+        if (TryGetOwnOption(options, "ignorePunctuation", out var ignorePunctuationValue))
+            ignorePunctuation = ignorePunctuationValue.BooleanValue;
+        if (TryGetOwnOption(options, "numeric", out var numericValue))
+            numeric = numericValue.BooleanValue;
+        if (TryGetOwnOption(options, "caseFirst", out var caseFirstValue))
+            caseFirst = caseFirstValue.StringValue;
+        if (TryGetOwnOption(options, "collation", out var collationValue) && IsValidCollation(collationValue.StringValue))
+            collation = collationValue.StringValue;
+    }
+
+    private JSIntlCollator() : base(CurrentPrototype()) { }
+
+    public JSValue Compare(in Arguments a)
+    {
+        var left = a.Get1().StringValue;
+        var right = a.GetAt(1).StringValue;
+        var options = CompareOptions.None;
+        if (sensitivity == "base")
+            options |= CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace;
+        else if (sensitivity == "accent")
+            options |= CompareOptions.IgnoreCase;
+        else if (sensitivity == "case")
+            options |= CompareOptions.IgnoreNonSpace;
+        if (ignorePunctuation)
+            options |= CompareOptions.IgnoreSymbols;
+
+        return JSValue.CreateNumber(compareInfo.Compare(left, right, options));
+    }
+
+    public static JSValue ResolvedOptionsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlCollator @this)
+            throw JSEngine.NewTypeError("Intl.Collator.prototype.resolvedOptions called on incompatible receiver");
+
+        var result = new JSObject();
+        result.FastAddValue(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("usage"), JSValue.CreateString(@this.usage), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("sensitivity"), JSValue.CreateString(@this.sensitivity), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("ignorePunctuation"), @this.ignorePunctuation ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("collation"), JSValue.CreateString(@this.collation), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("numeric"), @this.numeric ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("caseFirst"), JSValue.CreateString(@this.caseFirst), JSPropertyAttributes.EnumerableConfigurableValue);
+        return result;
+    }
+
+    private static bool TryGetOwnOption(JSObject options, string name, out JSValue value)
+    {
+        value = JSUndefined.Value;
+        if (options == null)
+            return false;
+
+        var key = KeyStrings.GetOrCreate(name);
+        if (options.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(name, key)) is not JSObject descriptor)
+            return false;
+
+        value = descriptor[KeyStrings.value];
+        return !value.IsUndefined;
+    }
+
+    private static bool TryGetUnicodeExtension(string locale, string key, out string value)
+    {
+        value = null;
+        var marker = "-u-";
+        var start = locale.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (start < 0)
+            return false;
+
+        var parts = locale[(start + marker.Length)..].Split('-', StringSplitOptions.RemoveEmptyEntries);
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (!string.Equals(parts[i], key, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            value = i + 1 < parts.Length && parts[i + 1].Length > 2 ? parts[i + 1] : "true";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsValidCollation(string value)
+        => Regex.IsMatch(value, @"^[0-9A-Za-z]{3,8}(?:-[0-9A-Za-z]{3,8})*$", RegexOptions.CultureInvariant);
+
+    private static JSObject CurrentPrototype()
+        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
+            ? (intl[KeyStrings.GetOrCreate("Collator")] as JSFunction)?.prototype
             : null;
 }
 

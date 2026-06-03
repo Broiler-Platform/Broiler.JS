@@ -982,14 +982,14 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         if (Debugger == null)
         {
             var fx = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache);
-            return fx(new Arguments(@this));
+            return JSTailCall.Resolve(fx(new Arguments(@this)));
         }
 
         try
         {
             var f = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache);
             Debugger.ScriptParsed(ID, code, codeFilePath);
-            return f(new Arguments(@this));
+            return JSTailCall.Resolve(f(new Arguments(@this)));
         }
         catch (Exception ex)
         {
@@ -1010,7 +1010,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         using (CoreScript.AllowTopLevelAwaitScope())
         {
             var fx = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache);
-            result = fx(new Arguments(@this));
+            result = JSTailCall.Resolve(fx(new Arguments(@this)));
         }
 
         result = await AwaitThenableResultAsync(result);
@@ -1033,7 +1033,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         if (wt != null)
             await wt;
 
-        return await AwaitThenableResultAsync(r);
+        return await AwaitThenableResultAsync(JSTailCall.Resolve(r));
     }
 
     private static async Task<JSValue> AwaitThenableResultAsync(JSValue r)
