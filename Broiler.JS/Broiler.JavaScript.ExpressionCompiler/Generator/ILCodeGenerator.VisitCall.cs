@@ -43,6 +43,12 @@ public partial class ILCodeGenerator
 
     private bool TryEmitJavaScriptTailCallValue(YCallExpression callExpression)
     {
+        if (!string.Equals(Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"), "1", StringComparison.Ordinal))
+            return false;
+
+        if (tailCallBlockedDepth != 0)
+            return false;
+
         if (callExpression.Target == null
             || callExpression.Type.FullName != "Broiler.JavaScript.Runtime.JSValue"
             || callExpression.Method.Name != "InvokeFunction"

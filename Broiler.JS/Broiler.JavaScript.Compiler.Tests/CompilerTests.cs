@@ -3444,24 +3444,33 @@ public class CompilerTests
     [Fact]
     public void Compile_TailPosition_Call_Uses_Trampoline()
     {
-        using var ctx = new JSContext();
-        var result = ctx.Eval("""
-            (function () {
-                'use strict';
-                var callCount = 0;
-                (function f(n) {
-                    if (n === 0) {
-                        callCount += 1;
-                        return;
-                    }
-                    function getF() { return f; }
-                    return getF()(n - 1);
-                })(100000);
-                return callCount;
-            })()
-            """);
+        var previousScriptHost = Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST");
+        try
+        {
+            Environment.SetEnvironmentVariable("BROILER_SCRIPT_HOST", "1");
+            using var ctx = new JSContext();
+            var result = ctx.Eval("""
+                (function () {
+                    'use strict';
+                    var callCount = 0;
+                    (function f(n) {
+                        if (n === 0) {
+                            callCount += 1;
+                            return;
+                        }
+                        function getF() { return f; }
+                        return getF()(n - 1);
+                    })(100000);
+                    return callCount;
+                })()
+                """);
 
-        Assert.Equal(1.0, result.DoubleValue);
+            Assert.Equal(1.0, result.DoubleValue);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("BROILER_SCRIPT_HOST", previousScriptHost);
+        }
     }
 
     [Fact]
