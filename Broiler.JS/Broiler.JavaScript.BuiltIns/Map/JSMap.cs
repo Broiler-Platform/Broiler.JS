@@ -14,11 +14,24 @@ namespace Broiler.JavaScript.BuiltIns.Map;
 [JSClassGenerator("Map")]
 public partial class JSMap : JSObject
 {
-    private readonly LinkedList<(JSValue key, JSValue value)> store = new();
-    private StringMap<LinkedListNode<(JSValue key, JSValue value)>> index = new();
+    // Entries are appended to an ordered list and never physically removed while live
+    // iterators may be in flight; deletion/clear mark the slot as a tombstone instead.
+    // Iteration walks the list by index so that entries added during iteration are
+    // observed and deleted entries are skipped, matching the spec's [[MapData]] semantics
+    // (and avoiding "Collection was modified" exceptions from foreach over a LinkedList).
+    private struct Entry
+    {
+        public JSValue Key;
+        public JSValue Value;
+        public bool Deleted;
+    }
+
+    private readonly List<Entry> store = new();
+    private StringMap<int> index = new();
+    private int liveCount;
 
     [JSExport]
-    public int Size => store.Count;
+    public int Size => liveCount;
 
     public JSMap(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
@@ -95,14 +108,17 @@ public partial class JSMap : JSObject
     {
         HashedString uk = key.ToUniqueID();
 
-        if (index.TryGetValue(in uk, out var i))
+        if (index.TryGetValue(in uk, out var pos))
         {
-            i.Value = (key, value);
+            var e = store[pos];
+            e.Value = value;
+            store[pos] = e;
         }
         else
         {
-            var node = store.AddLast((key, value));
-            index.Put(in uk) = node;
+            index.Put(in uk) = store.Count;
+            store.Add(new Entry { Key = key, Value = value });
+            liveCount++;
         }
 
         return value;
@@ -111,8 +127,19 @@ public partial class JSMap : JSObject
     [JSExport("clear")]
     public JSValue Set(in Arguments a)
     {
+        // Preserve the backing list (live iterators keep their position) but tombstone
+        // every slot so they observe the entries as removed.
+        for (var i = 0; i < store.Count; i++)
+        {
+            var e = store[i];
+            e.Deleted = true;
+            e.Key = JSUndefined.Value;
+            e.Value = JSUndefined.Value;
+            store[i] = e;
+        }
+
         index = new();
-        store.Clear();
+        liveCount = 0;
 
         return JSUndefined.Value;
     }
@@ -123,10 +150,15 @@ public partial class JSMap : JSObject
         var f = a[0];
         HashedString uk = f.ToUniqueID();
 
-        if (index.TryGetValue(in uk, out var i))
+        if (index.TryGetValue(in uk, out var pos))
         {
-            store.Remove(i);
+            var e = store[pos];
+            e.Deleted = true;
+            e.Key = JSUndefined.Value;
+            e.Value = JSUndefined.Value;
+            store[pos] = e;
             index.TryRemove(uk.Value, out _);
+            liveCount--;
             return JSBoolean.True;
         }
 
@@ -137,11 +169,16 @@ public partial class JSMap : JSObject
     [Symbol("@@iterator")]
     public IEnumerable<JSValue> GetEntries()
     {
-        if (store == null)
-            yield break;
+        // Walk by index so entries added during iteration are observed and tombstoned
+        // entries are skipped.
+        for (var i = 0; i < store.Count; i++)
+        {
+            var e = store[i];
+            if (e.Deleted)
+                continue;
 
-        foreach (var (key, value) in store)
-            yield return new JSArray(key, value);
+            yield return new JSArray(e.Key, e.Value);
+        }
     }
 
     [JSExport("forEach")]
@@ -152,12 +189,16 @@ public partial class JSMap : JSObject
             throw JSEngine.NewTypeError($"Function parameter expected");
 
         var @this = a.This ?? this;
-        if (store == null)
-            return JSUndefined.Value;
-        
-        foreach (var e in store)
-            fx.Call(@this, e.key, e.value, this);
-        
+
+        for (var i = 0; i < store.Count; i++)
+        {
+            var e = store[i];
+            if (e.Deleted)
+                continue;
+
+            fx.Call(@this, e.Value, e.Key, this);
+        }
+
         return JSUndefined.Value;
     }
 
@@ -166,7 +207,7 @@ public partial class JSMap : JSObject
     {
         var f = a.Get1();
         HashedString uk = f.ToUniqueID();
-        if (index.TryGetValue(in uk, out var i))
+        if (index.TryGetValue(in uk, out _))
             return JSBoolean.True;
 
         return JSBoolean.False;
@@ -177,8 +218,8 @@ public partial class JSMap : JSObject
     public JSValue Get(JSValue key)
     {
         HashedString uk = key.ToUniqueID();
-        if (index.TryGetValue(in uk, out var i))
-            return i.Value.value;
+        if (index.TryGetValue(in uk, out var pos))
+            return store[pos].Value;
 
         return JSUndefined.Value;
     }
@@ -186,22 +227,28 @@ public partial class JSMap : JSObject
     [JSExport("keys")]
     public IEnumerable<JSValue> Keys()
     {
-        if (store == null)
-            yield break;
+        for (var i = 0; i < store.Count; i++)
+        {
+            var e = store[i];
+            if (e.Deleted)
+                continue;
 
-        foreach (var (key, _) in store)
-            yield return key;
+            yield return e.Key;
+        }
     }
 
 
     [JSExport("values")]
     public IEnumerable<JSValue> Values()
     {
-        if (store == null)
-            yield break;
+        for (var i = 0; i < store.Count; i++)
+        {
+            var e = store[i];
+            if (e.Deleted)
+                continue;
 
-        foreach (var (_, value) in store)
-            yield return value;
+            yield return e.Value;
+        }
     }
 
     /// <summary>
@@ -215,11 +262,12 @@ public partial class JSMap : JSObject
         var (key, defaultValue) = a.Get2();
         HashedString uk = key.ToUniqueID();
 
-        if (index.TryGetValue(in uk, out var i))
-            return i.Value.value;
+        if (index.TryGetValue(in uk, out var pos))
+            return store[pos].Value;
 
-        var node = store.AddLast((key, defaultValue));
-        index.Put(in uk) = node;
+        index.Put(in uk) = store.Count;
+        store.Add(new Entry { Key = key, Value = defaultValue });
+        liveCount++;
 
         return defaultValue;
     }
@@ -237,12 +285,22 @@ public partial class JSMap : JSObject
             throw JSEngine.NewTypeError("getOrInsertComputed requires a callback function");
         
         HashedString uk = key.ToUniqueID();
-        if (index.TryGetValue(in uk, out var i))
-            return i.Value.value;
+        if (index.TryGetValue(in uk, out var pos))
+            return store[pos].Value;
 
         var value = callbackfn.Call(JSUndefined.Value, key);
-        var node = store.AddLast((key, value));
-        index.Put(in uk) = node;
+        // Re-check: the callback may have inserted this key already.
+        if (index.TryGetValue(in uk, out pos))
+        {
+            var existing = store[pos];
+            existing.Value = value;
+            store[pos] = existing;
+            return value;
+        }
+
+        index.Put(in uk) = store.Count;
+        store.Add(new Entry { Key = key, Value = value });
+        liveCount++;
 
         return value;
     }

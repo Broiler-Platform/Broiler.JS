@@ -2810,6 +2810,53 @@ public class CompilerTests
         Assert.Equal("true|function|123", result.ToString());
     }
 
+    [Fact]
+    public void AnnexB_Global_Block_Function_No_Skip_Try_Simple_Catch()
+    {
+        // B.3.3.2 / B.3.5: a block-scoped function declaration nested inside a
+        // catch with a *simple* CatchParameter of the same name must still create
+        // the Annex B var binding in the surrounding (global) scope. Reading the
+        // name before evaluation yields undefined (not a ReferenceError); after
+        // evaluation it is the function.
+        using var ctx = new JSContext();
+
+        // Block statement in the global scope, inside catch (f)
+        var block = ctx.Eval("""
+            var before = f === undefined;
+            try { throw null; } catch (f) {{ function f() { return 123; } }}
+            [before, typeof f, f()].join("|");
+            """);
+        Assert.Equal("true|function|123", block.ToString());
+
+        // switch `case` clause in the global scope, inside catch (f)
+        using var ctx2 = new JSContext();
+        var switchCase = ctx2.Eval("""
+            var before = f === undefined;
+            try { throw null; } catch (f) { switch (1) { case 1: function f() { return 123; } } }
+            [before, typeof f, f()].join("|");
+            """);
+        Assert.Equal("true|function|123", switchCase.ToString());
+    }
+
+    [Fact]
+    public void AnnexB_Eval_Global_Switch_Function_No_Skip_Try_Simple_Catch()
+    {
+        using var ctx = new JSContext();
+
+        // Direct eval at global scope, switch-case function declaration in catch (f)
+        var direct = ctx.Eval("""
+            eval('var before = f === undefined; try { throw null; } catch (f) { switch (1) { case 1: function f() { return 123; } } } [before, typeof f, f()].join("|");')
+            """);
+        Assert.Equal("true|function|123", direct.ToString());
+
+        // Indirect eval at global scope
+        using var ctx2 = new JSContext();
+        var indirect = ctx2.Eval("""
+            (0, eval)('var before = f === undefined; try { throw null; } catch (f) { switch (1) { case 1: function f() { return 123; } } } [before, typeof f, f()].join("|");')
+            """);
+        Assert.Equal("true|function|123", indirect.ToString());
+    }
+
     // ----------------------------------------------------------------
     // Seeded property-based parameterized tests (recommendation #5 from
     // docs/compliance/testsuite-optimization.md).  Each fixture generates

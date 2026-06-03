@@ -3788,7 +3788,8 @@ public class BuiltInsTests
             m.set('a', 1);
             m.set('b', 2);
             var sum = 0;
-            m.forEach(function(k, v) { sum += v; });
+            // Map.prototype.forEach callback signature is (value, key, map).
+            m.forEach(function(value, key) { sum += value; });
             sum;
         ");
         Assert.Equal(3.0, result.DoubleValue);
@@ -3814,6 +3815,95 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("2|false|true;false|false|false", result.ToString());
+    }
+
+    [Fact]
+    public void Map_And_Set_Tolerate_Mutation_During_Iteration()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // Deleting and adding entries while iterating must not throw and must
+        // follow spec semantics: deleted entries are skipped, entries added
+        // after iteration begins are visited, and a deleted-then-readded entry
+        // is revisited at its new position.
+        var result = ctx.Eval("""
+            var out = [];
+
+            var m = new Map([[1,'a'],[2,'b'],[3,'c']]);
+            var deletedSeen = [];
+            m.forEach(function(v,k){ deletedSeen.push(k); if (k===1) m.delete(2); });
+            out.push('map-del:' + deletedSeen.join(','));
+
+            var m2 = new Map([[1,'a']]);
+            var addSeen = [];
+            m2.forEach(function(v,k){ addSeen.push(k); if (k===1) m2.set(2,'b'); });
+            out.push('map-add:' + addSeen.join(','));
+
+            var m3 = new Map([[1,'a'],[2,'b']]);
+            var it = m3[Symbol.iterator]();
+            var itSeen = [it.next().value[0]];
+            m3.delete(2); m3.set(2,'b2');
+            var n = it.next();
+            itSeen.push(n.done ? 'done' : n.value[0]);
+            out.push('map-readd:' + itSeen.join(','));
+
+            var s = new Set([1,2,3]);
+            var setSeen = [];
+            s.forEach(function(v){ setSeen.push(v); if (v===1) s.delete(2); });
+            out.push('set-del:' + setSeen.join(','));
+
+            out.join('|');
+            """);
+
+        Assert.Equal("map-del:1,3|map-add:1,2|map-readd:1,2|set-del:1,3", result.ToString());
+    }
+
+    [Fact]
+    public void Map_Clear_Preserves_Iterator_And_Resets_Size()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // clear() during iteration empties the entries (skipped by a live
+        // iterator) and resets size to 0.
+        var result = ctx.Eval("""
+            var m = new Map([[1,'a'],[2,'b']]);
+            var it = m[Symbol.iterator]();
+            var first = it.next().value[0];
+            m.clear();
+            var afterClear = it.next().done;
+            [first, m.size, m.get(1) === undefined, afterClear].join('|');
+            """);
+
+        Assert.Equal("1|0|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void Object_HasOwn_And_Friends_Accept_Symbol_Property_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // ToPropertyKey must return a Symbol-valued primitive as-is instead of
+        // attempting ToString (which throws "Cannot convert a Symbol value to a
+        // string"). Covers a direct Symbol and an object whose @@toPrimitive
+        // returns a Symbol.
+        var result = ctx.Eval("""
+            var s = Symbol('x');
+            var o = {}; o[s] = 1;
+            var key = { [Symbol.toPrimitive]: function() { return s; } };
+            [
+              Object.hasOwn(o, s),
+              o.hasOwnProperty(s),
+              o.propertyIsEnumerable(s),
+              Object.hasOwn(o, key),
+              o.hasOwnProperty(key),
+              o.propertyIsEnumerable(key)
+            ].join('|');
+            """);
+
+        Assert.Equal("true|true|true|true|true|true", result.ToString());
     }
 
     // ── M3: JSWeakMap tests ──────────────────────────────────────────
