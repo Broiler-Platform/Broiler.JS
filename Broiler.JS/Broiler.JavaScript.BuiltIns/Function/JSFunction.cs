@@ -555,7 +555,14 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public new static JSValue ToString(in Arguments a)
     {
         if (a.This is not JSFunction fx)
+        {
+            // Per spec (Function.prototype.toString), any callable object (e.g. a Proxy whose
+            // target is callable) returns an implementation-defined NativeFunction representation.
+            if (a.This is JSObject { IsFunction: true })
+                return JSValue.CreateString("function () { [native code] }");
+
             throw JSEngine.NewTypeError($"Function.prototype.toString cannot be called with non function");
+        }
         
         var source = fx.source;
         if (source.IsEmpty)

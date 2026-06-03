@@ -57,7 +57,7 @@ public partial class JSPromise
                 reject = nextReject;
 
             return JSUndefined.Value;
-        }, "executor", "function executor() { [native] }", length: 2, createPrototype: false);
+        }, "executor", "function executor() { [native code] }", length: 2, createPrototype: false);
         executorFunction.SetNameProperty(string.Empty);
 
         var promise = constructor.CreateInstance(new Arguments(JSUndefined.Value, executorFunction));
@@ -213,13 +213,13 @@ public partial class JSPromise
                             FinishIfDone();
                         }, null);
                         return JSUndefined.Value;
-                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
                     var rejectElement = new JSFunction((in Arguments args) =>
                     {
                         var reason = args.Get1();
                         sc.Post(_ => reject.InvokeFunction(new Arguments(JSUndefined.Value, reason)), null);
                         return JSUndefined.Value;
-                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
                     if (item is JSPromise promise)
                     {
@@ -296,14 +296,14 @@ public partial class JSPromise
                             resolve.InvokeFunction(new Arguments(JSUndefined.Value, result));
                     }, null);
                     return JSUndefined.Value;
-                }, "", "function () { [native] }", length: 1, createPrototype: false);
+                }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
                 var rejectElement = new JSFunction((in Arguments args) =>
                 {
                     var v = args.Get1();
                     sc.Post((o) => reject.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), v);
                     return JSUndefined.Value;
-                }, "", "function () { [native] }", length: 1, createPrototype: false);
+                }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
                 if (value is JSPromise p)
                 {
@@ -351,13 +351,13 @@ public partial class JSPromise
                         var value = args.Get1();
                         sc.Post(o => resolve.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), value);
                         return JSUndefined.Value;
-                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
                     var rejectElement = new JSFunction((in Arguments args) =>
                     {
                         var value = args.Get1();
                         sc.Post(o => reject.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), value);
                         return JSUndefined.Value;
-                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
                     if (item is JSPromise promise)
                     {
@@ -432,7 +432,7 @@ public partial class JSPromise
                             FinishIfDone();
                         }, null);
                         return JSUndefined.Value;
-                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
                     var rejectElement = new JSFunction((in Arguments args) =>
                     {
                         var entry = new JSObject();
@@ -446,7 +446,7 @@ public partial class JSPromise
                             FinishIfDone();
                         }, null);
                         return JSUndefined.Value;
-                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
                     if (item is JSPromise promise)
                     {
@@ -545,7 +545,7 @@ public partial class JSPromise
                         var value = args.Get1();
                         sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, value)), null);
                         return JSUndefined.Value;
-                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
                     var rejectElement = new JSFunction((in Arguments args) =>
                     {
                         var currentIndex = errorIndex++;
@@ -558,7 +558,7 @@ public partial class JSPromise
                                 reject.InvokeFunction(new Arguments(JSUndefined.Value, errors));
                         }, null);
                         return JSUndefined.Value;
-                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
                     if (item is JSPromise promise)
                     {

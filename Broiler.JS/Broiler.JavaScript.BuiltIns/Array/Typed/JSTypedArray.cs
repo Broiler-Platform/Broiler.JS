@@ -46,7 +46,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     [JSExport]
     public readonly int byteOffset;
 
-    [JSExport("BYTES_PER_ELEMENT")]
+    // NOTE: BYTES_PER_ELEMENT is intentionally NOT exported here. Per spec it is a data
+    // property defined on each concrete TypedArray constructor and its prototype (wired up in
+    // PatchTypedArrayBuiltIns), not an accessor on %TypedArray%.prototype.
     internal readonly int bytesPerElement;
 
     [JSExport]
