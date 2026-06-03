@@ -287,6 +287,9 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <summary>Gets whether this value is a JavaScript boolean.</summary>
     public virtual bool IsBoolean => false;
 
+    /// <summary>Gets whether this value is a JavaScript BigInt.</summary>
+    public virtual bool IsBigInt => false;
+
     /// <summary>Gets whether this value is a JavaScript function.</summary>
     public virtual bool IsFunction => false;
 
@@ -420,12 +423,27 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue Decrement() => CreateNumber(DoubleValue - 1);
 
-    public virtual JSValue Subtract(JSValue value) => CreateNumber(DoubleValue - value.DoubleValue);
+    public virtual JSValue Subtract(JSValue value)
+    {
+        var self = ToNumericPrimitive(this);
+        value = ToNumericPrimitive(value);
+        return !ReferenceEquals(self, this) ? self.Subtract(value) : CreateNumber(DoubleValue - value.DoubleValue);
+    }
 
-    public virtual JSValue Multiply(JSValue value) => CreateNumber(DoubleValue * value.DoubleValue);
+    public virtual JSValue Multiply(JSValue value)
+    {
+        var self = ToNumericPrimitive(this);
+        value = ToNumericPrimitive(value);
+        return !ReferenceEquals(self, this) ? self.Multiply(value) : CreateNumber(DoubleValue * value.DoubleValue);
+    }
 
     /// <summary>
-    public virtual JSValue Divide(JSValue value) => CreateNumber(DoubleValue / value.DoubleValue);
+    public virtual JSValue Divide(JSValue value)
+    {
+        var self = ToNumericPrimitive(this);
+        value = ToNumericPrimitive(value);
+        return !ReferenceEquals(self, this) ? self.Divide(value) : CreateNumber(DoubleValue / value.DoubleValue);
+    }
 
     public virtual JSValue BitwiseAnd(JSValue value)
     {
@@ -475,7 +493,12 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         return !ReferenceEquals(self, this) ? self.UnsignedRightShift(value) : CreateNumber(UIntValue >> value.IntValue);
     }
 
-    public virtual JSValue Modulo(JSValue value) => CreateNumber(DoubleValue % value.DoubleValue);
+    public virtual JSValue Modulo(JSValue value)
+    {
+        var self = ToNumericPrimitive(this);
+        value = ToNumericPrimitive(value);
+        return !ReferenceEquals(self, this) ? self.Modulo(value) : CreateNumber(DoubleValue % value.DoubleValue);
+    }
 
     /// Speed improvements for string contact operations
     /// </summary>
@@ -959,6 +982,12 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         if (IsUndefined || value.IsUndefined)
             return false;
 
+        // A BigInt operand compares by mathematical value; let the BigInt side
+        // (which coerces the other operand) drive the comparison instead of
+        // forcing it through DoubleValue, which throws for BigInt.
+        if (value.IsBigInt && !IsBigInt)
+            return value.Greater(this);
+
         if (!CanBeNumber && !value.CanBeNumber)
         {
             if (StringValue.Less(value.StringValue))
@@ -979,6 +1008,9 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
         if (IsUndefined || value.IsUndefined)
             return false;
+
+        if (value.IsBigInt && !IsBigInt)
+            return value.GreaterOrEqual(this);
 
         if (!CanBeNumber && !value.CanBeNumber)
         {
@@ -1001,6 +1033,9 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         if (IsUndefined || value.IsUndefined)
             return false;
 
+        if (value.IsBigInt && !IsBigInt)
+            return value.Less(this);
+
         if (!CanBeNumber && !value.CanBeNumber)
         {
             if (StringValue.Greater(value.StringValue))
@@ -1021,6 +1056,9 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
         if (IsUndefined || value.IsUndefined)
             return false;
+
+        if (value.IsBigInt && !IsBigInt)
+            return value.LessOrEqual(this);
 
         if (!CanBeNumber && !value.CanBeNumber)
         {
