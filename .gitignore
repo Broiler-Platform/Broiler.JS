@@ -9,3 +9,15 @@
 **/obj/
 **/TestResults/
 **/Generated/
+/.vs/Broiler.JS.slnx/DesignTimeBuild/.dtbcache.v2
+/.vs/Broiler.JS.slnx/FileContentIndex/0adf1b45-99da-4323-a1ab-6dcb2514193c.vsidx
+/.vs/Broiler.JS.slnx/FileContentIndex/0d4afe4b-ac8b-461f-beb5-15df7b519cb8.vsidx
+/.vs/Broiler.JS.slnx/FileContentIndex/2a28b795-479d-4dc5-afc8-f46e322f87da.vsidx
+/.vs/Broiler.JS.slnx/FileContentIndex/b2384d99-c267-4170-be9a-c352cdc33c5b.vsidx
+/.vs/Broiler.JS.slnx/FileContentIndex/c05d2464-4e33-41b9-9d86-66d96d8ca0f7.vsidx
+/.vs/Broiler.JS.slnx/v18/.suo
+/.vs/Broiler.JS.slnx/v18/DocumentLayout.backup.json
+/.vs/Broiler.JS.slnx/v18/DocumentLayout.json
+/.vs/Broiler.JS.slnx/v18/TestStore/0/027.testlog
+/.vs/Broiler.JS.slnx/v18/TestStore/0/testlog.manifest
+/repro-out.txt
