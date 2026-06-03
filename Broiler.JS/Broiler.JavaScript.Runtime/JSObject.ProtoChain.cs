@@ -92,7 +92,14 @@ public partial class JSObject
 
     internal override PropertyKey ToKey(bool create = true)
     {
-        return CreateString(StringValue).ToKey(create);
+        // ToPropertyKey(argument): let key = ToPrimitive(argument, string). If key is a
+        // Symbol, return it as-is; otherwise return ToString(key). Converting a Symbol-valued
+        // primitive to a string would incorrectly throw "Cannot convert a Symbol value to a string".
+        var primitive = ToPrimitive(preferString: true);
+        if (primitive.IsSymbol)
+            return primitive.ToKey(create);
+
+        return CreateString(primitive.StringValue).ToKey(create);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -428,7 +428,12 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         var parent = scope.Top.Parent;
         while (parent != null && parent.Function == scope.Top.Function)
         {
-            if (parent.TryGetOwnVariable(name, out var variable) && variable != currentBinding)
+            // Skip a simple CatchParameter binding: per B.3.5 it does not block
+            // Annex B hoisting, and the var-scoped binding targets the enclosing
+            // function/program var environment, not the catch parameter. Returning
+            // it here would assign the (discarded) catch binding and short-circuit
+            // creation of the real outer binding, leaving the name undefined.
+            if (parent.TryGetOwnVariable(name, out var variable) && variable != currentBinding && !variable.IsSimpleCatchBinding)
                 return variable;
 
             parent = parent.Parent;

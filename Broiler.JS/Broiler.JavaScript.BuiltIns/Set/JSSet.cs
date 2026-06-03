@@ -17,11 +17,17 @@ public partial class JSSet : JSObject
 {
     private readonly record struct SetLikeRecord(int Size, Func<JSValue, bool> Has, Func<IElementEnumerator> GetKeys);
 
-    private LinkedList<JSValue> store = new();
-    private StringMap<LinkedListNode<JSValue>> index;
+    // Entries are appended to an ordered list and never physically removed while live
+    // iterators may be in flight; deletion/clear set the slot to null (a tombstone)
+    // instead. Iteration walks the list by index so that entries added during iteration
+    // are observed and removed entries are skipped, matching the spec's [[SetData]]
+    // semantics (and avoiding "Collection was modified" exceptions from foreach).
+    private List<JSValue> store = new();
+    private StringMap<int> index;
+    private int liveCount;
 
     [JSExport]
-    public int Size => store?.Count ?? 0;
+    public int Size => liveCount;
 
     public JSSet(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
@@ -58,8 +64,9 @@ public partial class JSSet : JSObject
 
         if (!index.TryGetValue(in uk, out _))
         {
-            var node = store.AddLast(key);
-            index.Put(in uk) = node;
+            index.Put(in uk) = store.Count;
+            store.Add(key);
+            liveCount++;
         }
 
         return key;
@@ -68,8 +75,13 @@ public partial class JSSet : JSObject
     [JSExport("clear")]
     public JSValue Set(in Arguments a)
     {
+        // Preserve the backing list (live iterators keep their position) but tombstone
+        // every slot so they observe the entries as removed.
+        for (var i = 0; i < store.Count; i++)
+            store[i] = null;
+
         index = new();
-        store.Clear();
+        liveCount = 0;
         return JSUndefined.Value;
     }
 
@@ -78,10 +90,11 @@ public partial class JSSet : JSObject
     {
         var f = a[0];
         HashedString uk = f.ToUniqueID();
-        if (index.TryGetValue(in uk, out var i))
+        if (index.TryGetValue(in uk, out var pos))
         {
-            store.Remove(i);
+            store[pos] = null;
             index.TryRemove(uk.Value, out _);
+            liveCount--;
             return JSBoolean.True;
         }
 
@@ -97,11 +110,12 @@ public partial class JSSet : JSObject
     private bool Remove(JSValue key)
     {
         HashedString uk = key.ToUniqueID();
-        if (!index.TryGetValue(in uk, out var node))
+        if (!index.TryGetValue(in uk, out var pos))
             return false;
 
-        store.Remove(node);
+        store[pos] = null;
         index.TryRemove(uk.Value, out _);
+        liveCount--;
         return true;
     }
 
@@ -138,24 +152,33 @@ public partial class JSSet : JSObject
             });
     }
 
-    private sealed class StoreEnumerator(LinkedList<JSValue> source) : IElementEnumerator
+    private sealed class StoreEnumerator(List<JSValue> source) : IElementEnumerator
     {
-        private LinkedListNode<JSValue> current;
+        private int position = -1;
         private uint index;
 
         private bool MoveNextNode(out JSValue value, out uint currentIndex)
         {
-            current = current == null ? source.First : current.Next;
-            if (current == null)
+            // Walk by index and skip tombstones so the enumerator tolerates mutation of
+            // the underlying set during iteration.
+            while (true)
             {
-                value = JSUndefined.Value;
-                currentIndex = 0;
-                return false;
-            }
+                position++;
+                if (position >= source.Count)
+                {
+                    value = JSUndefined.Value;
+                    currentIndex = 0;
+                    return false;
+                }
 
-            value = current.Value;
-            currentIndex = index++;
-            return true;
+                var entry = source[position];
+                if (entry is null)
+                    continue;
+
+                value = entry;
+                currentIndex = index++;
+                return true;
+            }
         }
 
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
@@ -183,11 +206,14 @@ public partial class JSSet : JSObject
     [JSExport("entries")]
     public IEnumerable<JSValue> GetEntries()
     {
-        if (store == null)
-            yield break;
+        for (var i = 0; i < store.Count; i++)
+        {
+            var entry = store[i];
+            if (entry is null)
+                continue;
 
-        foreach (var entry in store)
             yield return new JSArray(entry, entry);
+        }
     }
 
     [JSExport("forEach")]
@@ -198,12 +224,16 @@ public partial class JSSet : JSObject
             throw JSEngine.NewTypeError($"Function parameter expected");
 
         var @this = a.This ?? this;
-        if (store == null)
-            return JSUndefined.Value;
-        
-        foreach (var e in store)
+
+        for (var i = 0; i < store.Count; i++)
+        {
+            var e = store[i];
+            if (e is null)
+                continue;
+
             fx.Call(@this, e, e, this);
-        
+        }
+
         return JSUndefined.Value;
     }
 
@@ -222,22 +252,28 @@ public partial class JSSet : JSObject
     [JSExport("keys")]
     public IEnumerable<JSValue> Keys()
     {
-        if (store == null)
-            yield break;
+        for (var i = 0; i < store.Count; i++)
+        {
+            var entry = store[i];
+            if (entry is null)
+                continue;
 
-        foreach (var entry in store)
             yield return entry;
+        }
     }
 
 
     [JSExport("values")]
     public IEnumerable<JSValue> Values()
     {
-        if (store == null)
-            yield break;
+        for (var i = 0; i < store.Count; i++)
+        {
+            var entry = store[i];
+            if (entry is null)
+                continue;
 
-        foreach (var entry in store)
             yield return entry;
+        }
     }
 
     [JSExport("union")]
@@ -246,9 +282,10 @@ public partial class JSSet : JSObject
         var other = GetSetLikeRecord(a.Get1(), "union");
 
         var result = new JSSet(Arguments.Empty);
-        if (store != null)
+        for (var i = 0; i < store.Count; i++)
         {
-            foreach (var item in store)
+            var item = store[i];
+            if (item is not null)
                 result.Add(item);
         }
 
@@ -267,13 +304,11 @@ public partial class JSSet : JSObject
         var other = GetSetLikeRecord(a.Get1(), "intersection");
 
         var result = new JSSet(Arguments.Empty);
-        if (store != null)
+        for (var i = 0; i < store.Count; i++)
         {
-            foreach (var item in store)
-            {
-                if (other.Has(item))
-                    result.Add(item);
-            }
+            var item = store[i];
+            if (item is not null && other.Has(item))
+                result.Add(item);
         }
 
         return result;
@@ -285,12 +320,10 @@ public partial class JSSet : JSObject
         var other = GetSetLikeRecord(a.Get1(), "difference");
 
         var result = new JSSet(Arguments.Empty);
-        if (store == null)
-            return result;
-
-        foreach (var item in store)
+        for (var i = 0; i < store.Count; i++)
         {
-            if (!other.Has(item))
+            var item = store[i];
+            if (item is not null && !other.Has(item))
                 result.Add(item);
         }
 
@@ -303,9 +336,10 @@ public partial class JSSet : JSObject
         var other = GetSetLikeRecord(a.Get1(), "symmetricDifference");
 
         var result = new JSSet(Arguments.Empty);
-        if (store != null)
+        for (var i = 0; i < store.Count; i++)
         {
-            foreach (var item in store)
+            var item = store[i];
+            if (item is not null)
                 result.Add(item);
         }
 
@@ -324,12 +358,10 @@ public partial class JSSet : JSObject
     {
         var other = GetSetLikeRecord(a.Get1(), "isSubsetOf");
 
-        if (store == null)
-            return JSBoolean.True;
-
-        foreach (var item in store)
+        for (var i = 0; i < store.Count; i++)
         {
-            if (!other.Has(item))
+            var item = store[i];
+            if (item is not null && !other.Has(item))
                 return JSBoolean.False;
         }
 
