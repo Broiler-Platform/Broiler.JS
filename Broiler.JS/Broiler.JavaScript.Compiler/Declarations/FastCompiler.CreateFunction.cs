@@ -265,6 +265,9 @@ partial class FastCompiler
                 else
                     jsf = JSFunctionBuilder.EnableStrictMode(jsf);
 
+                if (!isStrictFunction && !functionDeclaration.IsArrowFunction)
+                    jsf = JSFunctionBuilder.EnableLegacyCallerAndArguments(jsf);
+
                 if (withBoundaries.Count > 0 && !isDirectEvalCompilation)
                     jsf = JSFunctionBuilder.CaptureWithScopes(jsf);
             }

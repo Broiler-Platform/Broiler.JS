@@ -17,6 +17,7 @@ public class JSFunctionBuilder
     private static PropertyInfo _coerceThisOnInvoke;
     private static PropertyInfo _isStrictMode;
     private static MethodInfo _captureWithScopes;
+    private static MethodInfo _addLegacyCallerAndArguments;
 
     private static MethodInfo invokeFunction;
 
@@ -39,6 +40,8 @@ public class JSFunctionBuilder
             ?? throw new InvalidOperationException($"IsStrictMode property not found on {type.FullName}");
         _captureWithScopes = type.PublicMethod("CaptureWithScopes", typeof(JSValue))
             ?? throw new InvalidOperationException($"CaptureWithScopes(JSValue) not found on {type.FullName}");
+        _addLegacyCallerAndArguments = type.PublicMethod("AddLegacyCallerAndArguments")
+            ?? throw new InvalidOperationException($"AddLegacyCallerAndArguments() not found on {type.FullName}");
         invokeFunction = typeof(JSValue).InternalMethod("InvokeFunction", ArgumentsBuilder.refType)
             ?? throw new InvalidOperationException("InvokeFunction method not found on JSValue");
         _invokeSuperConstructor = type.PublicMethod("InvokeSuperConstructor",
@@ -95,6 +98,16 @@ public class JSFunctionBuilder
             temp.AsSequence(),
             Expression.Assign(temp, target),
             Expression.Assign(Expression.Property(temp, _isStrictMode), Expression.Constant(true)),
+            temp);
+    }
+
+    public static Expression EnableLegacyCallerAndArguments(Expression target)
+    {
+        var temp = Expression.Parameter(type, "#function");
+        return Expression.Block(
+            temp.AsSequence(),
+            Expression.Assign(temp, target),
+            Expression.Call(temp, _addLegacyCallerAndArguments),
             temp);
     }
 
