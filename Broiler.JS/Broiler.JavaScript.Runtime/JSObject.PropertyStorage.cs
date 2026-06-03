@@ -806,7 +806,7 @@ public partial class JSObject
         {
             CompletePropertyDescriptor(pd, in old);
             if (!IsCompatiblePropertyRedefinition(in old, pd))
-                throw NewTypeError("Cannot redefine property");
+                return JSValue.BooleanFalse;
         }
 
         symbols.Put(key) = pd.ToProperty(key);
@@ -824,7 +824,7 @@ public partial class JSObject
         {
             CompletePropertyDescriptor(pd, in old);
             if (!IsCompatiblePropertyRedefinition(in old, pd))
-                throw NewTypeError("Cannot redefine property");
+                return JSValue.BooleanFalse;
         }
 
         elements.Put(key) = pd.ToProperty(key);
@@ -857,7 +857,7 @@ public partial class JSObject
 
             CompletePropertyDescriptor(pd, in old);
             if (!IsCompatiblePropertyRedefinition(in old, pd))
-                throw NewTypeError("Cannot redefine property");
+                return JSValue.BooleanFalse;
         }
         // p.key = name;
         ownProperties.Put(key) = pd.ToProperty(key);
@@ -945,14 +945,18 @@ public partial class JSObject
 
     internal JSProperty ToProperty(uint key)
     {
-        JSValue pget = null;
-        JSValue pset = null;
-        JSValue pvalue = null;
-        var value = this[KeyStrings.value];
-        var get = this[KeyStrings.get];
-        var set = this[KeyStrings.set];
+        // Accessor-ness is decided by the *presence* of get/set fields, not their
+        // values: { get: undefined } / { set: undefined } describe an accessor
+        // property (with the respective accessor absent), not a data property.
+        var hasGet = !GetInternalProperty(KeyStrings.get, false).IsEmpty;
+        var hasSet = !GetInternalProperty(KeyStrings.set, false).IsEmpty;
         var hasValue = !GetInternalProperty(KeyStrings.value, false).IsEmpty;
         var hasWritable = !GetInternalProperty(KeyStrings.writable, false).IsEmpty;
+        var isAccessor = hasGet || hasSet;
+
+        if (isAccessor && (hasValue || hasWritable))
+            throw NewTypeError("Invalid property.  Cannot both specify accessors and a value or writable attribute");
+
         var pt = JSPropertyAttributes.Empty;
 
         if (this[KeyStrings.configurable].BooleanValue)
@@ -961,38 +965,44 @@ public partial class JSObject
         if (this[KeyStrings.enumerable].BooleanValue)
             pt |= JSPropertyAttributes.Enumerable;
 
+        if (isAccessor)
+        {
+            JSValue pget = null;
+            JSValue pset = null;
+
+            if (hasGet)
+            {
+                var get = this[KeyStrings.get];
+                if (!get.IsUndefined)
+                {
+                    if (get is not IJSFunction)
+                        throw NewTypeError("Getter must be a function");
+
+                    pget = get;
+                }
+            }
+
+            if (hasSet)
+            {
+                var set = this[KeyStrings.set];
+                if (!set.IsUndefined)
+                {
+                    if (set is not IJSFunction)
+                        throw NewTypeError("Setter must be a function");
+
+                    pset = set;
+                }
+            }
+
+            pt |= JSPropertyAttributes.Property;
+            return new JSProperty(key, pget, pset, null, pt);
+        }
+
         if (!this[KeyStrings.writable].BooleanValue)
             pt |= JSPropertyAttributes.Readonly;
 
-        if (!get.IsUndefined)
-        {
-            if (get is not IJSFunction)
-                throw NewTypeError("Getter must be a function");
-
-            pt |= JSPropertyAttributes.Property;
-            pget = get;
-        }
-
-        if (!set.IsUndefined)
-        {
-            if (set is not IJSFunction)
-                throw NewTypeError("Setter must be a function");
-
-            pt |= JSPropertyAttributes.Property;
-            pset = set;
-        }
-
-        if ((pget != null || pset != null) && (hasValue || hasWritable))
-            throw NewTypeError("Invalid property.  Cannot both specify accessors and a value or writable attribute");
-
-        if (pget == null && pset == null)
-        {
-            pt |= JSPropertyAttributes.Value;
-            pvalue = value;
-        }
-
-        var pAttributes = pt;
-        return new JSProperty(key, pget, pset, pvalue, pAttributes);
+        pt |= JSPropertyAttributes.Value;
+        return new JSProperty(key, null, null, this[KeyStrings.value], pt);
     }
 
     public override JSValue Delete(in KeyString key)

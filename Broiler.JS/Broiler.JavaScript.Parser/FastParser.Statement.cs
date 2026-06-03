@@ -1,6 +1,7 @@
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Statements;
+using Broiler.JavaScript.ExpressionCompiler.Core;
 using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.Parser;
@@ -44,6 +45,59 @@ partial class FastParser
         }
 
         return false;
+    }
+
+    // Annex B.3.4: a FunctionDeclaration appearing as the sole Statement of an
+    // `if` clause behaves as if enclosed in a Block, so its lexical binding is
+    // scoped to that implicit block rather than the enclosing function/program
+    // body. This only changes observable behaviour when the declared name shadows
+    // a formal parameter (Annex B.3.3.1: the parameter binding must win and the
+    // var-hoisting is skipped), so we only synthesize the block in that case and
+    // otherwise leave the existing body-level handling untouched.
+    bool NestedStatement(out AstStatement node)
+    {
+        SkipNewLines();
+
+        if (stream.Current.Keyword == FastKeywords.function
+            && NestedFunctionShadowsParameter())
+        {
+            var begin = stream.Current;
+            var scope = variableScope.Push(begin, FastNodeType.Block);
+            try
+            {
+                if (!Statement(out var fn))
+                    throw stream.Unexpected();
+
+                node = new AstBlock(begin, PreviousToken, new Sequence<AstStatement> { fn })
+                {
+                    HoistingScope = scope.GetVariables(),
+                    AnnexBFunctionNames = scope.GetAnnexBNames(),
+                    IsSyntheticFunctionStatementBlock = true
+                };
+                return true;
+            }
+            finally
+            {
+                scope.Dispose();
+            }
+        }
+
+        return Statement(out node);
+    }
+
+    // True when the upcoming `function` declaration's name matches a formal
+    // parameter of the nearest enclosing function (where parameter names live).
+    private bool NestedFunctionShadowsParameter()
+    {
+        var next = stream.Current.Next;
+        if (next == null || next.Type != TokenTypes.Identifier)
+            return false;
+
+        var scope = variableScope.Top;
+        while (scope != null && scope.NodeType != FastNodeType.FunctionExpression)
+            scope = scope.Parent;
+
+        return scope != null && scope.DeclaresVariable(next.Span);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

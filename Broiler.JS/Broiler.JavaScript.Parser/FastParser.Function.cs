@@ -107,6 +107,15 @@ partial class FastParser
         if (target == null || target == top)
             return;
 
+        // Annex B.3.3.1 / B.3.3.2: do not apply Annex B var-hoisting when the
+        // name is also a formal parameter of the enclosing function. The
+        // parameter binding takes precedence and must not be shadowed by a
+        // hoisted function-scope var. (target.Parent, when it is the function
+        // scope, holds exactly the formal parameter names.)
+        if (target.Parent is { NodeType: FastNodeType.FunctionExpression } funcScope
+            && funcScope.DeclaresVariable(name))
+            return;
+
         // Blocked if any scope between the declaration and the body scope
         // (inclusive) already declares the name lexically.
         var s = top;

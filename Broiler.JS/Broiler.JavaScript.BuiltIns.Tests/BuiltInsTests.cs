@@ -8801,6 +8801,10 @@ public class BuiltInsTests
                     thrownCtor(function () {
                         Object.assign(target, { x: 1 });
                     }),
+                    // JSON.parse's InternalizeJSONProperty stores revived values with
+                    // CreateDataProperty, whose boolean result is discarded: a failed
+                    // [[DefineOwnProperty]] (here the proxy's trap returns false) is
+                    // silently ignored rather than throwing. So this is 'no-throw'.
                     thrownCtor(function () {
                         var bad = new Proxy([null], {
                             defineProperty: function () {
@@ -8829,7 +8833,7 @@ public class BuiltInsTests
             })();
             """);
 
-        Assert.Equal("TypeError|TypeError|TypeError|TypeError", result.ToString());
+        Assert.Equal("TypeError|no-throw|TypeError|TypeError", result.ToString());
     }
 
     [Fact]

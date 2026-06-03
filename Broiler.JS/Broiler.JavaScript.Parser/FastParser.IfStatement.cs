@@ -19,12 +19,12 @@ partial class FastParser
         if (!ExpressionSequence(out var test))
             throw stream.Unexpected();
 
-        if (!Statement(out var @true))
+        if (!NestedStatement(out var @true))
             throw stream.Unexpected();
 
         if (stream.CheckAndConsume(FastKeywords.@else))
         {
-            if (!Statement(out var @else))
+            if (!NestedStatement(out var @else))
                 throw stream.Unexpected();
 
             node = new AstIfStatement(begin, PreviousToken, test, @true, @else);

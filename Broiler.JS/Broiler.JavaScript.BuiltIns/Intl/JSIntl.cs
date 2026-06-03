@@ -229,6 +229,29 @@ public static class JSIntl
         constructor.prototype.FastAddValue(KeyStrings.toString,
             new JSFunction(JSIntlLocale.ToStringPrototype, "toString", "function toString() { [native code] }", createPrototype: false, length: 0),
             JSPropertyAttributes.ConfigurableValue);
+
+        // Accessor getters on Intl.Locale.prototype. Each is a configurable,
+        // non-enumerable accessor whose getter function is named "get <name>".
+        void AddLocaleGetter(string name, JSFunctionDelegate getter)
+            => constructor.prototype.FastAddProperty(
+                KeyStrings.GetOrCreate(name),
+                new JSFunction(getter, "get " + name, $"function get {name}() {{ [native code] }}", createPrototype: false, length: 0),
+                null,
+                JSPropertyAttributes.ConfigurableProperty);
+
+        AddLocaleGetter("baseName", JSIntlLocale.BaseNamePrototype);
+        AddLocaleGetter("calendar", JSIntlLocale.CalendarPrototype);
+        AddLocaleGetter("caseFirst", JSIntlLocale.CaseFirstPrototype);
+        AddLocaleGetter("collation", JSIntlLocale.CollationPrototype);
+        AddLocaleGetter("firstDayOfWeek", JSIntlLocale.FirstDayOfWeekPrototype);
+        AddLocaleGetter("hourCycle", JSIntlLocale.HourCyclePrototype);
+        AddLocaleGetter("language", JSIntlLocale.LanguagePrototype);
+        AddLocaleGetter("numberingSystem", JSIntlLocale.NumberingSystemPrototype);
+        AddLocaleGetter("numeric", JSIntlLocale.NumericPrototype);
+        AddLocaleGetter("region", JSIntlLocale.RegionPrototype);
+        AddLocaleGetter("script", JSIntlLocale.ScriptPrototype);
+        AddLocaleGetter("variants", JSIntlLocale.VariantsPrototype);
+
         SetIntlToStringTag(constructor, "Locale");
         return constructor;
     }
@@ -990,6 +1013,177 @@ public sealed class JSIntlLocale : JSObject
 
     public static JSValue ToStringPrototype(in Arguments a)
         => JSValue.CreateString(RequireLocale(in a, "toString").tag);
+
+    public static JSValue BaseNamePrototype(in Arguments a)
+        => JSValue.CreateString(RequireLocale(in a, "baseName").GetBaseName());
+
+    public static JSValue LanguagePrototype(in Arguments a)
+        => JSValue.CreateString(RequireLocale(in a, "language").GetLanguage());
+
+    public static JSValue ScriptPrototype(in Arguments a)
+        => OptionalString(RequireLocale(in a, "script").GetScript());
+
+    public static JSValue RegionPrototype(in Arguments a)
+        => OptionalString(RequireLocale(in a, "region").GetRegion());
+
+    public static JSValue VariantsPrototype(in Arguments a)
+        => OptionalString(RequireLocale(in a, "variants").GetVariants());
+
+    public static JSValue CalendarPrototype(in Arguments a)
+        => OptionalString(RequireLocale(in a, "calendar").GetUnicodeKeyword("ca"));
+
+    public static JSValue CaseFirstPrototype(in Arguments a)
+        => OptionalString(RequireLocale(in a, "caseFirst").GetUnicodeKeyword("kf"));
+
+    public static JSValue CollationPrototype(in Arguments a)
+        => OptionalString(RequireLocale(in a, "collation").GetUnicodeKeyword("co"));
+
+    public static JSValue HourCyclePrototype(in Arguments a)
+        => OptionalString(RequireLocale(in a, "hourCycle").GetUnicodeKeyword("hc"));
+
+    public static JSValue NumberingSystemPrototype(in Arguments a)
+        => OptionalString(RequireLocale(in a, "numberingSystem").GetUnicodeKeyword("nu"));
+
+    public static JSValue FirstDayOfWeekPrototype(in Arguments a)
+        => OptionalString(RequireLocale(in a, "firstDayOfWeek").GetUnicodeKeyword("fw"));
+
+    public static JSValue NumericPrototype(in Arguments a)
+    {
+        var value = RequireLocale(in a, "numeric").GetUnicodeKeyword("kn");
+        var numeric = value != null && (value.Length == 0 || value == "true");
+        return numeric ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+    }
+
+    private static JSValue OptionalString(string value)
+        => value == null ? JSValue.UndefinedValue : JSValue.CreateString(value);
+
+    // --- BCP-47 language tag parsing (over the stored, already-validated tag) ---
+
+    private static bool IsAllAlpha(string s)
+    {
+        foreach (var c in s)
+            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
+                return false;
+        return s.Length > 0;
+    }
+
+    private static bool IsAllDigit(string s)
+    {
+        foreach (var c in s)
+            if (c < '0' || c > '9')
+                return false;
+        return s.Length > 0;
+    }
+
+    private static string Titlecase(string s)
+        => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s.Substring(1).ToLowerInvariant();
+
+    private string GetLanguage()
+    {
+        var dash = tag.IndexOf('-');
+        return (dash < 0 ? tag : tag.Substring(0, dash)).ToLowerInvariant();
+    }
+
+    private string GetScript()
+    {
+        var parts = tag.Split('-');
+        if (parts.Length > 1 && parts[1].Length == 4 && IsAllAlpha(parts[1]))
+            return Titlecase(parts[1]);
+        return null;
+    }
+
+    private string GetRegion()
+    {
+        var parts = tag.Split('-');
+        var i = 1;
+        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i]))
+            i++;
+        if (i < parts.Length
+            && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigit(parts[i]))))
+            return parts[i].ToUpperInvariant();
+        return null;
+    }
+
+    private string GetVariants()
+    {
+        var parts = tag.Split('-');
+        var i = 1;
+        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i]))
+            i++;
+        if (i < parts.Length
+            && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigit(parts[i]))))
+            i++;
+
+        var variants = new List<string>();
+        for (; i < parts.Length; i++)
+        {
+            var p = parts[i];
+            if (p.Length == 1)
+                break;
+            if ((p.Length >= 5 && p.Length <= 8) || (p.Length == 4 && p[0] >= '0' && p[0] <= '9'))
+                variants.Add(p.ToLowerInvariant());
+            else
+                break;
+        }
+
+        return variants.Count == 0 ? null : string.Join("-", variants);
+    }
+
+    private string GetBaseName()
+    {
+        var parts = new List<string> { GetLanguage() };
+        var script = GetScript();
+        if (script != null)
+            parts.Add(script);
+        var region = GetRegion();
+        if (region != null)
+            parts.Add(region);
+        var variants = GetVariants();
+        if (variants != null)
+            parts.Add(variants);
+        return string.Join("-", parts);
+    }
+
+    // Parses the Unicode (-u-) extension and returns the type value for a 2-letter
+    // keyword key, or null when absent. An empty string denotes a present keyword
+    // with no explicit type (e.g. "-u-kn").
+    private string GetUnicodeKeyword(string key)
+    {
+        var parts = tag.Split('-');
+        var i = 0;
+        while (i < parts.Length && !(parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U')))
+            i++;
+        if (i >= parts.Length)
+            return null;
+
+        i++; // skip the 'u' singleton
+        string currentKey = null;
+        var values = new List<string>();
+        for (; i < parts.Length; i++)
+        {
+            var p = parts[i];
+            if (p.Length == 1)
+                break; // a new singleton ends the Unicode extension
+
+            if (p.Length == 2)
+            {
+                if (string.Equals(currentKey, key, StringComparison.OrdinalIgnoreCase))
+                    return string.Join("-", values);
+
+                currentKey = p;
+                values.Clear();
+            }
+            else if (currentKey != null)
+            {
+                values.Add(p.ToLowerInvariant());
+            }
+        }
+
+        if (string.Equals(currentKey, key, StringComparison.OrdinalIgnoreCase))
+            return string.Join("-", values);
+
+        return null;
+    }
 }
 
 public sealed class JSIntlPluralRules : JSObject

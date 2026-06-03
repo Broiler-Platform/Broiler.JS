@@ -30,6 +30,19 @@ public partial class JSObject
         target.PropertyChanged?.Invoke(target, (KeyStrings.length.Key, uint.MaxValue, null));
     }
 
+    private static uint ToUint32(double number)
+    {
+        if (double.IsNaN(number) || double.IsInfinity(number))
+            return 0;
+
+        const double twoPow32 = 4294967296d;
+        var truncated = Math.Truncate(number) % twoPow32;
+        if (truncated < 0)
+            truncated += twoPow32;
+
+        return (uint)truncated;
+    }
+
     private static void DefineArrayProperty(JSObject target, uint index, JSObject descriptor)
     {
         var lengthProperty = GetArrayLengthProperty(target);
@@ -70,25 +83,31 @@ public partial class JSObject
             return;
         }
 
-        var newLengthNumber = descriptor[KeyStrings.value].DoubleValue;
-        if (double.IsNaN(newLengthNumber)
-            || newLengthNumber < 0
-            || newLengthNumber > uint.MaxValue
-            || newLengthNumber != Math.Truncate(newLengthNumber))
-        {
+        // ArraySetLength steps 3-5: ToUint32 then ToNumber are *both* performed
+        // (each coerces the value, so a custom valueOf is invoked twice), and the
+        // results must agree under SameValueZero or it is an invalid length.
+        var rawValue = descriptor[KeyStrings.value];
+        var newLength = ToUint32(rawValue.DoubleValue);
+        var numberLen = rawValue.DoubleValue;
+        if (newLength != numberLen)
             throw NewRangeError("Invalid length");
-        }
 
-        var newLength = (uint)newLengthNumber;
-        if (!currentWritable)
-            throw NewTypeError("Cannot redefine property");
-
+        // Step 9: when the new length is not smaller than the current one, defer to
+        // ordinary [[DefineOwnProperty]] validation — redefining to the *same* value
+        // is a no-op even when length is non-writable, but growing it is rejected.
         if (newLength >= currentLength)
         {
+            if (!currentWritable && newLength != currentLength)
+                throw NewTypeError("Cannot redefine property");
+
             target[KeyStrings.length] = JSValue.CreateNumber(newLength);
             SetArrayLengthWritable(target, newWritable);
             return;
         }
+
+        // Step 10: shrinking a non-writable length always fails.
+        if (!currentWritable)
+            throw NewTypeError("Cannot redefine property");
 
         for (uint i = currentLength; i > newLength; i--)
         {

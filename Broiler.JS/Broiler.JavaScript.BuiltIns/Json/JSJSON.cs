@@ -161,16 +161,18 @@ public partial class JSJSON : JSObject
         return propertyKeys;
     }
 
-    private static void CreateDataPropertyOrThrow(JSObject target, JSValue key, JSValue value)
+    // Per InternalizeJSONProperty, revived values are stored with CreateDataProperty
+    // (7.3.5) whose boolean result is discarded: a failed [[DefineOwnProperty]]
+    // (e.g. the target index was made non-configurable by the reviver) is silently
+    // ignored rather than throwing a TypeError.
+    private static void CreateDataProperty(JSObject target, JSValue key, JSValue value)
     {
         var descriptor = new JSObject();
         descriptor.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);
         descriptor.FastAddValue(KeyStrings.writable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
         descriptor.FastAddValue(KeyStrings.enumerable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
         descriptor.FastAddValue(KeyStrings.configurable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
-        var result = target.DefineProperty(key, descriptor);
-        if (result.IsBoolean && !result.BooleanValue)
-            throw JSEngine.NewTypeError($"Cannot define property {key}");
+        target.DefineProperty(key, descriptor);
     }
 
     private static void RecordSource(
@@ -236,7 +238,7 @@ public partial class JSJSON : JSObject
                     if (revived.IsUndefined)
                         valueObject.Delete(index);
                     else
-                        CreateDataPropertyOrThrow(valueObject, JSValue.CreateNumber(index), revived);
+                        CreateDataProperty(valueObject, JSValue.CreateNumber(index), revived);
                 }
             }
             else
@@ -247,7 +249,7 @@ public partial class JSJSON : JSObject
                     if (revived.IsUndefined)
                         valueObject.Delete(propertyKey);
                     else
-                        CreateDataPropertyOrThrow(valueObject, JSValue.CreateString(propertyKey), revived);
+                        CreateDataProperty(valueObject, JSValue.CreateString(propertyKey), revived);
                 }
             }
 
@@ -291,7 +293,7 @@ public partial class JSJSON : JSObject
                     if (revived.IsUndefined)
                         valueObject.Delete(childIndex);
                     else
-                        CreateDataPropertyOrThrow(valueObject, JSValue.CreateNumber(childIndex), revived);
+                        CreateDataProperty(valueObject, JSValue.CreateNumber(childIndex), revived);
                 }
             }
             else
@@ -302,7 +304,7 @@ public partial class JSJSON : JSObject
                     if (revived.IsUndefined)
                         valueObject.Delete(propertyKey);
                     else
-                        CreateDataPropertyOrThrow(valueObject, JSValue.CreateString(propertyKey), revived);
+                        CreateDataProperty(valueObject, JSValue.CreateString(propertyKey), revived);
                 }
             }
 

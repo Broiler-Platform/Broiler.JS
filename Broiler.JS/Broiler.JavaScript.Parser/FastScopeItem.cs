@@ -50,6 +50,14 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
         => Variables.TryGetValue(name.Value, out var v)
             && v.kind is FastVariableKind.Let or FastVariableKind.Const;
 
+    /// <summary>
+    /// Returns true if this scope declares <paramref name="name"/> as any kind
+    /// of binding. For a FunctionExpression scope these are exactly the formal
+    /// parameter names.
+    /// </summary>
+    public bool DeclaresVariable(in StringSpan name)
+        => Variables.ContainsKey(name.Value);
+
     public void AddVariable(FastToken token, in StringSpan name, FastVariableKind kind = FastVariableKind.Var, bool throwError = true)
     {
         if (name.IsNullOrWhiteSpace())
