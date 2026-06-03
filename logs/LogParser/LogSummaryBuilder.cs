@@ -43,7 +43,7 @@ public static class LogSummaryBuilder
         return Normalize(parsed);
     }
 
-    public static LogFileSummary ParseAndSummarize(string path, int bucketDepth = 4, int notableEntryLimit = 3)
+    public static LogFileSummary ParseAndSummarize(string path, int bucketDepth = 4, int notableEntryLimit = 5)
     {
         return SummarizeLogRun(
             Path.GetFullPath(path),
