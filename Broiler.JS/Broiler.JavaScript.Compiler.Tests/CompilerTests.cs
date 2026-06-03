@@ -754,6 +754,14 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_NonStrict_Arguments_Can_Be_Reassigned()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("(function () { arguments = 42; return arguments; })(1, 2, 3);");
+        Assert.Equal(42d, result.DoubleValue);
+    }
+
+    [Fact]
     public void Compile_NonStrict_ArgumentsObject_Maps_NonConfigurable_Parameters()
     {
         using var ctx = new JSContext();

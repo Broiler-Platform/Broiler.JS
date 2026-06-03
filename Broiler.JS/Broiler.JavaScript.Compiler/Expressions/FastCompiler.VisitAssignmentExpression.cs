@@ -89,6 +89,17 @@ partial class FastCompiler
         {
             var identifier = (AstIdentifier)left;
             var shouldSuppressAnonymousFunctionName = left.WasParenthesized && IsAnonymousFunctionDefinition(right);
+
+            // Reassigning `arguments` in a non-arrow function must target the
+            // function-local binding. Materialize it first so the assignment
+            // resolves to the static variable instead of the dynamic context name.
+            if (identifier.Name.Equals("arguments")
+                && scope.Top.Function?.IsArrowFunction != true
+                && scope.Top.RootScope.Function != null)
+            {
+                VisitIdentifier(identifier, false);
+            }
+
             if (!TryGetStaticIdentifierVariable(identifier, out var variable) || variable == null)
             {
                 if (assignmentOperator == TokenTypes.Assign && (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName))
