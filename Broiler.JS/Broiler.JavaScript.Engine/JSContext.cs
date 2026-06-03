@@ -167,7 +167,15 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                     entry.PreviousValue = context[key];
 
                 entries.Add(entry);
-                context.Register(variable);
+                // A captured binding can still be in its temporal dead zone when the
+                // eval runs — e.g. a parameter whose own default initializer contains
+                // the direct eval (`function f(_ = (eval('var x=1'), ...)) {}`).
+                // Register publishes the binding's value as a global property, which
+                // reads JSVariable.Value and would throw for such a binding. Skip that
+                // value materialization; the binding stays in globalVars so it remains
+                // resolvable and a genuine read still throws the proper ReferenceError.
+                if (variable.IsInitialized)
+                    context.Register(variable);
                 context.globalVars.Put(key.Key) = variable;
             }
 
@@ -236,7 +244,8 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 entry.HadPreviousVariable = context.globalVars.TryGetValue(entry.Name.Key, out var pv);
                 entry.PreviousVariable = pv;
 
-                context.Register(entry.OverlayVariable);
+                if (entry.OverlayVariable.IsInitialized)
+                    context.Register(entry.OverlayVariable);
                 context.globalVars.Put(entry.Name.Key) = entry.OverlayVariable;
             }
         }
@@ -249,7 +258,11 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             {
                 if (entry.HadPreviousVariable)
                 {
-                    if (!ReferenceEquals(entry.PreviousVariable, entry.OverlayVariable))
+                    // Only propagate the overlay's value back if the eval actually
+                    // gave it one; an overlay still in its temporal dead zone has no
+                    // readable value (reading it would throw).
+                    if (!ReferenceEquals(entry.PreviousVariable, entry.OverlayVariable)
+                        && entry.OverlayVariable.IsInitialized)
                         entry.PreviousVariable.Value = entry.OverlayVariable.Value;
 
                     context.globalVars.Put(entry.Name.Key) = entry.PreviousVariable;

@@ -310,42 +310,63 @@ partial class FastCompiler
                             continue;
                         }
 
-                        switch (property.Key.Type)
+                        if (property.Key.Type == FastNodeType.SpreadElement)
                         {
-                            case FastNodeType.Identifier:
-                            case FastNodeType.Literal:
-                                var id = property.Key;
-                                var propertyInit = property.Init;
-                                var key = CreatePropertyKeyExpression(id, property.Computed);
-                                excludedKeys.Add(key);
-                                if (propertyInit != null)
-                                {
-                                   var defaultValue = Visit(propertyInit);
-                                   if (suppressAnonymousFunctionNameInference)
-                                   {
-                                       defaultValue = PrepareDestructuringInitializer(property.Value, propertyInit, defaultValue);
-                                   }
+                            var spread = (AstSpreadElement)property.Key;
+                            CreateAssignment(inits, spread.Argument, CreateObjectRest(init, excludedKeys), createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
+                            continue;
+                        }
 
-                                   var piTemp = scope.Top.GetTempVariable(typeof(JSValue));
-                                   inits.Add(YExpression.Assign(
-                                       piTemp.Variable,
-                                       CreateMemberExpression(init, id, property.Computed)));
-                                   inits.Add(JSValueExtensionsBuilder.AssignCoalesce(
-                                       piTemp.Expression,
-                                       defaultValue));
-                                   start = piTemp.Expression;
-                                }
-                                else
-                                {
-                                   start = CreateMemberExpression(init, id, property.Computed);
-                                }
-                                break;
-                            case FastNodeType.SpreadElement:
-                                var spread = (AstSpreadElement)property.Key;
-                                CreateAssignment(inits, spread.Argument, CreateObjectRest(init, excludedKeys), createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
-                                continue;
-                            default:
-                                throw new NotImplementedException();
+                        var id = property.Key;
+                        var propertyInit = property.Init;
+
+                        // Determine the member access expression `init[key]` and the key to
+                        // exclude when collecting an object rest.
+                        YExpression memberAccess;
+                        if (property.Computed
+                            && id.Type != FastNodeType.Identifier
+                            && id.Type != FastNodeType.Literal)
+                        {
+                            // A computed key that is an arbitrary expression (e.g.
+                            // `{ ['x' + 'y']: t }`, `{ [a.b]: t }`, `{ [fn()]: t }`).
+                            // Evaluate it exactly once and normalize it to a property key so
+                            // its observable side effects (and any errors raised while
+                            // evaluating the key, such as `a.b` when `a` is undefined) occur
+                            // in spec order, before the destructuring target is read.
+                            var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                            inits.Add(YExpression.Assign(
+                                keyTemp.Variable,
+                                YExpression.Call(null, NormalizePropertyKeyMethod, Visit(id))));
+                            excludedKeys.Add(keyTemp.Expression);
+                            memberAccess = JSValueBuilder.Index(init, keyTemp.Expression);
+                        }
+                        else
+                        {
+                            var key = CreatePropertyKeyExpression(id, property.Computed);
+                            excludedKeys.Add(key);
+                            memberAccess = CreateMemberExpression(init, id, property.Computed);
+                        }
+
+                        if (propertyInit != null)
+                        {
+                           var defaultValue = Visit(propertyInit);
+                           if (suppressAnonymousFunctionNameInference)
+                           {
+                               defaultValue = PrepareDestructuringInitializer(property.Value, propertyInit, defaultValue);
+                           }
+
+                           var piTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                           inits.Add(YExpression.Assign(
+                               piTemp.Variable,
+                               memberAccess));
+                           inits.Add(JSValueExtensionsBuilder.AssignCoalesce(
+                               piTemp.Expression,
+                               defaultValue));
+                           start = piTemp.Expression;
+                        }
+                        else
+                        {
+                           start = memberAccess;
                         }
 
                         switch (property.Value.Type)

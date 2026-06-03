@@ -105,6 +105,12 @@ public partial class JSBoolean : JSPrimitive
         if (value.IsObject)
             return value.Equals(this);
 
+        // Boolean == BigInt becomes ToNumber(Boolean) == BigInt; let the BigInt
+        // side perform the mathematical-value comparison rather than reading
+        // BigInt.DoubleValue, which throws.
+        if (value.IsBigInt)
+            return value.Equals(this);
+
         if (!_value)
         {
             if (value.IsNullOrUndefined)

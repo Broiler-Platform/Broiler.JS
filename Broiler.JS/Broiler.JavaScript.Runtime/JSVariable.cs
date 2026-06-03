@@ -74,6 +74,13 @@ public class JSVariable
     private JSValue _value;
     private bool _isInitialized = true;
 
+    /// <summary>
+    /// Whether this binding has been initialized. A binding in its temporal dead
+    /// zone (uninitialized) throws when its <see cref="Value"/> is read; callers
+    /// that need to inspect a binding without triggering that error can check this.
+    /// </summary>
+    internal bool IsInitialized => _isInitialized;
+
     private string ReferenceErrorMessage
         => Name.IsEmpty ? "Cannot access variable before initialization" : $"Cannot access '{Name.Value}' before initialization";
 

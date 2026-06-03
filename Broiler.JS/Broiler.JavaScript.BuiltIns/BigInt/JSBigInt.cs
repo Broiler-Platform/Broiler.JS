@@ -54,6 +54,8 @@ public partial class JSBigInt : JSPrimitive
 
     public override bool BooleanValue => value != 0;
 
+    public override bool IsBigInt => true;
+
     public override double DoubleValue => throw CannotMix();
 
     public override long BigIntValue => (long)value;
@@ -212,7 +214,9 @@ public partial class JSBigInt : JSPrimitive
         if (value is JSString str && BigInteger.TryParse(str.ToString(), out var bigintFromString))
             return this.value == bigintFromString;
 
-        if (!value.IsNumber)
+        // A Boolean operand is converted with ToNumber first (true -> 1, false -> 0)
+        // and then compared by mathematical value, per abstract equality.
+        if (!value.IsNumber && !value.IsBoolean)
             return false;
 
         var number = value.DoubleValue;
