@@ -41,6 +41,20 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     }
 
     /// <summary>
+    /// Adds the legacy, non-strict <c>caller</c> and <c>arguments</c> own data
+    /// properties (value <c>null</c>, non-writable, non-enumerable,
+    /// non-configurable) that web reality engines define on ordinary
+    /// non-strict functions. They shadow the poison-pill accessors inherited
+    /// from <c>Function.prototype</c>, so accessing them does not throw.
+    /// </summary>
+    public JSValue AddLegacyCallerAndArguments()
+    {
+        FastAddValue(KeyStrings.GetOrCreate("caller"), JSValue.NullValue, JSPropertyAttributes.ReadonlyValue);
+        FastAddValue(KeyStrings.arguments, JSValue.NullValue, JSPropertyAttributes.ReadonlyValue);
+        return this;
+    }
+
+    /// <summary>
     /// Gets or sets the underlying <see cref="JSFunctionDelegate"/> that implements
     /// this function's invocation logic. Used by CLR interop to wire constructor
     /// delegates.
