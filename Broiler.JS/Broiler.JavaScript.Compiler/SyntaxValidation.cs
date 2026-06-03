@@ -748,6 +748,15 @@ public static void ValidateProgram(
 
         private static void ThrowIfFunctionDeclarationBody(AstStatement body)
         {
+            // The parser wraps a single FunctionDeclaration `if` clause in a
+            // synthetic block (Annex B.3.4); in strict mode that is still an early
+            // error, so look through the wrapper as well as the bare statement.
+            if (body is AstBlock { IsSyntheticFunctionStatementBlock: true } block)
+            {
+                var en = block.Statements.GetFastEnumerator();
+                body = en.MoveNext(out var first) ? first : null;
+            }
+
             if (body is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true } func })
                 throw new FastParseException(func.Start, "In strict mode code, functions can only be declared at top level or inside a block");
         }
