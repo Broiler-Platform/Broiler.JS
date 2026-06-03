@@ -18,6 +18,7 @@ public class JSFunctionBuilder
     private static PropertyInfo _isStrictMode;
     private static MethodInfo _captureWithScopes;
     private static MethodInfo _addLegacyCallerAndArguments;
+    private static PropertyInfo _isOrdinaryUserFunction;
 
     private static MethodInfo invokeFunction;
 
@@ -38,6 +39,8 @@ public class JSFunctionBuilder
             ?? throw new InvalidOperationException($"CoerceThisOnInvoke property not found on {type.FullName}");
         _isStrictMode = type.GetProperty("IsStrictMode")
             ?? throw new InvalidOperationException($"IsStrictMode property not found on {type.FullName}");
+        _isOrdinaryUserFunction = type.GetProperty("IsOrdinaryUserFunction")
+            ?? throw new InvalidOperationException($"IsOrdinaryUserFunction property not found on {type.FullName}");
         _captureWithScopes = type.PublicMethod("CaptureWithScopes", typeof(JSValue))
             ?? throw new InvalidOperationException($"CaptureWithScopes(JSValue) not found on {type.FullName}");
         _addLegacyCallerAndArguments = type.PublicMethod("AddLegacyCallerAndArguments")
@@ -78,8 +81,16 @@ public class JSFunctionBuilder
         return Expression.Call(target, invokeFunction, args);
     }
 
-    public static Expression New(Expression del, Expression name, Expression code, int length, bool createPrototype = true) =>
-        NewLambdaExpression.NewExpression(type, del, name, code, Expression.Constant(length), Expression.Constant(createPrototype));
+    public static Expression New(Expression del, Expression name, Expression code, int length, bool createPrototype = true)
+    {
+        var created = NewLambdaExpression.NewExpression(type, del, name, code, Expression.Constant(length), Expression.Constant(createPrototype));
+        var temp = Expression.Parameter(type, "#function");
+        return Expression.Block(
+            temp.AsSequence(),
+            Expression.Assign(temp, created),
+            Expression.Assign(Expression.Property(temp, _isOrdinaryUserFunction), Expression.Constant(true)),
+            temp);
+    }
 
     public static Expression EnableNonStrictThis(Expression target)
     {

@@ -530,17 +530,10 @@ partial class JSTypedArray
         end = end < 0 ? Math.Max(Length + end, 0) : Math.Min(end, Length);
         newLength = Math.Max(end - begin, 0);
 
-        var src = buffer.buffer;
+        var r = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), newLength);
 
-        var r = a.This[KeyStrings.constructor].CreateInstance(new JSNumber(newLength)) as JSTypedArray;
-        var target = r.buffer.buffer;
-        int bytesPerElement = this.bytesPerElement;
-
-        for (int i = begin; i < end; i++)
-        {
-            var y = i - begin;
-            System.Array.Copy(src, byteOffset + (i * bytesPerElement), target, y * bytesPerElement, bytesPerElement);
-        }
+        for (int i = 0; i < newLength; i++)
+            r[(uint)i] = this[(uint)(begin + i)];
 
         return r;
 
@@ -629,7 +622,7 @@ partial class JSTypedArray
         begin = begin < 0 ? Math.Max(Length + begin, 0) : Math.Min(begin, Length);
         end = end < 0 ? Math.Max(Length + end, 0) : Math.Min(end, Length);
         newLength = Math.Max(end - begin, 0);
-        var r = a.This[KeyStrings.constructor].CreateInstance(buffer, new JSNumber(byteOffset + begin * bytesPerElement), new JSNumber(newLength * bytesPerElement));
+        var r = GetSpeciesConstructor(this).CreateInstance(buffer, new JSNumber(byteOffset + begin * bytesPerElement), new JSNumber(newLength));
 
         return r;
 
