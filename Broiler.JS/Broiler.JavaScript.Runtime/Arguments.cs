@@ -61,7 +61,7 @@ public readonly partial struct Arguments
     public Arguments CopyForBind(in Arguments a)
     {
         // need to append a's parameter to self...
-        var @this = this[0]!;
+        var @this = this[0] ?? JSValue.UndefinedValue;
         var boundLength = Math.Max(Length - 1, 0);
         var total = boundLength + a.Length;
         var list = new JSValue[total];

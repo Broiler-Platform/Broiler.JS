@@ -151,8 +151,8 @@ public static class JSValueToClrConverter
         throw new JSException($"Failed to convert JSValue to {type.Name}");
     }
 
-    public static T GetAs<T>(JSValue value) => value.TryConvertTo(typeof(T), out var obj) && obj is T v1 ? v1 : default;
+    public static T GetAs<T>(JSValue value) => (value ?? JSValue.UndefinedValue).TryConvertTo(typeof(T), out var obj) && obj is T v1 ? v1 : default;
 
-    public static T GetAsOrThrow<T>(JSValue value, string error) => value.TryConvertTo(typeof(T), out var obj) && obj is T v1 ? v1 : throw new JSException(error);
+    public static T GetAsOrThrow<T>(JSValue value, string error) => (value ?? JSValue.UndefinedValue).TryConvertTo(typeof(T), out var obj) && obj is T v1 ? v1 : throw new JSException(error);
 
 }

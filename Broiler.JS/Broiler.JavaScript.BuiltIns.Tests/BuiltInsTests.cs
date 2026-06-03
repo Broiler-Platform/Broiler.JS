@@ -13197,5 +13197,44 @@ public class BuiltInsTests
         Assert.Equal("1|true|true|1|true|1|true|2|11|true|3|42|44", result.ToString());
     }
 
+    [Fact]
+    public void Map_Set_Without_Value_Argument_Stores_Undefined()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // A missing value argument must be treated as undefined (spec-correct),
+        // rather than surfacing as an internal null-reference error.
+        var result = ctx.Eval(@"(function () {
+            var m = new Map();
+            m.set(42);
+            return [
+                m.has(42),
+                m.get(42) === undefined,
+                m.size
+            ].join('|');
+        })();");
+
+        Assert.Equal("true|true|1", result.ToString());
+    }
+
+    [Fact]
+    public void Bound_Function_Without_ThisArg_Uses_Undefined_This()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // f.bind() with no thisArg must bind undefined as this, not a null reference.
+        var result = ctx.Eval(@"(function () {
+            function f() { 'use strict'; return this; }
+            return [
+                f.bind()() === undefined,
+                f.bind('x')() === 'x'
+            ].join('|');
+        })();");
+
+        Assert.Equal("true|true", result.ToString());
+    }
+
     #endregion
 }
