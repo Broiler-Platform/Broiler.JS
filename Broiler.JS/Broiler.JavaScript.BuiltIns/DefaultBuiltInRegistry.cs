@@ -215,6 +215,6 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
     /// </summary>
     public static void AddProto(JSObject proto, string name, JSFunctionDelegate fn, int length = 0)
     {
-        proto.FastAddValue(KeyStrings.GetOrCreate(name), new JSFunction(fn, name, $"function {name}() {{ [native] }}", length, createPrototype: false), JSPropertyAttributes.ConfigurableValue);
+        proto.FastAddValue(KeyStrings.GetOrCreate(name), new JSFunction(fn, name, $"function {name}() {{ [native code] }}", length, createPrototype: false), JSPropertyAttributes.ConfigurableValue);
     }
 }

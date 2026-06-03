@@ -398,7 +398,7 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
     {
         var method = e.Method!;
 
-        var l = $",\"function {name}() {{ [native] }}\", createPrototype: false";
+        var l = $",\"function {name}() {{ [native code] }}\", createPrototype: false";
         if (e?.Length != null && e.Length.Length > 0)
         {
             l += ", length: " + e.Length;

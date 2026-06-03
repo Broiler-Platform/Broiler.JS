@@ -35,14 +35,14 @@ internal static class ObjectClassFactory
         prototype.FastAddValue(
             (KeyString)"propertyIsEnumerable",
             JSValue.CreateFunction(JSObject.PropertyIsEnumerable, "propertyIsEnumerable",
-                "function propertyIsEnumerable() { [native] }", 1, false),
+                "function propertyIsEnumerable() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // toString
         prototype.FastAddValue(
             (KeyString)"toString",
             JSValue.CreateFunction(JSObject.ToString, "toString",
-                "function toString() { [native] }", 0, false),
+                "function toString() { [native code] }", 0, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // __proto__ (get/set property)
@@ -68,21 +68,21 @@ internal static class ObjectClassFactory
         prototype.FastAddValue(
             (KeyString)"hasOwnProperty",
             JSValue.CreateFunction(JSObject.HasOwnProperty, "hasOwnProperty",
-                "function hasOwnProperty() { [native] }", 1, false),
+                "function hasOwnProperty() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // valueOf
         prototype.FastAddValue(
             (KeyString)"valueOf",
             JSValue.CreateFunction(JSObject.ValueOf, "valueOf",
-                "function valueOf() { [native] }", 0, false),
+                "function valueOf() { [native code] }", 0, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // isPrototypeOf
         prototype.FastAddValue(
             (KeyString)"isPrototypeOf",
             JSValue.CreateFunction(JSObject.IsPrototypeOf, "isPrototypeOf",
-                "function isPrototypeOf() { [native] }", 1, false),
+                "function isPrototypeOf() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // ── Static methods ──────────────────────────────────────────
@@ -91,77 +91,77 @@ internal static class ObjectClassFactory
         @class.FastAddValue(
             (KeyString)"create",
             JSValue.CreateFunction(JSObject.StaticCreate, "create",
-                "function create() { [native] }", 2, false),
+                "function create() { [native code] }", 2, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // assign
         @class.FastAddValue(
             (KeyString)"assign",
             JSValue.CreateFunction(JSObject.Assign, "assign",
-                "function assign() { [native] }", 2, false),
+                "function assign() { [native code] }", 2, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // defineProperties
         @class.FastAddValue(
             (KeyString)"defineProperties",
             JSValue.CreateFunction(JSObject.DefineProperties, "defineProperties",
-                "function defineProperties() { [native] }", 2, false),
+                "function defineProperties() { [native code] }", 2, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // defineProperty
         @class.FastAddValue(
             (KeyString)"defineProperty",
             JSValue.CreateFunction(JSObject.DefineProperty, "defineProperty",
-                "function defineProperty() { [native] }", 3, false),
+                "function defineProperty() { [native code] }", 3, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // entries
         @class.FastAddValue(
             (KeyString)"entries",
             JSValue.CreateFunction(JSObject.GetEntries, "entries",
-                "function entries() { [native] }", 1, false),
+                "function entries() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // freeze
         @class.FastAddValue(
             (KeyString)"freeze",
             JSValue.CreateFunction(JSObject.Freeze, "freeze",
-                "function freeze() { [native] }", 1, false),
+                "function freeze() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // fromEntries
         @class.FastAddValue(
             (KeyString)"fromEntries",
             JSValue.CreateFunction(JSObject.FromEntries, "fromEntries",
-                "function fromEntries() { [native] }", 1, false),
+                "function fromEntries() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // preventExtensions
         @class.FastAddValue(
             (KeyString)"preventExtensions",
             JSValue.CreateFunction(JSObject.PreventExtensions, "preventExtensions",
-                "function preventExtensions() { [native] }", 1, false),
+                "function preventExtensions() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // seal
         @class.FastAddValue(
             (KeyString)"seal",
             JSValue.CreateFunction(JSObject.Seal, "seal",
-                "function seal() { [native] }", 1, false),
+                "function seal() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // setPrototypeOf
         @class.FastAddValue(
             (KeyString)"setPrototypeOf",
             JSValue.CreateFunction(JSObject.SetPrototypeOf, "setPrototypeOf",
-                "function setPrototypeOf() { [native] }", 2, false),
+                "function setPrototypeOf() { [native code] }", 2, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // groupBy
         @class.FastAddValue(
             (KeyString)"groupBy",
             JSValue.CreateFunction(JSObject.GroupBy, "groupBy",
-                "function groupBy() { [native] }", 2, false),
+                "function groupBy() { [native code] }", 2, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // ── Static introspection methods ────────────────────────────
@@ -170,84 +170,84 @@ internal static class ObjectClassFactory
         @class.FastAddValue(
             (KeyString)"entries",
             JSValue.CreateFunction(JSObject.StaticEntries, "entries",
-                "function entries() { [native] }", 1, false),
+                "function entries() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // is
         @class.FastAddValue(
             (KeyString)"is",
             JSValue.CreateFunction(JSObject.Is, "is",
-                "function is() { [native] }", 2, false),
+                "function is() { [native code] }", 2, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // isExtensible
         @class.FastAddValue(
             (KeyString)"isExtensible",
             JSValue.CreateFunction(JSObject.IsExtensible, "isExtensible",
-                "function isExtensible() { [native] }", 1, false),
+                "function isExtensible() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // isFrozen
         @class.FastAddValue(
             (KeyString)"isFrozen",
             JSValue.CreateFunction(JSObject.IsFrozen, "isFrozen",
-                "function isFrozen() { [native] }", 1, false),
+                "function isFrozen() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // isSealed
         @class.FastAddValue(
             (KeyString)"isSealed",
             JSValue.CreateFunction(JSObject.IsSealed, "isSealed",
-                "function isSealed() { [native] }", 1, false),
+                "function isSealed() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // keys
         @class.FastAddValue(
             (KeyString)"keys",
             JSValue.CreateFunction(JSObject.Keys, "keys",
-                "function keys() { [native] }", 1, false),
+                "function keys() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // values
         @class.FastAddValue(
             (KeyString)"values",
             JSValue.CreateFunction(JSObject.Values, "values",
-                "function values() { [native] }", 1, false),
+                "function values() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // getOwnPropertyDescriptor
         @class.FastAddValue(
             (KeyString)"getOwnPropertyDescriptor",
             JSValue.CreateFunction(JSObject.GetOwnPropertyDescriptor, "getOwnPropertyDescriptor",
-                "function getOwnPropertyDescriptor() { [native] }", 2, false),
+                "function getOwnPropertyDescriptor() { [native code] }", 2, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // getOwnPropertyDescriptors
         @class.FastAddValue(
             (KeyString)"getOwnPropertyDescriptors",
             JSValue.CreateFunction(JSObject.GetOwnPropertyDescriptors, "getOwnPropertyDescriptors",
-                "function getOwnPropertyDescriptors() { [native] }", 1, false),
+                "function getOwnPropertyDescriptors() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // getOwnPropertyNames
         @class.FastAddValue(
             (KeyString)"getOwnPropertyNames",
             JSValue.CreateFunction(JSObject.GetOwnPropertyNames, "getOwnPropertyNames",
-                "function getOwnPropertyNames() { [native] }", 1, false),
+                "function getOwnPropertyNames() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // getOwnPropertySymbols
         @class.FastAddValue(
             (KeyString)"getOwnPropertySymbols",
             JSValue.CreateFunction(JSObject.GetOwnPropertySymbols, "getOwnPropertySymbols",
-                "function getOwnPropertySymbols() { [native] }", 1, false),
+                "function getOwnPropertySymbols() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         // getPrototypeOf
         @class.FastAddValue(
             (KeyString)"getPrototypeOf",
             JSValue.CreateFunction(JSObject.GetPrototypeOf, "getPrototypeOf",
-                "function getPrototypeOf() { [native] }", 1, false),
+                "function getPrototypeOf() { [native code] }", 1, false),
             JSPropertyAttributes.ConfigurableValue);
 
         return classValue;

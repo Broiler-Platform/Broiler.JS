@@ -109,7 +109,7 @@ public partial class DataView : JSObject
     //internal method
     public unsafe long GetInt64(in Arguments a)
     {
-        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"offset is required");
+        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
 
         if (byteOffset < 0 || byteOffset > byteLength - 8)
@@ -139,7 +139,7 @@ public partial class DataView : JSObject
     public unsafe int GetInt32Int(in Arguments a)
     {
         var @this = this;
-        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"offset is required");
+        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
         
         if (byteOffset < 0 || byteOffset > @this.byteLength - 4)
@@ -210,7 +210,7 @@ public partial class DataView : JSObject
     public unsafe int GetInt16Int(in Arguments a)
     {
         var @this = this;
-        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"offset is required");
+        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
 
         if (byteOffset < 0 || byteOffset > @this.byteLength - 2)
@@ -273,7 +273,7 @@ public partial class DataView : JSObject
     public int GetInt8Int(in Arguments a)
     {
         var @this = this;
-        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"Offset is required");
+        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
 
         if (byteOffset < 0 || byteOffset > @this.byteLength - 1)
             throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
@@ -323,7 +323,7 @@ public partial class DataView : JSObject
     public JSValue GetUint8(in Arguments a)
     {
         var @this = this;
-        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"offset is required");
+        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         
         if (byteOffset < 0 || byteOffset > @this.byteLength - 1)
             throw JSEngine.NewRangeError($"{byteOffset} offset is outside the bounds of DataView");
@@ -470,8 +470,10 @@ public partial class DataView : JSObject
         if (@this.buffer.isImmutable)
             throw JSEngine.NewTypeError("Cannot modify a DataView backed by an immutable ArrayBuffer");
 
-        var byteOffset = a[0] is { } offset ? ToByteOffset(offset) : throw JSEngine.NewTypeError($"offset is required");
-        var value = a[1] ?? throw JSEngine.NewTypeError($"value is required");
+        // An omitted byteOffset is ToIndex(undefined) = 0 and an omitted value is undefined
+        // (coerced per type); neither argument is required.
+        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
+        var value = a[1] ?? JSUndefined.Value;
 
         var littleEndian = a[2]?.BooleanValue ?? false;
 

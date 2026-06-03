@@ -1521,6 +1521,15 @@ internal static class BuiltInsAssemblyInitializer
         unscopables.FastAddValue(KeyStrings.GetOrCreate("with"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
     }
 
+    private static readonly string[] TypedArrayConstructorNames =
+    {
+        "Int8Array", "Uint8Array", "Uint8ClampedArray",
+        "Int16Array", "Uint16Array",
+        "Int32Array", "Uint32Array",
+        "BigInt64Array", "BigUint64Array",
+        "Float16Array", "Float32Array", "Float64Array"
+    };
+
     private static void PatchTypedArrayBuiltIns(JSContext context)
     {
         if (context[KeyStrings.GetOrCreate("TypedArray")] is not JSFunction typedArrayCtor)
@@ -1530,6 +1539,23 @@ internal static class BuiltInsAssemblyInitializer
             => value as JSTypedArray ?? throw JSEngine.NewTypeError("Failed to convert this to JSTypedArray");
 
         var prototype = typedArrayCtor.prototype;
+
+        // BYTES_PER_ELEMENT is a { writable: false, enumerable: false, configurable: false } data
+        // property on each concrete TypedArray constructor AND its prototype. The source generator
+        // only emits the constructor copy, so mirror that value onto the prototype here. (It must
+        // not live on %TypedArray%.prototype as an accessor — that would throw on access.)
+        foreach (var typedArrayName in TypedArrayConstructorNames)
+        {
+            if (context[KeyStrings.GetOrCreate(typedArrayName)] is not JSFunction ctor
+                || ctor.prototype is not JSObject ctorPrototype)
+            {
+                continue;
+            }
+
+            var bytesPerElement = ctor[Names.BYTES_PER_ELEMENT];
+            if (!bytesPerElement.IsUndefined)
+                ctorPrototype.FastAddValue(Names.BYTES_PER_ELEMENT, bytesPerElement, JSPropertyAttributes.ReadonlyValue);
+        }
 
         EnsureAccessorProperty(prototype, JSSymbol.toStringTag, "[Symbol.toStringTag]", static (in Arguments a) =>
         {
