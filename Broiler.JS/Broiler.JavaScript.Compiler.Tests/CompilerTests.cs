@@ -41,6 +41,25 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Generator_Yield_In_If_Block_Compiles_To_Valid_IL()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var g = function* () {
+                    if (true) {
+                        yield 42;
+                    }
+                };
+                var iterator = g();
+                return iterator.next().value + "|" + iterator.next().done;
+            })();
+            """);
+
+        Assert.Equal("42|true", result.ToString());
+    }
+
+    [Fact]
     public void Compile_SloppyMode_Allows_Future_Reserved_Binding_Names()
     {
         using var ctx = new JSContext();

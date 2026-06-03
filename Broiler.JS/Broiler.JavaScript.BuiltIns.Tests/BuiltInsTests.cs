@@ -42,6 +42,38 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Number_Prototype_ToString_Uses_Zero_NumberData()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("Number.prototype.toString(2);");
+
+        Assert.Equal("0", result.ToString());
+    }
+
+    [Fact]
+    public void ArrayBuffer_Prototype_Immutable_Is_Accessor()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var desc = Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, "immutable");
+                return [
+                    typeof desc.get,
+                    desc.get.name,
+                    desc.get.length,
+                    desc.set === undefined,
+                    desc.enumerable,
+                    desc.configurable
+                ].join("|");
+            })();
+            """);
+
+        Assert.Equal("function|get immutable|0|true|false|true", result.ToString());
+    }
+
+    [Fact]
     public void EventTarget_Construct_Succeeds()
     {
         EnsureBuiltInsLoaded();

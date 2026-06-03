@@ -1,4 +1,5 @@
 ﻿using Broiler.JavaScript.BuiltIns.BigInt;
+using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -18,6 +19,11 @@ internal static class JSNumberExtensions
         {
             if (target is JSPrimitiveObject primitiveObject)
                 return primitiveObject.value.ToNumber();
+
+            if (target is JSObject @object
+                && (JSEngine.Current as JSObject)?[Names.Number] is JSFunction numberConstructor
+                && ReferenceEquals(@object, numberConstructor.prototype))
+                return JSNumber.Zero;
 
             throw JSEngine.NewTypeError($"Number.prototype.{name} requires that 'this' be a Number");
         }

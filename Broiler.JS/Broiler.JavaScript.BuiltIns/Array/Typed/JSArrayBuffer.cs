@@ -152,6 +152,9 @@ public partial class JSArrayBuffer : JSObject
     [JSExport("detached")]
     public bool Detached => isDetached;
 
+    [JSExport("immutable")]
+    public bool Immutable => false;
+
     // ---------------------------------------------------------------
     // §2.9.1  ArrayBuffer.prototype.transfer(newLength?)
     // ---------------------------------------------------------------
