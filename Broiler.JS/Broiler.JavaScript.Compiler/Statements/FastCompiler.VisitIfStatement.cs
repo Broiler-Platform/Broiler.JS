@@ -13,10 +13,25 @@ partial class FastCompiler
 {
     protected override YExpression VisitIfStatement(AstIfStatement ifStatement)
     {
+        var test = JSValueBuilder.BooleanValue(VisitExpression(ifStatement.Test));
+
+        if (scope.Top.Function?.Generator == true)
+        {
+            var generatorTrueCase = ifStatement.True is AstExpressionStatement { Expression: AstFunctionExpression generatorTrueFunctionDeclaration }
+                ? VisitRuntimeFunctionDeclaration(generatorTrueFunctionDeclaration).ToJSValue()
+                : VisitStatement(ifStatement.True).ToJSValue();
+            var generatorFalseCase = ifStatement.False == null
+                ? JSUndefinedBuilder.Value
+                : ifStatement.False is AstExpressionStatement { Expression: AstFunctionExpression generatorFalseFunctionDeclaration }
+                    ? VisitRuntimeFunctionDeclaration(generatorFalseFunctionDeclaration).ToJSValue()
+                    : VisitStatement(ifStatement.False).ToJSValue();
+
+            return YExpression.Condition(test, generatorTrueCase, generatorFalseCase);
+        }
+
         var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
         var outerCompletionVars = GetCompletionVariables();
         using var completion = completionScopes.Push(completionVar);
-        var test = JSValueBuilder.BooleanValue(VisitExpression(ifStatement.Test));
         var trueCase = ifStatement.True is AstExpressionStatement { Expression: AstFunctionExpression trueFunctionDeclaration }
             ? TrackCompletion(VisitRuntimeFunctionDeclaration(trueFunctionDeclaration).ToJSValue())
             : TrackCompletion(VisitStatement(ifStatement.True).ToJSValue());

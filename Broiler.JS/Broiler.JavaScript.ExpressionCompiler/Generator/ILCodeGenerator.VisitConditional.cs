@@ -29,6 +29,8 @@ public partial class ILCodeGenerator
             : trueEnd);
         
         Visit(yConditionalExpression.@true);
+        if (yConditionalExpression.Type == typeof(void) && yConditionalExpression.@true.Type != typeof(void))
+            il.Emit(OpCodes.Pop);
 
         if(yConditionalExpression.@false != null)
         {
@@ -36,7 +38,7 @@ public partial class ILCodeGenerator
             il.MarkLabel(falseBegin);
             Visit(yConditionalExpression.@false);
 
-            if(yConditionalExpression.@true.Type == typeof(void) 
+            if ((yConditionalExpression.Type == typeof(void) || yConditionalExpression.@true.Type == typeof(void))
                 && yConditionalExpression.@false.Type != typeof(void))
             {
                 il.Emit(OpCodes.Pop);
@@ -48,7 +50,7 @@ public partial class ILCodeGenerator
         {
             il.MarkLabel(trueEnd);
             //// we will need to leave something on stack..
-            if (yConditionalExpression.@true.Type != typeof(void))
+            if (yConditionalExpression.Type != typeof(void) && yConditionalExpression.@true.Type != typeof(void))
             {
                 il.Emit(OpCodes.Ldnull);
             }

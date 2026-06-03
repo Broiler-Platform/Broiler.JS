@@ -42,6 +42,103 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Number_Prototype_ToString_Uses_Zero_NumberData()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("Number.prototype.toString(2);");
+
+        Assert.Equal("0", result.ToString());
+    }
+
+    [Fact]
+    public void ArrayBuffer_Prototype_Immutable_Is_Accessor()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var desc = Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, "immutable");
+                return [
+                    typeof desc.get,
+                    desc.get.name,
+                    desc.get.length,
+                    desc.set === undefined,
+                    desc.enumerable,
+                    desc.configurable
+                ].join("|");
+            })();
+            """);
+
+        Assert.Equal("function|get immutable|0|true|false|true", result.ToString());
+    }
+
+    [Fact]
+    public void JSON_Parse_Preserves_Numeric_Object_Property_Names()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var obj = JSON.parse('{"42":37}');
+                return Object.getOwnPropertyNames(obj).join(',') + '|' + obj[42];
+            })();
+            """);
+
+        Assert.Equal("42|37", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Match_Indices_Defines_Groups_Property()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var indices = /(?<x>.)/d.exec("a").indices;
+                return [
+                    Object.prototype.hasOwnProperty.call(indices, "groups"),
+                    indices.groups.x.join(","),
+                    Object.getPrototypeOf(indices.groups) === null
+                ].join("|");
+            })();
+            """);
+
+        Assert.Equal("true|0,1|true", result.ToString());
+    }
+
+    [Fact]
+    public void Promise_Any_Thenable_Reject_Element_Has_Builtin_Metadata()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("""
+            (function () {
+                var rejectElement;
+                var thenable = { then: function(resolve, reject) { rejectElement = reject; } };
+                function NotPromise(executor) { executor(function(){}, function(){}); }
+                NotPromise.resolve = function(value) { return value; };
+                Promise.any.call(NotPromise, [thenable]);
+                var name = Object.getOwnPropertyDescriptor(rejectElement, "name");
+                var length = Object.getOwnPropertyDescriptor(rejectElement, "length");
+                return [name.value, name.writable, name.enumerable, name.configurable, length.value, rejectElement.prototype === undefined].join("|");
+            })();
+            """);
+
+        Assert.Equal("|false|false|true|1|true", result.ToString());
+    }
+
+    [Fact]
+    public void ShadowRealm_ImportValue_Length_Is_Two()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        var result = ctx.Eval("Object.getOwnPropertyDescriptor(ShadowRealm.prototype.importValue, 'length').value;");
+
+        Assert.Equal(2.0, result.DoubleValue);
+    }
+
+    [Fact]
     public void EventTarget_Construct_Succeeds()
     {
         EnsureBuiltInsLoaded();
@@ -2269,6 +2366,25 @@ public class BuiltInsTests
             seen.join('|');
             """);
         Assert.Equal("present|1", result.ToString());
+    }
+
+    [Fact]
+    public void JSON_Parse_SourceTextAccess_Passes_Context_For_Composite_Root()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext(JavaScriptFeatureFlags.JsonParseSourceTextAccess);
+        var result = ctx.Eval("""
+            var seen = [];
+            JSON.parse('[]', function(key, value, context) {
+                seen.push(typeof context);
+                seen.push(Object.getPrototypeOf(context) === Object.prototype);
+                seen.push(Object.getOwnPropertyNames(context).length);
+                return value;
+            });
+            seen.join('|');
+            """);
+
+        Assert.Equal("object|true|0", result.ToString());
     }
 
     [Fact]

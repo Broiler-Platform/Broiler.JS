@@ -151,6 +151,8 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         var vne = node.Expressions.GetFastEnumerator();
         while (vne.MoveNext(out var s))
             list.Add(Visit(s));
+        if (node.Type == typeof(void) && (list.Count == 0 || list[^1].Type != typeof(void)))
+            list.Add(Expression.Empty);
 
         return retainedVariables.Count == 0
             ? Expression.Block(list)
@@ -237,6 +239,23 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         var (label, id) = GetNextYieldJumpTarget();
 
         return Expression.Block(Expression.Return(generatorReturn, GeneratorStateBuilder.New(arg, id, node.DelegateYield)), Expression.Label(label), nextValue);
+    }
+
+    protected override Exp VisitConditional(YConditionalExpression node)
+    {
+        var conditional = base.VisitConditional(node);
+        if (node.Type != typeof(void) || conditional is not YConditionalExpression rewritten)
+            return conditional;
+
+        static Exp ToVoid(Exp expression) => expression.Type == typeof(void)
+            ? expression
+            : Expression.Block(expression, Expression.Empty);
+
+        return new YConditionalExpression(
+            rewritten.test,
+            ToVoid(rewritten.@true),
+            rewritten.@false == null ? null : ToVoid(rewritten.@false),
+            typeof(void));
     }
 
     protected override Exp VisitLambda(LambdaExpression yLambdaExpression)

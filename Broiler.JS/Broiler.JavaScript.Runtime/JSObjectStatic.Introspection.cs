@@ -14,6 +14,15 @@ public partial class JSObject
         var keys = new List<JSValue>();
         List<(uint Key, JSValue Value)> symbolKeys = null;
 
+        if (!@object.IsArray)
+        {
+            foreach (var (key, property) in @object.GetElements(false).AllValues())
+            {
+                if (!property.IsEmpty)
+                    keys.Add(JSValue.CreateString(key.ToString()));
+            }
+        }
+
         var en = @object.GetAllKeys(false, false);
         while (en.MoveNext(out var hasValue, out var value, out var _))
         {

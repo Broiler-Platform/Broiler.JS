@@ -152,6 +152,33 @@ public partial class JSRegExp
         result[KeyStrings.input] = a.Get1();
 
         var groupsKey = KeyStrings.GetOrCreate("groups");
+        var indicesKey = KeyStrings.GetOrCreate("indices");
+        JSObject indicesGroups = null;
+        if (hasIndices)
+        {
+            var indices = JSValue.CreateArray((uint)c);
+            var indicesObject = (JSObject)indices;
+            for (int i = 0; i < c; i++)
+            {
+                var group = groups[i];
+                if (group.Captures.Count == 0)
+                {
+                    indices[(uint)i] = JSUndefined.Value;
+                }
+                else
+                {
+                    var range = JSValue.CreateArray(2);
+                    range[0] = JSValue.CreateNumber(group.Index);
+                    range[1] = JSValue.CreateNumber(group.Index + group.Length);
+                    indices[(uint)i] = range;
+                }
+            }
+
+            indicesGroups = new JSObject();
+            indicesGroups.SetPrototypeOf(JSValue.NullValue);
+            indicesObject.FastAddValue(groupsKey, JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
+            ((JSObject)result).FastAddValue(indicesKey, indices, JSPropertyAttributes.EnumerableConfigurableValue);
+        }
 
         // Populate named groups (§2.7 — duplicate named capture groups support).
         var groupNames = value.GetGroupNames();
@@ -171,12 +198,28 @@ public partial class JSRegExp
                     namedGroups[name] = g.Success
                         ? JSValue.CreateString(g.Value)
                         : JSUndefined.Value;
+                    if (hasIndices)
+                    {
+                        if (g.Success)
+                        {
+                            var range = JSValue.CreateArray(2);
+                            range[0] = JSValue.CreateNumber(g.Index);
+                            range[1] = JSValue.CreateNumber(g.Index + g.Length);
+                            indicesGroups[name] = range;
+                        }
+                        else
+                        {
+                            indicesGroups[name] = JSUndefined.Value;
+                        }
+                    }
                 }
             }
             
             if (hasNamedGroups)
             {
                 result[groupsKey] = namedGroups;
+                if (hasIndices)
+                    ((JSObject)result[indicesKey]).FastAddValue(groupsKey, indicesGroups, JSPropertyAttributes.EnumerableConfigurableValue);
                 return result;
             }
         }

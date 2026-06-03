@@ -6,11 +6,23 @@ using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Json;
 
 internal class JSJsonParser(JsonParserReceiver r) : System.Text.Json.Serialization.JsonConverter<JSValue>
 {
+    private static void AddJsonObjectProperty(JSObject target, string name, JSValue value)
+    {
+        if (uint.TryParse(name, out var index) && index != uint.MaxValue && index.ToString() == name)
+        {
+            target.FastAddValue(index, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            return;
+        }
+
+        target.FastAddValue(KeyStrings.GetOrCreate(name), value, JSPropertyAttributes.EnumerableConfigurableValue);
+    }
+
     public static JSValue Parse(string str, JsonParserReceiver r) => JsonSerializer.Deserialize<JSValue>(str, new JsonSerializerOptions
     {
         Converters =
@@ -151,7 +163,7 @@ internal class JSJsonParser(JsonParserReceiver r) : System.Text.Json.Serializati
                         if (value.IsUndefined)
                             continue;
 
-                        j[name] = value;
+                        AddJsonObjectProperty(j, name, value);
                     }
                     else
                     {
@@ -160,7 +172,7 @@ internal class JSJsonParser(JsonParserReceiver r) : System.Text.Json.Serializati
                         if (value.IsUndefined)
                             continue;
 
-                        j[name] = value;
+                        AddJsonObjectProperty(j, name, value);
                     }
                     break;
 
