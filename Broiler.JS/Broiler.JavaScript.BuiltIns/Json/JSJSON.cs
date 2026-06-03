@@ -341,6 +341,8 @@ public partial class JSJSON : JSObject
         }
 
         parsed ??= JSNull.Value;
+        if (sourceTextAccessEnabled)
+            sourceMap ??= [];
 
         if (receiver is not JSFunction function)
             return parsed;

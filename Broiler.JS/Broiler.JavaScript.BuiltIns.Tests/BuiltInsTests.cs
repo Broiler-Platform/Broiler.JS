@@ -2304,6 +2304,25 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void JSON_Parse_SourceTextAccess_Passes_Context_For_Composite_Root()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext(JavaScriptFeatureFlags.JsonParseSourceTextAccess);
+        var result = ctx.Eval("""
+            var seen = [];
+            JSON.parse('[]', function(key, value, context) {
+                seen.push(typeof context);
+                seen.push(Object.getPrototypeOf(context) === Object.prototype);
+                seen.push(Object.getOwnPropertyNames(context).length);
+                return value;
+            });
+            seen.join('|');
+            """);
+
+        Assert.Equal("object|true|0", result.ToString());
+    }
+
+    [Fact]
     public void Error_IsError_IsDisabled_WhenFlagIsOff()
     {
         EnsureBuiltInsLoaded();
