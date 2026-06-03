@@ -233,6 +233,10 @@ public class FastScanner
         if (first == '\\' || first.IsIdentifierStart())
             return ReadIdentifier(state);
 
+        if (char.IsHighSurrogate(first) && char.IsLowSurrogate(Next())
+            && char.ConvertToUtf32(first, Next()).IsIdentifierStart())
+            return ReadIdentifier(state);
+
         switch (first)
         {
             case '\'':
@@ -1207,6 +1211,24 @@ public class FastScanner
                     escaped = true;
                     start = false;
                     continue;
+                }
+
+                if (char.IsHighSurrogate(current))
+                {
+                    var low = Next();
+                    if (char.IsLowSurrogate(low))
+                    {
+                        var codePoint = char.ConvertToUtf32(current, low);
+                        if (!(start ? codePoint.IsIdentifierStart() : codePoint.IsIdentifierPart()))
+                            break;
+
+                        builder.Append(current);
+                        builder.Append(low);
+                        Consume();
+                        Consume();
+                        start = false;
+                        continue;
+                    }
                 }
 
                 if (!(start ? current.IsIdentifierStart() : current.IsIdentifierPart()))

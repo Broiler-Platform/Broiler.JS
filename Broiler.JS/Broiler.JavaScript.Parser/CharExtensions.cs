@@ -114,6 +114,9 @@ public static class CharExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsIdentifierPart(this int codePoint)
     {
+        if (codePoint < 0 || codePoint > 0x10FFFF || codePoint is >= 0xD800 and <= 0xDFFF)
+            return false;
+
         if (codePoint.IsIdentifierStart())
             return true;
 
