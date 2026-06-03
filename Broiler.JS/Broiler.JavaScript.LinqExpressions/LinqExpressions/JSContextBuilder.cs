@@ -31,6 +31,10 @@ public class JSContextBuilder
     public static Expression Current = Expression.Field(null, _CurrentField);
     public static Expression Object = Current.PropertyExpression<IJSExecutionContext, JSValue>(() => (x) => x.Object);
 
+    private static readonly PropertyInfo _DirectEvalSuper = typeof(JSContext).GetProperty(nameof(JSContext.DirectEvalSuper));
+    /// <summary>Reads the home-object super reference made available to a direct eval body.</summary>
+    public static Expression DirectEvalSuper => Expression.Property(Expression.Convert(Current, typeof(JSContext)), _DirectEvalSuper);
+
     private static PropertyInfo _Index = typeof(JSObject).IndexProperty(typeof(KeyString));
     private static MethodInfo _AssignIdentifier = typeof(JSContext).GetMethod(nameof(JSContext.AssignIdentifier), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
     private static MethodInfo _AssignIdentifierStrict = typeof(JSContext).GetMethod(nameof(JSContext.AssignIdentifier), [typeof(KeyString).MakeByRefType(), typeof(JSValue), typeof(bool)]);

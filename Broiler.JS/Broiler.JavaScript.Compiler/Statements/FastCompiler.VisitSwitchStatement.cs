@@ -278,7 +278,7 @@ partial class FastCompiler
             if (functionInitializers.Any())
                 statements.Add(YExpression.Block(functionInitializers));
             statements.Add(
-                YExpression.TryFinally(
+                YExpression.TailCallTransparentTryFinally(
                     YExpression.Switch(testTarget, d.ToJSValue() ?? JSUndefinedBuilder.Value, equalsMethod, [.. cases.Select(x =>
                     YExpression.SwitchCase(YExpression.Block(x.Body).ToJSValue(), x.Tests))]),
                     PropagateCompletion(completionVar, outerCompletionVars)));

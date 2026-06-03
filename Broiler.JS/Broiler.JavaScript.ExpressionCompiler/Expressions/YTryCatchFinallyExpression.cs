@@ -18,6 +18,17 @@ public class YTryCatchFinallyExpression(
     public new readonly YCatchBody? Catch = @catch;
     public readonly YExpression? Finally = @finally;
 
+    /// <summary>
+    /// When true this try/finally is a synthetic completion-tracking wrapper
+    /// (emitted for if/switch/loop statement completion values) whose finally has
+    /// no observable ordering relative to a return. Such wrappers must not block
+    /// proper tail calls in their body: a tail-call sentinel returned from inside
+    /// still runs the finally and is resolved by the caller, so semantics are
+    /// preserved. Real try/finally (user code, function stack-pop) leave this
+    /// false so tail calls remain blocked.
+    /// </summary>
+    public bool TailCallTransparent { get; init; }
+
     public override void Print(IndentedTextWriter writer)
     {
         writer.WriteLine("try {");

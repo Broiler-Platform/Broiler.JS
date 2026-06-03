@@ -17,7 +17,28 @@ partial class FastCompiler
         var hoistingScope = block.HoistingScope;
         var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
         var lexicalBindings = CollectTopLevelLexicalBindings(block.Statements);
-        
+
+        // Annex B 3.3 (sloppy mode): consume the function-scope var bindings handed
+        // down from CreateFunction for this function body block. Cleared immediately
+        // so nested blocks do not inherit them.
+        var annexBFunctionNames = pendingAnnexBFunctionNames;
+        pendingAnnexBFunctionNames = null;
+        if (annexBFunctionNames != null)
+        {
+            var annexBEn = annexBFunctionNames.GetFastEnumerator();
+            while (annexBEn.MoveNext(out var annexBName))
+            {
+                if (lexicalBindings.Contains(annexBName.Value))
+                    continue;
+
+                // Mark as a var (non-lexical) binding so the declaration site's
+                // Annex B outer-binding assignment is not blocked by
+                // IsAnnexBHoistingBlocked.
+                var created = scope.CreateVariable(annexBName, null, true, initialize: true);
+                created.IsLexical = false;
+            }
+        }
+
         if (hoistingScope != null)
         {
             var en = hoistingScope.GetFastEnumerator();

@@ -20,7 +20,7 @@ partial class FastCompiler
     private YExpression CreateFunction(AstFunctionExpression functionDeclaration, YExpression super = null, bool createClass = false, string className = null,
         IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true, string inferredFunctionName = null,
         bool createPrototype = true, string[] directEvalPrivateNames = null, IReadOnlyDictionary<AstClassProperty, YExpression> computedMemberNames = null,
-        bool thisIsUninitialized = false)
+        bool thisIsUninitialized = false, YExpression superConstructor = null)
     {
         var node = functionDeclaration;
         var functionLength = GetExpectedArgumentCount(functionDeclaration.Params);
@@ -58,6 +58,9 @@ partial class FastCompiler
         computedMemberNames: computedMemberNames,
         thisIsUninitialized: thisIsUninitialized));
         {
+            // super() in a derived constructor (or an arrow nested in it) targets the
+            // superclass constructor, which differs from the home-object prototype.
+            cs.SuperConstructor = superConstructor ?? (functionDeclaration.IsArrowFunction ? previousScope.SuperConstructor : null);
             cs.InParameterInitializer = previousScope.InParameterInitializer;
             var lexicalScopeVar = cs.Context;
 
@@ -111,6 +114,7 @@ partial class FastCompiler
             CollectParameterNames(functionDeclaration.Params, parameterNames);
             foreach (var parameterName in parameterNames)
                 cs.CreateVariable(parameterName, null, true, initialize: false);
+
             var directEvalParameterBindings = CollectDirectEvalParameterBindings(functionDeclaration, parameterNames);
 
             YExpression fxName;
@@ -184,6 +188,16 @@ partial class FastCompiler
                 CreateAssignment(bodyInits, v.Identifier, JSVariableBuilder.FromArgumentOptional(argumentElements, i, parameterInitializer), false, true,
                     suppressAnonymousFunctionNameInference: true);
             }
+
+            // Annex B 3.3 (sloppy mode): hand block-nested function declaration names
+            // to the body block so it creates the function-scope var bindings at
+            // entry (initialized to undefined). Reads before the declaration then
+            // resolve, and the declaration site assigns them via
+            // AppendAnnexBOuterBindingAssignments. Set right before visiting the body
+            // so parameter initializers cannot consume it first.
+            pendingAnnexBFunctionNames = isStrictFunction
+                ? null
+                : (functionDeclaration.Body as AstBlock)?.AnnexBFunctionNames;
 
             YExpression lambdaBody;
             using (completionScopes.Push(null))

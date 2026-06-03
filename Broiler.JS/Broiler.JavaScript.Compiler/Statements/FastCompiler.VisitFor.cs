@@ -46,7 +46,7 @@ partial class FastCompiler
         var right = VisitExpression(forInStatement.Target);
         var loop = YExpression.Loop(bodyList, s.Break, s.Continue);
 
-        var result = YExpression.Block(pList, YExpression.Assign(completionVar, JSUndefinedBuilder.Value), YExpression.Assign(en, JSValueBuilder.GetAllKeys(right)), YExpression.TryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)), completionVar);
+        var result = YExpression.Block(pList, YExpression.Assign(completionVar, JSUndefinedBuilder.Value), YExpression.Assign(en, JSValueBuilder.GetAllKeys(right)), YExpression.TailCallTransparentTryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)), completionVar);
         if (tdzScope == null)
             return result;
 
@@ -162,7 +162,7 @@ partial class FastCompiler
             YExpression.Assign(en, enumerator),
             YExpression.Assign(returnableVar, YExpression.TypeAs(en, typeof(IReturnableEnumerator))),
             YExpression.Assign(iterDoneVar, YExpression.Constant(false)),
-            YExpression.TryFinally(tryFinally, PropagateCompletion(completionVar, outerCompletionVars)),
+            YExpression.TailCallTransparentTryFinally(tryFinally, PropagateCompletion(completionVar, outerCompletionVars)),
             completionVar);
 
         if (tdzScope == null)
@@ -255,7 +255,7 @@ partial class FastCompiler
             var r1 = YExpression.Block(
                 new Sequence<YParameterExpression> { completionVar },
                 YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
-                YExpression.TryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)),
+                YExpression.TailCallTransparentTryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)),
                 completionVar);
             return r1;
         }
@@ -265,7 +265,7 @@ partial class FastCompiler
             new Sequence<YParameterExpression> { completionVar },
             YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
             init,
-            YExpression.TryFinally(bodyLoop, PropagateCompletion(completionVar, outerCompletionVars)),
+            YExpression.TailCallTransparentTryFinally(bodyLoop, PropagateCompletion(completionVar, outerCompletionVars)),
             completionVar);
         return r;
     }

@@ -35,6 +35,12 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     private readonly string[] directEvalBindingNames;
     private readonly string[] directEvalLexicalBindingNames;
 
+    // Annex B 3.3: names handed from CreateFunction to the next VisitBlock (the
+    // function body) to create function-scope var bindings for block-nested
+    // function declarations. Consumed and cleared by the first VisitBlock so
+    // inner blocks do not pick them up.
+    private IFastEnumerable<StringSpan> pendingAnnexBFunctionNames;
+
     public LoopScope LoopScope => scope.Top.Loop.Top;
 
     private StringArray _keyStrings = new();
@@ -65,6 +71,17 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         var isStrictProgram = HasUseStrictDirective(jScript);
 
         using var fx = scope.Push(new FastFunctionScope(pool, null, isAsync: jScript.IsAsync));
+
+        // Direct eval inside a method/initializer that has a [[HomeObject]] super:
+        // expose that super to the eval body so super.x resolves. Capture the
+        // pushed super value into a local at eval entry (like `this`) so nested
+        // arrows close over a stable value instead of re-reading the context.
+        if (isDirectEvalCompilation && context?.HasDirectEvalSuper == true)
+        {
+            var evalSuper = fx.CreateVariable("#evalSuper", JSContextBuilder.DirectEvalSuper);
+            evalSuper.SkipRegistration = true;
+            fx.Super = evalSuper.Expression;
+        }
 
         var lScope = fx.Context;
 
@@ -445,7 +462,10 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         return variable;
     }
 
-    protected override YExpression VisitFunctionExpression(AstFunctionExpression functionExpression) => CreateFunction(functionExpression);
+    protected override YExpression VisitFunctionExpression(AstFunctionExpression functionExpression)
+        // Arrow functions have no super binding of their own; they inherit the
+        // lexical [[HomeObject]] super of the enclosing method/initializer.
+        => CreateFunction(functionExpression, functionExpression.IsArrowFunction ? scope.Top.Super : null);
 
     protected override YExpression VisitSuper(AstSuper super) => scope.Top.ThisExpression;
 

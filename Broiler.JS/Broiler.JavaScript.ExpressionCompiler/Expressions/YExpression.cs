@@ -454,6 +454,14 @@ public abstract class YExpression(YExpressionType nodeType, Type type)
         YExpression @try,
         YExpression @finally) => new(@try, null, @finally);
 
+    /// <summary>
+    /// Creates a synthetic completion-tracking try/finally that does not block
+    /// proper tail calls in its body. See <see cref="YTryCatchFinallyExpression.TailCallTransparent"/>.
+    /// </summary>
+    public static YTryCatchFinallyExpression TailCallTransparentTryFinally(
+        YExpression @try,
+        YExpression @finally) => new(@try, null, @finally) { TailCallTransparent = true };
+
     public static YTryCatchFinallyExpression TryCatchFinally(
         YExpression @try,
         YExpression @finally,

@@ -9,6 +9,47 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
     private Dictionary<string, (StringSpan name, FastVariableKind kind)> Variables = new();
     public readonly FastNodeType NodeType = nodeType;
 
+    private List<StringSpan> annexBFunctionNames;
+
+    /// <summary>
+    /// Records a block-nested function declaration name that must be var-hoisted
+    /// to this (function/program body) scope per Annex B 3.3.
+    /// </summary>
+    public void AddAnnexBName(in StringSpan name)
+    {
+        if (name.IsNullOrWhiteSpace())
+            return;
+
+        annexBFunctionNames ??= new List<StringSpan>();
+        foreach (var existing in annexBFunctionNames)
+        {
+            if (existing.Value == name.Value)
+                return;
+        }
+
+        annexBFunctionNames.Add(name);
+    }
+
+    public IFastEnumerable<StringSpan> GetAnnexBNames()
+    {
+        if (annexBFunctionNames == null || annexBFunctionNames.Count == 0)
+            return Sequence<StringSpan>.Empty;
+
+        var list = new Sequence<StringSpan>();
+        foreach (var name in annexBFunctionNames)
+            list.Add(name);
+
+        return list;
+    }
+
+    /// <summary>
+    /// Returns true if this scope declares <paramref name="name"/> as a lexical
+    /// (let/const/class) binding.
+    /// </summary>
+    public bool HasLexicalBinding(in StringSpan name)
+        => Variables.TryGetValue(name.Value, out var v)
+            && v.kind is FastVariableKind.Let or FastVariableKind.Const;
+
     public void AddVariable(FastToken token, in StringSpan name, FastVariableKind kind = FastVariableKind.Var, bool throwError = true)
     {
         if (name.IsNullOrWhiteSpace())

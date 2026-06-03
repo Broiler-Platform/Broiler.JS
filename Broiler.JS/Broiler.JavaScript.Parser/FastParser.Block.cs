@@ -46,7 +46,11 @@ partial class FastParser
                 throw stream.Unexpected();
             } while (true);
 
-            node = new AstBlock(begin, PreviousToken, list) { HoistingScope = scope.GetVariables() };
+            node = new AstBlock(begin, PreviousToken, list)
+            {
+                HoistingScope = scope.GetVariables(),
+                AnnexBFunctionNames = scope.GetAnnexBNames()
+            };
         }
         finally
         {

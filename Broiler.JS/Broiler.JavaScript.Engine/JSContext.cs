@@ -79,6 +79,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     private readonly List<string[]> directEvalLexicalBindingNameScopes = [];
     private readonly List<DirectEvalScope> activeDirectEvalScopes = [];
     private readonly List<CallStackItem> directEvalActivationOwners = [];
+    private readonly List<JSValue> directEvalSuperValues = [];
     private WithScope withScope;
 
     private sealed class WithScope : IDisposable
@@ -317,6 +318,31 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         owner = null;
         return false;
     }
+
+    private sealed class DirectEvalSuperScope(JSContext context) : IDisposable
+    {
+        public void Dispose() => context.directEvalSuperValues.RemoveAt(context.directEvalSuperValues.Count - 1);
+    }
+
+    /// <summary>
+    /// Makes the lexical [[HomeObject]] super reference of the enclosing
+    /// method/initializer available to a direct eval body so that
+    /// <c>super.x</c> inside the eval resolves correctly.
+    /// </summary>
+    public IDisposable PushDirectEvalSuper(JSValue superValue)
+    {
+        if (superValue == null)
+            return null;
+
+        directEvalSuperValues.Add(superValue);
+        return new DirectEvalSuperScope(this);
+    }
+
+    /// <summary>The super reference visible to the direct eval currently being compiled/executed, or undefined.</summary>
+    public JSValue DirectEvalSuper => directEvalSuperValues.Count == 0 ? JSUndefined.Value : directEvalSuperValues[^1];
+
+    /// <summary>Whether a super reference is available to the direct eval currently being compiled.</summary>
+    public bool HasDirectEvalSuper => directEvalSuperValues.Count > 0;
 
     internal bool TryResolveDirectEvalBinding(in KeyString name, out JSVariable variable)
     {

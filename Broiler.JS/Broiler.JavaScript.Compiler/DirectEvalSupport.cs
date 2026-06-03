@@ -81,7 +81,7 @@ public static class DirectEvalSupport
         }
     }
 
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null)
     {
         if (!IsDirectEval(callee))
             return callee.InvokeFunction(arguments);
@@ -115,6 +115,9 @@ public static class DirectEvalSupport
                 : null;
             using var ___ = disallowArgumentsDeclaration
                 ? new DeclaredBindingSnapshot(context, declaredBindings, ExtractBindingNames(capturedBindings))
+                : null;
+            using var superScope = allowSuperProperty
+                ? context.PushDirectEvalSuper(directEvalSuper)
                 : null;
             using var __ = context.PushDirectEvalCompilation(requiresActivation, privateNamesInScope);
             var result = CoreScript.Compile(text, location, null, new TransientCodeCache())(new Arguments(@this ?? context));

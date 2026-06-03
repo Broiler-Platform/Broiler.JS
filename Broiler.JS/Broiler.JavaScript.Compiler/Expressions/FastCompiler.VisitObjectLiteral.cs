@@ -59,7 +59,11 @@ partial class FastCompiler
             }
         }
 
-        if (!hasProtoSetter)
+        // Object literal methods/accessors that reference super need a home object,
+        // so build the object into a temp and resolve super against its prototype.
+        var usesSuper = ObjectLiteralUsesSuper(objectExpression);
+
+        if (!hasProtoSetter && !usesSuper)
         {
             var elements = new Sequence<YElementInit>();
             var en = properties.GetFastEnumerator();
@@ -202,15 +206,18 @@ partial class FastCompiler
 
             AstClassProperty p = pn as AstClassProperty;
 
+            // Home object prototype for super.x inside this object's methods/accessors.
+            YExpression MethodSuper() => usesSuper ? JSValueBuilder.SuperPrototypeOf(temp.Variable) : null;
+
             YExpression key = null;
             YExpression value = p.Kind switch
             {
                 AstPropertyKind.Get when p.Init is AstFunctionExpression function =>
-                    CreateFunction(function, inferredFunctionName: GetPropertyFunctionName(p, "get"), createPrototype: false),
+                    CreateFunction(function, super: MethodSuper(), inferredFunctionName: GetPropertyFunctionName(p, "get"), createPrototype: false),
                 AstPropertyKind.Set when p.Init is AstFunctionExpression function =>
-                    CreateFunction(function, inferredFunctionName: GetPropertyFunctionName(p, "set"), createPrototype: false),
+                    CreateFunction(function, super: MethodSuper(), inferredFunctionName: GetPropertyFunctionName(p, "set"), createPrototype: false),
                 AstPropertyKind.Method or AstPropertyKind.Constructor when p.Init is AstFunctionExpression function =>
-                    CreateFunction(function, createPrototype: false),
+                    CreateFunction(function, super: MethodSuper(), createPrototype: false),
                 _ => VisitExpression(p.Init)
             };
             var pKey = p.Key;
@@ -286,5 +293,66 @@ partial class FastCompiler
 
         statements.Add(temp.Variable);
         return YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, statements);
+    }
+
+    // Detects whether any of the object literal's own methods/accessors reference
+    // super (crossing arrow functions, which inherit the home object, but not
+    // nested non-arrow functions / object / class literals, which have their own).
+    private static bool ObjectLiteralUsesSuper(AstObjectLiteral objectExpression)
+    {
+        var detector = new SuperUsageDetector();
+        var en = objectExpression.Properties.GetFastEnumerator();
+        while (en.MoveNext(out var pn))
+        {
+            if (pn is not AstClassProperty p
+                || p.Init is not AstFunctionExpression { IsArrowFunction: false } function
+                || p.Kind is not (AstPropertyKind.Method or AstPropertyKind.Get or AstPropertyKind.Set or AstPropertyKind.Constructor))
+            {
+                continue;
+            }
+
+            detector.Visit(function.Body);
+            if (detector.Found)
+                return true;
+        }
+
+        return false;
+    }
+
+    private sealed class SuperUsageDetector : AstReduce
+    {
+        public bool Found;
+
+        protected override AstNode VisitCallExpression(AstCallExpression callExpression)
+        {
+            if (callExpression.Callee is AstSuper)
+            {
+                Found = true;
+                return callExpression;
+            }
+
+            return base.VisitCallExpression(callExpression);
+        }
+
+        protected override AstNode VisitMemberExpression(AstMemberExpression memberExpression)
+        {
+            if (memberExpression.Object is AstSuper)
+            {
+                Found = true;
+                return memberExpression;
+            }
+
+            return base.VisitMemberExpression(memberExpression);
+        }
+
+        protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
+        {
+            // Only arrow functions inherit the enclosing home object's super; a
+            // nested non-arrow function introduces its own (absent) super binding.
+            if (functionExpression.IsArrowFunction)
+                Visit(functionExpression.Body);
+
+            return functionExpression;
+        }
     }
 }

@@ -224,7 +224,18 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public LinkedStack<LoopScope> Loop;
 
+    /// <summary>
+    /// The home object's prototype, used to resolve <c>super.x</c> property
+    /// references. (For a derived constructor this is the superclass prototype,
+    /// not the superclass constructor — those differ; see <see cref="SuperConstructor"/>.)
+    /// </summary>
     public YExpression Super { get; set; }
+
+    /// <summary>
+    /// The superclass constructor, used by a <c>super(...)</c> call in a derived
+    /// class constructor. Distinct from <see cref="Super"/> (the prototype).
+    /// </summary>
+    public YExpression SuperConstructor { get; set; }
 
     public IEnumerable<VariableScope> Variables
     {
@@ -350,6 +361,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         Awaiter = p.Awaiter;
         TempVariables = p.TempVariables;
         Super = p.Super;
+        SuperConstructor = p.SuperConstructor;
         Context = p.Context;
         StackItem = p.StackItem;
         Loop = p.Loop;

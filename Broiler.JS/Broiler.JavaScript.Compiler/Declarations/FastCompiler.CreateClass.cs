@@ -262,15 +262,21 @@ partial class FastCompiler
 
         if (constructor != null)
         {
-            var fx = CreateFunction(constructor, superVar, true, className, memberInits, true, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames,
-                thisIsUninitialized: hasSuperClass);
+            // super.x in the constructor body / field initializers resolves against
+            // the superclass prototype, while super(...) targets the superclass
+            // constructor. Pass both so each resolves correctly.
+            var fx = CreateFunction(constructor, superPrototypeVar, true, className, memberInits, true, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames,
+                thisIsUninitialized: hasSuperClass, superConstructor: superVar);
             staticElements.Add(JSClassBuilder.AddConstructor(fx));
         }
         else
         {
             if (memberInits.Any())
             {
-                using var s = this.scope.Push(new FastFunctionScope(null, null, memberInits: memberInits, computedMemberNames: computedMemberNames, thisIsUninitialized: hasSuperClass));
+                // super.x in instance field initializers resolves against the home
+                // object's prototype (the superclass prototype), so give the synthetic
+                // default constructor scope that super binding.
+                using var s = this.scope.Push(new FastFunctionScope(null, null, super: superPrototypeVar, memberInits: memberInits, computedMemberNames: computedMemberNames, thisIsUninitialized: hasSuperClass));
                 var args = s.Arguments;
                 var @this = s.ThisExpression;
                 var inits = new Sequence<YExpression>() { };

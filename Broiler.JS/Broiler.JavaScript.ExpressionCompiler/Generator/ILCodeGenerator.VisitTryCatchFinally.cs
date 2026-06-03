@@ -10,8 +10,13 @@ public partial class ILCodeGenerator
     {
         using (tempVariables.Push())
         {
-            var blockTailCalls = tailCallTryDepth != 0 || tryCatchFinallyExpression.Catch != null;
-            tailCallTryDepth++;
+            // Synthetic completion-tracking wrappers are tail-call transparent: they
+            // neither count as an enclosing try (for nested-try blocking) nor block
+            // tail calls themselves. Real try/finally still block as before.
+            var transparent = tryCatchFinallyExpression.TailCallTransparent;
+            var blockTailCalls = !transparent && (tailCallTryDepth != 0 || tryCatchFinallyExpression.Catch != null);
+            if (!transparent)
+                tailCallTryDepth++;
             if (blockTailCalls)
                 tailCallBlockedDepth++;
 
@@ -70,7 +75,8 @@ public partial class ILCodeGenerator
             {
                 if (blockTailCalls)
                     tailCallBlockedDepth--;
-                tailCallTryDepth--;
+                if (!transparent)
+                    tailCallTryDepth--;
             }
         }
         return true;

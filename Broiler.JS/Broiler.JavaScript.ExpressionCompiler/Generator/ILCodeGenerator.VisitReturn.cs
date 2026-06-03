@@ -51,11 +51,32 @@ public partial class ILCodeGenerator
             case YExpressionType.Block:
                 return VisitReturnBlock(exp as YBlockExpression, label, localIndex);
 
-            // tail call...
+            // The branches of a conditional / short-circuit operator in return
+            // position are themselves in tail position, so recurse into them to
+            // preserve proper tail calls (e.g. `return c ? a : f()`, `return a && f()`).
+            case YExpressionType.Conditional
+                when exp is YConditionalExpression { @false: not null } conditional
+                    && !conditional.Type.IsValueType
+                    && conditional.@true.Type.IsAssignableTo(conditional.Type)
+                    && conditional.@false.Type.IsAssignableTo(conditional.Type):
+                return VisitReturnConditional(conditional, label, localIndex);
+            case YExpressionType.Coalesce
+                when exp is YCoalesceExpression coalesce
+                    && !coalesce.Type.IsValueType
+                    && coalesce.Left.Type.IsAssignableTo(coalesce.Type)
+                    && coalesce.Right.Type.IsAssignableTo(coalesce.Type):
+                return VisitReturnCoalesce(coalesce, label, localIndex);
         }
         if (exp is not YCallExpression call || !TryEmitJavaScriptTailCallValue(call))
             Visit(exp);
-        if(!il.IsTryBlock)
+        return EmitReturnOnStack(label, localIndex);
+    }
+
+    // Emits the return of a value already on the evaluation stack: a real Ret
+    // outside a protected region, or save-local + branch when inside one.
+    private CodeInfo EmitReturnOnStack(ILWriterLabel label, int localIndex)
+    {
+        if (!il.IsTryBlock)
         {
             il.Emit(OpCodes.Ret);
             return true;
@@ -63,6 +84,29 @@ public partial class ILCodeGenerator
         il.EmitSaveLocal(localIndex);
         il.Branch(label, localIndex);
         return true;
+    }
+
+    private CodeInfo VisitReturnConditional(YConditionalExpression conditional, ILWriterLabel label, int localIndex)
+    {
+        var falseBegin = il.DefineLabel("retCondFalse", il.Top);
+        Visit(conditional.test);
+        il.Emit(OpCodes.Brfalse, falseBegin);
+        VisitReturn(conditional.@true, label, localIndex);
+        il.MarkLabel(falseBegin);
+        VisitReturn(conditional.@false, label, localIndex);
+        return true;
+    }
+
+    private CodeInfo VisitReturnCoalesce(YCoalesceExpression coalesce, ILWriterLabel label, int localIndex)
+    {
+        var notNull = il.DefineLabel("retCoalesce", il.Top);
+        Visit(coalesce.Left);
+        il.Emit(OpCodes.Dup);
+        il.Emit(OpCodes.Brtrue, notNull);
+        il.Emit(OpCodes.Pop);
+        VisitReturn(coalesce.Right, label, localIndex);
+        il.MarkLabel(notNull);
+        return EmitReturnOnStack(label, localIndex);
     }
 
     private CodeInfo VisitReturnAssign(YAssignExpression assign, ILWriterLabel label, int localIndex)

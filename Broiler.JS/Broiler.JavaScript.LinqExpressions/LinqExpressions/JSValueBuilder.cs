@@ -100,6 +100,15 @@ public class JSValueBuilder
 
     public static Expression TypeOf(Expression target) => Expression.Call(target, _TypeOf);
 
+    private static MethodInfo _GetPrototypeOf = type.GetMethod(nameof(JSValue.GetPrototypeOf), System.Type.EmptyTypes);
+
+    /// <summary>
+    /// The home object's prototype used to resolve <c>super.x</c> inside an object
+    /// literal method/accessor: <c>Object.getPrototypeOf(homeObject)</c>, evaluated
+    /// at call time so the final prototype (after any __proto__) is seen.
+    /// </summary>
+    public static Expression SuperPrototypeOf(Expression homeObject) => Expression.Call(homeObject, _GetPrototypeOf);
+
     private static PropertyInfo _IndexKeyString = type.IndexProperty(typeof(KeyString));
     private static PropertyInfo _IndexUInt = type.IndexProperty(typeof(uint));
     private static PropertyInfo _Index = type.IndexProperty(typeof(JSValue));

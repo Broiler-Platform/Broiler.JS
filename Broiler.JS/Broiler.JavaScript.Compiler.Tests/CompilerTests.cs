@@ -480,6 +480,74 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_AnnexB_Block_Function_Is_Var_Hoisted_To_Function_Scope()
+    {
+        // Annex B 3.3: a block-nested function declaration also creates a var
+        // binding in the enclosing function scope, initialized to undefined at
+        // entry. Reading the name before the declaration must yield undefined
+        // (not throw 'f is not defined'); after the declaration it is the function.
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var before = f;
+                { function f() { return 42; } }
+                return '' + before + ',' + f();
+            })()
+            """);
+
+        Assert.Equal("undefined,42", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_AnnexB_Switch_Function_Is_Var_Hoisted_To_Function_Scope()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var before = f;
+                switch (1) { case 1: function f() { return 7; } }
+                return '' + before + ',' + f();
+            })()
+            """);
+
+        Assert.Equal("undefined,7", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_AnnexB_Block_Function_Blocked_By_Lexical_Conflict()
+    {
+        // Annex B 3.3 is blocked when a lexical binding with the same name exists
+        // in an enclosing scope: the block function must not leak to function scope.
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                let f = 5;
+                { function f() {} }
+                return f;
+            })()
+            """);
+
+        Assert.Equal("5", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_AnnexB_Block_Function_Not_Hoisted_In_Strict_Mode()
+    {
+        // In strict mode block-scoped function declarations are NOT var-hoisted;
+        // the name is only visible within its block.
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                "use strict";
+                { function f() { return 1; } }
+                return typeof f;
+            })()
+            """);
+
+        Assert.Equal("undefined", result.ToString());
+    }
+
+    [Fact]
     public void Compile_UnicodeIdentifierEscape_Surrogate_Is_SyntaxError_Not_ArgumentOutOfRange()
     {
         using var ctx = new JSContext();
