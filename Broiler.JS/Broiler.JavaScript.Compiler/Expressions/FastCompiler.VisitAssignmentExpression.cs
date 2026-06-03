@@ -2,6 +2,7 @@ using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -30,6 +31,13 @@ partial class FastCompiler
         .GetMethod("NormalizePropertyKey", BindingFlags.NonPublic | BindingFlags.Static, [typeof(JSValue)])
         ?? throw new InvalidOperationException("JSValue.NormalizePropertyKey(JSValue) not found");
 
+    private static readonly MethodInfo ThrowInvalidAssignmentReferenceMethod = typeof(FastCompiler)
+        .GetMethod(nameof(ThrowInvalidAssignmentReference), BindingFlags.NonPublic | BindingFlags.Static)
+        ?? throw new InvalidOperationException("FastCompiler.ThrowInvalidAssignmentReference() not found");
+
+    private static JSValue ThrowInvalidAssignmentReference() =>
+        throw JSEngine.NewReferenceError("Invalid left-hand side in assignment");
+
 
     private static void CloseIterator(IReturnableEnumerator returnable)
     {
@@ -49,6 +57,17 @@ partial class FastCompiler
 
     private YExpression VisitAssignmentExpression(AstExpression left, TokenTypes assignmentOperator, AstExpression right)
     {
+        // A function call (or other invalid reference) used as an assignment
+        // target is a runtime ReferenceError. The target is still evaluated for
+        // its side effects, but the right-hand side is not, matching the
+        // behaviour already used for update expressions such as `f()++`.
+        if (left.Type == FastNodeType.CallExpression)
+        {
+            return YExpression.Block(
+                Visit(left),
+                YExpression.Call(null, ThrowInvalidAssignmentReferenceMethod));
+        }
+
         switch (left.Type)
         {
             case FastNodeType.ArrayPattern:
