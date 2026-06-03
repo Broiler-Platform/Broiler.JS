@@ -1425,13 +1425,33 @@ internal static class BuiltInsAssemblyInitializer
             null,
             JSPropertyAttributes.ConfigurableProperty);
 
-        EnsureAccessorProperty(regExpCtor.prototype, KeyStrings.GetOrCreate("dotAll"), "dotAll", static (in Arguments a) =>
-        {
-            if (a.This is not IJSRegExp regExp)
-                throw JSEngine.NewTypeError("RegExp.prototype.dotAll called on incompatible receiver");
+        // §22.2.6 — The single-flag accessors (global, ignoreCase, …) and source
+        // are generic getters that special-case %RegExp.prototype%. When invoked
+        // with the prototype itself as the receiver they return undefined (or
+        // "(?:)" for source) instead of throwing, because the prototype is an
+        // ordinary object without the regular-expression internal slots.
+        var regExpPrototype = regExpCtor.prototype;
+        PatchRegExpFlagGetter(regExpPrototype, "global", 'g');
+        PatchRegExpFlagGetter(regExpPrototype, "ignoreCase", 'i');
+        PatchRegExpFlagGetter(regExpPrototype, "multiline", 'm');
+        PatchRegExpFlagGetter(regExpPrototype, "dotAll", 's');
+        PatchRegExpFlagGetter(regExpPrototype, "unicode", 'u');
+        PatchRegExpFlagGetter(regExpPrototype, "unicodeSets", 'v');
+        PatchRegExpFlagGetter(regExpPrototype, "sticky", 'y');
+        PatchRegExpFlagGetter(regExpPrototype, "hasIndices", 'd');
 
-            return regExp.Flags.Contains('s') ? JSValue.BooleanTrue : JSValue.BooleanFalse;
-        });
+        regExpPrototype.FastAddProperty(
+            KeyStrings.GetOrCreate("source"),
+            CreateNativeGetter((in Arguments a) =>
+            {
+                if (a.This is JSRegExp regExp)
+                    return JSValue.CreateString(regExp.Source);
+                if (ReferenceEquals(a.This, regExpPrototype))
+                    return JSValue.CreateString("(?:)");
+                throw JSEngine.NewTypeError("RegExp.prototype.source called on incompatible receiver");
+            }, "source"),
+            null,
+            JSPropertyAttributes.ConfigurableProperty);
 
         PatchLegacyRegExpAccessor(regExpCtor, "lastMatch", "$&");
         PatchLegacyRegExpAccessor(regExpCtor, "lastParen", "$+");
@@ -1441,6 +1461,26 @@ internal static class BuiltInsAssemblyInitializer
 
         for (var i = 1; i <= 9; i++)
             PatchLegacyRegExpAccessor(regExpCtor, $"${i}");
+    }
+
+    // Registers a spec-compliant single-flag accessor on %RegExp.prototype%.
+    // The getter returns the flag's boolean state for a real RegExp instance,
+    // undefined when invoked on %RegExp.prototype% itself, and throws otherwise.
+    // It is a get-only accessor (no setter) per §22.2.6.
+    private static void PatchRegExpFlagGetter(JSObject prototype, string name, char flag)
+    {
+        prototype.FastAddProperty(
+            KeyStrings.GetOrCreate(name),
+            CreateNativeGetter((in Arguments a) =>
+            {
+                if (a.This is IJSRegExp regExp)
+                    return regExp.Flags.Contains(flag) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+                if (ReferenceEquals(a.This, prototype))
+                    return JSUndefined.Value;
+                throw JSEngine.NewTypeError($"RegExp.prototype.{name} called on incompatible receiver");
+            }, name),
+            null,
+            JSPropertyAttributes.ConfigurableProperty);
     }
 
     private static void EnsureRegExpEscape(JSObject regExpCtor)

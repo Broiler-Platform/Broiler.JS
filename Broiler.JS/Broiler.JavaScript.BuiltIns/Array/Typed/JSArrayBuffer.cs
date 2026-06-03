@@ -153,7 +153,7 @@ public partial class JSArrayBuffer : JSObject
     public bool Detached => isDetached;
 
     [JSExport("immutable")]
-    public bool Immutable => false;
+    public bool Immutable => isImmutable;
 
     // ---------------------------------------------------------------
     // §2.9.1  ArrayBuffer.prototype.transfer(newLength?)
@@ -165,6 +165,8 @@ public partial class JSArrayBuffer : JSObject
         var source = RequireArrayBuffer(a.This, "transfer");
         if (source.isDetached)
             throw JSEngine.NewTypeError("Cannot transfer a detached ArrayBuffer");
+        if (source.isImmutable)
+            throw JSEngine.NewTypeError("Cannot transfer an immutable ArrayBuffer");
 
         int newLength = a.Length > 0
             ? ToBufferLength(a.Get1(), source.buffer.Length)
@@ -191,6 +193,33 @@ public partial class JSArrayBuffer : JSObject
         // to transfer().  Broiler.JavaScript does not support resizable ArrayBuffers,
         // so the result is always a fixed-length buffer.
         return Transfer(in a);
+    }
+
+    // ---------------------------------------------------------------
+    // ArrayBuffer.prototype.transferToImmutable(newLength?)  [proposal]
+    // ---------------------------------------------------------------
+
+    [JSExport("transferToImmutable", Length = 0)]
+    internal JSValue TransferToImmutable(in Arguments a)
+    {
+        var source = RequireArrayBuffer(a.This, "transferToImmutable");
+        if (source.isDetached)
+            throw JSEngine.NewTypeError("Cannot transfer a detached ArrayBuffer");
+        if (source.isImmutable)
+            throw JSEngine.NewTypeError("Cannot transfer an immutable ArrayBuffer");
+
+        int newLength = a.Length > 0
+            ? ToBufferLength(a.Get1(), source.buffer.Length)
+            : source.buffer.Length;
+
+        var newBuffer = new byte[newLength];
+        System.Array.Copy(source.buffer, newBuffer, Math.Min(source.buffer.Length, newLength));
+
+        // Detach the source buffer; the copy becomes a fixed-length immutable buffer.
+        source.isDetached = true;
+        source.buffer = System.Array.Empty<byte>();
+
+        return new JSArrayBuffer(newBuffer) { isImmutable = true };
     }
 
     // ---------------------------------------------------------------

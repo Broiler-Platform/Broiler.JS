@@ -136,6 +136,8 @@ public partial class JSUInt8Array : JSTypedArray
         var str = a.Get1();
         if (!str.IsString)
             throw JSEngine.NewTypeError("setFromBase64 requires a string argument");
+        if (buffer.isImmutable)
+            throw JSEngine.NewTypeError("Cannot write into a Uint8Array backed by an immutable ArrayBuffer");
         var bytes = DecodeBase64(str.ToString(), a.Length > 1 ? a[1] : JSUndefined.Value);
         int written = Math.Min(bytes.Length, length);
         System.Array.Copy(bytes, 0, buffer.buffer, byteOffset, written);
@@ -225,6 +227,8 @@ public partial class JSUInt8Array : JSTypedArray
         var str = a.Get1();
         if (!str.IsString)
             throw JSEngine.NewTypeError("setFromHex requires a string argument");
+        if (buffer.isImmutable)
+            throw JSEngine.NewTypeError("Cannot write into a Uint8Array backed by an immutable ArrayBuffer");
         var hex = str.ToString();
         if (hex.Length % 2 != 0)
             throw JSEngine.NewSyntaxError("Invalid hex string length");

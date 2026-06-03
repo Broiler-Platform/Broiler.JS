@@ -18,6 +18,20 @@ public partial class JSPromise
     private static bool IsConstructor(JSValue value)
         => JSConstructorOperations.IsConstructor(value);
 
+    // GetPromiseResolve(C) — §27.2.4.1.1. Reads the constructor's "resolve"
+    // method and verifies it is callable. Performed up front by every Promise
+    // combinator (before iterating), so that an abrupt completion from the
+    // "resolve" getter rejects the returned promise without ever creating —
+    // and therefore without closing — the iterator.
+    private static JSValue GetPromiseResolve(JSValue constructor)
+    {
+        var promiseResolve = constructor[KeyStrings.GetOrCreate("resolve")];
+        if (!promiseResolve.IsFunction)
+            throw JSEngine.NewTypeError("Promise resolve is not a function");
+
+        return promiseResolve;
+    }
+
     private static JSValue CreatePromiseFromConstructor(JSValue constructor, Action<JSValue, JSValue> executor)
     {
         if (!IsConstructor(constructor))
@@ -155,66 +169,86 @@ public partial class JSPromise
     [JSExport("all")]
     public static JSValue All(in Arguments a)
     {
-        var f = a.Get1();
+        var iterable = a.Get1();
+        var constructor = a.This;
         var result = JSValue.CreateArray();
-        uint i = 0;
+        uint index = 0;
 
-        return CreatePromiseFromConstructor(a.This, (resolve, reject) =>
+        return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
         {
             var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
                 ?? throw JSEngine.NewTypeError($"Cannot use promise without Synchronization Context");
-            uint total = 0;
 
+            uint remaining = 0;
             bool empty = true;
 
-            var length = (uint)Math.Max(f.Length, 0);
-            for (uint index = 0; index < length; index++)
+            void FinishIfDone()
             {
-                var item = f[index];
-                if (item.IsUndefined)
-                    continue;
-
-                empty = false;
-                var ni = i++;
-                total = i;
-                var resolveElement = new JSFunction((in Arguments args) =>
-                {
-                    var r1 = args.Get1();
-                    sc.Post((r) =>
-                    {
-                        result[ni] = r as JSValue;
-                        total--;
-
-                        if (total <= 0)
-                            resolve.InvokeFunction(new Arguments(JSUndefined.Value, result));
-                    }, r1);
-                    return JSUndefined.Value;
-                }, "", "function () { [native] }", length: 1, createPrototype: false);
-                var rejectElement = new JSFunction((in Arguments args) =>
-                {
-                    var v = args.Get1();
-                    sc.Post((o) => reject.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), v);
-                    return JSUndefined.Value;
-                }, "", "function () { [native] }", length: 1, createPrototype: false);
-
-                if (item is JSPromise p)
-                {
-                    p.Then(resolveElement.Delegate, rejectElement.Delegate);
-                    continue;
-                }
-
-                var then = item[KeyStrings.then];
-                if (then.IsFunction)
-                {
-                    then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
-                    continue;
-                }
-
-                resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
+                if (remaining == 0)
+                    sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, result)), null);
             }
 
-            if (empty)
-                sc.Post((o) => resolve.InvokeFunction(new Arguments(JSUndefined.Value, JSValue.CreateArray())), null);
+            // Per §27.2.4.1, an abrupt completion while obtaining the constructor's
+            // "resolve" method, or while obtaining or stepping the iterable, must
+            // reject the returned promise rather than throwing synchronously.
+            try
+            {
+                GetPromiseResolve(constructor);
+                var en = iterable.GetIterableEnumerator();
+                while (en.MoveNext(out var hasValue, out var item, out var _))
+                {
+                    if (!hasValue)
+                        continue;
+
+                    empty = false;
+                    var currentIndex = index++;
+                    remaining++;
+                    var resolveElement = new JSFunction((in Arguments args) =>
+                    {
+                        var value = args.Get1();
+                        sc.Post(_ =>
+                        {
+                            result[currentIndex] = value;
+                            remaining--;
+                            FinishIfDone();
+                        }, null);
+                        return JSUndefined.Value;
+                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    var rejectElement = new JSFunction((in Arguments args) =>
+                    {
+                        var reason = args.Get1();
+                        sc.Post(_ => reject.InvokeFunction(new Arguments(JSUndefined.Value, reason)), null);
+                        return JSUndefined.Value;
+                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+
+                    if (item is JSPromise promise)
+                    {
+                        promise.Then(resolveElement.Delegate, rejectElement.Delegate);
+                        continue;
+                    }
+
+                    // null/undefined (and other primitives) are not thenable; reading
+                    // ".then" off null/undefined would throw, so only probe objects.
+                    if (!item.IsNullOrUndefined)
+                    {
+                        var then = item[KeyStrings.then];
+                        if (then.IsFunction)
+                        {
+                            then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
+                            continue;
+                        }
+                    }
+
+                    resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
+                }
+
+                if (empty)
+                    sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, result)), null);
+            }
+            catch (JSException ex)
+            {
+                reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
+            }
         });
     }
 
@@ -293,44 +327,57 @@ public partial class JSPromise
     public static JSValue Race(in Arguments a)
     {
         var iterable = a.Get1();
-        return CreatePromiseFromConstructor(a.This, (resolve, reject) =>
+        var constructor = a.This;
+        return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
         {
-            var en = iterable.GetElementEnumerator();
             var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
                 ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
 
-            while (en.MoveNext(out var hasValue, out var item, out var _))
+            // Per §27.2.4.5, an abrupt completion while obtaining the constructor's
+            // "resolve" method, or while obtaining or stepping the iterable (e.g. a
+            // throwing @@iterator, next, or result-property access), must reject the
+            // returned promise rather than throwing synchronously.
+            try
             {
-                if (!hasValue)
-                    continue;
+                GetPromiseResolve(constructor);
+                var en = iterable.GetElementEnumerator();
+                while (en.MoveNext(out var hasValue, out var item, out var _))
+                {
+                    if (!hasValue)
+                        continue;
 
-                var resolveElement = new JSFunction((in Arguments args) =>
-                {
-                    var value = args.Get1();
-                    sc.Post(o => resolve.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), value);
-                    return JSUndefined.Value;
-                }, "", "function () { [native] }", length: 1, createPrototype: false);
-                var rejectElement = new JSFunction((in Arguments args) =>
-                {
-                    var value = args.Get1();
-                    sc.Post(o => reject.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), value);
-                    return JSUndefined.Value;
-                }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    var resolveElement = new JSFunction((in Arguments args) =>
+                    {
+                        var value = args.Get1();
+                        sc.Post(o => resolve.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), value);
+                        return JSUndefined.Value;
+                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    var rejectElement = new JSFunction((in Arguments args) =>
+                    {
+                        var value = args.Get1();
+                        sc.Post(o => reject.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), value);
+                        return JSUndefined.Value;
+                    }, "", "function () { [native] }", length: 1, createPrototype: false);
 
-                if (item is JSPromise promise)
-                {
-                    promise.Then(resolveElement.Delegate, rejectElement.Delegate);
-                    continue;
+                    if (item is JSPromise promise)
+                    {
+                        promise.Then(resolveElement.Delegate, rejectElement.Delegate);
+                        continue;
+                    }
+
+                    var then = item[KeyStrings.then];
+                    if (then.IsFunction)
+                    {
+                        then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
+                        continue;
+                    }
+
+                    sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, item)), null);
                 }
-
-                var then = item[KeyStrings.then];
-                if (then.IsFunction)
-                {
-                    then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
-                    continue;
-                }
-
-                sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, item)), null);
+            }
+            catch (JSException ex)
+            {
+                reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
             }
         });
     }
@@ -339,12 +386,12 @@ public partial class JSPromise
     public static JSValue AllSettled(in Arguments a)
     {
         var iterable = a.Get1();
+        var constructor = a.This;
         var result = JSValue.CreateArray();
         uint index = 0;
 
-        return CreatePromiseFromConstructor(a.This, (resolve, reject) =>
+        return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
         {
-            var en = iterable.GetElementEnumerator();
             var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
                 ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
 
@@ -357,61 +404,73 @@ public partial class JSPromise
                     sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, result)), null);
             }
 
-            while (en.MoveNext(out var hasValue, out var item, out var _))
+            // Per §27.2.4.7, an abrupt completion while obtaining the constructor's
+            // "resolve" method, or while obtaining or stepping the iterable, must
+            // reject the returned promise rather than throwing synchronously.
+            try
             {
-                if (!hasValue)
-                    continue;
+                GetPromiseResolve(constructor);
+                var en = iterable.GetElementEnumerator();
+                while (en.MoveNext(out var hasValue, out var item, out var _))
+                {
+                    if (!hasValue)
+                        continue;
 
-                empty = false;
-                var currentIndex = index++;
-                remaining++;
-                var resolveElement = new JSFunction((in Arguments args) =>
-                {
-                    var entry = new JSObject();
-                    entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("fulfilled");
-                    var value = args.Get1();
-                    entry[KeyStrings.GetOrCreate("value")] = value;
-                    sc.Post(_ =>
+                    empty = false;
+                    var currentIndex = index++;
+                    remaining++;
+                    var resolveElement = new JSFunction((in Arguments args) =>
                     {
-                        result[currentIndex] = entry;
-                        remaining--;
-                        FinishIfDone();
-                    }, null);
-                    return JSUndefined.Value;
-                }, "", "function () { [native] }", length: 1, createPrototype: false);
-                var rejectElement = new JSFunction((in Arguments args) =>
-                {
-                    var entry = new JSObject();
-                    entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("rejected");
-                    var reason = args.Get1();
-                    entry[KeyStrings.GetOrCreate("reason")] = reason;
-                    sc.Post(_ =>
+                        var entry = new JSObject();
+                        entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("fulfilled");
+                        var value = args.Get1();
+                        entry[KeyStrings.GetOrCreate("value")] = value;
+                        sc.Post(_ =>
+                        {
+                            result[currentIndex] = entry;
+                            remaining--;
+                            FinishIfDone();
+                        }, null);
+                        return JSUndefined.Value;
+                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    var rejectElement = new JSFunction((in Arguments args) =>
                     {
-                        result[currentIndex] = entry;
-                        remaining--;
-                        FinishIfDone();
-                    }, null);
-                    return JSUndefined.Value;
-                }, "", "function () { [native] }", length: 1, createPrototype: false);
+                        var entry = new JSObject();
+                        entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("rejected");
+                        var reason = args.Get1();
+                        entry[KeyStrings.GetOrCreate("reason")] = reason;
+                        sc.Post(_ =>
+                        {
+                            result[currentIndex] = entry;
+                            remaining--;
+                            FinishIfDone();
+                        }, null);
+                        return JSUndefined.Value;
+                    }, "", "function () { [native] }", length: 1, createPrototype: false);
 
-                if (item is JSPromise promise)
-                {
-                    promise.Then(resolveElement.Delegate, rejectElement.Delegate);
-                    continue;
+                    if (item is JSPromise promise)
+                    {
+                        promise.Then(resolveElement.Delegate, rejectElement.Delegate);
+                        continue;
+                    }
+
+                    var then = item[KeyStrings.then];
+                    if (then.IsFunction)
+                    {
+                        then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
+                        continue;
+                    }
+
+                    resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
                 }
 
-                var then = item[KeyStrings.then];
-                if (then.IsFunction)
-                {
-                    then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
-                    continue;
-                }
-
-                resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
+                if (empty)
+                    sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, result)), null);
             }
-
-            if (empty)
-                sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, result)), null);
+            catch (JSException ex)
+            {
+                reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
+            }
         });
     }
 
@@ -455,63 +514,75 @@ public partial class JSPromise
     public static JSValue Any(in Arguments a)
     {
         var iterable = a.Get1();
+        var constructor = a.This;
         var errors = JSValue.CreateArray();
         uint errorIndex = 0;
 
-        return CreatePromiseFromConstructor(a.This, (resolve, reject) =>
+        return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
         {
-            var en = iterable.GetElementEnumerator();
             var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
                 ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
 
             uint remaining = 0;
             bool empty = true;
 
-            while (en.MoveNext(out var hasValue, out var item, out var _))
+            // Per §27.2.4.3, an abrupt completion while obtaining the constructor's
+            // "resolve" method, or while obtaining or stepping the iterable, must
+            // reject the returned promise rather than throwing synchronously.
+            try
             {
-                if (!hasValue)
-                    continue;
+                GetPromiseResolve(constructor);
+                var en = iterable.GetElementEnumerator();
+                while (en.MoveNext(out var hasValue, out var item, out var _))
+                {
+                    if (!hasValue)
+                        continue;
 
-                empty = false;
-                remaining++;
-                var resolveElement = new JSFunction((in Arguments args) =>
-                {
-                    var value = args.Get1();
-                    sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, value)), null);
-                    return JSUndefined.Value;
-                }, "", "function () { [native] }", length: 1, createPrototype: false);
-                var rejectElement = new JSFunction((in Arguments args) =>
-                {
-                    var currentIndex = errorIndex++;
-                    var reason = args.Get1();
-                    sc.Post(_ =>
+                    empty = false;
+                    remaining++;
+                    var resolveElement = new JSFunction((in Arguments args) =>
                     {
-                        errors[currentIndex] = reason;
-                        remaining--;
-                        if (remaining == 0)
-                            reject.InvokeFunction(new Arguments(JSUndefined.Value, errors));
-                    }, null);
-                    return JSUndefined.Value;
-                }, "", "function () { [native] }", length: 1, createPrototype: false);
+                        var value = args.Get1();
+                        sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, value)), null);
+                        return JSUndefined.Value;
+                    }, "", "function () { [native] }", length: 1, createPrototype: false);
+                    var rejectElement = new JSFunction((in Arguments args) =>
+                    {
+                        var currentIndex = errorIndex++;
+                        var reason = args.Get1();
+                        sc.Post(_ =>
+                        {
+                            errors[currentIndex] = reason;
+                            remaining--;
+                            if (remaining == 0)
+                                reject.InvokeFunction(new Arguments(JSUndefined.Value, errors));
+                        }, null);
+                        return JSUndefined.Value;
+                    }, "", "function () { [native] }", length: 1, createPrototype: false);
 
-                if (item is JSPromise promise)
-                {
-                    promise.Then(resolveElement.Delegate, rejectElement.Delegate);
-                    continue;
+                    if (item is JSPromise promise)
+                    {
+                        promise.Then(resolveElement.Delegate, rejectElement.Delegate);
+                        continue;
+                    }
+
+                    var then = item[KeyStrings.then];
+                    if (then.IsFunction)
+                    {
+                        then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
+                        continue;
+                    }
+
+                    resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
                 }
 
-                var then = item[KeyStrings.then];
-                if (then.IsFunction)
-                {
-                    then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
-                    continue;
-                }
-
-                resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
+                if (empty)
+                    sc.Post(_ => reject.InvokeFunction(new Arguments(JSUndefined.Value, errors)), null);
             }
-
-            if (empty)
-                sc.Post(_ => reject.InvokeFunction(new Arguments(JSUndefined.Value, errors)), null);
+            catch (JSException ex)
+            {
+                reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
+            }
         });
     }
 }
