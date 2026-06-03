@@ -1,6 +1,7 @@
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Iterator;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using Broiler.JavaScript.Runtime;
@@ -62,10 +63,10 @@ public partial class JSWeakMap: JSObject
     public JSValue Set(in Arguments a)
     {
         var (keyValue, value) = a.Get2();
-        if (keyValue is not JSObject key)
-            throw JSEngine.NewTypeError("WeakMap key must be an object");
+        if (!JSSymbol.CanBeHeldWeakly(keyValue))
+            throw JSEngine.NewTypeError("WeakMap key must be an object or a non-registered symbol");
 
-        HashedString uk = key.ToUniqueID();
+        HashedString uk = keyValue.ToUniqueID();
 
         lock (this)
         {
@@ -114,9 +115,13 @@ public partial class JSWeakMap: JSObject
 
 
     [JSExport("get")]
-    public JSValue Get(JSObject key)
+    public JSValue Get(in Arguments a)
     {
-        var uk = key.ToUniqueID();
+        var keyValue = a.Get1();
+        if (!JSSymbol.CanBeHeldWeakly(keyValue))
+            return JSUndefined.Value;
+
+        var uk = keyValue.ToUniqueID();
         lock (this)
         {
             if (index.TryGetValue(uk, out var v))
@@ -138,10 +143,10 @@ public partial class JSWeakMap: JSObject
     public JSValue GetOrInsert(in Arguments a)
     {
         var (keyVal, defaultValue) = a.Get2();
-        if (keyVal is not JSObject key)
-            throw JSEngine.NewTypeError("WeakMap key must be an object");
+        if (!JSSymbol.CanBeHeldWeakly(keyVal))
+            throw JSEngine.NewTypeError("WeakMap key must be an object or a non-registered symbol");
 
-        var uk = key.ToUniqueID();
+        var uk = keyVal.ToUniqueID();
         lock (this)
         {
             if (index.TryGetValue(uk, out var v))
@@ -165,13 +170,13 @@ public partial class JSWeakMap: JSObject
     public JSValue GetOrInsertComputed(in Arguments a)
     {
         var (keyVal, callbackfn) = a.Get2();
-        if (keyVal is not JSObject key)
-            throw JSEngine.NewTypeError("WeakMap key must be an object");
+        if (!JSSymbol.CanBeHeldWeakly(keyVal))
+            throw JSEngine.NewTypeError("WeakMap key must be an object or a non-registered symbol");
 
         if (!callbackfn.IsFunction)
             throw JSEngine.NewTypeError("getOrInsertComputed requires a callback function");
 
-        var uk = key.ToUniqueID();
+        var uk = keyVal.ToUniqueID();
         lock (this)
         {
             if (index.TryGetValue(uk, out var v))
@@ -180,7 +185,7 @@ public partial class JSWeakMap: JSObject
                     return target.value;
             }
 
-            var value = callbackfn.Call(JSUndefined.Value, key);
+            var value = callbackfn.Call(JSUndefined.Value, keyVal);
             index.Put(uk) = new WeakReference<WeakValue>(new WeakValue(uk, value, Unregister));
             return value;
         }

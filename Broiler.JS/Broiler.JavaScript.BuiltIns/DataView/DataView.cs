@@ -462,6 +462,16 @@ public partial class DataView : JSObject
     private (int byteOffset, bool littleEndian, DataView dataView, JSValue value) GetSetArgs(in Arguments a, int length)
     {
         var @this = this;
+
+        // The immutability of the backing buffer is observable independently of the
+        // arguments, so it must be checked before any argument coercion (which can run
+        // user code via valueOf/toString). See DataView.prototype.set* immutable-buffer
+        // tests in test262.
+        if (@this.buffer.isImmutable)
+            throw JSEngine.NewTypeError("Cannot modify a DataView backed by an immutable ArrayBuffer");
+
+        // An omitted byteOffset is ToIndex(undefined) = 0 and an omitted value is undefined
+        // (coerced per type); neither argument is required.
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var value = a[1] ?? JSUndefined.Value;
 
@@ -469,9 +479,6 @@ public partial class DataView : JSObject
 
         if (byteOffset < 0 || byteOffset > @this.byteLength - length)
             throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
-
-        if (@this.buffer.isImmutable)
-            throw JSEngine.NewTypeError("Cannot modify a DataView backed by an immutable ArrayBuffer");
 
         return (byteOffset, littleEndian, @this, value);
     }
