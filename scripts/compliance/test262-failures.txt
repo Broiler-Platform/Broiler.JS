@@ -320,7 +320,6 @@ test/built-ins/Array/fromAsync/this-constructor-with-unsettable-element-closes-s
 test/built-ins/Array/fromAsync/this-constructor-with-unsettable-element.js
 test/built-ins/Array/fromAsync/this-constructor.js
 test/built-ins/Array/fromAsync/this-non-constructor.js
-test/built-ins/Array/length/S15.4.4_A1.3_T1.js
 test/built-ins/Array/length/S15.4.5.2_A3_T4.js
 test/built-ins/Array/length/define-own-prop-length-coercion-order-set.js
 test/built-ins/Array/length/define-own-prop-length-coercion-order.js
@@ -357,11 +356,8 @@ test/built-ins/Array/prototype/copyWithin/undefined-end.js
 test/built-ins/Array/prototype/entries/iteration-mutable.js
 test/built-ins/Array/prototype/every/15.4.4.16-1-3.js
 test/built-ins/Array/prototype/every/15.4.4.16-1-5.js
-test/built-ins/Array/prototype/every/15.4.4.16-2-4.js
 test/built-ins/Array/prototype/every/15.4.4.16-7-c-i-21.js
 test/built-ins/Array/prototype/every/15.4.4.16-7-c-i-22.js
-test/built-ins/Array/prototype/exotic-array.js
-test/built-ins/Array/prototype/filter/15.4.4.20-2-4.js
 test/built-ins/Array/prototype/filter/15.4.4.20-5-1.js
 test/built-ins/Array/prototype/filter/15.4.4.20-5-30.js
 test/built-ins/Array/prototype/flat/non-numeric-depth-should-not-throw.js
@@ -372,23 +368,16 @@ test/built-ins/Array/prototype/flatMap/bound-function-argument.js
 test/built-ins/Array/prototype/flatMap/depth-always-one.js
 test/built-ins/Array/prototype/flatMap/proxy-access-count.js
 test/built-ins/Array/prototype/flatMap/thisArg-argument.js
-test/built-ins/Array/prototype/forEach/15.4.4.18-2-4.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-5-1.js
 test/built-ins/Array/prototype/forEach/15.4.4.18-5-25.js
-test/built-ins/Array/prototype/indexOf/15.4.4.14-2-4.js
 test/built-ins/Array/prototype/indexOf/length-zero-returns-minus-one.js
-test/built-ins/Array/prototype/lastIndexOf/15.4.4.15-2-4.js
 test/built-ins/Array/prototype/lastIndexOf/length-zero-returns-minus-one.js
-test/built-ins/Array/prototype/length.js
-test/built-ins/Array/prototype/map/15.4.4.19-2-4.js
 test/built-ins/Array/prototype/map/15.4.4.19-5-1.js
 test/built-ins/Array/prototype/methods-called-as-functions.js
 test/built-ins/Array/prototype/pop/S15.4.4.6_A2_T2.js
 test/built-ins/Array/prototype/pop/S15.4.4.6_A3_T1.js
 test/built-ins/Array/prototype/pop/S15.4.4.6_A3_T2.js
 test/built-ins/Array/prototype/push/S15.4.4.7_A3.js
-test/built-ins/Array/prototype/reduce/15.4.4.21-2-4.js
-test/built-ins/Array/prototype/reduceRight/15.4.4.22-2-4.js
 test/built-ins/Array/prototype/reduceRight/15.4.4.22-9-c-ii-5.js
 test/built-ins/Array/prototype/reduceRight/length-near-integer-limit.js
 test/built-ins/Array/prototype/reverse/length-exceeding-integer-limit-with-object.js
@@ -399,7 +388,6 @@ test/built-ins/Array/prototype/slice/create-non-array-invalid-len.js
 test/built-ins/Array/prototype/slice/create-proxied-array-invalid-len.js
 test/built-ins/Array/prototype/slice/length-exceeding-integer-limit-proxied-array.js
 test/built-ins/Array/prototype/slice/length-exceeding-integer-limit.js
-test/built-ins/Array/prototype/some/15.4.4.17-2-4.js
 test/built-ins/Array/prototype/some/15.4.4.17-5-1.js
 test/built-ins/Array/prototype/some/15.4.4.17-5-25.js
 test/built-ins/Array/prototype/sort/S15.4.4.11_A4_T3.js
@@ -693,7 +681,6 @@ test/built-ins/Object/defineProperties/15.2.3.7-6-a-159.js
 test/built-ins/Object/defineProperties/15.2.3.7-6-a-243.js
 test/built-ins/Object/defineProperties/15.2.3.7-6-a-246.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-116.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-117.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-163.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-184.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-254.js
@@ -782,7 +769,6 @@ test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-missing-target-is-proxy.js
 test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-null-target-is-proxy.js
 test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-undefined-target-is-proxy.js
 test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-undefined.js
-test/built-ins/Proxy/has/trap-is-undefined-using-with.js
 test/built-ins/Proxy/ownKeys/trap-is-missing-target-is-proxy.js
 test/built-ins/Proxy/proxy-no-prototype.js
 test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls-index.js
@@ -2014,13 +2000,6 @@ test/intl402/supportedLocalesOf-taint-Array-2.js
 test/intl402/supportedLocalesOf-taint-Array.js
 test/intl402/supportedLocalesOf-test-option-localeMatcher.js
 test/intl402/supportedLocalesOf-unicode-extensions-ignored.js
-test/language/arguments-object/10.6-12-1.js
-test/language/arguments-object/10.6-13-a-1.js
-test/language/arguments-object/10.6-13-a-2.js
-test/language/arguments-object/10.6-13-a-3.js
-test/language/arguments-object/S10.6_A3_T3.js
-test/language/arguments-object/S10.6_A3_T4.js
-test/language/arguments-object/S10.6_A4.js
 test/language/arguments-object/mapped/Symbol.iterator.js
 test/language/arguments-object/unmapped/Symbol.iterator.js
 test/language/block-scope/syntax/redeclaration-global/allowed-to-redeclare-function-declaration-with-var.js
@@ -2196,7 +2175,6 @@ test/language/expressions/compound-assignment/urshift-whitespace.js
 test/language/expressions/compound-assignment/xor-whitespace.js
 test/language/expressions/concatenation/S9.8_A5_T2.js
 test/language/expressions/conditional/in-branch-1.js
-test/language/expressions/delete/11.4.1-4.a-11.js
 test/language/expressions/delete/super-property-topropertykey.js
 test/language/expressions/delete/white-space-line-terminator-between-delete-unaryexpression-allowed.js
 test/language/expressions/division/bigint-complex-infinity.js
@@ -2665,8 +2643,6 @@ test/language/statements/for/scope-body-var-none.js
 test/language/statements/for/scope-head-lex-close.js
 test/language/statements/for/scope-head-lex-open.js
 test/language/statements/for/scope-head-var-none.js
-test/language/statements/function/S13.2.2_A18_T1.js
-test/language/statements/function/S13.2.2_A18_T2.js
 test/language/statements/function/S13.2.2_A19_T7.js
 test/language/statements/function/S13.2.2_A3_T1.js
 test/language/statements/function/S13.2.2_A3_T2.js
@@ -2775,7 +2751,6 @@ test/staging/sm/Array/pop-no-has-trap.js
 test/staging/sm/Array/redefine-nonwritable-length-custom-conversion-call-counts.js
 test/staging/sm/Array/redefine-nonwritable-length-custom-conversion-throw.js
 test/staging/sm/Array/redefine-nonwritable-length-nonnumeric.js
-test/staging/sm/Array/regress-599159.js
 test/staging/sm/Array/shift-no-has-trap.js
 test/staging/sm/Array/sort-delete-ascending-order.js
 test/staging/sm/Array/sort_small.js
@@ -2792,7 +2767,6 @@ test/staging/sm/AsyncGenerators/for-await-of-error.js
 test/staging/sm/BigInt/Number-conversion-rounding.js
 test/staging/sm/BigInt/property-name.js
 test/staging/sm/Date/toISOString-01.js
-test/staging/sm/Function/arguments-caller-callee.js
 test/staging/sm/Function/arguments-parameter-shadowing.js
 test/staging/sm/Function/function-bind.js
 test/staging/sm/Function/function-name-for.js
@@ -2977,13 +2951,6 @@ test/staging/sm/object/values.js
 test/staging/sm/regress/regress-428366.js
 test/staging/sm/regress/regress-452498-053.js
 test/staging/sm/regress/regress-560998-1.js
-test/staging/sm/regress/regress-577648-1.js
-test/staging/sm/regress/regress-577648-2.js
-test/staging/sm/regress/regress-586482-1.js
-test/staging/sm/regress/regress-586482-2.js
-test/staging/sm/regress/regress-586482-3.js
-test/staging/sm/regress/regress-586482-4.js
-test/staging/sm/regress/regress-586482-5.js
 test/staging/sm/regress/regress-593256.js
 test/staging/sm/regress/regress-597945-1.js
 test/staging/sm/regress/regress-600067.js
@@ -2994,6 +2961,5 @@ test/staging/sm/statements/for-loop-declaration-contains-computed-name.js
 test/staging/sm/statements/for-loop-declaration-contains-initializer.js
 test/staging/sm/strict/10.4.3.js
 test/staging/sm/strict/primitive-this-getter.js
-test/staging/sm/strict/regress-599159.js
 test/staging/sm/syntax/let-as-label.js
 test/staging/source-phase-imports/import-source-source-text-module.js
