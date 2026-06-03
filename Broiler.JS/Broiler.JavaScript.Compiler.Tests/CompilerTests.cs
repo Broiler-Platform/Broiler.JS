@@ -291,6 +291,53 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_ObjectLiteralSuper_Method_Getter_Setter_Access_Work()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var proto = {
+                    get value() { return 40; },
+                    method() { return 1; }
+                };
+
+                var store = {};
+                var obj = {
+                    run() { return super.value + super.method(); },
+                    get prop() { return super.value; },
+                    set prop(v) { store.v = super.value + v; }
+                };
+
+                Object.setPrototypeOf(obj, proto);
+                obj.prop = 2;
+
+                return obj.run() + obj.prop + store.v;
+            })()
+            """);
+
+        // run() => 40 + 1 = 41; obj.prop getter => 40; store.v => 40 + 2 = 42
+        Assert.Equal(123.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void Compile_ObjectLiteralSuper_ResolvesPrototypeAtCallTime()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var obj = {
+                    method() { return super.tag; }
+                };
+
+                Object.setPrototypeOf(obj, { tag: 7 });
+                return obj.method();
+            })()
+            """);
+
+        Assert.Equal(7.0, result.DoubleValue);
+    }
+
+    [Fact]
     public void Compile_ClassSuper_Method_And_Property_Access_Work()
     {
         using var ctx = new JSContext();

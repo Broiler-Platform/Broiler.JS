@@ -30,6 +30,16 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     internal JSFunctionDelegate f;
     public bool CoerceThisOnInvoke { get; set; }
     public bool IsStrictMode { get; set; }
+
+    /// <summary>
+    /// True for ordinary functions compiled from JavaScript source. When such a
+    /// function is used as a constructor and explicitly returns a distinct
+    /// object, that object is returned as-is with its own prototype preserved,
+    /// per the ECMAScript [[Construct]] semantics. Native built-in constructors
+    /// keep this <c>false</c> so the engine applies the newTarget-derived
+    /// prototype to the instance they allocate (required for subclassing).
+    /// </summary>
+    public bool IsOrdinaryUserFunction { get; set; }
     public JSObject[] CapturedWithObjects { get; set; }
 
     public static JSValue CaptureWithScopes(JSValue functionValue)
@@ -339,10 +349,19 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
         if (r.IsObject)
         {
-            if (deferInstancePrototypeResolution && previousNewTarget != null)
-                instancePrototype = ResolveInstancePrototype(previousNewTarget);
+            // An ordinary (user-defined) function that explicitly returns a
+            // distinct object yields that object as-is, preserving its own
+            // prototype. Native built-in constructors instead allocate their
+            // exotic instance here and need the newTarget-derived prototype
+            // applied to support subclassing.
+            if (!IsOrdinaryUserFunction || ReferenceEquals(r, obj))
+            {
+                if (deferInstancePrototypeResolution && previousNewTarget != null)
+                    instancePrototype = ResolveInstancePrototype(previousNewTarget);
 
-            r.BasePrototypeObject = instancePrototype;
+                r.BasePrototypeObject = instancePrototype;
+            }
+
             return r;
         }
 

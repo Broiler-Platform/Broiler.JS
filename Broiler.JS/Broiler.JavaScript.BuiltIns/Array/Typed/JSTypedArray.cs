@@ -205,18 +205,40 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     internal static JSValue GetSpeciesConstructor(JSTypedArray source)
     {
+        var defaultConstructor = source.GetDefaultConstructor();
+
         var constructor = source[KeyStrings.constructor];
+        if (constructor.IsUndefined)
+            return defaultConstructor;
+
         if (!constructor.IsObject)
-            return constructor;
+            throw JSEngine.NewTypeError("TypedArray constructor property is not an object");
 
         var species = constructor[(IJSSymbol)JSSymbol.species];
         if (species.IsNullOrUndefined)
-            return constructor;
+            return defaultConstructor;
 
         if (species is not IJSFunction)
             throw JSEngine.NewTypeError("TypedArray species constructor is not a constructor");
 
         return species;
+    }
+
+    /// <summary>
+    /// Resolves the intrinsic constructor for this typed array kind (e.g.
+    /// %Float64Array%), used as the default constructor by the species
+    /// protocol when <c>constructor</c> or <c>@@species</c> is absent.
+    /// </summary>
+    private JSValue GetDefaultConstructor()
+    {
+        if (GetCurrentPrototype() is JSObject intrinsicPrototype)
+        {
+            var constructor = intrinsicPrototype[KeyStrings.constructor];
+            if (!constructor.IsNullOrUndefined)
+                return constructor;
+        }
+
+        return this[KeyStrings.constructor];
     }
 
     private static bool TryGetCanonicalNumericIndex(in KeyString key, out double numericIndex)

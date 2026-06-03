@@ -13109,5 +13109,132 @@ public class BuiltInsTests
         Assert.Equal("true|true|upper|true|locale,usage,sensitivity,ignorePunctuation,collation,numeric,caseFirst|length,name|0", result.ToString());
     }
 
+    [Fact]
+    public void Constructor_Returning_Object_Preserves_That_Objects_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            function Inner(n) { this.n = n; }
+            function Outer(n) { return new Inner(n); }
+            var d = new Outer(7);
+
+            function ReturnArray() { return [1, 2, 3]; }
+            var arr = new ReturnArray();
+
+            return [
+                d.n,
+                d instanceof Inner,
+                Object.getPrototypeOf(d) === Inner.prototype,
+                arr instanceof Array,
+                arr.length
+            ].join('|');
+        })();");
+
+        Assert.Equal("7|true|true|true|3", result.ToString());
+    }
+
+    [Fact]
+    public void TypedArray_Slice_Map_Filter_Subarray_Use_Species_Constructor()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            var TA = Float64Array;
+
+            // slice reads @@species exactly once; an undefined result falls back
+            // to the default intrinsic constructor.
+            var s = new TA(2);
+            var calls = 0;
+            s.constructor = {};
+            Object.defineProperty(s.constructor, Symbol.species, { get: function () { calls++; } });
+            var sliced = s.slice();
+
+            // A custom species constructor is honored for slice/map/filter.
+            function withSpecies(arr) {
+                var sample = new TA(arr);
+                sample.speciesCalls = 0;
+                sample.constructor = {};
+                sample.constructor[Symbol.species] = function (len) {
+                    sample.speciesCalls++;
+                    return new TA(len);
+                };
+                return sample;
+            }
+
+            var sm = withSpecies([10, 11, 12, 13]);
+            var mapped = sm.map(function (x) { return x; });
+
+            var sf = withSpecies([10, 11, 12, 13]);
+            var filtered = sf.filter(function () { return true; });
+
+            // subarray invokes @@species with (buffer, byteOffset, length).
+            var su = new TA([10, 11, 12, 13]);
+            su.constructor = {};
+            su.constructor[Symbol.species] = function (buffer, byteOffset, length) {
+                return new TA(buffer, byteOffset, length);
+            };
+            var sub = su.subarray(1, 3);
+
+            // slice copies element-by-element, converting between element types.
+            var other = new Int16Array([42, 43, 44]);
+            other.constructor = {};
+            other.constructor[Symbol.species] = Int8Array;
+            var converted = other.slice();
+
+            return [
+                calls,
+                sliced instanceof TA,
+                mapped instanceof TA, sm.speciesCalls,
+                filtered instanceof TA, sf.speciesCalls,
+                sub instanceof TA, sub.length, sub[0],
+                converted instanceof Int8Array, converted.length, converted[0], converted[2]
+            ].join('|');
+        })();");
+
+        Assert.Equal("1|true|true|1|true|1|true|2|11|true|3|42|44", result.ToString());
+    }
+
+    [Fact]
+    public void Map_Set_Without_Value_Argument_Stores_Undefined()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // A missing value argument must be treated as undefined (spec-correct),
+        // rather than surfacing as an internal null-reference error.
+        var result = ctx.Eval(@"(function () {
+            var m = new Map();
+            m.set(42);
+            return [
+                m.has(42),
+                m.get(42) === undefined,
+                m.size
+            ].join('|');
+        })();");
+
+        Assert.Equal("true|true|1", result.ToString());
+    }
+
+    [Fact]
+    public void Bound_Function_Without_ThisArg_Uses_Undefined_This()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // f.bind() with no thisArg must bind undefined as this, not a null reference.
+        var result = ctx.Eval(@"(function () {
+            function f() { 'use strict'; return this; }
+            return [
+                f.bind()() === undefined,
+                f.bind('x')() === 'x'
+            ].join('|');
+        })();");
+
+        Assert.Equal("true|true", result.ToString());
+    }
+
     #endregion
 }
