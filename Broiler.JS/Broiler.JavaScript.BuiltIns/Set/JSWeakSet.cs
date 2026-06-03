@@ -1,4 +1,5 @@
 using Broiler.JavaScript.BuiltIns.Map;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Iterator;
@@ -47,17 +48,17 @@ public partial class JSWeakSet : JSObject
     public JSValue Add(in Arguments a)
     {
         var value = a.Get1();
-        if (value is not JSObject keyObject)
-            throw JSEngine.NewTypeError("WeakSet value must be an object");
+        if (!JSSymbol.CanBeHeldWeakly(value))
+            throw JSEngine.NewTypeError("WeakSet value must be an object or a non-registered symbol");
 
-        HashedString key = keyObject.ToUniqueID();
+        HashedString key = value.ToUniqueID();
         lock (this)
         {
             if (!index.TryGetValue(key, out var w))
-                index.Put(key) = new(new (key, keyObject, Unregister));
+                index.Put(key) = new(new (key, value, Unregister));
         }
 
-        return keyObject;
+        return value;
     }
 
     private void Unregister(in HashedString key) => index.RemoveAt(key.Value);

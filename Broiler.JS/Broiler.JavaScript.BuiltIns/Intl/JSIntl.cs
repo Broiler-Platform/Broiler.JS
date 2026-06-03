@@ -296,6 +296,7 @@ public static class JSIntl
             "DateTimeFormat",
             "function DateTimeFormat() { [native code] }");
         constructor.FastAddValue(KeyStrings.length, JSValue.NumberZero, JSPropertyAttributes.ConfigurableReadonlyValue);
+        constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
             new JSFunction(JSIntlDateTimeFormat.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
             JSPropertyAttributes.ConfigurableValue);
@@ -487,6 +488,7 @@ public static class JSIntl
             return result;
 
         var length = lengthValue.UIntValue;
+        HashSet<string> seen = null;
         for (uint i = 0; i < length; i++)
         {
             if (!localesObject.HasProperty(JSValue.CreateString(i.ToString())).BooleanValue)
@@ -496,7 +498,10 @@ public static class JSIntl
             if (locale.IsUndefined || locale.IsNull || locale.IsBoolean || locale.IsNumber || locale.IsSymbol)
                 throw JSEngine.NewTypeError("Locale list entries must be strings or objects");
 
-            result.AddArrayItem(JSValue.CreateString(ValidateLanguageTag(locale.StringValue)));
+            var canonical = ValidateLanguageTag(locale.StringValue);
+            seen ??= new HashSet<string>(StringComparer.Ordinal);
+            if (seen.Add(canonical))
+                result.AddArrayItem(JSValue.CreateString(canonical));
         }
 
         return result;

@@ -74,10 +74,24 @@ public partial class JSSymbol
         if (a.Get1() is not JSSymbol symbol)
             throw JSEngine.NewTypeError("Symbol.keyFor requires a symbol");
 
-        var description = symbol.Description;
-        if (description != null && globals.TryGetValue(description, out var existing) && ReferenceEquals(existing, symbol))
-            return JSValue.CreateString(description);
-
-        return JSUndefined.Value;
+        return IsRegistered(symbol) ? JSValue.CreateString(symbol.Description) : JSUndefined.Value;
     }
+
+    /// <summary>
+    /// Returns true if <paramref name="symbol"/> is present in the global symbol
+    /// registry (i.e. it was produced by <c>Symbol.for</c>).
+    /// </summary>
+    internal static bool IsRegistered(JSSymbol symbol)
+    {
+        var description = symbol.Description;
+        return description != null && globals.TryGetValue(description, out var existing) && ReferenceEquals(existing, symbol);
+    }
+
+    /// <summary>
+    /// AO CanBeHeldWeakly: a value may be used as a key in a WeakMap/WeakSet,
+    /// as a WeakRef target, or registered with a FinalizationRegistry when it is
+    /// an object or a non-registered (non-<c>Symbol.for</c>) symbol.
+    /// </summary>
+    public static bool CanBeHeldWeakly(JSValue value)
+        => value is JSObject || (value is JSSymbol symbol && !IsRegistered(symbol));
 }
