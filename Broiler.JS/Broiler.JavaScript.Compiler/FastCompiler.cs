@@ -326,9 +326,20 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         return YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, statements);
     }
 
-    private YExpression VisitRuntimeFunctionDeclaration(AstFunctionExpression functionDeclaration)
+    private YExpression VisitRuntimeFunctionDeclaration(AstFunctionExpression functionDeclaration, bool implicitBlockScoped = false)
     {
         var functionName = functionDeclaration.Id!.Name;
+
+        // Annex B.3.4: an `if`-clause FunctionDeclaration is wrapped in an implicit
+        // block. Outside of direct eval (which manages its own var environment via
+        // the direct-eval root/program bindings), materialise that block so the
+        // function's own binding is block-scoped and distinct from the Annex B
+        // var-scoped binding it copies its value out to. Without this, a body that
+        // reassigns its own name (`function f(){ f = 1; }`) would clobber the outer
+        // var/global binding instead of mutating only the block-scoped one.
+        if (implicitBlockScoped && !isDirectEvalCompilation)
+            return VisitImplicitBlockFunctionDeclaration(functionDeclaration, functionName);
+
         var rootFunction = scope.Top.RootScope.Function;
         FastFunctionScope.VariableScope currentBinding;
         if (rootFunction?.IsArrowFunction == true
@@ -369,6 +380,39 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
         statements.Add(temp.Variable);
         return YExpression.Block(variables, statements);
+    }
+
+    // Materialise the implicit B.3.4 block of an `if`-clause FunctionDeclaration:
+    // a fresh block-scoped binding (distinct from any outer var/global binding) is
+    // created, the function body resolves its own name to it, and the function
+    // value is then copied out to the Annex B var-scoped binding (unless blocked).
+    private YExpression VisitImplicitBlockFunctionDeclaration(AstFunctionExpression functionDeclaration, in StringSpan functionName)
+    {
+        var blockScope = scope.Push(new FastFunctionScope(scope.Top));
+
+        // newScope:true forces a binding local to this implicit block even when an
+        // outer binding of the same name exists. IsLexical is cleared so the
+        // function's own binding is not treated as a lexical blocker of its own
+        // Annex B var-hoisting (see IsAnnexBHoistingBlocked).
+        var blockBinding = blockScope.CreateVariable(functionName, null, newScope: true, initialize: true);
+        blockBinding.IsLexical = false;
+
+        var result = CreateFunction(functionDeclaration, hoistStatementDeclaration: false);
+
+        using var temp = blockScope.GetTempVariable(typeof(JSValue));
+        var statements = new Sequence<YExpression>
+        {
+            YExpression.Assign(temp.Variable, result),
+            YExpression.Assign(blockBinding.Expression, temp.Variable),
+        };
+
+        AppendAnnexBOuterBindingAssignments(statements, blockBinding, functionName, temp.Variable);
+        statements.Add(temp.Variable);
+
+        var inner = YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, statements);
+        var scoped = Scoped(blockScope, new Sequence<YExpression> { inner });
+        blockScope.Dispose();
+        return scoped;
     }
 
     private void AppendAnnexBOuterBindingAssignments(Sequence<YExpression> statements, FastFunctionScope.VariableScope currentBinding, in StringSpan name, YExpression value)

@@ -119,6 +119,13 @@ partial class FastParser
     {
         var top = variableScope.Top;
 
+        // Annex B.3.4: when this declaration is the sole statement of an `if`
+        // clause it is conceptually wrapped in an implicit block one level below
+        // `top`. So even when `top` is itself the body scope (e.g.
+        // `if (x) function f(){}` directly in a function/program body) the
+        // function still needs an Annex B var binding in that body.
+        var isIfClause = nestedFunctionClause;
+
         // Find the nearest enclosing function-body / program-body scope (the var
         // environment): a Block whose parent is a function or the script root.
         var target = top;
@@ -129,7 +136,14 @@ partial class FastParser
             target = target.Parent;
         }
 
-        if (target == null || target == top)
+        if (target == null)
+            return;
+
+        // A plain top-level function declaration (target == top) is already
+        // var/globally scoped and needs no Annex B hoisting. An if-clause
+        // function whose implicit block IS the body top level is the exception
+        // handled above.
+        if (target == top && !isIfClause)
             return;
 
         // Annex B.3.3.1 / B.3.3.2: do not apply Annex B var-hoisting when the

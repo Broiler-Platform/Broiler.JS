@@ -18,12 +18,12 @@ partial class FastCompiler
         if (scope.Top.Function?.Generator == true)
         {
             var generatorTrueCase = ifStatement.True is AstExpressionStatement { Expression: AstFunctionExpression generatorTrueFunctionDeclaration }
-                ? VisitRuntimeFunctionDeclaration(generatorTrueFunctionDeclaration).ToJSValue()
+                ? VisitRuntimeFunctionDeclaration(generatorTrueFunctionDeclaration, implicitBlockScoped: true).ToJSValue()
                 : VisitStatement(ifStatement.True).ToJSValue();
             var generatorFalseCase = ifStatement.False == null
                 ? JSUndefinedBuilder.Value
                 : ifStatement.False is AstExpressionStatement { Expression: AstFunctionExpression generatorFalseFunctionDeclaration }
-                    ? VisitRuntimeFunctionDeclaration(generatorFalseFunctionDeclaration).ToJSValue()
+                    ? VisitRuntimeFunctionDeclaration(generatorFalseFunctionDeclaration, implicitBlockScoped: true).ToJSValue()
                     : VisitStatement(ifStatement.False).ToJSValue();
 
             return YExpression.Condition(test, generatorTrueCase, generatorFalseCase);
@@ -33,14 +33,14 @@ partial class FastCompiler
         var outerCompletionVars = GetCompletionVariables();
         using var completion = completionScopes.Push(completionVar);
         var trueCase = ifStatement.True is AstExpressionStatement { Expression: AstFunctionExpression trueFunctionDeclaration }
-            ? TrackCompletion(VisitRuntimeFunctionDeclaration(trueFunctionDeclaration).ToJSValue())
+            ? TrackCompletion(VisitRuntimeFunctionDeclaration(trueFunctionDeclaration, implicitBlockScoped: true).ToJSValue())
             : TrackCompletion(VisitStatement(ifStatement.True).ToJSValue());
 
         YExpression result;
         if (ifStatement.False != null)
         {
             var elseCase = ifStatement.False is AstExpressionStatement { Expression: AstFunctionExpression falseFunctionDeclaration }
-                ? TrackCompletion(VisitRuntimeFunctionDeclaration(falseFunctionDeclaration).ToJSValue())
+                ? TrackCompletion(VisitRuntimeFunctionDeclaration(falseFunctionDeclaration, implicitBlockScoped: true).ToJSValue())
                 : TrackCompletion(VisitStatement(ifStatement.False).ToJSValue());
             result = YExpression.Condition(test, trueCase, elseCase);
         }
