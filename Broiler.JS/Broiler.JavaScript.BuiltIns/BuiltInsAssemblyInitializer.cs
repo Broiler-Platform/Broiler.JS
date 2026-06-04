@@ -720,10 +720,10 @@ internal static class BuiltInsAssemblyInitializer
             KeyStrings.__proto__,
             CreateNativeGetter(static (in Arguments a) =>
             {
-                if (!a.This.TryAsObjectThrowIfNullOrUndefined(out var @object))
-                    return JSUndefined.Value;
-
-                return @object.GetPrototypeOf();
+                // Per spec the getter performs ToObject(this value): primitives
+                // (string/number/boolean/symbol/bigint) are boxed so that e.g.
+                // `'x'.__proto__` resolves to String.prototype; null/undefined throw.
+                return CoerceObject(a.This).GetPrototypeOf();
             }, "__proto__"),
             CreateNativeSetter(static (in Arguments a) =>
             {

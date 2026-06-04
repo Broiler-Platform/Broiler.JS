@@ -391,26 +391,83 @@ public partial class JSBigInt : JSPrimitive
         return new JSBigInt(this.value + value.BigIntValue);
     }
 
-    [JSExport("toString")]
-    public JSValue JSToString() => new JSString(value.ToString());
-
-    [JSExport("toLocaleString")]
-    public JSValue ToLocaleString(in Arguments a) => new JSString(value.ToString(CultureInfo.CurrentCulture));
-
-    [JSExport("valueOf")]
-    public override JSValue ValueOf() => this;
-
-    [JSExport("asIntN")]
-    public static JSValue AsIntN(long bits, JSBigInt bigint)
+    // BigInt.prototype methods accept either a BigInt primitive or a boxed
+    // BigInt object (e.g. Object(1n)) as the receiver. Unwrap the wrapper and
+    // reject any other receiver with a TypeError (thisBigIntValue per spec).
+    private static JSBigInt ThisBigInt(JSValue value)
     {
-        if (bits < 0 || bits > 9007199254740991)
+        var unwrapped = value is JSPrimitiveObject primitiveObject ? primitiveObject.ValueOf() : value;
+        return unwrapped as JSBigInt
+            ?? throw JSEngine.NewTypeError("BigInt.prototype method called on incompatible receiver");
+    }
+
+    [JSPrototypeMethod]
+    [JSExport("toString")]
+    public static JSValue JSToString(in Arguments a) => new JSString(ThisBigInt(a.This).value.ToString());
+
+    [JSPrototypeMethod]
+    [JSExport("toLocaleString")]
+    public static JSValue ToLocaleString(in Arguments a) => new JSString(ThisBigInt(a.This).value.ToString(CultureInfo.CurrentCulture));
+
+    [JSPrototypeMethod]
+    [JSExport("valueOf")]
+    public static JSValue ValueOf(in Arguments a) => ThisBigInt(a.This);
+
+    // ToIndex(value): coerce to an integer index in [0, 2^53-1], else RangeError.
+    // Performed before ToBigInt so that side effects occur in spec order
+    // (BigInt.asIntN/asUintN step 1 runs before step 2).
+    private static long ToBitsIndex(JSValue value)
+    {
+        if (value.IsUndefined)
+            return 0;
+
+        var number = value.DoubleValue;
+        var integer = double.IsNaN(number) ? 0 : Math.Truncate(number);
+        if (integer < 0 || integer > 9007199254740991.0)
             throw JSEngine.NewRangeError("Invalid range for bits");
 
-        var n = bigint.value;
+        return (long)integer;
+    }
+
+    // ToBigInt(value): ECMAScript abstract operation. Coerces booleans, BigInts
+    // and BigInt-parseable strings; Numbers/Symbols/undefined/null throw TypeError.
+    private static BigInteger ToBigInt(JSValue value)
+    {
+        var primitive = value is JSObject @object ? @object.ToDefaultPrimitive() : value;
+
+        switch (primitive)
+        {
+            case JSBigInt bigint:
+                return bigint.value;
+
+            case JSBoolean boolean:
+                return boolean.BooleanValue ? BigInteger.One : BigInteger.Zero;
+
+            case JSString str:
+                // StringToBigInt: empty/whitespace-only strings are 0n; an
+                // otherwise unparseable string is a SyntaxError, not a TypeError.
+                var text = str.ToString();
+                if (string.IsNullOrWhiteSpace(text))
+                    return BigInteger.Zero;
+                if (!TryParseBigIntString(text, out var parsed))
+                    throw JSEngine.NewSyntaxError($"Cannot convert {text} to a BigInt");
+                return parsed;
+
+            default:
+                throw JSEngine.NewTypeError($"Cannot convert {primitive.TypeOf()} to a BigInt");
+        }
+    }
+
+    [JSExport("asIntN", Length = 2)]
+    public static JSValue AsIntN(in Arguments a)
+    {
+        var bits = ToBitsIndex(a[0]);
+        var n = ToBigInt(a[1]);
+
         var buffer = n.ToByteArray();
 
         if (buffer.Length * 8 < bits)
-            return bigint;
+            return new JSBigInt(n);
 
         var reminderBits = bits % 8;
         var length = (int)(bits / 8);
@@ -464,19 +521,19 @@ public partial class JSBigInt : JSPrimitive
         return new JSBigInt(r);
     }
 
-    [JSExport("asUintN")]
-    public static JSValue AsUintN(long bits, JSBigInt bigint)
+    [JSExport("asUintN", Length = 2)]
+    public static JSValue AsUintN(in Arguments a)
     {
-        if (bits < 0 || bits > 9007199254740991)
-            throw JSEngine.NewRangeError("Invalid range for bits");
+        var bits = ToBitsIndex(a[0]);
+        var original = ToBigInt(a[1]);
 
-        var n = bigint.value;
+        var n = original;
         if (n.Sign == BigInteger.MinusOne.Sign)
             n = -n;
 
         var buffer = n.ToByteArray();
         if (buffer.Length * 8 < bits)
-            return bigint;
+            return new JSBigInt(original);
 
         var reminderBits = bits % 8;
 
