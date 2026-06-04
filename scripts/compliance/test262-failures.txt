@@ -174,7 +174,6 @@ test/built-ins/Array/prototype/concat/is-concat-spreadable-get-order.js
 test/built-ins/Array/prototype/copyWithin/non-negative-out-of-bounds-end.js
 test/built-ins/Array/prototype/copyWithin/non-negative-out-of-bounds-target-and-start.js
 test/built-ins/Array/prototype/copyWithin/undefined-end.js
-test/built-ins/Array/prototype/entries/iteration-mutable.js
 test/built-ins/Array/prototype/every/15.4.4.16-1-3.js
 test/built-ins/Array/prototype/every/15.4.4.16-1-5.js
 test/built-ins/Array/prototype/every/15.4.4.16-7-c-i-21.js
@@ -429,18 +428,14 @@ test/built-ins/Object/defineProperties/15.2.3.7-6-a-179.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-116.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-184.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-625gs.js
-test/built-ins/Object/entries/primitive-strings.js
 test/built-ins/Object/entries/return-order.js
 test/built-ins/Object/freeze/15.2.3.9-2-a-12.js
 test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-key-accessor.js
 test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-key-tostring.js
 test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-value-accessor.js
-test/built-ins/Object/getOwnPropertyDescriptor/primitive-string.js
 test/built-ins/Object/getOwnPropertyDescriptors/order-after-define-property.js
-test/built-ins/Object/getOwnPropertyDescriptors/primitive-strings.js
 test/built-ins/Object/getOwnPropertyNames/15.2.3.4-4-44.js
 test/built-ins/Object/getOwnPropertyNames/15.2.3.4-4-49.js
-test/built-ins/Object/getOwnPropertyNames/non-object-argument-valid.js
 test/built-ins/Object/getOwnPropertyNames/order-after-define-property.js
 test/built-ins/Object/getPrototypeOf/15.2.3.2-2-30.js
 test/built-ins/Object/groupBy/groupLength.js
@@ -451,7 +446,6 @@ test/built-ins/Object/keys/proxy-keys.js
 test/built-ins/Object/keys/return-order.js
 test/built-ins/Object/prop-desc.js
 test/built-ins/Object/prototype/setPrototypeOf-with-different-values.js
-test/built-ins/Object/values/order-after-define-property.js
 test/built-ins/Object/values/return-order.js
 test/built-ins/Promise/all/call-resolve-element-after-return.js
 test/built-ins/Promise/all/capability-resolve-throws-no-close.js
@@ -489,7 +483,6 @@ test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-missing-target-is-proxy.js
 test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-null-target-is-proxy.js
 test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-undefined-target-is-proxy.js
 test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-undefined.js
-test/built-ins/Proxy/ownKeys/trap-is-missing-target-is-proxy.js
 test/built-ins/Proxy/proxy-no-prototype.js
 test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls-index.js
 test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls.js
@@ -2393,8 +2386,6 @@ test/staging/sm/object/15.2.3.14-01.js
 test/staging/sm/object/15.2.3.4-02.js
 test/staging/sm/object/defineProperty-proxy.js
 test/staging/sm/object/entries.js
-test/staging/sm/object/getOwnPropertyDescriptor.js
-test/staging/sm/object/keys.js
 test/staging/sm/object/property-descriptor-order.js
 test/staging/sm/object/propertyIsEnumerable-proxy.js
 test/staging/sm/object/propertyIsEnumerable.js
