@@ -9,6 +9,24 @@ public partial class JSObject
     private static bool ShouldIncludeOwnPropertyKey(JSValue value, bool includeSymbols) =>
         includeSymbols ? value is IJSSymbol : value is not IJSSymbol;
 
+    /// <summary>
+    /// Implements the abstract operation ToObject for the reflective Object.*
+    /// statics. Primitives (notably string primitives, which become String
+    /// exotic objects with index/length own properties) are boxed so their own
+    /// properties become observable; null/undefined throw a TypeError.
+    /// </summary>
+    private static JSObject ToObjectOrThrow(JSValue value)
+    {
+        if (value is JSObject @object)
+            return @object;
+
+        if (value.IsNullOrUndefined)
+            throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
+
+        return CreatePrimitiveObject(value) as JSObject
+            ?? throw new InvalidOperationException("CreatePrimitiveObject returned a non-object value.");
+    }
+
     private static List<JSValue> GetOwnPropertyKeysInListOrder(JSObject @object)
     {
         var keys = new List<JSValue>();
@@ -82,36 +100,22 @@ public partial class JSObject
     [JSExport("entries")]
     internal static JSValue StaticEntries(in Arguments a)
     {
-        var target = a.Get1();
-        if (target.IsNullOrUndefined)
-            throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
-
-        if (!target.IsObject)
-            return JSValue.CreateArray();
+        var target = ToObjectOrThrow(a.Get1());
 
         var r = JSValue.CreateArray();
-        var ownEntries = target.GetElementEnumerator();
 
-        while (ownEntries.MoveNext(out var hasValue, out var item, out var index))
+        // EnumerableOwnPropertyNames(O, key+value): iterate the own enumerable
+        // String-keyed properties (GetAllKeys already stringifies indices and
+        // excludes symbols / non-enumerable properties) and read each value.
+        var en = target.GetAllKeys(showEnumerableOnly: true, inherited: false);
+        while (en.MoveNext(out var hasValue, out var key, out var _))
         {
             if (!hasValue)
                 continue;
 
             var entry = JSValue.CreateArray();
-            entry.AddArrayItem(JSValue.CreateString(index.ToString()));
-            entry.AddArrayItem(item);
-            r.AddArrayItem(entry);
-        }
-
-        var en = (target as JSObject).GetOwnProperties(false).GetEnumerator();
-        while (en.MoveNext(out var key, out var property))
-        {
-            if (IsPrivateName(in key))
-                continue;
-
-            var entry = JSValue.CreateArray();
-            entry.AddArrayItem(JSObjectCoreExtensions.KeyStringToJSValue(key));
-            entry.AddArrayItem(target.GetValue(property));
+            entry.AddArrayItem(key);
+            entry.AddArrayItem(target[key]);
             r.AddArrayItem(entry);
         }
 
@@ -163,13 +167,7 @@ public partial class JSObject
     [JSExport("keys")]
     internal static JSValue Keys(in Arguments a)
     {
-        var first = a.Get1();
-
-        if (first.IsNullOrUndefined)
-            throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
-
-        if (first is not JSObject jobj)
-            return JSValue.CreateArray();
+        var jobj = ToObjectOrThrow(a.Get1());
 
         var en = jobj.GetAllKeys(true, false);
         var r = JSValue.CreateArray();
@@ -186,32 +184,19 @@ public partial class JSObject
     [JSExport("values")]
     internal static JSValue Values(in Arguments a)
     {
-        var first = a.Get1();
-
-        if (first.IsNullOrUndefined)
-            throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
-
-        if (first is not JSObject target)
-            return JSValue.CreateArray();
+        var target = ToObjectOrThrow(a.Get1());
 
         var r = JSValue.CreateArray();
-        var ownEntries = target.GetElementEnumerator();
 
-        while (ownEntries.MoveNext(out var hasValue, out var item, out var index))
+        // EnumerableOwnPropertyNames(O, value): mirror Object.entries but keep
+        // only the values.
+        var en = target.GetAllKeys(showEnumerableOnly: true, inherited: false);
+        while (en.MoveNext(out var hasValue, out var key, out var _))
         {
             if (!hasValue)
                 continue;
 
-            r.AddArrayItem(item);
-        }
-
-        var en = target.GetOwnProperties(false).GetEnumerator();
-        while (en.MoveNext(out var key, out var property))
-        {
-            if (IsPrivateName(in key))
-                continue;
-
-            r.AddArrayItem(target.GetValue(property));
+            r.AddArrayItem(target[key]);
         }
 
         return r;
@@ -222,11 +207,7 @@ public partial class JSObject
     {
         var (first, name) = a.Get2();
 
-        if (first.IsNullOrUndefined)
-            throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
-
-        if (first is not JSObject jobj)
-            return JSValue.UndefinedValue;
+        var jobj = ToObjectOrThrow(first);
 
         return jobj.GetOwnPropertyDescriptor(name);
     }
@@ -234,13 +215,7 @@ public partial class JSObject
     [JSExport("getOwnPropertyDescriptors")]
     internal static JSValue GetOwnPropertyDescriptors(in Arguments a)
     {
-        var first = a.Get1();
-
-        if (first.IsNullOrUndefined)
-            throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
-
-        if (first is not JSObject jobj)
-            return JSValue.CreateArray();
+        var jobj = ToObjectOrThrow(a.Get1());
 
         var r = new JSObject();
         foreach (var key in GetOwnPropertyKeysInListOrder(jobj))
@@ -266,13 +241,7 @@ public partial class JSObject
     [JSExport("getOwnPropertyNames")]
     internal static JSValue GetOwnPropertyNames(in Arguments a)
     {
-        var first = a.Get1();
-
-        if (first.IsNullOrUndefined)
-            throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
-
-        if (first is not JSObject jobj)
-            return JSValue.CreateArray();
+        var jobj = ToObjectOrThrow(a.Get1());
 
         var en = jobj.GetAllKeys(false, false);
         var r = JSValue.CreateArray();
@@ -287,12 +256,7 @@ public partial class JSObject
     [JSExport("getOwnPropertySymbols")]
     internal static JSValue GetOwnPropertySymbols(in Arguments a)
     {
-        var first = a.Get1();
-        if (first.IsNullOrUndefined)
-            throw NewTypeError(Cannot_convert_undefined_or_null_to_object);
-
-        if (first is not JSObject jobj)
-            return JSValue.CreateArray();
+        var jobj = ToObjectOrThrow(a.Get1());
 
         var r = JSValue.CreateArray();
         HashSet<uint> emittedSymbols = null;
