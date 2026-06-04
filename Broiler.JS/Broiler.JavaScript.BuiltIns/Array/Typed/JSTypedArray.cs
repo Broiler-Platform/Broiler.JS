@@ -36,7 +36,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     }
 
     [JSExport(Length = 1)]
-    private static JSValue From(in Arguments a) => a.This.InvokeMethod(Names.from, a);
+    private static JSValue From(in Arguments a) => FromShared(in a);
 
     [JSExport]
     private static JSValue Of(in Arguments a) => a.This.InvokeMethod(Names.of, a);
@@ -127,12 +127,18 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
                 break;
         }
         var copyByIndex = false;
-        if (length == -1
-            && source is JSObject arrayLike
-            && IsNonIterableArrayLike(source))
+        if (length == -1 && IsNonIterableArrayLike(source))
         {
-            length = arrayLike.Length;
-            copyByIndex = length >= 0;
+            // No @@iterator method: %TypedArray%.from treats the source as an
+            // array-like (ToObject, then ToLength(Get(source, "length"))). A
+            // missing/undefined "length" yields 0 — a primitive (number, symbol,
+            // boolean) or a plain object such as {} becomes a zero-length result.
+            // This must never fall through to the iterator path below, which
+            // throws "<source> is not iterable".
+            length = source is JSObject arrayLike && arrayLike.Length >= 0
+                ? arrayLike.Length
+                : 0;
+            copyByIndex = true;
         }
 
         IElementEnumerator en2;
@@ -202,7 +208,100 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         if (typedArray.Length < length)
             throw JSEngine.NewTypeError("TypedArray constructor returned a too-small TypedArray");
 
+        // TypedArrayCreateFromConstructor is invoked with the `write` access intent
+        // by %TypedArray%.from/of and the prototype methods that copy into the
+        // result, so the produced typed array must be backed by a mutable
+        // (non-immutable) buffer. Validated here, before any element is written.
+        if (typedArray.buffer.isImmutable)
+            throw JSEngine.NewTypeError("TypedArray constructor returned a typed array backed by an immutable ArrayBuffer");
+
         return typedArray;
+    }
+
+    /// <summary>
+    /// Shared implementation of %TypedArray%.from ( source [ , mapfn [ , thisArg ] ] )
+    /// following the spec's validation and error ordering (ES2024 23.2.2.1).
+    /// The receiver C must be a constructor; mapfn must be undefined or callable,
+    /// and that is verified BEFORE the source is observed (no @@iterator lookup,
+    /// constructor call, length read, or element read happens first). The source
+    /// is iterated through its @@iterator method when present, otherwise treated
+    /// as an array-like, and the result is created by calling C with the resolved
+    /// length so element coercion matches the receiver's element type.
+    /// </summary>
+    internal static JSValue FromShared(in Arguments a)
+    {
+        var constructor = a.This;
+        if (constructor is not IJSFunction)
+            throw JSEngine.NewTypeError("%TypedArray%.from must be called with a constructor receiver");
+
+        var (source, mapfn, thisArg) = a.Get3();
+
+        // mapfn must be undefined or callable. Checked before the source is
+        // touched in any way (the test asserts no side effects occur first).
+        var mapping = false;
+        if (!mapfn.IsUndefined)
+        {
+            if (!mapfn.IsFunction)
+                throw JSEngine.NewTypeError("%TypedArray%.from: mapping function is not callable");
+            mapping = true;
+        }
+
+        // GetMethod(source, @@iterator): a null/undefined source throws here (its
+        // ToObject step), a non-callable non-nullish @@iterator throws, and an
+        // absent/nullish @@iterator selects the array-like path below.
+        var usingIterator = GetIteratorMethod(source);
+
+        if (!usingIterator.IsUndefined)
+        {
+            var iterator = usingIterator.InvokeFunction(new Arguments(source));
+            if (!iterator.IsObject)
+                throw JSEngine.NewTypeError("Result of the Symbol.iterator method is not an object");
+
+            var values = new List<JSValue>();
+            var step = new JSIterator(iterator);
+            while (step.MoveNext(out var item))
+                values.Add(item);
+
+            var target = CreateTypedArrayFromConstructor(constructor, values.Count);
+            for (var k = 0; k < values.Count; k++)
+            {
+                var value = mapping ? mapfn.Call(thisArg, values[k], new JSNumber(k)) : values[k];
+                target[(uint)k] = value;
+            }
+
+            return target;
+        }
+
+        // Array-like path: ToLength(Get(source, "length")); a missing length is 0.
+        var rawLength = ToIntegerOrInfinity(source[KeyStrings.length]);
+        var length = rawLength < 0 ? 0 : rawLength;
+
+        var arrayLikeTarget = CreateTypedArrayFromConstructor(constructor, length);
+        for (var k = 0; k < length; k++)
+        {
+            var kValue = source[(uint)k];
+            var value = mapping ? mapfn.Call(thisArg, kValue, new JSNumber(k)) : kValue;
+            arrayLikeTarget[(uint)k] = value;
+        }
+
+        return arrayLikeTarget;
+    }
+
+    private static JSValue GetIteratorMethod(JSValue source)
+    {
+        // GetMethod(source, @@iterator). GetV performs ToObject(source) first, so a
+        // null/undefined source throws here (covers from(), from(undefined), from(null)).
+        if (source.IsNullOrUndefined)
+            throw JSEngine.NewTypeError("Cannot convert undefined or null to object");
+
+        var method = source[JSValue.SymbolIterator];
+        if (method.IsNullOrUndefined)
+            return JSValue.UndefinedValue;
+
+        if (!method.IsFunction)
+            throw JSEngine.NewTypeError("Symbol(Symbol.iterator) value is not callable");
+
+        return method;
     }
 
     internal static JSValue GetSpeciesConstructor(JSTypedArray source)

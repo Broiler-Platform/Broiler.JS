@@ -120,7 +120,13 @@ public static class DirectEvalSupport
                 ? context.PushDirectEvalSuper(directEvalSuper)
                 : null;
             using var __ = context.PushDirectEvalCompilation(requiresActivation, privateNamesInScope);
-            var result = CoreScript.Compile(text, location, null, new TransientCodeCache())(new Arguments(@this ?? context));
+            // The completion value of the eval body is a real value, not a tail
+            // call of the surrounding function: eval is a syntactic boundary. Under
+            // BROILER_SCRIPT_HOST the trailing expression may be emitted as a
+            // JSTailCall sentinel (proper tail call); force it here so the call
+            // actually runs even when the eval result is discarded.
+            var result = JSTailCall.Resolve(
+                CoreScript.Compile(text, location, null, new TransientCodeCache())(new Arguments(@this ?? context)));
             if (declaredBindings?.Length > 0 && capturedBindings?.Length > 0)
             {
                 foreach (var declaredBinding in declaredBindings)

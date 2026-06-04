@@ -51,15 +51,7 @@ public partial class JSUint8ClampedArray : JSTypedArray
     }
 
     [JSExport(Length = 1)]
-    public static JSValue From(in Arguments a)
-    {
-        var temp = new JSUint8ClampedArray(TypedArrayParameters.From(in a, BYTES_PER_ELENENT));
-        var result = CreateTypedArrayFromConstructor(a.This, temp.Length);
-        for (uint i = 0; i < temp.Length; i++)
-            result[i] = temp[i];
-
-        return result;
-    }
+    public static JSValue From(in Arguments a) => JSTypedArray.FromShared(in a);
 
     [JSExport]
     public static JSValue Of(in Arguments a)

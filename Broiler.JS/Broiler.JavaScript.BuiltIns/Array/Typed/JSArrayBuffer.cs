@@ -138,8 +138,10 @@ public partial class JSArrayBuffer : JSObject
     {
         get
         {
+            // §25.1.6.2 get ArrayBuffer.prototype.byteLength: if the buffer is
+            // detached, return +0 rather than throwing.
             if (isDetached)
-                throw JSEngine.NewTypeError("Cannot access byteLength of a detached ArrayBuffer");
+                return 0;
 
             return buffer.Length;
         }
