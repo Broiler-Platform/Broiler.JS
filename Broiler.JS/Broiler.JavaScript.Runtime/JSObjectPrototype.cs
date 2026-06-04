@@ -7,17 +7,26 @@ namespace Broiler.JavaScript.Runtime;
 public partial class JSObject
 {
     [JSExport(IsConstructor = true)]
-    public static JSValue Constructor(in Arguments a) 
+    public static JSValue Constructor(in Arguments a)
     {
-        if (a.This != null && !a.This.IsUndefined)
-            return a.This;
-
+        // ES2024 §20.1.1.1 Object ( [ value ] ): when a value argument is
+        // supplied it is returned via ToObject(value) — an object (including a
+        // function) is returned unchanged, a primitive is boxed — regardless of
+        // whether Object was invoked with `new`. The freshly-constructed `this`
+        // is only used for the no-argument (and subclass) case so that the
+        // correct prototype is preserved.
         var first = a.Get1();
+
         if (first.IsObject)
             return first;
 
         if (first.IsNullOrUndefined)
+        {
+            if (a.This != null && !a.This.IsUndefined)
+                return a.This;
+
             return new JSObject();
+        }
 
         return CreatePrimitiveObject(first);
     }

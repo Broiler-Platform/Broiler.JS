@@ -895,6 +895,12 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         IntrinsicEval = this[KeyStrings.eval];
         this[KeyStrings.globalThis] = this;
         this[KeyStrings.debug] = JSValue.CreateFunction(Debug);
+
+        // The global object inherits from Object.prototype (as in Node's
+        // `globalThis`), so that `Object.getPrototypeOf(globalThis)` is
+        // Object.prototype and inherited methods such as hasOwnProperty /
+        // propertyIsEnumerable are callable on the top-level `this`.
+        BasePrototypeObject = ObjectPrototype;
     }
 
     private void ReattachFunctionPrototypeMethods()
