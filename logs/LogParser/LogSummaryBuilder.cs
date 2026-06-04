@@ -267,7 +267,7 @@ public static class LogSummaryBuilder
 
     public static IReadOnlyList<MostCommonProblemMatch> FindMostCommonProblems(
         IEnumerable<LogEntry> entries,
-        int limit = 5)
+        int limit = 10)
     {
         if (limit <= 0)
         {
