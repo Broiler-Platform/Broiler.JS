@@ -12,8 +12,8 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private static readonly System.Reflection.MethodInfo DirectEvalMethod = typeof(DirectEvalSupport)
-        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(CallStackItem), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool)])
-        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, CallStackItem, bool, bool, string[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool) not found");
+        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(CallStackItem), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool)])
+        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, CallStackItem, bool, bool, string[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool) not found");
 
     protected override YExpression VisitCallExpression(AstCallExpression callExpression)
     {
@@ -113,7 +113,11 @@ partial class FastCompiler
             // Pass the lexical [[HomeObject]] super reference so super.x inside the
             // eval body resolves against the enclosing method/initializer's super.
             var superValue = scope.Top.Super ?? YExpression.Constant(null, typeof(JSValue));
-            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), scope.Top.ThisExpression, activationOwner, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding), superValue, YExpression.Constant(inMemberInitializer));
+            // new.target is only legal in the eval body when the direct eval is
+            // (transitively, through arrow functions) inside ordinary function
+            // code. In global code it is a SyntaxError (PerformEval early error).
+            var rejectNewTarget = !EnclosedByOrdinaryFunction(scope.Top);
+            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), scope.Top.ThisExpression, activationOwner, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding), superValue, YExpression.Constant(inMemberInitializer), YExpression.Constant(rejectNewTarget));
         }
 
     skipDirectEval:
@@ -201,6 +205,22 @@ partial class FastCompiler
             var target = VisitExpression(callee);
             return JSFunctionBuilder.InvokeFunction(target, paramArray, coalesce);
         }
+    }
+
+    // Walks out through arrow-function scopes (which inherit new.target from
+    // their enclosing environment) to determine whether the position is inside
+    // ordinary function code, where new.target is permitted.
+    private static bool EnclosedByOrdinaryFunction(FastFunctionScope scope)
+    {
+        for (var s = scope; s != null; s = s.Parent)
+        {
+            if (s.Function == null)
+                return false;
+            if (!s.Function.IsArrowFunction)
+                return true;
+        }
+
+        return false;
     }
 
     private YExpression CaptureDirectEvalBindings()
