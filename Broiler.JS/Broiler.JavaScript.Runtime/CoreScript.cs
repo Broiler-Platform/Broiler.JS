@@ -139,7 +139,10 @@ public class CoreScript
     {
         var ctx = GetCurrentContext();
         var fx = Compile(code, location, null, codeCache ?? ctx.codeCache);
-        return fx(new Arguments(ctx.value));
+        // The script/eval completion value must be a materialized value, never an
+        // unforced JSTailCall sentinel: a trailing call in the body is a tail call
+        // only within the script, and this boundary must trampoline it.
+        return JSTailCall.Resolve(fx(new Arguments(ctx.value)));
     }
 
     /// <summary>

@@ -87,8 +87,11 @@ internal static class BuiltInsAssemblyInitializer
 
         JSObject.CreatePrimitiveObject = static value => value switch
         {
-            JSPrimitive primitive => new JSPrimitiveObject(primitive),
+            // JSSymbol is a JSPrimitive, so it must be matched before the general
+            // JSPrimitive arm to box into a JSSymbolObject rather than a plain
+            // JSPrimitiveObject.
             JSSymbol symbol => new JSSymbolObject(symbol),
+            JSPrimitive primitive => new JSPrimitiveObject(primitive),
             _ => throw JSEngine.NewTypeError($"Cannot convert {value} to object")
         };
 

@@ -80,11 +80,19 @@ partial class FastCompiler
                 if (isDirectEvalCompilation && !usesDirectEvalLocalVarEnvironment && jsFVarScope != null)
                     jsFVarScope.IsDeletable = true;
             }
-            else if (functionName != null && (!functionDeclaration.IsStatement || !hoistStatementDeclaration))
+            else if (functionName != null && !functionDeclaration.IsStatement)
             {
-                // BROILER-PATCH: For function expressions, create a closure variable
-                // in the parent scope that the function body captures. This variable
-                // holds the function reference and is marked read-only.
+                // BROILER-PATCH: For named function *expressions* only, create a
+                // closure variable in the parent scope that the function body
+                // captures, holding the function reference and marked read-only
+                // (the name binding of a named function expression is immutable).
+                //
+                // A function *declaration* compiled at runtime (hoistStatementDeclaration
+                // == false, e.g. a block- or switch-scoped declaration inside direct
+                // eval) must NOT use this read-only binding: its name is a mutable
+                // binding, so the body resolves its own name to the enclosing
+                // (mutable) binding instead. Otherwise self-assignment such as
+                // `function f(){ f = 1; }` is wrongly ignored.
                 fexprNameParam = YExpression.Parameter(typeof(JSVariable), functionName);
                 var fexprVarScope = new FastFunctionScope.VariableScope
                 {

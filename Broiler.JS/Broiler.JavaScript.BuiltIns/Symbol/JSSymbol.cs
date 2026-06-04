@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.Engine;
+﻿using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
@@ -10,7 +11,7 @@ namespace Broiler.JavaScript.BuiltIns.Symbol;
 
 [JSBaseClass("Object")]
 [JSFunctionGenerator("Symbol")]
-public partial class JSSymbol: JSValue, IJSSymbol
+public partial class JSSymbol: JSPrimitive, IJSSymbol
 {
     private static int SymbolID = 1;
     private static readonly ConcurrentDictionary<uint, JSSymbol> SymbolsByKey = new();
@@ -37,12 +38,20 @@ public partial class JSSymbol: JSValue, IJSSymbol
 
     internal string ToDescriptiveString() => description == null ? "Symbol()" : $"Symbol({description})";
 
-    public JSSymbol(string description) : base((JSEngine.Current as IJSExecutionContext)?.ObjectPrototype)
+    public JSSymbol(string description) : base()
     {
         this.description = description;
         Key = (uint)Interlocked.Increment(ref SymbolID);
         SymbolsByKey[Key] = this;
     }
+
+    // A Symbol primitive's wrapper prototype is Symbol.prototype (which itself
+    // chains to Object.prototype). Resolved lazily like the other primitives so
+    // that well-known symbols created during bootstrap don't depend on
+    // Symbol.prototype already existing. Previously the prototype was hard-wired
+    // to Object.prototype, so e.g. `sym[key]` skipped Symbol.prototype entirely.
+    protected override JSValue GetPrototype()
+        => ((JSEngine.Current as JSObject)?[Names.Symbol] as JSFunction)?.prototype;
 
     internal static IJSSymbol? FromKey(uint key) => SymbolsByKey.TryGetValue(key, out var symbol) ? symbol : null;
 

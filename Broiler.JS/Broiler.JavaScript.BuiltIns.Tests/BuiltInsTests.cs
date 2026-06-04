@@ -3314,15 +3314,18 @@ public class BuiltInsTests
     }
 
     [Fact]
-    public void ArrayBuffer_Transferred_Source_Throws_On_ByteLength_Access()
+    public void ArrayBuffer_Transferred_Source_ByteLength_Is_Zero()
     {
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
-        Assert.Throws<JSException>(() => ctx.Eval(@"
+        // Per §25.1.6.2, the byteLength getter returns +0 for a detached buffer
+        // rather than throwing.
+        var result = ctx.Eval(@"
             var source = new ArrayBuffer(4);
             source.transfer(2);
-            source.byteLength;
-        "));
+            [source.detached, source.byteLength].join('|');
+        ");
+        Assert.Equal("true|0", result.ToString());
     }
 
     // ── M2: Hashbang grammar tests ────────────────────────────────────
