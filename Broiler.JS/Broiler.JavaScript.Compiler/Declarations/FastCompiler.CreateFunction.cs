@@ -110,6 +110,14 @@ partial class FastCompiler
             var previousStrictMode = IsStrictMode;
             IsStrictMode = isStrictFunction;
 
+            // The "inside a class field initializer" context is arrow-transparent
+            // but function-opaque: an ordinary function nested in a field
+            // initializer establishes its own `arguments`/super bindings, so the
+            // field-initializer early-error rules must not apply within it.
+            var previousInMemberInitializer = inMemberInitializer;
+            if (!functionDeclaration.IsArrowFunction)
+                inMemberInitializer = false;
+
             var parameterNames = new List<StringSpan>();
             CollectParameterNames(functionDeclaration.Params, parameterNames);
             foreach (var parameterName in parameterNames)
@@ -273,6 +281,7 @@ partial class FastCompiler
             }
 
             IsStrictMode = previousStrictMode;
+            inMemberInitializer = previousInMemberInitializer;
 
             cs.Dispose();
 
@@ -331,7 +340,24 @@ partial class FastCompiler
             var name = s.ComputedMemberNames != null && s.ComputedMemberNames.TryGetValue(member, out var computedName)
                 ? computedName
                 : GetClassElementName(member);
-            var value = member.Init == null ? JSUndefinedBuilder.Value : Visit(member.Init);
+            YExpression value;
+            if (member.Init == null)
+            {
+                value = JSUndefinedBuilder.Value;
+            }
+            else
+            {
+                var previousInMemberInitializer = inMemberInitializer;
+                inMemberInitializer = true;
+                try
+                {
+                    value = Visit(member.Init);
+                }
+                finally
+                {
+                    inMemberInitializer = previousInMemberInitializer;
+                }
+            }
             var attributes = member.IsPrivate
                 ? JSPropertyAttributes.ConfigurableValue
                 : JSPropertyAttributes.EnumerableConfigurableValue;

@@ -41,6 +41,11 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     // inner blocks do not pick them up.
     private IFastEnumerable<StringSpan> pendingAnnexBFunctionNames;
 
+    // True while compiling a class field (member) initializer. A SuperCall is a
+    // Syntax Error inside a field initializer even though super property access
+    // is permitted, so a direct eval appearing here must reject `super()`.
+    private bool inMemberInitializer;
+
     public LoopScope LoopScope => scope.Top.Loop.Top;
 
     private StringArray _keyStrings = new();
