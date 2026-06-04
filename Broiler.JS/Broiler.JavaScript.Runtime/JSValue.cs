@@ -406,12 +406,24 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <returns></returns>
     public virtual JSValue ValueOf() => this;
 
-    private static JSValue ToNumericPrimitive(JSValue value) => value switch
+    private static JSValue ToNumericPrimitive(JSValue value)
     {
-        JSPrimitiveObject primitiveObject => primitiveObject.ValueOf(),
-        JSObject @object => @object.ToDefaultPrimitive(),
-        _ => value.ValueOf()
-    };
+        var primitive = value switch
+        {
+            JSPrimitiveObject primitiveObject => primitiveObject.ValueOf(),
+            JSObject @object => @object.ToDefaultPrimitive(),
+            _ => value.ValueOf()
+        };
+
+        // ToNumeric must yield a Number or BigInt; a Symbol can never be coerced.
+        // Throw here (rather than later at DoubleValue access) so that, for a binary
+        // operator, ToNumeric(lhs) fails before the rhs operand is coerced.
+        if (primitive.IsSymbol)
+            throw NewTypeError?.Invoke("Cannot convert a Symbol value to a number.")
+                ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
+
+        return primitive;
+    }
 
     public virtual JSValue Negate()
     {
@@ -890,22 +902,35 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         };
     }
 
+    // MakeSuperPropertyReference (12.3.5.3) step 5: the super base — GetSuperBase,
+    // i.e. the prototype of the method's [[HomeObject]] — must be object-coercible.
+    // When the home object's prototype is null, accessing super.x throws a
+    // TypeError rather than silently reading undefined.
+    private static JSValue RequireSuperBase(JSValue super)
+    {
+        if (super == null || super.IsNullOrUndefined)
+            throw NewTypeError?.Invoke("Cannot convert undefined or null to object")
+                ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
+
+        return super;
+    }
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     public JSValue this[JSValue super, KeyString name]
     {
-        get => super.GetValue(name, this); set => super.SetValue(name, value, this, IsStrictModeEnabled?.Invoke() == true);
+        get => RequireSuperBase(super).GetValue(name, this); set => RequireSuperBase(super).SetValue(name, value, this, IsStrictModeEnabled?.Invoke() == true);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public JSValue this[JSValue super, uint index]
     {
-        get => super.GetValue(index, this); set => super.SetValue(index, value, this, IsStrictModeEnabled?.Invoke() == true);
+        get => RequireSuperBase(super).GetValue(index, this); set => RequireSuperBase(super).SetValue(index, value, this, IsStrictModeEnabled?.Invoke() == true);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public JSValue this[JSValue super, JSValue name]
     {
-        get => super.GetValue(name, this); set => super.SetValue(name, value, this, IsStrictModeEnabled?.Invoke() == true);
+        get => RequireSuperBase(super).GetValue(name, this); set => RequireSuperBase(super).SetValue(name, value, this, IsStrictModeEnabled?.Invoke() == true);
     }
 
 

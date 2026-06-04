@@ -408,7 +408,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             }
             else
             {
-                statements.Add(JSContextBuilder.DeclareGlobalFunction(KeyOfName(name), value));
+                statements.Add(JSContextBuilder.DeclareGlobalAnnexBFunction(KeyOfName(name), value));
             }
         }
     }
