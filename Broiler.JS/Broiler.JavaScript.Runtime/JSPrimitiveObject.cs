@@ -125,6 +125,47 @@ public class JSPrimitiveObject : JSObject
     public override JSValue DefineProperty(JSValue key, JSObject propertyDescription)
     {
         var propertyKey = key.ToKey();
+
+        // String exotic objects have a synthesized own "length" property that is
+        // non-writable, non-enumerable and non-configurable. It is not stored, so
+        // redefining it (e.g. by Object.freeze/seal) must be validated here rather
+        // than falling through to the ordinary store, which would reject it on a
+        // non-extensible object with "Cannot define property".
+        if (value.IsString && propertyKey.Type == KeyType.String && propertyKey.KeyString.Key == KeyStrings.length.Key)
+        {
+            if (!propertyDescription.GetInternalProperty(KeyStrings.configurable, false).IsEmpty
+                && propertyDescription[KeyStrings.configurable].BooleanValue)
+            {
+                return BooleanFalse;
+            }
+
+            if (!propertyDescription.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty
+                && propertyDescription[KeyStrings.enumerable].BooleanValue)
+            {
+                return BooleanFalse;
+            }
+
+            if (!propertyDescription.GetInternalProperty(KeyStrings.writable, false).IsEmpty
+                && propertyDescription[KeyStrings.writable].BooleanValue)
+            {
+                return BooleanFalse;
+            }
+
+            if (!propertyDescription.GetInternalProperty(KeyStrings.get, false).IsEmpty
+                || !propertyDescription.GetInternalProperty(KeyStrings.set, false).IsEmpty)
+            {
+                return BooleanFalse;
+            }
+
+            if (!propertyDescription.GetInternalProperty(KeyStrings.value, false).IsEmpty
+                && !propertyDescription[KeyStrings.value].Is(JSValue.CreateNumber(value.Length)).BooleanValue)
+            {
+                return BooleanFalse;
+            }
+
+            return JSUndefined.Value;
+        }
+
         if (value.IsString && propertyKey.IsUInt && propertyKey.Index < value.Length)
         {
             if (!propertyDescription.GetInternalProperty(KeyStrings.configurable, false).IsEmpty

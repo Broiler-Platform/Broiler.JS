@@ -189,6 +189,20 @@ partial class JSNumber
     {
         var n = a.This.ToNumber();
         var nv = n.value;
+        var fractionDigits = a.Get1();
+        var hasFractionDigits = !fractionDigits.IsUndefined;
+
+        // Step 2 of Number.prototype.toExponential: ToIntegerOrInfinity(fractionDigits)
+        // is evaluated (with any observable coercion side effects) before the
+        // non-finite short-circuit. ToIntegerOrInfinity truncates toward zero and
+        // maps NaN to 0.
+        var fRaw = hasFractionDigits ? fractionDigits.DoubleValue : 0.0;
+        var f = double.IsNaN(fRaw) ? 0.0 : Math.Truncate(fRaw);
+
+        // Step 3: a non-finite x returns "NaN"/"Infinity"/"-Infinity" *before* the
+        // fractionDigits range check (e.g. NaN.toExponential(-1) === "NaN").
+        if (double.IsNaN(nv))
+            return new JSString("NaN");
 
         if (double.IsPositiveInfinity(nv))
             return JSConstants.Infinity;
@@ -202,25 +216,20 @@ partial class JSNumber
         if (IsNegativeZero(nv))
             nv = 0.0;
 
-        if (a.Length > 0)
+        if (hasFractionDigits)
         {
-            var v = a.Get1().DoubleValue;
-
-            if (double.IsNaN(v) || v > 20 || v < 0)
+            // Step 4: the range check (0..100) only applies when fractionDigits is
+            // supplied, and is performed on the truncated integer value.
+            if (f < 0 || f > 100)
                 throw JSEngine.NewRangeError("toExponential() digits argument is out of range");
 
-            var m = (int)v;
-            if (m == 0)
-            {
-                // round..
-                return new JSString(nv.ToString("0e+0"));
-            }
-
-            var fx = $"#.{new string('0', m)}{new string('#', m != 0 ? 0 : 16 - m)}e+0";
-            return new JSString(nv.ToString(fx));
+            var m = (int)f;
+            var fx = m == 0 ? "0e+0" : "0." + new string('0', m) + "e+0";
+            return new JSString(nv.ToString(fx, CultureInfo.InvariantCulture));
         }
 
-        var text = n.value.ToString("#.################e+0");
+        // fractionDigits undefined: use as many significant digits as necessary.
+        var text = nv.ToString("0.################e+0", CultureInfo.InvariantCulture);
         return new JSString(text);
     }
 

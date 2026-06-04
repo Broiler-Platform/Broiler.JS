@@ -896,6 +896,9 @@ internal static class BuiltInsAssemblyInitializer
             if (a.This is JSSymbol symbol)
                 return symbol;
 
+            if (a.This is JSObject symbolObject && symbolObject.ValueOf() is JSSymbol boxed)
+                return boxed;
+
             throw JSEngine.NewTypeError("Symbol.prototype[Symbol.toPrimitive] requires a symbol receiver");
         }, "[Symbol.toPrimitive]", 1), JSPropertyAttributes.ConfigurableValue);
 
