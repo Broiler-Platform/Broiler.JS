@@ -23,15 +23,26 @@ public partial class DataView : JSObject
         var buffer = a[0] as JSArrayBuffer ?? throw JSEngine.NewTypeError("First argument to DataView constructor must be an ArrayBuffer.");
         var byteOffset = a[1]?.IntValue ?? 0; //optional, if not available assign 0
 
-        if (byteOffset >= buffer.buffer.Length)
+        var bufferByteLength = buffer.buffer.Length;
+
+        // ToIndex rejects negatives; an offset at the very end of the buffer is a
+        // valid zero-length view, so only offsets strictly past the end are errors.
+        if (byteOffset < 0 || byteOffset > bufferByteLength)
             throw JSEngine.NewRangeError("Start offset is outside the bounds of the buffer.");
 
-        var byteOffsetLength = buffer.buffer.Length - byteOffset;
-        //optional, if not given it should be (buffer length - byte offset)
-        var byteLength = a[2]?.IntValue ?? byteOffsetLength;
-
-        if ((byteOffset + byteOffsetLength) > buffer.buffer.Length)
-            throw JSEngine.NewTypeError("Invalid data view length.");
+        int byteLength;
+        var byteLengthArg = a[2];
+        if (byteLengthArg == null || byteLengthArg.IsUndefined)
+        {
+            //optional, if not given it should be (buffer length - byte offset)
+            byteLength = bufferByteLength - byteOffset;
+        }
+        else
+        {
+            byteLength = byteLengthArg.IntValue;
+            if (byteLength < 0 || byteOffset + byteLength > bufferByteLength)
+                throw JSEngine.NewRangeError("Invalid DataView length.");
+        }
 
         this.buffer = buffer;
         this.byteLength = byteLength;

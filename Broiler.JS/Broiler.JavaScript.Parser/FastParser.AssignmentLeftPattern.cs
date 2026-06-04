@@ -62,6 +62,7 @@ partial class FastParser
                 if (stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
                     break;
 
+                bool computed = false;
                 if (Identitifer(out var id))
                 {
                     left = id;
@@ -73,6 +74,16 @@ partial class FastParser
                 else if (NumberLiteral(out var num))
                 {
                     left = num;
+                }
+                else if (!modulePattern && stream.CheckAndConsume(TokenTypes.SquareBracketStart))
+                {
+                    // Computed property name: { [expr]: target }. The key is an
+                    // arbitrary expression whose side effects/errors must be observed,
+                    // so it can never be a shorthand and always requires a ':' target.
+                    if (!Expression(out left))
+                        throw stream.Unexpected();
+                    stream.Expect(TokenTypes.SquareBracketEnd);
+                    computed = true;
                 }
                 else if (!AssignmentLeftPattern(out left, kind, modulePattern))
                     throw stream.Unexpected();
@@ -95,7 +106,8 @@ partial class FastParser
                 }
                 else
                 {
-                    if (left is AstLiteral)
+                    // A computed key has no implicit shorthand binding target.
+                    if (computed || left is AstLiteral)
                         throw stream.Unexpected();
                     if (left.Start.IsKeyword || left.Start.IsEscapedReservedWord)
                         throw stream.Unexpected();
@@ -109,7 +121,7 @@ partial class FastParser
                         throw stream.Unexpected();
                 }
 
-                nodes.Add(new ObjectProperty(left, right, init));
+                nodes.Add(new ObjectProperty(left, right, init, computed: computed));
 
                 if (stream.CheckAndConsume(TokenTypes.Comma))
                     continue;
