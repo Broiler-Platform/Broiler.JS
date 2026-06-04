@@ -87,8 +87,11 @@ internal static class BuiltInsAssemblyInitializer
 
         JSObject.CreatePrimitiveObject = static value => value switch
         {
-            JSPrimitive primitive => new JSPrimitiveObject(primitive),
+            // JSSymbol is a JSPrimitive, so it must be matched before the general
+            // JSPrimitive arm to box into a JSSymbolObject rather than a plain
+            // JSPrimitiveObject.
             JSSymbol symbol => new JSSymbolObject(symbol),
+            JSPrimitive primitive => new JSPrimitiveObject(primitive),
             _ => throw JSEngine.NewTypeError($"Cannot convert {value} to object")
         };
 
@@ -720,10 +723,10 @@ internal static class BuiltInsAssemblyInitializer
             KeyStrings.__proto__,
             CreateNativeGetter(static (in Arguments a) =>
             {
-                if (!a.This.TryAsObjectThrowIfNullOrUndefined(out var @object))
-                    return JSUndefined.Value;
-
-                return @object.GetPrototypeOf();
+                // Per spec the getter performs ToObject(this value): primitives
+                // (string/number/boolean/symbol/bigint) are boxed so that e.g.
+                // `'x'.__proto__` resolves to String.prototype; null/undefined throw.
+                return CoerceObject(a.This).GetPrototypeOf();
             }, "__proto__"),
             CreateNativeSetter(static (in Arguments a) =>
             {

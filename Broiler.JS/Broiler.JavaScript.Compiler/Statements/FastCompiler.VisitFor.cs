@@ -31,9 +31,29 @@ partial class FastCompiler
         var outerCompletionVars = GetCompletionVariables();
         // this will create a variable if needed...
         // desugar takes care of let so do not worry
+
+        // The for-in head may bind to a simple identifier, a destructuring
+        // pattern (with or without a var declaration), or an arbitrary
+        // assignment target such as a member expression. Mirror the for-of
+        // handling: when the target is not a simple identifier, enumerate each
+        // key into a temporary and run the assignment per-iteration.
+        var perIterationInits = new Sequence<YExpression>();
+        YParameterExpression? iterationValueVariable = null;
         YExpression? identifier = forInStatement.Init.Type switch
         {
-            FastNodeType.Identifier or FastNodeType.VariableDeclaration => Visit(forInStatement.Init),
+            FastNodeType.Identifier => Visit(forInStatement.Init),
+            FastNodeType.VariableDeclaration when TryCreateForOfDestructuringAssignment(
+                (AstVariableDeclaration)forInStatement.Init,
+                perIterationInits,
+                out iterationValueVariable)
+                => iterationValueVariable,
+            FastNodeType.VariableDeclaration => Visit(forInStatement.Init),
+            _ when forInStatement.Init is AstExpression expression =>
+                CreateForOfDestructuringAssignment(
+                    expression,
+                    perIterationInits,
+                    out iterationValueVariable,
+                    forceDynamicAssignment: false),
             _ => throw new FastParseException(forInStatement.Start, $"Unexpcted"),
         };
 
@@ -41,8 +61,16 @@ partial class FastCompiler
         using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, continueTarget, false, label) { CompletionVariable = completionVar });
         var en = YExpression.Variable(typeof(IElementEnumerator));
         var pList = new Sequence<YParameterExpression> { en, completionVar };
+        if (iterationValueVariable != null)
+            pList.Add(iterationValueVariable);
         var body = TrackCompletion(VisitStatement(forInStatement.Body));
-        var bodyList = YExpression.Block(YExpression.IfThen(YExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)), YExpression.Goto(s.Break)), body);
+        var bodyListItems = new Sequence<YExpression>
+        {
+            YExpression.IfThen(YExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)), YExpression.Goto(s.Break)),
+        };
+        bodyListItems.AddRange(perIterationInits);
+        bodyListItems.Add(body);
+        var bodyList = YExpression.Block(bodyListItems);
         var right = VisitExpression(forInStatement.Target);
         var loop = YExpression.Loop(bodyList, s.Break, s.Continue);
 
@@ -180,6 +208,18 @@ partial class FastCompiler
         bool forceDynamicAssignment)
     {
         iterationValueVariable = YExpression.Variable(typeof(JSValue), "#forOfValue");
+
+        // A function call (or other invalid reference) used as the loop target is
+        // a runtime ReferenceError (AnnexB web-compat). Evaluate it for its side
+        // effects on each iteration, then throw, without coercing the iterated
+        // value. Mirrors VisitAssignmentExpression's handling of `f() = x`.
+        if (expression.Type == FastNodeType.CallExpression)
+        {
+            perIterationInits.Add(Visit(expression));
+            perIterationInits.Add(YExpression.Call(null, ThrowInvalidAssignmentReferenceMethod));
+            return iterationValueVariable;
+        }
+
         CreateAssignment(
             perIterationInits,
             expression.ToPattern(),

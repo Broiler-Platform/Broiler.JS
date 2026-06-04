@@ -35,8 +35,14 @@ partial class FastCompiler
             var hoisted = hoistingScope.GetFastEnumerator();
             while (hoisted.MoveNext(out var name))
             {
-                var variable = switchLexicalScope.CreateVariable(name, null, true, initialize: lexicalBindings.Contains(name.Value) == false);
-                variable.IsLexical = true;
+                // Only genuine let/const/class names are lexical bindings of the
+                // CaseBlock. An Annex B case-body FunctionDeclaration is var-like
+                // (it hoists to the enclosing function/program scope), so marking
+                // it lexical would wrongly make it block its own Annex B hoisting
+                // via IsAnnexBHoistingBlocked.
+                var isLexical = lexicalBindings.Contains(name.Value);
+                var variable = switchLexicalScope.CreateVariable(name, null, true, initialize: isLexical == false);
+                variable.IsLexical = isLexical;
             }
         }
 
