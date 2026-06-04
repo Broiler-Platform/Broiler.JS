@@ -75,19 +75,39 @@ public class JSGeneratorFunctionV2 : JSFunction
             BasePrototypeObject = generatorPrototype.GetPrototypeOf()
         };
 
-        CopyGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.next);
-        CopyGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.GetOrCreate("return"));
-        CopyGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.GetOrCreate("throw"));
+        AddAsyncGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.next, "next");
+        AddAsyncGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.GetOrCreate("return"), "return");
+        AddAsyncGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.GetOrCreate("throw"), "throw");
 
         asyncGeneratorPrototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("AsyncGenerator"), JSPropertyAttributes.ConfigurableReadonlyValue);
         return cache.AsyncGeneratorPrototype = asyncGeneratorPrototype;
     }
 
-    private static void CopyGeneratorMethod(JSObject source, JSObject target, KeyString key)
+    /// <summary>
+    /// Adds an %AsyncGeneratorPrototype% method (next/return/throw) that always
+    /// returns a promise.  Per §27.6.1.2-4, AsyncGeneratorValidate runs *after*
+    /// the promise capability is created, so a receiver that is not an async
+    /// generator must produce a rejected promise rather than a synchronous throw.
+    /// When the receiver is a genuine async generator we delegate to the shared
+    /// %GeneratorPrototype% method (JSGenerator already wraps its result in a
+    /// promise for async generators).
+    /// </summary>
+    private static void AddAsyncGeneratorMethod(JSObject source, JSObject target, KeyString key, string name)
     {
-        var value = source[key];
-        if (!value.IsUndefined)
-            target.FastAddValue(key, value, JSPropertyAttributes.ConfigurableValue);
+        if (source[key] is not JSFunction inner)
+            return;
+
+        JSValue Method(in Arguments a)
+        {
+            if (a.This is Generator.JSGenerator generator && generator.IsAsyncGenerator)
+                return inner.InvokeFunction(in a);
+
+            var error = Engine.Core.JSEngine.NewTypeError(
+                $"AsyncGenerator.prototype.{name} called on incompatible receiver");
+            return Engine.Core.JSEngine.CreateResolvedOrRejectedPromise(JSException.ErrorFrom(error), false);
+        }
+
+        target.FastAddValue(key, JSValue.CreateFunction(Method, name, null, 1, createPrototype: false), JSPropertyAttributes.ConfigurableValue);
     }
 
     private static JSObject GetGeneratorFunctionPrototype(bool asyncGenerator)

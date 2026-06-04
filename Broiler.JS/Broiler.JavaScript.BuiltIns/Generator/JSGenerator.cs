@@ -275,7 +275,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
             ? new ElementEnumerator(this)
             : base.GetAsyncIterableEnumerator();
 
-    private bool IsAsyncGenerator => cg?.IsAsyncGenerator == true;
+    internal bool IsAsyncGenerator => cg?.IsAsyncGenerator == true;
 
     private JSValue AsAsyncIteratorResult(Func<JSValue> operation)
     {
