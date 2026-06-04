@@ -449,9 +449,13 @@ public static class JSIntl
         return constructor;
     }
 
-    internal static JSObject ValidateConstructorArguments(string name, in Arguments a)
+    internal static JSObject ValidateConstructorArguments(string name, in Arguments a, bool requireNew = true)
     {
-        if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
+        // Intl.NumberFormat, Intl.DateTimeFormat and Intl.Collator are legacy
+        // constructors (ECMA-402): they may be called as ordinary functions
+        // without `new`, in which case they still construct and return an
+        // instance. The remaining Intl constructors require `new`.
+        if (requireNew && JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
             throw JSEngine.NewTypeError($"Intl.{name} requires 'new'");
 
         ValidateLocalesArgument(a.Get1());
@@ -1537,7 +1541,7 @@ public class JSIntlNumberFormat : JSObject
 
     public JSIntlNumberFormat(in Arguments a) : this()
     {
-        options = JSIntl.ValidateConstructorArguments("NumberFormat", in a);
+        options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, requireNew: false);
         JSIntl.ValidateNumberFormatOptions(options);
         locale = JSIntl.ResolveLocale(a.Get1());
     }
@@ -1694,7 +1698,7 @@ public class JSIntlCollator : JSObject
 
     public JSIntlCollator(in Arguments a) : this()
     {
-        var options = JSIntl.ValidateConstructorArguments("Collator", in a);
+        var options = JSIntl.ValidateConstructorArguments("Collator", in a, requireNew: false);
         locale = JSIntl.ResolveLocale(a.Get1());
         compareInfo = CultureInfo.CurrentCulture.CompareInfo;
 
@@ -1977,7 +1981,7 @@ public class JSIntlDateTimeFormat : JSObject
 
     public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())
     {
-        options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a);
+        options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a, requireNew: false);
         JSIntl.ValidateDateTimeFormatOptions(options);
         localeTag = JSIntl.ResolveLocale(a.Get1());
         locale = CultureInfo.CurrentCulture;
