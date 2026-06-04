@@ -51,12 +51,6 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     internal bool HasLegacyCallerArguments;
 
     private static readonly KeyString LegacyCallerKey = KeyStrings.GetOrCreate("caller");
-    private static JSFunction legacyCallerPoison;
-
-    private static JSFunction LegacyCallerPoison
-        => legacyCallerPoison ??= CreateFrozenThrowTypeErrorFunction(
-            "caller",
-            "Cannot access caller in strict mode");
 
     public static JSValue CaptureWithScopes(JSValue functionValue)
     {
@@ -83,24 +77,22 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     /// <summary>
     /// Updates the legacy <c>caller</c> own property to reflect the function
-    /// that invoked this one. Non-strict callers are exposed as a data value,
-    /// strict-mode callers install the %ThrowTypeError% poison accessor so the
-    /// property throws on access, and native or absent callers expose
-    /// <c>null</c>.
+    /// that invoked this one. Non-strict ordinary callers are exposed as a data
+    /// value; strict-mode, native, or absent callers expose <c>null</c>.
     /// </summary>
+    /// <remarks>
+    /// Per the Annex B.2 forbidden extension, the value observed through
+    /// <c>[[Get]]</c>/<c>[[GetOwnProperty]]</c> must never be a strict function.
+    /// A strict caller is therefore reported as <c>null</c> rather than via a
+    /// throwing %ThrowTypeError% accessor: test262's
+    /// <c>forbidden-ext/b2/*-indirect-access-prop-caller</c> tests read the
+    /// property directly and require that the access does not throw.
+    /// </remarks>
     private void SetLegacyCaller(JSValue callerFunction)
     {
-        if (callerFunction is JSFunction callerFn && callerFn.IsStrictMode)
-        {
-            FastAddProperty(
-                LegacyCallerKey,
-                LegacyCallerPoison,
-                LegacyCallerPoison,
-                JSPropertyAttributes.ConfigurableProperty);
-            return;
-        }
-
-        var value = callerFunction is JSFunction ordinary && ordinary.IsOrdinaryUserFunction
+        var value = callerFunction is JSFunction ordinary
+            && ordinary.IsOrdinaryUserFunction
+            && !ordinary.IsStrictMode
             ? callerFunction
             : JSValue.NullValue;
 

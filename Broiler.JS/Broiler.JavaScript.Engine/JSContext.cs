@@ -532,12 +532,14 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 throw JSEngine.NewTypeError($"Cannot define global function {name}");
 
             FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            SyncGlobalVariable(name, value);
             return value;
         }
 
         if (property.IsConfigurable)
         {
             FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            SyncGlobalVariable(name, value);
             return value;
         }
 
@@ -548,6 +550,17 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         }
 
         throw JSEngine.NewTypeError($"Cannot define global function {name}");
+    }
+
+    // Keep any registered global variable slot in sync with the global-object
+    // property so identifier resolution (which consults globalVars first) does
+    // not observe a stale binding when a global function declaration replaces an
+    // earlier hoisted instance. Mirrors the indexer setter and
+    // SetOwnPropertyValue behaviour.
+    private void SyncGlobalVariable(in KeyString name, JSValue value)
+    {
+        if (globalVars.TryGetValue(name.Key, out var jsv))
+            jsv.Value = value;
     }
 
     internal JSVariable RegisterDirectEvalVariable(JSVariable variable)

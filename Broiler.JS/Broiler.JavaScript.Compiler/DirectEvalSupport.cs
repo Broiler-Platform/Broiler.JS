@@ -81,7 +81,7 @@ public static class DirectEvalSupport
         }
     }
 
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false)
     {
         if (!IsDirectEval(callee))
             return callee.InvokeFunction(arguments);
@@ -98,7 +98,7 @@ public static class DirectEvalSupport
         if (inheritStrictMode)
             text = "\"use strict\";\n" + text;
 
-        Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall);
+        Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall, rejectArguments: inFieldInitializer);
         var declaredBindings = disallowArgumentsDeclaration ? CollectProgramDeclaredBindings(text) : null;
 
         if (JSEngine.Current is JSContext context)
@@ -146,10 +146,24 @@ public static class DirectEvalSupport
     }
 
 
-    private static void ValidateDirectEvalSuperUsage(AstProgram program, bool allowSuperProperty, bool allowSuperCall)
-        => new DirectEvalSuperValidator(allowSuperProperty, allowSuperCall).Visit(program);
+    private static void ValidateDirectEvalEarlyErrors(AstProgram program, bool allowSuperProperty, bool allowSuperCall, bool rejectArguments, bool rejectNewTarget)
+        => new DirectEvalEarlyErrorValidator(allowSuperProperty, allowSuperCall, rejectArguments, rejectNewTarget).Visit(program);
 
-    private sealed class DirectEvalSuperValidator(bool allowSuperProperty, bool allowSuperCall) : AstReduce
+    /// <summary>
+    /// Enforces the PerformEval early-error rules that depend on the syntactic
+    /// position of the eval call. Recursion stops at non-arrow function
+    /// boundaries (only arrow bodies are descended into) so that, like the spec
+    /// productions Contains SuperCall / ContainsArguments / new.target, the
+    /// checks apply to the eval's own statement list and any nested arrows but
+    /// not to nested ordinary functions, which establish their own bindings.
+    /// </summary>
+    /// <remarks>
+    /// <paramref name="rejectArguments"/> implements "Syntax Error if
+    /// ContainsArguments" for a direct eval inside a class field initializer.
+    /// <paramref name="rejectNewTarget"/> rejects <c>new.target</c> appearing at
+    /// the top level of an indirect eval (global code), where it is not allowed.
+    /// </remarks>
+    private sealed class DirectEvalEarlyErrorValidator(bool allowSuperProperty, bool allowSuperCall, bool rejectArguments, bool rejectNewTarget) : AstReduce
     {
         protected override AstNode VisitCallExpression(AstCallExpression callExpression)
         {
@@ -178,7 +192,34 @@ public static class DirectEvalSupport
                 return memberExpression;
             }
 
-            return base.VisitMemberExpression(memberExpression);
+            // Only a computed property is an expression position; a static
+            // property name such as `obj.arguments` is not an IdentifierReference
+            // and must not be treated as one by the ContainsArguments check.
+            Visit(memberExpression.Object);
+            if (memberExpression.Computed)
+                Visit(memberExpression.Property);
+
+            return memberExpression;
+        }
+
+        protected override AstNode VisitIdentifier(AstIdentifier identifier)
+        {
+            if (rejectArguments && identifier.Name.Equals("arguments"))
+                throw new FastParseException(identifier.Start, "Unexpected arguments in eval code inside a class field initializer");
+
+            return identifier;
+        }
+
+        protected override AstNode VisitMeta(AstMeta astMeta)
+        {
+            if (rejectNewTarget
+                && astMeta.Identifier.Name.Equals("new")
+                && astMeta.Property.Name.Equals("target"))
+            {
+                throw new FastParseException(astMeta.Start, "Unexpected new.target in eval code");
+            }
+
+            return astMeta;
         }
 
         protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
@@ -308,9 +349,9 @@ public static class DirectEvalSupport
     }
 
     public static void ValidateIndirectEval(string text)
-        => Validate(text, false, false, null, null, null, false, false);
+        => Validate(text, false, false, null, null, null, false, false, rejectNewTarget: true);
 
-    private static void Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall)
+    private static void Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool rejectArguments = false, bool rejectNewTarget = false)
     {
         if (inheritStrictMode && ContainsStrictReservedWordUsage(text))
             throw JSEngine.NewSyntaxError("Unexpected strict mode reserved word");
@@ -320,7 +361,7 @@ public static class DirectEvalSupport
             var pool = new FastPool();
             var parser = new FastParser(new FastTokenStream(pool, text));
             var program = parser.ParseProgram();
-            ValidateDirectEvalSuperUsage(program, allowSuperProperty, allowSuperCall);
+            ValidateDirectEvalEarlyErrors(program, allowSuperProperty, allowSuperCall, rejectArguments, rejectNewTarget);
             SyntaxValidation.ValidateProgram(program, text, inheritStrictMode, lexicalBindings, privateNamesInScope);
             if (parameterBindings?.Length > 0
                 && SyntaxValidation.ContainsDirectEvalVarConflict(program.Statements, parameterBindings))
