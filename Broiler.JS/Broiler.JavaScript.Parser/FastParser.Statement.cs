@@ -82,7 +82,21 @@ partial class FastParser
             }
         }
 
-        return Statement(out node);
+        // Annex B.3.4: a FunctionDeclaration used as the sole statement of an
+        // `if` clause behaves as if wrapped in its own block, so its name must
+        // not form a lexical binding in (or conflict with one in) the enclosing
+        // block/switch. The compiler handles it via VisitRuntimeFunctionDeclaration;
+        // here we only suppress the enclosing-scope lexical registration.
+        var wasNestedFunctionClause = nestedFunctionClause;
+        nestedFunctionClause = stream.Current.Keyword == FastKeywords.function;
+        try
+        {
+            return Statement(out node);
+        }
+        finally
+        {
+            nestedFunctionClause = wasNestedFunctionClause;
+        }
     }
 
     // True when the upcoming `function` declaration's name matches a formal

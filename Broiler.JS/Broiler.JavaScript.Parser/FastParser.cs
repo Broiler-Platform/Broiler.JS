@@ -20,6 +20,12 @@ public partial class FastParser(FastTokenStream stream) : IParser
     private bool inAsyncFunctionBody = false;
     private int functionDepth = 0;
 
+    // Set while parsing a FunctionDeclaration that is the sole statement of an
+    // `if` clause (Annex B.3.4). Such a declaration is scoped to its own implicit
+    // block, so its name must not register a lexical binding in — or conflict
+    // with one in — the enclosing block/switch scope.
+    private bool nestedFunctionClause = false;
+
     public StreamLocation BeginUndo() => new(this, stream.Current);
 
     public StreamLocation Location

@@ -50,7 +50,9 @@ partial class FastCompiler
                         return JSValueBuilder.Index(target, super, VisitLiteral(l), memberExpression.Coalesce);
 
                     default:
-                        throw new NotImplementedException();
+                        // null / bigint / regexp / template literal key: evaluate
+                        // the literal and coerce it to a property key at runtime.
+                        return JSValueBuilder.Index(target, super, VisitLiteral(l), memberExpression.Coalesce);
                 }
 
             case FastNodeType.MemberExpression:

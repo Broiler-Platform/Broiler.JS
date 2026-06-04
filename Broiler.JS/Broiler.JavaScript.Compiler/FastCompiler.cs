@@ -415,15 +415,19 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
     private bool IsAnnexBHoistingBlocked(in StringSpan name)
     {
-        // Per B.3.3.3 step ii and B.3.5: Annex B var-hoisting is blocked when
-        // a lexical binding with the same name exists in an enclosing scope
-        // (e.g. a destructured CatchParameter or a let/const/class binding).
-        var parent = scope.Top.Parent;
-        while (parent != null && parent.Function == scope.Top.Function)
+        // Per B.3.3.3 step ii and B.3.5: Annex B var-hoisting is blocked when a
+        // lexical binding with the same name exists in the current or an enclosing
+        // scope (e.g. a destructured CatchParameter or a let/const/class binding).
+        // The current scope is included so that, for an `if`-clause function whose
+        // implicit block sits inside a switch/block CaseBlock, a sibling `let`/
+        // `const` of the same name in that CaseBlock blocks the hoist. A function's
+        // own (non-lexical) binding never blocks itself.
+        var current = scope.Top;
+        while (current != null && current.Function == scope.Top.Function)
         {
-            if (parent.TryGetOwnVariable(name, out var variable) && variable.IsLexical && !variable.IsSimpleCatchBinding)
+            if (current.TryGetOwnVariable(name, out var variable) && variable.IsLexical && !variable.IsSimpleCatchBinding)
                 return true;
-            parent = parent.Parent;
+            current = current.Parent;
         }
         return false;
     }
