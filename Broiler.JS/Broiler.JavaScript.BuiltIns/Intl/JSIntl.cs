@@ -143,7 +143,32 @@ public static class JSIntl
     }
 
     private static JSFunction CreateSupportedLocalesOfFunction()
-        => new(static (in Arguments a) => CanonicalizeLocaleList(a.Get1()), "supportedLocalesOf", "function supportedLocalesOf() { [native code] }", length: 1, createPrototype: false);
+        => new(static (in Arguments a) =>
+        {
+            // SupportedLocales: canonicalize the requested locales, then coerce the
+            // options argument and validate the localeMatcher option (RangeError on
+            // an invalid value). Every requested locale is treated as supported.
+            var result = CanonicalizeLocaleList(a.Get1());
+            var options = CoerceOptionsToObject(a.GetAt(1));
+            _ = GetOption(options, LocaleMatcherKey, ["lookup", "best fit"], false, "best fit");
+            return result;
+        }, "supportedLocalesOf", "function supportedLocalesOf() { [native code] }", length: 1, createPrototype: false);
+
+    private static JSObject CoerceOptionsToObject(JSValue options)
+    {
+        if (options.IsUndefined)
+            return null;
+
+        if (options is JSObject optionsObject)
+            return optionsObject;
+
+        if (options.IsNull)
+            throw JSEngine.NewTypeError("Cannot convert null to object");
+
+        // A coerced primitive wrapper has no own option properties, so GetOption
+        // observes only the defaults — represented here by a null options object.
+        return null;
+    }
 
     private static JSFunction CreateGetCanonicalLocalesFunction()
         => new(static (in Arguments a) => CanonicalizeLocaleList(a.Get1()),
@@ -177,8 +202,11 @@ public static class JSIntl
     {
         var constructor = new JSFunction(static (in Arguments a) =>
         {
-            ValidateConstructorArguments("ListFormat", in a);
-            return new JSIntlListFormat();
+            var options = ValidateConstructorArguments("ListFormat", in a);
+            var locale = ResolveLocale(a.Get1());
+            var type = GetOption(options, TypeKey, ["conjunction", "disjunction", "unit"], false, "conjunction");
+            var style = GetOption(options, StyleKey, ["long", "short", "narrow"], false, "long");
+            return new JSIntlListFormat(locale, type, style);
         }, "ListFormat", "function ListFormat() { [native code] }", length: 0);
         constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(FormatKey,
@@ -263,8 +291,9 @@ public static class JSIntl
         {
             var options = ValidateConstructorArguments("Segmenter", in a);
             _ = GetOption(options, LocaleMatcherKey, ["lookup", "best fit"], false, "best fit");
+            var locale = ResolveLocale(a.Get1());
             var granularity = GetOption(options, GranularityKey, ["grapheme", "word", "sentence"], false, "grapheme");
-            return new JSIntlSegmenter(granularity);
+            return new JSIntlSegmenter(locale, granularity);
         }, "Segmenter", "function Segmenter() { [native code] }", length: 0);
         constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
@@ -354,9 +383,7 @@ public static class JSIntl
             "NumberFormat",
             "function NumberFormat() { [native code] }",
             length: 0);
-        constructor.FastAddValue(SupportedLocalesOfKey,
-            new JSFunction(static (in Arguments a) => a.Get1().IsNullOrUndefined ? JSValue.CreateArray() : a.Get1(), "supportedLocalesOf", "function supportedLocalesOf() { [native code] }", createPrototype: false, length: 1),
-            JSPropertyAttributes.ConfigurableValue);
+        constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
             new JSFunction(JSIntlNumberFormat.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
             JSPropertyAttributes.ConfigurableValue);
@@ -740,6 +767,10 @@ public class JSIntlRelativeTimeFormat : JSObject
         return JSValue.CreateArray();
     }
 
+    private readonly string locale;
+    private readonly string style;
+    private readonly string numeric;
+
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlRelativeTimeFormat @this)
@@ -747,18 +778,20 @@ public class JSIntlRelativeTimeFormat : JSObject
 
         var result = new JSObject();
         result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
-        result[KeyStrings.GetOrCreate("style")] = JSValue.CreateString("long");
-        result[KeyStrings.GetOrCreate("numeric")] = JSValue.CreateString("always");
+        result[KeyStrings.GetOrCreate("style")] = JSValue.CreateString(@this.style);
+        result[KeyStrings.GetOrCreate("numeric")] = JSValue.CreateString(@this.numeric);
         result[KeyStrings.GetOrCreate("numberingSystem")] = JSValue.CreateString("latn");
         return result;
     }
 
-    private readonly string locale;
-
     public JSIntlRelativeTimeFormat(in Arguments a) : this()
     {
-        JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a);
+        var options = JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a);
         locale = JSIntl.ResolveLocale(a.Get1());
+        var styleKey = KeyStrings.GetOrCreate("style");
+        var numericKey = KeyStrings.GetOrCreate("numeric");
+        style = options is null || options[styleKey].IsUndefined ? "long" : options[styleKey].StringValue;
+        numeric = options is null || options[numericKey].IsUndefined ? "always" : options[numericKey].StringValue;
     }
 
     private JSIntlRelativeTimeFormat() : base(CurrentPrototype("RelativeTimeFormat")) { }
@@ -771,16 +804,25 @@ public class JSIntlRelativeTimeFormat : JSObject
 
 public sealed class JSIntlSegmenter : JSObject
 {
+    private readonly string locale;
+
     internal string Granularity { get; }
 
-    public JSIntlSegmenter(string granularity = "grapheme") : base(CurrentPrototype()) => Granularity = granularity;
+    public JSIntlSegmenter(string locale = "en-US", string granularity = "grapheme") : base(CurrentPrototype())
+    {
+        this.locale = locale;
+        Granularity = granularity;
+    }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlSegmenter)
+        if (a.This is not JSIntlSegmenter @this)
             throw JSEngine.NewTypeError("Intl.Segmenter.prototype.resolvedOptions called on incompatible receiver");
 
-        return new JSObject();
+        var result = new JSObject();
+        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
+        result[KeyStrings.GetOrCreate("granularity")] = JSValue.CreateString(@this.Granularity);
+        return result;
     }
 
     public static JSValue SegmentPrototype(in Arguments a)
@@ -1065,6 +1107,17 @@ public sealed class JSIntlDurationFormat(JSObject _ = null) : JSObject
 
 public sealed class JSIntlListFormat : JSObject
 {
+    private readonly string locale;
+    private readonly string type;
+    private readonly string style;
+
+    public JSIntlListFormat(string locale = "en-US", string type = "conjunction", string style = "long")
+    {
+        this.locale = locale;
+        this.type = type;
+        this.style = style;
+    }
+
     public static JSValue FormatPrototype(in Arguments a)
     {
         if (a.This is not JSIntlListFormat)
@@ -1083,10 +1136,14 @@ public sealed class JSIntlListFormat : JSObject
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlListFormat)
+        if (a.This is not JSIntlListFormat @this)
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.resolvedOptions called on incompatible receiver");
 
-        return new JSObject();
+        var result = new JSObject();
+        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
+        result[KeyStrings.GetOrCreate("type")] = JSValue.CreateString(@this.type);
+        result[KeyStrings.GetOrCreate("style")] = JSValue.CreateString(@this.style);
+        return result;
     }
 }
 
