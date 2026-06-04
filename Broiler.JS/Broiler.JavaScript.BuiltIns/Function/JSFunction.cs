@@ -20,6 +20,31 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     [EditorBrowsable(EditorBrowsableState.Never)]
     public JSObject prototype;
 
+    /// <summary>
+    /// True once this function has been observed to carry a constructor's
+    /// <c>prototype</c> object. A function's [[Construct]] capability is fixed at
+    /// creation, so assigning a non-object value to the observable
+    /// <c>prototype</c> property (which nulls the <see cref="prototype"/> field)
+    /// must not demote it from being a constructor. <see cref="JSConstructorOperations"/>
+    /// consults this so <c>Reflect.construct(target, args, newTarget)</c> keeps
+    /// accepting a <c>newTarget</c> whose <c>prototype</c> was set to a non-object.
+    /// </summary>
+    internal bool IsConstructable;
+
+    /// <summary>
+    /// Updates the cached <see cref="prototype"/> field for a write to the
+    /// observable <c>prototype</c> property. If the function currently has a
+    /// prototype object it is, by construction, a constructor; record that before
+    /// the field is potentially cleared so constructorness survives the write.
+    /// </summary>
+    private void AssignPrototypeField(JSValue value)
+    {
+        if (prototype != null)
+            IsConstructable = true;
+
+        prototype = value as JSObject;
+    }
+
     private StringSpan source;
 
     internal JSFunction constructor;
@@ -253,7 +278,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         set
         {
             if (name.Key == KeyStrings.prototype.Key)
-                prototype = value as JSObject;
+                AssignPrototypeField(value);
 
             base[name] = value;
         }
@@ -290,7 +315,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             {
                 var inheritedResult = functionPrototype.SetValue(name, value, receiver ?? this, throwError);
                 if (inheritedResult && name.Key == KeyStrings.prototype.Key && ReferenceEquals(receiver as JSObject ?? this, this))
-                    prototype = value as JSObject;
+                    AssignPrototypeField(value);
 
                 return inheritedResult;
             }
@@ -298,7 +323,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
         var result = base.SetValue(name, value, receiver, throwError);
         if (result && name.Key == KeyStrings.prototype.Key && ReferenceEquals(receiver as JSObject ?? this, this))
-            prototype = value as JSObject;
+            AssignPrototypeField(value);
 
         return result;
     }
@@ -310,7 +335,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             && name.Key == KeyStrings.prototype.Key
             && pd.HasProperty(KeyStrings.value.ToJSValue()).BooleanValue)
         {
-            prototype = pd[KeyStrings.value] as JSObject;
+            AssignPrototypeField(pd[KeyStrings.value]);
         }
 
         return result;

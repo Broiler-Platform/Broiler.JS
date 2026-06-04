@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Generator;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -139,18 +140,23 @@ partial class JSTypedArray
     [JSExport("toSorted", Length = 1)]
     public JSValue ToSorted(in Arguments a)
     {
-        var values = new List<JSValue>();
-        var en = GetElementEnumerator();
-        while (en.MoveNext(out var hasValue, out var item, out var _))
-        {
-            if (hasValue)
-                values.Add(item);
-        }
+        var fx = a.Get1();
+        if (!fx.IsUndefined && !fx.IsFunction)
+            throw JSEngine.NewTypeError($"Argument is not a function");
 
-        values.Sort((left, right) => left.DoubleValue.CompareTo(right.DoubleValue));
-        var result = new JSArray();
-        foreach (var value in values)
-            result.Add(value);
+        var cx = BuildSortComparison(fx);
+
+        var len = Length;
+        var values = new List<JSValue>(len);
+        for (int i = 0; i < len; i++)
+            values.Add(this[(uint)i]);
+
+        values.Sort(cx);
+
+        // toSorted returns a new typed array of the same type, leaving this intact.
+        var result = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), len);
+        for (int i = 0; i < len; i++)
+            result[(uint)i] = values[i];
         return result;
     }
 
@@ -557,6 +563,46 @@ partial class JSTypedArray
         return JSBoolean.False;
     }
 
+    // SortCompare for %TypedArray%.prototype.sort with no comparefn: BigInt
+    // element arrays compare as BigInt (their elements have no Number value), all
+    // other arrays compare as Number with the spec's NaN-last / -0-before-+0 order.
+    private static int DefaultSortCompare(JSValue l, JSValue r)
+    {
+        if (l.IsBigInt || r.IsBigInt)
+            return l.AsBigIntegerOnly().CompareTo(r.AsBigIntegerOnly());
+
+        var x = l.DoubleValue;
+        var y = r.DoubleValue;
+        if (x < y)
+            return -1;
+        if (x > y)
+            return 1;
+        if (double.IsNaN(x))
+            return double.IsNaN(y) ? 0 : 1;
+        if (double.IsNaN(y))
+            return -1;
+        if (JSNumber.IsNegativeZero(x) && JSNumber.IsPositiveZero(y))
+            return -1;
+        if (JSNumber.IsPositiveZero(x) && JSNumber.IsNegativeZero(y))
+            return 1;
+        return 0;
+    }
+
+    // Builds the comparison used by sort/toSorted. A user comparefn is consulted
+    // through its sign only (ToNumber of the result, NaN treated as +0) so a
+    // fractional or BigInt-array result still orders correctly.
+    private Comparison<JSValue> BuildSortComparison(JSValue fx)
+    {
+        if (fx.IsUndefined)
+            return DefaultSortCompare;
+
+        return (l, r) =>
+        {
+            var v = fx.InvokeFunction(new Arguments(this, l, r)).DoubleValue;
+            return double.IsNaN(v) ? 0 : Math.Sign(v);
+        };
+    }
+
     [JSExport("sort", Length = 1)]
     public JSValue Sort(in Arguments a)
     {
@@ -564,51 +610,20 @@ partial class JSTypedArray
         if (!fx.IsUndefined && !fx.IsFunction)
             throw JSEngine.NewTypeError($"Argument is not a function");
 
-        Comparison<JSValue> cx = null;
-        if (!fx.IsUndefined)
-        {
-            cx = (l, r) =>
-            {
-                return (int)fx.InvokeFunction(new Arguments(this, l, r)).DoubleValue;
-            };
-        }
-        else
-        {
-            cx = (l, r) =>
-            {
-                var x = l.DoubleValue;
-                var y = r.DoubleValue;
-                if (x < y)
-                    return -1;
-                if (x > y)
-                    return 1;
-                if (double.IsNaN(x) && double.IsNaN(y))
-                    return 0;
-                if (double.IsNaN(x))
-                    return 1;
-                if (double.IsNaN(y))
-                    return -1;
-                if (JSNumber.IsNegativeZero(x) && JSNumber.IsPositiveZero(y))
-                    return -1;
-                if (JSNumber.IsPositiveZero(x) && JSNumber.IsNegativeZero(y))
-                    return 1;
-                return 0;
-            };
-        }
+        var cx = BuildSortComparison(fx);
 
-        var list = new List<JSValue>();
-        var en = GetElementEnumerator();
-        while (en.MoveNext(out var hasValue, out var item, out var index))
-        {
-            if (hasValue)
-            {
-                list.Add(item);
-            }
-        }
+        var len = Length;
+        var list = new List<JSValue>(len);
+        for (int i = 0; i < len; i++)
+            list.Add(this[(uint)i]);
 
         list.Sort(cx);
 
-        return new JSArray(list);
+        // %TypedArray%.prototype.sort sorts in place and returns the same instance.
+        for (int i = 0; i < len; i++)
+            this[(uint)i] = list[i];
+
+        return this;
     }
 
     [JSExport("subarray", Length = 2)]
