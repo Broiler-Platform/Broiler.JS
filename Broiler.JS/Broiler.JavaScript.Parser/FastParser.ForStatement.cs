@@ -40,6 +40,11 @@ partial class FastParser
             var @in = false;
             var of = false;
 
+            // Line terminators are insignificant inside the for-head parens.
+            // Skip any that follow "(" so a declaration keyword starting on the
+            // next line (e.g. `for (\n let [x] in obj)`) is still recognised as
+            // a keyword rather than mis-parsed as an identifier expression.
+            stream.SkipNewLines();
             var current = stream.Current;
 
             if (current.IsKeyword)

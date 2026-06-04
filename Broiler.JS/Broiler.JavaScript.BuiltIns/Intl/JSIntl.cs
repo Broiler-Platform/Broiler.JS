@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.JavaScript.BuiltIns.Date;
 using Broiler.JavaScript.BuiltIns.Function;
@@ -260,8 +261,10 @@ public static class JSIntl
     {
         var constructor = new JSFunction((in Arguments a) =>
         {
-            ObserveOptions(ValidateConstructorArguments("Segmenter", in a), LocaleMatcherKey, GranularityKey);
-            return new JSIntlSegmenter();
+            var options = ValidateConstructorArguments("Segmenter", in a);
+            _ = GetOption(options, LocaleMatcherKey, ["lookup", "best fit"], false, "best fit");
+            var granularity = GetOption(options, GranularityKey, ["grapheme", "word", "sentence"], false, "grapheme");
+            return new JSIntlSegmenter(granularity);
         }, "Segmenter", "function Segmenter() { [native code] }", length: 0);
         constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
@@ -641,7 +644,9 @@ public static class JSIntl
 
     private static string GetOption(JSObject options, KeyString key, string[] allowedValues, bool required, string defaultValue = null)
     {
-        var value = options[key];
+        // A missing (undefined) options argument is normalized to null upstream;
+        // treat every option as absent so defaults/required handling still apply.
+        var value = options == null ? JSUndefined.Value : options[key];
         if (value.IsUndefined)
         {
             if (required)
@@ -758,7 +763,9 @@ public class JSIntlRelativeTimeFormat : JSObject
 
 public sealed class JSIntlSegmenter : JSObject
 {
-    public JSIntlSegmenter() : base(CurrentPrototype()) { }
+    internal string Granularity { get; }
+
+    public JSIntlSegmenter(string granularity = "grapheme") : base(CurrentPrototype()) => Granularity = granularity;
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
@@ -770,17 +777,233 @@ public sealed class JSIntlSegmenter : JSObject
 
     public static JSValue SegmentPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlSegmenter)
+        if (a.This is not JSIntlSegmenter segmenter)
             throw JSEngine.NewTypeError("Intl.Segmenter.prototype.segment called on incompatible receiver");
 
-        _ = a.Get1().StringValue;
-        return new JSObject();
+        var input = a.Get1().StringValue;
+        return new JSIntlSegments(input, segmenter.Granularity);
     }
 
     private static JSObject CurrentPrototype()
         => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
             ? (intl[KeyStrings.GetOrCreate("Segmenter")] as JSFunction)?.prototype
             : null;
+}
+
+/// <summary>
+/// The object returned by Intl.Segmenter.prototype.segment — a %Segments%
+/// instance. Exposes <c>containing(index)</c> and is iterable, yielding a
+/// Segment Data object per segment.
+///
+/// Grapheme segmentation uses the BCL Unicode text-element algorithm
+/// (UAX #29). Word segmentation uses a simplified rule set (runs of
+/// letters/digits form words; whitespace runs group; everything else breaks).
+/// Sentence segmentation treats the whole string as a single segment. These
+/// approximations are sufficient for the spec'd shape and the common cases
+/// exercised by the test suite without bundling a full ICU break engine.
+/// </summary>
+public sealed class JSIntlSegments : JSObject
+{
+    private static readonly KeyString SegmentKey = KeyStrings.GetOrCreate("segment");
+    private static readonly KeyString IndexKey = KeyStrings.GetOrCreate("index");
+    private static readonly KeyString InputKey = KeyStrings.GetOrCreate("input");
+    private static readonly KeyString IsWordLikeKey = KeyStrings.GetOrCreate("isWordLike");
+
+    private readonly string _input;
+    private readonly string _granularity;
+    private List<(int start, int length)> _segments;
+
+    public JSIntlSegments(string input, string granularity)
+    {
+        _input = input;
+        _granularity = granularity;
+        FastAddValue(
+            KeyStrings.GetOrCreate("containing"),
+            new JSFunction(ContainingPrototype, "containing", "function containing() { [native code] }", createPrototype: false, length: 1),
+            JSPropertyAttributes.ConfigurableValue);
+    }
+
+    private List<(int start, int length)> Segments => _segments ??= Compute(_input, _granularity);
+
+    public static JSValue ContainingPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlSegments segments)
+            throw JSEngine.NewTypeError("%Segments.prototype%.containing called on incompatible receiver");
+
+        // ToInteger(index): ToNumber then NaN/±0 → 0, otherwise truncate toward zero.
+        var number = a.Get1().DoubleValue;
+        var n = double.IsNaN(number) ? 0 : Math.Truncate(number);
+
+        if (n < 0 || n >= segments._input.Length)
+            return JSUndefined.Value;
+
+        var index = (int)n;
+        foreach (var (start, length) in segments.Segments)
+        {
+            if (index >= start && index < start + length)
+                return segments.CreateSegmentDataObject(start, length);
+        }
+
+        return JSUndefined.Value;
+    }
+
+    public override IElementEnumerator GetIterableEnumerator() => new SegmentEnumerator(this);
+
+    private JSObject CreateSegmentDataObject(int start, int length)
+    {
+        var result = new JSObject();
+        result.FastAddValue(SegmentKey, JSValue.CreateString(_input.Substring(start, length)), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(IndexKey, JSValue.CreateNumber(start), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(InputKey, JSValue.CreateString(_input), JSPropertyAttributes.EnumerableConfigurableValue);
+        if (_granularity == "word")
+        {
+            var isWordLike = IsWordLike(_input.Substring(start, length));
+            result.FastAddValue(IsWordLikeKey, isWordLike ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+        }
+
+        return result;
+    }
+
+    private static List<(int start, int length)> Compute(string input, string granularity) => granularity switch
+    {
+        "word" => ComputeWords(input),
+        "sentence" => ComputeSentences(input),
+        _ => ComputeGraphemes(input),
+    };
+
+    private static List<(int start, int length)> ComputeGraphemes(string input)
+    {
+        var list = new List<(int, int)>();
+        var e = StringInfo.GetTextElementEnumerator(input);
+        while (e.MoveNext())
+            list.Add((e.ElementIndex, ((string)e.Current).Length));
+
+        return list;
+    }
+
+    private static List<(int start, int length)> ComputeSentences(string input)
+    {
+        // Approximation: the whole string is a single sentence. Sufficient for
+        // the spec'd shape; full UAX #29 sentence breaking is not implemented.
+        var list = new List<(int, int)>();
+        if (input.Length > 0)
+            list.Add((0, input.Length));
+
+        return list;
+    }
+
+    private static List<(int start, int length)> ComputeWords(string input)
+    {
+        var graphemes = ComputeGraphemes(input);
+        var list = new List<(int, int)>();
+
+        var i = 0;
+        while (i < graphemes.Count)
+        {
+            var (start, length) = graphemes[i];
+            var category = WordCategory(input, start, length);
+
+            var j = i + 1;
+            while (j < graphemes.Count)
+            {
+                var (nextStart, nextLength) = graphemes[j];
+                if (!Joinable(category, WordCategory(input, nextStart, nextLength)))
+                    break;
+
+                length = nextStart + nextLength - start;
+                j++;
+            }
+
+            list.Add((start, length));
+            i = j;
+        }
+
+        return list;
+    }
+
+    private enum WordCat { Letter, Number, Space, Other }
+
+    private static WordCat WordCategory(string input, int start, int length)
+    {
+        foreach (var rune in input.Substring(start, length).EnumerateRunes())
+        {
+            if (Rune.IsLetter(rune))
+                return WordCat.Letter;
+            if (Rune.IsDigit(rune))
+                return WordCat.Number;
+            if (Rune.IsWhiteSpace(rune))
+                return WordCat.Space;
+            return WordCat.Other;
+        }
+
+        return WordCat.Other;
+    }
+
+    private static bool Joinable(WordCat a, WordCat b)
+    {
+        if (a == WordCat.Space && b == WordCat.Space)
+            return true;
+
+        var aWord = a is WordCat.Letter or WordCat.Number;
+        var bWord = b is WordCat.Letter or WordCat.Number;
+        return aWord && bWord;
+    }
+
+    private static bool IsWordLike(string segment)
+    {
+        foreach (var rune in segment.EnumerateRunes())
+        {
+            if (Rune.IsLetter(rune) || Rune.IsDigit(rune))
+                return true;
+        }
+
+        return false;
+    }
+
+    private sealed class SegmentEnumerator(JSIntlSegments segments) : IElementEnumerator
+    {
+        private int _position;
+
+        public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
+        {
+            if (MoveNext(out value))
+            {
+                hasValue = true;
+                index = (uint)(_position - 1);
+                return true;
+            }
+
+            hasValue = false;
+            index = 0;
+            return false;
+        }
+
+        public bool MoveNext(out JSValue value)
+        {
+            var all = segments.Segments;
+            if (_position < all.Count)
+            {
+                var (start, length) = all[_position++];
+                value = segments.CreateSegmentDataObject(start, length);
+                return true;
+            }
+
+            value = JSUndefined.Value;
+            return false;
+        }
+
+        public bool MoveNextOrDefault(out JSValue value, JSValue @default)
+        {
+            if (MoveNext(out value))
+                return true;
+
+            value = @default;
+            return false;
+        }
+
+        public JSValue NextOrDefault(JSValue @default)
+            => MoveNext(out var value) ? value : @default;
+    }
 }
 
 public sealed class JSIntlDurationFormat(JSObject _ = null) : JSObject
