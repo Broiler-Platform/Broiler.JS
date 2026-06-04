@@ -742,15 +742,23 @@ public class JSIntlRelativeTimeFormat : JSObject
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlRelativeTimeFormat)
+        if (a.This is not JSIntlRelativeTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.RelativeTimeFormat.prototype.resolvedOptions called on incompatible receiver");
 
-        return new JSObject();
+        var result = new JSObject();
+        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
+        result[KeyStrings.GetOrCreate("style")] = JSValue.CreateString("long");
+        result[KeyStrings.GetOrCreate("numeric")] = JSValue.CreateString("always");
+        result[KeyStrings.GetOrCreate("numberingSystem")] = JSValue.CreateString("latn");
+        return result;
     }
+
+    private readonly string locale;
 
     public JSIntlRelativeTimeFormat(in Arguments a) : this()
     {
         JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a);
+        locale = JSIntl.ResolveLocale(a.Get1());
     }
 
     private JSIntlRelativeTimeFormat() : base(CurrentPrototype("RelativeTimeFormat")) { }

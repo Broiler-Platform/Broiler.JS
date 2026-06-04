@@ -41,7 +41,32 @@ partial class FastParser
                 // Register the candidate before adding the block-scoped Let binding
                 // so the conflict check does not see this declaration's own name.
                 RegisterAnnexBFunctionHoisting(id.Name);
-                variableScope.Top.AddVariable(id.Start, id.Name, FastVariableKind.Let);
+
+                // Annex B.3.4: when this declaration is the sole statement of an
+                // `if` clause it is scoped to its own implicit block, so it forms
+                // no lexical binding in the enclosing block/switch (only the Annex B
+                // var-hoisting registered above). Skip the enclosing-scope binding
+                // entirely; the compiler materialises it via
+                // VisitRuntimeFunctionDeclaration. Capture and clear the flag before
+                // parsing the body so declarations nested inside it are unaffected.
+                var isIfClause = nestedFunctionClause;
+                nestedFunctionClause = false;
+
+                if (!isIfClause)
+                {
+                    // A FunctionDeclaration at the top level of a function body,
+                    // script, or eval body is var-scoped: it contributes to
+                    // VarDeclaredNames (not LexicallyDeclaredNames), so duplicate
+                    // function declarations and a same-named `var` are allowed (the
+                    // last declaration wins). Only a block/switch-nested declaration
+                    // is lexical and conflicts on redeclaration.
+                    var top = variableScope.Top;
+                    var kind = top.NodeType == FastNodeType.Block
+                        && (top.Parent == null || top.Parent.NodeType == FastNodeType.FunctionExpression)
+                        ? FastVariableKind.Var
+                        : FastVariableKind.Let;
+                    top.AddVariable(id.Start, id.Name, kind);
+                }
             }
         }
 
