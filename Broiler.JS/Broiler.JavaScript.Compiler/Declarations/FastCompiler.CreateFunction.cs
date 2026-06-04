@@ -287,7 +287,15 @@ partial class FastCompiler
 
             if (jsFVarScope != null)
             {
-                if (previousScope.Function == null)
+                // Only a function declaration at the TOP LEVEL of the program/eval
+                // body creates a global binding (GlobalDeclarationInstantiation /
+                // CreateGlobalFunctionBinding). A declaration nested inside a block
+                // is block-scoped: in sloppy mode its extra var-scoped binding is
+                // created via Annex B (AppendAnnexBOuterBindingAssignments); in
+                // strict mode it must not escape the block at all. The program body
+                // sits one level below RootScope, so "top level" is parent == root.
+                var isProgramTopLevel = previousScope.Parent == previousScope.RootScope;
+                if (previousScope.Function == null && isProgramTopLevel)
                     jsFVarScope.SetPostInit(JSContextBuilder.DeclareGlobalFunction(KeyOfName(functionName), jsf));
                 else
                     jsFVarScope.SetPostInit(jsf);

@@ -552,6 +552,32 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         throw JSEngine.NewTypeError($"Cannot define global function {name}");
     }
 
+    // Annex B block-level function hoisting at global scope (B.3.3.3) uses
+    // CreateGlobalVarBinding followed by SetMutableBinding, NOT
+    // CreateGlobalFunctionBinding. The difference matters when a property of this
+    // name already exists on the global object: CreateGlobalVarBinding does not
+    // redefine an existing property, so its descriptor (e.g. a non-enumerable
+    // binding) must be preserved and only its value updated. A fresh enumerable,
+    // configurable var binding is created only when no such property exists yet.
+    public JSValue DeclareGlobalAnnexBFunction(in KeyString name, JSValue value)
+    {
+        var property = GetInternalProperty(name, false);
+        if (property.IsEmpty)
+        {
+            if (!IsExtensible())
+                throw JSEngine.NewTypeError($"Cannot define global function {name}");
+
+            FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            SyncGlobalVariable(name, value);
+            return value;
+        }
+
+        // Existing property: SetMutableBinding semantics (non-strict Set) updates
+        // the value while leaving enumerable/configurable/writable untouched.
+        this[name] = value;
+        return value;
+    }
+
     // Keep any registered global variable slot in sync with the global-object
     // property so identifier resolution (which consults globalVars first) does
     // not observe a stale binding when a global function declaration replaces an
