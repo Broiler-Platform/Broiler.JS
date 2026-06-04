@@ -209,13 +209,16 @@ public partial class JSArray
         return true;
     }
 
-    private struct ArrayLikeEntryEnumerator(JSObject @object, uint length) : IElementEnumerator
+    private struct ArrayLikeEntryEnumerator(JSObject @object) : IElementEnumerator
     {
         private int index = -1;
 
         public bool MoveNext(out JSValue value)
         {
-            if (++index < length)
+            // Array iterators are live: per CreateArrayIterator the length is
+            // re-read on every step, so elements appended after the iterator is
+            // created (but before it is exhausted) remain reachable.
+            if (++index < GetArrayLikeLength(@object))
             {
                 var entry = JSValue.CreateArray();
                 entry.AddArrayItem(JSValue.CreateNumber(index));
@@ -283,8 +286,7 @@ public partial class JSArray
     public new static JSValue Entries(in Arguments a)
     {
         var array = ToArrayLikeObject(a.This);
-        var length = GetArrayLikeLength(array);
-        return new JSGenerator(new ArrayLikeEntryEnumerator(array, length), "Array Iterator");
+        return new JSGenerator(new ArrayLikeEntryEnumerator(array), "Array Iterator");
     }
 
     [JSPrototypeMethod]

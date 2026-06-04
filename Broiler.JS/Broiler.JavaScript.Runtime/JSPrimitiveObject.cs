@@ -84,6 +84,18 @@ public class JSPrimitiveObject : JSObject
         }
     }
 
+    public override JSValue GetValue(uint name, JSValue receiver, bool throwError = true)
+    {
+        // String exotic objects expose their characters as own index properties.
+        // The this[uint] indexer handles direct C# access, but generic value
+        // reads (e.g. Object.entries/values via the JSValue indexer) route
+        // through GetValue(uint, ...), so mirror the character lookup here.
+        if (value.IsString && name < value.Length)
+            return value[name];
+
+        return base.GetValue(name, receiver, throwError);
+    }
+
     public override bool SetValue(uint name, JSValue value, JSValue receiver, bool throwError = true)
     {
         if (this.value.IsString && name < this.value.Length)
@@ -162,11 +174,23 @@ public class JSPrimitiveObject : JSObject
 
         var keys = new List<JSValue>();
         var stringKeys = new IntKeyEnumerator(value.Length);
-        while (stringKeys.MoveNext(out var hasValue, out var key, out _))
+        while (stringKeys.MoveNext(out var hasValue, out _, out var index))
         {
+            // String exotic objects expose their index properties under String
+            // property keys ("0", "1", ...), matching the base element enumerator
+            // which stringifies indices. Emitting raw numbers here would make
+            // Object.keys/entries/getOwnPropertyNames return numeric keys.
             if (hasValue)
-                keys.Add(key);
+                keys.Add(JSValue.CreateString(index.ToString()));
         }
+
+        // String exotic objects also have a non-writable, non-enumerable,
+        // non-configurable own "length" property. It is synthesized by the
+        // GetValue/GetOwnPropertyDescriptor overrides rather than stored, so it
+        // must be surfaced here for Object.getOwnPropertyNames/Descriptors. It
+        // is omitted when only enumerable keys are requested (Object.keys etc.).
+        if (!showEnumerableOnly)
+            keys.Add(KeyStrings.length.ToJSValue());
 
         var ownKeys = base.GetAllKeys(showEnumerableOnly, inherited);
         while (ownKeys.MoveNext(out var hasValue, out var key, out _))
