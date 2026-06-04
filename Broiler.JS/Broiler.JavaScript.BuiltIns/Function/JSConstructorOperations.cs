@@ -9,7 +9,7 @@ internal static class JSConstructorOperations
     {
         JSFunction function when function.BoundTargetFunction is JSObject boundTarget && !function.BoundTargetFunction.IsUndefined
             => IsConstructor(boundTarget),
-        JSFunction function => function.prototype != null,
+        JSFunction function => function.prototype != null || function.IsConstructable,
         JSProxy proxy => proxy.IsConstructable,
         _ => false
     };
