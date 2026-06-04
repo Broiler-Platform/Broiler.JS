@@ -119,6 +119,31 @@ partial class FastCompiler
             }
         }
 
+        // Annex B 3.3.2 (sloppy mode): a block/if-clause-nested FunctionDeclaration
+        // also creates a var-scoped binding in the global var environment,
+        // initialized to `undefined` at GlobalDeclarationInstantiation time (so a
+        // read before the declaration resolves to `undefined`). The declaration
+        // site copies the function value out via AppendAnnexBOuterBindingAssignments.
+        // Direct/strict eval program scopes handle their own var environment, so
+        // skip them here.
+        if (!IsStrictMode && !isDirectEvalCompilation && program.AnnexBFunctionNames != null)
+        {
+            var top = this.scope.Top;
+            var annexBEn = program.AnnexBFunctionNames.GetFastEnumerator();
+            while (annexBEn.MoveNext(out var v))
+            {
+                if (lexicalBindings.Contains(v.Value) || scope.TryGetOwnVariable(v, out _))
+                    continue;
+
+                var g = JSValueBuilder.Index(top.Context, KeyOfName(v));
+                var vs = scope.CreateVariable(v, null, true);
+                vs.IsLexical = false;
+                scope.Parent?.AddExternalVariable(v, vs);
+                vs.Expression = JSVariableBuilder.Property(vs.Variable);
+                vs.SetInit(JSVariableBuilder.New(g, v.Value));
+            }
+        }
+
         var se = program.Statements.GetFastEnumerator();
         while (se.MoveNext(out var stmt))
         {
