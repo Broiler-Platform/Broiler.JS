@@ -1327,19 +1327,45 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static readonly Dictionary<string, string> GeneralCategoryNames = BuildGeneralCategoryNames();
 
     /// <summary>
-    /// Unicode script and string-property names that the spec requires in
-    /// <c>u</c>/<c>v</c> mode but which need a Unicode Character Database that is
-    /// not bundled yet. Seeing one of these produces a clear "not supported"
-    /// SyntaxError instead of .NET's cryptic "Unknown property" message.
+    /// Emoji string-property names (require the <c>v</c> flag; they match
+    /// multi-code-point sequences). These need an emoji-sequence database that is
+    /// not bundled yet, so they raise a clear "not supported" SyntaxError instead
+    /// of .NET's cryptic "Unknown property" message.
     /// </summary>
     private static readonly HashSet<string> UnsupportedUnicodePropertyNames = new(StringComparer.Ordinal)
     {
-        // Property names used with the `Name=Value` form.
-        "script", "sc", "script_extensions", "scx",
-        // String properties (require the `v` flag; match code-point sequences).
         "rgi_emoji", "rgi_emoji_flag_sequence", "rgi_emoji_modifier_sequence",
         "rgi_emoji_tag_sequence", "rgi_emoji_zwj_sequence", "basic_emoji",
         "emoji_keycap_sequence",
+    };
+
+    /// <summary>
+    /// Code-point ranges for the Unicode scripts we can expand to regex without a
+    /// full UCD. Keyed by normalized script name/alias. Not exhaustive — scripts
+    /// not present here raise a clear "not supported" SyntaxError. Ranges are an
+    /// approximation sufficient for common usage (notably the supplementary-plane
+    /// Han ideographs the test262 v/u-flag tests probe).
+    /// </summary>
+    private static readonly Dictionary<string, (int Lo, int Hi)[]> ScriptRanges = new(StringComparer.Ordinal)
+    {
+        ["han"] = new (int, int)[]
+        {
+            (0x2E80, 0x2E99), (0x2E9B, 0x2EF3), (0x2F00, 0x2FD5),
+            (0x3005, 0x3005), (0x3007, 0x3007), (0x3021, 0x3029), (0x3038, 0x303B),
+            (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
+            (0xF900, 0xFA6D), (0xFA70, 0xFAD9),
+            (0x20000, 0x2A6DF), (0x2A700, 0x2EBE0), (0x2F800, 0x2FA1D), (0x30000, 0x3134A),
+        },
+    };
+
+    /// <summary>
+    /// Code-point ranges for the Unicode binary properties we support directly.
+    /// Keyed by normalized property name.
+    /// </summary>
+    private static readonly Dictionary<string, (int Lo, int Hi)[]> BinaryPropertyRanges = new(StringComparer.Ordinal)
+    {
+        ["ascii"] = new (int, int)[] { (0x00, 0x7F) },
+        ["any"] = new (int, int)[] { (0x00, 0x10FFFF) },
     };
 
     private static Dictionary<string, string> BuildGeneralCategoryNames()
@@ -1426,6 +1452,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         var sb = new StringBuilder(pattern.Length);
         int i = 0;
+        bool inClass = false;
         while (i < pattern.Length)
         {
             var c = pattern[i];
@@ -1446,7 +1473,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     if (close > 0)
                     {
                         var inner = pattern.Substring(i + 3, close - (i + 3));
-                        var translated = TranslateUnicodeProperty(next == 'P', inner);
+                        var translated = TranslateUnicodeProperty(next == 'P', inner, inClass);
                         if (translated != null)
                         {
                             sb.Append(translated);
@@ -1464,6 +1491,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 continue;
             }
 
+            // Track character-class context (classes do not nest in JS).
+            if (c == '[' && !inClass)
+                inClass = true;
+            else if (c == ']' && inClass)
+                inClass = false;
+
             sb.Append(c);
             i++;
         }
@@ -1477,12 +1510,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// Throws a SyntaxError for property classes that are recognized but not
     /// yet supported.
     /// </summary>
-    private static string TranslateUnicodeProperty(bool negated, string inner)
+    private static string TranslateUnicodeProperty(bool negated, string inner, bool inClass)
     {
         var eq = inner.IndexOf('=');
         var prefix = negated ? "\\P" : "\\p";
 
-        string NormalizeKey(string s)
+        static string NormalizeKey(string s)
         {
             var sb = new StringBuilder(s.Length);
             foreach (var ch in s)
@@ -1499,19 +1532,27 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // `Name=Value` form. .NET rejects this syntax entirely today, so it is
             // always safe to handle here.
             var name = NormalizeKey(inner.Substring(0, eq));
-            var value = inner.Substring(eq + 1);
+            var value = NormalizeKey(inner.Substring(eq + 1));
 
             if (name is "gc" or "generalcategory")
             {
-                if (GeneralCategoryNames.TryGetValue(NormalizeKey(value), out var shortName))
+                if (GeneralCategoryNames.TryGetValue(value, out var shortName))
                     return $"{prefix}{{{shortName}}}";
 
-                throw JSEngine.NewSyntaxError($"Invalid property name in regular expression: '{value}'");
+                throw NewUnsupportedPropertyError(inner);
             }
 
-            if (UnsupportedUnicodePropertyNames.Contains(name))
-                throw JSEngine.NewSyntaxError(
-                    $"Unicode property escape '\\p{{{inner}}}' is not supported yet (requires Unicode script/sequence data)");
+            if (name is "sc" or "script" or "scx" or "scriptextensions")
+            {
+                if (ScriptRanges.TryGetValue(value, out var ranges))
+                {
+                    var expanded = ExpandCodePointProperty(ranges, negated, inClass);
+                    if (expanded != null)
+                        return expanded;
+                }
+
+                throw NewUnsupportedPropertyError(inner);
+            }
 
             // Unknown Name=Value — let .NET surface its own error.
             return null;
@@ -1523,13 +1564,140 @@ public partial class JSRegExp : JSObject, IJSRegExp
         if (GeneralCategoryNames.TryGetValue(lone, out var loneShort))
             return $"{prefix}{{{loneShort}}}";
 
+        if (BinaryPropertyRanges.TryGetValue(lone, out var binaryRanges))
+        {
+            var expanded = ExpandCodePointProperty(binaryRanges, negated, inClass);
+            if (expanded != null)
+                return expanded;
+            throw NewUnsupportedPropertyError(inner);
+        }
+
+        if (ScriptRanges.TryGetValue(lone, out var scriptRanges))
+        {
+            var expanded = ExpandCodePointProperty(scriptRanges, negated, inClass);
+            if (expanded != null)
+                return expanded;
+            throw NewUnsupportedPropertyError(inner);
+        }
+
         if (UnsupportedUnicodePropertyNames.Contains(lone))
-            throw JSEngine.NewSyntaxError(
-                $"Unicode property escape '\\p{{{inner}}}' is not supported yet (requires Unicode script/sequence data)");
+            throw NewUnsupportedPropertyError(inner);
 
         // Anything else (native short categories like \p{L}, named blocks like
         // \p{IsBasicLatin}, or unknown lone names) is left for .NET to handle.
         return null;
+    }
+
+    private static JSException NewUnsupportedPropertyError(string inner)
+        => JSEngine.NewSyntaxError(
+            $"Unicode property escape '\\p{{{inner}}}' is not supported yet (requires Unicode script/sequence data)");
+
+    /// <summary>
+    /// Builds the .NET regex text matching a single code point in <paramref name="ranges"/>.
+    /// Outside a character class this is a non-capturing group that handles both
+    /// BMP code points and supplementary code points (via surrogate pairs); for
+    /// <paramref name="negated"/> it matches one code point NOT in the set.
+    /// Inside a character class only BMP, non-negated ranges can be expressed as
+    /// raw class fragments; anything else returns <c>null</c> (caller errors).
+    /// </summary>
+    private static string ExpandCodePointProperty((int Lo, int Hi)[] ranges, bool negated, bool inClass)
+    {
+        if (inClass)
+        {
+            if (negated)
+                return null; // a negated class fragment cannot be nested inside [...]
+
+            var fragment = new StringBuilder();
+            foreach (var (lo, hi) in ranges)
+            {
+                if (hi > 0xFFFF)
+                    return null; // surrogate pairs cannot appear inside [...]
+                AppendClassRange(fragment, lo, hi);
+            }
+            return fragment.ToString();
+        }
+
+        var positive = BuildPositiveCodePointMatcher(ranges);
+        if (!negated)
+            return positive;
+
+        // Match one code point that is NOT in the set: reject the set, then consume
+        // a full code point (a surrogate pair or any single code unit).
+        return $"(?:(?!{positive})(?:[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\s\\S]))";
+    }
+
+    private static string BuildPositiveCodePointMatcher((int Lo, int Hi)[] ranges)
+    {
+        var bmp = new StringBuilder();
+        var supplementary = new List<string>();
+
+        foreach (var (lo, hi) in ranges)
+        {
+            if (lo <= 0xFFFF)
+            {
+                AppendClassRange(bmp, lo, System.Math.Min(hi, 0xFFFF));
+                if (hi <= 0xFFFF)
+                    continue;
+                AppendSupplementaryRange(supplementary, 0x10000, hi);
+            }
+            else
+            {
+                AppendSupplementaryRange(supplementary, lo, hi);
+            }
+        }
+
+        var sb = new StringBuilder("(?:");
+        var first = true;
+        if (bmp.Length > 0)
+        {
+            sb.Append('[').Append(bmp).Append(']');
+            first = false;
+        }
+        foreach (var alt in supplementary)
+        {
+            if (!first)
+                sb.Append('|');
+            sb.Append(alt);
+            first = false;
+        }
+        sb.Append(')');
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Decomposes a supplementary-plane code-point range [lo, hi] into UTF-16
+    /// surrogate-pair regex alternatives (.NET regex matches code units).
+    /// </summary>
+    private static void AppendSupplementaryRange(List<string> alts, int lo, int hi)
+    {
+        int highLo = 0xD800 + ((lo - 0x10000) >> 10);
+        int lowLo = 0xDC00 + ((lo - 0x10000) & 0x3FF);
+        int highHi = 0xD800 + ((hi - 0x10000) >> 10);
+        int lowHi = 0xDC00 + ((hi - 0x10000) & 0x3FF);
+
+        if (highLo == highHi)
+        {
+            alts.Add(Unit(highLo) + UnitRange(lowLo, lowHi));
+            return;
+        }
+
+        alts.Add(Unit(highLo) + UnitRange(lowLo, 0xDFFF));
+        if (highHi - highLo >= 2)
+            alts.Add(UnitRange(highLo + 1, highHi - 1) + UnitRange(0xDC00, 0xDFFF));
+        alts.Add(Unit(highHi) + UnitRange(0xDC00, lowHi));
+
+        static string Unit(int u) => $"\\u{u:X4}";
+        static string UnitRange(int lo, int hi) => lo == hi ? Unit(lo) : $"[{Unit(lo)}-{Unit(hi)}]";
+    }
+
+    private static void AppendClassRange(StringBuilder sb, int lo, int hi)
+    {
+        if (lo == hi)
+            sb.Append(EncodeBmpScalar(lo));
+        else
+            sb.Append(EncodeBmpScalar(lo)).Append('-').Append(EncodeBmpScalar(hi));
+
+        static string EncodeBmpScalar(int cp) => cp <= 0xFF ? $"\\x{cp:X2}" : $"\\u{cp:X4}";
     }
 
     private static string TransformES3Patterns(string pattern)
