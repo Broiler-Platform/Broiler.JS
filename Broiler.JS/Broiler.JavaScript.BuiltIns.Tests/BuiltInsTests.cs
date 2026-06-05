@@ -6977,13 +6977,18 @@ public class BuiltInsTests
         using var ctx = new JSContext();
         Assert.Throws<JSException>(() => ctx.Eval(@"/\p{Script=Tibetan}/u;"));
 
-        // RGI_Emoji must raise the clear "not supported" SyntaxError, not .NET's
-        // cryptic "Unknown property 'RGI_Emoji'" message. The lookup goes through
-        // NormalizeKey (strips '_'), so the unsupported-name set must match the
+        // RGI_Emoji is a property of strings (UTS #51): valid only with the `v` flag.
+        // Bare in `u` mode it must raise the clear "not supported" SyntaxError, not
+        // .NET's cryptic "Unknown property 'RGI_Emoji'" message. The lookup goes
+        // through NormalizeKey (strips '_'), so the name table must match the
         // normalized form (#648 problem 1).
-        var ex = Assert.Throws<JSException>(() => ctx.Eval(@"/\p{RGI_Emoji}/v;"));
+        var ex = Assert.Throws<JSException>(() => ctx.Eval(@"/\p{RGI_Emoji}/u;"));
         Assert.Contains("not supported", ex.Message);
         Assert.DoesNotContain("Unknown property", ex.Message);
+
+        // In `v` mode the same property is now supported: it expands to an
+        // alternation of the bundled RGI emoji sequences (#659 problems 1/2).
+        Assert.Equal("true", ctx.Eval(@"String(/^\p{RGI_Emoji}$/v.test('\u{1F600}'))").ToString());
     }
 
     [Fact]

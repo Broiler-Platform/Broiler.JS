@@ -276,6 +276,11 @@ jobs:
     steps:
       - name: Check out Broiler.JS
         uses: actions/checkout@v4
+        with:
+          # The build references the Broiler.Unicode submodule (emoji string-property
+          # data), so it must be checked out. It is a public repo, so the default
+          # GITHUB_TOKEN suffices — no PAT needed.
+          submodules: recursive
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
@@ -435,6 +440,11 @@ jobs:
     steps:
       - name: Check out Broiler.JS
         uses: actions/checkout@v4
+        with:
+          # The build references the Broiler.Unicode submodule (emoji string-property
+          # data), so it must be checked out. It is a public repo, so the default
+          # GITHUB_TOKEN suffices — no PAT needed.
+          submodules: recursive
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
@@ -598,6 +608,11 @@ jobs:
     steps:
       - name: Check out Broiler.JS
         uses: actions/checkout@v4
+        with:
+          # The build references the Broiler.Unicode submodule (emoji string-property
+          # data), so it must be checked out. It is a public repo, so the default
+          # GITHUB_TOKEN suffices — no PAT needed.
+          submodules: recursive
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
