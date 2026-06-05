@@ -39,12 +39,28 @@ public class TailCallTests
     [InlineData("function f(n){ if(n===0) return 'done'; while(true) return f(n-1); }")]            // while body
     [InlineData("function f(n){ if(n===0) return 'done'; do { return f(n-1); } while(false); }")]   // do-while body
     [InlineData("function f(n){ if(n===0) return 'done'; switch(1){ case 1: return f(n-1); } }")]   // switch body
-    [InlineData("function f(n){ if(n===0) return 'done'; try { throw 0; } catch(e){ return f(n-1); } }")] // catch body, no finally
     [InlineData("function f(n){ if(n===0) return 'done'; try {} finally { return f(n-1); } }")]            // finally body
     [InlineData("function f(n){ if(n===0) return 'done'; try {} catch(e){} finally { return f(n-1); } }")] // finally body, catch present
     public void TailPosition_DoesNotGrowStack(string fn)
     {
         var result = EvalWithScriptHost(Prelude + fn + "\nf(N);");
+        Assert.Equal("done", result.ToString());
+    }
+
+    [Fact]
+    public void Catch_Body_TailCall_DoesNotGrowStack()
+    {
+        // A `return f(n-1)` in a catch (no finally) must be a proper tail call.
+        // Kept separate from the theory above with a much smaller depth because each
+        // iteration throws a real CLR exception to reach its catch (~0.4 ms each), so
+        // 300000 would take minutes. Without the tail-call lift, catch-wrapped frames
+        // overflow the native stack at ~150 deep, so 20000 proves the optimization.
+        var result = EvalWithScriptHost("""
+            "use strict";
+            var N = 20000;
+            function f(n){ if(n===0) return 'done'; try { throw 0; } catch(e){ return f(n-1); } }
+            f(N);
+            """);
         Assert.Equal("done", result.ToString());
     }
 
