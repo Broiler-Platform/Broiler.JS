@@ -214,7 +214,6 @@ test/built-ins/Number/POSITIVE_INFINITY/prop-desc.js
 test/built-ins/Number/prototype/toPrecision/range.js
 test/built-ins/Object/S15.2.2.1_A2_T3.js
 test/built-ins/Object/S15.2.2.1_A2_T5.js
-test/built-ins/Object/defineProperties/15.2.3.7-6-a-179.js
 test/built-ins/Object/defineProperty/15.2.3.6-4-184.js
 test/built-ins/Object/entries/return-order.js
 test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-key-accessor.js
@@ -1383,7 +1382,6 @@ test/language/statements/class/elements/syntax/valid/grammar-field-named-get-fol
 test/language/statements/class/elements/syntax/valid/grammar-field-named-set-followed-by-generator-asi.js
 test/language/statements/class/elements/syntax/valid/grammar-static-ctor-accessor-meth-valid.js
 test/language/statements/class/name-binding/in-extends-expression-assigned.js
-test/language/statements/class/static-init-super-property.js
 test/language/statements/class/subclass/superclass-prototype-setter-constructor.js
 test/language/statements/continue/S12.7_A9_T1.js
 test/language/statements/continue/nested-let-bound-for-loops-inner-continue.js
