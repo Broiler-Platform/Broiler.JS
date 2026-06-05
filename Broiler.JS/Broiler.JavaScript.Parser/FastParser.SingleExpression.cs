@@ -20,7 +20,7 @@ partial class FastParser
     /// </summary>
     /// <param name="node"></param>
     /// <returns></returns>
-    bool SingleExpression(out AstExpression node, bool afterDot = false)
+    bool SingleExpression(out AstExpression node, bool afterDot = false, bool asyncFunction = false)
     {
         var begin = stream.Current;
         var token = begin;
@@ -63,7 +63,10 @@ partial class FastParser
                 return true;
 
             case FastKeywords.function:
-                return FunctionExpression(out node);
+                // When a leading `async` was already consumed by the caller
+                // (SinglePrefixPostfixExpression), it threads asyncFunction here
+                // so the function body is parsed with inAsyncFunctionBody = true.
+                return FunctionExpression(out node, asyncFunction);
 
             case FastKeywords.@class:
                 return ClassExpression(out node);
