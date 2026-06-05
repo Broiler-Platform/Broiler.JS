@@ -28,10 +28,18 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   * Shrinking an array's length walked every index in the removed range, so
 //     `a.length = 2**32 - 1; a.length = 2` looped billions of times (a hang).
 //
+//   * Problem 4  — Date operations threw / returned NaN for years outside .NET's
+//                  1–9999 range. The Date class now computes time values with
+//                  ECMAScript date math across the full ±8.64e15 ms range (multi-arg
+//                  and numeric construction, Date.UTC, the UTC getters, and the
+//                  setUTCFullYear/setUTCHours setters), and parses ISO-8601 expanded
+//                  years via the Broiler.DateTime submodule so toISOString output
+//                  round-trips.
+//
 // Problems 1 (sm deepEqual harness), 2 (Intl.DateTimeFormat formatRange — needs
-// CLDR), 3 (IteratorClose on abrupt completion during destructuring rest), 4
-// (Date.toISOString extended-year range), 5 (abrupt completion in `finally`
-// overriding a pending throw), 6 (compound-assignment PutValue ordering) and 7
+// CLDR), 3 (IteratorClose on abrupt completion during destructuring rest), 5
+// (abrupt completion in `finally` overriding a pending throw), 6 (compound-assignment
+// PutValue ordering) and 7
 // (several unrelated root causes grouped by message) are triaged in the issue and
 // remain out of scope for this change (architectural / harness-specific).
 public class Issue665Tests
@@ -171,4 +179,67 @@ public class Issue665Tests
             "var a = [1, 2, 3, 4, 5];"
             + "Object.defineProperty(a, 3, { value: 99, configurable: false });"
             + "a.length = 1; String(a.length)"));
+
+    // ---- Problem 4: Date across the full ECMAScript range (years outside 1–9999) ----
+
+    [Fact]
+    public void DateUtcSupportsExpandedYears()
+        => Assert.Equal("+275760-09-13T00:00:00.000Z|-271821-04-20T00:00:00.000Z", Eval(
+            "new Date(Date.UTC(275760, 8, 13)).toISOString() + '|'"
+            + " + new Date(Date.UTC(-271821, 3, 20)).toISOString()"));
+
+    [Fact]
+    public void DateUtcStillHandlesNormalAndTwoDigitYears()
+        => Assert.Equal("1577836800000|1999-01-01T00:00:00.000Z", Eval(
+            "Date.UTC(2020, 0, 1) + '|' + new Date(Date.UTC(99, 0, 1)).toISOString()"));
+
+    [Fact]
+    public void NumericConstructorAndToIsoStringSpanFullRange()
+        => Assert.Equal("+275760-09-13T00:00:00.000Z|-271821-04-20T00:00:00.000Z", Eval(
+            "new Date(8.64e15).toISOString() + '|' + new Date(-8.64e15).toISOString()"));
+
+    [Fact]
+    public void ToIsoStringThrowsJustOutsideRange()
+        => Assert.Equal("RangeError", Eval(
+            "(function(){ try { new Date(8.64e15 + 1).toISOString(); return 'no-throw'; }"
+            + "catch(e){ return e.constructor.name; } })()"));
+
+    [Fact]
+    public void UtcGettersReadExtendedDates()
+        => Assert.Equal("275760-8-13", Eval(
+            "var d = new Date(8.64e15);"
+            + "d.getUTCFullYear() + '-' + d.getUTCMonth() + '-' + d.getUTCDate()"));
+
+    [Fact]
+    public void SetUtcFullYearAndHoursSupportExtendedYears()
+        => Assert.Equal("-271821-04-20T00:00:00.000Z", Eval(
+            "var d = new Date(0);"
+            + "d.setUTCFullYear(-271821, 3, 20);"
+            + "d.setUTCHours(0, 0, 0, 0);"
+            + "d.toISOString()"));
+
+    [Fact]
+    public void SetUtcFullYearKeepsNaNReceiverInvalid()
+        => Assert.Equal("true", Eval(
+            "var d = new Date(NaN); var r = d.setUTCFullYear(2001);"
+            + "String(r !== r)"));
+
+    [Fact]
+    public void ParsesExpandedYearIsoStringsRoundTrip()
+        => Assert.Equal("true|true|true", Eval(
+            "function rt(s){ return new Date(Date.parse(s)).toISOString() === s; }"
+            + "rt('+275760-09-13T00:00:00.000Z') + '|'"
+            + " + rt('-271821-04-20T00:00:00.000Z') + '|'"
+            + " + rt('+010000-01-01T00:00:00.000Z')"));
+
+    [Fact]
+    public void StringConstructorParsesExpandedYears()
+        => Assert.Equal("-000001-12-31T23:59:59.999Z", Eval(
+            "new Date('-000001-12-31T23:59:59.999Z').toISOString()"));
+
+    [Fact]
+    public void NormalIsoAndRfc2822ParsingUnaffected()
+        => Assert.Equal("2023-06-15T10:30:00.000Z|2023-06-15T10:30:00.000Z", Eval(
+            "new Date('2023-06-15T10:30:00.000Z').toISOString() + '|'"
+            + " + new Date('Thu, 15 Jun 2023 10:30:00 GMT').toISOString()"));
 }

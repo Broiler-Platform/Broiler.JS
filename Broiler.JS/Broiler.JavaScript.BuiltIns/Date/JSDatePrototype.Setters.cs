@@ -300,75 +300,67 @@ public partial class JSDate
         return new JSNumber(value.ToJSDate());
     }
 
-    [JSExport("setUTCFullYear", Length = 1)]
+    [JSExport("setUTCFullYear", Length = 3)]
     internal JSValue setUTCFullYear(in Arguments a)
     {
-        var date = value;
-        if (!IsValid(date, a.Get1(), out var year))
-            return JSNumber.NaN;
-
-        if (year <= 0)
+        // Operate on the ECMAScript time value (ms since epoch) so the full Date
+        // range is supported, including years outside .NET's 1–9999 window. Read the
+        // receiver's time value BEFORE coercing the arguments (their valueOf may
+        // mutate this date), and keep this engine's convention of not reviving an
+        // already-invalid date (matching setFullYear).
+        double t = GetTimeMs();
+        if (double.IsNaN(t))
         {
-            value = DateTimeOffset.MinValue;
+            value = InvalidDate;
+            rawTimeMs = double.NaN;
             return JSNumber.NaN;
         }
 
         var (_year, _month, _day) = a.Get3();
 
-        var offset = date.Offset;
-        var utc = date.ToUniversalTime();
+        double yearValue = _year.DoubleValue;
+        double monthValue = _month.IsUndefined ? JSDateMath.MonthFromTime(t) : _month.DoubleValue;
+        double dayValue = _day.IsUndefined ? JSDateMath.DateFromTime(t) : _day.DoubleValue;
 
-        var month = _month.IsUndefined ? utc.Month - 1 : _month.IntValue;
-        var day = (_day.IsUndefined ? utc.Day : _day.IntValue) - 1;
-
-        try
+        if (double.IsNaN(yearValue) || double.IsInfinity(yearValue)
+            || double.IsNaN(monthValue) || double.IsInfinity(monthValue)
+            || double.IsNaN(dayValue) || double.IsInfinity(dayValue))
         {
-            utc = new DateTimeOffset((int)year, 1, 1, utc.Hour, utc.Minute, utc.Second, utc.Millisecond, utc.Offset);
-            utc = utc.AddDays(day);
-            utc = utc.AddMonths(month);
-            value = utc.ToOffset(offset);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            value = DateTimeOffset.MinValue;
+            return new JSNumber(SetTimeValue(double.NaN));
         }
 
-        return new JSNumber(value.ToJSDate());
-
+        double newDay = JSDateMath.MakeDay((long)yearValue, (long)monthValue, (long)dayValue);
+        double newDate = JSDateMath.MakeDate(newDay, JSDateMath.TimeWithinDay(t));
+        return new JSNumber(SetTimeValue(JSDateMath.TimeClip(newDate)));
     }
 
     [JSExport("setUTCHours", Length = 4)]
     internal JSValue SetUTCHours(in Arguments a)
     {
-        var date = value;
-        if (!IsValid(date, a.Get1(), out var hours))
+        // Operate on the ECMAScript time value (ms since epoch) so dates outside
+        // .NET's 1–9999 year range keep working. An already-invalid date stays NaN.
+        double t = GetTimeMs();
+        if (double.IsNaN(t))
             return JSNumber.NaN;
 
         var (_hours, _mins, _seconds, _millis) = a.Get4();
 
-        var offset = date.Offset;
-        var utc = date.ToUniversalTime();
+        double hrs = _hours.DoubleValue;
+        double mins = _mins.IsUndefined ? JSDateMath.MinFromTime(t) : _mins.DoubleValue;
+        double seconds = _seconds.IsUndefined ? JSDateMath.SecFromTime(t) : _seconds.DoubleValue;
+        double millis = _millis.IsUndefined ? JSDateMath.MsFromTime(t) : _millis.DoubleValue;
 
-        var hrs = _hours.IsUndefined ? utc.Hour : _hours.IntValue;
-        var mins = _mins.IsUndefined ? utc.Minute : _mins.IntValue;
-        var seconds = _seconds.IsUndefined ? utc.Second : _seconds.IntValue;
-        var millis = _millis.IsUndefined ? utc.Millisecond : _millis.IntValue;
-
-        try
+        if (double.IsNaN(hrs) || double.IsInfinity(hrs)
+            || double.IsNaN(mins) || double.IsInfinity(mins)
+            || double.IsNaN(seconds) || double.IsInfinity(seconds)
+            || double.IsNaN(millis) || double.IsInfinity(millis))
         {
-            utc = new DateTimeOffset(utc.Year, utc.Month, utc.Day, 0, 0, 0, 0, utc.Offset);
-            utc = utc.AddMilliseconds(millis);
-            utc = utc.AddSeconds(seconds);
-            utc = utc.AddMinutes(mins);
-            utc = utc.AddHours(hrs);
-            value = utc.ToOffset(offset);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            value = DateTimeOffset.MinValue;
+            return new JSNumber(SetTimeValue(double.NaN));
         }
 
-        return new JSNumber(value.ToJSDate());
+        double newTime = JSDateMath.MakeTime(hrs, mins, seconds, millis);
+        double newDate = JSDateMath.MakeDate(JSDateMath.Day(t), newTime);
+        return new JSNumber(SetTimeValue(JSDateMath.TimeClip(newDate)));
     }
 
     [JSExport("setUTCMilliseconds", Length = 1)]

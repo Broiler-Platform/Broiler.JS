@@ -210,6 +210,9 @@ public partial class JSDate
     [JSExport("getUTCDate", Length = 0)]
     internal JSValue GetUTCDate(in Arguments a)
     {
+        if (!double.IsNaN(rawTimeMs))
+            return new JSNumber(JSDateMath.DateFromTime(rawTimeMs));
+
         if (value == DateTimeOffset.MinValue)
             return JSNumber.NaN;
 
@@ -220,6 +223,9 @@ public partial class JSDate
     [JSExport("getUTCDay", Length = 0)]
     internal JSValue GetUTCDay(in Arguments a)
     {
+        if (!double.IsNaN(rawTimeMs))
+            return new JSNumber(JSDateMath.WeekDay(rawTimeMs));
+
         if (value == DateTimeOffset.MinValue)
             return JSNumber.NaN;
 
@@ -230,6 +236,9 @@ public partial class JSDate
     [JSExport("getUTCFullYear", Length = 0)]
     internal JSValue GetUTCFullYear(in Arguments a)
     {
+        if (!double.IsNaN(rawTimeMs))
+            return new JSNumber(JSDateMath.YearFromTime(rawTimeMs));
+
         if (value == DateTimeOffset.MinValue)
             return JSNumber.NaN;
 
@@ -240,6 +249,9 @@ public partial class JSDate
     [JSExport("getUTCHours", Length = 0)]
     internal JSValue GetUTCHours(in Arguments a)
     {
+        if (!double.IsNaN(rawTimeMs))
+            return new JSNumber(JSDateMath.HourFromTime(rawTimeMs));
+
         if (value == DateTimeOffset.MinValue)
             return JSNumber.NaN;
 
@@ -250,6 +262,9 @@ public partial class JSDate
     [JSExport("getUTCMilliseconds", Length = 0)]
     internal JSValue GetUTCMilliseconds(in Arguments a)
     {
+        if (!double.IsNaN(rawTimeMs))
+            return new JSNumber(JSDateMath.MsFromTime(rawTimeMs));
+
         if (value == DateTimeOffset.MinValue)
             return JSNumber.NaN;
 
@@ -260,6 +275,9 @@ public partial class JSDate
     [JSExport("getUTCMinutes", Length = 0)]
     internal JSValue GetUTCMinutes(in Arguments a)
     {
+        if (!double.IsNaN(rawTimeMs))
+            return new JSNumber(JSDateMath.MinFromTime(rawTimeMs));
+
         if (value == DateTimeOffset.MinValue)
             return JSNumber.NaN;
 
@@ -270,6 +288,9 @@ public partial class JSDate
     [JSExport("getUTCMonth", Length = 0)]
     internal JSValue GetUTCMonth(in Arguments a)
     {
+        if (!double.IsNaN(rawTimeMs))
+            return new JSNumber(JSDateMath.MonthFromTime(rawTimeMs));
+
         if (value == DateTimeOffset.MinValue)
             return JSNumber.NaN;
 
@@ -280,6 +301,9 @@ public partial class JSDate
     [JSExport("getUTCSeconds", Length = 0)]
     internal JSValue GetUTCSeconds(in Arguments a)
     {
+        if (!double.IsNaN(rawTimeMs))
+            return new JSNumber(JSDateMath.SecFromTime(rawTimeMs));
+
         if (value == DateTimeOffset.MinValue)
             return JSNumber.NaN;
 
