@@ -1,0 +1,3 @@
+[submodule "Broiler.Unicode"]
+	path = Broiler.Unicode
+	url = https://github.com/MaiRat/Broiler.Unicode.git
