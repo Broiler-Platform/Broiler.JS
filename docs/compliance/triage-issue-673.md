@@ -16,6 +16,27 @@ carries the canonical per-bucket rows.
 - **Suite ref:** `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`
 - **Artifact:** `test262-logs`
 
+The categories below were **reproduced locally** against the engine (via
+`new JSContext().Eval(...)`); the observed output is recorded inline so the
+diagnoses are evidence-backed rather than static analysis.
+
+### Building this repo for local repro
+
+Two non-obvious prerequisites are needed before `dotnet test` works:
+
+1. **Git submodules.** `Broiler.JavaScript.BuiltIns` references the
+   `Broiler.Unicode` and `Broiler.DateTime` submodules (emoji string properties
+   and the `ExtendedDateTime` extern alias). Run
+   `git submodule update --init --recursive` first, or the `BuiltIns` build fails
+   with `CS0430`/`CS0246` (`ExtendedDateTime`, `UnicodeEmoji`).
+2. **A Roslyn ≥ 5.3.0 compiler.** `Broiler.JavaScript.JSClassGenerator`
+   references `Microsoft.CodeAnalysis.CSharp.Workspaces 5.3.0`, so the source
+   generator that emits `RegisterAll`/`*.g.cs` only runs under a matching
+   compiler. A stock .NET 8 SDK (Roslyn 4.8) silently skips the generator and the
+   build fails with `CS0103: The name 'RegisterAll' does not exist`. Use a .NET
+   SDK whose in-box Roslyn is ≥ 5.3.0, or add `Microsoft.Net.Compilers.Toolset`
+   `5.3.0` on a .NET 10 host.
+
 The line numbers quoted in the issue (`Throw @ 115`, `Compile @ 205/206`,
 `InitializeFactories @ 17`) are locations inside Broiler's own host/runtime, so
 they group failures by *where the exception surfaced*, not by a single shared
@@ -69,6 +90,7 @@ Broiler already emits the correct close machinery for the **throw** and
   catch — `Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitAssignmentExpression.cs:546`.
 - `for-of` does the same — `Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitFor.cs:166`.
 
+**Verified locally:** `returnCount` is `0` (expected `1`) for the snippet above.
 The gap is specific to a generator `return()` *resuming a suspended `yield`*:
 the generator state machine produced by
 `Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/GeneratorsV2/GeneratorRewriter.cs`
@@ -102,6 +124,23 @@ completion *replaces* any pending completion from the `try` block — so the
 thrown `"ex1"` is discarded and the loop continues. Broiler instead lets the
 original `"ex1"` propagate uncaught, which is why the failure surfaces as a raw
 `JSException` whose message is the thrown string `ex1`.
+
+**Verified locally:** the bare `try { throw } finally { continue }` form throws
+`JSException: ex1` (expected `fin6 === 1`, `c6 === 2`). The
+`try { throw } catch { continue } finally {}` form already works correctly
+(returns `1,2`), so the gap is specific to an abrupt completion in a `finally`
+overriding a pending *throw* (no catch present).
+
+Root cause in the IL layer: `try/finally` is emitted as a real CLR
+`finally`, and `continue`/`break`/`return` out of the finally is implemented as
+a *deferred* branch that runs after `endfinally`
+(`ILTryBlock.Branch`/`Dispose`). When an exception is unwinding, `endfinally`
+resumes propagation and never reaches the deferred-branch dispatch, so the throw
+survives. A correct fix has to lower a `finally` that contains abrupt
+completions into a catch-all that runs the finally body and suppresses the
+pending exception when the finally exits abruptly — a change to core exception
+emission, so it should land with review and the full try/finally + async +
+generator suites as regression guards.
 
 - **Implementation area:** the branch-out-of-`finally` machinery in the IL
   generator — `Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILCodeGenerator.VisitTryCatchFinally.cs`
@@ -137,10 +176,12 @@ Two requirements combine here:
    outer binding (→ outer `x === 4`), while the later `return x` resolves
    dynamically to the eval-injected local (→ `innerX === 2`).
 
-Broiler returns `innerX === 4`, i.e. `return x` still resolves statically to the
-outer binding and the eval-injected local is never created/visible. This needs
-direct-eval binding injection plus dynamic identifier resolution in functions
-that contain a direct `eval`.
+**Verified locally:** the snippet returns `4,4` (expected `2,4`). The outer `x`
+*is* correctly updated to `4` by the compound assignment, so the lref timing of
+`x += …` is already right; the remaining gap is that `return x` does not see the
+`var x` that the direct `eval` should have injected into the IIFE's variable
+environment. This needs direct-eval binding injection plus dynamic identifier
+resolution in functions that contain a direct `eval`.
 
 - **Implementation area:** eval semantics in the engine/runtime and identifier
   binding in `Broiler.JavaScript.Compiler` (functions containing a direct
@@ -161,6 +202,11 @@ These files declare thousands of variables (or class private names) whose first
 character is a supplementary-plane code point that is `ID_Start` under Unicode
 15.1 / 16.0 / 17.0. The parse fails partway through (line ~205/206), i.e. *some*
 of the code points are accepted and one is not.
+
+**Verified locally:** `var <U+3134B> = 1` throws
+`Unexpected token Identifier: var` (the code point is not accepted as identifier
+start), while a BMP CJK identifier such as `var 中 = 1` parses fine — confirming
+the failure is code-point/version specific, not a general identifier bug.
 
 `Broiler.JS/Broiler.JavaScript.Parser/CharExtensions.cs:88` classifies identifier
 start characters with `char.GetUnicodeCategory(...)`, which is bound to the
@@ -191,9 +237,16 @@ longer depends on the host runtime's Unicode version.
 
 `formatRange`/`formatRangeToParts` exist in
 `Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs`, so this is a divergence
-inside an already-implemented surface (e.g. an option such as
-`fractionalSecondDigits`, time-zone offset handling, or a resolved-options field
-read from an `undefined` slot) rather than a wholly missing method.
+inside an already-implemented surface rather than a wholly missing method.
+
+**Verified locally:** `new Intl.DateTimeFormat('en-US').formatRange(a, b)`
+returns the two raw epoch-millisecond values joined by an en dash
+(`"1577836800000–1577923200000"`) instead of locale-formatted dates — the wider
+`Intl` surface here is largely a stub (e.g. `JSIntlNumberFormat.Format` just
+calls `ToString()` on its argument). The reported `Cannot get property value of
+undefined` is a distinct option/slot path (`fractionalSecondDigits`,
+offset-timezone) that needs each sample reduced; making these tests *pass*
+requires real locale formatting, not just a non-crashing stub.
 
 - **Next step:** reproduce each file locally, capture which property read returns
   `undefined`, and extend the existing `Intl` regressions in

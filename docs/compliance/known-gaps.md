@@ -2,10 +2,10 @@
 
 This file tracks areas that must be validated before Broiler.JS can make strong standards-compliance claims.
 
-The gaps tracked through 2026-05-10 are closed by the evidence below. The
-2026-06-05 automated full script-host run reopened a fresh set of gaps; they are
-triaged in [`triage-issue-673.md`](triage-issue-673.md) and indexed as tracked
-batches.
+All currently tracked gaps for the supported scope are closed by the evidence
+below as of the 2026-05-10 measurements. The 2026-06-05 automated full
+script-host run then reopened a fresh set of gaps; they are triaged in
+[`triage-issue-673.md`](triage-issue-673.md) and indexed as tracked batches.
 
 Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-percent.md#tracked-gap-batches).
 
