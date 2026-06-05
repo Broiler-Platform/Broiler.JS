@@ -6831,6 +6831,24 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RegExp_Undefined_Flags_Default_To_Empty_String()
+    {
+        // test262 S15.10.4.1_A4_T1..T5: "let F be the empty string if flags is undefined".
+        // Previously undefined flags were ToString'd to "undefined", whose 2nd char 'n'
+        // triggered a spurious "Unknown flag n" SyntaxError.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var a = new RegExp(null, void 0);
+            var b = new RegExp(undefined, undefined);
+            var c = new RegExp({}.p, {}.q);
+            var d = new RegExp('', (function(){})());
+            [a.source, b.multiline, b.global, b.ignoreCase, c.flags, d.flags].join('|');
+        ");
+        Assert.Equal("null|false|false|false||", result.ToString());
+    }
+
+    [Fact]
     public void RegExp_V_Flag_Exposes_UnicodeSets_Metadata()
     {
         EnsureBuiltInsLoaded();
