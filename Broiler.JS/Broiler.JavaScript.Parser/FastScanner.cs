@@ -39,6 +39,14 @@ public class FastScanner
     private int line = 1;
     private int column = 1;
     private int templateParts = 0;
+    // Within an open template substitution (`${ ... }`) we must balance plain
+    // `{ }` braces (object literals, function bodies, blocks) so that an inner
+    // `}` is not mistaken for the substitution terminator. templateBraceDepth is
+    // the count of currently-open plain braces in the innermost substitution;
+    // the stack saves the enclosing substitutions' depths across nested
+    // template literals.
+    private int templateBraceDepth = 0;
+    private readonly System.Collections.Generic.Stack<int> templateBraceDepthStack = new();
 
     public SpanLocation Location => new(line, column);
 
@@ -293,12 +301,23 @@ public class FastScanner
                 return ReadSymbol(state, TokenTypes.SquareBracketEnd);
 
             case '{':
+                if (templateParts > 0)
+                    templateBraceDepth++;
                 return ReadSymbol(state, TokenTypes.CurlyBracketStart);
 
             case '}':
                 if (templateParts > 0)
                 {
+                    // A `}` only closes the substitution when no plain braces are
+                    // open inside it; otherwise it closes one of those braces.
+                    if (templateBraceDepth > 0)
+                    {
+                        templateBraceDepth--;
+                        return ReadSymbol(state, TokenTypes.CurlyBracketEnd);
+                    }
+
                     templateParts--;
+                    templateBraceDepth = templateBraceDepthStack.Pop();
                     return ReadTemplateString(state, TokenTypes.TemplatePart);
                 }
                 return ReadSymbol(state, TokenTypes.CurlyBracketEnd);
@@ -741,6 +760,8 @@ public class FastScanner
                             Consume();
                             // template part begin...
                             templateParts++;
+                            templateBraceDepthStack.Push(templateBraceDepth);
+                            templateBraceDepth = 0;
                             return state.Commit(part, t);
                         }
 

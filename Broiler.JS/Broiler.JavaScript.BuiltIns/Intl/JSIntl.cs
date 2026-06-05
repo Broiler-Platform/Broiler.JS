@@ -487,10 +487,16 @@ public static class JSIntl
         if (options.IsUndefined)
             return null;
 
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Options must be an object");
+        if (options is JSObject optionsObject)
+            return optionsObject;
 
-        return optionsObject;
+        // CoerceOptionsToObject: a defined non-object options argument is coerced
+        // with ToObject (primitives box into wrapper objects; null throws).
+        if (options.IsNull)
+            throw JSEngine.NewTypeError("Cannot convert undefined or null to object");
+
+        return JSObject.CreatePrimitiveObject(options) as JSObject
+            ?? throw JSEngine.NewTypeError("Options must be an object");
     }
 
     private static void ValidateLocalesArgument(JSValue locales)

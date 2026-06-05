@@ -171,7 +171,14 @@ partial class FastCompiler
                                 break;
 
                             default:
-                                throw new NotImplementedException();
+                                // null / bigint / regexp / etc. literal case:
+                                // evaluate it and compare via strict-equals like a
+                                // general expression case.
+                                test = VisitExpression(c.Test);
+                                allNumbers = false;
+                                allStrings = false;
+                                allIntegers = false;
+                                break;
                         }
 
                         break;
@@ -236,7 +243,10 @@ partial class FastCompiler
                     else
                     {
                         @case.Tests = @case.Tests.ConvertToJSValue(switchPoolScope);
-                        equalsMethod = JSValueBuilder.StaticEquals;
+                        // SwitchStatement uses the Strict Equality Comparison (===),
+                        // so e.g. `case null` must not match an `undefined`
+                        // discriminant.
+                        equalsMethod = JSValueBuilder.StaticStrictEquals;
                     }
                 }
             }
