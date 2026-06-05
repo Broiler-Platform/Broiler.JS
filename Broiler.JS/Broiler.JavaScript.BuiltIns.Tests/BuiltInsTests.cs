@@ -6831,6 +6831,40 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RegExp_Unicode_GeneralCategory_Property_Escapes()
+    {
+        // #642 problems 1/4 (partial): General_Category property escapes — including
+        // the long-name and `General_Category=Value` forms that .NET rejects — are
+        // translated to the short forms .NET understands.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            [
+                /\p{Letter}/u.test('A'),
+                /\p{Letter}/u.test('1'),
+                /\p{Lu}/u.test('A'),
+                /\p{gc=Lu}/u.test('A'),
+                /\p{General_Category=Decimal_Number}/u.test('7'),
+                /\P{Letter}/u.test('1'),
+                /[\p{Letter}\d]+/u.test('abc1')
+            ].join('|');
+        ");
+        Assert.Equal("true|false|true|true|true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Unsupported_Unicode_Property_Escapes_Throw_Clear_Error()
+    {
+        // Script and emoji string-property escapes need a Unicode database that is
+        // not bundled yet; they should fail cleanly as SyntaxErrors rather than
+        // surfacing .NET's cryptic "Incomplete \p{X}" message.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        Assert.Throws<JSException>(() => ctx.Eval(@"/\p{Script=Han}/u;"));
+        Assert.Throws<JSException>(() => ctx.Eval(@"/\p{RGI_Emoji}/v;"));
+    }
+
+    [Fact]
     public void RegExp_V_Flag_Exposes_UnicodeSets_Metadata()
     {
         EnsureBuiltInsLoaded();
