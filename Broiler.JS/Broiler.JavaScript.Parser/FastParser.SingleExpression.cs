@@ -280,11 +280,31 @@ partial class FastParser
 
             if (Expression(out var target))
             {
+                // `await x ** y` is a SyntaxError: an await UnaryExpression cannot
+                // be the left operand of `**`. `await` greedily parses a full
+                // Expression, so detect the case where exponentiation is applied
+                // directly to the await operand — the leftmost, unparenthesised
+                // primary of the parsed target. `await (x ** y)` is unaffected.
+                for (var n = target; n is AstBinaryExpression bin && !n.WasParenthesized;)
+                {
+                    if (bin.Left is AstBinaryExpression && !bin.Left.WasParenthesized)
+                    {
+                        n = bin.Left;
+                        continue;
+                    }
+
+                    if (bin.Operator == TokenTypes.Power)
+                        throw new FastParseException(begin,
+                            "Unary operator used immediately before exponentiation expression; parentheses must be used to disambiguate operator precedence");
+
+                    break;
+                }
+
                 if (functionDepth == 0)
                     isAsync = true;
                 statement = new AstAwaitExpression(begin, PreviousToken, target);
                 EndOfStatement();
-                
+
                 return true;
             }
 

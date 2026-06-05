@@ -41,6 +41,18 @@ partial class FastCompiler
                         {
                             list.Add(YExpression.Assign(v.Expression, initExpr));
                         }
+                        else if (withBoundaries.Count > 0
+                            && TryGetStaticIdentifierVariable(id, out var staticVar) && staticVar != null)
+                        {
+                            // The name statically resolves to a local declared inside the
+                            // active `with` boundary, so the local shadows any same-named
+                            // with-object property. Reads resolve to this local
+                            // (TryGetStaticIdentifierVariable), so the initializer must too —
+                            // otherwise a `var x = init` whose name collides with a
+                            // with-object property would store into the object and leave the
+                            // local undefined.
+                            list.Add(YExpression.Assign(v.Expression, initExpr));
+                        }
                         else
                         {
                             var key = KeyOfName(id.Name);

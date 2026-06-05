@@ -302,8 +302,71 @@ public partial class JSString : JSPrimitive
         return JSValue.BooleanFalse;
     }
 
+    // Array-like / property-index access enumerates by UTF-16 code unit (used by
+    // for-in, Object.keys, etc.).
     public override IElementEnumerator GetElementEnumerator() => new ElementEnumerator(value);
-    public override IElementEnumerator GetIterableEnumerator() => GetElementEnumerator();
+
+    // The iteration protocol (for-of, spread, destructuring, Array.from, Map/Set,
+    // ...) enumerates a String by Unicode code point, per the String Iterator.
+    public override IElementEnumerator GetIterableEnumerator() => new CodePointEnumerator(value);
+
+    private struct CodePointEnumerator(in StringSpan value) : IElementEnumerator
+    {
+        private readonly StringSpan span = value;
+        private int pos = 0;
+        private int index = -1;
+
+        private bool TryNext(out JSValue value)
+        {
+            if (pos >= span.Length)
+            {
+                value = JSUndefined.Value;
+                return false;
+            }
+
+            var first = span[pos];
+            if (char.IsHighSurrogate(first) && pos + 1 < span.Length && char.IsLowSurrogate(span[pos + 1]))
+            {
+                value = new JSString(new string(new[] { first, span[pos + 1] }));
+                pos += 2;
+            }
+            else
+            {
+                value = new JSString(new string(first, 1));
+                pos += 1;
+            }
+
+            index++;
+            return true;
+        }
+
+        public bool MoveNext(out bool hasValue, out JSValue value, out uint i)
+        {
+            if (TryNext(out value))
+            {
+                hasValue = true;
+                i = (uint)index;
+                return true;
+            }
+
+            hasValue = false;
+            i = 0;
+            return false;
+        }
+
+        public bool MoveNext(out JSValue value) => TryNext(out value);
+
+        public bool MoveNextOrDefault(out JSValue value, JSValue @default)
+        {
+            if (TryNext(out value))
+                return true;
+
+            value = @default;
+            return false;
+        }
+
+        public JSValue NextOrDefault(JSValue @default) => TryNext(out var v) ? v : @default;
+    }
 
     private struct ElementEnumerator(in StringSpan value) : IElementEnumerator
     {

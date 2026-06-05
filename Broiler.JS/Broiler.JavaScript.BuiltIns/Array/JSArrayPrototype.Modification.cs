@@ -25,6 +25,39 @@ public partial class JSArray
             throw JSEngine.NewTypeError($"Cannot delete property {index}");
     }
 
+    // 64-bit-index overloads for array-like objects whose length exceeds the
+    // 32-bit array-index range (up to 2^53-1). Valid array indices (< 2^32-1)
+    // keep the fast uint path; larger integer indices are addressed by their
+    // canonical numeric property key.
+    private static bool HasIndexedProperty(JSObject @object, long index)
+        => index < uint.MaxValue
+            ? HasIndexedProperty(@object, (uint)index)
+            : @object.HasProperty(JSValue.CreateNumber(index)).BooleanValue;
+
+    private static JSValue GetIndexedValue(JSObject @object, long index)
+        => index < uint.MaxValue
+            ? GetIndexedValue(@object, (uint)index)
+            : @object[JSValue.CreateNumber(index)];
+
+    private static void SetIndexedValue(JSObject @object, long index, JSValue value)
+    {
+        if (index < uint.MaxValue)
+            SetIndexedValue(@object, (uint)index, value);
+        else
+            @object.SetValue(JSValue.CreateNumber(index), value, @object, true);
+    }
+
+    private static void DeleteIndexedValueOrThrow(JSObject @object, long index)
+    {
+        if (index < uint.MaxValue)
+            DeleteIndexedValueOrThrow(@object, (uint)index);
+        else if (!@object.Delete(JSValue.CreateNumber(index)).BooleanValue)
+            throw JSEngine.NewTypeError($"Cannot delete property {index}");
+    }
+
+    private static void SetArrayLikeLength(JSObject @object, long length)
+        => @object.SetValue(KeyStrings.length, JSValue.CreateNumber(length), @object, true);
+
     [JSPrototypeMethod]
     [JSExport("copyWithin", Length = 2)]
     public static JSValue CopyWithin(in Arguments a)
@@ -388,11 +421,16 @@ public partial class JSArray
 
         deleteCount = Math.Min(Math.Max(deleteCount, 0), arrayLength - start);
 
+        var itemsLength = a.Length > 1 ? a.Length - 2 : 0;
+
+        // Array-like objects can carry a length beyond Int32 (up to 2^53-1).
+        // Such indices overflow the 32-bit fast path below, so dispatch them to
+        // a 64-bit implementation that addresses elements by numeric key.
+        if (arrayLength > int.MaxValue)
+            return SpliceLarge(in a, @this, arrayLength, start, deleteCount, itemsLength);
+
         // Get the deleted items.
         var deletedItems = CreateArraySpecies(@this, deleteCount);
-
-        if (arrayLength > int.MaxValue)
-            throw JSEngine.NewRangeError("The array is too long");
 
         var arrayLengthInt = (int)arrayLength;
         var startInt = (int)start;
@@ -406,8 +444,6 @@ public partial class JSArray
 
             CreateDataPropertyOrThrow(deletedItems, i, GetIndexedValue(@this, fromIndex));
         }
-
-        var itemsLength = a.Length > 1 ? a.Length - 2 : 0;
 
         // Move the trailing elements.
         int offset = itemsLength - deleteCountInt;
@@ -449,6 +485,63 @@ public partial class JSArray
             SetIndexedValue(@this, (uint)(start + i), a[i + 2]);
 
         // Return the deleted items.
+        return deletedItems;
+    }
+
+    // 64-bit splice for array-like objects whose length exceeds Int32 (up to
+    // 2^53-1). Mirrors Array.prototype.splice steps 7-19, addressing elements by
+    // numeric property key so indices beyond the 32-bit range are honoured
+    // rather than rejected with a (spec-incorrect) "array is too long" error.
+    private static JSValue SpliceLarge(in Arguments a, JSObject @this, long len, long start, long deleteCount, int itemsLength)
+    {
+        // Step 7: the resulting length must not exceed 2^53-1.
+        if (len + itemsLength - deleteCount > MaxArrayLikeLength)
+            throw JSEngine.NewTypeError("Invalid array length");
+
+        var deletedItems = CreateArraySpecies(@this, deleteCount);
+
+        for (long k = 0; k < deleteCount; k++)
+        {
+            var fromIndex = start + k;
+            if (HasIndexedProperty(@this, fromIndex))
+                CreateDataPropertyOrThrow(deletedItems, (uint)k, GetIndexedValue(@this, fromIndex));
+        }
+
+        var newLength = len - deleteCount + itemsLength;
+
+        if (deleteCount > itemsLength)
+        {
+            for (long k = start; k < len - deleteCount; k++)
+            {
+                var fromIndex = k + deleteCount;
+                var toIndex = k + itemsLength;
+                if (HasIndexedProperty(@this, fromIndex))
+                    SetIndexedValue(@this, toIndex, GetIndexedValue(@this, fromIndex));
+                else
+                    DeleteIndexedValueOrThrow(@this, toIndex);
+            }
+
+            for (long k = len; k > newLength; k--)
+                DeleteIndexedValueOrThrow(@this, k - 1);
+        }
+        else if (deleteCount < itemsLength)
+        {
+            for (long k = len - deleteCount; k > start; k--)
+            {
+                var fromIndex = k + deleteCount - 1;
+                var toIndex = k + itemsLength - 1;
+                if (HasIndexedProperty(@this, fromIndex))
+                    SetIndexedValue(@this, toIndex, GetIndexedValue(@this, fromIndex));
+                else
+                    DeleteIndexedValueOrThrow(@this, toIndex);
+            }
+        }
+
+        for (int i = 0; i < itemsLength; i++)
+            SetIndexedValue(@this, start + i, a[i + 2]);
+
+        SetArrayLikeLength(@this, newLength);
+
         return deletedItems;
     }
 

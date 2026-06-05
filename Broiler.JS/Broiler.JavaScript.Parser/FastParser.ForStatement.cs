@@ -87,6 +87,12 @@ partial class FastParser
             }
             else throw stream.Unexpected();
 
+            // Line terminators are insignificant inside the for-head parens, so a
+            // newline between the head binding and the `in`/`of` keyword must not
+            // hide it (e.g. `for (let a\n of obj)`). Skip any here so the
+            // contextual `of`/`in` keyword is recognised rather than parsed as an
+            // identifier expression.
+            stream.SkipNewLines();
 
             AstExpression? inTarget = null;
             AstExpression? ofTarget = null;

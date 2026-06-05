@@ -119,7 +119,13 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
                 if (n.Parent == null)
                     break;
 
-                if (n.NodeType == FastNodeType.Block && n.Parent.NodeType == FastNodeType.Block)
+                // `var` hoists out of nested blocks and for/for-in/for-of head
+                // scopes toward the nearest function/program (var-hoisting) scope.
+                // A `var` in a for-of/for-in body lives in the ForStatement scope,
+                // so that scope must be climbable too — otherwise the binding is
+                // stranded there and never reaches the function's HoistingScope.
+                if (n.NodeType is FastNodeType.Block or FastNodeType.ForStatement
+                    && n.Parent.NodeType is FastNodeType.Block or FastNodeType.ForStatement)
                 {
                     n = n.Parent;
                     continue;
