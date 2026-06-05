@@ -6831,6 +6831,44 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Atomics_Pause_Exists_And_Returns_Undefined()
+    {
+        // test262 Atomics/pause/{returns-undefined,length,name,descriptor,not-a-constructor}.js
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var pd = Object.getOwnPropertyDescriptor(Atomics, 'pause');
+            var ld = Object.getOwnPropertyDescriptor(Atomics.pause, 'length');
+            var notCtor = false;
+            try { new Atomics.pause(); } catch (e) { notCtor = e instanceof TypeError; }
+            [
+                typeof Atomics.pause,
+                Atomics.pause() === undefined,
+                Atomics.pause(0) === undefined,
+                Atomics.pause(Number.MAX_SAFE_INTEGER) === undefined,
+                Atomics.pause.name,
+                Atomics.pause.length,
+                pd.enumerable, pd.writable, pd.configurable,
+                ld.value, ld.enumerable, ld.writable, ld.configurable,
+                notCtor
+            ].join('|');
+        ");
+        Assert.Equal(
+            "function|true|true|true|pause|0|false|true|true|0|false|false|true|true",
+            result.ToString());
+    }
+
+    [Fact]
+    public void Atomics_Pause_Throws_On_Non_Integral_Argument()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        Assert.Throws<JSException>(() => ctx.Eval("Atomics.pause(1.5);"));
+        Assert.Throws<JSException>(() => ctx.Eval("Atomics.pause('1');"));
+        Assert.Throws<JSException>(() => ctx.Eval("Atomics.pause(NaN);"));
+    }
+
+    [Fact]
     public void RegExp_V_Flag_Exposes_UnicodeSets_Metadata()
     {
         EnsureBuiltInsLoaded();
