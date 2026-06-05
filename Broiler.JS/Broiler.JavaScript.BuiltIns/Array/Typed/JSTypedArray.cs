@@ -330,8 +330,25 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     /// %Float64Array%), used as the default constructor by the species
     /// protocol when <c>constructor</c> or <c>@@species</c> is absent.
     /// </summary>
+    /// <remarks>
+    /// The default constructor must be obtained non-observably: it is the realm
+    /// intrinsic for this typed array's element kind, not whatever the
+    /// <c>constructor</c> property currently resolves to. Reading the prototype's
+    /// <c>constructor</c> would be hijacked by tests that install a getter on
+    /// <c>TA.prototype.constructor</c> (e.g. speciesctor-get-ctor-inherited),
+    /// turning the default into <c>undefined</c> and breaking species creation.
+    /// </remarks>
     private JSValue GetDefaultConstructor()
     {
+        var kind = GetIntrinsicConstructorName();
+        if (kind.HasValue && JSEngine.Current is JSObject global)
+        {
+            var intrinsic = global[kind];
+            if (intrinsic is IJSFunction)
+                return intrinsic;
+        }
+
+        // Fallback: the constructor reachable from the (intrinsic) prototype.
         if (GetCurrentPrototype() is JSObject intrinsicPrototype)
         {
             var constructor = intrinsicPrototype[KeyStrings.constructor];
@@ -341,6 +358,27 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
         return this[KeyStrings.constructor];
     }
+
+    /// <summary>
+    /// The realm-global name of this typed array's intrinsic constructor, keyed
+    /// off the concrete element type (never a user-observable property read).
+    /// </summary>
+    private KeyString GetIntrinsicConstructorName() => this switch
+    {
+        JSInt8Array => KeyStrings.GetOrCreate("Int8Array"),
+        JSUInt8Array => KeyStrings.GetOrCreate("Uint8Array"),
+        JSUint8ClampedArray => KeyStrings.GetOrCreate("Uint8ClampedArray"),
+        JSInt16Array => KeyStrings.GetOrCreate("Int16Array"),
+        JSUInt16Array => KeyStrings.GetOrCreate("Uint16Array"),
+        JSInt32Array => KeyStrings.GetOrCreate("Int32Array"),
+        JSUInt32Array => KeyStrings.GetOrCreate("Uint32Array"),
+        JSBigInt64Array => KeyStrings.GetOrCreate("BigInt64Array"),
+        JSBigUint64Array => KeyStrings.GetOrCreate("BigUint64Array"),
+        JSFloat16Array => KeyStrings.GetOrCreate("Float16Array"),
+        JSFloat32Array => KeyStrings.GetOrCreate("Float32Array"),
+        JSFloat64Array => KeyStrings.GetOrCreate("Float64Array"),
+        _ => KeyString.Empty
+    };
 
     private static bool TryGetCanonicalNumericIndex(in KeyString key, out double numericIndex)
     {

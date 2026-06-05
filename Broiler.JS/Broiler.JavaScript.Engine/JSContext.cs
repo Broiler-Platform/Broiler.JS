@@ -905,7 +905,11 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
     private void ReattachFunctionPrototypeMethods()
     {
-        var en = FunctionPrototype.GetOwnProperties(false).GetEnumerator();
+        // Function.prototype's own methods (toString/call/apply/bind/valueOf) are
+        // non-enumerable, so the enumerator must be told to include non-enumerable
+        // properties — otherwise every method is skipped and keeps the null
+        // [[Prototype]] it was constructed with before FunctionPrototype existed.
+        var en = FunctionPrototype.GetOwnProperties(false).GetEnumerator(showEnumerableOnly: false);
         while (en.MoveNext(out var _, out var property))
         {
             if (property.IsValue && property.value is JSValue value && value.IsFunction)
