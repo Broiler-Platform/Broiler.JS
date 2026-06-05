@@ -81,10 +81,8 @@ test/built-ins/Array/length/define-own-prop-length-error.js
 test/built-ins/Array/length/define-own-prop-length-no-value-order.js
 test/built-ins/Array/length/define-own-prop-length-overflow-order.js
 test/built-ins/Array/of/return-a-custom-instance.js
-test/built-ins/Array/prototype/Symbol.unscopables/array-find-from-last.js
 test/built-ins/Array/prototype/Symbol.unscopables/change-array-by-copy.js
 test/built-ins/Array/prototype/Symbol.unscopables/prop-desc.js
-test/built-ins/Array/prototype/Symbol.unscopables/value.js
 test/built-ins/Array/prototype/concat/15.4.4.4-5-c-i-1.js
 test/built-ins/Array/prototype/concat/Array.prototype.concat_array-like-negative-length.js
 test/built-ins/Array/prototype/concat/Array.prototype.concat_array-like-primitive-non-number-length.js
@@ -795,18 +793,14 @@ test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_ZWJ_Sequence.
 test/built-ins/RegExp/property-escapes/special-property-value-Script_Extensions-Unknown.js
 test/built-ins/RegExp/prototype/S15.10.5.1_A3.js
 test/built-ins/RegExp/prototype/S15.10.5.1_A4.js
-test/built-ins/RegExp/prototype/Symbol.match/flags-tostring-error.js
 test/built-ins/RegExp/prototype/Symbol.match/g-match-empty-advance-lastindex.js
-test/built-ins/RegExp/prototype/Symbol.match/get-flags-err.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/species-constructor.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/species-regexp-get-global-throws.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/species-regexp-get-unicode-throws.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/this-get-flags.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/this-tostring-flags.js
 test/built-ins/RegExp/prototype/Symbol.replace/coerce-global.js
-test/built-ins/RegExp/prototype/Symbol.replace/flags-tostring-error.js
 test/built-ins/RegExp/prototype/Symbol.replace/fn-invoke-args-empty-result.js
-test/built-ins/RegExp/prototype/Symbol.replace/get-flags-err.js
 test/built-ins/RegExp/prototype/Symbol.replace/named-groups-fn.js
 test/built-ins/RegExp/prototype/Symbol.replace/named-groups.js
 test/built-ins/RegExp/prototype/Symbol.replace/poisoned-stdlib.js
@@ -1040,7 +1034,6 @@ test/harness/propertyhelper-verifywritable-array-length.js
 test/intl402/Array/prototype/toLocaleString/calls-toLocaleString-number-elements.js
 test/intl402/Array/prototype/toLocaleString/invoke-element-tolocalestring.js
 test/intl402/Collator/prototype/compare/non-normative-phonebook.js
-test/intl402/Collator/test-option-localeMatcher.js
 test/intl402/Collator/test-option-numeric-and-caseFirst.js
 test/intl402/Collator/test-option-sensitivity.js
 test/intl402/Collator/test-option-usage.js
@@ -1083,11 +1076,9 @@ test/intl402/DateTimeFormat/taint-Object-prototype-date-time-components.js
 test/intl402/DateTimeFormat/test-option-date-time-components.js
 test/intl402/DateTimeFormat/test-option-formatMatcher.js
 test/intl402/DateTimeFormat/test-option-hour12.js
-test/intl402/DateTimeFormat/test-option-localeMatcher.js
 test/intl402/DisplayNames/locales-symbol-length.js
 test/intl402/DurationFormat/constructor-option-read-order.js
 test/intl402/DurationFormat/constructor-options-defaults.js
-test/intl402/DurationFormat/constructor-options-localeMatcher-valid.js
 test/intl402/DurationFormat/constructor-options-order.js
 test/intl402/DurationFormat/prototype/formatToParts/formatToParts-style-default-en.js
 test/intl402/DurationFormat/prototype/formatToParts/formatToParts-style-digital-en.js
@@ -1113,7 +1104,6 @@ test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-RelativeTimeFor
 test/intl402/Intl/supportedValuesOf/numberingSystems-with-simple-digit-mappings.js
 test/intl402/Intl/supportedValuesOf/timeZones-include-non-continental.js
 test/intl402/Intl/supportedValuesOf/units-accepted-by-NumberFormat.js
-test/intl402/ListFormat/constructor/constructor/options-order.js
 test/intl402/ListFormat/constructor/constructor/options-undefined.js
 test/intl402/ListFormat/prototype/resolvedOptions/type.js
 test/intl402/Locale/canonicalize-locale-list-take-locale.js
@@ -1171,7 +1161,6 @@ test/intl402/NumberFormat/prototype/resolvedOptions/order.js
 test/intl402/NumberFormat/prototype/resolvedOptions/return-keys-order-default.js
 test/intl402/NumberFormat/significant-digits-options-get-sequence.js
 test/intl402/NumberFormat/test-option-currencyDisplay.js
-test/intl402/NumberFormat/test-option-localeMatcher.js
 test/intl402/NumberFormat/test-option-roundingPriority-mixed-options.js
 test/intl402/NumberFormat/test-option-roundingPriority.js
 test/intl402/NumberFormat/test-option-style.js
