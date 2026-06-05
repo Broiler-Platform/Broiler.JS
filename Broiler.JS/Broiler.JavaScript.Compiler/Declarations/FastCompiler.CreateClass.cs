@@ -316,8 +316,16 @@ partial class FastCompiler
             while (staticBlockEnumerator.MoveNext(out var staticBlock))
             {
                 var function = staticBlock.Init as AstFunctionExpression;
+                // A class static initialization block always runs with `this`
+                // bound to the (already-constructed) class constructor — it is
+                // passed as the receiver below. Unlike a derived constructor /
+                // instance field initializer, there is no super() call that
+                // initializes `this`, so it is NEVER in the temporal dead zone,
+                // even when the class has a superclass. `super.x` inside the
+                // block reads that `this`, so leaving it uninitialized here threw
+                // "Cannot access 'this' before initialization".
                 var fx = CreateFunction(function, superVar, forceStrictMode: true, createPrototype: false, directEvalPrivateNames: directEvalPrivateNames,
-                    thisIsUninitialized: hasSuperClass);
+                    thisIsUninitialized: false);
                 stmts.Add(JSFunctionBuilder.InvokeFunction(fx, ArgumentsBuilder.NewEmpty(retValue)));
             }
         }

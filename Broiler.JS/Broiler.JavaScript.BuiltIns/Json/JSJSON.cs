@@ -560,18 +560,22 @@ public partial class JSJSON : JSObject
         bool first = true;
         // the only left type is JSObject...
         var obj = target as JSObject;
-        var pen = obj.GetOwnProperties().GetEnumerator();
 
-        while (pen.MoveNext(out var key, out var value))
+        // Serializes a single own enumerable property. Per OrdinaryOwnPropertyKeys,
+        // integer-indexed keys come first (ascending), then string keys in
+        // insertion order; SerializeJSONObject visits EnumerableOwnPropertyNames in
+        // that same order. `keyText` is both the emitted property name and the key
+        // handed to `toJSON`/the replacer.
+        void WriteMember(in StringSpan keyText, JSValue keyValue, in JSProperty value)
         {
             if (value.IsEmpty || !value.IsEnumerable)
-                continue;
+                return;
 
             JSValue jsValue;
             if (!value.IsValue)
             {
                 if (value.get == null)
-                    continue;
+                    return;
 
                 jsValue = ((JSFunction)value.get).f(new Arguments(target));
             }
@@ -581,16 +585,16 @@ public partial class JSJSON : JSObject
             }
 
             if (jsValue.IsUndefined || jsValue is JSFunction)
-                continue;
+                return;
 
-            jsValue = ToJson(jsValue, KeyStringCoreExtensions.GetJSString(value.key));
+            jsValue = ToJson(jsValue, keyValue);
 
             // check replacer...
             if (replacer != null)
             {
-                jsValue = replacer((target, KeyStringCoreExtensions.GetJSString(value.key), jsValue));
+                jsValue = replacer((target, keyValue, jsValue));
                 if (jsValue.IsUndefined)
-                    continue;
+                    return;
             }
 
             // write indention here...
@@ -601,14 +605,27 @@ public partial class JSJSON : JSObject
             if (indent != null)
                 sb.WriteLine();
 
-            QuoteString(key.Value, sb);
+            QuoteString(keyText, sb);
             sb.Write(':');
             if (indent != null)
                 sb.Write(' ');
 
             Stringify(sb, jsValue, replacer, indent, stack);
-
         }
+
+        // Integer-indexed properties (stored separately from named ones) are own
+        // enumerable string keys too and must be serialized — previously they were
+        // skipped entirely, so e.g. `JSON.stringify({0:'a',x:1})` dropped "0".
+        // ElementArray.AllValues() yields them in ascending index order.
+        foreach (var (index, element) in obj.GetElements(create: false).AllValues())
+        {
+            var indexText = index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            WriteMember(indexText, JSValue.CreateString(indexText), element);
+        }
+
+        var pen = obj.GetOwnProperties().GetEnumerator();
+        while (pen.MoveNext(out var key, out var value))
+            WriteMember(key.Value, KeyStringCoreExtensions.GetJSString(value.key), value);
 
         if (indent != null)
         {
