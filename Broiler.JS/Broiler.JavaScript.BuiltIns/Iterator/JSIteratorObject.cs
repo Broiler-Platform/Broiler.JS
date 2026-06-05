@@ -28,6 +28,7 @@ public partial class JSIteratorObject : JSObject
     internal readonly IElementEnumerator _enumerator;
     private bool _done;
     private bool _executing;
+    private bool _started;
 
     // ---------------------------------------------------------------
     // Constructors
@@ -48,6 +49,7 @@ public partial class JSIteratorObject : JSObject
         try
         {
             _executing = true;
+            _started = true;
             if (!_done && _enumerator != null && _enumerator.MoveNext(out var value))
                 return IteratorResult(value, false);
         }
@@ -67,16 +69,29 @@ public partial class JSIteratorObject : JSObject
         if (_done)
             return IteratorResult(value, true);
 
-        try
+        _done = true;
+        if (_enumerator is IReturnableEnumerator returnable)
         {
-            _executing = true;
-            _done = true;
-            if (_enumerator is IReturnableEnumerator returnable)
+            // A generator that has never been resumed is in "suspended-start": per
+            // %IteratorHelperPrototype%.return it transitions straight to "completed"
+            // and only then closes its underlying iterators, so a reentrant
+            // next()/return() from an underlying return() observes the completed
+            // state and yields a done result (it must NOT throw "already executing").
+            if (!_started)
                 return returnable.Return();
-        }
-        finally
-        {
-            _executing = false;
+
+            // A generator that has yielded at least once is in "suspended-yield":
+            // return() resumes it (state becomes "executing") to run the close, so a
+            // reentrant next()/return() during that close must throw "already executing".
+            try
+            {
+                _executing = true;
+                return returnable.Return();
+            }
+            finally
+            {
+                _executing = false;
+            }
         }
 
         return IteratorResult(value, true);
@@ -708,6 +723,15 @@ public partial class JSIteratorObject : JSObject
                 return false;
             }
 
+            // With no iterators (e.g. Iterator.zip([])), the result is immediately
+            // done in every mode rather than yielding an endless stream of empty rows.
+            if (_iterators.Count == 0)
+            {
+                _done = true;
+                value = JSUndefined.Value;
+                return false;
+            }
+
             var row = new JSValue[_iterators.Count];
 
             for (int i = 0; i < _iterators.Count; i++)
@@ -937,7 +961,19 @@ public partial class JSIteratorObject : JSObject
                 return false;
             }
 
+            // With no iterators (e.g. Iterator.zipKeyed({})), the result is immediately
+            // done in every mode rather than yielding an endless stream of empty objects.
+            if (_iterators.Count == 0)
+            {
+                _done = true;
+                value = JSUndefined.Value;
+                return false;
+            }
+
+            // Per spec the zipKeyed result is OrdinaryObjectCreate(null): a
+            // null-prototype object whose own data properties are the zipped values.
             var result = JSObject.NewWithProperties();
+            result.BasePrototypeObject = null;
 
             for (int i = 0; i < _iterators.Count; i++)
             {

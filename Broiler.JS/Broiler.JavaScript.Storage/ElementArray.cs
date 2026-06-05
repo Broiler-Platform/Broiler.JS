@@ -56,6 +56,10 @@ public struct ElementArray
             }
         }
     }
+
+    // Enumerates only the indices that are actually stored, without walking the
+    // (possibly billions-wide) gap of absent indices. Order is unspecified.
+    public readonly IEnumerable<(uint Key, JSProperty Value)> StoredValues() => Storage.AllValues();
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool HasKey(uint key) => Storage.HasKey(key);
 
