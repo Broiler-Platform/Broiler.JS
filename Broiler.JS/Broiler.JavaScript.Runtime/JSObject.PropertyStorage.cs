@@ -759,9 +759,13 @@ public partial class JSObject
         if (!p.IsEmpty)
             return (receiver ?? this).GetValue(p);
 
-        var propertyKey = JSObjectCoreExtensions.KeyStringToJSValue(key).ToKey(false);
-        if (propertyKey.Type == KeyType.UInt)
-            return GetValue(propertyKey.Index, receiver, throwError);
+        // A canonical array-index string key (e.g. "1") names the same property as
+        // the integer index, which is stored in the element table. Canonicalize
+        // directly from the key's text: routing through KeyStringToJSValue().ToKey()
+        // would short-circuit, because that JSString carries a preset KeyString and
+        // ToKey() returns it without ever testing for an array index.
+        if (NumberParser.TryGetArrayIndex(key.Value, out var index))
+            return GetValue(index, receiver, throwError);
 
         return base.GetValue(key, receiver, throwError);
     }

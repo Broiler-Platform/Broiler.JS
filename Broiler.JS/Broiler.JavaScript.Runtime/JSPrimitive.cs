@@ -67,6 +67,24 @@ public abstract class JSPrimitive: JSValue
         return base.GetAllKeys(showEnumerableOnly, inherited);
     }
 
+    // Dynamic (non-constant-folded) property reads route through the
+    // GetValue(key, receiver) virtuals rather than the indexers above, so the
+    // primitive's prototype must be resolved here too. Without this, the first
+    // dynamic string-key or symbol-key read on a freshly-boxed primitive
+    // (e.g. ""[Symbol.iterator], "abc"[someVar]) saw a null prototypeChain and
+    // returned undefined.
+    internal protected override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
+    {
+        ResolvePrototype();
+        return base.GetValue(key, receiver, throwError);
+    }
+
+    internal protected override JSValue GetValue(IJSSymbol key, JSValue receiver, bool throwError = true)
+    {
+        ResolvePrototype();
+        return base.GetValue(key, receiver, throwError);
+    }
+
     internal override JSFunctionDelegate GetMethod(in KeyString key)
     {
         if(prototypeChain == null)
