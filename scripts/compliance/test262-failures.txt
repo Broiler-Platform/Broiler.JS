@@ -1427,9 +1427,6 @@ test/language/expressions/await/await-in-nested-function.js
 test/language/expressions/await/await-in-nested-generator.js
 test/language/expressions/await/syntax-await-has-UnaryExpression-with-MultiplicativeExpression.js
 test/language/expressions/bitwise-not/S11.4.8_A1.js
-test/language/expressions/call/tco-non-eval-function-dynamic.js
-test/language/expressions/call/tco-non-eval-global.js
-test/language/expressions/call/tco-non-eval-with.js
 test/language/expressions/class/accessor-name-inst-computed-in.js
 test/language/expressions/class/accessor-name-static-computed-in.js
 test/language/expressions/class/async-gen-method-static/yield-promise-reject-next-for-await-of-async-iterator.js
@@ -1901,9 +1898,6 @@ test/language/statements/try/S12.14_A9_T3.js
 test/language/statements/try/completion-values-fn-finally-return.js
 test/language/statements/try/dstr/ary-ptrn-elem-id-init-fn-name-cover.js
 test/language/statements/try/dstr/obj-ptrn-id-init-fn-name-cover.js
-test/language/statements/try/tco-catch-finally.js
-test/language/statements/try/tco-catch.js
-test/language/statements/try/tco-finally.js
 test/language/statements/variable/12.2.1-11.js
 test/language/statements/variable/S12.2_A10.js
 test/language/statements/variable/S12.2_A4.js
@@ -2114,6 +2108,5 @@ test/staging/sm/regress/regress-593256.js
 test/staging/sm/regress/regress-597945-1.js
 test/staging/sm/regress/regress-610026.js
 test/staging/sm/regress/regress-617405-2.js
-test/staging/sm/statements/for-inof-finally.js
 test/staging/sm/strict/10.4.3.js
 test/staging/sm/syntax/let-as-label.js
