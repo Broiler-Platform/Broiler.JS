@@ -72,7 +72,10 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
 
         if (done.BooleanValue)
         {
-            value = JSUndefined.Value;
+            // When the iterator is exhausted, surface the result's `value` (the
+            // iterator's "return value"). For `yield* inner`, this is the value
+            // the delegating expression evaluates to once `inner` completes.
+            value = value[KeyStrings.value];
             return false;
         }
 

@@ -94,6 +94,11 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
                             done = false;
                             return;
                         }
+
+                        // The delegated iterator is exhausted; `value` now holds
+                        // its return value, which becomes the result of the
+                        // `yield*` expression resumed below.
+                        delegatedCompletionValue = value;
                     }
                     else if (delegatedEnumerator.MoveNext(out value))
                     {
@@ -112,6 +117,10 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
                 delegatedEnumerator = null;
                 LastValue = delegatedCompletionValue ?? JSUndefined.Value;
                 delegatedCompletionValue = null;
+                // The sent value was already consumed by the delegated iterator;
+                // the `yield*` expression must now resume with the delegate's
+                // completion value (LastValue), not re-apply `next` below.
+                next = null;
             }
 
             LastValue = next ?? LastValue ?? JSUndefined.Value;

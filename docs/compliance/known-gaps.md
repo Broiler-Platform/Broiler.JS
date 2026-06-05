@@ -20,7 +20,7 @@ implementation area + next step) in [`triage-issue-673.md`](triage-issue-673.md)
 - [ ] Direct `eval` `var` injection + compound-assignment reference timing (`gap-673-eval-injection`).
 - [ ] Unicode `ID_Start` identifiers and `#` private names beyond the host Unicode version (`gap-673-unicode-identifiers`).
 - [ ] `Intl.DateTimeFormat` `formatRange`/`formatRangeToParts`/`formatToParts` divergence (`gap-673-intl-range`).
-- [ ] Structural / `SameValue` / parser categories needing per-file reproduction (`gap-673-triage-remaining`).
+- [ ] Structural / `SameValue` / parser categories needing per-file reproduction (`gap-673-triage-remaining`). Cat 1 `delegating-yield-*` fixed: `yield*` now evaluates to the delegate's return value (`Issue673Tests.cs`).
 
 ## Tracking checklist
 

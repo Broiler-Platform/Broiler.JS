@@ -47,7 +47,7 @@ diverge.
 
 | # | Category | Root-cause confidence | Implementation area |
 | --- | --- | --- | --- |
-| 1 | Structural `deepEqual` mismatches | low — needs per-file repro | `BuiltIns/Array`, generator `yield*` |
+| 1 | Structural `deepEqual` mismatches | **delegating-yield FIXED**; rest low — needs per-file repro | `BuiltIns/Array`, generator `yield*` |
 | 2 | `IteratorClose` on generator `return()` | high | `GeneratorsV2/GeneratorRewriter.cs` |
 | 3 | `Intl.DateTimeFormat` range formatting | medium | `BuiltIns/Intl/JSIntl.cs` |
 | 4 | `finally` abrupt completion override | high | `ExpressionCompiler` try/finally |
@@ -257,9 +257,16 @@ requires real locale formatting, not just a non-crashing stub.
 These buckets group files that share only the surfaced engine location, not a
 single root cause. Best current hypotheses:
 
-- **Cat 1 (structural mismatch):** `Array.prototype.concat` `@@isConcatSpreadable`
-  handling, `Array.from` over proxies/strings, `yield*` delegation values, and
-  `Object.entries` ordering — `BuiltIns/Array/*` and generator delegation.
+- **Cat 1 (structural mismatch):** the `staging/sm/generators/delegating-yield-*`
+  sub-cause is **fixed** — a `yield*` expression now evaluates to the delegated
+  iterator's return value (and the sent value is no longer re-applied after the
+  delegation completes). Root cause was `JSIterator.MoveNext(JSValue, out JSValue)`
+  discarding the final `{ value, done:true }` result, plus the delegation driver
+  in `GeneratorTypes.cs` (`ClrGeneratorV2.Next`) clobbering it with the spent
+  `next` value. Covered by `Broiler.JavaScript.Integration.Tests/Issue673Tests.cs`.
+  Still open in this bucket: `Array.prototype.concat` `@@isConcatSpreadable`
+  handling, `Array.from` over proxies/strings, and `Object.entries` ordering —
+  `BuiltIns/Array/*`.
 - **Cat 6 (`SameValue(false, true)`):** mixed — private-method vs computed-property
   ordering, `arguments` property access, `RegExp` `lastIndex` on match/replace,
   `NumberFormat` `compactDisplay`.
