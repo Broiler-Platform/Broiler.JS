@@ -1110,7 +1110,21 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     /// Evaluates the given code, waits for the promise and returns task that
     /// completes till all timeouts/intervals are completed.
     /// </summary>
-    public async Task<JSValue> ExecuteAsync(string code, string codeFilePath = null)
+    /// <remarks>
+    /// The JavaScript job loop (promise reactions and async-function continuations)
+    /// is posted to a <see cref="SynchronizationContext"/>. If that work were posted
+    /// to the <em>caller's</em> ambient context, completion would require the caller to
+    /// keep pumping it while it awaits — which single-threaded or otherwise un-pumped
+    /// hosts (e.g. some test runners) do not do, deadlocking the returned task. To stay
+    /// robust regardless of how the caller awaits us, run the script under our own pumped
+    /// loop (<see cref="AsyncPump"/>) on a worker thread, exactly like <see cref="Execute"/>.
+    /// The async-local current context flows across the <see cref="Task.Run(System.Action)"/>
+    /// boundary, so engine state resolves correctly on the worker thread.
+    /// </remarks>
+    public Task<JSValue> ExecuteAsync(string code, string codeFilePath = null)
+        => Task.Run(() => AsyncPump.Run(() => ExecuteScriptAsync(code, codeFilePath)));
+
+    private async Task<JSValue> ExecuteScriptAsync(string code, string codeFilePath = null)
     {
         var r = CoreScript.Evaluate(code, codeFilePath, codeCache: CodeCache);
         var wt = WaitTask;
@@ -1159,5 +1173,5 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     /// Evaluates the given code, waits for the promise and also
     /// waits synchronously (by running and AsyncPump) for timeouts/intervals to finish
     /// </summary>
-    public JSValue Execute(string code, string codeFilePath = null) => AsyncPump.Run(() => ExecuteAsync(code, codeFilePath));
+    public JSValue Execute(string code, string codeFilePath = null) => AsyncPump.Run(() => ExecuteScriptAsync(code, codeFilePath));
 }
