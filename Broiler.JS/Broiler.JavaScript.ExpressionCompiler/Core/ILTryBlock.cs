@@ -87,10 +87,24 @@ public class ILTryBlock(ILWriter iLWriter, Label label) : LinkedStackItem<ILTryB
             finallyJumpState = null;
         }
 
-        foreach (var (hop, jump, index) in pendingJumps)
+        // The pending-jump hops below are reachable only via their own `leave hop`
+        // (an abrupt completion — e.g. `return` — inside the catch body). They are
+        // emitted right where normal completion lands (`label`), so without an
+        // explicit skip the fall-through path of a try/catch whose try succeeds would
+        // run straight into the first hop, loading an unset local and branching to the
+        // return label. Jump over the hops on the normal path.
+        if (pendingJumps.Count > 0)
         {
-            il.MarkLabel(hop);
-            il.Branch(jump, index);
+            var afterHops = il.DefineLabel("afterHops");
+            il.Goto(afterHops);
+
+            foreach (var (hop, jump, index) in pendingJumps)
+            {
+                il.MarkLabel(hop);
+                il.Branch(jump, index);
+            }
+
+            il.MarkLabel(afterHops);
         }
 
         if (SavedLocal >= 0)

@@ -270,7 +270,11 @@ public partial class JSArray
 
         for (uint index = 0; index < length; index++)
         {
-            if (!array.TryGetElement(index, out var item))
+            // Per spec every uses HasProperty(O, k) then Get(O, k), so an index
+            // inherited from the prototype chain (e.g. a boxed primitive whose
+            // wrapper prototype defines indexed properties) must be visited too —
+            // not just own elements.
+            if (!TryGetArrayLikeElement(array, index, out var item))
                 continue;
 
             var itemArgs = new Arguments(thisArg, item, new JSNumber(index), array);

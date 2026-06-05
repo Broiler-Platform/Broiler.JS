@@ -358,7 +358,21 @@ partial class FastParser
                     for (int i = 0; i < pat.Count; i++)
                     {
                         var property = pat[i];
-                        pat[i] = new ObjectProperty(property.Key, AssignTempNames(list, hoisted, property.Value), property.Init, property.Spread);
+
+                        // Object rest (`{...rest}`) stores the rest target in the key as a
+                        // SpreadElement, and the compiler reads it from the key — not the
+                        // value (the parser shares the same node for both). Rewrite the key
+                        // once and keep both sides in sync, otherwise the generated temp
+                        // binding for the rest target is never declared and resolving it
+                        // throws "<temp> is not defined".
+                        if (property.Key != null && property.Key.Type == FastNodeType.SpreadElement)
+                        {
+                            var renamedRest = AssignTempNames(list, hoisted, property.Key);
+                            pat[i] = new ObjectProperty(renamedRest, renamedRest, property.Init, property.Spread, property.Computed);
+                            continue;
+                        }
+
+                        pat[i] = new ObjectProperty(property.Key, AssignTempNames(list, hoisted, property.Value), property.Init, property.Spread, property.Computed);
                     }
 
                     return pattern;
