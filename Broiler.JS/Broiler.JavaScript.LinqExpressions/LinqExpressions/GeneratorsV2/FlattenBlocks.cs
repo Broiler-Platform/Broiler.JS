@@ -116,7 +116,7 @@ public class FlattenBlocks : YExpressionMapVisitor
 
         var block = exp as YBlockExpression;
 
-        var vars = block.Variables;
+        var vars = new Sequence<ParameterExpression>(block.Variables);
         var length = block.Expressions.Count;
         var list = new Sequence<Expression>(length);
         var last = length - 1;
@@ -126,7 +126,25 @@ public class FlattenBlocks : YExpressionMapVisitor
         {
             if (last == i)
             {
-                list.Add(p(Visit(e)));
+                var visited = Visit(e);
+
+                // The tail expression may itself be a block (e.g. a `yield`
+                // rewritten to `Block(Return, Label, nextValue)`, nested an extra
+                // level by braces such as `{ yield x; }`). Recurse so `p` is
+                // applied to the innermost tail value and any leading statements —
+                // notably the yield's Return branch — are hoisted out as siblings
+                // instead of being left buried inside `p`'s result, which would
+                // emit a mid-expression branch and produce invalid IL inside loops.
+                if (Flatten(visited, p, out var nested) && nested is YBlockExpression nestedBlock)
+                {
+                    vars.AddRange(nestedBlock.Variables);
+                    list.AddRange(nestedBlock.Expressions);
+                }
+                else
+                {
+                    list.Add(p(visited));
+                }
+
                 continue;
             }
 

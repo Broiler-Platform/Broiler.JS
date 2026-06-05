@@ -397,6 +397,21 @@ public partial class JSSet : JSObject
         if (store == null)
             return JSBoolean.True;
 
+        // Per spec: when this set is no larger than the argument, iterate this
+        // set's elements and probe other.[[Has]] — the argument's keys iterator
+        // must NOT be touched in that case. Otherwise iterate the argument's keys.
+        if (Size <= other.Size)
+        {
+            for (var i = 0; i < store.Count; i++)
+            {
+                var item = store[i];
+                if (item is not null && other.Has(item))
+                    return JSBoolean.False;
+            }
+
+            return JSBoolean.True;
+        }
+
         var keys = other.GetKeys();
         while (keys.MoveNext(out var item))
         {

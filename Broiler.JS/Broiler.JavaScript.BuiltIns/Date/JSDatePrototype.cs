@@ -90,31 +90,23 @@ public partial class JSDate
             var primitive = ToPrimitive(dateString);
             if (primitive.IsNumber)
             {
-                var time = JSDateMath.TimeClip(primitive.DoubleValue);
-                if (double.IsNaN(time))
-                {
-                    value = InvalidDate;
-                    rawTimeMs = double.NaN;
-                    return;
-                }
-
-                if (time < MinTime || time > MaxTime)
-                {
-                    value = InvalidDate;
-                    rawTimeMs = time;
-                    return;
-                }
-
-                date = DateTimeOffset.FromUnixTimeMilliseconds((long)time);
-                value = date.ToOffset(Local);
-                rawTimeMs = double.NaN;
+                SetTimeValue(JSDateMath.TimeClip(primitive.DoubleValue));
                 return;
             }
 
-            date = DateParser.Parse(primitive.StringValue);
+            var text = primitive.StringValue;
+            date = DateParser.Parse(text);
 
             if (date == DateTimeOffset.MinValue)
             {
+                // Fall back to the extended ISO parser for expanded years / years
+                // outside .NET's 1–9999 range (e.g. "+275760-09-13T00:00:00Z").
+                if (TryParseExtendedIso(text, out var extended))
+                {
+                    SetTimeValue(extended);
+                    return;
+                }
+
                 value = date;
                 return;
             }
@@ -136,24 +128,34 @@ public partial class JSDate
 
         var (year, month, day, hours, minutes, seconds, millis) = a.Get7Int();
 
-        day = day - 1;
+        year = year >= 0 && year < 100 ? year + 1900 : year;
+
         try
         {
-            year = year >= 0 && year < 100 ? year + 1900 : year;
             date = new DateTimeOffset(year, 1, 1, 0, 0, 0, 0, Local);
             date = date.AddMilliseconds(millis);
             date = date.AddSeconds(seconds);
             date = date.AddMinutes(minutes);
             date = date.AddHours(hours);
-            date = date.AddDays(day);
+            date = date.AddDays(day - 1);
             date = date.AddMonths(month);
             value = date;
+            rawTimeMs = double.NaN;
 
             return;
         }
         catch (ArgumentOutOfRangeException)
         {
+            // The local date/time is outside .NET DateTimeOffset's 1–9999 year range.
+            // Fall back to ECMAScript time-value math (ms since epoch), which spans the
+            // full Date range, so e.g. new Date(1970, 0, -99999999) stays a valid date
+            // and toISOString() emits an expanded-year string instead of throwing.
+            double timeWithinDay = JSDateMath.MakeTime(hours, minutes, seconds, millis);
+            double dayValue = JSDateMath.MakeDay(year, month, day);
+            double result = JSDateMath.TimeClip(JSDateMath.UTC(JSDateMath.MakeDate(dayValue, timeWithinDay)));
+
             value = DateTimeOffset.MinValue;
+            rawTimeMs = result;
             return;
         }
     }

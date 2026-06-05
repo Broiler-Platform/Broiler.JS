@@ -1,4 +1,5 @@
-﻿using System;
+﻿extern alias ExtendedDateTime;
+using System;
 using System.Runtime.CompilerServices;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
@@ -37,8 +38,21 @@ partial class JSDate
     [JSExport("UTC")]
     internal static JSValue UTC(in Arguments a)
     {
+        // Compute the time value with ECMAScript date math (ms since epoch) so the
+        // full Date range is supported, including years outside .NET's 1–9999 window.
+        for (var i = 0; i < Math.Min(a.Length, 7); i++)
+        {
+            var part = a.GetAt(i).DoubleValue;
+            if (double.IsNaN(part) || double.IsInfinity(part))
+                return JSNumber.NaN;
+        }
+
         var (year, month, day, hour, minute, second, millisecond) = a.Get7Int();
-        var val = ToDateTime(year, month, day, hour, minute, second, millisecond, TimeSpan.Zero).ToJSDate();
+        year = year >= 0 && year < 100 ? year + 1900 : year;
+
+        double time = JSDateMath.MakeTime(hour, minute, second, millisecond);
+        double dayValue = JSDateMath.MakeDay(year, month, day);
+        double val = JSDateMath.TimeClip(JSDateMath.MakeDate(dayValue, time));
 
         return new JSNumber(val);
     }
@@ -60,10 +74,44 @@ partial class JSDate
     internal static JSValue Parse(in Arguments a)
     {
         var text = a.Get1().ToString();
-        double val;
 
-        val = DateParser.Parse(text).ToJSDate();
+        var val = DateParser.Parse(text).ToJSDate();
+
+        // The .NET-backed parser can't represent ISO-8601 expanded years (e.g.
+        // "+275760-09-13T..." / "-000001-...") or years outside 1–9999. Fall back to
+        // the extended ISO parser so toISOString output round-trips across the full range.
+        if (double.IsNaN(val) && TryParseExtendedIso(text, out var extended))
+            val = extended;
+
         return new JSNumber(val);
+    }
+
+    /// <summary>
+    /// Parses an ISO-8601 / RFC-3339 string whose year may use the expanded form
+    /// (e.g. "+275760-..." / "-000001-...") or fall outside .NET's 1–9999 range,
+    /// returning the ECMAScript time value (ms since epoch). Returns false when the
+    /// text is not a valid extended ISO date-time.
+    /// </summary>
+    internal static bool TryParseExtendedIso(string text, out double ms)
+    {
+        ms = double.NaN;
+
+        if (!ExtendedDateTime::Broiler.DateTime.ExtendedIsoDateTime.TryParse(text, out var v) || v is null)
+            return false;
+
+        int milli = v.Nanosecond / 1_000_000;
+        double wallClock = JSDateMath.MakeDate(
+            JSDateMath.MakeDay(v.Year, v.Month - 1, v.Day),
+            JSDateMath.MakeTime(v.Hour, v.Minute, v.Second, milli));
+
+        // A string with an explicit offset (including "Z") denotes a fixed instant;
+        // without one, ECMAScript interprets the wall-clock time as local time.
+        double utcMs = v.HasOffset
+            ? wallClock - v.Offset.Value.TotalMilliseconds
+            : JSDateMath.UTC(wallClock);
+
+        ms = JSDateMath.TimeClip(utcMs);
+        return !double.IsNaN(ms);
     }
 
     /// <summary>

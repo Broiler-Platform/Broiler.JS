@@ -49,6 +49,44 @@ public partial class JSDate: JSObject
     }
 
     /// <summary>
+    /// Stores an ECMAScript time value (ms since epoch) as this date's value,
+    /// keeping the raw <see cref="rawTimeMs"/> representation when the value falls
+    /// outside .NET DateTimeOffset's 1–9999 year range. Returns the stored value.
+    /// </summary>
+    internal double SetTimeValue(double ms)
+    {
+        if (double.IsNaN(ms))
+        {
+            value = InvalidDate;
+            rawTimeMs = double.NaN;
+            return double.NaN;
+        }
+
+        if (ms < MinTime || ms > MaxTime)
+        {
+            value = DateTimeOffset.MinValue;
+            rawTimeMs = ms;
+            return ms;
+        }
+
+        try
+        {
+            value = DateTimeOffset.FromUnixTimeMilliseconds((long)ms).ToOffset(Local);
+            rawTimeMs = double.NaN;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            // Re-expressing the instant in the local offset overflowed .NET's range
+            // at the very edge of the 1–9999 window; keep the raw time value, which
+            // the getters/toISOString handle via ECMAScript date math.
+            value = DateTimeOffset.MinValue;
+            rawTimeMs = ms;
+        }
+
+        return ms;
+    }
+
+    /// <summary>
     /// Returns true if this date is valid (not NaN / invalid).
     /// </summary>
     internal bool IsValidDate()

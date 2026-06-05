@@ -28,6 +28,14 @@
     <ProjectReference Include="..\Broiler.JavaScript.JSClassGenerator\Broiler.JavaScript.JSClassGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
     <ProjectReference Include="..\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj" />
     <ProjectReference Include="..\..\Broiler.Unicode\src\UnicodeEmoji.StringProperties\UnicodeEmoji.StringProperties.csproj" />
+    <ProjectReference Include="..\..\Broiler.DateTime\src\Broiler.DateTime\Broiler.DateTime.csproj">
+      <!-- Expose only via the `ExtendedDateTime` extern alias so the submodule's
+           `Broiler.DateTime` namespace does not shadow System.DateTime. PrivateAssets
+           keeps that compile-time reference from flowing to downstream projects (which
+           would re-introduce the collision); the runtime assembly is still emitted. -->
+      <Aliases>ExtendedDateTime</Aliases>
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>

@@ -383,9 +383,24 @@ public partial class JSArray : JSObject
             throw JSEngine.NewTypeError("Cannot modify property length");
 
         ref var elements = ref GetElements();
-        for (uint index = oldLength; index > newLength; index--)
+
+        // Only the indices that are actually stored need to be deleted; absent
+        // indices delete trivially. Walking the whole [newLength, oldLength) range
+        // would loop billions of times when shrinking from a huge sparse length
+        // (e.g. length = 2**32 - 1 back to 2). Collect the stored indices in range,
+        // then delete them high→low so the first non-configurable element halts the
+        // shrink at the spec-mandated point (ArraySetLength deletes from the top).
+        var doomed = new List<uint>();
+        foreach (var (key, _) in elements.StoredValues())
         {
-            var actualIndex = index - 1;
+            if (key >= newLength && key < oldLength)
+                doomed.Add(key);
+        }
+
+        doomed.Sort();
+        for (var i = doomed.Count - 1; i >= 0; i--)
+        {
+            var actualIndex = doomed[i];
             if (elements.TryGetValue(actualIndex, out var property) && !property.IsConfigurable)
             {
                 _length = actualIndex + 1;
