@@ -18,7 +18,7 @@ partial class FastParser
     /// </summary>
     /// <param name="node"></param>
     /// <returns></returns>
-    bool SingleMemberExpression(out AstExpression node, bool asNew = false)
+    bool SingleMemberExpression(out AstExpression node, bool asNew = false, bool asyncFunction = false)
     {
         node = null;
         var current = stream.Current;
@@ -40,7 +40,7 @@ partial class FastParser
 
             node = new AstMeta(new AstIdentifier(current.AsString()), new AstIdentifier(id));
         }
-        else if (!SingleExpression(out node))
+        else if (!SingleExpression(out node, asyncFunction: asyncFunction))
         {
             return false;
         }

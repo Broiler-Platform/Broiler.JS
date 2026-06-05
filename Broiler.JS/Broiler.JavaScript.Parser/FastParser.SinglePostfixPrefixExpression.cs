@@ -52,7 +52,7 @@ partial class FastParser
 
         try
         {
-            if (!SingleMemberExpression(out node, previous == UnaryOperator.@new))
+            if (!SingleMemberExpression(out node, previous == UnaryOperator.@new, hasAsync))
                 return begin.Reset();
         }
         finally

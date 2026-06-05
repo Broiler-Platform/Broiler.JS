@@ -18,6 +18,41 @@ public class BuiltInsTests
         => new(experimentalFeatures: experimentalFeatures);
 
     [Fact]
+    public void Async_Function_Expression_Allows_Await_Of_Identifier()
+    {
+        // Regression: in `var f = async function(){ await <expr>; }` the body was
+        // parsed with inAsyncFunctionBody=false, so `await` before an identifier or
+        // call (but not a numeric literal) failed with "Unexpected token". This is
+        // the asyncTest(async function(){ await assert.throwsAsync(...) }) shape used
+        // by the Array.fromAsync test262 tests.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var firstCallMade = false;
+            var assert = { throwsAsync: function () { firstCallMade = true; return Promise.resolve(); } };
+            function asyncTest(t) { return t(); }
+            var p = asyncTest(async function () {
+                await assert.throwsAsync(TypeError, () => 1);
+                await assert.throwsAsync(TypeError, () => 2);
+            });
+            // The body runs synchronously up to the first await, so firstCallMade is
+            // already true; p is the promise returned by the async function.
+            [firstCallMade, typeof p.then].join('|');
+        ");
+        Assert.Equal("true|function", result.ToString());
+    }
+
+    [Fact]
+    public void Nonasync_Function_Nested_In_Async_Does_Not_Allow_Await()
+    {
+        // The async context must not leak into a plain nested function.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        Assert.Throws<JSException>(() => ctx.Eval(
+            "var x = 1; async function f(){ function g(){ return await x; } return g; } f();"));
+    }
+
+    [Fact]
     public void WeakRef_Construct_And_Deref()
     {
         EnsureBuiltInsLoaded();
