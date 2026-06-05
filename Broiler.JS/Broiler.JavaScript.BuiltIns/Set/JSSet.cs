@@ -132,15 +132,27 @@ public partial class JSSet : JSObject
                 () => new StoreEnumerator(otherSet.store));
         }
 
+        // GetSetRecord: the "size" property is read and coerced to a number
+        // (observably invoking valueOf/toString) BEFORE "has" and "keys" are
+        // read. Reading those methods first would surface the size coercion in
+        // the wrong order (test262 staging/sm/Set property-access-order checks).
         var sizeValue = other["size"];
-        var hasMethod = other["has"];
-        var keysMethod = other["keys"];
+        var numSize = sizeValue.DoubleValue;
+        if (double.IsNaN(numSize))
+            throw JSEngine.NewTypeError($"Set.prototype.{methodName} requires a Set or set-like object argument");
+        if (numSize < 0)
+            throw JSEngine.NewRangeError($"Set.prototype.{methodName} requires the set-like object's size to be non-negative");
 
-        if (!hasMethod.IsFunction || !keysMethod.IsFunction)
+        var hasMethod = other["has"];
+        if (!hasMethod.IsFunction)
+            throw JSEngine.NewTypeError($"Set.prototype.{methodName} requires a Set or set-like object argument");
+
+        var keysMethod = other["keys"];
+        if (!keysMethod.IsFunction)
             throw JSEngine.NewTypeError($"Set.prototype.{methodName} requires a Set or set-like object argument");
 
         return new SetLikeRecord(
-            (int)sizeValue.DoubleValue,
+            double.IsPositiveInfinity(numSize) ? int.MaxValue : (int)numSize,
             value => hasMethod.Call(other, value).BooleanValue,
             () =>
             {
@@ -304,11 +316,28 @@ public partial class JSSet : JSObject
         var other = GetSetLikeRecord(a.Get1(), "intersection");
 
         var result = new JSSet(Arguments.Empty);
-        for (var i = 0; i < store.Count; i++)
+        // Spec selects the smaller collection to drive iteration: when this set
+        // is no larger than the argument, probe the argument's `has`; otherwise
+        // iterate the argument's keys() and probe this set. The argument's `has`
+        // must not be called in the keys() branch (test262 staging/sm/Set order
+        // checks use a `has` that throws). Result order follows the driver.
+        if (Size <= other.Size)
         {
-            var item = store[i];
-            if (item is not null && other.Has(item))
-                result.Add(item);
+            for (var i = 0; i < store.Count; i++)
+            {
+                var item = store[i];
+                if (item is not null && other.Has(item) && Contains(item))
+                    result.Add(item);
+            }
+        }
+        else
+        {
+            var keys = other.GetKeys();
+            while (keys.MoveNext(out var item))
+            {
+                if (Contains(item))
+                    result.Add(item);
+            }
         }
 
         return result;
@@ -319,12 +348,38 @@ public partial class JSSet : JSObject
     {
         var other = GetSetLikeRecord(a.Get1(), "difference");
 
-        var result = new JSSet(Arguments.Empty);
+        // Start from a copy of this set (preserving insertion order), then remove
+        // the argument's members. When this set is no larger than the argument,
+        // probe the argument's `has`; otherwise iterate the argument's keys() and
+        // remove each — the argument's `has` must not be called in that branch.
+        // The has-branch iterates the snapshot taken here, not the live store: a
+        // user `has` may mutate this set mid-operation (test262 clears it and adds
+        // new keys), and the spec operates over the copy of the original data.
+        var snapshot = new List<JSValue>(liveCount);
         for (var i = 0; i < store.Count; i++)
         {
             var item = store[i];
-            if (item is not null && !other.Has(item))
-                result.Add(item);
+            if (item is not null)
+                snapshot.Add(item);
+        }
+
+        var result = new JSSet(Arguments.Empty);
+        foreach (var item in snapshot)
+            result.Add(item);
+
+        if (Size <= other.Size)
+        {
+            foreach (var item in snapshot)
+            {
+                if (other.Has(item))
+                    result.Remove(item);
+            }
+        }
+        else
+        {
+            var keys = other.GetKeys();
+            while (keys.MoveNext(out var item))
+                result.Remove(item);
         }
 
         return result;
@@ -357,6 +412,11 @@ public partial class JSSet : JSObject
     public JSValue IsSubsetOf(in Arguments a)
     {
         var other = GetSetLikeRecord(a.Get1(), "isSubsetOf");
+
+        // A set cannot be a subset of a smaller one; bail before probing `has`
+        // (the argument's `has` must not be called in that case).
+        if (Size > other.Size)
+            return JSBoolean.False;
 
         for (var i = 0; i < store.Count; i++)
         {
