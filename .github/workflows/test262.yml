@@ -18,9 +18,6 @@ name: test262
 #     three most common failure categories when `ISSUE_TOKEN` is configured.
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       assembly:
