@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Generator;
@@ -48,6 +49,28 @@ public partial class ILCodeGenerator
 
         if (tailCallBlockedDepth != 0)
             return false;
+
+        // Indirect-eval tail call: `return eval(...)` where eval is not %eval%
+        // compiles to a static DirectEvalSupport.Execute call (not InvokeFunction).
+        // Re-emit it with its trailing `tailCall` flag forced true so Execute returns
+        // a JSTailCall sentinel for an indirect callee instead of recursing through
+        // InvokeFunction. Only reached in a genuine tail position (script-host and
+        // tailCallBlockedDepth == 0, checked above).
+        if (callExpression.Method is { IsStatic: true, Name: "Execute" }
+            && callExpression.Method.DeclaringType?.FullName == "Broiler.JavaScript.Compiler.DirectEvalSupport"
+            && callExpression.Type.FullName == "Broiler.JavaScript.Runtime.JSValue")
+        {
+            var argCount = callExpression.Arguments.Count;
+            var tailArgs = new Sequence<YExpression>(argCount + 1);
+            for (int i = 0; i < argCount; i++)
+                tailArgs.Add(callExpression.Arguments[i]);
+            tailArgs.Add(YExpression.Constant(true));
+
+            var save = EmitParameters(callExpression.Method, tailArgs, callExpression.Type);
+            il.EmitCall(callExpression.Method);
+            save();
+            return true;
+        }
 
         if (callExpression.Target == null
             || callExpression.Type.FullName != "Broiler.JavaScript.Runtime.JSValue"

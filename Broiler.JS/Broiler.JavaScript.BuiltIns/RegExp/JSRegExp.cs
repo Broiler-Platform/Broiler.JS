@@ -1334,12 +1334,17 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// multi-code-point sequences). These need an emoji-sequence database that is
     /// not bundled yet, so they raise a clear "not supported" SyntaxError instead
     /// of .NET's cryptic "Unknown property" message.
+    ///
+    /// Keys are stored in normalized form (lower-cased, '_'/' ' stripped) because
+    /// lookups go through <c>NormalizeKey</c> — e.g. <c>RGI_Emoji</c> normalizes to
+    /// <c>rgiemoji</c>. Storing them with underscores would make the lookup miss and
+    /// let .NET surface its cryptic "Unknown property" message instead.
     /// </summary>
     private static readonly HashSet<string> UnsupportedUnicodePropertyNames = new(StringComparer.Ordinal)
     {
-        "rgi_emoji", "rgi_emoji_flag_sequence", "rgi_emoji_modifier_sequence",
-        "rgi_emoji_tag_sequence", "rgi_emoji_zwj_sequence", "basic_emoji",
-        "emoji_keycap_sequence",
+        "rgiemoji", "rgiemojiflagsequence", "rgiemojimodifiersequence",
+        "rgiemojitagsequence", "rgiemojizwjsequence", "basicemoji",
+        "emojikeycapsequence",
     };
 
     /// <summary>

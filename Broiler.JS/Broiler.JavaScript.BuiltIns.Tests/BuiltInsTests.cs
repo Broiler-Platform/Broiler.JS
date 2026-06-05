@@ -6976,7 +6976,14 @@ public class BuiltInsTests
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
         Assert.Throws<JSException>(() => ctx.Eval(@"/\p{Script=Tibetan}/u;"));
-        Assert.Throws<JSException>(() => ctx.Eval(@"/\p{RGI_Emoji}/v;"));
+
+        // RGI_Emoji must raise the clear "not supported" SyntaxError, not .NET's
+        // cryptic "Unknown property 'RGI_Emoji'" message. The lookup goes through
+        // NormalizeKey (strips '_'), so the unsupported-name set must match the
+        // normalized form (#648 problem 1).
+        var ex = Assert.Throws<JSException>(() => ctx.Eval(@"/\p{RGI_Emoji}/v;"));
+        Assert.Contains("not supported", ex.Message);
+        Assert.DoesNotContain("Unknown property", ex.Message);
     }
 
     [Fact]
