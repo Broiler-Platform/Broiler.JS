@@ -708,6 +708,16 @@ public static class JSIntl
             if (timeZone.Contains('\u2212'))
                 throw JSEngine.NewRangeError("Invalid timeZone option");
         }
+
+        // fractionalSecondDigits \u2208 {1, 2, 3} (GetNumberOption with min 1, max 3);
+        // an out-of-range value (e.g. 0 or 4) is a RangeError.
+        var fractionalSecondDigits = options[KeyStrings.GetOrCreate("fractionalSecondDigits")];
+        if (!fractionalSecondDigits.IsUndefined)
+        {
+            var digits = fractionalSecondDigits.DoubleValue;
+            if (double.IsNaN(digits) || digits < 1 || digits > 3)
+                throw JSEngine.NewRangeError("fractionalSecondDigits value is out of range.");
+        }
     }
 
     private static void ObserveOptions(JSObject options, params KeyString[] keys)
@@ -1239,7 +1249,51 @@ public sealed class JSIntlLocale : JSObject
 {
     private readonly string tag;
 
+    // Regions that conventionally use a 12-hour clock; everything else defaults
+    // to the 24-hour cycle. Approximation sufficient for sensible defaults.
+    private static readonly HashSet<string> TwelveHourRegions = new(StringComparer.Ordinal)
+    {
+        "US", "CA", "AU", "NZ", "IN", "PH", "PK", "BD", "EG", "MX", "CO", "SA",
+    };
+
+    // A representative IANA time-zone for a handful of common regions. Not
+    // exhaustive — getTimeZones falls back to UTC for regions not listed here.
+    private static readonly Dictionary<string, string> RegionPrimaryTimeZone = new(StringComparer.Ordinal)
+    {
+        ["US"] = "America/New_York", ["CA"] = "America/Toronto", ["GB"] = "Europe/London",
+        ["DE"] = "Europe/Berlin", ["FR"] = "Europe/Paris", ["ES"] = "Europe/Madrid",
+        ["IT"] = "Europe/Rome", ["RU"] = "Europe/Moscow", ["CN"] = "Asia/Shanghai",
+        ["JP"] = "Asia/Tokyo", ["IN"] = "Asia/Kolkata", ["AU"] = "Australia/Sydney",
+        ["BR"] = "America/Sao_Paulo", ["MX"] = "America/Mexico_City",
+    };
+
     public JSIntlLocale(string tag = "und") : base(CurrentPrototype()) => this.tag = tag;
+
+    // Builds the result of CreateArrayFromListAndPreferred: the preferred value
+    // (when present) first, then the remaining list entries that differ from it.
+    private static JSValue CreateArrayFromListAndPreferred(string preferred, params string[] list)
+    {
+        var array = JSValue.CreateArray();
+        if (preferred != null)
+            array.AddArrayItem(JSValue.CreateString(preferred));
+        foreach (var item in list)
+            if (preferred == null || !string.Equals(item, preferred, StringComparison.Ordinal))
+                array.AddArrayItem(JSValue.CreateString(item));
+        return array;
+    }
+
+    // A Unicode-extension keyword type is only a usable "preferred" value when it
+    // names an explicit type (an empty/absent type is ignored).
+    private static string Preferred(string keywordType)
+        => string.IsNullOrEmpty(keywordType) ? null : keywordType;
+
+    private string DefaultHourCycle()
+    {
+        var region = GetRegion();
+        if (region != null)
+            return TwelveHourRegions.Contains(region) ? "h12" : "h23";
+        return GetLanguage() == "en" ? "h12" : "h23";
+    }
 
     private static JSObject CurrentPrototype()
         => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
@@ -1268,26 +1322,30 @@ public sealed class JSIntlLocale : JSObject
 
     public static JSValue GetCalendarsPrototype(in Arguments a)
     {
-        RequireLocale(in a, "getCalendars");
-        return JSValue.CreateArray();
+        var locale = RequireLocale(in a, "getCalendars");
+        return CreateArrayFromListAndPreferred(Preferred(locale.GetUnicodeKeyword("ca")), "gregory");
     }
 
     public static JSValue GetCollationsPrototype(in Arguments a)
     {
-        RequireLocale(in a, "getCollations");
-        return JSValue.CreateArray();
+        var locale = RequireLocale(in a, "getCollations");
+        var preferred = Preferred(locale.GetUnicodeKeyword("co"));
+        // The spec excludes "standard" and "search" from the collation list.
+        if (preferred is "standard" or "search")
+            preferred = null;
+        return CreateArrayFromListAndPreferred(preferred, "default");
     }
 
     public static JSValue GetHourCyclesPrototype(in Arguments a)
     {
-        RequireLocale(in a, "getHourCycles");
-        return JSValue.CreateArray();
+        var locale = RequireLocale(in a, "getHourCycles");
+        return CreateArrayFromListAndPreferred(Preferred(locale.GetUnicodeKeyword("hc")), locale.DefaultHourCycle());
     }
 
     public static JSValue GetNumberingSystemsPrototype(in Arguments a)
     {
-        RequireLocale(in a, "getNumberingSystems");
-        return JSValue.CreateArray();
+        var locale = RequireLocale(in a, "getNumberingSystems");
+        return CreateArrayFromListAndPreferred(Preferred(locale.GetUnicodeKeyword("nu")), "latn");
     }
 
     public static JSValue GetTextInfoPrototype(in Arguments a)
@@ -1298,8 +1356,19 @@ public sealed class JSIntlLocale : JSObject
 
     public static JSValue GetTimeZonesPrototype(in Arguments a)
     {
-        RequireLocale(in a, "getTimeZones");
-        return JSValue.CreateArray();
+        var locale = RequireLocale(in a, "getTimeZones");
+        var region = locale.GetRegion();
+
+        // Per spec, getTimeZones returns undefined for a locale without a region.
+        if (region == null)
+            return JSValue.UndefinedValue;
+
+        // Region→IANA time-zone data is not bundled; return a representative
+        // non-empty list (a primary zone for known regions, UTC otherwise).
+        var array = JSValue.CreateArray();
+        array.AddArrayItem(JSValue.CreateString(
+            RegionPrimaryTimeZone.TryGetValue(region, out var zone) ? zone : "UTC"));
+        return array;
     }
 
     public static JSValue GetWeekInfoPrototype(in Arguments a)
@@ -1807,6 +1876,9 @@ public class JSIntlDateTimeFormat : JSObject
     private static readonly ConcurrentDictionary<string, JSIntlDateTimeFormat> formats = new();
     private static readonly KeyString HourKey = KeyStrings.GetOrCreate("hour");
     private static readonly KeyString DayPeriodKey = KeyStrings.GetOrCreate("dayPeriod");
+    private static readonly KeyString MinuteKey = KeyStrings.GetOrCreate("minute");
+    private static readonly KeyString SecondKey = KeyStrings.GetOrCreate("second");
+    private static readonly KeyString FractionalSecondDigitsKey = KeyStrings.GetOrCreate("fractionalSecondDigits");
     private readonly CultureInfo locale;
     private readonly string localeTag;
     private JSObject options;
@@ -1900,6 +1972,34 @@ public class JSIntlDateTimeFormat : JSObject
             return dayPeriodParts;
         }
 
+        // minute + second (optionally with fractionalSecondDigits), no hour/date
+        // fields: render "mm:ss[.fff]" as typed parts.
+        if (@this.options != null
+            && !@this.options[MinuteKey].IsUndefined
+            && !@this.options[SecondKey].IsUndefined
+            && @this.options[HourKey].IsUndefined)
+        {
+            var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
+            var timeParts = JSValue.CreateArray();
+            AddDateTimePart(timeParts, "minute", localTime.Minute.ToString("D2", CultureInfo.InvariantCulture));
+            AddDateTimePart(timeParts, "literal", ":");
+            AddDateTimePart(timeParts, "second", localTime.Second.ToString("D2", CultureInfo.InvariantCulture));
+
+            var fractionalSecondDigits = @this.options[FractionalSecondDigitsKey];
+            if (!fractionalSecondDigits.IsUndefined)
+            {
+                var digits = (int)fractionalSecondDigits.DoubleValue;
+                if (digits >= 1 && digits <= 3)
+                {
+                    AddDateTimePart(timeParts, "literal", ".");
+                    AddDateTimePart(timeParts, "fractionalSecond",
+                        localTime.Millisecond.ToString("D3", CultureInfo.InvariantCulture).Substring(0, digits));
+                }
+            }
+
+            return timeParts;
+        }
+
         var formatted = clipped.ToString(CultureInfo.InvariantCulture);
         var parts = JSValue.CreateArray();
         var part = new JSObject();
@@ -1907,6 +2007,14 @@ public class JSIntlDateTimeFormat : JSObject
         part[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(formatted);
         parts.AddArrayItem(part);
         return parts;
+    }
+
+    private static void AddDateTimePart(JSValue parts, string type, string value)
+    {
+        var part = new JSObject();
+        part[KeyStrings.GetOrCreate("type")] = JSValue.CreateString(type);
+        part[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(value);
+        parts.AddArrayItem(part);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)

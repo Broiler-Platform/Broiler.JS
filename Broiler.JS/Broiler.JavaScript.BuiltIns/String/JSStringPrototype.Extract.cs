@@ -73,8 +73,9 @@ public partial class JSString
     [JSExport("toString")]
     public static JSValue ToString(in Arguments a) => a.This.AsJSString();
 
+    // The String iterator yields Unicode code points (not UTF-16 code units).
     [Symbol("@@iterator")]
-    public static JSValue Iterator(in Arguments a) => new JSGenerator(a.This.GetElementEnumerator(), "Array Iterator");
+    public static JSValue Iterator(in Arguments a) => new JSGenerator(new JSString(a.This.AsString()).GetIterableEnumerator(), "String Iterator");
 
     [JSPrototypeMethod]
     [JSExport("charCodeAt", Length = 1)]

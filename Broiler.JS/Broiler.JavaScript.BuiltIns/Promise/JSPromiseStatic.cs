@@ -176,16 +176,18 @@ public partial class JSPromise
 
         return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
         {
-            var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
-                ?? throw JSEngine.NewTypeError($"Cannot use promise without Synchronization Context");
+            // remainingElementsCount (§27.2.4.1.2) starts at 1 and is decremented
+            // once per settled element plus once after iteration completes. The
+            // capability resolves only when it reaches 0, so synchronous thenables
+            // that settle during the loop cannot resolve the result prematurely.
+            // The resolve element runs synchronously (a native promise already
+            // dispatches its reaction on a microtask via Then).
+            int remaining = 1;
 
-            uint remaining = 0;
-            bool empty = true;
-
-            void FinishIfDone()
+            void Settle()
             {
-                if (remaining == 0)
-                    sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, result)), null);
+                if (--remaining == 0)
+                    resolve.InvokeFunction(new Arguments(JSUndefined.Value, result));
             }
 
             // Per §27.2.4.1, an abrupt completion while obtaining the constructor's
@@ -200,24 +202,23 @@ public partial class JSPromise
                     if (!hasValue)
                         continue;
 
-                    empty = false;
                     var currentIndex = index++;
+                    result[currentIndex] = JSUndefined.Value;
                     remaining++;
+
+                    var alreadyCalled = false;
                     var resolveElement = new JSFunction((in Arguments args) =>
                     {
-                        var value = args.Get1();
-                        sc.Post(_ =>
-                        {
-                            result[currentIndex] = value;
-                            remaining--;
-                            FinishIfDone();
-                        }, null);
+                        if (alreadyCalled)
+                            return JSUndefined.Value;
+                        alreadyCalled = true;
+                        result[currentIndex] = args.Get1();
+                        Settle();
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
                     var rejectElement = new JSFunction((in Arguments args) =>
                     {
-                        var reason = args.Get1();
-                        sc.Post(_ => reject.InvokeFunction(new Arguments(JSUndefined.Value, reason)), null);
+                        reject.InvokeFunction(new Arguments(JSUndefined.Value, args.Get1()));
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
@@ -242,8 +243,7 @@ public partial class JSPromise
                     resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
                 }
 
-                if (empty)
-                    sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, result)), null);
+                Settle();
             }
             catch (JSException ex)
             {
@@ -392,16 +392,16 @@ public partial class JSPromise
 
         return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
         {
-            var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
-                ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
+            // remainingElementsCount (§27.2.4.7) starts at 1 and is decremented per
+            // settled element plus once after iteration; the capability resolves
+            // only at 0. Each element settles synchronously (a native promise
+            // already dispatches its reaction on a microtask via Then).
+            int remaining = 1;
 
-            uint remaining = 0;
-            bool empty = true;
-
-            void FinishIfDone()
+            void Settle()
             {
-                if (remaining == 0)
-                    sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, result)), null);
+                if (--remaining == 0)
+                    resolve.InvokeFunction(new Arguments(JSUndefined.Value, result));
             }
 
             // Per §27.2.4.7, an abrupt completion while obtaining the constructor's
@@ -410,41 +410,39 @@ public partial class JSPromise
             try
             {
                 GetPromiseResolve(constructor);
-                var en = iterable.GetElementEnumerator();
+                var en = iterable.GetIterableEnumerator();
                 while (en.MoveNext(out var hasValue, out var item, out var _))
                 {
                     if (!hasValue)
                         continue;
 
-                    empty = false;
                     var currentIndex = index++;
+                    result[currentIndex] = JSUndefined.Value;
                     remaining++;
+
+                    var alreadyCalled = false;
                     var resolveElement = new JSFunction((in Arguments args) =>
                     {
+                        if (alreadyCalled)
+                            return JSUndefined.Value;
+                        alreadyCalled = true;
                         var entry = new JSObject();
                         entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("fulfilled");
-                        var value = args.Get1();
-                        entry[KeyStrings.GetOrCreate("value")] = value;
-                        sc.Post(_ =>
-                        {
-                            result[currentIndex] = entry;
-                            remaining--;
-                            FinishIfDone();
-                        }, null);
+                        entry[KeyStrings.GetOrCreate("value")] = args.Get1();
+                        result[currentIndex] = entry;
+                        Settle();
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
                     var rejectElement = new JSFunction((in Arguments args) =>
                     {
+                        if (alreadyCalled)
+                            return JSUndefined.Value;
+                        alreadyCalled = true;
                         var entry = new JSObject();
                         entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("rejected");
-                        var reason = args.Get1();
-                        entry[KeyStrings.GetOrCreate("reason")] = reason;
-                        sc.Post(_ =>
-                        {
-                            result[currentIndex] = entry;
-                            remaining--;
-                            FinishIfDone();
-                        }, null);
+                        entry[KeyStrings.GetOrCreate("reason")] = args.Get1();
+                        result[currentIndex] = entry;
+                        Settle();
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
@@ -454,18 +452,20 @@ public partial class JSPromise
                         continue;
                     }
 
-                    var then = item[KeyStrings.then];
-                    if (then.IsFunction)
+                    if (!item.IsNullOrUndefined)
                     {
-                        then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
-                        continue;
+                        var then = item[KeyStrings.then];
+                        if (then.IsFunction)
+                        {
+                            then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
+                            continue;
+                        }
                     }
 
                     resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
                 }
 
-                if (empty)
-                    sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, result)), null);
+                Settle();
             }
             catch (JSException ex)
             {
@@ -520,11 +520,18 @@ public partial class JSPromise
 
         return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
         {
-            var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
-                ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
+            // remainingElementsCount (§27.2.4.3) starts at 1 and is decremented per
+            // rejection plus once after iteration; the promise rejects with an
+            // AggregateError only when every element has rejected. A fulfillment
+            // resolves the result. Elements settle synchronously (a native promise
+            // already dispatches its reaction on a microtask via Then).
+            int remaining = 1;
 
-            uint remaining = 0;
-            bool empty = true;
+            void RejectIfDone()
+            {
+                if (--remaining == 0)
+                    reject.InvokeFunction(new Arguments(JSUndefined.Value, NewAggregateError(errors)));
+            }
 
             // Per §27.2.4.3, an abrupt completion while obtaining the constructor's
             // "resolve" method, or while obtaining or stepping the iterable, must
@@ -532,31 +539,32 @@ public partial class JSPromise
             try
             {
                 GetPromiseResolve(constructor);
-                var en = iterable.GetElementEnumerator();
+                var en = iterable.GetIterableEnumerator();
                 while (en.MoveNext(out var hasValue, out var item, out var _))
                 {
                     if (!hasValue)
                         continue;
 
-                    empty = false;
+                    var currentIndex = errorIndex++;
+                    errors[currentIndex] = JSUndefined.Value;
                     remaining++;
+
+                    var alreadyCalled = false;
                     var resolveElement = new JSFunction((in Arguments args) =>
                     {
-                        var value = args.Get1();
-                        sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, value)), null);
+                        if (alreadyCalled)
+                            return JSUndefined.Value;
+                        alreadyCalled = true;
+                        resolve.InvokeFunction(new Arguments(JSUndefined.Value, args.Get1()));
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
                     var rejectElement = new JSFunction((in Arguments args) =>
                     {
-                        var currentIndex = errorIndex++;
-                        var reason = args.Get1();
-                        sc.Post(_ =>
-                        {
-                            errors[currentIndex] = reason;
-                            remaining--;
-                            if (remaining == 0)
-                                reject.InvokeFunction(new Arguments(JSUndefined.Value, errors));
-                        }, null);
+                        if (alreadyCalled)
+                            return JSUndefined.Value;
+                        alreadyCalled = true;
+                        errors[currentIndex] = args.Get1();
+                        RejectIfDone();
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
@@ -566,23 +574,37 @@ public partial class JSPromise
                         continue;
                     }
 
-                    var then = item[KeyStrings.then];
-                    if (then.IsFunction)
+                    if (!item.IsNullOrUndefined)
                     {
-                        then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
-                        continue;
+                        var then = item[KeyStrings.then];
+                        if (then.IsFunction)
+                        {
+                            then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
+                            continue;
+                        }
                     }
 
                     resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
                 }
 
-                if (empty)
-                    sc.Post(_ => reject.InvokeFunction(new Arguments(JSUndefined.Value, errors)), null);
+                RejectIfDone();
             }
             catch (JSException ex)
             {
                 reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
             }
         });
+    }
+
+    // Builds an AggregateError whose "errors" property holds the collected
+    // rejection reasons, using the realm's AggregateError constructor so that
+    // the result is `instanceof AggregateError` with the correct prototype.
+    private static JSValue NewAggregateError(JSValue errors)
+    {
+        var constructor = (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("AggregateError")];
+        if (constructor != null && constructor.IsFunction)
+            return constructor.CreateInstance(new Arguments(JSUndefined.Value, errors));
+
+        return errors;
     }
 }

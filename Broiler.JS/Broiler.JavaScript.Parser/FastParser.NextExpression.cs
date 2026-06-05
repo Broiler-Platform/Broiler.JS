@@ -37,6 +37,21 @@ partial class FastParser
         if (type == TokenTypes.QuestionDot)
             return new AstMemberExpression(left, right, false, true);
 
+        // The left operand of `**` must be an UpdateExpression: an unparenthesised
+        // unary expression (-x, +x, !x, ~x, typeof/void/delete x) is a SyntaxError,
+        // because its precedence relative to `**` is ambiguous. Prefix/postfix
+        // ++/-- are UpdateExpressions and remain valid, and parentheses
+        // (`(-2) ** 2`) disambiguate.
+        if (type == TokenTypes.Power
+            && left is AstUnaryExpression unary
+            && !unary.WasParenthesized
+            && unary.Operator != UnaryOperator.Increment
+            && unary.Operator != UnaryOperator.Decrement)
+        {
+            throw new FastParseException(left.Start,
+                "Unary operator used immediately before exponentiation expression; parentheses must be used to disambiguate operator precedence");
+        }
+
         return new AstBinaryExpression(left, type, right);
     }
 
@@ -331,10 +346,13 @@ partial class FastParser
 
     static bool Precedes(TokenTypes left, TokenTypes right)
     {
+        // Lower number == binds tighter. Exponentiation (`**`) is the tightest
+        // binary operator — tighter than multiplicative — so it must rank below 1.
         static int CalculatePrecedence(TokenTypes token)
         {
             return token switch
             {
+                TokenTypes.Power => 0,
                 TokenTypes.Mod or TokenTypes.Divide or TokenTypes.Multiply => 1,
                 TokenTypes.Plus or TokenTypes.Minus => 2,
                 TokenTypes.LeftShift or TokenTypes.RightShift or TokenTypes.UnsignedRightShift => 3,
@@ -351,7 +369,16 @@ partial class FastParser
         }
 
         if (left != TokenTypes.SemiColon && left != TokenTypes.EOF)
+        {
+            // `**` is right-associative: a ** b ** c == a ** (b ** c). When both
+            // the incoming and the pending operator are exponentiation, let the
+            // incoming one bind into the right operand first (which equal-
+            // precedence left-associative handling below would otherwise prevent).
+            if (left == TokenTypes.Power && right == TokenTypes.Power)
+                return true;
+
             return CalculatePrecedence(left) < CalculatePrecedence(right);
+        }
 
         return false;
     }

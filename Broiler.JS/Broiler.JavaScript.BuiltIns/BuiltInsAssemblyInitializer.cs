@@ -596,7 +596,7 @@ internal static class BuiltInsAssemblyInitializer
             prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, CreateNativeFunction(static (in Arguments a) =>
             {
                 var text = a.This.AsString();
-                return new JSGenerator(new JSString(text).GetElementEnumerator(), "String Iterator");
+                return new JSGenerator(new JSString(text).GetIterableEnumerator(), "String Iterator");
             }, "[Symbol.iterator]"), JSPropertyAttributes.ConfigurableValue);
         }
 

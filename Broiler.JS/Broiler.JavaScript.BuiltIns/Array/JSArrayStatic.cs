@@ -27,7 +27,9 @@ public partial class JSArray
         var t = a.This;
         var constructor = JSConstructorOperations.IsConstructor(t) && t is JSObject ctor ? ctor : null;
         var iteratorMethod = JSValue.SymbolIterator == null ? JSUndefined.Value : f.PropertyOrUndefined(JSValue.SymbolIterator);
-        var useArrayLike = iteratorMethod.IsUndefined || iteratorMethod.IsNull;
+        // A String is always iterable (by code point), even though @@iterator
+        // lookup on a primitive string value currently misses the prototype.
+        var useArrayLike = (iteratorMethod.IsUndefined || iteratorMethod.IsNull) && !f.IsString;
 
         if (useArrayLike)
         {
