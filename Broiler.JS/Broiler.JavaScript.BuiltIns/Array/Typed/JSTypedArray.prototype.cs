@@ -188,6 +188,19 @@ partial class JSTypedArray
     }
 
 
+    [JSExport("at", Length = 1)]
+    public JSValue At(in Arguments a)
+    {
+        var len = Length;
+        var relativeIndex = ToIntegerOrInfinity(a.Get1());
+        long index = relativeIndex >= 0 ? relativeIndex : (long)len + relativeIndex;
+
+        if (index < 0 || index >= len)
+            return JSUndefined.Value;
+
+        return this[(uint)index];
+    }
+
     [JSExport("find", Length = 1)]
     public JSValue Find(in Arguments a)
     {

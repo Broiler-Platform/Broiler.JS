@@ -246,8 +246,11 @@ partial class JSNumber
         if (hasDigits)
         {
             var digitsNumber = digitsValue.DoubleValue;
-            if (double.IsNaN(digitsNumber) || double.IsInfinity(digitsNumber))
-                throw JSEngine.NewRangeError("toFixed() digits argument must be between 0 and 100");
+            // Per spec, ToIntegerOrInfinity(fractionDigits) maps NaN to 0; only the
+            // subsequent [0, 100] range check rejects out-of-range values (which
+            // includes ±Infinity, since Math.Truncate leaves them unchanged).
+            if (double.IsNaN(digitsNumber))
+                digitsNumber = 0;
 
             var integerDigits = Math.Truncate(digitsNumber);
             if (integerDigits < 0 || integerDigits > 100)
@@ -269,15 +272,15 @@ partial class JSNumber
         if (hasDigits)
         {
             if (nv > 999999999999999.0 && digits <= 15)
-                return new JSString(nv.ToString("g21"));
+                return new JSString(nv.ToString("g21", CultureInfo.InvariantCulture));
 
-            return new JSString(nv.ToString($"F{digits}"));
+            return new JSString(nv.ToString($"F{digits}", CultureInfo.InvariantCulture));
         }
 
         if (nv > 999999999999999.0)
-            return new JSString(nv.ToString("g21"));
+            return new JSString(nv.ToString("g21", CultureInfo.InvariantCulture));
 
-        return new JSString(nv.ToString("F0"));
+        return new JSString(nv.ToString("F0", CultureInfo.InvariantCulture));
     }
 
     [JSPrototypeMethod]

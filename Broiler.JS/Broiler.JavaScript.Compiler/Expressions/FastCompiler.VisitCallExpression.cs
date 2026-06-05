@@ -116,7 +116,10 @@ partial class FastCompiler
             // new.target is only legal in the eval body when the direct eval is
             // (transitively, through arrow functions) inside ordinary function
             // code. In global code it is a SyntaxError (PerformEval early error).
-            var rejectNewTarget = !EnclosedByOrdinaryFunction(scope.Top);
+            // A class field initializer counts as ordinary function code even when
+            // the class has no explicit constructor (so scope.Top is not itself a
+            // function scope), so new.target is permitted there too.
+            var rejectNewTarget = !inMemberInitializer && !EnclosedByOrdinaryFunction(scope.Top);
             return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), scope.Top.ThisExpression, activationOwner, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding), superValue, YExpression.Constant(inMemberInitializer), YExpression.Constant(rejectNewTarget));
         }
 

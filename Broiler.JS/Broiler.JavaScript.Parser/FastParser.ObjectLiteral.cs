@@ -18,7 +18,24 @@ partial class FastParser
         var begin = BeginUndo();
         var current = begin.Token;
 
-        var isStatic = isClass ? stream.CheckAndConsume(FastKeywords.@static) : false;
+        var isStatic = false;
+        if (isClass && stream.CheckAndConsume(FastKeywords.@static))
+        {
+            // `static` is a class-element modifier only when followed by something
+            // that can begin a class element name. When the next token terminates
+            // the element (`;`, `}`, EOF), starts an initializer (`=`), or opens a
+            // parameter list (`(`), `static` is itself the field/method name — e.g.
+            // `class C { static; }`, `static = 1`, `static() {}`.
+            if (stream.Current.Type is TokenTypes.Assign or TokenTypes.SemiColon
+                or TokenTypes.CurlyBracketEnd or TokenTypes.EOF or TokenTypes.BracketStart)
+            {
+                begin.Reset();
+            }
+            else
+            {
+                isStatic = true;
+            }
+        }
 
         if (isStatic && stream.Current.Type == TokenTypes.CurlyBracketStart)
         {
