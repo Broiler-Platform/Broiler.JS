@@ -2,9 +2,25 @@
 
 This file tracks areas that must be validated before Broiler.JS can make strong standards-compliance claims.
 
-All currently tracked gaps for the supported scope are closed by the evidence below.
+The gaps tracked through 2026-05-10 are closed by the evidence below. The
+2026-06-05 automated full script-host run reopened a fresh set of gaps; they are
+triaged in [`triage-issue-673.md`](triage-issue-673.md) and indexed as tracked
+batches.
 
 Tracked batch details live in [`roadmap-to-100-percent.md`](roadmap-to-100-percent.md#tracked-gap-batches).
+
+## Open gaps (2026-06-05, issue #673)
+
+The full script-host runner filed [issue #673](https://github.com/MaiRat/Broiler.JS/issues/673)
+with the ten most-common failure categories. Each is documented (root cause +
+implementation area + next step) in [`triage-issue-673.md`](triage-issue-673.md):
+
+- [ ] `IteratorClose` not run on generator `return()` through destructuring/`for-of` (`gap-673-iterator-close`).
+- [ ] `finally` abrupt completion (`continue`/`break`/`return`) does not override a pending throw (`gap-673-finally-override`).
+- [ ] Direct `eval` `var` injection + compound-assignment reference timing (`gap-673-eval-injection`).
+- [ ] Unicode `ID_Start` identifiers and `#` private names beyond the host Unicode version (`gap-673-unicode-identifiers`).
+- [ ] `Intl.DateTimeFormat` `formatRange`/`formatRangeToParts`/`formatToParts` divergence (`gap-673-intl-range`).
+- [ ] Structural / `SameValue` / parser categories needing per-file reproduction (`gap-673-triage-remaining`).
 
 ## Tracking checklist
 
