@@ -290,7 +290,6 @@ public static class JSIntl
         var constructor = new JSFunction((in Arguments a) =>
         {
             var options = ValidateConstructorArguments("Segmenter", in a);
-            _ = GetOption(options, LocaleMatcherKey, ["lookup", "best fit"], false, "best fit");
             var locale = ResolveLocale(a.Get1());
             var granularity = GetOption(options, GranularityKey, ["grapheme", "word", "sentence"], false, "grapheme");
             return new JSIntlSegmenter(locale, granularity);
@@ -459,7 +458,13 @@ public static class JSIntl
             throw JSEngine.NewTypeError($"Intl.{name} requires 'new'");
 
         ValidateLocalesArgument(a.Get1());
-        return ValidateOptionsArgument(a.GetAt(1));
+        var options = ValidateOptionsArgument(a.GetAt(1));
+        // Every Intl service constructor reads localeMatcher first (right after
+        // coercing the options object) via GetOption(..., «lookup, best fit», ...),
+        // which is a RangeError for any other value. Validate it centrally so all
+        // constructors reject an invalid localeMatcher.
+        _ = GetOption(options, LocaleMatcherKey, ["lookup", "best fit"], false, "best fit");
+        return options;
     }
 
     internal static string ValidateLocaleConstructorArguments(in Arguments a)
@@ -665,7 +670,7 @@ public static class JSIntl
         if (options == null)
             throw JSEngine.NewTypeError("Intl.DisplayNames requires an options object");
 
-        _ = GetOption(options, LocaleMatcherKey, ["lookup", "best fit"], false, "best fit");
+        // localeMatcher is validated centrally in ValidateConstructorArguments.
         var style = GetOption(options, StyleKey, ["narrow", "short", "long"], false, "long");
         var type = GetOption(options, TypeKey, ["language", "region", "script", "currency", "calendar", "dateTimeField"], true);
         var fallback = GetOption(options, FallbackKey, ["code", "none"], false, "code");

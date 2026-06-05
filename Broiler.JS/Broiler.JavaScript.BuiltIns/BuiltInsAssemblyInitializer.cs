@@ -1170,7 +1170,10 @@ internal static class BuiltInsAssemblyInitializer
                 throw JSEngine.NewTypeError("RegExp.prototype[Symbol.match] called on incompatible receiver");
 
             var input = a.Get1();
-            var flags = GetObservableFlags(rx).ToString();
+            // §22.2.6.8 step 4: flags = ToString(Get(rx, "flags")). Read the
+            // observable "flags" property (so a user getter / toString runs and
+            // its errors propagate) rather than the individual flag accessors.
+            var flags = rx[KeyStrings.GetOrCreate("flags")].StringValue;
             if (!flags.Contains('g'))
             {
                 if (rx is JSRegExp regExp)
@@ -1251,7 +1254,10 @@ internal static class BuiltInsAssemblyInitializer
             var replaceValue = a.TryGetAt(1, out var second) ? second : JSUndefined.Value;
             var functionalReplace = replaceValue.IsFunction;
             var replacementText = functionalReplace ? null : replaceValue.ToString();
-            var flags = GetObservableFlags(rx).ToString();
+            // §22.2.6.11 step 7: flags = ToString(Get(rx, "flags")). Read the
+            // observable "flags" property so a user getter / toString runs and
+            // its errors propagate.
+            var flags = rx[KeyStrings.GetOrCreate("flags")].StringValue;
             var global = flags.Contains('g');
 
             if (global)
@@ -1517,15 +1523,26 @@ internal static class BuiltInsAssemblyInitializer
         ref var symbols = ref arrayCtor.prototype.GetSymbols();
         if (!symbols.TryGetValue(JSSymbol.unscopables.Key, out var property) || property.IsEmpty || property.value is not JSObject unscopables)
         {
+            // §23.1.3.40: Array.prototype[@@unscopables] is OrdinaryObjectCreate(null) —
+            // a null-prototype object, so Object.getPrototypeOf(...) is null.
             unscopables = new JSObject();
+            unscopables.BasePrototypeObject = null;
             symbols.Put(JSSymbol.unscopables.Key) = JSProperty.Property(unscopables, JSPropertyAttributes.ConfigurableValue);
         }
 
-        unscopables.FastAddValue(KeyStrings.GetOrCreate("toReversed"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
-        unscopables.FastAddValue(KeyStrings.GetOrCreate("toSorted"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
-        unscopables.FastAddValue(KeyStrings.GetOrCreate("toSpliced"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
-        unscopables.FastAddValue(KeyStrings.GetOrCreate("with"), JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
+        // §23.1.3.40: each entry is CreateDataPropertyOrThrow(list, name, true), i.e.
+        // a { value: true, writable, enumerable, configurable } data property.
+        foreach (var name in ArrayUnscopableNames)
+            unscopables.FastAddValue(KeyStrings.GetOrCreate(name), JSValue.BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
     }
+
+    // The @@unscopables list for Array.prototype, in spec order (§23.1.3.40).
+    private static readonly string[] ArrayUnscopableNames =
+    {
+        "at", "copyWithin", "entries", "fill", "find", "findIndex",
+        "findLast", "findLastIndex", "flat", "flatMap", "includes",
+        "keys", "toReversed", "toSorted", "toSpliced", "values", "with"
+    };
 
     private static readonly string[] TypedArrayConstructorNames =
     {
