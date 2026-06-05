@@ -675,6 +675,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // code unit, so expand it to also match surrogate pairs.
             if (unicode || unicodeSets)
             {
+                // v-mode (unicodeSets) extended character classes with set
+                // operations (A--B, A&&B), string literals \q{…}, and properties
+                // of strings expand to a literal alternation that .NET can match.
+                // Run before the property/surrogate transforms so the rewritten
+                // fragment (plain classes + escaped literals) flows through them.
+                if (unicodeSets)
+                    pattern = TransformUnicodeSetsClasses(pattern);
+
                 // Property escapes (\p{…}/\P{…}) are only valid in u/v mode.
                 // Translate the General_Category dimension to .NET-compatible
                 // short forms before the surrogate-aware class transforms run.
@@ -1386,6 +1394,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     {
         ["ascii"] = new (int, int)[] { (0x00, 0x7F) },
         ["any"] = new (int, int)[] { (0x00, 0x10FFFF) },
+        ["asciihexdigit"] = new (int, int)[] { (0x30, 0x39), (0x41, 0x46), (0x61, 0x66) },
     };
 
     private static Dictionary<string, string> BuildGeneralCategoryNames()
