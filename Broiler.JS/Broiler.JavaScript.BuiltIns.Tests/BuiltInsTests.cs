@@ -6944,14 +6944,38 @@ public class BuiltInsTests
     }
 
     [Fact]
-    public void RegExp_Unsupported_Unicode_Property_Escapes_Throw_Clear_Error()
+    public void RegExp_Unicode_Script_Han_Matches_Supplementary_Plane()
     {
-        // Script and emoji string-property escapes need a Unicode database that is
-        // not bundled yet; they should fail cleanly as SyntaxErrors rather than
-        // surfacing .NET's cryptic "Incomplete \p{X}" message.
+        // #642 problems 1/4: \p{Script=Han} (and lone \p{Han}) must match the
+        // supplementary-plane Han ideograph U+20BB7 ('𠮷'), including inside a
+        // capture group and under both the u and v flags, and must not match
+        // ASCII. \P{ASCII} must consume a full supplementary code point.
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
-        Assert.Throws<JSException>(() => ctx.Eval(@"/\p{Script=Han}/u;"));
+        var result = ctx.Eval(@"
+            var text = '𠮷a𠮷';   // 𠮷a𠮷
+            function exec(re){ var m = re.exec(text); return m ? m[0] + '@' + m.index : 'null'; }
+            [
+                exec(/\p{Script=Han}/u),
+                exec(/\p{Script=Han}/v),
+                exec(/\p{Han}/u),
+                /\p{Script=Han}/u.test('a'),
+                exec(/\p{ASCII}/u),
+                /\P{ASCII}/u.exec('a𠮷b')[0],
+                (function(){ var m = /(\p{Script=Han})(.)/u.exec(text); return m[1] + ',' + m[2] + ',' + m.index; })()
+            ].join('|');
+        ");
+        Assert.Equal("𠮷@0|𠮷@0|𠮷@0|false|a@2|𠮷|𠮷,a,0", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Unsupported_Unicode_Property_Escapes_Throw_Clear_Error()
+    {
+        // Scripts without bundled data and emoji string-properties should fail
+        // cleanly as SyntaxErrors rather than surfacing .NET's cryptic message.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        Assert.Throws<JSException>(() => ctx.Eval(@"/\p{Script=Tibetan}/u;"));
         Assert.Throws<JSException>(() => ctx.Eval(@"/\p{RGI_Emoji}/v;"));
     }
 
