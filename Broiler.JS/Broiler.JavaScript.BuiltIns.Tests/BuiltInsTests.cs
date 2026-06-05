@@ -18,6 +18,41 @@ public class BuiltInsTests
         => new(experimentalFeatures: experimentalFeatures);
 
     [Fact]
+    public void Async_Function_Expression_Allows_Await_Of_Identifier()
+    {
+        // Regression: in `var f = async function(){ await <expr>; }` the body was
+        // parsed with inAsyncFunctionBody=false, so `await` before an identifier or
+        // call (but not a numeric literal) failed with "Unexpected token". This is
+        // the asyncTest(async function(){ await assert.throwsAsync(...) }) shape used
+        // by the Array.fromAsync test262 tests.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var firstCallMade = false;
+            var assert = { throwsAsync: function () { firstCallMade = true; return Promise.resolve(); } };
+            function asyncTest(t) { return t(); }
+            var p = asyncTest(async function () {
+                await assert.throwsAsync(TypeError, () => 1);
+                await assert.throwsAsync(TypeError, () => 2);
+            });
+            // The body runs synchronously up to the first await, so firstCallMade is
+            // already true; p is the promise returned by the async function.
+            [firstCallMade, typeof p.then].join('|');
+        ");
+        Assert.Equal("true|function", result.ToString());
+    }
+
+    [Fact]
+    public void Nonasync_Function_Nested_In_Async_Does_Not_Allow_Await()
+    {
+        // The async context must not leak into a plain nested function.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        Assert.Throws<JSException>(() => ctx.Eval(
+            "var x = 1; async function f(){ function g(){ return await x; } return g; } f();"));
+    }
+
+    [Fact]
     public void WeakRef_Construct_And_Deref()
     {
         EnsureBuiltInsLoaded();
@@ -6828,6 +6863,120 @@ public class BuiltInsTests
             })();
         ");
         Assert.Equal("try", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Undefined_Flags_Default_To_Empty_String()
+    {
+        // test262 S15.10.4.1_A4_T1..T5: "let F be the empty string if flags is undefined".
+        // Previously undefined flags were ToString'd to "undefined", whose 2nd char 'n'
+        // triggered a spurious "Unknown flag n" SyntaxError.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var a = new RegExp(null, void 0);
+            var b = new RegExp(undefined, undefined);
+            var c = new RegExp({}.p, {}.q);
+            var d = new RegExp('', (function(){})());
+            [a.source, b.multiline, b.global, b.ignoreCase, c.flags, d.flags].join('|');
+        ");
+        Assert.Equal("null|false|false|false||", result.ToString());
+    }
+
+    [Fact]
+    public void Atomics_Pause_Exists_And_Returns_Undefined()
+    {
+        // test262 Atomics/pause/{returns-undefined,length,name,descriptor,not-a-constructor}.js
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var pd = Object.getOwnPropertyDescriptor(Atomics, 'pause');
+            var ld = Object.getOwnPropertyDescriptor(Atomics.pause, 'length');
+            var notCtor = false;
+            try { new Atomics.pause(); } catch (e) { notCtor = e instanceof TypeError; }
+            [
+                typeof Atomics.pause,
+                Atomics.pause() === undefined,
+                Atomics.pause(0) === undefined,
+                Atomics.pause(Number.MAX_SAFE_INTEGER) === undefined,
+                Atomics.pause.name,
+                Atomics.pause.length,
+                pd.enumerable, pd.writable, pd.configurable,
+                ld.value, ld.enumerable, ld.writable, ld.configurable,
+                notCtor
+            ].join('|');
+        ");
+        Assert.Equal(
+            "function|true|true|true|pause|0|false|true|true|0|false|false|true|true",
+            result.ToString());
+    }
+
+    [Fact]
+    public void Atomics_Pause_Throws_On_Non_Integral_Argument()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        Assert.Throws<JSException>(() => ctx.Eval("Atomics.pause(1.5);"));
+        Assert.Throws<JSException>(() => ctx.Eval("Atomics.pause('1');"));
+        Assert.Throws<JSException>(() => ctx.Eval("Atomics.pause(NaN);"));
+    }
+
+    [Fact]
+    public void RegExp_Unicode_GeneralCategory_Property_Escapes()
+    {
+        // #642 problems 1/4 (partial): General_Category property escapes — including
+        // the long-name and `General_Category=Value` forms that .NET rejects — are
+        // translated to the short forms .NET understands.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            [
+                /\p{Letter}/u.test('A'),
+                /\p{Letter}/u.test('1'),
+                /\p{Lu}/u.test('A'),
+                /\p{gc=Lu}/u.test('A'),
+                /\p{General_Category=Decimal_Number}/u.test('7'),
+                /\P{Letter}/u.test('1'),
+                /[\p{Letter}\d]+/u.test('abc1')
+            ].join('|');
+        ");
+        Assert.Equal("true|false|true|true|true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Unicode_Script_Han_Matches_Supplementary_Plane()
+    {
+        // #642 problems 1/4: \p{Script=Han} (and lone \p{Han}) must match the
+        // supplementary-plane Han ideograph U+20BB7 ('𠮷'), including inside a
+        // capture group and under both the u and v flags, and must not match
+        // ASCII. \P{ASCII} must consume a full supplementary code point.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var text = '𠮷a𠮷';   // 𠮷a𠮷
+            function exec(re){ var m = re.exec(text); return m ? m[0] + '@' + m.index : 'null'; }
+            [
+                exec(/\p{Script=Han}/u),
+                exec(/\p{Script=Han}/v),
+                exec(/\p{Han}/u),
+                /\p{Script=Han}/u.test('a'),
+                exec(/\p{ASCII}/u),
+                /\P{ASCII}/u.exec('a𠮷b')[0],
+                (function(){ var m = /(\p{Script=Han})(.)/u.exec(text); return m[1] + ',' + m[2] + ',' + m.index; })()
+            ].join('|');
+        ");
+        Assert.Equal("𠮷@0|𠮷@0|𠮷@0|false|a@2|𠮷|𠮷,a,0", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Unsupported_Unicode_Property_Escapes_Throw_Clear_Error()
+    {
+        // Scripts without bundled data and emoji string-properties should fail
+        // cleanly as SyntaxErrors rather than surfacing .NET's cryptic message.
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        Assert.Throws<JSException>(() => ctx.Eval(@"/\p{Script=Tibetan}/u;"));
+        Assert.Throws<JSException>(() => ctx.Eval(@"/\p{RGI_Emoji}/v;"));
     }
 
     [Fact]
