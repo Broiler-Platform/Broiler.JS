@@ -57,7 +57,22 @@ public partial class ILCodeGenerator
                         il.EmitSaveLocal(v.LocalBuilder.LocalIndex);
                     }
 
+                    // A catch clause with no finally is itself in tail position when
+                    // the surrounding context is (spec: for `try Block Catch`, the
+                    // tail position of Catch is the tail position of the try
+                    // statement). A `return f()` there exits the function immediately,
+                    // so it must be a proper tail call rather than growing the stack.
+                    // This node always blocks (Catch != null), so lift exactly the
+                    // block it added while visiting the catch body; any enclosing
+                    // blocking (e.g. an outer try/finally) survives and keeps the
+                    // catch blocked. With a finally present the finally runs after
+                    // the catch, so the catch is NOT a tail position and stays blocked.
+                    var liftCatchBlock = blockTailCalls && tryCatchFinallyExpression.Finally == null;
+                    if (liftCatchBlock)
+                        tailCallBlockedDepth--;
                     Visit(tryCatchFinallyExpression.Catch.Body);
+                    if (liftCatchBlock)
+                        tailCallBlockedDepth++;
                     if (hasType)
                     {
                         il.EmitSaveLocal(result.LocalIndex);
@@ -67,7 +82,28 @@ public partial class ILCodeGenerator
                 if (tryCatchFinallyExpression.Finally != null)
                 {
                     tcb.BeginFinally();
+                    // The finally block runs last, so a `return f()` there is in tail
+                    // position whenever the try statement itself is. Lift this node's
+                    // block while visiting the finally so the call can be a proper tail
+                    // call; an enclosing try/finally's block still survives and keeps it
+                    // non-tail. The finally-jump machinery (ILTryBlock.Branch) defers the
+                    // return until after endfinally, so the JSTailCall sentinel reaches
+                    // the trampoline correctly.
+                    var liftFinallyBlock = blockTailCalls;
+                    if (liftFinallyBlock)
+                        tailCallBlockedDepth--;
                     Visit(tryCatchFinallyExpression.Finally);
+                    if (liftFinallyBlock)
+                        tailCallBlockedDepth++;
+
+                    // A finally never contributes a value, but its body expression can
+                    // be non-void on the fall-through path (e.g. an `if`/loop statement
+                    // lowers to a Block that ends with its completion variable). That
+                    // value would sit on the evaluation stack at endfinally, which is
+                    // illegal IL, so discard it. (Try/Catch save their value to `result`
+                    // above; the finally has nowhere to put it.)
+                    if (tryCatchFinallyExpression.Finally.Type != typeof(void))
+                        il.Emit(OpCodes.Pop);
                 }
                 tcb.Dispose();
             }

@@ -81,10 +81,20 @@ public static class DirectEvalSupport
         }
     }
 
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, bool tailCall = false)
     {
         if (!IsDirectEval(callee))
-            return callee.InvokeFunction(arguments);
+        {
+            // An `eval(...)` whose callee is not %eval% is an ordinary call. When it
+            // sits in a proper-tail-call position (BROILER_SCRIPT_HOST), the IL
+            // generator forces tailCall=true so we hand a JSTailCall sentinel back to
+            // the enclosing trampoline instead of recursing through InvokeFunction —
+            // otherwise deep `return eval(n-1)` self-recursion overflows the stack
+            // (test262 tco-non-eval-global/with/function-dynamic, #648 problem 2).
+            return tailCall
+                ? new JSTailCall(callee, arguments)
+                : callee.InvokeFunction(arguments);
+        }
 
         var value = arguments.Get1();
         if (!value.IsString)

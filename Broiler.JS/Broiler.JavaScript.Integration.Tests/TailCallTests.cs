@@ -39,6 +39,9 @@ public class TailCallTests
     [InlineData("function f(n){ if(n===0) return 'done'; while(true) return f(n-1); }")]            // while body
     [InlineData("function f(n){ if(n===0) return 'done'; do { return f(n-1); } while(false); }")]   // do-while body
     [InlineData("function f(n){ if(n===0) return 'done'; switch(1){ case 1: return f(n-1); } }")]   // switch body
+    [InlineData("function f(n){ if(n===0) return 'done'; try { throw 0; } catch(e){ return f(n-1); } }")] // catch body, no finally
+    [InlineData("function f(n){ if(n===0) return 'done'; try {} finally { return f(n-1); } }")]            // finally body
+    [InlineData("function f(n){ if(n===0) return 'done'; try {} catch(e){} finally { return f(n-1); } }")] // finally body, catch present
     public void TailPosition_DoesNotGrowStack(string fn)
     {
         var result = EvalWithScriptHost(Prelude + fn + "\nf(N);");
@@ -94,5 +97,178 @@ public class TailCallTests
             r + ':' + log.join(',');
             """);
         Assert.Equal("g:call,finally", result.ToString());
+    }
+
+    [Fact]
+    public void Catch_With_Finally_Does_Not_Reorder_Tail_Call()
+    {
+        // `return` inside a catch that has a finally is NOT a tail position: the
+        // finally must still run after the catch's call result is produced.
+        var result = EvalWithScriptHost("""
+            "use strict";
+            var log = [];
+            function g(){ log.push('call'); return 'g'; }
+            function f(){ try { throw 0; } catch(e){ return g(); } finally { log.push('finally'); } }
+            var r = f();
+            r + ':' + log.join(',');
+            """);
+        Assert.Equal("g:call,finally", result.ToString());
+    }
+
+    [Fact]
+    public void Catch_Inside_Outer_Finally_Still_Runs_Finally()
+    {
+        // A catch tail call enabled only when there is no finally — an *enclosing*
+        // try/finally must keep the inner catch's call non-tail so the outer
+        // finally still runs.
+        var result = EvalWithScriptHost("""
+            "use strict";
+            var log = [];
+            function g(){ log.push('call'); return 'g'; }
+            function f(){
+              try {
+                try { throw 0; } catch(e){ return g(); }
+              } finally { log.push('finally'); }
+            }
+            var r = f();
+            r + ':' + log.join(',');
+            """);
+        Assert.Equal("g:call,finally", result.ToString());
+    }
+
+    [Fact]
+    public void Catch_Tail_Call_Preserves_Catch_Side_Effects_And_Value()
+    {
+        // The catch body runs (binding + side effects) and a tail call from it
+        // returns the eventual value.
+        var result = EvalWithScriptHost("""
+            "use strict";
+            var seen = [];
+            function f(n){
+              try { throw n; }
+              catch(e){ seen.push(e); if(n > 0) return f(n-1); return 'done:' + seen.join(','); }
+            }
+            f(3);
+            """);
+        Assert.Equal("done:3,2,1,0", result.ToString());
+    }
+
+    [Fact]
+    public void Finally_Return_Overrides_Try_Completion()
+    {
+        // A return in finally overrides the try's pending return; without one the
+        // try value flows through. Guards the finally tail-call lift's correctness.
+        var result = EvalWithScriptHost("""
+            "use strict";
+            function f(x){ try { return 'T'; } finally { if (x) return 'F'; } }
+            '' + f(true) + ',' + f(false);
+            """);
+        Assert.Equal("F,T", result.ToString());
+    }
+
+    // test262 language/expressions/call/tco-non-eval-*: a call written `eval(...)`
+    // whose binding is not %eval% is an ordinary call and must be a proper tail call.
+    // Each reassigns `eval` to the recursing function itself; with PTC, callCount
+    // reaches exactly 1 (only the n===0 base case) instead of overflowing the stack.
+
+    // Note: these run in sloppy mode (no top-level "use strict"): the global case
+    // reassigns `eval` and the with case uses `with`, both illegal under strict.
+
+    [Fact]
+    public void NonEval_Global_TailCall()
+    {
+        var result = EvalWithScriptHost("""
+            var globalCount = 0;
+            function f(n) {
+              "use strict";
+              if (n === 0) { globalCount += 1; return; }
+              return eval(n - 1);
+            }
+            eval = f;
+            f(300000);
+            '' + globalCount;
+            """);
+        Assert.Equal("1", result.ToString());
+    }
+
+    [Fact]
+    public void NonEval_With_Scope_TailCall()
+    {
+        var result = EvalWithScriptHost("""
+            var globalCount = 0;
+            var f, scope = {};
+            with (scope) {
+              f = function (n) {
+                "use strict";
+                if (n === 0) { globalCount += 1; return; }
+                return eval(n - 1);
+              }
+            }
+            scope.eval = f;
+            f(300000);
+            '' + globalCount;
+            """);
+        Assert.Equal("1", result.ToString());
+    }
+
+    [Fact]
+    public void NonEval_Function_Dynamic_TailCall()
+    {
+        var result = EvalWithScriptHost("""
+            var globalCount = 0;
+            (function() {
+              function f(n) {
+                "use strict";
+                if (n === 0) { globalCount += 1; return; }
+                return eval(n - 1);
+              }
+              eval("var eval = f;");
+              f(300000);
+            })();
+            '' + globalCount;
+            """);
+        Assert.Equal("1", result.ToString());
+    }
+
+    [Fact]
+    public void NonTail_Indirect_Eval_Returns_Value_Not_Sentinel()
+    {
+        // The tail-call lift must not leak a JSTailCall sentinel into a non-tail use.
+        var result = EvalWithScriptHost("""
+            eval = function(n){ return n * 10; };
+            function f(){ var x = eval(5); return x + 1; }
+            '' + f();
+            """);
+        Assert.Equal("51", result.ToString());
+    }
+
+    [Fact]
+    public void Direct_Eval_In_Tail_Position_Returns_Real_Value()
+    {
+        // A genuine direct eval in tail position evaluates its body to a real value.
+        var result = EvalWithScriptHost("""
+            function f(){ return eval('40 + 2'); }
+            '' + f();
+            """);
+        Assert.Equal("42", result.ToString());
+    }
+
+    [Fact]
+    public void Finally_Inside_Outer_Finally_Still_Runs_Outer()
+    {
+        // An inner finally tail call must not skip an enclosing finally.
+        var result = EvalWithScriptHost("""
+            "use strict";
+            var log = [];
+            function g(){ log.push('call'); return 'g'; }
+            function f(){
+              try {
+                try {} finally { if (true) return g(); }
+              } finally { log.push('outer'); }
+            }
+            var r = f();
+            r + ':' + log.join(',');
+            """);
+        Assert.Equal("g:call,outer", result.ToString());
     }
 }
