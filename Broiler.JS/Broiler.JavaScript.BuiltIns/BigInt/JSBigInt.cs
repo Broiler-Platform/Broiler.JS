@@ -80,6 +80,10 @@ public partial class JSBigInt : JSPrimitive
         }
 
         var text = f.ToString();
+        // StringToBigInt of an empty or whitespace-only string is 0n, not an error
+        // (e.g. BigInt(""), new BigInt64Array([""])).
+        if (f.IsString && string.IsNullOrWhiteSpace(text))
+            return new JSBigInt(BigInteger.Zero);
         if (!TryParseBigIntString(text, out var v))
             throw (f.IsString || f.IsObject)
                 ? JSEngine.NewSyntaxError($"{f} is not a valid big integer")
