@@ -240,6 +240,8 @@ public class JSValueBuilder
 
     public static MethodInfo StaticEquals = type.PublicMethod(nameof(JSValue.StaticEquals), typeof(JSValue), typeof(JSValue));
 
+    public static MethodInfo StaticStrictEquals = type.PublicMethod(nameof(JSValue.StaticStrictEquals), typeof(JSValue), typeof(JSValue));
+
     private static MethodInfo _Equals = type.PublicMethod(nameof(JSValue.Equals), typeof(JSValue));
 
     public static Expression Equals(Expression target, Expression value)

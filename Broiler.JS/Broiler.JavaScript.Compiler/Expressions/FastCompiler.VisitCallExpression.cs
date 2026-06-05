@@ -143,7 +143,10 @@ partial class FastCompiler
                     else if (l.TokenType == TokenTypes.Number)
                         name = GetLiteralPropertyKey(l);
                     else
-                        throw new NotImplementedException();
+                        // null / bigint / regexp / etc. literal key: evaluate the
+                        // literal and coerce it to a property key at runtime
+                        // (mirrors VisitMemberExpression's read path).
+                        name = VisitLiteral(l);
                     break;
 
                 case FastNodeType.MemberExpression:

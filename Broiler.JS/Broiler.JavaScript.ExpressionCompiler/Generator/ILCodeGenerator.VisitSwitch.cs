@@ -135,8 +135,15 @@ public partial class ILCodeGenerator
                 Visit(test);
                 il.Emit(OpCodes.Beq, target);
             }
-            
+
             if(node.Target.Type == typeof(int)) {
+                return CompareInteger;
+            }
+
+            // A numeric (double) switch has no CompareMethod; compare with Beq,
+            // which is an ordered comparison (NaN never matches), matching ===.
+            if (node.Target.Type == typeof(double))
+            {
                 return CompareInteger;
             }
 

@@ -27,7 +27,11 @@ partial class FastParser
         var nodes = new Sequence<Case>();
         var statements = new Sequence<AstStatement>();
         AstExpression test = null;
-        bool hasDefault = false;
+        // Whether a case/default label has been opened whose body is still being
+        // accumulated. A pending `default` has a null test, so flushing on
+        // `test != null` would drop a non-last default clause (its statements
+        // would merge into the following case); track an explicit flag instead.
+        bool pending = false;
         var scope = variableScope.Push(begin, FastNodeType.Block);
 
         try
@@ -36,7 +40,7 @@ partial class FastParser
             {
                 if (stream.CheckAndConsume(FastKeywords.@case))
                 {
-                    if (test != null)
+                    if (pending)
                     {
                         nodes.Add(new Case(test, statements));
                         statements = [];
@@ -46,25 +50,26 @@ partial class FastParser
                         throw stream.Unexpected();
 
                     stream.Expect(TokenTypes.Colon);
+                    pending = true;
                 }
                 else if (stream.CheckAndConsume(FastKeywords.@default))
                 {
                     stream.Expect(TokenTypes.Colon);
 
-                    if (test != null)
+                    if (pending)
                     {
                         nodes.Add(new Case(test, statements));
                         statements = [];
                     }
 
                     test = null;
-                    hasDefault = true;
+                    pending = true;
                 }
                 else if (Statement(out var stmt))
                     statements.Add(stmt);
             }
 
-            if (test != null || hasDefault)
+            if (pending)
                 nodes.Add(new Case(test, statements));
 
             node = new AstSwitchStatement(begin, PreviousToken, target, nodes)

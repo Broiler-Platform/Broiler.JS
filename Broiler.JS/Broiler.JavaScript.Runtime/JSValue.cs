@@ -946,6 +946,12 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static bool StaticEquals(JSValue left, JSValue right) => left.Equals(right);
 
+    // SwitchStatement compares the discriminant against each case with the Strict
+    // Equality Comparison (===), not loose ==; this is the static entry the
+    // compiler emits for the general (non-numeric/non-string) case path.
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static bool StaticStrictEquals(JSValue left, JSValue right) => left.StrictEquals(right);
+
     public abstract bool StrictEquals(JSValue value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

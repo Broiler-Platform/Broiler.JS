@@ -51,6 +51,10 @@ partial class FastCompiler
         try
         {
             Sequence<YExpression> defBody = null;
+            // Textual position of the `default` clause among the closed `cases`,
+            // so its body can be emitted at its original position in the
+            // fall-through sequence even when it is not the last clause.
+            int defaultInsertIndex = -1;
             var @continue = this.scope.Top.Loop?.Top?.Continue;
             var @break = YExpression.Label();
             var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
@@ -88,6 +92,7 @@ partial class FastCompiler
                 if (c.Test == null)
                 {
                     defBody = body;
+                    defaultInsertIndex = cases.Count;
                     lastCase = new SwitchInfo(switchPoolScope);
 
                     continue;
@@ -171,7 +176,14 @@ partial class FastCompiler
                                 break;
 
                             default:
-                                throw new NotImplementedException();
+                                // null / bigint / regexp / etc. literal case:
+                                // evaluate it and compare via strict-equals like a
+                                // general expression case.
+                                test = VisitExpression(c.Test);
+                                allNumbers = false;
+                                allStrings = false;
+                                allIntegers = false;
+                                break;
                         }
 
                         break;
@@ -207,13 +219,8 @@ partial class FastCompiler
 
             System.Reflection.MethodInfo equalsMethod = null;
 
-            SwitchInfo last = null;
             foreach (var @case in cases)
             {
-                // if last one is not break statement... make it fall through...
-                last?.Body.Add(YExpression.Goto(@case.Label));
-                last = @case;
-
                 if (allNumbers)
                 {
                     if (allIntegers)
@@ -236,45 +243,112 @@ partial class FastCompiler
                     else
                     {
                         @case.Tests = @case.Tests.ConvertToJSValue(switchPoolScope);
-                        equalsMethod = JSValueBuilder.StaticEquals;
+                        // SwitchStatement uses the Strict Equality Comparison (===),
+                        // so e.g. `case null` must not match an `undefined`
+                        // discriminant.
+                        equalsMethod = JSValueBuilder.StaticStrictEquals;
                     }
                 }
             }
 
-            var testTarget = VisitExpression(switchStatement.Target);
-            if (allNumbers)
+            var discriminant = VisitExpression(switchStatement.Target);
+
+            var lastLine = switchStatement.Start.Start.Line;
+
+            // The switch is lowered into (1) a dispatch that jumps to the matching
+            // clause's label and (2) the clause bodies emitted in TEXTUAL order as
+            // sequential statements. The native YExpression.Switch is used purely
+            // as the dispatcher: every arm — and the default arm — is a plain Goto,
+            // so the dispatch is void and stack-neutral. Fall-through is then just
+            // ordinary sequencing, which makes a non-last `default:` clause fall
+            // through into the following clause for free.
+            YLabelTarget defLabel = defBody != null
+                ? YExpression.Label($"default-start-{lastLine}")
+                : null;
+
+            YExpression NoMatch() => YExpression.Goto(defLabel ?? @break);
+
+            YExpression DispatchSwitch(YExpression target) =>
+                YExpression.Switch(target, NoMatch(), equalsMethod,
+                    [.. cases.Select(x => YExpression.SwitchCase(YExpression.Goto(x.Label), x.Tests))]);
+
+            YExpression dispatch;
+            if (allNumbers || allStrings)
             {
-                if (allIntegers)
+                // The numeric/string "fast path" compares with the typed IL
+                // operator (int Beq / string hash) after coercing the
+                // discriminant. Coercion is lossy, but switch matching is the
+                // Strict Equality Comparison (===): a discriminant of the wrong
+                // type — or a number that is not an exact in-range integer for the
+                // integer path (NaN, Infinity, fractional, out of range) — must
+                // match no case. Evaluate the discriminant once into a temp, then
+                // only enter the typed switch when the value can match by ===;
+                // otherwise jump straight to the default/break.
+                var discVar = YExpression.Variable(typeof(JSValue), "#switch-disc");
+
+                // The guards are nested rather than &&-combined so the inner
+                // coercions are only evaluated once the type is known (reading the
+                // numeric value of e.g. a BigInt would throw).
+                YExpression guarded;
+                if (allNumbers)
                 {
-                    testTarget = JSValueBuilder.IntValue(testTarget);
+                    if (allIntegers)
+                    {
+                        // Number, and an exact integer (DoubleValue round-trips
+                        // through IntValue) — excludes NaN/Infinity/fractional and
+                        // values outside the int range.
+                        var isExactInteger = YExpression.Equal(
+                            JSValueBuilder.DoubleValue(discVar),
+                            YExpression.Convert(JSValueBuilder.IntValue(discVar), typeof(double)));
+                        var integerDispatch = YExpression.Conditional(
+                            isExactInteger,
+                            DispatchSwitch(JSValueBuilder.IntValue(discVar)),
+                            NoMatch(), typeof(void));
+                        guarded = YExpression.Conditional(
+                            JSValueBuilder.IsNumber(discVar), integerDispatch, NoMatch(), typeof(void));
+                    }
+                    else
+                    {
+                        guarded = YExpression.Conditional(
+                            JSValueBuilder.IsNumber(discVar),
+                            DispatchSwitch(JSValueBuilder.DoubleValue(discVar)),
+                            NoMatch(), typeof(void));
+                    }
                 }
                 else
                 {
-                    testTarget = JSValueBuilder.DoubleValue(testTarget);
+                    guarded = YExpression.Conditional(
+                        JSValueBuilder.IsString(discVar),
+                        DispatchSwitch(ObjectBuilder.ToString(discVar)),
+                        NoMatch(), typeof(void));
                 }
+
+                dispatch = YExpression.Block(
+                    new Sequence<YParameterExpression> { discVar },
+                    new Sequence<YExpression>
+                    {
+                        YExpression.Assign(discVar, discriminant),
+                        guarded
+                    });
             }
             else
             {
-                if (allStrings)
-                {
-                    testTarget = ObjectBuilder.ToString(testTarget);
-                }
-                else
-                {
-
-                }
+                // Mixed/object cases compare via JSValue.StaticStrictEquals, which
+                // is already type-correct, so no guard is needed.
+                dispatch = DispatchSwitch(discriminant);
             }
 
-            YExpression d = null;
-            var lastLine = switchStatement.Start.Start.Line;
-
-            if (defBody != null)
+            var switchBody = new Sequence<YExpression> { dispatch };
+            for (int i = 0; i <= cases.Count; i++)
             {
-                var defLabel = YExpression.Label($"default-start-{lastLine}");
-                last?.Body.Add(YExpression.Goto(defLabel));
+                if (defLabel != null && i == defaultInsertIndex)
+                {
+                    defBody.Insert(0, YExpression.Label(defLabel));
+                    switchBody.Add(YExpression.Block(defBody));
+                }
 
-                defBody.Insert(0, YExpression.Label(defLabel));
-                d = YExpression.Block(defBody);
+                if (i < cases.Count)
+                    switchBody.Add(YExpression.Block(cases[i].Body));
             }
 
             var statements = new Sequence<YExpression>
@@ -285,8 +359,7 @@ partial class FastCompiler
                 statements.Add(YExpression.Block(functionInitializers));
             statements.Add(
                 YExpression.TailCallTransparentTryFinally(
-                    YExpression.Switch(testTarget, d.ToJSValue() ?? JSUndefinedBuilder.Value, equalsMethod, [.. cases.Select(x =>
-                    YExpression.SwitchCase(YExpression.Block(x.Body).ToJSValue(), x.Tests))]),
+                    YExpression.Block(switchBody),
                     PropagateCompletion(completionVar, outerCompletionVars)));
             statements.Add(YExpression.Label(@break));
             statements.Add(completionVar);
