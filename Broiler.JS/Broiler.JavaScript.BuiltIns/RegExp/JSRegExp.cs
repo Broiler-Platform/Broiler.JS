@@ -242,9 +242,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
             }
             else
             {
-                pattern = patternValue.StringValue;
+                // Per 22.2.3.1 RegExpInitialize: if pattern is undefined, P = "";
+                // if flags is undefined, F = "". Otherwise ToString the value.
+                if (!patternValue.IsUndefined)
+                    pattern = patternValue.StringValue;
 
-                if (a.Length > 1)
+                if (a.Length > 1 && !a.GetAt(1).IsUndefined)
                     flags = a.GetAt(1).StringValue;
             }
         }
