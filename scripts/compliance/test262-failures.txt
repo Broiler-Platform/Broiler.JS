@@ -793,11 +793,8 @@ test/built-ins/RegExp/property-escapes/generated/White_Space.js
 test/built-ins/RegExp/property-escapes/generated/XID_Continue.js
 test/built-ins/RegExp/property-escapes/generated/XID_Start.js
 test/built-ins/RegExp/property-escapes/generated/strings/Basic_Emoji.js
-test/built-ins/RegExp/property-escapes/generated/strings/Emoji_Keycap_Sequence.js
 test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji.js
-test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Flag_Sequence.js
 test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Modifier_Sequence.js
-test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Tag_Sequence.js
 test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_ZWJ_Sequence.js
 test/built-ins/RegExp/property-escapes/special-property-value-Script_Extensions-Unknown.js
 test/built-ins/RegExp/prototype/S15.10.5.1_A3.js
@@ -863,7 +860,6 @@ test/built-ins/RegExp/unicodeSets/generated/character-class-escape-union-string-
 test/built-ins/RegExp/unicodeSets/generated/character-class-intersection-character-class-escape.js
 test/built-ins/RegExp/unicodeSets/generated/character-class-intersection-character-class.js
 test/built-ins/RegExp/unicodeSets/generated/character-class-intersection-character-property-escape.js
-test/built-ins/RegExp/unicodeSets/generated/character-class-intersection-property-of-strings-escape.js
 test/built-ins/RegExp/unicodeSets/generated/character-class-intersection-string-literal.js
 test/built-ins/RegExp/unicodeSets/generated/character-class-union-character-class-escape.js
 test/built-ins/RegExp/unicodeSets/generated/character-class-union-character-class.js
@@ -920,11 +916,6 @@ test/built-ins/RegExp/unicodeSets/generated/property-of-strings-escape-union-cha
 test/built-ins/RegExp/unicodeSets/generated/property-of-strings-escape-union-character.js
 test/built-ins/RegExp/unicodeSets/generated/property-of-strings-escape-union-property-of-strings-escape.js
 test/built-ins/RegExp/unicodeSets/generated/property-of-strings-escape-union-string-literal.js
-test/built-ins/RegExp/unicodeSets/generated/rgi-emoji-13.1.js
-test/built-ins/RegExp/unicodeSets/generated/rgi-emoji-14.0.js
-test/built-ins/RegExp/unicodeSets/generated/rgi-emoji-15.0.js
-test/built-ins/RegExp/unicodeSets/generated/rgi-emoji-15.1.js
-test/built-ins/RegExp/unicodeSets/generated/rgi-emoji-16.0.js
 test/built-ins/RegExp/unicodeSets/generated/rgi-emoji-17.0.js
 test/built-ins/RegExp/unicodeSets/generated/string-literal-difference-character-class-escape.js
 test/built-ins/RegExp/unicodeSets/generated/string-literal-difference-character-class.js
