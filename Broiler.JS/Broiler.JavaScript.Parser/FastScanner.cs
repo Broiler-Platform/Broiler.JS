@@ -227,6 +227,14 @@ public class FastScanner
         if (lineTerminator)
             return state.Commit(TokenTypes.LineTerminator);
 
+        // Trailing non-newline whitespace runs `first` to EOF inside the skip
+        // loop above; without re-checking we would fall through the entire token
+        // switch to `throw Unexpected()` (reporting the previous token). The
+        // initial EOF guard only runs before whitespace skipping, so a source
+        // that ends in spaces/tabs (no final newline) would spuriously fail.
+        if (first == char.MaxValue)
+            return EOF;
+
         if (skipped)
             state = Push();
 

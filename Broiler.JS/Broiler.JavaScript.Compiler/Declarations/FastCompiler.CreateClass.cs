@@ -276,7 +276,7 @@ partial class FastCompiler
                 // super.x in instance field initializers resolves against the home
                 // object's prototype (the superclass prototype), so give the synthetic
                 // default constructor scope that super binding.
-                using var s = this.scope.Push(new FastFunctionScope(null, null, super: superPrototypeVar, memberInits: memberInits, computedMemberNames: computedMemberNames, thisIsUninitialized: hasSuperClass));
+                using var s = this.scope.Push(new FastFunctionScope(null, null, super: superPrototypeVar, memberInits: memberInits, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames, thisIsUninitialized: hasSuperClass));
                 var args = s.Arguments;
                 var @this = s.ThisExpression;
                 var inits = new Sequence<YExpression>() { };
