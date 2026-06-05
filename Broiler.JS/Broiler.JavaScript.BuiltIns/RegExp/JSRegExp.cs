@@ -674,6 +674,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // code unit, so expand it to also match surrogate pairs.
             if (unicode || unicodeSets)
             {
+                // Property escapes (\p{…}/\P{…}) are only valid in u/v mode.
+                // Translate the General_Category dimension to .NET-compatible
+                // short forms before the surrogate-aware class transforms run.
+                pattern = TransformUnicodePropertyEscapes(pattern);
                 pattern = TransformUnicodeWordBoundaries(pattern, ignoreCase);
                 pattern = TransformUnicodeDot(pattern, dotAll);
                 // Transform character class escapes (\S, \W, \D) outside character
@@ -1317,6 +1321,220 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
     // BROILER-PATCH: Transform ES3-specific regex patterns for .NET compatibility
     // Handles empty character classes, forward backreferences, and NUL escapes.
+    /// <summary>
+    /// General_Category long names / aliases → the .NET short form that
+    /// <see cref="Regex"/> accepts (e.g. <c>Uppercase_Letter</c> → <c>Lu</c>).
+    /// Keys are normalized (lower-cased, '_'/' ' stripped). Short forms map to
+    /// themselves so that the <c>gc=Lu</c> form normalizes too.
+    /// </summary>
+    private static readonly Dictionary<string, string> GeneralCategoryNames = BuildGeneralCategoryNames();
+
+    /// <summary>
+    /// Unicode script and string-property names that the spec requires in
+    /// <c>u</c>/<c>v</c> mode but which need a Unicode Character Database that is
+    /// not bundled yet. Seeing one of these produces a clear "not supported"
+    /// SyntaxError instead of .NET's cryptic "Unknown property" message.
+    /// </summary>
+    private static readonly HashSet<string> UnsupportedUnicodePropertyNames = new(StringComparer.Ordinal)
+    {
+        // Property names used with the `Name=Value` form.
+        "script", "sc", "script_extensions", "scx",
+        // String properties (require the `v` flag; match code-point sequences).
+        "rgi_emoji", "rgi_emoji_flag_sequence", "rgi_emoji_modifier_sequence",
+        "rgi_emoji_tag_sequence", "rgi_emoji_zwj_sequence", "basic_emoji",
+        "emoji_keycap_sequence",
+    };
+
+    private static Dictionary<string, string> BuildGeneralCategoryNames()
+    {
+        var map = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        void Add(string shortName, params string[] names)
+        {
+            map[Normalize(shortName)] = shortName;
+            foreach (var n in names)
+                map[Normalize(n)] = shortName;
+        }
+
+        Add("L", "Letter");
+        Add("Lu", "Uppercase_Letter");
+        Add("Ll", "Lowercase_Letter");
+        Add("Lt", "Titlecase_Letter");
+        Add("Lm", "Modifier_Letter");
+        Add("Lo", "Other_Letter");
+        Add("M", "Mark", "Combining_Mark");
+        Add("Mn", "Nonspacing_Mark");
+        Add("Mc", "Spacing_Mark");
+        Add("Me", "Enclosing_Mark");
+        Add("N", "Number");
+        Add("Nd", "Decimal_Number", "digit");
+        Add("Nl", "Letter_Number");
+        Add("No", "Other_Number");
+        Add("P", "Punctuation", "punct");
+        Add("Pc", "Connector_Punctuation");
+        Add("Pd", "Dash_Punctuation");
+        Add("Ps", "Open_Punctuation");
+        Add("Pe", "Close_Punctuation");
+        Add("Pi", "Initial_Punctuation");
+        Add("Pf", "Final_Punctuation");
+        Add("Po", "Other_Punctuation");
+        Add("S", "Symbol");
+        Add("Sm", "Math_Symbol");
+        Add("Sc", "Currency_Symbol");
+        Add("Sk", "Modifier_Symbol");
+        Add("So", "Other_Symbol");
+        Add("Z", "Separator");
+        Add("Zs", "Space_Separator");
+        Add("Zl", "Line_Separator");
+        Add("Zp", "Paragraph_Separator");
+        Add("C", "Other");
+        Add("Cc", "Control", "cntrl");
+        Add("Cf", "Format");
+        Add("Cs", "Surrogate");
+        Add("Co", "Private_Use");
+        Add("Cn", "Unassigned");
+
+        return map;
+
+        static string Normalize(string s)
+        {
+            var sb = new StringBuilder(s.Length);
+            foreach (var ch in s)
+            {
+                if (ch == '_' || ch == ' ')
+                    continue;
+                sb.Append(char.ToLowerInvariant(ch));
+            }
+            return sb.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Minimal Unicode property-escape support (ES2018 <c>\p{…}</c> / <c>\P{…}</c>),
+    /// only relevant in <c>u</c>/<c>v</c> mode. Translates the General_Category
+    /// dimension to the short forms .NET understands — including the
+    /// <c>General_Category=Value</c> and long-name forms that .NET rejects.
+    ///
+    /// Everything .NET already accepts (short categories, named blocks like
+    /// <c>\p{IsBasicLatin}</c>) is left untouched, so this never changes the
+    /// behavior of patterns that work today. Script and emoji string properties
+    /// require a Unicode database that is not bundled yet and raise a clear
+    /// "not supported" SyntaxError (see <see cref="UnsupportedUnicodePropertyNames"/>).
+    /// </summary>
+    private static string TransformUnicodePropertyEscapes(string pattern)
+    {
+        if (pattern.IndexOf("\\p", StringComparison.Ordinal) < 0 &&
+            pattern.IndexOf("\\P", StringComparison.Ordinal) < 0)
+            return pattern;
+
+        var sb = new StringBuilder(pattern.Length);
+        int i = 0;
+        while (i < pattern.Length)
+        {
+            var c = pattern[i];
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                var next = pattern[i + 1];
+                if (next == '\\')
+                {
+                    // Escaped backslash — copy both, do not treat the next char as an escape.
+                    sb.Append(c).Append(next);
+                    i += 2;
+                    continue;
+                }
+
+                if ((next == 'p' || next == 'P') && i + 2 < pattern.Length && pattern[i + 2] == '{')
+                {
+                    var close = pattern.IndexOf('}', i + 3);
+                    if (close > 0)
+                    {
+                        var inner = pattern.Substring(i + 3, close - (i + 3));
+                        var translated = TranslateUnicodeProperty(next == 'P', inner);
+                        if (translated != null)
+                        {
+                            sb.Append(translated);
+                            i = close + 1;
+                            continue;
+                        }
+                        // Unrecognized — leave the original escape so .NET decides
+                        // (preserves today's behavior for native forms like \p{L}).
+                    }
+                }
+
+                // Any other escape: copy the backslash and its escaped character.
+                sb.Append(c).Append(next);
+                i += 2;
+                continue;
+            }
+
+            sb.Append(c);
+            i++;
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Returns the .NET replacement text for a single <c>\p{inner}</c> /
+    /// <c>\P{inner}</c> escape, or <c>null</c> when it should be left untouched.
+    /// Throws a SyntaxError for property classes that are recognized but not
+    /// yet supported.
+    /// </summary>
+    private static string TranslateUnicodeProperty(bool negated, string inner)
+    {
+        var eq = inner.IndexOf('=');
+        var prefix = negated ? "\\P" : "\\p";
+
+        string NormalizeKey(string s)
+        {
+            var sb = new StringBuilder(s.Length);
+            foreach (var ch in s)
+            {
+                if (ch == '_' || ch == ' ')
+                    continue;
+                sb.Append(char.ToLowerInvariant(ch));
+            }
+            return sb.ToString();
+        }
+
+        if (eq >= 0)
+        {
+            // `Name=Value` form. .NET rejects this syntax entirely today, so it is
+            // always safe to handle here.
+            var name = NormalizeKey(inner.Substring(0, eq));
+            var value = inner.Substring(eq + 1);
+
+            if (name is "gc" or "generalcategory")
+            {
+                if (GeneralCategoryNames.TryGetValue(NormalizeKey(value), out var shortName))
+                    return $"{prefix}{{{shortName}}}";
+
+                throw JSEngine.NewSyntaxError($"Invalid property name in regular expression: '{value}'");
+            }
+
+            if (UnsupportedUnicodePropertyNames.Contains(name))
+                throw JSEngine.NewSyntaxError(
+                    $"Unicode property escape '\\p{{{inner}}}' is not supported yet (requires Unicode script/sequence data)");
+
+            // Unknown Name=Value — let .NET surface its own error.
+            return null;
+        }
+
+        // Lone `\p{Value}` form.
+        var lone = NormalizeKey(inner);
+
+        if (GeneralCategoryNames.TryGetValue(lone, out var loneShort))
+            return $"{prefix}{{{loneShort}}}";
+
+        if (UnsupportedUnicodePropertyNames.Contains(lone))
+            throw JSEngine.NewSyntaxError(
+                $"Unicode property escape '\\p{{{inner}}}' is not supported yet (requires Unicode script/sequence data)");
+
+        // Anything else (native short categories like \p{L}, named blocks like
+        // \p{IsBasicLatin}, or unknown lone names) is left for .NET to handle.
+        return null;
+    }
+
     private static string TransformES3Patterns(string pattern)
     {
         if (string.IsNullOrEmpty(pattern))
