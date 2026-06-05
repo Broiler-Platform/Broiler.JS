@@ -84,6 +84,33 @@ public static class ListOfExpressionsExtensions
 
         while (se.MoveNext(out var exp))
         {
+            // Numeric switch-case tests are emitted as DoubleConstant (the literal
+            // path always uses YExpression.Constant(double)); the typed constant
+            // nodes are not generic Constant nodes, so IsConstant() does not match
+            // them. Mirror ConvertToInteger and pass/convert them by NodeType.
+            switch (exp.NodeType)
+            {
+                case YExpressionType.DoubleConstant:
+                    result.Add(exp);
+                    continue;
+
+                case YExpressionType.Int32Constant:
+                    result.Add(Expression.Constant((double)(exp as YInt32ConstantExpression).Value));
+                    continue;
+
+                case YExpressionType.UInt32Constant:
+                    result.Add(Expression.Constant((double)(exp as YUInt32ConstantExpression).Value));
+                    continue;
+
+                case YExpressionType.Int64Constant:
+                    result.Add(Expression.Constant((double)(exp as YInt64ConstantExpression).Value));
+                    continue;
+
+                case YExpressionType.UInt64Constant:
+                    result.Add(Expression.Constant((double)(exp as YUInt64ConstantExpression).Value));
+                    continue;
+            }
+
             if (!exp.IsConstant(out var ce))
                 throw new NotSupportedException();
 

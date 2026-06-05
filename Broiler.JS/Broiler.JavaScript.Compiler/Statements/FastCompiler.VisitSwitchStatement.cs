@@ -251,29 +251,7 @@ partial class FastCompiler
                 }
             }
 
-            var testTarget = VisitExpression(switchStatement.Target);
-            if (allNumbers)
-            {
-                if (allIntegers)
-                {
-                    testTarget = JSValueBuilder.IntValue(testTarget);
-                }
-                else
-                {
-                    testTarget = JSValueBuilder.DoubleValue(testTarget);
-                }
-            }
-            else
-            {
-                if (allStrings)
-                {
-                    testTarget = ObjectBuilder.ToString(testTarget);
-                }
-                else
-                {
-
-                }
-            }
+            var discriminant = VisitExpression(switchStatement.Target);
 
             var lastLine = switchStatement.Start.Start.Line;
 
@@ -288,9 +266,77 @@ partial class FastCompiler
                 ? YExpression.Label($"default-start-{lastLine}")
                 : null;
 
-            var dispatchDefault = YExpression.Goto(defLabel ?? @break);
-            var dispatch = YExpression.Switch(testTarget, dispatchDefault, equalsMethod,
-                [.. cases.Select(x => YExpression.SwitchCase(YExpression.Goto(x.Label), x.Tests))]);
+            YExpression NoMatch() => YExpression.Goto(defLabel ?? @break);
+
+            YExpression DispatchSwitch(YExpression target) =>
+                YExpression.Switch(target, NoMatch(), equalsMethod,
+                    [.. cases.Select(x => YExpression.SwitchCase(YExpression.Goto(x.Label), x.Tests))]);
+
+            YExpression dispatch;
+            if (allNumbers || allStrings)
+            {
+                // The numeric/string "fast path" compares with the typed IL
+                // operator (int Beq / string hash) after coercing the
+                // discriminant. Coercion is lossy, but switch matching is the
+                // Strict Equality Comparison (===): a discriminant of the wrong
+                // type — or a number that is not an exact in-range integer for the
+                // integer path (NaN, Infinity, fractional, out of range) — must
+                // match no case. Evaluate the discriminant once into a temp, then
+                // only enter the typed switch when the value can match by ===;
+                // otherwise jump straight to the default/break.
+                var discVar = YExpression.Variable(typeof(JSValue), "#switch-disc");
+
+                // The guards are nested rather than &&-combined so the inner
+                // coercions are only evaluated once the type is known (reading the
+                // numeric value of e.g. a BigInt would throw).
+                YExpression guarded;
+                if (allNumbers)
+                {
+                    if (allIntegers)
+                    {
+                        // Number, and an exact integer (DoubleValue round-trips
+                        // through IntValue) — excludes NaN/Infinity/fractional and
+                        // values outside the int range.
+                        var isExactInteger = YExpression.Equal(
+                            JSValueBuilder.DoubleValue(discVar),
+                            YExpression.Convert(JSValueBuilder.IntValue(discVar), typeof(double)));
+                        var integerDispatch = YExpression.Conditional(
+                            isExactInteger,
+                            DispatchSwitch(JSValueBuilder.IntValue(discVar)),
+                            NoMatch(), typeof(void));
+                        guarded = YExpression.Conditional(
+                            JSValueBuilder.IsNumber(discVar), integerDispatch, NoMatch(), typeof(void));
+                    }
+                    else
+                    {
+                        guarded = YExpression.Conditional(
+                            JSValueBuilder.IsNumber(discVar),
+                            DispatchSwitch(JSValueBuilder.DoubleValue(discVar)),
+                            NoMatch(), typeof(void));
+                    }
+                }
+                else
+                {
+                    guarded = YExpression.Conditional(
+                        JSValueBuilder.IsString(discVar),
+                        DispatchSwitch(ObjectBuilder.ToString(discVar)),
+                        NoMatch(), typeof(void));
+                }
+
+                dispatch = YExpression.Block(
+                    new Sequence<YParameterExpression> { discVar },
+                    new Sequence<YExpression>
+                    {
+                        YExpression.Assign(discVar, discriminant),
+                        guarded
+                    });
+            }
+            else
+            {
+                // Mixed/object cases compare via JSValue.StaticStrictEquals, which
+                // is already type-correct, so no guard is needed.
+                dispatch = DispatchSwitch(discriminant);
+            }
 
             var switchBody = new Sequence<YExpression> { dispatch };
             for (int i = 0; i <= cases.Count; i++)
