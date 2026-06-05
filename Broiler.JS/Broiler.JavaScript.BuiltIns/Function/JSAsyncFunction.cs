@@ -58,7 +58,13 @@ public class JSAsyncFunction
             if (then.IsUndefined)
                 return JSEngine.CreateResolvedOrRejectedPromise(r, true);
 
-            var continuationContext = (JSEngine.Current as JSContext)?.synchronizationContext;
+            // Resume on the synchronization context currently being pumped (matching how
+            // JSPromise captures its context), falling back to the context captured at
+            // JSContext construction. Posting to the construction-time context directly would
+            // bypass a caller-installed pump (Execute/ExecuteAsync via AsyncPump) and strand
+            // continuations on a context nobody is draining, deadlocking the awaiting task.
+            var continuationContext = SynchronizationContext.Current
+                ?? (JSEngine.Current as JSContext)?.synchronizationContext;
 
             return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
             {
