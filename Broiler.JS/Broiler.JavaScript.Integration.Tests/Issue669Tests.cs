@@ -15,10 +15,17 @@ namespace Broiler.JavaScript.Integration.Tests;
 //                  compiler. The read path already evaluated such a literal and
 //                  coerced it to a property key; the call path now does too. This
 //                  is what `class C { [null]() {} }; new C()[null]()` exercises.
-//   * Problem 9  — a switch `case` whose test is a non-string/number/boolean
-//                  literal (e.g. `case null:`) threw NotImplementedException. It
-//                  now compiles and compares via strict-equals like any expression
-//                  case.
+//   * Problem 9  — three switch fixes: (a) a `case` whose test is a
+//                  non-string/number/boolean literal (e.g. `case null:`) threw
+//                  NotImplementedException; it now compiles and compares via
+//                  strict-equals like any expression case. (b) the mixed/object
+//                  case path used loose `==` instead of `===`. (c) a `default:`
+//                  clause that was NOT the last clause was dropped by the parser
+//                  (its statements merged into the following case) and the
+//                  compiler always treated default as last; the parser now flushes
+//                  a pending default and the switch is lowered to a dispatch +
+//                  textual-order bodies so default-in-the-middle falls through
+//                  correctly.
 //   * Problem 10 — a template-literal substitution containing plain `{ }` braces
 //                  (object literal, function body, block) mis-parsed: the scanner's
 //                  flat `templateParts` counter treated the first inner `}` as the
@@ -32,12 +39,6 @@ namespace Broiler.JavaScript.Integration.Tests;
 // 5 (compound-assignment PutValue ordering with a direct-eval var binding) and 6
 // (several unrelated root causes grouped by message) are triaged in the issue and
 // remain out of scope.
-//
-// Note: Problem 9's S12.11_A1_T3/T4 fixtures additionally require a `default:`
-// clause that is NOT the last clause to fall through correctly. That is a separate,
-// pre-existing architectural limitation of the value-producing switch codegen
-// (cross-arm gotos through a mid-position default unbalance the evaluation stack)
-// and is left out of scope here; the NotImplementedException itself is fixed.
 public class Issue669Tests
 {
     private static string Eval(string code)
@@ -104,6 +105,42 @@ public class Issue669Tests
         => Assert.Equal("96", Eval(
             "function f(v){ var r=0; switch(v){ case 0: r+=2; break; case null: r+=64;"
             + " default: r+=32; } return r; } f(null)"));
+
+    // ---- Problem 9: a `default:` clause that is not the last clause ----
+
+    [Fact]
+    public void SwitchDefaultInMiddleNoMatchFallsThrough()
+        // no case matches -> run default (32) then fall through to the case after it (4).
+        => Assert.Equal("36", Eval(
+            "function f(v){ var r=0; switch(v){ case 0: r+=2; default: r+=32; case 1: r+=4; }"
+            + " return r; } f(9)"));
+
+    [Fact]
+    public void SwitchDefaultInMiddleMatchBeforeDefaultFallsThrough()
+        // case 0 matches -> 2, fall through default -> 32, fall through case 1 -> 4.
+        => Assert.Equal("38", Eval(
+            "function f(v){ var r=0; switch(v){ case 0: r+=2; default: r+=32; case 1: r+=4; }"
+            + " return r; } f(0)"));
+
+    [Fact]
+    public void SwitchDefaultInMiddleMatchAfterDefaultDoesNotRunDefault()
+        // case 1 matches -> only 4, default is not entered.
+        => Assert.Equal("4", Eval(
+            "function f(v){ var r=0; switch(v){ case 0: r+=2; default: r+=32; case 1: r+=4; }"
+            + " return r; } f(1)"));
+
+    [Fact]
+    public void SwitchDefaultFirstNoMatchFallsThrough()
+        => Assert.Equal("38", Eval(
+            "function f(v){ var r=0; switch(v){ default: r+=32; case 0: r+=2; case 1: r+=4; }"
+            + " return r; } f(9)"));
+
+    [Fact]
+    public void SwitchDefaultInMiddleStringDiscriminant()
+        // string discriminant exercises the non-numeric dispatch path.
+        => Assert.Equal("def-b", Eval(
+            "function f(v){ var r=''; switch(v){ case 'a': r+='a'; break;"
+            + " default: r+='def-'; case 'b': r+='b'; break; } return r; } f('z')"));
 
     // ---- Problem 7: Intl options coerced via ToObject ----
 

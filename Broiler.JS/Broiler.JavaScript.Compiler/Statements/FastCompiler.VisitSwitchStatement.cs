@@ -51,6 +51,10 @@ partial class FastCompiler
         try
         {
             Sequence<YExpression> defBody = null;
+            // Textual position of the `default` clause among the closed `cases`,
+            // so its body can be emitted at its original position in the
+            // fall-through sequence even when it is not the last clause.
+            int defaultInsertIndex = -1;
             var @continue = this.scope.Top.Loop?.Top?.Continue;
             var @break = YExpression.Label();
             var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
@@ -88,6 +92,7 @@ partial class FastCompiler
                 if (c.Test == null)
                 {
                     defBody = body;
+                    defaultInsertIndex = cases.Count;
                     lastCase = new SwitchInfo(switchPoolScope);
 
                     continue;
@@ -214,13 +219,8 @@ partial class FastCompiler
 
             System.Reflection.MethodInfo equalsMethod = null;
 
-            SwitchInfo last = null;
             foreach (var @case in cases)
             {
-                // if last one is not break statement... make it fall through...
-                last?.Body.Add(YExpression.Goto(@case.Label));
-                last = @case;
-
                 if (allNumbers)
                 {
                     if (allIntegers)
@@ -275,16 +275,34 @@ partial class FastCompiler
                 }
             }
 
-            YExpression d = null;
             var lastLine = switchStatement.Start.Start.Line;
 
-            if (defBody != null)
-            {
-                var defLabel = YExpression.Label($"default-start-{lastLine}");
-                last?.Body.Add(YExpression.Goto(defLabel));
+            // The switch is lowered into (1) a dispatch that jumps to the matching
+            // clause's label and (2) the clause bodies emitted in TEXTUAL order as
+            // sequential statements. The native YExpression.Switch is used purely
+            // as the dispatcher: every arm — and the default arm — is a plain Goto,
+            // so the dispatch is void and stack-neutral. Fall-through is then just
+            // ordinary sequencing, which makes a non-last `default:` clause fall
+            // through into the following clause for free.
+            YLabelTarget defLabel = defBody != null
+                ? YExpression.Label($"default-start-{lastLine}")
+                : null;
 
-                defBody.Insert(0, YExpression.Label(defLabel));
-                d = YExpression.Block(defBody);
+            var dispatchDefault = YExpression.Goto(defLabel ?? @break);
+            var dispatch = YExpression.Switch(testTarget, dispatchDefault, equalsMethod,
+                [.. cases.Select(x => YExpression.SwitchCase(YExpression.Goto(x.Label), x.Tests))]);
+
+            var switchBody = new Sequence<YExpression> { dispatch };
+            for (int i = 0; i <= cases.Count; i++)
+            {
+                if (defLabel != null && i == defaultInsertIndex)
+                {
+                    defBody.Insert(0, YExpression.Label(defLabel));
+                    switchBody.Add(YExpression.Block(defBody));
+                }
+
+                if (i < cases.Count)
+                    switchBody.Add(YExpression.Block(cases[i].Body));
             }
 
             var statements = new Sequence<YExpression>
@@ -295,8 +313,7 @@ partial class FastCompiler
                 statements.Add(YExpression.Block(functionInitializers));
             statements.Add(
                 YExpression.TailCallTransparentTryFinally(
-                    YExpression.Switch(testTarget, d.ToJSValue() ?? JSUndefinedBuilder.Value, equalsMethod, [.. cases.Select(x =>
-                    YExpression.SwitchCase(YExpression.Block(x.Body).ToJSValue(), x.Tests))]),
+                    YExpression.Block(switchBody),
                     PropagateCompletion(completionVar, outerCompletionVars)));
             statements.Add(YExpression.Label(@break));
             statements.Add(completionVar);
