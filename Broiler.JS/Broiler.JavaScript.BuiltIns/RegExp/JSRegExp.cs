@@ -6,6 +6,7 @@ using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Storage;
+using UnicodeEmoji.StringProperties;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
 
@@ -677,7 +678,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // Property escapes (\p{…}/\P{…}) are only valid in u/v mode.
                 // Translate the General_Category dimension to .NET-compatible
                 // short forms before the surrogate-aware class transforms run.
-                pattern = TransformUnicodePropertyEscapes(pattern);
+                pattern = TransformUnicodePropertyEscapes(pattern, unicodeSets);
                 pattern = TransformUnicodeWordBoundaries(pattern, ignoreCase);
                 pattern = TransformUnicodeDot(pattern, dotAll);
                 // Transform character class escapes (\S, \W, \D) outside character
@@ -1330,22 +1331,33 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static readonly Dictionary<string, string> GeneralCategoryNames = BuildGeneralCategoryNames();
 
     /// <summary>
-    /// Emoji string-property names (require the <c>v</c> flag; they match
-    /// multi-code-point sequences). These need an emoji-sequence database that is
-    /// not bundled yet, so they raise a clear "not supported" SyntaxError instead
-    /// of .NET's cryptic "Unknown property" message.
+    /// Emoji string-property names (UTS #51 "properties of strings") mapped to the
+    /// <see cref="EmojiSequenceProperties"/> bit they select. These match
+    /// multi-code-point sequences and are only valid with the <c>v</c> flag; there
+    /// they expand to an alternation of the literal sequences (see
+    /// <see cref="ExpandEmojiStringProperty"/>), backed by the bundled Unicode emoji data.
     ///
     /// Keys are stored in normalized form (lower-cased, '_'/' ' stripped) because
     /// lookups go through <c>NormalizeKey</c> — e.g. <c>RGI_Emoji</c> normalizes to
-    /// <c>rgiemoji</c>. Storing them with underscores would make the lookup miss and
-    /// let .NET surface its cryptic "Unknown property" message instead.
+    /// <c>rgiemoji</c>.
     /// </summary>
-    private static readonly HashSet<string> UnsupportedUnicodePropertyNames = new(StringComparer.Ordinal)
+    private static readonly Dictionary<string, EmojiSequenceProperties> EmojiStringPropertyNames = new(StringComparer.Ordinal)
     {
-        "rgiemoji", "rgiemojiflagsequence", "rgiemojimodifiersequence",
-        "rgiemojitagsequence", "rgiemojizwjsequence", "basicemoji",
-        "emojikeycapsequence",
+        ["rgiemoji"] = EmojiSequenceProperties.RgiEmoji,
+        ["rgiemojiflagsequence"] = EmojiSequenceProperties.RgiEmojiFlagSequence,
+        ["rgiemojimodifiersequence"] = EmojiSequenceProperties.RgiEmojiModifierSequence,
+        ["rgiemojitagsequence"] = EmojiSequenceProperties.RgiEmojiTagSequence,
+        ["rgiemojizwjsequence"] = EmojiSequenceProperties.RgiEmojiZwjSequence,
+        ["basicemoji"] = EmojiSequenceProperties.BasicEmoji,
+        ["emojikeycapsequence"] = EmojiSequenceProperties.EmojiKeycapSequence,
     };
+
+    /// <summary>
+    /// Cache of the expanded .NET alternation for each emoji string property, keyed by
+    /// the <see cref="EmojiSequenceProperties"/> mask. Building the alternation walks the
+    /// whole emoji trie (thousands of sequences for <c>RGI_Emoji</c>), so it is computed once.
+    /// </summary>
+    private static readonly Dictionary<EmojiSequenceProperties, string> EmojiAlternationCache = new();
 
     /// <summary>
     /// Code-point ranges for the Unicode scripts we can expand to regex without a
@@ -1452,7 +1464,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// require a Unicode database that is not bundled yet and raise a clear
     /// "not supported" SyntaxError (see <see cref="UnsupportedUnicodePropertyNames"/>).
     /// </summary>
-    private static string TransformUnicodePropertyEscapes(string pattern)
+    private static string TransformUnicodePropertyEscapes(string pattern, bool unicodeSets)
     {
         if (pattern.IndexOf("\\p", StringComparison.Ordinal) < 0 &&
             pattern.IndexOf("\\P", StringComparison.Ordinal) < 0)
@@ -1481,7 +1493,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     if (close > 0)
                     {
                         var inner = pattern.Substring(i + 3, close - (i + 3));
-                        var translated = TranslateUnicodeProperty(next == 'P', inner, inClass);
+                        var translated = TranslateUnicodeProperty(next == 'P', inner, inClass, unicodeSets);
                         if (translated != null)
                         {
                             sb.Append(translated);
@@ -1518,7 +1530,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// Throws a SyntaxError for property classes that are recognized but not
     /// yet supported.
     /// </summary>
-    private static string TranslateUnicodeProperty(bool negated, string inner, bool inClass)
+    private static string TranslateUnicodeProperty(bool negated, string inner, bool inClass, bool unicodeSets)
     {
         var eq = inner.IndexOf('=');
         var prefix = negated ? "\\P" : "\\p";
@@ -1588,8 +1600,18 @@ public partial class JSRegExp : JSObject, IJSRegExp
             throw NewUnsupportedPropertyError(inner);
         }
 
-        if (UnsupportedUnicodePropertyNames.Contains(lone))
+        if (EmojiStringPropertyNames.TryGetValue(lone, out var emojiProperty))
+        {
+            // Properties of strings (UTS #51) match multi-code-point sequences, so they are
+            // only meaningful with the `v` flag and cannot be negated or nested in a class
+            // (a `[...]` set fragment cannot hold multi-character strings, and `\P` of a set
+            // containing strings is a SyntaxError). In `v` mode, standalone, expand to an
+            // alternation of the literal sequences; everything else stays a SyntaxError.
+            if (unicodeSets && !negated && !inClass)
+                return ExpandEmojiStringProperty(emojiProperty);
+
             throw NewUnsupportedPropertyError(inner);
+        }
 
         // Anything else (native short categories like \p{L}, named blocks like
         // \p{IsBasicLatin}, or unknown lone names) is left for .NET to handle.
@@ -1599,6 +1621,48 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static JSException NewUnsupportedPropertyError(string inner)
         => JSEngine.NewSyntaxError(
             $"Unicode property escape '\\p{{{inner}}}' is not supported yet (requires Unicode script/sequence data)");
+
+    /// <summary>
+    /// Expands an emoji string property (UTS #51 property of strings, e.g.
+    /// <c>RGI_Emoji</c> or <c>Emoji_Keycap_Sequence</c>) into a non-capturing alternation
+    /// of the literal sequences drawn from the bundled Unicode emoji data. Alternatives are
+    /// ordered longest-first so leftmost-longest matching picks the maximal sequence — e.g.
+    /// the full ZWJ family rather than a leading single-code-point emoji. The result is cached
+    /// per property because the alternation is large (thousands of sequences for RGI_Emoji).
+    /// </summary>
+    private static string ExpandEmojiStringProperty(EmojiSequenceProperties property)
+    {
+        lock (EmojiAlternationCache)
+        {
+            if (EmojiAlternationCache.TryGetValue(property, out var cached))
+                return cached;
+
+            var sequences = EmojiStringProperties.GetSequences(property);
+
+            // Longest first, then ordinal for a stable pattern. Length here is in UTF-16 code
+            // units, which is what the .NET regex consumes when matching the literal text.
+            var ordered = new List<string>(sequences);
+            ordered.Sort(static (a, b) =>
+            {
+                int byLength = b.Length.CompareTo(a.Length);
+                return byLength != 0 ? byLength : string.CompareOrdinal(a, b);
+            });
+
+            var sb = new StringBuilder();
+            sb.Append("(?:");
+            for (int n = 0; n < ordered.Count; n++)
+            {
+                if (n > 0)
+                    sb.Append('|');
+                sb.Append(Regex.Escape(ordered[n]));
+            }
+            sb.Append(')');
+
+            var expanded = sb.ToString();
+            EmojiAlternationCache[property] = expanded;
+            return expanded;
+        }
+    }
 
     /// <summary>
     /// Builds the .NET regex text matching a single code point in <paramref name="ranges"/>.
