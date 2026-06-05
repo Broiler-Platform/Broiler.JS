@@ -970,7 +970,6 @@ test/intl402/DateTimeFormat/constructor-options-order-dayPeriod.js
 test/intl402/DateTimeFormat/constructor-options-order-fractionalSecondDigits.js
 test/intl402/DateTimeFormat/constructor-options-order-timedate-style.js
 test/intl402/DateTimeFormat/constructor-options-order.js
-test/intl402/DateTimeFormat/constructor-options-toobject.js
 test/intl402/DateTimeFormat/date-time-options.js
 test/intl402/DateTimeFormat/prototype/format/proleptic-gregorian-calendar.js
 test/intl402/DateTimeFormat/prototype/format/related-year-zh.js
@@ -1035,7 +1034,6 @@ test/intl402/NumberFormat/constructor-compactDisplay-no-compact.js
 test/intl402/NumberFormat/constructor-locales-toobject.js
 test/intl402/NumberFormat/constructor-numberingSystem-order.js
 test/intl402/NumberFormat/constructor-option-read-order.js
-test/intl402/NumberFormat/constructor-options-toobject.js
 test/intl402/NumberFormat/constructor-roundingIncrement.js
 test/intl402/NumberFormat/constructor-trailingZeroDisplay.js
 test/intl402/NumberFormat/prototype/format/format-fraction-digits-precision.js
@@ -1096,8 +1094,6 @@ test/intl402/PluralRules/prototype/select/prop-desc.js
 test/intl402/PluralRules/prototype/select/tainting.js
 test/intl402/RelativeTimeFormat/constructor/constructor/options-order.js
 test/intl402/RelativeTimeFormat/constructor/constructor/options-throwing-getters.js
-test/intl402/RelativeTimeFormat/constructor/constructor/options-toobject-prototype.js
-test/intl402/RelativeTimeFormat/constructor/constructor/options-toobject.js
 test/intl402/RelativeTimeFormat/constructor/constructor/options-undefined.js
 test/intl402/RelativeTimeFormat/prototype/format/en-us-numbering-systems.js
 test/intl402/RelativeTimeFormat/prototype/formatToParts/result-type.js
@@ -1162,8 +1158,6 @@ test/language/expressions/await/syntax-await-has-UnaryExpression-with-Multiplica
 test/language/expressions/bitwise-not/S11.4.8_A1.js
 test/language/expressions/class/accessor-name-inst-computed-in.js
 test/language/expressions/class/accessor-name-static-computed-in.js
-test/language/expressions/class/cpn-class-expr-computed-property-name-from-null.js
-test/language/expressions/class/cpn-class-expr-fields-methods-computed-property-name-from-null.js
 test/language/expressions/class/decorator/syntax/class-valid/decorator-member-expr-private-identifier.js
 test/language/expressions/class/decorator/syntax/valid/decorator-call-expr-identifier-reference-yield.js
 test/language/expressions/class/decorator/syntax/valid/decorator-call-expr-identifier-reference.js
@@ -1286,9 +1280,6 @@ test/language/expressions/super/prop-expr-obj-val-from-eval.js
 test/language/expressions/tagged-template/cache-eval-inner-function.js
 test/language/expressions/tagged-template/invalid-escape-sequences.js
 test/language/expressions/tagged-template/template-object.js
-test/language/expressions/template-literal/literal-expr-abrupt.js
-test/language/expressions/template-literal/middle-list-many-expr-abrupt.js
-test/language/expressions/template-literal/middle-list-one-expr-abrupt.js
 test/language/expressions/template-literal/tv-template-character.js
 test/language/expressions/unary-minus/S11.4.7_A1.js
 test/language/expressions/unary-plus/S11.4.6_A1.js
@@ -1347,8 +1338,6 @@ test/language/literals/regexp/u-astral.js
 test/language/literals/regexp/u-unicode-esc.js
 test/language/module-code/top-level-await/new-await-script-code.js
 test/language/statements/async-function/syntax-declaration-no-line-terminator.js
-test/language/statements/class/cpn-class-decl-computed-property-name-from-null.js
-test/language/statements/class/cpn-class-decl-fields-methods-computed-property-name-from-null.js
 test/language/statements/class/decorator/syntax/class-valid/decorator-member-expr-private-identifier.js
 test/language/statements/class/decorator/syntax/valid/class-element-decorator-call-expr-identifier-reference.js
 test/language/statements/class/decorator/syntax/valid/class-element-decorator-member-expr-decorator-member-expr.js
@@ -1556,12 +1545,6 @@ test/language/statements/generators/has-instance.js
 test/language/statements/labeled/let-block-with-newline.js
 test/language/statements/labeled/let-identifier-with-newline.js
 test/language/statements/let/syntax/let-closure-inside-initialization.js
-test/language/statements/switch/S12.11_A1_T1.js
-test/language/statements/switch/S12.11_A1_T2.js
-test/language/statements/switch/S12.11_A1_T3.js
-test/language/statements/switch/S12.11_A1_T4.js
-test/language/statements/switch/cptn-no-dflt-no-match.js
-test/language/statements/switch/scope-lex-close-case.js
 test/language/statements/switch/scope-lex-open-case.js
 test/language/statements/switch/scope-var-none-case.js
 test/language/statements/switch/scope-var-none-dflt.js
