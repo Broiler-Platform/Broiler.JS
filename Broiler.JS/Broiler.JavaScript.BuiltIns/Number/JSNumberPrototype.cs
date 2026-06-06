@@ -295,8 +295,19 @@ partial class JSNumber
         if (double.IsNegativeInfinity(n.value))
             return JSConstants.NegativeInfinity;
 
-        if (a.Get1() is JSNumber n1)
+        var precisionArg = a.Get1();
+        if (!precisionArg.IsUndefined)
         {
+            // Step 3: p = ToIntegerOrInfinity(precision). ToNumber rejects a
+            // Symbol or BigInt with a TypeError; objects coerce via valueOf.
+            var precisionPrimitive = precisionArg is JSObject precisionObject
+                ? precisionObject.ToDefaultPrimitive()
+                : precisionArg;
+            if (precisionPrimitive.IsSymbol || precisionPrimitive is JSBigInt)
+                throw JSEngine.NewTypeError($"Cannot convert {precisionPrimitive.TypeOf()} to a number");
+
+            var n1 = precisionPrimitive as JSNumber ?? new JSNumber(precisionPrimitive.DoubleValue);
+
             if (double.IsNaN(n1.value) || n1.value > 21 || n1.value < 1)
                 throw JSEngine.NewRangeError("toPrecision() digits argument must be between 0 and 100");
 

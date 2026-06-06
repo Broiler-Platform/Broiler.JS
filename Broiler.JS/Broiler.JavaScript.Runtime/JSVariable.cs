@@ -122,6 +122,24 @@ public class JSVariable
         Value = value;
         return _value;
     }
+
+    /// <summary>
+    /// Implements BindThisValue for a derived class constructor's <c>this</c>
+    /// binding: the binding may be initialized only once, so a second
+    /// <c>super(...)</c> call (the binding is already initialized) is a
+    /// ReferenceError. Unlike <see cref="Assign"/>, this binds an as-yet
+    /// uninitialized binding rather than requiring it to already be initialized.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public JSValue BindThis(JSValue value)
+    {
+        if (_isInitialized)
+            throw (NewReferenceErrorFactory ?? throw new InvalidOperationException("JSVariable.NewReferenceErrorFactory delegate is not initialized. Ensure the Engine assembly module initializer has run."))
+                ("Super constructor may only be called once per derived class instance");
+
+        Value = value;
+        return _value;
+    }
     internal bool IsReadOnly;
     internal bool ThrowOnReadOnlyWrite;
 

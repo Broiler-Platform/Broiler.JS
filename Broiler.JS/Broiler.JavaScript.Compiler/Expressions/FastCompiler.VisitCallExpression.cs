@@ -191,20 +191,34 @@ partial class FastCompiler
                 // super(...) targets the superclass constructor, not the home-object prototype.
                 var super = top.SuperConstructor ?? top.Super;
 
+                // super(...) performs BindThisValue: the derived constructor's
+                // `this` binding may be initialized only once, so a second
+                // super() call (or a super() after `this` is already bound) is a
+                // ReferenceError. The superclass [[Construct]] runs on every call
+                // (it precedes the bind), and the bind throws when the binding is
+                // already initialized. `@this` is the `this` binding's value read
+                // (a property over the underlying JSVariable parameter); bind that
+                // parameter directly when available, else fall back to a plain
+                // assignment for non-JSVariable `this` representations.
+                var thisBinding = (@this as YPropertyExpression)?.Target;
+                YExpression BindSuperResult() => thisBinding != null
+                    ? JSVariableBuilder.BindThis(thisBinding, JSFunctionBuilder.ConstructSuper(super, paramArray1))
+                    : JSFunctionBuilder.InvokeSuperConstructor(super, @this, paramArray1);
+
                 // we need to set this to null
                 // to inform function creator that we have
                 // initialized members.. and super has been called...
                 if (members?.Any() ?? false)
                 {
-                    var initList = new Sequence<YExpression>() { JSFunctionBuilder.InvokeSuperConstructor(super, @this, paramArray1) };
+                    var initList = new Sequence<YExpression>() { BindSuperResult() };
                     InitMembers(initList, top);
                     root.MemberInits = null;
                     top.MemberInits = null;
 
                     return YExpression.Block(initList);
                 }
-                
-                return JSFunctionBuilder.InvokeSuperConstructor(super, @this, paramArray1);
+
+                return BindSuperResult();
             }
 
             var paramArray = VisitArguments(null, arguments);

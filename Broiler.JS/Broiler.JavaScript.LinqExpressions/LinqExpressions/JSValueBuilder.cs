@@ -31,6 +31,10 @@ public class JSValueBuilder
 
     public static Expression IsFunction(Expression exp) => exp.PropertyExpression<JSValue, bool>(() => (x) => x.IsFunction);
 
+    public static Expression IsObject(Expression exp) => exp.PropertyExpression<JSValue, bool>(() => (x) => x.IsObject);
+
+    public static Expression IsUndefined(Expression exp) => exp.PropertyExpression<JSValue, bool>(() => (x) => x.IsUndefined);
+
     public static Expression IsObjectType(Expression exp) =>
         Expression.And(exp.PropertyExpression<JSValue, bool>(() => (x) => x.IsObject), Expression.Not(exp.PropertyExpression<JSValue, bool>(() => (x) => x.IsFunction)));
 

@@ -21,6 +21,7 @@ public class JSException : Exception
     // lived inside the Core assembly.
     internal static Func<string, JSException> NewSyntaxErrorFactory;
     internal static Func<string, JSException> NewTypeErrorFactory;
+    internal static Func<string, JSException> NewReferenceErrorFactory;
     internal static Action<StringBuilder, List<(StringSpan target, string file, int line, int column)>> AppendStackTraceHelper;
 
     // Error message constants (moved from JSError for Core accessibility)
@@ -125,6 +126,12 @@ public class JSException : Exception
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T ThrowTypeError<T>(string value) =>
         throw (NewTypeErrorFactory ?? throw new InvalidOperationException("JSException.NewTypeErrorFactory delegate is not initialized. Ensure the Core assembly module initializer has run."))
+            (value);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static JSValue ThrowReferenceErrorValue(string value) =>
+        throw (NewReferenceErrorFactory ?? throw new InvalidOperationException("JSException.NewReferenceErrorFactory delegate is not initialized. Ensure the Core assembly module initializer has run."))
             (value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
