@@ -33,9 +33,37 @@ public partial class JSDate
     [JSExport("setFullYear", Length = 3)]
     internal JSValue SetFullYear(in Arguments a)
     {
+        // Capture validity from the snapshot BEFORE coercing the argument: a valueOf
+        // side effect may revive the date, but the spec reads [[DateValue]] first.
+        bool wasInvalid = !IsValidDate();
         var date = value;
-        if (!IsValid(date, a.Get1(), out var year))
-            return JSNumber.NaN;
+
+        // setFullYear does not early-return on an invalid date: per the spec, when
+        // the stored time value is NaN it is treated as +0 (so the call revives the
+        // date) rather than returning NaN. ToNumber(year) is still performed (a
+        // single valueOf), and only a NaN year makes the result NaN.
+        double year = a.Get1().DoubleValue;
+
+        if (wasInvalid)
+        {
+            // The revived date uses t = +0 (local). Compute purely with ECMAScript
+            // date math so the year-1 boundary doesn't underflow .NET's range when
+            // converting to/from a local-offset DateTimeOffset.
+            var (_, _m, _d) = a.Get3();
+            double t = 0;
+            double mv = _m.IsUndefined ? JSDateMath.MonthFromTime(t) : _m.DoubleValue;
+            double dv = _d.IsUndefined ? JSDateMath.DateFromTime(t) : _d.DoubleValue;
+            if (double.IsNaN(year) || double.IsInfinity(year)
+                || double.IsNaN(mv) || double.IsInfinity(mv)
+                || double.IsNaN(dv) || double.IsInfinity(dv))
+                return new JSNumber(SetTimeValue(double.NaN));
+
+            double newDate = JSDateMath.MakeDate(JSDateMath.MakeDay((long)year, (long)mv, (long)dv), JSDateMath.TimeWithinDay(t));
+            return new JSNumber(SetTimeValue(JSDateMath.TimeClip(JSDateMath.UTC(newDate))));
+        }
+
+        if (double.IsNaN(year))
+            return new JSNumber(SetTimeValue(double.NaN));
 
         var (_year, _month, _day) = a.Get3();
 
@@ -53,13 +81,16 @@ public partial class JSDate
                 date = date.AddDays(day - 1);
                 date = date.AddMonths(month);
                 value = date;
+                // Disambiguate a real year-1 boundary date from the MinValue sentinel
+                // that marks an invalid date (otherwise it would be read back as NaN).
+                rawTimeMs = value == InvalidDate ? value.ToUniversalTime().ToUnixTimeMilliseconds() : double.NaN;
             }
             catch (ArgumentOutOfRangeException)
             {
                 value = DateTimeOffset.MinValue;
             }
 
-            return new JSNumber(value.ToJSDate());
+            return new JSNumber(GetTimeMs());
         }
 
         // For year 0 or negative years, use ECMAScript date math directly.
@@ -212,19 +243,11 @@ public partial class JSDate
     [JSExport("setTime", Length = 1)]
     internal JSValue SetTime(in Arguments a)
     {
-        if (!IsValid(a.Get1(), out var _time))
-            return JSNumber.NaN;
-
-        try
-        {
-            value = DateTimeOffset.FromUnixTimeMilliseconds((long)_time).ToOffset(Local);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            value = DateTimeOffset.MinValue;
-        }
-
-        return new JSNumber(value.ToJSDate());
+        // setTime does not depend on the current [[DateValue]]: it always coerces
+        // its argument (ToNumber) and stores TimeClip of the result, so it works
+        // even when the receiver is currently an invalid date.
+        double t = a.Get1().DoubleValue;
+        return new JSNumber(SetTimeValue(JSDateMath.TimeClip(t)));
     }
 
     internal static JSValue SetYearLegacy(in Arguments a)
@@ -306,21 +329,24 @@ public partial class JSDate
         // Operate on the ECMAScript time value (ms since epoch) so the full Date
         // range is supported, including years outside .NET's 1–9999 window. Read the
         // receiver's time value BEFORE coercing the arguments (their valueOf may
-        // mutate this date), and keep this engine's convention of not reviving an
-        // already-invalid date (matching setFullYear).
+        // mutate this date). Like setFullYear, an invalid date is revived (t = +0).
         double t = GetTimeMs();
-        if (double.IsNaN(t))
-        {
-            value = InvalidDate;
-            rawTimeMs = double.NaN;
-            return JSNumber.NaN;
-        }
 
+        // Coerce the arguments (ToNumber, possibly invoking valueOf) BEFORE the
+        // "if t is NaN, return NaN" step, matching the spec's evaluation order.
         var (_year, _month, _day) = a.Get3();
 
         double yearValue = _year.DoubleValue;
-        double monthValue = _month.IsUndefined ? JSDateMath.MonthFromTime(t) : _month.DoubleValue;
-        double dayValue = _day.IsUndefined ? JSDateMath.DateFromTime(t) : _day.DoubleValue;
+        double monthArg = _month.IsUndefined ? double.NaN : _month.DoubleValue;
+        double dayArg = _day.IsUndefined ? double.NaN : _day.DoubleValue;
+
+        // setUTCFullYear revives an invalid date: when the stored time value is NaN
+        // it is treated as +0 (spec step 4) rather than returning NaN.
+        if (double.IsNaN(t))
+            t = 0;
+
+        double monthValue = _month.IsUndefined ? JSDateMath.MonthFromTime(t) : monthArg;
+        double dayValue = _day.IsUndefined ? JSDateMath.DateFromTime(t) : dayArg;
 
         if (double.IsNaN(yearValue) || double.IsInfinity(yearValue)
             || double.IsNaN(monthValue) || double.IsInfinity(monthValue)
@@ -340,15 +366,22 @@ public partial class JSDate
         // Operate on the ECMAScript time value (ms since epoch) so dates outside
         // .NET's 1–9999 year range keep working. An already-invalid date stays NaN.
         double t = GetTimeMs();
-        if (double.IsNaN(t))
-            return JSNumber.NaN;
 
+        // Coerce the arguments (ToNumber, possibly invoking valueOf) BEFORE the
+        // "if t is NaN, return NaN" step, matching the spec's evaluation order.
         var (_hours, _mins, _seconds, _millis) = a.Get4();
 
         double hrs = _hours.DoubleValue;
-        double mins = _mins.IsUndefined ? JSDateMath.MinFromTime(t) : _mins.DoubleValue;
-        double seconds = _seconds.IsUndefined ? JSDateMath.SecFromTime(t) : _seconds.DoubleValue;
-        double millis = _millis.IsUndefined ? JSDateMath.MsFromTime(t) : _millis.DoubleValue;
+        double minsArg = _mins.IsUndefined ? double.NaN : _mins.DoubleValue;
+        double secondsArg = _seconds.IsUndefined ? double.NaN : _seconds.DoubleValue;
+        double millisArg = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+
+        if (double.IsNaN(t))
+            return JSNumber.NaN;
+
+        double mins = _mins.IsUndefined ? JSDateMath.MinFromTime(t) : minsArg;
+        double seconds = _seconds.IsUndefined ? JSDateMath.SecFromTime(t) : secondsArg;
+        double millis = _millis.IsUndefined ? JSDateMath.MsFromTime(t) : millisArg;
 
         if (double.IsNaN(hrs) || double.IsInfinity(hrs)
             || double.IsNaN(mins) || double.IsInfinity(mins)

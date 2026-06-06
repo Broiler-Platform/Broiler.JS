@@ -219,10 +219,11 @@ public class Issue665Tests
             + "d.toISOString()"));
 
     [Fact]
-    public void SetUtcFullYearKeepsNaNReceiverInvalid()
-        => Assert.Equal("true", Eval(
-            "var d = new Date(NaN); var r = d.setUTCFullYear(2001);"
-            + "String(r !== r)"));
+    public void SetUtcFullYearRevivesNaNReceiver()
+        // Per the spec, setUTCFullYear treats a NaN time value as +0 and revives the
+        // date (it does not early-return NaN). 2001-01-01T00:00:00Z is the result.
+        => Assert.Equal("2001-01-01T00:00:00.000Z", Eval(
+            "var d = new Date(NaN); d.setUTCFullYear(2001); d.toISOString()"));
 
     [Fact]
     public void ParsesExpandedYearIsoStringsRoundTrip()

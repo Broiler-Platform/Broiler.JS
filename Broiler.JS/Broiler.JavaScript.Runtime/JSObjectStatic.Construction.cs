@@ -324,7 +324,9 @@ public partial class JSObject
             if (pdObject[key] is not JSObject itemObject)
                 throw NewTypeError("Property Description must be an object");
 
-            descriptors.Add((key, itemObject));
+            // ToPropertyDescriptor for each descriptor (resolves inherited / accessor
+            // fields), performed during the enumeration pass like the spec.
+            descriptors.Add((key, JSObject.NormalizeDescriptor(itemObject)));
         }
 
         foreach (var (key, descriptor) in descriptors)
@@ -341,8 +343,12 @@ public partial class JSObject
         if (target is not JSObject targetObject)
             throw NewTypeError("Object.defineProperty called on non-object");
 
-        if (desc is not JSObject pd)
+        if (desc is not JSObject userDesc)
             throw NewTypeError("Property Description must be an object");
+
+        // ToPropertyDescriptor: read the descriptor fields (which may be inherited or
+        // accessor-backed) into a fresh own-only record before defining.
+        var pd = JSObject.NormalizeDescriptor(userDesc);
 
         var propertyKey = key.ToKey();
         switch (propertyKey.Type)

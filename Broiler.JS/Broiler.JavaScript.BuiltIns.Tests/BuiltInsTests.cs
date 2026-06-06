@@ -10622,7 +10622,11 @@ public class BuiltInsTests
             })();
             """);
 
-        Assert.Equal("false|true|false|true|false|true|false|true", result.ToString());
+        // setFullYear/setUTCFullYear revive an invalid date (the spec treats a NaN
+        // time value as +0), so they return a non-NaN result even when started from
+        // an invalid date (indices 3 and 7 are "false"). The other setters keep the
+        // "if t is NaN, return NaN" behavior.
+        Assert.Equal("false|true|false|false|false|true|false|false", result.ToString());
     }
 
     [Fact]

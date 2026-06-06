@@ -39,16 +39,20 @@ public partial class JSDate
     {
         diffValue = 0;
 
-        if (date == DateTimeOffset.MinValue)
-            return false;
-
         if (diff.IsUndefined)
         {
             value = DateTimeOffset.MinValue;
             return false;
         }
 
+        // Coerce the argument (ToNumber, which may invoke valueOf and have
+        // observable side effects) BEFORE testing whether the stored date value
+        // is valid: the spec reads [[DateValue]] first but performs the ToNumber
+        // conversions of the arguments before the "if t is NaN, return NaN" step.
         diffValue = diff.DoubleValue;
+
+        if (date == DateTimeOffset.MinValue)
+            return false;
 
         if (double.IsNaN(diffValue))
         {

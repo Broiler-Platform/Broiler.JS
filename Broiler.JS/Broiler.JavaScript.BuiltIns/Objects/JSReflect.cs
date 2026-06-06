@@ -77,8 +77,12 @@ public partial class JSReflect : JSObject
 
         var key = propertyKey.ToKey();
 
-        if (attributes is not JSObject pd)
+        if (attributes is not JSObject userDesc)
             throw JSEngine.NewTypeError("Property description must be an object");
+
+        // ToPropertyDescriptor: resolve inherited / accessor descriptor fields into a
+        // fresh own-only record before defining.
+        var pd = JSObject.NormalizeDescriptor(userDesc);
 
         var result = key.Type switch
         {

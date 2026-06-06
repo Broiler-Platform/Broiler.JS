@@ -192,7 +192,7 @@ public static class JSIntl
     private static JSFunction CreateDurationFormatConstructor()
     {
         var constructor = new JSFunction(static (in Arguments a) =>
-            new JSIntlDurationFormat(ValidateConstructorArguments("DurationFormat", in a)),
+            new JSIntlDurationFormat(ValidateConstructorArguments("DurationFormat", in a, coerceOptions: false)),
             "DurationFormat",
             "function DurationFormat() { [native code] }",
             length: 0);
@@ -214,7 +214,7 @@ public static class JSIntl
     {
         var constructor = new JSFunction(static (in Arguments a) =>
         {
-            var options = ValidateConstructorArguments("ListFormat", in a);
+            var options = ValidateConstructorArguments("ListFormat", in a, coerceOptions: false);
             var locale = ResolveLocale(a.Get1());
             var type = GetOption(options, TypeKey, ["conjunction", "disjunction", "unit"], false, "conjunction");
             var style = GetOption(options, StyleKey, ["long", "short", "narrow"], false, "long");
@@ -301,7 +301,7 @@ public static class JSIntl
     {
         var constructor = new JSFunction((in Arguments a) =>
         {
-            var options = ValidateConstructorArguments("Segmenter", in a);
+            var options = ValidateConstructorArguments("Segmenter", in a, coerceOptions: false);
             var locale = ResolveLocale(a.Get1());
             var granularity = GetOption(options, GranularityKey, ["grapheme", "word", "sentence"], false, "grapheme");
             return new JSIntlSegmenter(locale, granularity);
@@ -460,7 +460,7 @@ public static class JSIntl
         return constructor;
     }
 
-    internal static JSObject ValidateConstructorArguments(string name, in Arguments a, bool requireNew = true)
+    internal static JSObject ValidateConstructorArguments(string name, in Arguments a, bool requireNew = true, bool coerceOptions = true)
     {
         // Intl.NumberFormat, Intl.DateTimeFormat and Intl.Collator are legacy
         // constructors (ECMA-402): they may be called as ordinary functions
@@ -470,7 +470,7 @@ public static class JSIntl
             throw JSEngine.NewTypeError($"Intl.{name} requires 'new'");
 
         ValidateLocalesArgument(a.Get1());
-        var options = ValidateOptionsArgument(a.GetAt(1));
+        var options = ValidateOptionsArgument(a.GetAt(1), coerceOptions);
         // Every Intl service constructor reads localeMatcher first (right after
         // coercing the options object) via GetOption(..., «lookup, best fit», ...),
         // which is a RangeError for any other value. Validate it centrally so all
@@ -494,13 +494,19 @@ public static class JSIntl
         return tagString;
     }
 
-    internal static JSObject ValidateOptionsArgument(JSValue options)
+    internal static JSObject ValidateOptionsArgument(JSValue options, bool coerce = true)
     {
         if (options.IsUndefined)
             return null;
 
         if (options is JSObject optionsObject)
             return optionsObject;
+
+        // GetOptionsObject (ECMA-402): used by Intl.ListFormat, Intl.Segmenter,
+        // Intl.DisplayNames and Intl.DurationFormat. A defined non-object options
+        // argument is a TypeError (it is not coerced).
+        if (!coerce)
+            throw JSEngine.NewTypeError("Options must be an object or undefined");
 
         // CoerceOptionsToObject: a defined non-object options argument is coerced
         // with ToObject (primitives box into wrapper objects; null throws).
@@ -1193,7 +1199,7 @@ public sealed class JSIntlDisplayNames : JSObject
 
     public JSIntlDisplayNames(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
-        options = JSIntl.ValidateDisplayNamesOptions(JSIntl.ValidateConstructorArguments("DisplayNames", in a));
+        options = JSIntl.ValidateDisplayNamesOptions(JSIntl.ValidateConstructorArguments("DisplayNames", in a, coerceOptions: false));
         locale = JSIntl.ResolveLocale(a.Get1());
     }
 
