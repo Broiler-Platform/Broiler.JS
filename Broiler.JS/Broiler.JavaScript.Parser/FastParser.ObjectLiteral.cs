@@ -159,7 +159,8 @@ partial class FastParser
 
                     var fx = new AstFunctionExpression(current, PreviousToken, false, isAsync, isGenerator, null, parameters, body);
 
-                    var isConstructor = !computed
+                    var isConstructor = isClass
+                        && !computed
                         && !isPrivate
                         && !isStatic
                         && (key is AstIdentifier keyIdentifier && keyIdentifier.Name.Value == "constructor"

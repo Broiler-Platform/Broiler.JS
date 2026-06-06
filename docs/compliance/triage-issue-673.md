@@ -54,7 +54,7 @@ diverge.
 | 5 | Direct `eval` var injection + lref timing | high | engine/runtime eval + identifier resolution |
 | 6 | `SameValue(false, true)` mismatches | low — needs per-file repro | mixed |
 | 7 | `#` private name after Unicode id | high (shares #9) | `Parser/CharExtensions.cs` |
-| 8 | `Unexpected token … constructor` | low — needs per-file repro | `Parser` class body |
+| 8 | `Unexpected token … constructor` | **FIXED** (`get`/`set constructor` in object literals) | `Parser/FastParser.ObjectLiteral.cs` |
 | 9 | Unicode ID_Start identifiers | high | `Parser/CharExtensions.cs` (Unicode data version) |
 | 10 | `Value is not iterable` | medium | iterator protocol / `yield*` |
 
@@ -270,9 +270,14 @@ single root cause. Best current hypotheses:
 - **Cat 6 (`SameValue(false, true)`):** mixed — private-method vs computed-property
   ordering, `arguments` property access, `RegExp` `lastIndex` on match/replace,
   `NumberFormat` `compactDisplay`.
-- **Cat 8 (`Unexpected token … constructor`):** a class-body form the parser
-  mis-handles; the samples are unrelated to Unicode, so triage each (e.g. getter
-  named after `constructor`, accessor/static ordering).
+- **Cat 8 (`Unexpected token … constructor`):** **fixed.** A getter/setter named
+  `constructor` in an *object literal* (`{ get constructor() {} }`,
+  `{ set constructor(_) {} }`, e.g. `Base.prototype = { set constructor(_) {} }`)
+  failed to parse because `FastParser.ObjectProperty` classified the inner method
+  as `AstPropertyKind.Constructor` regardless of context; the `get`/`set` wrapper
+  only rewraps a `Method`, so it reset and threw. The constructor classification
+  is now gated on `isClass`. A class accessor named `constructor` is still
+  rejected (a SyntaxError per spec). Covered by `Issue673Tests.cs`.
 - **Cat 10 (`Value is not iterable`):** iterator-protocol retrieval for `yield*`
   over an arbitrary expression, `Array.from` on a primitive, and `Map` from an
   iterable.
