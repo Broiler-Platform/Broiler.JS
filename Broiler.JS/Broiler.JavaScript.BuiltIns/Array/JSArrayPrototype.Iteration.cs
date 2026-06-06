@@ -278,7 +278,7 @@ public partial class JSArray
                 continue;
 
             var itemArgs = new Arguments(thisArg, item, new JSNumber(index), array);
-            if (!fn.f(itemArgs).BooleanValue)
+            if (!fn.InvokeCallback(itemArgs).BooleanValue)
                 return JSBoolean.False;
         }
 
@@ -314,7 +314,7 @@ public partial class JSArray
 
             var itemParams = new Arguments(thisArg, item, new JSNumber(index), @this);
 
-            if (fn.f(itemParams).BooleanValue)
+            if (fn.InvokeCallback(itemParams).BooleanValue)
                 CreateDataPropertyOrThrow(r, resultIndex++, item);
         }
         return r;
@@ -337,7 +337,7 @@ public partial class JSArray
                 continue;
 
             var itemParams = new Arguments(thisArg, item, new JSNumber(index), @this);
-            if (fn.f(itemParams).BooleanValue)
+            if (fn.InvokeCallback(itemParams).BooleanValue)
                 return item;
         }
 
@@ -431,7 +431,7 @@ public partial class JSArray
             var index = new JSNumber(n);
             var itemParams = new Arguments(thisArg, item, index, @this);
 
-            if (fn.f(itemParams).BooleanValue)
+            if (fn.InvokeCallback(itemParams).BooleanValue)
                 return index;
         }
 
@@ -456,7 +456,7 @@ public partial class JSArray
 
             var index = new JSNumber(n);
             var itemParams = new Arguments(thisArg, item, index, @this);
-            if (fn.f(itemParams).BooleanValue)
+            if (fn.InvokeCallback(itemParams).BooleanValue)
                 return item;
         }
 
@@ -481,7 +481,7 @@ public partial class JSArray
 
             var index = new JSNumber(n);
             var itemParams = new Arguments(thisArg, item, index, @this);
-            if (fn.f(itemParams).BooleanValue)
+            if (fn.InvokeCallback(itemParams).BooleanValue)
                 return index;
         }
 
@@ -507,7 +507,7 @@ public partial class JSArray
             var n = new JSNumber(index);
             var itemParams = new Arguments(thisArg, item, n, @this);
 
-            fn.f(itemParams);
+            fn.InvokeCallback(itemParams);
         }
 
         return JSUndefined.Value;
@@ -541,7 +541,7 @@ public partial class JSArray
                 continue;
 
             var itemArgs = new Arguments(thisArg, item, new JSNumber(index), @this);
-            CreateDataPropertyOrThrow(r, index, fn.f(itemArgs));
+            CreateDataPropertyOrThrow(r, index, fn.InvokeCallback(itemArgs));
         }
 
         return r;
@@ -611,7 +611,7 @@ public partial class JSArray
             if (!TryGetArrayLikeElement(@this, (uint)i, out var item))
                 continue;
 
-            initialValue = fn.f(new Arguments(JSUndefined.Value, initialValue, item, new JSNumber(i), @this));
+            initialValue = fn.InvokeCallback(new Arguments(JSUndefined.Value, initialValue, item, new JSNumber(i), @this));
         }
 
         return initialValue;
@@ -635,7 +635,7 @@ public partial class JSArray
 
             var itemArgs = new Arguments(thisArg, item, new JSNumber(index), array);
 
-            if (fn.f(itemArgs).BooleanValue)
+            if (fn.InvokeCallback(itemArgs).BooleanValue)
                 return JSBoolean.True;
         }
 
