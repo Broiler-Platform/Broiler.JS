@@ -86,7 +86,7 @@ partial class JSTypedArray
         while (en.MoveNext(out var hasValue, out var item, out var index))
         {
             var itemArgs = new Arguments(thisArg, item, new JSNumber(index), this);
-            if (!fn.f(itemArgs).BooleanValue)
+            if (!fn.InvokeCallback(itemArgs).BooleanValue)
                 return JSBoolean.False;
         }
         return JSBoolean.True;
@@ -124,7 +124,7 @@ partial class JSTypedArray
         {
             if (!hasValue) continue;
             var itemParams = new Arguments(thisArg, item, new JSNumber(index), this);
-            if (fn.f(itemParams).BooleanValue)
+            if (fn.InvokeCallback(itemParams).BooleanValue)
             {
                 values.Add(item);
             }
@@ -216,7 +216,7 @@ partial class JSTypedArray
             if (!hasValue)
                 continue;
             var itemParams = new Arguments(thisArg, item, new JSNumber(index), this);
-            if (fn.f(itemParams).BooleanValue)
+            if (fn.InvokeCallback(itemParams).BooleanValue)
             {
                 return item;
             }
@@ -239,7 +239,7 @@ partial class JSTypedArray
                 continue;
             var index = new JSNumber(n);
             var itemParams = new Arguments(thisArg, item, index, this);
-            if (fn.f(itemParams).BooleanValue)
+            if (fn.InvokeCallback(itemParams).BooleanValue)
             {
                 return index;
             }
@@ -262,7 +262,7 @@ partial class JSTypedArray
                 continue;
             var n = new JSNumber(index);
             var itemParams = new Arguments(thisArg, item, n, this);
-            fn.f(itemParams);
+            fn.InvokeCallback(itemParams);
         }
         return JSUndefined.Value;
     }
@@ -397,7 +397,7 @@ partial class JSTypedArray
                 continue;
             }
             var itemArgs = new Arguments(thisArg, item, new JSNumber(index), this);
-            values.Add(fn.f(itemArgs));
+            values.Add(fn.InvokeCallback(itemArgs));
         }
 
         var result = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), values.Count);
@@ -425,7 +425,7 @@ partial class JSTypedArray
             if (!hasValue)
                 continue;
             var itemArgs = new Arguments(JSUndefined.Value, initialValue, item, new JSNumber(index), this);
-            initialValue = fn.f(itemArgs);
+            initialValue = fn.InvokeCallback(itemArgs);
         }
         return initialValue;
     }
@@ -450,7 +450,7 @@ partial class JSTypedArray
         {
             var item = this[(uint)i];
             var itemArgs = new Arguments(JSUndefined.Value, initialValue, item, new JSNumber(i), this);
-            initialValue = fn.f(itemArgs);
+            initialValue = fn.InvokeCallback(itemArgs);
         }
         return initialValue;
     }
@@ -570,7 +570,7 @@ partial class JSTypedArray
             if (!hasValue)
                 continue;
             var itemArgs = new Arguments(thisArg, item, new JSNumber(index), this);
-            if (fn.f(itemArgs).BooleanValue)
+            if (fn.InvokeCallback(itemArgs).BooleanValue)
                 return JSBoolean.True;
         }
         return JSBoolean.False;

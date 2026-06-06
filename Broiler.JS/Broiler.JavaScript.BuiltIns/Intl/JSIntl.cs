@@ -1163,18 +1163,160 @@ public sealed class JSIntlListFormat : JSObject
 
     public static JSValue FormatPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlListFormat)
+        if (a.This is not JSIntlListFormat @this)
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.format called on incompatible receiver");
 
-        return JSValue.CreateString(string.Empty);
+        var items = StringListFromIterable(a.Get1());
+        return JSValue.CreateString(@this.FormatList(items));
     }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlListFormat)
+        if (a.This is not JSIntlListFormat @this)
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.formatToParts called on incompatible receiver");
 
-        return JSValue.CreateArray();
+        // Minimal formatToParts: a single "element" part per list item plus
+        // "literal" parts for the surrounding separators. We re-derive the
+        // literals by diffing the full formatted string against the elements.
+        var items = StringListFromIterable(a.Get1());
+        var formatted = @this.FormatList(items);
+        var result = JSValue.CreateArray();
+        var parts = (JSObject)result;
+        uint index = 0;
+        int cursor = 0;
+        for (int i = 0; i < items.Count; i++)
+        {
+            var pos = formatted.IndexOf(items[i], cursor, StringComparison.Ordinal);
+            if (pos < 0)
+                pos = cursor;
+            if (pos > cursor)
+                parts.SetPropertyOrThrow(JSValue.CreateNumber(index++), MakePart("literal", formatted.Substring(cursor, pos - cursor)));
+            parts.SetPropertyOrThrow(JSValue.CreateNumber(index++), MakePart("element", items[i]));
+            cursor = pos + items[i].Length;
+        }
+        if (cursor < formatted.Length)
+            parts.SetPropertyOrThrow(JSValue.CreateNumber(index++), MakePart("literal", formatted.Substring(cursor)));
+        return result;
+    }
+
+    private static JSObject MakePart(string type, string value)
+    {
+        var part = new JSObject();
+        part[KeyStrings.GetOrCreate("type")] = JSValue.CreateString(type);
+        part[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(value);
+        return part;
+    }
+
+    // §13.5.1 StringListFromIterable: iterate the argument requiring every
+    // produced value to be a String, collecting them into a list. `undefined`
+    // yields the empty list; a primitive string is iterated by code point.
+    private static List<string> StringListFromIterable(JSValue list)
+    {
+        var result = new List<string>();
+        if (list.IsUndefined)
+            return result;
+
+        var en = list.GetIterableEnumerator();
+        while (en.MoveNext(out var hasValue, out var item, out var _))
+        {
+            if (!hasValue)
+                continue;
+            if (!item.IsString)
+                throw JSEngine.NewTypeError("Intl.ListFormat: array element must be a string");
+            result.Add(item.StringValue);
+        }
+
+        return result;
+    }
+
+    // CLDR list-assembly: combine the elements using the (start, middle, end,
+    // pair) patterns for this list's locale/type/style.
+    private string FormatList(List<string> items)
+    {
+        var count = items.Count;
+        if (count == 0)
+            return string.Empty;
+        if (count == 1)
+            return items[0];
+
+        var (start, middle, end, pair) = GetPatterns();
+        if (count == 2)
+            return ApplyPattern(pair, items[0], items[1]);
+
+        var result = ApplyPattern(end, items[count - 2], items[count - 1]);
+        for (var i = count - 3; i >= 1; i--)
+            result = ApplyPattern(middle, items[i], result);
+        return ApplyPattern(start, items[0], result);
+    }
+
+    // Substitute {0}/{1} in a single left-to-right pass so substituted content
+    // containing literal "{0}"/"{1}" is never re-expanded.
+    private static string ApplyPattern(string pattern, string v0, string v1)
+    {
+        var sb = new StringBuilder(pattern.Length + v0.Length + v1.Length);
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            if (pattern[i] == '{' && i + 2 < pattern.Length && pattern[i + 2] == '}')
+            {
+                if (pattern[i + 1] == '0') { sb.Append(v0); i += 2; continue; }
+                if (pattern[i + 1] == '1') { sb.Append(v1); i += 2; continue; }
+            }
+            sb.Append(pattern[i]);
+        }
+        return sb.ToString();
+    }
+
+    private (string Start, string Middle, string End, string Pair) GetPatterns()
+    {
+        var lang = locale;
+        var dash = lang.IndexOf('-');
+        if (dash >= 0)
+            lang = lang.Substring(0, dash);
+
+        var word = type switch
+        {
+            "disjunction" => lang == "es" ? "o" : "or",
+            "unit" => null,
+            _ => lang == "es" ? "y" : "and",
+        };
+
+        // narrow unit lists join with a plain space; everything else uses comma
+        // separators for start/middle and the connector word (if any) at the end.
+        if (style == "narrow" && type == "unit")
+            return ("{0} {1}", "{0} {1}", "{0} {1}", "{0} {1}");
+
+        var startMid = "{0}, {1}";
+
+        if (type == "unit")
+        {
+            // unit: long keeps the connector word at the very end (e.g. es "y");
+            // short/narrow drop it entirely (comma separated).
+            if (style != "long")
+            {
+                var pairUnit = lang == "es" ? "{0} y {1}" : "{0}, {1}";
+                return (startMid, startMid, startMid, pairUnit);
+            }
+            var connector = lang == "es" ? "y" : null;
+            var endUnit = connector != null ? "{0} " + connector + " {1}" : "{0}, {1}";
+            var pairUnitLong = connector != null ? "{0} " + connector + " {1}" : "{0}, {1}";
+            return (startMid, startMid, endUnit, pairUnitLong);
+        }
+
+        // conjunction / disjunction
+        if (lang == "es")
+        {
+            var endEs = "{0} " + word + " {1}";
+            return (startMid, startMid, endEs, endEs);
+        }
+
+        var connectorEn = word; // "and" / "or"
+        var endEn = style == "long" ? "{0}, " + connectorEn + " {1}"
+                  : connectorEn == "and" ? "{0}, & {1}"
+                  : "{0}, " + connectorEn + " {1}";
+        var pairEn = style == "long" ? "{0} " + connectorEn + " {1}"
+                   : connectorEn == "and" ? "{0} & {1}"
+                   : "{0} " + connectorEn + " {1}";
+        return (startMid, startMid, endEn, pairEn);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)

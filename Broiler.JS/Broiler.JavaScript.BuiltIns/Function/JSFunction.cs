@@ -548,6 +548,16 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         }
     }
 
+    /// <summary>
+    /// Invokes this function's compiled body for a native callback site (e.g.
+    /// Array.prototype.map/filter/forEach) and resolves any proper-tail-call
+    /// sentinel it returns. A raw <c>f(a)</c> call does not trampoline tail
+    /// calls, so under BROILER_SCRIPT_HOST a callback ending in <c>return g()</c>
+    /// would otherwise leak a <see cref="JSTailCall"/> object to the native
+    /// caller instead of g()'s actual result.
+    /// </summary>
+    internal JSValue InvokeCallback(in Arguments a) => JSTailCall.Resolve(f(in a));
+
     [JSPrototypeMethod]
     [JSExport("valueOf", Length = 1)]
     public new static JSValue ValueOf(in Arguments a) => a.This;

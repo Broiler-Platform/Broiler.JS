@@ -269,10 +269,10 @@ public partial class JSJSON : JSObject
                 context["source"] = new JSString(source);
             }
 
-            return reviver.f(new Arguments(holder, new JSString(key), value, context));
+            return reviver.InvokeCallback(new Arguments(holder, new JSString(key), value, context));
         }
 
-        return reviver.f(new Arguments(holder, new JSString(key), value));
+        return reviver.InvokeCallback(new Arguments(holder, new JSString(key), value));
     }
 
     private static JSValue InternalizeJsonProperty(
@@ -318,10 +318,10 @@ public partial class JSJSON : JSObject
             if (IsPrimitiveJsonValue(value) && TryGetSource(sourceMap, holder, key, out var source))
                 context["source"] = new JSString(source);
 
-            return reviver.f(new Arguments(holder, new JSString(key), value, context));
+            return reviver.InvokeCallback(new Arguments(holder, new JSString(key), value, context));
         }
 
-        return reviver.f(new Arguments(holder, new JSString(key), value));
+        return reviver.InvokeCallback(new Arguments(holder, new JSString(key), value));
     }
 
     [JSExport]
@@ -397,7 +397,7 @@ public partial class JSJSON : JSObject
 
             if (r is JSFunction rf)
             {
-                replacer = (item) => rf.f(new Arguments(item.target, item.key, item.value));
+                replacer = (item) => rf.InvokeCallback(new Arguments(item.target, item.key, item.value));
             }
             else if (r.IsArray && r is JSObject ra)
             {
@@ -577,7 +577,7 @@ public partial class JSJSON : JSObject
                 if (value.get == null)
                     return;
 
-                jsValue = ((JSFunction)value.get).f(new Arguments(target));
+                jsValue = ((JSFunction)value.get).InvokeCallback(new Arguments(target));
             }
             else
             {
