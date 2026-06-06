@@ -5,15 +5,22 @@ namespace Broiler.JavaScript.Integration.Tests;
 // Regression tests for https://github.com/MaiRat/Broiler.JS/issues/675
 //
 // Issue #675 reports the ten most-common test262 failure categories from the
-// full script-host runner. Problems 1, 2, 4–7 overlap with categories triaged
-// in docs/compliance/triage-issue-673.md (delegating-yield, generator return,
-// object-literal constructor accessors, primitive iteration and concat-spreadable
-// are fixed there; direct-eval var injection, Unicode identifier coverage and
-// Intl range formatting remain open and tracked).
+// full script-host runner. Problems 2, 4–7 overlap with categories triaged
+// in docs/compliance/triage-issue-673.md (generator return, object-literal
+// constructor accessors, primitive iteration and concat-spreadable are fixed
+// there; direct-eval var injection, Unicode identifier coverage and Intl range
+// formatting remain open and tracked).
 //
-// Problem 3 (finally abrupt completion) and Problems 8–10 are fixed by this
-// change:
+// Problem 1 (Array.from-over-string with overridden iterator), Problem 3
+// (finally abrupt completion) and Problems 8–10 are fixed by this change:
 //
+//   * Problem 1 — iterating a string (`Array.from('ab')`, `[...'ab']`,
+//     `for (var c of 'ab')`, `[a,b] = 'ab'`) ignored an overridden
+//     String.prototype[@@iterator]: JSString.GetIterableEnumerator used the
+//     hardcoded code-point enumerator unconditionally. It now consults
+//     @@iterator and only takes the fast code-point path when the property is
+//     the built-in default (recognised via the JSFunction's backing method).
+//     Covers test/staging/sm/Array/from_string.
 //   * Problem 3 — a `finally` that completes abruptly (continue/break/return)
 //     must override a pending throw ("ex1"). endfinally re-raised the in-flight
 //     exception so the deferred jump never ran; the IL generator now wraps a
@@ -33,6 +40,63 @@ public class Issue675Tests
         using var ctx = new JSContext();
         return ctx.Eval(code).ToString();
     }
+
+    // ---- Problem 1: string iteration honours String.prototype[@@iterator] ----
+
+    // Default String iterator: still walks Unicode code points (a high/low
+    // surrogate pair counts as one element).
+    [Fact]
+    public void StringIteration_DefaultWalksByCodePoint()
+        => Assert.Equal("3", Eval(@"String(Array.from('a😀b').length);"));
+
+    [Fact]
+    public void StringIteration_DefaultArrayFromYieldsCodeUnits()
+        => Assert.Equal("a,b,c", Eval(@"Array.from('abc').join(',');"));
+
+    // Replacing String.prototype[Symbol.iterator] must affect every consumer of
+    // the iteration protocol over a string primitive.
+    [Fact]
+    public void StringIteration_ArrayFromHonoursPrototypeOverride()
+        => Assert.Equal("X,Y", Eval(@"
+            String.prototype[Symbol.iterator] = function () {
+                var i = 0, a = ['X', 'Y'];
+                return { next: function () { return i < a.length ? { value: a[i++], done: false } : { value: undefined, done: true }; } };
+            };
+            Array.from('ab').join(',');
+        "));
+
+    [Fact]
+    public void StringIteration_SpreadHonoursPrototypeOverride()
+        => Assert.Equal("X,Y", Eval(@"
+            String.prototype[Symbol.iterator] = function () {
+                var i = 0, a = ['X', 'Y'];
+                return { next: function () { return i < a.length ? { value: a[i++], done: false } : { value: undefined, done: true }; } };
+            };
+            [...'ab'].join(',');
+        "));
+
+    [Fact]
+    public void StringIteration_ForOfHonoursPrototypeOverride()
+        => Assert.Equal("X,Y", Eval(@"
+            String.prototype[Symbol.iterator] = function () {
+                var i = 0, a = ['X', 'Y'];
+                return { next: function () { return i < a.length ? { value: a[i++], done: false } : { value: undefined, done: true }; } };
+            };
+            var r = [];
+            for (var ch of 'ab') r.push(ch);
+            r.join(',');
+        "));
+
+    [Fact]
+    public void StringIteration_DestructuringHonoursPrototypeOverride()
+        => Assert.Equal("X", Eval(@"
+            String.prototype[Symbol.iterator] = function () {
+                var i = 0, a = ['X', 'Y'];
+                return { next: function () { return i < a.length ? { value: a[i++], done: false } : { value: undefined, done: true }; } };
+            };
+            var [first] = 'ab';
+            first;
+        "));
 
     // ---- Problem 3: finally abrupt completion overrides a pending throw ----
 

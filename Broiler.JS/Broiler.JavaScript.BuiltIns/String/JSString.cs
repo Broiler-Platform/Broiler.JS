@@ -306,9 +306,52 @@ public partial class JSString : JSPrimitive
     // for-in, Object.keys, etc.).
     public override IElementEnumerator GetElementEnumerator() => new ElementEnumerator(value);
 
+    // MethodInfo of the built-in String iterator (JSStringPrototype `Iterator`,
+    // installed as String.prototype[@@iterator]). Used to recognise — and keep
+    // the fast path for — the default iterator when it has not been replaced.
+    private static readonly System.Reflection.MethodInfo DefaultIteratorMethod =
+        typeof(JSString).GetMethod(nameof(Iterator),
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+
     // The iteration protocol (for-of, spread, destructuring, Array.from, Map/Set,
-    // ...) enumerates a String by Unicode code point, per the String Iterator.
-    public override IElementEnumerator GetIterableEnumerator() => new CodePointEnumerator(value);
+    // ...) enumerates a String by Unicode code point, per the built-in String
+    // Iterator. If user code has replaced String.prototype[@@iterator], that
+    // override must be honoured instead (e.g. test262 sm/Array/from_string and a
+    // spread/`for-of` over a string with a custom String.prototype iterator).
+    public override IElementEnumerator GetIterableEnumerator()
+    {
+        var symbolIterator = JSValue.SymbolIterator;
+        if (symbolIterator != null)
+        {
+            var iterator = this[symbolIterator];
+
+            // Fall back to the @@iterator protocol only when the method is not the
+            // built-in code-point iterator (the common, hot path stays direct).
+            if (!IsDefaultStringIterator(iterator))
+            {
+                if (iterator.IsNullOrUndefined)
+                    throw NewTypeError(JSException.NotIterable(this));
+                if (!iterator.IsFunction)
+                    throw NewTypeError("@@iterator is not a function");
+
+                var iteratorResult = iterator.InvokeFunction(new Arguments(this));
+                if (!iteratorResult.IsObject)
+                    throw NewTypeError("@@iterator result is not an object");
+
+                return new JSIterator(iteratorResult);
+            }
+        }
+
+        return new CodePointEnumerator(value);
+    }
+
+    // The raw built-in String iterator (Unicode code points). Used by the default
+    // String.prototype[@@iterator] so it never re-enters the override-aware
+    // GetIterableEnumerator (which would recurse back into this method).
+    internal IElementEnumerator GetCodePointEnumerator() => new CodePointEnumerator(value);
+
+    private static bool IsDefaultStringIterator(JSValue iterator)
+        => iterator is JSFunction f && DefaultIteratorMethod != null && f.Delegate?.Method == DefaultIteratorMethod;
 
     private struct CodePointEnumerator(in StringSpan value) : IElementEnumerator
     {

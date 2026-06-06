@@ -23,7 +23,7 @@ by a single shared cause.
 
 | # | Issue #675 problem | Status | Maps to |
 | --- | --- | --- | --- |
-| 1 | Structural `deepEqual` mismatch (`Array.from`, `delegating-yield-*`, `object/entries`) | `delegating-yield-*` **fixed** in #673; rest open | #673 cat 1 |
+| 1 | Structural `deepEqual` mismatch (`Array.from`, `delegating-yield-*`, `object/entries`) | `delegating-yield-*` **fixed** in #673; `Array.from`-string **fixed** in #675; rest open | #673 cat 1 |
 | 2 | `Cannot get property value of undefined` — `Intl.DateTimeFormat` range formatting | open | #673 cat 3 |
 | 3 | `ex1` — `finally` abrupt completion over a pending throw | **fixed** | #673 cat 4 |
 | 4 | `innerX === 2. Actual: 4` — direct-`eval` var injection | open | #673 cat 5 |
@@ -34,20 +34,12 @@ by a single shared cause.
 | 9 | `Method select not found in [object Intl.PluralRules]` | **fixed** | new |
 | 10 | `Method withResolvers not found in … Promise` | **fixed** | new |
 
-## Problems 1, 2, 4–7 — carried over from issue #673
+## Problems 2, 4–7 — carried over from issue #673
 
 These reproduce root causes already triaged in
 [`triage-issue-673.md`](triage-issue-673.md); the issue #675 sample paths are the
 same files (or near-identical variants). Their status is tracked by the
 `gap-673-*` rows in the roadmap:
-
-- **Problem 1** (structural `deepEqual`) → #673 category 1. The
-  `staging/sm/generators/delegating-yield-*` sub-cause is **fixed** (a `yield*`
-  expression now evaluates to the delegated iterator's return value). The
-  `Array/from_proxy.js`, `Array/from_string.js` and `object/entries.js` samples
-  remain open and are tracked under `gap-673-triage-remaining`. (`Object.entries`
-  itself reproduces correctly locally; the `object/entries.js` failure is a
-  narrower sub-case still to be reduced.)
 - **Problem 2** (`Intl.DateTimeFormat` `formatRange`/`formatRangeToParts`) → #673
   category 3, tracked under `gap-673-intl-range`. Locally `formatRange` returns
   the raw epoch-millisecond values joined by an en dash instead of formatted
@@ -63,6 +55,43 @@ same files (or near-identical variants). Their status is tracked by the
 
 No new work is landed for these here; see the #673 triage for the per-category
 root-cause analysis and next steps.
+
+## Problem 1 — `String.prototype[@@iterator]` override must be honoured (fixed)
+
+- **Exception:** `Test262Error: Expected ... to be structurally equal ...`
+- **Samples:** `test/staging/sm/Array/from_string.js` (and shape-equivalents
+  driven by `[...str]`, `for-of` over a string, and destructuring)
+
+`Array.from('ab')`, `[...'ab']`, `for (var c of 'ab')` and `var [x] = 'ab'`
+should all consult `String.prototype[Symbol.iterator]`. The `from_string.js`
+fixture replaces that method to short-circuit string iteration; Broiler ignored
+the override and returned the raw code points.
+
+**Root cause.** `JSString.GetIterableEnumerator` unconditionally returned a
+hardcoded `CodePointEnumerator` (the built-in String Iterator), so every
+consumer of the iteration protocol on a string primitive bypassed the prototype
+lookup. The default `String.prototype[@@iterator]` slot was also a freshly-built
+lambda that itself called back into `GetIterableEnumerator`, which made any
+attempt to add a "check the prototype first" guard recurse.
+
+**Fixed.**
+- `JSString.GetIterableEnumerator` now reads `this[Symbol.iterator]` and only
+  takes the fast code-point path when the method is the built-in default.
+  Identity is established by comparing the `JSFunction`'s backing
+  `Delegate.Method` to `JSString.Iterator` (the named static method exposed by
+  `JSStringPrototype.Extract.cs`), so the hot path stays a single property read
+  plus a reference comparison — no allocation, no `JSIterator` round-trip.
+- `JSString.Iterator` now uses a new internal `GetCodePointEnumerator()` so the
+  default iterator never re-enters the override-aware
+  `GetIterableEnumerator()` (avoiding the recursion above).
+- `BuiltInsAssemblyInitializer.PatchStringPrototype` no longer installs an
+  anonymous lambda for the default `@@iterator`; it now installs the named
+  `JSString.Iterator` so the identity check works.
+
+Covered by `Issue675Tests.cs` (`StringIteration_*`). Implementation:
+`Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSString.cs`,
+`.../String/JSStringPrototype.Extract.cs`,
+`.../BuiltInsAssemblyInitializer.cs`.
 
 ## Problem 3 — `finally` abrupt completion must override a pending throw (fixed)
 

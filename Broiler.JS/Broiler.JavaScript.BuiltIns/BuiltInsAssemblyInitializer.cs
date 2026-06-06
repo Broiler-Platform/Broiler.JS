@@ -593,11 +593,12 @@ internal static class BuiltInsAssemblyInitializer
 
         if (prototype.GetOwnPropertyDescriptor(JSSymbol.iterator).IsUndefined)
         {
-            prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, CreateNativeFunction(static (in Arguments a) =>
-            {
-                var text = a.This.AsString();
-                return new JSGenerator(new JSString(text).GetIterableEnumerator(), "String Iterator");
-            }, "[Symbol.iterator]"), JSPropertyAttributes.ConfigurableValue);
+            // Register the named String iterator (JSString.Iterator) rather than a
+            // lambda so JSString.GetIterableEnumerator can recognise the built-in
+            // default (and keep its fast code-point path) versus a user override.
+            // JSString.Iterator uses the raw code-point enumerator, so the override
+            // protocol can call it without re-entering GetIterableEnumerator.
+            prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, CreateNativeFunction(JSString.Iterator, "[Symbol.iterator]"), JSPropertyAttributes.ConfigurableValue);
         }
 
         if (!trimStart.IsUndefined)
