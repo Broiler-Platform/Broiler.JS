@@ -139,6 +139,29 @@ public partial class JSPromise
         return constructor.CreateInstance(new Arguments(JSUndefined.Value, executor));
     }
 
+    // Promise.withResolvers ( ) — §27.2.4.10. Creates a new promise via the
+    // receiver constructor's NewPromiseCapability and returns a plain object
+    // exposing the promise together with its resolve/reject functions.
+    [JSExport("withResolvers")]
+    public static JSValue WithResolvers(in Arguments a)
+    {
+        var constructor = a.This;
+
+        JSValue capturedResolve = JSUndefined.Value;
+        JSValue capturedReject = JSUndefined.Value;
+        var promise = CreatePromiseFromConstructor(constructor, (resolve, reject) =>
+        {
+            capturedResolve = resolve;
+            capturedReject = reject;
+        });
+
+        var result = new JSObject();
+        result[KeyStrings.GetOrCreate("promise")] = promise;
+        result[KeyStrings.GetOrCreate("resolve")] = capturedResolve;
+        result[KeyStrings.GetOrCreate("reject")] = capturedReject;
+        return result;
+    }
+
     [JSExport("resolve")]
     public static JSValue Resolve(in Arguments a)
     {

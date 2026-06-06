@@ -1,0 +1,120 @@
+using Broiler.JavaScript.Engine;
+
+namespace Broiler.JavaScript.Integration.Tests;
+
+// Regression tests for https://github.com/MaiRat/Broiler.JS/issues/675
+//
+// Issue #675 reports the ten most-common test262 failure categories from the
+// full script-host runner. Problems 1–7 overlap with the categories already
+// triaged in docs/compliance/triage-issue-673.md (delegating-yield, generator
+// return, object-literal constructor accessors, primitive iteration and
+// concat-spreadable are fixed there; the finally abrupt-completion override,
+// direct-eval var injection, Unicode identifier coverage and Intl range
+// formatting remain open and tracked).
+//
+// Problems 8–10 are *new* — three missing/incorrect built-in surfaces that this
+// change fixes:
+//
+//   * Problem 8 — Set.prototype.add returned the value instead of the Set, so
+//     chained calls (`set.add(1).add(2)`) threw "Method add not found in 1".
+//     The spec returns the Set (and WeakSet.prototype.add the WeakSet).
+//   * Problem 9 — Intl.PluralRules.prototype.select was missing entirely
+//     ("Method select not found in [object Intl.PluralRules]").
+//   * Problem 10 — Promise.withResolvers was missing entirely ("Method
+//     withResolvers not found in function Promise() { [native code] }").
+public class Issue675Tests
+{
+    private static string Eval(string code)
+    {
+        using var ctx = new JSContext();
+        return ctx.Eval(code).ToString();
+    }
+
+    // ---- Problem 8: Set.prototype.add returns the Set (chainable) ----
+
+    [Fact]
+    public void SetAdd_ReturnsTheSet()
+        => Assert.Equal("true", Eval("var s = new Set(); String(s.add(9) === s);"));
+
+    [Fact]
+    public void SetAdd_IsChainable_PreservesInsertionOrder()
+        => Assert.Equal("1,2,3", Eval(@"
+            var s = new Set();
+            s.add(1).add(2).add(3);
+            [...s].join(',');
+        "));
+
+    [Fact]
+    public void WeakSetAdd_ReturnsTheWeakSet()
+        => Assert.Equal("true", Eval(@"
+            var ws = new WeakSet();
+            var a = {}, b = {};
+            ws.add(a).add(b);
+            String(ws.has(a) && ws.has(b));
+        "));
+
+    // ---- Problem 9: Intl.PluralRules.prototype.select ----
+
+    [Fact]
+    public void PluralRulesSelect_IsAFunctionOfLengthOne()
+        => Assert.Equal("function,1", Eval(@"
+            var pr = new Intl.PluralRules('en');
+            (typeof pr.select) + ',' + pr.select.length;
+        "));
+
+    [Fact]
+    public void PluralRulesSelect_CardinalEnglish()
+        => Assert.Equal("one,other,other", Eval(@"
+            var pr = new Intl.PluralRules('en');
+            [pr.select(1), pr.select(0), pr.select(2)].join(',');
+        "));
+
+    [Fact]
+    public void PluralRulesSelect_NonFiniteIsOther()
+        => Assert.Equal("other,other,other", Eval(@"
+            var pr = new Intl.PluralRules('en');
+            [pr.select(Infinity), pr.select(-Infinity), pr.select(NaN)].join(',');
+        "));
+
+    [Fact]
+    public void PluralRulesSelect_OrdinalEnglish()
+        => Assert.Equal("one,two,few,other,other", Eval(@"
+            var pr = new Intl.PluralRules('en', { type: 'ordinal' });
+            [pr.select(1), pr.select(2), pr.select(3), pr.select(4), pr.select(11)].join(',');
+        "));
+
+    [Fact]
+    public void PluralRulesSelect_ThrowsOnIncompatibleReceiver()
+        => Assert.Equal("true", Eval(@"
+            var select = Intl.PluralRules.prototype.select;
+            var threw = false;
+            try { select.call({}, 1); } catch (e) { threw = e instanceof TypeError; }
+            String(threw);
+        "));
+
+    // ---- Problem 10: Promise.withResolvers ----
+
+    [Fact]
+    public void PromiseWithResolvers_ReturnsPromiseAndResolvers()
+        => Assert.Equal("true,function,function", Eval(@"
+            var d = Promise.withResolvers();
+            [d.promise instanceof Promise, typeof d.resolve, typeof d.reject].join(',');
+        "));
+
+    [Fact]
+    public void PromiseWithResolvers_HasLengthZero()
+        => Assert.Equal("0", Eval("String(Promise.withResolvers.length);"));
+
+    // Driven against a custom (synchronous) constructor so resolution is
+    // observable without a microtask queue: withResolvers must hand back the
+    // capability's own resolve/reject functions.
+    [Fact]
+    public void PromiseWithResolvers_WiresCapabilityResolveAndReject()
+        => Assert.Equal("resolved-with-42", Eval(@"
+            var captured;
+            function C(executor){ executor(function(v){ captured = 'resolved-with-' + v; }, function(){}); }
+            var d = Promise.withResolvers.call(C);
+            d.resolve(42);
+            captured;
+        "));
+}

@@ -69,7 +69,9 @@ public partial class JSSet : JSObject
             liveCount++;
         }
 
-        return key;
+        // Set.prototype.add returns the Set itself (not the value) so calls can
+        // be chained: `set.add(1).add(2)` (test262 Set/prototype/add/*).
+        return this;
     }
 
     [JSExport("clear")]
