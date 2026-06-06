@@ -5,6 +5,7 @@ using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.BuiltIns.Symbol;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
 
@@ -18,9 +19,23 @@ public partial class JSArray
         var result = CreateArraySpecies(@this, 0);
         uint resultIndex = 0;
 
+        // IsConcatSpreadable: @@isConcatSpreadable overrides the IsArray default.
+        static bool IsConcatSpreadable(JSValue item, out JSObject obj)
+        {
+            obj = item as JSObject;
+            if (obj == null)
+                return false;
+
+            var spreadable = obj[(IJSSymbol)JSSymbol.isConcatSpreadable];
+            if (!spreadable.IsUndefined)
+                return spreadable.BooleanValue;
+
+            return IsArrayValue(item);
+        }
+
         void Append(JSValue item)
         {
-            if (IsArrayValue(item) && item is JSObject spreadable)
+            if (IsConcatSpreadable(item, out var spreadable))
             {
                 var length = GetArrayLikeLength(spreadable);
                 for (uint sourceIndex = 0; sourceIndex < length; sourceIndex++)

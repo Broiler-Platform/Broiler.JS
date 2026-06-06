@@ -283,4 +283,27 @@ public class Issue673Tests
             it.return();
             log + ',done';
         "));
+
+    // ---- Category 1: Array.prototype.concat honours @@isConcatSpreadable ----
+
+    [Fact]
+    public void Concat_ArrayWithSpreadableFalse_IsNotSpread()
+        => Assert.Equal("[0,[1,2]]", Eval(@"
+            var a = [1, 2];
+            a[Symbol.isConcatSpreadable] = false;
+            JSON.stringify([0].concat(a));
+        "));
+
+    [Fact]
+    public void Concat_ArrayLikeWithSpreadableTrue_IsSpread()
+        => Assert.Equal("[0,\"a\",\"b\"]", Eval(@"
+            var o = { length: 2, 0: 'a', 1: 'b', [Symbol.isConcatSpreadable]: true };
+            JSON.stringify([0].concat(o));
+        "));
+
+    [Fact]
+    public void Concat_DefaultArraySpreads_PlainObjectDoesNot()
+        => Assert.Equal("[1,2,3,{\"x\":1}]", Eval(@"
+            JSON.stringify([1].concat([2, 3], { x: 1 }));
+        "));
 }

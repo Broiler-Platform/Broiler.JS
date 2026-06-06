@@ -47,7 +47,7 @@ diverge.
 
 | # | Category | Root-cause confidence | Implementation area |
 | --- | --- | --- | --- |
-| 1 | Structural `deepEqual` mismatches | **delegating-yield FIXED**; rest low — needs per-file repro | `BuiltIns/Array`, generator `yield*` |
+| 1 | Structural `deepEqual` mismatches | **delegating-yield + concat-spreadable FIXED**; rest low | `BuiltIns/Array`, generator `yield*` |
 | 2 | `IteratorClose` on generator `return()` | **FIXED** (`return()` resumes & runs `finally`) | `BuiltIns/Generator/JSGenerator.cs`, `GeneratorsV2/GeneratorTypes.cs` |
 | 3 | `Intl.DateTimeFormat` range formatting | medium | `BuiltIns/Intl/JSIntl.cs` |
 | 4 | `finally` abrupt completion override | high | `ExpressionCompiler` try/finally |
@@ -285,9 +285,15 @@ single root cause. Best current hypotheses:
   discarding the final `{ value, done:true }` result, plus the delegation driver
   in `GeneratorTypes.cs` (`ClrGeneratorV2.Next`) clobbering it with the spent
   `next` value. Covered by `Broiler.JavaScript.Integration.Tests/Issue673Tests.cs`.
-  Still open in this bucket: `Array.prototype.concat` `@@isConcatSpreadable`
-  handling, `Array.from` over proxies/strings, and `Object.entries` ordering —
-  `BuiltIns/Array/*`.
+  `Array.prototype.concat` now honours `@@isConcatSpreadable`
+  (`concat-spreadable-basic.js`): `Append` used a bare `IsArray` check, so an
+  array with `@@isConcatSpreadable = false` was still spread and an array-like
+  with `@@isConcatSpreadable = true` was not. It now uses `IsConcatSpreadable`
+  (consult the symbol, fall back to `IsArray`) — `JSArrayPrototype.Utility.cs`,
+  covered by `Issue673Tests.cs`. Still open in this bucket: `Array.from` over a
+  string with an overridden `String.prototype[Symbol.iterator]` (the string
+  enumerator is hardcoded; rerouting through `@@iterator` risks a spread/perf
+  regression on the common path) and the `Array.from` Proxy trap-order test.
 - **Cat 6 (`SameValue(false, true)`):** mixed — private-method vs computed-property
   ordering, `arguments` property access, `RegExp` `lastIndex` on match/replace,
   `NumberFormat` `compactDisplay`.
