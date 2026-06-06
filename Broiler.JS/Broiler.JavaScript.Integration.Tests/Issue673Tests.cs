@@ -11,6 +11,11 @@ namespace Broiler.JavaScript.Integration.Tests;
 // result). See JSIterator.MoveNext(JSValue, out JSValue) and the generator
 // delegation driver in ClrGeneratorV2.Next.
 //
+// Category 10 ("Value is not iterable") covered iterating a *primitive* whose
+// prototype defines Symbol.iterator (e.g. `[...true]`, `yield* 0`, `new Map(0)`).
+// Primitives now follow the @@iterator protocol via their wrapper prototype
+// (JSPrimitive.GetIterableEnumerator).
+//
 // Category 8 ("Unexpected token ... constructor" at Compile) was a parser bug:
 // a getter/setter named `constructor` in an *object literal* (e.g.
 // `{ get constructor() {} }`, `{ set constructor(_) {} }`) failed to parse. The
@@ -132,4 +137,60 @@ public class Issue673Tests
         // A class get/set accessor named `constructor` remains a SyntaxError.
         Assert.ThrowsAny<Exception>(() => Eval("class C { get constructor() {} }"));
     }
+
+    // ---- Category 10: iterating a primitive via its prototype's @@iterator ----
+
+    [Fact]
+    public void SpreadPrimitiveBoolean_UsesPrototypeIterator()
+        => Assert.Equal("[true]", Eval(@"
+            Boolean.prototype[Symbol.iterator] = function*() { yield this.valueOf(); };
+            JSON.stringify([...true]);
+        "));
+
+    [Fact]
+    public void YieldStarOverPrimitive_UsesPrototypeIterator()
+        => Assert.Equal("[true]", Eval(@"
+            Boolean.prototype[Symbol.iterator] = function*() { yield this.valueOf(); };
+            function* g() { yield* true; }
+            JSON.stringify([...g()]);
+        "));
+
+    [Fact]
+    public void ArrayFromPrimitive_UsesPrototypeIterator()
+        => Assert.Equal("[true]", Eval(@"
+            Boolean.prototype[Symbol.iterator] = function*() { yield this.valueOf(); };
+            JSON.stringify(Array.from(true));
+        "));
+
+    [Fact]
+    public void MapFromPrimitiveNumber_PreservesPrimitiveReceiver()
+        // test/staging/sm/Map/iterable.js: `new Map(0)` boxes 0 to look up
+        // Number.prototype[Symbol.iterator]; the method's `this` stays a number.
+        => Assert.Equal("number", Eval(@"
+            var t = 'none';
+            Object.defineProperty(Number.prototype, Symbol.iterator, {
+              value() { 'use strict'; t = typeof this; return { next() { return { done: true }; } }; },
+              configurable: true
+            });
+            new Map(0);
+            t;
+        "));
+
+    [Fact]
+    public void MapConstructor_DoesNotPassArgumentsToNext()
+        // test/staging/sm/Map/iterable.js: next() receives zero arguments.
+        => Assert.Equal("0", Eval(@"
+            var len = -1;
+            var iterable = {
+              [Symbol.iterator]() { return this; },
+              next() { len = arguments.length; return { done: true }; }
+            };
+            new Map(iterable);
+            String(len);
+        "));
+
+    [Fact]
+    public void PrimitiveWithoutIterator_StillThrows()
+        // A primitive without a Symbol.iterator on its prototype is not iterable.
+        => Assert.ThrowsAny<Exception>(() => Eval("[...42]"));
 }

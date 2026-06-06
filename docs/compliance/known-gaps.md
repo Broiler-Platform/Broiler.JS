@@ -20,7 +20,7 @@ implementation area + next step) in [`triage-issue-673.md`](triage-issue-673.md)
 - [ ] Direct `eval` `var` injection + compound-assignment reference timing (`gap-673-eval-injection`).
 - [ ] Unicode `ID_Start` identifiers and `#` private names beyond the host Unicode version (`gap-673-unicode-identifiers`).
 - [ ] `Intl.DateTimeFormat` `formatRange`/`formatRangeToParts`/`formatToParts` divergence (`gap-673-intl-range`).
-- [ ] Structural / `SameValue` / parser categories needing per-file reproduction (`gap-673-triage-remaining`). Fixed so far: Cat 1 `delegating-yield-*` (`yield*` return value) and Cat 8 (`get`/`set constructor` in object literals) — see `Issue673Tests.cs`.
+- [ ] Structural / `SameValue` / parser categories needing per-file reproduction (`gap-673-triage-remaining`). Fixed so far: Cat 1 `delegating-yield-*` (`yield*` return value), Cat 8 (`get`/`set constructor` in object literals), and Cat 10 (iterating primitives via prototype `@@iterator`) — see `Issue673Tests.cs`. Remaining: Cat 6 and the rest of Cat 1.
 
 ## Tracking checklist
 

@@ -99,4 +99,26 @@ public abstract class JSPrimitive: JSValue
         ResolvePrototype();
         return base.GetPrototypeOf();
     }
+
+    // Iterating a primitive (e.g. `[...true]`, `yield* 0`, `new Map(0)`) follows
+    // the same @@iterator protocol as objects: the method is looked up on the
+    // wrapper prototype (e.g. Number.prototype[Symbol.iterator]) and called with
+    // the primitive as the receiver. Primitives are not iterable by default, but
+    // become so if a Symbol.iterator is installed on their prototype. JSString
+    // keeps its dedicated code-point enumerator by overriding this.
+    public override IElementEnumerator GetIterableEnumerator()
+    {
+        var iterator = this[JSValue.SymbolIterator];
+        if (iterator.IsNullOrUndefined)
+            throw NewTypeError(JSException.NotIterable(this));
+
+        if (!iterator.IsFunction)
+            throw NewTypeError("@@iterator is not a function");
+
+        var iteratorResult = iterator.InvokeFunction(new Arguments(this));
+        if (!iteratorResult.IsObject)
+            throw NewTypeError("@@iterator result is not an object");
+
+        return new JSIterator(iteratorResult);
+    }
 }

@@ -56,7 +56,7 @@ diverge.
 | 7 | `#` private name after Unicode id | high (shares #9) | `Parser/CharExtensions.cs` |
 | 8 | `Unexpected token … constructor` | **FIXED** (`get`/`set constructor` in object literals) | `Parser/FastParser.ObjectLiteral.cs` |
 | 9 | Unicode ID_Start identifiers | high | `Parser/CharExtensions.cs` (Unicode data version) |
-| 10 | `Value is not iterable` | medium | iterator protocol / `yield*` |
+| 10 | `Value is not iterable` | **FIXED** (iterate primitives via prototype `@@iterator`) | `Runtime/JSPrimitive.cs` |
 
 ## Category 2 — IteratorClose on generator `return()` (high confidence)
 
@@ -278,9 +278,13 @@ single root cause. Best current hypotheses:
   only rewraps a `Method`, so it reset and threw. The constructor classification
   is now gated on `isClass`. A class accessor named `constructor` is still
   rejected (a SyntaxError per spec). Covered by `Issue673Tests.cs`.
-- **Cat 10 (`Value is not iterable`):** iterator-protocol retrieval for `yield*`
-  over an arbitrary expression, `Array.from` on a primitive, and `Map` from an
-  iterable.
+- **Cat 10 (`Value is not iterable`):** **fixed.** Iterating a *primitive* whose
+  prototype defines `Symbol.iterator` (`[...true]`, `yield* 0`, `Array.from(true)`,
+  `new Map(0)` per `staging/sm/Map/iterable.js` and `yield/star-in-rltn-expr.js`)
+  threw because only `JSObject`/`JSString` implemented the protocol; `JSPrimitive`
+  fell through to the throwing base. `JSPrimitive.GetIterableEnumerator` now looks
+  up `@@iterator` on the wrapper prototype and calls it with the primitive as the
+  receiver. Covered by `Issue673Tests.cs`.
 
 - **Next step:** pull each sample with the pinned runner, reduce to a minimal
   local script, and promote the confirmed root causes into their own rows in the
