@@ -92,6 +92,18 @@ partial class FastCompiler
                 }
 
                 var me = target as AstMemberExpression;
+
+                // delete of a SuperProperty reference is always a ReferenceError
+                // (delete operator runtime semantics step 5a: IsSuperReference).
+                // A computed key is still evaluated for its side effects first.
+                if (me.Object.Type == FastNodeType.Super)
+                {
+                    var refError = JSExceptionBuilder.ThrowReferenceError("Unsupported reference to 'super'");
+                    return me.Computed
+                        ? YExpression.Block(VisitExpression(me.Property), refError)
+                        : refError;
+                }
+
                 var targetObj = VisitExpression(me.Object);
 
                 if (me.Computed)

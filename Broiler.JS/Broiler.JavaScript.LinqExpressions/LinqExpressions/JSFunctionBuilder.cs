@@ -24,6 +24,8 @@ public class JSFunctionBuilder
 
     private static MethodInfo _invokeSuperConstructor;
 
+    private static MethodInfo _normalizeConstructorReturn;
+
     /// <summary>
     /// Initializes the builder with the concrete JSFunction type.
     /// Called from BuiltInsAssemblyInitializer.
@@ -50,6 +52,8 @@ public class JSFunctionBuilder
         _invokeSuperConstructor = type.PublicMethod("InvokeSuperConstructor",
             typeof(JSValue), typeof(JSValue), typeof(Arguments).MakeByRefType())
             ?? throw new InvalidOperationException($"InvokeSuperConstructor method not found on {type.FullName}");
+        _normalizeConstructorReturn = type.PublicMethod("ThrowDerivedConstructorReturnTypeError")
+            ?? throw new InvalidOperationException($"ThrowDerivedConstructorReturnTypeError method not found on {type.FullName}");
     }
 
     /// <summary>
@@ -65,6 +69,41 @@ public class JSFunctionBuilder
     {
         return Expression.Assign(returnValue,
             Expression.Call(null, _invokeSuperConstructor, JSUndefinedBuilder.Value, super, args));
+    }
+
+    /// <summary>
+    /// Runs the superclass [[Construct]] and returns the resulting instance
+    /// without binding it to the derived constructor's <c>this</c>. Callers that
+    /// must enforce BindThisValue (single <c>super</c> call) bind the result
+    /// separately via <see cref="JSVariableBuilder.BindThis"/>.
+    /// </summary>
+    public static Expression ConstructSuper(Expression super, Expression args)
+        => Expression.Call(null, _invokeSuperConstructor, JSUndefinedBuilder.Value, super, args);
+
+    /// <summary>
+    /// Wraps a class constructor body value with the [[Construct]] return-value
+    /// semantics. An object return passes through. Otherwise a base constructor
+    /// yields <paramref name="thisValue"/>; a derived constructor yields
+    /// <paramref name="thisValue"/> for an <c>undefined</c> return (whose guarded
+    /// read raises a ReferenceError when <c>super</c> was never called) and
+    /// throws a TypeError for any other value. <paramref name="thisValue"/> is
+    /// only evaluated on the branches that need it so an object return never
+    /// triggers the uninitialized-<c>this</c> guard.
+    /// </summary>
+    public static Expression NormalizeConstructorReturn(Expression returnValue, Expression thisValue, bool isDerived)
+    {
+        var temp = Expression.Parameter(typeof(JSValue), "#ctorret");
+        var nonObject = isDerived
+            ? Expression.Condition(
+                JSValueBuilder.IsUndefined(temp),
+                thisValue,
+                Expression.Call(null, _normalizeConstructorReturn))
+            : thisValue;
+
+        return Expression.Block(
+            temp.AsSequence(),
+            Expression.Assign(temp, returnValue),
+            Expression.Condition(JSValueBuilder.IsObject(temp), temp, nonObject));
     }
 
     public static Expression InvokeFunction(Expression target, Expression args, bool coalesce = false)

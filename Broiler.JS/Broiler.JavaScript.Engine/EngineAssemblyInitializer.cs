@@ -34,6 +34,7 @@ internal static class EngineAssemblyInitializer
         // ── JSException delegates ───────────────────────────────────
         JSException.NewSyntaxErrorFactory = static msg => JSEngine.NewSyntaxError(msg);
         JSException.NewTypeErrorFactory = static msg => JSEngine.NewTypeError(msg);
+        JSException.NewReferenceErrorFactory = static msg => JSEngine.NewReferenceError(msg);
         JSException.AppendStackTraceHelper = static (sb, trace) => JSEngine.AppendStackTrace?.Invoke(sb, trace);
 
         // ── JSVariable delegate ─────────────────────────────────────

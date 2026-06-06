@@ -352,23 +352,30 @@ public partial class DataView : JSObject
     /// <param name="value"> The value to set. </param>
     /// <param name="littleEndian"> Indicates whether the 64-bit float is stored in little- or
     /// big-endian format. If false or undefined, a big-endian value is written. </param>
+    // RawBytesFor reduces a (ToBigInt-coerced) value to its low 64 bits — the
+    // two's-complement 8-byte pattern shared by setBigInt64/setBigUint64. A plain
+    // (long)/(ulong) cast on JSBigInt.BigIntValue overflows for magnitudes that do
+    // not fit a signed 64-bit integer, so mask the BigInteger directly.
+    private static byte[] RawBytesFor(JSValue value)
+    {
+        var big = value is JSBigInt bigint ? bigint.value : new System.Numerics.BigInteger(value.BigIntValue);
+        ulong bits = (ulong)(big & ((System.Numerics.BigInteger.One << 64) - 1));
+        return BitConverter.GetBytes(bits);
+    }
+
     [JSExport(Length = 2)]
     public JSValue SetBigInt64(in Arguments a)
     {
-        var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 8);
-        var bytes = BitConverter.GetBytes(value.BigIntValue);
-
-        @this.SetCore(byteOffset, bytes, littleEndian);
+        var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 8, bigInt: true);
+        @this.SetCore(byteOffset, RawBytesFor(value), littleEndian);
         return JSUndefined.Value;
     }
 
     [JSExport("setBigUint64", Length = 2)]
     public JSValue SetBigUInt64(in Arguments a)
     {
-        var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 8);
-        var bytes = BitConverter.GetBytes((ulong)value.DoubleValue);
-
-        @this.SetCore(byteOffset, bytes, littleEndian);
+        var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 8, bigInt: true);
+        @this.SetCore(byteOffset, RawBytesFor(value), littleEndian);
         return JSUndefined.Value;
     }
 
@@ -470,7 +477,7 @@ public partial class DataView : JSObject
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private (int byteOffset, bool littleEndian, DataView dataView, JSValue value) GetSetArgs(in Arguments a, int length)
+    private (int byteOffset, bool littleEndian, DataView dataView, JSValue value) GetSetArgs(in Arguments a, int length, bool bigInt = false)
     {
         var @this = this;
 
@@ -485,6 +492,12 @@ public partial class DataView : JSObject
         // (coerced per type); neither argument is required.
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var value = a[1] ?? JSUndefined.Value;
+
+        // SetViewValue coerces the value (ToBigInt for the BigInt element types)
+        // BEFORE the out-of-bounds RangeError check, so e.g. setBigInt64(0) with no
+        // value argument is a TypeError (ToBigInt(undefined)) rather than a no-op.
+        if (bigInt)
+            value = JSBigInt.Coerce(value);
 
         var littleEndian = a[2]?.BooleanValue ?? false;
 
