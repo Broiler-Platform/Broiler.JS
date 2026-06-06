@@ -107,4 +107,24 @@
     -->
     <NoWarn>$(NoWarn);CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8619;CS8620;CS8622;CS8625;CS8631;CS8632;CS8765;CS8767;CS0109;CS0628;CS9113;CA1416;CA2255;SYSLIB0013;RS1038;RS1041</NoWarn>
   </PropertyGroup>
+
+  <!--
+    ════════════════════════════════════════════════════════════════════
+    Roslyn compiler toolset
+    ════════════════════════════════════════════════════════════════════
+    The JSClassGenerator source generator references Roslyn 5.3
+    (Microsoft.CodeAnalysis.CSharp.Workspaces 5.3.0). A source generator
+    can only be loaded by a C# compiler whose version is >= the Roslyn it
+    was built against; otherwise the compiler emits CS9057 and silently
+    skips the generator, producing errors such as
+    "The name 'RegisterAll' does not exist in the current context".
+
+    Pinning Microsoft.Net.Compilers.Toolset makes the build use Roslyn 5.3
+    regardless of which .NET SDK feature band is installed, so the engine
+    builds deterministically even on SDK bands that ship an older compiler
+    (e.g. 10.0.1xx, which ships Roslyn 5.0).
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="5.3.0" PrivateAssets="all" />
+  </ItemGroup>
 </Project>
