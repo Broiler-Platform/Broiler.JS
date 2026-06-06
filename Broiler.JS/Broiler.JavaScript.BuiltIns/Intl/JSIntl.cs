@@ -43,6 +43,14 @@ public static class JSIntl
     private static readonly KeyString GranularityKey = KeyStrings.GetOrCreate("granularity");
     private static readonly KeyString FallbackKey = KeyStrings.GetOrCreate("fallback");
     private static readonly KeyString LanguageDisplayKey = KeyStrings.GetOrCreate("languageDisplay");
+    private static readonly KeyString NotationKey = KeyStrings.GetOrCreate("notation");
+    private static readonly KeyString SignDisplayKey = KeyStrings.GetOrCreate("signDisplay");
+    private static readonly KeyString CompactDisplayKey = KeyStrings.GetOrCreate("compactDisplay");
+    private static readonly KeyString UnitDisplayKey = KeyStrings.GetOrCreate("unitDisplay");
+    private static readonly string[] NotationValues = ["standard", "scientific", "engineering", "compact"];
+    private static readonly string[] SignDisplayValues = ["auto", "never", "always", "exceptZero"];
+    private static readonly string[] CompactDisplayValues = ["short", "long"];
+    private static readonly string[] UnitDisplayValues = ["short", "narrow", "long"];
     private static readonly KeyString RoundingIncrementKey = KeyStrings.GetOrCreate("roundingIncrement");
     private static readonly KeyString RoundingModeKey = KeyStrings.GetOrCreate("roundingMode");
     private static readonly KeyString RoundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
@@ -650,10 +658,10 @@ public static class JSIntl
             throw JSEngine.NewRangeError("Invalid locale options for private use tag");
     }
 
-    internal static void ValidateNumberFormatOptions(JSObject options)
+    internal static JSIntlNumberFormatResolved ValidateNumberFormatOptions(JSObject options)
     {
         if (options == null)
-            return;
+            return new JSIntlNumberFormatResolved("standard", "auto", null, null);
 
         var styleValue = options[StyleKey];
         var style = styleValue.IsUndefined ? null : styleValue.StringValue;
@@ -673,7 +681,25 @@ public static class JSIntl
         if (style == "unit" && unitValue.IsUndefined)
             throw JSEngine.NewTypeError("Intl.NumberFormat unit style requires a unit option");
 
+        // unitDisplay is read (and validated) regardless of style, but the
+        // resolved slot only exists when style is "unit".
+        var unitDisplay = GetOption(options, UnitDisplayKey, UnitDisplayValues, false, "short");
+        if (style != "unit")
+            unitDisplay = null;
+
+        // notation precedes compactDisplay (spec order; observed by the
+        // compactDisplay getter call-order tests). compactDisplay is always
+        // validated, but only reflected when notation is "compact".
+        var notation = GetOption(options, NotationKey, NotationValues, false, "standard");
+        var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayValues, false, "short");
+        if (notation != "compact")
+            compactDisplay = null;
+
+        var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
+
         ObserveOptions(options, RoundingIncrementKey, RoundingModeKey, RoundingPriorityKey, TrailingZeroDisplayKey);
+
+        return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay);
     }
 
     internal static string ResolveLocale(JSValue locales)
@@ -1805,15 +1831,35 @@ public sealed class JSIntlPluralRules : JSObject
     }
 }
 
+internal sealed class JSIntlNumberFormatResolved
+{
+    public JSIntlNumberFormatResolved(string notation, string signDisplay, string compactDisplay, string unitDisplay)
+    {
+        Notation = notation;
+        SignDisplay = signDisplay;
+        CompactDisplay = compactDisplay;
+        UnitDisplay = unitDisplay;
+    }
+
+    // notation and signDisplay always have a resolved value; compactDisplay and
+    // unitDisplay are null unless the corresponding slot exists (notation is
+    // "compact" / style is "unit").
+    public string Notation { get; }
+    public string SignDisplay { get; }
+    public string CompactDisplay { get; }
+    public string UnitDisplay { get; }
+}
+
 public class JSIntlNumberFormat : JSObject
 {
     private readonly string locale;
     private JSObject options;
+    private JSIntlNumberFormatResolved resolved;
 
     public JSIntlNumberFormat(in Arguments a) : this()
     {
         options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, requireNew: false);
-        JSIntl.ValidateNumberFormatOptions(options);
+        resolved = JSIntl.ValidateNumberFormatOptions(options);
         locale = JSIntl.ResolveLocale(a.Get1());
     }
 
@@ -1883,9 +1929,6 @@ public class JSIntlNumberFormat : JSObject
         {
             var currencyKey = KeyStrings.GetOrCreate("currency");
             var unitKey = KeyStrings.GetOrCreate("unit");
-            var notationKey = KeyStrings.GetOrCreate("notation");
-            var compactDisplayKey = KeyStrings.GetOrCreate("compactDisplay");
-            var signDisplayKey = KeyStrings.GetOrCreate("signDisplay");
             var useGroupingKey = KeyStrings.GetOrCreate("useGrouping");
             var roundingIncrementKey = KeyStrings.GetOrCreate("roundingIncrement");
             var roundingModeKey = KeyStrings.GetOrCreate("roundingMode");
@@ -1901,12 +1944,6 @@ public class JSIntlNumberFormat : JSObject
                 result[currencyKey] = @this.options[currencyKey];
             if (!@this.options[unitKey].IsUndefined)
                 result[unitKey] = @this.options[unitKey];
-            if (!@this.options[notationKey].IsUndefined)
-                result[notationKey] = @this.options[notationKey];
-            if (!@this.options[compactDisplayKey].IsUndefined)
-                result[compactDisplayKey] = @this.options[compactDisplayKey];
-            if (!@this.options[signDisplayKey].IsUndefined)
-                result[signDisplayKey] = @this.options[signDisplayKey];
             if (!@this.options[useGroupingKey].IsUndefined)
                 result[useGroupingKey] = @this.options[useGroupingKey];
             if (!@this.options[roundingIncrementKey].IsUndefined)
@@ -1943,8 +1980,21 @@ public class JSIntlNumberFormat : JSObject
             result[KeyStrings.GetOrCreate("minimumFractionDigits")] = JSValue.CreateNumber(0);
             result[KeyStrings.GetOrCreate("maximumFractionDigits")] = JSValue.CreateNumber(3);
             result[KeyStrings.GetOrCreate("useGrouping")] = JSValue.BooleanTrue;
-            result[KeyStrings.GetOrCreate("notation")] = JSValue.CreateString("standard");
-            result[KeyStrings.GetOrCreate("signDisplay")] = JSValue.CreateString("auto");
+        }
+
+        // notation/signDisplay always have a resolved value; compactDisplay and
+        // unitDisplay are reflected only when their slot exists. These are read
+        // from the slots resolved at construction (not the live options object)
+        // so getter side effects observe construction-time order, not access.
+        var r = @this.resolved;
+        if (r != null)
+        {
+            result[KeyStrings.GetOrCreate("notation")] = JSValue.CreateString(r.Notation);
+            result[KeyStrings.GetOrCreate("signDisplay")] = JSValue.CreateString(r.SignDisplay);
+            if (r.CompactDisplay != null)
+                result[KeyStrings.GetOrCreate("compactDisplay")] = JSValue.CreateString(r.CompactDisplay);
+            if (r.UnitDisplay != null)
+                result[KeyStrings.GetOrCreate("unitDisplay")] = JSValue.CreateString(r.UnitDisplay);
         }
 
         return result;

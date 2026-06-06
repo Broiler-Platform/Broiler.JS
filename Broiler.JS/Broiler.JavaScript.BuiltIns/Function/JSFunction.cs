@@ -556,7 +556,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     /// would otherwise leak a <see cref="JSTailCall"/> object to the native
     /// caller instead of g()'s actual result.
     /// </summary>
-    internal JSValue InvokeCallback(in Arguments a) => JSTailCall.Resolve(f(in a));
+    internal JSValue InvokeCallback(in Arguments a) =>
+        JSTailCall.Resolve((CoerceThisOnInvoke ? f(a.OverrideThis(CoerceNonStrictThis(a.This))) : f(in a)) ?? JSUndefined.Value);
 
     [JSPrototypeMethod]
     [JSExport("valueOf", Length = 1)]
