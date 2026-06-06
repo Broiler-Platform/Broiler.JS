@@ -41,24 +41,7 @@ test/built-ins/Array/of/return-a-custom-instance.js
 test/built-ins/Array/prototype/Symbol.unscopables/change-array-by-copy.js
 test/built-ins/Array/prototype/Symbol.unscopables/prop-desc.js
 test/built-ins/Array/prototype/concat/15.4.4.4-5-c-i-1.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_array-like-negative-length.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_array-like-primitive-non-number-length.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_array-like-string-length.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_array-like.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_holey-sloppy-arguments.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_large-typed-array.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_sloppy-arguments-with-dupes.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_sloppy-arguments.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_small-typed-array.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_spreadable-boolean-wrapper.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_spreadable-function.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_spreadable-number-wrapper.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_spreadable-reg-exp.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_spreadable-sparse-object.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_spreadable-string-wrapper.js
-test/built-ins/Array/prototype/concat/Array.prototype.concat_strict-arguments.js
 test/built-ins/Array/prototype/concat/arg-length-exceeding-integer-limit.js
-test/built-ins/Array/prototype/concat/is-concat-spreadable-get-order.js
 test/built-ins/Array/prototype/copyWithin/non-negative-out-of-bounds-end.js
 test/built-ins/Array/prototype/copyWithin/non-negative-out-of-bounds-target-and-start.js
 test/built-ins/Array/prototype/copyWithin/undefined-end.js
@@ -249,7 +232,6 @@ test/built-ins/Promise/prototype/finally/this-value-proxy.js
 test/built-ins/Promise/prototype/finally/this-value-thenable.js
 test/built-ins/Promise/prototype/then/S25.4.5.3_A4.2_T1.js
 test/built-ins/Promise/prototype/then/S25.4.5.3_A4.2_T2.js
-test/built-ins/Promise/prototype/then/context-check-on-entry.js
 test/built-ins/Promise/prototype/then/ctor-custom.js
 test/built-ins/Promise/race/invoke-then-error-close.js
 test/built-ins/Promise/race/invoke-then-get-error-close.js
@@ -744,7 +726,6 @@ test/built-ins/RegExp/prototype/Symbol.replace/named-groups-fn.js
 test/built-ins/RegExp/prototype/Symbol.replace/named-groups.js
 test/built-ins/RegExp/prototype/Symbol.replace/poisoned-stdlib.js
 test/built-ins/RegExp/prototype/Symbol.replace/result-coerce-index-undefined.js
-test/built-ins/RegExp/prototype/Symbol.split/species-ctor-ctor-get-err.js
 test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T3.js
 test/built-ins/RegExp/prototype/exec/duplicate-named-groups-properties.js
 test/built-ins/RegExp/prototype/exec/duplicate-named-indices-groups-properties.js
@@ -1140,8 +1121,6 @@ test/language/expressions/assignment/dstr/array-elem-nested-obj-yield-expr.js
 test/language/expressions/assignment/dstr/array-elem-trlg-iter-list-rtrn-close-err.js
 test/language/expressions/assignment/dstr/array-elem-trlg-iter-list-rtrn-close-null.js
 test/language/expressions/assignment/dstr/array-elem-trlg-iter-list-rtrn-close.js
-test/language/expressions/assignment/dstr/array-elem-trlg-iter-rest-rtrn-close.js
-test/language/expressions/assignment/dstr/array-rest-iter-rtrn-close.js
 test/language/expressions/assignment/dstr/array-rest-nested-obj-yield-expr.js
 test/language/expressions/assignment/dstr/obj-id-init-yield-expr.js
 test/language/expressions/assignment/dstr/obj-prop-elem-init-yield-expr.js
@@ -1284,7 +1263,6 @@ test/language/expressions/unary-minus/S11.4.7_A1.js
 test/language/expressions/unary-plus/S11.4.6_A1.js
 test/language/expressions/void/S11.4.2_A1.js
 test/language/expressions/yield/rhs-template-middle.js
-test/language/expressions/yield/star-in-rltn-expr.js
 test/language/function-code/S10.2.1_A4_T1.js
 test/language/global-code/decl-func.js
 test/language/identifier-resolution/S10.2.2_A1_T3.js
@@ -1382,7 +1360,6 @@ test/language/statements/class/elements/syntax/valid/grammar-field-named-get-fol
 test/language/statements/class/elements/syntax/valid/grammar-field-named-set-followed-by-generator-asi.js
 test/language/statements/class/elements/syntax/valid/grammar-static-ctor-accessor-meth-valid.js
 test/language/statements/class/name-binding/in-extends-expression-assigned.js
-test/language/statements/class/subclass/superclass-prototype-setter-constructor.js
 test/language/statements/continue/S12.7_A9_T1.js
 test/language/statements/continue/nested-let-bound-for-loops-inner-continue.js
 test/language/statements/continue/nested-let-bound-for-loops-labeled-continue.js
@@ -1508,8 +1485,6 @@ test/language/statements/for-of/dstr/array-elem-nested-obj-yield-expr.js
 test/language/statements/for-of/dstr/array-elem-trlg-iter-list-rtrn-close-err.js
 test/language/statements/for-of/dstr/array-elem-trlg-iter-list-rtrn-close-null.js
 test/language/statements/for-of/dstr/array-elem-trlg-iter-list-rtrn-close.js
-test/language/statements/for-of/dstr/array-elem-trlg-iter-rest-rtrn-close.js
-test/language/statements/for-of/dstr/array-rest-iter-rtrn-close.js
 test/language/statements/for-of/dstr/array-rest-nested-obj-yield-expr.js
 test/language/statements/for-of/dstr/obj-id-init-in.js
 test/language/statements/for-of/dstr/obj-id-init-yield-expr.js
@@ -1579,7 +1554,6 @@ test/language/white-space/after-regular-expression-literal-zwnbsp.js
 test/staging/built-ins/RegExp/named-groups/duplicate-named-groups.js
 test/staging/decorators/private-auto-accessor.js
 test/staging/decorators/public-auto-accessor.js
-test/staging/sm/Array/concat-spreadable-basic.js
 test/staging/sm/Array/from_primitive.js
 test/staging/sm/Array/from_proxy.js
 test/staging/sm/Array/from_string.js
@@ -1608,7 +1582,6 @@ test/staging/sm/Function/invalid-parameter-list.js
 test/staging/sm/Function/return-finally.js
 test/staging/sm/Function/strict-arguments.js
 test/staging/sm/JSON/stringify-ignore-noncallable-toJSON.js
-test/staging/sm/Map/iterable.js
 test/staging/sm/Math/acosh-approx.js
 test/staging/sm/Math/asinh-approx.js
 test/staging/sm/Math/atanh-approx.js
@@ -1626,7 +1599,6 @@ test/staging/sm/Reflect/propertyKeys.js
 test/staging/sm/Reflect/setPrototypeOf.js
 test/staging/sm/RegExp/RegExpExec-exec-type-check.js
 test/staging/sm/RegExp/RegExpExec-exec.js
-test/staging/sm/RegExp/constructor-IsRegExp.js
 test/staging/sm/RegExp/escape.js
 test/staging/sm/RegExp/lastIndex-match-or-replace.js
 test/staging/sm/RegExp/lastIndex-search.js
@@ -1637,7 +1609,6 @@ test/staging/sm/RegExp/regress-613820-3.js
 test/staging/sm/RegExp/regress-yarr-regexp.js
 test/staging/sm/RegExp/replace-trace.js
 test/staging/sm/RegExp/replace-twoBytes.js
-test/staging/sm/RegExp/split-invalid-lastIndex.js
 test/staging/sm/RegExp/split-trace.js
 test/staging/sm/RegExp/toString.js
 test/staging/sm/RegExp/unicode-braced.js
@@ -1705,13 +1676,11 @@ test/staging/sm/generators/delegating-yield-11.js
 test/staging/sm/generators/delegating-yield-2.js
 test/staging/sm/generators/delegating-yield-5.js
 test/staging/sm/generators/delegating-yield-7.js
-test/staging/sm/generators/delegating-yield-9.js
 test/staging/sm/generators/objects.js
 test/staging/sm/generators/return-finally.js
 test/staging/sm/generators/runtime.js
 test/staging/sm/generators/syntax.js
 test/staging/sm/generators/yield-error.js
-test/staging/sm/generators/yield-iterator-close.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-label.js
 test/staging/sm/lexical-environment/block-scoped-functions-deprecated-redecl.js
