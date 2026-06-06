@@ -124,22 +124,44 @@ thrown `"ex1"` is discarded and the loop continues. Broiler instead lets the
 original `"ex1"` propagate uncaught, which is why the failure surfaces as a raw
 `JSException` whose message is the thrown string `ex1`.
 
-**Verified locally:** the bare `try { throw } finally { continue }` form throws
-`JSException: ex1` (expected `fin6 === 1`, `c6 === 2`). The
-`try { throw } catch { continue } finally {}` form already works correctly
-(returns `1,2`), so the gap is specific to an abrupt completion in a `finally`
-overriding a pending *throw* (no catch present).
+**Verified locally (full case matrix).** Only one shape fails — an abrupt
+completion inside a `finally` while the `try` has a *pending throw* and there is
+no catch:
 
-Root cause in the IL layer: `try/finally` is emitted as a real CLR
-`finally`, and `continue`/`break`/`return` out of the finally is implemented as
-a *deferred* branch that runs after `endfinally`
-(`ILTryBlock.Branch`/`Dispose`). When an exception is unwinding, `endfinally`
-resumes propagation and never reaches the deferred-branch dispatch, so the throw
-survives. A correct fix has to lower a `finally` that contains abrupt
-completions into a catch-all that runs the finally body and suppresses the
-pending exception when the finally exits abruptly — a change to core exception
-emission, so it should land with review and the full try/finally + async +
-generator suites as regression guards.
+| case | result | correct? |
+| --- | --- | --- |
+| `try{throw} finally{continue}` | throws `ex1` | ✗ (want loop continues) |
+| `try{throw} finally{break}` | throws `ex` | ✗ |
+| `try{throw} finally{return 'R'}` | throws `ex` | ✗ (want `R`) |
+| `try{throw} catch{continue} finally{}` | `1,2` | ✓ |
+| `try{throw} finally{/*nothing*/}` | propagates | ✓ |
+| `do{try{x} finally{continue}}` (no throw) | works | ✓ |
+| `try{continue} finally{}` | works | ✓ |
+| `try{return 'T'} finally{return 'F'}` | `F` | ✓ |
+
+So the deferred-jump machinery already handles every abrupt completion *except*
+when a CLR exception is unwinding: `endfinally` resumes the exception and never
+reaches the post-`endfinally` dispatch that performs the `continue`/`break`/
+`return`.
+
+Root cause in the IL layer: `try/finally` is emitted as a real CLR `finally`;
+`continue`/`break`/`return` out of the finally records a pending jump
+(`ILTryBlock.Branch` sets `finallyJumpState` and branches to `endfinally`) that
+is dispatched *after* `EndExceptionBlock` (`ILTryBlock.Dispose`). On the exception
+path that dispatch is skipped.
+
+**Fix design (not yet implemented — core IL change, land with review):** when a
+`finally` body contains an abrupt completion, wrap the inner try/finally in an
+outer `catch (Exception)` that inspects `finallyJumpState`: if non-zero the
+finally requested a jump that overrides the pending throw, so discard the
+exception and `leave` to the jump dispatch; otherwise `rethrow`. The dispatch
+block (which branches to the `continue`/`break`/`return` targets) must be moved
+*outside* the outer exception region so it is reachable from the catch's `leave`.
+This should be gated on "the finally actually branches out" (detectable by
+scanning the `Finally` YExpression for gotos/returns targeting labels outside the
+finally) so the common `try/finally` path — and its `SavedLocal` result value,
+tail-call transparency, and nested-try handling — stays byte-for-byte unchanged.
+Guard with the full try/finally + async + generator suites.
 
 - **Implementation area:** the branch-out-of-`finally` machinery in the IL
   generator — `Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILCodeGenerator.VisitTryCatchFinally.cs`
