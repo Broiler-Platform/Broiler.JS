@@ -72,7 +72,10 @@ public partial class JSDate: JSObject
         try
         {
             value = DateTimeOffset.FromUnixTimeMilliseconds((long)ms).ToOffset(Local);
-            rawTimeMs = double.NaN;
+            // The MinValue sentinel doubles as the "invalid date" marker, so a real
+            // time value that lands exactly on it (0001-01-01T00:00:00Z, the .NET
+            // boundary) must keep its raw representation to avoid being read as NaN.
+            rawTimeMs = value == InvalidDate ? ms : double.NaN;
         }
         catch (ArgumentOutOfRangeException)
         {

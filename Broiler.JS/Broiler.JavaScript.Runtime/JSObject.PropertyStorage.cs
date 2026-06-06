@@ -947,6 +947,34 @@ public partial class JSObject
 
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) => new KeyEnumerator(this, showEnumerableOnly, inherited);//var elements = this.elements;//if (elements != null)//{//    foreach (var (Key, Value) in elements.AllValues)//    {//        if (showEnumerableOnly)//        {//            if (!Value.IsEnumerable)//                continue;//        }//        yield return new JSNumber(Key);//    }//}//var ownProperties = this.ownProperties;//if (ownProperties != null)//{//    var en = new PropertySequence.Enumerator(ownProperties);//    while(en.MoveNext())//    {//        var p = en.Current;//        if (showEnumerableOnly)//        {//            if (!p.IsEnumerable)//                continue;//        }//        yield return p.ToJSValue();//    }//}//if (inherited)//{//    var @base = this.prototypeChain;//    if (@base != this && @base != null)//    {//        foreach (var i in @base.GetAllKeys(showEnumerableOnly))//            yield return i;//    }//}
 
+    /// <summary>
+    /// Implements ToPropertyDescriptor (ECMA-262 § 6.2.6.5): reads the well-known
+    /// descriptor fields from <paramref name="userDescriptor"/> using [[HasProperty]]
+    /// and [[Get]] — both of which consult the prototype chain — producing a fresh
+    /// own-data-property record. Descriptor fields may therefore be inherited from
+    /// the descriptor object's prototype or be supplied via accessors on it.
+    /// </summary>
+    internal static JSObject NormalizeDescriptor(JSObject userDescriptor)
+    {
+        var record = new JSObject();
+        CopyDescriptorField(userDescriptor, record, KeyStrings.enumerable);
+        CopyDescriptorField(userDescriptor, record, KeyStrings.configurable);
+        CopyDescriptorField(userDescriptor, record, KeyStrings.value);
+        CopyDescriptorField(userDescriptor, record, KeyStrings.writable);
+        CopyDescriptorField(userDescriptor, record, KeyStrings.get);
+        CopyDescriptorField(userDescriptor, record, KeyStrings.set);
+        return record;
+    }
+
+    private static void CopyDescriptorField(JSObject source, JSObject record, in KeyString field)
+    {
+        // [[HasProperty]] (prototype chain) decides presence; [[Get]] reads the value.
+        if (source.GetInternalProperty(field).IsEmpty)
+            return;
+
+        record.FastAddValue(field, source[field], JSPropertyAttributes.EnumerableConfigurableValue);
+    }
+
     internal JSProperty ToProperty(uint key)
     {
         // Accessor-ness is decided by the *presence* of get/set fields, not their

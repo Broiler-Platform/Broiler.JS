@@ -6,7 +6,40 @@ namespace Broiler.JavaScript.Runtime;
 public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementEnumerator, IReturnableEnumerator
 {
     private uint index = 0;
+
+    // Mirrors the iterator record's [[done]] flag. It becomes true once the iterator
+    // is exhausted (a result with done:true) or when a call to next() throws. Per the
+    // spec, IteratorClose must NOT call return() once [[done]] is true, so Return()
+    // is a no-op in that state (e.g. when destructuring's next() throws).
+    private bool done = false;
+
     private readonly JSValue nextMethod = iterator[KeyStrings.next];
+
+    private JSValue StepNext()
+    {
+        try
+        {
+            return GetIteratorResult();
+        }
+        catch
+        {
+            done = true;
+            throw;
+        }
+    }
+
+    private JSValue StepNext(JSValue value)
+    {
+        try
+        {
+            return GetIteratorResult(value);
+        }
+        catch
+        {
+            done = true;
+            throw;
+        }
+    }
 
     private readonly JSValue AwaitIfNeeded(JSValue result)
     {
@@ -33,30 +66,32 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
 
     public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
     {
-        value = GetIteratorResult();
-        var done = value[KeyStrings.done];
-        
-        if (done.BooleanValue)
+        value = StepNext();
+        var resultDone = value[KeyStrings.done];
+
+        if (resultDone.BooleanValue)
         {
+            done = true;
             index = 0;
             value = JSUndefined.Value;
             hasValue = false;
             return false;
         }
-        
+
         value = value[KeyStrings.value];
         index = this.index++;
         hasValue = true;
         return true;
     }
 
-    public readonly bool MoveNext(out JSValue value)
+    public bool MoveNext(out JSValue value)
     {
-        value = GetIteratorResult();
-        var done = value[KeyStrings.done];
-        
-        if (done.BooleanValue)
+        value = StepNext();
+        var resultDone = value[KeyStrings.done];
+
+        if (resultDone.BooleanValue)
         {
+            done = true;
             value = JSUndefined.Value;
             return false;
         }
@@ -65,13 +100,14 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
         return true;
     }
 
-    public readonly bool MoveNext(JSValue nextValue, out JSValue value)
+    public bool MoveNext(JSValue nextValue, out JSValue value)
     {
-        value = GetIteratorResult(nextValue);
-        var done = value[KeyStrings.done];
+        value = StepNext(nextValue);
+        var resultDone = value[KeyStrings.done];
 
-        if (done.BooleanValue)
+        if (resultDone.BooleanValue)
         {
+            done = true;
             // When the iterator is exhausted, surface the result's `value` (the
             // iterator's "return value"). For `yield* inner`, this is the value
             // the delegating expression evaluates to once `inner` completes.
@@ -83,13 +119,14 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
         return true;
     }
 
-    public readonly bool MoveNextOrDefault(out JSValue value, JSValue @default)
+    public bool MoveNextOrDefault(out JSValue value, JSValue @default)
     {
-        value = GetIteratorResult();
-        var done = value[KeyStrings.done];
+        value = StepNext();
+        var resultDone = value[KeyStrings.done];
 
-        if (done.BooleanValue)
+        if (resultDone.BooleanValue)
         {
+            done = true;
             value = @default;
             return false;
         }
@@ -98,43 +135,56 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
         return true;
     }
 
-    public readonly JSValue NextOrDefault(JSValue @default)
+    public JSValue NextOrDefault(JSValue @default)
     {
-        var value = GetIteratorResult();
-        var done = value[KeyStrings.done];
+        var value = StepNext();
+        var resultDone = value[KeyStrings.done];
 
-        if (done.BooleanValue)
+        if (resultDone.BooleanValue)
+        {
+            done = true;
             return @default;
+        }
 
         return value[KeyStrings.value];
     }
 
-    public readonly JSValue Return(JSValue value)
+    public JSValue Return(JSValue value)
     {
+        // [[done]] is already set: IteratorClose must not invoke return() again.
+        if (done)
+            return MakeDoneResult(value);
+
+        done = true;
+
         var method = iterator[KeyStrings.@return];
         if (method.IsUndefined || method.IsNull)
-        {
-            var iteratorResult = JSObject.NewWithProperties();
-            iteratorResult.FastAddValue(KeyStrings.value, value, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
-            iteratorResult.FastAddValue(KeyStrings.done, JSValue.BooleanTrue, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
-            return iteratorResult;
-        }
+            return MakeDoneResult(value);
 
         return ValidateIteratorResult(method.InvokeFunction(new Arguments(iterator, value)), "return");
     }
 
-    public readonly JSValue Return()
+    public JSValue Return()
     {
+        // [[done]] is already set: IteratorClose must not invoke return() again.
+        if (done)
+            return MakeDoneResult(JSUndefined.Value);
+
+        done = true;
+
         var method = iterator[KeyStrings.@return];
         if (method.IsUndefined || method.IsNull)
-        {
-            var iteratorResult = JSObject.NewWithProperties();
-            iteratorResult.FastAddValue(KeyStrings.value, JSUndefined.Value, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
-            iteratorResult.FastAddValue(KeyStrings.done, JSValue.BooleanTrue, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
-            return iteratorResult;
-        }
+            return MakeDoneResult(JSUndefined.Value);
 
         return ValidateIteratorResult(method.InvokeFunction(new Arguments(iterator)), "return");
+    }
+
+    private static JSValue MakeDoneResult(JSValue value)
+    {
+        var iteratorResult = JSObject.NewWithProperties();
+        iteratorResult.FastAddValue(KeyStrings.value, value, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
+        iteratorResult.FastAddValue(KeyStrings.done, JSValue.BooleanTrue, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
+        return iteratorResult;
     }
 
     public readonly bool TryThrow(JSValue value, out JSValue iteratorResult)
