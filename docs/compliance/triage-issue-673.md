@@ -32,10 +32,11 @@ Two non-obvious prerequisites are needed before `dotnet test` works:
 2. **A Roslyn ≥ 5.3.0 compiler.** `Broiler.JavaScript.JSClassGenerator`
    references `Microsoft.CodeAnalysis.CSharp.Workspaces 5.3.0`, so the source
    generator that emits `RegisterAll`/`*.g.cs` only runs under a matching
-   compiler. A stock .NET 8 SDK (Roslyn 4.8) silently skips the generator and the
-   build fails with `CS0103: The name 'RegisterAll' does not exist`. Use a .NET
-   SDK whose in-box Roslyn is ≥ 5.3.0, or add `Microsoft.Net.Compilers.Toolset`
-   `5.3.0` on a .NET 10 host.
+   compiler. The repository targets `net10.0` (see issue #675), so any .NET 10
+   SDK ≥ 10.0.100 (which ships Roslyn 5.x in-box) builds cleanly. Older SDKs
+   silently skip the generator and the build fails with `CS0103: The name
+   'RegisterAll' does not exist`; for those, add
+   `Microsoft.Net.Compilers.Toolset` `5.3.0` as a workaround.
 
 The line numbers quoted in the issue (`Throw @ 115`, `Compile @ 205/206`,
 `InitializeFactories @ 17`) are locations inside Broiler's own host/runtime, so

@@ -5,7 +5,7 @@
 
   <PropertyGroup>
     <!-- All Broiler.JavaScript projects target .NET 8.0 -->
-    <TargetFramework Condition="'$(TargetFramework)' == ''">net8.0</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 

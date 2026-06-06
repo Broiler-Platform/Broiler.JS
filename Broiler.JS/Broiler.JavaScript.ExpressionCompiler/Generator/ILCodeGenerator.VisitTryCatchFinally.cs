@@ -22,7 +22,12 @@ public partial class ILCodeGenerator
 
             try
             {
-                var tcb = il.BeginTry();
+                // A finally that can complete abruptly (continue/break/return)
+                // must override a pending throw; guard it with an outer try/catch
+                // (see FinallyBranchScanner / ILTryBlock).
+                var guardFinallyBranch = tryCatchFinallyExpression.Finally != null
+                    && FinallyBranchScanner.BranchesOut(tryCatchFinallyExpression.Finally);
+                var tcb = il.BeginTry(guardFinallyBranch);
 
                 // visit labels...
                 tcb.CollectLabels(tryCatchFinallyExpression, labels);

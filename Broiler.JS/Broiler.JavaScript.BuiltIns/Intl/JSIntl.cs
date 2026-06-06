@@ -119,6 +119,18 @@ public static class JSIntl
             return new JSIntlPluralRules(in a);
         }, "PluralRules", "function PluralRules() { [native code] }", length: 0);
         constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
+        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("select"),
+            new JSFunction(static (in Arguments a) =>
+            {
+                if (a.This is not JSIntlPluralRules pluralRules)
+                    throw JSEngine.NewTypeError("Intl.PluralRules.prototype.select called on incompatible receiver");
+
+                // ToNumber the argument (may invoke valueOf), then resolve the
+                // CLDR plural category for the number.
+                var n = a.Get1().DoubleValue;
+                return JSValue.CreateString(pluralRules.SelectCategory(n));
+            }, "select", "function select() { [native code] }", createPrototype: false, length: 1),
+            JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
             new JSFunction(JSIntlPluralRules.ResolvedOptionsPrototype, "resolvedOptions", "function resolvedOptions() { [native code] }", createPrototype: false, length: 0),
             JSPropertyAttributes.ConfigurableValue);
@@ -1580,6 +1592,37 @@ public sealed class JSIntlPluralRules : JSObject
         => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
             ? (intl[KeyStrings.GetOrCreate("PluralRules")] as JSFunction)?.prototype
             : null;
+
+    // ResolvePlural: maps a number to its CLDR plural category. Non-finite
+    // numbers always resolve to "other". This mirrors the English (`en`) rules
+    // exposed by `resolvedOptions().pluralCategories` (cardinal → one/other;
+    // ordinal → one/two/few/other), consistent with the engine's locale
+    // approximation.
+    public string SelectCategory(double n)
+    {
+        if (!double.IsFinite(n))
+            return "other";
+
+        var abs = System.Math.Abs(n);
+
+        if (type == "ordinal")
+        {
+            var i = (long)abs;
+            var n10 = i % 10;
+            var n100 = i % 100;
+            if (n10 == 1 && n100 != 11)
+                return "one";
+            if (n10 == 2 && n100 != 12)
+                return "two";
+            if (n10 == 3 && n100 != 13)
+                return "few";
+            return "other";
+        }
+
+        // Cardinal (en): "one" when the integer value is 1 with no visible
+        // fraction digits; everything else is "other".
+        return abs == 1 ? "one" : "other";
+    }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {

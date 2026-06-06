@@ -31,7 +31,7 @@ except ImportError:  # pragma: no cover - only exercised on non-POSIX platforms
 DEFAULT_SUITE_REF = "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BROILER_DLL = str(
-    REPO_ROOT / "Broiler.JS/Broiler.JavaScript/bin/Debug/net8.0/BroilerJS.dll"
+    REPO_ROOT / "Broiler.JS/Broiler.JavaScript/bin/Debug/net10.0/BroilerJS.dll"
 )
 ALL_SHARDS = -1
 TEMP_DIRECTORY = Path(tempfile.gettempdir()) / "broiler-test262"

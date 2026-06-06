@@ -14,7 +14,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BROILER_DLL = str(
-    REPO_ROOT / "Broiler.JS/Broiler.JavaScript/bin/Debug/net8.0/BroilerJS.dll"
+    REPO_ROOT / "Broiler.JS/Broiler.JavaScript/bin/Debug/net10.0/BroilerJS.dll"
 )
 
 

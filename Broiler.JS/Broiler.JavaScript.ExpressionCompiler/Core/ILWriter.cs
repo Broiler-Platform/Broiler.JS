@@ -192,12 +192,24 @@ public class ILWriter(ILGenerator il, TextWriter? writer = null)
         il.Emit(code, value);
     }
 
-    internal ILTryBlock BeginTry()
+    internal ILTryBlock BeginTry(bool guardFinallyBranch = false)
     {
+        // When the finally can complete abruptly (continue/break/return), wrap the
+        // whole try/catch/finally in an outer try so a pending CLR exception that
+        // endfinally would re-raise can be discarded in favour of the finally's
+        // abrupt completion (ECMAScript finally-override semantics). The dispatch
+        // of the deferred jump is emitted outside this outer region.
+        if (guardFinallyBranch)
+        {
+            PrintOffset();
+            writer?.WriteLine("guard try:");
+            il.BeginExceptionBlock();
+        }
+
         PrintOffset();
         writer?.WriteLine("try:");
         var label = il.BeginExceptionBlock();
-        var ilb = tryStack.Push(new ILTryBlock(this, label));
+        var ilb = tryStack.Push(new ILTryBlock(this, label, guardFinallyBranch));
         return ilb;
     }
 

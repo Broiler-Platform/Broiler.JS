@@ -5,14 +5,20 @@ using Broiler.JavaScript.ExpressionCompiler.Generator;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Core;
 
-public class ILTryBlock(ILWriter iLWriter, Label label) : LinkedStackItem<ILTryBlock>
+public class ILTryBlock(ILWriter iLWriter, Label label, bool hasOuterGuard = false) : LinkedStackItem<ILTryBlock>
 {
     private bool isCatch = false;
     private bool isFinally = false;
     private bool hasFinally = false;
 
+    // When true an outer try/catch wraps this block so a finally that completes
+    // abruptly (continue/break/return) overrides a pending throw instead of having
+    // endfinally re-raise it. Opened by ILWriter.BeginTry, closed in Dispose.
+    private readonly bool hasOuterGuard = hasOuterGuard;
+
     internal readonly ILWriter il = iLWriter;
     private readonly ILWriterLabel label = iLWriter.DefineLabel("tryEnd");
+    private readonly ILWriterLabel outerGuardEnd = hasOuterGuard ? iLWriter.DefineLabel("guardEnd") : null;
 
     private Sequence<(ILWriterLabel hop, ILWriterLabel final, int localIndex)> pendingJumps = [];
     private Sequence<(int state, ILWriterLabel target, int localIndex)> pendingFinallyJumps = [];
@@ -70,6 +76,29 @@ public class ILTryBlock(ILWriter iLWriter, Label label) : LinkedStackItem<ILTryB
         il.EndExceptionBlock();
 
         il.MarkLabel(label);
+
+        if (hasOuterGuard)
+        {
+            // Normal completion of the inner try/catch/finally: leave the outer
+            // guard to the dispatch point below.
+            il.Emit(OpCodes.Leave, outerGuardEnd);
+
+            // A CLR exception escaped the inner try/catch/finally. If the finally
+            // requested an abrupt jump (continue/break/return), that completion
+            // overrides the pending throw: discard the exception and fall through
+            // to the deferred-jump dispatch. Otherwise re-raise it.
+            il.BeginCatchBlock(typeof(Exception));
+            il.Emit(OpCodes.Pop);                                   // drop the exception reference
+            var rethrow = il.DefineLabel("guardRethrow");
+            il.EmitLoadLocal(finallyJumpState!.LocalIndex);
+            il.Emit(OpCodes.Brfalse, rethrow);
+            il.Emit(OpCodes.Leave, outerGuardEnd);
+            il.MarkLabel(rethrow);
+            il.Emit(OpCodes.Rethrow);
+            il.EndExceptionBlock();
+
+            il.MarkLabel(outerGuardEnd);
+        }
 
         if (finallyJumpState != null)
         {

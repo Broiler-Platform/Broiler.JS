@@ -58,7 +58,9 @@ public partial class JSWeakSet : JSObject
                 index.Put(key) = new(new (key, value, Unregister));
         }
 
-        return value;
+        // WeakSet.prototype.add returns the WeakSet itself (not the value) so
+        // calls can be chained: `ws.add(a).add(b)`.
+        return this;
     }
 
     private void Unregister(in HashedString key) => index.RemoveAt(key.Value);
