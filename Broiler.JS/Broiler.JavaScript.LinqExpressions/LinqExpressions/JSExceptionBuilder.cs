@@ -12,6 +12,8 @@ public static class JSExceptionBuilder
 
     public static Expression ThrowSyntaxError(string value) => NewLambdaExpression.StaticCallExpression(() => () => JSException.ThrowSyntaxError(""), Expression.Constant(value));
 
+    public static Expression ThrowReferenceError(string value) => NewLambdaExpression.StaticCallExpression(() => () => JSException.ThrowReferenceErrorValue(""), Expression.Constant(value));
+
     public static Expression Throw(string message, Type type = null, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null,
         [CallerLineNumber] int line = 0) => Expression.Throw(NewLambdaExpression.NewExpression<JSException>(() => () => new JSException("", "", "", 0),
             Expression.Constant(message), Expression.Constant(function), Expression.Constant(filePath), Expression.Constant(line)), type ?? typeof(JSValue));

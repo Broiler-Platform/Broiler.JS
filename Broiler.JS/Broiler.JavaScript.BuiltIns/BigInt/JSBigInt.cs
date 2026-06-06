@@ -435,6 +435,13 @@ public partial class JSBigInt : JSPrimitive
 
     // ToBigInt(value): ECMAScript abstract operation. Coerces booleans, BigInts
     // and BigInt-parseable strings; Numbers/Symbols/undefined/null throw TypeError.
+    /// <summary>
+    /// Performs the ToBigInt abstract operation, returning a <see cref="JSBigInt"/>.
+    /// Throws a TypeError for values that cannot be converted (undefined, null,
+    /// Number, Symbol) and a SyntaxError for an unparseable string.
+    /// </summary>
+    internal static JSBigInt Coerce(JSValue value) => new JSBigInt(ToBigInt(value));
+
     private static BigInteger ToBigInt(JSValue value)
     {
         var primitive = value is JSObject @object ? @object.ToDefaultPrimitive() : value;

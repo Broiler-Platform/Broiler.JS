@@ -234,15 +234,23 @@ partial class FastCompiler
             if (thisIsUninitialized && s.MemberInits != null)
                 InitMembers(sList, s);
 
-            if (createClass)
-                sList.Add(YExpression.Return(r, YExpression.Coalesce(s.ThisExpression, JSExceptionBuilder.Throw("this cannot be null"))));
-
             sList.Add(YExpression.Label(r, JSUndefinedBuilder.Value));
+
+            // A class constructor body produces a value via the return label
+            // (explicit `return x`, or `undefined` on fall-through). Apply the
+            // [[Construct]] return-value semantics: object returns pass through,
+            // a base constructor otherwise yields `this`, and a derived
+            // constructor throws (TypeError for a non-undefined non-object,
+            // ReferenceError when `this` is still uninitialized).
+            YExpression bodyExpression = YExpression.Block(sList);
+            if (createClass)
+                bodyExpression = JSFunctionBuilder.NormalizeConstructorReturn(
+                    bodyExpression, s.ThisExpression, thisIsUninitialized);
 
             var block = YExpression.Block(
                 vList,
                 YExpression.TryFinally(
-                    YExpression.Block(sList),
+                    bodyExpression,
                     JSContextStackBuilder.Pop(stackItem, cs.Context)));
 
             // adding lexical scope pending...

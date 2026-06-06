@@ -591,6 +591,16 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         return JSValue.CreateString(source.Source);
     }
 
+    /// <summary>
+    /// Throws the TypeError a derived class constructor produces when its body
+    /// returns a value that is neither an object nor <c>undefined</c>
+    /// (OrdinaryCallEvaluateBody / [[Construct]] step 13c). Declared to return
+    /// <see cref="JSValue"/> so it can sit in a value-producing conditional arm.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static JSValue ThrowDerivedConstructorReturnTypeError()
+        => throw JSEngine.NewTypeError("Derived constructors may only return object or undefined");
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static JSValue InvokeSuperConstructor(JSValue newTarget, JSValue super, in Arguments a)
     {
