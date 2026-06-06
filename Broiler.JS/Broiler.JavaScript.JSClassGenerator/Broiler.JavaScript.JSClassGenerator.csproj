@@ -1,7 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <!-- Roslyn analyzers/source generators load into the compiler (csc) host, whose
+         runtime is the SDK's — independent of this repo's target framework. They must
+         target netstandard2.0 so the host can load them; targeting an app TFM (e.g.
+         net10.0) hard-references that version's System.Runtime and breaks generator
+         load with a FileNotFoundException during build. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Version>1.0.1</Version>
 <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
