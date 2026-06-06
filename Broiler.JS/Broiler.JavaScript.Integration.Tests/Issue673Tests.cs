@@ -22,10 +22,16 @@ namespace Broiler.JavaScript.Integration.Tests;
 // name `constructor` is only special inside a class body, so the constructor
 // classification in FastParser.ObjectProperty is now gated on `isClass`.
 //
-// The remaining issue #673 categories (finally abrupt-completion override,
-// direct-eval var injection, generator IteratorClose on return(), Unicode
-// identifier start coverage, and Intl range formatting) are triaged in
-// docs/compliance/triage-issue-673.md and remain open.
+// Category 2 ("Expected SameValue(0, 1)") covered IteratorClose: calling
+// Generator.prototype.return() on a generator suspended at a `yield` must resume
+// it with a "return" completion so enclosing `finally` blocks run (closing a
+// destructuring/for-of iterator). See JSGenerator.Return and the
+// GeneratorReturnCompletion handling in ClrGeneratorV2.GetNext.
+//
+// The remaining issue #673 categories (finally abrupt-completion override in
+// plain code, direct-eval var injection, Unicode identifier start coverage,
+// Intl range formatting, and the private-name vs computed-property collision)
+// are triaged in docs/compliance/triage-issue-673.md and remain open.
 public class Issue673Tests
 {
     private static string Eval(string code)
@@ -193,4 +199,88 @@ public class Issue673Tests
     public void PrimitiveWithoutIterator_StillThrows()
         // A primitive without a Symbol.iterator on its prototype is not iterable.
         => Assert.ThrowsAny<Exception>(() => Eval("[...42]"));
+
+    // ---- Category 2: Generator.prototype.return() runs finally / IteratorClose ----
+
+    [Fact]
+    public void GeneratorReturn_RunsFinally()
+        => Assert.Equal("F,99,true", Eval(@"
+            var log = '';
+            function* g() { try { yield 1; } finally { log += 'F'; } }
+            var it = g(); it.next();
+            var r = it.return(99);
+            log + ',' + r.value + ',' + r.done;
+        "));
+
+    [Fact]
+    public void GeneratorReturn_SkipsCatch_RunsFinally()
+        => Assert.Equal("F,7,true", Eval(@"
+            var log = '';
+            function* g() { try { yield 1; } catch (e) { log += 'C'; } finally { log += 'F'; } }
+            var it = g(); it.next();
+            var r = it.return(7);
+            log + ',' + r.value + ',' + r.done;
+        "));
+
+    [Fact]
+    public void GeneratorReturn_FinallyCanOverrideCompletion()
+        => Assert.Equal("over,true", Eval(@"
+            function* g() { try { yield 1; } finally { return 'over'; } }
+            var it = g(); it.next();
+            var r = it.return(9);
+            r.value + ',' + r.done;
+        "));
+
+    [Fact]
+    public void GeneratorReturn_BeforeStart_DoesNotRunBody()
+        => Assert.Equal("none,3,true", Eval(@"
+            var log = 'none';
+            function* g() { try { log = 'ran'; yield 1; } finally { log = 'F'; } }
+            var it = g();
+            var r = it.return(3);
+            log + ',' + r.value + ',' + r.done;
+        "));
+
+    [Fact]
+    public void GeneratorReturn_ClosesDestructuringIterator()
+        // test/language/.../dstr/array-rest-iter-rtrn-close.js shape: a yield inside
+        // a destructuring rest target; return() must close the partially-read iterator.
+        => Assert.Equal("1", Eval(@"
+            var returnCount = 0;
+            var iterable = {};
+            var iterator = {
+              next() { return { done: false, value: 1 }; },
+              return() { returnCount += 1; return {}; }
+            };
+            iterable[Symbol.iterator] = function() { return iterator; };
+            function* g() { var x; [ x, ...{}[yield] ] = iterable; }
+            var it = g(); it.next(); it.return(5);
+            String(returnCount);
+        "));
+
+    [Fact]
+    public void GeneratorReturn_ClosesForOfIterator()
+        => Assert.Equal("closed", Eval(@"
+            var state = 'open';
+            var iter = {
+              next() { return { done: false, value: 1 }; },
+              return() { state = 'closed'; return {}; },
+              [Symbol.iterator]() { return this; }
+            };
+            function* g() { for (var v of iter) { yield v; } }
+            var it = g(); it.next(); it.return();
+            state;
+        "));
+
+    [Fact]
+    public void GeneratorReturn_RunsNestedFinallies()
+        => Assert.Equal("BA,done", Eval(@"
+            var log = '';
+            function* g() {
+              try { try { yield 1; } finally { log += 'B'; } } finally { log += 'A'; }
+            }
+            var it = g(); it.next();
+            it.return();
+            log + ',done';
+        "));
 }

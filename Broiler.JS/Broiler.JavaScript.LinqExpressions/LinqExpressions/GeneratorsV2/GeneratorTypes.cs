@@ -16,6 +16,19 @@ public class GeneratorState(JSValue value, int nextJump, bool isValueDelegate)
     public readonly int NextJump = nextJump;
 }
 
+/// <summary>
+/// Signals a generator "return" completion injected by <c>Generator.prototype.return</c>.
+/// It unwinds the suspended generator like an exception so enclosing <c>finally</c>
+/// blocks (and IteratorClose) run, but it is not catchable by user <c>catch</c>
+/// clauses and is converted back into a normal <c>{ value, done:true }</c> result at
+/// the generator boundary.
+/// </summary>
+public sealed class GeneratorReturnCompletion(JSValue value) : Exception
+{
+    public readonly JSValue Value = value;
+}
+
+
 public class TryBlock
 {
     public int Catch;
@@ -50,6 +63,11 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
     public bool IsFinished;
     public int NextJump;
     internal bool HasDelegatedEnumerator => delegatedEnumerator != null;
+
+    // A non-zero NextJump means the generator is parked at a `yield` resume point
+    // (yield jump ids start at 1). NextJump == 0 is the suspended-start state, where
+    // `return()` must complete the generator without running its body.
+    internal bool IsSuspendedAtYield => NextJump != 0 && !IsFinished;
 
     // this is null...
     public TryBlock Root;
@@ -231,8 +249,10 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
                 if (root.CatchBegan || root.FinallyBegan)
                     throw;
 
-                // this.Root = root.Parent;
-                if (root.Catch > 0)
+                // A "return" completion (Generator.prototype.return) runs `finally`
+                // blocks but is not observable by user `catch` clauses, so skip the
+                // catch handler and fall through to the finally below.
+                if (ex is not GeneratorReturnCompletion && root.Catch > 0)
                     return GetNext(root.Catch, lastValue, ex);
 
                 if (root.Finally > 0)

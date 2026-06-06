@@ -48,7 +48,7 @@ diverge.
 | # | Category | Root-cause confidence | Implementation area |
 | --- | --- | --- | --- |
 | 1 | Structural `deepEqual` mismatches | **delegating-yield FIXED**; rest low — needs per-file repro | `BuiltIns/Array`, generator `yield*` |
-| 2 | `IteratorClose` on generator `return()` | high | `GeneratorsV2/GeneratorRewriter.cs` |
+| 2 | `IteratorClose` on generator `return()` | **FIXED** (`return()` resumes & runs `finally`) | `BuiltIns/Generator/JSGenerator.cs`, `GeneratorsV2/GeneratorTypes.cs` |
 | 3 | `Intl.DateTimeFormat` range formatting | medium | `BuiltIns/Intl/JSIntl.cs` |
 | 4 | `finally` abrupt completion override | high | `ExpressionCompiler` try/finally |
 | 5 | Direct `eval` var injection + lref timing | high | engine/runtime eval + identifier resolution |
@@ -90,18 +90,17 @@ Broiler already emits the correct close machinery for the **throw** and
   catch — `Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitAssignmentExpression.cs:546`.
 - `for-of` does the same — `Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitFor.cs:166`.
 
-**Verified locally:** `returnCount` is `0` (expected `1`) for the snippet above.
-The gap is specific to a generator `return()` *resuming a suspended `yield`*:
-the generator state machine produced by
-`Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/GeneratorsV2/GeneratorRewriter.cs`
-does not run the enclosing `finally` (and therefore the IteratorClose) when the
-resumption is a return-completion rather than a normal value or a thrown error.
-
-- **Next step:** add a generator-return regression in
-  `Broiler.JavaScript.Runtime.Tests` (or `BuiltIns.Tests`) asserting
-  `returnCount === 1` for the snippet above, then make the rewriter unwind
-  return-completions through enclosing `try/finally` regions before reaching the
-  generator boundary.
+**Fixed.** `JSGenerator.Return` previously just marked the generator `done`
+without resuming it, so enclosing `finally` blocks (and therefore IteratorClose)
+never ran (`returnCount === 0`). It now resumes a generator that is suspended at
+a `yield` with a `GeneratorReturnCompletion` signal that unwinds like the
+existing `throw()` path: `ClrGeneratorV2.GetNext` runs enclosing `finally` blocks
+but skips user `catch` clauses for the signal, and the generator boundary
+converts it back into a `{ value, done:true }` result. A `finally` that itself
+completes abruptly (its own `return`/`throw`) or yields overrides the result, and
+`return()` on a suspended-start generator still completes without running the
+body. Covered by `Issue673Tests.cs` (`GeneratorReturn_*`, including
+destructuring/for-of IteratorClose and nested finallies).
 
 ## Category 4 — `finally` abrupt completion must override a pending throw (high confidence)
 

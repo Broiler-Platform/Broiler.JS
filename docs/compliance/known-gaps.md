@@ -15,7 +15,7 @@ The full script-host runner filed [issue #673](https://github.com/MaiRat/Broiler
 with the ten most-common failure categories. Each is documented (root cause +
 implementation area + next step) in [`triage-issue-673.md`](triage-issue-673.md):
 
-- [ ] `IteratorClose` not run on generator `return()` through destructuring/`for-of` (`gap-673-iterator-close`).
+- [x] `IteratorClose` not run on generator `return()` through destructuring/`for-of` (`gap-673-iterator-close`) — fixed: `return()` resumes the generator so `finally`/IteratorClose run (`Issue673Tests.cs`).
 - [ ] `finally` abrupt completion (`continue`/`break`/`return`) does not override a pending throw (`gap-673-finally-override`).
 - [ ] Direct `eval` `var` injection + compound-assignment reference timing (`gap-673-eval-injection`).
 - [ ] Unicode `ID_Start` identifiers and `#` private names beyond the host Unicode version (`gap-673-unicode-identifiers`).
