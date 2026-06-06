@@ -32,7 +32,20 @@ public class ILTryBlock(ILWriter iLWriter, Label label, bool hasOuterGuard = fal
     internal void MarkHasFinally()
     {
         hasFinally = true;
-        finallyJumpState ??= il.NewTemp(typeof(int));
+        if (finallyJumpState == null)
+        {
+            finallyJumpState = il.NewTemp(typeof(int));
+
+            // The deferred finally-jump state is a REUSED temp local — a prior
+            // try block may have left it non-zero, and the CLR only zero-inits
+            // locals once at method entry. Reset it at the top of this try body
+            // so the post-finally dispatch (see Dispose) branches only when THIS
+            // block actually requested a deferred jump (continue/break/return);
+            // otherwise a stale 1 from an earlier loop would spuriously fire the
+            // previous block's break/continue.
+            il.Emit(OpCodes.Ldc_I4_0);
+            il.EmitSaveLocal(finallyJumpState.LocalIndex);
+        }
     }
 
     public void BeginCatch(Type type)
