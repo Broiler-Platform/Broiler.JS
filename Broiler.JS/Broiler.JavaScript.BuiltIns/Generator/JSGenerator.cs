@@ -118,10 +118,30 @@ public partial class JSGenerator : JSObject, IJSGenerator
             }
         }
 
+        // A generator parked at a `yield` must be resumed with a "return" completion
+        // so enclosing `finally` blocks run (e.g. IteratorClose for a destructuring or
+        // for-of that was suspended mid-iteration). A `finally` may override the result
+        // by completing abruptly itself (its own `return`/`throw`) or by yielding.
+        if (!done && cg != null && cg.IsSuspendedAtYield)
+        {
+            cg.InjectException(new GeneratorReturnCompletion(value));
+            try
+            {
+                return Next();
+            }
+            catch (GeneratorReturnCompletion ret)
+            {
+                done = true;
+                this.value = JSUndefined.Value;
+                return NewWithProperties().AddProperty(KeyStrings.value, ret.Value).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
+            }
+        }
+
+        // Suspended-start or already-finished: complete without running the body.
         done = true;
         this.value = JSUndefined.Value;
 
-        return NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, done ? JSValue.BooleanTrue : JSValue.BooleanFalse);
+        return NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
     }
 
     public JSValue Throw(JSValue value)
