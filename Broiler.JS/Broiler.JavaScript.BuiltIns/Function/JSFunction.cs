@@ -50,6 +50,17 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     internal JSFunction constructor;
     internal JSValue BoundTargetFunction;
 
+    /// <summary>
+    /// For a bound function (created via <c>Function.prototype.bind</c>), the
+    /// immediate target whose [[Construct]] is invoked when the bound function is
+    /// used with <c>new</c>, together with the bind-time arguments used to build
+    /// the bound-arguments prefix. Per the ECMAScript BoundFunction [[Construct]]
+    /// semantics, the target is constructed directly (bound <c>this</c> ignored)
+    /// rather than going through the bound function's [[Call]] delegate.
+    /// </summary>
+    internal JSValue BoundConstructTarget;
+    internal Arguments BoundConstructArguments;
+
     public readonly StringSpan name;
 
     internal JSFunctionDelegate f;
@@ -356,6 +367,18 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public override string ToDetailString() => source.Value;
     public override JSValue CreateInstance(in Arguments a)
     {
+        // BoundFunction [[Construct]]: construct the (immediate) target directly
+        // with boundArgs ++ args, ignoring the bound `this`. The newTarget already
+        // sits on the execution context (defaulting to this bound function, which
+        // the target's CreateInstance maps to itself) so we delegate as-is.
+        if (BoundConstructTarget != null)
+        {
+            if (!JSConstructorOperations.IsConstructor(this))
+                throw JSEngine.NewTypeError($"{name} is not a constructor");
+
+            return BoundConstructTarget.CreateInstance(BoundConstructArguments.CopyForBind(a));
+        }
+
         static void ValidateProxyNewTarget(JSProxy proxy) => _ = proxy.RequireTarget();
 
         JSObject ResolveInstancePrototype(JSValue newTargetValue)
@@ -397,12 +420,25 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             StringComparison.Ordinal);
         using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
+
+        // Track the executing function across [[Construct]] just as [[Call]] does,
+        // so a function invoked from within this constructor's body observes this
+        // function as its (legacy) caller. Without this, the strict-mode poison of
+        // `.caller` cannot be reached for a callee invoked from a constructor body.
+        var previousExecutingFunction = JSEngine.ExecutingFunction;
+        JSEngine.ExecutingFunction = this;
+        var trackLegacyCaller = HasLegacyCallerArguments;
+        if (trackLegacyCaller)
+            SetLegacyCaller(previousExecutingFunction);
         try
         {
             r = f(a1) ?? JSUndefined.Value;
         }
         finally
         {
+            if (trackLegacyCaller)
+                SetLegacyCaller(JSValue.NullValue);
+            JSEngine.ExecutingFunction = previousExecutingFunction;
             if (ec != null)
                 ec.CurrentNewTarget = previousNewTarget;
         }
@@ -556,7 +592,9 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         {
             prototype = originalFunction?.prototype,
             constructor = originalFunction?.constructor,
-            BoundTargetFunction = boundTargetFunction
+            BoundTargetFunction = boundTargetFunction,
+            BoundConstructTarget = target,
+            BoundConstructArguments = copy
         };
         if (originalFunction != null)
             fx.prototypeChain = originalFunction.prototypeChain;
