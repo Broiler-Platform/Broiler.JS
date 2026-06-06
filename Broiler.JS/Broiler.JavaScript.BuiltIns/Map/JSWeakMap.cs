@@ -70,8 +70,13 @@ public partial class JSWeakMap: JSObject
 
         lock (this)
         {
-            if (!index.TryGetValue(uk, out var w))
-                index.Put(uk) = new(new(uk, value, Unregister));
+            // Replacing an existing entry: detach the previous WeakValue's
+            // finalizer so its ~WeakValue() can't later Unregister (and thus
+            // remove) the freshly stored entry for the same key.
+            if (index.TryGetValue(uk, out var existing) && existing.TryGetTarget(out var oldTarget))
+                GC.SuppressFinalize(oldTarget);
+
+            index.Put(uk) = new(new(uk, value, Unregister));
         }
 
         return value;
@@ -110,7 +115,7 @@ public partial class JSWeakMap: JSObject
             }
         }
 
-        return JSUndefined.Value;
+        return JSBoolean.False;
     }
 
 

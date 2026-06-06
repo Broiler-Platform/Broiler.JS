@@ -289,7 +289,11 @@ partial class FastCompiler
                 else
                     jsf = JSFunctionBuilder.EnableStrictMode(jsf);
 
-                if (!isStrictFunction && !functionDeclaration.IsArrowFunction)
+                // Only ordinary FunctionDeclaration/FunctionExpression objects expose
+                // the legacy `caller`/`arguments` own data properties (Annex B). Concise
+                // methods, getters and setters do not — they are compiled with
+                // createPrototype:false, which distinguishes them here from real functions.
+                if (!isStrictFunction && !functionDeclaration.IsArrowFunction && createPrototype)
                     jsf = JSFunctionBuilder.EnableLegacyCallerAndArguments(jsf);
 
                 if (withBoundaries.Count > 0 && !isDirectEvalCompilation)

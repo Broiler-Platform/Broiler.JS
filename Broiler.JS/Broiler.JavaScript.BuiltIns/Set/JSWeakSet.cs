@@ -96,6 +96,6 @@ public partial class JSWeakSet : JSObject
             }
         }
 
-        return JSUndefined.Value;
+        return JSBoolean.False;
     }
 }
