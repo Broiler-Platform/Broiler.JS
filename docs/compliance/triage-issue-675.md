@@ -25,7 +25,7 @@ by a single shared cause.
 | --- | --- | --- | --- |
 | 1 | Structural `deepEqual` mismatch (`Array.from`, `delegating-yield-*`, `object/entries`) | `delegating-yield-*` **fixed** in #673; rest open | #673 cat 1 |
 | 2 | `Cannot get property value of undefined` — `Intl.DateTimeFormat` range formatting | open | #673 cat 3 |
-| 3 | `ex1` — `finally` abrupt completion over a pending throw | open (fix designed) | #673 cat 4 |
+| 3 | `ex1` — `finally` abrupt completion over a pending throw | **fixed** | #673 cat 4 |
 | 4 | `innerX === 2. Actual: 4` — direct-`eval` var injection | open | #673 cat 5 |
 | 5 | `SameValue(false, true)` mismatches | open (mixed) | #673 cat 6 |
 | 6 | `Unexpected token Hash: #` — Unicode `ID_Start` + private names | open | #673 cat 7 |
@@ -34,9 +34,9 @@ by a single shared cause.
 | 9 | `Method select not found in [object Intl.PluralRules]` | **fixed** | new |
 | 10 | `Method withResolvers not found in … Promise` | **fixed** | new |
 
-## Problems 1–7 — carried over from issue #673
+## Problems 1, 2, 4–7 — carried over from issue #673
 
-Problems 1 through 7 reproduce the same root causes already triaged in
+These reproduce root causes already triaged in
 [`triage-issue-673.md`](triage-issue-673.md); the issue #675 sample paths are the
 same files (or near-identical variants). Their status is tracked by the
 `gap-673-*` rows in the roadmap:
@@ -45,12 +45,13 @@ same files (or near-identical variants). Their status is tracked by the
   `staging/sm/generators/delegating-yield-*` sub-cause is **fixed** (a `yield*`
   expression now evaluates to the delegated iterator's return value). The
   `Array/from_proxy.js`, `Array/from_string.js` and `object/entries.js` samples
-  remain open and are tracked under `gap-673-triage-remaining`.
+  remain open and are tracked under `gap-673-triage-remaining`. (`Object.entries`
+  itself reproduces correctly locally; the `object/entries.js` failure is a
+  narrower sub-case still to be reduced.)
 - **Problem 2** (`Intl.DateTimeFormat` `formatRange`/`formatRangeToParts`) → #673
-  category 3, tracked under `gap-673-intl-range`.
-- **Problem 3** (`finally` abrupt completion must override a pending throw) →
-  #673 category 4, tracked under `gap-673-finally-override` (core IL change,
-  land with review).
+  category 3, tracked under `gap-673-intl-range`. Locally `formatRange` returns
+  the raw epoch-millisecond values joined by an en dash instead of formatted
+  dates, so making these pass needs real locale formatting (a stub today).
 - **Problem 4** (direct-`eval` `var` injection + compound-assignment lref
   timing) → #673 category 5, tracked under `gap-673-eval-injection`.
 - **Problem 5** (`SameValue(false, true)`) → #673 category 6, mixed root causes
@@ -62,6 +63,53 @@ same files (or near-identical variants). Their status is tracked by the
 
 No new work is landed for these here; see the #673 triage for the per-category
 root-cause analysis and next steps.
+
+## Problem 3 — `finally` abrupt completion must override a pending throw (fixed)
+
+- **Exception:** `JSException @ Throw` surfacing as a bare `ex1`
+- **Samples:** `language/statements/try/S12.14_A9_T2.js`, `A10_T2.js`,
+  `A11_T2.js`, `A12_T2.js`
+
+The decisive sub-case (CHECK#6 of `S12.14_A9_T2`):
+
+```js
+do {
+  try { c6 += 1; throw "ex1"; }
+  finally { fin6 = 1; continue; }   // abrupt "continue" must discard the throw
+} while (c6 < 2);
+```
+
+Per §14.15, when a `finally` block completes abruptly (here `continue`), its
+completion *replaces* the pending completion of the `try`/`catch` — so the thrown
+`"ex1"` is discarded and the loop continues. Broiler instead let the original
+`"ex1"` propagate uncaught.
+
+**Root cause.** `try/finally` is emitted as a real CLR `finally`;
+`continue`/`break`/`return` out of the finally records a *deferred jump*
+(`ILTryBlock.Branch` sets `finallyJumpState` and branches to `endfinally`) that is
+dispatched *after* `EndExceptionBlock`. On the normal path, `endfinally` falls
+through to that dispatch and the jump wins. But when a CLR exception is unwinding,
+`endfinally` **re-raises** it and never reaches the dispatch — so the jump is lost
+and the throw escapes.
+
+**Fixed.** `ILCodeGenerator.VisitTryCatchFinally` now detects a finally that can
+complete abruptly (`FinallyBranchScanner`: a `return`, or a `break`/`continue`
+whose target label is declared outside the finally) and asks
+`ILWriter.BeginTry` to wrap the whole construct in an **outer `try`/`catch
+(Exception)`** guard. On the exception path the guard inspects `finallyJumpState`:
+if the finally requested a jump it discards the exception and falls through to the
+deferred-jump dispatch (now emitted outside the outer region); otherwise it
+re-raises. The guard is *only* emitted when the finally actually branches out, so
+the common `try/finally` path — its `SavedLocal` result, tail-call transparency
+and nested-try handling — is byte-for-byte unchanged. The scan never produces a
+false negative (only labels declared inside the finally are treated as internal).
+
+Covered by `Issue675Tests.cs` (`FinallyContinue_*`, `FinallyReturn_*`,
+`FinallyBreak_*`, `NonBranchingFinally_*`, `NestedBranchingFinally_*`,
+`CatchRethrow_ThenFinallyContinue_*`). Implementation:
+`Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILCodeGenerator.VisitTryCatchFinally.cs`,
+`.../Generator/FinallyBranchScanner.cs`,
+`.../Core/ILWriter.cs`, `.../Core/ILTryBlock.cs`.
 
 ## Problems 8–10 — new missing or incorrect built-ins (fixed)
 

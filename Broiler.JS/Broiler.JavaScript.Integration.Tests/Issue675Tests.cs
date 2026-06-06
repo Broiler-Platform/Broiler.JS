@@ -5,16 +5,20 @@ namespace Broiler.JavaScript.Integration.Tests;
 // Regression tests for https://github.com/MaiRat/Broiler.JS/issues/675
 //
 // Issue #675 reports the ten most-common test262 failure categories from the
-// full script-host runner. Problems 1–7 overlap with the categories already
-// triaged in docs/compliance/triage-issue-673.md (delegating-yield, generator
-// return, object-literal constructor accessors, primitive iteration and
-// concat-spreadable are fixed there; the finally abrupt-completion override,
-// direct-eval var injection, Unicode identifier coverage and Intl range
-// formatting remain open and tracked).
+// full script-host runner. Problems 1, 2, 4–7 overlap with categories triaged
+// in docs/compliance/triage-issue-673.md (delegating-yield, generator return,
+// object-literal constructor accessors, primitive iteration and concat-spreadable
+// are fixed there; direct-eval var injection, Unicode identifier coverage and
+// Intl range formatting remain open and tracked).
 //
-// Problems 8–10 are *new* — three missing/incorrect built-in surfaces that this
-// change fixes:
+// Problem 3 (finally abrupt completion) and Problems 8–10 are fixed by this
+// change:
 //
+//   * Problem 3 — a `finally` that completes abruptly (continue/break/return)
+//     must override a pending throw ("ex1"). endfinally re-raised the in-flight
+//     exception so the deferred jump never ran; the IL generator now wraps a
+//     branching finally in an outer try/catch guard (FinallyBranchScanner /
+//     ILTryBlock). Covers test/language/statements/try/S12.14_A9..A12_T2.
 //   * Problem 8 — Set.prototype.add returned the value instead of the Set, so
 //     chained calls (`set.add(1).add(2)`) threw "Method add not found in 1".
 //     The spec returns the Set (and WeakSet.prototype.add the WeakSet).
@@ -29,6 +33,70 @@ public class Issue675Tests
         using var ctx = new JSContext();
         return ctx.Eval(code).ToString();
     }
+
+    // ---- Problem 3: finally abrupt completion overrides a pending throw ----
+
+    // S12.14_A9_T2 CHECK#6 shape: `continue` in finally discards the throw and
+    // the loop continues to completion.
+    [Fact]
+    public void FinallyContinue_OverridesPendingThrow()
+        => Assert.Equal("{\"c\":2,\"log\":[\"fin\",\"fin\"]}", Eval(@"
+            var log=[]; var c=0;
+            do { try { c+=1; throw 'ex1'; } finally { log.push('fin'); continue; } } while (c<2);
+            JSON.stringify({c:c, log:log});
+        "));
+
+    [Fact]
+    public void FinallyReturn_OverridesPendingThrow()
+        => Assert.Equal("R", Eval(@"
+            function f(){ try { throw 'ex'; } finally { return 'R'; } }
+            f();
+        "));
+
+    [Fact]
+    public void FinallyBreak_OverridesPendingThrow()
+        => Assert.Equal("after", Eval(@"
+            var s='before';
+            do { try { throw 'e'; } finally { break; } } while (true);
+            s='after'; s;
+        "));
+
+    // The guard is gated on the finally actually branching out: a finally that
+    // does not branch must let the pending throw propagate unchanged.
+    [Fact]
+    public void NonBranchingFinally_DoesNotSwallowThrow()
+        => Assert.Equal("caught:keep", Eval(@"
+            var r;
+            try { try { throw 'keep'; } finally { var x=1; } } catch(e){ r='caught:'+e; }
+            r;
+        "));
+
+    // Existing behaviour preserved: a finally return overrides a try return,
+    // and an inner branching finally is itself overridden by an outer one.
+    [Fact]
+    public void FinallyReturn_OverridesTryReturn()
+        => Assert.Equal("F", Eval(@"
+            function f(){ try { return 'T'; } finally { return 'F'; } }
+            f();
+        "));
+
+    [Fact]
+    public void NestedBranchingFinally_OuterContinueWins()
+        => Assert.Equal("done:2", Eval(@"
+            var n=0;
+            do { try { try { throw 'a'; } finally { throw 'b'; } } finally { n++; continue; } } while (n<2);
+            'done:'+n;
+        "));
+
+    // A catch that re-throws followed by a branching finally: the finally's
+    // continue overrides the re-thrown exception.
+    [Fact]
+    public void CatchRethrow_ThenFinallyContinue_Overrides()
+        => Assert.Equal("ok:2", Eval(@"
+            var k=0;
+            do { try { throw 'x'; } catch(e){ throw e; } finally { k++; continue; } } while (k<2);
+            'ok:'+k;
+        "));
 
     // ---- Problem 8: Set.prototype.add returns the Set (chainable) ----
 
