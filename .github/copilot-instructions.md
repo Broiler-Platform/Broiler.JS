@@ -52,7 +52,7 @@ dotnet test  Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Broiler.JavaScript.Bui
 dotnet test  Broiler.JS/Broiler.JavaScript.Compiler.Tests/Broiler.JavaScript.Compiler.Tests.csproj -m:1
 
 # Ad-hoc script execution against a built CLI
-dotnet Broiler.JS/Broiler.JavaScript/bin/Release/net8.0/BroilerJS.dll --script-host <file>
+dotnet Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll --script-host <file>
 ```
 
 Compliance work (test262 etc.) is gated separately; never run the full external

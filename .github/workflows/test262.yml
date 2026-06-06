@@ -89,7 +89,7 @@ env:
   TEST262_REF: ${{ inputs.suite_ref || 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e' }}
   TEST262_ROOT: ${{ github.workspace }}/.cache/test262
   RESULTS_DIR: ${{ github.workspace }}/.artifacts/test262/full-script-host
-  BROILER_DLL: ${{ github.workspace }}/Broiler.JS/Broiler.JavaScript/bin/Release/net8.0/BroilerJS.dll
+  BROILER_DLL: ${{ github.workspace }}/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
   SHARD_COUNT: 8
   SELECTED_SHARD_INDEX: ${{ inputs.shard_index || -1 }}
   TEST_TIMEOUT_SECONDS: ${{ inputs.test_timeout_seconds || 30 }}
@@ -285,7 +285,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
@@ -449,7 +449,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
@@ -617,7 +617,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
@@ -865,7 +865,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Download shard logs into one directory
         uses: actions/download-artifact@v4.1.3

@@ -12,7 +12,11 @@ namespace Broiler.JavaScript.Integration.Tests;
 // formatting remain open and tracked).
 //
 // Problem 1 (Array.from-over-string with overridden iterator), Problem 3
-// (finally abrupt completion) and Problems 8–10 are fixed by this change:
+// (finally abrupt completion), Problems 6 & 7 (Unicode ID_Start coverage —
+// resolved by bumping every project from net8.0 to net10.0; .NET 10 ships
+// Unicode 16 tables that recognise the 15.1/16.0 ID_Start additions that
+// .NET 8's tables — and therefore the CI builds — missed) and Problems 8–10
+// are fixed by this change:
 //
 //   * Problem 1 — iterating a string (`Array.from('ab')`, `[...'ab']`,
 //     `for (var c of 'ab')`, `[a,b] = 'ab'`) ignored an overridden
@@ -40,6 +44,37 @@ public class Issue675Tests
         using var ctx = new JSContext();
         return ctx.Eval(code).ToString();
     }
+
+    // ---- Problems 6 & 7: Unicode 15.1+ ID_Start coverage (via .NET 10) ----
+
+    // .NET 8's CharUnicodeInfo tables stop at Unicode 15.0, so identifier-start
+    // code points added in Unicode 15.1 (CJK Unified Ideographs Extension I) and
+    // 16.0 (Tulu-Tigalari, Gurung Khema, ...) were classified as "Not Assigned"
+    // and rejected by the parser. .NET 10 ships Unicode 16 tables, so these now
+    // pass without the project needing its own static ID_Start fallback table.
+
+    [Fact]
+    public void Unicode15_1_CJKExtensionI_IsIdentifierStart()
+        => Assert.Equal("1", Eval("var " + char.ConvertFromUtf32(0x2EBF0) + " = 1; " + char.ConvertFromUtf32(0x2EBF0)));
+
+    [Fact]
+    public void Unicode16_TuluTigalari_IsIdentifierStart()
+        => Assert.Equal("1", Eval("var " + char.ConvertFromUtf32(0x11380) + " = 1; " + char.ConvertFromUtf32(0x11380)));
+
+    [Fact]
+    public void Unicode16_GurungKhema_IsIdentifierStart()
+        => Assert.Equal("1", Eval("var " + char.ConvertFromUtf32(0x16100) + " = 1; " + char.ConvertFromUtf32(0x16100)));
+
+    // The class-form failure surfaces as "Unexpected token Hash" because the
+    // scanner leaves the `#<char>` private name unconsumed when <char> is
+    // unrecognised as identifier-start. With .NET 10's tables the private
+    // declaration scans cleanly.
+    [Fact]
+    public void Unicode15_1_AsPrivateClassName()
+        => Assert.Equal("1", Eval(@"
+            class C { #" + char.ConvertFromUtf32(0x2EBF0) + @" = 1; get() { return this.#" + char.ConvertFromUtf32(0x2EBF0) + @"; } }
+            new C().get();
+        "));
 
     // ---- Problem 1: string iteration honours String.prototype[@@iterator] ----
 

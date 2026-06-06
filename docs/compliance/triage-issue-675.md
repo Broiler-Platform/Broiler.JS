@@ -28,8 +28,8 @@ by a single shared cause.
 | 3 | `ex1` — `finally` abrupt completion over a pending throw | **fixed** | #673 cat 4 |
 | 4 | `innerX === 2. Actual: 4` — direct-`eval` var injection | open | #673 cat 5 |
 | 5 | `SameValue(false, true)` mismatches | open (mixed) | #673 cat 6 |
-| 6 | `Unexpected token Hash: #` — Unicode `ID_Start` + private names | open | #673 cat 7 |
-| 7 | `Unexpected token Identifier: var` — Unicode `ID_Start` | open | #673 cat 9 |
+| 6 | `Unexpected token Hash: #` — Unicode `ID_Start` + private names | **fixed** (net10 bump) | #673 cat 7 |
+| 7 | `Unexpected token Identifier: var` — Unicode `ID_Start` | **fixed** (net10 bump) | #673 cat 9 |
 | 8 | `Method add not found in 1` — `Set.prototype.add` | **fixed** | new |
 | 9 | `Method select not found in [object Intl.PluralRules]` | **fixed** | new |
 | 10 | `Method withResolvers not found in … Promise` | **fixed** | new |
@@ -49,9 +49,14 @@ same files (or near-identical variants). Their status is tracked by the
 - **Problem 5** (`SameValue(false, true)`) → #673 category 6, mixed root causes
   tracked under `gap-673-triage-remaining`.
 - **Problems 6 & 7** (`#` private names and `var` after a supplementary-plane
-  `ID_Start` code point) → #673 categories 7 & 9, tracked under
-  `gap-673-unicode-identifiers` (needs a version-pinned Unicode derived-property
-  table in `Broiler.Unicode`).
+  `ID_Start` code point) → #673 categories 7 & 9. **Fixed** by bumping every
+  project from `net8.0` to `net10.0`: `CharExtensions.IsIdentifierStart` uses
+  `char.GetUnicodeCategory`, which on .NET 8 ships Unicode 15.0 tables
+  (`U+2EBF0` and the rest of CJK Extension I, Tulu-Tigalari, Gurung Khema, …
+  classified as `OtherNotAssigned`). .NET 10 ships Unicode 16 tables so those
+  code points now classify as `OtherLetter` and the parser accepts them
+  without any project-local data. Covered by `Issue675Tests.cs`
+  (`Unicode15_1_*`, `Unicode16_*`, `Unicode15_1_AsPrivateClassName`).
 
 No new work is landed for these here; see the #673 triage for the per-category
 root-cause analysis and next steps.
