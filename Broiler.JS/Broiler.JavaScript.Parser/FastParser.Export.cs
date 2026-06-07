@@ -41,7 +41,8 @@ partial class FastParser
                     return true;
 
                 case FastKeywords.@class:
-                    if (!ClassExpression(out var @class))
+                    // `export [default] class C {}` is a ClassDeclaration: bind C.
+                    if (!ClassExpression(out var @class, isStatement: true))
                         throw stream.Unexpected();
 
                     var c = @class as AstClassExpression;

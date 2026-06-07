@@ -47,6 +47,11 @@ public abstract class JSPrimitive: JSValue
     {
         get
         {
+            // A private member access on a primitive is a brand-check TypeError:
+            // ToObject would create a fresh wrapper that has no private fields.
+            if (JSObject.IsPrivateName(in name))
+                JSObject.ThrowMissingPrivateMember(in name, reading: true);
+
             ResolvePrototype();
             if (prototypeChain == null)
                 return UndefinedValue;
@@ -75,6 +80,9 @@ public abstract class JSPrimitive: JSValue
     // returned undefined.
     internal protected override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
     {
+        if (JSObject.IsPrivateName(in key))
+            JSObject.ThrowMissingPrivateMember(in key, reading: true);
+
         ResolvePrototype();
         return base.GetValue(key, receiver, throwError);
     }

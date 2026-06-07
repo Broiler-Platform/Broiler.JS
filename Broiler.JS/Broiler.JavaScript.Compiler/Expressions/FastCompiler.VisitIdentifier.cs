@@ -145,6 +145,6 @@ partial class FastCompiler
 
         return throwIfMissing
             ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
-            : JSContextBuilder.Index(KeyOfName(identifier.Name));
+            : JSContextBuilder.ResolveIdentifierOrUndefined(KeyOfName(identifier.Name));
     }
 }

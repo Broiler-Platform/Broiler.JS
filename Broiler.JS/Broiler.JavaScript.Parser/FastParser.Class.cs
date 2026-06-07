@@ -57,10 +57,14 @@ partial class FastParser
             stream.CheckAndConsumeWithLineTerminator(TokenTypes.SemiColon);
         }
 
-        if (identifier != null)
-            variableScope.Top.AddVariable(identifier.Start, identifier.Name, isStatement ? FastVariableKind.Let : FastVariableKind.Var, throwError: false);
+        // A ClassDeclaration binds its name (block-scoped) in the enclosing scope.
+        // A ClassExpression's name is visible only inside the class body (as an
+        // immutable binding created by the compiler), so it must not register a
+        // binding in the enclosing scope — otherwise the name leaks outward.
+        if (identifier != null && isStatement)
+            variableScope.Top.AddVariable(identifier.Start, identifier.Name, FastVariableKind.Let, throwError: false);
 
-        statement = new AstClassExpression(begin, PreviousToken, identifier, @base, nodes);
+        statement = new AstClassExpression(begin, PreviousToken, identifier, @base, nodes, isDeclaration: isStatement);
 
         return true;
     }

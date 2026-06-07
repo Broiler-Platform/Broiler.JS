@@ -397,6 +397,46 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         }
     }
 
+    /// <summary>
+    /// The bindings a `with` statement must overlay so they remain resolvable
+    /// inside the with body even though the object environment is consulted
+    /// first. Only *function-owned* bindings are returned: a global/program-level
+    /// `var` is already resolvable through the global environment and is kept in
+    /// sync with its global-object property by the normal dual-binding path, so
+    /// overlaying it (and isolating writes from that property) would be wrong.
+    /// Function-local bindings, by contrast, genuinely shadow same-named globals
+    /// and their writes must stay local.
+    /// </summary>
+    public IEnumerable<VariableScope> GetWithFallbackVariables()
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var current = this;
+
+        while (current != null)
+        {
+            if (current.Function != null)
+            {
+                var variables = current.variableScopeList.AllValues;
+                while (variables.MoveNext(out var entry))
+                {
+                    var variable = entry.Value;
+                    if (variable.Variable == null
+                        || variable.Variable.Type != typeof(JSVariable)
+                        || variable.IsTemp
+                        || variable.Name == "this"
+                        || !seen.Add(NormalizeVisibleName(variable.Name)))
+                    {
+                        continue;
+                    }
+
+                    yield return variable;
+                }
+            }
+
+            current = current.Parent;
+        }
+    }
+
     public IEnumerable<string> GetDirectEvalLexicalBindingNames()
     {
         var scopes = new List<FastFunctionScope>();

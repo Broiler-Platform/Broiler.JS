@@ -6523,7 +6523,11 @@ public class BuiltInsTests
             })();
             """);
 
-        Assert.Equal("1|2|2|x1", result.ToString());
+        // `this` is the global object (sloppy IIFE). `p1` is a function-local
+        // `var`, so it must NOT leak onto the global object — `this.p1` is
+        // `undefined` (Node agrees). The earlier "x1" expectation encoded a bug
+        // where a `with`-overlaid local was published as a global property.
+        Assert.Equal("1|2|2|undefined", result.ToString());
     }
 
     [Fact]

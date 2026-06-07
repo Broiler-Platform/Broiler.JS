@@ -326,23 +326,6 @@ public partial class JSPromise : JSObject, IJSPromise
         return @return;
     }
 
-    internal static void ValidatePromiseSpeciesConstructor(JSValue promise)
-    {
-        var constructor = promise[KeyStrings.constructor];
-        if (constructor.IsUndefined)
-            return;
-
-        if (!constructor.IsObject)
-            throw JSEngine.NewTypeError("Promise constructor must be an object");
-
-        var species = constructor[(IJSSymbol)BuiltIns.Symbol.JSSymbol.species];
-        if (species.IsNullOrUndefined)
-            return;
-
-        if (species is not IJSFunction)
-            throw JSEngine.NewTypeError("Promise species constructor is not a constructor");
-    }
-
     private void Post(Reaction reaction) => Post(() =>
     {
         if (reaction.Handler != null)

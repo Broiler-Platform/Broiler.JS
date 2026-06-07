@@ -386,10 +386,13 @@ partial class FastCompiler
                     inMemberInitializer = previousInMemberInitializer;
                 }
             }
-            var attributes = member.IsPrivate
-                ? JSPropertyAttributes.ConfigurableValue
-                : JSPropertyAttributes.EnumerableConfigurableValue;
-            var init = JSObjectBuilder.AddValue(name, value, attributes);
+            // A public field is CreateDataPropertyOrThrow — observable through a
+            // Proxy receiver's defineProperty trap (a `return`-override base may
+            // hand back a Proxy as `this`). A private field is an internal slot
+            // added directly (PrivateFieldAdd never consults proxy traps).
+            var init = member.IsPrivate
+                ? JSObjectBuilder.AddValue(name, value, JSPropertyAttributes.ConfigurableValue)
+                : JSObjectBuilder.CreateDataProperty(name, value);
 
             sList.Add(YExpression.Call(@this, init.Member as MethodInfo, init.Arguments));
         }

@@ -248,7 +248,7 @@ public abstract class AstReduce : AstMapVisitor<AstNode>
     {
         var pc = Modified(classStatement.Identifier, classStatement.Base, out var id, out var @base);
         if (Modified(classStatement.Members, out var members) || pc)
-            return new AstClassExpression(classStatement.Start, classStatement.End, id, @base, members);
+            return new AstClassExpression(classStatement.Start, classStatement.End, id, @base, members, classStatement.IsDeclaration);
 
         return classStatement;
     }

@@ -32,6 +32,29 @@ internal static class UriHelper
     private static readonly bool[] decodeURIReservedSet = CreateCharacterSetLookupTable(";/?:@&=+$,#");
     private static readonly bool[] decodeURIComponentReservedSet = new bool[128];
 
+    // Per §19.2.6.5 Encode, the set of code units that are not percent-encoded.
+    // uriUnescaped = uriAlpha + DecimalDigit + uriMark ("-_.!~*'()").
+    // encodeURI additionally keeps uriReserved (";/?:@&=+$,") and "#".
+    private static readonly bool[] encodeURIUnescapedSet =
+        CreateUnescapedLookupTable("-_.!~*'()" + ";/?:@&=+$," + "#");
+    private static readonly bool[] encodeURIComponentUnescapedSet =
+        CreateUnescapedLookupTable("-_.!~*'()");
+
+    /// <summary>
+    /// Builds a 128-entry lookup table containing the alphanumeric characters
+    /// plus the supplied additional unescaped marks.
+    /// </summary>
+    private static bool[] CreateUnescapedLookupTable(string additional)
+    {
+        var result = new bool[128];
+        for (char c = 'A'; c <= 'Z'; c++) result[c] = true;
+        for (char c = 'a'; c <= 'z'; c++) result[c] = true;
+        for (char c = '0'; c <= '9'; c++) result[c] = true;
+        foreach (char c in additional)
+            result[c] = true;
+        return result;
+    }
+
 
     /// <summary>
     /// Ref: https://github.com/paulbartrum/jurassic/blob/1e9b24b4926740aa2c1b0df8169398b3d340f681/Jurassic/Library/GlobalObject.cs#L511
@@ -175,6 +198,89 @@ internal static class UriHelper
         }
 
         return result.ToString();
+    }
+
+    internal static string EncodeURI(string input)
+        => Encode(input, encodeURIUnescapedSet);
+
+    internal static string EncodeURIComponent(string input)
+        => Encode(input, encodeURIComponentUnescapedSet);
+
+    /// <summary>
+    /// Implements the abstract Encode operation (§19.2.6.5). Code units in the
+    /// unescaped set are copied verbatim; everything else is UTF-8 encoded and
+    /// percent-escaped. Unpaired surrogates raise a URIError.
+    /// </summary>
+    private static string Encode(string input, bool[] unescapedSet)
+    {
+        var result = new StringBuilder(input.Length);
+        for (int i = 0; i < input.Length; i++)
+        {
+            char c = input[i];
+            if (c < 128 && unescapedSet[c])
+            {
+                result.Append(c);
+                continue;
+            }
+
+            int codePoint;
+            if (c >= 0xDC00 && c <= 0xDFFF)
+            {
+                // Lone trailing (low) surrogate.
+                throw NewURIError("URI malformed");
+            }
+            else if (c < 0xD800 || c > 0xDBFF)
+            {
+                codePoint = c;
+            }
+            else
+            {
+                // High surrogate: must be followed by a low surrogate.
+                if (i + 1 >= input.Length)
+                    throw NewURIError("URI malformed");
+
+                char next = input[i + 1];
+                if (next < 0xDC00 || next > 0xDFFF)
+                    throw NewURIError("URI malformed");
+
+                codePoint = 0x10000 + ((c - 0xD800) << 10) + (next - 0xDC00);
+                i++;
+            }
+
+            foreach (byte b in Utf8Encode(codePoint))
+            {
+                result.Append('%');
+                result.Append(((int)b).ToString("X2"));
+            }
+        }
+
+        return result.ToString();
+    }
+
+    private static byte[] Utf8Encode(int codePoint)
+    {
+        if (codePoint <= 0x7F)
+            return new[] { (byte)codePoint };
+        if (codePoint <= 0x7FF)
+            return new[]
+            {
+                (byte)(0xC0 | (codePoint >> 6)),
+                (byte)(0x80 | (codePoint & 0x3F)),
+            };
+        if (codePoint <= 0xFFFF)
+            return new[]
+            {
+                (byte)(0xE0 | (codePoint >> 12)),
+                (byte)(0x80 | ((codePoint >> 6) & 0x3F)),
+                (byte)(0x80 | (codePoint & 0x3F)),
+            };
+        return new[]
+        {
+            (byte)(0xF0 | (codePoint >> 18)),
+            (byte)(0x80 | ((codePoint >> 12) & 0x3F)),
+            (byte)(0x80 | ((codePoint >> 6) & 0x3F)),
+            (byte)(0x80 | (codePoint & 0x3F)),
+        };
     }
 
     internal static string Escape(string input)

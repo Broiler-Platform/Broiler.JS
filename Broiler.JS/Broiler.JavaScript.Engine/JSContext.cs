@@ -128,11 +128,22 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             public bool HadPreviousVariable;
             public bool HadOwnProperty;
             public JSValue PreviousValue;
+
+            // True for a `with`-fallback overlay of a function-owned binding that
+            // merely shadows a same-named outer binding. Such overlays must never
+            // publish to, propagate back to, or otherwise mutate the shadowed
+            // binding or its global-object property (writes stay on the inner
+            // variable). A program-level global `var` is never shadowed: it is
+            // kept in sync with its property by the normal dual-binding path.
+            public bool Shadowed;
         }
 
-        public DirectEvalScope(JSContext context, JSVariable[] variables)
+        public DirectEvalScope(JSContext context, JSVariable[] variables, JSVariable[] shadowedVariables = null)
         {
             this.context = context;
+            HashSet<JSVariable> shadowed = shadowedVariables is { Length: > 0 }
+                ? [.. shadowedVariables]
+                : null;
             if (variables == null || variables.Length == 0)
             {
                 context.directEvalDepth++;
@@ -166,6 +177,8 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 if (entry.HadOwnProperty)
                     entry.PreviousValue = context[key];
 
+                entry.Shadowed = shadowed != null && shadowed.Contains(variable);
+
                 entries.Add(entry);
                 // A captured binding can still be in its temporal dead zone when the
                 // eval runs — e.g. a parameter whose own default initializer contains
@@ -174,7 +187,12 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 // reads JSVariable.Value and would throw for such a binding. Skip that
                 // value materialization; the binding stays in globalVars so it remains
                 // resolvable and a genuine read still throws the proper ReferenceError.
-                if (variable.IsInitialized)
+                //
+                // A shadowing overlay never publishes to the global object: the
+                // shadowed binding's property must keep its own value while the
+                // `with` body runs (e.g. `globalThis.v` stays the outer value even
+                // though the unscopables-blocked `v` resolves to the inner var).
+                if (variable.IsInitialized && !entry.Shadowed)
                     context.Register(variable);
                 context.globalVars.Put(key.Key) = variable;
             }
@@ -244,10 +262,32 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 entry.HadPreviousVariable = context.globalVars.TryGetValue(entry.Name.Key, out var pv);
                 entry.PreviousVariable = pv;
 
-                if (entry.OverlayVariable.IsInitialized)
+                // A shadowing overlay only re-establishes the globalVars binding;
+                // it never republishes to the global-object property.
+                if (entry.OverlayVariable.IsInitialized && !entry.Shadowed)
                     context.Register(entry.OverlayVariable);
                 context.globalVars.Put(entry.Name.Key) = entry.OverlayVariable;
             }
+        }
+
+        /// <summary>
+        /// If this scope overlays <paramref name="name"/>, reports whether that
+        /// overlay is a shadowing (lexical-fallback) one. The return value says
+        /// whether the name is overlaid at all.
+        /// </summary>
+        public bool TryGetOverlayShadowing(in KeyString name, out bool isShadowing)
+        {
+            foreach (var entry in entries)
+            {
+                if (entry.Name.Key == name.Key)
+                {
+                    isShadowing = entry.Shadowed;
+                    return true;
+                }
+            }
+
+            isShadowing = false;
+            return false;
         }
 
         public void Dispose()
@@ -258,6 +298,15 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             {
                 if (entry.HadPreviousVariable)
                 {
+                    // A shadowing overlay leaves the shadowed binding (and its
+                    // property) exactly as it was: writes inside the `with` body
+                    // went only to the inner variable and must not leak outward.
+                    if (entry.Shadowed)
+                    {
+                        context.globalVars.Put(entry.Name.Key) = entry.PreviousVariable;
+                        continue;
+                    }
+
                     // Only propagate the overlay's value back if the eval actually
                     // gave it one; an overlay still in its temporal dead zone has no
                     // readable value (reading it would throw).
@@ -279,6 +328,12 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 }
 
                 context.globalVars.RemoveAt(entry.Name.Key);
+
+                // A shadowing overlay never created or mutated the global-object
+                // property, so leave it untouched on teardown.
+                if (entry.Shadowed)
+                    continue;
+
                 if (entry.HadOwnProperty)
                     context[entry.Name] = entry.PreviousValue;
                 else
@@ -292,6 +347,17 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     }
 
     public IDisposable PushDirectEvalScope(JSVariable[] variables) => new DirectEvalScope(this, variables);
+
+    /// <summary>
+    /// Pushes the lexical-environment fallback overlay for a `with` statement.
+    /// <paramref name="variables"/> are all the in-scope bindings made resolvable
+    /// inside the body; <paramref name="shadowedVariables"/> is the function-owned
+    /// subset whose writes must stay local (never leaking to a same-named global
+    /// or its property). Program-level globals are resolvable through the normal
+    /// path and are not shadow-isolated.
+    /// </summary>
+    public IDisposable PushWithFallbackScope(JSVariable[] variables, JSVariable[] shadowedVariables)
+        => new DirectEvalScope(this, variables, shadowedVariables);
 
     private sealed class DirectEvalActivationScope(JSContext context, CallStackItem owner) : IDisposable
     {
@@ -366,6 +432,23 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         }
 
         variable = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Whether the binding currently overlaying <paramref name="name"/> in
+    /// <see cref="globalVars"/> is a shadowing (lexical-fallback) overlay
+    /// established by a `with` statement. Such overlays must be written through
+    /// the overlay variable alone, never the shadowed global-object property.
+    /// </summary>
+    private bool IsShadowingOverlay(in KeyString name)
+    {
+        for (var i = activeDirectEvalScopes.Count - 1; i >= 0; i--)
+        {
+            if (activeDirectEvalScopes[i].TryGetOverlayShadowing(name, out var isShadowing))
+                return isShadowing;
+        }
+
         return false;
     }
 
@@ -735,6 +818,35 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         throw JSEngine.NewReferenceError($"{name} is not defined");
     }
 
+    /// <summary>
+    /// Resolves an identifier the way <see cref="ResolveIdentifier"/> does — with
+    /// the same precedence (`with` object, direct-eval / `with`-fallback overlay,
+    /// global var, global property) — but yields <c>undefined</c> instead of
+    /// throwing when the name is unresolvable. Used by `typeof` so it consults a
+    /// `with`-fallback overlay (e.g. a function-local that shadows a global via
+    /// @@unscopables) rather than reading the bare global-object property.
+    /// </summary>
+    public JSValue ResolveIdentifierOrUndefined(in KeyString name)
+    {
+        if (TryResolveWithObject(name, out var withObject))
+        {
+            return withObject.HasProperty(name.ToJSValue()).BooleanValue
+                ? withObject[name]
+                : JSUndefined.Value;
+        }
+
+        if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
+            return directEvalBinding.Value;
+
+        if (globalVars.TryGetValue(name.Key, out var variable))
+            return variable.Value;
+
+        if (!GetInternalProperty(name).IsEmpty)
+            return this[name];
+
+        return JSUndefined.Value;
+    }
+
     public JSValue AssignIdentifier(in KeyString name, JSValue value) => AssignIdentifier(name, value, JSEngine.IsStrictMode);
 
     public JSValue AssignWithObjectIdentifier(JSObject withObject, in KeyString name, JSValue value, bool strictMode)
@@ -766,6 +878,16 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
         {
             directEvalBinding.Value = value;
+            return value;
+        }
+
+        // A `with` shadowing overlay must capture the write itself; the shadowed
+        // global-object property of the same name belongs to an outer binding and
+        // must stay untouched (matching the read path, which resolves to the
+        // overlay before consulting the property).
+        if (hasVariable && IsShadowingOverlay(name))
+        {
+            variable.Value = value;
             return value;
         }
 
