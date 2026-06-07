@@ -36,13 +36,22 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   explicitly returned object untouched, while body-less default-derived classes
 //   (which inherit a native/derived delegate) keep the previous behaviour.
 //
+// Problem 9 (computed-property-abrupt-completion) — class computed property keys
+//   were not all evaluated in source order: an instance field's key ran before a
+//   preceding static element's key, so `static [throws()]; [neverExecuted=true];`
+//   still evaluated the second key. ClassDefinitionEvaluation evaluates every
+//   ClassElementName in source order before the elements are installed; CreateClass
+//   now pre-evaluates each computed key in order into a class-scope variable that
+//   methods/accessors/static fields consume, instead of re-evaluating it inside the
+//   deferred MemberInit.
+//
 // Out of scope (architectural / CLDR / deep parser, matching the triage carried
 // in #683 / #685 / #687 / #689 / #691, and confirmed by probing the engine for
 // this issue): the private-* brand-check and double-initialisation families,
 // super-*-reference-null, the proxy default-handler TypeError tests, AnnexB eval
-// binding re-init / skip-early-err, scope-param-elem-var,
-// computed-property-abrupt-completion, NumberFormat signDisplay "negative"
-// currency CLDR formatting, and the staging/sm negative SyntaxError grab-bag.
+// binding re-init / skip-early-err, scope-param-elem-var, NumberFormat signDisplay
+// "negative" currency CLDR formatting, and the staging/sm negative SyntaxError
+// grab-bag.
 public class Issue693Tests
 {
     private static JSValue Eval(string code)
@@ -175,4 +184,40 @@ public class Issue693Tests
             "class T extends Error {}"
             + "function F(){ throw new T(); }"
             + "var r; try { new F(); } catch (e) { r = e.constructor.name; } r;").ToString());
+
+    // ---- Problem 9: class computed keys evaluate in source order ----
+
+    // The exact shape of computed-property-abrupt-completition.js: a throwing
+    // computed key on an earlier element must abort before a later element's key
+    // (here an assignment) is evaluated, for both element orderings.
+    [Theory]
+    [InlineData("[ac()]; [n = true];")]
+    [InlineData("static [ac()]; [n = true];")]
+    [InlineData("static [ac()]; static [n = true];")]
+    public void ComputedKeyAbruptCompletionShortCircuits(string body)
+    {
+        var code =
+            "function ac(){ throw new Test262Error(); }"
+            + "function Test262Error(){} var n = false; var t;"
+            + "try { eval('class C { " + body + " }'); t = 'no-throw'; }"
+            + "catch (e) { t = e.constructor.name; }"
+            + "t + '|' + n;";
+        Assert.Equal("Test262Error|false", Eval(code).ToString());
+    }
+
+    // Every computed key — instance/static, field/method/accessor — is evaluated
+    // exactly once, in source order.
+    [Fact]
+    public void ComputedKeysEvaluateInSourceOrder()
+        => Assert.Equal("a,b,c,d,e,f", Eval(
+            "var log = []; function k(n){ log.push(n); return n; }"
+            + "class C {"
+            + "  [k('a')](){}"
+            + "  static [k('b')](){}"
+            + "  [k('c')] = 1;"
+            + "  static [k('d')] = 2;"
+            + "  get [k('e')](){ return 1; }"
+            + "  static get [k('f')](){ return 1; }"
+            + "}"
+            + "log.join(',');").ToString());
 }

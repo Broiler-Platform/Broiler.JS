@@ -170,6 +170,27 @@ partial class FastCompiler
         while (en.MoveNext(out var property))
         {
             var isPrivateName = property.Key is AstIdentifier propertyIdentifier && propertyIdentifier.Name.Value.StartsWith("#");
+
+            // ECMA-262 ClassDefinitionEvaluation evaluates every ClassElementName
+            // (the computed key) in source order, before any static field
+            // initializer or method definition that follows it. Pre-evaluate each
+            // computed key here, in order, into a class-scope variable so a later
+            // element's key cannot run ahead of an earlier element's abrupt
+            // completion (computed-property-abrupt-completion) and so mixed
+            // static/instance keys observe source order. Methods, accessors and
+            // static data fields then consume the cached value instead of
+            // re-evaluating it inside the deferred MemberInit; instance fields read
+            // it at construction time via ComputedMemberNames.
+            if (property.Computed
+                && property.Kind is AstPropertyKind.Data or AstPropertyKind.Get
+                    or AstPropertyKind.Set or AstPropertyKind.Method)
+            {
+                var computedNameVar = YExpression.Parameter(typeof(JSValue), $"#className{computedMemberNames.Count}");
+                classScopeVariables.Add(computedNameVar);
+                stmts.Add(YExpression.Assign(computedNameVar, ValidateStaticPropertyName(property, GetClassElementName(property))));
+                computedMemberNames[property] = computedNameVar;
+            }
+
             YExpression name;
             // var el = property.IsStatic ? staticElements : prototypeElements;
             switch (property.Kind)
@@ -181,7 +202,9 @@ partial class FastCompiler
                 case AstPropertyKind.Data:
                     if (property.IsStatic)
                     {
-                        name = ValidateStaticPropertyName(property, GetClassElementName(property));
+                        name = property.Computed
+                            ? computedMemberNames[property]
+                            : ValidateStaticPropertyName(property, GetClassElementName(property));
                         var value = property.Init == null ? JSUndefinedBuilder.Value : Visit(property.Init);
                         var attributes = isPrivateName
                             ? JSPropertyAttributes.ConfigurableValue
@@ -189,19 +212,16 @@ partial class FastCompiler
                         staticElements.Add(JSObjectBuilder.AddValue(name, value, attributes));
                         break;
                     }
-                    if (property.Computed)
-                    {
-                        var computedNameVar = YExpression.Parameter(typeof(JSValue), $"#classFieldName{computedMemberNames.Count}");
-                        classScopeVariables.Add(computedNameVar);
-                        stmts.Add(YExpression.Assign(computedNameVar, GetClassElementName(property)));
-                        computedMemberNames[property] = computedNameVar;
-                    }
-
+                    // The computed key (if any) was already evaluated, in source
+                    // order, into ComputedMemberNames above; the initializer runs
+                    // per-instance during construction (InitMembers).
                     memberInits.Add(property);
                     break;
 
                 case AstPropertyKind.Get:
-                    name = ValidateStaticPropertyName(property, GetClassElementName(property));
+                    name = property.Computed
+                        ? computedMemberNames[property]
+                        : ValidateStaticPropertyName(property, GetClassElementName(property));
                     if (property.IsStatic)
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
@@ -218,7 +238,9 @@ partial class FastCompiler
                     break;
 
                 case AstPropertyKind.Set:
-                    name = ValidateStaticPropertyName(property, GetClassElementName(property));
+                    name = property.Computed
+                        ? computedMemberNames[property]
+                        : ValidateStaticPropertyName(property, GetClassElementName(property));
                     if (property.IsStatic)
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
@@ -238,7 +260,9 @@ partial class FastCompiler
                     break;
 
                 case AstPropertyKind.Method:
-                    name = ValidateStaticPropertyName(property, GetClassElementName(property));
+                    name = property.Computed
+                        ? computedMemberNames[property]
+                        : ValidateStaticPropertyName(property, GetClassElementName(property));
                     if (property.IsStatic)
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
