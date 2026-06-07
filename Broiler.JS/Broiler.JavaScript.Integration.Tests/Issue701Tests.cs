@@ -34,6 +34,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   private-method-double-initialisation* and the method/accessor portions of the
 //   return-override non-extensible tests; covered by a full base-vs-fix run of the
 //   class/elements + class/subclass test262 trees with zero regressions.)
+//
+// Problem 2 (static fields) — static data field initializers ran while the
+//   constructor object was being built, before its name binding was set, so an
+//   initializer that referenced the class name saw `undefined`. They now run after
+//   the class binding (ClassDefinitionEvaluation evaluates static field
+//   initializers last, after the methods), and a static private field uses
+//   PrivateFieldAdd — so a self-sealed constructor throws. (Fixes
+//   private-class-field-on-nonextensible-objects.js.)
 public class Issue701Tests
 {
     private static JSValue Eval(string code)
@@ -199,4 +207,39 @@ public class Issue701Tests
     public void SyntheticConstructorInstallsPrivateMethod()
         => Assert.Equal("4", Eval(
             "class C { #m() { return 4; } call() { return this.#m(); } } new C().call();").ToString());
+
+    // ---- Static data field initializers run after the class binding is set ----
+
+    // A static private field added to a constructor that an earlier initializer
+    // sealed is a TypeError.
+    [Fact]
+    public void StaticPrivateFieldOnSelfSealedConstructorThrows()
+        => Assert.Equal("TypeError", Catch(
+            "class T { static #g = (Object.preventExtensions(T), 'x'); }"));
+
+    // The class name resolves to the constructor inside a static field initializer
+    // (it was previously undefined).
+    [Fact]
+    public void ClassNameVisibleInStaticFieldInitializer()
+        => Assert.Equal("function", Eval(
+            "class C { static #t = (typeof C); static get() { return C.#t; } } C.get();").ToString());
+
+    [Fact]
+    public void ClassNameVisibleInPublicStaticFieldInitializer()
+        => Assert.Equal("function", Eval("class C { static t = typeof C; } C.t;").ToString());
+
+    // Static methods install before static field initializers, so a static field
+    // initializer may call one.
+    [Fact]
+    public void StaticFieldInitializerCanCallStaticMethod()
+        => Assert.Equal("3", Eval("class C { static m() { return 3; } static x = C.m(); } C.x;").ToString());
+
+    // Ordinary static private and public fields still read back.
+    [Fact]
+    public void StaticPrivateFieldStillReads()
+        => Assert.Equal("5", Eval("class C { static #x = 5; static get() { return C.#x; } } C.get();").ToString());
+
+    [Fact]
+    public void StaticPublicFieldStillReads()
+        => Assert.Equal("7", Eval("class C { static y = 7; } C.y;").ToString());
 }

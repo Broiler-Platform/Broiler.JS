@@ -186,6 +186,11 @@ public class JSObjectBuilder
     public static Expression AddRange(Expression target, Expression value)
         => Expression.Call(target, _FastAddRange, value);
 
+    // PrivateFieldAdd against an explicit target (a static private field on the
+    // constructor): same extensibility/duplicate guards as the instance form.
+    public static Expression PrivateFieldAdd(Expression target, Expression key, Expression value)
+        => Expression.Call(target, _PrivateFieldAddKeyString, key, value);
+
     public static Expression AddValue(Expression target, Expression key, Expression value, JSPropertyAttributes attributes = JSPropertyAttributes.EnumerableConfigurableValue)
     {
         if (key.Type.IsJSValueType())

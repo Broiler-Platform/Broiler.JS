@@ -191,6 +191,14 @@ partial class FastCompiler
         var privateInstanceElements = new List<PrivateInstanceElement>();
         var privateElementByName = new Dictionary<string, PrivateInstanceElement>(StringComparer.Ordinal);
 
+        // Static data field initializations are deferred to run AFTER the class is
+        // defined and its name binding is set (ClassDefinitionEvaluation evaluates
+        // static field initializers last) — so an initializer that references the
+        // class name sees the constructor, and adding a static private field to a
+        // (self-)sealed constructor throws. Static methods/accessors stay in the
+        // constructor's object initializer and so are installed first.
+        var staticFieldInits = new List<(YExpression Name, YExpression Value, bool IsPrivate)>();
+
         PrivateInstanceElement PrivateElementFor(AstClassProperty property, YExpression keyName)
         {
             var pname = ((AstIdentifier)property.Key).Name.Value;
@@ -311,10 +319,8 @@ partial class FastCompiler
                             ? computedMemberNames[property]
                             : ValidateStaticPropertyName(property, GetClassElementName(property));
                         var value = property.Init == null ? JSUndefinedBuilder.Value : Visit(property.Init);
-                        var attributes = isPrivateName
-                            ? JSPropertyAttributes.ConfigurableValue
-                            : JSPropertyAttributes.EnumerableConfigurableValue;
-                        staticElements.Add(JSObjectBuilder.AddValue(name, value, attributes));
+                        // Deferred to after the class binding (see staticFieldInits).
+                        staticFieldInits.Add((name, value, isPrivateName));
                         break;
                     }
                     // The computed key (if any) was already evaluated, in source
@@ -449,6 +455,16 @@ partial class FastCompiler
             // lock it so a write from within the body throws a TypeError.
             stmts.Add(YExpression.Assign(innerNameVar.Expression, retValue));
             stmts.Add(JSVariableBuilder.SetReadOnly(innerNameVar.Variable, true));
+        }
+
+        // Static field initializers run on the constructor now that its name binding
+        // is set. A private static field uses PrivateFieldAdd so a self-sealed
+        // constructor (preventExtensions in an earlier initializer) throws.
+        foreach (var (fieldName, fieldValue, fieldIsPrivate) in staticFieldInits)
+        {
+            stmts.Add(fieldIsPrivate
+                ? JSObjectBuilder.PrivateFieldAdd(retValue, fieldName, fieldValue)
+                : JSObjectBuilder.AddValue(retValue, fieldName, fieldValue, JSPropertyAttributes.EnumerableConfigurableValue));
         }
 
         if (staticBlocks.Any())
