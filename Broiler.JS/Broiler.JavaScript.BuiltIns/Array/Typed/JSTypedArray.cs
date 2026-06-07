@@ -412,6 +412,27 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     internal virtual void ValidateElementValue(JSValue value) => _ = (value ?? JSUndefined.Value).DoubleValue;
 
+    public override JSValue HasProperty(JSValue propertyKey)
+    {
+        // [[HasProperty]] for an integer-indexed exotic object: a canonical numeric
+        // index resolves to IsValidIntegerIndex and never consults the prototype
+        // chain (so an out-of-range index is absent even when the prototype carries
+        // a same-named element). Non-numeric keys fall back to OrdinaryHasProperty.
+        var key = propertyKey.ToKey(false);
+        switch (key.Type)
+        {
+            case KeyType.UInt:
+                return IsValidIntegerIndex(key.Index) ? BooleanTrue : BooleanFalse;
+
+            case KeyType.String:
+                if (TryGetCanonicalNumericIndex(key.KeyString, out var numericIndex))
+                    return IsValidIntegerIndex(numericIndex) ? BooleanTrue : BooleanFalse;
+                break;
+        }
+
+        return base.HasProperty(propertyKey);
+    }
+
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
         var key = name.ToKey(false);
@@ -542,7 +563,13 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     internal IElementEnumerator GetEntries() => new EntryEnumerator(this);
 
-    public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) => new IntKeyEnumerator(length);
+    // [[OwnPropertyKeys]] for a typed array is the integer indices followed by the
+    // ordinary string-keyed own properties (and then symbols, handled separately).
+    // The base KeyEnumerator already yields the indices via the overridden
+    // GetElementEnumerator, so deferring to it also surfaces extra own properties
+    // (e.g. `ta.foo = 1`) to getOwnPropertyNames / for-in / Object.is{Sealed,Frozen}
+    // instead of dropping them as an indices-only enumerator did.
+    public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) => base.GetAllKeys(showEnumerableOnly, inherited);
 
     internal JSGenerator GetKeys() => new(new IntKeyEnumerator(length), "Array Iterator");
 
