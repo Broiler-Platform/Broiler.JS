@@ -62,6 +62,16 @@ namespace Broiler.JavaScript.Integration.Tests;
 //       binding must be left in place (CreateGlobalVarBinding), so a read before
 //       the declaration observes the existing value. The eval-root binding now
 //       initialises from the current global value rather than `undefined`.
+//
+// Problem 1 (subset) — accessing a private member (`obj.#x` read, `obj.#x = v`
+//   write, or `obj.#m()` call) on an object whose class did not declare the
+//   private name must throw a TypeError (the PrivateFieldGet/PrivateFieldSet brand
+//   check). The runtime previously returned `undefined` for a missing private read
+//   and silently created the property on a write. GetValue/SetValue now perform the
+//   brand check for private-name keys (via the internal property lookup, so no
+//   getter/Proxy traps fire); field *initialization* is unaffected because it adds
+//   the field directly rather than through GetValue/SetValue. (Per-evaluation brand
+//   identity — Problem 6 — is a separate, larger change and is not addressed here.)
 public class Issue695Tests
 {
     private static JSValue Eval(string code)
@@ -288,4 +298,29 @@ public class Issue695Tests
     public void EvalIfClauseGlobalFunctionIsDeletable()
         => Assert.Equal("true|undefined", Eval(
             "eval('if (true) function delme(){}'); (delete delme) + '|' + (typeof delme);").ToString());
+
+    // ---- Problem 1: private member brand check throws TypeError on foreign objects ----
+
+    // Valid private access (own field, inherited method/accessor, compound, set) is
+    // unaffected by the brand check.
+    [Theory]
+    [InlineData("class C{#x=1; g(){return this.#x;}} '' + new C().g();", "1")]
+    [InlineData("class C{#x=1; s(v){this.#x=v; return this.#x;}} '' + new C().s(5);", "5")]
+    [InlineData("class C{#m(){return 7;} g(){return this.#m();}} '' + new C().g();", "7")]
+    [InlineData("class C{#x=1; g(){this.#x+=2; return this.#x;}} '' + new C().g();", "3")]
+    [InlineData("class C{get #x(){return 9;} g(){return this.#x;}} '' + new C().g();", "9")]
+    public void ValidPrivateAccessWorks(string code, string expected)
+        => Assert.Equal(expected, Eval(code).ToString());
+
+    // Reading / writing / calling a private member on an object that lacks the brand
+    // is a TypeError.
+    [Theory]
+    [InlineData("(class C{#x=1; static g(o){return o.#x;}}).g({})")]      // read foreign object
+    [InlineData("(class C{#x=1; static s(o){o.#x=2;}}).s({})")]           // write foreign object
+    [InlineData("(class C{#m(){return 1;} static g(o){return o.#m();}}).g({})")] // call foreign object
+    [InlineData("(class C{#x=1; static g(o){return o.#x;}}).g(new (class{}))")] // read on a different class's instance
+    [InlineData("(class C{#x=1; static s(o){o.#x=2;}}).s(null)")]         // write on null
+    public void ForeignPrivateAccessThrowsTypeError(string body)
+        => Assert.Equal("TypeError", Eval(
+            "var r; try { " + body + "; r = 'no throw'; } catch (e) { r = e.constructor.name; } r;").ToString());
 }

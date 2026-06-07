@@ -27,6 +27,24 @@ public partial class JSObject
         return !string.IsNullOrEmpty(value) && value[0] == PrivateNameMarker;
     }
 
+    // Brand check for a private member access (`obj.#x`). A private name must be
+    // present — as an own field or an inherited method/accessor on the real
+    // prototype chain — on the receiver, otherwise the access is a TypeError
+    // (PrivateFieldGet / PrivateMethodGet / PrivateSet abstract operations). The
+    // check uses the internal property lookup so it observes neither getters/setters
+    // nor Proxy traps. Field *initialization* never reaches here: it adds the field
+    // directly via FastAddValue rather than through GetValue/SetValue.
+    private void ThrowIfMissingPrivateMember(in KeyString key, bool reading)
+    {
+        if (!GetInternalProperty(key).IsEmpty)
+            return;
+
+        var display = key.Value.Value is { Length: > 0 } s && s[0] == PrivateNameMarker ? s[1..] : "#<unknown>";
+        throw NewTypeError(reading
+            ? $"Cannot read private member {display} from an object whose class did not declare it"
+            : $"Cannot write private member {display} to an object whose class did not declare it");
+    }
+
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
         var key = name.ToKey(false);
@@ -229,6 +247,13 @@ public partial class JSObject
 
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
     {
+        // A private member assignment (`obj.#x = v`) requires the brand: writing a
+        // private name to an object whose class did not declare it is a TypeError.
+        // Field initialization adds the field directly via FastAddValue and never
+        // reaches SetValue, so it is unaffected.
+        if (IsPrivateName(in name))
+            ThrowIfMissingPrivateMember(in name, reading: false);
+
         if (name.Key == KeyStrings.__proto__.Key
             && GetInternalProperty(name, false).IsEmpty
             && !GetInternalProperty(name).IsEmpty)
@@ -764,6 +789,13 @@ public partial class JSObject
 
     internal protected override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
     {
+        // A private member read on an object whose class did not declare the private
+        // name is a TypeError (brand check), not an `undefined` result. Throwing here
+        // — before the ordinary own/prototype lookup — also covers private method
+        // gets (InvokeMethod resolves the method through GetValue).
+        if (IsPrivateName(in key))
+            ThrowIfMissingPrivateMember(in key, reading: true);
+
         ref var p = ref ownProperties.GetValue(key.Key);
         if (!p.IsEmpty)
             return (receiver ?? this).GetValue(p);
