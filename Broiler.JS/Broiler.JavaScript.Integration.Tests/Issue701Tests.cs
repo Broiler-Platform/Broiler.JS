@@ -42,6 +42,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   initializers last, after the methods), and a static private field uses
 //   PrivateFieldAdd — so a self-sealed constructor throws. (Fixes
 //   private-class-field-on-nonextensible-objects.js.)
+//
+// Problem 2 (private members on a Proxy) — a private member access (`this.#x`)
+//   whose receiver is a Proxy forwarded to the target (or the get/set trap)
+//   instead of operating on the proxy's own private elements. A private member is
+//   not a property lookup and never consults the target or a trap, so a proxy that
+//   does not itself carry the name fails the brand check (TypeError). JSProxy now
+//   routes private-name reads/writes to the base object. (Fixes the
+//   *-proxy-default-handler-throws and static-private-methods-proxy tests.)
 public class Issue701Tests
 {
     private static JSValue Eval(string code)
@@ -242,4 +250,35 @@ public class Issue701Tests
     [Fact]
     public void StaticPublicFieldStillReads()
         => Assert.Equal("7", Eval("class C { static y = 7; } C.y;").ToString());
+
+    // ---- Private member access does not forward through a Proxy ----
+
+    // Calling a method through a Proxy runs it with the proxy as `this`; the
+    // proxy does not carry the target's private field, so `this.#x` is a TypeError.
+    [Fact]
+    public void PrivateFieldDoesNotLeakThroughProxy()
+        => Assert.Equal("TypeError", Catch(
+            "class C { #x = 1; x() { return this.#x; } }" +
+            "var c = new C(); var p = new Proxy(c, {}); p.x();"));
+
+    // The original object still reads its own private field.
+    [Fact]
+    public void PrivateFieldReadsOnRealReceiver()
+        => Assert.Equal("1", Eval(
+            "class C { #x = 1; x() { return this.#x; } } new C().x();").ToString());
+
+    // A proxy handed a private field by a constructor return-override holds it as
+    // its own element and can read it.
+    [Fact]
+    public void ProxyWithOwnPrivateFieldReads()
+        => Assert.Equal("7", Eval(
+            "class B { constructor(o) { return o; } }" +
+            "class C extends B { #x = 7; static get(o) { return o.#x; } }" +
+            "var p = new Proxy({}, {}); var inst = new C(p); C.get(p);").ToString());
+
+    // Ordinary (non-private) property access through a Proxy is unaffected.
+    [Fact]
+    public void ProxyOrdinaryGetTrapStillWorks()
+        => Assert.Equal("42", Eval(
+            "var p = new Proxy({ a: 1 }, { get(t, k) { return k === 'a' ? 42 : t[k]; } }); p.a;").ToString());
 }
