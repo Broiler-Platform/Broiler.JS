@@ -170,6 +170,20 @@ partial class FastCompiler
         AstFunctionExpression constructor = null;
         var directEvalPrivateNames = CombinePrivateNames(this.scope.Top.DirectEvalPrivateNames, CollectPrivateNames(body.Members));
 
+        // The class name is an immutable (const-like) binding scoped to the class
+        // body: the constructor, methods, accessors and static blocks close over
+        // it, and assigning to it (`class C { m() { C = 1; } }`) is a TypeError.
+        // It lives in a dedicated class scope pushed here so it does not leak to
+        // the enclosing scope and does not collide with the outer, mutable
+        // declaration binding, which is (re)created after this scope is popped.
+        FastFunctionScope classNameScope = null;
+        FastFunctionScope.VariableScope innerNameVar = null;
+        if (id?.Name != null)
+        {
+            classNameScope = this.scope.Push(new FastFunctionScope(this.scope.Top));
+            innerNameVar = classNameScope.CreateVariable(id.Name, newScope: true);
+        }
+
         var en = body.Members.GetFastEnumerator();
         while (en.MoveNext(out var property))
         {
@@ -332,10 +346,12 @@ partial class FastCompiler
 
         stmts.Add(YExpression.Assign(retValue, retVal));
 
-        if (id?.Name != null)
+        if (innerNameVar != null)
         {
-            var v = this.scope.Top.CreateVariable(id.Name);
-            stmts.Add(YExpression.Assign(v.Expression, retValue));
+            // Initialize the inner class-name binding to the class object, then
+            // lock it so a write from within the body throws a TypeError.
+            stmts.Add(YExpression.Assign(innerNameVar.Expression, retValue));
+            stmts.Add(JSVariableBuilder.SetReadOnly(innerNameVar.Variable, true));
         }
 
         if (staticBlocks.Any())
@@ -356,6 +372,27 @@ partial class FastCompiler
                     thisIsUninitialized: false);
                 stmts.Add(JSFunctionBuilder.InvokeFunction(fx, ArgumentsBuilder.NewEmpty(retValue)));
             }
+        }
+
+        // Pop the class scope and recreate the outer, mutable declaration binding
+        // in the enclosing scope. Both bindings share the name but live in
+        // different scopes: the inner const is what the body resolves to, the
+        // outer one is what `class C {}` declares (and what `C = ...` after the
+        // declaration targets). The class-scope locals (the inner binding) must be
+        // declared in the emitted block and instantiated by its InitList before
+        // any statement uses them.
+        if (classNameScope != null)
+        {
+            classScopeVariables.AddRange(classNameScope.VariableParameters);
+            var initList = new Sequence<YExpression>();
+            initList.AddRange(classNameScope.InitList);
+            initList.AddRange(stmts);
+            stmts = initList;
+
+            classNameScope.Dispose();
+
+            var outer = this.scope.Top.CreateVariable(id.Name);
+            stmts.Add(YExpression.Assign(outer.Expression, retValue));
         }
 
         stmts.Add(retValue);

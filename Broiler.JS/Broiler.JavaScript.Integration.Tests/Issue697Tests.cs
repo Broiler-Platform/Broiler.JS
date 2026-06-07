@@ -156,4 +156,35 @@ public class Issue697Tests
     [Fact]
     public void PrivateFieldReadOnInstanceStillWorks()
         => Assert.Equal("1", Eval("class C { #p = 1; m() { return this.#p; } } new C().m();").ToString());
+
+    // ---- Problem 1 (subset): the class name is a const binding inside the body ----
+
+    // Assigning to the class name from the constructor / a method / an accessor is
+    // a TypeError (the inner binding is immutable). Covers declaration and
+    // expression forms.
+    [Theory]
+    [InlineData("class C { constructor() { C = 42; } }; new C();")]
+    [InlineData("new (class C { constructor() { C = 42; } });")]
+    [InlineData("class C { m() { C = 42; } }; new C().m();")]
+    [InlineData("new (class C { m() { C = 42; } }).m();")]
+    [InlineData("class C { get x() { C = 42; } }; new C().x;")]
+    [InlineData("class C { set x(_) { C = 42; } }; new C().x = 15;")]
+    public void ClassNameIsConstInsideBody(string source)
+        => Assert.Equal("TypeError", Catch(source));
+
+    // The outer declaration binding stays mutable: reassigning the class name
+    // *after* the declaration is allowed.
+    [Fact]
+    public void ClassDeclarationNameIsReassignableOutside()
+        => Assert.Equal("99", Eval("class C {}; C = 99; C;").ToString());
+
+    // The name is still readable inside the body (it resolves to the class).
+    [Fact]
+    public void ClassNameReadableInsideBody()
+        => Assert.Equal("C", Eval("class C { m() { return C.name; } } new C().m();").ToString());
+
+    // Static recursion through the class name still works.
+    [Fact]
+    public void ClassNameStaticRecursionWorks()
+        => Assert.Equal("120", Eval("class F { static run(n) { return n <= 1 ? 1 : n * F.run(n - 1); } } F.run(5);").ToString());
 }
