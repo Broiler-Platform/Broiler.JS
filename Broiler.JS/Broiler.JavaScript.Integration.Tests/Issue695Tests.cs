@@ -15,6 +15,15 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   intl402/NumberFormat/prototype/format/signDisplay-negative-* family threw
 //   during construction (GetOption) before any formatting assertion ran. The value
 //   is now accepted and round-trips through resolvedOptions().
+//
+// Problem 10 — the multi-argument Date setters (setHours, setMinutes, setSeconds,
+//   setMonth and their UTC counterparts) coerced their first argument twice. The
+//   IsValid helper performs ToNumber on the first argument (reading [[DateValue]]
+//   before coercion, per spec), but the setters then ignored that coerced value and
+//   re-read .IntValue on the same argument — invoking its valueOf a second time. The
+//   built-ins/Date/prototype/set*/date-value-read-before-tonumber-when-date-is-valid
+//   tests assert valueOf is called exactly once. The setters now reuse the already
+//   coerced value for the first slot.
 public class Issue695Tests
 {
     private static JSValue Eval(string code)
@@ -53,4 +62,43 @@ public class Issue695Tests
         => Assert.Equal("RangeError", Eval(
             "var t; try { new Intl.NumberFormat('en', { signDisplay: 'sometimes' }); t = 'no throw'; }" +
             " catch (e) { t = e.constructor.name; } t;").ToString());
+
+    // ---- Problem 10: Date multi-arg setters coerce the first argument once ----
+
+    // On a valid date, the first argument's valueOf must run exactly once, and the
+    // setter must still apply the coerced value (here 5) to the relevant component.
+    [Theory]
+    [InlineData("setHours", "getHours")]
+    [InlineData("setMinutes", "getMinutes")]
+    [InlineData("setSeconds", "getSeconds")]
+    [InlineData("setMonth", "getMonth")]
+    [InlineData("setUTCMinutes", "getUTCMinutes")]
+    [InlineData("setUTCSeconds", "getUTCSeconds")]
+    [InlineData("setUTCMonth", "getUTCMonth")]
+    public void MultiArgSetterCoercesFirstArgumentOnce(string setter, string getter)
+    {
+        var code =
+            "var calls = 0;" +
+            "var arg = { valueOf: function () { calls++; return 5; } };" +
+            "var d = new Date(2020, 0, 15, 10, 20, 30, 40);" +
+            "d." + setter + "(arg);" +
+            "calls + '|' + d." + getter + "();";
+        Assert.Equal("1|5", Eval(code).ToString());
+    }
+
+    // The single-argument setters were already correct; guard against a regression.
+    [Theory]
+    [InlineData("setDate", "getDate")]
+    [InlineData("setMilliseconds", "getMilliseconds")]
+    [InlineData("setUTCDate", "getUTCDate")]
+    public void SingleArgSetterCoercesArgumentOnce(string setter, string getter)
+    {
+        var code =
+            "var calls = 0;" +
+            "var arg = { valueOf: function () { calls++; return 7; } };" +
+            "var d = new Date(2020, 0, 15, 10, 20, 30, 40);" +
+            "d." + setter + "(arg);" +
+            "calls + '|' + d." + getter + "();";
+        Assert.Equal("1|7", Eval(code).ToString());
+    }
 }

@@ -6,6 +6,14 @@ namespace Broiler.JavaScript.BuiltIns.Date;
 
 public partial class JSDate
 {
+    // IsValid already performed ToNumber on the first component argument (which may
+    // invoke valueOf). Multi-argument setters must reuse that coerced value for the
+    // first slot instead of reading IntValue again — a second read would call
+    // valueOf a second time, which the spec forbids (each argument is coerced
+    // exactly once). The (int)(long) truncation reproduces JSValue.IntValue exactly,
+    // including its low-32-bit wraparound for out-of-range / infinite operands.
+    private static int CoercedIntValue(double coerced) => unchecked((int)(long)coerced);
+
     /// <summary>
     /// The setDate() method sets the day of the Date object relative to the beginning of the currently set month.
     /// </summary>
@@ -115,7 +123,7 @@ public partial class JSDate
 
         var (_hours, _mins, _seconds, _millis) = a.Get4();
 
-        var hrs = _hours.IsUndefined ? date.Hour : _hours.IntValue;
+        var hrs = _hours.IsUndefined ? date.Hour : CoercedIntValue(hours);
         var mins = _mins.IsUndefined ? date.Minute : _mins.IntValue;
         var seconds = _seconds.IsUndefined ? date.Second : _seconds.IntValue;
         var millis = _millis.IsUndefined ? date.Millisecond : _millis.IntValue;
@@ -166,7 +174,7 @@ public partial class JSDate
             return JSNumber.NaN;
 
         var (_mins, _seconds, _millis) = a.Get3();
-        var mins = _mins.IsUndefined ? date.Minute : _mins.IntValue;
+        var mins = _mins.IsUndefined ? date.Minute : CoercedIntValue(minutes);
         var seconds = _seconds.IsUndefined ? date.Second : _seconds.IntValue;
         var millis = _millis.IsUndefined ? date.Millisecond : _millis.IntValue;
 
@@ -194,7 +202,7 @@ public partial class JSDate
             return JSNumber.NaN;
 
         var (_month, _days) = a.Get2();
-        var month = _month.IsUndefined ? date.Month : _month.IntValue;
+        var month = _month.IsUndefined ? date.Month : CoercedIntValue(mnth);
         var days = (_days.IsUndefined ? date.Day : _days.IntValue) - 1;
 
         try
@@ -221,7 +229,7 @@ public partial class JSDate
             return JSNumber.NaN;
 
         var (_seconds, _millis) = a.Get2();
-        var seconds = _seconds.IsUndefined ? date.Second : _seconds.IntValue;
+        var seconds = _seconds.IsUndefined ? date.Second : CoercedIntValue(secs);
         var millis = _millis.IsUndefined ? date.Millisecond : _millis.IntValue;
 
         try
@@ -433,7 +441,7 @@ public partial class JSDate
 
         var (_mins, _seconds, _millis) = a.Get3();
 
-        var mins = _mins.IsUndefined ? utc.Minute : _mins.IntValue;
+        var mins = _mins.IsUndefined ? utc.Minute : CoercedIntValue(minutes);
         var seconds = _seconds.IsUndefined ? utc.Second : _seconds.IntValue;
         var millis = _millis.IsUndefined ? utc.Millisecond : _millis.IntValue;
 
@@ -466,7 +474,7 @@ public partial class JSDate
 
         var (_month, _days) = a.Get2();
 
-        var month = _month.IsUndefined ? utc.Month : _month.IntValue;
+        var month = _month.IsUndefined ? utc.Month : CoercedIntValue(mnth);
         var days = (_days.IsUndefined ? utc.Day : _days.IntValue) - 1;
 
         try
@@ -497,7 +505,7 @@ public partial class JSDate
 
         var (_seconds, _millis) = a.Get2();
 
-        var seconds = _seconds.IsUndefined ? utc.Second : _seconds.IntValue;
+        var seconds = _seconds.IsUndefined ? utc.Second : CoercedIntValue(secs);
         var millis = _millis.IsUndefined ? utc.Millisecond : _millis.IntValue;
 
         try
