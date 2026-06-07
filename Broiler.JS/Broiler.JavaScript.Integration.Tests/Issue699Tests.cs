@@ -136,4 +136,43 @@ public class Issue699Tests
         Assert.Equal("true", Eval(
             "var m = new Map(); m.getOrInsert(-0, 1); Object.is([...m.keys()][0], 0)").ToString());
     }
+
+    // ---- Problem 10: Reflect.ownKeys lists symbol keys ----
+
+    [Fact]
+    public void OwnKeys_Lists_String_Then_Symbol_Keys()
+    {
+        // [[OwnPropertyKeys]] order: integer-index, string, then symbol keys.
+        Assert.Equal("0,a,Symbol(s)", Eval(
+            "var s = Symbol('s'); var o = {a:1}; o[0] = 0; o[s] = 2; " +
+            "Reflect.ownKeys(o).map(String).join(',')").ToString());
+    }
+
+    [Fact]
+    public void OwnKeys_Includes_Assigned_Symbol()
+    {
+        Assert.Equal("true", Eval(
+            "var s = Symbol(); var o = {}; o[s] = 1; Reflect.ownKeys(o)[0] === s").ToString());
+    }
+
+    [Fact]
+    public void Computed_Key_From_Symbol_Returning_ToString_Is_A_Symbol_Key()
+    {
+        // ToPropertyKey returns a Symbol from ToPrimitive directly (no ToString),
+        // so the computed key is the symbol itself and Reflect.ownKeys surfaces it.
+        Assert.Equal("true", Eval(
+            "var sym = Symbol('x'); var key = { toString() { return sym; } }; " +
+            "var obj = { [key]: 13 }; var found = Reflect.ownKeys(obj); " +
+            "found.length === 1 && found[0] === sym && obj[sym] === 13").ToString());
+    }
+
+    [Fact]
+    public void OwnKeys_On_Proxy_Still_Uses_Trap()
+    {
+        // The Proxy path must keep firing the ownKeys trap (not the ordinary helper).
+        Assert.Equal("x,y", Eval(
+            "var p = new Proxy({}, { ownKeys() { return ['x', 'y']; }, " +
+            "getOwnPropertyDescriptor() { return { configurable: true, enumerable: true, value: 1 }; } }); " +
+            "Reflect.ownKeys(p).join(',')").ToString());
+    }
 }
