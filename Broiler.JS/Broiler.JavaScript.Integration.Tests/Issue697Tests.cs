@@ -43,6 +43,14 @@ public class Issue697Tests
         return ctx.Eval(code);
     }
 
+    // Run `source` and drain the microtask queue, returning the settled value of
+    // the final expression (used to observe async Promise settlement).
+    private static string Execute(string code)
+    {
+        using var ctx = new JSContext(experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026);
+        return ctx.Execute(code).ToString();
+    }
+
     // Run `source`, reporting the thrown error's constructor name or "ok".
     private static string Catch(string source)
         => Eval("var r; try { " + source + " r = 'ok'; } catch (e) { r = e.constructor.name; } r;").ToString();
@@ -243,4 +251,40 @@ public class Issue697Tests
     public void PublicFieldDefinesOwnDataPropertyOverPrototypeSetter()
         => Assert.Equal("5", Eval(
             "class P { set v(x) { throw new Error('setter'); } } class Q extends P { v = 5; } new Q().v;").ToString());
+
+    // ---- Problem 10 (subset): Promise.prototype.then SpeciesConstructor ----
+
+    // `then` builds its result promise via SpeciesConstructor(this, %Promise%); a
+    // species constructor that throws surfaces synchronously from `then`.
+    [Fact]
+    public void PromiseThenSpeciesConstructorThrowPropagates()
+        => Assert.Equal("Test262Error", Eval(
+            "function Test262Error(){} var bad = function(){ throw new Test262Error(); };" +
+            "Object.defineProperty(Promise, Symbol.species, { value: bad });" +
+            "var p = new Promise(function(res){ res(); });" +
+            "var t; try { p.then(); t = 'no throw'; } catch (e) { t = e.constructor.name; } t;").ToString());
+
+    // A non-constructor @@species is a TypeError.
+    [Fact]
+    public void PromiseThenNonConstructorSpeciesThrows()
+        => Assert.Equal("TypeError", Catch(
+            "var p = Promise.resolve(1); var c = function(){}; c[Symbol.species] = 42;" +
+            "Object.defineProperty(p, 'constructor', { value: c }); p.then();"));
+
+    // The default species keeps returning a %Promise% and settling normally.
+    [Fact]
+    public void PromiseThenDefaultSpeciesSettles()
+        => Assert.Equal("2", Execute("Promise.resolve(1).then(function(v){ return v + 1; });"));
+
+    // A custom (subclass) species: `then` returns an instance of the subclass …
+    [Fact]
+    public void PromiseThenSubclassSpeciesReturnsSubclassInstance()
+        => Assert.Equal("true", Eval(
+            "class MyP extends Promise {} (MyP.resolve(1).then(function(x){ return x; }) instanceof MyP);").ToString());
+
+    // … and that subclass-built result promise still settles with the handler value.
+    [Fact]
+    public void PromiseThenSubclassSpeciesSettles()
+        => Assert.Equal("21", Execute(
+            "class MyP extends Promise {} MyP.resolve(10).then(function(v){ return v * 2; }).then(function(v){ return v + 1; });"));
 }
