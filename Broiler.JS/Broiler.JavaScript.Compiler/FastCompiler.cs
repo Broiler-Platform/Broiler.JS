@@ -41,6 +41,14 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     // inner blocks do not pick them up.
     private IFastEnumerable<StringSpan> pendingAnnexBFunctionNames;
 
+    // The genuine top-level lexical (let/const/class) binding names of the direct
+    // eval body currently being compiled. Used to recognise when a B.3.4 `if`-clause
+    // FunctionDeclaration's name collides with such a binding so its Annex B var
+    // hoisting must be suppressed (and the outer lexical binding left untouched)
+    // rather than overwriting it. Only meaningful at the eval program's own top
+    // level (scope.Top.Function == null).
+    private HashSet<string> directEvalProgramLexicalNames;
+
     // True while compiling a class field (member) initializer. A SuperCall is a
     // Syntax Error inside a field initializer even though super property access
     // is permitted, so a direct eval appearing here must reject `super()`.
@@ -339,6 +347,23 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         // var/global binding instead of mutating only the block-scoped one.
         if (implicitBlockScoped && !isDirectEvalCompilation)
             return VisitImplicitBlockFunctionDeclaration(functionDeclaration, functionName);
+
+        // Direct eval, B.3.4 `if`-clause FunctionDeclaration whose name is also a
+        // genuine top-level lexical (let/const/class) binding of the eval body:
+        // Annex B var hoisting is suppressed (B.3.3.3 step ii), so the function is
+        // purely block-scoped within its implicit block and must NOT be copied to
+        // (and clobber) the lexical binding. Materialise the implicit block; its
+        // copy-out is in turn suppressed by IsAnnexBHoistingBlocked. A name that is
+        // not a genuine lexical (e.g. a sibling block-scoped function's Annex B var
+        // binding) still flows through the normal path below so it updates the var
+        // binding as required.
+        if (implicitBlockScoped
+            && isDirectEvalCompilation
+            && scope.Top.Function == null
+            && directEvalProgramLexicalNames?.Contains(functionName.Value) == true)
+        {
+            return VisitImplicitBlockFunctionDeclaration(functionDeclaration, functionName);
+        }
 
         var rootFunction = scope.Top.RootScope.Function;
         FastFunctionScope.VariableScope currentBinding;

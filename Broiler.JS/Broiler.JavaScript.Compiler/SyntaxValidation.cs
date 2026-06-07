@@ -518,6 +518,41 @@ public static void ValidateProgram(
             return declarator;
         }
 
+        protected override AstNode VisitObjectLiteral(AstObjectLiteral objectLiteral)
+        {
+            // Annex B.3.1 / 13.2.5.1: an object literal may not contain more than one
+            // `__proto__: value` data property obtained from a colon PropertyDefinition.
+            // Shorthand (`{__proto__}`), methods, accessors and computed keys are
+            // exempt — only the literal `__proto__ : AssignmentExpression` form counts.
+            var seenProtoSetter = false;
+            var members = objectLiteral.Properties.GetFastEnumerator();
+            while (members.MoveNext(out var node))
+            {
+                if (node is not AstClassProperty { Kind: AstPropertyKind.Data, UsesColon: true, Computed: false } property
+                    || !IsProtoName(property.Key))
+                {
+                    continue;
+                }
+
+                if (seenProtoSetter)
+                    throw new FastParseException(property.Start, "Duplicate __proto__ fields are not allowed in object literals");
+
+                seenProtoSetter = true;
+            }
+
+            return base.VisitObjectLiteral(objectLiteral);
+        }
+
+        // The PropertyName `__proto__`, written either as an IdentifierName or a
+        // StringLiteral (but not a computed key), designates the prototype setter.
+        private static bool IsProtoName(AstExpression key)
+            => key switch
+            {
+                AstIdentifier identifier => identifier.Name.Value == "__proto__",
+                AstLiteral { TokenType: TokenTypes.String } literal => literal.StringValue == "__proto__",
+                _ => false,
+            };
+
         protected override AstNode VisitClassStatement(AstClassExpression classStatement)
         {
             if (IsStrictMode && IsRestrictedName(classStatement.Identifier?.Name))
@@ -525,6 +560,8 @@ public static void ValidateProgram(
 
             Visit(classStatement.Identifier);
             Visit(classStatement.Base);
+
+            ValidateClassEarlyErrors(classStatement);
 
             privateNameScopes.Push(CollectPrivateNames(classStatement.Members));
             try
@@ -777,6 +814,79 @@ public static void ValidateProgram(
 
             if (current is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true } func })
                 throw new FastParseException(func.Start, "In strict mode code, functions can only be declared at top level or inside a block");
+        }
+
+        // ClassBody early errors (ECMAScript 15.7.1):
+        //   * at most one ClassElement may be the constructor;
+        //   * PrivateBoundIdentifiers may not contain duplicate entries, unless a
+        //     name is used exactly once for a getter and once for a setter and in no
+        //     other element. A getter/setter pair must also share the same static
+        //     placement (a static getter and an instance setter — or vice versa — do
+        //     not form a valid accessor pair, matching V8/SpiderMonkey).
+        private sealed class PrivateNameUsage
+        {
+            public bool HasGet;
+            public bool HasSet;
+            public bool HasOther;   // field, method, or any non-accessor element
+            public bool GetStatic;
+            public bool SetStatic;
+        }
+
+        private static void ValidateClassEarlyErrors(AstClassExpression classStatement)
+        {
+            var seenConstructor = false;
+            Dictionary<string, PrivateNameUsage> privateNames = null;
+
+            var members = classStatement.Members.GetFastEnumerator();
+            while (members.MoveNext(out var member))
+            {
+                if (member.Kind == AstPropertyKind.Constructor)
+                {
+                    if (seenConstructor)
+                        throw new FastParseException(member.Start, "A class may only have one constructor");
+
+                    seenConstructor = true;
+                }
+
+                if (!member.IsPrivate || member.Key is not AstIdentifier identifier)
+                    continue;
+
+                privateNames ??= new Dictionary<string, PrivateNameUsage>(StringComparer.Ordinal);
+                if (!privateNames.TryGetValue(identifier.Name.Value, out var usage))
+                {
+                    usage = new PrivateNameUsage();
+                    privateNames[identifier.Name.Value] = usage;
+                }
+
+                var duplicate = member.Kind switch
+                {
+                    // A getter may join only a single, same-placement setter.
+                    AstPropertyKind.Get => usage.HasGet || usage.HasOther
+                        || (usage.HasSet && usage.SetStatic != member.IsStatic),
+                    AstPropertyKind.Set => usage.HasSet || usage.HasOther
+                        || (usage.HasGet && usage.GetStatic != member.IsStatic),
+                    // A field/method cannot share its name with anything else.
+                    _ => usage.HasGet || usage.HasSet || usage.HasOther,
+                };
+
+                if (duplicate)
+                    throw new FastParseException(member.Start, $"Duplicate private name #{identifier.Name.Value}");
+
+                switch (member.Kind)
+                {
+                    case AstPropertyKind.Get:
+                        usage.HasGet = true;
+                        usage.GetStatic = member.IsStatic;
+                        break;
+                    case AstPropertyKind.Set:
+                        usage.HasSet = true;
+                        usage.SetStatic = member.IsStatic;
+                        break;
+                    default:
+                        usage.HasOther = true;
+                        break;
+                }
+            }
         }
 
         private static HashSet<string> CollectPrivateNames(IFastEnumerable<AstClassProperty> members)
