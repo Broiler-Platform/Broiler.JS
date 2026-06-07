@@ -654,8 +654,30 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public static JSValue InvokeSuperConstructor(JSValue newTarget, JSValue super, in Arguments a)
     {
         var @this = a.This;
-        var r = super.CreateInstance(a.OverrideThis(a.This));
-        return r?.IsObject == true ? r : @this ?? new JSObject();
+
+        // The active new target (the most-derived constructor of the `new`
+        // expression) was moved onto the running call-stack item when this
+        // derived constructor's body began executing, which cleared
+        // JSContext.CurrentNewTarget (see CallStackItem). Restore it for the
+        // superclass [[Construct]] so the instance super() allocates carries the
+        // most-derived prototype and `new.target` observed inside the superclass
+        // is the original new target — not the immediate superclass.
+        var ec = JSEngine.Current as IJSExecutionContext;
+        var activeNewTarget = JSEngine.NewTarget;
+        var previousNewTarget = ec?.CurrentNewTarget;
+        if (ec != null && activeNewTarget != null)
+            ec.CurrentNewTarget = activeNewTarget;
+
+        try
+        {
+            var r = super.CreateInstance(a.OverrideThis(a.This));
+            return r?.IsObject == true ? r : @this ?? new JSObject();
+        }
+        finally
+        {
+            if (ec != null)
+                ec.CurrentNewTarget = previousNewTarget;
+        }
     }
 
     [JSExport(IsConstructor = true, Length = 1)]
