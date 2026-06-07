@@ -389,9 +389,11 @@ partial class FastCompiler
             // A public field is CreateDataPropertyOrThrow — observable through a
             // Proxy receiver's defineProperty trap (a `return`-override base may
             // hand back a Proxy as `this`). A private field is an internal slot
-            // added directly (PrivateFieldAdd never consults proxy traps).
+            // added directly via PrivateFieldAdd (never consults proxy traps), which
+            // also enforces the TypeError on a non-extensible target or a re-added
+            // private name.
             var init = member.IsPrivate
-                ? JSObjectBuilder.AddValue(name, value, JSPropertyAttributes.ConfigurableValue)
+                ? JSObjectBuilder.PrivateFieldAdd(name, value)
                 : JSObjectBuilder.CreateDataProperty(name, value);
 
             sList.Add(YExpression.Call(@this, init.Member as MethodInfo, init.Arguments));

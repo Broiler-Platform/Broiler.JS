@@ -68,10 +68,42 @@ public partial class JSObject
     // field, so `(15).#x` / `"s".#x` is always a TypeError.
     internal static void ThrowMissingPrivateMember(in KeyString key, bool reading)
     {
-        var display = key.Value.Value is { Length: > 0 } s && s[0] == PrivateNameMarker ? s[1..] : "#<unknown>";
+        var display = PrivateDisplayName(in key);
         throw NewTypeError(reading
             ? $"Cannot read private member {display} from an object whose class did not declare it"
             : $"Cannot write private member {display} to an object whose class did not declare it");
+    }
+
+    // Recovers a private name's human-readable text (e.g. "#x") from a minted key
+    // for diagnostics, dropping the internal marker and per-evaluation uniquifier.
+    private static string PrivateDisplayName(in KeyString key)
+    {
+        var s = key.Value.Value;
+        if (string.IsNullOrEmpty(s) || s[0] != PrivateNameMarker)
+            return "#<unknown>";
+
+        var end = s.IndexOf(PrivateNameEvalSeparator, 1);
+        return end < 0 ? s[1..] : s[1..end];
+    }
+
+    /// <summary>
+    /// PrivateFieldAdd (ECMA-262 § 7.3.28): installs a private field on this object
+    /// during instance-field initialization. Adding a private field to a
+    /// non-extensible object is a TypeError (the <c>nonextensible-applies-to-private</c>
+    /// refinement), and so is re-adding a private name the object already carries
+    /// (PrivateFieldAdd step 4) — observable when a derived constructor's
+    /// <c>return</c>-override hands the same object to two field initializations.
+    /// The field is stored directly as an internal slot, bypassing Proxy traps.
+    /// </summary>
+    public void PrivateFieldAdd(KeyString key, JSValue value)
+    {
+        if (!IsExtensible())
+            throw NewTypeError($"Cannot add private member {PrivateDisplayName(in key)} to a non-extensible object");
+
+        if (!ownProperties.GetValue(key.Key).IsEmpty)
+            throw NewTypeError($"Cannot add private member {PrivateDisplayName(in key)}: it is already present on the object");
+
+        FastAddValue(key, value, JSPropertyAttributes.ConfigurableValue);
     }
 
     public override JSValue GetOwnPropertyDescriptor(JSValue name)

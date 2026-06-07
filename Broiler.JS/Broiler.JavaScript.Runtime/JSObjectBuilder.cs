@@ -66,6 +66,9 @@ public class JSObjectBuilder
     readonly static MethodInfo _CreateDataPropertyKeyValue =
         type.PublicMethod(nameof(JSObject.CreateDataProperty), typeof(JSValue), typeof(JSValue));
 
+    readonly static MethodInfo _PrivateFieldAddKeyString =
+        type.PublicMethod(nameof(JSObject.PrivateFieldAdd), typeof(KeyString), typeof(JSValue));
+
     readonly static MethodInfo _FastAddValueKeySymbol =
         type.PublicMethod(nameof(JSObject.FastAddValue), typeof(IJSSymbol), typeof(JSValue), typeof(JSPropertyAttributes));
 
@@ -114,6 +117,12 @@ public class JSObjectBuilder
     // time. Stored in a class-scope variable that member references close over.
     public static Expression MintPrivateName(string name)
         => Expression.Call(null, _MintPrivateName, Expression.Constant(name));
+
+    // PrivateFieldAdd for an instance private field: installs the field as an
+    // internal slot, throwing a TypeError when the target is non-extensible or
+    // already carries the private name. The key is always a minted KeyString.
+    public static YElementInit PrivateFieldAdd(Expression key, Expression value)
+        => new YElementInit(_PrivateFieldAddKeyString, key, value);
 
     // CreateDataPropertyOrThrow for a public class field: observable on exotic
     // receivers (Proxy), a plain own-property store on ordinary objects.
