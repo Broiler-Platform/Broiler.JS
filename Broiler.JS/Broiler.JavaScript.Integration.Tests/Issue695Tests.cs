@@ -24,6 +24,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   built-ins/Date/prototype/set*/date-value-read-before-tonumber-when-date-is-valid
 //   tests assert valueOf is called exactly once. The setters now reuse the already
 //   coerced value for the first slot.
+//
+// Problem 8 (subset) — two ClassBody early errors were not enforced, so several
+//   staging/sm class-syntax tests saw no SyntaxError where one was required:
+//     * a class with more than one `constructor` element;
+//     * duplicate PrivateBoundIdentifiers — the same #name used by more than one
+//       element, except a single getter/setter pair of matching static placement.
+//   SyntaxValidation now reports both at parse time.
 public class Issue695Tests
 {
     private static JSValue Eval(string code)
@@ -31,6 +38,12 @@ public class Issue695Tests
         using var ctx = new JSContext(experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026);
         return ctx.Eval(code);
     }
+
+    // Compile/run `source` via eval and report the thrown error's constructor name,
+    // or "ok" when it completes without throwing.
+    private static string EvalCatch(string source)
+        => Eval("var r; try { eval(" + System.Text.Json.JsonSerializer.Serialize(source)
+            + "); r = 'ok'; } catch (e) { r = e.constructor.name; } r;").ToString();
 
     // ---- Problem 3: signDisplay accepts the "negative" value ----
 
@@ -101,4 +114,29 @@ public class Issue695Tests
             "calls + '|' + d." + getter + "();";
         Assert.Equal("1|7", Eval(code).ToString());
     }
+
+    // ---- Problem 8: ClassBody early errors (constructor / private name) ----
+
+    // Class shapes that must be rejected with a SyntaxError at parse time.
+    [Theory]
+    [InlineData("class C { constructor(){} constructor(){} }")] // two constructors
+    [InlineData("(class { #x; #x; })")]                          // two private fields
+    [InlineData("(class { #x; #x(){} })")]                       // field + method
+    [InlineData("(class { get #x(){} get #x(){} })")]            // two getters
+    [InlineData("(class { set #x(v){} set #x(v){} })")]          // two setters
+    [InlineData("(class { #x; get #x(){} })")]                   // field + accessor
+    [InlineData("(class { get #x(){} static set #x(v){} })")]    // get/set, mismatched placement
+    [InlineData("(class { #x; static #x; })")]                   // instance + static field
+    public void IllegalClassBodyThrowsSyntaxError(string source)
+        => Assert.Equal("SyntaxError", EvalCatch(source));
+
+    // Class shapes that remain legal and must keep compiling.
+    [Theory]
+    [InlineData("(class { get #x(){} set #x(v){} })")]            // instance accessor pair
+    [InlineData("(class { static get #x(){} static set #x(v){} })")] // static accessor pair
+    [InlineData("(class { #x; #y; m(){} static m(){} })")]       // distinct names
+    [InlineData("class C { m(){} m(){} }")]                       // public duplicate methods are allowed
+    [InlineData("class C { ['constructor'](){} constructor(){} }")] // computed key is not the constructor
+    public void LegalClassBodyStillCompiles(string source)
+        => Assert.Equal("ok", EvalCatch(source));
 }
