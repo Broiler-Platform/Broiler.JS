@@ -15,7 +15,12 @@ partial class FastCompiler
         {
             case FastNodeType.Identifier:
                 var id = (AstIdentifier)property;
-                return computed ? VisitIdentifier(id) : KeyOfName(id.Name);
+                if (computed)
+                    return VisitIdentifier(id);
+                // `.#x` is a private member reference; key it in the private namespace.
+                return id.Name.Length > 0 && id.Name.Value[0] == '#'
+                    ? KeyOfPrivateName(id.Name)
+                    : KeyOfName(id.Name);
 
             case FastNodeType.Literal:
                 var l = (AstLiteral)property;

@@ -93,6 +93,10 @@ partial class FastCompiler
             case (FastNodeType.Identifier, AstIdentifier id):
                 if (computed)
                     return VisitIdentifier(id);
+                // A `#x` class element is an IdentifierName starting with '#'; a
+                // public `"#x"` element is an AstLiteral and never reaches here.
+                if (id.Name.Length > 0 && id.Name.Value[0] == '#')
+                    return KeyOfPrivateName(id.Name);
                 return KeyOfName(id.Name);
 
             case (FastNodeType.Literal, AstLiteral l):

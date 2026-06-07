@@ -133,7 +133,11 @@ partial class FastCompiler
             {
                 case FastNodeType.Identifier:
                     var id = (me.Property as AstIdentifier)!;
-                    name = me.Computed ? VisitExpression(id) : KeyOfName(id.Name);
+                    name = me.Computed
+                        ? VisitExpression(id)
+                        : id.Name.Length > 0 && id.Name.Value[0] == '#'
+                            ? KeyOfPrivateName(id.Name)
+                            : KeyOfName(id.Name);
                     break;
 
                 case FastNodeType.Literal:

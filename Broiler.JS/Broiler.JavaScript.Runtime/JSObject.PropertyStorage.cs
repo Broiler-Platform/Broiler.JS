@@ -11,11 +11,20 @@ public partial class JSObject
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref PropertySequence GetOwnProperties(bool create = true) => ref ownProperties;
 
+    /// <summary>
+    /// Internal marker character prefixed to a private name's property key so it
+    /// occupies a key space disjoint from ordinary string properties. A class's
+    /// private <c>#x</c> and a public <c>"#x"</c> string property must be distinct
+    /// bindings (sec-privatefieldget); the compiler emits this marker for private
+    /// member references, and reflection/enumeration hides keys carrying it.
+    /// </summary>
+    public const char PrivateNameMarker = '\u0001';
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsPrivateName(in KeyString key)
     {
         var value = key.Value.Value;
-        return !string.IsNullOrEmpty(value) && value[0] == '#';
+        return !string.IsNullOrEmpty(value) && value[0] == PrivateNameMarker;
     }
 
     public override JSValue GetOwnPropertyDescriptor(JSValue name)

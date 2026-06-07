@@ -79,13 +79,27 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   the error completion through IteratorClose (calling return(), suppressing a
 //   secondary completion), covering both format and formatToParts.
 //
+// Problem 3 (private name not clobbered by computed property) — a private name and a
+//   same-spelled public string property shared one key ("#x"), so a class with both
+//   `#m` and `["#m"]` saw the private field overwritten, and any public `"#x"`
+//   string property was wrongly hidden from reflection (IsPrivateName matched a bare
+//   '#'). Private names (`#x` IdentifierName references) are now keyed in a
+//   marker-prefixed namespace (JSObject.PrivateNameMarker), disjoint from public
+//   string keys; the runtime hides only marker-prefixed keys. (Brand-check TypeErrors
+//   — privatefieldget/set-typeerror — remain out of scope; they need a dedicated
+//   throwing access path.)
+//
 // Out of scope (architectural / CLDR / deep parser, matching the triage carried
 // in #683 / #685 / #687 / #689 / #691, and confirmed by probing the engine for
-// this issue): the private-* brand-check and double-initialisation families,
-// super-*-reference-null, the proxy default-handler TypeError tests, AnnexB eval
-// binding re-init / skip-early-err, scope-param-elem-var, NumberFormat signDisplay
-// "negative" currency CLDR formatting, and the staging/sm negative SyntaxError
-// grab-bag.
+// this issue): the private-* brand-check and double-initialisation families (need a
+// throwing private access path) plus optional-chained private references
+// (`a?.#b`, a parser gap), super-*-reference-null, dynamic super home-object
+// re-resolution (superPropProtoChanges — needs prototype-before-methods class
+// assembly), the proxy default-handler TypeError tests, AnnexB eval binding
+// re-init / skip-early-err, scope-param-elem-var, NumberFormat signDisplay
+// "negative" currency CLDR formatting, `\S` inside a character class
+// (character-class-escape-s — needs .NET class-subtraction rewriting), and the
+// staging/sm negative SyntaxError grab-bag.
 public class Issue693Tests
 {
     private static JSValue Eval(string code)
@@ -444,4 +458,65 @@ public class Issue693Tests
             + "var it = { [Symbol.iterator]() { return this; }, ['return']() { throw 'x'; },"
             + "  count: 0, next() { this.count++; if (this.count == 1) return { done: false, value: 3 }; return { done: true }; } };"
             + "var t; try { lf.format(it); } catch (e) { t = e.constructor.name; } t;").ToString());
+
+    // ---- Problem 3: private names are distinct from same-spelled public properties ----
+
+    // The exact shape of private-field-is-not-clobbered-by-computed-property.js: a
+    // private #m and a public ["#m"] coexist as distinct bindings.
+    [Fact]
+    public void PrivateFieldNotClobberedByComputedProperty()
+        => Assert.Equal("44|4|true", Eval(
+            "class C {"
+            + "  #m = 44;"
+            + "  ['#m'] = this.#m / 11;"
+            + "  chk() { return this.#m + '|' + this['#m'] + '|' + this.hasOwnProperty('#m'); }"
+            + "}"
+            + "new C().chk();").ToString());
+
+    // The same for a private method vs a public "#m" data property.
+    [Fact]
+    public void PrivateMethodNotClobberedByComputedProperty()
+        => Assert.Equal("1|9", Eval(
+            "class C { #m(){ return 1; } ['#m'] = 9; chk(){ return this.#m() + '|' + this['#m']; } }"
+            + "new C().chk();").ToString());
+
+    // A public string property that merely starts with '#' must be a normal, visible
+    // own property — not mistaken for a private name.
+    [Fact]
+    public void PublicHashStringPropertyIsVisible()
+    {
+        Assert.Equal("#z|true", Eval(
+            "var o = {}; o['#z'] = 1;"
+            + "Object.getOwnPropertyNames(o).join(',') + '|' + o.hasOwnProperty('#z');").ToString());
+        Assert.Equal("1", Eval("var o = { '#z': 1 }; String(Object.getOwnPropertyDescriptor(o, '#z').value);").ToString());
+    }
+
+    // Private members stay hidden from reflection/enumeration and serialization, and
+    // do not leak the internal marker.
+    [Fact]
+    public void PrivateMembersRemainHidden()
+    {
+        Assert.Equal("#a,pub", Eval(
+            "class C { #a = 1; ['#a'] = 2; pub = 5; } Object.getOwnPropertyNames(new C()).sort().join(',');").ToString());
+        Assert.Equal("{}", Eval("class C { #x = 5; } JSON.stringify(new C());").ToString());
+        Assert.Equal("", Eval("class C { #x = 5; } var r = []; for (var k in new C()) r.push(k); r.join(',');").ToString());
+    }
+
+    // All read/write/update/call access paths resolve the private (not public) member.
+    [Fact]
+    public void PrivateAccessPathsAreConsistent()
+        => Assert.Equal("1,2,3,4", Eval(
+            "class C {"
+            + "  #a = 1; ['#a'] = 2; #b(){ return 3; } ['#b'] = 4;"
+            + "  chk(){ return [this.#a, this['#a'], this.#b(), this['#b']].join(','); }"
+            + "}"
+            + "new C().chk();").ToString());
+
+    // Two unrelated classes with the same private name spelling keep separate bindings.
+    [Fact]
+    public void SamePrivateNameInDifferentClassesIsDistinct()
+        => Assert.Equal("1|2", Eval(
+            "class A { #v = 1; get(){ return this.#v; } }"
+            + "class B { #v = 2; get(){ return this.#v; } }"
+            + "new A().get() + '|' + new B().get();").ToString());
 }

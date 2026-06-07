@@ -21,7 +21,15 @@ partial class FastCompiler
             case FastNodeType.Identifier:
                 var id = mp as AstIdentifier;
                 if (!memberExpression.Computed)
-                    return JSValueBuilder.Index(target, super, KeyOfName(id.Name), memberExpression.Coalesce);
+                {
+                    // `obj.#x` is the only way to reach a non-computed IdentifierName
+                    // starting with '#'; route it to the private key namespace so it
+                    // does not alias a public `obj["#x"]` string property.
+                    var key = id.Name.Length > 0 && id.Name.Value[0] == '#'
+                        ? KeyOfPrivateName(id.Name)
+                        : KeyOfName(id.Name);
+                    return JSValueBuilder.Index(target, super, key, memberExpression.Coalesce);
+                }
 
                 return JSValueBuilder.Index(target, super, VisitIdentifier(id), memberExpression.Coalesce);
 
