@@ -74,6 +74,11 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   such an error (suppressing a secondary completion from return()), while an error
 //   from the iterator's own next()/value/done still propagates without a close.
 //
+// Problem 3 (Intl.ListFormat iterator close) — StringListFromIterable threw a
+//   TypeError for a non-String element without closing the iterator. It now passes
+//   the error completion through IteratorClose (calling return(), suppressing a
+//   secondary completion), covering both format and formatToParts.
+//
 // Out of scope (architectural / CLDR / deep parser, matching the triage carried
 // in #683 / #685 / #687 / #689 / #691, and confirmed by probing the engine for
 // this issue): the private-* brand-check and double-initialisation families,
@@ -410,4 +415,33 @@ public class Issue693Tests
             + "  return() { closed = true; throw 'return throws'; } }; } };"
             + "var msg; try { MyArray.from(iterable); } catch (e) { msg = e; }"
             + "msg + '|' + closed;").ToString());
+
+    // ---- Problem 3: Intl.ListFormat closes the iterator on a non-string element ----
+
+    // The exact shape of ListFormat/.../iterable-iteratorclose.js: a non-string
+    // element throws a TypeError and runs the iterator's return() (count frozen at 3).
+    [Theory]
+    [InlineData("format")]
+    [InlineData("formatToParts")]
+    public void ListFormatClosesIteratorOnNonStringElement(string method)
+    {
+        var code =
+            "var lf = new Intl.ListFormat();"
+            + "var it = { [Symbol.iterator]() { return this; }, ['return']() { this.returnIsCalled = true; },"
+            + "  count: 0, returnIsCalled: false,"
+            + "  next() { this.count++; if (this.count == 3) return { done: false, value: 3 };"
+            + "    if (this.count < 5) return { done: false, value: String(this.count) }; return { done: true }; } };"
+            + "var threw = false; try { lf." + method + "(it); } catch (e) { threw = e.constructor.name === 'TypeError'; }"
+            + "threw + '|' + it.count + '|' + it.returnIsCalled;";
+        Assert.Equal("true|3|true", Eval(code).ToString());
+    }
+
+    // A secondary error from the iterator's return() is suppressed; the TypeError wins.
+    [Fact]
+    public void ListFormatSuppressesSecondaryCloseError()
+        => Assert.Equal("TypeError", Eval(
+            "var lf = new Intl.ListFormat();"
+            + "var it = { [Symbol.iterator]() { return this; }, ['return']() { throw 'x'; },"
+            + "  count: 0, next() { this.count++; if (this.count == 1) return { done: false, value: 3 }; return { done: true }; } };"
+            + "var t; try { lf.format(it); } catch (e) { t = e.constructor.name; } t;").ToString());
 }

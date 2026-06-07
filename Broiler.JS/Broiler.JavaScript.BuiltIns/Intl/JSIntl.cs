@@ -1342,7 +1342,19 @@ public sealed class JSIntlListFormat : JSObject
             if (!hasValue)
                 continue;
             if (!item.IsString)
+            {
+                // §13.5.1 step 5.b.ii: a non-String element is an error completion
+                // that must be passed through IteratorClose, so the iterator's
+                // return() runs (its own abrupt completion is then suppressed).
+                if (en is IReturnableEnumerator returnable)
+                {
+                    try { returnable.Return(); }
+                    catch { /* IteratorClose suppresses a secondary completion */ }
+                }
+
                 throw JSEngine.NewTypeError("Intl.ListFormat: array element must be a string");
+            }
+
             result.Add(item.StringValue);
         }
 
