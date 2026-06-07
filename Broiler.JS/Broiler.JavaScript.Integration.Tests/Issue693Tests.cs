@@ -53,6 +53,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   change above, and string-keyed `"constructor"(){ return {} }` via the
 //   constructor return-override fix.)
 //
+// Problem 9 (TypedArray seal-and-freeze) — a typed array's own [[OwnPropertyKeys]]
+//   enumeration returned only the integer indices, dropping ordinary string-keyed
+//   own properties (e.g. `ta.foo = 1`). So getOwnPropertyNames / for-in / Object.keys
+//   missed them and Object.isFrozen / isSealed (which walk the own keys) wrongly
+//   reported a non-extensible empty typed array with a still-writable extra property
+//   as frozen. JSTypedArray.GetAllKeys now defers to the base enumerator (indices
+//   first, then string keys), matching ordinary objects.
+//
 // Out of scope (architectural / CLDR / deep parser, matching the triage carried
 // in #683 / #685 / #687 / #689 / #691, and confirmed by probing the engine for
 // this issue): the private-* brand-check and double-initialisation families,
@@ -277,4 +285,42 @@ public class Issue693Tests
             "class A { \"constructor\"() { return {}; } }"
             + "class B extends class {} { \"constructor\"() { return {}; } }"
             + "(new A() instanceof A) + '|' + (new B() instanceof B);").ToString());
+
+    // ---- Problem 9: typed-array own keys include extra string properties ----
+
+    // A typed array's own keys are the integer indices followed by ordinary
+    // string-keyed own properties, surfaced through getOwnPropertyNames/keys/for-in.
+    [Fact]
+    public void TypedArrayOwnKeysIncludeExtraProperties()
+    {
+        Assert.Equal("0,1,b", Eval(
+            "var a = new Int32Array(2); a.b = 't'; Object.getOwnPropertyNames(a).join(',');").ToString());
+        Assert.Equal("0,1,foo", Eval(
+            "var a = new Int32Array(2); a.foo = 9; Object.keys(a).join(',');").ToString());
+        Assert.Equal("0,1,foo", Eval(
+            "var a = new Int32Array(2); a.foo = 9; var r = []; for (var k in a) r.push(k); r.join(',');").ToString());
+    }
+
+    // staging/sm/TypedArray/seal-and-freeze.js: an empty non-extensible typed array
+    // with a still-writable extra own property is NOT frozen; only once that
+    // property is made non-writable & non-configurable does it become frozen.
+    [Fact]
+    public void TypedArrayWithWritableExtraPropertyIsNotFrozen()
+    {
+        Assert.Equal("false", Eval(
+            "var a = new Int32Array(0); a.b = 't'; Object.preventExtensions(a); String(Object.isFrozen(a));").ToString());
+        Assert.Equal("true", Eval(
+            "var a = new Int32Array(0); a.b = 't'; Object.preventExtensions(a);"
+            + "Object.defineProperty(a, 'b', { configurable: false, writable: false });"
+            + "String(Object.isFrozen(a));").ToString());
+    }
+
+    // The fix must not disturb element iteration, spread, or symbol-keyed lookups.
+    [Fact]
+    public void TypedArrayIterationAndSymbolsUnaffected()
+    {
+        Assert.Equal("10,20", Eval("var a = new Int32Array([10,20]); a.foo = 9; Array.from(a).join(',');").ToString());
+        Assert.Equal("1,2,3", Eval("[...new Int32Array([1,2,3])].join(',');").ToString());
+        Assert.Equal("1", Eval("var a = new Int32Array(2); a[Symbol('x')] = 1; String(Object.getOwnPropertySymbols(a).length);").ToString());
+    }
 }

@@ -542,7 +542,13 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     internal IElementEnumerator GetEntries() => new EntryEnumerator(this);
 
-    public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) => new IntKeyEnumerator(length);
+    // [[OwnPropertyKeys]] for a typed array is the integer indices followed by the
+    // ordinary string-keyed own properties (and then symbols, handled separately).
+    // The base KeyEnumerator already yields the indices via the overridden
+    // GetElementEnumerator, so deferring to it also surfaces extra own properties
+    // (e.g. `ta.foo = 1`) to getOwnPropertyNames / for-in / Object.is{Sealed,Frozen}
+    // instead of dropping them as an indices-only enumerator did.
+    public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) => base.GetAllKeys(showEnumerableOnly, inherited);
 
     internal JSGenerator GetKeys() => new(new IntKeyEnumerator(length), "Array Iterator");
 
