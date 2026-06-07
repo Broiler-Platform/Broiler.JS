@@ -412,6 +412,27 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     internal virtual void ValidateElementValue(JSValue value) => _ = (value ?? JSUndefined.Value).DoubleValue;
 
+    public override JSValue HasProperty(JSValue propertyKey)
+    {
+        // [[HasProperty]] for an integer-indexed exotic object: a canonical numeric
+        // index resolves to IsValidIntegerIndex and never consults the prototype
+        // chain (so an out-of-range index is absent even when the prototype carries
+        // a same-named element). Non-numeric keys fall back to OrdinaryHasProperty.
+        var key = propertyKey.ToKey(false);
+        switch (key.Type)
+        {
+            case KeyType.UInt:
+                return IsValidIntegerIndex(key.Index) ? BooleanTrue : BooleanFalse;
+
+            case KeyType.String:
+                if (TryGetCanonicalNumericIndex(key.KeyString, out var numericIndex))
+                    return IsValidIntegerIndex(numericIndex) ? BooleanTrue : BooleanFalse;
+                break;
+        }
+
+        return base.HasProperty(propertyKey);
+    }
+
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
         var key = name.ToKey(false);
