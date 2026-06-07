@@ -777,7 +777,21 @@ public partial class JSObject
         return false;
     }
 
-    private static JSObject CreateDataDescriptor(JSValue value, JSPropertyAttributes attributes)
+    // CreateDataPropertyOrThrow(this, key, value) for a public class field
+    // initializer. An ordinary object stores the own data property directly; an
+    // exotic object (e.g. a Proxy handed back by a `return`-override base
+    // constructor) overrides these to route through [[DefineOwnProperty]], so its
+    // defineProperty trap observes the field initialization.
+    public virtual void CreateDataProperty(KeyString key, JSValue value)
+        => FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+
+    public virtual void CreateDataProperty(uint index, JSValue value)
+        => FastAddValue(index, value, JSPropertyAttributes.EnumerableConfigurableValue);
+
+    public virtual void CreateDataProperty(JSValue key, JSValue value)
+        => FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+
+    internal static JSObject CreateDataDescriptor(JSValue value, JSPropertyAttributes attributes)
     {
         var descriptor = new JSObject();
         descriptor.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);

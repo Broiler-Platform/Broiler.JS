@@ -224,4 +224,23 @@ public class Issue697Tests
     public void ClassDeclarationTdzBeforeDeclaration()
         => Assert.Equal("ReferenceError", Eval(
             "var t; try { DZ; t = 'no throw'; } catch (e) { t = e.constructor.name; } class DZ {} t;").ToString());
+
+    // ---- Problem 10 (subset): public field init is visible to a proxy ----
+
+    // When a `return`-override base hands back a Proxy as `this`, a public field
+    // initializer is CreateDataPropertyOrThrow and must fire the defineProperty
+    // trap.
+    [Fact]
+    public void PublicFieldInitFiresProxyDefinePropertyTrap()
+        => Assert.Equal("trapped", Eval(
+            "function PB(){ return new Proxy(this, { defineProperty() { throw new Error('trapped'); } }); }" +
+            "class B extends PB { f = 'x'; }" +
+            "var t; try { new B(); t = 'no throw'; } catch (e) { t = e.message; } t;").ToString());
+
+    // An ordinary public field initializer is unchanged: it defines an own data
+    // property rather than invoking an inherited setter.
+    [Fact]
+    public void PublicFieldDefinesOwnDataPropertyOverPrototypeSetter()
+        => Assert.Equal("5", Eval(
+            "class P { set v(x) { throw new Error('setter'); } } class Q extends P { v = 5; } new Q().v;").ToString());
 }

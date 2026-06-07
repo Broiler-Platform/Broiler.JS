@@ -54,6 +54,15 @@ public class JSObjectBuilder
     public readonly static MethodInfo _FastAddValueKeyString =
         type.PublicMethod(nameof(JSObject.FastAddValue), typeof(KeyString), typeof(JSValue), typeof(JSPropertyAttributes));
 
+    readonly static MethodInfo _CreateDataPropertyUInt =
+        type.PublicMethod(nameof(JSObject.CreateDataProperty), typeof(uint), typeof(JSValue));
+
+    readonly static MethodInfo _CreateDataPropertyKeyString =
+        type.PublicMethod(nameof(JSObject.CreateDataProperty), typeof(KeyString), typeof(JSValue));
+
+    readonly static MethodInfo _CreateDataPropertyKeyValue =
+        type.PublicMethod(nameof(JSObject.CreateDataProperty), typeof(JSValue), typeof(JSValue));
+
     readonly static MethodInfo _FastAddValueKeySymbol =
         type.PublicMethod(nameof(JSObject.FastAddValue), typeof(IJSSymbol), typeof(JSValue), typeof(JSPropertyAttributes));
 
@@ -96,6 +105,22 @@ public class JSObjectBuilder
             return new YElementInit(_FastAddValueUInt, Expression.Convert(key, typeof(uint)), value, Expression.Constant(attributes));
 
         return new YElementInit(_FastAddValueKeyString, key, value, Expression.Constant(attributes));
+    }
+
+    // CreateDataPropertyOrThrow for a public class field: observable on exotic
+    // receivers (Proxy), a plain own-property store on ordinary objects.
+    public static YElementInit CreateDataProperty(Expression key, Expression value)
+    {
+        if (key.Type.IsJSValueType())
+            return new YElementInit(_CreateDataPropertyKeyValue, key, value);
+
+        if (key.Type == typeof(uint))
+            return new YElementInit(_CreateDataPropertyUInt, key, value);
+
+        if (key.Type == typeof(int))
+            return new YElementInit(_CreateDataPropertyUInt, Expression.Convert(key, typeof(uint)), value);
+
+        return new YElementInit(_CreateDataPropertyKeyString, key, value);
     }
 
     public static YElementInit AddSetter(Expression key, Expression setter, JSPropertyAttributes attributes = JSPropertyAttributes.EnumerableConfigurableProperty)

@@ -441,6 +441,23 @@ public partial class JSProxy : JSObject
 
     public override JSValue DefineProperty(IJSSymbol name, JSObject pd) => DefineProperty((JSValue)(JSSymbol)name, pd);
 
+    // A public class field initializer is CreateDataPropertyOrThrow, an observable
+    // [[DefineOwnProperty]] — so on a Proxy receiver (via a `return`-override base)
+    // it must fire the defineProperty trap and throw if the define is rejected.
+    public override void CreateDataProperty(KeyString key, JSValue value) => CreateDataPropertyOrThrow(key.ToJSValue(), value);
+
+    public override void CreateDataProperty(uint index, JSValue value) => CreateDataPropertyOrThrow(JSValue.CreateString(index.ToString()), value);
+
+    public override void CreateDataProperty(JSValue key, JSValue value) => CreateDataPropertyOrThrow(key, value);
+
+    private void CreateDataPropertyOrThrow(JSValue key, JSValue value)
+    {
+        var descriptor = CreateDataDescriptor(value, JSPropertyAttributes.EnumerableConfigurableValue);
+        var result = DefineProperty(key, descriptor);
+        if (result.IsBoolean && !result.BooleanValue)
+            throw JSEngine.NewTypeError($"Cannot define property {key} on proxy");
+    }
+
     public override JSValue Delete(JSValue index)
     {
         var target = RequireTarget();
