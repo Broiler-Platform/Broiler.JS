@@ -391,8 +391,14 @@ partial class FastCompiler
 
             classNameScope.Dispose();
 
-            var outer = this.scope.Top.CreateVariable(id.Name);
-            stmts.Add(YExpression.Assign(outer.Expression, retValue));
+            // Only a ClassDeclaration binds its name in the enclosing scope. A
+            // named ClassExpression keeps its name purely as the inner binding
+            // above, so creating an outer binding here would leak it.
+            if (body.IsDeclaration)
+            {
+                var outer = this.scope.Top.CreateVariable(id.Name);
+                stmts.Add(YExpression.Assign(outer.Expression, retValue));
+            }
         }
 
         stmts.Add(retValue);

@@ -409,7 +409,9 @@ partial class FastCompiler
                             CollectBindingNames(declarator.Identifier, lexicalBindings);
                         break;
 
-                    case AstExpressionStatement { Expression: AstClassExpression { Identifier: { } identifier } }:
+                    // Only a ClassDeclaration introduces a lexical binding; a
+                    // named ClassExpression statement does not.
+                    case AstExpressionStatement { Expression: AstClassExpression { Identifier: { } identifier, IsDeclaration: true } }:
                         lexicalBindings.Add(identifier.Name.Value);
                         break;
                 }

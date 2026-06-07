@@ -187,4 +187,25 @@ public class Issue697Tests
     [Fact]
     public void ClassNameStaticRecursionWorks()
         => Assert.Equal("120", Eval("class F { static run(n) { return n <= 1 ? 1 : n * F.run(n - 1); } } F.run(5);").ToString());
+
+    // A named class EXPRESSION does not leak its name to the enclosing scope.
+    [Fact]
+    public void NamedClassExpressionDoesNotLeakName()
+        => Assert.Equal("undefined", Eval("(class C {}); typeof C;").ToString());
+
+    // The expression's name is still usable inside the body (self-reference).
+    [Fact]
+    public void NamedClassExpressionNameVisibleInside()
+        => Assert.Equal("E", Eval("var D = class E { who() { return E.name; } }; new D().who();").ToString());
+
+    // A class DECLARATION still binds (and the binding is reassignable).
+    [Fact]
+    public void ClassDeclarationStillBindsName()
+        => Assert.Equal("function", Eval("class Decl {} typeof Decl;").ToString());
+
+    // A class declaration is still in its temporal dead zone before the declaration.
+    [Fact]
+    public void ClassDeclarationTdzBeforeDeclaration()
+        => Assert.Equal("ReferenceError", Eval(
+            "var t; try { DZ; t = 'no throw'; } catch (e) { t = e.constructor.name; } class DZ {} t;").ToString());
 }
