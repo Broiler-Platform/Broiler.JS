@@ -30,7 +30,7 @@ partial class FastCompiler
         return YExpression.Block(
             new Sequence<YParameterExpression> { withBindings, withScope, completionVar },
             YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
-            YExpression.Assign(withBindings, JSContextBuilder.PushDirectEvalScope(CaptureDirectEvalBindings())),
+            YExpression.Assign(withBindings, JSContextBuilder.PushWithFallbackScope(CaptureWithFallbackBindings(), CaptureWithFallbackShadowedBindings())),
             YExpression.Assign(withScope, JSContextBuilder.PushWithScope(VisitExpression(withStatement.Object))),
             YExpression.TryFinally(
                 YExpression.TryFinally(

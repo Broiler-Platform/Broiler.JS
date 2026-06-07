@@ -41,9 +41,11 @@ public class JSContextBuilder
     private static MethodInfo _AssignWithObjectIdentifier = typeof(JSContext).GetMethod(nameof(JSContext.AssignWithObjectIdentifier), [typeof(JSObject), typeof(KeyString).MakeByRefType(), typeof(JSValue), typeof(bool)]);
     private static MethodInfo _DeleteIdentifier = typeof(JSContext).GetMethod(nameof(JSContext.DeleteIdentifier), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _PushDirectEvalScope = typeof(JSContext).GetMethod(nameof(JSContext.PushDirectEvalScope), [typeof(JSVariable[])]);
+    private static MethodInfo _PushWithFallbackScope = typeof(JSContext).GetMethod(nameof(JSContext.PushWithFallbackScope), [typeof(JSVariable[]), typeof(JSVariable[])]);
     private static MethodInfo _PushWithScope = typeof(JSContext).GetMethod(nameof(JSContext.PushWithScope), [typeof(JSValue)]);
     private static MethodInfo _CaptureWithScopes = typeof(JSContext).GetMethod(nameof(JSContext.CaptureWithScopes), Type.EmptyTypes);
     private static MethodInfo _ResolveIdentifier = typeof(JSContext).GetMethod(nameof(JSContext.ResolveIdentifier), [typeof(KeyString).MakeByRefType()]);
+    private static MethodInfo _ResolveIdentifierOrUndefined = typeof(JSContext).GetMethod(nameof(JSContext.ResolveIdentifierOrUndefined), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _ResolveWithObject = typeof(JSContext).GetMethod(nameof(JSContext.ResolveWithObject), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _EnsureCanDeclareGlobalFunction = typeof(JSContext).GetMethod(nameof(JSContext.EnsureCanDeclareGlobalFunction), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _DeclareGlobalFunction = typeof(JSContext).GetMethod(nameof(JSContext.DeclareGlobalFunction), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
@@ -60,9 +62,11 @@ public class JSContextBuilder
     public static Expression AssignWithObjectIdentifier(Expression withObject, Expression key, Expression value, bool strictMode) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _AssignWithObjectIdentifier, withObject, key, value, Expression.Constant(strictMode));
     public static Expression DeleteIdentifier(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeleteIdentifier, key);
     public static Expression PushDirectEvalScope(Expression variables) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _PushDirectEvalScope, variables);
+    public static Expression PushWithFallbackScope(Expression variables, Expression shadowedVariables) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _PushWithFallbackScope, variables, shadowedVariables);
     public static Expression PushWithScope(Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _PushWithScope, value);
     public static Expression CaptureWithScopes() => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _CaptureWithScopes);
     public static Expression ResolveIdentifier(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveIdentifier, key);
+    public static Expression ResolveIdentifierOrUndefined(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveIdentifierOrUndefined, key);
     public static Expression ResolveWithObject(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveWithObject, key);
     public static Expression EnsureCanDeclareGlobalFunction(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _EnsureCanDeclareGlobalFunction, key);
     public static Expression DeclareGlobalFunction(Expression key, Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareGlobalFunction, key, value);

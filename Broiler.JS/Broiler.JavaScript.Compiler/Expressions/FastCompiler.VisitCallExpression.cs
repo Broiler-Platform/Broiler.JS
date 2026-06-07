@@ -256,6 +256,29 @@ partial class FastCompiler
         return YExpression.NewArrayInit(typeof(JSVariable), bindings);
     }
 
+    // All in-scope bindings, overlaid so they remain resolvable inside a `with`
+    // body even though the object environment is consulted first.
+    private YExpression CaptureWithFallbackBindings()
+    {
+        var bindings = new Sequence<YExpression>();
+        foreach (var variable in scope.Top.GetVisibleVariables())
+            bindings.Add(variable.Variable);
+
+        return YExpression.NewArrayInit(typeof(JSVariable), bindings);
+    }
+
+    // The function-owned subset whose writes must stay local. A program-level
+    // global `var` is resolvable through the global environment and kept in sync
+    // with its property by the normal dual-binding path, so it is not isolated.
+    private YExpression CaptureWithFallbackShadowedBindings()
+    {
+        var bindings = new Sequence<YExpression>();
+        foreach (var variable in scope.Top.GetWithFallbackVariables())
+            bindings.Add(variable.Variable);
+
+        return YExpression.NewArrayInit(typeof(JSVariable), bindings);
+    }
+
     private YExpression CaptureDirectEvalBindingLexicalNames()
     {
         var names = new Sequence<YExpression>();

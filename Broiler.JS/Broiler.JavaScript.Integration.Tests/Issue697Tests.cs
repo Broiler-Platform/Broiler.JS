@@ -23,6 +23,18 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   or a `lastIndex` valueOf that throws never fired — the abrupt completion the
 //   spec requires (steps 5 and 7) was lost. The JSRegExp fast path now reads
 //   `R.flags` (ToString) and `R.lastIndex` (ToLength) observably.
+//
+// Problem 6 — a `with` statement reused the direct-eval overlay machinery to
+//   keep in-scope locals resolvable inside the body. For a function-local `var`
+//   that shadows a same-named global (with the global blocked by @@unscopables),
+//   that overlay leaked: an assignment to the shadowed name wrote through to the
+//   global-object property (and teardown propagated the local's value back to the
+//   global binding), so `globalThis.v` became the inner value. Two parts: (1) the
+//   `with` fallback now captures only *function-owned* bindings (a program-level
+//   global var is left to the normal dual-binding path) and installs them as a
+//   *shadowing* overlay that never publishes to / propagates back to the global
+//   object; (2) `typeof` of a dynamic name now resolves through the overlay
+//   (ResolveIdentifierOrUndefined) rather than reading the bare global property.
 public class Issue697Tests
 {
     private static JSValue Eval(string code)
@@ -89,4 +101,38 @@ public class Issue697Tests
     public void MatchAllStillIterates()
         => Assert.Equal("a:0,a:1", Eval(
             "var r = []; for (var m of 'aabb'.matchAll(/(a)/g)) r.push(m[0] + ':' + m.index); r.join(',');").ToString());
+
+    // ---- Problem 6: `with` + @@unscopables write isolation ----
+
+    // A write to a function-local `var` that is shadowed (and @@unscopables-blocked
+    // in the with object) stays local; the same-named global is untouched.
+    [Fact]
+    public void WithUnscopablesWriteStaysLocal()
+        => Assert.Equal("20|1", Eval(
+            "var v = 1; globalThis[Symbol.unscopables] = { v: true };" +
+            "function f(){ var v; with (globalThis) { v = 20; } return v; }" +
+            "var local = f();" +
+            "var out = local + '|' + globalThis.v; delete globalThis[Symbol.unscopables]; out;").ToString());
+
+    // A blocked read resolves to the hoisted local (undefined), not the global.
+    [Fact]
+    public void WithUnscopablesReadResolvesToLocal()
+        => Assert.Equal("undefined", Eval(
+            "var v = 1; globalThis[Symbol.unscopables] = { v: true };" +
+            "function f(){ var r; with (globalThis) { r = typeof v; } var v = 2; return r; }" +
+            "var out = f(); delete globalThis[Symbol.unscopables]; out;").ToString());
+
+    // A genuine global `var` written inside a global-scope `with` still updates the
+    // global (and its property) — the shadowing isolation must not apply to it.
+    [Fact]
+    public void GlobalVarWriteInWithStillSyncs()
+        => Assert.Equal("5|5", Eval(
+            "var gg = 1; var o = {}; with (o) { gg = 5; } gg + '|' + globalThis.gg;").ToString());
+
+    // A `with`-object property of a non-blocked name wins over the local, and the
+    // local stays untouched.
+    [Fact]
+    public void WithObjectPropertyWinsOverLocal()
+        => Assert.Equal("7|99", Eval(
+            "(function(){ var k = 99; var o = { k: 1 }; with (o) { k = 7; } return o.k + '|' + k; })();").ToString());
 }
