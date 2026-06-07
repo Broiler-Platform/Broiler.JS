@@ -518,6 +518,41 @@ public static void ValidateProgram(
             return declarator;
         }
 
+        protected override AstNode VisitObjectLiteral(AstObjectLiteral objectLiteral)
+        {
+            // Annex B.3.1 / 13.2.5.1: an object literal may not contain more than one
+            // `__proto__: value` data property obtained from a colon PropertyDefinition.
+            // Shorthand (`{__proto__}`), methods, accessors and computed keys are
+            // exempt — only the literal `__proto__ : AssignmentExpression` form counts.
+            var seenProtoSetter = false;
+            var members = objectLiteral.Properties.GetFastEnumerator();
+            while (members.MoveNext(out var node))
+            {
+                if (node is not AstClassProperty { Kind: AstPropertyKind.Data, UsesColon: true, Computed: false } property
+                    || !IsProtoName(property.Key))
+                {
+                    continue;
+                }
+
+                if (seenProtoSetter)
+                    throw new FastParseException(property.Start, "Duplicate __proto__ fields are not allowed in object literals");
+
+                seenProtoSetter = true;
+            }
+
+            return base.VisitObjectLiteral(objectLiteral);
+        }
+
+        // The PropertyName `__proto__`, written either as an IdentifierName or a
+        // StringLiteral (but not a computed key), designates the prototype setter.
+        private static bool IsProtoName(AstExpression key)
+            => key switch
+            {
+                AstIdentifier identifier => identifier.Name.Value == "__proto__",
+                AstLiteral { TokenType: TokenTypes.String } literal => literal.StringValue == "__proto__",
+                _ => false,
+            };
+
         protected override AstNode VisitClassStatement(AstClassExpression classStatement)
         {
             if (IsStrictMode && IsRestrictedName(classStatement.Identifier?.Name))

@@ -31,6 +31,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     * duplicate PrivateBoundIdentifiers — the same #name used by more than one
 //       element, except a single getter/setter pair of matching static placement.
 //   SyntaxValidation now reports both at parse time.
+//
+// Problem 8 (subset) — an object literal with more than one `__proto__: value`
+//   data property (the colon PropertyDefinition form) is an early SyntaxError per
+//   Annex B.3.1. It was accepted silently. Shorthand, methods, accessors and
+//   computed `__proto__` keys remain exempt, and a single `__proto__:` still
+//   performs prototype mutation.
 public class Issue695Tests
 {
     private static JSValue Eval(string code)
@@ -139,4 +145,32 @@ public class Issue695Tests
     [InlineData("class C { ['constructor'](){} constructor(){} }")] // computed key is not the constructor
     public void LegalClassBodyStillCompiles(string source)
         => Assert.Equal("ok", EvalCatch(source));
+
+    // ---- Problem 8: duplicate __proto__ data properties in object literals ----
+
+    [Theory]
+    [InlineData("({ __proto__: 1, __proto__: 2 })")]
+    [InlineData("({ '__proto__': 1, __proto__: 2 })")]
+    [InlineData("({ __proto__: 1, x: 0, __proto__: 2 })")]
+    public void DuplicateProtoSetterThrowsSyntaxError(string source)
+        => Assert.Equal("SyntaxError", EvalCatch(source));
+
+    [Theory]
+    [InlineData("({ __proto__: 1, ['__proto__']: 2 })")]  // one computed
+    [InlineData("({ __proto__: 1, __proto__() {} })")]    // one method
+    [InlineData("({ __proto__: 1, get __proto__() {} })")] // one accessor
+    [InlineData("({ x: 1, x: 2 })")]                       // non-proto duplicates allowed
+    public void NonDuplicateProtoStillCompiles(string source)
+        => Assert.Equal("ok", EvalCatch(source));
+
+    // A single `__proto__:` still mutates the prototype; shorthand is an own property.
+    [Fact]
+    public void SingleProtoSetterMutatesPrototype()
+        => Assert.Equal("1|true", Eval(
+            "var p = { a: 1 }; var o = { __proto__: p }; o.a + '|' + (Object.getPrototypeOf(o) === p);").ToString());
+
+    [Fact]
+    public void ProtoShorthandIsOwnProperty()
+        => Assert.Equal("true|5", Eval(
+            "var __proto__ = 5; var o = { __proto__ }; o.hasOwnProperty('__proto__') + '|' + o.__proto__;").ToString());
 }
