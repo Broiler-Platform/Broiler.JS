@@ -175,4 +175,46 @@ public class Issue699Tests
             "getOwnPropertyDescriptor() { return { configurable: true, enumerable: true, value: 1 }; } }); " +
             "Reflect.ownKeys(p).join(',')").ToString());
     }
+
+    // ---- Problem 3: TypedArray out-of-bounds element write semantics ----
+
+    [Fact]
+    public void TypedArray_OOB_Set_Calls_ToNumber_And_Returns_True()
+    {
+        // IntegerIndexedElementSet performs ToNumber BEFORE the bounds check and the
+        // [[Set]] result is true even for an out-of-bounds (no-op) write.
+        Assert.Equal("true", Eval(
+            "var n = 0; var v = { valueOf() { n++; return 1; } }; var ta = new Int32Array(0); " +
+            "var r = Reflect.set(ta, 0, v); r === true && n === 1").ToString());
+    }
+
+    [Fact]
+    public void TypedArray_OOB_Plain_Assignment_Does_Not_Throw_In_Strict_Mode()
+    {
+        Assert.Equal("ok", Eval(
+            "'use strict'; var ta = new Int32Array(0); ta[5] = 1; 'ok';").ToString());
+    }
+
+    [Fact]
+    public void TypedArray_OOB_DefineProperty_Returns_False_Without_ToNumber()
+    {
+        // IntegerIndexedDefineOwnProperty checks IsValidIntegerIndex first and returns
+        // false for an out-of-bounds index without ever converting the value.
+        Assert.Equal("true", Eval(
+            "var n = 0; var v = { valueOf() { n++; return 1; } }; var ta = new Int32Array(0); " +
+            "var r = Reflect.defineProperty(ta, 0, { value: v, writable: true, enumerable: true, configurable: true }); " +
+            "r === false && n === 0").ToString());
+    }
+
+    [Fact]
+    public void TypedArray_InBounds_Write_Still_Works()
+    {
+        Assert.Equal("5", Eval("var ta = new Int32Array(2); ta[1] = 5; String(ta[1])").ToString());
+        Assert.Equal("true", Eval(
+            "var ta = new Int32Array(1); Reflect.set(ta, 0, 7) === true && ta[0] === 7").ToString());
+        // A minimal value descriptor for an in-bounds index defines and writes.
+        Assert.Equal("true", Eval(
+            "var ta = new Int32Array(1); " +
+            "Reflect.defineProperty(ta, 0, { value: 9 }) === true && ta[0] === 9").ToString());
+    }
 }

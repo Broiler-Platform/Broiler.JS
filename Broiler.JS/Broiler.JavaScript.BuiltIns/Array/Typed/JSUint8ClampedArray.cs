@@ -27,7 +27,7 @@ public partial class JSUint8ClampedArray : JSTypedArray
     {
         double number = (value ?? JSUndefined.Value).DoubleValue;
         if (index >= length)
-            return false;
+            return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
         // This algorithm is defined as ToUint8Clamp in the spec.
         int result;
         if (number <= 0)

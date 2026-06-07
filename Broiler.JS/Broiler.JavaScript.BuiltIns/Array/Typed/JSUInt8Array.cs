@@ -33,7 +33,7 @@ public partial class JSUInt8Array : JSTypedArray
     {
         var intValue = (value ?? JSUndefined.Value).IntValue;
         if (index >= length)
-            return false;
+            return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
         buffer.buffer[byteOffset + index] = (byte)(uint)intValue;
         return true;
     }

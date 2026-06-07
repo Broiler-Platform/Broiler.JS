@@ -467,12 +467,15 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     public override JSValue DefineProperty(uint key, JSObject pd)
     {
+        // IntegerIndexedDefineOwnProperty checks IsValidIntegerIndex first and
+        // returns false for an out-of-bounds index WITHOUT converting the value
+        // (ToNumber happens only at the final element-set step).
+        if (key >= length)
+            return JSBoolean.False;
+
         var hasValue = !pd.GetInternalProperty(KeyStrings.value, false).IsEmpty;
         if (hasValue)
             ValidateElementValue(pd[KeyStrings.value]);
-
-        if (key >= length)
-            return JSBoolean.False;
 
         if (!pd.GetInternalProperty(KeyStrings.get, false).IsEmpty
             || !pd.GetInternalProperty(KeyStrings.set, false).IsEmpty)
@@ -499,11 +502,13 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     {
         if (TryGetCanonicalNumericIndex(name, out var numericIndex))
         {
-            var hasValue = !pd.GetInternalProperty(KeyStrings.value, false).IsEmpty;
-            if (hasValue)
-                ValidateElementValue(pd[KeyStrings.value]);
+            // Out-of-bounds (invalid) integer index: return false without ToNumber.
+            // The valid-index path delegates to the uint overload, which validates
+            // and writes the value.
+            if (!IsValidIntegerIndex(numericIndex))
+                return JSBoolean.False;
 
-            return IsValidIntegerIndex(numericIndex) ? DefineProperty((uint)numericIndex, pd) : JSBoolean.False;
+            return DefineProperty((uint)numericIndex, pd);
         }
 
         return base.DefineProperty(name, pd);
