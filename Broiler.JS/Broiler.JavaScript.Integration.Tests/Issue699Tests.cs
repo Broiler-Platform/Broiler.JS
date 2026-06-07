@@ -31,6 +31,10 @@ public class Issue699Tests
         return ctx.Eval(code);
     }
 
+    // Run `source`, reporting the thrown error's constructor name or "ok".
+    private static string Catch(string source)
+        => Eval("var r; try { " + source + " r = 'ok'; } catch (e) { r = e.constructor.name; } r;").ToString();
+
     // ---- Problem 8: Error objects tag as "[object Error]" ----
 
     [Theory]
@@ -243,5 +247,29 @@ public class Issue699Tests
         Assert.Equal("ar,zh,fa", Eval(
             "var loc = new Intl.Locale('ar'); var ploc = new Intl.Locale('fa'); " +
             "Intl.getCanonicalLocales([loc, 'zh', ploc]).join(',')").ToString());
+    }
+
+    // ---- Problem 1: ArrayBuffer constructor requires `new` ----
+
+    [Theory]
+    [InlineData("ArrayBuffer()")]
+    [InlineData("ArrayBuffer(1)")]
+    [InlineData("ArrayBuffer.call(null)")]
+    [InlineData("ArrayBuffer.apply(null, [])")]
+    [InlineData("Reflect.apply(ArrayBuffer, null, [])")]
+    public void ArrayBuffer_Called_Without_New_Throws_TypeError(string call)
+    {
+        Assert.Equal("TypeError", Catch(call + ";"));
+    }
+
+    [Fact]
+    public void ArrayBuffer_With_New_Still_Constructs()
+    {
+        Assert.Equal("8", Eval("String(new ArrayBuffer(8).byteLength)").ToString());
+        // Subclassing and internal allocations (typed array / slice) are unaffected.
+        Assert.Equal("true", Eval(
+            "class B extends ArrayBuffer {} var b = new B(4); " +
+            "b instanceof ArrayBuffer && b.byteLength === 4").ToString());
+        Assert.Equal("4", Eval("String(new ArrayBuffer(8).slice(0, 4).byteLength)").ToString());
     }
 }
