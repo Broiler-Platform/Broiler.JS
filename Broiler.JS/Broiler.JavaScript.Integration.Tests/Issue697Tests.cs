@@ -203,6 +203,22 @@ public class Issue697Tests
     public void ClassDeclarationStillBindsName()
         => Assert.Equal("function", Eval("class Decl {} typeof Decl;").ToString());
 
+    // ---- Problem 1 (subset): class heritage is strict mode code ----
+
+    // A function expression in the heritage is strict, so its `arguments` /
+    // `caller` are poison pills (TypeError on access).
+    [Fact]
+    public void ClassHeritageFunctionArgumentsIsPoisonPill()
+        => Assert.Equal("TypeError", Catch(
+            "var D = class extends function () {} {}; Object.getPrototypeOf(D).arguments;"));
+
+    // Running that heritage function as the [[Construct]] target (via super)
+    // executes its strict body, where `arguments.callee` throws.
+    [Fact]
+    public void ClassHeritageArgumentsCalleeThrows()
+        => Assert.Equal("TypeError", Catch(
+            "var D = class extends function () { arguments.callee; } {}; new D;"));
+
     // A class declaration is still in its temporal dead zone before the declaration.
     [Fact]
     public void ClassDeclarationTdzBeforeDeclaration()

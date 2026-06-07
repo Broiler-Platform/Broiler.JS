@@ -146,7 +146,21 @@ partial class FastCompiler
         YExpression superExp;
         if (hasSuperClass)
         {
-            superExp = VisitExpression(super);
+            // All parts of a class definition are strict mode code, including the
+            // heritage (ClassHeritage) expression. A function expression there
+            // (`class extends function () { ... }`) must therefore be strict — so
+            // its `arguments`/`caller` are poison pills and `arguments.callee`
+            // inside it throws.
+            var previousStrictMode = IsStrictMode;
+            IsStrictMode = true;
+            try
+            {
+                superExp = VisitExpression(super);
+            }
+            finally
+            {
+                IsStrictMode = previousStrictMode;
+            }
         }
         else
         {
