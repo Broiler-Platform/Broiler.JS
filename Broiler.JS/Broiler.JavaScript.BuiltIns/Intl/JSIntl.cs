@@ -48,7 +48,7 @@ public static class JSIntl
     private static readonly KeyString CompactDisplayKey = KeyStrings.GetOrCreate("compactDisplay");
     private static readonly KeyString UnitDisplayKey = KeyStrings.GetOrCreate("unitDisplay");
     private static readonly string[] NotationValues = ["standard", "scientific", "engineering", "compact"];
-    private static readonly string[] SignDisplayValues = ["auto", "never", "always", "exceptZero"];
+    private static readonly string[] SignDisplayValues = ["auto", "never", "always", "exceptZero", "negative"];
     private static readonly string[] CompactDisplayValues = ["short", "long"];
     private static readonly string[] UnitDisplayValues = ["short", "narrow", "long"];
     private static readonly KeyString RoundingIncrementKey = KeyStrings.GetOrCreate("roundingIncrement");
