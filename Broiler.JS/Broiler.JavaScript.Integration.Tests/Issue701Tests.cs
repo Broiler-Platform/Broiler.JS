@@ -17,6 +17,11 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   route through JSObject.PrivateFieldAdd, which performs both checks before
 //   storing the slot. Ordinary field initialization on a fresh, extensible object
 //   is unchanged.
+//
+// Problem 5 (subset) — a class element written as a `key: value` colon pair
+//   (object-literal syntax) was accepted as a data property instead of being
+//   rejected. A colon is never a valid ClassElement, so `class X { x: 1 }` is now
+//   a SyntaxError. Object-literal and destructuring colons are unaffected.
 public class Issue701Tests
 {
     private static JSValue Eval(string code)
@@ -80,4 +85,36 @@ public class Issue701Tests
     public void DistinctInstancesEachGetTheirOwnField()
         => Assert.Equal("1,1", Eval(
             "class C { #x = 1; v() { return this.#x; } } new C().v() + ',' + new C().v();").ToString());
+
+    // ---- A `key: value` colon is never a valid ClassElement ----
+
+    // The plain, static, and computed-key colon forms are all SyntaxErrors.
+    [Theory]
+    [InlineData("eval('class X { x: 1 }');")]
+    [InlineData("eval('class X { static x: 1 }');")]
+    [InlineData("eval('class X { [\\'y\\']: 1 }');")]
+    public void ClassElementColonIsSyntaxError(string source)
+        => Assert.Equal("SyntaxError", Catch(source));
+
+    // Valid ClassElement forms still parse and run: field, method, accessor pair,
+    // static block, and a computed-key method.
+    [Fact]
+    public void ValidClassElementsStillParse()
+        => Assert.Equal("5,7,9,3,4", Eval(
+            "class CF { x = 5; }" +
+            "class CM { m() { return 7; } }" +
+            "class CA { #v = 1; get x() { return this.#v; } set x(n) { this.#v = n; } }" +
+            "class CS { static y; static { CS.y = 3; } }" +
+            "class CC { ['m']() { return 4; } }" +
+            "var a = new CA(); a.x = 9;" +
+            "[new CF().x, new CM().m(), a.x, CS.y, new CC().m()].join(',');").ToString());
+
+    // The object-literal and destructuring colons are untouched.
+    [Fact]
+    public void ObjectLiteralColonStillWorks()
+        => Assert.Equal("1", Eval("({ a: 1 }).a;").ToString());
+
+    [Fact]
+    public void DestructuringDefaultStillWorks()
+        => Assert.Equal("5", Eval("var { a = 5 } = {}; a;").ToString());
 }
