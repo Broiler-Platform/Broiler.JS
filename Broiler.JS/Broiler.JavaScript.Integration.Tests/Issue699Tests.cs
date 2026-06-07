@@ -217,4 +217,31 @@ public class Issue699Tests
             "var ta = new Int32Array(1); " +
             "Reflect.defineProperty(ta, 0, { value: 9 }) === true && ta[0] === 9").ToString());
     }
+
+    // ---- Problem 10: CanonicalizeLocaleList accepts Intl.Locale objects ----
+
+    [Fact]
+    public void GetCanonicalLocales_Accepts_A_Single_Locale_Object()
+    {
+        Assert.Equal("ar", Eval(
+            "Intl.getCanonicalLocales(new Intl.Locale('ar')).join(',')").ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Uses_Locale_Slot_Not_ToString()
+    {
+        // A Locale subclass with a throwing toString must still canonicalize via the
+        // [[Locale]] internal slot.
+        Assert.Equal("fa", Eval(
+            "class L extends Intl.Locale { toString() { throw new Error('nope'); } } " +
+            "Intl.getCanonicalLocales(new L('fa')).join(',')").ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Mixed_List_With_Locale_Objects()
+    {
+        Assert.Equal("ar,zh,fa", Eval(
+            "var loc = new Intl.Locale('ar'); var ploc = new Intl.Locale('fa'); " +
+            "Intl.getCanonicalLocales([loc, 'zh', ploc]).join(',')").ToString());
+    }
 }

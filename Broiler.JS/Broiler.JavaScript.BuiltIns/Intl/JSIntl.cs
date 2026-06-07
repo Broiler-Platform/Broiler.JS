@@ -640,6 +640,14 @@ public static class JSIntl
             return result;
         }
 
+        // A single Intl.Locale (it has an [[InitializedLocale]] internal slot) is
+        // treated as a one-element list using its [[Locale]] tag — never ToString.
+        if (locales is JSIntlLocale singleLocale)
+        {
+            result.AddArrayItem(JSValue.CreateString(singleLocale.Tag));
+            return result;
+        }
+
         if (locales is not JSObject localesObject)
         {
             if (locales.IsSymbol)
@@ -660,10 +668,20 @@ public static class JSIntl
                 continue;
 
             var locale = localesObject[i];
-            if (locale.IsUndefined || locale.IsNull || locale.IsBoolean || locale.IsNumber || locale.IsSymbol)
-                throw JSEngine.NewTypeError("Locale list entries must be strings or objects");
 
-            var canonical = ValidateLanguageTag(locale.StringValue);
+            string canonical;
+            if (locale is JSIntlLocale elementLocale)
+            {
+                // [[InitializedLocale]] element: use the [[Locale]] slot, not ToString.
+                canonical = elementLocale.Tag;
+            }
+            else
+            {
+                if (locale.IsUndefined || locale.IsNull || locale.IsBoolean || locale.IsNumber || locale.IsSymbol)
+                    throw JSEngine.NewTypeError("Locale list entries must be strings or objects");
+
+                canonical = ValidateLanguageTag(locale.StringValue);
+            }
             seen ??= new HashSet<string>(StringComparer.Ordinal);
             if (seen.Add(canonical))
                 result.AddArrayItem(JSValue.CreateString(canonical));
@@ -1571,6 +1589,10 @@ public sealed class JSIntlLocale : JSObject
     };
 
     public JSIntlLocale(string tag = "und") : base(CurrentPrototype()) => this.tag = tag;
+
+    // The [[Locale]] internal slot: the canonical language tag. Used by
+    // CanonicalizeLocaleList to read a Locale argument without calling toString.
+    internal string Tag => tag;
 
     // Builds the result of CreateArrayFromListAndPreferred: the preferred value
     // (when present) first, then the remaining list entries that differ from it.
