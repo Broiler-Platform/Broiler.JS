@@ -93,7 +93,6 @@ test/built-ins/AggregateError/message-tostring-abrupt.js
 test/built-ins/Array/15.4.5.1-5-2.js
 test/built-ins/Array/S15.4.5.2_A1_T2.js
 test/built-ins/Array/from/elements-deleted-after.js
-test/built-ins/Array/from/iter-map-fn-err.js
 test/built-ins/Array/from/iter-set-elem-prop-err.js
 test/built-ins/Array/from/iter-set-elem-prop-non-writable.js
 test/built-ins/Array/from/source-object-length-set-elem-prop-err.js
@@ -1482,17 +1481,13 @@ test/built-ins/TypedArrayConstructors/ctors/object-arg/throws-setting-obj-valueo
 test/built-ins/TypedArrayConstructors/ctors/typedarray-arg/throw-type-error-before-custom-proto-access.js
 test/built-ins/TypedArrayConstructors/from/BigInt/inherited.js
 test/built-ins/TypedArrayConstructors/from/inherited.js
-test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/BigInt/key-is-not-canonical-index.js
 test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/BigInt/key-is-numericindex-desc-configurable.js
 test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/BigInt/key-is-numericindex-desc-not-configurable-throws.js
 test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/BigInt/key-is-numericindex.js
-test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/BigInt/non-extensible-redefine-key.js
 test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/conversion-operation.js
-test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/key-is-not-canonical-index.js
 test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/key-is-numericindex-desc-configurable.js
 test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/key-is-numericindex-desc-not-configurable-throws.js
 test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/key-is-numericindex.js
-test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/non-extensible-redefine-key.js
 test/built-ins/TypedArrayConstructors/internals/Get/BigInt/key-is-not-integer.js
 test/built-ins/TypedArrayConstructors/internals/Get/BigInt/key-is-not-minus-zero.js
 test/built-ins/TypedArrayConstructors/internals/Get/BigInt/key-is-out-of-bounds.js
@@ -1501,25 +1496,9 @@ test/built-ins/TypedArrayConstructors/internals/Get/key-is-not-minus-zero.js
 test/built-ins/TypedArrayConstructors/internals/Get/key-is-out-of-bounds.js
 test/built-ins/TypedArrayConstructors/internals/GetOwnProperty/BigInt/index-prop-desc.js
 test/built-ins/TypedArrayConstructors/internals/GetOwnProperty/index-prop-desc.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/BigInt/abrupt-from-ordinary-has-parent-hasproperty.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/BigInt/inherited-property.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/BigInt/key-is-greater-than-last-index.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/BigInt/key-is-lower-than-zero.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/BigInt/key-is-minus-zero.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/BigInt/key-is-not-integer.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/abrupt-from-ordinary-has-parent-hasproperty.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/inherited-property.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/key-is-greater-than-last-index.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/key-is-lower-than-zero.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/key-is-minus-zero.js
-test/built-ins/TypedArrayConstructors/internals/HasProperty/key-is-not-integer.js
 test/built-ins/TypedArrayConstructors/internals/OwnPropertyKeys/BigInt/integer-indexes-and-string-and-symbol-keys-.js
-test/built-ins/TypedArrayConstructors/internals/OwnPropertyKeys/BigInt/integer-indexes-and-string-keys.js
-test/built-ins/TypedArrayConstructors/internals/OwnPropertyKeys/BigInt/integer-indexes.js
 test/built-ins/TypedArrayConstructors/internals/OwnPropertyKeys/BigInt/not-enumerable-keys.js
 test/built-ins/TypedArrayConstructors/internals/OwnPropertyKeys/integer-indexes-and-string-and-symbol-keys-.js
-test/built-ins/TypedArrayConstructors/internals/OwnPropertyKeys/integer-indexes-and-string-keys.js
-test/built-ins/TypedArrayConstructors/internals/OwnPropertyKeys/integer-indexes.js
 test/built-ins/TypedArrayConstructors/internals/OwnPropertyKeys/not-enumerable-keys.js
 test/built-ins/TypedArrayConstructors/internals/Set/BigInt/bigint-tobigint64.js
 test/built-ins/TypedArrayConstructors/internals/Set/BigInt/bigint-tobiguint64.js
@@ -1587,7 +1566,6 @@ test/intl402/Collator/prototype/resolvedOptions/ignorePunctuation-default.js
 test/intl402/Collator/prototype/resolvedOptions/resolved-case-first-unicode-extensions-and-options.js
 test/intl402/Collator/prototype/resolvedOptions/resolved-collation-unicode-extensions-and-options.js
 test/intl402/Collator/prototype/resolvedOptions/resolved-numeric-unicode-extensions-and-options.js
-test/intl402/Collator/supportedLocalesOf/basic.js
 test/intl402/Collator/test-option-numeric-and-caseFirst.js
 test/intl402/Collator/test-option-sensitivity.js
 test/intl402/Collator/test-option-usage.js
@@ -1666,7 +1644,6 @@ test/intl402/DateTimeFormat/prototype/resolvedOptions/resolved-calendar-unicode-
 test/intl402/DateTimeFormat/prototype/resolvedOptions/resolved-hour-cycle-unicode-extensions-and-options.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/resolved-locale-with-hc-unicode.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/resolved-numbering-system-unicode-extensions-and-options.js
-test/intl402/DateTimeFormat/supportedLocalesOf/basic.js
 test/intl402/DateTimeFormat/taint-Object-prototype-date-time-components.js
 test/intl402/DateTimeFormat/test-option-date-time-components.js
 test/intl402/DateTimeFormat/test-option-formatMatcher.js
@@ -1738,11 +1715,8 @@ test/intl402/Intl/supportedValuesOf/timeZones-include-non-continental.js
 test/intl402/Intl/supportedValuesOf/units-accepted-by-NumberFormat.js
 test/intl402/ListFormat/constructor/constructor/locales-valid.js
 test/intl402/ListFormat/constructor/constructor/options-undefined.js
-test/intl402/ListFormat/constructor/supportedLocalesOf/basic.js
 test/intl402/ListFormat/constructor/supportedLocalesOf/options-toobject.js
-test/intl402/ListFormat/prototype/format/iterable-iteratorclose.js
 test/intl402/ListFormat/prototype/formatToParts/en-us-disjunction.js
-test/intl402/ListFormat/prototype/formatToParts/iterable-iteratorclose.js
 test/intl402/ListFormat/prototype/resolvedOptions/type.js
 test/intl402/Locale/canonicalize-locale-list-take-locale.js
 test/intl402/Locale/constructor-apply-options-canonicalizes-twice.js
@@ -1897,10 +1871,8 @@ test/intl402/NumberFormat/prototype/format/useGrouping-extended-en-US.js
 test/intl402/NumberFormat/prototype/format/value-arg-coerced-to-number.js
 test/intl402/NumberFormat/prototype/format/value-decimal-string.js
 test/intl402/NumberFormat/prototype/format/value-tonumber.js
-test/intl402/NumberFormat/prototype/formatRange/argument-to-Intlmathematicalvalue-throws.js
 test/intl402/NumberFormat/prototype/formatRange/en-US.js
 test/intl402/NumberFormat/prototype/formatRange/pt-PT.js
-test/intl402/NumberFormat/prototype/formatRangeToParts/argument-to-Intlmathematicalvalue-throws.js
 test/intl402/NumberFormat/prototype/formatRangeToParts/en-US.js
 test/intl402/NumberFormat/prototype/formatToParts/default-parameter.js
 test/intl402/NumberFormat/prototype/formatToParts/engineering-scientific-de-DE.js
@@ -1947,7 +1919,6 @@ test/intl402/NumberFormat/prototype/resolvedOptions/resolved-numbering-system-un
 test/intl402/NumberFormat/prototype/resolvedOptions/return-keys-order-default.js
 test/intl402/NumberFormat/prototype/resolvedOptions/roundingMode.js
 test/intl402/NumberFormat/significant-digits-options-get-sequence.js
-test/intl402/NumberFormat/supportedLocalesOf/basic.js
 test/intl402/NumberFormat/test-option-currency.js
 test/intl402/NumberFormat/test-option-currencyDisplay.js
 test/intl402/NumberFormat/test-option-roundingPriority-mixed-options.js
@@ -1968,7 +1939,6 @@ test/intl402/PluralRules/prototype/resolvedOptions/plural-categories-order.js
 test/intl402/PluralRules/prototype/resolvedOptions/properties.js
 test/intl402/PluralRules/prototype/select/notation.js
 test/intl402/PluralRules/prototype/selectRange/nan-arguments-throws.js
-test/intl402/PluralRules/supportedLocalesOf/main.js
 test/intl402/RelativeTimeFormat/constructor/constructor/locales-valid.js
 test/intl402/RelativeTimeFormat/constructor/constructor/options-numberingSystem-invalid.js
 test/intl402/RelativeTimeFormat/constructor/constructor/options-numeric-invalid.js
@@ -1976,7 +1946,6 @@ test/intl402/RelativeTimeFormat/constructor/constructor/options-order.js
 test/intl402/RelativeTimeFormat/constructor/constructor/options-style-invalid.js
 test/intl402/RelativeTimeFormat/constructor/constructor/options-throwing-getters.js
 test/intl402/RelativeTimeFormat/constructor/constructor/options-undefined.js
-test/intl402/RelativeTimeFormat/constructor/supportedLocalesOf/basic.js
 test/intl402/RelativeTimeFormat/constructor/supportedLocalesOf/options-toobject.js
 test/intl402/RelativeTimeFormat/prototype/format/en-us-numbering-systems.js
 test/intl402/RelativeTimeFormat/prototype/format/en-us-numeric-always.js
@@ -2000,7 +1969,6 @@ test/intl402/RelativeTimeFormat/prototype/resolvedOptions/resolved-numbering-sys
 test/intl402/RelativeTimeFormat/prototype/resolvedOptions/type.js
 test/intl402/Segmenter/constructor/constructor/locales-valid.js
 test/intl402/Segmenter/constructor/constructor/options-undefined.js
-test/intl402/Segmenter/constructor/supportedLocalesOf/basic.js
 test/intl402/Segmenter/constructor/supportedLocalesOf/options-toobject.js
 test/intl402/Segmenter/prototype/resolvedOptions/type-without-lbs.js
 test/intl402/Segmenter/prototype/segment/name_of_symbol_iterator.js
@@ -2019,7 +1987,6 @@ test/intl402/constructors-taint-Object-prototype.js
 test/intl402/language-tags-canonicalized.js
 test/intl402/language-tags-invalid.js
 test/intl402/language-tags-with-underscore.js
-test/intl402/supportedLocalesOf-default-locale-and-zxx-locale.js
 test/intl402/supportedLocalesOf-locales-arg-coered-to-object.js
 test/language/arguments-object/mapped/Symbol.iterator.js
 test/language/arguments-object/unmapped/Symbol.iterator.js
@@ -2125,7 +2092,6 @@ test/language/expressions/class/elements/class-name-static-initializer-decl.js
 test/language/expressions/class/elements/class-name-static-initializer-expr.js
 test/language/expressions/class/elements/fields-multiple-definitions-static-private-methods-proxy.js
 test/language/expressions/class/elements/grammar-private-field-optional-chaining.js
-test/language/expressions/class/elements/intercalated-static-non-static-computed-fields.js
 test/language/expressions/class/elements/private-field-access-on-inner-arrow-function.js
 test/language/expressions/class/elements/private-field-access-on-inner-function.js
 test/language/expressions/class/elements/private-field-after-optional-chain.js
@@ -2311,7 +2277,6 @@ test/language/expressions/logical-assignment/lgcl-or-whitespace.js
 test/language/expressions/logical-not/S11.4.9_A1.js
 test/language/expressions/modulus/bigint-modulo-zero.js
 test/language/expressions/new.target/asi.js
-test/language/expressions/new.target/value-via-super-call.js
 test/language/expressions/new/S11.2.2_A4_T1.js
 test/language/expressions/new/S11.2.2_A4_T2.js
 test/language/expressions/new/S11.2.2_A4_T3.js
@@ -2358,7 +2323,6 @@ test/language/expressions/property-accessors/S11.2.1_A4_T3.js
 test/language/expressions/property-accessors/S11.2.1_A4_T5.js
 test/language/expressions/right-shift/bigint.js
 test/language/expressions/subtraction/S11.6.2_A4_T7.js
-test/language/expressions/super/call-construct-invocation.js
 test/language/expressions/super/call-proto-not-ctor.js
 test/language/expressions/super/call-spread-obj-with-overrides.js
 test/language/expressions/super/prop-dot-obj-val-from-eval.js
@@ -2461,23 +2425,18 @@ test/language/statements/class/definition/fn-name-method.js
 test/language/statements/class/definition/fn-name-static-precedence-order.js
 test/language/statements/class/definition/fn-name-static-precedence.js
 test/language/statements/class/definition/prototype-getter.js
-test/language/statements/class/definition/prototype-property.js
 test/language/statements/class/definition/this-access-restriction.js
 test/language/statements/class/elements/class-field-is-observable-by-proxy.js
 test/language/statements/class/elements/class-field-on-frozen-objects.js
-test/language/statements/class/elements/computed-property-abrupt-completition.js
-test/language/statements/class/elements/fields-hash-constructor-is-a-valid-name.js
 test/language/statements/class/elements/get-access-of-missing-private-getter.js
 test/language/statements/class/elements/get-access-of-missing-private-static-getter.js
 test/language/statements/class/elements/get-access-of-missing-shadowed-private-getter.js
 test/language/statements/class/elements/grammar-private-field-optional-chaining.js
-test/language/statements/class/elements/intercalated-static-non-static-computed-fields.js
 test/language/statements/class/elements/private-accessor-is-visible-in-computed-properties.js
 test/language/statements/class/elements/private-class-field-on-nonextensible-objects.js
 test/language/statements/class/elements/private-field-access-on-inner-arrow-function.js
 test/language/statements/class/elements/private-field-access-on-inner-function.js
 test/language/statements/class/elements/private-field-after-optional-chain.js
-test/language/statements/class/elements/private-field-is-not-clobbered-by-computed-property.js
 test/language/statements/class/elements/private-field-is-visible-in-computed-properties.js
 test/language/statements/class/elements/private-field-visible-to-direct-eval.js
 test/language/statements/class/elements/private-field-with-initialized-id-is-visible-in-computed-properties.js
@@ -2486,7 +2445,6 @@ test/language/statements/class/elements/private-getter-access-on-inner-function.
 test/language/statements/class/elements/private-getter-brand-check-multiple-evaluations-of-class.js
 test/language/statements/class/elements/private-getter-brand-check-super-class.js
 test/language/statements/class/elements/private-getter-brand-check.js
-test/language/statements/class/elements/private-getter-is-not-clobbered-by-computed-property.js
 test/language/statements/class/elements/private-getter-shadowed-by-field-on-nested-class.js
 test/language/statements/class/elements/private-getter-shadowed-by-getter-on-nested-class.js
 test/language/statements/class/elements/private-getter-shadowed-by-method-on-nested-class.js
@@ -2498,7 +2456,6 @@ test/language/statements/class/elements/private-method-double-initialisation-get
 test/language/statements/class/elements/private-method-double-initialisation-get.js
 test/language/statements/class/elements/private-method-double-initialisation-set.js
 test/language/statements/class/elements/private-method-double-initialisation.js
-test/language/statements/class/elements/private-method-is-not-clobbered-by-computed-property.js
 test/language/statements/class/elements/private-method-shadowed-by-field-on-nested-class.js
 test/language/statements/class/elements/private-method-shadowed-by-getter-on-nested-class.js
 test/language/statements/class/elements/private-method-shadowed-by-setter-on-nested-class.js
@@ -2508,7 +2465,6 @@ test/language/statements/class/elements/private-setter-access-on-inner-function.
 test/language/statements/class/elements/private-setter-brand-check-multiple-evaluations-of-class.js
 test/language/statements/class/elements/private-setter-brand-check-super-class.js
 test/language/statements/class/elements/private-setter-brand-check.js
-test/language/statements/class/elements/private-setter-is-not-clobbered-by-computed-property.js
 test/language/statements/class/elements/private-setter-shadowed-by-field-on-nested-class.js
 test/language/statements/class/elements/private-setter-shadowed-by-getter-on-nested-class.js
 test/language/statements/class/elements/private-setter-shadowed-by-method-on-nested-class.js
@@ -2579,8 +2535,6 @@ test/language/statements/class/scope-name-lex-open-no-heritage.js
 test/language/statements/class/static-init-abrupt.js
 test/language/statements/class/static-init-sequence.js
 test/language/statements/class/strict-mode/arguments-callee.js
-test/language/statements/class/subclass/class-definition-null-proto-contains-return-override.js
-test/language/statements/class/subclass/derived-class-return-override-with-object.js
 test/language/statements/class/subclass/derived-class-return-override-with-symbol.js
 test/language/statements/class/subclass/private-class-field-on-nonextensible-return-override.js
 test/language/statements/class/syntax/class-expression-binding-identifier-opt-class-element-list.js
@@ -2822,7 +2776,6 @@ test/staging/decorators/private-auto-accessor.js
 test/staging/decorators/public-auto-accessor.js
 test/staging/sm/Array/for_of_3.js
 test/staging/sm/Array/for_of_4.js
-test/staging/sm/Array/from-iterator-close.js
 test/staging/sm/Array/from_proxy.js
 test/staging/sm/Array/from_string.js
 test/staging/sm/Array/group.js
@@ -2988,10 +2941,8 @@ test/staging/sm/Symbol/toStringTag.js
 test/staging/sm/Symbol/valueOf.js
 test/staging/sm/TypedArray/constructor-not-callable.js
 test/staging/sm/TypedArray/from_basics.js
-test/staging/sm/TypedArray/has-property-op.js
 test/staging/sm/TypedArray/indexOf-and-lastIndexOf.js
 test/staging/sm/TypedArray/object-defineproperty.js
-test/staging/sm/TypedArray/seal-and-freeze.js
 test/staging/sm/TypedArray/set-toobject.js
 test/staging/sm/TypedArray/slice-conversion.js
 test/staging/sm/TypedArray/toString.js
@@ -3006,7 +2957,6 @@ test/staging/sm/async-functions/property.js
 test/staging/sm/async-functions/toString.js
 test/staging/sm/class/classHeritage.js
 test/staging/sm/class/className.js
-test/staging/sm/class/classPrototype.js
 test/staging/sm/class/derivedConstructorArrowEvalNestedSuperCall.js
 test/staging/sm/class/derivedConstructorArrowEvalSuperCall.js
 test/staging/sm/class/fields-instance-class-name-binding-eval.js
@@ -3020,7 +2970,6 @@ test/staging/sm/class/newTargetArrow.js
 test/staging/sm/class/newTargetEval.js
 test/staging/sm/class/parenExprToString.js
 test/staging/sm/class/strictExecution.js
-test/staging/sm/class/stringConstructor.js
 test/staging/sm/class/superCallBadDynamicSuperClass.js
 test/staging/sm/class/superCallBaseInvoked.js
 test/staging/sm/class/superCallIllegal.js
