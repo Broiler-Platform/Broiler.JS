@@ -134,14 +134,14 @@ public partial class JSGlobalStatic
     public static JSValue EncodeURI(in Arguments a)
     {
         var f = a.Get1().ToString();
-        return JSValue.CreateString(Uri.EscapeUriString(f));
+        return JSValue.CreateString(UriHelper.EncodeURI(f));
     }
 
     [JSExport("encodeURIComponent", Length = 1)]
     public static JSValue EncodeURIComponent(in Arguments a)
     {
         var f = a.Get1().ToString();
-        return JSValue.CreateString(Uri.EscapeDataString(f));
+        return JSValue.CreateString(UriHelper.EncodeURIComponent(f));
     }
 
     [JSExport("escape", Length = 1)]

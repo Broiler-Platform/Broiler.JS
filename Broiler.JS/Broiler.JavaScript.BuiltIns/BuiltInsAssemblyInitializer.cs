@@ -1213,11 +1213,15 @@ internal static class BuiltInsAssemblyInitializer
         {
             if (a.This is JSRegExp regExp)
             {
-                var flags = GetObservableFlags(regExp);
+                // Per 22.2.6.9, flags is ToString(Get(R, "flags")) and lastIndex
+                // is ToLength(Get(R, "lastIndex")) — both reads are observable, so
+                // a throwing `flags` getter / `flags` toString / `lastIndex`
+                // valueOf must propagate.
+                var flags = JSValue.CreateString(regExp[KeyStrings.GetOrCreate("flags")].ToString());
                 var matcher = InvokeSpeciesConstructor(regExp, flags);
                 if (matcher.IsUndefined)
                     matcher = new JSRegExp(new Arguments(JSUndefined.Value, regExp, flags));
-                matcher[KeyStrings.lastIndex] = regExp[KeyStrings.lastIndex];
+                matcher[KeyStrings.lastIndex] = JSValue.CreateNumber(ToLength(regExp[KeyStrings.lastIndex]));
                 return new JSRegExpStringIterator(
                     matcher,
                     JSValue.CreateString(a.Get1().ToString()),
