@@ -167,12 +167,106 @@ public static class JSIntl
         {
             // SupportedLocales: canonicalize the requested locales, then coerce the
             // options argument and validate the localeMatcher option (RangeError on
-            // an invalid value). Every requested locale is treated as supported.
-            var result = CanonicalizeLocaleList(a.Get1());
+            // an invalid value), and finally narrow the canonicalized list to the
+            // locales the runtime can actually serve (LookupSupportedLocales).
+            var requested = CanonicalizeLocaleList(a.Get1());
             var options = CoerceOptionsToObject(a.GetAt(1));
             _ = GetOption(options, LocaleMatcherKey, ["lookup", "best fit"], false, "best fit");
-            return result;
+            return LookupSupportedLocales(requested);
         }, "supportedLocalesOf", "function supportedLocalesOf() { [native code] }", length: 1, createPrototype: false);
+
+    // The set of BCP 47 language tags the host runtime knows about, sourced from
+    // the .NET globalization data (ICU/CLDR). Used as AvailableLocales for the
+    // BestAvailableLocale fallback walk in LookupSupportedLocales.
+    private static HashSet<string> availableLocales;
+
+    private static HashSet<string> AvailableLocales
+    {
+        get
+        {
+            if (availableLocales == null)
+            {
+                var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var culture in CultureInfo.GetCultures(CultureTypes.AllCultures))
+                {
+                    if (!string.IsNullOrEmpty(culture.Name))
+                        set.Add(culture.Name);
+                }
+
+                availableLocales = set;
+            }
+
+            return availableLocales;
+        }
+    }
+
+    // LookupSupportedLocales (ECMA-402): keep each requested (already
+    // canonicalized) locale whose BestAvailableLocale match is defined, dropping
+    // the rest (e.g. "zxx", "und"). The original requested tag — extensions and
+    // all — is preserved in the result.
+    private static JSValue LookupSupportedLocales(JSValue requested)
+    {
+        var subset = JSValue.CreateArray();
+        if (requested is not JSObject list)
+            return subset;
+
+        var length = list[KeyStrings.length].UIntValue;
+        for (uint i = 0; i < length; i++)
+        {
+            var locale = list[i];
+            if (locale.IsUndefined)
+                continue;
+
+            if (IsLocaleAvailable(locale.StringValue))
+                subset.AddArrayItem(JSValue.CreateString(locale.StringValue));
+        }
+
+        return subset;
+    }
+
+    // BestAvailableLocale: strip extension sequences, then progressively trim the
+    // trailing subtag (skipping single-character subtags) until an available
+    // locale is found or the candidate is exhausted.
+    private static bool IsLocaleAvailable(string locale)
+    {
+        var available = AvailableLocales;
+        var candidate = RemoveExtensionSequences(locale);
+        while (candidate.Length > 0)
+        {
+            if (available.Contains(candidate))
+                return true;
+
+            var pos = candidate.LastIndexOf('-');
+            if (pos < 0)
+                return false;
+
+            if (pos >= 2 && candidate[pos - 2] == '-')
+                pos -= 2;
+
+            candidate = candidate.Substring(0, pos);
+        }
+
+        return false;
+    }
+
+    // Drop every subtag from the first singleton (length-1) subtag onward, i.e.
+    // the Unicode ("-u-"), transform ("-t-") and private ("-x-") extension
+    // sequences, leaving the language/script/region/variant core for matching.
+    private static string RemoveExtensionSequences(string locale)
+    {
+        var parts = locale.Split('-');
+        var end = parts.Length;
+        for (var i = 1; i < parts.Length; i++)
+        {
+            if (parts[i].Length == 1)
+            {
+                end = i;
+                break;
+            }
+        }
+
+        return end == parts.Length ? locale : string.Join("-", parts, 0, end);
+    }
 
     private static JSObject CoerceOptionsToObject(JSValue options)
     {
