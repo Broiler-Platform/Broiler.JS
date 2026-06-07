@@ -22,6 +22,18 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   (object-literal syntax) was accepted as a data property instead of being
 //   rejected. A colon is never a valid ClassElement, so `class X { x: 1 }` is now
 //   a SyntaxError. Object-literal and destructuring colons are unaffected.
+//
+// Problem 2 (private methods/accessors) — instance private methods and accessors
+//   were installed once on the prototype, which broke the per-instance brand: a
+//   `return`-override object (whose prototype is not the class prototype) could
+//   not call them, and re-running a constructor over the same object did not throw.
+//   They are now created once at class evaluation and installed PER INSTANCE (via
+//   PrivateMethodAdd / PrivateAccessorAdd, before the field initializers), matching
+//   InitializeInstanceElements: a second installation or a non-extensible target
+//   throws, and the override object carries the element. (Fixes the
+//   private-method-double-initialisation* and the method/accessor portions of the
+//   return-override non-extensible tests; covered by a full base-vs-fix run of the
+//   class/elements + class/subclass test262 trees with zero regressions.)
 public class Issue701Tests
 {
     private static JSValue Eval(string code)
@@ -117,4 +129,74 @@ public class Issue701Tests
     [Fact]
     public void DestructuringDefaultStillWorks()
         => Assert.Equal("5", Eval("var { a = 5 } = {}; a;").ToString());
+
+    // ---- Instance private methods/accessors install per instance ----
+
+    // Re-running a constructor over the same `return`-override object installs the
+    // private method a second time and throws (PrivateMethodOrAccessorAdd).
+    [Fact]
+    public void PrivateMethodDoubleInstallThrows()
+        => Assert.Equal("TypeError", Catch(
+            "class B { constructor(o) { return o; } }" +
+            "class C extends B { #m() {} }" +
+            "var o = {}; new C(o); new C(o);"));
+
+    // The same for a private accessor sharing a getter and setter.
+    [Fact]
+    public void PrivateAccessorDoubleInstallThrows()
+        => Assert.Equal("TypeError", Catch(
+            "class B { constructor(o) { return o; } }" +
+            "class C extends B { get #x() {} set #x(v) {} }" +
+            "var o = {}; new C(o); new C(o);"));
+
+    // Installing a private method on a non-extensible instance throws.
+    [Fact]
+    public void PrivateMethodOnNonExtensibleThrows()
+        => Assert.Equal("TypeError", Catch(
+            "class B { constructor(seal) { if (seal) Object.preventExtensions(this); } }" +
+            "class C extends B { constructor(seal) { super(seal); } #m() { return 1; } }" +
+            "new C(true);"));
+
+    // A `return`-override object carries the private method and can call it — the
+    // method is on the instance, not (only) the class prototype.
+    [Fact]
+    public void ReturnOverrideObjectCanCallPrivateMethod()
+        => Assert.Equal("7", Eval(
+            "class B { constructor(o) { return o; } }" +
+            "class C extends B { #m() { return 7; } static call(o) { return o.#m(); } }" +
+            "var o = {}; var inst = new C(o); C.call(inst);").ToString());
+
+    // A private method is callable on an ordinary instance (the common case).
+    [Fact]
+    public void PrivateMethodOnOrdinaryInstanceWorks()
+        => Assert.Equal("3", Eval(
+            "class C { #m() { return 3; } call() { return this.#m(); } } new C().call();").ToString());
+
+    // A private accessor (getter + setter) round-trips on an ordinary instance.
+    [Fact]
+    public void PrivateAccessorRoundTrips()
+        => Assert.Equal("9", Eval(
+            "class C { #v = 1; get #x() { return this.#v; } set #x(n) { this.#v = n; }" +
+            "          run() { this.#x = 9; return this.#x; } } new C().run();").ToString());
+
+    // Private methods install before field initializers, so a field initializer
+    // may call one.
+    [Fact]
+    public void FieldInitializerCanCallPrivateMethod()
+        => Assert.Equal("5", Eval(
+            "class C { #m() { return 5; } x = this.#m(); } new C().x;").ToString());
+
+    // A private method is not an enumerable own property.
+    [Fact]
+    public void PrivateMethodIsNotEnumerable()
+        => Assert.Equal("0", Eval(
+            "class C { #m() {} f = 1; }" +
+            "var n = 0; for (var k in new C()) if (k !== 'f') n++; n;").ToString());
+
+    // A class with private methods but no fields and no explicit constructor still
+    // installs them (the synthetic constructor runs InitMembers).
+    [Fact]
+    public void SyntheticConstructorInstallsPrivateMethod()
+        => Assert.Equal("4", Eval(
+            "class C { #m() { return 4; } call() { return this.#m(); } } new C().call();").ToString());
 }

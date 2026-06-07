@@ -20,7 +20,7 @@ partial class FastCompiler
     private YExpression CreateFunction(AstFunctionExpression functionDeclaration, YExpression super = null, bool createClass = false, string className = null,
         IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true, string inferredFunctionName = null,
         bool createPrototype = true, string[] directEvalPrivateNames = null, IReadOnlyDictionary<AstClassProperty, YExpression> computedMemberNames = null,
-        bool thisIsUninitialized = false, YExpression superConstructor = null)
+        bool thisIsUninitialized = false, YExpression superConstructor = null, IReadOnlyList<PrivateInstanceElement> privateInstanceElements = null)
     {
         var node = functionDeclaration;
         var functionLength = GetExpectedArgumentCount(functionDeclaration.Params);
@@ -61,6 +61,7 @@ partial class FastCompiler
             // super() in a derived constructor (or an arrow nested in it) targets the
             // superclass constructor, which differs from the home-object prototype.
             cs.SuperConstructor = superConstructor ?? (functionDeclaration.IsArrowFunction ? previousScope.SuperConstructor : null);
+            cs.PrivateInstanceElements = privateInstanceElements;
             cs.InParameterInitializer = previousScope.InParameterInitializer;
             var lexicalScopeVar = cs.Context;
 
@@ -361,6 +362,28 @@ partial class FastCompiler
     private void InitMembers(Sequence<YExpression> sList, FastFunctionScope s)
     {
         var @this = s.ThisExpression;
+
+        // InitializeInstanceElements installs the class's private methods/accessors
+        // (the shared function objects created once at class evaluation) onto the
+        // instance BEFORE any field initializer runs, so a field initializer can
+        // call them. Each install also establishes the per-instance private brand.
+        if (s.PrivateInstanceElements != null)
+        {
+            foreach (var element in s.PrivateInstanceElements)
+            {
+                if (element.Method != null)
+                {
+                    sList.Add(JSObjectBuilder.PrivateMethodAdd(@this, element.Key, element.Method));
+                }
+                else
+                {
+                    sList.Add(JSObjectBuilder.PrivateAccessorAdd(@this, element.Key,
+                        element.Getter ?? YExpression.Constant(null, typeof(JSValue)),
+                        element.Setter ?? YExpression.Constant(null, typeof(JSValue))));
+                }
+            }
+        }
+
         var en = s.MemberInits.GetFastEnumerator();
 
         while (en.MoveNext(out var member))

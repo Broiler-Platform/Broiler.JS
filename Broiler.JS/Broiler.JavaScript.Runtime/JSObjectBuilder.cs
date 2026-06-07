@@ -69,6 +69,12 @@ public class JSObjectBuilder
     readonly static MethodInfo _PrivateFieldAddKeyString =
         type.PublicMethod(nameof(JSObject.PrivateFieldAdd), typeof(KeyString), typeof(JSValue));
 
+    readonly static MethodInfo _PrivateMethodAddKeyString =
+        type.PublicMethod(nameof(JSObject.PrivateMethodAdd), typeof(KeyString), typeof(JSValue));
+
+    readonly static MethodInfo _PrivateAccessorAddKeyString =
+        type.PublicMethod(nameof(JSObject.PrivateAccessorAdd), typeof(KeyString), typeof(JSValue), typeof(JSValue));
+
     readonly static MethodInfo _FastAddValueKeySymbol =
         type.PublicMethod(nameof(JSObject.FastAddValue), typeof(IJSSymbol), typeof(JSValue), typeof(JSPropertyAttributes));
 
@@ -123,6 +129,15 @@ public class JSObjectBuilder
     // already carries the private name. The key is always a minted KeyString.
     public static YElementInit PrivateFieldAdd(Expression key, Expression value)
         => new YElementInit(_PrivateFieldAddKeyString, key, value);
+
+    // PrivateMethodOrAccessorAdd for an instance private method/accessor: installs
+    // the shared function object(s) onto `target` under the minted private key,
+    // with the same extensibility/duplicate guards as PrivateFieldAdd.
+    public static Expression PrivateMethodAdd(Expression target, Expression key, Expression method)
+        => Expression.Call(target, _PrivateMethodAddKeyString, key, method);
+
+    public static Expression PrivateAccessorAdd(Expression target, Expression key, Expression getter, Expression setter)
+        => Expression.Call(target, _PrivateAccessorAddKeyString, key, getter, setter);
 
     // CreateDataPropertyOrThrow for a public class field: observable on exotic
     // receivers (Proxy), a plain own-property store on ordinary objects.

@@ -182,6 +182,34 @@ partial class FastCompiler
         var computedMemberNames = new Dictionary<AstClassProperty, YExpression>();
         var classScopeVariables = new Sequence<YParameterExpression> { superVar, superPrototypeVar };
         AstFunctionExpression constructor = null;
+
+        // Non-static private methods/accessors are installed PER INSTANCE (not on the
+        // prototype) so that a `return`-override object carries them and a second
+        // installation throws. Each function object is created once here, into a
+        // class-scope variable, and referenced by the constructor's InitMembers. A
+        // getter and setter sharing a private name merge into one element.
+        var privateInstanceElements = new List<PrivateInstanceElement>();
+        var privateElementByName = new Dictionary<string, PrivateInstanceElement>(StringComparer.Ordinal);
+
+        PrivateInstanceElement PrivateElementFor(AstClassProperty property, YExpression keyName)
+        {
+            var pname = ((AstIdentifier)property.Key).Name.Value;
+            if (!privateElementByName.TryGetValue(pname, out var element))
+            {
+                element = new PrivateInstanceElement { Key = keyName };
+                privateElementByName[pname] = element;
+                privateInstanceElements.Add(element);
+            }
+            return element;
+        }
+
+        YParameterExpression SharedMemberFunctionVar(YExpression fx, string label)
+        {
+            var fnVar = YExpression.Parameter(fx.Type, $"{label}$pf{privateKeyVarCounter++}");
+            classScopeVariables.Add(fnVar);
+            stmts.Add(YExpression.Assign(fnVar, fx));
+            return fnVar;
+        }
         var ownPrivateNames = CollectPrivateNames(body.Members);
         var directEvalPrivateNames = CombinePrivateNames(this.scope.Top.DirectEvalPrivateNames, ownPrivateNames);
         // Only INSTANCE private names get per-evaluation minted keys. A static private
@@ -310,7 +338,10 @@ partial class FastCompiler
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
-                        prototypeElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
+                        if (isPrivateName)
+                            PrivateElementFor(property, name).Getter = SharedMemberFunctionVar(fx, "#get");
+                        else
+                            prototypeElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     break;
 
@@ -328,7 +359,10 @@ partial class FastCompiler
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
-                        prototypeElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
+                        if (isPrivateName)
+                            PrivateElementFor(property, name).Setter = SharedMemberFunctionVar(fx, "#set");
+                        else
+                            prototypeElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     break;
 
@@ -350,7 +384,10 @@ partial class FastCompiler
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
-                        prototypeElements.Add(JSObjectBuilder.AddValue(name, fx, isPrivateName ? JSPropertyAttributes.ConfigurableReadonlyValue : JSPropertyAttributes.ConfigurableValue));
+                        if (isPrivateName)
+                            PrivateElementFor(property, name).Method = SharedMemberFunctionVar(fx, "#m");
+                        else
+                            prototypeElements.Add(JSObjectBuilder.AddValue(name, fx, JSPropertyAttributes.ConfigurableValue));
                     }
                     break;
 
@@ -367,17 +404,18 @@ partial class FastCompiler
             // the superclass prototype, while super(...) targets the superclass
             // constructor. Pass both so each resolves correctly.
             var fx = CreateFunction(constructor, superPrototypeVar, true, className, memberInits, true, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames,
-                thisIsUninitialized: hasSuperClass, superConstructor: superVar);
+                thisIsUninitialized: hasSuperClass, superConstructor: superVar, privateInstanceElements: privateInstanceElements);
             staticElements.Add(JSClassBuilder.AddConstructor(fx));
         }
         else
         {
-            if (memberInits.Any())
+            if (memberInits.Any() || privateInstanceElements.Count > 0)
             {
                 // super.x in instance field initializers resolves against the home
                 // object's prototype (the superclass prototype), so give the synthetic
                 // default constructor scope that super binding.
                 using var s = this.scope.Push(new FastFunctionScope(null, null, super: superPrototypeVar, memberInits: memberInits, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames, thisIsUninitialized: hasSuperClass));
+                s.PrivateInstanceElements = privateInstanceElements;
                 var args = s.Arguments;
                 var @this = s.ThisExpression;
                 var inits = new Sequence<YExpression>() { };

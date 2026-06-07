@@ -13,6 +13,22 @@ using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 namespace Broiler.JavaScript.Compiler;
 
 
+// One non-static private method or accessor of a class, captured at class
+// evaluation time. Its shared function object(s) live in class-scope variables;
+// every instance installs the element under the minted private Key via
+// PrivateMethodAdd / PrivateAccessorAdd, which establishes the per-instance brand
+// (so a `return`-override object carries it, and a second installation throws).
+// Getter/Setter are the two halves of one accessor element (either may be null);
+// Method is set instead for an ordinary private method.
+public sealed class PrivateInstanceElement
+{
+    public YExpression Key;
+    public YExpression Method;
+    public YExpression Getter;
+    public YExpression Setter;
+}
+
+
 public class SharedParserStringMap<T>
 {
     private static ConcurrentNameMap parserStringCache = new();
@@ -297,6 +313,11 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public IReadOnlyDictionary<AstClassProperty, YExpression> ComputedMemberNames { get; set; }
 
+    // Non-static private methods/accessors installed on each instance (before the
+    // field initializers) by the constructor's InitMembers. Null/empty for classes
+    // without instance private methods or accessors.
+    public IReadOnlyList<PrivateInstanceElement> PrivateInstanceElements { get; set; }
+
     public readonly FastFunctionScope RootScope;
 
     public FastFunctionScope(FastPool pool, AstFunctionExpression fx, YExpression previousThis = null, YExpression super = null, bool isAsync = false,
@@ -354,6 +375,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         RootScope = p.RootScope;
         MemberInits = p.MemberInits;
         ComputedMemberNames = p.ComputedMemberNames;
+        PrivateInstanceElements = p.PrivateInstanceElements;
         DirectEvalPrivateNames = p.DirectEvalPrivateNames;
         InParameterInitializer = p.InParameterInitializer;
         ArgumentsExpression = p.ArgumentsExpression;

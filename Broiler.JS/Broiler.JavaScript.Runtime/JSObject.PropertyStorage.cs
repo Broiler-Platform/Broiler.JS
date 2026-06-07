@@ -86,24 +86,52 @@ public partial class JSObject
         return end < 0 ? s[1..] : s[1..end];
     }
 
-    /// <summary>
-    /// PrivateFieldAdd (ECMA-262 § 7.3.28): installs a private field on this object
-    /// during instance-field initialization. Adding a private field to a
-    /// non-extensible object is a TypeError (the <c>nonextensible-applies-to-private</c>
-    /// refinement), and so is re-adding a private name the object already carries
-    /// (PrivateFieldAdd step 4) — observable when a derived constructor's
-    /// <c>return</c>-override hands the same object to two field initializations.
-    /// The field is stored directly as an internal slot, bypassing Proxy traps.
-    /// </summary>
-    public void PrivateFieldAdd(KeyString key, JSValue value)
+    // Shared guard for PrivateFieldAdd / PrivateMethodOrAccessorAdd: adding a
+    // private element to a non-extensible object is a TypeError (the
+    // nonextensible-applies-to-private refinement), and so is re-adding a private
+    // name the object already carries — observable when a derived constructor's
+    // return-override hands the same object to two installations.
+    private void PrivateElementAddGuard(in KeyString key)
     {
         if (!IsExtensible())
             throw NewTypeError($"Cannot add private member {PrivateDisplayName(in key)} to a non-extensible object");
 
         if (!ownProperties.GetValue(key.Key).IsEmpty)
             throw NewTypeError($"Cannot add private member {PrivateDisplayName(in key)}: it is already present on the object");
+    }
 
+    /// <summary>
+    /// PrivateFieldAdd (ECMA-262 § 7.3.28): installs a private field on this object
+    /// during instance-field initialization. The field is stored directly as an
+    /// internal slot, bypassing Proxy traps.
+    /// </summary>
+    public void PrivateFieldAdd(KeyString key, JSValue value)
+    {
+        PrivateElementAddGuard(in key);
         FastAddValue(key, value, JSPropertyAttributes.ConfigurableValue);
+    }
+
+    /// <summary>
+    /// PrivateMethodOrAccessorAdd for an instance private method: installs the
+    /// shared method function as a read-only per-instance internal slot. Installing
+    /// it per instance (rather than once on the prototype) is what gives a
+    /// <c>return</c>-override object the brand and makes a second installation throw.
+    /// </summary>
+    public void PrivateMethodAdd(KeyString key, JSValue method)
+    {
+        PrivateElementAddGuard(in key);
+        FastAddValue(key, method, JSPropertyAttributes.ConfigurableReadonlyValue);
+    }
+
+    /// <summary>
+    /// PrivateMethodOrAccessorAdd for an instance private accessor: installs the
+    /// shared getter and/or setter (either may be null) merged into one element.
+    /// </summary>
+    public void PrivateAccessorAdd(KeyString key, JSValue getter, JSValue setter)
+    {
+        PrivateElementAddGuard(in key);
+        ref var pr = ref GetOwnProperties();
+        pr.Put(key.Key) = new JSProperty(key, getter, setter, JSPropertyAttributes.ConfigurableProperty);
     }
 
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
