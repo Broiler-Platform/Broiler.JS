@@ -135,4 +135,25 @@ public class Issue697Tests
     public void WithObjectPropertyWinsOverLocal()
         => Assert.Equal("7|99", Eval(
             "(function(){ var k = 99; var o = { k: 1 }; with (o) { k = 7; } return o.k + '|' + k; })();").ToString());
+
+    // ---- Problem 10 (subset): private field read on a primitive receiver ----
+
+    // `this.#p` with a primitive `this` (set via .call) is a brand-check TypeError —
+    // ToObject yields a fresh wrapper that has no private field. (Previously it
+    // returned undefined.)
+    [Theory]
+    [InlineData("15")]
+    [InlineData("'Test262'")]
+    [InlineData("Symbol('x')")]
+    [InlineData("10n")]
+    [InlineData("true")]
+    public void PrivateFieldReadOnPrimitiveReceiverThrows(string primitive)
+        => Assert.Equal("TypeError", Eval(
+            "var t; class C { #p = 1; m() { return this.#p; } }" +
+            "try { C.prototype.m.call(" + primitive + "); t = 'no throw'; } catch (e) { t = e.constructor.name; } t;").ToString());
+
+    // A genuine instance still reads its private field.
+    [Fact]
+    public void PrivateFieldReadOnInstanceStillWorks()
+        => Assert.Equal("1", Eval("class C { #p = 1; m() { return this.#p; } } new C().m();").ToString());
 }

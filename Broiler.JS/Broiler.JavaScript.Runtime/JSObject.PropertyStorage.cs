@@ -39,6 +39,15 @@ public partial class JSObject
         if (!GetInternalProperty(key).IsEmpty)
             return;
 
+        ThrowMissingPrivateMember(in key, reading);
+    }
+
+    // Raises the brand-check TypeError for a private member access whose receiver
+    // does not carry the private name. Also used by the primitive path: a raw
+    // primitive (the boxed wrapper ToObject would create) can never hold a private
+    // field, so `(15).#x` / `"s".#x` is always a TypeError.
+    internal static void ThrowMissingPrivateMember(in KeyString key, bool reading)
+    {
         var display = key.Value.Value is { Length: > 0 } s && s[0] == PrivateNameMarker ? s[1..] : "#<unknown>";
         throw NewTypeError(reading
             ? $"Cannot read private member {display} from an object whose class did not declare it"
