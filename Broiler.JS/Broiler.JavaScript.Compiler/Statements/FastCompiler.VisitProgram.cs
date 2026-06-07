@@ -144,15 +144,31 @@ partial class FastCompiler
             }
         }
 
-        var se = program.Statements.GetFastEnumerator();
-        while (se.MoveNext(out var stmt))
-        {
-            var exp = Visit(stmt);
-            if (exp == null)
-                continue;
+        // Expose this eval body's genuine top-level lexical names so a B.3.4
+        // `if`-clause FunctionDeclaration whose name collides with one of them has
+        // its Annex B var hoisting suppressed instead of clobbering the lexical
+        // binding (see VisitRuntimeFunctionDeclaration). Restored afterwards so a
+        // nested function/program body does not inherit it.
+        var previousDirectEvalProgramLexicalNames = directEvalProgramLexicalNames;
+        if (isDirectEvalCompilation && this.scope.Top.Function == null)
+            directEvalProgramLexicalNames = lexicalBindings;
 
-            blockList.Add(CallStackItemBuilder.Step(scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
-            blockList.Add(exp);
+        try
+        {
+            var se = program.Statements.GetFastEnumerator();
+            while (se.MoveNext(out var stmt))
+            {
+                var exp = Visit(stmt);
+                if (exp == null)
+                    continue;
+
+                blockList.Add(CallStackItemBuilder.Step(scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
+                blockList.Add(exp);
+            }
+        }
+        finally
+        {
+            directEvalProgramLexicalNames = previousDirectEvalProgramLexicalNames;
         }
 
         var r = Scoped(scope, blockList);
@@ -207,7 +223,14 @@ partial class FastCompiler
                 : directEvalBindingNames?.Contains(name.Value) == true
                 ? JSContextBuilder.Index(KeyOfName(name))
                 : JSValueBuilder.Index(top.RootScope.Context, KeyOfName(name));
-        variable.SetInit(JSVariableBuilder.New(functionBinding ? JSUndefinedBuilder.Value : globalValue, name.Value));
+        // Initialise the binding from the current global value rather than
+        // `undefined`: per B.3.3.3 / CreateGlobalVarBinding an Annex B function
+        // var binding that already exists on the global object is left in place,
+        // so a read before the FunctionDeclaration executes must observe the
+        // existing value (e.g. `var f='x'; eval('… if (true) function f(){} …')`).
+        // When no such global exists the read yields `undefined`, matching the
+        // previous behaviour.
+        variable.SetInit(JSVariableBuilder.New(globalValue, name.Value));
         return variable;
     }
 

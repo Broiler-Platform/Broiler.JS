@@ -49,6 +49,19 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   were a downstream symptom: once the local `var` is properly hoisted, a read
 //   inside a `with` that is blocked by @@unscopables resolves to it rather than
 //   leaking to the same-named global.
+//
+// Problem 4 / Problem 7 — a B.3.4 `if`-clause FunctionDeclaration in direct eval
+//   (no braces, e.g. `eval('… if (true) function f(){} …')`) mishandled the
+//   Annex B var binding:
+//     * Problem 7: when the eval body has a same-named lexical binding
+//       (`let f = 123`), Annex B hoisting must be suppressed; the engine instead
+//       wrote the function to the lexical binding. The if-clause function is now
+//       block-scoped (via the implicit-block path) when its name is a genuine
+//       top-level lexical of the eval body, leaving the lexical binding intact.
+//     * Problem 4: when a same-named global already exists (`var f='x'`), the var
+//       binding must be left in place (CreateGlobalVarBinding), so a read before
+//       the declaration observes the existing value. The eval-root binding now
+//       initialises from the current global value rather than `undefined`.
 public class Issue695Tests
 {
     private static JSValue Eval(string code)
@@ -217,4 +230,62 @@ public class Issue695Tests
             "var v = 1; globalThis[Symbol.unscopables] = { v: true };" +
             "function f(){ var r; with (globalThis) { r = typeof v; } var v = 2; return r; }" +
             "f();").ToString());
+
+    // ---- Problem 7: lexical binding suppresses annexB hoist of an eval if-clause fn ----
+
+    // `if (true) function f(){}` in direct eval must not overwrite a same-named
+    // lexical (let/const) binding of the eval body; the lexical value is preserved.
+    [Theory]
+    [InlineData("let f = 123;")]
+    [InlineData("const f = 123;")]
+    public void EvalIfClauseFnDoesNotClobberLexical(string decl)
+    {
+        var code = "var init, after; eval('" + decl
+            + " init = f; if (true) function f() {} after = f;'); init + '/' + (typeof after);";
+        Assert.Equal("123/number", Eval(code).ToString());
+    }
+
+    // The same inside a function-scoped direct eval.
+    [Fact]
+    public void EvalIfClauseFnDoesNotClobberLexicalInFunction()
+        => Assert.Equal("123/number", Eval(
+            "function g(){ var init, after;" +
+            "eval('let f = 123; init = f; if (true) function f() {} after = f;');" +
+            "return init + '/' + (typeof after); } g();").ToString());
+
+    // A non-lexical name (a sibling block-scoped function's annexB var binding) must
+    // still be updated by the if-clause function (last declaration wins).
+    [Fact]
+    public void EvalIfClauseFnUpdatesNonLexicalVarBinding()
+        => Assert.Equal("2", Eval(
+            "(function () { var updated;" +
+            "eval('{ function h(){return 1;} } if (true) function h(){return 2;} else function _h(){} updated = h;');" +
+            "return updated(); }())").ToString());
+
+    // ---- Problem 4: existing global binding left in place by annexB hoisting ----
+
+    // A read before the if-clause FunctionDeclaration observes the existing global
+    // value (the binding is not reinitialized to undefined), and afterwards the
+    // binding is the function.
+    [Fact]
+    public void EvalIfClauseFnLeavesExistingGlobalBinding()
+        => Assert.Equal("x", Eval(
+            "var f = 'x'; eval('var probe = f; if (true) function f() {} globalThis.__p = probe;'); globalThis.__p;").ToString());
+
+    [Fact]
+    public void EvalIfClauseFnLeavesNonConfigurableGlobalBinding()
+        => Assert.Equal("x", Eval(
+            "Object.defineProperty(globalThis, 'f', { value: 'x', enumerable: true, writable: true, configurable: false });" +
+            "eval('var probe = f; if (true) function f() {} globalThis.__p = probe;'); globalThis.__p;").ToString());
+
+    [Fact]
+    public void EvalIfClauseFnFinalValueIsFunction()
+        => Assert.Equal("function", Eval(
+            "var f = 'x'; eval('if (true) function f() {}'); typeof f;").ToString());
+
+    // An eval-created global function from an if-clause remains deletable.
+    [Fact]
+    public void EvalIfClauseGlobalFunctionIsDeletable()
+        => Assert.Equal("true|undefined", Eval(
+            "eval('if (true) function delme(){}'); (delete delme) + '|' + (typeof delme);").ToString());
 }
