@@ -31,7 +31,7 @@ public partial class JSBigUint64Array : JSTypedArray
     {
         var ulongValue = (ulong)ToBigIntValue(value ?? JSUndefined.Value).value;
         if (index >= length)
-            return false;
+            return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
 
         System.Array.Copy(BitConverter.GetBytes(ulongValue), 0, buffer.buffer, byteOffset + index * 8, 8);
         return true;

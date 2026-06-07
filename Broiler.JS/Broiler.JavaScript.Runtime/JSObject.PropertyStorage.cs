@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 namespace Broiler.JavaScript.Runtime;
 
 public partial class JSObject
@@ -20,12 +21,31 @@ public partial class JSObject
     /// </summary>
     public const char PrivateNameMarker = '\u0001';
 
+    // Separates a private name's text from a per-evaluation uniquifier in a minted
+    // private key (see MintPrivateName). Distinct from PrivateNameMarker.
+    private const char PrivateNameEvalSeparator = '';
+
+    private static int privateNameCounter;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsPrivateName(in KeyString key)
     {
         var value = key.Value.Value;
         return !string.IsNullOrEmpty(value) && value[0] == PrivateNameMarker;
     }
+
+    /// <summary>
+    /// Mints a fresh private-name key for one class evaluation. Each call returns a
+    /// distinct key, so a private element installed by one evaluation of a class is
+    /// not visible on instances produced by another evaluation — the key itself is
+    /// the per-evaluation PrivateBrand (brand-check-multiple-evaluations). The
+    /// compiler stores the result in a class-evaluation-scope variable that every
+    /// member reference closes over. <paramref name="name"/> already carries the
+    /// leading '#'.
+    /// </summary>
+    public static KeyString MintPrivateName(string name)
+        => KeyStrings.GetOrCreate(
+            PrivateNameMarker + name + PrivateNameEvalSeparator + Interlocked.Increment(ref privateNameCounter));
 
     // Brand check for a private member access (`obj.#x`). A private name must be
     // present — as an own field or an inherited method/accessor on the real

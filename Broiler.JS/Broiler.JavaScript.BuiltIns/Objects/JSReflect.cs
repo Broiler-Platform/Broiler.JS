@@ -162,13 +162,32 @@ public partial class JSReflect : JSObject
         var target = a.Get1();
         if (target is not JSObject @object)
             throw JSEngine.NewTypeError($"Not an object");
-        
+
         var r = new JSArray();
+
+        // GetAllKeys yields integer-index then string keys (and, for a Proxy, fires
+        // the ownKeys trap which already returns its full string+symbol result).
         var en = @object.GetAllKeys(false, false);
         while (en.MoveNext(out var hasValue, out var value, out var _))
         {
             if (hasValue)
                 r.Add(value);
+        }
+
+        // [[OwnPropertyKeys]] also lists symbol keys after the string keys. The
+        // ordinary GetAllKeys omits them, so append the object's own symbols here.
+        // A Proxy's GetAllKeys already included them via the trap, so skip it.
+        if (@object is not JSProxy)
+        {
+            foreach (var (key, property) in @object.GetSymbols().AllValues())
+            {
+                if (property.IsEmpty)
+                    continue;
+
+                var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(key);
+                if (symbol != null)
+                    r.Add((JSValue)symbol);
+            }
         }
 
         return r;

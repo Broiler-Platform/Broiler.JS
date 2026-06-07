@@ -4,6 +4,7 @@ using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.BuiltIns.DataView;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Storage;
@@ -112,6 +113,12 @@ public partial class JSArrayBuffer : JSObject
     [JSExport(Length = 1)]
     public JSArrayBuffer(in Arguments a) : this(JSEngine.NewTargetPrototype)
     {
+        // ArrayBuffer ( ... ): step 1 — if NewTarget is undefined (called as a plain
+        // function, not via `new`), throw a TypeError. A native [[Construct]] keeps
+        // its new.target in CurrentNewTarget, so both must be null to be a plain call.
+        if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
+            throw JSEngine.NewTypeError("Constructor ArrayBuffer requires 'new'");
+
         int length = ToBufferLength(a.Get1(), 0);
         buffer = new byte[length];
     }

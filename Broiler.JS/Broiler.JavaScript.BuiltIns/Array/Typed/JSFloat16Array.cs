@@ -28,7 +28,7 @@ public partial class JSFloat16Array : JSTypedArray
     {
         var half = (Half)(value ?? JSUndefined.Value).DoubleValue;
         if (index >= length)
-            return false;
+            return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
         var bytes = BitConverter.GetBytes(half);
         System.Array.Copy(bytes, 0, buffer.buffer, byteOffset + index * 2, 2);
         return true;

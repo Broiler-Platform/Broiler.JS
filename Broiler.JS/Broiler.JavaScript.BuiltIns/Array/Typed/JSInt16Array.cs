@@ -27,7 +27,7 @@ public partial class JSInt16Array : JSTypedArray
     {
         var intValue = (value ?? JSUndefined.Value).IntValue;
         if (index >= length)
-            return false;
+            return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
         System.Array.Copy(BitConverter.GetBytes((short)intValue), 0, buffer.buffer, byteOffset + index * 2, 2);
         return true;
     }
