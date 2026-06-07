@@ -309,7 +309,10 @@ public partial class JSArray
 
         for (uint index = 0; index < length; index++)
         {
-            if (!@this.TryGetElement(index, out var item))
+            // Per spec filter uses HasProperty(O, k) then Get(O, k), so an index
+            // inherited from the prototype chain (e.g. a boxed primitive whose
+            // wrapper prototype defines indexed properties) must be visited too.
+            if (!TryGetArrayLikeElement(@this, index, out var item))
                 continue;
 
             var itemParams = new Arguments(thisArg, item, new JSNumber(index), @this);
@@ -537,7 +540,10 @@ public partial class JSArray
         var arrayLikeLength = (uint)length;
         for (uint index = 0; index < arrayLikeLength; index++)
         {
-            if (!@this.TryGetElement(index, out var item))
+            // Per spec map uses HasProperty(O, k) then Get(O, k), so an index
+            // inherited from the prototype chain (e.g. a boxed primitive whose
+            // wrapper prototype defines indexed properties) must be visited too.
+            if (!TryGetArrayLikeElement(@this, index, out var item))
                 continue;
 
             var itemArgs = new Arguments(thisArg, item, new JSNumber(index), @this);
