@@ -45,6 +45,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   methods/accessors/static fields consume, instead of re-evaluating it inside the
 //   deferred MemberInit.
 //
+// Problem 9 (classPrototype) — a class constructor's "prototype" property was
+//   writable. A class's "prototype" is a non-writable, non-enumerable,
+//   non-configurable data property (MakeClassConstructor), unlike an ordinary
+//   function's writable prototype. JSClass now installs it read-only. (The same
+//   file's `static ["prototype"]` rejection already passes via the computed-key
+//   change above, and string-keyed `"constructor"(){ return {} }` via the
+//   constructor return-override fix.)
+//
 // Out of scope (architectural / CLDR / deep parser, matching the triage carried
 // in #683 / #685 / #687 / #689 / #691, and confirmed by probing the engine for
 // this issue): the private-* brand-check and double-initialisation families,
@@ -220,4 +228,53 @@ public class Issue693Tests
             + "  static get [k('f')](){ return 1; }"
             + "}"
             + "log.join(',');").ToString());
+
+    // A computed static element named "prototype" is a TypeError (it would clobber
+    // the non-configurable prototype). Covers the three accessor/method forms.
+    [Theory]
+    [InlineData("static [\"prototype\"](){}")]
+    [InlineData("static get [\"prototype\"](){}")]
+    [InlineData("static set [\"prototype\"](x){}")]
+    public void StaticComputedPrototypeNameThrows(string element)
+    {
+        var code = "var t; try { eval('(class a { constructor(){}; " + element + " })'); t = 'no-throw'; }"
+            + " catch (e) { t = e.constructor.name; } t;";
+        Assert.Equal("TypeError", Eval(code).ToString());
+    }
+
+    // ---- Problem 9: a class's "prototype" property is read-only ----
+
+    // ECMA-262 MakeClassConstructor: a class's "prototype" is non-writable,
+    // non-enumerable, non-configurable — for base, derived, and class expressions.
+    [Theory]
+    [InlineData("class A { constructor(){} }", "A")]
+    [InlineData("var E = class { constructor(){} };", "E")]
+    [InlineData("class A {} class B extends A {}", "B")]
+    public void ClassPrototypeIsReadOnly(string setup, string name)
+        => Assert.Equal("false|false|false", Eval(
+            setup + " var d = Object.getOwnPropertyDescriptor(" + name + ", 'prototype');"
+            + " d.writable + '|' + d.configurable + '|' + d.enumerable;").ToString());
+
+    // An ordinary function's "prototype" stays writable — the change is class-only.
+    [Fact]
+    public void OrdinaryFunctionPrototypeStaysWritable()
+        => Assert.Equal("true|false|false", Eval(
+            "var d = Object.getOwnPropertyDescriptor(function f(){}, 'prototype');"
+            + "d.writable + '|' + d.configurable + '|' + d.enumerable;").ToString());
+
+    // The read-only prototype cannot be reassigned: a strict write throws.
+    [Fact]
+    public void ClassPrototypeReassignmentThrowsInStrictMode()
+        => Assert.Equal("TypeError", Eval(
+            "'use strict'; class A {} var t; try { A.prototype = {}; t = 'no-throw'; }"
+            + " catch (e) { t = e.constructor.name; } t;").ToString());
+
+    // A string-keyed "constructor" method is the class constructor; returning an
+    // object from it discards the instance (staging/sm/class/stringConstructor.js).
+    [Fact]
+    public void StringKeyedConstructorActsAsConstructor()
+        => Assert.Equal("false|false", Eval(
+            "class A { \"constructor\"() { return {}; } }"
+            + "class B extends class {} { \"constructor\"() { return {}; } }"
+            + "(new A() instanceof A) + '|' + (new B() instanceof B);").ToString());
 }

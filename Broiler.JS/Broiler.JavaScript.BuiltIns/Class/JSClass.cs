@@ -5,6 +5,7 @@ using Broiler.JavaScript.BuiltIns.Proxy;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Class;
 
@@ -40,6 +41,12 @@ public class JSClass : JSFunction
             BasePrototypeObject = superObject;
 
         prototype.BasePrototypeObject = ResolveSuperclassPrototype(super);
+
+        // Unlike an ordinary function (whose "prototype" is writable), a class's
+        // "prototype" is a non-writable, non-enumerable, non-configurable data
+        // property (ECMA-262 ClassDefinitionEvaluation / MakeClassConstructor). The
+        // base JSFunction constructor installed it as writable, so tighten it here.
+        GetOwnProperties().Put(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
