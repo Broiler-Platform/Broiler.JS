@@ -66,15 +66,32 @@ public partial class JSArray
 
         var en = f.GetIterableEnumerator();
         uint index = 0;
+        // MoveNext performs IteratorStep / value access; an error there is the
+        // iterator's own abrupt completion and must NOT trigger IteratorClose. Only
+        // an error while mapping or storing a successfully-read value closes the
+        // iterator (the close's own error/getter is suppressed; the original throws).
         while (en.MoveNext(out var hasValue, out var item, out var _))
         {
             if (!hasValue)
                 continue;
 
-            if (!map.IsUndefined)
-                item = map.InvokeFunction(new Arguments(mapThis, item, new JSNumber(index)));
+            try
+            {
+                if (!map.IsUndefined)
+                    item = map.InvokeFunction(new Arguments(mapThis, item, new JSNumber(index)));
 
-            r.SetPropertyOrThrow(JSValue.CreateNumber(index++), item);
+                r.SetPropertyOrThrow(JSValue.CreateNumber(index++), item);
+            }
+            catch
+            {
+                if (en is IReturnableEnumerator returnable)
+                {
+                    try { returnable.Return(); }
+                    catch { /* IteratorClose suppresses a secondary completion */ }
+                }
+
+                throw;
+            }
         }
 
         if (r is JSArray array)
