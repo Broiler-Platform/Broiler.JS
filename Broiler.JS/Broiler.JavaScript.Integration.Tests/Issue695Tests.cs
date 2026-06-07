@@ -37,6 +37,18 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   Annex B.3.1. It was accepted silently. Shorthand, methods, accessors and
 //   computed `__proto__` keys remain exempt, and a single `__proto__:` still
 //   performs prototype mutation.
+//
+// Problem 9 (root cause) — a function-local `var` whose name collided with a
+//   binding in an enclosing function or the global scope was never registered in
+//   the function's own scope: the parser's var-hoisting dedup search climbed past
+//   the function boundary and treated the outer binding as satisfying the
+//   declaration. As a result the inner `var` resolved to the outer binding —
+//   including reads before its own declaration, which must instead see the
+//   hoisted `undefined`. The search now stops at the function boundary. This also
+//   fixes the `with` / @@unscopables family (unscopables-with), whose failures
+//   were a downstream symptom: once the local `var` is properly hoisted, a read
+//   inside a `with` that is blocked by @@unscopables resolves to it rather than
+//   leaking to the same-named global.
 public class Issue695Tests
 {
     private static JSValue Eval(string code)
@@ -173,4 +185,36 @@ public class Issue695Tests
     public void ProtoShorthandIsOwnProperty()
         => Assert.Equal("true|5", Eval(
             "var __proto__ = 5; var o = { __proto__ }; o.hasOwnProperty('__proto__') + '|' + o.__proto__;").ToString());
+
+    // ---- Problem 9: function-local var hoisting shadows same-named outer bindings ----
+
+    // A function-local `var` read before its own declaration sees the hoisted
+    // `undefined`, even when an outer `var`/`let` of the same name exists.
+    [Theory]
+    [InlineData("var x = 9; function h(){ var got = x; var x = 5; return got; } h();")]
+    [InlineData("let x = 9; function h(){ var got = x; var x = 5; return got; } h();")]
+    [InlineData("var x=9; function a(){ function b(){ var got=x; var x=1; return got; } return b(); } a();")]
+    public void LocalVarShadowsOuterBindingBeforeDeclaration(string code)
+        => Assert.Equal("undefined", Eval(code).ToString());
+
+    // Writing the function-local `var` must not leak to the same-named global.
+    [Fact]
+    public void LocalVarDoesNotLeakToGlobal()
+        => Assert.Equal("5|9", Eval(
+            "var x = 9; function h(){ var x = 5; return x; } var inner = h(); inner + '|' + x;").ToString());
+
+    // A `var` whose name matches a parameter is the same binding, not a new one.
+    [Fact]
+    public void VarDedupesWithParameter()
+        => Assert.Equal("5|7", Eval(
+            "function h(a){ var keep = a; var a = 7; return keep + '|' + a; } h(5);").ToString());
+
+    // The original unscopables-with shape: a read inside a `with` blocked by
+    // @@unscopables resolves to the hoisted function-local var, not the global.
+    [Fact]
+    public void UnscopablesBlockedReadResolvesToHoistedLocal()
+        => Assert.Equal("undefined", Eval(
+            "var v = 1; globalThis[Symbol.unscopables] = { v: true };" +
+            "function f(){ var r; with (globalThis) { r = typeof v; } var v = 2; return r; }" +
+            "f();").ToString());
 }

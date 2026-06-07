@@ -103,13 +103,27 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
         if (kind == FastVariableKind.Var)
         {
             // in case of var...
-            // find the top most declaration... if exists..
+            // find an existing declaration of the same name, but only within the
+            // CURRENT function's var-hoisting region. A `var` is hoisted to the
+            // nearest enclosing function/program scope, so the search must stop at
+            // the function boundary: a same-named binding in an enclosing function
+            // (or the global scope) is a *different* variable and must not absorb
+            // this declaration — otherwise `var x` inside a function whose name
+            // collides with an outer `var x`/`let x` would never be registered and
+            // would wrongly resolve to the outer binding (including reads before its
+            // own declaration, which must see the hoisted `undefined`).
             var it = n;
 
             while (it != null)
             {
                 if (it.Variables.TryGetValue(name.Value, out var v))
                     return;
+
+                // The FunctionExpression scope (which owns the parameters) is the
+                // outermost scope of the current function; checking it lets a `var`
+                // dedupe against a parameter of the same name, but we go no further.
+                if (it.NodeType == FastNodeType.FunctionExpression)
+                    break;
 
                 it = it.Parent;
             }
