@@ -2000,6 +2000,11 @@ public class JSIntlNumberFormat : JSObject
         if (value == null || value.IsUndefined)
             throw JSEngine.NewTypeError("Invalid number range");
 
+        // ToIntlMathematicalValue (ECMA-402): a Symbol operand cannot be coerced
+        // to a numeric value, so it is a TypeError rather than a formatted string.
+        if (value.IsSymbol)
+            throw JSEngine.NewTypeError("Cannot convert a Symbol value to a number");
+
         if (value.IsNumber && double.IsNaN(value.DoubleValue))
             throw JSEngine.NewRangeError("Invalid number range");
 
