@@ -54,6 +54,9 @@ public class JSObjectBuilder
     public readonly static MethodInfo _FastAddValueKeyString =
         type.PublicMethod(nameof(JSObject.FastAddValue), typeof(KeyString), typeof(JSValue), typeof(JSPropertyAttributes));
 
+    readonly static MethodInfo _MintPrivateName =
+        type.PublicMethod(nameof(JSObject.MintPrivateName), typeof(string));
+
     readonly static MethodInfo _CreateDataPropertyUInt =
         type.PublicMethod(nameof(JSObject.CreateDataProperty), typeof(uint), typeof(JSValue));
 
@@ -106,6 +109,11 @@ public class JSObjectBuilder
 
         return new YElementInit(_FastAddValueKeyString, key, value, Expression.Constant(attributes));
     }
+
+    // Mints a unique per-evaluation private-name key (KeyString) at class-evaluation
+    // time. Stored in a class-scope variable that member references close over.
+    public static Expression MintPrivateName(string name)
+        => Expression.Call(null, _MintPrivateName, Expression.Constant(name));
 
     // CreateDataPropertyOrThrow for a public class field: observable on exotic
     // receivers (Proxy), a plain own-property store on ordinary objects.

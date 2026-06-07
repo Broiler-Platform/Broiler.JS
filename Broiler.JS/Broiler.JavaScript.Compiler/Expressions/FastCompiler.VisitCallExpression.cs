@@ -128,16 +128,21 @@ partial class FastCompiler
         if (callee.Type == FastNodeType.MemberExpression && callee is AstMemberExpression me)
         {
             YExpression name;
+            var isPrivateMethodKey = false;
 
             switch (me.Property.Type)
             {
                 case FastNodeType.Identifier:
                     var id = (me.Property as AstIdentifier)!;
-                    name = me.Computed
-                        ? VisitExpression(id)
-                        : id.Name.Length > 0 && id.Name.Value[0] == '#'
-                            ? KeyOfPrivateName(id.Name)
-                            : KeyOfName(id.Name);
+                    if (!me.Computed && id.Name.Length > 0 && id.Name.Value[0] == '#')
+                    {
+                        name = KeyOfPrivateName(id.Name);
+                        isPrivateMethodKey = true;
+                    }
+                    else
+                    {
+                        name = me.Computed ? VisitExpression(id) : KeyOfName(id.Name);
+                    }
                     break;
 
                 case FastNodeType.Literal:
@@ -177,6 +182,20 @@ partial class FastCompiler
             var (args, spread) = VisitArguments(arguments);
             using var te = scope.Top.GetTempVariable(typeof(JSValue));
             using var te2 = scope.Top.GetTempVariable(typeof(JSValue));
+
+            // A private name resolves to a per-evaluation key captured from the class
+            // scope. InvokeMethod takes the key as an `in KeyString` (by-address)
+            // argument, and a captured closure variable cannot be loaded by address;
+            // copy it into a method-local temp (which can) first.
+            if (isPrivateMethodKey)
+            {
+                using var keyTemp = scope.Top.GetTempVariable(typeof(KeyString));
+                return YExpression.Block(new YExpression[]
+                {
+                    YExpression.Assign(keyTemp.Variable, name),
+                    JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, keyTemp.Variable, args, spread, me.Coalesce || coalesce),
+                });
+            }
 
             return JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, name, args, spread, me.Coalesce || coalesce);
         }

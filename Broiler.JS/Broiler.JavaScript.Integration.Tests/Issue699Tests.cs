@@ -272,4 +272,61 @@ public class Issue699Tests
             "b instanceof ArrayBuffer && b.byteLength === 4").ToString());
         Assert.Equal("4", Eval("String(new ArrayBuffer(8).slice(0, 4).byteLength)").ToString());
     }
+
+    // ---- Problem 4/7: per-evaluation private brand ----
+
+    private static string PrivateEval(string body, string tail)
+        => Eval("var __r; try { " + body + " __r = (" + tail + "); } catch (e) { __r = e.constructor.name; } __r;").ToString();
+
+    [Theory]
+    [InlineData("#m() { return 'x'; } access(o) { return o.#m(); }")]   // private method
+    [InlineData("get #m() { return 'x'; } access(o) { return o.#m; }")] // private getter
+    public void Private_Member_Brand_Differs_Per_Class_Evaluation(string members)
+    {
+        // Each call to the factory evaluates the class afresh, minting a distinct
+        // private brand; an instance of one evaluation cannot reach another's member.
+        var setup =
+            "function make() { return new (class { " + members + " }); } " +
+            "var c1 = make(); var c2 = make();";
+        Assert.Equal("x", PrivateEval(setup, "c1.access(c1)"));
+        Assert.Equal("x", PrivateEval(setup, "c2.access(c2)"));
+        Assert.Equal("TypeError", PrivateEval(setup, "c1.access(c2)"));
+        Assert.Equal("TypeError", PrivateEval(setup, "c2.access(c1)"));
+    }
+
+    [Fact]
+    public void Nested_Class_Private_Name_Shadows_Outer()
+    {
+        // The inner class's `#x` is a distinct private name; an outer instance does
+        // not carry it, so reaching it through the inner accessor is a TypeError.
+        const string setup =
+            "var outer = new (class Outer { #x = 'outer'; " +
+            "  Inner = class { #x = 'inner'; reach(o) { return o.#x; } }; " +
+            "  makeInner() { return new this.Inner(); } });";
+        Assert.Equal("inner", PrivateEval(setup, "outer.makeInner().reach(outer.makeInner())"));
+        Assert.Equal("TypeError", PrivateEval(setup, "outer.makeInner().reach(outer)"));
+    }
+
+    [Fact]
+    public void Instance_Private_Field_And_Method_Still_Work()
+    {
+        Assert.Equal("42", Eval("class C { #f = 42; get() { return this.#f; } } new C().get()").ToString());
+        Assert.Equal("7", Eval("class C { #m() { return 7; } call() { return this.#m(); } } new C().call()").ToString());
+    }
+
+    [Fact]
+    public void Static_Private_Members_Still_Work()
+    {
+        // Static private members keep the stable key (one constructor per evaluation).
+        Assert.Equal("1", Eval("class C { static #y = 1; static getY() { return this.#y; } } String(C.getY())").ToString());
+        Assert.Equal("2", Eval("class C { static #m() { return 2; } static call() { return this.#m(); } } String(C.call())").ToString());
+    }
+
+    [Fact]
+    public void Private_Name_Visible_To_Direct_Eval_In_Member()
+    {
+        // A class whose member uses direct eval falls back to the stable constant key
+        // so the eval can still resolve the private name.
+        Assert.Equal("5", Eval("class C { #m = 5; v = eval('this.#m'); } String(new C().v)").ToString());
+    }
 }

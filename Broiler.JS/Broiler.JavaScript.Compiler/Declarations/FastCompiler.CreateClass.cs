@@ -182,7 +182,52 @@ partial class FastCompiler
         var computedMemberNames = new Dictionary<AstClassProperty, YExpression>();
         var classScopeVariables = new Sequence<YParameterExpression> { superVar, superPrototypeVar };
         AstFunctionExpression constructor = null;
-        var directEvalPrivateNames = CombinePrivateNames(this.scope.Top.DirectEvalPrivateNames, CollectPrivateNames(body.Members));
+        var ownPrivateNames = CollectPrivateNames(body.Members);
+        var directEvalPrivateNames = CombinePrivateNames(this.scope.Top.DirectEvalPrivateNames, ownPrivateNames);
+        // Only INSTANCE private names get per-evaluation minted keys. A static private
+        // element lives on the (single) constructor, and its members reference the
+        // name in a class-evaluation context where the minted-key variable is not
+        // reliably captured; static elements keep the stable constant key (there is
+        // one constructor per evaluation anyway, so brand distinctness is moot).
+        var instancePrivateNames = CollectInstancePrivateNames(body.Members);
+
+        // Mint a fresh private-name key per declared `#x` for THIS class evaluation,
+        // each stored in a class-scope variable that all member references close
+        // over. Two evaluations of the same class text therefore use distinct keys,
+        // so a private element installed by one is absent on instances of the other
+        // (the key is the per-evaluation PrivateBrand). The names are registered on
+        // the compiler's private-name stack while members compile, so a nested
+        // class's `#x` shadows an enclosing one.
+        Dictionary<string, YExpression> privateNameScope = null;
+        // A direct eval inside a member can reference this class's private names, but
+        // the eval is compiled separately and resolves them to the stable
+        // marker-prefixed constant key (it cannot see the minted-key variables). So
+        // when the class body might contain a direct eval, fall back to constant keys
+        // for the whole class — losing per-evaluation brand distinctness for that
+        // class but keeping private names visible to the eval (#667). The common
+        // (eval-free) class still gets unique per-evaluation brands.
+        if (instancePrivateNames != null && !ClassBodyMayDirectEval(body.Members))
+        {
+            privateNameScope = new Dictionary<string, YExpression>(instancePrivateNames.Length);
+            foreach (var privateName in instancePrivateNames)
+            {
+                // A getter and setter share one private name — mint it only once.
+                if (privateNameScope.ContainsKey(privateName))
+                    continue;
+
+                // The variable MUST be named: a method that references the key by
+                // address (a private-method call `o.#m()` passes the key as an
+                // `in KeyString` argument) resolves the captured closure variable by
+                // name, and the name must be unique across nested class evaluations.
+                var privateKeyVar = YExpression.Parameter(
+                    typeof(KeyString), $"{privateName}$pk{privateKeyVarCounter++}");
+                classScopeVariables.Add(privateKeyVar);
+                stmts.Add(YExpression.Assign(privateKeyVar, JSObjectBuilder.MintPrivateName(privateName)));
+                privateNameScope[privateName] = privateKeyVar;
+            }
+
+            PushPrivateNameScope(privateNameScope);
+        }
 
         // The class name is an immutable (const-like) binding scoped to the class
         // body: the constructor, methods, accessors and static blocks close over
@@ -388,6 +433,12 @@ partial class FastCompiler
             }
         }
 
+        // All member, constructor and static-block bodies (the only places that can
+        // reference this class's private names) have been compiled; the minted-key
+        // variables remain declared in classScopeVariables.
+        if (privateNameScope != null)
+            PopPrivateNameScope();
+
         // Pop the class scope and recreate the outer, mutable declaration binding
         // in the enclosing scope. Both bindings share the name but live in
         // different scopes: the inner const is what the body resolves to, the
@@ -437,6 +488,30 @@ partial class FastCompiler
         return [.. privateNames];
     }
 
+    // Conservative scan: does any class element's source contain the token "eval"?
+    // A false positive only forgoes the per-evaluation-brand optimization for that
+    // class (correctness is unaffected); a missed direct eval would, in contrast,
+    // break private-name resolution inside the eval, so err toward detecting it.
+    private static bool ClassBodyMayDirectEval(IFastEnumerable<AstClassProperty> members)
+    {
+        var en = members.GetFastEnumerator();
+        while (en.MoveNext(out var member))
+        {
+            var span = member.Start.Span;
+            var source = span.Source;
+            if (source == null)
+                continue;
+
+            var start = span.Offset;
+            var endSpan = member.End.Span;
+            var end = System.Math.Min(source.Length, endSpan.Offset + endSpan.Length);
+            if (end > start && source.IndexOf("eval", start, end - start, System.StringComparison.Ordinal) >= 0)
+                return true;
+        }
+
+        return false;
+    }
+
     private static string[] CollectPrivateNames(IFastEnumerable<AstClassProperty> members)
     {
         var privateNames = new List<string>();
@@ -444,6 +519,21 @@ partial class FastCompiler
         while (enumerator.MoveNext(out var member))
         {
             if (member.IsPrivate && member.Key is AstIdentifier identifier)
+                privateNames.Add(identifier.Name.Value);
+        }
+
+        return privateNames.Count == 0 ? null : [.. privateNames];
+    }
+
+    // Private names declared on instance (non-static) class elements only — the set
+    // eligible for per-evaluation minted keys (see CreateClass).
+    private static string[] CollectInstancePrivateNames(IFastEnumerable<AstClassProperty> members)
+    {
+        var privateNames = new List<string>();
+        var enumerator = members.GetFastEnumerator();
+        while (enumerator.MoveNext(out var member))
+        {
+            if (!member.IsStatic && member.IsPrivate && member.Key is AstIdentifier identifier)
                 privateNames.Add(identifier.Name.Value);
         }
 
