@@ -139,7 +139,8 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         var d = first.DoubleValue;
-        var r = new JSNumber(Math.Log(d + Math.Sqrt(d * d + 1.0)));
+        // Math.Asinh preserves the sign of zero (asinh(-0) === -0) and handles ±∞.
+        var r = new JSNumber(Math.Asinh(d));
         return r;
     }
 
@@ -183,7 +184,9 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         var d = first.DoubleValue;
-        var r = new JSNumber(Math.Log((1.0 + d) / (1.0 - d)) / 2.0);
+        // Math.Atanh preserves the sign of zero (atanh(-0) === -0), returns ±∞ at ±1
+        // and NaN outside [-1, 1].
+        var r = new JSNumber(Math.Atanh(d));
 
         return r;
     }
@@ -193,9 +196,9 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         var d = first.DoubleValue;
-        var r = Math.Pow(Math.Abs(d), 1.0 / 3.0);
-
-        return new JSNumber(d < 0 ? -r : r);
+        // Math.Cbrt preserves the sign of zero (cbrt(-0) === -0), handles negatives
+        // exactly and propagates ±∞ / NaN.
+        return new JSNumber(Math.Cbrt(d));
     }
 
     [JSExport]
@@ -277,6 +280,10 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         var d = first.DoubleValue;
+        // expm1(±0) === ±0: Math.Exp(-0)-1 would lose the sign of zero, so pass
+        // ±0 (and NaN) through unchanged.
+        if (d == 0.0 || double.IsNaN(d))
+            return new JSNumber(d);
         return new JSNumber(Math.Exp(d) - 1.0);
     }
 
@@ -553,11 +560,17 @@ public partial class JSMath : JSObject
         if (iterable.IsNullOrUndefined)
             throw JSEngine.NewTypeError("Math.sumPrecise requires an iterable argument");
 
-        double sum = 0.0;
+        // Per spec the accumulator starts at -0𝔽, so an empty list (or a list of
+        // only -0 values) yields -0, while mixing in a +0 produces +0.
+        double sum = -0.0;
         double compensation = 0.0;
         bool hasNaN = false;
         bool hasPositiveInfinity = false;
         bool hasNegativeInfinity = false;
+        // Tracks whether every finite summand seen so far has been -0 (the empty
+        // list also qualifies). Only then is the -0 accumulator preserved; any +0 or
+        // other value forces the result's zero to be +0.
+        bool allNegativeZero = true;
 
         var en = iterable.GetIterableEnumerator();
         while (en.MoveNext(out var hasValue, out var item, out var _))
@@ -593,6 +606,9 @@ public partial class JSMath : JSObject
                 continue;
             }
 
+            if (d != 0.0 || !double.IsNegative(d))
+                allNegativeZero = false;
+
             // Neumaier compensated summation
             var t = sum + d;
             if (Math.Abs(sum) >= Math.Abs(d))
@@ -611,6 +627,10 @@ public partial class JSMath : JSObject
         if (hasNegativeInfinity)
             return JSNumber.NegativeInfinity;
 
-        return new JSNumber(sum + compensation);
+        var result = sum + compensation;
+        if (result == 0.0)
+            return new JSNumber(allNegativeZero ? -0.0 : 0.0);
+
+        return new JSNumber(result);
     }
 }

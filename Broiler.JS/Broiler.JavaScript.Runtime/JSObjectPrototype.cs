@@ -81,8 +81,18 @@ public partial class JSObject
         if (a.This.IsUndefined)
             return JSValue.CreateString("[object Undefined]");
 
+        // The builtin tag (§20.1.3.6 steps 4-21) is computed first; a string-valued
+        // @@toStringTag (step 22-23) overrides it. Error objects have an [[ErrorData]]
+        // internal slot and therefore tag as "Error", not "Object".
+        string builtinTag;
         if (a.This.IsArray)
-            return JSValue.CreateString("[object Array]");
+            builtinTag = "Array";
+        else if (a.This is IJSError)
+            builtinTag = "Error";
+        else if (a.This?.TypeOf() == JSConstants.Function)
+            builtinTag = "Function";
+        else
+            builtinTag = "Object";
 
         var toStringTag = GetGlobalSymbolFactory?.Invoke("toStringTag");
         if (toStringTag != null && a.This is JSObject @object)
@@ -92,7 +102,7 @@ public partial class JSObject
                 return JSValue.CreateString($"[object {tag}]");
         }
 
-        return JSValue.CreateString(a.This?.TypeOf() == JSConstants.Function ? "[object Function]" : "[object Object]");
+        return JSValue.CreateString($"[object {builtinTag}]");
     }
 
     [JSPrototypeMethod][JSExport("toLocaleString")]

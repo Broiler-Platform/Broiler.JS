@@ -256,10 +256,19 @@ public partial class JSMap : JSObject
     /// Returns the value for key if present, otherwise inserts defaultValue
     /// and returns it.
     /// </summary>
+    /// <summary>
+    /// CanonicalizeKeyedCollectionKey (§24.5.1): -0𝔽 is stored and surfaced as +0𝔽.
+    /// </summary>
+    private static JSValue CanonicalizeKey(JSValue key)
+        => key is JSNumber n && n.value == 0.0 && double.IsNegative(n.value)
+            ? JSValue.CreateNumber(0.0)
+            : key;
+
     [JSExport("getOrInsert", Length = 2)]
     public JSValue GetOrInsert(in Arguments a)
     {
         var (key, defaultValue) = a.Get2();
+        key = CanonicalizeKey(key);
         HashedString uk = key.ToUniqueID();
 
         if (index.TryGetValue(in uk, out var pos))
@@ -283,7 +292,8 @@ public partial class JSMap : JSObject
         var (key, callbackfn) = a.Get2();
         if (!callbackfn.IsFunction)
             throw JSEngine.NewTypeError("getOrInsertComputed requires a callback function");
-        
+
+        key = CanonicalizeKey(key);
         HashedString uk = key.ToUniqueID();
         if (index.TryGetValue(in uk, out var pos))
             return store[pos].Value;
