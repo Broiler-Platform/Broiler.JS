@@ -351,28 +351,46 @@ internal static class BuiltInsAssemblyInitializer
 
     private static JSTypedArray CloneTypedArray(JSTypedArray typedArray, JSArrayBuffer clonedBuffer)
     {
+        // The (buffer, byteOffset, length) TypedArray constructor takes length in
+        // ELEMENTS, not bytes (the two coincide only for 1-byte element types).
         var args = new Arguments(
             JSUndefined.Value,
             clonedBuffer,
             new JSNumber(typedArray.byteOffset),
-            new JSNumber(typedArray.Length * typedArray.bytesPerElement));
+            new JSNumber(typedArray.Length));
 
-        return typedArray switch
+        // The TypedArray (in Arguments) constructor enforces the "requires new" check
+        // via new.target. This internal reconstruction is morally a `new`, so publish a
+        // new.target (the source's constructor) for the duration: the check then passes
+        // and the per-type prototype resolves correctly.
+        var executionContext = JSEngine.Current as IJSExecutionContext;
+        var savedNewTarget = executionContext?.CurrentNewTarget;
+        if (executionContext != null)
+            executionContext.CurrentNewTarget = typedArray[KeyStrings.constructor];
+        try
         {
-            JSInt8Array => new JSInt8Array(args),
-            JSUInt8Array => new JSUInt8Array(args),
-            JSUint8ClampedArray => new JSUint8ClampedArray(args),
-            JSInt16Array => new JSInt16Array(args),
-            JSUInt16Array => new JSUInt16Array(args),
-            JSInt32Array => new JSInt32Array(args),
-            JSUInt32Array => new JSUInt32Array(args),
-            JSBigInt64Array => new JSBigInt64Array(args),
-            JSBigUint64Array => new JSBigUint64Array(args),
-            JSFloat16Array => new JSFloat16Array(args),
-            JSFloat32Array => new JSFloat32Array(args),
-            JSFloat64Array => new JSFloat64Array(args),
-            _ => throw JSEngine.NewTypeError($"structuredClone: unsupported typed array type {typedArray.GetType().Name}")
-        };
+            return typedArray switch
+            {
+                JSInt8Array => new JSInt8Array(args),
+                JSUInt8Array => new JSUInt8Array(args),
+                JSUint8ClampedArray => new JSUint8ClampedArray(args),
+                JSInt16Array => new JSInt16Array(args),
+                JSUInt16Array => new JSUInt16Array(args),
+                JSInt32Array => new JSInt32Array(args),
+                JSUInt32Array => new JSUInt32Array(args),
+                JSBigInt64Array => new JSBigInt64Array(args),
+                JSBigUint64Array => new JSBigUint64Array(args),
+                JSFloat16Array => new JSFloat16Array(args),
+                JSFloat32Array => new JSFloat32Array(args),
+                JSFloat64Array => new JSFloat64Array(args),
+                _ => throw JSEngine.NewTypeError($"structuredClone: unsupported typed array type {typedArray.GetType().Name}")
+            };
+        }
+        finally
+        {
+            if (executionContext != null)
+                executionContext.CurrentNewTarget = savedNewTarget;
+        }
     }
 
     private static void PatchErrorConstructors(JSContext context)
@@ -1217,16 +1235,20 @@ internal static class BuiltInsAssemblyInitializer
                 // is ToLength(Get(R, "lastIndex")) — both reads are observable, so
                 // a throwing `flags` getter / `flags` toString / `lastIndex`
                 // valueOf must propagate.
-                var flags = JSValue.CreateString(regExp[KeyStrings.GetOrCreate("flags")].ToString());
+                var flagsString = regExp[KeyStrings.GetOrCreate("flags")].ToString();
+                var flags = JSValue.CreateString(flagsString);
                 var matcher = InvokeSpeciesConstructor(regExp, flags);
                 if (matcher.IsUndefined)
                     matcher = new JSRegExp(new Arguments(JSUndefined.Value, regExp, flags));
                 matcher[KeyStrings.lastIndex] = JSValue.CreateNumber(ToLength(regExp[KeyStrings.lastIndex]));
+                // Steps 9-12: global / fullUnicode are derived from the flags STRING,
+                // not by reading "global"/"unicode" off the constructed matcher (those
+                // reads are not observable per spec — a throwing getter must not fire).
                 return new JSRegExpStringIterator(
                     matcher,
                     JSValue.CreateString(a.Get1().ToString()),
-                    matcher[KeyStrings.GetOrCreate("global")].BooleanValue,
-                    matcher[KeyStrings.GetOrCreate("unicode")].BooleanValue || matcher[KeyStrings.GetOrCreate("unicodeSets")].BooleanValue);
+                    flagsString.Contains('g'),
+                    flagsString.Contains('u') || flagsString.Contains('v'));
             }
 
             if (JSRegExp.IsRegExpLike(a.This))

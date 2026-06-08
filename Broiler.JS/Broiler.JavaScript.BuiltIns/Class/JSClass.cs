@@ -13,6 +13,14 @@ public class JSClass : JSFunction
 {
     internal readonly JSValue super;
 
+    // True for a body-less class with no own constructor (no explicit constructor and
+    // no field/private-method-synthesised one). Its [[Construct]] is the default
+    // derived constructor `constructor(...args){ super(...args) }`, whose super target
+    // is GetSuperConstructor() = the class's CURRENT [[Prototype]] — so it must be
+    // resolved dynamically at construction (observing Object.setPrototypeOf(C, X)),
+    // not bound to the superclass delegate captured at definition.
+    internal bool IsBodylessDefaultConstructor;
+
     internal static JSObject ResolveSuperclassPrototype(JSValue super)
     {
         if (super.IsNull)
@@ -37,6 +45,7 @@ public class JSClass : JSFunction
         : base(fx ?? (super as JSFunction)?.Delegate ?? empty, name, code)
     {
         this.super = super;
+        IsBodylessDefaultConstructor = fx == null;
         if (super is JSObject superObject)
             BasePrototypeObject = superObject;
 
@@ -53,6 +62,9 @@ public class JSClass : JSFunction
     public void AddConstructor(JSFunction fx)
     {
         f = fx.f;
+        // The class now has its own constructor body, so it is no longer the default
+        // derived constructor; its super references are already compiled dynamically.
+        IsBodylessDefaultConstructor = false;
 
         // A class with its own (user-written or field-synthesised) constructor is
         // an ordinary user function: when its body explicitly returns a distinct
@@ -98,13 +110,22 @@ public class JSClass : JSFunction
         var @object = new JSObject() { BasePrototypeObject = instancePrototype };
         var ao = a.OverrideThis(@object);
 
+        // For a body-less default derived constructor, super() targets the class's
+        // CURRENT [[Prototype]] (GetSuperConstructor), resolved dynamically here rather
+        // than the superclass delegate captured at definition. Falls back to `f` when
+        // the prototype is not a constructor (e.g. `extends null`), preserving the
+        // existing TypeError path.
+        var constructorDelegate = IsBodylessDefaultConstructor && GetPrototypeOf() is JSFunction superConstructor
+            ? superConstructor.Delegate
+            : f;
+
         JSValue @this;
         try
         {
             if (ec != null)
                 ec.CurrentNewTarget = previousNewTarget ?? this;
 
-            @this = f(ao);
+            @this = constructorDelegate(ao);
         }
         finally
         {

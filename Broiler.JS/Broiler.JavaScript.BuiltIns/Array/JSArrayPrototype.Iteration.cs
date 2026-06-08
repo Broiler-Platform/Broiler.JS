@@ -336,8 +336,8 @@ public partial class JSArray
 
         for (uint index = 0; index < length; index++)
         {
-            if (!@this.TryGetElement(index, out var item))
-                continue;
+            // find visits every index (holes read as undefined); it does not skip holes.
+            var item = @this[index];
 
             var itemParams = new Arguments(thisArg, item, new JSNumber(index), @this);
             if (fn.InvokeCallback(itemParams).BooleanValue)
@@ -428,8 +428,8 @@ public partial class JSArray
 
         for (uint n = 0; n < length; n++)
         {
-            if (!@this.TryGetElement(n, out var item))
-                continue;
+            // findIndex visits every index (holes read as undefined); it does not skip holes.
+            var item = @this[n];
 
             var index = new JSNumber(n);
             var itemParams = new Arguments(thisArg, item, index, @this);
@@ -454,8 +454,8 @@ public partial class JSArray
 
         for (var n = (long)length - 1; n >= 0; n--)
         {
-            if (!@this.TryGetElement((uint)n, out var item))
-                continue;
+            // findLast visits every index (holes read as undefined); it does not skip holes.
+            var item = @this[(uint)n];
 
             var index = new JSNumber(n);
             var itemParams = new Arguments(thisArg, item, index, @this);
@@ -479,8 +479,8 @@ public partial class JSArray
 
         for (var n = (long)length - 1; n >= 0; n--)
         {
-            if (!@this.TryGetElement((uint)n, out var item))
-                continue;
+            // findLastIndex visits every index (holes read as undefined); it does not skip holes.
+            var item = @this[(uint)n];
 
             var index = new JSNumber(n);
             var itemParams = new Arguments(thisArg, item, index, @this);

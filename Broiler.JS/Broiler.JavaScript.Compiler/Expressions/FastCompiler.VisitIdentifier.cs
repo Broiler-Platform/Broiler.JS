@@ -88,6 +88,23 @@ partial class FastCompiler
         return false;
     }
 
+    // Whether <paramref name="functionDeclaration"/> has a direct `eval(...)` call in
+    // its body (not nested inside another function/class, which have their own var
+    // environments). A sloppy direct eval can introduce a `var`/`function` into THIS
+    // function's variable environment that must be observed by closures created in the
+    // body (test262 staging sm/regress-554955, sm/eval/exhaustive-*) — so free names
+    // that resolve to an enclosing scope are routed through EvalShadowVariable bindings
+    // that the eval reuses as its var storage.
+    private static bool BodyContainsDirectEval(AstFunctionExpression functionDeclaration)
+    {
+        if (functionDeclaration.Body == null)
+            return false;
+
+        var detector = new ParameterDirectEvalDetector();
+        detector.Visit(functionDeclaration.Body);
+        return detector.Found;
+    }
+
     // Finds a direct `eval(...)` call in an expression, without descending into
     // nested functions or classes (which establish their own scopes).
     private sealed class ParameterDirectEvalDetector : Broiler.JavaScript.Ast.AstReduce
