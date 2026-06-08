@@ -2499,10 +2499,10 @@ public class JSIntlDateTimeFormat : JSObject
         if (double.IsNaN(clipped))
             throw JSEngine.NewRangeError("Invalid time value");
 
-        if (SupportsEnglishDayPeriod())
+        if (SupportsDayPeriod())
         {
             var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
-            var dayPeriod = FormatEnglishDayPeriod(localTime, DayPeriodStyle());
+            var dayPeriod = FormatDayPeriod(localTime, DayPeriodStyle());
             if (UsesHourFormatting())
                 return new JSString($"{FormatEnglishHour(localTime)} {dayPeriod}");
 
@@ -2553,7 +2553,7 @@ public class JSIntlDateTimeFormat : JSObject
         if (double.IsNaN(clipped))
             throw JSEngine.NewRangeError("Invalid time value");
 
-        if (@this.SupportsEnglishDayPeriod())
+        if (@this.SupportsDayPeriod())
         {
             var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
             var dayPeriodParts = JSValue.CreateArray();
@@ -2571,7 +2571,7 @@ public class JSIntlDateTimeFormat : JSObject
 
             var dayPeriodPart = new JSObject();
             dayPeriodPart[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("dayPeriod");
-            dayPeriodPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(FormatEnglishDayPeriod(localTime, @this.DayPeriodStyle()));
+            dayPeriodPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(@this.FormatDayPeriod(localTime, @this.DayPeriodStyle()));
             dayPeriodParts.AddArrayItem(dayPeriodPart);
             return dayPeriodParts;
         }
@@ -2659,10 +2659,8 @@ public class JSIntlDateTimeFormat : JSObject
 
     internal JSValue Format(DateTimeOffset value, JSObject format) => new JSString(value.ToString(locale));
 
-    private bool SupportsEnglishDayPeriod()
-        => localeTag.StartsWith("en", StringComparison.OrdinalIgnoreCase)
-            && options != null
-            && !options[DayPeriodKey].IsUndefined;
+    private bool SupportsDayPeriod()
+        => options != null && !options[DayPeriodKey].IsUndefined;
 
     private bool UsesHourFormatting()
         => options != null && !options[HourKey].IsUndefined;
@@ -2673,22 +2671,19 @@ public class JSIntlDateTimeFormat : JSObject
     private static string FormatEnglishHour(DateTimeOffset value)
         => ((value.Hour % 12) == 0 ? 12 : value.Hour % 12).ToString(CultureInfo.InvariantCulture);
 
-    private static string FormatEnglishDayPeriod(DateTimeOffset value, string style)
+    // The localized day-period name for the time, from CLDR data: the day-period
+    // rules pick the period (am/pm/noon/midnight/morning/…) and the ECMA-402
+    // dayPeriod option (long/short/narrow) selects the CLDR width.
+    private string FormatDayPeriod(DateTimeOffset value, string style)
     {
-        var hour = value.Hour;
-        if (hour < 12)
-            return "in the morning";
-
-        if (hour == 12)
-            return style == "narrow" ? "n" : "noon";
-
-        if (hour < 18)
-            return "in the afternoon";
-
-        if (hour < 22)
-            return "in the evening";
-
-        return "at night";
+        var period = CldrLocaleData.GetDayPeriod(localeTag, value.Hour, value.Minute);
+        var width = style switch
+        {
+            "narrow" => "narrow",
+            "short" => "abbreviated",
+            _ => "wide",
+        };
+        return CldrLocaleData.GetDayPeriodName(localeTag, period, width);
     }
 
     public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())

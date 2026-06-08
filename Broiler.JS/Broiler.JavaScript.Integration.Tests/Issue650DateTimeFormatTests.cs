@@ -53,4 +53,33 @@ public class Issue650DateTimeFormatTests
             $"var d=new Date(2019,7,10,1,2,3,{ms});" +
             $"new Intl.DateTimeFormat('en',{{minute:'numeric',second:'numeric',fractionalSecondDigits:{digits}}})" +
             ".formatToParts(d).map(function(p){return p.type+'='+p.value;}).join(',')"));
+
+    // The dayPeriod option uses generated CLDR data (rules + names) for every
+    // locale, not just English. The exact "midnight"/"noon" rules win over the
+    // morning/afternoon ranges.
+    private static string DayPeriod(string locale, string display, int hour)
+        => Eval($"new Intl.DateTimeFormat('{locale}', {{ dayPeriod: '{display}' }})" +
+                $".format(new Date(2017, 11, 12, {hour}, 0, 0, 0))");
+
+    [Theory]
+    [InlineData(0, "midnight")]
+    [InlineData(9, "in the morning")]
+    [InlineData(12, "noon")]
+    [InlineData(15, "in the afternoon")]
+    [InlineData(23, "at night")]
+    public void DayPeriodEnglishIsCldrCorrect(int hour, string expected)
+        => Assert.Equal(expected, DayPeriod("en", "long", hour));
+
+    // German and French day periods come from the locale's CLDR data.
+    [Fact]
+    public void DayPeriodIsLocalized()
+    {
+        Assert.Equal("morgens", DayPeriod("de", "long", 9));
+        Assert.Equal("nachmittags", DayPeriod("de", "long", 15));
+        Assert.Equal("du matin", DayPeriod("fr", "long", 9));
+    }
+
+    [Fact]
+    public void DayPeriodNarrowNoon()
+        => Assert.Equal("n", DayPeriod("en", "narrow", 12));
 }
