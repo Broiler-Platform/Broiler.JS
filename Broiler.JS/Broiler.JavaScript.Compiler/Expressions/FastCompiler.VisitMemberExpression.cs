@@ -16,6 +16,22 @@ partial class FastCompiler
         var super = isSuper ? scope.Top.Super : null;
         var mp = memberExpression.Property;
 
+        // `super[Expression]`: the property-key Expression is evaluated BEFORE the super
+        // base is read (MakeSuperPropertyReference evaluates the key, then calls
+        // GetSuperBase = [[HomeObject]].[[Prototype]]). Because super is resolved
+        // dynamically (SuperPrototypeOf reads the home's CURRENT prototype each access),
+        // a key side effect such as `Object.setPrototypeOf(homeProto, null)` must be
+        // observed by that read — e.g. `super[ruin()]` where ruin() nulls the prototype
+        // must throw a TypeError. Evaluating super and the key as plain Index arguments
+        // would read super first, so spill the key into a temp evaluated up front.
+        if (isSuper && memberExpression.Computed)
+        {
+            using var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
+            return YExpression.Block(
+                YExpression.Assign(keyTemp.Expression, VisitExpression(mp)),
+                JSValueBuilder.Index(target, super, keyTemp.Expression, memberExpression.Coalesce));
+        }
+
         switch (mp.Type)
         {
             case FastNodeType.Identifier:

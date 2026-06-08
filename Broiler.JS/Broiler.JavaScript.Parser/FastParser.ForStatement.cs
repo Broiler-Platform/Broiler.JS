@@ -330,7 +330,10 @@ partial class FastParser
                 case FastNodeType.Identifier:
                     var id = e as AstIdentifier;
                     var tempID = Interlocked.Increment(ref TempVarID).ToString();
-                    var temp = new AstIdentifier(id!.Start, tempID);
+                    // Preserve the original binding name for NamedEvaluation: a binding such
+                    // as `[f = () => {}]` must name the anonymous initializer "f", not the
+                    // synthetic temp this rename introduces.
+                    var temp = new AstIdentifier(id!.Start, tempID) { InferenceName = id.Name.Value };
 
                     hoisted.Add(id.Name);
                     list.Add((id.Name.Value!, temp));
