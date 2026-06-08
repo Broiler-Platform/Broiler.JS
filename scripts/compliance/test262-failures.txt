@@ -57,7 +57,6 @@ test/built-ins/AggregateError/message-tostring-abrupt-symbol.js
 test/built-ins/AggregateError/message-tostring-abrupt.js
 test/built-ins/Array/15.4.5.1-5-2.js
 test/built-ins/Array/S15.4.5.2_A1_T2.js
-test/built-ins/Array/from/elements-deleted-after.js
 test/built-ins/Array/from/iter-set-elem-prop-err.js
 test/built-ins/Array/from/iter-set-elem-prop-non-writable.js
 test/built-ins/Array/from/source-object-length-set-elem-prop-err.js
@@ -184,7 +183,6 @@ test/built-ins/Array/prototype/unshift/S15.4.4.13_A4_T2.js
 test/built-ins/Array/prototype/unshift/clamps-to-integer-limit.js
 test/built-ins/Array/prototype/unshift/length-near-integer-limit.js
 test/built-ins/Array/prototype/unshift/throws-if-integer-limit-exceeded.js
-test/built-ins/Array/prototype/values/iteration-mutable.js
 test/built-ins/ArrayBuffer/allocation-limit.js
 test/built-ins/ArrayBuffer/length-is-too-large-throws.js
 test/built-ins/ArrayBuffer/prototype/slice/species-constructor-is-not-object.js
@@ -197,7 +195,6 @@ test/built-ins/ArrayIteratorPrototype/next/args-mapped-expansion-before-exhausti
 test/built-ins/ArrayIteratorPrototype/next/args-mapped-truncation-before-exhaustion.js
 test/built-ins/ArrayIteratorPrototype/next/args-unmapped-expansion-before-exhaustion.js
 test/built-ins/ArrayIteratorPrototype/next/args-unmapped-truncation-before-exhaustion.js
-test/built-ins/ArrayIteratorPrototype/next/iteration-mutable.js
 test/built-ins/AsyncFunction/AsyncFunction-is-subclass.js
 test/built-ins/AsyncFunction/AsyncFunctionPrototype-to-string.js
 test/built-ins/AsyncGeneratorFunction/instance-await-expr-in-param.js
@@ -505,7 +502,6 @@ test/built-ins/Object/internals/DefineOwnProperty/consistent-value-function-call
 test/built-ins/Object/keys/15.2.3.14-5-13.js
 test/built-ins/Object/keys/property-traps-order-with-proxied-array.js
 test/built-ins/Object/keys/proxy-keys.js
-test/built-ins/Object/keys/proxy-non-enumerable-prop-invariant-3.js
 test/built-ins/Object/keys/return-order.js
 test/built-ins/Object/prop-desc.js
 test/built-ins/Object/prototype/__defineGetter__/getter-non-callable.js
@@ -629,8 +625,6 @@ test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/lookahead-quantifier-match-groups.js
 test/built-ins/RegExp/match-indices/indices-array-unicode-match.js
 test/built-ins/RegExp/match-indices/indices-array-unicode-property-names.js
-test/built-ins/RegExp/match-indices/indices-groups-object.js
-test/built-ins/RegExp/match-indices/indices-groups-properties.js
 test/built-ins/RegExp/named-groups/duplicate-names-exec.js
 test/built-ins/RegExp/named-groups/duplicate-names-match.js
 test/built-ins/RegExp/named-groups/duplicate-names-matchall.js
@@ -638,8 +632,6 @@ test/built-ins/RegExp/named-groups/duplicate-names-replace.js
 test/built-ins/RegExp/named-groups/duplicate-names-replaceall.js
 test/built-ins/RegExp/named-groups/duplicate-names-split.js
 test/built-ins/RegExp/named-groups/groups-object-undefined.js
-test/built-ins/RegExp/named-groups/groups-object.js
-test/built-ins/RegExp/named-groups/groups-properties.js
 test/built-ins/RegExp/named-groups/non-unicode-match.js
 test/built-ins/RegExp/named-groups/non-unicode-property-names-valid.js
 test/built-ins/RegExp/named-groups/non-unicode-property-names.js
@@ -2290,7 +2282,6 @@ test/language/statements/class/name-binding/in-extends-expression-assigned.js
 test/language/statements/class/scope-name-lex-open-heritage.js
 test/language/statements/class/static-init-abrupt.js
 test/language/statements/class/static-init-sequence.js
-test/language/statements/class/subclass/derived-class-return-override-with-symbol.js
 test/language/statements/const/cptn-value.js
 test/language/statements/continue/S12.7_A9_T1.js
 test/language/statements/continue/labeled-continue.js
@@ -2414,8 +2405,6 @@ test/language/statements/for-in/order-enumerable-shadowed.js
 test/language/statements/for-in/order-property-added.js
 test/language/statements/for-in/order-simple-object.js
 test/language/statements/for-of/arguments-mapped-aliasing.js
-test/language/statements/for-of/array-contract.js
-test/language/statements/for-of/array-expand.js
 test/language/statements/for-of/dstr/array-elem-init-in.js
 test/language/statements/for-of/dstr/array-elem-init-yield-expr.js
 test/language/statements/for-of/dstr/array-elem-iter-rtrn-close-null.js
@@ -2522,8 +2511,6 @@ test/staging/built-ins/RegExp/named-groups/duplicate-named-groups-replace.js
 test/staging/built-ins/RegExp/named-groups/duplicate-named-groups.js
 test/staging/decorators/private-auto-accessor.js
 test/staging/decorators/public-auto-accessor.js
-test/staging/sm/Array/for_of_3.js
-test/staging/sm/Array/for_of_4.js
 test/staging/sm/Array/from_proxy.js
 test/staging/sm/Array/from_string.js
 test/staging/sm/Array/group.js
