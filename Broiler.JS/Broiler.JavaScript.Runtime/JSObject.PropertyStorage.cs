@@ -754,15 +754,15 @@ public partial class JSObject
             return false;
         }
 
-        if (hasSet && descriptor[KeyStrings.set] is IJSFunction setter)
-        {
-            setter.InvokeFunction(new Arguments(receiver ?? target, value));
-            result = true;
-            return true;
-        }
-
+        // This branch runs only when the base (the object whose prototype chain was
+        // walked) resolved the property to a DATA descriptor — i.e. we are applying the
+        // write to a DISTINCT receiver (super.x = / Reflect.set with a 4th argument).
+        // OrdinarySetWithOwnDescriptor step: if the receiver's own property is an
+        // accessor, return false. The receiver's setter is NOT invoked here — a setter
+        // is only honoured when the accessor is found while walking the base's prototype
+        // chain (handled by the IsProperty branches before reaching this receiver path).
         if (throwError)
-            throw NewTypeError($"Cannot modify property {name} of {target} which has only a getter");
+            throw NewTypeError($"Cannot assign to property {name} of {target} whose receiver has an accessor");
 
         result = false;
         return true;

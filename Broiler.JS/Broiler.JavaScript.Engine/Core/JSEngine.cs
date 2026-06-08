@@ -190,20 +190,24 @@ public static class JSEngine
 
     internal readonly struct StrictModeScope : IDisposable
     {
-        private readonly bool enabled;
+        private readonly int previous;
 
         public StrictModeScope(bool enabled)
         {
-            this.enabled = enabled;
-
-            if (enabled)
-                _strictModeDepth.Value++;
+            // Strictness reflects the CURRENTLY executing code, not "any strict frame on
+            // the stack". A strict function (or class constructor) entered from sloppy
+            // code raises the level; a sloppy function entered from strict code must drop
+            // back to non-strict so its property [[Set]] semantics stay lenient. Modelling
+            // this as a save/restore of an absolute level (rather than a one-way counter
+            // that a sloppy callee leaves untouched) keeps a sloppy callee invoked from a
+            // strict caller from inheriting the caller's strict-mode set semantics.
+            previous = _strictModeDepth.Value;
+            _strictModeDepth.Value = enabled ? previous + 1 : 0;
         }
 
         public void Dispose()
         {
-            if (enabled)
-                _strictModeDepth.Value--;
+            _strictModeDepth.Value = previous;
         }
     }
 

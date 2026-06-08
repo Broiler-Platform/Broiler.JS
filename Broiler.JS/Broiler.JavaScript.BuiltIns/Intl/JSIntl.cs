@@ -2538,9 +2538,78 @@ public class JSIntlDateTimeFormat : JSObject
     private static readonly KeyString MinuteKey = KeyStrings.GetOrCreate("minute");
     private static readonly KeyString SecondKey = KeyStrings.GetOrCreate("second");
     private static readonly KeyString FractionalSecondDigitsKey = KeyStrings.GetOrCreate("fractionalSecondDigits");
+    private static readonly KeyString YearKey = KeyStrings.GetOrCreate("year");
+    private static readonly KeyString MonthKey = KeyStrings.GetOrCreate("month");
+    private static readonly KeyString DayKey = KeyStrings.GetOrCreate("day");
+    private static readonly KeyString DateStyleKey = KeyStrings.GetOrCreate("dateStyle");
+    private static readonly KeyString TimeStyleKey = KeyStrings.GetOrCreate("timeStyle");
+    private static readonly KeyString TimeZoneKey = KeyStrings.GetOrCreate("timeZone");
+    private static readonly KeyString Hour12Key = KeyStrings.GetOrCreate("hour12");
+    private static readonly KeyString HourCycleKey = KeyStrings.GetOrCreate("hourCycle");
     private readonly CultureInfo locale;
     private readonly string localeTag;
     private JSObject options;
+
+    private string OptionString(KeyString key)
+    {
+        var value = options?[key];
+        return value == null || value.IsUndefined ? null : value.StringValue;
+    }
+
+    private int FractionalSecondDigits()
+    {
+        var value = options?[FractionalSecondDigitsKey];
+        return value == null || value.IsUndefined ? 0 : (int)value.DoubleValue;
+    }
+
+    private bool ResolveHour12()
+    {
+        var hour12 = options?[Hour12Key];
+        if (hour12 != null && !hour12.IsUndefined)
+            return hour12.BooleanValue;
+        var cycle = OptionString(HourCycleKey);
+        if (cycle == "h23" || cycle == "h24")
+            return false;
+        return true; // en default
+    }
+
+    private JSIntlDateTimeFormatEngine.Pattern ResolveEnginePattern()
+        => JSIntlDateTimeFormatEngine.ResolvePattern(
+            hasYear: OptionString(YearKey) != null,
+            yearStyle: OptionString(YearKey),
+            hasMonth: OptionString(MonthKey) != null,
+            monthStyle: OptionString(MonthKey),
+            hasDay: OptionString(DayKey) != null,
+            dayStyle: OptionString(DayKey),
+            hasHour: OptionString(HourKey) != null,
+            hasMinute: OptionString(MinuteKey) != null,
+            hasSecond: OptionString(SecondKey) != null,
+            fractionalSecondDigits: FractionalSecondDigits(),
+            hasDayPeriodField: false,
+            dateStyle: OptionString(DateStyleKey),
+            timeStyle: OptionString(TimeStyleKey),
+            hour12: ResolveHour12());
+
+    private JSIntlDateTimeFormatEngine.Fields ResolveFields(double clipped)
+        => new(JSIntlDateTimeFormatEngine.ToZone(clipped, OptionString(TimeZoneKey)));
+
+    private static JSValue PartsArray(System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> parts)
+    {
+        var typeKey = KeyStrings.GetOrCreate("type");
+        var valueKey = KeyStrings.GetOrCreate("value");
+        var sourceKey = KeyStrings.GetOrCreate("source");
+        var array = JSValue.CreateArray();
+        foreach (var p in parts)
+        {
+            var obj = new JSObject();
+            obj[typeKey] = JSValue.CreateString(p.Type);
+            obj[valueKey] = JSValue.CreateString(p.Value);
+            if (p.Source != null)
+                obj[sourceKey] = JSValue.CreateString(p.Source);
+            array.AddArrayItem(obj);
+        }
+        return array;
+    }
 
     public static JSIntlDateTimeFormat Get(CultureInfo culture)
         => formats.GetOrAdd(culture.Name, static key => new JSIntlDateTimeFormat(CultureInfo.GetCultureInfo(key)));
@@ -2564,7 +2633,10 @@ public class JSIntlDateTimeFormat : JSObject
             return new JSString(dayPeriod);
         }
 
-        return new JSString(clipped.ToString(CultureInfo.InvariantCulture));
+        var pattern = ResolveEnginePattern();
+        var fields = ResolveFields(clipped);
+        var parts = JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), "literal");
+        return new JSString(JSIntlDateTimeFormatEngine.PartsToString(parts));
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -2573,27 +2645,40 @@ public class JSIntlDateTimeFormat : JSObject
             : throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.format called on incompatible receiver");
 
     public static JSValue FormatRangePrototype(in Arguments a)
-        => a.This is JSIntlDateTimeFormat
-            ? JSValue.CreateString($"{CoerceRangeTime(a.Get1())}–{CoerceRangeTime(a.GetAt(1))}")
-            : throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatRange called on incompatible receiver");
+    {
+        if (a.This is not JSIntlDateTimeFormat @this)
+            throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatRange called on incompatible receiver");
+
+        var parts = @this.ComputeRangeParts(a);
+        var sb = new StringBuilder();
+        foreach (var part in parts)
+            sb.Append(part.Value);
+        return JSValue.CreateString(sb.ToString());
+    }
 
     public static JSValue FormatRangeToPartsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlDateTimeFormat)
+        if (a.This is not JSIntlDateTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatRangeToParts called on incompatible receiver");
 
-        var startValue = CoerceRangeTime(a.Get1());
-        var endValue = CoerceRangeTime(a.GetAt(1));
-        var parts = JSValue.CreateArray();
-        var start = new JSObject();
-        start[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("startRange");
-        start[KeyStrings.GetOrCreate("value")] = JSValue.CreateNumber(startValue);
-        var end = new JSObject();
-        end[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("endRange");
-        end[KeyStrings.GetOrCreate("value")] = JSValue.CreateNumber(endValue);
-        parts.AddArrayItem(start);
-        parts.AddArrayItem(end);
-        return parts;
+        return PartsArray(@this.ComputeRangeParts(a));
+    }
+
+    private System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> ComputeRangeParts(in Arguments a)
+    {
+        // FormatDateTimeRange step 3: TypeError if either endpoint is undefined — checked
+        // before ToNumber, so a throwing valueOf on the other argument is not observed.
+        var startArg = a.Get1();
+        var endArg = a.GetAt(1);
+        if (startArg == null || startArg.IsUndefined || endArg == null || endArg.IsUndefined)
+            throw JSEngine.NewTypeError("Intl.DateTimeFormat range start and end dates must not be undefined");
+
+        var startValue = CoerceRangeTime(startArg);
+        var endValue = CoerceRangeTime(endArg);
+        var pattern = ResolveEnginePattern();
+        var startFields = ResolveFields(startValue);
+        var endFields = ResolveFields(endValue);
+        return JSIntlDateTimeFormatEngine.FormatRangeToParts(pattern, in startFields, in endFields, FractionalSecondDigits());
     }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
@@ -2659,13 +2744,10 @@ public class JSIntlDateTimeFormat : JSObject
             return timeParts;
         }
 
-        var formatted = clipped.ToString(CultureInfo.InvariantCulture);
-        var parts = JSValue.CreateArray();
-        var part = new JSObject();
-        part[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("literal");
-        part[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(formatted);
-        parts.AddArrayItem(part);
-        return parts;
+        var pattern = @this.ResolveEnginePattern();
+        var fields = @this.ResolveFields(clipped);
+        var engineParts = JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, @this.FractionalSecondDigits(), null);
+        return PartsArray(engineParts);
     }
 
     private static void AddDateTimePart(JSValue parts, string type, string value)

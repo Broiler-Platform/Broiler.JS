@@ -432,7 +432,12 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             SetLegacyCaller(previousExecutingFunction);
         try
         {
-            r = f(a1) ?? JSUndefined.Value;
+            // [[Construct]] must run the body under its own strict-mode setting,
+            // mirroring [[Call]] in InvokeFunction: a strict function constructed via
+            // `new` performs strict property [[Set]] semantics (the runtime strict
+            // flag is read by JSValue's set accessors through IsStrictModeEnabled).
+            using (JSEngine.EnterStrictMode(IsStrictMode))
+                r = f(a1) ?? JSUndefined.Value;
         }
         finally
         {

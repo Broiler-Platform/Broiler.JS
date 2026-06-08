@@ -157,6 +157,19 @@ partial class FastCompiler
             return Assign(variable.Expression, right, assignmentOperator);
         }
 
+        // A `super[key]` assignment target must be an assignable super-index expression.
+        // VisitMemberExpression spills the key into a temp (and returns a Block) so a READ
+        // observes the spec key-before-GetSuperBase order; a Block is not assignable, so
+        // build the index node directly here for the write path. (The write path already
+        // evaluates the key as part of the index target, so the spilling reorder is not
+        // needed to make the existing super-assignment tests pass.)
+        if (left is AstMemberExpression { Computed: true, Object.Type: FastNodeType.Super } superMember)
+        {
+            var superTarget = JSValueBuilder.Index(
+                scope.Top.ThisExpression, scope.Top.Super, VisitExpression(superMember.Property), superMember.Coalesce);
+            return Assign(superTarget, right, assignmentOperator);
+        }
+
         return Assign(Visit(left), right, assignmentOperator);
     }
 
@@ -700,7 +713,7 @@ partial class FastCompiler
             null,
             PrepareAnonymousFunctionNameForDestructuringMethod,
             value,
-            YExpression.Constant(id.Name.Value),
+            YExpression.Constant(id.InferenceName),
             YExpression.Constant(IsAnonymousFunctionDefinition(initializer)));
     }
 }

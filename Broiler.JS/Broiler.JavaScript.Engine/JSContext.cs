@@ -200,7 +200,15 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 // shadowed binding's property must keep its own value while the
                 // `with` body runs (e.g. `globalThis.v` stays the outer value even
                 // though the unscopables-blocked `v` resolves to the inner var).
-                if (variable.IsInitialized && !entry.Shadowed)
+                // Do NOT republish when the name already has a live global-object
+                // property: that property is the variable's true store and already holds
+                // its current value. The captured binding's `Value` field can be a stale
+                // snapshot (a global var written through its property does not update the
+                // binding field), so Register would overwrite the live property with a
+                // stale value. The eval resolves the name through the existing property
+                // regardless. Transient function-local bindings (no prior property) are
+                // still published so the eval can see them.
+                if (variable.IsInitialized && !entry.Shadowed && !entry.HadOwnProperty)
                     context.Register(variable);
                 context.globalVars.Put(key.Key) = variable;
             }
@@ -314,21 +322,27 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                         continue;
                     }
 
-                    // Only propagate the overlay's value back if the eval actually
-                    // gave it one; an overlay still in its temporal dead zone has no
-                    // readable value (reading it would throw).
-                    if (!ReferenceEquals(entry.PreviousVariable, entry.OverlayVariable)
-                        && entry.OverlayVariable.IsInitialized)
-                        entry.PreviousVariable.Value = entry.OverlayVariable.Value;
-
                     context.globalVars.Put(entry.Name.Key) = entry.PreviousVariable;
+
+                    if (entry.HadOwnProperty)
+                    {
+                        // The name already had a live global-object property — its true
+                        // store, which the eval read and wrote DIRECTLY. Leave it exactly
+                        // as the eval left it. The captured binding's `Value` field can be
+                        // a stale snapshot (a global var's binding field is not kept in
+                        // sync when writes flow through its property), so writing it back
+                        // here would corrupt the live value.
+                        continue;
+                    }
 
                     if (!ReferenceEquals(entry.PreviousVariable, entry.OverlayVariable))
                     {
-                        if (entry.HadOwnProperty)
-                            context.SetOwnPropertyValue(entry.Name, entry.PreviousVariable.Value);
-                        else
-                            context.Delete(entry.Name);
+                        // A transient overlay (an eval-introduced binding with no prior
+                        // global property): propagate its value to the outer binding so
+                        // later closures observe it, then drop the transient property.
+                        if (entry.OverlayVariable.IsInitialized)
+                            entry.PreviousVariable.Value = entry.OverlayVariable.Value;
+                        context.Delete(entry.Name);
                     }
 
                     continue;

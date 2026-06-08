@@ -46,6 +46,16 @@ public class JSClass : JSFunction
     {
         this.super = super;
         IsBodylessDefaultConstructor = fx == null;
+
+        // Class bodies are always strict (MakeClassConstructor / ClassDefinitionEvaluation),
+        // so the constructor must run under strict mode when invoked via [[Construct]]
+        // (CreateInstance enters EnterStrictMode(IsStrictMode)). The per-member function
+        // objects carry their own strict flag, but the JSClass constructor object —
+        // whose delegate AddConstructor copies — needs it set here so strict property
+        // [[Set]] semantics (e.g. `super.x =` to a non-writable inherited property)
+        // throw rather than silently failing.
+        IsStrictMode = true;
+
         if (super is JSObject superObject)
             BasePrototypeObject = superObject;
 
@@ -112,9 +122,16 @@ public class JSClass : JSFunction
 
         // For a body-less default derived constructor, super() targets the class's
         // CURRENT [[Prototype]] (GetSuperConstructor), resolved dynamically here rather
-        // than the superclass delegate captured at definition. Falls back to `f` when
-        // the prototype is not a constructor (e.g. `extends null`), preserving the
-        // existing TypeError path.
+        // than the superclass delegate captured at definition.
+        //
+        // `class extends null {}` IS a derived class whose synthetic constructor runs
+        // `super(...args)`; GetSuperConstructor is %Function.prototype% (not a
+        // constructor) so super() throws a TypeError. The null heritage uniquely marks
+        // this case: a base class (no heritage) carries the Object sentinel here, never
+        // JS null, so base classes are unaffected.
+        if (IsBodylessDefaultConstructor && super != null && super.IsNull)
+            throw JSEngine.NewTypeError("Super constructor null of derived class is not a constructor");
+
         var constructorDelegate = IsBodylessDefaultConstructor && GetPrototypeOf() is JSFunction superConstructor
             ? superConstructor.Delegate
             : f;
@@ -125,7 +142,15 @@ public class JSClass : JSFunction
             if (ec != null)
                 ec.CurrentNewTarget = previousNewTarget ?? this;
 
-            @this = constructorDelegate(ao);
+            // [[Construct]] must run the constructor body under its own strict-mode
+            // setting, exactly as [[Call]] does in InvokeFunction. Class constructor
+            // bodies are always strict, so a property [[Set]] that fails (e.g. adding
+            // a property to a non-extensible object, or `super.x =` onto a
+            // non-writable inherited property) must throw a TypeError rather than
+            // silently failing. The runtime strict flag is read by JSValue's set
+            // accessors via IsStrictModeEnabled, so it must be entered here.
+            using (JSEngine.EnterStrictMode(IsStrictMode))
+                @this = constructorDelegate(ao);
         }
         finally
         {

@@ -51,7 +51,13 @@ partial class FastCompiler
                     return false; // an ordinary binding declared inside the boundary function
 
                 outer = v; // a binding in an enclosing scope: shadow it
-                outerIsGlobal = s.Function == null; // the program/global var environment
+                // Only a `var`/function global (a global-object-backed binding) is read
+                // and written through JSVariable.GlobalValue. A top-level `let`/`const`
+                // is a LEXICAL binding that is NOT a property of the global object — it is
+                // its own JSVariable storage like a function local — so it must use
+                // GetValue/SetValue. Treating it as global made the shadow read the
+                // (absent) global-object property and observe undefined.
+                outerIsGlobal = s.Function == null && !v.IsLexical;
                 break;
             }
 
