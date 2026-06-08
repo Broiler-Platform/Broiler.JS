@@ -1,4 +1,4 @@
-using Broiler.JavaScript.Engine;
+﻿using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Integration.Tests;
@@ -118,4 +118,43 @@ public class Issue705Tests
     public void FormatToPartsGroupsLargeIntegers()
         => Assert.Equal("integer:1|group:,|integer:234|group:,|integer:567",
             Parts("en-US", "auto", "1234567"));
+
+    // ---- Problem 4: currency formatting (style:"currency", accounting sign) ----
+
+    private static string CurrencyParts(string locale, string signDisplay, string value)
+        => Eval($"new Intl.NumberFormat('{locale}', {{style:'currency', currency:'USD', " +
+                $"currencySign:'accounting', signDisplay:'{signDisplay}'}}).formatToParts({value})" +
+                ".map(function(p){return p.type+':'+p.value;}).join('|');").ToString();
+
+    // USD defaults to 2 fraction digits; the symbol precedes the number in en-US.
+    [Fact]
+    public void CurrencyPositiveEnUs()
+        => Assert.Equal("currency:$|integer:987|decimal:.|fraction:00", CurrencyParts("en-US", "auto", "987"));
+
+    // An accounting negative is wrapped in parentheses in en-US.
+    [Fact]
+    public void CurrencyAccountingNegativeEnUs()
+        => Assert.Equal("literal:(|currency:$|integer:987|decimal:.|fraction:00|literal:)",
+            CurrencyParts("en-US", "auto", "-987"));
+
+    // ko-KR uses the "US$" symbol; the accounting parens convention still applies.
+    [Fact]
+    public void CurrencySymbolIsLocaleSpecific()
+        => Assert.Equal("literal:(|currency:US$|integer:987|decimal:.|fraction:00|literal:)",
+            CurrencyParts("ko-KR", "auto", "-987"));
+
+    // de-DE places the symbol after the number, separated by a no-break space
+    // (U+00A0, normalized to <nbsp> below), and uses a leading minus for
+    // accounting negatives instead of parentheses.
+    [Fact]
+    public void CurrencyDeUsesTrailingSymbolAndMinus()
+    {
+        var actual = CurrencyParts("de-DE", "auto", "-987").Replace(" ", "<nbsp>");
+        Assert.Equal("minusSign:-|integer:987|decimal:,|fraction:00|literal:<nbsp>|currency:$", actual);
+    }
+
+    // "never" suppresses the accounting parens entirely (uses the positive layout).
+    [Fact]
+    public void CurrencyNeverSuppressesAccountingParens()
+        => Assert.Equal("currency:$|integer:987|decimal:.|fraction:00", CurrencyParts("en-US", "never", "-987"));
 }

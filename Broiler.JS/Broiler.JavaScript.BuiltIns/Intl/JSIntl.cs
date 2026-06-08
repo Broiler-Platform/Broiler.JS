@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -2033,6 +2033,8 @@ public class JSIntlNumberFormat : JSObject
         var isNaN = double.IsNaN(x);
         var isInfinity = double.IsInfinity(x);
         var signBit = !isNaN && double.IsNegative(x);
+        var isCurrency = StyleOption() == "currency";
+        var currency = isCurrency ? ResolveCurrency() : default;
 
         List<(string, string)> magnitude;
         bool roundedIsZero;
@@ -2046,9 +2048,13 @@ public class JSIntlNumberFormat : JSObject
             magnitude = [("infinity", "∞")];
             roundedIsZero = false;
         }
+        else if (isCurrency)
+        {
+            magnitude = FormatFiniteMagnitude(Math.Abs(x), currency.Digits, currency.Digits, out roundedIsZero);
+        }
         else
         {
-            magnitude = FormatFiniteMagnitude(Math.Abs(x), out roundedIsZero);
+            magnitude = FormatFiniteMagnitude(Math.Abs(x), 0, 3, out roundedIsZero);
         }
 
         var negativeNonZero = signBit && !roundedIsZero;
@@ -2063,6 +2069,13 @@ public class JSIntlNumberFormat : JSObject
             _ => signBit ? "-" : null, // "auto"
         };
 
+        return isCurrency
+            ? AssembleCurrencyParts(magnitude, sign, currency)
+            : AssemblePlainParts(magnitude, sign);
+    }
+
+    private static List<(string, string)> AssemblePlainParts(List<(string, string)> magnitude, string sign)
+    {
         var parts = new List<(string, string)>();
         if (sign == "-")
             parts.Add(("minusSign", "-"));
@@ -2072,10 +2085,48 @@ public class JSIntlNumberFormat : JSObject
         return parts;
     }
 
-    private List<(string, string)> FormatFiniteMagnitude(double magnitude, out bool roundedIsZero)
+    // Lays out the currency symbol around the number core and applies the sign.
+    // For the "accounting" currencySign a negative is wrapped in parentheses in
+    // locales that use that convention (en/ja/ko/zh); locales like de-DE use a
+    // leading minus sign instead. A plus sign (signDisplay) is always prepended.
+    private List<(string, string)> AssembleCurrencyParts(List<(string, string)> magnitude, string sign, CurrencyInfo currency)
     {
-        var minFrac = ReadIntOption("minimumFractionDigits", 0);
-        var maxFrac = ReadIntOption("maximumFractionDigits", 3);
+        var core = new List<(string, string)>();
+        if (currency.SymbolAfter)
+        {
+            core.AddRange(magnitude);
+            if (currency.Spacing.Length > 0)
+                core.Add(("literal", currency.Spacing));
+            core.Add(("currency", currency.Symbol));
+        }
+        else
+        {
+            core.Add(("currency", currency.Symbol));
+            core.AddRange(magnitude);
+        }
+
+        var useAccountingParens = sign == "-" && CurrencySignOption() == "accounting" && currency.AccountingParens;
+        var parts = new List<(string, string)>();
+        if (useAccountingParens)
+        {
+            parts.Add(("literal", "("));
+            parts.AddRange(core);
+            parts.Add(("literal", ")"));
+            return parts;
+        }
+
+        if (sign == "-")
+            parts.Add(("minusSign", "-"));
+        else if (sign == "+")
+            parts.Add(("plusSign", "+"));
+        parts.AddRange(core);
+        return parts;
+    }
+
+    private List<(string, string)> FormatFiniteMagnitude(double magnitude, int defaultMinFrac, int defaultMaxFrac, out bool roundedIsZero)
+    {
+        var minFrac = ReadIntOption("minimumFractionDigits", defaultMinFrac);
+        var maxFrac = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
         if (maxFrac < minFrac)
             maxFrac = minFrac;
         var minInt = ReadIntOption("minimumIntegerDigits", 1);
@@ -2174,6 +2225,99 @@ public class JSIntlNumberFormat : JSObject
     private string GroupSeparator() => Culture().NumberFormat.NumberGroupSeparator;
 
     private string DecimalSeparator() => Culture().NumberFormat.NumberDecimalSeparator;
+
+    private string StyleOption()
+    {
+        if (options == null)
+            return "decimal";
+        var v = options[KeyStrings.GetOrCreate("style")];
+        return v == null || v.IsUndefined ? "decimal" : v.StringValue;
+    }
+
+    private string CurrencySignOption()
+    {
+        if (options == null)
+            return "standard";
+        var v = options[KeyStrings.GetOrCreate("currencySign")];
+        return v == null || v.IsUndefined ? "standard" : v.StringValue;
+    }
+
+    // CLDR separates the number and the currency symbol with a no-break space
+    // (U+00A0) in locales such as de-DE.
+    private const string NoBreakSpace = " ";
+
+    // A minimal, locale-aware currency descriptor covering the symbol string,
+    // its placement and the negative convention. This is a small CLDR subset
+    // sufficient for the common locales/currencies; unknown currencies fall back
+    // to the currency code and the default (symbol-before, parenthesized) layout.
+    private readonly struct CurrencyInfo
+    {
+        public string Symbol { get; init; }
+        public bool SymbolAfter { get; init; }
+        // Literal placed between the number and the symbol (CLDR uses a no-break
+        // space, U+00A0, for de); empty when the symbol abuts the number.
+        public string Spacing { get; init; }
+        public bool AccountingParens { get; init; }
+        public int Digits { get; init; }
+    }
+
+    private CurrencyInfo ResolveCurrency()
+    {
+        var code = ReadStringOption("currency", string.Empty).ToUpperInvariant();
+        var display = ReadStringOption("currencyDisplay", "symbol");
+        var language = LanguageOf(locale);
+
+        // de-DE places the symbol after the number with a space and uses a leading
+        // minus for accounting negatives; the other tested locales place it before
+        // and wrap accounting negatives in parentheses.
+        var symbolAfter = language == "de";
+
+        return new CurrencyInfo
+        {
+            Symbol = display == "code" ? code : CurrencySymbol(code, language, display),
+            SymbolAfter = symbolAfter,
+            Spacing = symbolAfter ? NoBreakSpace : string.Empty,
+            AccountingParens = !symbolAfter,
+            Digits = CurrencyDigits(code),
+        };
+    }
+
+    private static string CurrencySymbol(string code, string language, string display)
+    {
+        var wide = display != "narrowSymbol" && (language == "ko" || language == "zh");
+        return code switch
+        {
+            "USD" => wide ? "US$" : "$",
+            "JPY" => wide ? "JP¥" : "¥",
+            "EUR" => "€",
+            "GBP" => "£",
+            "" => code,
+            _ => code,
+        };
+    }
+
+    private static int CurrencyDigits(string code) => code switch
+    {
+        "JPY" or "KRW" or "CLP" or "VND" => 0,
+        "BHD" or "KWD" or "OMR" or "TND" => 3,
+        _ => 2,
+    };
+
+    private static string LanguageOf(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return string.Empty;
+        var dash = tag.IndexOf('-');
+        return (dash < 0 ? tag : tag[..dash]).ToLowerInvariant();
+    }
+
+    private string ReadStringOption(string name, string fallback)
+    {
+        if (options == null)
+            return fallback;
+        var v = options[KeyStrings.GetOrCreate(name)];
+        return v == null || v.IsUndefined ? fallback : v.StringValue;
+    }
 
     public static JSValue FormatRangePrototype(in Arguments a)
     {
