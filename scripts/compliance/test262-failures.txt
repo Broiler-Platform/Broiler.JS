@@ -1055,7 +1055,6 @@ test/built-ins/RegExp/prototype/Symbol.match/exec-invocation.js
 test/built-ins/RegExp/prototype/Symbol.match/g-match-empty-advance-lastindex.js
 test/built-ins/RegExp/prototype/Symbol.match/u-advance-after-empty.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/isregexp-called-once.js
-test/built-ins/RegExp/prototype/Symbol.matchAll/species-constructor.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/this-not-object-throws.js
 test/built-ins/RegExp/prototype/Symbol.replace/coerce-global.js
 test/built-ins/RegExp/prototype/Symbol.replace/coerce-lastindex.js
@@ -1820,7 +1819,6 @@ test/language/eval-code/direct/parse-failure-5.js
 test/language/eval-code/direct/super-prop-method.js
 test/language/eval-code/direct/var-env-func-init-local-new-delete.js
 test/language/eval-code/direct/var-env-var-init-local-new-delete.js
-test/language/eval-code/direct/var-env-var-non-strict.js
 test/language/eval-code/indirect/cptn-nrml-empty-var.js
 test/language/eval-code/indirect/lex-env-heritage.js
 test/language/eval-code/indirect/non-definable-function-with-function.js
@@ -2043,7 +2041,6 @@ test/language/expressions/property-accessors/S11.2.1_A4_T3.js
 test/language/expressions/property-accessors/S11.2.1_A4_T5.js
 test/language/expressions/right-shift/bigint.js
 test/language/expressions/subtraction/S11.6.2_A4_T7.js
-test/language/expressions/super/call-proto-not-ctor.js
 test/language/expressions/super/call-spread-obj-with-overrides.js
 test/language/expressions/super/prop-dot-obj-val-from-eval.js
 test/language/expressions/super/prop-expr-getsuperbase-before-topropertykey-putvalue-compound-assign.js
@@ -2137,7 +2134,6 @@ test/language/statements/class/definition/fn-name-accessor-set.js
 test/language/statements/class/definition/fn-name-gen-method.js
 test/language/statements/class/definition/fn-name-method.js
 test/language/statements/class/definition/fn-name-static-precedence-order.js
-test/language/statements/class/definition/fn-name-static-precedence.js
 test/language/statements/class/definition/prototype-getter.js
 test/language/statements/class/definition/this-access-restriction.js
 test/language/statements/class/elements/class-field-on-frozen-objects.js
