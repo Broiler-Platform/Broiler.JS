@@ -366,7 +366,29 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public abstract JSValue TypeOf();
 
-    public virtual int IntValue => (int)(((long)DoubleValue << 32) >> 32);
+    public virtual int IntValue => unchecked((int)ToUint32(DoubleValue));
+
+    // ToUint32 (§7.1.6) / ToInt32 (§7.1.5): NaN, ±0 and ±∞ map to 0; every other
+    // value is truncated toward zero and reduced modulo 2^32. The fast path covers
+    // finite values inside the signed 64-bit range, where (long) truncates exactly
+    // and the low 32 bits are the result. Values outside that range (including ±∞,
+    // which .NET converts to long.MaxValue/MinValue rather than wrapping) take the
+    // floating-point modulo path.
+    internal static uint ToUint32(double d)
+    {
+        const double TwoPow32 = 4294967296.0;
+        if (d >= -9.2233720368547758E18 && d < 9.2233720368547758E18)
+            return unchecked((uint)((long)d << 32 >> 32));
+
+        if (!double.IsFinite(d))
+            return 0;
+
+        var num = Math.Truncate(d) % TwoPow32;
+        if (num < 0)
+            num += TwoPow32;
+
+        return (uint)num;
+    }
 
     /// <summary>
     /// Integer value restricts value within int.MaxValue and
@@ -389,7 +411,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual long BigIntValue => (long)(ulong)DoubleValue;
 
-    public virtual uint UIntValue => (uint)(((long)DoubleValue << 32) >> 32);
+    public virtual uint UIntValue => ToUint32(DoubleValue);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IJSPrototype prototypeChain;

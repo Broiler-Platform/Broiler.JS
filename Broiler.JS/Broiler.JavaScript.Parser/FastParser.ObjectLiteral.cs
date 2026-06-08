@@ -233,11 +233,18 @@ partial class FastParser
                     throw stream.Unexpected();
 
                 nodes.Add(new AstSpreadElement(current, exp.End, exp));
-                continue;
             }
-
-            if (ObjectProperty(out var property))
+            else if (ObjectProperty(out var property))
+            {
                 nodes.Add(property);
+            }
+            else
+            {
+                // The while-condition already consumed a closing `}`/EOF, so any
+                // position that is neither a spread nor a property here (e.g. an
+                // elision such as `{,a(){}}` or `{a,,b}`) is a SyntaxError.
+                throw stream.Unexpected();
+            }
 
             if (stream.CheckAndConsume(TokenTypes.Comma))
                 continue;
