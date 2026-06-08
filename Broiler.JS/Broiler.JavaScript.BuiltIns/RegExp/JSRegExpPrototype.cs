@@ -184,9 +184,14 @@ public partial class JSRegExp
         var groupNames = value.GetGroupNames();
         if (groupNames.Length > 1) // First name is always "0" (the whole match)
         {
+            // The groups object is ObjectCreate(null) and its properties are
+            // installed via CreateDataProperty (writable/enumerable/configurable),
+            // never [[Set]] — so inherited setters / a "__proto__" group name do
+            // not interfere (RegExpBuiltinExec steps 24-28).
             var namedGroups = new JSObject();
+            namedGroups.SetPrototypeOf(JSValue.NullValue);
             bool hasNamedGroups = false;
-            
+
             for (int i = 0; i < groupNames.Length; i++)
             {
                 var name = groupNames[i];
@@ -194,10 +199,11 @@ public partial class JSRegExp
                 if (name.Length > 0 && (name[0] < '0' || name[0] > '9'))
                 {
                     hasNamedGroups = true;
+                    var nameKey = KeyStrings.GetOrCreate(name);
                     var g = match.Groups[name];
-                    namedGroups[name] = g.Success
+                    namedGroups.FastAddValue(nameKey, g.Success
                         ? JSValue.CreateString(g.Value)
-                        : JSUndefined.Value;
+                        : JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
                     if (hasIndices)
                     {
                         if (g.Success)
@@ -205,26 +211,26 @@ public partial class JSRegExp
                             var range = JSValue.CreateArray(2);
                             range[0] = JSValue.CreateNumber(g.Index);
                             range[1] = JSValue.CreateNumber(g.Index + g.Length);
-                            indicesGroups[name] = range;
+                            indicesGroups.FastAddValue(nameKey, range, JSPropertyAttributes.EnumerableConfigurableValue);
                         }
                         else
                         {
-                            indicesGroups[name] = JSUndefined.Value;
+                            indicesGroups.FastAddValue(nameKey, JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
                         }
                     }
                 }
             }
-            
+
             if (hasNamedGroups)
             {
-                result[groupsKey] = namedGroups;
+                ((JSObject)result).FastAddValue(groupsKey, namedGroups, JSPropertyAttributes.EnumerableConfigurableValue);
                 if (hasIndices)
                     ((JSObject)result[indicesKey]).FastAddValue(groupsKey, indicesGroups, JSPropertyAttributes.EnumerableConfigurableValue);
                 return result;
             }
         }
 
-        result[groupsKey] = JSUndefined.Value;
+        ((JSObject)result).FastAddValue(groupsKey, JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
 
         return result;
     }
