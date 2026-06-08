@@ -157,6 +157,16 @@ public class JSVariable
         return _value;
     }
 
+    // Reference-stable compound assignment (`x op= y`). The spec resolves the
+    // target Reference once, before the right-hand side runs, and the write uses
+    // that same Reference even if the RHS (via a direct eval) introduces a more
+    // local binding. CaptureReference records which binding the read observed;
+    // Get/SetCaptured then read/write that same binding. For an ordinary binding
+    // the reference is always this binding, so the captured token is ignored.
+    public virtual bool CaptureReference() => true;
+    public virtual JSValue GetCaptured(bool reference) => GetValue();
+    public virtual JSValue SetCaptured(bool reference, JSValue value) => SetValue(value);
+
     /// <summary>
     /// Implements BindThisValue for a derived class constructor's <c>this</c>
     /// binding: the binding may be initialized only once, so a second

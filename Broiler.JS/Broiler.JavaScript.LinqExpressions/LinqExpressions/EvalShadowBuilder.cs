@@ -22,4 +22,14 @@ public static class EvalShadowBuilder
 
     public static Expression Register(Expression stackItem, Expression variable) =>
         stackItem.CallExpression<CallStackItem>(() => x => x.RegisterDirectEvalBinding(null), variable);
+
+    // Reference-stable compound assignment (see JSVariable.CaptureReference).
+    public static Expression CaptureReference(Expression target) =>
+        target.CallExpression<JSVariable, bool>(() => x => x.CaptureReference());
+
+    public static Expression GetCaptured(Expression target, Expression reference) =>
+        target.CallExpression<JSVariable, bool, JSValue>(() => (x, r) => x.GetCaptured(r), reference);
+
+    public static Expression SetCaptured(Expression target, Expression reference, Expression value) =>
+        target.CallExpression<JSVariable, bool, JSValue, JSValue>(() => (x, r, v) => x.SetCaptured(r, v), reference, value);
 }
