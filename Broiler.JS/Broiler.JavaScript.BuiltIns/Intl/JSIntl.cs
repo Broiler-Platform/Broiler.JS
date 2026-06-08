@@ -1850,36 +1850,11 @@ public sealed class JSIntlPluralRules : JSObject
             ? (intl[KeyStrings.GetOrCreate("PluralRules")] as JSFunction)?.prototype
             : null;
 
-    // ResolvePlural: maps a number to its CLDR plural category. Non-finite
-    // numbers always resolve to "other". This mirrors the English (`en`) rules
-    // exposed by `resolvedOptions().pluralCategories` (cardinal → one/other;
-    // ordinal → one/two/few/other), consistent with the engine's locale
-    // approximation.
+    // ResolvePlural: maps a number to its CLDR plural category using the per-locale
+    // rules generated from cldr-json (UnicodeCldr.LocaleData). Non-finite numbers,
+    // and locales with no rules, resolve to "other".
     public string SelectCategory(double n)
-    {
-        if (!double.IsFinite(n))
-            return "other";
-
-        var abs = System.Math.Abs(n);
-
-        if (type == "ordinal")
-        {
-            var i = (long)abs;
-            var n10 = i % 10;
-            var n100 = i % 100;
-            if (n10 == 1 && n100 != 11)
-                return "one";
-            if (n10 == 2 && n100 != 12)
-                return "two";
-            if (n10 == 3 && n100 != 13)
-                return "few";
-            return "other";
-        }
-
-        // Cardinal (en): "one" when the integer value is 1 with no visible
-        // fraction digits; everything else is "other".
-        return abs == 1 ? "one" : "other";
-    }
+        => CldrLocaleData.SelectPlural(locale, type, n);
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
@@ -1896,18 +1871,8 @@ public sealed class JSIntlPluralRules : JSObject
         var categories = result[KeyStrings.GetOrCreate("pluralCategories")];
         if (categories is JSObject array)
         {
-            if (@this.type == "ordinal")
-            {
-                array.AddArrayItem(JSValue.CreateString("one"));
-                array.AddArrayItem(JSValue.CreateString("two"));
-                array.AddArrayItem(JSValue.CreateString("few"));
-                array.AddArrayItem(JSValue.CreateString("other"));
-            }
-            else
-            {
-                array.AddArrayItem(JSValue.CreateString("one"));
-                array.AddArrayItem(JSValue.CreateString("other"));
-            }
+            foreach (var category in CldrLocaleData.GetPluralCategories(@this.locale, @this.type))
+                array.AddArrayItem(JSValue.CreateString(category));
         }
 
         return result;
