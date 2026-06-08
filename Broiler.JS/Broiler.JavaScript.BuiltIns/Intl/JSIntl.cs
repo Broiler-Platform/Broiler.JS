@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,6 +12,7 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
+using UnicodeCldr.LocaleData;
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
 
@@ -1416,58 +1417,12 @@ public sealed class JSIntlListFormat : JSObject
         return sb.ToString();
     }
 
+    // The (start, middle, end, pair) list-assembly patterns come from the shared
+    // CLDR data library (UnicodeCldr.LocaleData), generated from cldr-json — so the
+    // per-locale list patterns are real CLDR data rather than a hand-coded en/es
+    // approximation.
     private (string Start, string Middle, string End, string Pair) GetPatterns()
-    {
-        var lang = locale;
-        var dash = lang.IndexOf('-');
-        if (dash >= 0)
-            lang = lang.Substring(0, dash);
-
-        var word = type switch
-        {
-            "disjunction" => lang == "es" ? "o" : "or",
-            "unit" => null,
-            _ => lang == "es" ? "y" : "and",
-        };
-
-        // narrow unit lists join with a plain space; everything else uses comma
-        // separators for start/middle and the connector word (if any) at the end.
-        if (style == "narrow" && type == "unit")
-            return ("{0} {1}", "{0} {1}", "{0} {1}", "{0} {1}");
-
-        var startMid = "{0}, {1}";
-
-        if (type == "unit")
-        {
-            // unit: long keeps the connector word at the very end (e.g. es "y");
-            // short/narrow drop it entirely (comma separated).
-            if (style != "long")
-            {
-                var pairUnit = lang == "es" ? "{0} y {1}" : "{0}, {1}";
-                return (startMid, startMid, startMid, pairUnit);
-            }
-            var connector = lang == "es" ? "y" : null;
-            var endUnit = connector != null ? "{0} " + connector + " {1}" : "{0}, {1}";
-            var pairUnitLong = connector != null ? "{0} " + connector + " {1}" : "{0}, {1}";
-            return (startMid, startMid, endUnit, pairUnitLong);
-        }
-
-        // conjunction / disjunction
-        if (lang == "es")
-        {
-            var endEs = "{0} " + word + " {1}";
-            return (startMid, startMid, endEs, endEs);
-        }
-
-        var connectorEn = word; // "and" / "or"
-        var endEn = style == "long" ? "{0}, " + connectorEn + " {1}"
-                  : connectorEn == "and" ? "{0}, & {1}"
-                  : "{0}, " + connectorEn + " {1}";
-        var pairEn = style == "long" ? "{0} " + connectorEn + " {1}"
-                   : connectorEn == "and" ? "{0} & {1}"
-                   : "{0} " + connectorEn + " {1}";
-        return (startMid, startMid, endEn, pairEn);
-    }
+        => CldrLocaleData.GetListPattern(locale, type, style);
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
@@ -1895,36 +1850,11 @@ public sealed class JSIntlPluralRules : JSObject
             ? (intl[KeyStrings.GetOrCreate("PluralRules")] as JSFunction)?.prototype
             : null;
 
-    // ResolvePlural: maps a number to its CLDR plural category. Non-finite
-    // numbers always resolve to "other". This mirrors the English (`en`) rules
-    // exposed by `resolvedOptions().pluralCategories` (cardinal → one/other;
-    // ordinal → one/two/few/other), consistent with the engine's locale
-    // approximation.
+    // ResolvePlural: maps a number to its CLDR plural category using the per-locale
+    // rules generated from cldr-json (UnicodeCldr.LocaleData). Non-finite numbers,
+    // and locales with no rules, resolve to "other".
     public string SelectCategory(double n)
-    {
-        if (!double.IsFinite(n))
-            return "other";
-
-        var abs = System.Math.Abs(n);
-
-        if (type == "ordinal")
-        {
-            var i = (long)abs;
-            var n10 = i % 10;
-            var n100 = i % 100;
-            if (n10 == 1 && n100 != 11)
-                return "one";
-            if (n10 == 2 && n100 != 12)
-                return "two";
-            if (n10 == 3 && n100 != 13)
-                return "few";
-            return "other";
-        }
-
-        // Cardinal (en): "one" when the integer value is 1 with no visible
-        // fraction digits; everything else is "other".
-        return abs == 1 ? "one" : "other";
-    }
+        => CldrLocaleData.SelectPlural(locale, type, n);
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
@@ -1941,18 +1871,8 @@ public sealed class JSIntlPluralRules : JSObject
         var categories = result[KeyStrings.GetOrCreate("pluralCategories")];
         if (categories is JSObject array)
         {
-            if (@this.type == "ordinal")
-            {
-                array.AddArrayItem(JSValue.CreateString("one"));
-                array.AddArrayItem(JSValue.CreateString("two"));
-                array.AddArrayItem(JSValue.CreateString("few"));
-                array.AddArrayItem(JSValue.CreateString("other"));
-            }
-            else
-            {
-                array.AddArrayItem(JSValue.CreateString("one"));
-                array.AddArrayItem(JSValue.CreateString("other"));
-            }
+            foreach (var category in CldrLocaleData.GetPluralCategories(@this.locale, @this.type))
+                array.AddArrayItem(JSValue.CreateString(category));
         }
 
         return result;
@@ -1993,20 +1913,319 @@ public class JSIntlNumberFormat : JSObject
 
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
 
-    public JSValue Format(in Arguments a) => JSValue.CreateString((a[0] ?? JSUndefined.Value).ToString());
+    public JSValue Format(in Arguments a)
+    {
+        var sb = new StringBuilder();
+        foreach (var (_, value) in ComputeFormatParts(a.Get1()))
+            sb.Append(value);
+        return JSValue.CreateString(sb.ToString());
+    }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlNumberFormat @this)
             throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatToParts called on incompatible receiver");
 
-        var formatted = @this.Format(in a);
-        var part = new JSObject();
-        part.FastAddValue(KeyStrings.GetOrCreate("type"), JSValue.CreateString("integer"), JSPropertyAttributes.EnumerableConfigurableValue);
-        part.FastAddValue(KeyStrings.GetOrCreate("value"), JSValue.CreateString(formatted.ToString()), JSPropertyAttributes.EnumerableConfigurableValue);
+        var typeKey = KeyStrings.GetOrCreate("type");
+        var valueKey = KeyStrings.GetOrCreate("value");
         var parts = JSValue.CreateArray();
-        parts.AddArrayItem(part);
+        foreach (var (type, value) in @this.ComputeFormatParts(a.Get1()))
+        {
+            var part = new JSObject();
+            part.FastAddValue(typeKey, JSValue.CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(valueKey, JSValue.CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
+            parts.AddArrayItem(part);
+        }
         return parts;
+    }
+
+    // Builds the ordered sign/number parts for format / formatToParts. Implements
+    // the spec sign-display selection (auto/always/never/exceptZero/negative) over
+    // the rounded magnitude, with special handling for NaN and ±Infinity. The sign
+    // is decided from the rounded value, so a value that rounds to zero counts as a
+    // signed zero for "auto"/"always" but is treated as unsigned for "exceptZero"
+    // and "negative".
+    private List<(string type, string value)> ComputeFormatParts(JSValue value)
+    {
+        var x = value != null && value.IsBigInt ? (double)value.BigIntValue : (value ?? JSUndefined.Value).DoubleValue;
+
+        var signDisplay = resolved?.SignDisplay ?? "auto";
+        var isNaN = double.IsNaN(x);
+        var isInfinity = double.IsInfinity(x);
+        var signBit = !isNaN && double.IsNegative(x);
+        var style = StyleOption();
+        var isCurrency = style == "currency";
+        var isUnit = style == "unit";
+        var currency = isCurrency ? ResolveCurrency() : default;
+
+        List<(string, string)> magnitude;
+        bool roundedIsZero;
+        if (isNaN)
+        {
+            magnitude = [("nan", NanSymbol())];
+            roundedIsZero = false;
+        }
+        else if (isInfinity)
+        {
+            magnitude = [("infinity", CldrLocaleData.InfinitySymbol)];
+            roundedIsZero = false;
+        }
+        else if (isCurrency)
+        {
+            magnitude = FormatFiniteMagnitude(Math.Abs(x), currency.FractionDigits, currency.FractionDigits, out roundedIsZero);
+        }
+        else
+        {
+            magnitude = FormatFiniteMagnitude(Math.Abs(x), 0, 3, out roundedIsZero);
+        }
+
+        var negativeNonZero = signBit && !roundedIsZero;
+        var positiveNonZero = !signBit && !isNaN && !roundedIsZero;
+
+        var sign = signDisplay switch
+        {
+            "never" => null,
+            "always" => signBit ? "-" : "+",
+            "exceptZero" => negativeNonZero ? "-" : positiveNonZero ? "+" : null,
+            "negative" => negativeNonZero ? "-" : null,
+            _ => signBit ? "-" : null, // "auto"
+        };
+
+        if (isCurrency)
+            return AssembleCurrencyParts(magnitude, sign, currency);
+
+        var plain = AssemblePlainParts(magnitude, sign);
+        return isUnit ? AssembleUnitParts(plain, x) : plain;
+    }
+
+    private static List<(string, string)> AssemblePlainParts(List<(string, string)> magnitude, string sign)
+    {
+        var parts = new List<(string, string)>();
+        if (sign == "-")
+            parts.Add(("minusSign", "-"));
+        else if (sign == "+")
+            parts.Add(("plusSign", "+"));
+        parts.AddRange(magnitude);
+        return parts;
+    }
+
+    // Wraps the formatted number in the locale's CLDR unit pattern (e.g. "{0} m"),
+    // choosing the plural-category variant from the number. The text around the
+    // "{0}" placeholder is split into "unit" parts (the unit name) and "literal"
+    // parts (surrounding whitespace). The unit identifier and display come from the
+    // options; the patterns are generated CLDR data (UnicodeCldr.LocaleData).
+    private List<(string, string)> AssembleUnitParts(List<(string, string)> numberParts, double x)
+    {
+        var unit = ReadStringOption("unit", string.Empty);
+        var display = resolved?.UnitDisplay ?? "short";
+        var category = CldrLocaleData.SelectPlural(locale, "cardinal", x);
+        var pattern = CldrLocaleData.GetUnitPattern(locale, unit, display, category);
+
+        var placeholder = pattern.IndexOf("{0}", StringComparison.Ordinal);
+        if (placeholder < 0)
+            return numberParts;
+
+        var parts = new List<(string, string)>();
+        AppendUnitText(parts, pattern[..placeholder]);
+        parts.AddRange(numberParts);
+        AppendUnitText(parts, pattern[(placeholder + 3)..]);
+        return parts;
+    }
+
+    // Splits a unit-pattern fragment into leading/trailing whitespace ("literal")
+    // and the unit name ("unit").
+    private static void AppendUnitText(List<(string, string)> parts, string text)
+    {
+        if (text.Length == 0)
+            return;
+
+        var start = 0;
+        while (start < text.Length && char.IsWhiteSpace(text[start]))
+            start++;
+        var end = text.Length;
+        while (end > start && char.IsWhiteSpace(text[end - 1]))
+            end--;
+
+        if (start > 0)
+            parts.Add(("literal", text[..start]));
+        if (end > start)
+            parts.Add(("unit", text[start..end]));
+        if (end < text.Length)
+            parts.Add(("literal", text[end..]));
+    }
+
+    // Lays out the currency symbol around the number core and applies the sign.
+    // For the "accounting" currencySign a negative is wrapped in parentheses in
+    // locales that use that convention (en/ja/ko/zh); locales like de-DE use a
+    // leading minus sign instead. A plus sign (signDisplay) is always prepended.
+    private List<(string, string)> AssembleCurrencyParts(List<(string, string)> magnitude, string sign, CldrCurrencyFormat currency)
+    {
+        var core = new List<(string, string)>();
+        if (currency.SymbolAfterNumber)
+        {
+            core.AddRange(magnitude);
+            if (currency.SpacingBetweenNumberAndSymbol.Length > 0)
+                core.Add(("literal", currency.SpacingBetweenNumberAndSymbol));
+            core.Add(("currency", currency.Symbol));
+        }
+        else
+        {
+            core.Add(("currency", currency.Symbol));
+            core.AddRange(magnitude);
+        }
+
+        var useAccountingParens = sign == "-" && CurrencySignOption() == "accounting" && currency.AccountingUsesParentheses;
+        var parts = new List<(string, string)>();
+        if (useAccountingParens)
+        {
+            parts.Add(("literal", "("));
+            parts.AddRange(core);
+            parts.Add(("literal", ")"));
+            return parts;
+        }
+
+        if (sign == "-")
+            parts.Add(("minusSign", "-"));
+        else if (sign == "+")
+            parts.Add(("plusSign", "+"));
+        parts.AddRange(core);
+        return parts;
+    }
+
+    private List<(string, string)> FormatFiniteMagnitude(double magnitude, int defaultMinFrac, int defaultMaxFrac, out bool roundedIsZero)
+    {
+        var minFrac = ReadIntOption("minimumFractionDigits", defaultMinFrac);
+        var maxFrac = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
+        if (maxFrac < minFrac)
+            maxFrac = minFrac;
+        var minInt = ReadIntOption("minimumIntegerDigits", 1);
+
+        var rounded = Math.Round(magnitude, Math.Clamp(maxFrac, 0, 15), MidpointRounding.AwayFromZero);
+        roundedIsZero = rounded == 0;
+
+        var fixedStr = rounded.ToString("F" + maxFrac, CultureInfo.InvariantCulture);
+        var dot = fixedStr.IndexOf('.');
+        var intDigits = dot < 0 ? fixedStr : fixedStr[..dot];
+        var fracDigits = dot < 0 ? string.Empty : fixedStr[(dot + 1)..];
+
+        // Trim trailing fraction zeros down to the minimum requested.
+        while (fracDigits.Length > minFrac && fracDigits.EndsWith('0'))
+            fracDigits = fracDigits[..^1];
+
+        intDigits = intDigits.TrimStart('0');
+        if (intDigits.Length == 0)
+            intDigits = "0";
+        while (intDigits.Length < minInt)
+            intDigits = "0" + intDigits;
+
+        var result = new List<(string, string)>();
+        AppendIntegerParts(result, intDigits);
+        if (fracDigits.Length > 0)
+        {
+            result.Add(("decimal", DecimalSeparator()));
+            result.Add(("fraction", fracDigits));
+        }
+        return result;
+    }
+
+    private void AppendIntegerParts(List<(string, string)> result, string intDigits)
+    {
+        if (!UseGrouping() || intDigits.Length <= 3)
+        {
+            result.Add(("integer", intDigits));
+            return;
+        }
+
+        var groupSeparator = GroupSeparator();
+        var first = intDigits.Length % 3;
+        if (first == 0)
+            first = 3;
+        result.Add(("integer", intDigits[..first]));
+        for (var idx = first; idx < intDigits.Length; idx += 3)
+        {
+            result.Add(("group", groupSeparator));
+            result.Add(("integer", intDigits.Substring(idx, 3)));
+        }
+    }
+
+    private string NanSymbol() => CldrLocaleData.NaNSymbol(locale);
+
+    private bool UseGrouping()
+    {
+        if (options == null)
+            return true;
+        var v = options[KeyStrings.GetOrCreate("useGrouping")];
+        if (v == null || v.IsUndefined)
+            return true;
+        if (v.IsBoolean)
+            return v.BooleanValue;
+        if (v.IsString)
+        {
+            var s = v.StringValue;
+            return s != "false" && s != "never";
+        }
+        return true;
+    }
+
+    private int ReadIntOption(string name, int fallback)
+    {
+        if (options == null)
+            return fallback;
+        var v = options[KeyStrings.GetOrCreate(name)];
+        if (v == null || v.IsUndefined)
+            return fallback;
+        var d = v.DoubleValue;
+        return double.IsNaN(d) ? fallback : (int)d;
+    }
+
+    private CultureInfo Culture()
+    {
+        if (string.IsNullOrEmpty(locale))
+            return CultureInfo.InvariantCulture;
+        var tag = locale;
+        var uPos = tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase);
+        if (uPos >= 0)
+            tag = tag[..uPos];
+        try { return CultureInfo.GetCultureInfo(tag); }
+        catch (CultureNotFoundException) { return CultureInfo.InvariantCulture; }
+    }
+
+    private string GroupSeparator() => Culture().NumberFormat.NumberGroupSeparator;
+
+    private string DecimalSeparator() => Culture().NumberFormat.NumberDecimalSeparator;
+
+    private string StyleOption()
+    {
+        if (options == null)
+            return "decimal";
+        var v = options[KeyStrings.GetOrCreate("style")];
+        return v == null || v.IsUndefined ? "decimal" : v.StringValue;
+    }
+
+    private string CurrencySignOption()
+    {
+        if (options == null)
+            return "standard";
+        var v = options[KeyStrings.GetOrCreate("currencySign")];
+        return v == null || v.IsUndefined ? "standard" : v.StringValue;
+    }
+
+    // The locale-aware currency layout (symbol string, placement, negative
+    // convention and fraction digits) comes from the shared CLDR data library
+    // (UnicodeCldr.LocaleData) so the hand-curated tables live next to the other
+    // Unicode Consortium data and can later be generated from cldr-json.
+    private CldrCurrencyFormat ResolveCurrency()
+        => CldrLocaleData.ResolveCurrency(
+            locale,
+            ReadStringOption("currency", string.Empty),
+            ReadStringOption("currencyDisplay", "symbol"));
+
+    private string ReadStringOption(string name, string fallback)
+    {
+        if (options == null)
+            return fallback;
+        var v = options[KeyStrings.GetOrCreate(name)];
+        return v == null || v.IsUndefined ? fallback : v.StringValue;
     }
 
     public static JSValue FormatRangePrototype(in Arguments a)
@@ -2280,10 +2499,10 @@ public class JSIntlDateTimeFormat : JSObject
         if (double.IsNaN(clipped))
             throw JSEngine.NewRangeError("Invalid time value");
 
-        if (SupportsEnglishDayPeriod())
+        if (SupportsDayPeriod())
         {
             var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
-            var dayPeriod = FormatEnglishDayPeriod(localTime, DayPeriodStyle());
+            var dayPeriod = FormatDayPeriod(localTime, DayPeriodStyle());
             if (UsesHourFormatting())
                 return new JSString($"{FormatEnglishHour(localTime)} {dayPeriod}");
 
@@ -2334,7 +2553,7 @@ public class JSIntlDateTimeFormat : JSObject
         if (double.IsNaN(clipped))
             throw JSEngine.NewRangeError("Invalid time value");
 
-        if (@this.SupportsEnglishDayPeriod())
+        if (@this.SupportsDayPeriod())
         {
             var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
             var dayPeriodParts = JSValue.CreateArray();
@@ -2352,7 +2571,7 @@ public class JSIntlDateTimeFormat : JSObject
 
             var dayPeriodPart = new JSObject();
             dayPeriodPart[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("dayPeriod");
-            dayPeriodPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(FormatEnglishDayPeriod(localTime, @this.DayPeriodStyle()));
+            dayPeriodPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(@this.FormatDayPeriod(localTime, @this.DayPeriodStyle()));
             dayPeriodParts.AddArrayItem(dayPeriodPart);
             return dayPeriodParts;
         }
@@ -2440,10 +2659,8 @@ public class JSIntlDateTimeFormat : JSObject
 
     internal JSValue Format(DateTimeOffset value, JSObject format) => new JSString(value.ToString(locale));
 
-    private bool SupportsEnglishDayPeriod()
-        => localeTag.StartsWith("en", StringComparison.OrdinalIgnoreCase)
-            && options != null
-            && !options[DayPeriodKey].IsUndefined;
+    private bool SupportsDayPeriod()
+        => options != null && !options[DayPeriodKey].IsUndefined;
 
     private bool UsesHourFormatting()
         => options != null && !options[HourKey].IsUndefined;
@@ -2454,22 +2671,19 @@ public class JSIntlDateTimeFormat : JSObject
     private static string FormatEnglishHour(DateTimeOffset value)
         => ((value.Hour % 12) == 0 ? 12 : value.Hour % 12).ToString(CultureInfo.InvariantCulture);
 
-    private static string FormatEnglishDayPeriod(DateTimeOffset value, string style)
+    // The localized day-period name for the time, from CLDR data: the day-period
+    // rules pick the period (am/pm/noon/midnight/morning/…) and the ECMA-402
+    // dayPeriod option (long/short/narrow) selects the CLDR width.
+    private string FormatDayPeriod(DateTimeOffset value, string style)
     {
-        var hour = value.Hour;
-        if (hour < 12)
-            return "in the morning";
-
-        if (hour == 12)
-            return style == "narrow" ? "n" : "noon";
-
-        if (hour < 18)
-            return "in the afternoon";
-
-        if (hour < 22)
-            return "in the evening";
-
-        return "at night";
+        var period = CldrLocaleData.GetDayPeriod(localeTag, value.Hour, value.Minute);
+        var width = style switch
+        {
+            "narrow" => "narrow",
+            "short" => "abbreviated",
+            _ => "wide",
+        };
+        return CldrLocaleData.GetDayPeriodName(localeTag, period, width);
     }
 
     public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())

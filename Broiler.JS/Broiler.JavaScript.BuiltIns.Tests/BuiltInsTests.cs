@@ -12002,7 +12002,9 @@ public class BuiltInsTests
             })();
             """);
 
-        Assert.Equal("in the morning|noon|1|dayPeriod|noon|12 n|3|hour|12|literal| |dayPeriod|n", result.ToString());
+        // 00:00 resolves to the "midnight" day period (an exact CLDR rule that
+        // takes precedence over the morning range), per the generated CLDR data.
+        Assert.Equal("midnight|noon|1|dayPeriod|noon|12 n|3|hour|12|literal| |dayPeriod|n", result.ToString());
     }
 
     [Fact]

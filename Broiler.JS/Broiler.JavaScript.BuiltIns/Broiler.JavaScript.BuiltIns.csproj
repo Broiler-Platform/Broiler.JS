@@ -28,6 +28,7 @@
     <ProjectReference Include="..\Broiler.JavaScript.JSClassGenerator\Broiler.JavaScript.JSClassGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
     <ProjectReference Include="..\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj" />
     <ProjectReference Include="..\..\Broiler.Unicode\src\UnicodeEmoji.StringProperties\UnicodeEmoji.StringProperties.csproj" />
+    <ProjectReference Include="..\..\Broiler.Unicode\src\UnicodeCldr.LocaleData\UnicodeCldr.LocaleData.csproj" />
     <ProjectReference Include="..\..\Broiler.DateTime\src\Broiler.DateTime\Broiler.DateTime.csproj">
       <!-- Expose only via the `ExtendedDateTime` extern alias so the submodule's
            `Broiler.DateTime` namespace does not shadow System.DateTime. PrivateAssets
