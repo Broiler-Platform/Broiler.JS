@@ -222,7 +222,14 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public YExpression ThisExpression => field ??= GetVariable("this", true).Expression;
 
-    // public Expression NewTarget => Expression.Field(ArgumentsExpression, nameof(Broiler.JavaScript.Core.Arguments.NewTarget));
+    // new.target is lexically scoped exactly like `this`: an ordinary function
+    // captures the running new.target at entry into a closure cell, and arrow
+    // functions reuse the enclosing function's cell instead of creating their own
+    // (an arrow has no new.target of its own). Null in the root/program scope,
+    // where VisitMeta falls back to reading the live call-stack value.
+    public YExpression NewTargetExpression { get; private set; }
+
+    internal const string NewTargetBindingName = "new.target";
 
     public bool HasDisposable => _dispoable != null;
 
@@ -329,7 +336,8 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public FastFunctionScope(FastPool pool, AstFunctionExpression fx, YExpression previousThis = null, YExpression super = null, bool isAsync = false,
         IFastEnumerable<AstClassProperty> memberInits = null, FastFunctionScope previous = null, string[] directEvalPrivateNames = null,
-        IReadOnlyDictionary<AstClassProperty, YExpression> computedMemberNames = null, bool thisIsUninitialized = false)
+        IReadOnlyDictionary<AstClassProperty, YExpression> computedMemberNames = null, bool thisIsUninitialized = false,
+        YExpression previousNewTarget = null)
     {
         RootScope = previous ?? this;
         TopScope = this;
@@ -367,6 +375,20 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             ThisExpression = t.Expression;
         }
 
+        if (previousNewTarget != null)
+        {
+            // Arrow function: reuse the enclosing function's new.target cell.
+            NewTargetExpression = previousNewTarget;
+        }
+        else if (fx != null)
+        {
+            // Ordinary function: capture the running new.target at entry. The init
+            // runs in InitList, after the CallStackItem is pushed, so the live
+            // value is observed.
+            var nt = CreateVariable(NewTargetBindingName, JSContextBuilder.NewTarget());
+            NewTargetExpression = nt.Expression;
+        }
+
         Context = YExpression.Parameter(typeof(JSContext), $"{nameof(Context)}{sID}");
         StackItem = YExpression.Parameter(typeof(CallStackItem), $"{nameof(StackItem)}{sID}");
 
@@ -395,6 +417,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         StackItem = p.StackItem;
         Loop = p.Loop;
         ReturnLabel = p.ReturnLabel;
+        NewTargetExpression = p.NewTargetExpression;
     }
 
     public YExpression this[string name] => GetVariable(name).Expression;
@@ -415,6 +438,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
                     || variable.IsTemp
                     || variable.IsEvalShadow
                     || variable.Name == "this"
+                    || variable.Name == NewTargetBindingName
                     || !seen.Add(NormalizeVisibleName(variable.Name)))
                 {
                     continue;
@@ -454,6 +478,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
                         || variable.Variable.Type != typeof(JSVariable)
                         || variable.IsTemp
                         || variable.Name == "this"
+                        || variable.Name == NewTargetBindingName
                         || !seen.Add(NormalizeVisibleName(variable.Name)))
                     {
                         continue;
