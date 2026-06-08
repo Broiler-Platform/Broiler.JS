@@ -1,6 +1,7 @@
 ﻿using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.ExpressionCompiler;
 
 namespace Broiler.JavaScript.BuiltIns.Symbol;
 
@@ -19,6 +20,7 @@ public partial class JSSymbol
         return new JSSymbol(name.StringValue);
     }
 
+    [JSPrototypeMethod]
     [JSExport("toString", Length = 0)]
     public static JSValue ToString(in Arguments a)
     {
