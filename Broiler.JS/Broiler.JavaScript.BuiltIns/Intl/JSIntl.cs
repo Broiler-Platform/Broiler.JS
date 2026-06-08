@@ -1953,7 +1953,9 @@ public class JSIntlNumberFormat : JSObject
         var isNaN = double.IsNaN(x);
         var isInfinity = double.IsInfinity(x);
         var signBit = !isNaN && double.IsNegative(x);
-        var isCurrency = StyleOption() == "currency";
+        var style = StyleOption();
+        var isCurrency = style == "currency";
+        var isUnit = style == "unit";
         var currency = isCurrency ? ResolveCurrency() : default;
 
         List<(string, string)> magnitude;
@@ -1989,9 +1991,11 @@ public class JSIntlNumberFormat : JSObject
             _ => signBit ? "-" : null, // "auto"
         };
 
-        return isCurrency
-            ? AssembleCurrencyParts(magnitude, sign, currency)
-            : AssemblePlainParts(magnitude, sign);
+        if (isCurrency)
+            return AssembleCurrencyParts(magnitude, sign, currency);
+
+        var plain = AssemblePlainParts(magnitude, sign);
+        return isUnit ? AssembleUnitParts(plain, x) : plain;
     }
 
     private static List<(string, string)> AssemblePlainParts(List<(string, string)> magnitude, string sign)
@@ -2003,6 +2007,51 @@ public class JSIntlNumberFormat : JSObject
             parts.Add(("plusSign", "+"));
         parts.AddRange(magnitude);
         return parts;
+    }
+
+    // Wraps the formatted number in the locale's CLDR unit pattern (e.g. "{0} m"),
+    // choosing the plural-category variant from the number. The text around the
+    // "{0}" placeholder is split into "unit" parts (the unit name) and "literal"
+    // parts (surrounding whitespace). The unit identifier and display come from the
+    // options; the patterns are generated CLDR data (UnicodeCldr.LocaleData).
+    private List<(string, string)> AssembleUnitParts(List<(string, string)> numberParts, double x)
+    {
+        var unit = ReadStringOption("unit", string.Empty);
+        var display = resolved?.UnitDisplay ?? "short";
+        var category = CldrLocaleData.SelectPlural(locale, "cardinal", x);
+        var pattern = CldrLocaleData.GetUnitPattern(locale, unit, display, category);
+
+        var placeholder = pattern.IndexOf("{0}", StringComparison.Ordinal);
+        if (placeholder < 0)
+            return numberParts;
+
+        var parts = new List<(string, string)>();
+        AppendUnitText(parts, pattern[..placeholder]);
+        parts.AddRange(numberParts);
+        AppendUnitText(parts, pattern[(placeholder + 3)..]);
+        return parts;
+    }
+
+    // Splits a unit-pattern fragment into leading/trailing whitespace ("literal")
+    // and the unit name ("unit").
+    private static void AppendUnitText(List<(string, string)> parts, string text)
+    {
+        if (text.Length == 0)
+            return;
+
+        var start = 0;
+        while (start < text.Length && char.IsWhiteSpace(text[start]))
+            start++;
+        var end = text.Length;
+        while (end > start && char.IsWhiteSpace(text[end - 1]))
+            end--;
+
+        if (start > 0)
+            parts.Add(("literal", text[..start]));
+        if (end > start)
+            parts.Add(("unit", text[start..end]));
+        if (end < text.Length)
+            parts.Add(("literal", text[end..]));
     }
 
     // Lays out the currency symbol around the number core and applies the sign.

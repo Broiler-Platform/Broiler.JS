@@ -157,4 +157,31 @@ public class Issue705Tests
     [Fact]
     public void CurrencyNeverSuppressesAccountingParens()
         => Assert.Equal("currency:$|integer:987|decimal:.|fraction:00", CurrencyParts("en-US", "never", "-987"));
+
+    // ---- style:"unit" formatting (CLDR unit patterns, plural-aware) ----
+
+    private static string Unit(string unit, string display, string value)
+        => Eval($"new Intl.NumberFormat('en-US', {{style:'unit', unit:'{unit}', unitDisplay:'{display}'}}).format({value});").ToString();
+
+    // Singular vs plural is chosen by the locale's plural rules.
+    [Fact]
+    public void UnitLongSingularAndPlural()
+    {
+        Assert.Equal("1 meter", Unit("meter", "long", "1"));
+        Assert.Equal("5 meters", Unit("meter", "long", "5"));
+    }
+
+    [Fact]
+    public void UnitShortAndNarrow()
+    {
+        Assert.Equal("-987 m", Unit("meter", "short", "-987"));
+        Assert.Equal("3m", Unit("meter", "narrow", "3"));
+    }
+
+    // formatToParts emits a "unit" part and stays consistent with format().
+    [Fact]
+    public void UnitFormatToPartsHasUnitPart()
+        => Assert.Equal("minusSign:-|integer:987|literal: |unit:m", Eval(
+            "new Intl.NumberFormat('en-US', { style:'unit', unit:'meter' }).formatToParts(-987)" +
+            ".map(function(p){return p.type+':'+p.value;}).join('|');").ToString());
 }
