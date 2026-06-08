@@ -647,6 +647,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
         {
             var (options, globalSearch, ignoreCase, multiline, dotAll, hasIndices, sticky, unicode, unicodeSets, normalizedFlags) = ParseFlags(flags);
 
+            // ES2015+ Unicode (u) mode forbids identity escapes, octal escapes,
+            // lone syntax characters ({ } ]), quantified assertions, etc. .NET's
+            // engine is lenient about these, so validate the raw pattern here (the
+            // same check the lexer applies to regex literals) before transforming.
+            if (unicode && !RegExpUnicodeValidator.IsValidUnicodePattern(pattern))
+                throw JSEngine.NewSyntaxError("Invalid regular expression: invalid pattern in Unicode mode");
+
             // BROILER-PATCH: Transform ES3 empty character classes and forward backreferences
             // for .NET compatibility (tests 89, 90)
             pattern = TransformES3Patterns(pattern);
