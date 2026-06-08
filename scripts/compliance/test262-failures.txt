@@ -578,7 +578,6 @@ test/built-ins/Reflect/getOwnPropertyDescriptor/return-from-data-descriptor.js
 test/built-ins/Reflect/getOwnPropertyDescriptor/symbol-property.js
 test/built-ins/Reflect/ownKeys/return-non-enumerable-keys.js
 test/built-ins/Reflect/ownKeys/return-on-corresponding-order-large-index.js
-test/built-ins/Reflect/set/different-property-descriptors.js
 test/built-ins/Reflect/setPrototypeOf/return-false-if-target-and-proto-are-the-same.js
 test/built-ins/Reflect/setPrototypeOf/return-false-if-target-is-not-extensible.js
 test/built-ins/Reflect/setPrototypeOf/return-false-if-target-is-prototype-of-proto.js
@@ -1471,11 +1470,9 @@ test/intl402/DateTimeFormat/constructor-options-timeZoneName-invalid.js
 test/intl402/DateTimeFormat/date-time-options.js
 test/intl402/DateTimeFormat/default-options-object-prototype.js
 test/intl402/DateTimeFormat/ignore-invalid-unicode-ext-values.js
-test/intl402/DateTimeFormat/prototype/format/fractionalSecondDigits.js
 test/intl402/DateTimeFormat/prototype/format/numbering-system.js
 test/intl402/DateTimeFormat/prototype/format/proleptic-gregorian-calendar.js
 test/intl402/DateTimeFormat/prototype/format/related-year-zh.js
-test/intl402/DateTimeFormat/prototype/format/time-clip-to-integer.js
 test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js
 test/intl402/DateTimeFormat/prototype/formatRangeToParts/chinese-calendar-dates.js
 test/intl402/DateTimeFormat/prototype/formatRangeToParts/dangi-calendar-dates.js
@@ -2581,7 +2578,6 @@ test/staging/sm/global/bug-320887.js
 test/staging/sm/global/bug660612.js
 test/staging/sm/global/eval-01.js
 test/staging/sm/global/eval-02.js
-test/staging/sm/global/parenthesized-eval-is-direct.js
 test/staging/sm/global/parseInt-01.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-arguments.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
@@ -2616,8 +2612,6 @@ test/staging/sm/object/values.js
 test/staging/sm/regress/regress-551763-0.js
 test/staging/sm/regress/regress-554955-2.js
 test/staging/sm/regress/regress-554955-3.js
-test/staging/sm/regress/regress-554955-4.js
-test/staging/sm/regress/regress-554955-6.js
 test/staging/sm/regress/regress-560998-1.js
 test/staging/sm/regress/regress-593256.js
 test/staging/sm/regress/regress-597945-1.js
