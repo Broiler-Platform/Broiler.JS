@@ -12,6 +12,7 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
+using UnicodeCldr.LocaleData;
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
 
@@ -2045,12 +2046,12 @@ public class JSIntlNumberFormat : JSObject
         }
         else if (isInfinity)
         {
-            magnitude = [("infinity", "∞")];
+            magnitude = [("infinity", CldrLocaleData.InfinitySymbol)];
             roundedIsZero = false;
         }
         else if (isCurrency)
         {
-            magnitude = FormatFiniteMagnitude(Math.Abs(x), currency.Digits, currency.Digits, out roundedIsZero);
+            magnitude = FormatFiniteMagnitude(Math.Abs(x), currency.FractionDigits, currency.FractionDigits, out roundedIsZero);
         }
         else
         {
@@ -2089,14 +2090,14 @@ public class JSIntlNumberFormat : JSObject
     // For the "accounting" currencySign a negative is wrapped in parentheses in
     // locales that use that convention (en/ja/ko/zh); locales like de-DE use a
     // leading minus sign instead. A plus sign (signDisplay) is always prepended.
-    private List<(string, string)> AssembleCurrencyParts(List<(string, string)> magnitude, string sign, CurrencyInfo currency)
+    private List<(string, string)> AssembleCurrencyParts(List<(string, string)> magnitude, string sign, CldrCurrencyFormat currency)
     {
         var core = new List<(string, string)>();
-        if (currency.SymbolAfter)
+        if (currency.SymbolAfterNumber)
         {
             core.AddRange(magnitude);
-            if (currency.Spacing.Length > 0)
-                core.Add(("literal", currency.Spacing));
+            if (currency.SpacingBetweenNumberAndSymbol.Length > 0)
+                core.Add(("literal", currency.SpacingBetweenNumberAndSymbol));
             core.Add(("currency", currency.Symbol));
         }
         else
@@ -2105,7 +2106,7 @@ public class JSIntlNumberFormat : JSObject
             core.AddRange(magnitude);
         }
 
-        var useAccountingParens = sign == "-" && CurrencySignOption() == "accounting" && currency.AccountingParens;
+        var useAccountingParens = sign == "-" && CurrencySignOption() == "accounting" && currency.AccountingUsesParentheses;
         var parts = new List<(string, string)>();
         if (useAccountingParens)
         {
@@ -2179,8 +2180,7 @@ public class JSIntlNumberFormat : JSObject
         }
     }
 
-    private string NanSymbol()
-        => locale != null && locale.StartsWith("zh", StringComparison.OrdinalIgnoreCase) ? "非數值" : "NaN";
+    private string NanSymbol() => CldrLocaleData.NaNSymbol(locale);
 
     private bool UseGrouping()
     {
@@ -2242,74 +2242,15 @@ public class JSIntlNumberFormat : JSObject
         return v == null || v.IsUndefined ? "standard" : v.StringValue;
     }
 
-    // CLDR separates the number and the currency symbol with a no-break space
-    // (U+00A0) in locales such as de-DE.
-    private const string NoBreakSpace = " ";
-
-    // A minimal, locale-aware currency descriptor covering the symbol string,
-    // its placement and the negative convention. This is a small CLDR subset
-    // sufficient for the common locales/currencies; unknown currencies fall back
-    // to the currency code and the default (symbol-before, parenthesized) layout.
-    private readonly struct CurrencyInfo
-    {
-        public string Symbol { get; init; }
-        public bool SymbolAfter { get; init; }
-        // Literal placed between the number and the symbol (CLDR uses a no-break
-        // space, U+00A0, for de); empty when the symbol abuts the number.
-        public string Spacing { get; init; }
-        public bool AccountingParens { get; init; }
-        public int Digits { get; init; }
-    }
-
-    private CurrencyInfo ResolveCurrency()
-    {
-        var code = ReadStringOption("currency", string.Empty).ToUpperInvariant();
-        var display = ReadStringOption("currencyDisplay", "symbol");
-        var language = LanguageOf(locale);
-
-        // de-DE places the symbol after the number with a space and uses a leading
-        // minus for accounting negatives; the other tested locales place it before
-        // and wrap accounting negatives in parentheses.
-        var symbolAfter = language == "de";
-
-        return new CurrencyInfo
-        {
-            Symbol = display == "code" ? code : CurrencySymbol(code, language, display),
-            SymbolAfter = symbolAfter,
-            Spacing = symbolAfter ? NoBreakSpace : string.Empty,
-            AccountingParens = !symbolAfter,
-            Digits = CurrencyDigits(code),
-        };
-    }
-
-    private static string CurrencySymbol(string code, string language, string display)
-    {
-        var wide = display != "narrowSymbol" && (language == "ko" || language == "zh");
-        return code switch
-        {
-            "USD" => wide ? "US$" : "$",
-            "JPY" => wide ? "JP¥" : "¥",
-            "EUR" => "€",
-            "GBP" => "£",
-            "" => code,
-            _ => code,
-        };
-    }
-
-    private static int CurrencyDigits(string code) => code switch
-    {
-        "JPY" or "KRW" or "CLP" or "VND" => 0,
-        "BHD" or "KWD" or "OMR" or "TND" => 3,
-        _ => 2,
-    };
-
-    private static string LanguageOf(string tag)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return string.Empty;
-        var dash = tag.IndexOf('-');
-        return (dash < 0 ? tag : tag[..dash]).ToLowerInvariant();
-    }
+    // The locale-aware currency layout (symbol string, placement, negative
+    // convention and fraction digits) comes from the shared CLDR data library
+    // (UnicodeCldr.LocaleData) so the hand-curated tables live next to the other
+    // Unicode Consortium data and can later be generated from cldr-json.
+    private CldrCurrencyFormat ResolveCurrency()
+        => CldrLocaleData.ResolveCurrency(
+            locale,
+            ReadStringOption("currency", string.Empty),
+            ReadStringOption("currencyDisplay", "symbol"));
 
     private string ReadStringOption(string name, string fallback)
     {
