@@ -1,5 +1,6 @@
 ﻿using System;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Runtime;
@@ -64,6 +65,14 @@ public readonly struct TypedArrayParameters
     public TypedArrayParameters(
         in Arguments a, int bytesPerElements)
     {
+        // TypedArray constructor step 1: invoking a TypedArray constructor as a plain
+        // function (no `new`) throws a TypeError. This struct is built only on the
+        // JS-facing `(in Arguments)` construction path, so the check belongs here; a
+        // native [[Construct]] keeps its new.target in CurrentNewTarget, so both must
+        // be null to be a plain [[Call]]. (Mirrors the ArrayBuffer constructor.)
+        if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
+            throw JSEngine.NewTypeError("Constructor TypedArray requires 'new'");
+
         buffer = null;
         length = -1;
         bytesPerElement = bytesPerElements;

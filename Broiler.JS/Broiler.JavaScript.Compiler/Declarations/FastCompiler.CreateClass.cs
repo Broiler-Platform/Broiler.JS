@@ -170,17 +170,40 @@ partial class FastCompiler
         var superVar = YExpression.Parameter(typeof(JSValue));
         var superPrototypeVar = YExpression.Parameter(typeof(JSObject));
 
+        // [[HomeObject]] holders for DYNAMIC super resolution. GetSuperBase reads the
+        // home object's CURRENT [[Prototype]] on every super access, so
+        // `Object.setPrototypeOf(C, X)` / `setPrototypeOf(C.prototype, X)` is observed
+        // (matching the object-literal super path). The home objects are the class
+        // itself (for static members and the super() target) and its prototype (for
+        // instance members and the constructor's super.x). They cannot be captured as
+        // plain locals: a method's function object is built DURING the class object's
+        // construction (MemberInit), and the closure rewriter snapshots a plain captured
+        // local at that moment — when the class/prototype do not yet exist. A JSVariable
+        // is a heap box whose REFERENCE is captured (stable) while its value is filled in
+        // after the class is built (the same mechanism the inner class-name binding uses).
+        var homeConstructorVar = YExpression.Parameter(typeof(JSVariable), "#super-home-ctor");
+        var homePrototypeVar = YExpression.Parameter(typeof(JSVariable), "#super-home-proto");
+        YExpression StaticSuper() => JSValueBuilder.SuperPrototypeOf(JSVariable.ValueExpression(homeConstructorVar));
+        YExpression InstanceSuper() => JSValueBuilder.SuperPrototypeOf(JSVariable.ValueExpression(homePrototypeVar));
+
         var stmts = new Sequence<YExpression>(body.Members.Count)
         {
             YExpression.Assign(superVar, superExp),
-            YExpression.Assign(superPrototypeVar, JSClassBuilder.ResolveSuperclassPrototype(superVar))
+            YExpression.Assign(superPrototypeVar, JSClassBuilder.ResolveSuperclassPrototype(superVar)),
+            // Allocate the (empty) home-object boxes before any member function object is
+            // created, so the methods capture these stable references. The JSVariable
+            // names are EMPTY: a named binding would re-run NamedEvaluation when the
+            // class object is stored into it, renaming an anonymous `class {}` to the
+            // holder's name instead of its binding's.
+            YExpression.Assign(homeConstructorVar, JSVariableBuilder.New("")),
+            YExpression.Assign(homePrototypeVar, JSVariableBuilder.New(""))
         };
 
         YExpression retValue = tempVar.Variable;
 
         var memberInits = new Sequence<AstClassProperty>();
         var computedMemberNames = new Dictionary<AstClassProperty, YExpression>();
-        var classScopeVariables = new Sequence<YParameterExpression> { superVar, superPrototypeVar };
+        var classScopeVariables = new Sequence<YParameterExpression> { superVar, superPrototypeVar, homeConstructorVar, homePrototypeVar };
         AstFunctionExpression constructor = null;
 
         // Non-static private methods/accessors are installed PER INSTANCE (not on the
@@ -335,14 +358,14 @@ partial class FastCompiler
                         : ValidateStaticPropertyName(property, GetClassElementName(property));
                     if (property.IsStatic)
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, StaticSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         staticElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                         break;
                     }
                     else
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, InstanceSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         if (isPrivateName)
                             PrivateElementFor(property, name).Getter = SharedMemberFunctionVar(fx, "#get");
@@ -357,13 +380,13 @@ partial class FastCompiler
                         : ValidateStaticPropertyName(property, GetClassElementName(property));
                     if (property.IsStatic)
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, StaticSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         staticElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     else
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, InstanceSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         if (isPrivateName)
                             PrivateElementFor(property, name).Setter = SharedMemberFunctionVar(fx, "#set");
@@ -382,13 +405,13 @@ partial class FastCompiler
                         : ValidateStaticPropertyName(property, GetClassElementName(property));
                     if (property.IsStatic)
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superVar, forceStrictMode: true,
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, StaticSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         staticElements.Add(JSObjectBuilder.AddValue(name, fx, isPrivateName ? JSPropertyAttributes.ConfigurableReadonlyValue : JSPropertyAttributes.ConfigurableValue));
                     }
                     else
                     {
-                        var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
+                        var fx = CreateFunction(property.Init as AstFunctionExpression, InstanceSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         if (isPrivateName)
                             PrivateElementFor(property, name).Method = SharedMemberFunctionVar(fx, "#m");
@@ -409,8 +432,8 @@ partial class FastCompiler
             // super.x in the constructor body / field initializers resolves against
             // the superclass prototype, while super(...) targets the superclass
             // constructor. Pass both so each resolves correctly.
-            var fx = CreateFunction(constructor, superPrototypeVar, true, className, memberInits, true, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames,
-                thisIsUninitialized: hasSuperClass, superConstructor: superVar, privateInstanceElements: privateInstanceElements);
+            var fx = CreateFunction(constructor, InstanceSuper(), true, className, memberInits, true, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames,
+                thisIsUninitialized: hasSuperClass, superConstructor: StaticSuper(), privateInstanceElements: privateInstanceElements);
             staticElements.Add(JSClassBuilder.AddConstructor(fx));
         }
         else
@@ -420,7 +443,7 @@ partial class FastCompiler
                 // super.x in instance field initializers resolves against the home
                 // object's prototype (the superclass prototype), so give the synthetic
                 // default constructor scope that super binding.
-                using var s = this.scope.Push(new FastFunctionScope(null, null, super: superPrototypeVar, memberInits: memberInits, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames, thisIsUninitialized: hasSuperClass));
+                using var s = this.scope.Push(new FastFunctionScope(null, null, super: InstanceSuper(), memberInits: memberInits, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames, thisIsUninitialized: hasSuperClass));
                 s.PrivateInstanceElements = privateInstanceElements;
                 var args = s.Arguments;
                 var @this = s.ThisExpression;
@@ -428,7 +451,7 @@ partial class FastCompiler
 
                 inits.AddRange(s.InitList);
                 if (hasSuperClass)
-                    inits.Add(JSFunctionBuilder.InvokeSuperConstructor(superVar, @this, args));
+                    inits.Add(JSFunctionBuilder.InvokeSuperConstructor(StaticSuper(), @this, args));
 
                 InitMembers(inits, s);
                 inits.Add(@this);
@@ -448,6 +471,13 @@ partial class FastCompiler
         YExpression retVal = staticElements.Any() ? YExpression.MemberInit(_new, staticElements) : _new;
 
         stmts.Add(YExpression.Assign(retValue, retVal));
+
+        // Fill the home-object boxes now that the class object exists. Member function
+        // objects created above captured these boxes; their super references read the
+        // current value here at call time. Done before static field initializers and
+        // static blocks run (which may themselves use super).
+        stmts.Add(YExpression.Assign(JSVariable.ValueExpression(homeConstructorVar), retValue));
+        stmts.Add(YExpression.Assign(JSVariable.ValueExpression(homePrototypeVar), JSFunctionBuilder.Prototype(retValue)));
 
         if (innerNameVar != null)
         {
@@ -481,7 +511,7 @@ partial class FastCompiler
                 // even when the class has a superclass. `super.x` inside the
                 // block reads that `this`, so leaving it uninitialized here threw
                 // "Cannot access 'this' before initialization".
-                var fx = CreateFunction(function, superVar, forceStrictMode: true, createPrototype: false, directEvalPrivateNames: directEvalPrivateNames,
+                var fx = CreateFunction(function, StaticSuper(), forceStrictMode: true, createPrototype: false, directEvalPrivateNames: directEvalPrivateNames,
                     thisIsUninitialized: false);
                 stmts.Add(JSFunctionBuilder.InvokeFunction(fx, ArgumentsBuilder.NewEmpty(retValue)));
             }

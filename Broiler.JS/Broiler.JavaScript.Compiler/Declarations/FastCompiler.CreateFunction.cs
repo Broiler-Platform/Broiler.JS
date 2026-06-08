@@ -179,7 +179,7 @@ partial class FastCompiler
             // While this boundary is active, identifier references that resolve
             // outside this function are routed through EvalShadowVariable bindings.
             var previousEvalShadowBoundary = evalShadowBoundary;
-            if (!isStrictFunction && ParametersContainDirectEval(functionDeclaration))
+            if (!isStrictFunction && (ParametersContainDirectEval(functionDeclaration) || BodyContainsDirectEval(functionDeclaration)))
                 evalShadowBoundary = cs;
 
             var pe = functionDeclaration.Params.GetFastEnumerator();

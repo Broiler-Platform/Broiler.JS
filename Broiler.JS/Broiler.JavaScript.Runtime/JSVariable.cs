@@ -10,6 +10,21 @@ namespace Broiler.JavaScript.Runtime;
 
 public class JSVariable
 {
+    // Anonymous functions are created carrying the internal placeholder name "native";
+    // NamedEvaluation later overwrites it (with the binding/property name) or clears it
+    // to "". We must only ever act on a function still bearing that placeholder, and we
+    // must detect it WITHOUT triggering a user-defined `name` getter: reading the public
+    // [[Get]] would invoke an accessor the script installed via Object.defineProperty
+    // (e.g. `var t = Object.defineProperty(function(){}, 'name', { get(){throw} })`),
+    // which is observable and per spec must not happen here. Inspect the own data
+    // property directly instead.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool HasPlaceholderName(JSObject functionObject)
+    {
+        var nameProperty = functionObject.GetInternalProperty(KeyStrings.name, false);
+        return nameProperty.IsValue && (nameProperty.value as JSValue)?.ToString() == "native";
+    }
+
     // BROILER-PATCH: Support read-only variables for function expression names (ES3 §13)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static JSValue PrepareAnonymousFunctionNameForDestructuring(JSValue value, string name, bool assignName)
@@ -17,7 +32,7 @@ public class JSVariable
         if (value is not JSObject functionObject || value is not IJSFunction)
             return value;
 
-        if (functionObject[KeyStrings.name].ToString() != "native")
+        if (!HasPlaceholderName(functionObject))
             return value;
 
         functionObject.FastAddValue(KeyStrings.name, JSValue.CreateString(assignName ? name : string.Empty), JSPropertyAttributes.ConfigurableReadonlyValue);
@@ -29,7 +44,7 @@ public class JSVariable
         if (value is not JSObject functionObject || value is not IJSFunction)
             return value;
 
-        if (functionObject[KeyStrings.name].ToString() != "native")
+        if (!HasPlaceholderName(functionObject))
             return value;
 
         functionObject.FastAddValue(KeyStrings.name, JSValue.CreateString(name), JSPropertyAttributes.ConfigurableReadonlyValue);
@@ -64,7 +79,7 @@ public class JSVariable
         if (Name.IsEmpty || value is not JSObject functionObject || value is not IJSFunction)
             return value;
 
-        if (functionObject[KeyStrings.name].ToString() != "native")
+        if (!HasPlaceholderName(functionObject))
             return value;
 
         functionObject.FastAddValue(KeyStrings.name, JSValue.CreateString(Name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);

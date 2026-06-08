@@ -85,14 +85,8 @@ test/built-ins/Array/prototype/copyWithin/non-negative-out-of-bounds-end.js
 test/built-ins/Array/prototype/copyWithin/non-negative-out-of-bounds-target-and-start.js
 test/built-ins/Array/prototype/copyWithin/undefined-end.js
 test/built-ins/Array/prototype/fill/length-near-integer-limit.js
-test/built-ins/Array/prototype/find/array-altered-during-loop.js
-test/built-ins/Array/prototype/find/predicate-called-for-each-array-property.js
-test/built-ins/Array/prototype/findIndex/array-altered-during-loop.js
-test/built-ins/Array/prototype/findIndex/predicate-called-for-each-array-property.js
 test/built-ins/Array/prototype/findLast/maximum-index.js
-test/built-ins/Array/prototype/findLast/predicate-called-for-each-array-property.js
 test/built-ins/Array/prototype/findLastIndex/maximum-index.js
-test/built-ins/Array/prototype/findLastIndex/predicate-called-for-each-array-property.js
 test/built-ins/Array/prototype/flat/non-numeric-depth-should-not-throw.js
 test/built-ins/Array/prototype/flat/proxy-access-count.js
 test/built-ins/Array/prototype/flatMap/array-like-objects-typedarrays.js
@@ -288,7 +282,6 @@ test/built-ins/Function/prototype/arguments/prop-desc.js
 test/built-ins/Function/prototype/bind/instance-construct-newtarget-boundtarget-bound.js
 test/built-ins/Function/prototype/bind/instance-construct-newtarget-self-reflect.js
 test/built-ins/Function/prototype/bind/instance-length-default-value.js
-test/built-ins/Function/prototype/bind/instance-name-error.js
 test/built-ins/Function/prototype/caller-arguments/accessor-properties.js
 test/built-ins/Function/prototype/caller/prop-desc.js
 test/built-ins/Function/prototype/name.js
@@ -1063,8 +1056,6 @@ test/built-ins/RegExp/prototype/Symbol.match/g-match-empty-advance-lastindex.js
 test/built-ins/RegExp/prototype/Symbol.match/u-advance-after-empty.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/isregexp-called-once.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/species-constructor.js
-test/built-ins/RegExp/prototype/Symbol.matchAll/species-regexp-get-global-throws.js
-test/built-ins/RegExp/prototype/Symbol.matchAll/species-regexp-get-unicode-throws.js
 test/built-ins/RegExp/prototype/Symbol.matchAll/this-not-object-throws.js
 test/built-ins/RegExp/prototype/Symbol.replace/coerce-global.js
 test/built-ins/RegExp/prototype/Symbol.replace/coerce-lastindex.js
@@ -1828,8 +1819,6 @@ test/language/eval-code/direct/non-definable-function-with-function.js
 test/language/eval-code/direct/parse-failure-5.js
 test/language/eval-code/direct/super-prop-method.js
 test/language/eval-code/direct/var-env-func-init-local-new-delete.js
-test/language/eval-code/direct/var-env-func-init-local-update.js
-test/language/eval-code/direct/var-env-var-init-local-exstng.js
 test/language/eval-code/direct/var-env-var-init-local-new-delete.js
 test/language/eval-code/direct/var-env-var-non-strict.js
 test/language/eval-code/indirect/cptn-nrml-empty-var.js
@@ -1863,8 +1852,6 @@ test/language/expressions/assignment/dstr/obj-prop-nested-array-yield-expr.js
 test/language/expressions/assignment/dstr/obj-prop-nested-obj-yield-expr.js
 test/language/expressions/assignment/dstr/obj-rest-str-val.js
 test/language/expressions/assignment/line-terminator.js
-test/language/expressions/assignment/target-super-computed-reference-null.js
-test/language/expressions/assignment/target-super-identifier-reference-null.js
 test/language/expressions/assignment/white-space.js
 test/language/expressions/async-arrow-function/async-lineterminator-identifier-throws.js
 test/language/expressions/async-arrow-function/prototype.js
@@ -2552,7 +2539,6 @@ test/staging/sm/Symbol/property-accessor.js
 test/staging/sm/Symbol/toString.js
 test/staging/sm/Symbol/toStringTag.js
 test/staging/sm/Symbol/valueOf.js
-test/staging/sm/TypedArray/constructor-not-callable.js
 test/staging/sm/TypedArray/from_basics.js
 test/staging/sm/TypedArray/indexOf-and-lastIndexOf.js
 test/staging/sm/TypedArray/object-defineproperty.js
@@ -2578,17 +2564,14 @@ test/staging/sm/class/newTargetArrow.js
 test/staging/sm/class/newTargetEval.js
 test/staging/sm/class/parenExprToString.js
 test/staging/sm/class/strictExecution.js
-test/staging/sm/class/superCallBadDynamicSuperClass.js
 test/staging/sm/class/superCallBaseInvoked.js
 test/staging/sm/class/superCallIllegal.js
 test/staging/sm/class/superCallInvalidBase.js
-test/staging/sm/class/superCallProperBase.js
 test/staging/sm/class/superPropDerivedCalls.js
 test/staging/sm/class/superPropFor.js
 test/staging/sm/class/superPropHomeObject.js
 test/staging/sm/class/superPropNoOverwriting.js
 test/staging/sm/class/superPropOrdering.js
-test/staging/sm/class/superPropProtoChanges.js
 test/staging/sm/class/superPropStrictAssign.js
 test/staging/sm/destructuring/bug1396261.js
 test/staging/sm/destructuring/order-super.js
@@ -2677,7 +2660,6 @@ test/staging/sm/object/toPrimitive-callers.js
 test/staging/sm/object/toPrimitive.js
 test/staging/sm/object/values.js
 test/staging/sm/regress/regress-551763-0.js
-test/staging/sm/regress/regress-554955-1.js
 test/staging/sm/regress/regress-554955-2.js
 test/staging/sm/regress/regress-554955-3.js
 test/staging/sm/regress/regress-554955-4.js

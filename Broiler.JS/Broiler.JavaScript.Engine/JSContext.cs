@@ -150,6 +150,14 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 return;
             }
 
+            // Enter eval depth BEFORE publishing captured bindings below. Register must
+            // observe directEvalDepth > 0 so an overlaid outer-scope binding that has no
+            // global property yet is published as a CONFIGURABLE one (a transient eval
+            // overlay) — Dispose can then delete it. Otherwise a function-local `var`
+            // captured for the eval would be published as a permanent, non-configurable
+            // global property and leak after the surrounding function returns.
+            context.directEvalDepth++;
+
             var seen = new HashSet<uint>();
             foreach (var variable in variables)
             {
@@ -199,7 +207,6 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
             context.activeDirectEvalScopes.Add(this);
             context.directEvalBindingNameScopes.Add(ExtractBindingNames(variables));
-            context.directEvalDepth++;
         }
 
         private static string[] ExtractBindingNames(JSVariable[] bindings)
