@@ -124,6 +124,25 @@ public class JSVariable
     }
 
     /// <summary>
+    /// Reads this binding's value. For an ordinary binding this is just
+    /// <see cref="Value"/>; <see cref="EvalShadowVariable"/> overrides it to forward
+    /// to its outer binding until a direct eval introduces the binding. Kept as a
+    /// separate virtual method so the hot <see cref="Value"/> property stays
+    /// non-virtual and inlinable for the common case.
+    /// </summary>
+    public virtual JSValue GetValue() => Value;
+
+    /// <summary>
+    /// Writes this binding's value. Mirrors <see cref="GetValue"/> for the
+    /// shadow-binding forwarding case.
+    /// </summary>
+    public virtual JSValue SetValue(JSValue value)
+    {
+        Value = value;
+        return _value;
+    }
+
+    /// <summary>
     /// Implements BindThisValue for a derived class constructor's <c>this</c>
     /// binding: the binding may be initialized only once, so a second
     /// <c>super(...)</c> call (the binding is already initialized) is a

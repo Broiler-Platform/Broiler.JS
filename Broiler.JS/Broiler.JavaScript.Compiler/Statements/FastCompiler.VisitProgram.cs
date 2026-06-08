@@ -88,8 +88,11 @@ partial class FastCompiler
                     if (usesDirectEvalLocalVarEnvironment && !IsStrictMode)
                     {
                         var currentValue = JSContextBuilder.Index(KeyOfName(v));
-                        localVariable.SetInit(JSVariableBuilder.New(currentValue, v.Value));
-                        localVariable.SetPostInit(JSContextBuilder.RegisterDirectEvalVariable(localVariable.Variable));
+                        // Reuse an existing activation binding (e.g. a parameter-eval
+                        // shadow) as the storage so assignments inside the eval body
+                        // reach the same binding the surrounding closures capture;
+                        // GetOrCreate registers a freshly created binding itself.
+                        localVariable.SetInit(JSContextBuilder.GetOrCreateDirectEvalLocalBinding(KeyOfName(v), currentValue));
                     }
                     continue;
                 }

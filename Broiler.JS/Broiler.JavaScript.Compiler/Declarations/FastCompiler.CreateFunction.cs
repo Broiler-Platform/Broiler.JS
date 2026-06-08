@@ -172,6 +172,16 @@ partial class FastCompiler
 
             var argumentElements = args;
 
+            // A sloppy function whose parameter list contains a direct eval gets a
+            // separate parameter environment (FunctionDeclarationInstantiation step
+            // 20): an eval-introduced `var` must shadow same-named outer bindings for
+            // the parameter expressions, the body and the closures created in them.
+            // While this boundary is active, identifier references that resolve
+            // outside this function are routed through EvalShadowVariable bindings.
+            var previousEvalShadowBoundary = evalShadowBoundary;
+            if (!isStrictFunction && ParametersContainDirectEval(functionDeclaration))
+                evalShadowBoundary = cs;
+
             var pe = functionDeclaration.Params.GetFastEnumerator();
             while (pe.MoveNext(out var v, out var i))
             {
@@ -220,8 +230,19 @@ partial class FastCompiler
             using (completionScopes.Push(null))
                 lambdaBody = VisitStatement(functionDeclaration.Body);
 
+            evalShadowBoundary = previousEvalShadowBoundary;
+
             vList.AddRange(s.VariableParameters);
             sList.AddRange(s.InitList);
+
+            // Register the parameter-environment shadow bindings into this function's
+            // CallStackItem AFTER they are constructed (InitList) but BEFORE the
+            // parameter initializers run (bodyInits), so a direct eval in the
+            // parameter list resolves its introduced `var` to the shared shadow
+            // binding (via TryResolveDirectEvalBinding in JSContext.Register).
+            foreach (var evalShadow in cs.EvalShadows)
+                sList.Add(EvalShadowBuilder.Register(stackItem, evalShadow.Variable));
+
             sList.AddRange(bodyInits);
 
             if (s.MemberInits != null && !thisIsUninitialized)

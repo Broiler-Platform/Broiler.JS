@@ -29,6 +29,14 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     readonly LinkedStack<FastFunctionScope> scope = new();
     readonly ScopedStack<YParameterExpression> completionScopes = new();
     private readonly Stack<FastFunctionScope> withBoundaries = new();
+
+    // The scope of the nearest enclosing sloppy function whose parameter list
+    // contains a direct eval. While set, identifier references that resolve OUTSIDE
+    // this function are routed through an EvalShadowVariable created in this scope,
+    // so an eval-introduced parameter `var` can shadow the outer binding for the
+    // function body and the closures it creates (FunctionDeclarationInstantiation
+    // step 20). Null when not inside such a function. Inherited by nested functions.
+    private FastFunctionScope evalShadowBoundary;
     private readonly string location;
     private readonly bool isDirectEvalCompilation;
     private readonly bool usesDirectEvalLocalVarEnvironment;

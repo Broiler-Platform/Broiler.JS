@@ -1976,7 +1976,11 @@ public class JSIntlNumberFormat : JSObject
         }
         else
         {
-            magnitude = FormatFiniteMagnitude(Math.Abs(x), 0, 3, out roundedIsZero);
+            var notation = resolved?.Notation ?? "standard";
+            if (notation == "scientific" || notation == "engineering")
+                magnitude = FormatScientificEngineering(Math.Abs(x), notation == "engineering", out roundedIsZero);
+            else
+                magnitude = FormatFiniteMagnitude(Math.Abs(x), 0, 3, out roundedIsZero);
         }
 
         var negativeNonZero = signBit && !roundedIsZero;
@@ -2090,6 +2094,57 @@ public class JSIntlNumberFormat : JSObject
             parts.Add(("plusSign", "+"));
         parts.AddRange(core);
         return parts;
+    }
+
+    // Formats a finite magnitude in scientific ("3.45E-4") or engineering ("345E-6")
+    // notation. The exponent is chosen so the mantissa lies in [1,10) for scientific
+    // or [1,1000) (with the exponent a multiple of 3) for engineering; the mantissa is
+    // then formatted with the usual fraction-digit rules and an "E"+digits exponent
+    // suffix is appended as exponentSeparator / exponentMinusSign / exponentInteger
+    // parts.
+    private List<(string, string)> FormatScientificEngineering(double absX, bool engineering, out bool roundedIsZero)
+    {
+        var minFrac = ReadIntOption("minimumFractionDigits", 0);
+        var maxFrac = ReadIntOption("maximumFractionDigits", 3);
+        if (maxFrac < minFrac)
+            maxFrac = minFrac;
+
+        var exponent = ComputeExponent(absX, engineering);
+        var mantissa = absX == 0 ? 0 : absX / Math.Pow(10, exponent);
+
+        // A mantissa that rounds up past its upper bound bumps the exponent
+        // (e.g. 9.999 -> 10 in scientific, 999.9 -> 1000 in engineering).
+        var upper = engineering ? 1000.0 : 10.0;
+        var roundedMantissa = Math.Round(mantissa, Math.Clamp(maxFrac, 0, 15), MidpointRounding.AwayFromZero);
+        if (absX != 0 && roundedMantissa >= upper)
+        {
+            exponent += engineering ? 3 : 1;
+            mantissa = absX / Math.Pow(10, exponent);
+        }
+
+        var result = FormatFiniteMagnitude(mantissa, minFrac, maxFrac, out roundedIsZero);
+        result.Add(("exponentSeparator", "E"));
+        if (exponent < 0)
+            result.Add(("exponentMinusSign", "-"));
+        result.Add(("exponentInteger", Math.Abs(exponent).ToString(CultureInfo.InvariantCulture)));
+        return result;
+    }
+
+    // ComputeExponentForMagnitude over floor(log10(absX)): scientific keeps the raw
+    // base-10 magnitude; engineering rounds it down to a multiple of 3.
+    private static int ComputeExponent(double absX, bool engineering)
+    {
+        if (absX == 0 || double.IsNaN(absX) || double.IsInfinity(absX))
+            return 0;
+
+        var magnitude = (int)Math.Floor(Math.Log10(absX));
+        // Correct floating-point error near exact powers of ten.
+        if (Math.Pow(10, magnitude) > absX)
+            magnitude--;
+        else if (Math.Pow(10, magnitude + 1) <= absX)
+            magnitude++;
+
+        return engineering ? (int)(Math.Floor(magnitude / 3.0) * 3) : magnitude;
     }
 
     private List<(string, string)> FormatFiniteMagnitude(double magnitude, int defaultMinFrac, int defaultMaxFrac, out bool roundedIsZero)

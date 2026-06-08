@@ -109,6 +109,12 @@ partial class FastCompiler
             var identifier = (AstIdentifier)left;
             var shouldSuppressAnonymousFunctionName = left.WasParenthesized && IsAnonymousFunctionDefinition(right);
 
+            // A name that resolves outside a sloppy parameter-eval function is routed
+            // through an EvalShadowVariable: writes go through SetValue so they forward
+            // to the outer binding until the eval introduces the var.
+            if (TryResolveEvalShadow(identifier.Name, out var shadowVariable))
+                return ShadowAssign(shadowVariable, identifier, right, assignmentOperator, shouldSuppressAnonymousFunctionName);
+
             // Reassigning `arguments` in a non-arrow function must target the
             // function-local binding. Materialize it first so the assignment
             // resolves to the static variable instead of the dynamic context name.
@@ -153,6 +159,69 @@ partial class FastCompiler
 
         return Assign(Visit(left), right, assignmentOperator);
     }
+
+    // Compiles an assignment whose target is an EvalShadowVariable. Reads/writes use
+    // GetValue/SetValue (the binding may forward to its outer binding), so the target
+    // cannot be used as an ordinary assignable expression.
+    private YExpression ShadowAssign(FastFunctionScope.VariableScope shadow, AstIdentifier identifier, AstExpression right, TokenTypes assignmentOperator, bool suppressAnonymousFunctionName)
+    {
+        var target = shadow.Variable;
+
+        if (assignmentOperator == TokenTypes.Assign)
+        {
+            var initExpr = Visit(right);
+            if (!IsAnonymousFunctionDefinition(right) || suppressAnonymousFunctionName)
+                initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(identifier.Name.Value), YExpression.Constant(false));
+            return EvalShadowBuilder.SetValue(target, initExpr);
+        }
+
+        var current = EvalShadowBuilder.GetValue(target);
+        var rhs = Visit(right);
+
+        switch (assignmentOperator)
+        {
+            case TokenTypes.AssignCoalesce:
+            case TokenTypes.AssignBooleanAnd:
+            case TokenTypes.AssignBooleanOr:
+            {
+                using var currentTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                var condition = assignmentOperator switch
+                {
+                    TokenTypes.AssignCoalesce => JSValueBuilder.IsNullOrUndefined(currentTemp.Expression),
+                    TokenTypes.AssignBooleanAnd => JSValueBuilder.BooleanValue(currentTemp.Expression),
+                    _ => YExpression.Not(JSValueBuilder.BooleanValue(currentTemp.Expression)),
+                };
+                return YExpression.Block(
+                    currentTemp.Variable.AsSequence(),
+                    YExpression.Assign(currentTemp.Expression, current),
+                    YExpression.Condition(
+                        condition,
+                        EvalShadowBuilder.SetValue(target, rhs),
+                        currentTemp.Expression,
+                        typeof(JSValue)));
+            }
+        }
+
+        var computed = BinaryOperation.Operation(current, rhs, CompoundAssignmentToBinaryOperator(assignmentOperator));
+        return EvalShadowBuilder.SetValue(target, computed);
+    }
+
+    private static TokenTypes CompoundAssignmentToBinaryOperator(TokenTypes assignmentOperator) => assignmentOperator switch
+    {
+        TokenTypes.AssignAdd => TokenTypes.Plus,
+        TokenTypes.AssignSubtract => TokenTypes.Minus,
+        TokenTypes.AssignMultiply => TokenTypes.Multiply,
+        TokenTypes.AssignDivide => TokenTypes.Divide,
+        TokenTypes.AssignMod => TokenTypes.Mod,
+        TokenTypes.AssignBitwideAnd => TokenTypes.BitwiseAnd,
+        TokenTypes.AssignBitwideOr => TokenTypes.BitwiseOr,
+        TokenTypes.AssignXor => TokenTypes.Xor,
+        TokenTypes.AssignLeftShift => TokenTypes.LeftShift,
+        TokenTypes.AssignRightShift => TokenTypes.RightShift,
+        TokenTypes.AssignUnsignedRightShift => TokenTypes.UnsignedRightShift,
+        TokenTypes.AssignPower => TokenTypes.Power,
+        _ => throw new NotSupportedException($"Unsupported compound assignment {assignmentOperator}"),
+    };
 
     private YExpression AssignIdentifier(AstIdentifier identifier, AstExpression right, TokenTypes assignmentOperator)
     {
@@ -254,6 +323,14 @@ partial class FastCompiler
                     }
                     else
                     {
+                        if (!forceDynamicAssignment && TryResolveEvalShadow(id.Name, out var shadowVar))
+                        {
+                            if (suppressAnonymousFunctionNameInference)
+                                init = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, YExpression.Constant(id.Name.Value), YExpression.Constant(false));
+                            inits.Add(EvalShadowBuilder.SetValue(shadowVar.Variable, init));
+                            return;
+                        }
+
                         if (forceDynamicAssignment || !TryGetStaticIdentifierVariable(id, out var variable) || variable == null)
                         {
                             if (suppressAnonymousFunctionNameInference)

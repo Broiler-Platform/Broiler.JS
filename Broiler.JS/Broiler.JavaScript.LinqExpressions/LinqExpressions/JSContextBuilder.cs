@@ -72,6 +72,8 @@ public class JSContextBuilder
     public static Expression DeclareGlobalFunction(Expression key, Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareGlobalFunction, key, value);
     public static Expression DeclareGlobalAnnexBFunction(Expression key, Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareGlobalAnnexBFunction, key, value);
     public static Expression RegisterDirectEvalVariable(Expression variable) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _RegisterDirectEvalVariable, variable);
+    private static MethodInfo _GetOrCreateDirectEvalLocalBinding = typeof(JSContext).GetMethod(nameof(JSContext.GetOrCreateDirectEvalLocalBinding), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
+    public static Expression GetOrCreateDirectEvalLocalBinding(Expression key, Expression fallback) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _GetOrCreateDirectEvalLocalBinding, key, fallback);
     public static Expression Top => Current.PropertyExpression<IJSExecutionContext, CallStackItem>(() => (x) => x.Top);
 
     public static Expression NewTarget() => Expression.Coalesce(
