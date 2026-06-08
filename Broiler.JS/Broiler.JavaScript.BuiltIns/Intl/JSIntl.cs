@@ -1417,58 +1417,12 @@ public sealed class JSIntlListFormat : JSObject
         return sb.ToString();
     }
 
+    // The (start, middle, end, pair) list-assembly patterns come from the shared
+    // CLDR data library (UnicodeCldr.LocaleData), generated from cldr-json — so the
+    // per-locale list patterns are real CLDR data rather than a hand-coded en/es
+    // approximation.
     private (string Start, string Middle, string End, string Pair) GetPatterns()
-    {
-        var lang = locale;
-        var dash = lang.IndexOf('-');
-        if (dash >= 0)
-            lang = lang.Substring(0, dash);
-
-        var word = type switch
-        {
-            "disjunction" => lang == "es" ? "o" : "or",
-            "unit" => null,
-            _ => lang == "es" ? "y" : "and",
-        };
-
-        // narrow unit lists join with a plain space; everything else uses comma
-        // separators for start/middle and the connector word (if any) at the end.
-        if (style == "narrow" && type == "unit")
-            return ("{0} {1}", "{0} {1}", "{0} {1}", "{0} {1}");
-
-        var startMid = "{0}, {1}";
-
-        if (type == "unit")
-        {
-            // unit: long keeps the connector word at the very end (e.g. es "y");
-            // short/narrow drop it entirely (comma separated).
-            if (style != "long")
-            {
-                var pairUnit = lang == "es" ? "{0} y {1}" : "{0}, {1}";
-                return (startMid, startMid, startMid, pairUnit);
-            }
-            var connector = lang == "es" ? "y" : null;
-            var endUnit = connector != null ? "{0} " + connector + " {1}" : "{0}, {1}";
-            var pairUnitLong = connector != null ? "{0} " + connector + " {1}" : "{0}, {1}";
-            return (startMid, startMid, endUnit, pairUnitLong);
-        }
-
-        // conjunction / disjunction
-        if (lang == "es")
-        {
-            var endEs = "{0} " + word + " {1}";
-            return (startMid, startMid, endEs, endEs);
-        }
-
-        var connectorEn = word; // "and" / "or"
-        var endEn = style == "long" ? "{0}, " + connectorEn + " {1}"
-                  : connectorEn == "and" ? "{0}, & {1}"
-                  : "{0}, " + connectorEn + " {1}";
-        var pairEn = style == "long" ? "{0} " + connectorEn + " {1}"
-                   : connectorEn == "and" ? "{0} & {1}"
-                   : "{0} " + connectorEn + " {1}";
-        return (startMid, startMid, endEn, pairEn);
-    }
+        => CldrLocaleData.GetListPattern(locale, type, style);
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
