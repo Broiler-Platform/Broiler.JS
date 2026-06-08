@@ -26,6 +26,8 @@ public class JSFunctionBuilder
 
     private static MethodInfo _normalizeConstructorReturn;
 
+    private static MethodInfo _resolveTailCall;
+
     /// <summary>
     /// Initializes the builder with the concrete JSFunction type.
     /// Called from BuiltInsAssemblyInitializer.
@@ -54,6 +56,8 @@ public class JSFunctionBuilder
             ?? throw new InvalidOperationException($"InvokeSuperConstructor method not found on {type.FullName}");
         _normalizeConstructorReturn = type.PublicMethod("ThrowDerivedConstructorReturnTypeError")
             ?? throw new InvalidOperationException($"ThrowDerivedConstructorReturnTypeError method not found on {type.FullName}");
+        _resolveTailCall = typeof(JSTailCall).GetMethod("Resolve", new[] { typeof(JSValue) })
+            ?? throw new InvalidOperationException("Resolve(JSValue) method not found on JSTailCall");
     }
 
     /// <summary>
@@ -100,9 +104,15 @@ public class JSFunctionBuilder
                 Expression.Call(null, _normalizeConstructorReturn))
             : thisValue;
 
+        // A constructor's completion value can never be a proper tail call — the
+        // [[Construct]] return-value semantics below must inspect the actual value
+        // (object passthrough vs `this` vs TypeError). When the body ends in
+        // `return <call>` the call is emitted as a JSTailCall sentinel, which is a
+        // JSObject and would wrongly satisfy IsObject and pass through unchecked.
+        // Resolve it first so e.g. `return Symbol()` in a derived ctor still throws.
         return Expression.Block(
             temp.AsSequence(),
-            Expression.Assign(temp, returnValue),
+            Expression.Assign(temp, Expression.Call(null, _resolveTailCall, returnValue)),
             Expression.Condition(JSValueBuilder.IsObject(temp), temp, nonObject));
     }
 

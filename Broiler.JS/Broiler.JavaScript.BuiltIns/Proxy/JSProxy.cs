@@ -793,7 +793,30 @@ public partial class JSProxy : JSObject
             }
 
             ValidateOwnKeysInvariant(target, seenKeys);
-            return array.GetElementEnumerator();
+
+            // The ownKeys trap itself never skips non-enumerable keys (the
+            // invariant above is validated over the full key set). Callers that
+            // want EnumerableOwnPropertyNames (Object.keys/values/entries) pass
+            // showEnumerableOnly: they must additionally filter each key by its
+            // [[GetOwnProperty]] descriptor's [[Enumerable]] attribute.
+            if (!showEnumerableOnly)
+                return array.GetElementEnumerator();
+
+            var enumerableKeys = new JSArray();
+            var keyEnumerator = array.GetElementEnumerator();
+            while (keyEnumerator.MoveNext(out var keyHasValue, out var key, out var _))
+            {
+                if (!keyHasValue)
+                    continue;
+
+                var descriptor = GetOwnPropertyDescriptor(key);
+                if (descriptor.IsUndefined || !descriptor[KeyStrings.enumerable].BooleanValue)
+                    continue;
+
+                enumerableKeys.Add(key);
+            }
+
+            return enumerableKeys.GetElementEnumerator();
         }
 
         var keys = new JSArray();

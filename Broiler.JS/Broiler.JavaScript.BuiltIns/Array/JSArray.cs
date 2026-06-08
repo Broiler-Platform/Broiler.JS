@@ -171,7 +171,11 @@ public partial class JSArray : JSObject
 
     private struct ElementEnumerator(JSArray array) : IElementEnumerator
     {
-        uint length = array._length;
+        // Array iterators are live (CreateArrayIterator re-reads the length each
+        // step): entries pushed during for-of / spread traversal must be visited,
+        // and a shrink must end iteration early. Read the length dynamically
+        // rather than snapshotting it at construction.
+        readonly uint length => array._length;
         uint index = uint.MaxValue;
 
         public bool MoveNext(out JSValue value)
