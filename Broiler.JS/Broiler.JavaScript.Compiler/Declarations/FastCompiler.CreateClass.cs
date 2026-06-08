@@ -120,7 +120,12 @@ partial class FastCompiler
 
     private static YExpression ValidateStaticPropertyName(AstClassProperty property, YExpression name)
     {
-        if (!property.IsStatic)
+        // Only a public static element can collide with the reserved "prototype"
+        // name. A private name (`#x`) lives in the marker-prefixed private namespace
+        // and can never be "prototype", so it needs no validation — and skipping it
+        // avoids passing a per-evaluation minted key (a captured local) by reference,
+        // which would load a stale value for the static field's key.
+        if (!property.IsStatic || property.IsPrivate)
             return name;
 
         return name.Type switch
@@ -243,12 +248,14 @@ partial class FastCompiler
         }
         var ownPrivateNames = CollectPrivateNames(body.Members);
         var directEvalPrivateNames = CombinePrivateNames(this.scope.Top.DirectEvalPrivateNames, ownPrivateNames);
-        // Only INSTANCE private names get per-evaluation minted keys. A static private
-        // element lives on the (single) constructor, and its members reference the
-        // name in a class-evaluation context where the minted-key variable is not
-        // reliably captured; static elements keep the stable constant key (there is
-        // one constructor per evaluation anyway, so brand distinctness is moot).
-        var instancePrivateNames = CollectInstancePrivateNames(body.Members);
+        // Every declared private name — instance AND static — gets a per-evaluation
+        // minted key. ClassDefinitionEvaluation creates a fresh Private Name for each
+        // `#x` on every class evaluation (§sec-runtime-semantics-evaluate-name), so a
+        // static private element installed by one evaluation must be absent on the
+        // constructor produced by another (e.g. `C1.access.call(C2)` is a TypeError).
+        // Static private members reference the minted-key variable through their
+        // closure exactly like instance members do.
+        var mintablePrivateNames = ownPrivateNames;
 
         // Mint a fresh private-name key per declared `#x` for THIS class evaluation,
         // each stored in a class-scope variable that all member references close
@@ -265,10 +272,10 @@ partial class FastCompiler
         // for the whole class — losing per-evaluation brand distinctness for that
         // class but keeping private names visible to the eval (#667). The common
         // (eval-free) class still gets unique per-evaluation brands.
-        if (instancePrivateNames != null && !ClassBodyMayDirectEval(body.Members))
+        if (mintablePrivateNames != null && !ClassBodyMayDirectEval(body.Members))
         {
-            privateNameScope = new Dictionary<string, YExpression>(instancePrivateNames.Length);
-            foreach (var privateName in instancePrivateNames)
+            privateNameScope = new Dictionary<string, YExpression>(mintablePrivateNames.Length);
+            foreach (var privateName in mintablePrivateNames)
             {
                 // A getter and setter share one private name — mint it only once.
                 if (privateNameScope.ContainsKey(privateName))
@@ -603,21 +610,6 @@ partial class FastCompiler
         while (enumerator.MoveNext(out var member))
         {
             if (member.IsPrivate && member.Key is AstIdentifier identifier)
-                privateNames.Add(identifier.Name.Value);
-        }
-
-        return privateNames.Count == 0 ? null : [.. privateNames];
-    }
-
-    // Private names declared on instance (non-static) class elements only — the set
-    // eligible for per-evaluation minted keys (see CreateClass).
-    private static string[] CollectInstancePrivateNames(IFastEnumerable<AstClassProperty> members)
-    {
-        var privateNames = new List<string>();
-        var enumerator = members.GetFastEnumerator();
-        while (enumerator.MoveNext(out var member))
-        {
-            if (!member.IsStatic && member.IsPrivate && member.Key is AstIdentifier identifier)
                 privateNames.Add(identifier.Name.Value);
         }
 
