@@ -1993,21 +1993,187 @@ public class JSIntlNumberFormat : JSObject
 
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
 
-    public JSValue Format(in Arguments a) => JSValue.CreateString((a[0] ?? JSUndefined.Value).ToString());
+    public JSValue Format(in Arguments a)
+    {
+        var sb = new StringBuilder();
+        foreach (var (_, value) in ComputeFormatParts(a.Get1()))
+            sb.Append(value);
+        return JSValue.CreateString(sb.ToString());
+    }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlNumberFormat @this)
             throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatToParts called on incompatible receiver");
 
-        var formatted = @this.Format(in a);
-        var part = new JSObject();
-        part.FastAddValue(KeyStrings.GetOrCreate("type"), JSValue.CreateString("integer"), JSPropertyAttributes.EnumerableConfigurableValue);
-        part.FastAddValue(KeyStrings.GetOrCreate("value"), JSValue.CreateString(formatted.ToString()), JSPropertyAttributes.EnumerableConfigurableValue);
+        var typeKey = KeyStrings.GetOrCreate("type");
+        var valueKey = KeyStrings.GetOrCreate("value");
         var parts = JSValue.CreateArray();
-        parts.AddArrayItem(part);
+        foreach (var (type, value) in @this.ComputeFormatParts(a.Get1()))
+        {
+            var part = new JSObject();
+            part.FastAddValue(typeKey, JSValue.CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(valueKey, JSValue.CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
+            parts.AddArrayItem(part);
+        }
         return parts;
     }
+
+    // Builds the ordered sign/number parts for format / formatToParts. Implements
+    // the spec sign-display selection (auto/always/never/exceptZero/negative) over
+    // the rounded magnitude, with special handling for NaN and ±Infinity. The sign
+    // is decided from the rounded value, so a value that rounds to zero counts as a
+    // signed zero for "auto"/"always" but is treated as unsigned for "exceptZero"
+    // and "negative".
+    private List<(string type, string value)> ComputeFormatParts(JSValue value)
+    {
+        var x = value != null && value.IsBigInt ? (double)value.BigIntValue : (value ?? JSUndefined.Value).DoubleValue;
+
+        var signDisplay = resolved?.SignDisplay ?? "auto";
+        var isNaN = double.IsNaN(x);
+        var isInfinity = double.IsInfinity(x);
+        var signBit = !isNaN && double.IsNegative(x);
+
+        List<(string, string)> magnitude;
+        bool roundedIsZero;
+        if (isNaN)
+        {
+            magnitude = [("nan", NanSymbol())];
+            roundedIsZero = false;
+        }
+        else if (isInfinity)
+        {
+            magnitude = [("infinity", "∞")];
+            roundedIsZero = false;
+        }
+        else
+        {
+            magnitude = FormatFiniteMagnitude(Math.Abs(x), out roundedIsZero);
+        }
+
+        var negativeNonZero = signBit && !roundedIsZero;
+        var positiveNonZero = !signBit && !isNaN && !roundedIsZero;
+
+        var sign = signDisplay switch
+        {
+            "never" => null,
+            "always" => signBit ? "-" : "+",
+            "exceptZero" => negativeNonZero ? "-" : positiveNonZero ? "+" : null,
+            "negative" => negativeNonZero ? "-" : null,
+            _ => signBit ? "-" : null, // "auto"
+        };
+
+        var parts = new List<(string, string)>();
+        if (sign == "-")
+            parts.Add(("minusSign", "-"));
+        else if (sign == "+")
+            parts.Add(("plusSign", "+"));
+        parts.AddRange(magnitude);
+        return parts;
+    }
+
+    private List<(string, string)> FormatFiniteMagnitude(double magnitude, out bool roundedIsZero)
+    {
+        var minFrac = ReadIntOption("minimumFractionDigits", 0);
+        var maxFrac = ReadIntOption("maximumFractionDigits", 3);
+        if (maxFrac < minFrac)
+            maxFrac = minFrac;
+        var minInt = ReadIntOption("minimumIntegerDigits", 1);
+
+        var rounded = Math.Round(magnitude, Math.Clamp(maxFrac, 0, 15), MidpointRounding.AwayFromZero);
+        roundedIsZero = rounded == 0;
+
+        var fixedStr = rounded.ToString("F" + maxFrac, CultureInfo.InvariantCulture);
+        var dot = fixedStr.IndexOf('.');
+        var intDigits = dot < 0 ? fixedStr : fixedStr[..dot];
+        var fracDigits = dot < 0 ? string.Empty : fixedStr[(dot + 1)..];
+
+        // Trim trailing fraction zeros down to the minimum requested.
+        while (fracDigits.Length > minFrac && fracDigits.EndsWith('0'))
+            fracDigits = fracDigits[..^1];
+
+        intDigits = intDigits.TrimStart('0');
+        if (intDigits.Length == 0)
+            intDigits = "0";
+        while (intDigits.Length < minInt)
+            intDigits = "0" + intDigits;
+
+        var result = new List<(string, string)>();
+        AppendIntegerParts(result, intDigits);
+        if (fracDigits.Length > 0)
+        {
+            result.Add(("decimal", DecimalSeparator()));
+            result.Add(("fraction", fracDigits));
+        }
+        return result;
+    }
+
+    private void AppendIntegerParts(List<(string, string)> result, string intDigits)
+    {
+        if (!UseGrouping() || intDigits.Length <= 3)
+        {
+            result.Add(("integer", intDigits));
+            return;
+        }
+
+        var groupSeparator = GroupSeparator();
+        var first = intDigits.Length % 3;
+        if (first == 0)
+            first = 3;
+        result.Add(("integer", intDigits[..first]));
+        for (var idx = first; idx < intDigits.Length; idx += 3)
+        {
+            result.Add(("group", groupSeparator));
+            result.Add(("integer", intDigits.Substring(idx, 3)));
+        }
+    }
+
+    private string NanSymbol()
+        => locale != null && locale.StartsWith("zh", StringComparison.OrdinalIgnoreCase) ? "非數值" : "NaN";
+
+    private bool UseGrouping()
+    {
+        if (options == null)
+            return true;
+        var v = options[KeyStrings.GetOrCreate("useGrouping")];
+        if (v == null || v.IsUndefined)
+            return true;
+        if (v.IsBoolean)
+            return v.BooleanValue;
+        if (v.IsString)
+        {
+            var s = v.StringValue;
+            return s != "false" && s != "never";
+        }
+        return true;
+    }
+
+    private int ReadIntOption(string name, int fallback)
+    {
+        if (options == null)
+            return fallback;
+        var v = options[KeyStrings.GetOrCreate(name)];
+        if (v == null || v.IsUndefined)
+            return fallback;
+        var d = v.DoubleValue;
+        return double.IsNaN(d) ? fallback : (int)d;
+    }
+
+    private CultureInfo Culture()
+    {
+        if (string.IsNullOrEmpty(locale))
+            return CultureInfo.InvariantCulture;
+        var tag = locale;
+        var uPos = tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase);
+        if (uPos >= 0)
+            tag = tag[..uPos];
+        try { return CultureInfo.GetCultureInfo(tag); }
+        catch (CultureNotFoundException) { return CultureInfo.InvariantCulture; }
+    }
+
+    private string GroupSeparator() => Culture().NumberFormat.NumberGroupSeparator;
+
+    private string DecimalSeparator() => Culture().NumberFormat.NumberDecimalSeparator;
 
     public static JSValue FormatRangePrototype(in Arguments a)
     {
