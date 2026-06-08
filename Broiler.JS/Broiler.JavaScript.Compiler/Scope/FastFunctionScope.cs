@@ -152,6 +152,13 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         public bool InUse { get; internal set; }
         public bool IsTemp { get; internal set; }
         public bool SkipRegistration { get; internal set; }
+
+        // A parameter-environment shadow binding created for a name that resolves
+        // outside a sloppy function whose parameter list contains a direct eval (see
+        // EvalShadowVariable). Reads/writes of such a binding go through
+        // GetValue/SetValue rather than the JSVariable.Value property.
+        public bool IsEvalShadow { get; internal set; }
+
         public void Dispose() => InUse = false;
 
         public void SetPostInit(YExpression exp)
@@ -406,6 +413,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
                 if (variable.Variable == null
                     || variable.Variable.Type != typeof(JSVariable)
                     || variable.IsTemp
+                    || variable.IsEvalShadow
                     || variable.Name == "this"
                     || !seen.Add(NormalizeVisibleName(variable.Name)))
                 {
@@ -616,4 +624,34 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public bool TryGetOwnVariable(in StringSpan name, out VariableScope variable)
         => variableScopeList.TryGetValue(name, out variable);
+
+    // Parameter-environment shadow bindings created in this function scope (see
+    // EvalShadowVariable). Registered into the function's CallStackItem at entry so
+    // a direct eval in the parameter list writes the eval-introduced var into the
+    // shared binding the closures capture.
+    public readonly List<VariableScope> EvalShadows = [];
+
+    /// <summary>
+    /// Creates a shadow binding for <paramref name="name"/> — a name that resolves
+    /// to <paramref name="outerVariable"/> outside this (the boundary) function whose
+    /// parameter list contains a sloppy direct eval. The binding forwards to the
+    /// outer one until the eval introduces the var; reads use <c>GetValue</c>.
+    /// </summary>
+    public VariableScope CreateEvalShadow(in StringSpan name, YParameterExpression outerVariable, bool outerIsGlobal)
+    {
+        var pe = YExpression.Parameter(typeof(JSVariable), name.Value + "`evalShadow");
+        var v = new VariableScope
+        {
+            Name = name.Value,
+            Variable = pe,
+            Expression = EvalShadowBuilder.GetValue(pe),
+            Create = true,
+            IsEvalShadow = true,
+            OwnerFunction = Function,
+        };
+        v.SetInit(EvalShadowBuilder.New(name.Value, outerVariable, outerIsGlobal), initialize: false);
+        variableScopeList[name] = v;
+        EvalShadows.Add(v);
+        return v;
+    }
 }

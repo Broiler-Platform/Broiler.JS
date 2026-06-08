@@ -57,6 +57,12 @@ partial class FastParser
             return true;
         }
 
+        // The MethodDefinition source text reported by Function.prototype.toString
+        // begins at the method's own first token (the `async`/`get`/`set`/`*` prefix
+        // or the property name) and excludes the `static` ClassElement modifier. Once
+        // `static` is consumed, the current token is that start.
+        var methodStart = stream.Current;
+
         // Check for async methods first. `async get foo()` / `async set foo()` remain
         // invalid ECMAScript syntax; `async get()` / `async set()` are async methods
         // whose property names happen to be `get` / `set`.
@@ -67,7 +73,7 @@ partial class FastParser
                 if (property.Kind == AstPropertyKind.Get || property.Kind == AstPropertyKind.Set)
                     throw stream.Unexpected();
 
-                property = new AstClassProperty(current, property.End, AstPropertyKind.Method, property.IsPrivate, isStatic, property.Key, property.Computed, property.Init, property.UsesColon, property.UsesAssign);
+                property = new AstClassProperty(current, property.End, AstPropertyKind.Method, property.IsPrivate, isStatic, property.Key, property.Computed, RebaseFunctionStart(property.Init, methodStart), property.UsesColon, property.UsesAssign);
                 return true;
             }
 
@@ -90,7 +96,7 @@ partial class FastParser
                 {
                     if (property.Kind == AstPropertyKind.Method)
                     {
-                        property = new AstClassProperty(current, property.End, isSet ? AstPropertyKind.Set : AstPropertyKind.Get, property.IsPrivate, isStatic, property.Key, property.Computed, property.Init, property.UsesColon, property.UsesAssign);
+                        property = new AstClassProperty(current, property.End, isSet ? AstPropertyKind.Set : AstPropertyKind.Get, property.IsPrivate, isStatic, property.Key, property.Computed, RebaseFunctionStart(property.Init, methodStart), property.UsesColon, property.UsesAssign);
                         return true;
                     }
 
@@ -160,7 +166,7 @@ partial class FastParser
                     if (body.Type != FastNodeType.Block)
                         throw stream.Unexpected();
 
-                    var fx = new AstFunctionExpression(current, PreviousToken, false, isAsync, isGenerator, null, parameters, body);
+                    var fx = new AstFunctionExpression(methodStart, PreviousToken, false, isAsync, isGenerator, null, parameters, body);
 
                     var isConstructor = isClass
                         && !computed
@@ -194,6 +200,17 @@ partial class FastParser
 
         property = default;
         return begin.Reset();
+    }
+
+    // Re-anchor a method's function-expression source span to <paramref name="start"/>
+    // so Function.prototype.toString includes the `get`/`set`/`async`/`*` prefix that
+    // precedes the property name in the original source.
+    static AstExpression RebaseFunctionStart(AstExpression init, FastToken start)
+    {
+        if (init is AstFunctionExpression fx)
+            return new AstFunctionExpression(start, fx.End, fx.IsArrowFunction, fx.Async, fx.Generator, fx.Id, fx.Params, fx.Body, fx.IsStatement);
+
+        return init;
     }
 
     bool ObjectLiteral(out AstExpression node)

@@ -175,7 +175,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 var property = context.GetInternalProperty(key, false);
                 entry.HadOwnProperty = !property.IsEmpty;
                 if (entry.HadOwnProperty)
-                    entry.PreviousValue = context[key];
+                    entry.PreviousValue = context.GetOwnPropertyValue(key);
 
                 entry.Shadowed = shadowed != null && shadowed.Contains(variable);
 
@@ -231,7 +231,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 {
                     context.globalVars.Put(entry.Name.Key) = entry.PreviousVariable;
                     if (entry.HadOwnProperty)
-                        context[entry.Name] = entry.PreviousValue;
+                        context.SetOwnPropertyValue(entry.Name, entry.PreviousValue);
                     else
                         context.Delete(entry.Name);
                 }
@@ -239,7 +239,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 {
                     context.globalVars.RemoveAt(entry.Name.Key);
                     if (entry.HadOwnProperty)
-                        context[entry.Name] = entry.PreviousValue;
+                        context.SetOwnPropertyValue(entry.Name, entry.PreviousValue);
                     else
                         context.Delete(entry.Name);
                 }
@@ -258,7 +258,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 var property = context.GetInternalProperty(entry.Name, false);
                 entry.HadOwnProperty = !property.IsEmpty;
                 if (entry.HadOwnProperty)
-                    entry.PreviousValue = context[entry.Name];
+                    entry.PreviousValue = context.GetOwnPropertyValue(entry.Name);
                 entry.HadPreviousVariable = context.globalVars.TryGetValue(entry.Name.Key, out var pv);
                 entry.PreviousVariable = pv;
 
@@ -319,7 +319,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                     if (!ReferenceEquals(entry.PreviousVariable, entry.OverlayVariable))
                     {
                         if (entry.HadOwnProperty)
-                            context[entry.Name] = entry.PreviousVariable.Value;
+                            context.SetOwnPropertyValue(entry.Name, entry.PreviousVariable.Value);
                         else
                             context.Delete(entry.Name);
                     }
@@ -335,7 +335,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                     continue;
 
                 if (entry.HadOwnProperty)
-                    context[entry.Name] = entry.PreviousValue;
+                    context.SetOwnPropertyValue(entry.Name, entry.PreviousValue);
                 else
                     context.Delete(entry.Name);
             }
@@ -423,12 +423,22 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     /// <summary>Whether a super reference is available to the direct eval currently being compiled.</summary>
     public bool HasDirectEvalSuper => directEvalSuperValues.Count > 0;
 
-    internal bool TryResolveDirectEvalBinding(in KeyString name, out JSVariable variable)
+    internal bool TryResolveDirectEvalBinding(in KeyString name, out JSVariable variable, bool includeUninitializedShadows = false)
     {
         for (var current = Top; current != null; current = current.Parent)
         {
             if (current.TryGetDirectEvalBinding(name, out variable))
+            {
+                // An uninitialized EvalShadowVariable means a sloppy parameter-eval
+                // shadow whose name the eval has not (yet) introduced; it forwards to
+                // the outer binding, so resolution must look through it to the real
+                // binding. The eval's own var-declaration path (Register) passes
+                // includeUninitializedShadows so it can find and initialize the shadow.
+                if (!includeUninitializedShadows && variable is EvalShadowVariable { IsInitialized: false })
+                    continue;
+
                 return true;
+            }
         }
 
         variable = null;
@@ -563,6 +573,9 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     public JSValue Register(JSVariable variable)
     {
         KeyString name = variable.Name;
+        // Skip an uninitialized parameter-eval shadow: a captured-binding publish must
+        // not initialize it. The eval's own var declaration reuses the shadow as its
+        // local storage via GetOrCreateDirectEvalLocalBinding instead.
         if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
         {
             directEvalBinding.Value = variable.Value;
@@ -678,12 +691,33 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return variable;
     }
 
+    /// <summary>
+    /// The storage binding a direct eval should use for a <c>var</c> it declares
+    /// while running inside a function's local var environment. When a
+    /// parameter-environment shadow (or any other activation binding) for the name
+    /// already exists, the eval reuses it so that assignments inside the eval body
+    /// reach the same binding the surrounding closures capture; otherwise a fresh
+    /// binding is created and registered into the activation. <paramref name="fallback"/>
+    /// is the value to seed a freshly created binding with.
+    /// </summary>
+    public JSVariable GetOrCreateDirectEvalLocalBinding(in KeyString name, JSValue fallback)
+    {
+        if (TryResolveDirectEvalBinding(name, out var existing, includeUninitializedShadows: true))
+            return existing;
+
+        var variable = new JSVariable(fallback, name.Value);
+        if (directEvalLocalVarEnvironmentDepth > 0 && TryGetCurrentDirectEvalActivationOwner(out var owner))
+            owner.RegisterDirectEvalBinding(variable);
+
+        return variable;
+    }
+
     public override JSValue this[KeyString name]
     {
         get
         {
             if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
-                return directEvalBinding.Value;
+                return directEvalBinding.GetValue();
 
             return base[name];
         }
@@ -691,7 +725,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         {
             if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
             {
-                directEvalBinding.Value = value;
+                directEvalBinding.SetValue(value);
                 return;
             }
 
@@ -807,7 +841,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         }
 
         if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
-            return directEvalBinding.Value;
+            return directEvalBinding.GetValue();
 
         if (globalVars.TryGetValue(name.Key, out var variable))
             return variable.Value;
@@ -836,7 +870,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         }
 
         if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
-            return directEvalBinding.Value;
+            return directEvalBinding.GetValue();
 
         if (globalVars.TryGetValue(name.Key, out var variable))
             return variable.Value;
@@ -877,7 +911,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
         if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
         {
-            directEvalBinding.Value = value;
+            directEvalBinding.SetValue(value);
             return value;
         }
 
