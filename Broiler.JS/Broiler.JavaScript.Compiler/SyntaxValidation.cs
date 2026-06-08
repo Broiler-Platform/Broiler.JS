@@ -528,6 +528,14 @@ public static void ValidateProgram(
             var members = objectLiteral.Properties.GetFastEnumerator();
             while (members.MoveNext(out var node))
             {
+                // A CoverInitializedName (`{ id = expr }`) is only legal when the
+                // object literal is reinterpreted as an assignment/binding pattern.
+                // A genuine destructuring target is parsed as an ObjectPattern, so any
+                // object *literal* that still carries `UsesAssign` is being used as a
+                // value (e.g. `({a = 0})`, `[{a = 0}.x] = []`) — a SyntaxError.
+                if (node is AstClassProperty { Kind: AstPropertyKind.Data, UsesAssign: true } coverInit)
+                    throw new FastParseException(coverInit.Start, "Invalid shorthand property initializer in object literal");
+
                 if (node is not AstClassProperty { Kind: AstPropertyKind.Data, UsesColon: true, Computed: false } property
                     || !IsProtoName(property.Key))
                 {
