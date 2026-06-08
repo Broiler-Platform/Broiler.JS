@@ -511,6 +511,14 @@ public partial class JSProxy : JSObject
 
     internal protected override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
     {
+        // A private member is not a property lookup: it operates on this object's
+        // own private elements and never consults the target or a Proxy trap. A
+        // proxy that does not itself carry the private name (the common case) fails
+        // the brand check with a TypeError; a proxy handed a private field via a
+        // constructor return-override holds it as its own slot.
+        if (IsPrivateName(in key))
+            return base.GetValue(key, receiver, throwError);
+
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.get);
         if (!fx.IsUndefined)
@@ -539,6 +547,10 @@ public partial class JSProxy : JSObject
 
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
     {
+        // Private member writes bypass the target and the set trap (see GetValue).
+        if (IsPrivateName(in name))
+            return base.SetValue(name, value, receiver, throwError);
+
         if (name.Key == KeyStrings.__proto__.Key)
         {
             if (!value.IsObject && !value.IsNull)

@@ -117,7 +117,10 @@ partial class FastParser
 
             if (stream.CheckAndConsume(TokenTypes.Colon))
             {
-                if (!checkContextualKeyword)
+                // A `key: value` colon is object-literal syntax; it is never a valid
+                // ClassElement. `class X { x: 1 }` is a SyntaxError (the ClassElement
+                // productions are methods, accessors, fields and static blocks only).
+                if (!checkContextualKeyword || isClass)
                     throw stream.Unexpected();
 
                 if (!Expression(out var value))

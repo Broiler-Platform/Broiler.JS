@@ -182,6 +182,42 @@ partial class FastCompiler
         var computedMemberNames = new Dictionary<AstClassProperty, YExpression>();
         var classScopeVariables = new Sequence<YParameterExpression> { superVar, superPrototypeVar };
         AstFunctionExpression constructor = null;
+
+        // Non-static private methods/accessors are installed PER INSTANCE (not on the
+        // prototype) so that a `return`-override object carries them and a second
+        // installation throws. Each function object is created once here, into a
+        // class-scope variable, and referenced by the constructor's InitMembers. A
+        // getter and setter sharing a private name merge into one element.
+        var privateInstanceElements = new List<PrivateInstanceElement>();
+        var privateElementByName = new Dictionary<string, PrivateInstanceElement>(StringComparer.Ordinal);
+
+        // Static data field initializations are deferred to run AFTER the class is
+        // defined and its name binding is set (ClassDefinitionEvaluation evaluates
+        // static field initializers last) — so an initializer that references the
+        // class name sees the constructor, and adding a static private field to a
+        // (self-)sealed constructor throws. Static methods/accessors stay in the
+        // constructor's object initializer and so are installed first.
+        var staticFieldInits = new List<(YExpression Name, YExpression Value, bool IsPrivate)>();
+
+        PrivateInstanceElement PrivateElementFor(AstClassProperty property, YExpression keyName)
+        {
+            var pname = ((AstIdentifier)property.Key).Name.Value;
+            if (!privateElementByName.TryGetValue(pname, out var element))
+            {
+                element = new PrivateInstanceElement { Key = keyName };
+                privateElementByName[pname] = element;
+                privateInstanceElements.Add(element);
+            }
+            return element;
+        }
+
+        YParameterExpression SharedMemberFunctionVar(YExpression fx, string label)
+        {
+            var fnVar = YExpression.Parameter(fx.Type, $"{label}$pf{privateKeyVarCounter++}");
+            classScopeVariables.Add(fnVar);
+            stmts.Add(YExpression.Assign(fnVar, fx));
+            return fnVar;
+        }
         var ownPrivateNames = CollectPrivateNames(body.Members);
         var directEvalPrivateNames = CombinePrivateNames(this.scope.Top.DirectEvalPrivateNames, ownPrivateNames);
         // Only INSTANCE private names get per-evaluation minted keys. A static private
@@ -283,10 +319,8 @@ partial class FastCompiler
                             ? computedMemberNames[property]
                             : ValidateStaticPropertyName(property, GetClassElementName(property));
                         var value = property.Init == null ? JSUndefinedBuilder.Value : Visit(property.Init);
-                        var attributes = isPrivateName
-                            ? JSPropertyAttributes.ConfigurableValue
-                            : JSPropertyAttributes.EnumerableConfigurableValue;
-                        staticElements.Add(JSObjectBuilder.AddValue(name, value, attributes));
+                        // Deferred to after the class binding (see staticFieldInits).
+                        staticFieldInits.Add((name, value, isPrivateName));
                         break;
                     }
                     // The computed key (if any) was already evaluated, in source
@@ -310,7 +344,10 @@ partial class FastCompiler
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
-                        prototypeElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
+                        if (isPrivateName)
+                            PrivateElementFor(property, name).Getter = SharedMemberFunctionVar(fx, "#get");
+                        else
+                            prototypeElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     break;
 
@@ -328,7 +365,10 @@ partial class FastCompiler
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
-                        prototypeElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
+                        if (isPrivateName)
+                            PrivateElementFor(property, name).Setter = SharedMemberFunctionVar(fx, "#set");
+                        else
+                            prototypeElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     break;
 
@@ -350,7 +390,10 @@ partial class FastCompiler
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, superPrototypeVar, forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
-                        prototypeElements.Add(JSObjectBuilder.AddValue(name, fx, isPrivateName ? JSPropertyAttributes.ConfigurableReadonlyValue : JSPropertyAttributes.ConfigurableValue));
+                        if (isPrivateName)
+                            PrivateElementFor(property, name).Method = SharedMemberFunctionVar(fx, "#m");
+                        else
+                            prototypeElements.Add(JSObjectBuilder.AddValue(name, fx, JSPropertyAttributes.ConfigurableValue));
                     }
                     break;
 
@@ -367,17 +410,18 @@ partial class FastCompiler
             // the superclass prototype, while super(...) targets the superclass
             // constructor. Pass both so each resolves correctly.
             var fx = CreateFunction(constructor, superPrototypeVar, true, className, memberInits, true, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames,
-                thisIsUninitialized: hasSuperClass, superConstructor: superVar);
+                thisIsUninitialized: hasSuperClass, superConstructor: superVar, privateInstanceElements: privateInstanceElements);
             staticElements.Add(JSClassBuilder.AddConstructor(fx));
         }
         else
         {
-            if (memberInits.Any())
+            if (memberInits.Any() || privateInstanceElements.Count > 0)
             {
                 // super.x in instance field initializers resolves against the home
                 // object's prototype (the superclass prototype), so give the synthetic
                 // default constructor scope that super binding.
                 using var s = this.scope.Push(new FastFunctionScope(null, null, super: superPrototypeVar, memberInits: memberInits, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames, thisIsUninitialized: hasSuperClass));
+                s.PrivateInstanceElements = privateInstanceElements;
                 var args = s.Arguments;
                 var @this = s.ThisExpression;
                 var inits = new Sequence<YExpression>() { };
@@ -411,6 +455,16 @@ partial class FastCompiler
             // lock it so a write from within the body throws a TypeError.
             stmts.Add(YExpression.Assign(innerNameVar.Expression, retValue));
             stmts.Add(JSVariableBuilder.SetReadOnly(innerNameVar.Variable, true));
+        }
+
+        // Static field initializers run on the constructor now that its name binding
+        // is set. A private static field uses PrivateFieldAdd so a self-sealed
+        // constructor (preventExtensions in an earlier initializer) throws.
+        foreach (var (fieldName, fieldValue, fieldIsPrivate) in staticFieldInits)
+        {
+            stmts.Add(fieldIsPrivate
+                ? JSObjectBuilder.PrivateFieldAdd(retValue, fieldName, fieldValue)
+                : JSObjectBuilder.AddValue(retValue, fieldName, fieldValue, JSPropertyAttributes.EnumerableConfigurableValue));
         }
 
         if (staticBlocks.Any())
