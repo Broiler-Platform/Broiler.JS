@@ -37,18 +37,6 @@ public partial class JSBigUint64Array : JSTypedArray
         return true;
     }
 
-    [JSExport(Length = 1)]
-    public static JSValue From(in Arguments a) => JSTypedArray.FromShared(in a);
-
-    [JSExport]
-    public static JSValue Of(in Arguments a)
-    {
-        var result = CreateTypedArrayFromConstructor(a.This, a.Length);
-        for (int i = 0; i < a.Length; i++)
-            result[(uint)i] = a[i];
-
-        return result;
-    }
 
     internal override void ValidateElementValue(JSValue value) => _ = ToBigIntValue(value);
 

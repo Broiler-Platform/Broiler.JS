@@ -647,6 +647,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
         {
             var (options, globalSearch, ignoreCase, multiline, dotAll, hasIndices, sticky, unicode, unicodeSets, normalizedFlags) = ParseFlags(flags);
 
+            // ES2015+ Unicode (u) mode forbids identity escapes, octal escapes,
+            // lone syntax characters ({ } ]), quantified assertions, etc. .NET's
+            // engine is lenient about these, so validate the raw pattern here (the
+            // same check the lexer applies to regex literals) before transforming.
+            if (unicode && !RegExpUnicodeValidator.IsValidUnicodePattern(pattern))
+                throw JSEngine.NewSyntaxError("Invalid regular expression: invalid pattern in Unicode mode");
+
             // BROILER-PATCH: Transform ES3 empty character classes and forward backreferences
             // for .NET compatibility (tests 89, 90)
             pattern = TransformES3Patterns(pattern);
@@ -655,10 +662,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // .NET's \s only covers ASCII whitespace, so expand to the full set.
             pattern = TransformUnicodeWhitespace(pattern, unicode || unicodeSets);
 
-            // .NET IgnoreCase doesn't handle all Unicode CaseFolding pairs (e.g. µ↔μ, ſ↔s).
-            // Expand literal characters to include their missing case-fold equivalents.
+            // .NET IgnoreCase only applies simple (ToLower-based) case folding, so it
+            // misses ECMAScript case equivalences such as µ↔Μ↔μ, the Greek symbol
+            // variants and ſ↔s (in Unicode mode). Expand literals to their full
+            // ECMAScript Canonicalize equivalence class. The class differs by mode:
+            // non-Unicode uses toUppercase (with the ASCII guard, so ſ does NOT fold
+            // to s), Unicode/Unicode-sets use case folding (so ſ DOES fold to s).
             if (ignoreCase)
-                pattern = TransformUnicodeCaseFolding(pattern);
+                pattern = TransformUnicodeCaseFolding(pattern, unicode || unicodeSets);
 
             // §2.6 — Detect inline pattern modifiers (?i:...) / (?-i:...) / (?ims:...) etc.
             // .NET ECMAScript mode does not support them, so switch to default mode.
@@ -1990,18 +2001,8 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     {
                         if (next == 's')
                             sb.Append('[').Append(esWhitespaceChars).Append(']');
-                        else if (unicodeMode)
-                        {
-                            // In unicode mode, \S must also match supplementary-plane
-                            // code points (surrogate pairs).  The surrogate-pair branch
-                            // must come first so it is preferred over the BMP negated
-                            // class which would greedily match a lone high surrogate.
-                            sb.Append(@"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^")
-                              .Append(esWhitespaceChars)
-                              .Append(@"\uD800-\uDFFF])");
-                        }
                         else
-                            sb.Append("[^").Append(esWhitespaceChars).Append(']');
+                            AppendEsNonWhitespace(sb, esWhitespaceChars, unicodeMode);
                     }
                     i++; // skip the s/S
                     continue;
@@ -2015,7 +2016,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
             }
 
             if (!inClass && c == '[')
+            {
+                // ES \S inside a class can't be expressed inline (it differs from
+                // .NET's \S by U+FEFF and U+0085), so rewrite the whole-class forms
+                // that consist solely of \S: [\S] == \S, and [^\S] == \s.
+                if (i + 3 < pattern.Length && pattern[i + 1] == '\\' && pattern[i + 2] == 'S' && pattern[i + 3] == ']')
+                {
+                    AppendEsNonWhitespace(sb, esWhitespaceChars, unicodeMode);
+                    i += 3;
+                    continue;
+                }
+
+                if (i + 4 < pattern.Length && pattern[i + 1] == '^' && pattern[i + 2] == '\\' && pattern[i + 3] == 'S' && pattern[i + 4] == ']')
+                {
+                    sb.Append('[').Append(esWhitespaceChars).Append(']');
+                    i += 4;
+                    continue;
+                }
+
                 inClass = true;
+            }
             else if (inClass && c == ']')
                 inClass = false;
 
@@ -2025,13 +2045,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
         return sb.ToString();
     }
 
+    // Emits the ECMAScript \S (a single non-whitespace code point). In Unicode mode
+    // the surrogate-pair branch comes first so a supplementary-plane code point is
+    // matched as a whole rather than as a lone high surrogate.
+    private static void AppendEsNonWhitespace(StringBuilder sb, string esWhitespaceChars, bool unicodeMode)
+    {
+        if (unicodeMode)
+            sb.Append(@"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^")
+              .Append(esWhitespaceChars)
+              .Append(@"\uD800-\uDFFF])");
+        else
+            sb.Append("[^").Append(esWhitespaceChars).Append(']');
+    }
+
     /// <summary>
     /// .NET IgnoreCase regex doesn't handle several Unicode CaseFolding pairs.
     /// This method expands literal characters and \uNNNN escapes in the pattern
     /// to include their missing case-fold equivalents so that case-insensitive
     /// matching conforms to ECMAScript Canonicalize semantics.
     /// </summary>
-    private static string TransformUnicodeCaseFolding(string pattern)
+    private static string TransformUnicodeCaseFolding(string pattern, bool unicode)
     {
         if (string.IsNullOrEmpty(pattern))
             return pattern;
@@ -2053,7 +2086,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 {
                     int cp = HexValue(pattern[i + 2]) << 12 | HexValue(pattern[i + 3]) << 8
                            | HexValue(pattern[i + 4]) << 4 | HexValue(pattern[i + 5]);
-                    var equiv = GetCaseFoldEquivalents((char)cp);
+                    var equiv = GetCaseFoldEquivalents((char)cp, unicode);
                     if (equiv != null)
                     {
                         sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
@@ -2064,6 +2097,24 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
                     sb?.Append(pattern, i, 6);
                     i += 5;
+                    continue;
+                }
+
+                if (next == 'x' && i + 3 < pattern.Length
+                    && IsHexDigit(pattern[i + 2]) && IsHexDigit(pattern[i + 3]))
+                {
+                    int cp = HexValue(pattern[i + 2]) << 4 | HexValue(pattern[i + 3]);
+                    var equiv = GetCaseFoldEquivalents((char)cp, unicode);
+                    if (equiv != null)
+                    {
+                        sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
+                        AppendWithEquivalents(sb, (char)cp, equiv, inClass);
+                        i += 3;
+                        continue;
+                    }
+
+                    sb?.Append(pattern, i, 4);
+                    i += 3;
                     continue;
                 }
 
@@ -2089,7 +2140,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             }
 
             // Check literal characters
-            var litEquiv = GetCaseFoldEquivalents(c);
+            var litEquiv = GetCaseFoldEquivalents(c, unicode);
             if (litEquiv != null)
             {
                 sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
@@ -2122,25 +2173,94 @@ public partial class JSRegExp : JSObject, IJSRegExp
     }
 
     /// <summary>
-    /// Returns additional characters that should match case-insensitively with the given
-    /// character but that .NET's IgnoreCase doesn't handle. Returns null when .NET handles
-    /// the case folding natively.
+    /// Returns the other characters that match <paramref name="c"/> case-insensitively
+    /// under ECMAScript Canonicalize but that .NET's (simple, ToLower-based) IgnoreCase
+    /// does not fold. Returns null when there are no such extra equivalents.
     /// </summary>
-    private static char[] GetCaseFoldEquivalents(char c) => c switch
+    /// <param name="unicode">
+    /// true for the u/v flags (case folding; the long s folds to s); false otherwise
+    /// (toUppercase with the ASCII guard, so the long s does NOT fold to s).
+    /// </param>
+    private static char[] GetCaseFoldEquivalents(char c, bool unicode)
     {
-        // µ (U+00B5 MICRO SIGN) folds to μ (U+03BC GREEK SMALL MU) — .NET misses µ↔Μ
-        '\u00B5' => ['\u03BC', '\u039C'],
-        // Μ (U+039C GREEK CAPITAL MU) — .NET handles Μ↔μ but not Μ↔µ
-        '\u039C' => ['\u03BC', '\u00B5'],
-        // μ (U+03BC GREEK SMALL MU) — .NET handles μ↔Μ but not μ↔µ
-        '\u03BC' => ['\u039C', '\u00B5'],
-        // ſ (U+017F LATIN SMALL LETTER LONG S) folds to s — .NET misses entirely
-        '\u017F' => ['s', 'S'],
-        // s and S should also match ſ
-        's' => ['S', '\u017F'],
-        'S' => ['s', '\u017F'],
-        _ => null,
-    };
+        var map = unicode ? UnicodeCaseFoldEquivalents.Value : NonUnicodeCaseFoldEquivalents.Value;
+        return map.TryGetValue(c, out var equivalents) ? equivalents : null;
+    }
+
+    // Reverse maps from a character to the other members of its ECMAScript
+    // Canonicalize equivalence class. Built once by grouping every BMP code unit by
+    // its canonical key; only classes with more than one member AND at least one
+    // non-ASCII member are kept (ASCII-only classes such as {a, A} are folded
+    // correctly by .NET's own IgnoreCase, so expanding them would only bloat the
+    // pattern). Surrogate code units are excluded.
+    private static readonly Lazy<Dictionary<char, char[]>> NonUnicodeCaseFoldEquivalents =
+        new(() => BuildCaseFoldEquivalents(unicode: false));
+    private static readonly Lazy<Dictionary<char, char[]>> UnicodeCaseFoldEquivalents =
+        new(() => BuildCaseFoldEquivalents(unicode: true));
+
+    private static Dictionary<char, char[]> BuildCaseFoldEquivalents(bool unicode)
+    {
+        var groups = new Dictionary<char, List<char>>();
+
+        for (int u = 0; u <= 0xFFFF; u++)
+        {
+            // Skip surrogate code units: they are not stand-alone characters.
+            if (u >= 0xD800 && u <= 0xDFFF)
+                continue;
+
+            char ch = (char)u;
+            char key = unicode ? CaseFoldKey(ch) : CanonicalizeKey(ch);
+
+            if (!groups.TryGetValue(key, out var list))
+                groups[key] = list = new List<char>(2);
+            list.Add(ch);
+        }
+
+        var map = new Dictionary<char, char[]>();
+        foreach (var list in groups.Values)
+        {
+            if (list.Count < 2)
+                continue;
+
+            bool hasNonAscii = false;
+            foreach (var m in list)
+            {
+                if (m >= 128) { hasNonAscii = true; break; }
+            }
+            if (!hasNonAscii)
+                continue;
+
+            foreach (var member in list)
+            {
+                var others = new char[list.Count - 1];
+                int k = 0;
+                foreach (var m in list)
+                {
+                    if (m != member)
+                        others[k++] = m;
+                }
+                map[member] = others;
+            }
+        }
+
+        return map;
+    }
+
+    // ECMAScript Canonicalize for non-Unicode mode: the toUppercase of the code unit,
+    // except that a code point >= 128 whose uppercase is an ASCII character is left
+    // unchanged (so e.g. the long s U+017F is its own canonical form).
+    private static char CanonicalizeKey(char ch)
+    {
+        char cu = char.ToUpperInvariant(ch);
+        if (ch >= 128 && cu < 128)
+            return ch;
+        return cu;
+    }
+
+    // Simple case folding used by Canonicalize in Unicode mode. .NET does not expose
+    // CaseFolding.txt directly, but toUppercase followed by toLowercase yields the same
+    // canonical lowercase form for the affected characters.
+    private static char CaseFoldKey(char ch) => char.ToLowerInvariant(char.ToUpperInvariant(ch));
 
     private static bool IsHexDigit(char c) =>
         (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');

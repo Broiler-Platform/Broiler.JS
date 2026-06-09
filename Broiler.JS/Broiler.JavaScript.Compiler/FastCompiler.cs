@@ -169,7 +169,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
                 if (argsList?.Contains(v.Name) ?? false)
                     continue;
 
-                if (v.Name == "this")
+                if (v.Name == "this" || v.Name == FastFunctionScope.NewTargetBindingName)
                     continue;
 
                 if (isDirectEvalCompilation && isStrictProgram)

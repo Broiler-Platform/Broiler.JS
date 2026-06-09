@@ -188,8 +188,12 @@ partial class FastCompiler
             return EvalShadowBuilder.SetValue(target, initExpr);
         }
 
-        var current = EvalShadowBuilder.GetValue(target);
-        var rhs = Visit(right);
+        // A compound assignment resolves its target Reference once, before the RHS
+        // runs. Capture which binding the shadow's read observes so a direct eval in
+        // the RHS that introduces a local var cannot redirect the write (§13.15.2).
+        var referenceTemp = scope.Top.GetTempVariable(typeof(bool));
+        var captureReference = YExpression.Assign(referenceTemp.Expression, EvalShadowBuilder.CaptureReference(target));
+        var current = EvalShadowBuilder.GetCaptured(target, referenceTemp.Expression);
 
         switch (assignmentOperator)
         {
@@ -204,19 +208,28 @@ partial class FastCompiler
                     TokenTypes.AssignBooleanAnd => JSValueBuilder.BooleanValue(currentTemp.Expression),
                     _ => YExpression.Not(JSValueBuilder.BooleanValue(currentTemp.Expression)),
                 };
-                return YExpression.Block(
-                    currentTemp.Variable.AsSequence(),
+                var logical = YExpression.Block(
+                    new Sequence<YParameterExpression> { referenceTemp.Variable, currentTemp.Variable },
+                    captureReference,
                     YExpression.Assign(currentTemp.Expression, current),
                     YExpression.Condition(
                         condition,
-                        EvalShadowBuilder.SetValue(target, rhs),
+                        EvalShadowBuilder.SetCaptured(target, referenceTemp.Expression, Visit(right)),
                         currentTemp.Expression,
                         typeof(JSValue)));
+                referenceTemp.Dispose();
+                return logical;
             }
         }
 
+        var rhs = Visit(right);
         var computed = BinaryOperation.Operation(current, rhs, CompoundAssignmentToBinaryOperator(assignmentOperator));
-        return EvalShadowBuilder.SetValue(target, computed);
+        var result = YExpression.Block(
+            referenceTemp.Variable.AsSequence(),
+            captureReference,
+            EvalShadowBuilder.SetCaptured(target, referenceTemp.Expression, computed));
+        referenceTemp.Dispose();
+        return result;
     }
 
     private static TokenTypes CompoundAssignmentToBinaryOperator(TokenTypes assignmentOperator) => assignmentOperator switch

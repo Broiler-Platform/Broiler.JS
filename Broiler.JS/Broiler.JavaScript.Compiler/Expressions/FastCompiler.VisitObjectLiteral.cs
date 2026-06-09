@@ -50,6 +50,18 @@ partial class FastCompiler
         }
 
         var properties = objectExpression.Properties;
+
+        // A CoverInitializedName (`{ id = expr }`) reaching value compilation means
+        // the object literal is being used as a value rather than reinterpreted as a
+        // destructuring pattern — e.g. the `{b = 0}` base of `({a: {b = 0}.x} = {})`.
+        // That is a SyntaxError (a genuine target is compiled as an ObjectPattern).
+        var coverScan = properties.GetFastEnumerator();
+        while (coverScan.MoveNext(out var coverNode))
+        {
+            if (coverNode is AstClassProperty { Kind: AstPropertyKind.Data, UsesAssign: true } coverInit)
+                throw new FastParseException(coverInit.Start, "Invalid shorthand property initializer in object literal");
+        }
+
         bool hasProtoSetter = false;
         var protoScan = properties.GetFastEnumerator();
         while (protoScan.MoveNext(out var propertyNode))

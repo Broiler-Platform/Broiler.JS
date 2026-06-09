@@ -40,6 +40,22 @@ partial class FastParser
 
             node = new AstMeta(new AstIdentifier(current.AsString()), new AstIdentifier(id));
         }
+        else if (current.Keyword == FastKeywords.@import && stream.Next.Type == TokenTypes.Dot)
+        {
+            // import.meta — only valid when the syntactic goal symbol is Module.
+            // Parse it as a meta property so the compiler can reject it with a
+            // SyntaxError in Script / FunctionBody / FormalParameters contexts.
+            stream.Consume();
+            stream.Consume();
+
+            if (!stream.CheckAndConsume(TokenTypes.Identifier, out var id))
+                throw stream.Unexpected();
+
+            if (id.CookedText != null || !id.Span.Equals("meta"))
+                throw stream.Unexpected();
+
+            node = new AstMeta(new AstIdentifier(current.AsString()), new AstIdentifier(id));
+        }
         else if (!SingleExpression(out node, asyncFunction: asyncFunction))
         {
             return false;

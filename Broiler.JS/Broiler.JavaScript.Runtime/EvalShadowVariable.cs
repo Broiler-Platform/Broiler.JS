@@ -72,4 +72,23 @@ public sealed class EvalShadowVariable : JSVariable
 
         return value;
     }
+
+    // A compound assignment captures whether this shadow already owns its value
+    // before the right-hand side runs. If a direct eval in the RHS initializes the
+    // shadow in between, the write still targets the binding the read observed (the
+    // outer binding), matching the single Reference of a compound assignment.
+    public override bool CaptureReference() => IsInitialized;
+
+    public override JSValue GetCaptured(bool ownedAtCapture)
+        => ownedAtCapture ? Value : OuterValue;
+
+    public override JSValue SetCaptured(bool ownedAtCapture, JSValue value)
+    {
+        if (ownedAtCapture)
+            Value = value;
+        else
+            OuterValue = value;
+
+        return value;
+    }
 }

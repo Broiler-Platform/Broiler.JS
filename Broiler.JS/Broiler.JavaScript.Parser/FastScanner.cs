@@ -905,7 +905,11 @@ public class FastScanner
                         case char.MaxValue:
                             return false;
 
+                        // A LineTerminator may not appear unescaped in a regex literal.
                         case '\n':
+                        case '\r':
+                        case '\u2028':
+                        case '\u2029':
                             return false;
 
                         case '/':
@@ -953,7 +957,9 @@ public class FastScanner
                                 break;
                             }
 
-                            if (CanConsume('\n', '\r'))
+                            // A LineTerminator (LF, CR, U+2028, U+2029) immediately
+                            // after a backslash is never valid in a regex literal.
+                            if (first is '\n' or '\r' or '\u2028' or '\u2029')
                                 return false;
 
                             t.Append('\\');

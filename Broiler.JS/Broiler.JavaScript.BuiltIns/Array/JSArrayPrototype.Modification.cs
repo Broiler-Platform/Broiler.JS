@@ -129,7 +129,7 @@ public partial class JSArray
         var endIndex = relativeEnd < 0 ? Math.Max(len + relativeEnd, 0) : Math.Min(relativeEnd, len);
 
         for (var index = startIndex; index < endIndex; index++)
-            SetIndexedValue(@this, (uint)index, value);
+            SetIndexedValue(@this, index, value);
 
         return @this;
     }

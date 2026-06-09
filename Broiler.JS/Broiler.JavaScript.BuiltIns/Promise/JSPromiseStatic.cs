@@ -166,10 +166,20 @@ public partial class JSPromise
     public static JSValue Resolve(in Arguments a)
     {
         var value = a.Get1();
-        if (IsDefaultPromiseConstructor(a.This))
+        var constructor = a.This;
+        if (!constructor.IsObject)
+            throw JSEngine.NewTypeError("Promise.resolve must be called with an object receiver");
+
+        // PromiseResolve(C, x) — §27.2.4.7.1: if x is already a promise whose
+        // own "constructor" is C, return it unchanged so an overridden `then`
+        // (or other observable behaviour) on the existing promise is preserved.
+        if (value is JSPromise && ReferenceEquals(value[KeyStrings.constructor], constructor))
+            return value;
+
+        if (IsDefaultPromiseConstructor(constructor))
             return new JSPromise(value, PromiseState.Resolved);
 
-        return CreatePromiseFromConstructor(a.This, (resolve, _) =>
+        return CreatePromiseFromConstructor(constructor, (resolve, _) =>
         {
             resolve.InvokeFunction(new Arguments(JSUndefined.Value, value));
         });
@@ -362,8 +372,13 @@ public partial class JSPromise
             // returned promise rather than throwing synchronously.
             try
             {
-                GetPromiseResolve(constructor);
-                var en = iterable.GetElementEnumerator();
+                // PerformPromiseRace (§27.2.4.5.1) routes every value through
+                // Call(promiseResolve, constructor, « nextValue »); the resulting
+                // promise's `then` schedules the race reaction. This is observable
+                // for Promise subclasses whose `resolve` is overridden, so it must
+                // be called per element rather than special-casing native promises.
+                var promiseResolve = GetPromiseResolve(constructor);
+                var en = iterable.GetIterableEnumerator();
                 while (en.MoveNext(out var hasValue, out var item, out var _))
                 {
                     if (!hasValue)
@@ -382,20 +397,18 @@ public partial class JSPromise
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
-                    if (item is JSPromise promise)
+                    var nextPromise = promiseResolve.InvokeFunction(new Arguments(constructor, item));
+                    if (nextPromise is JSPromise promise)
                     {
                         promise.Then(resolveElement.Delegate, rejectElement.Delegate);
                         continue;
                     }
 
-                    var then = item[KeyStrings.then];
-                    if (then.IsFunction)
-                    {
-                        then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
-                        continue;
-                    }
+                    var then = nextPromise[KeyStrings.then];
+                    if (!then.IsFunction)
+                        throw JSEngine.NewTypeError("Promise resolve did not return a thenable");
 
-                    sc.Post(_ => resolve.InvokeFunction(new Arguments(JSUndefined.Value, item)), null);
+                    then.InvokeFunction(new Arguments(nextPromise, resolveElement, rejectElement));
                 }
             }
             catch (JSException ex)

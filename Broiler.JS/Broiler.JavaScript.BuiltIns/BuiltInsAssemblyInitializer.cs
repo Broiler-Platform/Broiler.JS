@@ -699,8 +699,8 @@ internal static class BuiltInsAssemblyInitializer
 
         static JSValue LookupAccessor(JSValue thisValue, JSValue propertyName, KeyString accessorKey)
         {
-            var key = ToPropertyKeyValue(propertyName);
             var current = CoerceObject(thisValue);
+            var key = ToPropertyKeyValue(propertyName);
             while (true)
             {
                 var descriptor = current.GetOwnPropertyDescriptor(key);
@@ -775,12 +775,12 @@ internal static class BuiltInsAssemblyInitializer
 
         prototype.FastAddValue(KeyStrings.GetOrCreate("__defineGetter__"), CreateNativeFunction(static (in Arguments a) =>
         {
-            var key = ToPropertyKeyValue(a.Get1());
             var target = CoerceObject(a.This);
             var getter = a.GetAt(1);
             if (getter is not IJSFunction)
                 throw JSEngine.NewTypeError("Getter must be a function");
 
+            var key = ToPropertyKeyValue(a.Get1());
             var descriptor = new JSObject();
             descriptor[KeyStrings.get] = getter;
             descriptor[KeyStrings.enumerable] = JSValue.BooleanTrue;
@@ -792,12 +792,12 @@ internal static class BuiltInsAssemblyInitializer
         }, "__defineGetter__", 2), JSPropertyAttributes.ConfigurableValue);
         prototype.FastAddValue(KeyStrings.GetOrCreate("__defineSetter__"), CreateNativeFunction(static (in Arguments a) =>
         {
-            var key = ToPropertyKeyValue(a.Get1());
             var target = CoerceObject(a.This);
             var setter = a.GetAt(1);
             if (setter is not IJSFunction)
                 throw JSEngine.NewTypeError("Setter must be a function");
 
+            var key = ToPropertyKeyValue(a.Get1());
             var descriptor = new JSObject();
             descriptor[KeyStrings.set] = setter;
             descriptor[KeyStrings.enumerable] = JSValue.BooleanTrue;

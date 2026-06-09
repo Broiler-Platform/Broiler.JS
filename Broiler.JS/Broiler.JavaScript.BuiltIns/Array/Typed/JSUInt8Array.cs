@@ -38,19 +38,6 @@ public partial class JSUInt8Array : JSTypedArray
         return true;
     }
 
-    [JSExport(Length = 1)]
-    public static JSValue From(in Arguments a) => JSTypedArray.FromShared(in a);
-
-    [JSExport]
-    public static JSValue Of(in Arguments a)
-    {
-        var r = CreateTypedArrayFromConstructor(a.This, a.Length);
-        for (int i = 0; i < a.Length; i++)
-        {
-            r[(uint)i] = a[i];
-        }
-        return r;
-    }
 
     /// <summary>
     /// ES2026 §4.3.1 — Uint8Array.fromBase64(str)

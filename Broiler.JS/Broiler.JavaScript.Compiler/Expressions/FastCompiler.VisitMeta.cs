@@ -12,6 +12,9 @@ partial class FastCompiler
         if (!(astMeta.Identifier.Name.Equals("new") && astMeta.Property.Name.Equals("target")))
             throw JSEngine.NewSyntaxError($"{astMeta.Identifier.Name}.{astMeta.Property} not supported");
 
-        return JSContextBuilder.NewTarget();
+        // Inside a function, new.target resolves to the lexically captured cell
+        // (which an arrow function inherits from its enclosing ordinary function).
+        // At the program/root level there is no cell, so read the live value.
+        return scope.Top.NewTargetExpression ?? JSContextBuilder.NewTarget();
     }
 }

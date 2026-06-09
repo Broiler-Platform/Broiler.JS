@@ -135,4 +135,10 @@ public static class NewLambdaExpression
         var m = TypeQuery.TypeQuery.QueryInstanceMethod(fx);
         return Expression.Call(@this, m, p1, p2);
     }
+
+    public static Expression CallExpression<TIn, T1, T2, TOut>(this Expression @this, Func<Expression<Func<TIn, T1, T2, TOut>>> fx, Expression p1, Expression p2)
+    {
+        var m = TypeQuery.TypeQuery.QueryInstanceMethod(fx);
+        return Expression.Call(@this, m, p1, p2);
+    }
 }

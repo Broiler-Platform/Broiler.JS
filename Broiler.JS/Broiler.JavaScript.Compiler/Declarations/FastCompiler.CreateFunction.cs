@@ -35,6 +35,10 @@ partial class FastCompiler
         if (!functionDeclaration.IsArrowFunction)
             previousThis = null;
 
+        // An arrow function has no new.target of its own; it inherits the enclosing
+        // function's captured cell. Ordinary functions capture their own (below).
+        var previousNewTarget = functionDeclaration.IsArrowFunction ? scope.Top.NewTargetExpression : null;
+
         var functionName = functionDeclaration.Id?.Name.Value;
 
         // var parentScriptInfo = this.scope.Top.ScriptInfo;
@@ -56,7 +60,8 @@ partial class FastCompiler
             previous: functionDeclaration.IsArrowFunction ? current : null,
             directEvalPrivateNames: directEvalPrivateNames ?? previousScope.DirectEvalPrivateNames,
         computedMemberNames: computedMemberNames,
-        thisIsUninitialized: thisIsUninitialized));
+        thisIsUninitialized: thisIsUninitialized,
+        previousNewTarget: previousNewTarget));
         {
             // super() in a derived constructor (or an arrow nested in it) targets the
             // superclass constructor, which differs from the home-object prototype.

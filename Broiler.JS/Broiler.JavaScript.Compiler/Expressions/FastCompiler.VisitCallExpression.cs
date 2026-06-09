@@ -173,7 +173,12 @@ partial class FastCompiler
 
             if (isSuper)
             {
-                var paramArray = VisitArguments(ArgumentsBuilder.This(scope.Top.ArgumentsExpression), arguments);
+                // The super method runs with the caller's `this`. Use the lexical
+                // this binding (ThisExpression) rather than the current activation's
+                // Arguments.This: inside an arrow function the arrow has its own
+                // Arguments whose This is not the enclosing method's receiver, but
+                // ThisExpression resolves to the captured lexical this in both cases.
+                var paramArray = VisitArguments(target, arguments);
                 var superMethod = JSValueBuilder.Index(super, name, me.Coalesce);
 
                 return JSFunctionBuilder.InvokeFunction(superMethod, paramArray, me.Coalesce);
@@ -242,6 +247,43 @@ partial class FastCompiler
                 }
 
                 return BindSuperResult();
+            }
+
+            // Calling a name resolved through a `with` object binds that object as
+            // the call's `this` (the reference's WithBaseObject). Only applies to a
+            // name that is not a binding declared inside the with body — those are
+            // ordinary locals with an undefined `this`.
+            if (callee.Type == FastNodeType.Identifier
+                && withBoundaries.Count != 0
+                && callee is AstIdentifier withCallee
+                && !withCallee.Name.Equals("eval")
+                && !(TryGetStaticIdentifierVariable(withCallee, out var withStatic) && withStatic != null)
+                && !TryResolveEvalShadow(withCallee.Name, out _))
+            {
+                var key = KeyOfName(withCallee.Name);
+                using var withObjTemp = scope.Top.GetTempVariable(typeof(JSObject));
+                using var withTargetTemp = scope.Top.GetTempVariable(typeof(JSValue));
+
+                var hasWithObject = YExpression.NotEqual(withObjTemp.Expression, YExpression.Constant(null, typeof(JSObject)));
+                var withThis = YExpression.Condition(
+                    hasWithObject,
+                    YExpression.Convert(withObjTemp.Expression, typeof(JSValue)),
+                    JSUndefinedBuilder.Value,
+                    typeof(JSValue));
+
+                var withArgs = VisitArguments(withThis, arguments);
+
+                return YExpression.Block(
+                    new Sequence<YParameterExpression> { withObjTemp.Variable, withTargetTemp.Variable },
+                    YExpression.Assign(withObjTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
+                    YExpression.Assign(
+                        withTargetTemp.Expression,
+                        YExpression.Condition(
+                            hasWithObject,
+                            JSValueBuilder.Index(withObjTemp.Expression, key),
+                            JSContextBuilder.ResolveIdentifier(key),
+                            typeof(JSValue))),
+                    JSFunctionBuilder.InvokeFunction(withTargetTemp.Expression, withArgs, coalesce));
             }
 
             var paramArray = VisitArguments(null, arguments);
