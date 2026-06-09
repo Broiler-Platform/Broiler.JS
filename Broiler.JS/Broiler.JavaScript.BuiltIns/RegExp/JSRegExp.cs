@@ -715,6 +715,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // Transform character classes containing supplementary characters
                 // (surrogate pairs) so they match as whole code points.
                 pattern = TransformUnicodeCharClasses(pattern);
+                // Finally, give lone surrogates and surrogate pairs that sit
+                // *outside* a character class their ECMAScript code-point semantics
+                // (a lone surrogate must not match a code unit that forms a pair; a
+                // pair is one atom for the purpose of a following quantifier). Runs
+                // last so the earlier class/dot transforms aren't disturbed.
+                pattern = TransformUnicodeLoneSurrogates(pattern);
             }
 
             // ES §21.2.2.8 Atom: Without dotAll, '.' must not match any of
@@ -1536,6 +1542,101 @@ public partial class JSRegExp : JSObject, IJSRegExp
             return pattern;
 
         sb.Append(pattern, start, pattern.Length - start);
+        return sb.ToString();
+    }
+
+    // In Unicode (u/v) mode a regex matches by code point, so a surrogate that
+    // appears *outside* a character class needs help from .NET (which matches by
+    // UTF-16 code unit):
+    //   • a lone lead surrogate must match a lead code unit only when it is NOT
+    //     followed by a trailing surrogate (otherwise the two form one code point),
+    //   • a lone trail surrogate must match a trail code unit only when it is NOT
+    //     preceded by a leading surrogate,
+    //   • a lead immediately followed by a trail is a single code-point atom, so a
+    //     following quantifier (?, +, *, {n}) must apply to the whole pair.
+    // Surrogates inside character classes are handled by TransformUnicodeCharClasses;
+    // this pass therefore skips class bodies and runs after it. By this point the
+    // earlier transforms have already materialised \uHHHH escapes into real chars.
+    private static string TransformUnicodeLoneSurrogates(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern))
+            return pattern;
+
+        var hasSurrogate = false;
+        foreach (var ch in pattern)
+        {
+            if (char.IsSurrogate(ch))
+            {
+                hasSurrogate = true;
+                break;
+            }
+        }
+        if (!hasSurrogate)
+            return pattern;
+
+        var sb = new StringBuilder(pattern.Length + 16);
+        var inClass = false;
+        var depth = 0;
+
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+
+            // Copy escapes verbatim — by now any surrogate escapes have been
+            // collapsed to real chars, so a backslash here introduces some other
+            // escape (\d, \(, …) that must pass through untouched.
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                sb.Append(c).Append(pattern[i + 1]);
+                i++;
+                continue;
+            }
+
+            if (!inClass && c == '[')
+            {
+                inClass = true;
+                depth = 1;
+                sb.Append(c);
+                continue;
+            }
+            if (inClass)
+            {
+                if (c == '[')
+                    depth++;
+                else if (c == ']' && --depth <= 0)
+                    inClass = false;
+                sb.Append(c);
+                continue;
+            }
+
+            if (char.IsHighSurrogate(c))
+            {
+                if (i + 1 < pattern.Length && char.IsLowSurrogate(pattern[i + 1]))
+                {
+                    // Surrogate pair → atomic group so a following quantifier binds
+                    // to the whole code point rather than just the trail unit.
+                    sb.Append("(?:").Append(c).Append(pattern[i + 1]).Append(')');
+                    i++;
+                }
+                else
+                {
+                    // Lone lead surrogate: match only when not part of a pair.
+                    sb.Append(c).Append("(?![\uDC00-\uDFFF])");
+                }
+                continue;
+            }
+
+            if (char.IsLowSurrogate(c))
+            {
+                // Lone trail surrogate (a preceding lead would have been consumed as
+                // a pair above): match only when not part of a pair.
+                sb.Append("(?<![\uD800-\uDBFF])").Append(c);
+                continue;
+            }
+
+            sb.Append(c);
+        }
+
         return sb.ToString();
     }
 

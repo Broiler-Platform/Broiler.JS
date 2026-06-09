@@ -28,6 +28,17 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   conditional. This also fixes a latent ordering bug for any pattern mixing
 //   named and unnamed groups (e.g. `/(?<x>a)(b)/`).
 //   (built-ins/RegExp/named-groups/duplicate-names-{exec,match,matchall}.js.)
+//
+//   Problem 5 — lone surrogates and surrogate-pair atoms in Unicode (u/v) mode.
+//   .NET matches by UTF-16 code unit, so a lone lead surrogate pattern matched a
+//   lead unit even when it formed a valid pair with the next input unit (should be
+//   no match), a lone trail matched regardless of a preceding lead, and a
+//   surrogate pair was not treated as one atom under a quantifier (`/🐸?/u`,
+//   `/🐸+/u`). A final transform now gives surrogates outside character classes
+//   their ECMAScript code-point semantics: lone lead → `<lead>(?![\uDC00-\uDFFF])`,
+//   lone trail → `(?<![\uD800-\uDBFF])<trail>`, and a lead+trail pair → `(?:…)`.
+//   (staging/sm/RegExp/{unicode-lead-trail,unicode-character-class-escape,
+//   regress-576828}.js.)
 public class Issue723Tests
 {
     private static string Eval(string code)
@@ -137,4 +148,54 @@ public class Issue723Tests
                + " for (var m of 'ab'.matchAll(/(?<x>a)|(?<x>b)/g)) {"
                + "   out.push((m[1]===undefined?'u':m[1])+','+(m[2]===undefined?'u':m[2])+'/x='+m.groups.x);"
                + " } out.join(';');"));
+
+    // ---- Problem 5: lone surrogates / surrogate-pair atoms in Unicode mode ----
+
+    // Renders exec() as the matched text's char codes, or "null".
+    private const string ShowCodes =
+        "function fc(){return String.fromCharCode.apply(null,arguments);}"
+      + "function codes(m){ return m===null ? 'null'"
+      + "   : Array.prototype.map.call(m[0], function(ch){ return ch.charCodeAt(0); }).join(','); }";
+
+    [Theory]
+    // A lone lead surrogate in u-mode matches a lead unit only when it is NOT
+    // followed by a trail unit (DC00-DFFF); otherwise the two form one code point.
+    [InlineData("fc(0xD83D)", "u", "fc(0xD83D,0xDBFF)", "55357")] // followed by lead → lone, matches
+    [InlineData("fc(0xD83D)", "u", "fc(0xD83D,0xDC00)", "null")]  // followed by trail → pair, no match
+    [InlineData("fc(0xD83D)", "u", "fc(0xD83D,0xDFFF)", "null")]
+    [InlineData("fc(0xD83D)", "u", "fc(0xD83D,0xE000)", "55357")] // followed by BMP → lone
+    [InlineData("fc(0xD83D)", "u", "fc(0xD83D)", "55357")]
+    // Without the u flag the lone lead always matches a lead unit.
+    [InlineData("fc(0xD83D)", "", "fc(0xD83D,0xDC00)", "55357")]
+    // A lone trail surrogate in u-mode matches only when NOT preceded by a lead.
+    [InlineData("fc(0xDC38)", "u", "fc(0xD7FF,0xDC38)", "56376")]
+    [InlineData("fc(0xDC38)", "u", "fc(0xD800,0xDC38)", "null")]
+    [InlineData("fc(0xDC38)", "u", "fc(0xDC00,0xDC38)", "56376")]
+    public void LoneSurrogateMatching(string pattern, string flags, string input, string expected)
+        => Assert.Equal(
+            expected,
+            Eval(ShowCodes + "codes(new RegExp(" + pattern + ", '" + flags + "').exec(" + input + "));"));
+
+    // A surrogate pair is a single code-point atom in u-mode, so a quantifier binds
+    // to the whole pair: /🐸?/u on a lone lead matches the empty string (the pair
+    // can't match a lone lead), and /🐸+/u on "🐸<trail>" matches only the one pair.
+    [Fact]
+    public void SurrogatePairIsAtomicUnderQuantifierInUnicodeMode()
+        => Assert.Equal(
+            "empty|2:55357,56376",
+            Eval(ShowCodes
+               + "var a = new RegExp(fc(0xD83D,0xDC38) + '?', 'u').exec(fc(0xD83D));"
+               + "var b = new RegExp(fc(0xD83D,0xDC38) + '+', 'u').exec(fc(0xD83D,0xDC38,0xDC38));"
+               + "(a[0] === '' ? 'empty' : codes(a)) + '|' + b[0].length + ':' + codes(b);"));
+
+    // Without the u flag the pair is two units: `?`/`+` bind to the trail unit, so
+    // the same inputs behave per code-unit (regression guard that u-only changed).
+    [Fact]
+    public void SurrogatePairQuantifierUnaffectedWithoutUnicodeFlag()
+        => Assert.Equal(
+            "55357|55357,56376,56376",
+            Eval(ShowCodes
+               + "var a = new RegExp(fc(0xD83D,0xDC38) + '?', '').exec(fc(0xD83D));"
+               + "var b = new RegExp(fc(0xD83D,0xDC38) + '+', '').exec(fc(0xD83D,0xDC38,0xDC38));"
+               + "codes(a) + '|' + codes(b);"));
 }
