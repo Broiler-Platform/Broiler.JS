@@ -2001,18 +2001,8 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     {
                         if (next == 's')
                             sb.Append('[').Append(esWhitespaceChars).Append(']');
-                        else if (unicodeMode)
-                        {
-                            // In unicode mode, \S must also match supplementary-plane
-                            // code points (surrogate pairs).  The surrogate-pair branch
-                            // must come first so it is preferred over the BMP negated
-                            // class which would greedily match a lone high surrogate.
-                            sb.Append(@"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^")
-                              .Append(esWhitespaceChars)
-                              .Append(@"\uD800-\uDFFF])");
-                        }
                         else
-                            sb.Append("[^").Append(esWhitespaceChars).Append(']');
+                            AppendEsNonWhitespace(sb, esWhitespaceChars, unicodeMode);
                     }
                     i++; // skip the s/S
                     continue;
@@ -2026,7 +2016,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
             }
 
             if (!inClass && c == '[')
+            {
+                // ES \S inside a class can't be expressed inline (it differs from
+                // .NET's \S by U+FEFF and U+0085), so rewrite the whole-class forms
+                // that consist solely of \S: [\S] == \S, and [^\S] == \s.
+                if (i + 3 < pattern.Length && pattern[i + 1] == '\\' && pattern[i + 2] == 'S' && pattern[i + 3] == ']')
+                {
+                    AppendEsNonWhitespace(sb, esWhitespaceChars, unicodeMode);
+                    i += 3;
+                    continue;
+                }
+
+                if (i + 4 < pattern.Length && pattern[i + 1] == '^' && pattern[i + 2] == '\\' && pattern[i + 3] == 'S' && pattern[i + 4] == ']')
+                {
+                    sb.Append('[').Append(esWhitespaceChars).Append(']');
+                    i += 4;
+                    continue;
+                }
+
                 inClass = true;
+            }
             else if (inClass && c == ']')
                 inClass = false;
 
@@ -2034,6 +2043,19 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         return sb.ToString();
+    }
+
+    // Emits the ECMAScript \S (a single non-whitespace code point). In Unicode mode
+    // the surrogate-pair branch comes first so a supplementary-plane code point is
+    // matched as a whole rather than as a lone high surrogate.
+    private static void AppendEsNonWhitespace(StringBuilder sb, string esWhitespaceChars, bool unicodeMode)
+    {
+        if (unicodeMode)
+            sb.Append(@"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^")
+              .Append(esWhitespaceChars)
+              .Append(@"\uD800-\uDFFF])");
+        else
+            sb.Append("[^").Append(esWhitespaceChars).Append(']');
     }
 
     /// <summary>
