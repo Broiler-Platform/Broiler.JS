@@ -244,6 +244,43 @@ partial class FastCompiler
                 return BindSuperResult();
             }
 
+            // Calling a name resolved through a `with` object binds that object as
+            // the call's `this` (the reference's WithBaseObject). Only applies to a
+            // name that is not a binding declared inside the with body — those are
+            // ordinary locals with an undefined `this`.
+            if (callee.Type == FastNodeType.Identifier
+                && withBoundaries.Count != 0
+                && callee is AstIdentifier withCallee
+                && !withCallee.Name.Equals("eval")
+                && !(TryGetStaticIdentifierVariable(withCallee, out var withStatic) && withStatic != null)
+                && !TryResolveEvalShadow(withCallee.Name, out _))
+            {
+                var key = KeyOfName(withCallee.Name);
+                using var withObjTemp = scope.Top.GetTempVariable(typeof(JSObject));
+                using var withTargetTemp = scope.Top.GetTempVariable(typeof(JSValue));
+
+                var hasWithObject = YExpression.NotEqual(withObjTemp.Expression, YExpression.Constant(null, typeof(JSObject)));
+                var withThis = YExpression.Condition(
+                    hasWithObject,
+                    YExpression.Convert(withObjTemp.Expression, typeof(JSValue)),
+                    JSUndefinedBuilder.Value,
+                    typeof(JSValue));
+
+                var withArgs = VisitArguments(withThis, arguments);
+
+                return YExpression.Block(
+                    new Sequence<YParameterExpression> { withObjTemp.Variable, withTargetTemp.Variable },
+                    YExpression.Assign(withObjTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
+                    YExpression.Assign(
+                        withTargetTemp.Expression,
+                        YExpression.Condition(
+                            hasWithObject,
+                            JSValueBuilder.Index(withObjTemp.Expression, key),
+                            JSContextBuilder.ResolveIdentifier(key),
+                            typeof(JSValue))),
+                    JSFunctionBuilder.InvokeFunction(withTargetTemp.Expression, withArgs, coalesce));
+            }
+
             var paramArray = VisitArguments(null, arguments);
             var target = VisitExpression(callee);
             return JSFunctionBuilder.InvokeFunction(target, paramArray, coalesce);
