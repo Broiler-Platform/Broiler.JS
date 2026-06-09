@@ -172,4 +172,59 @@ public class Issue725Tests
         => Assert.Equal(
             "field",
             Eval("class C { static field = class {}; } C.field.name"));
+
+    // ---- Problem 5: missing TypeErrors ----
+    //
+    // staging/sm/Symbol/constructor.js: Symbol.prototype.valueOf on a non-symbol
+    // receiver must throw (it fell through to Object.prototype.valueOf).
+
+    [Fact]
+    public void SymbolPrototypeValueOfOnPrototypeThrows()
+        => Assert.Equal(
+            "TypeError",
+            Eval("try { Symbol.prototype.valueOf(); 'no throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void SymbolPrototypeValueOfReturnsWrappedSymbol()
+        => Assert.Equal("true", Eval("var s = Symbol('x'); Object(s).valueOf() === s"));
+
+    [Fact]
+    public void SymbolConstructorWithSymbolArgumentThrows()
+        => Assert.Equal(
+            "TypeError",
+            Eval("var s = Symbol(); try { Symbol(s); 'no throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void SymbolConstructorWithBoxedSymbolArgumentThrows()
+        => Assert.Equal(
+            "TypeError",
+            Eval("var s = Symbol(); try { Symbol(Object(s)); 'no throw'; } catch (e) { e.constructor.name; }"));
+
+    // staging/sm/TypedArray/object-defineproperty.js: typed-array elements are
+    // configurable:true since ES2021; defineProperty with a conflicting attribute
+    // or an accessor must throw, while matching attributes succeed.
+
+    [Theory]
+    [InlineData("{get: function(){}}")]
+    [InlineData("{set: function(){}}")]
+    [InlineData("{configurable: false}")]
+    [InlineData("{enumerable: false}")]
+    [InlineData("{writable: false}")]
+    [InlineData("{configurable: false, value: 15}")]
+    public void TypedArrayDefinePropertyRejectsConflictingDescriptor(string desc)
+        => Assert.Equal(
+            "TypeError",
+            Eval($"var a = new Int32Array(2); try {{ Object.defineProperty(a, 0, {desc}); 'no throw'; }} catch (e) {{ e.constructor.name; }}"));
+
+    [Fact]
+    public void TypedArrayDefinePropertyAllowsMatchingAttributes()
+        => Assert.Equal(
+            "15",
+            Eval("var a = new Int32Array(2); Object.defineProperty(a, 0, {configurable: true}); Object.defineProperty(a, 0, {value: 15}); String(a[0])"));
+
+    [Fact]
+    public void TypedArrayElementDescriptorIsConfigurable()
+        => Assert.Equal(
+            "true,true,true",
+            Eval("var a = new Int32Array(2); a[0] = 1; var d = Object.getOwnPropertyDescriptor(a, 0); [d.configurable, d.enumerable, d.writable].join(',')"));
 }
