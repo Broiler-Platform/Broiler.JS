@@ -16,6 +16,18 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   property failed `unit for entry 0` for both the negative-duration and the
 //   plain formatToParts style fixtures.
 //   (intl402/DurationFormat/prototype/formatToParts/*-en.js.)
+//
+//   Problem 6 — ES2025 duplicate named capture groups. The engine delegates to
+//   .NET Regex, which merges capturing groups that share a name into a single
+//   numbered group and orders all named groups after the unnamed ones — so
+//   `/(?<x>a)|(?<x>b)/.exec("bab")` produced `[b, b]` instead of
+//   `[b, undefined, b]`. Whenever a pattern has any named group, every capturing
+//   group is now renamed to a synthetic source-ordered name (bjsg1, bjsg2, …) so
+//   .NET numbers them left-to-right like ECMAScript and keeps duplicates distinct;
+//   \k<name> references resolve to the participating same-named group via a nested
+//   conditional. This also fixes a latent ordering bug for any pattern mixing
+//   named and unnamed groups (e.g. `/(?<x>a)(b)/`).
+//   (built-ins/RegExp/named-groups/duplicate-names-{exec,match,matchall}.js.)
 public class Issue723Tests
 {
     private static string Eval(string code)
@@ -84,4 +96,45 @@ public class Issue723Tests
               + "  finally { delete Object.prototype.localeMatcher; }"
               + "  counts.push(n);"
               + "}); counts.join('|');"));
+
+    // ---- Problem 6: ES2025 duplicate named capture groups ----
+
+    // Renders exec() output as "[e0,e1,…] x=<groups.x>" with "u" for undefined,
+    // so both the positional capture array and the resolved named group are checked.
+    private const string ShowExec =
+        "function show(m){ if(m===null) return 'null';"
+      + " var a=[]; for(var i=0;i<m.length;i++) a.push(m[i]===undefined?'u':m[i]);"
+      + " return '['+a.join(',')+']'; }";
+
+    [Theory]
+    // Duplicate name in disjoint alternatives: each alternative is its own slot.
+    [InlineData("/(?<x>a)|(?<x>b)/.exec('bab')", "[b,u,b]")]
+    [InlineData("/(?<x>b)|(?<x>a)/.exec('bab')", "[b,b,u]")]
+    // \k<x> backreferences whichever same-named group matched.
+    [InlineData("/(?:(?<x>a)|(?<x>b))\\k<x>/.exec('aa')", "[aa,a,u]")]
+    [InlineData("/(?:(?<x>a)|(?<x>b))\\k<x>/.exec('abab')", "null")]
+    // A backreference to a non-participating duplicate name matches the empty string.
+    [InlineData("/^(?:(?<a>x)|(?<a>y)|z)\\k<a>$/.exec('z')", "[z,u,u]")]
+    // Latent ordering bug: a named group preceding an unnamed one keeps source order.
+    [InlineData("/(?<x>a)(b)/.exec('ab')", "[ab,a,b]")]
+    [InlineData("/(z)(?<x>a)|(?<y>b)(w)/.exec('bw')", "[bw,u,u,b,w]")]
+    public void DuplicateNamedGroupsPositions(string expr, string expected)
+        => Assert.Equal(expected, Eval(ShowExec + "show(" + expr + ");"));
+
+    // The resolved `groups` object exposes the participating capture per name.
+    [Fact]
+    public void DuplicateNamedGroupsResolvedGroupsObject()
+        => Assert.Equal(
+            "b|undefined",
+            Eval("var m = /(?<x>a)|(?<x>b)/.exec('bab'); m.groups.x + '|' + ('y' in m.groups ? m.groups.y : 'undefined');"));
+
+    // matchAll surfaces the same per-alternative slots across iterations.
+    [Fact]
+    public void DuplicateNamedGroupsMatchAll()
+        => Assert.Equal(
+            "a,u/x=a;u,b/x=b",
+            Eval("var out = [];"
+               + " for (var m of 'ab'.matchAll(/(?<x>a)|(?<x>b)/g)) {"
+               + "   out.push((m[1]===undefined?'u':m[1])+','+(m[2]===undefined?'u':m[2])+'/x='+m.groups.x);"
+               + " } out.join(';');"));
 }
