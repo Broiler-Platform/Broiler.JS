@@ -97,7 +97,15 @@ public class FastScanner
 
         while (Token.Type == TokenTypes.LineTerminator && nextToken.Type == TokenTypes.LineTerminator)
         {
+            // Collapsing consecutive line terminators into one token must preserve
+            // the link back to the last significant token. ReadToken() does not set
+            // Previous, so without carrying it over PreviousToken would resolve to
+            // this line-terminator token itself — wrongly extending the preceding
+            // node's source range across the intervening blank lines / comments
+            // (e.g. Function.prototype.toString including a trailing `// comment`).
+            var previous = Token.Previous;
             Token = nextToken;
+            Token.Previous = previous;
             nextToken = ReadToken();
         }
 

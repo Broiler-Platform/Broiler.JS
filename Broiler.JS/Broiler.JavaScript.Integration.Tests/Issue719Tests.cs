@@ -24,9 +24,11 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   create/assign the global like `x = key`, not throw "x is not defined". A free
 //   identifier head is now routed through the per-iteration assignment path.
 //
-//   Problem 8 (Function.prototype.toString line-terminator normalisation) — a
-//   function whose source was written with CR or CRLF line endings must toString
-//   with LF (U+000A) separators. toString now normalises CRLF and CR to LF.
+//   Problem 8 (Function.prototype.toString line terminators) — superseded by
+//   issue #721. The test262 line-terminator-normalisation tests require the
+//   OPPOSITE of what the name suggests: toString must NOT normalise line
+//   terminators, but return the source verbatim (CR/CRLF preserved). The
+//   assertions below were corrected accordingly.
 //
 //   Problem 9 (Date setMonth/setFullYear/setUTCMonth day overflow) — the setters
 //   applied the day offset before the month offset, so .NET's AddMonths clamped the
@@ -241,38 +243,37 @@ var innerB = new c.B();
         => Assert.Equal("ReferenceError",
             Eval("'use strict'; try { for (k in { a: 1 }) {} 'no throw' } catch (e) { e.constructor.name }"));
 
-    // ---- Problem 8: Function.prototype.toString normalises CR / CRLF to LF ----
+    // ---- Problem 8: Function.prototype.toString preserves CR / CRLF verbatim ----
 
     [Fact]
-    public void FunctionToStringNormalisesCrlfToLf()
+    public void FunctionToStringPreservesCrlf()
     {
         using var ctx = new JSContext();
         ctx.Eval("var f = function a(\r\nx\r\n){\r\n;\r\n};");
         var s = ctx.Eval("f.toString()").ToString();
-        Assert.DoesNotContain("\r", s);
-        Assert.Contains("\n", s);
+        Assert.Equal("function a(\r\nx\r\n){\r\n;\r\n}", s);
     }
 
     [Fact]
-    public void FunctionToStringNormalisesLoneCrToLf()
+    public void FunctionToStringPreservesLoneCr()
     {
         using var ctx = new JSContext();
         ctx.Eval("var f = function a(\rx\r){\r;\r};");
         var s = ctx.Eval("f.toString()").ToString();
-        Assert.DoesNotContain("\r", s);
-        Assert.Contains("\n", s);
+        Assert.Equal("function a(\rx\r){\r;\r}", s);
     }
 
     // Mirrors the exact test262 line-terminator-normalisation source shape (named
-    // function expression with interleaved comments) to confirm the full source span
-    // — including the leading `function` and comments — is captured verbatim.
+    // function expression with interleaved comments): the full source span — the
+    // leading `function`, the comments and the original CRLF line terminators — is
+    // captured verbatim, with NO normalisation to LF.
     [Fact]
     public void FunctionToStringCapturesFullSourceWithComments()
     {
-        const string expected = "function\n// a\nf\n// b\n(\n// c\nx\n// d\n,\n// e\ny\n// f\n)\n// g\n{\n// h\n;\n// i\n;\n// j\n}";
+        const string body = "function\n// a\nf\n// b\n(\n// c\nx\n// d\n,\n// e\ny\n// f\n)\n// g\n{\n// h\n;\n// i\n;\n// j\n}";
         using var ctx = new JSContext();
-        // CRLF source must normalise to the LF expected.
-        var src = ("var f = " + expected + "\n;").Replace("\n", "\r\n");
+        var src = ("var f = " + body + "\n;").Replace("\n", "\r\n");
+        var expected = body.Replace("\n", "\r\n");
         ctx.Eval(src);
         Assert.Equal(expected, ctx.Eval("f.toString()").ToString());
     }

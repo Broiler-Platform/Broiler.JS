@@ -39,6 +39,16 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   from the second statement. The scanner now recognises all four
 //   LineTerminators in whitespace, line comments and block comments.
 //   (language/types/string/S8.4_A7.2.js, A7.3, A7.4.)
+//
+//   Problem 8 — Function.prototype.toString. Two defects: (1) a function whose
+//   source was followed by a blank line / comment captured too much source — its
+//   range ran through the trailing line terminators — because collapsing
+//   consecutive LineTerminator tokens dropped the Previous link used to compute a
+//   node's end; (2) toString wrongly normalised CR/CRLF to LF, but the spec (and
+//   the line-terminator-normalisation tests) require the source verbatim. The
+//   token collapse now preserves Previous and toString returns the raw source.
+//   (built-ins/Function/prototype/toString/line-terminator-normalisation-*.js;
+//   the verbatim-source assertions live in Issue719Tests.)
 public class Issue721Tests
 {
     private static string Eval(string code)
@@ -182,4 +192,21 @@ public class Issue721Tests
     [Fact]
     public void LineFeedIsLineTerminatorForAsi()
         => Assert.Equal("ReferenceError", Catch("eval('var x = asdf\\u000Aghjk');"));
+
+    // ---- Problem 8: Function.prototype.toString source range / verbatim text ----
+
+    // A trailing comment after the function must not be swallowed into its source.
+    [Fact]
+    public void FunctionToStringExcludesTrailingComment()
+        => Assert.Equal("function f(){}", Eval("function f(){}\n// after\nf.toString();"));
+
+    // Blank lines between the function and the next token are likewise excluded.
+    [Fact]
+    public void FunctionToStringExcludesTrailingBlankLines()
+        => Assert.Equal("function f(){}", Eval("function f(){}\n\n\nvar z = 1; f.toString();"));
+
+    // CR / CRLF line terminators inside the source are preserved, not normalised.
+    [Fact]
+    public void FunctionToStringPreservesCarriageReturns()
+        => Assert.Equal("function a(\rb\r){\r}", Eval("var f = function a(\rb\r){\r}; f.toString();"));
 }
