@@ -75,8 +75,11 @@ public partial class JSString : JSPrimitive
             return new JSString(string.Concat(this.value, vString.value));
         }
 
-        if (value.IsObject)
-            value = value.ValueOf();
+        // `string + obj` coerces the object with ToPrimitive (default hint), not a
+        // string-forcing ValueOf() — so an overridden valueOf / @@toPrimitive that
+        // yields a number (e.g. a boxed Symbol) is honoured before stringification.
+        if (value is JSObject valueObject)
+            value = valueObject.ToDefaultPrimitive();
 
         if (this.value.IsEmpty())
             return new JSString(value.StringValue);

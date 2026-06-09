@@ -11,7 +11,12 @@ internal sealed class JSSymbolObject(JSSymbol symbol) : JSObject(GetPrototype())
 
     private static JSObject GetPrototype() => ((JSEngine.Current as JSObject)?[KeyStrings.Symbol] as JSFunction)?.prototype;
 
-    public override JSValue ValueOf() => symbol;
+    // The wrapped [[SymbolData]]. Exposed directly (rather than via the CLR
+    // ValueOf() override) so that abstract operations on the wrapper — relational
+    // comparison, addition, ToNumber — go through ToPrimitive and observe a
+    // user-overridden Symbol.prototype.valueOf / @@toPrimitive instead of being
+    // short-circuited to the raw symbol (which can never be coerced).
+    internal JSSymbol WrappedSymbol => symbol;
 
     public override string ToString() => symbol.ToString();
 }

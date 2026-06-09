@@ -42,26 +42,39 @@ public partial class JSObject
         {
             ref var elements = ref @object.GetElements();
             ref var property = ref elements.Get(key.Index);
-            if (!property.IsEmpty && property.IsEnumerable)
-                return JSValue.BooleanTrue;
+            if (!property.IsEmpty)
+                return property.IsEnumerable ? JSValue.BooleanTrue : JSValue.BooleanFalse;
 
-            return JSValue.BooleanFalse;
+            return EnumerableFromDescriptor(@object, a.Get1());
         }
 
         if (key.IsSymbol)
         {
             ref var symbols = ref @object.GetSymbols();
             ref var property = ref symbols.GetRefOrDefault(key.Symbol.Key, ref JSProperty.Empty);
-            if (!property.IsEmpty && property.IsEnumerable)
-                return JSValue.BooleanTrue;
+            if (!property.IsEmpty)
+                return property.IsEnumerable ? JSValue.BooleanTrue : JSValue.BooleanFalse;
 
-            return JSValue.BooleanFalse;
+            return EnumerableFromDescriptor(@object, a.Get1());
         }
 
         ref var ownProperties = ref @object.GetOwnProperties(false);
         ref var ownProperty = ref ownProperties.GetValue(key.KeyString.Key);
-        if (!ownProperty.IsEmpty && !JSObject.IsPrivateName(in key.KeyString) && ownProperty.IsEnumerable)
-            return JSValue.BooleanTrue;
+        if (!ownProperty.IsEmpty)
+            return !JSObject.IsPrivateName(in key.KeyString) && ownProperty.IsEnumerable
+                ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+
+        return EnumerableFromDescriptor(@object, a.Get1());
+    }
+
+    // §20.1.3.4: when an object has no directly stored property slot, the
+    // enumerability of an own property is still defined by [[GetOwnProperty]] —
+    // this surfaces synthesized exotic properties (String index characters,
+    // typed-array elements) and routes Proxy receivers through their trap.
+    private static JSValue EnumerableFromDescriptor(JSObject @object, JSValue key)
+    {
+        if (@object.GetOwnPropertyDescriptor(key) is JSObject descriptor)
+            return descriptor[KeyStrings.enumerable].BooleanValue ? JSValue.BooleanTrue : JSValue.BooleanFalse;
 
         return JSValue.BooleanFalse;
     }

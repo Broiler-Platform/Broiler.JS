@@ -65,7 +65,20 @@ public partial class JSSymbol: JSPrimitive, IJSSymbol
         return false;
     }
 
-    public override bool Equals(JSValue value) => ReferenceEquals(this, value);
+    public override bool Equals(JSValue value)
+    {
+        if (ReferenceEquals(this, value))
+            return true;
+
+        // Abstract equality (§7.2.15): when one operand is a Symbol and the other
+        // an Object, the object is coerced with ToPrimitive before comparison, so a
+        // symbol equals its own boxed wrapper (`sym == Object(sym)`). Delegate to
+        // the object, whose Equals performs that coercion.
+        if (value.IsObject)
+            return value.Equals(this);
+
+        return false;
+    }
     public override int GetHashCode() => (int)Key;
 
     public override JSValue InvokeFunction(in Arguments a)
