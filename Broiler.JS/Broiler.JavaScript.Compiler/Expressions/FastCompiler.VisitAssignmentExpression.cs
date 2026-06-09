@@ -462,7 +462,7 @@ partial class FastCompiler
                            inits.Add(YExpression.Assign(
                                piTemp.Variable,
                                memberAccess));
-                           inits.Add(JSValueExtensionsBuilder.AssignCoalesce(
+                           inits.Add(AssignDestructuringDefault(
                                piTemp.Expression,
                                defaultValue));
                            start = piTemp.Expression;
@@ -488,10 +488,15 @@ partial class FastCompiler
                                 {
                                     defaultValue = PrepareDestructuringInitializer(ap.Left, ap.Right, defaultValue);
                                 }
+                                // Spill the extracted value into a temp and apply the
+                                // default as a statement (see AssignDestructuringDefault)
+                                // so a `yield`/`await` in the default stays at a statement
+                                // boundary instead of inside a value-position coalesce.
+                                var apTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                                inits.Add(YExpression.Assign(apTemp.Variable, start));
+                                inits.Add(AssignDestructuringDefault(apTemp.Expression, defaultValue));
                                 CreateAssignment(inits, ap.Left,
-                                    YExpression.Coalesce(
-                                        JSValueExtensionsBuilder.NullIfUndefined(start),
-                                        defaultValue),
+                                    apTemp.Expression,
                                     suppressAnonymousFunctionNameInference: suppressAnonymousFunctionNameInference,
                                     initializeVariable: initializeVariable,
                                     readOnlyAfterAssign: readOnlyAfterAssign,
@@ -609,7 +614,7 @@ partial class FastCompiler
                                         identifierDefaultValue = PrepareDestructuringInitializer(be.Left, be.Right, identifierDefaultValue);
                                     }
 
-                                    arrayInits.Add(JSValueExtensionsBuilder.AssignCoalesce(moveTemp2.Expression, identifierDefaultValue));
+                                    arrayInits.Add(AssignDestructuringDefault(moveTemp2.Expression, identifierDefaultValue));
                                     arrayInits.Add(CreateAssignment(be.Left, moveTemp2.Expression, createVariable, newScope,
                                         suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment));
                                 }
@@ -716,6 +721,22 @@ partial class FastCompiler
             YExpression.Assign(target, temp.Expression),
             temp.Expression);
     }
+
+    // Apply a destructuring default ("= initializer") to a temp holding the
+    // extracted value, when that value is `undefined`. Emitted as a void IfThen
+    // statement (`if (temp === undefined) temp = default;`) rather than the
+    // value-position coalesce `temp = temp ?? default`. The two are behaviourally
+    // identical (the default is evaluated lazily, only on undefined), but the
+    // statement form keeps a `yield`/`await` inside the default at a statement
+    // boundary. The generator/async state-machine rewriter suspends by emitting a
+    // mid-stream `return`, which corrupts the IL evaluation stack if it occurs
+    // inside a value-position sub-expression (e.g. the right operand of `??`).
+    private static YExpression AssignDestructuringDefault(YExpression temp, YExpression defaultValue)
+        => YExpression.IfThen(
+            JSValueBuilder.IsUndefined(temp),
+            // The if-body must be void (the assigned value is discarded); leaving a
+            // value on the stack would unbalance the then/else branches.
+            YExpression.Block(YExpression.Assign(temp, defaultValue), YExpression.Empty));
 
     private static YExpression PrepareDestructuringInitializer(AstExpression target, AstExpression initializer, YExpression value)
     {

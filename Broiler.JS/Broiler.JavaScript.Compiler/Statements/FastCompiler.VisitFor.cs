@@ -152,7 +152,7 @@ partial class FastCompiler
         };
 
         if (forOfStatement.IsAwait)
-            bodyListItems.Add(YExpression.Assign(identifier, YExpression.Yield(identifier)));
+            bodyListItems.Add(YExpression.Assign(identifier, YExpression.Await(identifier)));
 
         bodyListItems.AddRange(perIterationInits);
         bodyListItems.Add(body);

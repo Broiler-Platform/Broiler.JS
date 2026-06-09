@@ -455,7 +455,18 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             // prototype. Native built-in constructors instead allocate their
             // exotic instance here and need the newTarget-derived prototype
             // applied to support subclassing.
-            if (!IsOrdinaryUserFunction || ReferenceEquals(r, obj))
+            //
+            // The one exception is a native ctor that, when invoked directly
+            // (not subclassed), returns a *boxed primitive* — e.g. Object(value)
+            // performing ToObject(value) into a Number/String/Boolean/Symbol
+            // wrapper. That wrapper already carries the correct, type-specific
+            // prototype (%Number.prototype% etc.); overwriting it with this
+            // function's own .prototype (%Object.prototype%) would make
+            // `new Object(1).constructor` resolve to Object instead of Number.
+            var subclassing = previousNewTarget != null && !ReferenceEquals(previousNewTarget, this);
+            var keepsOwnPrototype = !subclassing
+                && (r is JSPrimitiveObject || r is Broiler.JavaScript.BuiltIns.Symbol.JSSymbolObject);
+            if ((!IsOrdinaryUserFunction && !keepsOwnPrototype) || ReferenceEquals(r, obj))
             {
                 if (deferInstancePrototypeResolution && previousNewTarget != null)
                     instancePrototype = ResolveInstancePrototype(previousNewTarget);
