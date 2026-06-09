@@ -49,6 +49,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   token collapse now preserves Previous and toString returns the raw source.
 //   (built-ins/Function/prototype/toString/line-terminator-normalisation-*.js;
 //   the verbatim-source assertions live in Issue719Tests.)
+//
+//   Problem 9 — Intl.DurationFormat was a stub: format() returned "" for every
+//   input and resolvedOptions() returned {}. Implemented PartitionDurationFormat-
+//   Pattern (per-unit style/display resolution, numeric/2-digit time separators,
+//   fractional sub-seconds, ListFormat joining) on top of the existing NumberFormat
+//   / ListFormat, plus resolvedOptions. (DurationFormat/prototype/format/
+//   numeric-hour-*.js.)
 public class Issue721Tests
 {
     private static string Eval(string code)
@@ -209,4 +216,73 @@ public class Issue721Tests
     [Fact]
     public void FunctionToStringPreservesCarriageReturns()
         => Assert.Equal("function a(\rb\r){\r}", Eval("var f = function a(\rb\r){\r}; f.toString();"));
+
+    // ---- Problem 9: Intl.DurationFormat.format / resolvedOptions ----
+
+    // Numeric hours introduce a time separator for the following units (1:00:30).
+    [Fact]
+    public void DurationFormatNumericHoursTimeSeparator()
+        => Assert.Equal(
+            "1:00:30",
+            Eval("new Intl.DurationFormat('en', { hours: 'numeric' }).format({ hours: 1, minutes: 0, seconds: 30 });"));
+
+    [Fact]
+    public void DurationFormatNumericHoursAllUnits()
+        => Assert.Equal(
+            "1:01:01",
+            Eval("new Intl.DurationFormat('en', { hours: 'numeric' }).format({ hours: 1, minutes: 1, seconds: 1 });"));
+
+    // Default ("short") style joins unit-formatted values with a list separator.
+    [Fact]
+    public void DurationFormatDefaultShortStyle()
+        => Assert.Equal(
+            "1 hr, 30 min",
+            Eval("new Intl.DurationFormat('en').format({ hours: 1, minutes: 30 });"));
+
+    [Fact]
+    public void DurationFormatLongStyle()
+        => Assert.Equal(
+            "1 year, 2 months, 3 days",
+            Eval("new Intl.DurationFormat('en', { style: 'long' }).format({ years: 1, months: 2, days: 3 });"));
+
+    [Fact]
+    public void DurationFormatDigitalStyle()
+        => Assert.Equal(
+            "1:02:03",
+            Eval("new Intl.DurationFormat('en', { style: 'digital' }).format({ hours: 1, minutes: 2, seconds: 3 });"));
+
+    // Sub-second units fold into a fractional value on the seconds field.
+    [Fact]
+    public void DurationFormatFractionalSubSeconds()
+        => Assert.Equal(
+            "1:00:00.001",
+            Eval("new Intl.DurationFormat('en', { hours: 'numeric' }).format({ hours: 1, milliseconds: 1 });"));
+
+    [Fact]
+    public void DurationFormatFractionalDigitsTruncates()
+        => Assert.Equal(
+            "0:00:01.23",
+            Eval("new Intl.DurationFormat('en', { style: 'digital', fractionalDigits: 2 }).format({ seconds: 1, milliseconds: 234 });"));
+
+    // Only the first displayed value carries the negative sign.
+    [Fact]
+    public void DurationFormatNegativeSignOnFirstValueOnly()
+        => Assert.Equal(
+            "-1 hour, 30 minutes",
+            Eval("new Intl.DurationFormat('en', { style: 'long' }).format({ hours: -1, minutes: -30 });"));
+
+    // resolvedOptions reports the resolved per-unit styles/displays.
+    [Fact]
+    public void DurationFormatResolvedOptions()
+        => Assert.Equal(
+            "short|numeric|always|2-digit|2-digit",
+            Eval("var o = new Intl.DurationFormat('en', { hours: 'numeric' }).resolvedOptions();"
+               + " [o.style, o.hours, o.hoursDisplay, o.minutes, o.seconds].join('|');"));
+
+    // format() against a self-consistent reference holds for the partition algorithm.
+    [Fact]
+    public void DurationFormatMixedSignThrows()
+        => Assert.Equal(
+            "RangeError",
+            Eval("var r; try { new Intl.DurationFormat('en').format({ hours: 1, minutes: -1 }); r = 'ok'; } catch (e) { r = e.constructor.name; } r;"));
 }

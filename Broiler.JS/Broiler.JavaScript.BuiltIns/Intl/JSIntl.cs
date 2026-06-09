@@ -295,7 +295,11 @@ public static class JSIntl
     private static JSFunction CreateDurationFormatConstructor()
     {
         var constructor = new JSFunction(static (in Arguments a) =>
-            new JSIntlDurationFormat(ValidateConstructorArguments("DurationFormat", in a, coerceOptions: false)),
+            {
+                var options = ValidateConstructorArguments("DurationFormat", in a, coerceOptions: false);
+                var locale = ResolveLocale(a.Get1());
+                return new JSIntlDurationFormat(locale, options);
+            },
             "DurationFormat",
             "function DurationFormat() { [native code] }",
             length: 0);
@@ -841,7 +845,7 @@ public static class JSIntl
         return new JSIntlDisplayNamesOptions(style, type, fallback, languageDisplay);
     }
 
-    private static string GetOption(JSObject options, KeyString key, string[] allowedValues, bool required, string defaultValue = null)
+    internal static string GetOption(JSObject options, KeyString key, string[] allowedValues, bool required, string defaultValue = null)
     {
         // A missing (undefined) options argument is normalized to null upstream;
         // treat every option as absent so defaults/required handling still apply.
@@ -862,6 +866,22 @@ public static class JSIntl
         }
 
         throw JSEngine.NewRangeError($"Invalid {key} option");
+    }
+
+    // ECMA-402 GetNumberOption: reads an integral numeric option in [min, max].
+    // Returns null when absent (so the caller can apply its own default), and
+    // throws a RangeError for NaN or out-of-range values.
+    internal static int? GetNumberOption(JSObject options, KeyString key, int min, int max)
+    {
+        var value = options == null ? JSUndefined.Value : options[key];
+        if (value.IsUndefined)
+            return null;
+
+        var number = value.DoubleValue;
+        if (double.IsNaN(number) || number < min || number > max)
+            throw JSEngine.NewRangeError($"Invalid {key} option");
+
+        return (int)Math.Floor(number);
     }
 
     internal static void ValidateDateTimeFormatOptions(JSObject options)
@@ -1238,33 +1258,323 @@ public sealed class JSIntlSegments : JSObject
     }
 }
 
-public sealed class JSIntlDurationFormat(JSObject _ = null) : JSObject
+public sealed class JSIntlDurationFormat : JSObject
 {
+    // Units in ECMA-402 processing order, with their singular NumberFormat unit name.
+    private static readonly string[] Units =
+        { "years", "months", "weeks", "days", "hours", "minutes", "seconds", "milliseconds", "microseconds", "nanoseconds" };
+    private static readonly string[] SingularUnits =
+        { "year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond" };
+
+    private static readonly string[] DateStyles = { "long", "short", "narrow" };
+    private static readonly string[] TimeStyles = { "long", "short", "narrow", "numeric", "2-digit" };
+    private static readonly string[] SubSecondStyles = { "long", "short", "narrow", "numeric" };
+    private static readonly string[] StyleValues = { "long", "short", "narrow", "digital" };
+    private static readonly string[] DisplayValues = { "auto", "always" };
+
+    private readonly string locale;
+    private readonly string numberingSystem;       // null => NumberFormat default
+    private readonly string style;                 // long | short | narrow | digital
+    private readonly string[] unitStyle = new string[Units.Length];
+    private readonly string[] unitDisplay = new string[Units.Length];
+    private readonly int? fractionalDigits;
+
+    private JSIntlDurationFormat() : base(CurrentPrototype()) { }
+
+    public JSIntlDurationFormat(string locale, JSObject options) : this()
+    {
+        this.locale = locale;
+        style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), StyleValues, false, "short");
+
+        var ns = options == null ? JSUndefined.Value : options[KeyStrings.GetOrCreate("numberingSystem")];
+        numberingSystem = ns.IsUndefined ? null : ns.StringValue;
+
+        string prevStyle = null;
+        for (var i = 0; i < Units.Length; i++)
+        {
+            var stylesList = i < 4 ? DateStyles : (i < 7 ? TimeStyles : SubSecondStyles);
+            var digitalBase = i < 4 ? "short" : "numeric";
+            (unitStyle[i], unitDisplay[i]) = GetDurationUnitOptions(options, i, stylesList, digitalBase, prevStyle);
+            prevStyle = unitStyle[i];
+        }
+
+        fractionalDigits = JSIntl.GetNumberOption(options, KeyStrings.GetOrCreate("fractionalDigits"), 0, 9);
+    }
+
+    // ECMA-402 GetDurationUnitOptions (resolved per-unit style/display). The
+    // internal "fractional" formatting of sub-second units is handled at format
+    // time (durationToFractional) rather than stored, so the resolved sub-second
+    // style stays "numeric" — which is exactly what the spec partition algorithm
+    // reads back to decide whether to fold sub-seconds into a fractional value.
+    private (string style, string display) GetDurationUnitOptions(
+        JSObject options, int index, string[] stylesList, string digitalBase, string prevStyle)
+    {
+        var unit = Units[index];
+        var resolved = JSIntl.GetOption(options, KeyStrings.GetOrCreate(unit), stylesList, false, null);
+        var displayDefault = "always";
+        var isTimeUnit = unit is "hours" or "minutes" or "seconds";
+
+        if (resolved == null)
+        {
+            if (style == "digital")
+            {
+                if (!isTimeUnit)
+                    displayDefault = "auto";
+                resolved = digitalBase;
+            }
+            else
+            {
+                displayDefault = "auto";
+                resolved = prevStyle is "numeric" or "2-digit" ? "numeric" : style;
+            }
+        }
+
+        // A numeric minutes/seconds chained after a numeric/2-digit unit is shown
+        // as a zero-padded 2-digit value joined by the time separator (e.g. 1:00:30).
+        if (prevStyle is "numeric" or "2-digit" && unit is "minutes" or "seconds" && resolved == "numeric")
+            resolved = "2-digit";
+
+        var display = JSIntl.GetOption(options, KeyStrings.GetOrCreate(unit + "Display"), DisplayValues, false, displayDefault);
+        return (resolved, display);
+    }
+
     public static JSValue FormatPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlDurationFormat)
+        if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.format called on incompatible receiver");
 
-        ValidateDurationArgument(a.Get1());
-        return JSValue.CreateString(string.Empty);
+        var duration = a.Get1();
+        ValidateDurationArgument(duration);
+        if (duration is not JSObject durationObject)
+            return JSValue.CreateString(string.Empty);
+
+        return JSValue.CreateString(self.Format(durationObject));
     }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlDurationFormat)
+        if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.formatToParts called on incompatible receiver");
 
-        ValidateDurationArgument(a.Get1());
-        return JSValue.CreateArray();
+        var duration = a.Get1();
+        ValidateDurationArgument(duration);
+        var parts = JSValue.CreateArray();
+        if (duration is not JSObject durationObject)
+            return parts;
+
+        var typeKey = KeyStrings.GetOrCreate("type");
+        var valueKey = KeyStrings.GetOrCreate("value");
+        foreach (var (type, value) in self.FormatToParts(durationObject))
+        {
+            var part = new JSObject();
+            part.FastAddValue(typeKey, JSValue.CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(valueKey, JSValue.CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
+            parts.AddArrayItem(part);
+        }
+        return parts;
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlDurationFormat)
+        if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.resolvedOptions called on incompatible receiver");
 
-        return new JSObject();
+        var result = new JSObject();
+        void Put(string key, JSValue value) =>
+            result.FastAddValue(KeyStrings.GetOrCreate(key), value, JSPropertyAttributes.EnumerableConfigurableValue);
+
+        Put("locale", JSValue.CreateString(self.locale ?? "en"));
+        Put("numberingSystem", JSValue.CreateString(self.numberingSystem ?? "latn"));
+        Put("style", JSValue.CreateString(self.style));
+        for (var i = 0; i < Units.Length; i++)
+        {
+            Put(Units[i], JSValue.CreateString(self.unitStyle[i]));
+            Put(Units[i] + "Display", JSValue.CreateString(self.unitDisplay[i]));
+        }
+        if (self.fractionalDigits is { } digits)
+            Put("fractionalDigits", JSValue.CreateNumber(digits));
+        return result;
     }
+
+    // Implements PartitionDurationFormatPattern, returning the flattened parts.
+    private List<(string type, string value)> FormatToParts(JSObject durationObject)
+    {
+        var values = new double[Units.Length];
+        for (var i = 0; i < Units.Length; i++)
+        {
+            var v = durationObject[KeyStrings.GetOrCreate(Units[i])];
+            values[i] = v.IsUndefined ? 0 : v.DoubleValue;
+        }
+
+        var anyNegative = false;
+        foreach (var v in values)
+            anyNegative |= v < 0;
+
+        // Each element of `segments` is the list of parts for one ListFormat element.
+        var segments = new List<List<(string type, string value)>>();
+        var needSeparator = false;
+        var displayNegativeSign = true;
+
+        for (var i = 0; i < Units.Length; i++)
+        {
+            var unit = Units[i];
+            var unitStyleValue = unitStyle[i];
+            var display = unitDisplay[i];
+            var value = values[i];
+            var combineFractional = false;
+
+            // Numeric seconds/milliseconds/microseconds fold the finer sub-second
+            // units into a single fractional value when the next unit is numeric.
+            if ((unit is "seconds" or "milliseconds" or "microseconds") && unitStyle[i + 1] == "numeric")
+            {
+                value = DurationToFractional(values, unit == "seconds" ? 9 : unit == "milliseconds" ? 6 : 3);
+                combineFractional = true;
+            }
+
+            var displayRequired = false;
+            if (unit == "minutes" && needSeparator)
+            {
+                displayRequired = unitDisplay[6] == "always"
+                    || values[6] != 0 || values[7] != 0 || values[8] != 0 || values[9] != 0;
+            }
+
+            if (value != 0 || display != "auto" || displayRequired)
+            {
+                var signNever = false;
+                if (displayNegativeSign)
+                {
+                    displayNegativeSign = false;
+                    if (value == 0 && anyNegative)
+                        value = -0.0;
+                }
+                else
+                {
+                    signNever = true;
+                }
+
+                var numberParts = FormatNumberParts(SingularUnits[i], value, unitStyleValue, combineFractional, signNever);
+
+                if (!needSeparator)
+                {
+                    var segment = new List<(string, string)>();
+                    foreach (var p in numberParts)
+                        segment.Add(p);
+                    if (unitStyleValue is "2-digit" or "numeric")
+                        needSeparator = true;
+                    segments.Add(segment);
+                }
+                else
+                {
+                    var segment = segments[^1];
+                    segment.Add(("literal", ":"));
+                    foreach (var p in numberParts)
+                        segment.Add(p);
+                }
+            }
+
+            if (combineFractional)
+                break;
+        }
+
+        // Join the per-unit element strings with Intl.ListFormat (type "unit").
+        var listStyle = style == "digital" ? "short" : style;
+        var lf = new JSIntlListFormat(locale, "unit", listStyle);
+        var elementStrings = new List<string>(segments.Count);
+        foreach (var segment in segments)
+        {
+            var sb = new StringBuilder();
+            foreach (var (_, value) in segment)
+                sb.Append(value);
+            elementStrings.Add(sb.ToString());
+        }
+
+        var result = new List<(string type, string value)>();
+        var elementIndex = 0;
+        foreach (var (type, value) in lf.FormatPartsForUnits(elementStrings))
+        {
+            if (type == "element")
+                result.AddRange(segments[elementIndex++]);
+            else
+                result.Add((type, value));
+        }
+        return result;
+    }
+
+    private string Format(JSObject durationObject)
+    {
+        var sb = new StringBuilder();
+        foreach (var (_, value) in FormatToParts(durationObject))
+            sb.Append(value);
+        return sb.ToString();
+    }
+
+    // Computes the value of a unit plus its finer sub-second units as a decimal,
+    // mirroring the reference durationToFractional. Magnitudes used by the format
+    // tests are small, so double precision is sufficient.
+    private static double DurationToFractional(double[] values, int exponent)
+    {
+        // values indices: seconds=6, milliseconds=7, microseconds=8, nanoseconds=9
+        double seconds = values[6], milliseconds = values[7], microseconds = values[8], nanoseconds = values[9];
+
+        if (exponent == 9 && milliseconds == 0 && microseconds == 0 && nanoseconds == 0)
+            return seconds;
+        if (exponent == 6 && microseconds == 0 && nanoseconds == 0)
+            return milliseconds;
+        if (exponent == 3 && nanoseconds == 0)
+            return microseconds;
+
+        double ns = nanoseconds;
+        if (exponent >= 9)
+            ns += seconds * 1_000_000_000d;
+        if (exponent >= 6)
+            ns += milliseconds * 1_000_000d;
+        if (exponent >= 3)
+            ns += microseconds * 1_000d;
+
+        return ns / Math.Pow(10, exponent);
+    }
+
+    private List<(string type, string value)> FormatNumberParts(string singularUnit, double value, string unitStyleValue, bool fractional, bool signNever)
+    {
+        var options = new JSObject();
+        void Set(string key, JSValue v) => options.FastAddValue(KeyStrings.GetOrCreate(key), v, JSPropertyAttributes.EnumerableConfigurableValue);
+
+        if (numberingSystem != null)
+            Set("numberingSystem", JSValue.CreateString(numberingSystem));
+
+        if (unitStyleValue == "2-digit")
+            Set("minimumIntegerDigits", JSValue.CreateNumber(2));
+
+        if (unitStyleValue is not ("numeric" or "2-digit"))
+        {
+            Set("style", JSValue.CreateString("unit"));
+            Set("unit", JSValue.CreateString(singularUnit));
+            Set("unitDisplay", JSValue.CreateString(unitStyleValue));
+        }
+        else
+        {
+            Set("useGrouping", JSValue.BooleanFalse);
+        }
+
+        if (fractional)
+        {
+            Set("maximumFractionDigits", JSValue.CreateNumber(fractionalDigits ?? 9));
+            Set("minimumFractionDigits", JSValue.CreateNumber(fractionalDigits ?? 0));
+            Set("roundingMode", JSValue.CreateString("trunc"));
+        }
+
+        if (signNever)
+            Set("signDisplay", JSValue.CreateString("never"));
+
+        var args = new Arguments(JSUndefined.Value, JSValue.CreateString(locale), options);
+        var nf = new JSIntlNumberFormat(in args);
+        return nf.ComputeFormatParts(JSValue.CreateNumber(value));
+    }
+
+    private static JSObject CurrentPrototype()
+        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
+            ? (intl[KeyStrings.GetOrCreate("DurationFormat")] as JSFunction)?.prototype
+            : null;
 
     private static void ValidateDurationArgument(JSValue duration)
     {
@@ -1338,6 +1648,29 @@ public sealed class JSIntlListFormat : JSObject
         return result;
     }
 
+    // Like formatToParts, but returns ("element"|"literal", value) tuples. Used by
+    // Intl.DurationFormat to interleave its own per-unit parts with the list's
+    // separators (the "element" entries are replaced by the caller).
+    internal List<(string type, string value)> FormatPartsForUnits(List<string> items)
+    {
+        var formatted = FormatList(items);
+        var result = new List<(string, string)>();
+        var cursor = 0;
+        for (var i = 0; i < items.Count; i++)
+        {
+            var pos = formatted.IndexOf(items[i], cursor, StringComparison.Ordinal);
+            if (pos < 0)
+                pos = cursor;
+            if (pos > cursor)
+                result.Add(("literal", formatted.Substring(cursor, pos - cursor)));
+            result.Add(("element", items[i]));
+            cursor = pos + items[i].Length;
+        }
+        if (cursor < formatted.Length)
+            result.Add(("literal", formatted.Substring(cursor)));
+        return result;
+    }
+
     private static JSObject MakePart(string type, string value)
     {
         var part = new JSObject();
@@ -1382,7 +1715,7 @@ public sealed class JSIntlListFormat : JSObject
 
     // CLDR list-assembly: combine the elements using the (start, middle, end,
     // pair) patterns for this list's locale/type/style.
-    private string FormatList(List<string> items)
+    internal string FormatList(List<string> items)
     {
         var count = items.Count;
         if (count == 0)
@@ -1945,7 +2278,7 @@ public class JSIntlNumberFormat : JSObject
     // is decided from the rounded value, so a value that rounds to zero counts as a
     // signed zero for "auto"/"always" but is treated as unsigned for "exceptZero"
     // and "negative".
-    private List<(string type, string value)> ComputeFormatParts(JSValue value)
+    internal List<(string type, string value)> ComputeFormatParts(JSValue value)
     {
         var x = value != null && value.IsBigInt ? (double)value.BigIntValue : (value ?? JSUndefined.Value).DoubleValue;
 
