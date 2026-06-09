@@ -953,7 +953,12 @@ internal static class BuiltInsAssemblyInitializer
             replacement = new JSFunction((in Arguments a) =>
             {
                 var (pattern, flags) = a.Get2();
-                if (flags.IsUndefined && JSRegExp.IsRegExpLike(pattern))
+                // §22.2.4.1 step 4: the "return the existing RegExp unchanged"
+                // optimization applies ONLY to the call form (NewTarget undefined).
+                // `new RegExp(re)` (NewTarget defined) must always allocate a fresh
+                // instance — otherwise two regexes alias one another's lastIndex.
+                var isConstruct = (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget != null;
+                if (!isConstruct && flags.IsUndefined && JSRegExp.IsRegExpLike(pattern))
                 {
                     var constructor = pattern[KeyStrings.constructor];
                     if (ReferenceEquals(constructor, replacement) || ReferenceEquals(constructor, originalCtor))
@@ -1195,9 +1200,9 @@ internal static class BuiltInsAssemblyInitializer
             var flags = rx[KeyStrings.GetOrCreate("flags")].StringValue;
             if (!flags.Contains('g'))
             {
-                if (rx is JSRegExp regExp)
-                    return regExp.Match(input);
-
+                // §22.2.6.8 step 6: when not global, return RegExpExec(rx, S). This
+                // must go through exec — which reads `lastIndex` (firing its valueOf)
+                // — rather than a fast path that skips that observable read.
                 return RegExpExec(rx, input);
             }
 

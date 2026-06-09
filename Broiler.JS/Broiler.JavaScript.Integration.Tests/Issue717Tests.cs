@@ -51,10 +51,17 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     it, a strict write to a non-writable with-binding inside such a function threw
 //     ReferenceError instead of TypeError under script-host, where the dynamic
 //     with-scope is suspended across calls.
+//   * RegExp/lastIndex-match-or-replace: two bugs. (1) `new RegExp(re)` returned the
+//     source object — the call-form "return the existing RegExp" optimization (only
+//     valid when NewTarget is undefined) leaked into the construct form — so derived
+//     regexes aliased the source's lastIndex; `defineProperty(one, 'lastIndex', …)`
+//     poisoned the others. It now allocates a fresh instance under `new`. (2)
+//     non-global RegExp.prototype[@@match] used a fast path that skipped the
+//     observable lastIndex read; it now goes through RegExpExec so a lastIndex
+//     valueOf side-effect fires.
 //
-// Out of scope (architectural / deep regex / CLDR): P1 DateTimeFormat CLDR (de
-// format, calendars, related-year — the CLDR pipeline has no date patterns / month
-// names yet), the RegExp Symbol.match/replace lastIndex grab-bag, P2 with/@@unscopables in nested fn, P3 private getter/method
+// Out of scope (CLDR): P1 DateTimeFormat (de format, calendars, related-year — the
+// CLDR pipeline has no date patterns / month names yet), P2 with/@@unscopables in nested fn, P3 private getter/method
 // shadowed by setter (per-evaluation private brand), P4 indirect-eval / with
 // var-env, P6 sm RegExp grab-bag, P7 duplicate named capture groups (requires
 // distinct .NET group numbering + backreference rewrite).
@@ -308,4 +315,45 @@ sobj.test();"));
             + "try { eval(\"with (obj()) { (function () { 'use strict'; x = 2; })(); }\"); }"
             + "catch (e) { caught = e.constructor.name; }"
             + "caught"));
+
+    // ---- Problem 1: `new RegExp(regexp)` allocates a fresh instance ----
+    // (RegExp/lastIndex-match-or-replace: `new RegExp(re)` was returning the source
+    // object — the call-form "return the existing RegExp" optimization leaked into
+    // the construct form — so the derived regex aliased the source's lastIndex.)
+
+    [Fact]
+    public void NewRegExpFromRegExpCreatesFreshInstance()
+        => Assert.Equal("false", Eval("var lit = /a/; new RegExp(lit) === lit"));
+
+    [Fact]
+    public void RegExpCallFormReturnsSameInstance()
+        => Assert.Equal("true", Eval("var lit = /a/; RegExp(lit) === lit"));
+
+    [Fact]
+    public void NewRegExpFromRegExpDoesNotAliasLastIndex()
+        => Assert.Equal("undefined", Eval(
+            "var lit = /a/; var r = new RegExp(lit); r.foo = 1; typeof lit.foo"));
+
+    [Fact]
+    public void DefinePropertyOnDerivedRegExpDoesNotAffectSibling()
+        => Assert.Equal("true", Eval(
+            "var lit = /a/; var a = new RegExp(lit); var b = new RegExp(lit);"
+            + "Object.defineProperty(a, 'lastIndex', { value: 0, writable: false });"
+            + "Object.getOwnPropertyDescriptor(b, 'lastIndex').writable + ''"));
+
+    // ---- Problem 1: non-global RegExp.prototype[@@match] reads lastIndex ----
+
+    [Fact]
+    public void NonGlobalMatchReadsLastIndex()
+        => Assert.Equal("true", Eval(
+            "var re = /a/; var called = false;"
+            + "re.lastIndex = { valueOf: function () { called = true; return 0; } };"
+            + "RegExp.prototype[Symbol.match].call(re, 'a'); called + ''"));
+
+    [Fact]
+    public void GlobalMatchDoesNotReadLastIndexValueOf()
+        => Assert.Equal("false", Eval(
+            "var re = /a/g; var called = false;"
+            + "re.lastIndex = { valueOf: function () { called = true; return 0; } };"
+            + "RegExp.prototype[Symbol.match].call(re, 'a'); called + ''"));
 }

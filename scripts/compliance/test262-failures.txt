@@ -2209,7 +2209,6 @@ test/staging/sm/RegExp/escape.js
 test/staging/sm/RegExp/exec.js
 test/staging/sm/RegExp/ignoreCase-non-latin1-to-latin1.js
 test/staging/sm/RegExp/lastIndex-exec.js
-test/staging/sm/RegExp/lastIndex-match-or-replace.js
 test/staging/sm/RegExp/lastIndex-search.js
 test/staging/sm/RegExp/match-trace.js
 test/staging/sm/RegExp/prototype.js
