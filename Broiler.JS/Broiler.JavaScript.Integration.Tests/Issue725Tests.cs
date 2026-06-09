@@ -506,6 +506,21 @@ public class Issue725Tests
 
     [Fact]
     public void UnsupportedCalendarResolvesToGregory()
-        => Assert.Equal("gregory", Eval("new Intl.DateTimeFormat('en-u-ca-chinese').resolvedOptions().calendar;"));
+        => Assert.Equal("gregory", Eval("new Intl.DateTimeFormat('en-u-ca-hebrew').resolvedOptions().calendar;"));
+
+
+        // related-year.js: the chinese calendar shows the year as relatedYear(yearName),
+    // so formatToParts must contain both a "relatedYear" and a "yearName" part.
+
+    [Fact]
+    public void ChineseCalendarYearHasRelatedYearAndYearNameParts()
+        => Assert.Equal(
+            "relatedYear=2017|literal=(|yearName=\u4E01\u9149|literal=)",
+            Eval(@"new Intl.DateTimeFormat('en-u-ca-chinese', {year:'numeric'}).formatToParts(new Date(2017,11,12)).map(function(p){return p.type+'='+p.value;}).join('|');"));
+
+    [Fact]
+    public void ChineseCalendarResolves()
+        => Assert.Equal("chinese", Eval("new Intl.DateTimeFormat('en-u-ca-chinese').resolvedOptions().calendar;"));
+
 
 }

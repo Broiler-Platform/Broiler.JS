@@ -60,16 +60,34 @@ internal static class JSIntlDateTimeFormatEngine
     }
 
     // Era-using calendars derived from the proleptic Gregorian year by a fixed
-    // offset, with a single modern era. (Lunisolar/era-boundary calendars such as
-    // chinese/japanese are not modelled.) Maps calendar -> (year offset, en era).
+    // offset, with a single modern era. (Era-boundary calendars such as japanese
+    // are not modelled.) Maps calendar -> (year offset, en era).
     private static readonly Dictionary<string, (int YearOffset, string Era)> EraCalendars =
         new(StringComparer.Ordinal)
         {
             ["buddhist"] = (543, "BE"),
         };
 
+    // Calendars that display the year as a related (Gregorian) year plus a
+    // sexagenary cycle year-name (e.g. chinese "2017(丁酉)"). The lunisolar month/day
+    // arithmetic is not modelled; only the year presentation is.
+    private static readonly HashSet<string> CyclicYearCalendars =
+        new(StringComparer.Ordinal) { "chinese", "dangi" };
+
+    private static readonly string[] SexagenaryStems =
+        { "甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸" };
+    private static readonly string[] SexagenaryBranches =
+        { "子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥" };
+
+    // The sexagenary (stem+branch) year name for a Gregorian year, e.g. 2017 → 丁酉.
+    private static string SexagenaryYearName(int year)
+    {
+        var index = ((year - 4) % 60 + 60) % 60;
+        return SexagenaryStems[index % 10] + SexagenaryBranches[index % 12];
+    }
+
     internal static bool IsSupportedCalendar(string calendar)
-        => calendar != null && EraCalendars.ContainsKey(calendar);
+        => calendar != null && (EraCalendars.ContainsKey(calendar) || CyclicYearCalendars.Contains(calendar));
 
     // ── en locale data ──
     private static readonly string[] MonthShort =
@@ -201,11 +219,17 @@ internal static class JSIntlDateTimeFormatEngine
         if (datePattern == null && timePattern == null)
             datePattern = DefaultNumericDate(localeTag);
 
-        // An era-using calendar (e.g. buddhist) appends the era after a date that
-        // shows a year, e.g. "M/d/y" -> "M/d/y G". This both produces the correct
-        // value and makes the pattern structurally distinct from the gregorian one.
-        if (datePattern != null && IsSupportedCalendar(calendar) && datePattern.IndexOf('y') >= 0)
-            datePattern += " G";
+        if (datePattern != null && datePattern.IndexOf('y') >= 0)
+        {
+            // An era-using calendar (e.g. buddhist) appends the era after a date that
+            // shows a year, e.g. "M/d/y" -> "M/d/y G". A cyclic-year calendar (chinese,
+            // dangi) shows the year as relatedYear(yearName), so the year field becomes
+            // "r(U)". Both make the pattern structurally distinct from the gregorian one.
+            if (EraCalendars.ContainsKey(calendar ?? string.Empty))
+                datePattern += " G";
+            else if (CyclicYearCalendars.Contains(calendar ?? string.Empty))
+                datePattern = ReplaceYearField(datePattern, "r(U)");
+        }
 
         string combined = (datePattern, timePattern) switch
         {
@@ -223,6 +247,39 @@ internal static class JSIntlDateTimeFormatEngine
     // separator between fields from the locale's short-date pattern. Falls back to
     // the en convention (M/d/y) for an unknown/complex pattern, so en and locales
     // whose pattern can't be parsed are unchanged.
+    // Replaces the run of year letters ('y') in a pattern with a replacement field,
+    // skipping quoted literals. Used to swap a numeric year for the chinese
+    // relatedYear(yearName) form.
+    private static string ReplaceYearField(string pattern, string replacement)
+    {
+        var sb = new StringBuilder(pattern.Length + replacement.Length);
+        var inQuote = false;
+        var replaced = false;
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+            if (c == '\'')
+            {
+                inQuote = !inQuote;
+                sb.Append(c);
+                continue;
+            }
+            if (!inQuote && c == 'y')
+            {
+                while (i + 1 < pattern.Length && pattern[i + 1] == 'y')
+                    i++;
+                if (!replaced)
+                {
+                    sb.Append(replacement);
+                    replaced = true;
+                }
+                continue;
+            }
+            sb.Append(c);
+        }
+        return sb.ToString();
+    }
+
     // The default all-numeric date pattern (year/month/day) for a locale, e.g.
     // "M/d/y" for en, "d.M.y" for de, "y/M/d" for ja.
     private static string DefaultNumericDate(string localeTag)
@@ -436,6 +493,12 @@ internal static class JSIntlDateTimeFormatEngine
             case 'G':
                 // Era. Only era-using calendars emit a 'G' token.
                 return ("era", EraCalendars.TryGetValue(calendar ?? string.Empty, out var era) ? era.Era : "AD");
+            case 'U':
+                // Cyclic year name (sexagenary), used by chinese/dangi.
+                return ("yearName", SexagenaryYearName(f.Year));
+            case 'r':
+                // Related (Gregorian) year, used by chinese/dangi.
+                return ("relatedYear", f.Year.ToString(CultureInfo.InvariantCulture));
             case 'y':
                 var year = f.Year;
                 if (calendar != null && EraCalendars.TryGetValue(calendar, out var cal))
