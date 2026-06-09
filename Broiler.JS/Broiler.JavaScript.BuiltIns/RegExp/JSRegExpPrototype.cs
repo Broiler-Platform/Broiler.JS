@@ -72,7 +72,7 @@ public partial class JSRegExp
         }
 
         pattern = nextPattern;
-        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, flags) = CreateRegex(nextPattern, nextFlags);
+        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, flags) = CreateRegex(nextPattern, nextFlags, out captureMap);
         SetObservableLastIndex(0);
         return this;
     }
@@ -132,20 +132,17 @@ public partial class JSRegExp
             SetObservableLastIndex(match.Index + match.Length);
 
         var groups = match.Groups;
-        var c = groups.Count;
+        // When the pattern has named groups every capture was renamed to a
+        // synthetic, source-ordered name (see RewriteCaptureGroups), so .NET now
+        // numbers them 1..n in ECMAScript order and integer indexing is correct.
+        // The captureMap supplies that count and the original-name mapping.
+        var c = captureMap != null ? captureMap.Count + 1 : groups.Count;
         var result = JSValue.CreateArray((uint)c);
 
         for (int i = 0; i < c; i++)
         {
             var group = groups[i];
-            if (group.Captures.Count == 0)
-            {
-                result[(uint)i] = JSUndefined.Value;
-            } 
-            else
-            {
-                result[(uint)i] = JSValue.CreateString(group.Value);
-            }
+            result[(uint)i] = group.Success ? JSValue.CreateString(group.Value) : JSUndefined.Value;
         }
 
         result[KeyStrings.index] = JSValue.CreateNumber(match.Index);
@@ -164,7 +161,7 @@ public partial class JSRegExp
             for (int i = 0; i < c; i++)
             {
                 var group = groups[i];
-                if (group.Captures.Count == 0)
+                if (!group.Success)
                 {
                     indices[(uint)i] = JSUndefined.Value;
                 }
@@ -183,54 +180,57 @@ public partial class JSRegExp
             ((JSObject)result).FastAddValue(indicesKey, indices, JSPropertyAttributes.EnumerableConfigurableValue);
         }
 
-        // Populate named groups (§2.7 — duplicate named capture groups support).
-        var groupNames = value.GetGroupNames();
-        if (groupNames.Length > 1) // First name is always "0" (the whole match)
+        // Populate named groups (§2.7 — including ES2025 duplicate named groups).
+        // The groups object is ObjectCreate(null) and its properties are installed
+        // via CreateDataProperty (writable/enumerable/configurable), never [[Set]],
+        // so inherited setters / a "__proto__" group name do not interfere
+        // (RegExpBuiltinExec steps 24-28). Distinct names appear in source order,
+        // and a name shared by several alternatives resolves to whichever group
+        // participated (at most one can, since duplicates are mutually exclusive).
+        if (captureMap != null && captureMap.NamedGroups.Count > 0)
         {
-            // The groups object is ObjectCreate(null) and its properties are
-            // installed via CreateDataProperty (writable/enumerable/configurable),
-            // never [[Set]] — so inherited setters / a "__proto__" group name do
-            // not interfere (RegExpBuiltinExec steps 24-28).
             var namedGroups = new JSObject();
             namedGroups.SetPrototypeOf(JSValue.NullValue);
-            bool hasNamedGroups = false;
 
-            for (int i = 0; i < groupNames.Length; i++)
+            foreach (var (name, indices) in captureMap.NamedGroups)
             {
-                var name = groupNames[i];
-                // Skip numeric group names (they're positional, not named)
-                if (name.Length > 0 && (name[0] < '0' || name[0] > '9'))
+                var nameKey = KeyStrings.GetOrCreate(name);
+
+                System.Text.RegularExpressions.Group matched = null;
+                foreach (var idx in indices)
                 {
-                    hasNamedGroups = true;
-                    var nameKey = KeyStrings.GetOrCreate(name);
-                    var g = match.Groups[name];
-                    namedGroups.FastAddValue(nameKey, g.Success
-                        ? JSValue.CreateString(g.Value)
-                        : JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
-                    if (hasIndices)
+                    var g = groups[idx];
+                    if (g.Success)
                     {
-                        if (g.Success)
-                        {
-                            var range = JSValue.CreateArray(2);
-                            range[0] = JSValue.CreateNumber(g.Index);
-                            range[1] = JSValue.CreateNumber(g.Index + g.Length);
-                            indicesGroups.FastAddValue(nameKey, range, JSPropertyAttributes.EnumerableConfigurableValue);
-                        }
-                        else
-                        {
-                            indicesGroups.FastAddValue(nameKey, JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
-                        }
+                        matched = g;
+                        break;
+                    }
+                }
+
+                namedGroups.FastAddValue(nameKey, matched != null
+                    ? JSValue.CreateString(matched.Value)
+                    : JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
+
+                if (hasIndices)
+                {
+                    if (matched != null)
+                    {
+                        var range = JSValue.CreateArray(2);
+                        range[0] = JSValue.CreateNumber(matched.Index);
+                        range[1] = JSValue.CreateNumber(matched.Index + matched.Length);
+                        indicesGroups.FastAddValue(nameKey, range, JSPropertyAttributes.EnumerableConfigurableValue);
+                    }
+                    else
+                    {
+                        indicesGroups.FastAddValue(nameKey, JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
                     }
                 }
             }
 
-            if (hasNamedGroups)
-            {
-                ((JSObject)result).FastAddValue(groupsKey, namedGroups, JSPropertyAttributes.EnumerableConfigurableValue);
-                if (hasIndices)
-                    ((JSObject)result[indicesKey]).FastAddValue(groupsKey, indicesGroups, JSPropertyAttributes.EnumerableConfigurableValue);
-                return result;
-            }
+            ((JSObject)result).FastAddValue(groupsKey, namedGroups, JSPropertyAttributes.EnumerableConfigurableValue);
+            if (hasIndices)
+                ((JSObject)result[indicesKey]).FastAddValue(groupsKey, indicesGroups, JSPropertyAttributes.EnumerableConfigurableValue);
+            return result;
         }
 
         ((JSObject)result).FastAddValue(groupsKey, JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);

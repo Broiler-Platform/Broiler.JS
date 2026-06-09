@@ -217,6 +217,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
     internal Regex value;
 
+    // Non-null when the pattern contains at least one named capturing group: it
+    // records the ECMAScript capture ordering and name→index mapping that .NET's
+    // group renaming (see RewriteCaptureGroups) would otherwise lose. Null for
+    // patterns with no named groups (the .NET numbering already matches).
+    internal CaptureGroupMap captureMap;
+
     [JSExport]
     public int lastIndex = 0;
 
@@ -255,7 +261,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         this.pattern = pattern;
 
-        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, this.flags) = CreateRegex(pattern, flags);
+        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, this.flags) = CreateRegex(pattern, flags, out captureMap);
 
         // Initialize lastIndex as an own data property (writable, non-configurable, non-enumerable)
         ref var ownProperties = ref GetOwnProperties();
@@ -266,7 +272,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     {
         this.pattern = pattern;
 
-        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, this.flags) = CreateRegex(pattern, flags);
+        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, this.flags) = CreateRegex(pattern, flags, out captureMap);
 
         // Initialize lastIndex as an own data property (writable, non-configurable, non-enumerable)
         ref var ownProps = ref GetOwnProperties();
@@ -641,8 +647,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// Supports ES2025 inline pattern modifiers (§2.6) and duplicate
     /// named capturing groups (§2.7).
     /// </summary>
-    public static (Regex, bool, bool, bool, bool, bool, bool, bool, string) CreateRegex(string pattern, string flags)
+    public static (Regex, bool, bool, bool, bool, bool, bool, bool, string) CreateRegex(string pattern, string flags, out CaptureGroupMap captureMap)
     {
+        captureMap = null;
         try
         {
             var (options, globalSearch, ignoreCase, multiline, dotAll, hasIndices, sticky, unicode, unicodeSets, normalizedFlags) = ParseFlags(flags);
@@ -683,11 +690,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if ((options & RegexOptions.ECMAScript) != 0 && HasInlineModifiers(pattern))
                 options &= ~RegexOptions.ECMAScript;
 
-            // §2.7 — Detect duplicate named capturing groups.
-            // .NET ECMAScript mode does not allow them; default mode does.
-            if ((options & RegexOptions.ECMAScript) != 0 && HasDuplicateNamedGroups(pattern))
-                options &= ~RegexOptions.ECMAScript;
-
             // ES2015 §21.2.2.8: In Unicode mode, '.' matches any single
             // Unicode code point.  .NET's '.' only matches a single UTF-16
             // code unit, so expand it to also match surrogate pairs.
@@ -713,6 +715,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // Transform character classes containing supplementary characters
                 // (surrogate pairs) so they match as whole code points.
                 pattern = TransformUnicodeCharClasses(pattern);
+                // Finally, give lone surrogates and surrogate pairs that sit
+                // *outside* a character class their ECMAScript code-point semantics
+                // (a lone surrogate must not match a code unit that forms a pair; a
+                // pair is one atom for the purpose of a following quantifier). Runs
+                // last so the earlier class/dot transforms aren't disturbed.
+                pattern = TransformUnicodeLoneSurrogates(pattern);
             }
 
             // ES §21.2.2.8 Atom: Without dotAll, '.' must not match any of
@@ -777,6 +785,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     pattern = builder.ToString();
                 }
             }
+
+            // Final transform: rename capturing groups to synthetic, source-ordered
+            // names so .NET's group numbering and duplicate-name handling match
+            // ECMAScript. Runs last so the capture layout reflects the user's groups
+            // (the earlier transforms only add non-capturing groups / lookarounds).
+            pattern = RewriteCaptureGroups(pattern, out captureMap);
 
             return (new Regex(pattern, options), globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, normalizedFlags);
         }
@@ -906,37 +920,209 @@ public partial class JSRegExp : JSObject, IJSRegExp
         return false;
     }
 
-    /// <summary>
-    /// Returns <c>true</c> when the pattern contains more than one named
-    /// capturing group with the same name (ES2025 §2.7).
-    /// </summary>
-    private static bool HasDuplicateNamedGroups(string pattern)
+    // Records the ECMAScript capture-group layout of a pattern whose groups were
+    // renamed to synthetic, source-ordered names (bjsg1, bjsg2, …) so .NET keeps
+    // them distinct and numbered left-to-right.
+    public sealed class CaptureGroupMap
     {
-        var names = new System.Collections.Generic.HashSet<string>();
-        for (int i = 0; i < pattern.Length - 3; i++)
+        // 1-based: OriginalName[i] is the JS name of capture group i, or null when
+        // the group was unnamed. Index 0 is a placeholder for the whole match.
+        public readonly string[] OriginalName;
+
+        // Distinct JS names in first-appearance order, each paired with the capture
+        // indices that share the name (more than one only for ES2025 duplicates).
+        public readonly List<(string Name, List<int> Indices)> NamedGroups;
+
+        public int Count => OriginalName.Length - 1;
+
+        public CaptureGroupMap(string[] originalName, List<(string, List<int>)> namedGroups)
         {
-            if (pattern[i] == '(' && i + 2 < pattern.Length &&
-                pattern[i + 1] == '?' && pattern[i + 2] == '<' &&
-                (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!')))
+            OriginalName = originalName;
+            NamedGroups = namedGroups;
+        }
+    }
+
+    // .NET merges capturing groups that share a name into a single numbered group
+    // and orders all named groups after the unnamed ones — neither matches
+    // ECMAScript, where every '(' is its own group numbered strictly left-to-right
+    // and duplicate names (ES2025) are distinct groups living in mutually-exclusive
+    // alternatives. Whenever a pattern contains any named group we therefore rename
+    // *every* capturing group to a synthetic, position-encoded name (bjsg1, bjsg2,
+    // …). .NET then numbers them 1..n in source order (so integer indexing and
+    // numeric backreferences line up with ECMAScript) and keeps duplicates apart.
+    // A \k<name> reference is rewritten to the synthetic name, or — for a
+    // duplicated name — to a nested conditional that backreferences whichever of
+    // the same-named groups participated in the match.
+    private static string RewriteCaptureGroups(string pattern, out CaptureGroupMap map)
+    {
+        map = null;
+        if (string.IsNullOrEmpty(pattern))
+            return pattern;
+
+        // Pass 1: enumerate capturing groups in source order.
+        var originalNames = new List<string> { null };           // [0] = whole match
+        var nameToIndices = new Dictionary<string, List<int>>(StringComparer.Ordinal);
+        var orderedNames = new List<string>();
+        var anyNamed = false;
+
+        ScanCaptureGroups(pattern, (index, name) =>
+        {
+            originalNames.Add(name);
+            if (name == null)
+                return;
+
+            anyNamed = true;
+            if (!nameToIndices.TryGetValue(name, out var list))
             {
-                // Extract the group name
-                int start = i + 3;
-                int end = pattern.IndexOf('>', start);
-                if (end > start)
+                nameToIndices[name] = list = new List<int>();
+                orderedNames.Add(name);
+            }
+            list.Add(index);
+        });
+
+        if (!anyNamed)
+            return pattern;  // no named groups → .NET numbering already matches ECMAScript.
+
+        // Pass 2: emit the rewritten pattern, renaming every capturing group and
+        // resolving \k<name> references against the map built above.
+        var sb = new StringBuilder(pattern.Length + 16);
+        var inClass = false;
+        var groupIndex = 0;
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                // Named backreference \k<name> (only meaningful outside a class).
+                if (!inClass && pattern[i + 1] == 'k' && i + 2 < pattern.Length && pattern[i + 2] == '<')
                 {
-                    var name = pattern.Substring(start, end - start);
-                    if (!names.Add(name))
-                        return true;
-                    i = end;
+                    var nameEnd = pattern.IndexOf('>', i + 3);
+                    if (nameEnd > i + 3 &&
+                        nameToIndices.TryGetValue(pattern.Substring(i + 3, nameEnd - (i + 3)), out var refIndices))
+                    {
+                        sb.Append(BuildNamedBackref(refIndices));
+                        i = nameEnd;
+                        continue;
+                    }
                 }
+
+                sb.Append(c).Append(pattern[i + 1]);
+                i++;
+                continue;
             }
 
-            // Skip escaped characters
-            if (pattern[i] == '\\' && i + 1 < pattern.Length)
-                i++;
+            if (c == '[')
+            {
+                inClass = true;
+                sb.Append(c);
+                continue;
+            }
+            if (c == ']')
+            {
+                inClass = false;
+                sb.Append(c);
+                continue;
+            }
+
+            if (c == '(' && !inClass)
+            {
+                // Named group (?<name>…), but not a lookbehind (?<=…) / (?<!…).
+                if (i + 2 < pattern.Length && pattern[i + 1] == '?' && pattern[i + 2] == '<'
+                    && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!')))
+                {
+                    var nameEnd = pattern.IndexOf('>', i + 3);
+                    groupIndex++;
+                    sb.Append("(?<bjsg").Append(groupIndex).Append('>');
+                    if (nameEnd > i + 3)
+                        i = nameEnd;
+                    continue;
+                }
+
+                // Any other (?…) construct is non-capturing.
+                if (i + 1 < pattern.Length && pattern[i + 1] == '?')
+                {
+                    sb.Append(c);
+                    continue;
+                }
+
+                // Plain unnamed capturing group.
+                groupIndex++;
+                sb.Append("(?<bjsg").Append(groupIndex).Append('>');
+                continue;
+            }
+
+            sb.Append(c);
         }
 
-        return false;
+        var namedGroups = new List<(string, List<int>)>(orderedNames.Count);
+        foreach (var name in orderedNames)
+            namedGroups.Add((name, nameToIndices[name]));
+        map = new CaptureGroupMap(originalNames.ToArray(), namedGroups);
+        return sb.ToString();
+    }
+
+    // Walks the pattern invoking onGroup(index, name) for each capturing group in
+    // source order (name is null for unnamed groups). Mirrors the group-detection
+    // in RewriteCaptureGroups' second pass so the assigned indices stay in lockstep.
+    private static void ScanCaptureGroups(string pattern, Action<int, string> onGroup)
+    {
+        var inClass = false;
+        var index = 0;
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                i++;
+                continue;
+            }
+            if (c == '[')
+            {
+                inClass = true;
+                continue;
+            }
+            if (c == ']')
+            {
+                inClass = false;
+                continue;
+            }
+            if (c != '(' || inClass)
+                continue;
+
+            if (i + 2 < pattern.Length && pattern[i + 1] == '?' && pattern[i + 2] == '<'
+                && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!')))
+            {
+                var nameEnd = pattern.IndexOf('>', i + 3);
+                var name = nameEnd > i + 3 ? pattern.Substring(i + 3, nameEnd - (i + 3)) : string.Empty;
+                onGroup(++index, name);
+                if (nameEnd > i + 3)
+                    i = nameEnd;
+                continue;
+            }
+
+            if (i + 1 < pattern.Length && pattern[i + 1] == '?')
+                continue;  // non-capturing (?:…) / lookaround / modifier
+
+            onGroup(++index, null);
+        }
+    }
+
+    // Rewrites a JS \k<name> reference to its synthetic .NET form. A name shared by
+    // several alternatives (ES2025 duplicate) becomes a nested conditional so the
+    // backreference follows whichever same-named group participated; a name that
+    // participated in no alternative falls through to an empty (always-matching)
+    // branch, matching the ECMAScript "backreference to an unmatched group" rule.
+    private static string BuildNamedBackref(List<int> indices)
+    {
+        if (indices.Count == 1)
+            return $"\\k<bjsg{indices[0]}>";
+
+        var acc = $"(?(bjsg{indices[^1]})\\k<bjsg{indices[^1]}>)";
+        for (var k = indices.Count - 2; k >= 0; k--)
+            acc = $"(?(bjsg{indices[k]})\\k<bjsg{indices[k]}>|{acc})";
+        return acc;
     }
 
     /// <summary>
@@ -1356,6 +1542,101 @@ public partial class JSRegExp : JSObject, IJSRegExp
             return pattern;
 
         sb.Append(pattern, start, pattern.Length - start);
+        return sb.ToString();
+    }
+
+    // In Unicode (u/v) mode a regex matches by code point, so a surrogate that
+    // appears *outside* a character class needs help from .NET (which matches by
+    // UTF-16 code unit):
+    //   • a lone lead surrogate must match a lead code unit only when it is NOT
+    //     followed by a trailing surrogate (otherwise the two form one code point),
+    //   • a lone trail surrogate must match a trail code unit only when it is NOT
+    //     preceded by a leading surrogate,
+    //   • a lead immediately followed by a trail is a single code-point atom, so a
+    //     following quantifier (?, +, *, {n}) must apply to the whole pair.
+    // Surrogates inside character classes are handled by TransformUnicodeCharClasses;
+    // this pass therefore skips class bodies and runs after it. By this point the
+    // earlier transforms have already materialised \uHHHH escapes into real chars.
+    private static string TransformUnicodeLoneSurrogates(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern))
+            return pattern;
+
+        var hasSurrogate = false;
+        foreach (var ch in pattern)
+        {
+            if (char.IsSurrogate(ch))
+            {
+                hasSurrogate = true;
+                break;
+            }
+        }
+        if (!hasSurrogate)
+            return pattern;
+
+        var sb = new StringBuilder(pattern.Length + 16);
+        var inClass = false;
+        var depth = 0;
+
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+
+            // Copy escapes verbatim — by now any surrogate escapes have been
+            // collapsed to real chars, so a backslash here introduces some other
+            // escape (\d, \(, …) that must pass through untouched.
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                sb.Append(c).Append(pattern[i + 1]);
+                i++;
+                continue;
+            }
+
+            if (!inClass && c == '[')
+            {
+                inClass = true;
+                depth = 1;
+                sb.Append(c);
+                continue;
+            }
+            if (inClass)
+            {
+                if (c == '[')
+                    depth++;
+                else if (c == ']' && --depth <= 0)
+                    inClass = false;
+                sb.Append(c);
+                continue;
+            }
+
+            if (char.IsHighSurrogate(c))
+            {
+                if (i + 1 < pattern.Length && char.IsLowSurrogate(pattern[i + 1]))
+                {
+                    // Surrogate pair → atomic group so a following quantifier binds
+                    // to the whole code point rather than just the trail unit.
+                    sb.Append("(?:").Append(c).Append(pattern[i + 1]).Append(')');
+                    i++;
+                }
+                else
+                {
+                    // Lone lead surrogate: match only when not part of a pair.
+                    sb.Append(c).Append("(?![\uDC00-\uDFFF])");
+                }
+                continue;
+            }
+
+            if (char.IsLowSurrogate(c))
+            {
+                // Lone trail surrogate (a preceding lead would have been consumed as
+                // a pair above): match only when not part of a pair.
+                sb.Append("(?<![\uD800-\uDBFF])").Append(c);
+                continue;
+            }
+
+            sb.Append(c);
+        }
+
         return sb.ToString();
     }
 
