@@ -305,12 +305,4 @@ public class Issue725Tests
         => Assert.Equal(
             "true,true,true",
             Eval("var a = new Int32Array(2); a[0] = 1; var d = Object.getOwnPropertyDescriptor(a, 0); [d.configurable, d.enumerable, d.writable].join(',')"));
-
-
-
-    
-
-    
-
-    
 }
