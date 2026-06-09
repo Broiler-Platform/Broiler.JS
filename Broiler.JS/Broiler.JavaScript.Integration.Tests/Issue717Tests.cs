@@ -31,11 +31,25 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   is an object that has a "cause" property) as a non-enumerable, writable,
 //   configurable own data property.
 //
-// Out of scope (architectural / deep regex / CLDR — same families as prior
-// issues): P1 sm grab-bag + DateTimeFormat CLDR, P2 with/@@unscopables in nested
-// fn, P3 private getter/method shadowed by setter (per-evaluation private brand),
-// P4 indirect-eval / with var-env, P6 sm RegExp grab-bag, P7 duplicate named
-// capture groups (requires distinct .NET group numbering + backreference rewrite).
+//   Problem 1 (SameValue false/true — sm grab-bag) — two unrelated files:
+//   * Symbol/conversions: `sym == Object(sym)` must be true (abstract equality
+//     coerces the object operand), and the relational/additive operators on a
+//     boxed Symbol must honour an overridden Symbol.prototype.valueOf / @@toPrimitive
+//     instead of short-circuiting through the raw CLR ValueOf() to the un-coercible
+//     symbol. JSSymbolObject no longer overrides ValueOf(); the +/< coercion paths
+//     go through ToPrimitive (default hint).
+//   * extensions/arguments-property-access: a non-strict function's `f.arguments`
+//     is the live arguments object while `f` is executing (Annex B web reality),
+//     and null otherwise; strict functions still throw via the inherited poison pill.
+//
+// Out of scope (architectural / deep regex / CLDR): P1 DateTimeFormat CLDR (de
+// format, calendars, related-year), P1 sm `yield`-as-identifier division
+// tokenization (needs generator context in the scanner) and the RegExp
+// Symbol.match/replace lastIndex grab-bag, P1 with-scope strict write under
+// script-host (8.7.2), P2 with/@@unscopables in nested fn, P3 private getter/method
+// shadowed by setter (per-evaluation private brand), P4 indirect-eval / with
+// var-env, P6 sm RegExp grab-bag, P7 duplicate named capture groups (requires
+// distinct .NET group numbering + backreference rewrite).
 public class Issue717Tests
 {
     private static string Eval(string code)
@@ -172,4 +186,76 @@ Object.keys({ ...proxy }).join(',')"));
     public void TypedArrayElementIsEnumerable()
         => Assert.Equal("true",
             Eval("Object.prototype.propertyIsEnumerable.call(new Int8Array([1, 2, 3]), '0')"));
+
+    // ---- Problem 1: Symbol abstract equality & operator coercion ----
+
+    [Fact]
+    public void SymbolEqualsItsBoxedWrapper()
+        => Assert.Equal("true", Eval("var s = Symbol(); s == Object(s)"));
+
+    [Fact]
+    public void SymbolDoesNotEqualUnrelatedWrapper()
+        => Assert.Equal("false", Eval("Symbol() == Object(Symbol())"));
+
+    [Fact]
+    public void BoxedSymbolNotLooselyEqualToNumber()
+        => Assert.Equal("false", Eval("Object(Symbol()) == 0"));
+
+    [Fact]
+    public void BoxedSymbolRelationalUsesOverriddenValueOf()
+        => Assert.Equal("false", Eval(
+            "delete Symbol.prototype[Symbol.toPrimitive]; Symbol.prototype.valueOf = function () { return 117.25; }; Object(Symbol()) < 0"));
+
+    [Fact]
+    public void BoxedSymbolAdditionUsesOverriddenValueOf()
+        => Assert.Equal("118.25", Eval(
+            "delete Symbol.prototype[Symbol.toPrimitive]; Symbol.prototype.valueOf = function () { return 117.25; }; Object(Symbol()) + 1 + ''"));
+
+    [Fact]
+    public void BoxedSymbolStringConcatUsesDefaultHint()
+        => Assert.Equal("117.25", Eval(
+            "delete Symbol.prototype[Symbol.toPrimitive]; Symbol.prototype.valueOf = function () { return 117.25; }; Symbol.prototype.toString = function () { return 'TS'; }; '' + Object(Symbol())"));
+
+    [Fact]
+    public void BoxedSymbolToNumberUsesOverriddenValueOf()
+        => Assert.Equal("117.25", Eval(
+            "delete Symbol.prototype[Symbol.toPrimitive]; Symbol.prototype.valueOf = function () { return 117.25; }; Number(Object(Symbol())) + ''"));
+
+    [Fact]
+    public void BoxedSymbolToStringUsesOverriddenToString()
+        => Assert.Equal("TS", Eval(
+            "delete Symbol.prototype[Symbol.toPrimitive]; Symbol.prototype.toString = function () { return 'TS'; }; String(Object(Symbol()))"));
+
+    [Fact]
+    public void SymbolToPrimitiveStillWorksOnBoxedReceiver()
+        => Assert.Equal("true", Eval(
+            "var s = Symbol('d'); Object(s)[Symbol.toPrimitive]('default') === s"));
+
+    [Fact]
+    public void BoxedSymbolDescriptionStillWorks()
+        => Assert.Equal("d", Eval("Object(Symbol('d')).description"));
+
+    // ---- Problem 1: legacy function.arguments (Annex B) ----
+
+    [Fact]
+    public void NonStrictFunctionArgumentsIsLiveDuringInvocation()
+        => Assert.Equal("true,5,undefined,2", Eval(@"
+var obj = { test: function () {
+  var args = obj.test.arguments;
+  return (args !== null) + ',' + args[0] + ',' + args[1] + ',' + args.length;
+} };
+obj.test(5, undefined);"));
+
+    [Fact]
+    public void FunctionArgumentsIsNullWhenNotExecuting()
+        => Assert.Equal("true", Eval("function f() {} f(1, 2); f.arguments === null"));
+
+    [Fact]
+    public void StrictFunctionArgumentsThrows()
+        => Assert.Equal("true", Eval(@"
+var sobj = { test: function () {
+  'use strict';
+  try { sobj.test.arguments; return false; } catch (e) { return e instanceof TypeError; }
+} };
+sobj.test();"));
 }

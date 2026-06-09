@@ -915,8 +915,8 @@ internal static class BuiltInsAssemblyInitializer
             if (a.This is JSSymbol symbol)
                 return symbol;
 
-            if (a.This is JSObject symbolObject && symbolObject.ValueOf() is JSSymbol boxed)
-                return boxed;
+            if (a.This is Broiler.JavaScript.BuiltIns.Symbol.JSSymbolObject symbolObject)
+                return symbolObject.WrappedSymbol;
 
             throw JSEngine.NewTypeError("Symbol.prototype[Symbol.toPrimitive] requires a symbol receiver");
         }, "[Symbol.toPrimitive]", 1), JSPropertyAttributes.ConfigurableValue);
@@ -926,8 +926,8 @@ internal static class BuiltInsAssemblyInitializer
             if (a.This is JSSymbol symbol)
                 return symbol.Description == null ? JSUndefined.Value : JSValue.CreateString(symbol.Description);
 
-            if (a.This is JSObject symbolObject && symbolObject.ValueOf() is JSSymbol boxed)
-                return boxed.Description == null ? JSUndefined.Value : JSValue.CreateString(boxed.Description);
+            if (a.This is Broiler.JavaScript.BuiltIns.Symbol.JSSymbolObject symbolObject)
+                return symbolObject.WrappedSymbol.Description == null ? JSUndefined.Value : JSValue.CreateString(symbolObject.WrappedSymbol.Description);
 
             throw JSEngine.NewTypeError("Symbol.prototype.description requires a symbol receiver");
         });

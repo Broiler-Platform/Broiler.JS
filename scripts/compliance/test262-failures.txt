@@ -2250,7 +2250,6 @@ test/staging/sm/String/string-upper-lower-mapping.js
 test/staging/sm/String/unicode-braced.js
 test/staging/sm/Symbol/as-base-value.js
 test/staging/sm/Symbol/constructor.js
-test/staging/sm/Symbol/conversions.js
 test/staging/sm/Symbol/json-stringify-values.js
 test/staging/sm/Symbol/property-accessor.js
 test/staging/sm/Symbol/toStringTag.js
@@ -2301,7 +2300,6 @@ test/staging/sm/expressions/octal-literals.js
 test/staging/sm/expressions/optional-chain.js
 test/staging/sm/expressions/short-circuit-compound-assignment-anon-fns.js
 test/staging/sm/expressions/string-literal-escape-sequences.js
-test/staging/sm/extensions/arguments-property-access-in-function.js
 test/staging/sm/extensions/function-caller-skips-eval-frames.js
 test/staging/sm/extensions/function-properties.js
 test/staging/sm/extensions/mutable-proto-special-form.js

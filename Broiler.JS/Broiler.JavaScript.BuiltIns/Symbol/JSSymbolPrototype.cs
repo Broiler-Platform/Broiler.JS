@@ -27,8 +27,8 @@ public partial class JSSymbol
         if (a.This is JSSymbol symbol)
             return JSValue.CreateString(symbol.ToDescriptiveString());
 
-        if (a.This is JSObject symbolObject && symbolObject.ValueOf() is JSSymbol boxed)
-            return JSValue.CreateString(boxed.ToDescriptiveString());
+        if (a.This is JSSymbolObject symbolObject)
+            return JSValue.CreateString(symbolObject.WrappedSymbol.ToDescriptiveString());
 
         throw JSEngine.NewTypeError("Symbol.prototype.toString requires a symbol receiver");
     }

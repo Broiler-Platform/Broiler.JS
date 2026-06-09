@@ -136,6 +136,28 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     }
 
     /// <summary>
+    /// Updates the legacy <c>arguments</c> own property to the arguments object of
+    /// the in-progress invocation (Annex B web-reality behaviour: a non-strict
+    /// function's <c>f.arguments</c> is non-null while <c>f</c> is on the stack).
+    /// Reset to <c>null</c> when the invocation completes.
+    /// </summary>
+    private void SetLegacyArguments(JSValue argumentsObject)
+        => FastAddValue(KeyStrings.arguments, argumentsObject, JSPropertyAttributes.ReadonlyValue);
+
+    private static JSObject CreateLegacyArgumentsObject(in Arguments a)
+    {
+        // A plain (unmapped) arguments-like object: indexed data properties plus a
+        // writable, non-enumerable, configurable `length`. Sufficient for the
+        // legacy `f.arguments` accessor, which exposes positional arguments.
+        var argumentsObject = new JSObject();
+        var length = a.Length;
+        for (uint i = 0; i < length; i++)
+            argumentsObject.FastAddValue(i, a.GetAt((int)i), JSPropertyAttributes.EnumerableConfigurableValue);
+        argumentsObject.FastAddValue(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableValue);
+        return argumentsObject;
+    }
+
+    /// <summary>
     /// Gets or sets the underlying <see cref="JSFunctionDelegate"/> that implements
     /// this function's invocation logic. Used by CLR interop to wire constructor
     /// delegates.
@@ -429,7 +451,10 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         JSEngine.ExecutingFunction = this;
         var trackLegacyCaller = HasLegacyCallerArguments;
         if (trackLegacyCaller)
+        {
             SetLegacyCaller(previousExecutingFunction);
+            SetLegacyArguments(CreateLegacyArgumentsObject(a1));
+        }
         try
         {
             // [[Construct]] must run the body under its own strict-mode setting,
@@ -442,7 +467,10 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         finally
         {
             if (trackLegacyCaller)
+            {
                 SetLegacyCaller(JSValue.NullValue);
+                SetLegacyArguments(JSValue.NullValue);
+            }
             JSEngine.ExecutingFunction = previousExecutingFunction;
             if (ec != null)
                 ec.CurrentNewTarget = previousNewTarget;
@@ -518,7 +546,10 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
                 var trackLegacyCaller = current.HasLegacyCallerArguments;
                 if (trackLegacyCaller)
+                {
                     current.SetLegacyCaller(previousExecutingFunction);
+                    current.SetLegacyArguments(CreateLegacyArgumentsObject(currentArguments));
+                }
 
                 using (JSEngine.EnterStrictMode(current.IsStrictMode))
                 {
@@ -540,7 +571,10 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                     finally
                     {
                         if (trackLegacyCaller)
+                        {
                             current.SetLegacyCaller(JSValue.NullValue);
+                            current.SetLegacyArguments(JSValue.NullValue);
+                        }
                     }
                 }
 

@@ -561,7 +561,14 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <returns></returns>
     public virtual JSValue AddValue(double value)
     {
-        var self = ValueOf();
+        // §13.15 ApplyStringOrNumericBinaryOperator: the left operand is first
+        // coerced with ToPrimitive (default hint). Going through ToDefaultPrimitive
+        // — rather than the raw CLR ValueOf() — lets a wrapper observe an overridden
+        // valueOf / @@toPrimitive (e.g. a boxed Symbol whose valueOf was replaced).
+        var self = this is JSObject selfObject ? selfObject.ToDefaultPrimitive() : ValueOf();
+        if (!ReferenceEquals(self, this))
+            return self.AddValue(value);
+
         if (self.CanBeNumber)
             return CreateNumber(self.DoubleValue + value);
 
@@ -575,7 +582,9 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <returns></returns>
     public virtual JSValue AddValue(string value)
     {
-        var self = ValueOf();
+        var self = this is JSObject selfObject ? selfObject.ToDefaultPrimitive() : ValueOf();
+        if (!ReferenceEquals(self, this))
+            return self.AddValue(value);
 
         if (value.Length == 0)
             return self.IsString ? self : CreateString(self.StringValue);
