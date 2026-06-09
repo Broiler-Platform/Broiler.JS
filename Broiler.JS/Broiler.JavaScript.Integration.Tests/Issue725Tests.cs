@@ -90,4 +90,38 @@ public class Issue725Tests
         => Assert.Equal(
             "[2,4]",
             Eval("JSON.stringify([1, 2], function (k, v) { return typeof v === 'number' ? v * 2 : v; })"));
+
+    // ---- Problem 6: grandfathered language tag canonicalization ----
+    //
+    // Intl.getCanonicalLocales / Intl.Locale must replace a regular grandfathered
+    // tag with its preferred UTS #35 form. Covers
+    // intl402/Intl/getCanonicalLocales/grandfathered.js and preferred-grandfathered.js.
+
+    [Theory]
+    [InlineData("art-lojban", "jbo")]
+    [InlineData("cel-gaulish", "xtg")]
+    [InlineData("zh-guoyu", "zh")]
+    [InlineData("zh-hakka", "hak")]
+    [InlineData("zh-xiang", "hsn")]
+    public void GetCanonicalLocalesMapsRegularGrandfatheredTags(string tag, string canonical)
+        => Assert.Equal(canonical, Eval($"Intl.getCanonicalLocales('{tag}')[0]"));
+
+    [Fact]
+    public void GrandfatheredCanonicalizationIsCaseInsensitive()
+        => Assert.Equal("jbo", Eval("Intl.getCanonicalLocales('Art-LojBan')[0]"));
+
+    [Fact]
+    public void IntlLocaleCanonicalizesGrandfatheredTag()
+        => Assert.Equal("jbo", Eval("new Intl.Locale('art-lojban').toString()"));
+
+    [Theory]
+    [InlineData("i-klingon")]
+    [InlineData("en-GB-oed")]
+    [InlineData("sgn-BE-FR")]
+    [InlineData("no-bok")]
+    [InlineData("zh-min-nan")]
+    public void IrregularAndInvalidGrandfatheredTagsAreRejected(string tag)
+        => Assert.Equal(
+            "RangeError",
+            Eval($"try {{ Intl.getCanonicalLocales('{tag}'); 'no throw'; }} catch (e) {{ e.constructor.name; }}"));
 }

@@ -73,6 +73,21 @@ public static class JSIntl
         "zh-min-nan",
     };
 
+    // Regular grandfathered tags that remain structurally valid language tags but
+    // whose canonical form is a single preferred subtag (UTS #35 §3.3, the CLDR
+    // language-alias "type" mappings). CanonicalizeUnicodeLocaleId replaces the
+    // whole tag with the preferred value. Irregular grandfathered tags (i-klingon,
+    // en-GB-oed, sgn-*, …) are not structurally valid and are rejected by the
+    // grammar before reaching this table.
+    private static readonly Dictionary<string, string> RegularGrandfatheredMappings = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["art-lojban"] = "jbo",
+        ["cel-gaulish"] = "xtg",
+        ["zh-guoyu"] = "zh",
+        ["zh-hakka"] = "hak",
+        ["zh-xiang"] = "hsn",
+    };
+
     public static JSValue GetIntlObject()
     {
         if (JSEngine.CurrentContext is JSObject global)
@@ -600,9 +615,11 @@ public static class JSIntl
             throw JSEngine.NewTypeError("Locale tag must be a string or object");
 
         var tagString = tag.StringValue;
-        ValidateLanguageTag(tagString);
-        ValidateLocaleOptions(tagString, ValidateOptionsArgument(a.GetAt(1)));
-        return tagString;
+        // ValidateLanguageTag also canonicalizes (e.g. grandfathered "art-lojban"
+        // -> "jbo"); the canonical form is what the Locale stores and reports.
+        var canonicalTag = ValidateLanguageTag(tagString);
+        ValidateLocaleOptions(canonicalTag, ValidateOptionsArgument(a.GetAt(1)));
+        return canonicalTag;
     }
 
     internal static JSObject ValidateOptionsArgument(JSValue options, bool coerce = true)
@@ -706,6 +723,11 @@ public static class JSIntl
             HasDuplicateVariantSubtag(tag) ||
             HasInvalidUnicodeExtensionKey(tag))
             throw JSEngine.NewRangeError("Invalid language tag");
+
+        // CanonicalizeUnicodeLocaleId: a regular grandfathered tag is replaced
+        // wholesale by its preferred form (e.g. "art-lojban" -> "jbo").
+        if (RegularGrandfatheredMappings.TryGetValue(tag, out var preferred))
+            return preferred;
 
         return tag;
     }
