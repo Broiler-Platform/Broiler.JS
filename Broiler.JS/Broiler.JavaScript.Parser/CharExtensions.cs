@@ -78,6 +78,13 @@ public static class CharExtensions
 
     }
 
+    // ECMAScript LineTerminator (§12.3): LF, CR, LINE SEPARATOR (U+2028) and
+    // PARAGRAPH SEPARATOR (U+2029). These four — and only these — end a line for
+    // the purposes of automatic semicolon insertion.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static bool IsLineTerminator(this char ch)
+        => ch is '\n' or '\r' or '\u2028' or '\u2029';
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsIdentifierStart(this char ch)
     {

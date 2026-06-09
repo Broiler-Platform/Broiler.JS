@@ -234,7 +234,7 @@ public class FastScanner
 
         while (char.IsWhiteSpace(first))
         {
-            if (first == '\n')
+            if (first.IsLineTerminator())
                 lineTerminator = true;
 
             first = Consume();
@@ -1131,7 +1131,7 @@ public class FastScanner
     private FastToken SkipMultilineComment(State state)
     {
         char ch = Peek();
-        bool hasLineTerminator = ch == '\n' || ch == '\r';
+        bool hasLineTerminator = ch.IsLineTerminator();
         do
         {
             ch = Consume();
@@ -1139,6 +1139,8 @@ public class FastScanner
             {
                 case '\r':
                 case '\n':
+                case '\u2028':
+                case '\u2029':
                     hasLineTerminator = true;
                     continue;
 
@@ -1186,7 +1188,7 @@ public class FastScanner
         }
 
         var ch = Peek();
-        while (ch != '\n' && ch != char.MaxValue)
+        while (!ch.IsLineTerminator() && ch != char.MaxValue)
         {
             ch = Consume();
         }

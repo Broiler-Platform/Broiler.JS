@@ -366,12 +366,18 @@ partial class FastCompiler
             // function reference. The function body captures this variable.
             if (fexprNameParam != null)
             {
-                var isReadOnlyField = typeof(JSVariable).GetField("IsReadOnly", BindingFlags.Instance | BindingFlags.NonPublic);
                 var fexprVars = new Sequence<YParameterExpression> { fexprNameParam };
 
+                // Mark the name binding read-only. In a strict-mode function an
+                // assignment to it must throw a TypeError; the default read-only
+                // write only throws when the engine's runtime strict-mode flag is
+                // active, but a generator / async body resumes as a state machine
+                // outside that scope, so the throw would be lost. Baking the
+                // strictness in (throwOnWrite) makes the TypeError independent of
+                // the runtime flag.
                 return YExpression.Block(fexprVars,
                     YExpression.Assign(fexprNameParam, JSVariableBuilder.New(jsf, functionName)),
-                    YExpression.Assign(YExpression.Field(fexprNameParam, isReadOnlyField), YExpression.Constant(true)), 
+                    JSVariableBuilder.SetReadOnly(fexprNameParam, throwOnWrite: isStrictFunction),
                     JSVariable.ValueExpression(fexprNameParam));
             }
 

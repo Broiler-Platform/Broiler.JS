@@ -22,6 +22,23 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   (and Annex-B function names) into the synthetic block.
 //
 //   sm/regress/regress-560998-1.js is the canonical reproduction.
+//
+//   Problem 3 (subset) — assigning to the immutable name binding of a named
+//   generator or async function expression in strict mode silently did nothing
+//   instead of throwing a TypeError. The read-only write only threw while the
+//   engine's runtime strict-mode flag was active, but a generator / async body
+//   resumes as a state machine outside that scope, so the throw was lost. The
+//   name binding now bakes the function's strictness in at compile time.
+//   (language/expressions/generators/named-strict-error-reassign-fn-name-in-body.js
+//   and the function/async siblings.)
+//
+//   Problem 10 — CR (U+000D), LINE SEPARATOR (U+2028) and PARAGRAPH SEPARATOR
+//   (U+2029) were not treated as LineTerminators by the scanner (only LF was), so
+//   automatic semicolon insertion did not fire across them and `eval("var x =
+//   asdf<CR>ghjk")` raised a SyntaxError instead of the expected ReferenceError
+//   from the second statement. The scanner now recognises all four
+//   LineTerminators in whitespace, line comments and block comments.
+//   (language/types/string/S8.4_A7.2.js, A7.3, A7.4.)
 public class Issue721Tests
 {
     private static string Eval(string code)
@@ -37,6 +54,10 @@ public class Issue721Tests
         using var ctx = new JSContext(experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026);
         return ctx.Execute(code).ToString();
     }
+
+    // Run `source`, reporting the thrown error's constructor name or "ok".
+    private static string Catch(string source)
+        => Eval("var r; try { " + source + " r = 'ok'; } catch (e) { r = e.constructor.name; } r;");
 
     // ---- Problem 1: hoisted FunctionDeclaration capturing a for-let binding ----
 
@@ -100,4 +121,65 @@ public class Issue721Tests
         => Assert.Equal(
             "1",
             Execute("class C { static async #m(v) { return await v; } static async run(v) { return await this.#m(v); } } C.run(1);"));
+
+    // ---- Problem 3: strict-mode reassignment of a function-expression name ----
+
+    // A named generator function expression: assigning to its own name throws.
+    [Fact]
+    public void StrictGeneratorNameReassignThrows()
+        => Assert.Equal(
+            "TypeError",
+            Eval("'use strict'; var ref = function* BindingIdentifier() { BindingIdentifier = 1; yield; }; var r; try { ref().next(); r = 'no throw'; } catch (e) { r = e.constructor.name; } r;"));
+
+    // A named async function expression behaves the same once awaited.
+    [Fact]
+    public void StrictAsyncNameReassignThrows()
+        => Assert.Equal(
+            "TypeError",
+            Execute("'use strict'; var f = async function g() { g = 1; }; f().then(function () { return 'no throw'; }, function (e) { return e.constructor.name; });"));
+
+    // Regression guard: the ordinary named function expression case still throws.
+    [Fact]
+    public void StrictFunctionNameReassignThrows()
+        => Assert.Equal(
+            "TypeError",
+            Eval("'use strict'; var f = function g() { g = 1; }; var r; try { f(); r = 'no throw'; } catch (e) { r = e.constructor.name; } r;"));
+
+    // In sloppy mode the assignment is silently ignored (no throw, no effect).
+    [Fact]
+    public void SloppyGeneratorNameReassignIsSilent()
+        => Assert.Equal("function", Eval("var ref = function* g() { g = 1; yield typeof g; }; ref().next().value;"));
+
+    [Fact]
+    public void SloppyFunctionNameReassignIsSilent()
+        => Assert.Equal("function", Eval("var f = function g() { g = 1; return typeof g; }; f();"));
+
+    // ---- Problem 10: CR / LS / PS are LineTerminators (ASI) ----
+
+    // CR (U+000D) between two statements triggers ASI, so the second statement
+    // runs and resolving the undeclared `asdf` is a ReferenceError (not a parse
+    // SyntaxError). Mirrors S8.4_A7.2.js.
+    [Fact]
+    public void CarriageReturnIsLineTerminatorForAsi()
+        => Assert.Equal("ReferenceError", Catch("eval('var x = asdf\\u000Dghjk');"));
+
+    // LINE SEPARATOR (U+2028). Mirrors S8.4_A7.3/A7.4.
+    [Fact]
+    public void LineSeparatorIsLineTerminatorForAsi()
+        => Assert.Equal("ReferenceError", Catch("eval('var x = asdf\\u2028ghjk');"));
+
+    // PARAGRAPH SEPARATOR (U+2029).
+    [Fact]
+    public void ParagraphSeparatorIsLineTerminatorForAsi()
+        => Assert.Equal("ReferenceError", Catch("eval('var x = asdf\\u2029ghjk');"));
+
+    // A CR-terminated single-line comment ends at the CR; the following code runs.
+    [Fact]
+    public void CarriageReturnEndsLineComment()
+        => Assert.Equal("1", Eval("eval('// comment\\u000Dvar y = 1; y');"));
+
+    // LF still works (regression guard).
+    [Fact]
+    public void LineFeedIsLineTerminatorForAsi()
+        => Assert.Equal("ReferenceError", Catch("eval('var x = asdf\\u000Aghjk');"));
 }
