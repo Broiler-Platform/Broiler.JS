@@ -188,7 +188,9 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         {
             var g = GeneratorRewriter.Rewrite("vm", script, fx.ReturnLabel, fx.Generator, replaceArgs: fx.Arguments, replaceStackItem: fx.StackItem,
                 replaceContext: fx.Context, replaceScriptInfo: scriptInfo);
-            Broiler.JavaScript.ExpressionCompiler.LambdaRewriter.Rewrite(g);
+            // Pre-rewrite the top-level-await body only; nested lambdas are threaded
+            // by the later full rewrite. See LambdaRewriter.rewriteNestedLambdas.
+            Broiler.JavaScript.ExpressionCompiler.LambdaRewriter.RewriteRootOnly(g);
 
             var jsf = JSAsyncFunctionBuilder.Create(JSGeneratorFunctionBuilderV2.New(g, StringSpanBuilder.New("vm"), StringSpanBuilder.New(code.Value)));
             var np = YExpression.Parameter(ArgumentsBuilder.refType, "a");

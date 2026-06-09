@@ -38,7 +38,7 @@ public sealed partial class JSNumber : JSPrimitive
     public static bool IsNegativeZero(double value) => BitConverter.DoubleToInt64Bits(value) == negativeZeroBits;
 
     [JSExport("NaN")]
-    public static JSNumber NaN = new(double.NaN);
+    public static readonly JSNumber NaN = new(double.NaN);
 
     public static JSNumber MinusOne = new(-1);
     public static JSNumber Zero = new(0d);
@@ -47,10 +47,10 @@ public sealed partial class JSNumber : JSPrimitive
     public static JSNumber Two = new(2d);
 
     [JSExport("POSITIVE_INFINITY")]
-    public static JSNumber PositiveInfinity = new(double.PositiveInfinity);
+    public static readonly JSNumber PositiveInfinity = new(double.PositiveInfinity);
 
     [JSExport("NEGATIVE_INFINITY")]
-    public static JSNumber NegativeInfinity = new(double.NegativeInfinity);
+    public static readonly JSNumber NegativeInfinity = new(double.NegativeInfinity);
 
 
     [JSExport("EPSILON")]

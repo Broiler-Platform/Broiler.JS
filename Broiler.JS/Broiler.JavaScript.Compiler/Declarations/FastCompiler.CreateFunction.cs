@@ -303,7 +303,12 @@ partial class FastCompiler
 
                 lambda = GeneratorRewriter.Rewrite(in scriptFunctionName, block, cs.ReturnLabel, cs.Generator, replaceArgs: cs.Arguments, replaceStackItem: cs.StackItem,
                     replaceContext: cs.Context, replaceScriptInfo: scriptInfo);
-                Broiler.JavaScript.ExpressionCompiler.LambdaRewriter.Rewrite(lambda);
+                // Pre-rewrite only the async function's own body. Nested lambdas keep
+                // their raw outer-variable references so the later full top-down
+                // rewrite can thread (and box) those captures with the complete scope
+                // chain — descending here would strand them (KeyNotFound / type
+                // mismatch at IL-gen). See LambdaRewriter.rewriteNestedLambdas.
+                Broiler.JavaScript.ExpressionCompiler.LambdaRewriter.RewriteRootOnly(lambda);
 
                 jsf = JSAsyncFunctionBuilder.Create(JSGeneratorFunctionBuilderV2.New(lambda, fxName, code, functionLength));
             }

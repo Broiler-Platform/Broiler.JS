@@ -107,8 +107,18 @@ public class LambdaRewriter: YExpressionMapVisitor
     private ScopedStack<Scope> lambdaStack = new();
     private YLambdaExpression RootExpression;
 
+    // When false, the rewriter processes only the root lambda's own body and does
+    // NOT descend into nested lambdas. Used by the async pre-rewrite (which runs in
+    // isolation, before the enclosing scope exists): descending there would convert
+    // a nested lambda's references to an OUTER variable into boxed closure accesses
+    // and finalize/cache that nested lambda's closure repository against an
+    // incomplete scope chain — stranding the capture (the enclosing scope never
+    // learns to box the variable). Leaving nested lambdas untouched lets the later
+    // full top-down rewrite (which has the whole scope chain) thread them correctly.
+    private bool rewriteNestedLambdas = true;
+
     public Scope Root => lambdaStack.TopItem;
-    
+
     public LambdaRewriter()
     {
 
@@ -129,6 +139,8 @@ public class LambdaRewriter: YExpressionMapVisitor
         if (node != RootExpression)
         {
             node.SetupAsClosure();
+            if (!rewriteNestedLambdas)
+                return node;
         }
         if (node.This != null)
         {
@@ -232,7 +244,20 @@ public class LambdaRewriter: YExpressionMapVisitor
     {
         var l = new LambdaRewriter();
         l.RootExpression = convert;
-        l.Visit(convert);   
+        l.Visit(convert);
+        return convert;
+    }
+
+    /// <summary>
+    /// Rewrites only the root lambda's own body, leaving nested lambdas untouched
+    /// for a later enclosing-scope rewrite. Used by the async function pre-rewrite,
+    /// which runs before the enclosing scope exists; see <see cref="rewriteNestedLambdas"/>.
+    /// </summary>
+    public static YExpression RewriteRootOnly(YLambdaExpression convert)
+    {
+        var l = new LambdaRewriter { rewriteNestedLambdas = false };
+        l.RootExpression = convert;
+        l.Visit(convert);
         return convert;
     }
 }
