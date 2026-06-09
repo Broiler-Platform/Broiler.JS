@@ -930,7 +930,16 @@ public partial class JSObject
 
         ref var p = ref ownProperties.GetValue(key.Key);
         if (!p.IsEmpty)
+        {
+            // A private accessor declared with only a setter has no [[Get]]: reading
+            // it is a TypeError (PrivateGet, sec-privateget), not the `undefined` an
+            // ordinary getterless accessor yields. Public accessors keep the undefined
+            // result; this stricter behaviour is gated on the private-name marker.
+            if (IsPrivateName(in key) && p.IsProperty && p.get is not IJSFunction)
+                throw NewTypeError($"Cannot read private member {PrivateDisplayName(in key)}: it was defined without a getter");
+
             return (receiver ?? this).GetValue(p);
+        }
 
         // A canonical array-index string key (e.g. "1") names the same property as
         // the integer index, which is stored in the element table. Canonicalize

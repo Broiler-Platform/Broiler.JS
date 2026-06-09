@@ -41,7 +41,21 @@ partial class FastCompiler
         YParameterExpression? iterationValueVariable = null;
         YExpression? identifier = forInStatement.Init.Type switch
         {
-            FastNodeType.Identifier => Visit(forInStatement.Init),
+            // A bare-identifier head that resolves to a known binding is assigned
+            // directly (the enumerator writes the key into the variable). A FREE
+            // identifier (undeclared) must instead go through the per-iteration
+            // assignment path: in sloppy mode `for (x in o)` assigns to / creates the
+            // global `x`, exactly like `x = key`. Treating it as a read target made
+            // the enumerator out-parameter resolve `x` for reading and throw
+            // "x is not defined" before the first assignment.
+            FastNodeType.Identifier when TryGetStaticIdentifierVariable((AstIdentifier)forInStatement.Init, out var v) && v != null
+                => Visit(forInStatement.Init),
+            FastNodeType.Identifier =>
+                CreateForOfDestructuringAssignment(
+                    (AstExpression)forInStatement.Init,
+                    perIterationInits,
+                    out iterationValueVariable,
+                    forceDynamicAssignment: false),
             FastNodeType.VariableDeclaration when TryCreateForOfDestructuringAssignment(
                 (AstVariableDeclaration)forInStatement.Init,
                 perIterationInits,
@@ -108,7 +122,17 @@ partial class FastCompiler
         YParameterExpression? iterationValueVariable = null;
         YExpression? identifier = forOfStatement.Init.Type switch
         {
-            FastNodeType.Identifier => Visit(forOfStatement.Init),
+            // See VisitForInStatement: a free (undeclared) identifier head must be
+            // assigned through the per-iteration path so a sloppy `for (x of o)`
+            // creates/assigns the global `x` instead of reading an undefined binding.
+            FastNodeType.Identifier when TryGetStaticIdentifierVariable((AstIdentifier)forOfStatement.Init, out var v) && v != null
+                => Visit(forOfStatement.Init),
+            FastNodeType.Identifier =>
+                CreateForOfDestructuringAssignment(
+                    (AstExpression)forOfStatement.Init,
+                    perIterationInits,
+                    out iterationValueVariable,
+                    forOfStatement.IsAwait),
             FastNodeType.VariableDeclaration when TryCreateForOfDestructuringAssignment(
                 (AstVariableDeclaration)forOfStatement.Init,
                 perIterationInits,

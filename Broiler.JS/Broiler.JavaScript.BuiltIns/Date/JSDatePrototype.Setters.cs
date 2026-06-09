@@ -86,8 +86,14 @@ public partial class JSDate
             try
             {
                 date = new DateTimeOffset((int)year, 1, 1, date.Hour, date.Minute, date.Second, date.Millisecond, value.Offset);
-                date = date.AddDays(day - 1);
+                // Apply the month offset before the day offset: ECMAScript MakeDay
+                // resolves the (year, month) to the first of that month and then adds
+                // (date - 1) days, so day overflow rolls into the next month. Doing
+                // AddDays first then AddMonths would let .NET's AddMonths clamp the
+                // day-of-month to the target month's last valid day (e.g. setMonth(5,31)
+                // would wrongly land on Jun 30 instead of Jul 1).
                 date = date.AddMonths(month);
+                date = date.AddDays(day - 1);
                 value = date;
                 // Disambiguate a real year-1 boundary date from the MinValue sentinel
                 // that marks an invalid date (otherwise it would be read back as NaN).
@@ -207,9 +213,12 @@ public partial class JSDate
 
         try
         {
+            // Month offset before day offset so day overflow rolls into the next month
+            // (ECMAScript MakeDay), instead of .NET AddMonths clamping the day to the
+            // target month's last valid day. See SetFullYear for the detailed rationale.
             date = new DateTimeOffset(date.Year, 1, 1, date.Hour, date.Minute, date.Second, date.Millisecond, date.Offset);
-            date = date.AddDays(days);
             date = date.AddMonths(month);
+            date = date.AddDays(days);
             value = date;
 
         }
@@ -479,9 +488,11 @@ public partial class JSDate
 
         try
         {
+            // Month offset before day offset so day overflow rolls into the next month
+            // (ECMAScript MakeDay), instead of .NET AddMonths clamping. See SetFullYear.
             utc = new DateTimeOffset(utc.Year, 1, 1, utc.Hour, utc.Minute, utc.Second, utc.Millisecond, utc.Offset);
-            utc = utc.AddDays(days);
             utc = utc.AddMonths(month);
+            utc = utc.AddDays(days);
 
             value = utc.ToOffset(offset);
         }
