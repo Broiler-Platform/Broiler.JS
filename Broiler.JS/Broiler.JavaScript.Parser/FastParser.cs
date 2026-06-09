@@ -16,8 +16,20 @@ public partial class FastParser(FastTokenStream stream) : IParser
     /// </summary>
     private bool considerInOfAsOperators = true;
     private bool isAsync = false;
-    private bool inGeneratorBody = false;
+
+    // Tracks whether the parser is inside a generator / async function body, which
+    // makes `yield` / `await` keywords. Assigning these also informs the scanner so
+    // it disambiguates a following `/` as a regex literal (keyword form) rather than
+    // division (identifier form) — see FastScanner.YieldIsKeyword / AwaitIsKeyword.
+    private bool _inGeneratorBody = false;
+    private bool inGeneratorBody
+    {
+        get => _inGeneratorBody;
+        set { _inGeneratorBody = value; stream.YieldIsKeyword = value; }
+    }
+
     private bool inAsyncFunctionBody = false;
+
     private int functionDepth = 0;
 
     // Set while parsing a FunctionDeclaration that is the sole statement of an

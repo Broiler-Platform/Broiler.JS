@@ -41,12 +41,16 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   * extensions/arguments-property-access: a non-strict function's `f.arguments`
 //     is the live arguments object while `f` is executing (Annex B web reality),
 //     and null otherwise; strict functions still throw via the inherited poison pill.
+//   * generators/yield-non-regexp: in sloppy code outside a generator `yield` is an
+//     ordinary identifier, so `yield /a/g` is division, not a regex literal. The
+//     scanner now only treats a `/` after `yield` as a regex when the parser is
+//     inside a generator body (it threads that context to the scanner, which must be
+//     set before the body's `{` is consumed because of the one-token lookahead).
 //
 // Out of scope (architectural / deep regex / CLDR): P1 DateTimeFormat CLDR (de
-// format, calendars, related-year), P1 sm `yield`-as-identifier division
-// tokenization (needs generator context in the scanner) and the RegExp
-// Symbol.match/replace lastIndex grab-bag, P1 with-scope strict write under
-// script-host (8.7.2), P2 with/@@unscopables in nested fn, P3 private getter/method
+// format, calendars, related-year — the CLDR pipeline has no date patterns / month
+// names yet), the RegExp Symbol.match/replace lastIndex grab-bag, P1 with-scope
+// strict write under script-host (8.7.2), P2 with/@@unscopables in nested fn, P3 private getter/method
 // shadowed by setter (per-evaluation private brand), P4 indirect-eval / with
 // var-env, P6 sm RegExp grab-bag, P7 duplicate named capture groups (requires
 // distinct .NET group numbering + backreference rewrite).
@@ -258,4 +262,24 @@ var sobj = { test: function () {
   try { sobj.test.arguments; return false; } catch (e) { return e instanceof TypeError; }
 } };
 sobj.test();"));
+
+    // ---- Problem 1: `yield` as identifier — `/` is division, not a regex ----
+
+    [Fact]
+    public void SloppyYieldIsIdentifierSoSlashIsDivision()
+        => Assert.Equal("true", Eval(
+            "var yield = 12, a = 3, b = 6, g = 2, r = false; yield /a; r = true; b/g; r"));
+
+    [Fact]
+    public void GeneratorYieldFollowedBySlashIsRegex()
+        => Assert.Equal("ab", Eval("function* g() { yield /ab/.source; } g().next().value"));
+
+    [Fact]
+    public void GeneratorMethodYieldFollowedBySlashIsRegex()
+        => Assert.Equal("cd", Eval("class C { *g() { yield /cd/.source; } } new C().g().next().value"));
+
+    [Fact]
+    public void YieldAsIdentifierInNestedFunctionInsideGenerator()
+        => Assert.Equal("5", Eval(
+            "function* g() { function h() { var yield = 10, a = 2; return yield /a; } return h(); } g().next().value + ''"));
 }

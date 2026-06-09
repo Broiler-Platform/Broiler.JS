@@ -50,6 +50,13 @@ public class FastTokenStream
         scanner = new FastScanner(pool, text, Keywords);
     }
 
+    /// <summary>
+    /// Forwards the parser's generator / async context to the scanner so it can
+    /// decide whether a <c>/</c> following <c>yield</c> / <c>await</c> begins a
+    /// regular-expression literal (keyword form) or is division (identifier form).
+    /// </summary>
+    public bool YieldIsKeyword { set => scanner.YieldIsKeyword = value; }
+
     public FastToken Current => current ??= scanner.Token;
 
     public FastToken Next => current.Next;

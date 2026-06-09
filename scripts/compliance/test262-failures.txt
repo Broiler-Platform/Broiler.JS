@@ -2314,7 +2314,6 @@ test/staging/sm/generators/return-finally.js
 test/staging/sm/generators/runtime.js
 test/staging/sm/generators/syntax.js
 test/staging/sm/generators/yield-error.js
-test/staging/sm/generators/yield-non-regexp.js
 test/staging/sm/global/bug-320887.js
 test/staging/sm/global/bug660612.js
 test/staging/sm/global/eval-01.js

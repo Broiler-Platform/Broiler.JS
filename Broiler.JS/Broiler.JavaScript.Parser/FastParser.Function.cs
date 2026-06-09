@@ -76,18 +76,22 @@ partial class FastParser
         if (!Parameters(out var declarators, TokenTypes.BracketEnd, false, FastVariableKind.Var))
             throw stream.Unexpected();
 
-        if (!stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
-            throw stream.Unexpected();
-
         try
         {
             functionDepth++;
             var previousInGeneratorBody = inGeneratorBody;
             var previousInAsyncFunctionBody = inAsyncFunctionBody;
+            // Enter the generator/async context BEFORE consuming the body's `{`.
+            // The scanner reads one token ahead, so the token following the body's
+            // first `yield`/`await` is lexed at the `{`-consume below; the context
+            // must already be set then for the regex-vs-division decision to be right.
             inGeneratorBody = generator;
             inAsyncFunctionBody = isAsync;
             try
             {
+                if (!stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
+                    throw stream.Unexpected();
+
                 if (!Block(out var body))
                     throw stream.Unexpected();
 

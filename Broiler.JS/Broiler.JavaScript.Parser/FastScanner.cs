@@ -74,6 +74,15 @@ public class FastScanner
 
     private FastToken lastToken = EmptyToken;
 
+    /// <summary>
+    /// Whether <c>yield</c> is currently a keyword (set by the parser when it enters
+    /// a generator body). This governs the regex-vs-division decision for a <c>/</c>
+    /// that follows a <c>yield</c> token: after the keyword form it begins a
+    /// regular-expression literal, after the identifier form it is the division
+    /// operator.
+    /// </summary>
+    public bool YieldIsKeyword;
+
     public FastToken Token
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -816,7 +825,12 @@ public class FastScanner
             case TokenTypes.Identifier:
                 scanRegExp = last.Keyword switch
                 {
-                    FastKeywords.instanceof or FastKeywords.@in or FastKeywords.@typeof or FastKeywords.@return or FastKeywords.yield or FastKeywords.await => true,
+                    FastKeywords.instanceof or FastKeywords.@in or FastKeywords.@typeof or FastKeywords.@return or FastKeywords.await => true,
+                    // `yield` only introduces an expression (so a following `/` begins
+                    // a regex) when it is a keyword — inside a generator body. In sloppy
+                    // code outside a generator it is an ordinary identifier, after which
+                    // `/` is division (e.g. `var yield = 1; yield /a/g`).
+                    FastKeywords.yield => YieldIsKeyword,
                     _ => false,
                 };
                 break;
