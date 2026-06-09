@@ -85,6 +85,7 @@ internal static class JSIntlDateTimeFormatEngine
 
     // ── Pattern resolution ──
     internal static Pattern ResolvePattern(
+        string localeTag,
         bool hasYear, string yearStyle, bool hasMonth, string monthStyle, bool hasDay, string dayStyle,
         bool hasHour, bool hasMinute, bool hasSecond, int fractionalSecondDigits, bool hasDayPeriodField,
         string dateStyle, string timeStyle, bool hour12)
@@ -122,15 +123,43 @@ internal static class JSIntlDateTimeFormatEngine
             var alphaMonth = monthStyle is "long" or "short" or "narrow";
 
             var date = new StringBuilder();
-            if (hasMonth && hasDay && hasYear)
-                date.Append(alphaMonth ? $"{monthTok} {dayTok}, {yearTok}" : $"{monthTok}/{dayTok}/{yearTok}");
-            else if (hasMonth && hasDay)
-                date.Append(alphaMonth ? $"{monthTok} {dayTok}" : $"{monthTok}/{dayTok}");
-            else if (hasYear && hasMonth)
-                date.Append(alphaMonth ? $"{monthTok} {yearTok}" : $"{monthTok}/{yearTok}");
-            else if (hasYear) date.Append(yearTok);
-            else if (hasMonth) date.Append(monthTok);
-            else if (hasDay) date.Append(dayTok);
+            if (alphaMonth)
+            {
+                // Spelled-out month: keep the en layout (locale word order for named
+                // months is not modelled here).
+                if (hasMonth && hasDay && hasYear)
+                    date.Append($"{monthTok} {dayTok}, {yearTok}");
+                else if (hasMonth && hasDay)
+                    date.Append($"{monthTok} {dayTok}");
+                else if (hasYear && hasMonth)
+                    date.Append($"{monthTok} {yearTok}");
+                else if (hasYear) date.Append(yearTok);
+                else if (hasMonth) date.Append(monthTok);
+                else if (hasDay) date.Append(dayTok);
+            }
+            else
+            {
+                // Numeric date: order the present fields per the locale's short-date
+                // convention (e.g. de → d.M.y, ja → y/M/d) instead of always M/d/y.
+                var (order, sep) = NumericDateLayout(localeTag);
+                var first = true;
+                foreach (var field in order)
+                {
+                    string tok = field switch
+                    {
+                        'd' => hasDay ? dayTok : null,
+                        'M' => hasMonth ? monthTok : null,
+                        'y' => hasYear ? yearTok : null,
+                        _ => null,
+                    };
+                    if (tok == null)
+                        continue;
+                    if (!first)
+                        date.Append(sep);
+                    date.Append(tok);
+                    first = false;
+                }
+            }
 
             var time = new StringBuilder();
             if (hasHour && hasMinute && hasSecond)
@@ -155,7 +184,9 @@ internal static class JSIntlDateTimeFormatEngine
 
         string combined = (datePattern, timePattern) switch
         {
-            (null, null) => "M/d/y",
+            // No component or style options: ECMA-402 defaults to numeric
+            // year/month/day, laid out in the locale's short-date order.
+            (null, null) => DefaultNumericDate(localeTag),
             (not null, null) => datePattern,
             (null, not null) => timePattern,
             _ => datePattern + ", " + timePattern,
@@ -163,6 +194,91 @@ internal static class JSIntlDateTimeFormatEngine
 
         var tokens = Parse(combined);
         return new Pattern { Tokens = tokens, Skeleton = SkeletonOf(tokens) };
+    }
+
+    // Derives the numeric-date field order (a permutation of 'd','M','y') and the
+    // separator between fields from the locale's short-date pattern. Falls back to
+    // the en convention (M/d/y) for an unknown/complex pattern, so en and locales
+    // whose pattern can't be parsed are unchanged.
+    // The default all-numeric date pattern (year/month/day) for a locale, e.g.
+    // "M/d/y" for en, "d.M.y" for de, "y/M/d" for ja.
+    private static string DefaultNumericDate(string localeTag)
+    {
+        var (order, sep) = NumericDateLayout(localeTag);
+        var sb = new StringBuilder();
+        for (var i = 0; i < order.Length; i++)
+        {
+            if (i > 0)
+                sb.Append(sep);
+            sb.Append(order[i]);
+        }
+        return sb.ToString();
+    }
+
+    private static (string Order, string Separator) NumericDateLayout(string localeTag)
+    {
+        var fallback = ("Mdy", "/");
+        if (string.IsNullOrEmpty(localeTag))
+            return fallback;
+
+        var tag = localeTag;
+        var uPos = tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase);
+        if (uPos >= 0)
+            tag = tag[..uPos];
+
+        CultureInfo culture;
+        try
+        {
+            culture = CultureInfo.GetCultureInfo(tag);
+        }
+        catch (CultureNotFoundException)
+        {
+            return fallback;
+        }
+
+        if (culture.IsNeutralCulture && tag.Equals("en", StringComparison.OrdinalIgnoreCase))
+            return fallback;
+
+        var shortPattern = culture.DateTimeFormat.ShortDatePattern;
+        if (string.IsNullOrEmpty(shortPattern))
+            return fallback;
+
+        var order = new StringBuilder(3);
+        string separator = null;
+        var inQuote = false;
+        for (var i = 0; i < shortPattern.Length; i++)
+        {
+            var c = shortPattern[i];
+            if (c == '\'')
+            {
+                inQuote = !inQuote;
+                continue;
+            }
+            if (inQuote)
+                continue;
+
+            var field = c is 'd' ? 'd' : c is 'M' ? 'M' : c is 'y' ? 'y' : '\0';
+            if (field != '\0')
+            {
+                if (order.Length == 0 || order[^1] != field)
+                {
+                    if (order.ToString().IndexOf(field) >= 0)
+                        return fallback; // repeated field group → too complex, keep en
+                    order.Append(field);
+                }
+            }
+            else if (order.Length == 1 && separator == null && !char.IsWhiteSpace(c))
+            {
+                // First separator run, immediately after the first field.
+                separator = c.ToString();
+            }
+        }
+
+        // Only use a clean d/M/y layout with a single-character separator.
+        if (order.Length != 3 || separator == null)
+            return fallback;
+
+        return (order.ToString(), separator);
     }
 
     private static List<Token> Parse(string pattern)

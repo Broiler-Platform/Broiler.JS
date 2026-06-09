@@ -448,4 +448,29 @@ public class Issue725Tests
     public void SelfBackreferenceMatchesEmpty(string pat, string input, string expected)
         => Assert.Equal(expected, Eval($"var m = {pat}.exec('{input}'); m===null?'NULL':Array.prototype.map.call(m,function(x){{return x===undefined?'':x;}}).join(',');"));
 
+    // ---- Problem 3: locale-aware numeric date layout ----
+    //
+    // Covers staging/sm/String/internalUsage.js: Intl.DateTimeFormat("de").format
+    // must produce a German date ("2.1.1970"), not the en M/d/y form, and must not
+    // be affected by a user override of String.prototype[Symbol.split].
+
+    [Theory]
+    [InlineData("de", "2.1.1970")]
+    [InlineData("en", "1/2/1970")]
+    public void NumericDateUsesLocaleLayout(string locale, string expected)
+        => Assert.Equal(expected, Eval($"Intl.DateTimeFormat('{locale}', {{}}).format(24*60*60*1000);"));
+
+    [Fact]
+    public void GermanDateFormatRobustToSplitPrototypePatch()
+        => Assert.Equal(
+            "true,true,true,true",
+            Eval(@"
+                var t = 24*60*60*1000;
+                var ok = ['1.1.1970','2.1.1970','3.1.1970'];
+                var r = [];
+                ['', 'x-foo', 'de-u-co', 'en-US'].forEach(function (v) {
+                  String.prototype[Symbol.split] = function () { return [v]; };
+                  r.push(ok.indexOf(Intl.DateTimeFormat('de', {}).format(t)) >= 0);
+                });
+                r.join(',');"));
 }

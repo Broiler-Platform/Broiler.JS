@@ -3076,6 +3076,7 @@ public class JSIntlDateTimeFormat : JSObject
 
     private JSIntlDateTimeFormatEngine.Pattern ResolveEnginePattern()
         => JSIntlDateTimeFormatEngine.ResolvePattern(
+            localeTag: localeTag,
             hasYear: OptionString(YearKey) != null,
             yearStyle: OptionString(YearKey),
             hasMonth: OptionString(MonthKey) != null,
