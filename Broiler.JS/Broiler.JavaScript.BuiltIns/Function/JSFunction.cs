@@ -687,16 +687,12 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         if (source.Source.Length != source.Length || source.Offset != 0)
             source = source.Value;
 
-        // Function.prototype.toString must normalise line terminators in the returned
-        // source text to LF: a function whose source was written with CR or CRLF line
-        // endings still toStrings with U+000A separators (test262
-        // Function/prototype/toString/line-terminator-normalisation-*). Only pay the
-        // allocation when a CR is actually present.
-        var text = source.Source;
-        if (text.IndexOf('\r') >= 0)
-            text = text.Replace("\r\n", "\n").Replace('\r', '\n');
-
-        return JSValue.CreateString(text);
+        // Function.prototype.toString must NOT normalise line terminator sequences:
+        // a function whose source was written with CR or CRLF line endings toStrings
+        // with those exact characters preserved (test262
+        // Function/prototype/toString/line-terminator-normalisation-*). Return the
+        // verbatim source text.
+        return JSValue.CreateString(source.Source);
     }
 
     /// <summary>

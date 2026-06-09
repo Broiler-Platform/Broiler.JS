@@ -97,7 +97,15 @@ public class FastScanner
 
         while (Token.Type == TokenTypes.LineTerminator && nextToken.Type == TokenTypes.LineTerminator)
         {
+            // Collapsing consecutive line terminators into one token must preserve
+            // the link back to the last significant token. ReadToken() does not set
+            // Previous, so without carrying it over PreviousToken would resolve to
+            // this line-terminator token itself — wrongly extending the preceding
+            // node's source range across the intervening blank lines / comments
+            // (e.g. Function.prototype.toString including a trailing `// comment`).
+            var previous = Token.Previous;
             Token = nextToken;
+            Token.Previous = previous;
             nextToken = ReadToken();
         }
 
@@ -234,7 +242,7 @@ public class FastScanner
 
         while (char.IsWhiteSpace(first))
         {
-            if (first == '\n')
+            if (first.IsLineTerminator())
                 lineTerminator = true;
 
             first = Consume();
@@ -1131,7 +1139,7 @@ public class FastScanner
     private FastToken SkipMultilineComment(State state)
     {
         char ch = Peek();
-        bool hasLineTerminator = ch == '\n' || ch == '\r';
+        bool hasLineTerminator = ch.IsLineTerminator();
         do
         {
             ch = Consume();
@@ -1139,6 +1147,8 @@ public class FastScanner
             {
                 case '\r':
                 case '\n':
+                case '\u2028':
+                case '\u2029':
                     hasLineTerminator = true;
                     continue;
 
@@ -1186,7 +1196,7 @@ public class FastScanner
         }
 
         var ch = Peek();
-        while (ch != '\n' && ch != char.MaxValue)
+        while (!ch.IsLineTerminator() && ch != char.MaxValue)
         {
             ch = Consume();
         }

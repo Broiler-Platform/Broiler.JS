@@ -4,6 +4,8 @@ using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
+using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Broiler.JavaScript.Parser;
@@ -172,7 +174,7 @@ partial class FastParser
 
                 if (newScope && declaration != null)
                 {
-                    (beginNode, statement, update, test) = Desugar(declaration, block.Statements, update, test);
+                    (beginNode, statement, update, test) = Desugar(declaration, block.Statements, update, test, block);
                 }
                 else
                 {
@@ -419,7 +421,7 @@ partial class FastParser
         }
 
         (AstNode beginNode, AstStatement statement, AstExpression? update, AstExpression? test) Desugar(AstVariableDeclaration declaration, IFastEnumerable<AstStatement> body,
-            AstExpression? update, AstExpression? test)
+            AstExpression? update, AstExpression? test, AstBlock? sourceBlock = null)
         {
             var statementList = new Sequence<AstStatement>(body.Count + 1) { null! };
             statementList.AddRange(body);
@@ -477,10 +479,54 @@ partial class FastParser
             var last = body.Count == 0 ? declaration : body.Last();
             var block = new AstBlock(r.Start, last.End, statementList);
 
-            if (requiresReplacement)
-                block.HoistingScope = hoisted;
+            // The synthetic per-iteration block replaces the original loop body
+            // block, so it must also carry that body's hoisted bindings (e.g. a
+            // nested `function` declaration). Otherwise the declaration is not
+            // hoisted into this block scope and a closure over the per-iteration
+            // loop variable captures an uninitialised slot. Merge those names with
+            // the loop's own per-iteration binding names (`hoisted`).
+            var combinedHoisting = CombineHoisting(requiresReplacement ? hoisted : null, sourceBlock?.HoistingScope);
+            if (combinedHoisting != null)
+                block.HoistingScope = combinedHoisting;
+
+            if (sourceBlock?.AnnexBFunctionNames != null)
+                block.AnnexBFunctionNames = sourceBlock.AnnexBFunctionNames;
 
             return (r, block, update, test);
+        }
+
+        static IFastEnumerable<StringSpan>? CombineHoisting(
+            IFastEnumerable<StringSpan>? loopBindings,
+            IFastEnumerable<StringSpan>? bodyHoisting)
+        {
+            var hasLoop = loopBindings != null && loopBindings.Count > 0;
+            var hasBody = bodyHoisting != null && bodyHoisting.Count > 0;
+
+            if (!hasLoop && !hasBody)
+                return null;
+            if (!hasBody)
+                return loopBindings;
+            if (!hasLoop)
+                return bodyHoisting;
+
+            var merged = new Sequence<StringSpan>();
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+
+            var loopEn = loopBindings!.GetFastEnumerator();
+            while (loopEn.MoveNext(out var name))
+            {
+                if (seen.Add(name.Value))
+                    merged.Add(name);
+            }
+
+            var bodyEn = bodyHoisting!.GetFastEnumerator();
+            while (bodyEn.MoveNext(out var name))
+            {
+                if (seen.Add(name.Value))
+                    merged.Add(name);
+            }
+
+            return merged;
         }
     }
 
