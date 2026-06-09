@@ -401,17 +401,22 @@ public class Issue725Tests
             "minusSign:-|integer:9|decimal:.|fraction:9|compact:億",
             Eval(@"new Intl.NumberFormat('ja-JP',{notation:'compact'}).formatToParts(-987654321).map(function(p){return p.type+':'+p.value;}).join('|');"));
 
-    // ---- Problem 1: unicode (u-flag) CharacterClassEscape code-point semantics ----
+    // ---- Problem 1: RegExp semantics (unicode class escapes + self-backrefs) ----
     //
-    // Covers staging/sm/RegExp/unicode-character-class-escape.js. With the u flag,
-    // \D/\S/\W (and their [\D]/[\S]/[\W] class forms) match a whole surrogate pair
-    // as one code point, and a LONE surrogate as a single code unit (an unpaired
-    // surrogate is itself a non-digit/non-space/non-word code point).
+    // unicode-character-class-escape.js: with the u flag, \D/\S/\W (and their
+    // [\D]/[\S]/[\W] class forms) match a whole surrogate pair as one code point and
+    // a LONE surrogate as a single code unit.
     //
-    // Note: the sibling staging/sm/RegExp/regress-576828.js (/(z\1){3}/) is NOT
-    // fixed here — it needs per-iteration capture reset inside a quantifier, which
-    // the underlying .NET regex engine does not implement (it keeps captures across
-    // iterations).
+    // regress-576828.js: /(z\1){3}/ on "zzz" → ["zzz","z"]. A backreference inside
+    // the group it references is always empty in ECMAScript (the group resets each
+    // quantifier iteration); .NET keeps the prior capture, so such self/ancestor
+    // references are rewritten to an empty group.
+
+    [Fact]
+    public void SelfBackreferenceInQuantifierMatchesEmpty()
+        => Assert.Equal(
+            "zzz|z|0|zzz",
+            Eval(@"var m = /(z\1){3}/.exec('zzz'); m[0] + '|' + m[1] + '|' + m.index + '|' + m.input;"));
 
     [Theory]
     [InlineData(@"/\D/u", @"\uD83D\uDBFF", "d83d")]   // two high surrogates: lone, single unit
@@ -430,4 +435,17 @@ public class Issue725Tests
         => Assert.Equal(
             expectedHex,
             Eval($"var m = {pat}.exec('{input}'); m===null?'NULL':Array.prototype.map.call(m[0],function(ch){{return ch.charCodeAt(0).toString(16);}}).join(',');"));
+
+    [Theory]
+    [InlineData(@"/(z\1){3}/", "zzz", "zzz,z")]                 // self-ref in quantifier
+    [InlineData(@"/(z\1)/", "z", "z,z")]                        // self-ref, unquantified
+    [InlineData(@"/(a)\1/", "aa", "aa,a")]                      // normal backref still works
+    [InlineData(@"/(a)(b)\2\1/", "abba", "abba,a,b")]           // multiple normal backrefs
+    [InlineData(@"/((a)\2)/", "aa", "aa,aa,a")]                 // nested: \2 refs closed inner group
+    [InlineData(@"/(a(b\1))/", "ab", "ab,ab,b")]                // ancestor ref \1 -> empty
+    [InlineData(@"/\1(a)/", "a", "a,a")]                        // forward ref -> empty
+    [InlineData(@"/(a)|(b)\2/", "bb", "bb,,b")]                 // \2 refs closed group in alt
+    public void SelfBackreferenceMatchesEmpty(string pat, string input, string expected)
+        => Assert.Equal(expected, Eval($"var m = {pat}.exec('{input}'); m===null?'NULL':Array.prototype.map.call(m,function(x){{return x===undefined?'':x;}}).join(',');"));
+
 }

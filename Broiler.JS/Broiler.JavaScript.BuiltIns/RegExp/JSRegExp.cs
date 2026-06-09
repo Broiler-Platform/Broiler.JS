@@ -2182,6 +2182,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
         var sb = new StringBuilder(pattern.Length + 8);
         bool inClass = false;
         int groupsSeen = 0;
+        // Capturing groups whose '(' has been seen but whose ')' has not — i.e. the
+        // groups the current position is lexically nested inside. A backreference to
+        // one of these is a self/ancestor reference, which always matches the empty
+        // string in ECMAScript (the group is mid-match, and is reset on every
+        // quantifier iteration). groupStack records the number for each open group
+        // (0 = a non-capturing/lookaround group).
+        var groupStack = new Stack<int>();
+        var openCapturing = new HashSet<int>();
 
         for (int i = 0; i < pattern.Length; i++)
         {
@@ -2195,13 +2203,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     // Backreference \N — check if it's a forward reference
                     int refNum = 0;
                     int j = i + 1;
-                    
+
                     while (j < pattern.Length && pattern[j] >= '0' && pattern[j] <= '9')
                     {
                         refNum = refNum * 10 + (pattern[j] - '0');
                         j++;
                     }
-                    
+
                     if (refNum > totalGroups)
                     {
                         // Reference to non-existent group — treat as empty match
@@ -2209,7 +2217,18 @@ public partial class JSRegExp : JSObject, IJSRegExp
                         i = j - 1;
                         continue;
                     }
-                    
+
+                    if (openCapturing.Contains(refNum))
+                    {
+                        // Self/ancestor reference: the referenced group is still being
+                        // matched, so per ECMAScript it always matches the empty string.
+                        // .NET would instead reuse the previous iteration's capture
+                        // (e.g. /(z\1){3}/ on "zzz"), so emit an empty group here.
+                        sb.Append("(?:)");
+                        i = j - 1;
+                        continue;
+                    }
+
                     if (refNum > groupsSeen)
                     {
                         // Forward reference to not-yet-captured group — matches empty string per ES3
@@ -2217,7 +2236,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                         i = j - 1;
                         continue;
                     }
-                    
+
                     // Normal backreference — pass through
                     sb.Append(pattern, i, j - i);
                     i = j - 1;
@@ -2281,8 +2300,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 continue;
             }
 
-            if (c == '(' && (i + 1 >= pattern.Length || pattern[i + 1] != '?'))
-                groupsSeen++;
+            if (c == '(')
+            {
+                var capturing = i + 1 >= pattern.Length || pattern[i + 1] != '?';
+                if (capturing)
+                {
+                    groupsSeen++;
+                    groupStack.Push(groupsSeen);
+                    openCapturing.Add(groupsSeen);
+                }
+                else
+                {
+                    groupStack.Push(0);
+                }
+            }
+            else if (c == ')' && groupStack.Count > 0)
+            {
+                var closed = groupStack.Pop();
+                if (closed > 0)
+                    openCapturing.Remove(closed);
+            }
 
             sb.Append(c);
         }
