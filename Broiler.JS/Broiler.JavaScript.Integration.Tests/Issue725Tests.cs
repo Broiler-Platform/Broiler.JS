@@ -73,6 +73,42 @@ public class Issue725Tests
             "B",
             Eval(@"var updated; eval('{ function f(){ return ""A""; } }{ function f(){ return ""B""; } }updated = f;'); updated();"));
 
+    // ---- Problem 8: strict eval must not leak function declarations ----
+    //
+    // Covers language/eval-code/indirect/var-env-func-strict.js. A strict-mode
+    // eval (direct or indirect) has its own variable environment, so a top-level
+    // function declaration must not be created on the caller/global environment.
+
+    [Fact]
+    public void IndirectStrictEvalDoesNotLeakFunctionToGlobal()
+        => Assert.Equal(
+            "undefined|undefined",
+            Eval(@"
+                var typeofInside;
+                (function() {
+                  (0,eval)(""'use strict'; function fun(){}"");
+                  typeofInside = typeof fun;
+                }());
+                typeofInside + '|' + (typeof fun);"));
+
+    [Fact]
+    public void DirectStrictEvalDoesNotLeakFunction()
+        => Assert.Equal(
+            "undefined",
+            Eval(@"var t; (function(){ eval(""'use strict'; function dfn(){}""); t = typeof dfn; }()); t;"));
+
+    [Fact]
+    public void IndirectSloppyEvalStillDeclaresGlobalFunction()
+        => Assert.Equal(
+            "function|7",
+            Eval(@"(0,eval)('function gfn(){ return 7; }'); typeof gfn + '|' + gfn();"));
+
+    [Fact]
+    public void StrictEvalVarStillIsolated()
+        => Assert.Equal(
+            "undefined|undefined",
+            Eval(@"var t; (function(){ (0,eval)(""'use strict'; var v=1;""); t = typeof v; }()); t + '|' + (typeof v);"));
+
     // ---- replacer-array-empty.js ----
 
     [Fact]
@@ -271,4 +307,10 @@ public class Issue725Tests
             Eval("var a = new Int32Array(2); a[0] = 1; var d = Object.getOwnPropertyDescriptor(a, 0); [d.configurable, d.enumerable, d.writable].join(',')"));
 
 
+
+    
+
+    
+
+    
 }
