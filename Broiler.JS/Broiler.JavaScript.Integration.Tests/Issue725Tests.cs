@@ -400,4 +400,34 @@ public class Issue725Tests
         => Assert.Equal(
             "minusSign:-|integer:9|decimal:.|fraction:9|compact:億",
             Eval(@"new Intl.NumberFormat('ja-JP',{notation:'compact'}).formatToParts(-987654321).map(function(p){return p.type+':'+p.value;}).join('|');"));
+
+    // ---- Problem 1: unicode (u-flag) CharacterClassEscape code-point semantics ----
+    //
+    // Covers staging/sm/RegExp/unicode-character-class-escape.js. With the u flag,
+    // \D/\S/\W (and their [\D]/[\S]/[\W] class forms) match a whole surrogate pair
+    // as one code point, and a LONE surrogate as a single code unit (an unpaired
+    // surrogate is itself a non-digit/non-space/non-word code point).
+    //
+    // Note: the sibling staging/sm/RegExp/regress-576828.js (/(z\1){3}/) is NOT
+    // fixed here — it needs per-iteration capture reset inside a quantifier, which
+    // the underlying .NET regex engine does not implement (it keeps captures across
+    // iterations).
+
+    [Theory]
+    [InlineData(@"/\D/u", @"\uD83D\uDBFF", "d83d")]   // two high surrogates: lone, single unit
+    [InlineData(@"/\D/u", @"🐀", "d83d,dc00")]            // valid pair: whole code point
+    [InlineData(@"/\S/u", @"𐀸", "d800,dc38")]
+    [InlineData(@"/\S/u", @"\uD83D", "d83d")]           // lone high surrogate
+    [InlineData(@"/\S/u", @"\uDC00\uDC38", "dc00")]     // lone low surrogate
+    [InlineData(@"/\W/u", @"􏰸", "dbff,dc38")]
+    [InlineData(@"/[\D]/u", @"𐀸", "d800,dc38")]          // class form, valid pair
+    [InlineData(@"/[\S]/u", @"𐀸", "d800,dc38")]
+    [InlineData(@"/[\W]/u", @"􏰸", "dbff,dc38")]
+    [InlineData(@"/[\D]/u", @"\uDC00\uDC38", "dc00")]   // class form, lone surrogate
+    [InlineData(@"/[\W]/u", @"퟿\uDC38", "d7ff")]
+    [InlineData(@"/[\D]+/u", "abc012", "61,62,63")]       // BMP behaviour preserved
+    public void UnicodeClassEscapeMatchesCodePoints(string pat, string input, string expectedHex)
+        => Assert.Equal(
+            expectedHex,
+            Eval($"var m = {pat}.exec('{input}'); m===null?'NULL':Array.prototype.map.call(m[0],function(ch){{return ch.charCodeAt(0).toString(16);}}).join(',');"));
 }

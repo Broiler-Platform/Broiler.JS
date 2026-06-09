@@ -1284,19 +1284,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 if (i < pattern.Length && pattern[i] == ']')
                     i++;
 
-                // Scan for supplementary chars (surrogate pairs) in this class
+                // Scan for supplementary chars (surrogate pairs) in this class, or
+                // for a \D / \S / \W escape: those negated escapes include every
+                // supplementary code point, so a non-negated class containing one
+                // must also match a whole surrogate pair (not just the leading unit).
                 var supplementaryChars = new List<string>();
                 bool hasSupplementary = false;
+                bool classMatchesSupplementary = false;
 
                 int scanPos = i;
                 while (scanPos < pattern.Length && pattern[scanPos] != ']')
                 {
                     if (pattern[scanPos] == '\\' && scanPos + 1 < pattern.Length)
                     {
+                        var esc = pattern[scanPos + 1];
+                        if (!negated && (esc == 'D' || esc == 'S' || esc == 'W'))
+                            classMatchesSupplementary = true;
                         scanPos += 2;
                         continue;
                     }
-                    if (char.IsHighSurrogate(pattern[scanPos]) && scanPos + 1 < pattern.Length 
+                    if (char.IsHighSurrogate(pattern[scanPos]) && scanPos + 1 < pattern.Length
                         && char.IsLowSurrogate(pattern[scanPos + 1]))
                     {
                         hasSupplementary = true;
@@ -1305,7 +1312,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     scanPos++;
                 }
 
-                if (!hasSupplementary)
+                if (!hasSupplementary && !classMatchesSupplementary)
                 {
                     // Find end of class and skip
                     while (i < pattern.Length && pattern[i] != ']')
@@ -1380,8 +1387,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 }
                 else
                 {
-                    // [𝌆a-z] → (?:𝌆|[a-z])
+                    // [𝌆a-z] → (?:𝌆|[a-z]); a class containing \D/\S/\W also gets a
+                    // leading surrogate-pair alternative so a whole pair is consumed
+                    // as one code point before the single-unit class is tried, e.g.
+                    // [\D] → (?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[\D]).
                     sb.Append("(?:");
+                    if (classMatchesSupplementary)
+                        sb.Append(@"[\uD800-\uDBFF][\uDC00-\uDFFF]|");
                     for (int si = 0; si < supplementaryChars.Count; si++)
                     {
                         sb.Append(supplementaryChars[si]);
@@ -2418,9 +2430,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static void AppendEsNonWhitespace(StringBuilder sb, string esWhitespaceChars, bool unicodeMode)
     {
         if (unicodeMode)
+            // A valid surrogate pair is one (non-whitespace) code point and is tried
+            // first; otherwise any non-whitespace code unit, INCLUDING a lone
+            // surrogate (an unpaired surrogate is itself a non-whitespace code point
+            // in ECMAScript, so \S must match it). The pair alternative being first
+            // means a real pair is never split by the single-unit fallback.
             sb.Append(@"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^")
               .Append(esWhitespaceChars)
-              .Append(@"\uD800-\uDFFF])");
+              .Append(@"])");
         else
             sb.Append("[^").Append(esWhitespaceChars).Append(']');
     }
