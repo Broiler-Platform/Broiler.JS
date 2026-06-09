@@ -2364,6 +2364,5 @@ test/staging/sm/statements/for-loop-declaration-contains-initializer.js
 test/staging/sm/statements/regress-642975.js
 test/staging/sm/statements/try-completion.js
 test/staging/sm/strict/8.12.7-2.js
-test/staging/sm/strict/8.7.2.js
 test/staging/sm/strict/primitive-this-getter.js
 test/staging/sm/syntax/let-as-label.js

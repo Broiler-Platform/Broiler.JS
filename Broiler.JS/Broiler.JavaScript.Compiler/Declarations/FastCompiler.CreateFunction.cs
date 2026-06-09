@@ -323,7 +323,13 @@ partial class FastCompiler
                 if (!isStrictFunction && !functionDeclaration.IsArrowFunction && createPrototype)
                     jsf = JSFunctionBuilder.EnableLegacyCallerAndArguments(jsf);
 
-                if (withBoundaries.Count > 0 && !isDirectEvalCompilation)
+                // A function created inside a `with` block must capture the current
+                // with-scope chain so it stays resolvable when the function is later
+                // invoked with the dynamic with-scopes suspended (script-host / PTC
+                // mode). This holds even when the `with` is part of directly-eval'd
+                // code — e.g. `eval("with (o) { (function () { ... })(); }")` — so the
+                // capture must not be skipped for direct-eval compilation.
+                if (withBoundaries.Count > 0)
                     jsf = JSFunctionBuilder.CaptureWithScopes(jsf);
             }
 

@@ -46,11 +46,15 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     scanner now only treats a `/` after `yield` as a regex when the parser is
 //     inside a generator body (it threads that context to the scanner, which must be
 //     set before the body's `{` is consumed because of the one-token lookahead).
+//   * strict/8.7.2: a function created inside an eval'd `with` block now captures the
+//     with-scope chain (the capture was skipped for direct-eval compilation). Without
+//     it, a strict write to a non-writable with-binding inside such a function threw
+//     ReferenceError instead of TypeError under script-host, where the dynamic
+//     with-scope is suspended across calls.
 //
 // Out of scope (architectural / deep regex / CLDR): P1 DateTimeFormat CLDR (de
 // format, calendars, related-year — the CLDR pipeline has no date patterns / month
-// names yet), the RegExp Symbol.match/replace lastIndex grab-bag, P1 with-scope
-// strict write under script-host (8.7.2), P2 with/@@unscopables in nested fn, P3 private getter/method
+// names yet), the RegExp Symbol.match/replace lastIndex grab-bag, P2 with/@@unscopables in nested fn, P3 private getter/method
 // shadowed by setter (per-evaluation private brand), P4 indirect-eval / with
 // var-env, P6 sm RegExp grab-bag, P7 duplicate named capture groups (requires
 // distinct .NET group numbering + backreference rewrite).
@@ -282,4 +286,26 @@ sobj.test();"));
     public void YieldAsIdentifierInNestedFunctionInsideGenerator()
         => Assert.Equal("5", Eval(
             "function* g() { function h() { var yield = 10, a = 2; return yield /a; } return h(); } g().next().value + ''"));
+
+    // ---- Problem 1: function created inside an eval'd `with` captures the scope ----
+    // (8.7.2 failed only under script-host, where the dynamic with-scope is suspended
+    // across calls; the eval-compiled function was not capturing it. The same capture
+    // is observable here without script-host by calling the function after the `with`
+    // block has exited, so the dynamic scope is gone in every mode.)
+
+    [Fact]
+    public void FunctionInEvaldWithCapturesScopeAfterBlockExits()
+        => Assert.Equal("42", Eval(
+            "var o = { x: 42 }; var f;"
+            + "eval(\"with (o) { f = function () { return typeof x === 'undefined' ? 'unresolved' : x; }; }\");"
+            + "f() + ''"));
+
+    [Fact]
+    public void StrictWriteToNonWritableWithBindingInEvalThrows()
+        => Assert.Equal("TypeError", Eval(
+            "function obj() { var o = { x: 1 }; Object.defineProperty(o, 'x', { writable: false }); return o; }"
+            + "var caught = 'none';"
+            + "try { eval(\"with (obj()) { (function () { 'use strict'; x = 2; })(); }\"); }"
+            + "catch (e) { caught = e.constructor.name; }"
+            + "caught"));
 }
