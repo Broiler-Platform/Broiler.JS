@@ -359,4 +359,45 @@ public class Issue725Tests
             Eval(@"
                 var parts = new Intl.DateTimeFormat('en', {dayPeriod:'long'}).formatToParts(new Date(2017,11,12,0,0));
                 parts.map(function(p){ return p.type + ':' + p.value; }).join('|');"));
+
+    // ---- Problem 4: compact notation for CJK locales ----
+    //
+    // Covers intl402/NumberFormat/prototype/formatToParts/notation-compact-
+    // {ja-JP,ko-KR,zh-TW}.js. The value is reduced by the largest applicable compact
+    // unit (万/億/兆, 천/만/억/조, 萬/億/兆) and rounded with the default morePrecision
+    // rule (2 significant digits below 100, else integer); the suffix is a "compact"
+    // part. Numbers below the smallest unit are not compacted.
+
+    [Theory]
+    [InlineData("ja-JP", 987654321, "9.9億")]
+    [InlineData("ja-JP", 98765432, "9877万")]
+    [InlineData("ja-JP", 98765, "9.9万")]
+    [InlineData("ja-JP", 9876, "9876")]
+    [InlineData("ja-JP", 159, "159")]
+    [InlineData("ja-JP", 15.9, "16")]
+    [InlineData("ja-JP", 1.59, "1.6")]
+    [InlineData("ja-JP", 0.00159, "0.0016")]
+    [InlineData("ko-KR", 987654321, "9.9억")]
+    [InlineData("ko-KR", 98765432, "9877만")]
+    [InlineData("ko-KR", 98765, "9.9만")]
+    [InlineData("ko-KR", 9876, "9.9천")]
+    [InlineData("ko-KR", 159, "159")]
+    [InlineData("zh-TW", 987654321, "9.9億")]
+    [InlineData("zh-TW", 98765432, "9877萬")]
+    [InlineData("zh-TW", 98765, "9.9萬")]
+    [InlineData("zh-TW", 9876, "9876")]
+    public void CompactNotationFormatsCjkLocales(string loc, double n, string expected)
+        => Assert.Equal(expected, Eval($"new Intl.NumberFormat('{loc}',{{notation:'compact'}}).format({n});"));
+
+    [Fact]
+    public void CompactNotationFormatToPartsHasFourParts()
+        => Assert.Equal(
+            "integer:9|decimal:.|fraction:9|compact:億",
+            Eval(@"new Intl.NumberFormat('ja-JP',{notation:'compact'}).formatToParts(987654321).map(function(p){return p.type+':'+p.value;}).join('|');"));
+
+    [Fact]
+    public void CompactNotationNegativeKeepsSign()
+        => Assert.Equal(
+            "minusSign:-|integer:9|decimal:.|fraction:9|compact:億",
+            Eval(@"new Intl.NumberFormat('ja-JP',{notation:'compact'}).formatToParts(-987654321).map(function(p){return p.type+':'+p.value;}).join('|');"));
 }

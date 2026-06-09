@@ -2346,6 +2346,8 @@ public class JSIntlNumberFormat : JSObject
             var notation = resolved?.Notation ?? "standard";
             if (notation == "scientific" || notation == "engineering")
                 magnitude = FormatScientificEngineering(Math.Abs(x), notation == "engineering", out roundedIsZero);
+            else if (notation == "compact")
+                magnitude = FormatCompact(Math.Abs(x), out roundedIsZero);
             else
                 magnitude = FormatFiniteMagnitude(Math.Abs(x), 0, 3, out roundedIsZero);
         }
@@ -2497,6 +2499,130 @@ public class JSIntlNumberFormat : JSObject
         return result;
     }
 
+    // Compact decimal units (descending by exponent) for the CJK locales exercised
+    // by test262. Each entry is (power-of-ten boundary, suffix); the suffix is shared
+    // by short and long compactDisplay in these locales. Intermediate powers (e.g.
+    // 10^5..10^7 for ja) reuse the lower unit, so the divisor is the largest unit
+    // whose exponent does not exceed the value's magnitude.
+    private static readonly (int Exp, string Suffix)[] CompactUnitsJa = [(12, "兆"), (8, "億"), (4, "万")];
+    private static readonly (int Exp, string Suffix)[] CompactUnitsKo = [(12, "조"), (8, "억"), (4, "만"), (3, "천")];
+    private static readonly (int Exp, string Suffix)[] CompactUnitsZhHant = [(12, "兆"), (8, "億"), (4, "萬")];
+    private static readonly (int Exp, string Suffix)[] CompactUnitsZhHans = [(12, "兆"), (8, "亿"), (4, "万")];
+
+    private static (int Exp, string Suffix)[] GetCompactUnits(string localeTag)
+    {
+        var tag = localeTag ?? string.Empty;
+        var dash = tag.IndexOf('-');
+        var language = (dash < 0 ? tag : tag[..dash]).ToLowerInvariant();
+        switch (language)
+        {
+            case "ja":
+                return CompactUnitsJa;
+            case "ko":
+                return CompactUnitsKo;
+            case "zh":
+                var lower = tag.ToLowerInvariant();
+                var isTraditional = lower.Contains("hant") || lower.Contains("-tw")
+                    || lower.Contains("-hk") || lower.Contains("-mo");
+                return isTraditional ? CompactUnitsZhHant : CompactUnitsZhHans;
+            default:
+                return null;
+        }
+    }
+
+    // Compact notation (notation: "compact"). The value is divided by the largest
+    // applicable compact unit and rounded with the default ECMA-402 "morePrecision"
+    // rule: the more precise of {maximumFractionDigits 0} and {maximumSignificantDigits
+    // 2}. That reduces to: when the reduced value's integer magnitude is ≤ 1 (i.e.
+    // < 100) keep 2 significant digits, otherwise round to an integer. The locale's
+    // compact suffix is appended as a "compact" part. Compact numbers are not grouped
+    // (CLDR useGrouping "min2": the ≤4-digit reduced values stay ungrouped). Only the
+    // CJK locales with embedded data are compacted; others fall back to standard
+    // formatting (unchanged behaviour).
+    private List<(string, string)> FormatCompact(double absX, out bool roundedIsZero)
+    {
+        var units = GetCompactUnits(locale);
+        if (units == null)
+            return FormatFiniteMagnitude(absX, 0, 3, out roundedIsZero);
+
+        string suffix = null;
+        var reduced = absX;
+        if (absX > 0 && !double.IsInfinity(absX))
+        {
+            var magnitude = CompactMagnitude(absX);
+            foreach (var (exp, sfx) in units)
+            {
+                if (magnitude >= exp)
+                {
+                    reduced = absX / Math.Pow(10, exp);
+                    suffix = sfx;
+                    break;
+                }
+            }
+        }
+
+        int maxFrac;
+        if (HasOption("maximumFractionDigits"))
+        {
+            maxFrac = ReadIntOption("maximumFractionDigits", 0);
+        }
+        else
+        {
+            // morePrecision default: keep 2 significant digits while the value is
+            // below 100, otherwise round to an integer.
+            var m = CompactMagnitude(reduced);
+            maxFrac = m <= 1 ? Math.Max(0, 1 - m) : 0;
+        }
+
+        var parts = FormatCompactMantissa(reduced, maxFrac, out roundedIsZero);
+        if (suffix != null)
+            parts.Add(("compact", suffix));
+        return parts;
+    }
+
+    private static int CompactMagnitude(double v)
+    {
+        if (v <= 0 || double.IsNaN(v) || double.IsInfinity(v))
+            return 0;
+
+        var m = (int)Math.Floor(Math.Log10(v));
+        if (Math.Pow(10, m) > v)
+            m--;
+        else if (Math.Pow(10, m + 1) <= v)
+            m++;
+        return m;
+    }
+
+    // Formats the reduced compact value (integer + optional fraction parts) without
+    // grouping, trimming trailing fraction zeros.
+    private List<(string, string)> FormatCompactMantissa(double reduced, int maxFrac, out bool roundedIsZero)
+    {
+        var clamped = Math.Clamp(maxFrac, 0, 15);
+        var rounded = Math.Round(reduced, clamped, MidpointRounding.AwayFromZero);
+        roundedIsZero = rounded == 0;
+
+        var fixedStr = rounded.ToString("F" + clamped, CultureInfo.InvariantCulture);
+        var dot = fixedStr.IndexOf('.');
+        var intDigits = dot < 0 ? fixedStr : fixedStr[..dot];
+        var fracDigits = dot < 0 ? string.Empty : fixedStr[(dot + 1)..];
+
+        while (fracDigits.Length > 0 && fracDigits.EndsWith('0'))
+            fracDigits = fracDigits[..^1];
+
+        intDigits = intDigits.TrimStart('0');
+        if (intDigits.Length == 0)
+            intDigits = "0";
+
+        var result = new List<(string, string)> { ("integer", intDigits) };
+        if (fracDigits.Length > 0)
+        {
+            result.Add(("decimal", DecimalSeparator()));
+            result.Add(("fraction", fracDigits));
+        }
+
+        return result;
+    }
+
     // ComputeExponentForMagnitude over floor(log10(absX)): scientific keeps the raw
     // base-10 magnitude; engineering rounds it down to a multiple of 3.
     private static int ComputeExponent(double absX, bool engineering)
@@ -2598,6 +2724,14 @@ public class JSIntlNumberFormat : JSObject
             return fallback;
         var d = v.DoubleValue;
         return double.IsNaN(d) ? fallback : (int)d;
+    }
+
+    private bool HasOption(string name)
+    {
+        if (options == null)
+            return false;
+        var v = options[KeyStrings.GetOrCreate(name)];
+        return v != null && !v.IsUndefined;
     }
 
     private CultureInfo Culture()
