@@ -3090,7 +3090,38 @@ public class JSIntlDateTimeFormat : JSObject
             hasDayPeriodField: false,
             dateStyle: OptionString(DateStyleKey),
             timeStyle: OptionString(TimeStyleKey),
-            hour12: ResolveHour12());
+            hour12: ResolveHour12(),
+            calendar: ResolvedCalendar());
+
+    // The resolved calendar: the requested -u-ca- value when it is one this engine
+    // supports (era-based Gregorian-derived calendars), otherwise "gregory".
+    internal string ResolvedCalendar()
+    {
+        var ca = UnicodeKeyword(localeTag, "ca");
+        return JSIntlDateTimeFormatEngine.IsSupportedCalendar(ca) ? ca : "gregory";
+    }
+
+    // Reads a Unicode (-u-) keyword value from a BCP-47 tag, e.g. "ca" from
+    // "en-u-ca-buddhist". Returns null when absent.
+    private static string UnicodeKeyword(string tag, string key)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return null;
+        var parts = tag.Split('-');
+        var u = System.Array.IndexOf(parts, "u");
+        if (u < 0)
+            return null;
+        for (var i = u + 1; i < parts.Length; i++)
+        {
+            if (parts[i].Length == 2 && string.Equals(parts[i], key, StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < parts.Length && parts[i + 1].Length > 2)
+                    return parts[i + 1].ToLowerInvariant();
+                return null;
+            }
+        }
+        return null;
+    }
 
     private JSIntlDateTimeFormatEngine.Fields ResolveFields(double clipped)
         => new(JSIntlDateTimeFormatEngine.ToZone(clipped, OptionString(TimeZoneKey)));
@@ -3267,7 +3298,7 @@ public class JSIntlDateTimeFormat : JSObject
 
         var result = new JSObject();
         result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.localeTag);
-        result[KeyStrings.GetOrCreate("calendar")] = JSValue.CreateString("gregory");
+        result[KeyStrings.GetOrCreate("calendar")] = JSValue.CreateString(@this.ResolvedCalendar());
         result[KeyStrings.GetOrCreate("numberingSystem")] = JSValue.CreateString("latn");
         result[KeyStrings.GetOrCreate("timeZone")] = JSValue.CreateString(TimeZoneInfo.Local.Id);
 

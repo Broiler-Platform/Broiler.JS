@@ -473,4 +473,39 @@ public class Issue725Tests
                   r.push(ok.indexOf(Intl.DateTimeFormat('de', {}).format(t)) >= 0);
                 });
                 r.join(',');"));
+
+        // pattern-on-calendar.js: at least one calendar must yield a different
+    // formatToParts / formatRangeToParts pattern than the en (gregorian) default.
+    // The buddhist calendar (year + 543, era "BE") adds an era part.
+
+    [Fact]
+    public void SomeCalendarProducesADifferentFormatToPartsPattern()
+        => Assert.Equal("true", Eval(@"
+            var date = new Date(2017, 11, 12);
+            function ser(parts){ return parts.map(function(p){ return p.type==='literal'?'L('+p.value+')':p.type; }).join(':'); }
+            var cals = ['buddhist','chinese','coptic','dangi','ethioaa','ethiopic','gregory','hebrew','indian','islamic','iso8601','japanese','persian','roc'];
+            var base = ser(new Intl.DateTimeFormat('en').formatToParts(date));
+            var found = false;
+            cals.forEach(function(c){ if (ser(new Intl.DateTimeFormat('en-u-ca-'+c).formatToParts(date)) !== base) found = true; });
+            String(found);"));
+
+    [Fact]
+    public void SomeCalendarProducesADifferentFormatRangePattern()
+        => Assert.Equal("true", Eval(@"
+            var d1 = new Date(2017, 11, 12), d2 = new Date(2018, 0, 5);
+            function ser(parts){ return parts.map(function(p){ return p.type==='literal'?'L('+p.value+')':p.type; }).join(':'); }
+            var cals = ['buddhist','gregory','japanese','roc'];
+            var base = ser(new Intl.DateTimeFormat('en').formatRangeToParts(d1, d2));
+            var found = false;
+            cals.forEach(function(c){ if (ser(new Intl.DateTimeFormat('en-u-ca-'+c).formatRangeToParts(d1, d2)) !== base) found = true; });
+            String(found);"));
+
+    [Fact]
+    public void BuddhistCalendarFormatsYearPlus543WithEra()
+        => Assert.Equal("12/12/2560 BE", Eval("new Intl.DateTimeFormat('en-u-ca-buddhist').format(new Date(2017,11,12));"));
+
+    [Fact]
+    public void UnsupportedCalendarResolvesToGregory()
+        => Assert.Equal("gregory", Eval("new Intl.DateTimeFormat('en-u-ca-chinese').resolvedOptions().calendar;"));
+
 }

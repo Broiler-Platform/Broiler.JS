@@ -55,7 +55,21 @@ internal static class JSIntlDateTimeFormatEngine
         public List<Token> Tokens;
         // The CLDR skeleton key (e.g. "yMMMd"), used to find interval patterns.
         public string Skeleton;
+        // The resolved calendar (e.g. "buddhist"); null/"gregory" for the default.
+        public string Calendar;
     }
+
+    // Era-using calendars derived from the proleptic Gregorian year by a fixed
+    // offset, with a single modern era. (Lunisolar/era-boundary calendars such as
+    // chinese/japanese are not modelled.) Maps calendar -> (year offset, en era).
+    private static readonly Dictionary<string, (int YearOffset, string Era)> EraCalendars =
+        new(StringComparer.Ordinal)
+        {
+            ["buddhist"] = (543, "BE"),
+        };
+
+    internal static bool IsSupportedCalendar(string calendar)
+        => calendar != null && EraCalendars.ContainsKey(calendar);
 
     // ── en locale data ──
     private static readonly string[] MonthShort =
@@ -88,7 +102,7 @@ internal static class JSIntlDateTimeFormatEngine
         string localeTag,
         bool hasYear, string yearStyle, bool hasMonth, string monthStyle, bool hasDay, string dayStyle,
         bool hasHour, bool hasMinute, bool hasSecond, int fractionalSecondDigits, bool hasDayPeriodField,
-        string dateStyle, string timeStyle, bool hour12)
+        string dateStyle, string timeStyle, bool hour12, string calendar = null)
     {
         string datePattern = null;
         string timePattern = null;
@@ -182,10 +196,19 @@ internal static class JSIntlDateTimeFormatEngine
             timePattern = time.Length > 0 ? time.ToString() : null;
         }
 
+        // No component or style options: ECMA-402 defaults to numeric
+        // year/month/day, laid out in the locale's short-date order.
+        if (datePattern == null && timePattern == null)
+            datePattern = DefaultNumericDate(localeTag);
+
+        // An era-using calendar (e.g. buddhist) appends the era after a date that
+        // shows a year, e.g. "M/d/y" -> "M/d/y G". This both produces the correct
+        // value and makes the pattern structurally distinct from the gregorian one.
+        if (datePattern != null && IsSupportedCalendar(calendar) && datePattern.IndexOf('y') >= 0)
+            datePattern += " G";
+
         string combined = (datePattern, timePattern) switch
         {
-            // No component or style options: ECMA-402 defaults to numeric
-            // year/month/day, laid out in the locale's short-date order.
             (null, null) => DefaultNumericDate(localeTag),
             (not null, null) => datePattern,
             (null, not null) => timePattern,
@@ -193,7 +216,7 @@ internal static class JSIntlDateTimeFormatEngine
         };
 
         var tokens = Parse(combined);
-        return new Pattern { Tokens = tokens, Skeleton = SkeletonOf(tokens) };
+        return new Pattern { Tokens = tokens, Skeleton = SkeletonOf(tokens), Calendar = calendar };
     }
 
     // Derives the numeric-date field order (a permutation of 'd','M','y') and the
@@ -406,12 +429,17 @@ internal static class JSIntlDateTimeFormatEngine
     }
 
     // ── Field formatting ──
-    private static (string type, string value) FormatField(in Token token, in Fields f, int fractionalSecondDigits)
+    private static (string type, string value) FormatField(in Token token, in Fields f, int fractionalSecondDigits, string calendar)
     {
         switch (token.Field)
         {
+            case 'G':
+                // Era. Only era-using calendars emit a 'G' token.
+                return ("era", EraCalendars.TryGetValue(calendar ?? string.Empty, out var era) ? era.Era : "AD");
             case 'y':
                 var year = f.Year;
+                if (calendar != null && EraCalendars.TryGetValue(calendar, out var cal))
+                    year += cal.YearOffset;
                 return ("year", token.Count == 2
                     ? (year % 100).ToString("D2", CultureInfo.InvariantCulture)
                     : year.ToString(CultureInfo.InvariantCulture));
@@ -466,7 +494,7 @@ internal static class JSIntlDateTimeFormatEngine
                 parts.Add(new Part("literal", token.Literal, source));
                 continue;
             }
-            var (type, value) = FormatField(in token, in f, fractionalSecondDigits);
+            var (type, value) = FormatField(in token, in f, fractionalSecondDigits, pattern.Calendar);
             parts.Add(new Part(type, value, source));
         }
         return parts;
@@ -531,7 +559,7 @@ internal static class JSIntlDateTimeFormatEngine
             && IntervalPatterns.TryGetValue($"{pattern.Skeleton}|{fieldLetter}", out var intervalPatternText))
         {
             var intervalTokens = Parse(intervalPatternText);
-            return FormatIntervalPattern(intervalTokens, in start, in end, fractionalSecondDigits);
+            return FormatIntervalPattern(intervalTokens, in start, in end, fractionalSecondDigits, pattern.Calendar);
         }
 
         // Fallback "{0} – {1}".
@@ -547,7 +575,7 @@ internal static class JSIntlDateTimeFormatEngine
     // endRange/date1); a letter appearing once is shared. A literal between two fields of
     // the same source takes that source, otherwise it is shared.
     private static List<Part> FormatIntervalPattern(
-        List<Token> tokens, in Fields start, in Fields end, int fractionalSecondDigits)
+        List<Token> tokens, in Fields start, in Fields end, int fractionalSecondDigits, string calendar)
     {
         // Count field-letter occurrences.
         var counts = new Dictionary<char, int>();
@@ -595,8 +623,8 @@ internal static class JSIntlDateTimeFormatEngine
             }
             ref readonly var fields = ref start;
             var (type, value) = source == "endRange"
-                ? FormatField(in token, in end, fractionalSecondDigits)
-                : FormatField(in token, in fields, fractionalSecondDigits);
+                ? FormatField(in token, in end, fractionalSecondDigits, calendar)
+                : FormatField(in token, in fields, fractionalSecondDigits, calendar);
             parts.Add(new Part(type, value, source));
         }
         return parts;
