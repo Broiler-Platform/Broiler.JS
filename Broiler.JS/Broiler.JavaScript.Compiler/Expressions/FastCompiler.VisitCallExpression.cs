@@ -173,7 +173,12 @@ partial class FastCompiler
 
             if (isSuper)
             {
-                var paramArray = VisitArguments(ArgumentsBuilder.This(scope.Top.ArgumentsExpression), arguments);
+                // The super method runs with the caller's `this`. Use the lexical
+                // this binding (ThisExpression) rather than the current activation's
+                // Arguments.This: inside an arrow function the arrow has its own
+                // Arguments whose This is not the enclosing method's receiver, but
+                // ThisExpression resolves to the captured lexical this in both cases.
+                var paramArray = VisitArguments(target, arguments);
                 var superMethod = JSValueBuilder.Index(super, name, me.Coalesce);
 
                 return JSFunctionBuilder.InvokeFunction(superMethod, paramArray, me.Coalesce);
