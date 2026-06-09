@@ -445,7 +445,7 @@ partial class FastCompiler
                 inMemberInitializer = true;
                 try
                 {
-                    value = Visit(member.Init);
+                    value = ApplyFieldFunctionName(member, name, Visit(member.Init));
                 }
                 finally
                 {

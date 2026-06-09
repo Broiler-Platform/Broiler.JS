@@ -348,7 +348,9 @@ partial class FastCompiler
                         name = property.Computed
                             ? computedMemberNames[property]
                             : ValidateStaticPropertyName(property, GetClassElementName(property));
-                        var value = property.Init == null ? JSUndefinedBuilder.Value : Visit(property.Init);
+                        var value = property.Init == null
+                            ? JSUndefinedBuilder.Value
+                            : ApplyFieldFunctionName(property, name, Visit(property.Init));
                         // Deferred to after the class binding (see staticFieldInits).
                         staticFieldInits.Add((name, value, isPrivateName));
                         break;

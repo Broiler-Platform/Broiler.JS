@@ -124,4 +124,52 @@ public class Issue725Tests
         => Assert.Equal(
             "RangeError",
             Eval($"try {{ Intl.getCanonicalLocales('{tag}'); 'no throw'; }} catch (e) {{ e.constructor.name; }}"));
+
+    // ---- Problem 9: anonymous function naming for class fields (NamedEvaluation) ----
+    //
+    // Covers language/{statements,expressions}/class/elements/
+    // static-field-anonymous-function-name.js. The function assigned to a field
+    // takes the field's name; a private field uses the "#name" form.
+
+    [Fact]
+    public void StaticPublicFieldAnonymousFunctionGetsFieldName()
+        => Assert.Equal(
+            "field",
+            Eval("class C { static field = function () { return 42; }; } C.field.name"));
+
+    [Fact]
+    public void StaticPrivateFieldAnonymousArrowGetsHashName()
+        => Assert.Equal(
+            "#field",
+            Eval("class C { static #field = () => 'x'; static getName() { return this.#field.name; } } C.getName()"));
+
+    [Fact]
+    public void InstancePublicFieldAnonymousFunctionGetsFieldName()
+        => Assert.Equal(
+            "f",
+            Eval("class C { f = function () {}; } new C().f.name"));
+
+    [Fact]
+    public void InstancePrivateFieldAnonymousFunctionGetsHashName()
+        => Assert.Equal(
+            "#m",
+            Eval("class C { #m = function () {}; getName() { return this.#m.name; } } new C().getName()"));
+
+    [Fact]
+    public void ComputedFieldAnonymousFunctionGetsComputedName()
+        => Assert.Equal(
+            "computed",
+            Eval("var k = 'computed'; class C { static [k] = function () {}; } C.computed.name"));
+
+    [Fact]
+    public void NamedFunctionFieldKeepsItsOwnName()
+        => Assert.Equal(
+            "original",
+            Eval("class C { static field = function original() {}; } C.field.name"));
+
+    [Fact]
+    public void StaticFieldAnonymousClassGetsFieldName()
+        => Assert.Equal(
+            "field",
+            Eval("class C { static field = class {}; } C.field.name"));
 }
