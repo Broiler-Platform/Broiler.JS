@@ -305,4 +305,58 @@ public class Issue725Tests
         => Assert.Equal(
             "true,true,true",
             Eval("var a = new Int32Array(2); a[0] = 1; var d = Object.getOwnPropertyDescriptor(a, 0); [d.configurable, d.enumerable, d.writable].join(',')"));
+
+    // ---- Problem 2: en dayPeriod must use contiguous flexible periods ----
+    //
+    // Covers intl402/DateTimeFormat/prototype/{format,formatToParts}/
+    // dayPeriod-{long,short}-en.js. The observed periods across 24h must be the
+    // five {in the morning, noon, in the afternoon, in the evening, at night};
+    // midnight must NOT surface and the periods must be contiguous.
+
+    [Theory]
+    [InlineData(0, "at night")]
+    [InlineData(5, "at night")]
+    [InlineData(6, "in the morning")]
+    [InlineData(11, "in the morning")]
+    [InlineData(12, "noon")]
+    [InlineData(13, "in the afternoon")]
+    [InlineData(17, "in the afternoon")]
+    [InlineData(18, "in the evening")]
+    [InlineData(20, "in the evening")]
+    [InlineData(21, "at night")]
+    [InlineData(23, "at night")]
+    public void EnDayPeriodLongResolvesEachHour(int hour, string expected)
+        => Assert.Equal(
+            expected,
+            Eval($"new Intl.DateTimeFormat('en', {{dayPeriod:'long'}}).format(new Date(2017,11,12,{hour},0));"));
+
+    [Fact]
+    public void EnDayPeriodAcrossDayUsesOnlyTheFiveExpectedPeriods()
+        => Assert.Equal(
+            "in the morning,noon,in the afternoon,in the evening,at night",
+            Eval(@"
+                var f = new Intl.DateTimeFormat('en', {dayPeriod:'long'});
+                var seen = [];
+                for (var h = 0; h < 24; h++) {
+                  var p = f.format(new Date(2017,11,12,h,0));
+                  if (seen.indexOf(p) < 0) seen.push(p);
+                }
+                seen.sort(function(a,b){
+                  var order=['in the morning','noon','in the afternoon','in the evening','at night'];
+                  return order.indexOf(a)-order.indexOf(b);
+                }).join(',');"));
+
+    [Fact]
+    public void EnDayPeriodShortMidnightIsAtNight()
+        => Assert.Equal(
+            "at night",
+            Eval("new Intl.DateTimeFormat('en', {dayPeriod:'short'}).format(new Date(2017,11,12,0,0));"));
+
+    [Fact]
+    public void EnDayPeriodFormatToPartsMidnightIsAtNight()
+        => Assert.Equal(
+            "dayPeriod:at night",
+            Eval(@"
+                var parts = new Intl.DateTimeFormat('en', {dayPeriod:'long'}).formatToParts(new Date(2017,11,12,0,0));
+                parts.map(function(p){ return p.type + ':' + p.value; }).join('|');"));
 }

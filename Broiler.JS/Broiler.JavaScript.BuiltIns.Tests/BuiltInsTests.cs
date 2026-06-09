@@ -12002,9 +12002,11 @@ public class BuiltInsTests
             })();
             """);
 
-        // 00:00 resolves to the "midnight" day period (an exact CLDR rule that
-        // takes precedence over the morning range), per the generated CLDR data.
-        Assert.Equal("midnight|noon|1|dayPeriod|noon|12 n|3|hour|12|literal| |dayPeriod|n", result.ToString());
+        // 00:00 resolves to the flexible "at night" period: the ECMA-402 dayPeriod
+        // option does not surface the fixed "midnight" period (it folds into the
+        // surrounding night period), matching test262 dayPeriod-long-en.js. "noon"
+        // (12:00) is still surfaced.
+        Assert.Equal("at night|noon|1|dayPeriod|noon|12 n|3|hour|12|literal| |dayPeriod|n", result.ToString());
     }
 
     [Fact]

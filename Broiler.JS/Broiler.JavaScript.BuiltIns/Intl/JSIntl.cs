@@ -3175,12 +3175,25 @@ public class JSIntlDateTimeFormat : JSObject
     private static string FormatEnglishHour(DateTimeOffset value)
         => ((value.Hour % 12) == 0 ? 12 : value.Hour % 12).ToString(CultureInfo.InvariantCulture);
 
+    // CLDR day-period rule overrides for the ECMA-402 dayPeriod option. The bundled
+    // Broiler.Unicode tables (a) surface the fixed "midnight" period at 00:00, which
+    // the dayPeriod option never emits (browsers fold midnight into the surrounding
+    // flexible period, so 00:00 → "at night" for en), and (b) for "en" carry a
+    // mis-generated morning1/night1 split (morning1=0-720, night1=1260-1440) rather
+    // than the CLDR morning1=06:00-12:00 with night1 wrapping 21:00-06:00. The
+    // corrected rules keep the flexible periods contiguous; "noon" is retained (it
+    // IS surfaced by the option). Keyed by language subtag.
+    private static readonly Dictionary<string, string> DayPeriodRuleOverrides = new(StringComparer.Ordinal)
+    {
+        ["en"] = "noon@720;morning1=360-720;afternoon1=720-1080;evening1=1080-1260;night1=1260-360",
+    };
+
     // The localized day-period name for the time, from CLDR data: the day-period
     // rules pick the period (am/pm/noon/midnight/morning/…) and the ECMA-402
     // dayPeriod option (long/short/narrow) selects the CLDR width.
     private string FormatDayPeriod(DateTimeOffset value, string style)
     {
-        var period = CldrLocaleData.GetDayPeriod(localeTag, value.Hour, value.Minute);
+        var period = ResolveDayPeriodKey(localeTag, value.Hour, value.Minute);
         var width = style switch
         {
             "narrow" => "narrow",
@@ -3188,6 +3201,48 @@ public class JSIntlDateTimeFormat : JSObject
             _ => "wide",
         };
         return CldrLocaleData.GetDayPeriodName(localeTag, period, width);
+    }
+
+    private static string ResolveDayPeriodKey(string localeTag, int hour, int minute)
+    {
+        var dash = localeTag?.IndexOf('-') ?? -1;
+        var language = (dash < 0 ? localeTag ?? string.Empty : localeTag[..dash]).ToLowerInvariant();
+        if (DayPeriodRuleOverrides.TryGetValue(language, out var rules))
+            return MatchDayPeriodRules(rules, hour * 60 + minute) ?? (hour < 12 ? "am" : "pm");
+
+        return CldrLocaleData.GetDayPeriod(localeTag, hour, minute);
+    }
+
+    // Mirrors UnicodeCldr.LocaleData's day-period rule matcher: "@" ("at") rules
+    // win first, then half-open ranges (a from>before range wraps past midnight).
+    private static string MatchDayPeriodRules(string rules, int time)
+    {
+        foreach (var rule in rules.Split(';'))
+        {
+            var at = rule.IndexOf('@');
+            if (at >= 0)
+            {
+                if (int.Parse(rule[(at + 1)..], CultureInfo.InvariantCulture) == time)
+                    return rule[..at];
+                continue;
+            }
+
+            var eq = rule.IndexOf('=');
+            if (eq < 0)
+                continue;
+
+            var period = rule[..eq];
+            var dash = rule.IndexOf('-', eq + 1);
+            var from = int.Parse(rule[(eq + 1)..dash], CultureInfo.InvariantCulture);
+            var before = int.Parse(rule[(dash + 1)..], CultureInfo.InvariantCulture);
+            var matched = from <= before
+                ? time >= from && time < before
+                : time >= from || time < before;
+            if (matched)
+                return period;
+        }
+
+        return null;
     }
 
     public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())

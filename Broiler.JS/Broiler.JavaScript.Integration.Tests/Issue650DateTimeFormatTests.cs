@@ -55,14 +55,15 @@ public class Issue650DateTimeFormatTests
             ".formatToParts(d).map(function(p){return p.type+'='+p.value;}).join(',')"));
 
     // The dayPeriod option uses generated CLDR data (rules + names) for every
-    // locale, not just English. The exact "midnight"/"noon" rules win over the
-    // morning/afternoon ranges.
+    // locale. The fixed "noon" rule wins over the afternoon range, but the fixed
+    // "midnight" period is NOT surfaced by the dayPeriod option — 00:00 folds into
+    // the surrounding "at night" flexible period (matching test262 / browsers).
     private static string DayPeriod(string locale, string display, int hour)
         => Eval($"new Intl.DateTimeFormat('{locale}', {{ dayPeriod: '{display}' }})" +
                 $".format(new Date(2017, 11, 12, {hour}, 0, 0, 0))");
 
     [Theory]
-    [InlineData(0, "midnight")]
+    [InlineData(0, "at night")]
     [InlineData(9, "in the morning")]
     [InlineData(12, "noon")]
     [InlineData(15, "in the afternoon")]
