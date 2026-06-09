@@ -31,6 +31,48 @@ public class Issue725Tests
         return ctx.Eval(code).ToString();
     }
 
+    // ---- Problem 7: Annex B block-scoped function hoisting in direct eval ----
+    //
+    // Covers annexB/language/eval-code/direct/func-{block,switch-*}-decl-eval-func-
+    // existing-block-fn-update.js. Each block-scoped function declaration in a
+    // direct eval must copy its value to the eval var-environment binding, so the
+    // LAST block wins.
+
+    [Fact]
+    public void DirectEvalTwoBlocksLastFunctionWins()
+        => Assert.Equal(
+            "function|second declaration",
+            Eval(@"
+                var updated;
+                (function() {
+                  eval('{ function f() { return ""first declaration""; } }{ function f() { return ""second declaration""; } }updated = f;');
+                }());
+                typeof updated + '|' + (typeof updated === 'function' ? updated() : 'n/a');"));
+
+    [Fact]
+    public void DirectEvalThreeBlocksLastFunctionWins()
+        => Assert.Equal(
+            "C",
+            Eval(@"(function(){ return eval('{ function f(){ return ""A""; } }{ function f(){ return ""B""; } }{ function f(){ return ""C""; } } f();'); }());"));
+
+    [Fact]
+    public void DirectEvalBlockFunctionUpdatesBindingAfterEachBlock()
+        => Assert.Equal(
+            "AB",
+            Eval(@"(function(){ return eval('{ function f(){ return ""A""; } } var t1 = f(); { function f(){ return ""B""; } } var t2 = f(); t1 + t2;'); }());"));
+
+    [Fact]
+    public void DirectEvalSingleBlockFunctionStillHoists()
+        => Assert.Equal(
+            "A",
+            Eval(@"(function(){ return eval('{ function f(){ return ""A""; } } f();'); }());"));
+
+    [Fact]
+    public void GlobalEvalTwoBlocksLastFunctionWinsUnchanged()
+        => Assert.Equal(
+            "B",
+            Eval(@"var updated; eval('{ function f(){ return ""A""; } }{ function f(){ return ""B""; } }updated = f;'); updated();"));
+
     // ---- replacer-array-empty.js ----
 
     [Fact]
@@ -227,4 +269,6 @@ public class Issue725Tests
         => Assert.Equal(
             "true,true,true",
             Eval("var a = new Int32Array(2); a[0] = 1; var d = Object.getOwnPropertyDescriptor(a, 0); [d.configurable, d.enumerable, d.writable].join(',')"));
+
+
 }
