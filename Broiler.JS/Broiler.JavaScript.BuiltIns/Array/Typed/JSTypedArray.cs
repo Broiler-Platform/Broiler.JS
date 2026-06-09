@@ -35,11 +35,22 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return (int)Math.Truncate(number);
     }
 
+    // %TypedArray%.from and %TypedArray%.of are defined once on the %TypedArray%
+    // intrinsic and inherited by every concrete TypedArray constructor, so e.g.
+    // Int8Array.from === Float64Array.from. They use `this` (a.This) as the target
+    // constructor, so they behave correctly for each subclass.
     [JSExport(Length = 1)]
     private static JSValue From(in Arguments a) => FromShared(in a);
 
     [JSExport]
-    private static JSValue Of(in Arguments a) => a.This.InvokeMethod(Names.of, a);
+    private static JSValue Of(in Arguments a)
+    {
+        var result = CreateTypedArrayFromConstructor(a.This, a.Length);
+        for (int i = 0; i < a.Length; i++)
+            result[(uint)i] = a[i];
+
+        return result;
+    }
 
     [JSExport]
     internal readonly JSArrayBuffer buffer;
