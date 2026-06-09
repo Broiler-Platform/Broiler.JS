@@ -424,7 +424,10 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.defineProperty);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(handler, target, NormalizeTrapPropertyKey(key), propertyDescription));
+            // §10.5.6 step 9: the trap receives FromPropertyDescriptor(Desc), whose
+            // fields appear in the canonical §6.2.5.4 order — not the order the
+            // caller happened to write them in.
+            var result = fx.InvokeFunction(new Arguments(handler, target, NormalizeTrapPropertyKey(key), CanonicalizeTrapDescriptor(propertyDescription)));
             if (!result.BooleanValue)
                 return JSBoolean.False;
 
@@ -433,6 +436,29 @@ public partial class JSProxy : JSObject
         }
 
         return target.DefineProperty(key, propertyDescription);
+    }
+
+    // FromPropertyDescriptor (§6.2.5.4): emit only the present fields, in the order
+    // value, writable, get, set, enumerable, configurable.
+    private static JSObject CanonicalizeTrapDescriptor(JSObject descriptor)
+    {
+        var result = new JSObject();
+        CopyTrapField(descriptor, result, KeyStrings.value);
+        CopyTrapField(descriptor, result, KeyStrings.writable);
+        CopyTrapField(descriptor, result, KeyStrings.get);
+        CopyTrapField(descriptor, result, KeyStrings.set);
+        CopyTrapField(descriptor, result, KeyStrings.enumerable);
+        CopyTrapField(descriptor, result, KeyStrings.configurable);
+        return result;
+    }
+
+    private static void CopyTrapField(JSObject source, JSObject result, in KeyString field)
+    {
+        var property = source.GetInternalProperty(field, false);
+        if (property.IsEmpty)
+            return;
+
+        result.FastAddValue(field, source[field], JSPropertyAttributes.EnumerableConfigurableValue);
     }
 
     public override JSValue DefineProperty(in KeyString name, JSObject pd) => DefineProperty(name.ToJSValue(), pd);
@@ -688,6 +714,11 @@ public partial class JSProxy : JSObject
 
         return target.GetPrototypeOf();
     }
+
+    // Object spread / Object.assign must observe the proxy's ownKeys,
+    // getOwnPropertyDescriptor and get traps in spec order rather than copying
+    // internal slots directly.
+    private protected override bool UseObservableSpreadCopy => true;
 
     public override JSValue HasProperty(JSValue propertyKey)
     {

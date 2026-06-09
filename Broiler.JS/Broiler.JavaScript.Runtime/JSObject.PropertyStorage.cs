@@ -275,10 +275,39 @@ public partial class JSObject
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
+    // Object spread (`{ ...source }`) and Object.assign perform CopyDataProperties:
+    // copy the source's own *enumerable* properties. Ordinary objects use the fast
+    // path below (direct slot copy). Exotic objects whose own-key enumeration and
+    // property reads must be observable — Proxies above all — override this to true
+    // so the copy goes through [[OwnPropertyKeys]] / [[GetOwnProperty]] / [[Get]].
+    private protected virtual bool UseObservableSpreadCopy => false;
+
     public void FastAddRange(JSValue value)
     {
         if (value is not JSObject target)
             return;
+
+        if (target.UseObservableSpreadCopy)
+        {
+            // §7.3.25 CopyDataProperties: iterate [[OwnPropertyKeys]] in order; for
+            // each key read its descriptor (firing the getOwnPropertyDescriptor
+            // trap) and copy only enumerable properties, reading the value via
+            // [[Get]] (firing the get trap).
+            var keys = target.GetAllKeys(showEnumerableOnly: false, inherited: false);
+            while (keys.MoveNext(out var hasKey, out var key, out _))
+            {
+                if (!hasKey)
+                    continue;
+
+                if (target.GetOwnPropertyDescriptor(key) is not JSObject descriptor
+                    || !descriptor[KeyStrings.enumerable].BooleanValue)
+                    continue;
+
+                CreateDataProperty(key, target[key]);
+            }
+
+            return;
+        }
 
         var en = target.elements.Length;
         for (uint i = 0; i < en; i++)

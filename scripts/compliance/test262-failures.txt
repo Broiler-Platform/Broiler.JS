@@ -52,7 +52,6 @@ test/annexB/language/literals/regexp/non-empty-class-ranges.js
 test/annexB/language/statements/for-in/nonstrict-initializer.js
 test/annexB/language/statements/try/catch-redeclared-for-in-var.js
 test/annexB/language/statements/try/catch-redeclared-for-of-var.js
-test/built-ins/AggregateError/cause-property.js
 test/built-ins/AggregateError/message-tostring-abrupt-symbol.js
 test/built-ins/AggregateError/message-tostring-abrupt.js
 test/built-ins/Array/15.4.5.1-5-2.js
@@ -252,7 +251,6 @@ test/built-ins/Date/prototype/valueOf/S9.4_A3_T1.js
 test/built-ins/Date/value-to-primitive-result-non-string-prim.js
 test/built-ins/Date/year-zero.js
 test/built-ins/Error/cause_abrupt.js
-test/built-ins/Error/cause_property.js
 test/built-ins/Error/constructor.js
 test/built-ins/Error/error-message-tostring-symbol.js
 test/built-ins/Error/error-message-tostring-toprimitive.js
@@ -362,7 +360,6 @@ test/built-ins/Math/round/S15.8.2.15_A7.js
 test/built-ins/Math/sign/sign-specialVals.js
 test/built-ins/Math/sqrt/results.js
 test/built-ins/Math/sumPrecise/sum.js
-test/built-ins/NativeErrors/cause_property_native_error.js
 test/built-ins/NativeErrors/nativeerror-tostring-message-throws-symbol.js
 test/built-ins/NativeErrors/nativeerror-tostring-message-throws-toprimitive.js
 test/built-ins/Number/15.7.4-1.js
@@ -522,9 +519,7 @@ test/built-ins/Promise/reject-function-length.js
 test/built-ins/Promise/resolve-function-length.js
 test/built-ins/Promise/withResolvers/resolvers.js
 test/built-ins/Proxy/enumerate/removed-does-not-trigger.js
-test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-missing-target-is-proxy.js
 test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-null-target-is-proxy.js
-test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-undefined-target-is-proxy.js
 test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-undefined.js
 test/built-ins/Proxy/has/call-in-prototype-index.js
 test/built-ins/Proxy/proxy-no-prototype.js
@@ -534,8 +529,6 @@ test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls-index.js
 test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls.js
 test/built-ins/Proxy/setPrototypeOf/toboolean-trap-result-false.js
 test/built-ins/Reflect/getOwnPropertyDescriptor/return-from-accessor-descriptor.js
-test/built-ins/Reflect/getOwnPropertyDescriptor/return-from-data-descriptor.js
-test/built-ins/Reflect/getOwnPropertyDescriptor/symbol-property.js
 test/built-ins/Reflect/ownKeys/return-non-enumerable-keys.js
 test/built-ins/Reflect/ownKeys/return-on-corresponding-order-large-index.js
 test/built-ins/Reflect/setPrototypeOf/return-false-if-target-and-proto-are-the-same.js
@@ -1073,7 +1066,6 @@ test/built-ins/ShadowRealm/prototype/evaluate/throws-typeerror-wrap-throwing.js
 test/built-ins/ShadowRealm/prototype/importValue/specifier-tostring.js
 test/built-ins/String/S15.5.2.1_A3.js
 test/built-ins/String/S15.5.5_A2_T2.js
-test/built-ins/String/numeric-properties.js
 test/built-ins/String/prototype/S15.5.4_A1.js
 test/built-ins/String/prototype/S15.5.4_A2.js
 test/built-ins/String/prototype/S15.5.4_A3.js
@@ -1810,7 +1802,6 @@ test/language/expressions/object/accessor-name-computed-in.js
 test/language/expressions/object/computed-property-name-topropertykey-before-value-evaluation.js
 test/language/expressions/object/dstr/object-rest-proxy-get-not-called-on-dontenum-keys.js
 test/language/expressions/object/dstr/object-rest-proxy-gopd-not-called-on-excluded-keys.js
-test/language/expressions/object/dstr/object-rest-proxy-ownkeys-returned-keys-order.js
 test/language/expressions/object/fn-name-accessor-get.js
 test/language/expressions/object/fn-name-accessor-set.js
 test/language/expressions/object/literal-property-name-bigint.js
@@ -1820,8 +1811,6 @@ test/language/expressions/object/method-definition/generator-super-prop-param.js
 test/language/expressions/object/method-definition/name-prop-name-yield-expr.js
 test/language/expressions/object/method-definition/name-super-prop-param.js
 test/language/expressions/object/object-spread-proxy-get-not-called-on-dontenum-keys.js
-test/language/expressions/object/object-spread-proxy-no-excluded-keys.js
-test/language/expressions/object/object-spread-proxy-ownkeys-returned-keys-order.js
 test/language/expressions/optional-chaining/eval-optional-call.js
 test/language/expressions/optional-chaining/optional-chain-prod-arguments.js
 test/language/expressions/optional-chaining/punctuator-decimal-lookahead.js
@@ -2355,7 +2344,6 @@ test/staging/sm/object/accessor-name.js
 test/staging/sm/object/defineProperty-proxy.js
 test/staging/sm/object/entries.js
 test/staging/sm/object/object-toString-01.js
-test/staging/sm/object/property-descriptor-order.js
 test/staging/sm/object/propertyIsEnumerable-proxy.js
 test/staging/sm/object/propertyIsEnumerable.js
 test/staging/sm/object/toLocaleString-01.js

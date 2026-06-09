@@ -20,23 +20,26 @@ internal static class JSObjectCoreExtensions
         var f = JSValue.BooleanFalse;
         JSObject obj;
 
+        // §6.2.5.4 FromPropertyDescriptor inserts fields in a fixed order:
+        // data → value, writable, enumerable, configurable;
+        // accessor → get, set, enumerable, configurable.
         if (px.IsValue)
         {
             obj = JSObject.NewWithProperties()
-                .AddProperty(KeyStrings.configurable, px.IsConfigurable ? t : f)
-                .AddProperty(KeyStrings.enumerable, px.IsEnumerable ? t : f)
+                .AddProperty(KeyStrings.value, (JSValue)px.value)
                 .AddProperty(KeyStrings.writable, !px.IsReadOnly ? t : f)
-                .AddProperty(KeyStrings.value, (JSValue)px.value);
+                .AddProperty(KeyStrings.enumerable, px.IsEnumerable ? t : f)
+                .AddProperty(KeyStrings.configurable, px.IsConfigurable ? t : f);
         }
         else
         {
             var getter = px.get as JSValue ?? JSUndefined.Value;
             var setter = px.set as JSValue ?? JSUndefined.Value;
             obj = JSObject.NewWithProperties()
-                .AddProperty(KeyStrings.configurable, px.IsConfigurable ? t : f)
-                .AddProperty(KeyStrings.enumerable, px.IsEnumerable ? t : f)
                 .AddProperty(KeyStrings.@get, getter)
-                .AddProperty(KeyStrings.@set, setter);
+                .AddProperty(KeyStrings.@set, setter)
+                .AddProperty(KeyStrings.enumerable, px.IsEnumerable ? t : f)
+                .AddProperty(KeyStrings.configurable, px.IsConfigurable ? t : f);
         }
 
         return obj;

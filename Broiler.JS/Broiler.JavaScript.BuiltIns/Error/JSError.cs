@@ -15,7 +15,18 @@ public partial class JSError : JSObject, IJSError
     public string Message { get; private set; }
     public string Stack { get; private set; }
 
+    private static readonly KeyString CauseKey = KeyStrings.GetOrCreate("cause");
+
     Exception IJSError.Exception => Exception;
+
+    // 20.5.8.1 InstallErrorCause(O, options): when options is an object having
+    // an own-or-inherited "cause" property, copy it as a non-enumerable data
+    // property (configurable, writable, non-enumerable).
+    private protected void InstallErrorCause(JSValue options)
+    {
+        if (options is JSObject optionsObject && optionsObject.HasProperty(CauseKey.ToJSValue()).BooleanValue)
+            FastAddValue(CauseKey, optionsObject[CauseKey], JSPropertyAttributes.ConfigurableValue);
+    }
 
     private string CreateStack()
     {
@@ -56,6 +67,8 @@ public partial class JSError : JSObject, IJSError
             FastAddValue(KeyStrings.message, JSValue.CreateString(message), JSPropertyAttributes.ConfigurableValue);
 
         FastAddValue(KeyStrings.stack, JSValue.CreateString(Stack), JSPropertyAttributes.ConfigurableValue);
+
+        InstallErrorCause(a.GetAt(1));
     }
 
     [JSExport("isError")]
@@ -164,5 +177,8 @@ public partial class JSAggregateError : JSError
         base(new Arguments(a.This, a.GetAt(1)), function: function, filePath: filePath, line: line)
     {
         FastAddValue(ErrorsKey, JSArray.StaticFrom(new Arguments(JSUndefined.Value, a.GetAt(0))), JSPropertyAttributes.ConfigurableValue);
+
+        // AggregateError(errors, message, options): options is the third argument.
+        InstallErrorCause(a.GetAt(2));
     }
 }
