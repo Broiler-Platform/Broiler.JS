@@ -539,7 +539,7 @@ public class YExpressionMapVisitor : YExpressionVisitor<YExpression>
     protected override YExpression VisitYield(YYieldExpression node)
     {
         if (Modified(node.Argument, out var arg))
-            return new YYieldExpression(arg, node.DelegateYield);
+            return new YYieldExpression(arg, node.DelegateYield, node.IsAwait);
         return node;
     }
 

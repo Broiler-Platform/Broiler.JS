@@ -671,6 +671,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if (ignoreCase)
                 pattern = TransformUnicodeCaseFolding(pattern, unicode || unicodeSets);
 
+            // Per sec-patterns-static-semantics-early-errors, an inline modifier
+            // group `(?<add>-<remove>:…)` may only contain i/m/s flags, may not repeat
+            // a flag within a group, may not list a flag in both the added and removed
+            // sets (e.g. `(?s-s:a)`), and must add or remove at least one flag. .NET
+            // accepts these, so validate first (independent of the mode switch below).
+            ValidateInlineModifiers(pattern);
+
             // §2.6 — Detect inline pattern modifiers (?i:...) / (?-i:...) / (?ims:...) etc.
             // .NET ECMAScript mode does not support them, so switch to default mode.
             if ((options & RegexOptions.ECMAScript) != 0 && HasInlineModifiers(pattern))
@@ -792,6 +799,85 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// groups such as <c>(?i:...)</c>, <c>(?-m:...)</c>, <c>(?si:...)</c>.
     /// These are not supported in .NET ECMAScript mode.
     /// </summary>
+    // Validates ES2025 inline modifier groups `(?<add>-<remove>:…)` per the pattern
+    // static-semantics early errors. Throws SyntaxError when: a flag is repeated
+    // within a group; the same flag is both added and removed; a non-i/m/s flag
+    // (e.g. uppercase `I`) appears; or the group adds and removes nothing (`(?-:…)`).
+    private static void ValidateInlineModifiers(string pattern)
+    {
+        for (int i = 0; i + 2 < pattern.Length; i++)
+        {
+            if (pattern[i] == '\\')
+            {
+                i++; // skip the escaped character
+                continue;
+            }
+
+            if (pattern[i] != '(' || pattern[i + 1] != '?')
+                continue;
+
+            // `(?` followed by an ASCII letter or `-` begins a modifier group: no
+            // other `(?…` construct — (?:…), (?=…), (?!…), (?<name>…), (?<=…), (?<!…) —
+            // starts that way, so a letter here is always an (attempted) modifier flag.
+            int j = i + 2;
+            var first = pattern[j];
+            var firstIsLetter = (first >= 'a' && first <= 'z') || (first >= 'A' && first <= 'Z');
+            if (!firstIsLetter && first != '-')
+                continue;
+
+            var added = new HashSet<char>();
+            var removed = new HashSet<char>();
+            var current = added;
+            bool sawDash = false;
+
+            while (j < pattern.Length)
+            {
+                char c = pattern[j];
+                if (c == 'i' || c == 'm' || c == 's')
+                {
+                    if (!current.Add(c))
+                        throw JSEngine.NewSyntaxError(
+                            "Invalid regular expression: a modifier flag must not be repeated within a modifier group");
+                    j++;
+                }
+                else if (c == 'x')
+                {
+                    // .NET-only flag tolerated for passthrough; not a duplicate-checked
+                    // JS modifier flag.
+                    j++;
+                }
+                else if (c == '-' && !sawDash)
+                {
+                    sawDash = true;
+                    current = removed;
+                    j++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            // A modifier group must be terminated by ':'. Anything else after the
+            // flags (e.g. an uppercase `I`) is an invalid flag.
+            if (j >= pattern.Length || pattern[j] != ':')
+                throw JSEngine.NewSyntaxError(
+                    "Invalid regular expression: invalid flag in modifier group");
+
+            // `(?-:…)` adds and removes nothing.
+            if (sawDash && added.Count == 0 && removed.Count == 0)
+                throw JSEngine.NewSyntaxError(
+                    "Invalid regular expression: a modifier group must add or remove at least one flag");
+
+            foreach (var c in added)
+            {
+                if (removed.Contains(c))
+                    throw JSEngine.NewSyntaxError(
+                        "Invalid regular expression: a modifier flag must not appear in both the added and removed flag sets");
+            }
+        }
+    }
+
     private static bool HasInlineModifiers(string pattern)
     {
         // Look for (?[imsx-]+: which is the inline-modifier syntax.

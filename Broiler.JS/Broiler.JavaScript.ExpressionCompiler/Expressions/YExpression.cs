@@ -574,4 +574,6 @@ public abstract class YExpression(YExpressionType nodeType, Type type)
 
 
     public static YYieldExpression Yield(YExpression arg, bool @delegate = false) => new(arg, @delegate);
+
+    public static YYieldExpression Await(YExpression arg) => new(arg, false, isAwait: true);
 }

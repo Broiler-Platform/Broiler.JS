@@ -3,17 +3,22 @@ using Broiler.JavaScript.ExpressionCompiler.ClosureSeparator;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 
 public delegate GeneratorState JSGeneratorDelegateV2(ClrGeneratorV2 generator, in Arguments a, int nextJump, JSValue nextValue, Exception ex);
 
-public class GeneratorState(JSValue value, int nextJump, bool isValueDelegate)
+public class GeneratorState(JSValue value, int nextJump, bool isValueDelegate, bool isAwait = false)
 {
     public readonly bool HasValue = value != null;
     public readonly JSValue Value = value;
     public readonly bool IsValueDelegate = isValueDelegate;
     public readonly int NextJump = nextJump;
+
+    // True when this suspension is an internal `await` (see YYieldExpression.IsAwait).
+    // The async-generator driver awaits the value and resumes without surfacing it.
+    public readonly bool IsAwait = isAwait;
 }
 
 /// <summary>
@@ -62,6 +67,17 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
     public bool IsFinished;
     public int NextJump;
+
+    // Set by Next() each time it surfaces a suspension: true when the suspension is
+    // an internal `await` (GeneratorState.IsAwait), false for a user `yield` (incl.
+    // yield* delegation). Consulted only by the async-generator driver.
+    internal bool LastYieldWasAwait;
+
+    // When a `yield*` delegated to a JSIterator surfaces a result, this holds the
+    // iterator's *raw* result object so it can be re-yielded to the consumer
+    // without re-boxing (per GeneratorYield(innerResult)). Null for ordinary yields.
+    internal JSValue DelegatedRawResult;
+
     internal bool HasDelegatedEnumerator => delegatedEnumerator != null;
 
     // A non-zero NextJump means the generator is parked at a `yield` resume point
@@ -94,6 +110,8 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
     internal void Next(JSValue next, out JSValue value, out bool done)
     {
         GeneratorState v = null;
+        LastYieldWasAwait = false;
+        DelegatedRawResult = null;
         while (true)
         {
             if (delegatedEnumerator != null)
@@ -106,17 +124,23 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
                             ? JSUndefined.Value
                             : next ?? JSUndefined.Value;
                         delegatedNeedsInitialNext = false;
-                        delegatedEnumerator = iterator;
-                        if (iterator.MoveNext(delegatedNextValue, out value))
+                        // `yield*` re-yields the delegated iterator's result object
+                        // as-is (without re-boxing into a fresh {value,done}); keep
+                        // the raw result so the consumer observes the same object.
+                        if (iterator.MoveNextRaw(delegatedNextValue, out var rawResult))
                         {
+                            delegatedEnumerator = iterator;
+                            DelegatedRawResult = rawResult;
+                            value = rawResult[KeyStrings.value];
                             done = false;
                             return;
                         }
 
-                        // The delegated iterator is exhausted; `value` now holds
-                        // its return value, which becomes the result of the
+                        delegatedEnumerator = iterator;
+                        // The delegated iterator is exhausted; its result's `value`
+                        // holds the return value, which becomes the result of the
                         // `yield*` expression resumed below.
-                        delegatedCompletionValue = value;
+                        delegatedCompletionValue = rawResult[KeyStrings.value];
                     }
                     else if (delegatedEnumerator.MoveNext(out value))
                     {
@@ -181,6 +205,7 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
                     return;
                 }
 
+                LastYieldWasAwait = v.IsAwait;
                 done = false;
                 return;
             }

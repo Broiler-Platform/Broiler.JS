@@ -1314,6 +1314,16 @@ public partial class JSObject
         return new ElementEnumerator(this);
     }
 
+    // Enumerates the object's own integer-indexed elements for key enumeration
+    // (Object.keys / for-in / etc.), which must never invoke the iterator protocol.
+    // When the object carries its *own* @@iterator the iterator-aware
+    // GetElementEnumerator would (correctly, for for-of) honour it — and throw if it
+    // is non-callable (e.g. `o[Symbol.iterator] = 'x'`) — so bypass it with the raw
+    // element walk. Otherwise delegate to GetElementEnumerator so exotic objects
+    // (arrays, typed arrays) keep their specialised, hole-aware element enumeration.
+    internal IElementEnumerator GetOwnIndexedElementEnumerator()
+        => HasIterator ? new ElementEnumerator(this) : GetElementEnumerator();
+
     public override IElementEnumerator GetIterableEnumerator()
     {
         var iterator = this[JSValue.SymbolIterator];

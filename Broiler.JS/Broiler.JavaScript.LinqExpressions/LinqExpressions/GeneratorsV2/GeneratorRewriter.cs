@@ -191,11 +191,14 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
             return Expression.Return(generatorReturn, GeneratorStateBuilder.New(Visit(node.Default), -1));
 
         // return yield case... need to expand..
+        // Preserve the suspension kind: `return yield* X` must delegate, and
+        // `return await X` (async) must be treated as an await — otherwise the
+        // flags are lost and the operand surfaces as a plain yield value.
         var yield = node.Default as YYieldExpression;
         var arg = Visit(yield.Argument);
         var (label, id) = GetNextYieldJumpTarget();
 
-        return Expression.Block(Expression.Return(generatorReturn, GeneratorStateBuilder.New(arg, id)), Expression.Label(label),
+        return Expression.Block(Expression.Return(generatorReturn, GeneratorStateBuilder.New(arg, id, yield.DelegateYield, yield.IsAwait)), Expression.Label(label),
             Expression.Return(generatorReturn, GeneratorStateBuilder.New(nextValue, -1)));
     }
 
@@ -238,7 +241,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         var arg = Visit(node.Argument);
         var (label, id) = GetNextYieldJumpTarget();
 
-        return Expression.Block(Expression.Return(generatorReturn, GeneratorStateBuilder.New(arg, id, node.DelegateYield)), Expression.Label(label), nextValue);
+        return Expression.Block(Expression.Return(generatorReturn, GeneratorStateBuilder.New(arg, id, node.DelegateYield, node.IsAwait)), Expression.Label(label), nextValue);
     }
 
     protected override Exp VisitConditional(YConditionalExpression node)

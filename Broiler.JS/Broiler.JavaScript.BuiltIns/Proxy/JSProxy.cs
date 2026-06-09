@@ -809,6 +809,13 @@ public partial class JSProxy : JSObject
                 if (!keyHasValue)
                     continue;
 
+                // EnumerableOwnPropertyNames / for-in enumerate STRING keys only;
+                // GetAllKeys never surfaces symbols in its enumerable form (the
+                // ordinary KeyEnumerator does the same). Symbol keys for a proxy are
+                // obtained via Reflect.ownKeys / getOwnPropertySymbols (showEnumerableOnly: false).
+                if (key.IsSymbol)
+                    continue;
+
                 var descriptor = GetOwnPropertyDescriptor(key);
                 if (descriptor.IsUndefined || !descriptor[KeyStrings.enumerable].BooleanValue)
                     continue;
@@ -827,14 +834,20 @@ public partial class JSProxy : JSObject
                 keys.Add(value);
         }
 
-        foreach (var (key, property) in target.GetSymbols().AllValues())
+        // Symbol keys are part of [[OwnPropertyKeys]] (Reflect.ownKeys /
+        // getOwnPropertySymbols, showEnumerableOnly: false) but never of the
+        // string-key enumeration used by Object.keys / for-in.
+        if (!showEnumerableOnly)
         {
-            if (property.IsEmpty || (showEnumerableOnly && !property.IsEnumerable))
-                continue;
+            foreach (var (key, property) in target.GetSymbols().AllValues())
+            {
+                if (property.IsEmpty)
+                    continue;
 
-            var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(key)
-                ?? throw new InvalidOperationException($"Unknown symbol key {key}");
-            keys.Add((JSValue)symbol);
+                var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(key)
+                    ?? throw new InvalidOperationException($"Unknown symbol key {key}");
+                keys.Add((JSValue)symbol);
+            }
         }
 
         return keys.GetElementEnumerator();

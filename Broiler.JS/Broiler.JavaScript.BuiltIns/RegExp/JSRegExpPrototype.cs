@@ -149,7 +149,10 @@ public partial class JSRegExp
         }
 
         result[KeyStrings.index] = JSValue.CreateNumber(match.Index);
-        result[KeyStrings.input] = a.Get1();
+        // RegExpBuiltinExec stores the *coerced* (ToString) subject string in the
+        // result's `input` property, not the raw argument — e.g. exec(undefined)
+        // yields input === "undefined".
+        result[KeyStrings.input] = JSValue.CreateString(input);
 
         var groupsKey = KeyStrings.GetOrCreate("groups");
         var indicesKey = KeyStrings.GetOrCreate("indices");

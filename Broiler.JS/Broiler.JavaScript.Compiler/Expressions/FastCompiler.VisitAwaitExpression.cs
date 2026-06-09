@@ -8,6 +8,6 @@ partial class FastCompiler
     protected override YExpression VisitAwaitExpression(AstAwaitExpression node)
     {
         var target = VisitExpression(node.Argument);
-        return YExpression.Yield(target);
+        return YExpression.Await(target);
     }
 }

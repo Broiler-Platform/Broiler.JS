@@ -119,6 +119,22 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
         return true;
     }
 
+    // Like MoveNext, but yields the iterator's *raw* result object (the
+    // { value, done } record) instead of unwrapping it. Used by `yield*` to
+    // re-yield the delegated result without re-boxing. Returns false (and leaves
+    // the raw result, whose `value` is the completion value) once exhausted.
+    public bool MoveNextRaw(JSValue nextValue, out JSValue rawResult)
+    {
+        rawResult = StepNext(nextValue);
+        if (rawResult[KeyStrings.done].BooleanValue)
+        {
+            done = true;
+            return false;
+        }
+
+        return true;
+    }
+
     public bool MoveNextOrDefault(out JSValue value, JSValue @default)
     {
         value = StepNext();

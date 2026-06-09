@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.Ast.Expressions;
+﻿using Broiler.JavaScript.Ast;
+using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
@@ -112,6 +113,10 @@ partial class FastParser
                 {
                     ValidateForInOfDeclaration(declaration, isOf: false);
                 }
+                else
+                {
+                    beginNode = ReinterpretForHeadTarget(beginNode);
+                }
 
                 @in = true;
 
@@ -128,6 +133,10 @@ partial class FastParser
                 if (declaration != null)
                 {
                     ValidateForInOfDeclaration(declaration, isOf: true);
+                }
+                else
+                {
+                    beginNode = ReinterpretForHeadTarget(beginNode);
                 }
 
                 of = true;
@@ -241,6 +250,18 @@ partial class FastParser
         static bool IsOfKeyword(FastToken token)
             => token.ContextualKeyword == FastKeywords.of
                 || token.CookedText == "of";
+
+        // A non-declaration for-in/for-of LHS is parsed as an expression. When it
+        // is an object/array literal it is actually a destructuring assignment
+        // target (a CoverInitializedName like `{ x = 1 }` is only legal here), so
+        // reinterpret it as a pattern at parse time — mirroring the assignment
+        // expression path (NextExpression). Other targets (identifiers, member
+        // expressions, and even invalid `f()` references handled at runtime per
+        // Annex B) are left untouched.
+        static AstNode ReinterpretForHeadTarget(AstNode lhs)
+            => lhs is AstExpression { Type: FastNodeType.ObjectLiteral or FastNodeType.ArrayExpression } expr
+                ? expr.ToPattern()
+                : lhs;
 
         static IFastEnumerable<StringSpan> GetBindingNames(AstVariableDeclaration declaration)
         {
