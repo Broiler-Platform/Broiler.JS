@@ -250,8 +250,6 @@ test/built-ins/Date/prototype/toUTCString/negative-year.js
 test/built-ins/Date/prototype/valueOf/S9.4_A3_T1.js
 test/built-ins/Date/value-to-primitive-result-non-string-prim.js
 test/built-ins/Date/year-zero.js
-test/built-ins/Error/cause_abrupt.js
-test/built-ins/Error/constructor.js
 test/built-ins/Error/error-message-tostring-symbol.js
 test/built-ins/Error/error-message-tostring-toprimitive.js
 test/built-ins/Error/prototype/toString/tostring-message-throws-symbol.js
@@ -519,8 +517,6 @@ test/built-ins/Promise/reject-function-length.js
 test/built-ins/Promise/resolve-function-length.js
 test/built-ins/Promise/withResolvers/resolvers.js
 test/built-ins/Proxy/enumerate/removed-does-not-trigger.js
-test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-null-target-is-proxy.js
-test/built-ins/Proxy/getOwnPropertyDescriptor/trap-is-undefined.js
 test/built-ins/Proxy/has/call-in-prototype-index.js
 test/built-ins/Proxy/proxy-no-prototype.js
 test/built-ins/Proxy/set/call-parameters-prototype-dunder-proto.js
@@ -528,7 +524,6 @@ test/built-ins/Proxy/set/call-parameters.js
 test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls-index.js
 test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls.js
 test/built-ins/Proxy/setPrototypeOf/toboolean-trap-result-false.js
-test/built-ins/Reflect/getOwnPropertyDescriptor/return-from-accessor-descriptor.js
 test/built-ins/Reflect/ownKeys/return-non-enumerable-keys.js
 test/built-ins/Reflect/ownKeys/return-on-corresponding-order-large-index.js
 test/built-ins/Reflect/setPrototypeOf/return-false-if-target-and-proto-are-the-same.js
@@ -1669,7 +1664,6 @@ test/language/eval-code/indirect/var-env-func-strict.js
 test/language/eval-code/indirect/var-env-global-lex-non-strict.js
 test/language/expressions/addition/S11.6.1_A4_T7.js
 test/language/expressions/addition/bigint-and-number.js
-test/language/expressions/addition/coerce-symbol-to-prim-return-prim.js
 test/language/expressions/addition/get-symbol-to-prim-err.js
 test/language/expressions/assignment/S11.13.1_A6_T1.js
 test/language/expressions/assignment/S11.13.1_A6_T2.js
@@ -1744,7 +1738,6 @@ test/language/expressions/compound-assignment/srshift-whitespace.js
 test/language/expressions/compound-assignment/sub-whitespace.js
 test/language/expressions/compound-assignment/urshift-whitespace.js
 test/language/expressions/compound-assignment/xor-whitespace.js
-test/language/expressions/concatenation/S9.8_A5_T2.js
 test/language/expressions/conditional/in-branch-1.js
 test/language/expressions/delete/S11.4.1_A3.1.js
 test/language/expressions/delete/white-space-line-terminator-between-delete-unaryexpression-allowed.js
@@ -1757,8 +1750,6 @@ test/language/expressions/equals/S11.9.1_A6.2_T2.js
 test/language/expressions/equals/bigint-and-number-extremes.js
 test/language/expressions/equals/bigint-and-object.js
 test/language/expressions/equals/bigint-and-string.js
-test/language/expressions/equals/coerce-symbol-to-prim-return-prim.js
-test/language/expressions/equals/symbol-abstract-equality-comparison.js
 test/language/expressions/equals/symbol-strict-equality-comparison.js
 test/language/expressions/function/named-strict-error-reassign-fn-name-in-body-in-eval.js
 test/language/expressions/function/param-dflt-yield-non-strict.js
@@ -1800,7 +1791,6 @@ test/language/expressions/new/S11.2.2_A4_T2.js
 test/language/expressions/new/S11.2.2_A4_T3.js
 test/language/expressions/object/accessor-name-computed-in.js
 test/language/expressions/object/computed-property-name-topropertykey-before-value-evaluation.js
-test/language/expressions/object/dstr/object-rest-proxy-get-not-called-on-dontenum-keys.js
 test/language/expressions/object/dstr/object-rest-proxy-gopd-not-called-on-excluded-keys.js
 test/language/expressions/object/fn-name-accessor-get.js
 test/language/expressions/object/fn-name-accessor-set.js
@@ -1810,7 +1800,6 @@ test/language/expressions/object/method-definition/generator-prop-name-yield-exp
 test/language/expressions/object/method-definition/generator-super-prop-param.js
 test/language/expressions/object/method-definition/name-prop-name-yield-expr.js
 test/language/expressions/object/method-definition/name-super-prop-param.js
-test/language/expressions/object/object-spread-proxy-get-not-called-on-dontenum-keys.js
 test/language/expressions/optional-chaining/eval-optional-call.js
 test/language/expressions/optional-chaining/optional-chain-prod-arguments.js
 test/language/expressions/optional-chaining/punctuator-decimal-lookahead.js
@@ -2208,8 +2197,6 @@ test/staging/sm/RegExp/constructor-ordering.js
 test/staging/sm/RegExp/escape.js
 test/staging/sm/RegExp/exec.js
 test/staging/sm/RegExp/ignoreCase-non-latin1-to-latin1.js
-test/staging/sm/RegExp/lastIndex-exec.js
-test/staging/sm/RegExp/lastIndex-search.js
 test/staging/sm/RegExp/match-trace.js
 test/staging/sm/RegExp/prototype.js
 test/staging/sm/RegExp/regress-576828.js
@@ -2300,7 +2287,6 @@ test/staging/sm/expressions/optional-chain.js
 test/staging/sm/expressions/short-circuit-compound-assignment-anon-fns.js
 test/staging/sm/expressions/string-literal-escape-sequences.js
 test/staging/sm/extensions/function-caller-skips-eval-frames.js
-test/staging/sm/extensions/function-properties.js
 test/staging/sm/extensions/mutable-proto-special-form.js
 test/staging/sm/extensions/quote-string-for-nul-character.js
 test/staging/sm/fields/await-identifier-script.js
@@ -2340,7 +2326,6 @@ test/staging/sm/object/accessor-name.js
 test/staging/sm/object/defineProperty-proxy.js
 test/staging/sm/object/entries.js
 test/staging/sm/object/object-toString-01.js
-test/staging/sm/object/propertyIsEnumerable-proxy.js
 test/staging/sm/object/propertyIsEnumerable.js
 test/staging/sm/object/toLocaleString-01.js
 test/staging/sm/object/toLocaleString.js
