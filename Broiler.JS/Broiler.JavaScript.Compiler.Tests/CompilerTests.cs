@@ -3263,11 +3263,13 @@ public class CompilerTests
     }
 
     [Fact]
-    public void FunctionDeclaration_InWhile_SloppyMode_Parses()
+    public void FunctionDeclaration_InWhile_SloppyMode_ThrowsSyntaxError()
     {
         using var ctx = new JSContext();
-        // Should parse without error in sloppy mode (Annex B)
-        ctx.Eval("(function() { while (false) function f() {} })()");
+        // A FunctionDeclaration is never a legal `while` body: the Annex B
+        // single-statement-function extensions cover only `if` and labelled
+        // statements, so this is a SyntaxError in sloppy mode too.
+        Assert.Throws<JSException>(() => ctx.Eval("(function() { while (false) function f() {} })()"));
     }
 
     [Fact]
