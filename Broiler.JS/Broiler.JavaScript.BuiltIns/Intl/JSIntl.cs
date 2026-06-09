@@ -280,9 +280,13 @@ public static class JSIntl
         if (options.IsNull)
             throw JSEngine.NewTypeError("Cannot convert null to object");
 
-        // A coerced primitive wrapper has no own option properties, so GetOption
-        // observes only the defaults — represented here by a null options object.
-        return null;
+        // CoerceOptionsToObject: a defined non-object options argument is boxed
+        // with ToObject. The wrapper has no own option properties, but GetOption
+        // still walks its prototype chain, so an inherited accessor (e.g. a
+        // localeMatcher getter installed on Object.prototype) is observed exactly
+        // as the spec requires.
+        return JSObject.CreatePrimitiveObject(options) as JSObject
+            ?? throw JSEngine.NewTypeError("Cannot convert options to object");
     }
 
     private static JSFunction CreateGetCanonicalLocalesFunction()
@@ -1364,11 +1368,16 @@ public sealed class JSIntlDurationFormat : JSObject
 
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
-        foreach (var (type, value) in self.FormatToParts(durationObject))
+        var unitKey = KeyStrings.GetOrCreate("unit");
+        foreach (var (type, value, unit) in self.FormatToParts(durationObject))
         {
             var part = new JSObject();
             part.FastAddValue(typeKey, JSValue.CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
             part.FastAddValue(valueKey, JSValue.CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
+            // Parts produced from a unit's NumberFormat carry the singular unit
+            // name; list separators and ListFormat literals leave it absent.
+            if (unit != null)
+                part.FastAddValue(unitKey, JSValue.CreateString(unit), JSPropertyAttributes.EnumerableConfigurableValue);
             parts.AddArrayItem(part);
         }
         return parts;
@@ -1397,7 +1406,9 @@ public sealed class JSIntlDurationFormat : JSObject
     }
 
     // Implements PartitionDurationFormatPattern, returning the flattened parts.
-    private List<(string type, string value)> FormatToParts(JSObject durationObject)
+    // Each tuple's `unit` is the singular duration unit for parts produced from a
+    // unit's NumberFormat, or null for time separators and ListFormat literals.
+    private List<(string type, string value, string unit)> FormatToParts(JSObject durationObject)
     {
         var values = new double[Units.Length];
         for (var i = 0; i < Units.Length; i++)
@@ -1411,7 +1422,7 @@ public sealed class JSIntlDurationFormat : JSObject
             anyNegative |= v < 0;
 
         // Each element of `segments` is the list of parts for one ListFormat element.
-        var segments = new List<List<(string type, string value)>>();
+        var segments = new List<List<(string type, string value, string unit)>>();
         var needSeparator = false;
         var displayNegativeSign = true;
 
@@ -1453,12 +1464,13 @@ public sealed class JSIntlDurationFormat : JSObject
                 }
 
                 var numberParts = FormatNumberParts(SingularUnits[i], value, unitStyleValue, combineFractional, signNever);
+                var unitName = SingularUnits[i];
 
                 if (!needSeparator)
                 {
-                    var segment = new List<(string, string)>();
-                    foreach (var p in numberParts)
-                        segment.Add(p);
+                    var segment = new List<(string, string, string)>();
+                    foreach (var (type, val) in numberParts)
+                        segment.Add((type, val, unitName));
                     if (unitStyleValue is "2-digit" or "numeric")
                         needSeparator = true;
                     segments.Add(segment);
@@ -1466,9 +1478,9 @@ public sealed class JSIntlDurationFormat : JSObject
                 else
                 {
                     var segment = segments[^1];
-                    segment.Add(("literal", ":"));
-                    foreach (var p in numberParts)
-                        segment.Add(p);
+                    segment.Add(("literal", ":", null));
+                    foreach (var (type, val) in numberParts)
+                        segment.Add((type, val, unitName));
                 }
             }
 
@@ -1483,19 +1495,19 @@ public sealed class JSIntlDurationFormat : JSObject
         foreach (var segment in segments)
         {
             var sb = new StringBuilder();
-            foreach (var (_, value) in segment)
+            foreach (var (_, value, _) in segment)
                 sb.Append(value);
             elementStrings.Add(sb.ToString());
         }
 
-        var result = new List<(string type, string value)>();
+        var result = new List<(string type, string value, string unit)>();
         var elementIndex = 0;
         foreach (var (type, value) in lf.FormatPartsForUnits(elementStrings))
         {
             if (type == "element")
                 result.AddRange(segments[elementIndex++]);
             else
-                result.Add((type, value));
+                result.Add((type, value, null));
         }
         return result;
     }
@@ -1503,7 +1515,7 @@ public sealed class JSIntlDurationFormat : JSObject
     private string Format(JSObject durationObject)
     {
         var sb = new StringBuilder();
-        foreach (var (_, value) in FormatToParts(durationObject))
+        foreach (var (_, value, _) in FormatToParts(durationObject))
             sb.Append(value);
         return sb.ToString();
     }
