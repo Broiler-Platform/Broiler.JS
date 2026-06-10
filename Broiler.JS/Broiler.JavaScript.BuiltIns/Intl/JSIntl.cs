@@ -834,6 +834,14 @@ public static class JSIntl
         // compactDisplay getter call-order tests). compactDisplay is always
         // validated, but only reflected when notation is "compact".
         var notation = GetOption(options, NotationKey, NotationValues, false, "standard");
+
+        // SetNumberFormatDigitOptions: read the digit options from the bag exactly
+        // once, in spec order (minimumIntegerDigits, minimumFractionDigits,
+        // maximumFractionDigits, minimumSignificantDigits, maximumSignificantDigits),
+        // and snapshot them so later format/resolvedOptions calls reuse the values
+        // instead of re-invoking option getters.
+        var digitOptions = SnapshotDigitOptions(options);
+
         var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayValues, false, "short");
         if (notation != "compact")
             compactDisplay = null;
@@ -842,7 +850,38 @@ public static class JSIntl
 
         ObserveOptions(options, RoundingIncrementKey, RoundingModeKey, RoundingPriorityKey, TrailingZeroDisplayKey);
 
-        return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay);
+        return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay)
+        {
+            DigitOptions = digitOptions,
+        };
+    }
+
+    // Reads the digit-related options from the bag once (in spec order) and stores
+    // them as plain data properties, so subsequent reads observe construction-time
+    // values without re-triggering option getters. Absent options are left out so
+    // callers apply their own (style-dependent) defaults.
+    private static JSObject SnapshotDigitOptions(JSObject options)
+    {
+        if (options == null)
+            return null;
+
+        var snapshot = new JSObject();
+        foreach (var name in new[]
+        {
+            "minimumIntegerDigits",
+            "minimumFractionDigits",
+            "maximumFractionDigits",
+            "minimumSignificantDigits",
+            "maximumSignificantDigits",
+        })
+        {
+            var key = KeyStrings.GetOrCreate(name);
+            var value = options[key];
+            if (value != null && !value.IsUndefined)
+                snapshot.FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+        }
+
+        return snapshot;
     }
 
     internal static string ResolveLocale(JSValue locales)
@@ -2263,6 +2302,12 @@ internal sealed class JSIntlNumberFormatResolved
     public string SignDisplay { get; }
     public string CompactDisplay { get; }
     public string UnitDisplay { get; }
+
+    // Snapshot of the fraction/integer/significant digit options, read from the
+    // options bag exactly once during construction (SetNumberFormatDigitOptions),
+    // so a getter on e.g. minimumFractionDigits fires once at construction rather
+    // than on every format/resolvedOptions call.
+    public JSObject DigitOptions { get; set; }
 }
 
 public class JSIntlNumberFormat : JSObject
@@ -2715,11 +2760,15 @@ public class JSIntlNumberFormat : JSObject
         return true;
     }
 
+    // Digit options come from the construction-time snapshot (read once from the
+    // options bag), not the live options object, so format-time reads do not
+    // re-invoke option getters.
     private int ReadIntOption(string name, int fallback)
     {
-        if (options == null)
+        var snapshot = resolved?.DigitOptions;
+        if (snapshot == null)
             return fallback;
-        var v = options[KeyStrings.GetOrCreate(name)];
+        var v = snapshot[KeyStrings.GetOrCreate(name)];
         if (v == null || v.IsUndefined)
             return fallback;
         var d = v.DoubleValue;
@@ -2728,9 +2777,10 @@ public class JSIntlNumberFormat : JSObject
 
     private bool HasOption(string name)
     {
-        if (options == null)
+        var snapshot = resolved?.DigitOptions;
+        if (snapshot == null)
             return false;
-        var v = options[KeyStrings.GetOrCreate(name)];
+        var v = snapshot[KeyStrings.GetOrCreate(name)];
         return v != null && !v.IsUndefined;
     }
 
@@ -2862,25 +2912,30 @@ public class JSIntlNumberFormat : JSObject
                 result[roundingPriorityKey] = @this.options[roundingPriorityKey];
             if (!@this.options[trailingZeroDisplayKey].IsUndefined)
                 result[trailingZeroDisplayKey] = @this.options[trailingZeroDisplayKey];
-            if (!@this.options[minimumIntegerDigitsKey].IsUndefined)
-                result[minimumIntegerDigitsKey] = @this.options[minimumIntegerDigitsKey];
+            // Digit options reflect the construction-time snapshot (read once),
+            // not the live options bag, so resolvedOptions does not re-trigger
+            // option getters.
+            var digits = @this.resolved?.DigitOptions;
+
+            if (digits != null && !digits[minimumIntegerDigitsKey].IsUndefined)
+                result[minimumIntegerDigitsKey] = digits[minimumIntegerDigitsKey];
             else
                 result[minimumIntegerDigitsKey] = JSValue.CreateNumber(1);
 
-            if (!@this.options[minimumFractionDigitsKey].IsUndefined)
-                result[minimumFractionDigitsKey] = @this.options[minimumFractionDigitsKey];
+            if (digits != null && !digits[minimumFractionDigitsKey].IsUndefined)
+                result[minimumFractionDigitsKey] = digits[minimumFractionDigitsKey];
             else
                 result[minimumFractionDigitsKey] = JSValue.CreateNumber(0);
 
-            if (!@this.options[maximumFractionDigitsKey].IsUndefined)
-                result[maximumFractionDigitsKey] = @this.options[maximumFractionDigitsKey];
+            if (digits != null && !digits[maximumFractionDigitsKey].IsUndefined)
+                result[maximumFractionDigitsKey] = digits[maximumFractionDigitsKey];
             else
                 result[maximumFractionDigitsKey] = JSValue.CreateNumber(3);
 
-            if (!@this.options[minimumSignificantDigitsKey].IsUndefined)
-                result[minimumSignificantDigitsKey] = @this.options[minimumSignificantDigitsKey];
-            if (!@this.options[maximumSignificantDigitsKey].IsUndefined)
-                result[maximumSignificantDigitsKey] = @this.options[maximumSignificantDigitsKey];
+            if (digits != null && !digits[minimumSignificantDigitsKey].IsUndefined)
+                result[minimumSignificantDigitsKey] = digits[minimumSignificantDigitsKey];
+            if (digits != null && !digits[maximumSignificantDigitsKey].IsUndefined)
+                result[maximumSignificantDigitsKey] = digits[maximumSignificantDigitsKey];
         }
         else
         {
