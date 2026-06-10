@@ -41,9 +41,28 @@ partial class FastCompiler
                     // `obj.#x` is the only way to reach a non-computed IdentifierName
                     // starting with '#'; route it to the private key namespace so it
                     // does not alias a public `obj["#x"]` string property.
-                    var key = id.Name.Length > 0 && id.Name.Value[0] == '#'
+                    var isPrivate = id.Name.Length > 0 && id.Name.Value[0] == '#';
+                    var key = isPrivate
                         ? KeyOfPrivateName(id.Name)
                         : KeyOfName(id.Name);
+
+                    // `obj?.#x`: short-circuit on a nullish receiver, otherwise read
+                    // through the brand-checking private indexer. The generic coalesce
+                    // path (PropertyOrUndefined) is unusable here: it takes the key by
+                    // `in` reference — illegal for a captured per-evaluation private-key
+                    // variable — and would swallow the brand-check TypeError that a
+                    // present-but-foreign receiver must raise.
+                    if (isPrivate && memberExpression.Coalesce)
+                    {
+                        using var recv = scope.Top.GetTempVariable(typeof(JSValue));
+                        return YExpression.Block(
+                            YExpression.Assign(recv.Expression, target),
+                            YExpression.Condition(
+                                JSValueBuilder.IsNullOrUndefined(recv.Expression),
+                                JSUndefinedBuilder.Value,
+                                JSValueBuilder.Index(recv.Expression, super, key, false)));
+                    }
+
                     return JSValueBuilder.Index(target, super, key, memberExpression.Coalesce);
                 }
 

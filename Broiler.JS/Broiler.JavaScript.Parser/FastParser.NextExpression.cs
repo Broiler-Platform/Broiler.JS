@@ -52,6 +52,26 @@ partial class FastParser
                 "Unary operator used immediately before exponentiation expression; parentheses must be used to disambiguate operator precedence");
         }
 
+        // `??` is a ShortCircuitExpression sibling of `||`/`&&` and may not be
+        // combined with either without parentheses: `a ?? b || c`, `a || b ?? c`
+        // (and the `&&` forms) are early SyntaxErrors. Parenthesising one side
+        // (`(a ?? b) || c`, `a ?? (b || c)`) is required and allowed.
+        static bool IsUnparenthesizedLogical(AstExpression e)
+            => e is AstBinaryExpression { WasParenthesized: false } b
+                && (b.Operator == TokenTypes.BooleanOr || b.Operator == TokenTypes.BooleanAnd);
+
+        static bool IsUnparenthesizedCoalesce(AstExpression e)
+            => e is AstBinaryExpression { WasParenthesized: false, Operator: TokenTypes.Coalesce };
+
+        if (type == TokenTypes.Coalesce
+            ? IsUnparenthesizedLogical(left) || IsUnparenthesizedLogical(right)
+            : (type == TokenTypes.BooleanOr || type == TokenTypes.BooleanAnd)
+                && (IsUnparenthesizedCoalesce(left) || IsUnparenthesizedCoalesce(right)))
+        {
+            throw new FastParseException(left.Start,
+                "Cannot mix the nullish coalescing operator '??' with '||' or '&&'; wrap an operand in parentheses to disambiguate");
+        }
+
         return new AstBinaryExpression(left, type, right);
     }
 
@@ -280,6 +300,7 @@ partial class FastParser
             case TokenTypes.BitwiseNot:
             case TokenTypes.BooleanAnd:
             case TokenTypes.BooleanOr:
+            case TokenTypes.Coalesce:
             case TokenTypes.Xor:
             case TokenTypes.LeftShift:
             case TokenTypes.RightShift:
@@ -358,12 +379,15 @@ partial class FastParser
                 TokenTypes.LeftShift or TokenTypes.RightShift or TokenTypes.UnsignedRightShift => 3,
                 TokenTypes.Less or TokenTypes.LessOrEqual or TokenTypes.Greater or TokenTypes.GreaterOrEqual or TokenTypes.In or TokenTypes.InstanceOf => 4,
                 TokenTypes.Equal or TokenTypes.NotEqual or TokenTypes.StrictlyEqual or TokenTypes.StrictlyNotEqual => 5,
-                TokenTypes.Coalesce => 6,
                 TokenTypes.BitwiseAnd => 7,
                 TokenTypes.Xor => 8,
                 TokenTypes.BitwiseOr => 9,
                 TokenTypes.BooleanAnd => 10,
                 TokenTypes.BooleanOr => 11,
+                // `??` is a ShortCircuitExpression sibling of `||`/`&&`; its operand
+                // is a BitwiseORExpression, so it must bind looser than every other
+                // binary operator (a ?? b | c parses as a ?? (b | c)).
+                TokenTypes.Coalesce => 12,
                 _ => int.MaxValue,
             };
         }

@@ -50,7 +50,8 @@ partial class FastParser
             stream.SkipNewLines();
             var current = stream.Current;
 
-            if (current.IsKeyword)
+            if (current.IsKeyword
+                && current.Keyword is FastKeywords.var or FastKeywords.let or FastKeywords.@const)
             {
                 // Disable `in`/`of` as binary operators while parsing the
                 // variable declaration so that `for (var x = 3 in obj)` is

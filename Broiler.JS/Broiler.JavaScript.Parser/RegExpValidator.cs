@@ -96,6 +96,21 @@ internal static class RegExpValidator
                 pattern = NormalizeUnicodePropertyEscapes(pattern);
             }
 
+            // ECMAScript permits group names .NET rejects (a leading `$`, names
+            // beginning with a digit, ZWJ/ZWNJ etc.). The runtime renames every
+            // named group to a synthetic safe name (JSRegExp.RewriteCaptureGroups);
+            // mirror that here so the lexer accepts the literal rather than falling
+            // back to division. Runs after the Unicode validator so u-mode errors
+            // are still surfaced.
+            pattern = NormalizeNamedGroups(pattern);
+
+            // Annex B control escapes such as `\c0`, `\c8`, `\c_` (a `\c` not
+            // followed by an ASCII letter) are valid in non-Unicode regexes but
+            // rejected by .NET. Only reached for non-Unicode patterns (u-mode
+            // rejects them above), so neutralise them for the compile check.
+            if (!unicode)
+                pattern = NormalizeAnnexBControlEscapes(pattern);
+
             _ = new Regex(pattern, options);
             return true;
         }
@@ -195,6 +210,179 @@ internal static class RegExpValidator
         return classDepth == 0;
     }
 
+
+    /// <summary>
+    /// Renames every named group <c>(?&lt;name&gt;…)</c> and named backreference
+    /// <c>\k&lt;name&gt;</c> to a synthetic, .NET-safe name so a JavaScript-valid
+    /// name the .NET engine would reject (e.g. <c>$</c>) does not make the lexer
+    /// classify the regex literal as division. Only validity matters here, so the
+    /// concrete names are irrelevant as long as declarations and references agree.
+    /// </summary>
+    private static string NormalizeNamedGroups(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf("(?<", System.StringComparison.Ordinal) < 0)
+            return pattern;
+
+        // Pass 1: map each distinct group name to a fresh safe name.
+        var map = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.Ordinal);
+        var counter = 0;
+        ScanGroupNames(pattern, name =>
+        {
+            if (!map.ContainsKey(name))
+                map[name] = "bjsv" + counter++;
+        });
+
+        if (map.Count == 0)
+            return pattern;
+
+        // Pass 2: rewrite declarations and \k<name> references.
+        var sb = new System.Text.StringBuilder(pattern.Length + 8);
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                if (!inClass && pattern[i + 1] == 'k' && i + 2 < pattern.Length && pattern[i + 2] == '<')
+                {
+                    int end = pattern.IndexOf('>', i + 3);
+                    if (end > i + 3 && map.TryGetValue(pattern.Substring(i + 3, end - (i + 3)), out var safeRef))
+                    {
+                        sb.Append("\\k<").Append(safeRef).Append('>');
+                        i = end;
+                        continue;
+                    }
+                }
+
+                sb.Append(c).Append(pattern[i + 1]);
+                i++;
+                continue;
+            }
+
+            if (c == '[') { inClass = true; sb.Append(c); continue; }
+            if (c == ']') { inClass = false; sb.Append(c); continue; }
+
+            if (c == '(' && !inClass
+                && i + 2 < pattern.Length && pattern[i + 1] == '?' && pattern[i + 2] == '<'
+                && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!')))
+            {
+                int end = pattern.IndexOf('>', i + 3);
+                if (end > i + 3 && map.TryGetValue(pattern.Substring(i + 3, end - (i + 3)), out var safe))
+                {
+                    sb.Append("(?<").Append(safe).Append('>');
+                    i = end;
+                    continue;
+                }
+            }
+
+            sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
+
+    // Invokes onName for each named-group declaration in source order.
+    private static void ScanGroupNames(string pattern, System.Action<string> onName)
+    {
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+            if (c == '\\' && i + 1 < pattern.Length) { i++; continue; }
+            if (c == '[') { inClass = true; continue; }
+            if (c == ']') { inClass = false; continue; }
+            if (c != '(' || inClass)
+                continue;
+
+            if (i + 2 < pattern.Length && pattern[i + 1] == '?' && pattern[i + 2] == '<'
+                && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!')))
+            {
+                int end = pattern.IndexOf('>', i + 3);
+                if (end > i + 3)
+                {
+                    onName(pattern.Substring(i + 3, end - (i + 3)));
+                    i = end;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Neutralises Annex B escapes that .NET rejects but JavaScript accepts so the
+    /// .NET compile check (used only to tell a regex literal from division) passes.
+    /// The runtime applies the correct semantics on the original source.
+    ///   • <c>\c</c> not followed by an ASCII letter (<c>\c0</c>, <c>\c_</c>, a
+    ///     trailing <c>\c</c>) → literal <c>c</c>. <c>\cA</c>…<c>\cZ</c> stay.
+    ///   • a decimal escape <c>\1</c>…<c>\9</c> outside a character class → the
+    ///     literal digits. These are backreferences only when enough groups
+    ///     precede them; otherwise Annex B treats them as IdentityEscapes, but
+    ///     .NET rejects a reference to an undefined group. A literal digit always
+    ///     compiles, which is all the validity check needs.
+    /// </summary>
+    // Letters that keep their special meaning after a backslash in a non-Unicode
+    // regex; any other ASCII letter is an Annex B IdentityEscape (the literal letter).
+    private const string RecognizedEscapeLetters = "bBcdDfknrsStuvwWx";
+
+    private static string NormalizeAnnexBControlEscapes(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf('\\') < 0)
+            return pattern;
+
+        var sb = new System.Text.StringBuilder(pattern.Length);
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                char next = pattern[i + 1];
+
+                if (next == 'c')
+                {
+                    char after = i + 2 < pattern.Length ? pattern[i + 2] : '\0';
+                    bool isControlLetter = (after >= 'A' && after <= 'Z') || (after >= 'a' && after <= 'z');
+                    if (!isControlLetter)
+                    {
+                        // `\c<non-letter>` → literal `c`.
+                        sb.Append('c');
+                        i++; // consumed '\' and 'c'
+                        continue;
+                    }
+                }
+                else if (!inClass && next >= '1' && next <= '9')
+                {
+                    // Decimal escape → drop the backslash, keep the digits literal.
+                    sb.Append(next);
+                    i++;
+                    while (i + 1 < pattern.Length && pattern[i + 1] >= '0' && pattern[i + 1] <= '9')
+                        sb.Append(pattern[++i]);
+                    continue;
+                }
+                else if (!inClass
+                    && ((next >= 'a' && next <= 'z') || (next >= 'A' && next <= 'Z'))
+                    && RecognizedEscapeLetters.IndexOf(next) < 0)
+                {
+                    // Annex B IdentityEscape (`\C`, `\P`, …) → literal letter.
+                    sb.Append(next);
+                    i++;
+                    continue;
+                }
+
+                sb.Append(c).Append(next);
+                i++;
+                continue;
+            }
+
+            if (c == '[') inClass = true;
+            else if (c == ']') inClass = false;
+
+            sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
 
     /// <summary>
     /// Normalizes ES3 empty character classes (<c>[]</c> and <c>[^]</c>) into

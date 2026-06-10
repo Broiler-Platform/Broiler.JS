@@ -665,6 +665,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // for .NET compatibility (tests 89, 90)
             pattern = TransformES3Patterns(pattern);
 
+            // Annex B IdentityEscape: in a non-Unicode regex `\` followed by a letter
+            // that is not a recognised escape is the literal letter (e.g. /\C/ ≡ /C/,
+            // /O\PQ/ ≡ /OPQ/). .NET rejects those, so drop the backslash. Skipped in
+            // u/v mode, where the same escapes are syntax errors (rejected above) and
+            // \p/\P are Unicode property escapes handled later.
+            if (!unicode && !unicodeSets)
+                pattern = TransformAnnexBIdentityEscapes(pattern);
+
             // ECMAScript \s must match all Unicode whitespace (Zs category + BOM + line terminators).
             // .NET's \s only covers ASCII whitespace, so expand to the full set.
             pattern = TransformUnicodeWhitespace(pattern, unicode || unicodeSets);
@@ -1005,6 +1013,24 @@ public partial class JSRegExp : JSObject, IJSRegExp
                         i = nameEnd;
                         continue;
                     }
+                }
+
+                // Numbered backreference \N. Every group is being renamed to a
+                // synthetic name, so a plain \N no longer resolves under .NET's
+                // named/numbered group numbering; rewrite it to the matching
+                // \k<bjsgN>. (Over-large / forward / self references were already
+                // neutralised by TransformES3Patterns, so any \N reaching here is a
+                // valid backward reference.)
+                if (!inClass && pattern[i + 1] >= '1' && pattern[i + 1] <= '9')
+                {
+                    var refNum = 0;
+                    var j = i + 1;
+                    while (j < pattern.Length && pattern[j] >= '0' && pattern[j] <= '9')
+                        refNum = refNum * 10 + (pattern[j++] - '0');
+
+                    sb.Append("\\k<bjsg").Append(refNum).Append('>');
+                    i = j - 1;
+                    continue;
                 }
 
                 sb.Append(c).Append(pattern[i + 1]);
@@ -2171,6 +2197,46 @@ public partial class JSRegExp : JSObject, IJSRegExp
         static string EncodeBmpScalar(int cp) => cp <= 0xFF ? $"\\x{cp:X2}" : $"\\u{cp:X4}";
     }
 
+    // Letters that keep their special meaning after a backslash in a non-Unicode
+    // regex (character-class escapes, control escapes, boundaries, hex/unicode, the
+    // named backreference \k and \c). Any other ASCII letter is an Annex B
+    // IdentityEscape that denotes the literal letter.
+    private const string RecognizedEscapeLetters = "bBcdDfknrsStuvwWx";
+
+    private static string TransformAnnexBIdentityEscapes(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf('\\') < 0)
+            return pattern;
+
+        var sb = new StringBuilder(pattern.Length);
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                char next = pattern[i + 1];
+                bool isLetter = (next >= 'a' && next <= 'z') || (next >= 'A' && next <= 'Z');
+                if (!inClass && isLetter && RecognizedEscapeLetters.IndexOf(next) < 0)
+                {
+                    sb.Append(next); // IdentityEscape → literal letter
+                    i++;
+                    continue;
+                }
+
+                sb.Append(c).Append(next);
+                i++;
+                continue;
+            }
+
+            if (c == '[') inClass = true;
+            else if (c == ']') inClass = false;
+            sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
+
     private static string TransformES3Patterns(string pattern)
     {
         if (string.IsNullOrEmpty(pattern))
@@ -2212,8 +2278,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
                     if (refNum > totalGroups)
                     {
-                        // Reference to non-existent group — treat as empty match
-                        sb.Append("(?:)");
+                        // Reference to a group that does not exist. In Annex B this
+                        // DecimalEscape is not a backreference — `\8`/`\9` (and any
+                        // over-large number) degrade to the literal digit characters
+                        // (an IdentityEscape), e.g. `/7\89/` matches "789". .NET would
+                        // instead reject the undefined-group reference.
+                        sb.Append(pattern, i + 1, j - (i + 1));
                         i = j - 1;
                         continue;
                     }
@@ -2260,6 +2330,35 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     continue;
                 }
 
+                if (next == 'c')
+                {
+                    // Annex B control escapes. `\cA`…`\cZ` (and lowercase) are
+                    // ordinary ControlEscapes handled by .NET, so pass them
+                    // through. `\c` followed by anything else is the Annex B
+                    // extension and .NET rejects it:
+                    //   • inside a class, `\c` + DecimalDigit/`_` is a control
+                    //     character whose value is the letter's code point mod 32;
+                    //   • everywhere else, the `\` is a literal backslash and `c`
+                    //     is a literal `c` (ClassEscape/AtomEscape fall-through).
+                    char after = i + 2 < pattern.Length ? pattern[i + 2] : '\0';
+                    bool isControlLetter = (after >= 'A' && after <= 'Z') || (after >= 'a' && after <= 'z');
+                    if (!isControlLetter)
+                    {
+                        if (inClass && ((after >= '0' && after <= '9') || after == '_'))
+                        {
+                            sb.Append("\\u").Append(((int)(after % 32)).ToString("x4"));
+                            i += 2; // consumed '\', 'c', and the control letter
+                            continue;
+                        }
+
+                        // Literal backslash + literal 'c'; the following character
+                        // is processed normally on the next iteration.
+                        sb.Append("\\\\c");
+                        i++; // consumed '\' and 'c'
+                        continue;
+                    }
+                }
+
                 // Other escapes — pass through
                 sb.Append(c);
                 sb.Append(next);
@@ -2302,7 +2401,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
             if (c == '(')
             {
-                var capturing = i + 1 >= pattern.Length || pattern[i + 1] != '?';
+                var capturing = IsCapturingGroupStart(pattern, i);
                 if (capturing)
                 {
                     groupsSeen++;
@@ -2328,6 +2427,18 @@ public partial class JSRegExp : JSObject, IJSRegExp
     }
 
     // Count the total number of capturing groups in the pattern
+    // True when pattern[i] == '(' opens a capturing group: a plain '(', or a named
+    // group '(?<name>' — but not a lookbehind '(?<=' / '(?<!', a non-capturing
+    // group '(?:', a lookahead '(?=' / '(?!', or an inline modifier '(?i)'.
+    private static bool IsCapturingGroupStart(string pattern, int i)
+    {
+        if (i + 1 >= pattern.Length || pattern[i + 1] != '?')
+            return true;
+
+        return i + 2 < pattern.Length && pattern[i + 2] == '<'
+            && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!'));
+    }
+
     private static int CountCapturingGroups(string pattern)
     {
         int count = 0;
@@ -2349,7 +2460,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             }
 
             if (c == '[') { inClass = true; continue; }
-            if (c == '(' && (i + 1 >= pattern.Length || pattern[i + 1] != '?'))
+            if (c == '(' && IsCapturingGroupStart(pattern, i))
             {
                 count++;
             }

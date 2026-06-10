@@ -40,8 +40,16 @@ partial class FastParser
         hasAsync = false;
         hasGenerator = false;
 
-        if (stream.CheckAndConsume(FastKeywords.async))
+        // `async` is the async function/arrow keyword only when it actually
+        // introduces one (`async function`, `async (...) =>`, `async id =>`).
+        // Otherwise it is a plain identifier — `async`, `async.x`, `async = 1`,
+        // `async(args)` (a call), or the parameter of a non-async arrow
+        // (`async => x`) — and must be left for the member/identifier parser.
+        if (stream.Current.Keyword == FastKeywords.async && LooksLikeAsyncFunctionOrArrow())
+        {
+            stream.Consume();
             hasAsync = true;
+        }
 
         if (stream.CheckAndConsume(TokenTypes.Multiply))
             hasGenerator = true;
@@ -194,5 +202,68 @@ partial class FastParser
                     return false;
             }
         }
+    }
+
+    /// <summary>
+    /// Decides whether a leading <c>async</c> token introduces an async function or
+    /// arrow (so it should be consumed as the async keyword) rather than being a
+    /// plain identifier. True for <c>async function …</c>, <c>async id =&gt; …</c>,
+    /// and <c>async ( … ) =&gt; …</c>; false for <c>async</c>, <c>async.x</c>,
+    /// <c>async = 1</c>, a call <c>async(args)</c>, and <c>async =&gt; x</c> (where
+    /// <c>async</c> is the arrow parameter). The lookahead is non-destructive: it
+    /// consumes tokens to scan a balanced parameter list and then resets the stream.
+    /// </summary>
+    bool LooksLikeAsyncFunctionOrArrow()
+    {
+        var start = stream.Current;
+        stream.Consume();
+        stream.SkipNewLines();
+
+        var t = stream.Current;
+        bool result;
+
+        if (t.Keyword == FastKeywords.function || t.Type == TokenTypes.Identifier)
+        {
+            // `async function …` or `async BindingIdentifier =>` (a bare
+            // `async id` with no `=>` is itself a syntax error, so committing here
+            // does not mis-handle any valid identifier use).
+            result = true;
+        }
+        else if (t.Type == TokenTypes.BracketStart)
+        {
+            // `async ( … )` — an async arrow only when `=>` follows the matching
+            // `)`; otherwise it is a call `async(args)`.
+            var depth = 0;
+            result = false;
+            while (true)
+            {
+                var ct = stream.Current;
+                if (ct.Type == TokenTypes.EOF)
+                    break;
+
+                if (ct.Type == TokenTypes.BracketStart)
+                    depth++;
+                else if (ct.Type == TokenTypes.BracketEnd)
+                {
+                    depth--;
+                    if (depth == 0)
+                    {
+                        stream.Consume();
+                        stream.SkipNewLines();
+                        result = stream.Current.Type == TokenTypes.Lambda;
+                        break;
+                    }
+                }
+
+                stream.Consume();
+            }
+        }
+        else
+        {
+            result = false;
+        }
+
+        stream.Reset(start);
+        return result;
     }
 }

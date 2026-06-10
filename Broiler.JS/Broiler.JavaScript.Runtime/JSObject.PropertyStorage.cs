@@ -47,6 +47,19 @@ public partial class JSObject
         => KeyStrings.GetOrCreate(
             PrivateNameMarker + name + PrivateNameEvalSeparator + Interlocked.Increment(ref privateNameCounter));
 
+    // Ergonomic brand check `#name in rval` (RelationalExpression : PrivateIdentifier
+    // in ShiftExpression). Returns true when rval carries the private name, false
+    // otherwise; a non-object rval is a TypeError. Uses the same internal lookup as a
+    // private member access, so `#x in obj` is true exactly when `obj.#x` would not
+    // throw a brand-check TypeError.
+    public static JSValue PrivateNameIn(KeyString key, JSValue rval)
+    {
+        if (rval is not JSObject obj)
+            throw NewTypeError("Cannot use 'in' operator to check for a private name in a non-object");
+
+        return obj.GetInternalProperty(key).IsEmpty ? JSValue.BooleanFalse : JSValue.BooleanTrue;
+    }
+
     // Brand check for a private member access (`obj.#x`). A private name must be
     // present — as an own field or an inherited method/accessor on the real
     // prototype chain — on the receiver, otherwise the access is a TypeError
