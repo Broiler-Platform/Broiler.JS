@@ -111,12 +111,15 @@ public partial class JSString
     internal static JSValue IndexOf(in Arguments a)
     {
         var @this = a.This.AsString();
-        var searchStr = a[0] ?? JSUndefined.Value;
+        // Spec order: ToString(this), then ToString(searchString), then
+        // ToInteger(position). Read searchString BEFORE coercing position so an
+        // exception from the search argument surfaces first.
+        var searchString = (a[0] ?? JSUndefined.Value).StringValue;
         var pos = a[1]?.IntegerValue ?? 0;
 
         pos = Math.Min(Math.Max(pos, 0), @this.Length);
 
-        var index = @this.IndexOf(searchStr.StringValue, pos);
+        var index = @this.IndexOf(searchString, pos);
         return JSValue.CreateNumber(index);
     }
 
@@ -125,22 +128,24 @@ public partial class JSString
     internal static JSValue LastIndexOF(in Arguments a)
     {
         var @this = a.This.AsString();
-        var searchStr = a[0] ?? JSUndefined.Value;
+        // Spec order: ToString(this), then ToString(searchString), then
+        // ToNumber(position). Read searchString BEFORE coercing position.
+        var search = (a[0] ?? JSUndefined.Value).StringValue;
         var fromIndex = a[1]?.DoubleValue ?? int.MaxValue;
         var startIndex = double.IsNaN(fromIndex) ? int.MaxValue : (int)(((long)fromIndex << 32) >> 32);
 
         startIndex = Math.Min(startIndex, @this.Length - 1);
-        startIndex = Math.Min(startIndex + searchStr.Length - 1, @this.Length - 1);
+        startIndex = Math.Min(startIndex + search.Length - 1, @this.Length - 1);
 
         if (startIndex < 0)
         {
-            if (@this == string.Empty && searchStr.Length == 0)
+            if (@this == string.Empty && search.Length == 0)
                 return JSValue.NumberZero;
 
             return JSValue.NumberMinusOne;
         }
 
-        return JSValue.CreateNumber(@this.LastIndexOf(searchStr.StringValue, startIndex, StringComparison.Ordinal));
+        return JSValue.CreateNumber(@this.LastIndexOf(search, startIndex, StringComparison.Ordinal));
     }
 
     [JSPrototypeMethod]
@@ -169,7 +174,8 @@ public partial class JSString
         if (!search.IsNullOrUndefined && search.IsObject)
         {
             var searcher = search[(IJSSymbol)JSSymbol.search];
-            if (!searcher.IsUndefined)
+            // GetMethod semantics: a null @@search is treated as absent.
+            if (!searcher.IsNullOrUndefined)
             {
                 if (!searcher.IsFunction)
                     throw JSEngine.NewTypeError("@@search is not callable");

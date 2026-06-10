@@ -23,7 +23,9 @@ public partial class JSString
         if (!reg.IsNullOrUndefined && reg.IsObject)
         {
             var matcher = reg[(IJSSymbol)JSSymbol.match];
-            if (!matcher.IsUndefined)
+            // GetMethod: a null @@match is treated as absent (fall through to the
+            // default RegExpCreate path), not a non-callable error.
+            if (!matcher.IsNullOrUndefined)
             {
                 if (!matcher.IsFunction)
                     throw JSEngine.NewTypeError("@@match is not callable");
@@ -50,7 +52,8 @@ public partial class JSString
         if (!f.IsNullOrUndefined && f.IsObject)
         {
             var replacer = f[(IJSSymbol)JSSymbol.replace];
-            if (!replacer.IsUndefined)
+            // GetMethod semantics: a null @@replace is treated as absent.
+            if (!replacer.IsNullOrUndefined)
             {
                 if (!replacer.IsFunction)
                     throw JSEngine.NewTypeError("@@replace is not callable");
@@ -100,7 +103,8 @@ public partial class JSString
             }
 
             var replacer = searchValue[(IJSSymbol)JSSymbol.replace];
-            if (!replacer.IsUndefined)
+            // GetMethod semantics: a null @@replace is treated as absent.
+            if (!replacer.IsNullOrUndefined)
             {
                 if (!replacer.IsFunction)
                     throw JSEngine.NewTypeError("@@replace is not callable");
@@ -172,7 +176,8 @@ public partial class JSString
         if (!_separator.IsNullOrUndefined && _separator.IsObject)
         {
             var splitter = _separator[(IJSSymbol)JSSymbol.split];
-            if (!splitter.IsUndefined)
+            // GetMethod semantics: a null @@split is treated as absent.
+            if (!splitter.IsNullOrUndefined)
             {
                 if (!splitter.IsFunction)
                     throw JSEngine.NewTypeError("@@split is not callable");

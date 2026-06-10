@@ -1926,19 +1926,21 @@ public class BuiltInsTests
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
         var result = ctx.Eval(@"
-            var handlers = {
-                get: function() {
-                    handle.revoke();
+            (function () {
+                var handlers = {
+                    get: function() {
+                        handle.revoke();
+                    }
+                };
+                var handle = Proxy.revocable(function() {}, handlers);
+                var f = handle.proxy;
+                try {
+                    new f();
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
                 }
-            };
-            var handle = Proxy.revocable(function() {}, handlers);
-            var f = handle.proxy;
-            try {
-                new f();
-                return 'no-throw';
-            } catch (e) {
-                return e.constructor.name;
-            }
+            })();
         ");
 
         Assert.Equal("TypeError", result.ToString());
@@ -1985,21 +1987,23 @@ public class BuiltInsTests
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
         var result = ctx.Eval(@"
-            var target = {};
-            Object.defineProperty(target, 'fixed', {
-                value: 1,
-                writable: false,
-                configurable: false
-            });
-            var proxy = new Proxy(target, {
-                get: function() { return 2; }
-            });
-            try {
-                proxy.fixed;
-                return 'no-throw';
-            } catch (e) {
-                return e.constructor.name;
-            }
+            (function () {
+                var target = {};
+                Object.defineProperty(target, 'fixed', {
+                    value: 1,
+                    writable: false,
+                    configurable: false
+                });
+                var proxy = new Proxy(target, {
+                    get: function() { return 2; }
+                });
+                try {
+                    proxy.fixed;
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })();
         ");
         Assert.Equal("TypeError", result.ToString());
     }
@@ -2010,21 +2014,23 @@ public class BuiltInsTests
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
         var result = ctx.Eval(@"
-            var target = {};
-            Object.defineProperty(target, 'fixed', {
-                value: 1,
-                enumerable: true,
-                configurable: false
-            });
-            var proxy = new Proxy(target, {
-                ownKeys: function() { return []; }
-            });
-            try {
-                Object.keys(proxy);
-                return 'no-throw';
-            } catch (e) {
-                return e.constructor.name;
-            }
+            (function () {
+                var target = {};
+                Object.defineProperty(target, 'fixed', {
+                    value: 1,
+                    enumerable: true,
+                    configurable: false
+                });
+                var proxy = new Proxy(target, {
+                    ownKeys: function() { return []; }
+                });
+                try {
+                    Object.keys(proxy);
+                    return 'no-throw';
+                } catch (e) {
+                    return e.constructor.name;
+                }
+            })();
         ");
         Assert.Equal("TypeError", result.ToString());
     }
