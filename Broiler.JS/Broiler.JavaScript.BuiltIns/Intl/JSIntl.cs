@@ -999,11 +999,30 @@ public static class JSIntl
 
 public class JSIntlRelativeTimeFormat : JSObject
 {
+    // ECMA-402 sanctioned units (singular and plural spellings) mapped to the
+    // singular form used to key the CLDR relative-time patterns.
+    private static readonly Dictionary<string, string> SingularUnit = new(StringComparer.Ordinal)
+    {
+        ["second"] = "second", ["seconds"] = "second",
+        ["minute"] = "minute", ["minutes"] = "minute",
+        ["hour"] = "hour", ["hours"] = "hour",
+        ["day"] = "day", ["days"] = "day",
+        ["week"] = "week", ["weeks"] = "week",
+        ["month"] = "month", ["months"] = "month",
+        ["quarter"] = "quarter", ["quarters"] = "quarter",
+        ["year"] = "year", ["years"] = "year",
+    };
+
     public JSValue Format(in Arguments args)
     {
-        var value = args[0] ?? JSUndefined.Value;
-        _ = value.DoubleValue;
-        return value;
+        // ToNumber(value) precedes ToString(unit) per spec.
+        var value = (args[0] ?? JSUndefined.Value).DoubleValue;
+        var unit = args.GetAt(1).StringValue;
+
+        var sb = new StringBuilder();
+        foreach (var (_, partValue, _) in PartitionRelativeTimePattern(value, unit))
+            sb.Append(partValue);
+        return JSValue.CreateString(sb.ToString());
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -1013,25 +1032,87 @@ public class JSIntlRelativeTimeFormat : JSObject
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlRelativeTimeFormat)
+        if (a.This is not JSIntlRelativeTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.RelativeTimeFormat.prototype.formatToParts called on incompatible receiver");
 
-        var value = a[0] ?? JSUndefined.Value;
-        _ = value.DoubleValue;
-        var unit = a.GetAt(1);
-        if (unit.IsUndefined)
-            throw JSEngine.NewRangeError("Invalid unit argument");
-        var unitStr = unit.StringValue;
-        var validUnits = new HashSet<string>
-        {
-            "year", "years", "quarter", "quarters", "month", "months",
-            "week", "weeks", "day", "days", "hour", "hours",
-            "minute", "minutes", "second", "seconds"
-        };
-        if (!validUnits.Contains(unitStr))
-            throw JSEngine.NewRangeError($"Invalid unit argument: {unitStr}");
+        var value = (a[0] ?? JSUndefined.Value).DoubleValue;
+        var unit = a.GetAt(1).StringValue;
 
-        return JSValue.CreateArray();
+        var typeKey = KeyStrings.GetOrCreate("type");
+        var valueKey = KeyStrings.GetOrCreate("value");
+        var unitKey = KeyStrings.GetOrCreate("unit");
+
+        var parts = JSValue.CreateArray();
+        foreach (var (type, partValue, partUnit) in @this.PartitionRelativeTimePattern(value, unit))
+        {
+            var part = new JSObject();
+            part.FastAddValue(typeKey, JSValue.CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(valueKey, JSValue.CreateString(partValue), JSPropertyAttributes.EnumerableConfigurableValue);
+            if (partUnit != null)
+                part.FastAddValue(unitKey, JSValue.CreateString(partUnit), JSPropertyAttributes.EnumerableConfigurableValue);
+            parts.AddArrayItem(part);
+        }
+        return parts;
+    }
+
+    // PartitionRelativeTimePattern: resolves the ordered (type, value, unit) parts
+    // for a value/unit. Numeric "auto" first tries an exact phrase (e.g. "tomorrow");
+    // otherwise the future/past pattern for the value's plural category is filled with
+    // the locale's number parts (each tagged with the unit).
+    private List<(string type, string value, string unit)> PartitionRelativeTimePattern(double value, string unitArgument)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+            throw JSEngine.NewRangeError("Value of Intl.RelativeTimeFormat must be a finite number");
+
+        if (!SingularUnit.TryGetValue(unitArgument, out var unit))
+            throw JSEngine.NewRangeError($"Invalid unit argument for Intl.RelativeTimeFormat: {unitArgument}");
+
+        if (numeric == "auto" && value == Math.Floor(value) && value >= int.MinValue && value <= int.MaxValue)
+        {
+            var exact = CldrRelativeTimeData.GetExact(locale, unit, style, (int)value);
+            if (exact != null)
+                return [("literal", exact, null)];
+        }
+
+        // -0 and negative values are "past"; +0 and positive values are "future".
+        var isPast = value < 0 || (value == 0 && double.IsNegative(value));
+        var tense = isPast ? "past" : "future";
+
+        var magnitude = Math.Abs(value);
+        var pluralCategory = CldrLocaleData.SelectPlural(locale, "cardinal", magnitude);
+        var pattern = CldrRelativeTimeData.GetPattern(locale, unit, style, tense, pluralCategory);
+
+        return FillRelativeTimePattern(pattern, unit, magnitude);
+    }
+
+    // Splits the pattern around the "{0}" placeholder, emitting the surrounding
+    // text as "literal" parts and the formatted number's parts (each carrying the
+    // unit) in its place.
+    private List<(string type, string value, string unit)> FillRelativeTimePattern(string pattern, string unit, double magnitude)
+    {
+        var result = new List<(string, string, string)>();
+        var placeholder = pattern.IndexOf("{0}", StringComparison.Ordinal);
+        if (placeholder < 0)
+        {
+            if (pattern.Length > 0)
+                result.Add(("literal", pattern, null));
+            return result;
+        }
+
+        var prefix = pattern[..placeholder];
+        var suffix = pattern[(placeholder + 3)..];
+        if (prefix.Length > 0)
+            result.Add(("literal", prefix, null));
+
+        var numberArgs = new Arguments(JSUndefined.Value, JSValue.CreateString(locale));
+        var numberFormat = new JSIntlNumberFormat(in numberArgs);
+        foreach (var (type, value) in numberFormat.ComputeFormatParts(JSValue.CreateNumber(magnitude)))
+            result.Add((type, value, unit));
+
+        if (suffix.Length > 0)
+            result.Add(("literal", suffix, null));
+
+        return result;
     }
 
     private readonly string locale;
@@ -1055,10 +1136,8 @@ public class JSIntlRelativeTimeFormat : JSObject
     {
         var options = JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a);
         locale = JSIntl.ResolveLocale(a.Get1());
-        var styleKey = KeyStrings.GetOrCreate("style");
-        var numericKey = KeyStrings.GetOrCreate("numeric");
-        style = options is null || options[styleKey].IsUndefined ? "long" : options[styleKey].StringValue;
-        numeric = options is null || options[numericKey].IsUndefined ? "always" : options[numericKey].StringValue;
+        style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), ["long", "short", "narrow"], false, "long");
+        numeric = JSIntl.GetOption(options, KeyStrings.GetOrCreate("numeric"), ["always", "auto"], false, "always");
     }
 
     private JSIntlRelativeTimeFormat() : base(CurrentPrototype("RelativeTimeFormat")) { }
