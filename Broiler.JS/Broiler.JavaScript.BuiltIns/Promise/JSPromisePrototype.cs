@@ -1,5 +1,6 @@
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
 
@@ -88,16 +89,28 @@ public partial class JSPromise
         return IsDefaultPromiseConstructor(species) ? null : species;
     }
 
-    [JSExport("catch")]
-    public JSValue Catch(in Arguments a)
+    // catch/finally are generic per spec: they require `this` to be an Object and
+    // simply Invoke `this.then(...)`. Declaring them as [JSPrototypeMethod] statics
+    // keeps them on the prototype without the generator casting `this` to JSPromise,
+    // so they work on any thenable (e.g. Promise.prototype.finally.call(thenable)).
+    [JSPrototypeMethod]
+    [JSExport("catch", Length = 1)]
+    public static JSValue Catch(in Arguments a)
     {
+        if (!a.This.IsObject)
+            throw JSEngine.NewTypeError("Promise.prototype.catch called on non-object");
+
         var then = a.This[KeyStrings.then];
         return then.InvokeFunction(new Arguments(a.This, JSUndefined.Value, a.Get1()));
     }
 
-    [JSExport("finally")]
-    public JSValue Finally(in Arguments a)
+    [JSPrototypeMethod]
+    [JSExport("finally", Length = 1)]
+    public static JSValue Finally(in Arguments a)
     {
+        if (!a.This.IsObject)
+            throw JSEngine.NewTypeError("Promise.prototype.finally called on non-object");
+
         var onFinally = a.Get1();
         var then = a.This[KeyStrings.then];
         if (then is not JSFunction thenFunction)

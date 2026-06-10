@@ -1179,7 +1179,12 @@ public class FastScanner
         } while (true);
 
         if (hasLineTerminator)
-            return ReadSymbol(state, TokenTypes.LineTerminator);
+            // The closing `*/` has already been consumed, so `position` points at
+            // the first character after the comment. Commit the LineTerminator token
+            // directly — going through ReadSymbol would Consume() that next character
+            // (swallowing e.g. the `v` of a following `var`, or a closing `'`), which
+            // broke ASI after a MultiLineComment containing a line terminator.
+            return state.Commit(TokenTypes.LineTerminator);
 
         return ReadToken();
     }

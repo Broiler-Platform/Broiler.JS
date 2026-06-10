@@ -177,6 +177,44 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                         ");
             }
 
+            if (!type.Globals && !type.InternalClass && className == "String")
+            {
+                // Per spec (22.1.3 Properties of the String Prototype Object), the
+                // String prototype object is itself a String exotic object whose
+                // [[StringData]] is the empty String — typeof is "object" and it has an
+                // own "length" of 0. Replace the ordinary prototype object with a
+                // primitive String wrapper so that String.prototype.length is 0 instead
+                // of throwing through the JSString length accessor (whose `this` cast
+                // rejects the plain-object prototype). The wrapper resolves length and
+                // character access from its [[StringData]], bypassing that accessor.
+                sb.AppendLine($@"
+                        prototype = new JSPrimitiveObject(new JSString(string.Empty));
+                        prototype.SetPrototypeOf((context[""Object""] as JSFunction)?.prototype);
+                        prototype.FastAddValue(KeyStrings.constructor, @class, JSPropertyAttributes.ConfigurableValue);
+                        @class.prototype = prototype;
+                        @class.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
+                        ");
+            }
+
+            if (!type.Globals && !type.InternalClass && className == "Function")
+            {
+                // Per spec (20.2.3) %Function.prototype% is itself a built-in function
+                // object: typeof is "function", it is callable, accepts any arguments and
+                // returns undefined, and is NOT a constructor (createPrototype: false, so
+                // it has no own "prototype"). Replace the ordinary prototype object with a
+                // no-op callable so `Function.prototype()` returns undefined and every
+                // function keeps a callable [[Prototype]]. Its own length is 0 and name is
+                // the empty String; its [[Prototype]] (Object.prototype) is wired up later
+                // in JSContext, once Object exists (Function is created before Object).
+                sb.AppendLine($@"
+                        prototype = new JSFunction((in Arguments a) => JSUndefined.Value, ""native"", ""function () {{ [native code] }}"", createPrototype: false, length: 0);
+                        prototype.FastAddValue(KeyStrings.name, JSValue.CreateString(string.Empty), JSPropertyAttributes.ConfigurableReadonlyValue);
+                        prototype.FastAddValue(KeyStrings.constructor, @class, JSPropertyAttributes.ConfigurableValue);
+                        @class.prototype = prototype;
+                        @class.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
+                        ");
+            }
+
             foreach (var member in type.Members)
             {
                 GenerateMember(sb, member);

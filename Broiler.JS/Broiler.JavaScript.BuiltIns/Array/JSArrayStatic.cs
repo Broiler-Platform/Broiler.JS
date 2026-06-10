@@ -47,7 +47,10 @@ public partial class JSArray
                 if (!map.IsUndefined)
                     value = map.InvokeFunction(new Arguments(mapThis, value, new JSNumber(i)));
 
-                arrayLikeResult.SetPropertyOrThrow(JSValue.CreateNumber(i), value);
+                // Spec: CreateDataPropertyOrThrow — defines a fresh writable/enumerable/
+                // configurable data property, overwriting a non-writable existing one
+                // (rather than Set, which would throw on a non-writable target prop).
+                arrayLikeResult.CreateDataProperty(JSValue.CreateNumber(i), value);
             }
 
             if (arrayLikeResult is JSArray arrayLikeArray)
@@ -80,7 +83,7 @@ public partial class JSArray
                 if (!map.IsUndefined)
                     item = map.InvokeFunction(new Arguments(mapThis, item, new JSNumber(index)));
 
-                r.SetPropertyOrThrow(JSValue.CreateNumber(index++), item);
+                r.CreateDataProperty(JSValue.CreateNumber(index++), item);
             }
             catch
             {
