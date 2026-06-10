@@ -6,6 +6,20 @@ namespace Broiler.JavaScript.Integration.Tests;
 //
 // Fixed here:
 //
+//   Problem 1 (generators/syntax.js — the third sm file) — `yield`-context rules in a
+//   generator body:
+//     * A YieldExpression is now intercepted at the AssignmentExpression level
+//       (Expression()), not the primary level, so `yield` can no longer be an operand
+//       of a higher-precedence operator: `yield 3 + yield 4` is a SyntaxError, while
+//       valid positions (assignment RHS, arguments, array/parens, ternary branches,
+//       comma-sequences, another yield's operand) still parse.
+//     * `yield` is rejected as an IdentifierReference, a LabelIdentifier, and a
+//       function BindingIdentifier inside a generator (a generator-expression's own
+//       name can never be `yield`; a declaration's name can't be `yield` when the
+//       enclosing body is a generator).
+//     * `yield *` requires the `*` on the same line — `yield\n* x` is `yield` then a
+//       stray `* x`, a SyntaxError.
+//
 //   Problems 3-10 (decorator syntax) — a DecoratorList (`@expr`) is now parsed before
 //   a class declaration, a class expression, and a class element. The grammar is
 //   enforced (DecoratorMemberExpression / DecoratorParenthesizedExpression /
@@ -255,6 +269,46 @@ public class Issue739Tests
         Assert.Equal("3", Eval("''+new Function('...a','return a.length')(1,2,3)"));
         Assert.Equal("9", Eval("''+new Function('{x}','return x')({x:9})"));
         Assert.Equal("function", Eval("typeof new Function('//only a comment')"));
+    }
+
+    // ---- Problem 1 (generators/syntax.js): yield-context rules ----
+
+    [Theory]
+    [InlineData("function* g() { yield 3 + yield 4; }")]      // yield as a binary operand
+    [InlineData("function* g() { yield: 1 }")]                // yield as a label
+    [InlineData("function* g() { function yield() {} }")]     // declaration named yield in gen
+    [InlineData("function* g() { function* yield() {} }")]    // generator declaration named yield in gen
+    [InlineData("function f() { (function* yield() {}); }")]  // generator NFE named yield
+    [InlineData("function* g() { (function* yield() {}); }")]
+    [InlineData("function* g() { yield\n* foo }")]            // yield* needs * on the same line
+    public void YieldContextNegativesAreSyntaxErrors(string code)
+        => Assert.Equal("SyntaxError", SyntaxCheck(code));
+
+    [Theory]
+    [InlineData("function* g() { yield 3 + (yield 4); }")]            // parenthesised is fine
+    [InlineData("function* g() { (yield) ? yield : yield }")]        // ternary branches
+    [InlineData("function* g() { yield yield 1; }")]                 // yield operand of yield
+    [InlineData("function* g() { var x = yield 2; yield x; }")]      // assignment RHS
+    [InlineData("function* g(obj) { yield obj.yield; }")]            // yield as a member name
+    [InlineData("function* g() { yield ({ yield: 1 }) }")]           // yield as a property key
+    [InlineData("function f() { (function yield() {}); }")]          // non-gen NFE named yield
+    [InlineData("function* g() { (function yield() {}); }")]         // non-gen NFE named yield in gen
+    [InlineData("function f() { function* yield() {} }")]            // gen declaration named yield in non-gen
+    [InlineData("function f() { yield: 1 }")]                        // yield label in non-gen
+    [InlineData("function* g() {\n yield\n 3 }")]                    // yield then ASI, 3 is separate
+    public void YieldContextPositivesParse(string code)
+        => Assert.Equal("OK", EvalOk(code));
+
+    [Fact]
+    public void GeneratorYieldStillRunsCorrectly()
+    {
+        Assert.Equal("1,2,3", Eval(
+            "function* g(){ yield 1; var x = yield 2; yield x; } var it=g();" +
+            "[it.next().value, it.next().value, it.next(3).value].join(',')"));
+        // yield* delegation
+        Assert.Equal("1,2", Eval(
+            "function* a(){ yield 1; yield 2; } function* b(){ yield* a(); } var it=b();" +
+            "[it.next().value, it.next().value].join(',')"));
     }
 
     // ---- Problems 3-10: decorator syntax parses (and is discarded) ----

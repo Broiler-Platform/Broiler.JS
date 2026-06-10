@@ -228,6 +228,11 @@ partial class FastParser
         {
             if (stream.CheckAndConsume(TokenTypes.Identifier, TokenTypes.Colon, out var id, out var _))
             {
+                // `yield` is a reserved word inside a generator body and cannot be used
+                // as a LabelIdentifier (`function* g(){ yield: 1 }` is a SyntaxError).
+                if (inGeneratorBody && id.Keyword == FastKeywords.yield)
+                    throw stream.Unexpected();
+
                 SkipNewLines();
 
                 // has to be do/while/for...

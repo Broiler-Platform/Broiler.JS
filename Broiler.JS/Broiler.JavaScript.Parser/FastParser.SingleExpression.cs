@@ -76,10 +76,10 @@ partial class FastParser
             case FastKeywords.@class:
                 return ClassExpression(out node);
 
-            case FastKeywords.yield:
-                if (inGeneratorBody)
-                    return YieldExpression(out node);
-                break;
+            // NOTE: `yield` is intentionally NOT handled here. A YieldExpression is at
+            // the AssignmentExpression level, so it is intercepted in Expression();
+            // handling it at the primary level would wrongly accept it as an operand of
+            // a higher-precedence operator (e.g. `3 + yield 4`).
 
             case FastKeywords.await:
                 if (ShouldParseAwaitAsExpression())
@@ -96,6 +96,15 @@ partial class FastParser
         {
             if (id.Start.IsEscapedReservedWord)
                 throw new FastParseException(id.Start, "Keyword must not contain escaped characters");
+
+            // Inside a generator body `yield` is a reserved word and cannot be an
+            // IdentifierReference (a bare `yield` is a YieldExpression, intercepted in
+            // Expression()). Reaching here means `yield` appeared in an operand position
+            // such as the right side of a binary operator (`3 + yield 4`), which is a
+            // SyntaxError.
+            if (inGeneratorBody && id.Start.Keyword == FastKeywords.yield)
+                throw stream.Unexpected();
+
             node = id;
             return true;
         }
@@ -251,44 +260,6 @@ partial class FastParser
             end = PreviousToken;
 
             return true;
-        }
-
-        bool YieldExpression(out AstExpression statement)
-        {
-            var begin = stream.Current;
-            stream.Consume();
-
-            bool star = false;
-
-            if (stream.CheckAndConsume(TokenTypes.Multiply))
-                star = true;
-
-            if (!star)
-            {
-                switch (stream.Current.Type)
-                {
-                    case TokenTypes.Comma:
-                    case TokenTypes.SemiColon:
-                    case TokenTypes.LineTerminator:
-                    case TokenTypes.EOF:
-                    case TokenTypes.CurlyBracketEnd:
-                    case TokenTypes.BracketEnd:
-                    case TokenTypes.SquareBracketEnd:
-                    case TokenTypes.Colon:
-                        statement = new AstYieldExpression(begin, PreviousToken, null);
-                        return true;
-                }
-            }
-
-            if (Expression(out var target))
-            {
-                statement = new AstYieldExpression(begin, PreviousToken, target, star);
-                EndOfStatement();
-
-                return true;
-            }
-
-            throw stream.Unexpected();
         }
 
         bool ShouldParseAwaitAsExpression()
