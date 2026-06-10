@@ -600,12 +600,24 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return false;
         }
 
-        result = index < length ? base.SetValue(index, value, receiver, throwError) : true;
+        // §10.4.5.5 step 3 (O is not the Receiver, valid index): OrdinarySet returns
+        // the result of OrdinarySetWithOwnDescriptor with O's own integer-indexed data
+        // descriptor — the value is written onto the Receiver (never coerced, never
+        // stored in this buffer), and O's own prototype chain (e.g. a setter installed
+        // on %TypedArray%.prototype[index]) is NOT consulted. SetIndexOnReceiver
+        // applies exactly that algorithm to the Receiver. An out-of-bounds index is a
+        // successful no-op.
+        result = index < length
+            ? SetIndexOnReceiver(index, value, receiver, JSPropertyAttributes.EnumerableConfigurableValue, throwError)
+            : true;
         return true;
     }
 
     public override bool BooleanValue => true;
-    public override double DoubleValue => double.NaN;
+    // No DoubleValue override: a typed array coerces to a number via the ordinary
+    // ToPrimitive path (JSObject.DoubleValue) so that @@toPrimitive / a custom
+    // valueOf / toString is honoured (e.g. `Number(new Int8Array([5]))` === 5, and
+    // a throwing valueOf propagates when the array is used as a typed-array element).
     public override bool Equals(JSValue value) => ReferenceEquals(this, value);
 
     public override JSValue InvokeFunction(in Arguments a) => throw JSEngine.NewTypeError($"{this} is not a function");

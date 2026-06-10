@@ -14,23 +14,11 @@ public partial class JSPromise
     {
         var (success, fail) = a.Get2();
 
-        JSFunctionDelegate successHandler = null;
-        if (!success.IsUndefined)
-        {
-            if (success is not JSFunction successFx)
-                throw JSEngine.NewTypeError($"Parameter for then is not a function");
-
-            successHandler = successFx.f;
-        }
-
-        JSFunctionDelegate failHandler = null;
-        if (!fail.IsUndefined)
-        {
-            if (fail is not JSFunction failFx)
-                throw JSEngine.NewTypeError($"Parameter for then is not a function");
-
-            failHandler = failFx.f;
-        }
+        // PerformPromiseThen: a non-callable onFulfilled/onRejected is treated as
+        // undefined (the reaction handler becomes an identity/thrower pass-through),
+        // it must NOT throw.
+        JSFunctionDelegate successHandler = success is JSFunction successFx ? successFx.f : null;
+        JSFunctionDelegate failHandler = fail is JSFunction failFx ? failFx.f : null;
 
         // SpeciesConstructor(this, %Promise%): the default %Promise% keeps the fast
         // native path. A custom species builds the result promise via

@@ -246,18 +246,18 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         this.name = name.IsEmpty ? "native" : name;
         this.source = source.IsEmpty ? $"function {this.name}() {{ [native code] }}" : source;
 
+        // Own-key order per spec: a function's "length" and "name" are installed
+        // before its "prototype" (SetFunctionName/SetFunctionLength then
+        // MakeConstructor), so getOwnPropertyNames yields [length, name, prototype].
+        ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.name, name.IsEmpty ? JSValue.CreateString("native") : JSValue.CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
+
         if (createPrototype)
         {
             prototype = new JSObject();
-            // prototype[KeyStrings.constructor] = this;
             prototype.FastAddValue(KeyStrings.constructor, this, JSPropertyAttributes.ConfigurableValue);
-            // ref var opp = ref prototype.GetOwnProperties(true);
-            // opp[KeyStrings.constructor.Key] = JSProperty.Property(this, JSPropertyAttributes.ConfigurableReadonlyValue);
             ownProperties.Put(KeyStrings.prototype, prototype, JSPropertyAttributes.Value);
         }
-
-        ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.name, name.IsEmpty ? JSValue.CreateString("native") : JSValue.CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         constructor = this;
     }
@@ -269,18 +269,16 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         this.name = name.IsEmpty ? "native" : name;
         this.source = source.IsEmpty ? $"function {this.name}() {{ [native code] }}" : source;
 
+        // Own-key order per spec: [length, name, prototype] (see above).
+        ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.name, name.IsEmpty ? JSValue.CreateString("native") : JSValue.CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
+
         if (createPrototype)
         {
             prototype = new JSObject();
-            // prototype[KeyStrings.constructor] = this;
             prototype.FastAddValue(KeyStrings.constructor, this, JSPropertyAttributes.ConfigurableValue);
-            // ref var opp = ref prototype.GetOwnProperties(true);
-            // opp[KeyStrings.constructor.Key] = JSProperty.Property(this, JSPropertyAttributes.ConfigurableReadonlyValue);
             ownProperties.Put(KeyStrings.prototype, prototype, JSPropertyAttributes.Value);
         }
-
-        ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.name, name.IsEmpty ? JSValue.CreateString("native") : JSValue.CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         constructor = this;
     }

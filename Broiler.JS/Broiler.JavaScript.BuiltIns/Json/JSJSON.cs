@@ -702,7 +702,19 @@ public partial class JSJSON : JSObject
     private static JSValue ToJson(JSValue value, JSValue key)
     {
         if (value is not JSObject jobj)
+        {
+            // SerializeJSONProperty step 2 also reads toJSON when Type(value) is
+            // BigInt (the BigInt proposal). GetV resolves BigInt.prototype.toJSON
+            // and calls it with the BigInt as receiver.
+            if (value is JSBigInt)
+            {
+                var bigIntToJson = value[KeyStrings.toJSON];
+                if (bigIntToJson is IJSFunction bp)
+                    return bp.Delegate(new Arguments(value, key));
+            }
+
             return value;
+        }
 
         var primitive = jobj.ValueOf();
         if (!primitive.IsObject)

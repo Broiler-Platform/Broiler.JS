@@ -443,6 +443,12 @@ partial class FastParser
         bool Return(out AstStatement statement)
         {
             var begin = stream.Current;
+            // A `return` statement is only valid inside a function body. At the top
+            // level of a Script, Module, or eval code (functionDepth == 0) it is an
+            // early SyntaxError — even when the eval is a direct eval invoked from
+            // within a function, since eval code is not itself a function body.
+            if (functionDepth == 0)
+                throw stream.Unexpected();
             stream.Consume();
 
             var current = stream.Current;

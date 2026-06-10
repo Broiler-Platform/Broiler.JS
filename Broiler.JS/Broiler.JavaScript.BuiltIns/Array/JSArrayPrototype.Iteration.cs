@@ -209,6 +209,21 @@ public partial class JSArray
         return true;
     }
 
+    // 64-bit-index overload for array-likes whose length exceeds the 32-bit array
+    // index range (up to 2^53-1). Indices past uint.MaxValue are addressed by their
+    // canonical numeric property key via the long Has/Get overloads.
+    private static bool TryGetArrayLikeElement(JSObject @object, long index, out JSValue value)
+    {
+        if (!HasIndexedProperty(@object, index))
+        {
+            value = JSUndefined.Value;
+            return false;
+        }
+
+        value = GetIndexedValue(@object, index);
+        return true;
+    }
+
     private struct ArrayLikeEntryEnumerator(JSObject @object) : IElementEnumerator
     {
         private int index = -1;
