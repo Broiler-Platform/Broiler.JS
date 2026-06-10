@@ -1563,6 +1563,7 @@ public class FastScanner
                     case FastKeywords.constructor:
                     case FastKeywords.from:
                     case FastKeywords.@as:
+                    case FastKeywords.@accessor:
                     case FastKeywords.@async:
                     case FastKeywords.@let:
                     case FastKeywords.@yield:
@@ -1618,6 +1619,7 @@ public class FastScanner
                     case FastKeywords.constructor:
                     case FastKeywords.from:
                     case FastKeywords.@as:
+                    case FastKeywords.@accessor:
                         isKw = false;
                         tokenType = TokenTypes.Identifier;
                         contextualKeyword = k;

@@ -6,6 +6,18 @@ namespace Broiler.JavaScript.Integration.Tests;
 //
 // Fixed here:
 //
+//   Problem 11 (`accessor` auto-accessor field) — `class { accessor x; accessor y=1 }`
+//   now parses. `accessor` is a contextual keyword that, inside a class and followed
+//   (no LineTerminator) by a ClassElementName, introduces an auto-accessor field;
+//   otherwise it is an ordinary field/method name. Modelled as a plain data field
+//   (getter/setter + private backing storage semantics are not implemented).
+//
+//   Problem 12 (`static get`/`set constructor`) — a static accessor may be named
+//   `constructor` (`class C { static get constructor(){} }`). The recursion classifies
+//   any method named `constructor` as the class Constructor, so the get/set wrapper
+//   rejected it; it now accepts a Constructor-kind body when the accessor is static
+//   (an instance `get`/`set constructor` is still a SyntaxError).
+//
 //   Problem 1 (two of the three sm negative-syntax files) —
 //     * methDefnGen.js: object-literal method-definition edge cases now reject as
 //       SyntaxErrors. A generator marker `*name` must introduce a method, so
@@ -226,5 +238,55 @@ public class Issue739Tests
         Assert.Equal("3", Eval("''+new Function('...a','return a.length')(1,2,3)"));
         Assert.Equal("9", Eval("''+new Function('{x}','return x')({x:9})"));
         Assert.Equal("function", Eval("typeof new Function('//only a comment')"));
+    }
+
+    // ---- Problem 12: a static accessor may be named `constructor` ----
+
+    [Fact]
+    public void StaticAccessorNamedConstructorIsAllowed()
+        => Assert.Equal("true,true,true", Eval(
+            "class C { static get constructor() {} static set constructor(_) {} constructor() {} }" +
+            "[C.hasOwnProperty('constructor'),C.prototype.hasOwnProperty('constructor')," +
+            "C.prototype.constructor!==C.constructor].join(',')"));
+
+    [Fact]
+    public void StaticAccessorNamedConstructorReadsThroughGetter()
+        => Assert.Equal("7", Eval("class C { static get constructor(){return 7;} } ''+C.constructor"));
+
+    [Fact]
+    public void InstanceAccessorNamedConstructorIsSyntaxError()
+        => Assert.Equal("SyntaxError", SyntaxCheck("class C { get constructor(){} }"));
+
+    [Fact]
+    public void StaticAccessorNamedPrototypeStillRejected()
+        => Assert.NotEqual("NOTHROW", SyntaxCheck("class C { static get prototype(){} }"));
+
+    // ---- Problem 11: `accessor` auto-accessor fields ----
+
+    [Fact]
+    public void AccessorFieldsParseAndEvaluate()
+        => Assert.Equal("undefined,5", Eval(
+            "var C=class{ accessor x; accessor y = 5; };var c=new C();[String(c.x),c.y].join(',')"));
+
+    [Fact]
+    public void StaticAccessorFieldEvaluates()
+        => Assert.Equal("3", Eval("class C { static accessor z = 3; } ''+C.z"));
+
+    [Fact]
+    public void AccessorFieldComputedAndPrivateNames()
+        => Assert.Equal("ok", Eval(
+            "var k='m';class C { accessor [k] = 1; accessor #p = 2; getP(){return this.#p;} }" +
+            "var c=new C();(c.m===1 && c.getP()===2)?'ok':'no'"));
+
+    // `accessor` is still usable as an ordinary field / method / identifier name.
+    [Fact]
+    public void AccessorRemainsUsableAsName()
+    {
+        Assert.Equal("ok", Eval("class C { accessor; } 'ok'"));
+        Assert.Equal("1", Eval("class C { accessor = 1; } ''+new C().accessor"));
+        Assert.Equal("2", Eval("class C { accessor(){return 2;} } ''+new C().accessor()"));
+        Assert.Equal("9", Eval("var accessor = 9; ''+accessor"));
+        // a LineTerminator after `accessor` makes it a field, then a separate field
+        Assert.Equal("ok", Eval("class C { accessor\n x; } 'ok'"));
     }
 }
