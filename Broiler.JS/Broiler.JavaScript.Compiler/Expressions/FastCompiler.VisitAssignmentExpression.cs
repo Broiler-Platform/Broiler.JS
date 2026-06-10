@@ -423,6 +423,21 @@ partial class FastCompiler
                 return;
 
             case FastNodeType.MemberExpression:
+                // A computed `super[key]` destructuring/for-head target: Visit() would
+                // spill the key into a temp and return a Block (the key-before-
+                // GetSuperBase ordering used for reads), which is not an assignable
+                // reference — the IL backend's VisitAssign would reject the Block-typed
+                // left. Build the super-index reference directly so the assignment lowers
+                // to the super-index setter, mirroring the direct `super[key] = v` path.
+                if (pattern is AstMemberExpression { Computed: true, Object.Type: FastNodeType.Super } superMember)
+                {
+                    var superTarget = JSValueBuilder.Index(
+                        scope.Top.ThisExpression, scope.Top.Super,
+                        VisitExpression(superMember.Property), superMember.Coalesce);
+                    inits.Add(BinaryOperation.Assign(superTarget, init, TokenTypes.Assign));
+                    return;
+                }
+
                 inits.Add(BinaryOperation.Assign(Visit(pattern), init, TokenTypes.Assign));
                 return;
 

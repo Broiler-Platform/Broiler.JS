@@ -46,9 +46,20 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   a no-op callable JSFunction (mirroring the Array/String prototype special-cases);
 //   its [[Prototype]] (Object.prototype) is wired up later in JSContext.
 //
+//   Problem 2 (computed super-property as a destructuring / for-head assignment
+//   target, NotImplementedException in ILCodeGenerator.VisitAssign) — a `super[key]`
+//   read spills the key into a temp and yields a Block (key-before-GetSuperBase
+//   ordering), which is not an assignable reference, so the IL backend rejected the
+//   Block-typed assignment left. The destructuring lowering now builds the super-index
+//   reference directly for a computed-super leaf (as the direct `super[key] = v` path
+//   already did), so `for (super[k] of/in …)` and `({a: super[k]} = …)` work.
+//
 // Out of scope (architectural / generated-code / Stage-3): P1 sm/eval ReferenceError;
-// P2 IL-backend super-property destructuring target; P3-P12 class decorators and
-// `accessor` auto-accessors; P16 super-call-in-arrow-eval this-init.
+// P3-P12 class decorators and `accessor` auto-accessors; P16 super-call-in-arrow-eval
+// this-init. (sm/destructuring/order-super.js no longer crashes but still fails on a
+// pre-existing, general IteratorClose behaviour — the engine calls a not-yet-done
+// iterator's `return` after a fixed-length array pattern, which that SpiderMonkey test
+// predates; it is independent of super and of this fix.)
 public class Issue737Tests
 {
     private static string Eval(string code)
@@ -174,4 +185,26 @@ public class Issue737Tests
     public void FunctionsStillInheritFromFunctionPrototype()
         => Assert.Equal("true,true", Eval(
             "function f(){} [Object.getPrototypeOf(f)===Function.prototype, typeof f.call==='function'].join(',')"));
+
+    // ---- Problem 2: computed super-property as a destructuring / for-head target ----
+
+    [Fact]
+    public void ComputedSuperPropertyAsForOfTarget()
+        => Assert.Equal("2,2", Eval(
+            "var obj={ m(){ var hits=0; for (super['prop'] of [1,2]) hits++; return this.prop+','+hits; } }; obj.m()"));
+
+    [Fact]
+    public void ComputedSuperPropertyAsForInTarget()
+        => Assert.Equal("b,2", Eval(
+            "var obj={ m(){ var hits=0; for (super['prop'] in {a:1,b:2}) hits++; return this.prop+','+hits; } }; obj.m()"));
+
+    [Fact]
+    public void ComputedSuperPropertyAsObjectDestructuringTarget()
+        => Assert.Equal("9", Eval(
+            "var obj={ m(){ ({a: super['prop']} = {a: 9}); return this.prop; } }; String(obj.m())"));
+
+    [Fact]
+    public void ComputedSuperPropertyAsArrayDestructuringTarget()
+        => Assert.Equal("5", Eval(
+            "var obj={ m(){ [super['prop']] = [5]; return this.prop; } }; String(obj.m())"));
 }
