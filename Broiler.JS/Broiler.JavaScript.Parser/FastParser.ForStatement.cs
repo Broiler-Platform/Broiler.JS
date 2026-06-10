@@ -122,10 +122,12 @@ partial class FastParser
 
                 @in = true;
 
-                if (!Expression(out inTarget))
+                // for-in's right-hand side is an `Expression` (the full comma
+                // production), so `for (x in a, b)` is valid; ExpressionSequence
+                // also consumes the closing ")". (for-of, below, is restricted to
+                // a single AssignmentExpression and must NOT accept a comma.)
+                if (!ExpressionSequence(out inTarget, TokenTypes.BracketEnd))
                     throw stream.Unexpected();
-
-                stream.Expect(TokenTypes.BracketEnd);
             }
             else if (IsOfKeyword(stream.Current))
             {

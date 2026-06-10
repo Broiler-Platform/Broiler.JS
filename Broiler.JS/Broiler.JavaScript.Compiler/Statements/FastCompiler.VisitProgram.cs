@@ -156,25 +156,50 @@ partial class FastCompiler
         if (isDirectEvalCompilation && this.scope.Top.Function == null)
             directEvalProgramLexicalNames = lexicalBindings;
 
-        try
-        {
-            var se = program.Statements.GetFastEnumerator();
-            while (se.MoveNext(out var stmt))
-            {
-                var exp = Visit(stmt);
-                if (exp == null)
-                    continue;
+        // The program (script/eval) result is the script's completion value, which
+        // per spec ignores statements that complete with an empty value
+        // (declarations, empty statements/blocks, …). Establish a completion var so
+        // the existing TrackCompletion (value-bearing expression statements) and
+        // PropagateCompletion (nested blocks/loops/labeled statements) plumbing
+        // flows into it; statements that complete empty leave it untouched. This is
+        // what makes `eval('function f(){}{x:42};')` evaluate to 42 rather than the
+        // trailing empty statement's undefined.
+        var completionVar = YExpression.Variable(typeof(JSValue), "#programCompletion");
+        blockList.Add(YExpression.Assign(completionVar, JSUndefinedBuilder.Value));
 
-                blockList.Add(CallStackItemBuilder.Step(scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
-                blockList.Add(exp);
+        using (completionScopes.Push(completionVar))
+        {
+            try
+            {
+                var se = program.Statements.GetFastEnumerator();
+                while (se.MoveNext(out var stmt))
+                {
+                    var exp = Visit(stmt);
+                    if (exp == null)
+                        continue;
+
+                    // A top-level VariableStatement contributes its initializer value
+                    // to the script/eval completion (Broiler returns it, e.g.
+                    // `eval('var x = 1')` → 1). Wrap it here rather than in
+                    // VisitVariableDeclaration so that var declarations synthesized
+                    // inside desugared for-in/for-of bodies are left untouched.
+                    if (stmt is AstVariableDeclaration)
+                        exp = TrackCompletion(exp);
+
+                    blockList.Add(CallStackItemBuilder.Step(scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
+                    blockList.Add(exp);
+                }
+            }
+            finally
+            {
+                directEvalProgramLexicalNames = previousDirectEvalProgramLexicalNames;
             }
         }
-        finally
-        {
-            directEvalProgramLexicalNames = previousDirectEvalProgramLexicalNames;
-        }
 
-        var r = Scoped(scope, blockList);
+        blockList.Add(completionVar);
+        var r = YExpression.Block(
+            new Sequence<YParameterExpression> { completionVar },
+            Scoped(scope, blockList));
 
         scope.Dispose();
         return r;

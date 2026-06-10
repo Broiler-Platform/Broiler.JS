@@ -305,16 +305,26 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
     protected override YExpression VisitExpressionStatement(AstExpressionStatement expressionStatement)
     {
+        // A FunctionDeclaration and a ClassDeclaration complete with an empty value
+        // (per spec), so they must NOT update the script/eval completion value —
+        // e.g. `eval('1; function f(){}')` is 1, not the function. Visit them
+        // without TrackCompletion. (Empty statements already compile to a void
+        // expression that TrackCompletion ignores.)
+        var producesEmptyCompletion = expressionStatement.Expression
+            is AstFunctionExpression { IsStatement: true }
+            or AstClassExpression { IsDeclaration: true };
+
         if (isDirectEvalCompilation
             && !IsStrictMode
             && scope.Top.Function == null
             && scope.Top.Parent != scope.Top.RootScope
             && expressionStatement.Expression is AstFunctionExpression { IsStatement: true, Id: { } } directEvalFunctionDeclaration)
         {
-            return TrackCompletion(VisitRuntimeFunctionDeclaration(directEvalFunctionDeclaration));
+            return VisitRuntimeFunctionDeclaration(directEvalFunctionDeclaration);
         }
 
-        var result = TrackCompletion(Visit(expressionStatement.Expression));
+        var visited = Visit(expressionStatement.Expression);
+        var result = producesEmptyCompletion ? visited : TrackCompletion(visited);
 
         if (IsStrictMode
             || scope.Top == scope.Top.RootScope

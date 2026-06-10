@@ -674,12 +674,13 @@ public static class JSIntl
             return result;
         }
 
+        // Any other value (Number, Boolean, Symbol, …) is coerced with ToObject
+        // per CanonicalizeLocaleList step "Else, let O be ? ToObject(locales)".
+        // The resulting wrapper has no own "length", so the list comes out empty.
         if (locales is not JSObject localesObject)
         {
-            if (locales.IsSymbol)
-                _ = locales.StringValue;
-
-            throw JSEngine.NewTypeError("Locale list must be a string or an object");
+            localesObject = JSObject.CreatePrimitiveObject(locales) as JSObject
+                ?? throw JSEngine.NewTypeError("Cannot convert locale list to object");
         }
 
         var lengthValue = localesObject[KeyStrings.length];
@@ -2864,7 +2865,13 @@ public class JSIntlNumberFormat : JSObject
 
     private void AppendIntegerParts(List<(string, string)> result, string intDigits)
     {
-        if (!UseGrouping() || intDigits.Length <= 3)
+        // CLDR minimumGroupingDigits: grouping is shown only when the leading
+        // (most-significant) group has at least that many digits. For locales such
+        // as pl/es/it (value 2), four-digit values like 1000 stay ungrouped.
+        var leadingGroup = ((intDigits.Length - 1) % 3) + 1;
+        if (!UseGrouping()
+            || intDigits.Length <= 3
+            || leadingGroup < CldrLocaleData.MinimumGroupingDigits(locale))
         {
             result.Add(("integer", intDigits));
             return;

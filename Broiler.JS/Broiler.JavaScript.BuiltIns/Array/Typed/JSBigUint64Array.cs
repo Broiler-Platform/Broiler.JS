@@ -32,11 +32,13 @@ public partial class JSBigUint64Array : JSTypedArray
         if (TrySetForeignReceiver(index, value, receiver, throwError, out var foreign))
             return foreign;
 
-        var ulongValue = (ulong)ToBigIntValue(value ?? JSUndefined.Value).value;
+        // ToBigUint64 wraps modulo 2^64; a plain (ulong) cast on the BigInteger
+        // overflows for magnitudes outside [0, 2^64), so mask the low 64 bits.
+        var bits = (ulong)(ToBigIntValue(value ?? JSUndefined.Value).value & ((BigInteger.One << 64) - 1));
         if (index >= length)
             return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
 
-        System.Array.Copy(BitConverter.GetBytes(ulongValue), 0, buffer.buffer, byteOffset + index * 8, 8);
+        System.Array.Copy(BitConverter.GetBytes(bits), 0, buffer.buffer, byteOffset + index * 8, 8);
         return true;
     }
 

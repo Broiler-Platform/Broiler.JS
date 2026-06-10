@@ -73,39 +73,38 @@ partial class FastParser
         stream.Expect(TokenTypes.BracketStart);
         var scope = variableScope.Push(begin, FastNodeType.FunctionExpression);
 
-        if (!Parameters(out var declarators, TokenTypes.BracketEnd, false, FastVariableKind.Var))
-            throw stream.Unexpected();
-
+        var previousInGeneratorBody = inGeneratorBody;
+        var previousInAsyncFunctionBody = inAsyncFunctionBody;
         try
         {
             functionDepth++;
-            var previousInGeneratorBody = inGeneratorBody;
-            var previousInAsyncFunctionBody = inAsyncFunctionBody;
-            // Enter the generator/async context BEFORE consuming the body's `{`.
-            // The scanner reads one token ahead, so the token following the body's
-            // first `yield`/`await` is lexed at the `{`-consume below; the context
-            // must already be set then for the regex-vs-division decision to be right.
+            // FormalParameters are parsed in THIS function's [Yield]/[Await]
+            // context, not the enclosing one. So `yield`/`await` in a parameter
+            // default belong to the inner function's grammar: a non-generator
+            // function nested in a generator treats `yield` in its parameters as a
+            // plain identifier (sloppy mode), not an (illegal) YieldExpression.
+            // Setting the context before Parameters also keeps it set across the
+            // body's `{`-consume below, which the scanner's one-token lookahead
+            // needs for the regex-vs-division decision after the first yield/await.
             inGeneratorBody = generator;
             inAsyncFunctionBody = isAsync;
-            try
-            {
-                if (!stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
-                    throw stream.Unexpected();
 
-                if (!Block(out var body))
-                    throw stream.Unexpected();
+            if (!Parameters(out var declarators, TokenTypes.BracketEnd, false, FastVariableKind.Var))
+                throw stream.Unexpected();
 
-                node = new AstFunctionExpression(begin, PreviousToken, false, isAsync, generator, id, declarators, body, isStatement);
-            }
-            finally
-            {
-                inGeneratorBody = previousInGeneratorBody;
-                inAsyncFunctionBody = previousInAsyncFunctionBody;
-                functionDepth--;
-            }
+            if (!stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
+                throw stream.Unexpected();
+
+            if (!Block(out var body))
+                throw stream.Unexpected();
+
+            node = new AstFunctionExpression(begin, PreviousToken, false, isAsync, generator, id, declarators, body, isStatement);
         }
         finally
         {
+            inGeneratorBody = previousInGeneratorBody;
+            inAsyncFunctionBody = previousInAsyncFunctionBody;
+            functionDepth--;
             scope.Dispose();
             this.isAsync = isRootAsync;
         }

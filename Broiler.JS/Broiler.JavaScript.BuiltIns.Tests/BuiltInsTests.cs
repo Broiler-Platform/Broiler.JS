@@ -10776,10 +10776,13 @@ public class BuiltInsTests
                     }
                 }
 
+                // CanonicalizeLocaleList applies ToObject to a non-string, non-Locale
+                // argument, so primitives such as Symbol() yield an empty list rather
+                // than throwing. Only null (ToObject throws) produces a TypeError.
                 return [
-                    thrownCtor(function () { Intl.DurationFormat.supportedLocalesOf(Symbol()); }),
-                    thrownCtor(function () { Intl.ListFormat.supportedLocalesOf(Symbol()); }),
-                    thrownCtor(function () { Intl.RelativeTimeFormat.supportedLocalesOf(Symbol()); })
+                    thrownCtor(function () { Intl.DurationFormat.supportedLocalesOf(null); }),
+                    thrownCtor(function () { Intl.ListFormat.supportedLocalesOf(null); }),
+                    thrownCtor(function () { Intl.RelativeTimeFormat.supportedLocalesOf(null); })
                 ].join('|');
             })();
             """);
