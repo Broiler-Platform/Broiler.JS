@@ -84,7 +84,39 @@ partial class FastCompiler
         // we need to rewrite left side if it is computed expression with member assignment...
         if (assignmentOperator != TokenTypes.Assign && left.Type == FastNodeType.MemberExpression && left is AstMemberExpression mem)
         {
+            var isSuperCompound = mem.Object?.Type == FastNodeType.Super;
             using var objectTemp = scope.Top.GetTempVariable(typeof(JSValue));
+
+            if (isSuperCompound)
+            {
+                // `super[key] op= rhs` / `super.x op= rhs`: build a single
+                // SuperProperty Reference. GetSuperBase is resolved (and captured)
+                // before ToPropertyKey, and the captured base plus the converted
+                // key drive both the read and the write. Resolving this as an
+                // ordinary member would drop the super base and operate on `this`,
+                // reading/writing the wrong object.
+                using var superBaseTemp = scope.Top.GetTempVariable(typeof(JSValue));
+
+                if (mem.Computed)
+                {
+                    using var propertyTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                    using var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                    var leftExp = JSValueBuilder.Index(objectTemp.Expression, superBaseTemp.Expression, keyTemp.Expression);
+                    return YExpression.Block(
+                        YExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
+                        YExpression.Assign(propertyTemp.Expression, Visit(mem.Property)),
+                        YExpression.Assign(superBaseTemp.Expression, scope.Top.Super),
+                        YExpression.Assign(keyTemp.Expression, YExpression.Call(null, NormalizePropertyKeyMethod, propertyTemp.Expression)),
+                        Assign(leftExp, right, assignmentOperator));
+                }
+
+                var superLeftExp = JSValueBuilder.Index(objectTemp.Expression, superBaseTemp.Expression, CreatePropertyKeyExpression(mem.Property, false));
+                return YExpression.Block(
+                    YExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
+                    YExpression.Assign(superBaseTemp.Expression, scope.Top.Super),
+                    Assign(superLeftExp, right, assignmentOperator));
+            }
+
             if (mem.Computed)
             {
                 using var propertyTemp = scope.Top.GetTempVariable(typeof(JSValue));

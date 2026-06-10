@@ -18,6 +18,13 @@ public interface IJSExecutionContext : IJSContext
     /// <summary>Gets the Object.prototype object for this context.</summary>
     JSObject ObjectPrototype { get; }
 
+    /// <summary>
+    /// Gets or sets the cached per-realm %AsyncFunction.prototype% intrinsic,
+    /// shared by every async function so they compare equal under
+    /// <c>Object.getPrototypeOf</c>.
+    /// </summary>
+    JSObject AsyncFunctionPrototype { get; set; }
+
     /// <summary>Gets the global Object constructor for this context.</summary>
     JSValue Object { get; }
 

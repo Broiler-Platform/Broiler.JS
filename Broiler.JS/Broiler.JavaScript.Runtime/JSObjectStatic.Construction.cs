@@ -542,7 +542,9 @@ public partial class JSObject
         if (!callbackfn.IsFunction)
             throw NewTypeError("CallbackFn must be a function");
 
+        // Per spec, Object.groupBy returns an object with a null prototype.
         var result = new JSObject();
+        result.BasePrototypeObject = null;
         var en = items.GetIterableEnumerator();
         int index = 0;
 

@@ -63,6 +63,12 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
     public JSObject FunctionPrototype { get; private set; }
     public new JSObject ObjectPrototype { get; private set; }
+
+    // The per-realm %AsyncFunction.prototype% intrinsic. All async functions
+    // (declarations, expressions and arrows) share this single object as their
+    // [[Prototype]], so it is created lazily once and cached here rather than
+    // rebuilt per function. Populated by JSAsyncFunction via the interface.
+    public JSObject AsyncFunctionPrototype { get; set; }
     public JSValue Object { get; private set; }
     public JSValue IntrinsicEval { get; private set; } = JSUndefined.Value;
     public event LogEventHandler Log;

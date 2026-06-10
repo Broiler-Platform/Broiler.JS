@@ -1,6 +1,7 @@
 ﻿using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Ast.Patterns;
+using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.LinqExpressions.LambdaGen;
 using Broiler.JavaScript.Runtime;
@@ -34,6 +35,11 @@ partial class FastCompiler
                     }
                     else
                     {
+                        // NamedEvaluation: an anonymous class adopts the binding name
+                        // during ClassDefinitionEvaluation (before static initializers
+                        // run), so thread the name in via the hint consumed by CreateClass.
+                        if (d.Init is AstClassExpression { Identifier: null })
+                            anonymousClassNameHint = id.Name.Value;
                         var initExpr = Visit(d.Init);
                         if (!IsAnonymousFunctionDefinition(d.Init))
                             initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));

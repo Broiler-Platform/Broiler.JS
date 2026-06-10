@@ -834,6 +834,14 @@ public static class JSIntl
         // compactDisplay getter call-order tests). compactDisplay is always
         // validated, but only reflected when notation is "compact".
         var notation = GetOption(options, NotationKey, NotationValues, false, "standard");
+
+        // SetNumberFormatDigitOptions: read the digit options from the bag exactly
+        // once, in spec order (minimumIntegerDigits, minimumFractionDigits,
+        // maximumFractionDigits, minimumSignificantDigits, maximumSignificantDigits),
+        // and snapshot them so later format/resolvedOptions calls reuse the values
+        // instead of re-invoking option getters.
+        var digitOptions = SnapshotDigitOptions(options);
+
         var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayValues, false, "short");
         if (notation != "compact")
             compactDisplay = null;
@@ -842,7 +850,38 @@ public static class JSIntl
 
         ObserveOptions(options, RoundingIncrementKey, RoundingModeKey, RoundingPriorityKey, TrailingZeroDisplayKey);
 
-        return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay);
+        return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay)
+        {
+            DigitOptions = digitOptions,
+        };
+    }
+
+    // Reads the digit-related options from the bag once (in spec order) and stores
+    // them as plain data properties, so subsequent reads observe construction-time
+    // values without re-triggering option getters. Absent options are left out so
+    // callers apply their own (style-dependent) defaults.
+    private static JSObject SnapshotDigitOptions(JSObject options)
+    {
+        if (options == null)
+            return null;
+
+        var snapshot = new JSObject();
+        foreach (var name in new[]
+        {
+            "minimumIntegerDigits",
+            "minimumFractionDigits",
+            "maximumFractionDigits",
+            "minimumSignificantDigits",
+            "maximumSignificantDigits",
+        })
+        {
+            var key = KeyStrings.GetOrCreate(name);
+            var value = options[key];
+            if (value != null && !value.IsUndefined)
+                snapshot.FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+        }
+
+        return snapshot;
     }
 
     internal static string ResolveLocale(JSValue locales)
@@ -960,11 +999,30 @@ public static class JSIntl
 
 public class JSIntlRelativeTimeFormat : JSObject
 {
+    // ECMA-402 sanctioned units (singular and plural spellings) mapped to the
+    // singular form used to key the CLDR relative-time patterns.
+    private static readonly Dictionary<string, string> SingularUnit = new(StringComparer.Ordinal)
+    {
+        ["second"] = "second", ["seconds"] = "second",
+        ["minute"] = "minute", ["minutes"] = "minute",
+        ["hour"] = "hour", ["hours"] = "hour",
+        ["day"] = "day", ["days"] = "day",
+        ["week"] = "week", ["weeks"] = "week",
+        ["month"] = "month", ["months"] = "month",
+        ["quarter"] = "quarter", ["quarters"] = "quarter",
+        ["year"] = "year", ["years"] = "year",
+    };
+
     public JSValue Format(in Arguments args)
     {
-        var value = args[0] ?? JSUndefined.Value;
-        _ = value.DoubleValue;
-        return value;
+        // ToNumber(value) precedes ToString(unit) per spec.
+        var value = (args[0] ?? JSUndefined.Value).DoubleValue;
+        var unit = args.GetAt(1).StringValue;
+
+        var sb = new StringBuilder();
+        foreach (var (_, partValue, _) in PartitionRelativeTimePattern(value, unit))
+            sb.Append(partValue);
+        return JSValue.CreateString(sb.ToString());
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -974,25 +1032,87 @@ public class JSIntlRelativeTimeFormat : JSObject
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlRelativeTimeFormat)
+        if (a.This is not JSIntlRelativeTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.RelativeTimeFormat.prototype.formatToParts called on incompatible receiver");
 
-        var value = a[0] ?? JSUndefined.Value;
-        _ = value.DoubleValue;
-        var unit = a.GetAt(1);
-        if (unit.IsUndefined)
-            throw JSEngine.NewRangeError("Invalid unit argument");
-        var unitStr = unit.StringValue;
-        var validUnits = new HashSet<string>
-        {
-            "year", "years", "quarter", "quarters", "month", "months",
-            "week", "weeks", "day", "days", "hour", "hours",
-            "minute", "minutes", "second", "seconds"
-        };
-        if (!validUnits.Contains(unitStr))
-            throw JSEngine.NewRangeError($"Invalid unit argument: {unitStr}");
+        var value = (a[0] ?? JSUndefined.Value).DoubleValue;
+        var unit = a.GetAt(1).StringValue;
 
-        return JSValue.CreateArray();
+        var typeKey = KeyStrings.GetOrCreate("type");
+        var valueKey = KeyStrings.GetOrCreate("value");
+        var unitKey = KeyStrings.GetOrCreate("unit");
+
+        var parts = JSValue.CreateArray();
+        foreach (var (type, partValue, partUnit) in @this.PartitionRelativeTimePattern(value, unit))
+        {
+            var part = new JSObject();
+            part.FastAddValue(typeKey, JSValue.CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(valueKey, JSValue.CreateString(partValue), JSPropertyAttributes.EnumerableConfigurableValue);
+            if (partUnit != null)
+                part.FastAddValue(unitKey, JSValue.CreateString(partUnit), JSPropertyAttributes.EnumerableConfigurableValue);
+            parts.AddArrayItem(part);
+        }
+        return parts;
+    }
+
+    // PartitionRelativeTimePattern: resolves the ordered (type, value, unit) parts
+    // for a value/unit. Numeric "auto" first tries an exact phrase (e.g. "tomorrow");
+    // otherwise the future/past pattern for the value's plural category is filled with
+    // the locale's number parts (each tagged with the unit).
+    private List<(string type, string value, string unit)> PartitionRelativeTimePattern(double value, string unitArgument)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+            throw JSEngine.NewRangeError("Value of Intl.RelativeTimeFormat must be a finite number");
+
+        if (!SingularUnit.TryGetValue(unitArgument, out var unit))
+            throw JSEngine.NewRangeError($"Invalid unit argument for Intl.RelativeTimeFormat: {unitArgument}");
+
+        if (numeric == "auto" && value == Math.Floor(value) && value >= int.MinValue && value <= int.MaxValue)
+        {
+            var exact = CldrRelativeTimeData.GetExact(locale, unit, style, (int)value);
+            if (exact != null)
+                return [("literal", exact, null)];
+        }
+
+        // -0 and negative values are "past"; +0 and positive values are "future".
+        var isPast = value < 0 || (value == 0 && double.IsNegative(value));
+        var tense = isPast ? "past" : "future";
+
+        var magnitude = Math.Abs(value);
+        var pluralCategory = CldrLocaleData.SelectPlural(locale, "cardinal", magnitude);
+        var pattern = CldrRelativeTimeData.GetPattern(locale, unit, style, tense, pluralCategory);
+
+        return FillRelativeTimePattern(pattern, unit, magnitude);
+    }
+
+    // Splits the pattern around the "{0}" placeholder, emitting the surrounding
+    // text as "literal" parts and the formatted number's parts (each carrying the
+    // unit) in its place.
+    private List<(string type, string value, string unit)> FillRelativeTimePattern(string pattern, string unit, double magnitude)
+    {
+        var result = new List<(string, string, string)>();
+        var placeholder = pattern.IndexOf("{0}", StringComparison.Ordinal);
+        if (placeholder < 0)
+        {
+            if (pattern.Length > 0)
+                result.Add(("literal", pattern, null));
+            return result;
+        }
+
+        var prefix = pattern[..placeholder];
+        var suffix = pattern[(placeholder + 3)..];
+        if (prefix.Length > 0)
+            result.Add(("literal", prefix, null));
+
+        var numberArgs = new Arguments(JSUndefined.Value, JSValue.CreateString(locale));
+        var numberFormat = new JSIntlNumberFormat(in numberArgs);
+        foreach (var (type, value) in numberFormat.ComputeFormatParts(JSValue.CreateNumber(magnitude)))
+            result.Add((type, value, unit));
+
+        if (suffix.Length > 0)
+            result.Add(("literal", suffix, null));
+
+        return result;
     }
 
     private readonly string locale;
@@ -1016,10 +1136,8 @@ public class JSIntlRelativeTimeFormat : JSObject
     {
         var options = JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a);
         locale = JSIntl.ResolveLocale(a.Get1());
-        var styleKey = KeyStrings.GetOrCreate("style");
-        var numericKey = KeyStrings.GetOrCreate("numeric");
-        style = options is null || options[styleKey].IsUndefined ? "long" : options[styleKey].StringValue;
-        numeric = options is null || options[numericKey].IsUndefined ? "always" : options[numericKey].StringValue;
+        style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), ["long", "short", "narrow"], false, "long");
+        numeric = JSIntl.GetOption(options, KeyStrings.GetOrCreate("numeric"), ["always", "auto"], false, "always");
     }
 
     private JSIntlRelativeTimeFormat() : base(CurrentPrototype("RelativeTimeFormat")) { }
@@ -2263,6 +2381,12 @@ internal sealed class JSIntlNumberFormatResolved
     public string SignDisplay { get; }
     public string CompactDisplay { get; }
     public string UnitDisplay { get; }
+
+    // Snapshot of the fraction/integer/significant digit options, read from the
+    // options bag exactly once during construction (SetNumberFormatDigitOptions),
+    // so a getter on e.g. minimumFractionDigits fires once at construction rather
+    // than on every format/resolvedOptions call.
+    public JSObject DigitOptions { get; set; }
 }
 
 public class JSIntlNumberFormat : JSObject
@@ -2715,11 +2839,15 @@ public class JSIntlNumberFormat : JSObject
         return true;
     }
 
+    // Digit options come from the construction-time snapshot (read once from the
+    // options bag), not the live options object, so format-time reads do not
+    // re-invoke option getters.
     private int ReadIntOption(string name, int fallback)
     {
-        if (options == null)
+        var snapshot = resolved?.DigitOptions;
+        if (snapshot == null)
             return fallback;
-        var v = options[KeyStrings.GetOrCreate(name)];
+        var v = snapshot[KeyStrings.GetOrCreate(name)];
         if (v == null || v.IsUndefined)
             return fallback;
         var d = v.DoubleValue;
@@ -2728,9 +2856,10 @@ public class JSIntlNumberFormat : JSObject
 
     private bool HasOption(string name)
     {
-        if (options == null)
+        var snapshot = resolved?.DigitOptions;
+        if (snapshot == null)
             return false;
-        var v = options[KeyStrings.GetOrCreate(name)];
+        var v = snapshot[KeyStrings.GetOrCreate(name)];
         return v != null && !v.IsUndefined;
     }
 
@@ -2862,25 +2991,30 @@ public class JSIntlNumberFormat : JSObject
                 result[roundingPriorityKey] = @this.options[roundingPriorityKey];
             if (!@this.options[trailingZeroDisplayKey].IsUndefined)
                 result[trailingZeroDisplayKey] = @this.options[trailingZeroDisplayKey];
-            if (!@this.options[minimumIntegerDigitsKey].IsUndefined)
-                result[minimumIntegerDigitsKey] = @this.options[minimumIntegerDigitsKey];
+            // Digit options reflect the construction-time snapshot (read once),
+            // not the live options bag, so resolvedOptions does not re-trigger
+            // option getters.
+            var digits = @this.resolved?.DigitOptions;
+
+            if (digits != null && !digits[minimumIntegerDigitsKey].IsUndefined)
+                result[minimumIntegerDigitsKey] = digits[minimumIntegerDigitsKey];
             else
                 result[minimumIntegerDigitsKey] = JSValue.CreateNumber(1);
 
-            if (!@this.options[minimumFractionDigitsKey].IsUndefined)
-                result[minimumFractionDigitsKey] = @this.options[minimumFractionDigitsKey];
+            if (digits != null && !digits[minimumFractionDigitsKey].IsUndefined)
+                result[minimumFractionDigitsKey] = digits[minimumFractionDigitsKey];
             else
                 result[minimumFractionDigitsKey] = JSValue.CreateNumber(0);
 
-            if (!@this.options[maximumFractionDigitsKey].IsUndefined)
-                result[maximumFractionDigitsKey] = @this.options[maximumFractionDigitsKey];
+            if (digits != null && !digits[maximumFractionDigitsKey].IsUndefined)
+                result[maximumFractionDigitsKey] = digits[maximumFractionDigitsKey];
             else
                 result[maximumFractionDigitsKey] = JSValue.CreateNumber(3);
 
-            if (!@this.options[minimumSignificantDigitsKey].IsUndefined)
-                result[minimumSignificantDigitsKey] = @this.options[minimumSignificantDigitsKey];
-            if (!@this.options[maximumSignificantDigitsKey].IsUndefined)
-                result[maximumSignificantDigitsKey] = @this.options[maximumSignificantDigitsKey];
+            if (digits != null && !digits[minimumSignificantDigitsKey].IsUndefined)
+                result[minimumSignificantDigitsKey] = digits[minimumSignificantDigitsKey];
+            if (digits != null && !digits[maximumSignificantDigitsKey].IsUndefined)
+                result[maximumSignificantDigitsKey] = digits[maximumSignificantDigitsKey];
         }
         else
         {

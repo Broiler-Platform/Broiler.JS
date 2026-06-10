@@ -220,7 +220,11 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public AstFunctionExpression Function { get; }
 
-    public YExpression ThisExpression => field ??= GetVariable("this", true).Expression;
+    public YExpression ThisExpression
+    {
+        get => field ??= GetVariable("this", true).Expression;
+        internal set;
+    }
 
     // new.target is lexically scoped exactly like `this`: an ordinary function
     // captures the running new.target at entry into a closure cell, and arrow

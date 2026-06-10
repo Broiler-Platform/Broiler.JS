@@ -153,8 +153,9 @@ partial class JSTypedArray
 
         values.Sort(cx);
 
-        // toSorted returns a new typed array of the same type, leaving this intact.
-        var result = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), len);
+        // toSorted returns a new typed array of the same type (TypedArrayCreateSameType,
+        // never @@species), leaving this intact.
+        var result = CreateSameTypeTypedArray(len);
         for (int i = 0; i < len; i++)
             result[(uint)i] = values[i];
         return result;
@@ -164,7 +165,8 @@ partial class JSTypedArray
     public JSValue ToReversed(in Arguments a)
     {
         var len = Length;
-        var result = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), len);
+        // toReversed creates a same-type array (TypedArrayCreateSameType), not @@species.
+        var result = CreateSameTypeTypedArray(len);
         for (int i = 0; i < len; i++)
             result[(uint)i] = this[(uint)(len - i - 1)];
         return result;
@@ -181,7 +183,8 @@ partial class JSTypedArray
         if (actualIndex < 0 || actualIndex >= len)
             throw JSEngine.NewRangeError("Invalid index");
 
-        var result = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), len);
+        // with creates a same-type array (TypedArrayCreateSameType), not @@species.
+        var result = CreateSameTypeTypedArray(len);
         for (int i = 0; i < len; i++)
             result[(uint)i] = i == (int)actualIndex ? value : this[(uint)i];
         return result;

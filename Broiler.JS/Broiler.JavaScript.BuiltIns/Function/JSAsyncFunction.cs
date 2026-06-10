@@ -10,6 +10,25 @@ namespace Broiler.JavaScript.BuiltIns.Function;
 
 public class JSAsyncFunction
 {
+    // Returns the per-realm %AsyncFunction.prototype% intrinsic, creating and
+    // caching it on first use. Every async function shares this single object as
+    // its [[Prototype]] (so `Object.getPrototypeOf(async () => {})` equals
+    // `AsyncFunction.prototype`), instead of receiving a fresh prototype each time.
+    private static JSObject GetOrCreateAsyncFunctionPrototype()
+    {
+        if (JSEngine.Current is IJSExecutionContext context)
+        {
+            if (context.AsyncFunctionPrototype is JSObject cached)
+                return cached;
+
+            var created = CreateAsyncFunctionPrototype();
+            context.AsyncFunctionPrototype = created;
+            return created;
+        }
+
+        return CreateAsyncFunctionPrototype();
+    }
+
     private static JSObject CreateAsyncFunctionPrototype()
     {
         var prototype = new JSObject();
@@ -42,7 +61,7 @@ public class JSAsyncFunction
         var fn = gf as JSFunction;
         var asyncFunction = JSValue.CreateFunction(ToAsync, fn?.name.Value, null, gf.Length, createPrototype: false);
         if (asyncFunction is JSObject asyncObject)
-            asyncObject.BasePrototypeObject = CreateAsyncFunctionPrototype();
+            asyncObject.BasePrototypeObject = GetOrCreateAsyncFunctionPrototype();
 
         return asyncFunction;
     }

@@ -453,6 +453,12 @@ public partial class JSJSON : JSObject
         if (replacer != null)
             f = replacer((root, JSValue.EmptyString, f));
 
+        // SerializeJSONProperty yields undefined for an undefined/callable/symbol
+        // root value; JSON.stringify then returns the undefined value rather than
+        // the string "null".
+        if (f.IsUndefined || f is JSFunction || f is JSSymbol)
+            return JSUndefined.Value;
+
         if (indent != null)
         {
             var writer = new IndentedTextWriter(sb, indent);
