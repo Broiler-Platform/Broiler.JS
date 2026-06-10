@@ -6,6 +6,21 @@ namespace Broiler.JavaScript.Integration.Tests;
 //
 // Fixed here:
 //
+//   Problem 1 (two of the three sm negative-syntax files) —
+//     * methDefnGen.js: object-literal method-definition edge cases now reject as
+//       SyntaxErrors. A generator marker `*name` must introduce a method, so
+//       `{*a : 1}` (and `{*a}` / `{*a = 1}`) are errors; a getter/setter is never a
+//       generator, so `{get *a(){}}` / `{set *a(c){}}` are errors; and a leading `*`
+//       no longer begins an expression (`{a :* 1}`, `x = * 1`) — it was silently
+//       consumed as a phantom generator prefix in the prefix-expression parser.
+//     * invalid-parameter-list.js: Function() now parses the parameter text and the
+//       body text independently (per §20.2.1.1.1) so a comment / template / stray `)`
+//       in one part can no longer escape into the other (e.g.
+//       `new Function("/*", "*/){")` used to assemble into a valid empty function).
+//   (generators/syntax.js, the third file, still needs full yield-context tracking
+//   for `yield` as a label / binding name in generator vs non-generator scopes — out
+//   of scope.)
+//
 //   Problem 13 ("Failed to convert this to JSRegExp") — RegExp.prototype.test is
 //   generic (§22.2.6.16): it only requires `this` to be an Object and then performs
 //   RegExpExec, which calls the receiver's own (callable) `exec` property rather than
@@ -31,17 +46,28 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   TrySetPrototypeOf returning the boolean (SetPrototypeOf keeps throwing on top of
 //   it), and Reflect.setPrototypeOf surfaces the boolean.
 //
-// Out of scope (unchanged): P1 sm negative-syntax grab-bag (generator method
-// definition / invalid parameter list edge cases) and P2 eval ReferenceError
-// (parser/architectural); P3-P12 class decorators + `accessor` auto-accessors
-// (Stage-3); P14 super-call-in-arrow-eval this-init, P17 for-of head var-environment,
-// P18 Annex-B eval block-scoped function hoisting (architectural scope/eval).
+// Out of scope (unchanged): P1 generators/syntax.js yield-context tracking and P2
+// eval ReferenceError (parser/architectural); P3-P12 class decorators + `accessor`
+// auto-accessors (Stage-3); P14 super-call-in-arrow-eval this-init, P17 for-of head
+// var-environment, P18 Annex-B eval block-scoped function hoisting (architectural).
 public class Issue739Tests
 {
     private static string Eval(string code)
     {
         using var ctx = new JSContext();
         return ctx.Eval(code).ToString();
+    }
+
+    // Evaluates `code` via indirect eval inside a JS try/catch and returns the JS error
+    // constructor name (e.g. "SyntaxError"), or "NOTHROW". Compile-time syntax errors
+    // are surfaced this way because a bare parse failure isn't catchable in-script.
+    private static string SyntaxCheck(string code)
+    {
+        using var ctx = new JSContext();
+        var src = System.Text.Json.JsonSerializer.Serialize(code);
+        return ctx.Eval(
+            "(function(){try{var e=eval;e(" + src + ");return 'NOTHROW';}" +
+            "catch(err){return err && err.constructor ? err.constructor.name : String(err);}})()").ToString();
     }
 
     // ---- Problem 13: RegExp.prototype.test is generic over the receiver's exec ----
@@ -140,4 +166,65 @@ public class Issue739Tests
         => Assert.Equal("true,true", Eval(
             "var o={};var p={};" +
             "[Reflect.setPrototypeOf(o,p), Object.getPrototypeOf(o)===p].join(',')"));
+
+    // ---- Problem 1 (methDefnGen.js): object-literal method-definition negatives ----
+
+    [Theory]
+    [InlineData("({*a : 1})")]      // a generator marker requires a method body
+    [InlineData("({*a})")]
+    [InlineData("({*a = 1})")]
+    [InlineData("({a :* 1})")]      // a leading * is not an expression
+    [InlineData("({get *a(){}})")]  // a getter cannot be a generator
+    [InlineData("({set *a(c){}})")] // a setter cannot be a generator
+    public void ObjectLiteralGeneratorAndStarNegativesAreSyntaxErrors(string code)
+        => Assert.Equal("SyntaxError", SyntaxCheck(code));
+
+    // ---- Problem 1: a leading `*` no longer starts an expression ----
+
+    [Theory]
+    [InlineData("x = * 1")]
+    [InlineData("var y = * 1")]
+    [InlineData("var y = (* 1)")]
+    [InlineData("var y = 1 + * 1")]
+    public void LeadingStarIsNotAnExpression(string code)
+        => Assert.Equal("SyntaxError", SyntaxCheck(code));
+
+    [Fact]
+    public void MultiplicationAndGeneratorMethodsStillWork()
+    {
+        Assert.Equal("42", Eval("''+(6*7)"));
+        // generator method with yield in computed keys still runs
+        Assert.Equal("1,2", Eval(
+            "var b={*g(){yield 1;yield 2;}};var it=b.g();[it.next().value,it.next().value].join(',')"));
+        // a generator method is not constructable
+        Assert.Equal("TypeError", Eval(
+            "var a={*g(){yield 1;}};try{new a.g;'no'}catch(e){e.constructor.name}"));
+        // yield* delegation still parses and runs
+        Assert.Equal("1,2", Eval(
+            "function* inner(){yield 1;yield 2;}function* outer(){yield* inner();}" +
+            "var it=outer();[it.next().value,it.next().value].join(',')"));
+    }
+
+    // ---- Problem 1 (invalid-parameter-list.js): Function() validates parts apart ----
+
+    [Theory]
+    [InlineData("/*", "*/) {")]
+    [InlineData("//", ") {")]
+    [InlineData("a = `", "` ) {")]
+    [InlineData(") { var x = function (", "} ")]
+    [InlineData("x = function (", "}) {")]
+    public void FunctionConstructorRejectsParameterListInjection(string p, string b)
+        => Assert.Equal("SyntaxError", SyntaxCheck(
+            $"new Function({System.Text.Json.JsonSerializer.Serialize(p)},{System.Text.Json.JsonSerializer.Serialize(b)})"));
+
+    [Fact]
+    public void FunctionConstructorStillBuildsValidFunctions()
+    {
+        Assert.Equal("5", Eval("''+new Function('a','b','return a+b')(2,3)"));
+        Assert.Equal("7", Eval("''+new Function('a','// c\\nreturn a')(7)"));   // comment body needs the newline
+        Assert.Equal("5", Eval("''+new Function('a=5','return a')()"));
+        Assert.Equal("3", Eval("''+new Function('...a','return a.length')(1,2,3)"));
+        Assert.Equal("9", Eval("''+new Function('{x}','return x')({x:9})"));
+        Assert.Equal("function", Eval("typeof new Function('//only a comment')"));
+    }
 }

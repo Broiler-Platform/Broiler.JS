@@ -770,8 +770,21 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         context?.DispatchEvalEvent(ref bodyText, ref location);
         var parameterText = string.Join(",", sargs);
         var source = $"({functionKind} anonymous({parameterText}\n) {{\n{bodyText}\n}})";
-        _ = CoreScript.Compile(source, location ?? "internal", codeCache: null);
-        return CoreScript.Evaluate(source, location ?? "internal", context?.CodeCache);
+
+        // §20.2.1.1.1 CreateDynamicFunction parses the parameter text and the body
+        // text separately (as FormalParameters and FunctionBody) before assembling
+        // the whole function. Validating only the concatenated source lets a comment,
+        // template or stray `)` in the parameters escape into the body (or vice
+        // versa) and close the parameter list early — e.g. `new Function("/*", "*/){")`
+        // would otherwise parse as a valid empty function. Compile each part on its
+        // own (against the same assembled shape, with the other part empty) so such an
+        // injection surfaces as a SyntaxError.
+        var loc = location ?? "internal";
+        _ = CoreScript.Compile($"({functionKind} anonymous({parameterText}\n) {{\n\n}})", loc, codeCache: null);
+        _ = CoreScript.Compile($"({functionKind} anonymous(\n) {{\n{bodyText}\n}})", loc, codeCache: null);
+
+        _ = CoreScript.Compile(source, loc, codeCache: null);
+        return CoreScript.Evaluate(source, loc, context?.CodeCache);
     }
 
     internal static JSValue CoerceNonStrictThis(JSValue value)
