@@ -96,6 +96,12 @@ partial class FastParser
                 {
                     if (property.Kind == AstPropertyKind.Method)
                     {
+                        // A getter/setter is never a generator: `{get *a(){}}` /
+                        // `{set *a(c){}}` are SyntaxErrors (the accessor method the
+                        // recursion produced carries the `*`).
+                        if (property.Init is AstFunctionExpression { Generator: true })
+                            throw stream.Unexpected();
+
                         property = new AstClassProperty(current, property.End, isSet ? AstPropertyKind.Set : AstPropertyKind.Get, property.IsPrivate, isStatic, property.Key, property.Computed, RebaseFunctionStart(property.Init, methodStart), property.UsesColon, property.UsesAssign);
                         return true;
                     }
@@ -106,6 +112,12 @@ partial class FastParser
 
             var propertyNameEnd = PreviousToken;
             var separator = stream.SkipNewLines();
+
+            // A generator marker (`*name`) only introduces a method definition, so
+            // the property name must be followed by a parameter list. `{*a : 1}`,
+            // `{*a}`, `{*a = 1}` etc. are SyntaxErrors.
+            if (isGenerator && stream.Current.Type != TokenTypes.BracketStart)
+                throw stream.Unexpected();
 
             if (stream.CheckAndConsume(TokenTypes.Assign))
             {
