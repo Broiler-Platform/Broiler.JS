@@ -57,6 +57,9 @@ public class JSObjectBuilder
     readonly static MethodInfo _MintPrivateName =
         type.PublicMethod(nameof(JSObject.MintPrivateName), typeof(string));
 
+    readonly static MethodInfo _PrivateNameIn =
+        type.PublicMethod(nameof(JSObject.PrivateNameIn), typeof(KeyString), typeof(JSValue));
+
     readonly static MethodInfo _CreateDataPropertyUInt =
         type.PublicMethod(nameof(JSObject.CreateDataProperty), typeof(uint), typeof(JSValue));
 
@@ -123,6 +126,12 @@ public class JSObjectBuilder
     // time. Stored in a class-scope variable that member references close over.
     public static Expression MintPrivateName(string name)
         => Expression.Call(null, _MintPrivateName, Expression.Constant(name));
+
+    // Ergonomic brand check `#name in rval`: returns a JSBoolean, throwing a
+    // TypeError when rval is not an object. The key is the resolved private-name
+    // KeyString (per-evaluation minted variable or fallback constant).
+    public static Expression PrivateNameIn(Expression key, Expression rval)
+        => Expression.Call(null, _PrivateNameIn, key, rval);
 
     // PrivateFieldAdd for an instance private field: installs the field as an
     // internal slot, throwing a TypeError when the target is non-extensible or

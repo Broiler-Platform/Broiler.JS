@@ -17,6 +17,20 @@ partial class FastCompiler
         if (@operator > TokenTypes.BeginAssignTokens && @operator < TokenTypes.EndAssignTokens)
             return VisitAssignmentExpression(binaryExpression.Left, @operator, binaryExpression.Right);
 
+        // Ergonomic brand check: `#name in rval`. A leading PrivateIdentifier is only
+        // valid as the left operand of `in`; resolve it to its private-name key and
+        // emit a brand-presence test rather than a normal `in` (which would try to
+        // resolve `#name` as a variable).
+        if (@operator == TokenTypes.In
+            && binaryExpression.Left is AstIdentifier privateLeft
+            && privateLeft.Name.Length > 0
+            && privateLeft.Name.Value[0] == '#')
+        {
+            return JSObjectBuilder.PrivateNameIn(
+                KeyOfPrivateName(privateLeft.Name),
+                ToJSValueExpression(Visit(binaryExpression.Right)));
+        }
+
         var (isLeftString, isLeftNumber, left) = ToNativeExpression(binaryExpression.Left);
         var (isRightString, isRightNumber, right) = ToNativeExpression(binaryExpression.Right);
 

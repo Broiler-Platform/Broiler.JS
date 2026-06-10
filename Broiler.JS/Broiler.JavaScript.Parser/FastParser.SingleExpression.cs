@@ -49,18 +49,13 @@ partial class FastParser
         switch (token.Keyword)
         {
             case FastKeywords.async:
-                stream.Consume();
-
-                if (!Expression(out var fx))
-                    throw stream.Unexpected();
-
-                if (!fx.IsFunction(out var func))
-                    throw stream.Unexpected();
-
-                func.Async = true;
-                node = func;
-
-                return true;
+                // Whether `async` introduces an async function/arrow is decided by
+                // SinglePrefixPostfixExpression (LooksLikeAsyncFunctionOrArrow), which
+                // consumes it in that case. Reaching here means it is a plain
+                // identifier (`async`, `async.x`, `async = 1`, `async(args)`, or the
+                // parameter of a non-async arrow); fall through to the identifier
+                // parser below.
+                break;
 
             case FastKeywords.function:
                 // When a leading `async` was already consumed by the caller
@@ -97,14 +92,49 @@ partial class FastParser
 
         switch (token.Type)
         {
+            // A for-head suppresses `in` as a binary operator (to detect `for (x in
+            // …)`), but that `[~In]` only applies at the top level of the head: inside
+            // a parenthesised, array, or object sub-expression `in` is an ordinary
+            // operator again (e.g. the destructuring default in
+            // `for ({ p = 'a' in obj } of …)`). Restore it while parsing the grouping.
             case TokenTypes.BracketStart:
-                return BracketExpression(out node);
+            {
+                var savedIn = considerInOfAsOperators;
+                considerInOfAsOperators = true;
+                var ok = BracketExpression(out node);
+                considerInOfAsOperators = savedIn;
+                return ok;
+            }
 
             case TokenTypes.SquareBracketStart:
-                return ArrayExpression(out node);
+            {
+                var savedIn = considerInOfAsOperators;
+                considerInOfAsOperators = true;
+                var ok = ArrayExpression(out node);
+                considerInOfAsOperators = savedIn;
+                return ok;
+            }
 
             case TokenTypes.CurlyBracketStart:
-                return ObjectLiteral(out node);
+            {
+                var savedIn = considerInOfAsOperators;
+                considerInOfAsOperators = true;
+                var ok = ObjectLiteral(out node);
+                considerInOfAsOperators = savedIn;
+                return ok;
+            }
+
+            case TokenTypes.Hash:
+                // A leading `#name` is a PrivateIdentifier, only valid as the left
+                // operand of `in` (the ergonomic brand check `#x in obj`). Parse it
+                // into an identifier in the private-name namespace; the compiler
+                // resolves the brand check (VisitBinaryExpression) and rejects any
+                // other position.
+                stream.Consume();
+                if (!Identitifer(out var privateName))
+                    throw stream.Unexpected();
+                node = new AstIdentifier(token, "#" + privateName.Name.Value);
+                return true;
 
             case TokenTypes.TemplateBegin:
                 node = Template();

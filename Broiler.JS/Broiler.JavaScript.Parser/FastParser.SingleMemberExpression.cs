@@ -119,7 +119,8 @@ partial class FastParser
                     stream.Consume();
                     stream.SkipNewLines();
 
-                    if (token.Type == TokenTypes.Dot && stream.CheckAndConsume(TokenTypes.Hash, out var hashToken))
+                    if ((token.Type == TokenTypes.Dot || token.Type == TokenTypes.QuestionDot)
+                        && stream.CheckAndConsume(TokenTypes.Hash, out var hashToken))
                     {
                         if (!Identitifer(out var privateIdentifier))
                             throw stream.Unexpected();
@@ -127,7 +128,7 @@ partial class FastParser
                         node = node.Member(
                             new AstIdentifier(hashToken, $"#{privateIdentifier.Name.Value}"),
                             false,
-                            false);
+                            token.Type == TokenTypes.QuestionDot);
                         continue;
                     }
 
