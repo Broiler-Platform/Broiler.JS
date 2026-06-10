@@ -250,6 +250,8 @@ public static class RegExpUnicodeValidator
             case 'f': case 'n': case 'r': case 't': case 'v':
             case '0':
             case 'x': case 'u': case 'c':
+            // Named backreference \k<GroupName>
+            case 'k':
             // Unicode property escapes
             case 'p': case 'P':
             // Syntax characters that can be escaped
