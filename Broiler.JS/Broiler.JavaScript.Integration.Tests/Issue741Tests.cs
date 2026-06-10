@@ -208,4 +208,33 @@ public class Issue741Tests
     public void PlainFunctionOwnKeyOrderStartsWithLengthNamePrototype()
         => Assert.Equal("length,name,prototype", Eval(
             "Object.getOwnPropertyNames(function f(){}).slice(0,3).join(',')"));
+
+    // ---- Problems 20/21: typed-array [[Set]] with an altered Receiver ----
+    // A valid-index write whose Receiver is not the typed array performs OrdinarySet
+    // on the Receiver: the value is written there uncoerced, the typed array is left
+    // unchanged, and a setter on %TypedArray%.prototype[index] is never reached.
+
+    [Fact]
+    public void TypedArraySetWithForeignReceiverDoesNotCoerceOrHitPrototypeSetter()
+        => Assert.Equal("true|0|true|false|false|1|vo=0", Eval(
+            "var voCalls=0;var value={valueOf:function(){++voCalls;return 2.3;}};var TA=Float64Array;" +
+            "Object.defineProperty(TA.prototype,0,{get:function(){throw new Error('g');}," +
+            "set:function(){throw new Error('setter reached');},configurable:true});var out=[];" +
+            "var target=new TA([0]);var receiver={};" +
+            "out.push(Reflect.set(target,0,value,receiver));out.push(target[0]);out.push(receiver[0]===value);" +
+            "target=new TA([0]);receiver=Object.preventExtensions({});" +
+            "out.push(Reflect.set(target,0,value,receiver));out.push(receiver.hasOwnProperty(0));" +
+            "target=new TA([0]);receiver={};Object.defineProperty(receiver,0,{get:function(){return 1;}," +
+            "set:function(){throw new Error('r setter');},configurable:true});" +
+            "out.push(Reflect.set(target,0,value,receiver)?'set':receiver[0]);" +
+            "delete TA.prototype[0];out.push('vo='+voCalls);out.join('|')"));
+
+    [Fact]
+    public void BigIntTypedArraySetWithForeignReceiverDoesNotHitPrototypeSetter()
+        => Assert.Equal("true|0|true", Eval(
+            "var TA=BigInt64Array;" +
+            "Object.defineProperty(TA.prototype,0,{set:function(){throw new Error('setter reached');},configurable:true});" +
+            "var target=new TA([0n]);var receiver={};var v={};" +
+            "var r=[Reflect.set(target,0,v,receiver),String(target[0]),receiver[0]===v];" +
+            "delete TA.prototype[0];r.join('|')"));
 }

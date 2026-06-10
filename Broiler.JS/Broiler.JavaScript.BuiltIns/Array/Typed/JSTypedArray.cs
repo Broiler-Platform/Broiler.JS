@@ -600,7 +600,16 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return false;
         }
 
-        result = index < length ? base.SetValue(index, value, receiver, throwError) : true;
+        // §10.4.5.5 step 3 (O is not the Receiver, valid index): OrdinarySet returns
+        // the result of OrdinarySetWithOwnDescriptor with O's own integer-indexed data
+        // descriptor — the value is written onto the Receiver (never coerced, never
+        // stored in this buffer), and O's own prototype chain (e.g. a setter installed
+        // on %TypedArray%.prototype[index]) is NOT consulted. SetIndexOnReceiver
+        // applies exactly that algorithm to the Receiver. An out-of-bounds index is a
+        // successful no-op.
+        result = index < length
+            ? SetIndexOnReceiver(index, value, receiver, JSPropertyAttributes.EnumerableConfigurableValue, throwError)
+            : true;
         return true;
     }
 

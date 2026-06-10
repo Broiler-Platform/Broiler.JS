@@ -613,7 +613,7 @@ public partial class JSObject
         return DefineReceiverDataProperty(target, name, value, !p.IsEmpty ? p.Attributes : defaultAttributes, throwError);
     }
 
-    private bool SetIndexOnReceiver(uint name, JSValue value, JSValue receiver, JSPropertyAttributes defaultAttributes, bool throwError)
+    private protected bool SetIndexOnReceiver(uint name, JSValue value, JSValue receiver, JSPropertyAttributes defaultAttributes, bool throwError)
     {
         if (receiver != null && receiver is not JSObject)
         {
