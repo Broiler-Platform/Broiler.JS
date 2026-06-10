@@ -4426,6 +4426,58 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_Of_Is_Generic_Over_Constructor_This()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // Array.of called with a constructor as `this` must Construct it, propagate
+        // an abrupt completion from the constructor or from setting length, populate
+        // elements, and set length on the result.
+        var result = ctx.Execute(@"
+            var out = [];
+            function ThrowingCtor() { throw new Error('ctor'); }
+            try { Array.of.call(ThrowingCtor, 1, 2, 3); out.push('ctor:NO'); }
+            catch (e) { out.push('ctor:' + e.message); }
+
+            function LenThrows() {
+                Object.defineProperty(this, 'length', { set: function() { throw new Error('len'); } });
+            }
+            try { Array.of.call(LenThrows, 1); out.push('len:NO'); }
+            catch (e) { out.push('len:' + e.message); }
+
+            function MyArr(n) { this.received = n; }
+            var inst = Array.of.call(MyArr, 'a', 'b');
+            out.push('custom:' + (inst instanceof MyArr) + ',' + inst[0] + ',' + inst[1] + ',' + inst.length + ',' + inst.received);
+
+            out.push('plain:' + Array.of(7, 8, 9).join('') + ',' + Array.isArray(Array.of(1)));
+            out.join('|');
+        ");
+        Assert.Equal("ctor:ctor|len:len|custom:true,a,b,2,2|plain:789,true", result.ToString());
+    }
+
+    [Theory]
+    // ArrayBuffer.prototype.transfer / transferToFixedLength / transferToImmutable must
+    // coerce the newLength argument (ToIndex -> valueOf) BEFORE validating the receiver,
+    // so the side effect runs even when the method then throws for a detached buffer.
+    [InlineData("transfer")]
+    [InlineData("transferToFixedLength")]
+    [InlineData("transferToImmutable")]
+    public void ArrayBuffer_Transfer_Coerces_NewLength_Before_Validation(string method)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var called = false;
+            var newLen = { valueOf: function() { called = true; return 0; } };
+            var ab = new ArrayBuffer(8);
+            ab.transfer();           // detach the buffer
+            try { ab." + method + @"(newLen); } catch (e) { /* expected: detached throws */ }
+            called;
+        ");
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
     public void ThrowTypeError_Is_Shared_Across_Unmapped_Arguments_Callee()
     {
         EnsureBuiltInsLoaded();
