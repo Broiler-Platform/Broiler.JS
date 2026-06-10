@@ -39,10 +39,16 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   already does for Array.prototype). JSString also resolves its own "length" on the
 //   dynamic-key read path so `s["length"]` no longer falls through to that prototype.
 //
+//   Problem 18 (callable %Function.prototype%, "Object is not a function") —
+//   Function.prototype must itself be a built-in function object: typeof "function",
+//   callable, accepts any arguments and returns undefined, not a constructor, with own
+//   length 0 and name "". It was an ordinary object. The JSClassGenerator now makes it
+//   a no-op callable JSFunction (mirroring the Array/String prototype special-cases);
+//   its [[Prototype]] (Object.prototype) is wired up later in JSContext.
+//
 // Out of scope (architectural / generated-code / Stage-3): P1 sm/eval ReferenceError;
 // P2 IL-backend super-property destructuring target; P3-P12 class decorators and
-// `accessor` auto-accessors; P16 super-call-in-arrow-eval this-init; P18 callable
-// %Function.prototype%.
+// `accessor` auto-accessors; P16 super-call-in-arrow-eval this-init.
 public class Issue737Tests
 {
     private static string Eval(string code)
@@ -141,4 +147,31 @@ public class Issue737Tests
     public void StringPrototypeInheritsObjectPrototype()
         => Assert.Equal("true", Eval(
             "(Object.getPrototypeOf(String.prototype)===Object.prototype)+''"));
+
+    // ---- Problem 18: %Function.prototype% is a callable no-op function ----
+
+    [Fact]
+    public void FunctionPrototypeIsCallableReturningUndefined()
+        => Assert.Equal("undefined,undefined", Eval(
+            "var x; [String(Function.prototype(x)), String(Function.prototype(1,2,3))].join(',')"));
+
+    [Fact]
+    public void FunctionPrototypeTypeofIsFunctionWithEmptyNameZeroLength()
+        => Assert.Equal("function,,0", Eval(
+            "[typeof Function.prototype, Function.prototype.name, Function.prototype.length].join(',')"));
+
+    [Fact]
+    public void FunctionPrototypeIsNotAConstructor()
+        => Assert.Equal("true", Eval(
+            "var t=false; try{ new Function.prototype(); }catch(e){ t=(e instanceof TypeError); } t+''"));
+
+    [Fact]
+    public void FunctionPrototypeHasNoOwnPrototypeAndInheritsObjectPrototype()
+        => Assert.Equal("false,true", Eval(
+            "[Function.prototype.hasOwnProperty('prototype'), Object.getPrototypeOf(Function.prototype)===Object.prototype].join(',')"));
+
+    [Fact]
+    public void FunctionsStillInheritFromFunctionPrototype()
+        => Assert.Equal("true,true", Eval(
+            "function f(){} [Object.getPrototypeOf(f)===Function.prototype, typeof f.call==='function'].join(',')"));
 }
