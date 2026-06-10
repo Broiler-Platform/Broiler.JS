@@ -111,6 +111,132 @@ public partial class JSArray : JSObject
         set => ArrayLength = value;
     }
 
+    // True once "length" has been materialized into the ordinary property store
+    // (which happens only when its writability is changed via SetLengthWritable).
+    // While synthetic it is absent from the base key stream and must be injected.
+    private bool IsLengthStored()
+    {
+        ref var ownProperties = ref GetOwnProperties(false);
+        return !ownProperties.IsEmpty && !ownProperties.GetValue(KeyStrings.length.Key).IsEmpty;
+    }
+
+    // Array exotic objects expose "length" as a non-enumerable own property that
+    // sits right after the integer indices in [[OwnPropertyKeys]]. Because it is
+    // synthetic (not stored unless its writability changes), the base key stream
+    // omits it. Inject it for non-enumerable own-key reflection
+    // (Object.getOwnPropertyNames / Reflect.ownKeys / Object.getOwnPropertyDescriptors)
+    // while leaving enumerable-only walks (Object.keys, for-in, JSON, spread)
+    // untouched — "length" is non-enumerable. When it is already stored, the base
+    // stream yields it and no injection is needed.
+    public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)
+    {
+        var baseKeys = base.GetAllKeys(showEnumerableOnly, inherited);
+        if (showEnumerableOnly || IsLengthStored())
+            return baseKeys;
+
+        return new ArrayLengthKeyEnumerator(baseKeys);
+    }
+
+    // Wraps the base own-key enumerator and emits "length" at the boundary between
+    // the integer-index keys and the remaining string keys (or at the end when there
+    // are no further string keys), reproducing the array's [[OwnPropertyKeys]] order.
+    private sealed class ArrayLengthKeyEnumerator(IElementEnumerator inner) : IElementEnumerator
+    {
+        private static readonly JSValue LengthKey = JSValue.CreateString("length");
+
+        private bool lengthPending = true;
+        private bool hasBuffered;
+        private bool bufHasValue;
+        private JSValue bufValue;
+        private uint bufIndex;
+
+        private static bool IsIndexKey(JSValue key) => key.ToKey(false).Type == KeyType.UInt;
+
+        private bool Advance(out bool hasValue, out JSValue value, out uint index)
+        {
+            if (hasBuffered)
+            {
+                hasBuffered = false;
+                hasValue = bufHasValue;
+                value = bufValue;
+                index = bufIndex;
+                return true;
+            }
+
+            if (inner.MoveNext(out hasValue, out value, out index))
+            {
+                // The first present non-index key marks the end of the index run;
+                // surface "length" before it (buffering the key we just pulled).
+                if (lengthPending && hasValue && !IsIndexKey(value))
+                {
+                    lengthPending = false;
+                    bufHasValue = hasValue;
+                    bufValue = value;
+                    bufIndex = index;
+                    hasBuffered = true;
+
+                    hasValue = true;
+                    value = LengthKey;
+                    index = 0;
+                }
+
+                return true;
+            }
+
+            if (lengthPending)
+            {
+                lengthPending = false;
+                hasValue = true;
+                value = LengthKey;
+                index = 0;
+                return true;
+            }
+
+            hasValue = false;
+            value = null;
+            index = 0;
+            return false;
+        }
+
+        public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
+            => Advance(out hasValue, out value, out index);
+
+        public bool MoveNext(out JSValue value)
+        {
+            while (Advance(out var hasValue, out value, out _))
+            {
+                if (hasValue)
+                    return true;
+            }
+
+            value = JSValue.UndefinedValue;
+            return false;
+        }
+
+        public bool MoveNextOrDefault(out JSValue value, JSValue @default)
+        {
+            while (Advance(out var hasValue, out value, out _))
+            {
+                if (hasValue)
+                    return true;
+            }
+
+            value = @default;
+            return false;
+        }
+
+        public JSValue NextOrDefault(JSValue @default)
+        {
+            while (Advance(out var hasValue, out var value, out _))
+            {
+                if (hasValue)
+                    return value;
+            }
+
+            return @default;
+        }
+    }
+
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
         var key = name.ToKey(false);

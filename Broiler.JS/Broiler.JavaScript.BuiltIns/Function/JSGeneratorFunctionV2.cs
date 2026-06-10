@@ -41,7 +41,9 @@ public class JSGeneratorFunctionV2 : JSFunction
         }, constructorName, $"function {constructorName}() {{ [native code] }}", 1, createPrototype: false);
         constructor.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
         constructor.prototype = prototype;
-        prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableValue);
+        // §27.3.3.2 / §27.4.3.2: the .prototype.constructor property is non-writable
+        // (attributes { writable: false, enumerable: false, configurable: true }).
+        prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableReadonlyValue);
 
         var generatorPrototype = GetGeneratorPrototype(asyncGenerator);
         if (generatorPrototype != null)

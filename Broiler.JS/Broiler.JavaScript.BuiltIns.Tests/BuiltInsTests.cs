@@ -4350,6 +4350,61 @@ public class BuiltInsTests
         Assert.Equal(expected, result.ToString());
     }
 
+    [Theory]
+    // Object.prototype.toString reports the builtin tag "Function" for every callable,
+    // but async/generator function objects inherit a @@toStringTag from their prototype
+    // that overrides it. A Proxy of such a function forwards the @@toStringTag Get to its
+    // target, so it reports the same tag. Regression for AsyncFunction.prototype lacking
+    // @@toStringTag (it returned "[object Function]" instead of "[object AsyncFunction]").
+    [InlineData("(function(){})", "[object Function]")]
+    [InlineData("(async function(){})", "[object AsyncFunction]")]
+    [InlineData("(function*(){})", "[object GeneratorFunction]")]
+    [InlineData("(async function*(){})", "[object AsyncGeneratorFunction]")]
+    [InlineData("new Proxy(function(){}, {})", "[object Function]")]
+    [InlineData("new Proxy(async function(){}, {})", "[object AsyncFunction]")]
+    public void Object_ToString_Reports_Function_Kind_Tag(string expr, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute("Object.prototype.toString.call(" + expr + ");");
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
+    // §27.x.3.2: the .prototype.constructor of the dynamic-function constructors is
+    // non-writable { writable: false, enumerable: false, configurable: true }.
+    [InlineData("(function*(){}).constructor")]
+    [InlineData("(async function*(){}).constructor")]
+    [InlineData("(async function(){}).constructor")]
+    public void Dynamic_Function_Prototype_Constructor_Is_NonWritable(string ctorExpr)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var C = " + ctorExpr + @";
+            var d = Object.getOwnPropertyDescriptor(C.prototype, 'constructor');
+            [d.writable, d.enumerable, d.configurable].join('|');
+        ");
+        Assert.Equal("false|false|true", result.ToString());
+    }
+
+    [Theory]
+    // Array exotic objects list "length" (non-enumerable) right after the integer
+    // indices in [[OwnPropertyKeys]], so non-enumerable own-key reflection must report
+    // it while enumerable-only walks must not. Regression for "length" being omitted.
+    [InlineData("Object.getOwnPropertyNames([1,2,3])", "0,1,2,length")]
+    [InlineData("Object.getOwnPropertyNames([])", "length")]
+    [InlineData("Reflect.ownKeys([1,2])", "0,1,length")]
+    [InlineData("Object.keys(Object.getOwnPropertyDescriptors([1,2]))", "0,1,length")]
+    [InlineData("Object.keys([1,2,3])", "0,1,2")]
+    public void Array_OwnKeys_Include_Length_Only_When_NonEnumerable(string expr, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(expr + ".join(',');");
+        Assert.Equal(expected, result.ToString());
+    }
+
     [Fact]
     public void Promise_Nested_Resolution_Assimilates_Inner_Promise()
     {
