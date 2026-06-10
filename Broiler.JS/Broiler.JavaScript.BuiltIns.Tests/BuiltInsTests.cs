@@ -4323,6 +4323,33 @@ public class BuiltInsTests
         Assert.Equal("sync|then:ok", result.ToString());
     }
 
+    [Theory]
+    // Each multi-argument Date setter must coerce every PRESENT argument (ToNumber,
+    // invoking valueOf) in order, even when the receiver is an invalid date — the
+    // spec performs all the ToNumber conversions before the "if t is NaN, return NaN"
+    // step. Regression for early-returning after coercing only the first argument.
+    [InlineData("d.setMinutes(mk('min'), mk('sec'), mk('ms'));", "min|sec|ms")]
+    [InlineData("d.setSeconds(mk('sec'), mk('ms'));", "sec|ms")]
+    [InlineData("d.setMonth(mk('month'), mk('date'));", "month|date")]
+    [InlineData("d.setHours(mk('hr'), mk('min'), mk('sec'), mk('ms'));", "hr|min|sec|ms")]
+    [InlineData("d.setUTCMinutes(mk('min'), mk('sec'), mk('ms'));", "min|sec|ms")]
+    [InlineData("d.setUTCSeconds(mk('sec'), mk('ms'));", "sec|ms")]
+    [InlineData("d.setUTCMonth(mk('month'), mk('date'));", "month|date")]
+    public void Date_Setters_Coerce_All_Arguments_On_Invalid_Date(string call, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var order = [];
+            var mk = function(label) { return { valueOf: function(){ order.push(label); return 1; } }; };
+            var d = new Date(NaN);
+            " + call + @"
+            order.join('|');
+        ");
+
+        Assert.Equal(expected, result.ToString());
+    }
+
     [Fact]
     public void Promise_Nested_Resolution_Assimilates_Inner_Promise()
     {
