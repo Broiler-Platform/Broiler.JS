@@ -605,7 +605,10 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     }
 
     public override bool BooleanValue => true;
-    public override double DoubleValue => double.NaN;
+    // No DoubleValue override: a typed array coerces to a number via the ordinary
+    // ToPrimitive path (JSObject.DoubleValue) so that @@toPrimitive / a custom
+    // valueOf / toString is honoured (e.g. `Number(new Int8Array([5]))` === 5, and
+    // a throwing valueOf propagates when the array is used as a typed-array element).
     public override bool Equals(JSValue value) => ReferenceEquals(this, value);
 
     public override JSValue InvokeFunction(in Arguments a) => throw JSEngine.NewTypeError($"{this} is not a function");

@@ -110,7 +110,7 @@ public partial class JSArray
 
         for (long sourceIndex = actualStart; sourceIndex < actualEnd; sourceIndex++)
         {
-            if (!TryGetArrayLikeElement(@this, (uint)sourceIndex, out var value))
+            if (!TryGetArrayLikeElement(@this, sourceIndex, out var value))
             {
                 resultIndex++;
                 continue;

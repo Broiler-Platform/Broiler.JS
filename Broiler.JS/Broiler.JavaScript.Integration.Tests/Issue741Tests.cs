@@ -35,6 +35,22 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   (eval code is not itself a function body). `new Function('return …')` is unaffected
 //   because its body is parsed inside a synthesised function expression.
 //
+//   Problem 22 (TypedArray(object) element coercion) — building a typed array from an
+//   array-like must ToNumber each element (so a throwing valueOf/toString propagates).
+//   `JSTypedArray` hardcoded DoubleValue to NaN, short-circuiting ToPrimitive, so an
+//   element that is itself an object with a custom valueOf was never coerced. Removing
+//   the override also makes `Number(new Int8Array([5]))` === 5 (ToPrimitive → toString),
+//   per spec.
+//
+//   Problem 25 (Array.prototype.slice with length near 2^53) — the per-element read
+//   truncated the source index to uint, corrupting indices above the 32-bit range. It
+//   now uses the existing 64-bit Has/Get overloads.
+//
+//   Problem 30 (function own-key order) — a function's own keys are [length, name,
+//   prototype, …]; the JSFunction constructors installed `prototype` before length/name.
+//   They now install length and name first, matching SetFunctionLength/Name preceding
+//   MakeConstructor. Applies to user classes, user functions, and native functions.
+//
 // Out of scope (architectural / generated-code / Stage-3 / CLDR): P1 sm/eval
 // exhaustive ReferenceError; P2 super-call-in-arrow-eval this-init; P6 Unicode
 // Script_Extensions data; P15 DateTimeFormat hour12 derivation (Intl resolution stub);
@@ -150,4 +166,46 @@ public class Issue741Tests
             "var o={m(){return 3;}};" +
             "var c=new Function('return 4;');" +
             "[a(),b(),o.m(),c()].join('|')"));
+
+    // ---- Problem 25: Array.prototype.slice with length near 2^53 (64-bit indices) ----
+
+    [Fact]
+    public void SliceHandlesIndicesBeyond32BitRange()
+        => Assert.Equal("9007199254740989,9007199254740990", Eval(
+            "var o={'9007199254740988':'9007199254740988','9007199254740989':'9007199254740989'," +
+            "'9007199254740990':'9007199254740990','9007199254740991':'9007199254740991',length:2**53+2};" +
+            "Array.prototype.slice.call(o,9007199254740989).join(',')"));
+
+    [Fact]
+    public void SliceHandlesNegativeIndicesBeyond32BitRange()
+        => Assert.Equal("9007199254740989", Eval(
+            "var o={'9007199254740988':'9007199254740988','9007199254740989':'9007199254740989'," +
+            "'9007199254740990':'9007199254740990','9007199254740991':'9007199254740991',length:2**53+2};" +
+            "Array.prototype.slice.call(o,-2,-1).join(',')"));
+
+    // ---- Problem 22: TypedArray(object) coerces each element via ToNumber ----
+
+    [Fact]
+    public void TypedArrayCtorFromObjectPropagatesThrowingValueOf()
+        => Assert.Equal("threw:1", Eval(
+            "var s=new Int8Array(1);var n=0;s.valueOf=function(){n++;throw new Error('x');};" +
+            "try{new Float64Array([8,s]);'nothrow';}catch(e){'threw:'+n}"));
+
+    // A typed array coerces to a number via ToPrimitive (toString), not always NaN.
+    [Fact]
+    public void NumberOfSingleElementTypedArrayUsesToString()
+        => Assert.Equal("5|7", Eval(
+            "Number(new Int8Array([5]))+'|'+(+new Float64Array([7]))"));
+
+    // ---- Problem 30: class constructor own-key order is [length, name, prototype, …] ----
+
+    [Fact]
+    public void ClassConstructorOwnKeyOrder()
+        => Assert.Equal("length,name,prototype,method", Eval(
+            "class A{static method(){}static length(){}}Object.getOwnPropertyNames(A).join(',')"));
+
+    [Fact]
+    public void PlainFunctionOwnKeyOrderStartsWithLengthNamePrototype()
+        => Assert.Equal("length,name,prototype", Eval(
+            "Object.getOwnPropertyNames(function f(){}).slice(0,3).join(',')"));
 }
