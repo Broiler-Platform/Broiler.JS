@@ -1069,7 +1069,7 @@ public class JSIntlRelativeTimeFormat : JSObject
 
         if (numeric == "auto" && value == Math.Floor(value) && value >= int.MinValue && value <= int.MaxValue)
         {
-            var exact = CldrRelativeTimeData.GetExact(locale, unit, style, (int)value);
+            var exact = CldrLocaleData.GetRelativeTimeExact(locale, unit, style, (int)value);
             if (exact != null)
                 return [("literal", exact, null)];
         }
@@ -1080,7 +1080,7 @@ public class JSIntlRelativeTimeFormat : JSObject
 
         var magnitude = Math.Abs(value);
         var pluralCategory = CldrLocaleData.SelectPlural(locale, "cardinal", magnitude);
-        var pattern = CldrRelativeTimeData.GetPattern(locale, unit, style, tense, pluralCategory);
+        var pattern = CldrLocaleData.GetRelativeTimePattern(locale, unit, style, tense, pluralCategory);
 
         return FillRelativeTimePattern(pattern, unit, magnitude);
     }
