@@ -231,6 +231,35 @@ partial class FastParser
                     switch (current.Keyword)
                     {
                         case FastKeywords.let:
+                        {
+                            // `let` is only a LexicalDeclaration (forbidden here) when
+                            // it begins the restricted `let [` lookahead, or when a
+                            // BindingIdentifier / `{` pattern follows on the SAME line
+                            // (ASI cannot split it). Otherwise `let` is an
+                            // IdentifierReference and the labelled item is the
+                            // expression statement it leads — e.g. `L: let\n{}` is
+                            // `let;` followed by the block `{}`, and `L: let\nx = 1` is
+                            // `let;` followed by `x = 1`.
+                            var letPosition = stream.Current;
+                            stream.Consume();
+                            var lineBreakAfterLet = stream.LineTerminator();
+                            var afterLet = stream.Current.Type;
+                            stream.Reset(letPosition);
+
+                            var isLexicalDeclaration = afterLet == TokenTypes.SquareBracketStart
+                                || (!lineBreakAfterLet
+                                    && (afterLet == TokenTypes.Identifier
+                                        || afterLet == TokenTypes.CurlyBracketStart));
+                            if (isLexicalDeclaration)
+                                throw new FastParseException(current, "Lexical declaration cannot appear in a single-statement context");
+
+                            if (!ExpressionSequence(out var letExpression, TokenTypes.SemiColon))
+                                throw stream.Unexpected();
+
+                            statement = new AstLabeledStatement(id, new AstExpressionStatement(current, PreviousToken, letExpression));
+                            return true;
+                        }
+
                         case FastKeywords.@const:
                         case FastKeywords.@class:
                             throw new FastParseException(current, "Lexical declaration cannot appear in a single-statement context");

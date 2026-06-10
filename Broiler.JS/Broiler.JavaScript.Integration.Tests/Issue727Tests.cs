@@ -64,7 +64,9 @@ public class Issue727Tests
 
     [Fact]
     public void PolishLongFormat()
-        => Assert.Equal("za 1 000 sekund", Eval("new Intl.RelativeTimeFormat('pl-PL').format(1000, 'second');"));
+        // Polish has CLDR minimumGroupingDigits=2, so a four-digit value like 1000
+        // is NOT grouped ("1000", not "1 000") — matching V8/test262.
+        => Assert.Equal("za 1000 sekund", Eval("new Intl.RelativeTimeFormat('pl-PL').format(1000, 'second');"));
 
     [Fact]
     public void PluralUnitSpellingAccepted()

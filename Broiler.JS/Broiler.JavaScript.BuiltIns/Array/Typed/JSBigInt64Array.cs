@@ -32,11 +32,14 @@ public partial class JSBigInt64Array : JSTypedArray
         if (TrySetForeignReceiver(index, value, receiver, throwError, out var foreign))
             return foreign;
 
-        var longValue = (long)ToBigIntValue(value ?? JSUndefined.Value).value;
+        // ToBigInt64 wraps modulo 2^64; a plain (long) cast on the BigInteger
+        // overflows for magnitudes that do not fit a signed 64-bit integer, so
+        // mask the low 64 bits (the two's-complement pattern) directly.
+        var bits = (ulong)(ToBigIntValue(value ?? JSUndefined.Value).value & ((BigInteger.One << 64) - 1));
         if (index >= length)
             return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
 
-        System.Array.Copy(BitConverter.GetBytes(longValue), 0, buffer.buffer, byteOffset + index * 8, 8);
+        System.Array.Copy(BitConverter.GetBytes(bits), 0, buffer.buffer, byteOffset + index * 8, 8);
         return true;
     }
 

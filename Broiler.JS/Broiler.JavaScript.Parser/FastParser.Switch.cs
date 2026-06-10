@@ -17,10 +17,10 @@ partial class FastParser
 
         stream.Expect(TokenTypes.BracketStart);
 
-        if (!Expression(out var target))
+        // The switch discriminant is an `Expression` (the full comma production),
+        // so `switch (a, b, c)` is valid. ExpressionSequence also consumes ")".
+        if (!ExpressionSequence(out var target, TokenTypes.BracketEnd) || target.Type == FastNodeType.EmptyExpression)
             throw stream.Unexpected();
-
-        stream.Expect(TokenTypes.BracketEnd);
 
         stream.Expect(TokenTypes.CurlyBracketStart);
 
@@ -46,10 +46,12 @@ partial class FastParser
                         statements = [];
                     }
 
-                    if (!Expression(out test))
+                    // `case Expression :` — Expression is the full comma
+                    // production, so `case a, b, c:` is valid. ExpressionSequence
+                    // also consumes the terminating ":".
+                    if (!ExpressionSequence(out test, TokenTypes.Colon) || test.Type == FastNodeType.EmptyExpression)
                         throw stream.Unexpected();
 
-                    stream.Expect(TokenTypes.Colon);
                     pending = true;
                 }
                 else if (stream.CheckAndConsume(FastKeywords.@default))

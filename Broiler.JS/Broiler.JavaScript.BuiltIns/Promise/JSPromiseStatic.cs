@@ -32,6 +32,22 @@ public partial class JSPromise
         return promiseResolve;
     }
 
+    // IfAbruptCloseIterator: when a Promise combinator's per-element processing
+    // (Call(promiseResolve, …), Get(nextPromise, "then"), or Call(then, …))
+    // completes abruptly, the iterator must be closed via IteratorClose before
+    // the returned promise is rejected. A throw from the close itself is
+    // discarded — the original abrupt completion takes precedence. `en` is null
+    // when the failure occurred before the iterator was obtained (GetPromiseResolve
+    // or GetIterator abrupt), in which case there is nothing to close.
+    private static void CloseIteratorOnError(IElementEnumerator en)
+    {
+        if (en is IReturnableEnumerator returnable)
+        {
+            try { returnable.Return(); }
+            catch { /* original completion wins; ignore the close error */ }
+        }
+    }
+
     private static JSValue CreatePromiseFromConstructor(JSValue constructor, Action<JSValue, JSValue> executor)
     {
         if (!IsConstructor(constructor))
@@ -226,10 +242,11 @@ public partial class JSPromise
             // Per §27.2.4.1, an abrupt completion while obtaining the constructor's
             // "resolve" method, or while obtaining or stepping the iterable, must
             // reject the returned promise rather than throwing synchronously.
+            IElementEnumerator en = null;
             try
             {
                 var promiseResolve = GetPromiseResolve(constructor);
-                var en = iterable.GetIterableEnumerator();
+                en = iterable.GetIterableEnumerator();
                 while (en.MoveNext(out var hasValue, out var item, out var _))
                 {
                     if (!hasValue)
@@ -273,6 +290,7 @@ public partial class JSPromise
             }
             catch (JSException ex)
             {
+                CloseIteratorOnError(en);
                 reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
             }
         });
@@ -363,6 +381,7 @@ public partial class JSPromise
             // "resolve" method, or while obtaining or stepping the iterable (e.g. a
             // throwing @@iterator, next, or result-property access), must reject the
             // returned promise rather than throwing synchronously.
+            IElementEnumerator en = null;
             try
             {
                 // PerformPromiseRace (§27.2.4.5.1) routes every value through
@@ -371,7 +390,7 @@ public partial class JSPromise
                 // for Promise subclasses whose `resolve` is overridden, so it must
                 // be called per element rather than special-casing native promises.
                 var promiseResolve = GetPromiseResolve(constructor);
-                var en = iterable.GetIterableEnumerator();
+                en = iterable.GetIterableEnumerator();
                 while (en.MoveNext(out var hasValue, out var item, out var _))
                 {
                     if (!hasValue)
@@ -404,6 +423,7 @@ public partial class JSPromise
             }
             catch (JSException ex)
             {
+                CloseIteratorOnError(en);
                 reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
             }
         });
@@ -434,10 +454,11 @@ public partial class JSPromise
             // Per §27.2.4.7, an abrupt completion while obtaining the constructor's
             // "resolve" method, or while obtaining or stepping the iterable, must
             // reject the returned promise rather than throwing synchronously.
+            IElementEnumerator en = null;
             try
             {
                 var promiseResolve = GetPromiseResolve(constructor);
-                var en = iterable.GetIterableEnumerator();
+                en = iterable.GetIterableEnumerator();
                 while (en.MoveNext(out var hasValue, out var item, out var _))
                 {
                     if (!hasValue)
@@ -488,6 +509,7 @@ public partial class JSPromise
             }
             catch (JSException ex)
             {
+                CloseIteratorOnError(en);
                 reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
             }
         });
@@ -555,10 +577,11 @@ public partial class JSPromise
             // Per §27.2.4.3, an abrupt completion while obtaining the constructor's
             // "resolve" method, or while obtaining or stepping the iterable, must
             // reject the returned promise rather than throwing synchronously.
+            IElementEnumerator en = null;
             try
             {
                 var promiseResolve = GetPromiseResolve(constructor);
-                var en = iterable.GetIterableEnumerator();
+                en = iterable.GetIterableEnumerator();
                 while (en.MoveNext(out var hasValue, out var item, out var _))
                 {
                     if (!hasValue)
@@ -602,6 +625,7 @@ public partial class JSPromise
             }
             catch (JSException ex)
             {
+                CloseIteratorOnError(en);
                 reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
             }
         });

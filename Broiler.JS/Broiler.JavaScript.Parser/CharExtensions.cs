@@ -47,7 +47,8 @@ public static class CharExtensions
             case '5':
             case '6':
             case '7':
-                if (binary || octal)
+                // 2-7 are valid octal (and decimal/hex) digits; only binary rejects them.
+                if (binary)
                     return false;
 
                 return true;
