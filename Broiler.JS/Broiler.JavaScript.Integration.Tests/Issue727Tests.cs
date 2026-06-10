@@ -7,8 +7,9 @@ namespace Broiler.JavaScript.Integration.Tests;
 //
 // Intl.RelativeTimeFormat.prototype.format / formatToParts were stubs (format
 // echoed the value; formatToParts returned []). They are now backed by the CLDR
-// relative-time fields (generated into CldrRelativeTimeData), the locale plural
-// rules, and the locale NumberFormat for the number parts.
+// relative-time fields (generated into the Broiler.Unicode CldrRelativeTimeData
+// table, surfaced via CldrLocaleData.GetRelativeTimePattern/GetRelativeTimeExact),
+// the locale plural rules, and the locale NumberFormat for the number parts.
 public class Issue727Tests
 {
     private static string Eval(string code)
