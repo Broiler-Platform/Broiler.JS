@@ -623,38 +623,66 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual void SetPrototypeOf(JSValue target)
     {
+        if (!TrySetPrototypeOf(target, out var error))
+            throw NewTypeError(error ?? "Could not set prototype");
+    }
+
+    /// <summary>
+    /// Spec ordinary [[SetPrototypeOf]] (§10.1.2): performs the change and
+    /// returns whether it succeeded. The not-extensible and cyclic cases return
+    /// <c>false</c> (with <paramref name="error"/> set) rather than throwing, so
+    /// callers like <c>Reflect.setPrototypeOf</c> can surface the boolean result
+    /// while <c>Object.setPrototypeOf</c> / the <c>__proto__</c> setter throw.
+    /// </summary>
+    public virtual bool TrySetPrototypeOf(JSValue target, out string error)
+    {
+        error = null;
+
         if (target == NullValue)
         {
             if (this is JSObject { } nullTargetObject && !nullTargetObject.IsExtensible() && prototypeChain?.Object != null)
-                throw NewTypeError("Object is not extensible");
+            {
+                error = "Object is not extensible";
+                return false;
+            }
 
             BasePrototypeObject = null;
-            return;
+            return true;
         }
 
         if (!target.IsObject)
-            throw NewTypeError($"Prototype must be an object or null");
+        {
+            error = "Prototype must be an object or null";
+            return false;
+        }
 
         if (this is JSObject { } @object)
         {
             var current = prototypeChain?.Object;
             if (ReferenceEquals(current, target))
-                return;
+                return true;
 
             if (!@object.IsExtensible())
-                throw NewTypeError("Object is not extensible");
+            {
+                error = "Object is not extensible";
+                return false;
+            }
         }
 
         for (var prototype = target; prototype is JSObject prototypeObject; prototype = prototypeObject.GetPrototypeOf())
         {
             if (ReferenceEquals(prototype, this))
-                throw NewTypeError("Cyclic __proto__ value");
+            {
+                error = "Cyclic __proto__ value";
+                return false;
+            }
 
             if (prototypeObject.GetType() != typeof(JSObject))
                 break;
         }
 
         BasePrototypeObject = target;
+        return true;
     }
 
     public virtual JSValue GetOwnPropertyDescriptor(JSValue name) => throw new NotImplementedException();
