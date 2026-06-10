@@ -136,8 +136,19 @@ partial class FastCompiler
         };
     }
 
+    // NamedEvaluation hint for an anonymous class expression (e.g. `var C = class {}`).
+    // ClassDefinitionEvaluation must set the constructor's name BEFORE static field
+    // initializers run, so the inferred binding name is threaded in here rather than
+    // applied (too late) when the class object is stored into its binding.
+    private string anonymousClassNameHint;
+
     private YExpression CreateClass(AstIdentifier id, AstExpression super, AstClassExpression body)
     {
+        // Consume the inferred-name hint immediately so a nested class in the body,
+        // base clause or a member initializer does not inherit it.
+        var nameHint = anonymousClassNameHint;
+        anonymousClassNameHint = null;
+
         var scope = pool.NewScope();
         var tempVar = this.scope.Top.GetTempVariable(JSClassBuilder.Type);
         var hasSuperClass = super != null;
@@ -348,9 +359,30 @@ partial class FastCompiler
                         name = property.Computed
                             ? computedMemberNames[property]
                             : ValidateStaticPropertyName(property, GetClassElementName(property));
-                        var value = property.Init == null
-                            ? JSUndefinedBuilder.Value
-                            : ApplyFieldFunctionName(property, name, Visit(property.Init));
+                        YExpression value;
+                        if (property.Init == null)
+                            value = JSUndefinedBuilder.Value;
+                        else
+                        {
+                            // A static field initializer evaluates with `this` bound to
+                            // the constructor (the class object) per
+                            // ClassDefinitionEvaluation, so `this.x` and `this.name`
+                            // observe the class itself. The deferred AddValue below runs
+                            // after `retValue` (the constructor) is assigned, so binding
+                            // `this` to it here is valid. The computed key was already
+                            // evaluated above against the outer `this`.
+                            var top = this.scope.Top;
+                            var savedThis = top.ThisExpression;
+                            top.ThisExpression = retValue;
+                            try
+                            {
+                                value = ApplyFieldFunctionName(property, name, Visit(property.Init));
+                            }
+                            finally
+                            {
+                                top.ThisExpression = savedThis;
+                            }
+                        }
                         // Deferred to after the class binding (see staticFieldInits).
                         staticFieldInits.Add((name, value, isPrivateName));
                         break;
@@ -434,7 +466,11 @@ partial class FastCompiler
             }
         }
 
-        var className = id?.Name.Value ?? string.Empty;
+        // A named class uses its own name; an anonymous class assigned to a binding
+        // adopts the inferred name (NamedEvaluation) so static field initializers
+        // observe `this.name`. The runtime placeholder-rename on the binding store is
+        // then skipped because the constructor already carries a real name.
+        var className = id?.Name.Value ?? nameHint ?? string.Empty;
 
         if (constructor != null)
         {

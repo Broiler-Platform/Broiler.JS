@@ -98,7 +98,7 @@ public partial class JSString
         var pos = a[0]?.IntegerValue ?? 0;
 
         if (pos < 0 || pos >= text.Length)
-            return JSValue.NumberNaN;
+            return JSUndefined.Value;
 
         int firstCodePoint = text[pos];
         if (firstCodePoint < 0xD800 || firstCodePoint > 0xDBFF || pos + 1 == text.Length)
