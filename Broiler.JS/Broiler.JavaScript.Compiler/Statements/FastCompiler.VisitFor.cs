@@ -132,19 +132,27 @@ partial class FastCompiler
                     (AstExpression)forOfStatement.Init,
                     perIterationInits,
                     out iterationValueVariable,
-                    forOfStatement.IsAwait),
+                    forceDynamicAssignment: false),
             FastNodeType.VariableDeclaration when TryCreateForOfDestructuringAssignment(
                 (AstVariableDeclaration)forOfStatement.Init,
                 perIterationInits,
                 out iterationValueVariable)
                 => iterationValueVariable,
             FastNodeType.VariableDeclaration => Visit(forOfStatement.Init),
+            // A for-await head must resolve declared (lexical) destructuring targets
+            // statically, exactly like sync for-of: the static JSVariable reference
+            // survives the async state-machine rewrite (a plain `x = …` in the body
+            // does). Forcing a dynamic assignment here (the old `IsAwait` flag) wrote
+            // to the global object instead of a `let`/`const` binding's cell, leaving
+            // the bound variable undefined. Undeclared free identifiers still fall
+            // back to a dynamic assignment via the TryGetStaticIdentifierVariable
+            // check inside CreateAssignment.
             _ when forOfStatement.Init is AstExpression expression =>
                 CreateForOfDestructuringAssignment(
                     expression,
                     perIterationInits,
                     out iterationValueVariable,
-                    forOfStatement.IsAwait),
+                    forceDynamicAssignment: false),
             _ => throw new FastParseException(forOfStatement.Start, $"Unexpcted"),
         };
 
