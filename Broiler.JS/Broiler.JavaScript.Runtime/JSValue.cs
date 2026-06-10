@@ -237,6 +237,15 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// </summary>
     internal static Func<uint, IJSSymbol?> GetSymbolByKeyFactory;
 
+    /// <summary>
+    /// Returns the Object.prototype.toString builtin tag ("Number", "Boolean",
+    /// "String", "BigInt", "Symbol") for values whose primitive [[XxxData]]
+    /// internal slot is modelled in the BuiltIns layer — boxed primitives and the
+    /// Number/Boolean/String prototype objects — or null when none applies.
+    /// Wired by the BuiltIns assembly.
+    /// </summary>
+    internal static Func<JSValue, string> GetBuiltinToStringTag;
+
     /// <summary>Gets whether this value is the <c>undefined</c> singleton.</summary>
     public bool IsUndefined
     {

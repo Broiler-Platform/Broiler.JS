@@ -355,7 +355,9 @@ partial class FastCompiler
     private YExpression CaptureDirectEvalLexicalBindings()
     {
         var bindings = new Sequence<YExpression>();
-        foreach (var name in scope.Top.GetDirectEvalLexicalBindingNames())
+        // In non-strict mode a simple catch parameter does not conflict with a
+        // `var` of the same name in the direct eval body (Annex B.3.4).
+        foreach (var name in scope.Top.GetDirectEvalLexicalBindingNames(excludeSimpleCatchBindings: !IsStrictMode))
             bindings.Add(YExpression.Constant(name));
 
         return YExpression.NewArrayInit(typeof(string), bindings);

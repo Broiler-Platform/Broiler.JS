@@ -29,6 +29,9 @@ public partial class JSBigUint64Array : JSTypedArray
 
     public override bool SetValue(uint index, JSValue value, JSValue receiver, bool throwError = true)
     {
+        if (TrySetForeignReceiver(index, value, receiver, throwError, out var foreign))
+            return foreign;
+
         var ulongValue = (ulong)ToBigIntValue(value ?? JSUndefined.Value).value;
         if (index >= length)
             return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)

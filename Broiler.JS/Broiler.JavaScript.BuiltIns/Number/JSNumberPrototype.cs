@@ -1,5 +1,6 @@
 ﻿using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.BuiltIns.Intl;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -308,8 +309,16 @@ partial class JSNumber
 
             var n1 = precisionPrimitive as JSNumber ?? new JSNumber(precisionPrimitive.DoubleValue);
 
-            if (double.IsNaN(n1.value) || n1.value > 21 || n1.value < 1)
-                throw JSEngine.NewRangeError("toPrecision() digits argument must be between 0 and 100");
+            // Step 4: if x is NaN, return "NaN" — this happens after coercing
+            // precision but BEFORE the range check, so an out-of-range precision
+            // (e.g. a valueOf returning Infinity) still yields "NaN" rather than
+            // a RangeError.
+            if (double.IsNaN(n.value))
+                return new JSString("NaN");
+
+            // Step 8: the precision must be in the inclusive range 1..100.
+            if (double.IsNaN(n1.value) || n1.value > 100 || n1.value < 1)
+                throw JSEngine.NewRangeError("toPrecision() digits argument must be between 1 and 100");
 
             var i = (int)n1.value;
             var originalPrecision = i;
@@ -405,26 +414,24 @@ partial class JSNumber
         var (locale, format) = a.Get2();
         var formatting = "g";
 
+        // §21.1.3.4: Number.prototype.toLocaleString(locales, options) ≡
+        // Intl.NumberFormat(locales, options).format(this). A non-string, defined
+        // `format` is the standard Intl options bag and is delegated to
+        // Intl.NumberFormat; a string `format` keeps Broiler's .NET
+        // numeric-format-string extension.
+        if (!format.IsNullOrUndefined && !format.IsString)
+        {
+            var nf = new JSIntlNumberFormat(new Arguments(JSUndefined.Value, locale, format));
+            return new JSString(nf.Format(new Arguments(JSUndefined.Value, n)).StringValue);
+        }
+
         if (locale.IsNullOrUndefined)
             return new JSString(n.value.ToString(formatting, CultureInfo.CurrentCulture));
 
-        string number;
         var culture = CultureInfo.GetCultureInfo(locale.ToString());
-        if (format.IsNullOrUndefined)
-        {
-            number = n.value.ToString(formatting, culture);
-        }
-        else
-        {
-            if (format.IsString)
-            {
-                number = n.value.ToString(format.ToString(), culture);
-            }
-            else
-            {
-                throw JSEngine.NewTypeError("Options not supported, use .Net String Formats");
-            }
-        }
+        var number = format.IsString
+            ? n.value.ToString(format.ToString(), culture)
+            : n.value.ToString(formatting, culture);
 
         return new JSString(number);
     }

@@ -381,6 +381,17 @@ partial class FastCompiler
                 return callExpression;
             }
 
+            // A direct eval may reference super at runtime (e.g. eval("super.x")),
+            // so the method needs a [[HomeObject]]. Per spec every concise method /
+            // accessor has one regardless of whether super is used syntactically;
+            // detecting the direct eval call is enough to build it here, matching
+            // class methods (which always establish a home object).
+            if (callExpression.Callee is AstIdentifier evalId && evalId.Name.Equals("eval"))
+            {
+                Found = true;
+                return callExpression;
+            }
+
             return base.VisitCallExpression(callExpression);
         }
 

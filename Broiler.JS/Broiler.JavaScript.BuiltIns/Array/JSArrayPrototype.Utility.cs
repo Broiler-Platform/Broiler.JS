@@ -127,6 +127,7 @@ public partial class JSArray
     internal static JSValue ToLocaleString(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
+        var (locales, options) = a.Get2();
         StringBuilder sb = new();
 
         var length = (uint)@this.Length;
@@ -140,8 +141,10 @@ public partial class JSArray
             if (item.IsNullOrUndefined)
                 continue;
 
+            // §23.1.3.32: Invoke(element, "toLocaleString", « locales, options ») —
+            // the locale and options arguments are forwarded to each element.
             var method = item[toLocaleString];
-            sb.Append(method.Call(item).ToString());
+            sb.Append(method.InvokeFunction(new Arguments(item, locales, options)).StringValue);
         }
 
         return new JSString(sb.ToString());

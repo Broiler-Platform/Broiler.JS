@@ -729,7 +729,69 @@ public static class JSIntl
         if (RegularGrandfatheredMappings.TryGetValue(tag, out var preferred))
             return preferred;
 
-        return tag;
+        return CanonicalizeLanguageTagCase(tag);
+    }
+
+    // CanonicalizeUnicodeLocaleId case folding (UTS #35 §3.2.1): the language
+    // subtag is lowercased, a script subtag is title-cased, an alphabetic region
+    // subtag is uppercased, and every other subtag — extlang, variants, and the
+    // contents of singleton extension / privateuse sequences — is lowercased.
+    // (Alias substitution and extension keyword reordering are not applied.)
+    private static string CanonicalizeLanguageTagCase(string tag)
+    {
+        var subtags = tag.Split('-');
+        var inExtension = false;
+
+        for (var i = 0; i < subtags.Length; i++)
+        {
+            var subtag = subtags[i];
+
+            if (i == 0)
+            {
+                // Leading subtag is the language (or, for a wholly-privateuse
+                // tag, the "x" singleton); either way it is lowercased.
+                subtags[i] = subtag.ToLowerInvariant();
+                continue;
+            }
+
+            if (subtag.Length == 1)
+            {
+                // A singleton ('u', 't', 'x', …) opens an extension or privateuse
+                // sequence; it and everything after it is lowercased.
+                subtags[i] = subtag.ToLowerInvariant();
+                inExtension = true;
+                continue;
+            }
+
+            if (inExtension)
+            {
+                subtags[i] = subtag.ToLowerInvariant();
+                continue;
+            }
+
+            if (subtag.Length == 4 && IsAllAlpha(subtag))
+                // script -> Titlecase
+                subtags[i] = char.ToUpperInvariant(subtag[0]) + subtag.Substring(1).ToLowerInvariant();
+            else if (subtag.Length == 2 && IsAllAlpha(subtag))
+                // alphabetic region -> uppercase
+                subtags[i] = subtag.ToUpperInvariant();
+            else
+                // extlang, variant, numeric region -> lowercase
+                subtags[i] = subtag.ToLowerInvariant();
+        }
+
+        return string.Join("-", subtags);
+    }
+
+    private static bool IsAllAlpha(string value)
+    {
+        foreach (var c in value)
+        {
+            if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')))
+                return false;
+        }
+
+        return true;
     }
 
     private static bool HasDuplicateVariantSubtag(string tag)

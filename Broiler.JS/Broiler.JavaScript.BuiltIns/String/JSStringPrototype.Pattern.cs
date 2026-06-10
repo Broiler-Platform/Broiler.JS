@@ -192,6 +192,20 @@ public partial class JSString
         if (_separator is JSRegExp jSRegExp)
             return jSRegExp.Split(@this, limitMax);
 
+        // Per spec (22.1.3.23): a zero limit yields an empty array, and an
+        // undefined separator yields a single-element array containing the
+        // whole string (it must NOT be coerced to "undefined" and used as a
+        // delimiter).
+        if (limitMax == 0)
+            return JSValue.CreateArray();
+
+        if (_separator.IsUndefined)
+        {
+            var single = JSValue.CreateArray();
+            single.AddArrayItem(new JSString(@this));
+            return single;
+        }
+
         var separator = _separator.StringValue;
         var result = JSValue.CreateArray();
         if (string.IsNullOrEmpty(separator))

@@ -540,19 +540,70 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return base.DefineProperty(name, pd);
     }
 
+    internal protected override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
+    {
+        // [[Get]] for an integer-indexed exotic object (10.4.5.4): a canonical
+        // numeric index is resolved via IntegerIndexedElementGet — the element for
+        // a valid index, otherwise undefined — and never falls through to
+        // OrdinaryGet, so an invalid/out-of-bounds index must not consult the
+        // prototype chain.
+        if (TryGetCanonicalNumericIndex(key, out var numericIndex))
+        {
+            if (IsValidIntegerIndex(numericIndex))
+                return GetValue((uint)numericIndex, receiver, throwError);
+
+            return JSUndefined.Value;
+        }
+
+        return base.GetValue(key, receiver, throwError);
+    }
+
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
     {
         if (TryGetCanonicalNumericIndex(name, out var numericIndex))
         {
-            ValidateElementValue(value);
-            if (IsValidIntegerIndex(numericIndex))
-                return SetValue((uint)numericIndex, value, receiver, throwError);
+            // [[Set]] for an integer-indexed exotic object (10.4.5.5). A null
+            // receiver denotes a direct write (the object itself is the receiver).
+            if (receiver is null || ReferenceEquals(receiver, this))
+            {
+                // SameValue(O, Receiver): TypedArraySetElement always coerces the
+                // value (ToNumber/ToBigInt → valueOf) before the validity check,
+                // even for an out-of-bounds index, then writes only when valid.
+                ValidateElementValue(value);
+                if (IsValidIntegerIndex(numericIndex))
+                    return SetValue((uint)numericIndex, value, receiver, throwError);
 
-            return true;
+                return true;
+            }
+
+            // Receiver is some other object: an invalid index is a silent no-op
+            // (no coercion); a valid index falls through to OrdinarySet so the
+            // value is written to the receiver, not the typed array.
+            if (!IsValidIntegerIndex(numericIndex))
+                return true;
         }
 
         return base.SetValue(name, value, receiver, throwError);
     }
+
+    // §10.4.5.5 [[Set]] for an indexed write whose Receiver is not this typed
+    // array. The element is never coerced or stored in this buffer: a valid index
+    // delegates to OrdinarySet (writing on the Receiver), an out-of-bounds index
+    // is a successful no-op. Returns true when fully handled (the per-type
+    // SetValue(uint) returns `result`); false when this is a normal direct write
+    // (null receiver or SameValue(O, Receiver)) that should coerce and store.
+    private protected bool TrySetForeignReceiver(uint index, JSValue value, JSValue receiver, bool throwError, out bool result)
+    {
+        if (receiver is null || ReferenceEquals(receiver, this))
+        {
+            result = false;
+            return false;
+        }
+
+        result = index < length ? base.SetValue(index, value, receiver, throwError) : true;
+        return true;
+    }
+
     public override bool BooleanValue => true;
     public override double DoubleValue => double.NaN;
     public override bool Equals(JSValue value) => ReferenceEquals(this, value);

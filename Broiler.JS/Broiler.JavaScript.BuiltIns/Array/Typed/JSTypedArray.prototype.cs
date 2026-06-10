@@ -669,22 +669,12 @@ partial class JSTypedArray
         var (locale, format) = a.Get2();
         StringBuilder sb = new();
 
-        var def = "N0";
-        switch (this)
-        {
-            case JSFloat32Array:
-            case JSFloat64Array:
-                def = "N";
-                break;
-        }
-
-        string strFormat = format.IsNullOrUndefined ? def : (format.IsString ? format.ToString() :
-            throw JSEngine.NewTypeError("Options not supported, use .Net String Formats")
-            );
-
-        CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.ToString());
-        // Group separator based on CultureInfo.
-        var separator = culture.TextInfo.ListSeparator;
+        // §23.2.3.32: the element list separator is the same implementation-defined
+        // value Array.prototype.toLocaleString uses (a comma), so the two stay
+        // consistent. Each element is formatted via its own toLocaleString(locale,
+        // format) below, which handles a string .NET format or an Intl options bag
+        // (so the typed array must not reject an options object up front).
+        var separator = ",";
 
         bool first = true;
         var en = GetElementEnumerator();

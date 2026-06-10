@@ -25,6 +25,9 @@ public partial class JSUint8ClampedArray : JSTypedArray
 
     public override bool SetValue(uint index, JSValue value, JSValue receiver, bool throwError = true)
     {
+        if (TrySetForeignReceiver(index, value, receiver, throwError, out var foreign))
+            return foreign;
+
         double number = (value ?? JSUndefined.Value).DoubleValue;
         if (index >= length)
             return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
