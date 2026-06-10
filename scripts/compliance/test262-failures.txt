@@ -48,9 +48,7 @@ test/built-ins/AggregateError/message-tostring-abrupt.js
 test/built-ins/Array/15.4.5.1-5-2.js
 test/built-ins/Array/S15.4.5.2_A1_T2.js
 test/built-ins/Array/from/iter-set-elem-prop-err.js
-test/built-ins/Array/from/iter-set-elem-prop-non-writable.js
 test/built-ins/Array/from/source-object-length-set-elem-prop-err.js
-test/built-ins/Array/from/source-object-length-set-elem-prop-non-writable.js
 test/built-ins/Array/length/define-own-prop-length-coercion-order-set.js
 test/built-ins/Array/length/define-own-prop-length-coercion-order.js
 test/built-ins/Array/length/define-own-prop-length-error.js
@@ -240,11 +238,6 @@ test/built-ins/Error/prototype/toString/tostring-message-throws-symbol.js
 test/built-ins/Error/prototype/toString/tostring-message-throws-toprimitive.js
 test/built-ins/FinalizationRegistry/prototype/unregister/unregister-symbol-token.js
 test/built-ins/Function/prop-desc.js
-test/built-ins/Function/prototype/S15.3.3.1_A1.js
-test/built-ins/Function/prototype/S15.3.4_A1.js
-test/built-ins/Function/prototype/S15.3.4_A2_T1.js
-test/built-ins/Function/prototype/S15.3.4_A2_T2.js
-test/built-ins/Function/prototype/S15.3.4_A2_T3.js
 test/built-ins/Function/prototype/S15.3.4_A4.js
 test/built-ins/Function/prototype/arguments/prop-desc.js
 test/built-ins/Function/prototype/bind/instance-construct-newtarget-boundtarget-bound.js
@@ -252,8 +245,6 @@ test/built-ins/Function/prototype/bind/instance-construct-newtarget-self-reflect
 test/built-ins/Function/prototype/bind/instance-length-default-value.js
 test/built-ins/Function/prototype/caller-arguments/accessor-properties.js
 test/built-ins/Function/prototype/caller/prop-desc.js
-test/built-ins/Function/prototype/name.js
-test/built-ins/Function/prototype/property-order.js
 test/built-ins/Function/prototype/toString/AsyncGenerator.js
 test/built-ins/Function/prototype/toString/async-generator-declaration.js
 test/built-ins/Function/prototype/toString/async-generator-expression.js
@@ -307,7 +298,6 @@ test/built-ins/JSON/stringify/value-string-escape-unicode.js
 test/built-ins/JSON/stringify/value-string-object.js
 test/built-ins/JSON/stringify/value-symbol.js
 test/built-ins/JSON/stringify/value-tojson-arguments.js
-test/built-ins/JSON/stringify/value-tojson-not-function.js
 test/built-ins/Map/prototype/entries/name.js
 test/built-ins/Map/prototype/forEach/callback-this-non-strict.js
 test/built-ins/Map/prototype/forEach/callback-this-strict.js
@@ -431,8 +421,6 @@ test/built-ins/Promise/exec-args.js
 test/built-ins/Promise/executor-call-context-sloppy.js
 test/built-ins/Promise/executor-call-context-strict.js
 test/built-ins/Promise/prototype/finally/invokes-then-with-function.js
-test/built-ins/Promise/prototype/finally/this-value-proxy.js
-test/built-ins/Promise/prototype/finally/this-value-thenable.js
 test/built-ins/Promise/prototype/then/S25.4.5.3_A4.2_T1.js
 test/built-ins/Promise/prototype/then/S25.4.5.3_A4.2_T2.js
 test/built-ins/Promise/race/reject-from-same-thenable.js
@@ -971,7 +959,6 @@ test/built-ins/ShadowRealm/prototype/evaluate/throws-syntaxerror-on-bad-syntax.j
 test/built-ins/ShadowRealm/prototype/evaluate/throws-typeerror-wrap-throwing.js
 test/built-ins/ShadowRealm/prototype/importValue/specifier-tostring.js
 test/built-ins/String/S15.5.5_A2_T2.js
-test/built-ins/String/prototype/S15.5.4_A2.js
 test/built-ins/String/prototype/indexOf/S15.5.4.7_A4_T4.js
 test/built-ins/String/prototype/indexOf/S15.5.4.7_A4_T5.js
 test/built-ins/String/prototype/lastIndexOf/S15.5.4.8_A1_T1.js
@@ -1423,10 +1410,6 @@ test/language/arguments-object/mapped/Symbol.iterator.js
 test/language/arguments-object/unmapped/Symbol.iterator.js
 test/language/comments/S7.4_A5.js
 test/language/comments/S7.4_A6.js
-test/language/comments/multi-line-asi-carriage-return.js
-test/language/comments/multi-line-asi-line-feed.js
-test/language/comments/multi-line-asi-line-separator.js
-test/language/comments/multi-line-asi-paragraph-separator.js
 test/language/computed-property-names/class/method/number.js
 test/language/computed-property-names/class/static/method-number-order.js
 test/language/computed-property-names/class/static/method-number.js
@@ -1477,7 +1460,6 @@ test/language/expressions/class/decorator/syntax/valid/decorator-member-expr-ide
 test/language/expressions/class/decorator/syntax/valid/decorator-member-expr-identifier-reference.js
 test/language/expressions/class/decorator/syntax/valid/decorator-parenthesized-expr-identifier-reference-yield.js
 test/language/expressions/class/decorator/syntax/valid/decorator-parenthesized-expr-identifier-reference.js
-test/language/expressions/class/elements/private-field-after-optional-chain.js
 test/language/expressions/class/elements/private-methods/prod-private-method-initialize-order.js
 test/language/expressions/class/elements/static-field-init-this-inside-arrow-function.js
 test/language/expressions/class/elements/static-private-method-subclass-receiver.js
@@ -1559,8 +1541,6 @@ test/language/expressions/postfix-increment/S11.3.1_A4_T1.js
 test/language/expressions/postfix-increment/S11.3.1_A4_T2.js
 test/language/expressions/postfix-increment/S11.3.1_A4_T3.js
 test/language/expressions/postfix-increment/S11.3.1_A4_T4.js
-test/language/expressions/property-accessors/S11.2.1_A4_T3.js
-test/language/expressions/property-accessors/S11.2.1_A4_T5.js
 test/language/expressions/right-shift/bigint.js
 test/language/expressions/subtraction/S11.6.2_A4_T7.js
 test/language/expressions/super/prop-expr-uninitialized-this-getvalue.js
@@ -1631,7 +1611,6 @@ test/language/statements/class/definition/fn-name-method.js
 test/language/statements/class/definition/fn-name-static-precedence-order.js
 test/language/statements/class/definition/prototype-getter.js
 test/language/statements/class/elements/class-field-on-frozen-objects.js
-test/language/statements/class/elements/private-field-after-optional-chain.js
 test/language/statements/class/elements/private-methods/prod-private-method-initialize-order.js
 test/language/statements/class/elements/privatefieldset-evaluation-order-1.js
 test/language/statements/class/elements/static-field-init-this-inside-arrow-function.js
@@ -1826,7 +1805,6 @@ test/staging/sm/Function/arguments-caller-callee.js
 test/staging/sm/Function/arguments-parameter-shadowing.js
 test/staging/sm/Function/bound-length-and-name.js
 test/staging/sm/Function/builtin-no-construct.js
-test/staging/sm/Function/builtin-no-prototype.js
 test/staging/sm/Function/constructor-binding.js
 test/staging/sm/Function/function-name-assignment.js
 test/staging/sm/Function/function-name-binding.js
@@ -1834,7 +1812,6 @@ test/staging/sm/Function/function-name-computed-01.js
 test/staging/sm/Function/function-name-computed-02.js
 test/staging/sm/Function/function-name-method.js
 test/staging/sm/Function/function-name-property.js
-test/staging/sm/Function/function-name.js
 test/staging/sm/Function/function-toString-builtin-name.js
 test/staging/sm/Function/invalid-parameter-list.js
 test/staging/sm/Function/return-finally.js
@@ -1843,7 +1820,6 @@ test/staging/sm/JSON/parse-crockford-01.js
 test/staging/sm/JSON/parse-primitives.js
 test/staging/sm/JSON/stringify-boxed-primitives.js
 test/staging/sm/JSON/stringify-gap.js
-test/staging/sm/JSON/stringify-ignore-noncallable-toJSON.js
 test/staging/sm/JSON/stringify-replacer-array-boxed-elements.js
 test/staging/sm/JSON/stringify-replacer-array-trailing-holes.js
 test/staging/sm/JSON/stringify-replacer.js
@@ -1930,7 +1906,6 @@ test/staging/sm/class/parenExprToString.js
 test/staging/sm/class/strictExecution.js
 test/staging/sm/class/superCallBaseInvoked.js
 test/staging/sm/class/superCallIllegal.js
-test/staging/sm/class/superPropFor.js
 test/staging/sm/destructuring/order-super.js
 test/staging/sm/destructuring/order.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
@@ -1944,7 +1919,6 @@ test/staging/sm/expressions/destructuring-array-default-function.js
 test/staging/sm/expressions/destructuring-array-default-simple.js
 test/staging/sm/expressions/destructuring-array-done.js
 test/staging/sm/expressions/destructuring-array-lexical.js
-test/staging/sm/expressions/destructuring-pattern-parenthesized.js
 test/staging/sm/expressions/object-literal-__proto__.js
 test/staging/sm/expressions/object-literal-computed-property-evaluation.js
 test/staging/sm/expressions/optional-chain.js
@@ -1984,7 +1958,6 @@ test/staging/sm/misc/builtin-methods-reject-null-undefined-this.js
 test/staging/sm/misc/explicit-undefined-optional-argument.js
 test/staging/sm/misc/future-reserved-words.js
 test/staging/sm/misc/line-paragraph-separator-parse-as-lineterminator.js
-test/staging/sm/misc/new-with-non-constructor.js
 test/staging/sm/object/15.2.3.14-01.js
 test/staging/sm/object/15.2.3.4-02.js
 test/staging/sm/object/accessor-name.js
