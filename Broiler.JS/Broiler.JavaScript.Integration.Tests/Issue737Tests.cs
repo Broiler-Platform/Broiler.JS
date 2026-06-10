@@ -31,10 +31,18 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   trailing `.#f` / `.d` / `()` after a `?.` yields undefined on a nullish base
 //   instead of reading through it ("Cannot get property ... of undefined").
 //
+//   Problem 15 (String.prototype.length, "Failed to convert this to JSString") —
+//   String.prototype is a String exotic object whose [[StringData]] is "" (typeof
+//   "object", own length 0). It was an ordinary object, so reading length invoked the
+//   JSString length accessor whose `this` cast rejected the plain-object prototype.
+//   The JSClassGenerator now makes String.prototype a primitive String wrapper (as it
+//   already does for Array.prototype). JSString also resolves its own "length" on the
+//   dynamic-key read path so `s["length"]` no longer falls through to that prototype.
+//
 // Out of scope (architectural / generated-code / Stage-3): P1 sm/eval ReferenceError;
 // P2 IL-backend super-property destructuring target; P3-P12 class decorators and
-// `accessor` auto-accessors; P15 String.prototype as a String exotic (length getter);
-// P16 super-call-in-arrow-eval this-init; P18 callable %Function.prototype%.
+// `accessor` auto-accessors; P16 super-call-in-arrow-eval this-init; P18 callable
+// %Function.prototype%.
 public class Issue737Tests
 {
     private static string Eval(string code)
@@ -106,4 +114,31 @@ public class Issue737Tests
     public void OptionalChainTrailingMemberShortCircuits()
         => Assert.Equal("undefined,undefined", Eval(
             "[String(undefined?.c.d), String(null?.c.d)].join(',')"));
+
+    // ---- Problem 15: String.prototype is a String exotic (typeof object, length 0) ----
+
+    [Fact]
+    public void StringPrototypeIsObjectWithNumberLength()
+        => Assert.Equal("object,number,0", Eval(
+            "[typeof String.prototype, typeof String.prototype.length, String.prototype.length].join(',')"));
+
+    [Fact]
+    public void StringPrototypeMethodsRemainCallable()
+        => Assert.Equal("function,b,3", Eval(
+            "[typeof String.prototype.charAt, 'abc'.charAt(1), 'abc'.length].join(',')"));
+
+    [Fact]
+    public void StringDynamicLengthKeyResolvesOwnLength()
+        => Assert.Equal("function 3", Eval(
+            "var k='charAt'; var l='length'; typeof 'abc'[k] + ' ' + 'abc'[l]"));
+
+    [Fact]
+    public void StringPrototypeLengthIsReadonlyDataPropertyZero()
+        => Assert.Equal("0,false", Eval(
+            "var d=Object.getOwnPropertyDescriptor(String.prototype,'length'); [d.value, d.writable].join(',')"));
+
+    [Fact]
+    public void StringPrototypeInheritsObjectPrototype()
+        => Assert.Equal("true", Eval(
+            "(Object.getPrototypeOf(String.prototype)===Object.prototype)+''"));
 }

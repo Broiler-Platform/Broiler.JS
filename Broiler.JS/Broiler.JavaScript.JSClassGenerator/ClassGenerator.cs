@@ -177,6 +177,25 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                         ");
             }
 
+            if (!type.Globals && !type.InternalClass && className == "String")
+            {
+                // Per spec (22.1.3 Properties of the String Prototype Object), the
+                // String prototype object is itself a String exotic object whose
+                // [[StringData]] is the empty String — typeof is "object" and it has an
+                // own "length" of 0. Replace the ordinary prototype object with a
+                // primitive String wrapper so that String.prototype.length is 0 instead
+                // of throwing through the JSString length accessor (whose `this` cast
+                // rejects the plain-object prototype). The wrapper resolves length and
+                // character access from its [[StringData]], bypassing that accessor.
+                sb.AppendLine($@"
+                        prototype = new JSPrimitiveObject(new JSString(string.Empty));
+                        prototype.SetPrototypeOf((context[""Object""] as JSFunction)?.prototype);
+                        prototype.FastAddValue(KeyStrings.constructor, @class, JSPropertyAttributes.ConfigurableValue);
+                        @class.prototype = prototype;
+                        @class.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
+                        ");
+            }
+
             foreach (var member in type.Members)
             {
                 GenerateMember(sb, member);

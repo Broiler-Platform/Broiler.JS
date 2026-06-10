@@ -189,6 +189,19 @@ public partial class JSString : JSPrimitive
         return new JSString(new string(value[(int)key], 1));
     }
 
+    internal protected override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
+    {
+        // A primitive string is a String exotic object with its own non-configurable
+        // "length". Resolve it here so a dynamic `s["length"]` read returns the string's
+        // own length rather than falling through to String.prototype, which is itself a
+        // String exotic whose [[StringData]] is "" (length 0). The static `s.length`
+        // path already resolved locally; this keeps the dynamic-key path consistent.
+        if (key.Key == KeyStrings.length.Key)
+            return JSValue.CreateNumber(value.Length);
+
+        return base.GetValue(key, receiver, throwError);
+    }
+
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) => new IntKeyEnumerator(Length);
 
     [JSExport]
