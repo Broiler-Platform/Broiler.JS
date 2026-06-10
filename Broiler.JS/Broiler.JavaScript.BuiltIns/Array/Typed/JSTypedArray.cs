@@ -337,6 +337,16 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     }
 
     /// <summary>
+    /// TypedArrayCreateSameType: the copy-on-change methods (<c>toReversed</c>,
+    /// <c>toSorted</c>, <c>with</c>) build a new array of the SAME element type
+    /// using the intrinsic constructor. They never consult <c>@@species</c> or the
+    /// (possibly hijacked) <c>constructor</c> property, so a throwing
+    /// <c>constructor</c> getter must not be triggered here.
+    /// </summary>
+    internal JSTypedArray CreateSameTypeTypedArray(int length)
+        => CreateTypedArrayFromConstructor(GetDefaultConstructor(), length);
+
+    /// <summary>
     /// Resolves the intrinsic constructor for this typed array kind (e.g.
     /// %Float64Array%), used as the default constructor by the species
     /// protocol when <c>constructor</c> or <c>@@species</c> is absent.

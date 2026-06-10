@@ -1,13 +1,19 @@
+using System.Collections.Concurrent;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
+using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Symbol;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
 
 internal sealed class JSRegExpStringIterator : JSObject
 {
-    private static readonly JSObject Prototype = CreateIteratorPrototype();
+    // %RegExpStringIteratorPrototype% inherits from %IteratorPrototype%. That
+    // intrinsic is realm-specific, so cache one prototype per realm (keyed by the
+    // realm's %IteratorPrototype% identity) rather than a single process-global
+    // object, mirroring how JSGenerator builds its iterator prototypes.
+    private static readonly ConcurrentDictionary<string, JSObject> Prototypes = new();
 
     private readonly JSValue regexp;
     private readonly JSValue input;
@@ -17,16 +23,26 @@ internal sealed class JSRegExpStringIterator : JSObject
 
     public JSRegExpStringIterator(JSValue regexp, JSValue input, bool global, bool unicode)
     {
-        BasePrototypeObject = Prototype;
+        BasePrototypeObject = GetPrototype();
         this.regexp = regexp;
         this.input = input;
         this.global = global;
         this.unicode = unicode;
     }
 
-    private static JSObject CreateIteratorPrototype()
+    private static JSObject GetIteratorPrototype()
+        => ((JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Iterator")] as JSFunction)?.prototype;
+
+    private static JSObject GetPrototype()
     {
-        var prototype = new JSObject();
+        var iteratorPrototype = GetIteratorPrototype();
+        var key = iteratorPrototype == null ? string.Empty : iteratorPrototype.UniqueID.ToString();
+        return Prototypes.GetOrAdd(key, _ => CreateIteratorPrototype(iteratorPrototype));
+    }
+
+    private static JSObject CreateIteratorPrototype(JSObject iteratorPrototype)
+    {
+        var prototype = new JSObject { BasePrototypeObject = iteratorPrototype };
         prototype.FastAddValue(KeyStrings.next, JSValue.CreateFunction(Next, "next", null, 0, false), JSPropertyAttributes.ConfigurableValue);
         prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, JSValue.CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false), JSPropertyAttributes.ConfigurableValue);
         return prototype;

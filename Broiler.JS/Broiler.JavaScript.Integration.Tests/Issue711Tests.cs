@@ -188,10 +188,13 @@ public class Issue711Tests
         => Assert.Equal("7", Eval(
             "class B { m(){ return this.v; } } class D extends B { constructor(){ super(); this.v = 7; } g(){ return super['m'](); } } '' + new D().g();"));
 
+    // `super[k] += 5` reads `n` from the SUPER base (B.prototype), adds 5, and writes
+    // the result onto the receiver (`this`), shadowing the inherited value. The read
+    // therefore must resolve against B.prototype (where n === 10), not against `this`.
     [Fact]
     public void SuperComputedCompoundAssign()
         => Assert.Equal("15", Eval(
-            "class B { constructor(){ this.n = 10; } } class D extends B { constructor(){ super(); } t(){ let k = 'n'; super[k] += 5; return this.n; } } '' + new D().t();"));
+            "class B {} B.prototype.n = 10; class D extends B { constructor(){ super(); } t(){ let k = 'n'; super[k] += 5; return this.n; } } '' + new D().t();"));
 
     // ---- Problem 4: Intl.DateTimeFormat format / formatToParts / formatRange ----
 

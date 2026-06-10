@@ -123,15 +123,44 @@ partial class FastCompiler
 
         FastFunctionScope.VariableScope target = null;
         FastFunctionScope.VariableScope key = null;
+        FastFunctionScope.VariableScope superBase = null;
         FastFunctionScope.VariableScope @return = null;
         var right = VisitExpression(updateExpression.Argument);
 
         if (updateExpression.Argument is AstMemberExpression memberExpression)
         {
+            var isSuper = memberExpression.Object?.Type == FastNodeType.Super;
+
             target = scope.Top.GetTempVariable(typeof(JSValue));
             list.Add(YExpression.Assign(target.Variable, VisitExpression(memberExpression.Object)));
 
-            if (memberExpression.Computed)
+            if (isSuper)
+            {
+                // `++super[key]` / `++super.x`: the spec builds a single
+                // SuperProperty Reference whose base (GetSuperBase) is resolved
+                // BEFORE ToPropertyKey, and reuses that base and key for both the
+                // read and the write. Capture them once here: evaluate the key
+                // expression, then GetSuperBase, then normalize the key (whose
+                // toString must observe the already-resolved base). A plain
+                // member update would drop the super base and use `this` as the
+                // base, reading/writing the wrong object.
+                superBase = scope.Top.GetTempVariable(typeof(JSValue));
+
+                if (memberExpression.Computed)
+                {
+                    key = scope.Top.GetTempVariable(typeof(JSValue));
+                    list.Add(YExpression.Assign(key.Variable, VisitExpression(memberExpression.Property)));
+                    list.Add(YExpression.Assign(superBase.Variable, scope.Top.Super));
+                    list.Add(YExpression.Assign(key.Variable, YExpression.Call(null, NormalizeUpdatePropertyKeyMethod, key.Expression)));
+                    right = JSValueBuilder.Index(target.Expression, superBase.Expression, key.Expression);
+                }
+                else
+                {
+                    list.Add(YExpression.Assign(superBase.Variable, scope.Top.Super));
+                    right = JSValueBuilder.Index(target.Expression, superBase.Expression, CreatePropertyKeyExpression(memberExpression.Property, false));
+                }
+            }
+            else if (memberExpression.Computed)
             {
                 key = scope.Top.GetTempVariable(typeof(JSValue));
                 list.Add(YExpression.Assign(key.Variable, VisitExpression(memberExpression.Property)));
@@ -190,6 +219,7 @@ partial class FastCompiler
         var r = YExpression.Block(list);
         @return?.Dispose();
         key?.Dispose();
+        superBase?.Dispose();
         target?.Dispose();
 
         return r;
