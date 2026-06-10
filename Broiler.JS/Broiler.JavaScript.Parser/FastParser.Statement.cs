@@ -36,6 +36,15 @@ partial class FastParser
                 stream.Consume();
                 node = new AstExpressionStatement(new AstEmptyExpression(token));
                 return true;
+
+            case TokenTypes.At:
+                // A DecoratorList in statement position introduces a (decorated) class
+                // declaration. Decorators are parsed and discarded; the class is then
+                // parsed as usual so it binds its name in the enclosing scope.
+                Decorators();
+                if (stream.Current.Keyword != FastKeywords.@class)
+                    throw stream.Unexpected();
+                return Class(out node);
         }
 
         if (SingleStatement(begin, out node))
@@ -219,6 +228,11 @@ partial class FastParser
         {
             if (stream.CheckAndConsume(TokenTypes.Identifier, TokenTypes.Colon, out var id, out var _))
             {
+                // `yield` is a reserved word inside a generator body and cannot be used
+                // as a LabelIdentifier (`function* g(){ yield: 1 }` is a SyntaxError).
+                if (inGeneratorBody && id.Keyword == FastKeywords.yield)
+                    throw stream.Unexpected();
+
                 SkipNewLines();
 
                 // has to be do/while/for...

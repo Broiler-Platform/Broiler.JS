@@ -106,4 +106,5 @@ public enum TokenTypes
     RegExLiteral,
     OptionalCall,
     OptionalIndex,
+    At,
 }

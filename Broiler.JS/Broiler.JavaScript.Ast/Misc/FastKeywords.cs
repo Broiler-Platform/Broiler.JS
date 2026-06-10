@@ -60,5 +60,6 @@ public enum FastKeywords
     @of,
     @constructor,
     @from,
-    @as
+    @as,
+    @accessor
 }

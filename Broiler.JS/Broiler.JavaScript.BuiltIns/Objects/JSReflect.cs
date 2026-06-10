@@ -226,7 +226,8 @@ public partial class JSReflect : JSObject
         if (!p.IsObject && !p.IsNull)
             throw JSEngine.NewTypeError($"Not an object");
 
-        @object.SetPrototypeOf(p);
-        return JSBoolean.True;
+        // §28.1.13: return target.[[SetPrototypeOf]](proto) — the not-extensible
+        // and cyclic cases yield false rather than throwing.
+        return @object.TrySetPrototypeOf(p, out _) ? JSBoolean.True : JSBoolean.False;
     }
 }

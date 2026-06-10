@@ -51,8 +51,16 @@ partial class FastParser
         var nodes = new Sequence<AstClassProperty>();
         while (!stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
         {
+            // A ClassElement may be preceded by a DecoratorList. Decorators are parsed
+            // and discarded; the element itself is parsed as usual. An empty element
+            // (`;`) makes ObjectProperty return false, which is fine — unless a
+            // decorator was present, in which case a real element is required.
+            var decorated = Decorators();
+
             if (ObjectProperty(out var property, true, isClass: true))
                 nodes.Add(property);
+            else if (decorated)
+                throw stream.Unexpected();
 
             stream.CheckAndConsumeWithLineTerminator(TokenTypes.SemiColon);
         }

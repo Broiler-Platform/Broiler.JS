@@ -25,6 +25,44 @@ partial class FastParser
     /// </summary>
     private FastToken lastExpressionIndex;
 
+    // YieldExpression : yield | yield [no LineTerminator here] * AssignmentExpression
+    //                 | yield AssignmentExpression
+    bool YieldExpression(out AstExpression statement)
+    {
+        var begin = stream.Current;
+        stream.Consume();
+
+        // `yield *` requires the `*` on the same line (no LineTerminator here); a
+        // newline turns `yield\n* x` into a yield with no argument followed by `* x`.
+        var star = stream.CheckAndConsumeNoLineTerminator(TokenTypes.Multiply);
+
+        if (!star)
+        {
+            switch (stream.Current.Type)
+            {
+                case TokenTypes.Comma:
+                case TokenTypes.SemiColon:
+                case TokenTypes.LineTerminator:
+                case TokenTypes.EOF:
+                case TokenTypes.CurlyBracketEnd:
+                case TokenTypes.BracketEnd:
+                case TokenTypes.SquareBracketEnd:
+                case TokenTypes.Colon:
+                    statement = new AstYieldExpression(begin, PreviousToken, null);
+                    return true;
+            }
+        }
+
+        if (Expression(out var target))
+        {
+            statement = new AstYieldExpression(begin, PreviousToken, target, star);
+            EndOfStatement();
+            return true;
+        }
+
+        throw stream.Unexpected();
+    }
+
     bool Expression(out AstExpression node)
     {
         SkipNewLines();
@@ -34,6 +72,15 @@ partial class FastParser
 
         if (token.Type == TokenTypes.EOF)
             throw stream.Unexpected();
+
+        // A YieldExpression is at the AssignmentExpression level. Intercept it here (the
+        // assignment-expression entry) rather than at the primary level, so it cannot
+        // appear as an operand of a higher-precedence operator (`3 + yield 4` is a
+        // SyntaxError) while still being valid wherever an AssignmentExpression is —
+        // assignment RHS, arguments, array elements, parentheses, ternary branches,
+        // comma-sequences and the operand of another yield (all routed through here).
+        if (inGeneratorBody && token.Keyword == FastKeywords.yield && !token.IsEscapedReservedWord)
+            return YieldExpression(out node);
 
         if (!SinglePrefixPostfixExpression(out node, out var isAsync, out var isGenerator))
         {

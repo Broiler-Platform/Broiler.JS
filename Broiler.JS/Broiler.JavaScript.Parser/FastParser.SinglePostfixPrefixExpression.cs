@@ -51,8 +51,17 @@ partial class FastParser
             hasAsync = true;
         }
 
-        if (stream.CheckAndConsume(TokenTypes.Multiply))
-            hasGenerator = true;
+        // A leading `*` never begins an expression in ECMAScript. Generator syntax
+        // only appears after `function` or in a method definition, both handled by
+        // other productions; there is no generator-arrow. Previously a stray `*` was
+        // silently consumed (and ignored unless an arrow followed), so `x = * 1`,
+        // `({a: * 1})` and `({*a: 1})`'s value were wrongly accepted. Fail here so the
+        // `*` is reported as unexpected by the enclosing production.
+        if (stream.Current.Type == TokenTypes.Multiply)
+        {
+            node = null;
+            return begin.Reset();
+        }
 
         var previousInAsyncFunctionBody = inAsyncFunctionBody;
         if (hasAsync)

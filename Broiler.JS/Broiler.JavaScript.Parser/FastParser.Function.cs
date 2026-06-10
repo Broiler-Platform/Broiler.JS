@@ -32,6 +32,16 @@ partial class FastParser
 
         if (Identitifer(out var id))
         {
+            // `yield` as the function's BindingIdentifier is a SyntaxError when it is
+            // bound in a [+Yield] context. For a function/generator DECLARATION the name
+            // is bound in the enclosing scope, so it is illegal when the enclosing body
+            // is a generator (`inGeneratorBody` here is still the enclosing context). For
+            // a function EXPRESSION (NFE) the name is bound in the function's own scope,
+            // so it is illegal only when this function is itself a generator. (Strict
+            // mode is handled separately.)
+            if (id.Start.Keyword == FastKeywords.yield && (isStatement ? inGeneratorBody : generator))
+                throw new FastParseException(id.Start, "yield cannot be used as a function name in this context");
+
             // BROILER-PATCH: For function declarations, add name to parent scope (hoisted).
             // For function expressions, do NOT add to parent scope (ES3 §13).
             if (isStatement)

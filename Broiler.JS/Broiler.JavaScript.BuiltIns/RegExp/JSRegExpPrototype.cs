@@ -83,28 +83,40 @@ public partial class JSRegExp
         get => lastIndex; set => lastIndex = value;
     }
 
+    // §22.2.6.16 RegExp.prototype.test is generic: it only requires `this` to be an
+    // Object and then performs RegExpExec, which uses the receiver's `exec` property
+    // (any callable) rather than assuming a real RegExp. A static prototype method so
+    // the generated wrapper does not cast `this` to JSRegExp.
+    [JSPrototypeMethod]
     [JSExport("test")]
-    public JSValue Test(in Arguments a)
+    public static JSValue Test(in Arguments a)
     {
-        var text = a.Get1().StringValue;
-        var startPosition = CalculateStartPosition(text);
-        var match = value.Match(text, startPosition);
+        if (a.This is not JSObject receiver)
+            throw JSEngine.NewTypeError("RegExp.prototype.test called on a non-object");
 
-        if (sticky && (!match.Success || match.Index != startPosition))
-            match = System.Text.RegularExpressions.Match.Empty;
+        var s = a.Get1().StringValue;
+        var match = RegExpExec(receiver, JSValue.CreateString(s));
+        return match.IsNull ? JSValue.BooleanFalse : JSValue.BooleanTrue;
+    }
 
-        if (match.Success)
+    // §22.2.7.1 RegExpExec ( R, S ): use a callable `exec` property if present,
+    // otherwise fall back to the builtin RegExpBuiltinExec (requires a real RegExp).
+    private static JSValue RegExpExec(JSObject r, JSValue s)
+    {
+        var exec = r[KeyStrings.GetOrCreate("exec")];
+        if (exec.IsFunction)
         {
-            if (globalSearch || sticky)
-                SetObservableLastIndex(match.Index + match.Length);
+            var result = exec.InvokeFunction(new Arguments(r, s));
+            if (!result.IsObject && !result.IsNull)
+                throw JSEngine.NewTypeError("RegExp exec method returned something other than an Object or null");
 
-            return JSValue.BooleanTrue;
+            return result;
         }
 
-        if (globalSearch || sticky)
-            SetObservableLastIndex(0);
+        if (r is JSRegExp regexp)
+            return regexp.Exec(new Arguments(r, s));
 
-        return JSValue.BooleanFalse;
+        throw JSEngine.NewTypeError("Method called on incompatible receiver");
     }
 
     [JSExport("exec")]

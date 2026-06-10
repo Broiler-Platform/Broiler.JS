@@ -1082,9 +1082,117 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         var namedGroups = new List<(string, List<int>)>(orderedNames.Count);
+        var anyDuplicate = false;
         foreach (var name in orderedNames)
-            namedGroups.Add((name, nameToIndices[name]));
+        {
+            var idxs = nameToIndices[name];
+            namedGroups.Add((name, idxs));
+            if (idxs.Count > 1)
+                anyDuplicate = true;
+        }
         map = new CaptureGroupMap(originalNames.ToArray(), namedGroups);
+
+        var rewritten = sb.ToString();
+
+        // A name shared by several groups (ES2025 duplicate named groups) is only
+        // resolvable by a \k<name> backreference when its groups reset on each
+        // quantifier repetition the way ECMAScript requires. .NET retains a group's
+        // capture across repetitions, so emulate the reset for duplicate-named
+        // patterns; ordinary patterns keep .NET's native behaviour.
+        if (anyDuplicate)
+            rewritten = InjectQuantifierCaptureResets(rewritten);
+
+        return rewritten;
+    }
+
+    // Emulates ECMAScript's per-repetition capture reset: at the start of every
+    // iteration of a quantified group, pop any stale capture of the synthetic
+    // (bjsgN) groups declared inside it via a balancing group, i.e. prepend
+    // "(?(bjsgN)(?<-bjsgN>))" to the group body. Without this, a \k<name>
+    // backreference to a same-named group from a previous iteration keeps matching
+    // (or the conditional in BuildNamedBackref fires on a group that should have
+    // been cleared), so e.g. /(?:(?:(?<x>a)|(?<x>b)|c)\k<x>){2}/ fails to match
+    // "aac". Only invoked for patterns that contain duplicate named groups.
+    private static string InjectQuantifierCaptureResets(string pattern)
+    {
+        // One frame per open group: the offset just after the group's header
+        // (where a reset prologue would go) and the bjsg numbers declared inside it.
+        var stack = new List<(int HeaderEnd, List<int> Inner)>();
+        var insertions = new List<(int Pos, List<int> Names)>();
+        var inClass = false;
+
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+            if (c == '\\') { i++; continue; }
+            if (inClass) { if (c == ']') inClass = false; continue; }
+            if (c == '[') { inClass = true; continue; }
+
+            if (c == '(')
+            {
+                var headerEnd = i + 1;
+                var declaredNum = -1;
+                if (i + 1 < pattern.Length && pattern[i + 1] == '?')
+                {
+                    if (i + 2 < pattern.Length && pattern[i + 2] == '<'
+                        && i + 3 < pattern.Length && pattern[i + 3] != '=' && pattern[i + 3] != '!')
+                    {
+                        var close = pattern.IndexOf('>', i + 3);
+                        headerEnd = close + 1;
+                        var name = pattern.Substring(i + 3, close - (i + 3));
+                        if (name.StartsWith("bjsg") && int.TryParse(name.Substring(4), out var n))
+                            declaredNum = n;
+                    }
+                    else
+                    {
+                        // Non-capturing header: (?:  (?=  (?!  (?>  (?<=  (?<!  (?( …
+                        headerEnd = i + 2 < pattern.Length && pattern[i + 2] == '<' ? i + 4 : i + 3;
+                    }
+                }
+
+                // A declared group belongs to every enclosing group, so each one
+                // that is quantified must reset it.
+                if (declaredNum >= 0)
+                    foreach (var f in stack)
+                        f.Inner.Add(declaredNum);
+
+                stack.Add((headerEnd, new List<int>()));
+                continue;
+            }
+
+            if (c == ')')
+            {
+                if (stack.Count == 0)
+                    continue;
+
+                var frame = stack[^1];
+                stack.RemoveAt(stack.Count - 1);
+
+                var next = i + 1 < pattern.Length ? pattern[i + 1] : '\0';
+                if ((next == '*' || next == '+' || next == '?' || next == '{') && frame.Inner.Count > 0)
+                    insertions.Add((frame.HeaderEnd, frame.Inner));
+            }
+        }
+
+        if (insertions.Count == 0)
+            return pattern;
+
+        insertions.Sort((a, b) => a.Pos.CompareTo(b.Pos));
+        var sb = new StringBuilder(pattern.Length + insertions.Count * 24);
+        var ins = 0;
+        for (var i = 0; i <= pattern.Length; i++)
+        {
+            while (ins < insertions.Count && insertions[ins].Pos == i)
+            {
+                foreach (var n in insertions[ins].Names)
+                    sb.Append("(?(bjsg").Append(n).Append(")(?<-bjsg").Append(n).Append(">))");
+                ins++;
+            }
+
+            if (i < pattern.Length)
+                sb.Append(pattern[i]);
+        }
+
         return sb.ToString();
     }
 

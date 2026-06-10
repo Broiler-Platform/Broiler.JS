@@ -82,6 +82,38 @@ partial class FastParser
 
         stream.SkipNewLines();
 
+        // `accessor` auto-accessor field (decorators proposal):
+        //   accessor [no LineTerminator here] ClassElementName Initializer?
+        // Only a modifier inside a class body, and only when a ClassElementName
+        // follows on the same line; otherwise `accessor` is itself the element name
+        // (`class C { accessor; }`, `accessor = 1`, `accessor() {}`). Modelled as a
+        // plain data field — the auto-accessor getter/setter + private backing
+        // storage semantics are not implemented, which is sufficient for the field
+        // grammar to parse and evaluate.
+        if (isClass && checkContextualKeyword && !isAsync
+            && stream.Current.ContextualKeyword == FastKeywords.accessor)
+        {
+            var accUndo = Location;
+            stream.Consume(); // 'accessor'
+
+            var nextType = stream.Current.Type;
+            if (nextType is not (TokenTypes.LineTerminator or TokenTypes.Assign
+                    or TokenTypes.SemiColon or TokenTypes.Colon or TokenTypes.BracketStart
+                    or TokenTypes.CurlyBracketEnd or TokenTypes.EOF or TokenTypes.Multiply)
+                && PropertyName(out var accKey, out var accComputed, out var accPrivate, acceptKeywords: true))
+            {
+                AstExpression accInit = null;
+                if (stream.CheckAndConsume(TokenTypes.Assign) && !Expression(out accInit))
+                    throw stream.Unexpected();
+
+                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, accPrivate, isStatic, accKey, accComputed, accInit);
+                stream.CheckAndConsume(TokenTypes.SemiColon);
+                return true;
+            }
+
+            accUndo.Reset();
+        }
+
         var sc = stream.Current;
         var isGet = sc.ContextualKeyword == FastKeywords.get;
         var isSet = sc.ContextualKeyword == FastKeywords.set;
@@ -94,8 +126,20 @@ partial class FastParser
                 var accessorNameStart = Location;
                 if (ObjectProperty(out property, isClass: isClass, isAsync: isAsync))
                 {
-                    if (property.Kind == AstPropertyKind.Method)
+                    // A method named `constructor` is classified as Constructor by the
+                    // recursion. As the body of an accessor it is just a method whose
+                    // name is "constructor", which is valid only for a STATIC accessor
+                    // (`static get constructor(){}`); an instance `get`/`set
+                    // constructor` falls through and is reported as a SyntaxError.
+                    if (property.Kind == AstPropertyKind.Method
+                        || (property.Kind == AstPropertyKind.Constructor && isStatic))
                     {
+                        // A getter/setter is never a generator: `{get *a(){}}` /
+                        // `{set *a(c){}}` are SyntaxErrors (the accessor method the
+                        // recursion produced carries the `*`).
+                        if (property.Init is AstFunctionExpression { Generator: true })
+                            throw stream.Unexpected();
+
                         property = new AstClassProperty(current, property.End, isSet ? AstPropertyKind.Set : AstPropertyKind.Get, property.IsPrivate, isStatic, property.Key, property.Computed, RebaseFunctionStart(property.Init, methodStart), property.UsesColon, property.UsesAssign);
                         return true;
                     }
@@ -106,6 +150,12 @@ partial class FastParser
 
             var propertyNameEnd = PreviousToken;
             var separator = stream.SkipNewLines();
+
+            // A generator marker (`*name`) only introduces a method definition, so
+            // the property name must be followed by a parameter list. `{*a : 1}`,
+            // `{*a}`, `{*a = 1}` etc. are SyntaxErrors.
+            if (isGenerator && stream.Current.Type != TokenTypes.BracketStart)
+                throw stream.Unexpected();
 
             if (stream.CheckAndConsume(TokenTypes.Assign))
             {

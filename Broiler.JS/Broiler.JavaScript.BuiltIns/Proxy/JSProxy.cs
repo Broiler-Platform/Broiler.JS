@@ -780,21 +780,31 @@ public partial class JSProxy : JSObject
 
     public override void SetPrototypeOf(JSValue proto)
     {
+        if (!TrySetPrototypeOf(proto, out var error))
+            throw JSEngine.NewTypeError(error ?? "Proxy setPrototypeOf trap returned false");
+    }
+
+    public override bool TrySetPrototypeOf(JSValue proto, out string error)
+    {
+        error = null;
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.setPrototypeOf);
         if (!fx.IsUndefined)
         {
             var result = fx.InvokeFunction(new Arguments(handler, target, proto));
+            // §10.5.2 [[SetPrototypeOf]]: a falsy trap result makes the internal
+            // method return false (it does not throw); only Object.setPrototypeOf
+            // / __proto__ turn that into a TypeError.
             if (!result.BooleanValue)
-                throw JSEngine.NewTypeError("Proxy setPrototypeOf trap returned false");
+                return false;
 
             if (!target.IsExtensible() && !ReferenceEquals(target.GetPrototypeOf(), proto))
                 throw JSEngine.NewTypeError("Proxy setPrototypeOf trap returned true for an invalid prototype change");
 
-            return;
+            return true;
         }
 
-        target.SetPrototypeOf(proto);
+        return target.TrySetPrototypeOf(proto, out error);
     }
 
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)
