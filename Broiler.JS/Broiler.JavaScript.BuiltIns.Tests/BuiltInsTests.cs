@@ -4405,6 +4405,26 @@ public class BuiltInsTests
         Assert.Equal(expected, result.ToString());
     }
 
+    [Theory]
+    // A property that is deleted and then recreated is a NEW property and must move
+    // to the end of the enumeration order (OrdinaryOwnPropertyKeys); integer-index
+    // keys still sort ascending ahead of string keys, and redefining a live property
+    // keeps its position. Regression for the revived key retaining its old position.
+    [InlineData("var o={}; o.p1=1;o.p2=2;o.p3=3;o.p4=4; delete o.p1; o.p1=1; return Object.keys(o);", "p2,p3,p4,p1")]
+    [InlineData("var o={a:1,b:2,c:3}; delete o.b; o.b=1; return Object.keys(o);", "a,c,b")]
+    [InlineData("var o={a:1,b:2,c:3}; delete o.a; o.a=1; return Object.keys(o);", "b,c,a")]
+    [InlineData("var o={a:1,b:2,c:3}; o.b=9; return Object.keys(o);", "a,b,c")]
+    [InlineData("var o={}; o.x=1;o[2]=1;o[0]=1;o[1]=1;o.y=1; delete o.x; o.x=1; return Object.keys(o);", "0,1,2,y,x")]
+    [InlineData("var o={a:1,b:2,c:3}; delete o.a; o.a=1; var r=[]; for(var k in o) r.push(k); return r;", "b,c,a")]
+    [InlineData("var o={a:1,b:2,c:3}; delete o.a; o.a=7; return Object.values(o);", "2,3,7")]
+    public void Object_Enumeration_Order_Moves_Recreated_Key_To_End(string body, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute("(function(){ " + body + " })().join(',');");
+        Assert.Equal(expected, result.ToString());
+    }
+
     [Fact]
     public void ThrowTypeError_Is_Shared_Across_Unmapped_Arguments_Callee()
     {

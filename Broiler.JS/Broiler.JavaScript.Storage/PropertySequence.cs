@@ -180,6 +180,37 @@ public struct PropertySequence
             throw new InvalidOperationException($"Cannot delete property {KeyStrings.GetNameString(key)} of {this}");
         }
 
+        // Unlink the node from the insertion-order chain. A property that is deleted
+        // and later recreated must be treated as a NEW property — placed at the END of
+        // the enumeration order (OrdinaryOwnPropertyKeys), not revived in its original
+        // position. The node stays in the map but with Next reset to 0, so a later
+        // Put(key) sees Next == 0 and re-appends it at the tail.
+        var next = objectProperty.Next;
+        if (head == key)
+        {
+            head = next;
+            if (tail == key)
+                tail = 0; // removed the only / last remaining linked property
+        }
+        else
+        {
+            var prev = head;
+            while (prev != 0)
+            {
+                ref var prevNode = ref map.GetRefOrDefault(prev, ref JSObjectProperty.Empty);
+                if (prevNode.Next == key)
+                {
+                    prevNode.Next = next;
+                    if (tail == key)
+                        tail = prev;
+                    break;
+                }
+
+                prev = prevNode.Next;
+            }
+        }
+
+        objectProperty.Next = 0;
         property = JSProperty.Empty;
 
         return true;
