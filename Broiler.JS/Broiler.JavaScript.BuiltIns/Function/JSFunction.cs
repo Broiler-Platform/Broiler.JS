@@ -283,6 +283,26 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         constructor = this;
     }
 
+    // Returns the per-realm %ThrowTypeError% intrinsic, creating and caching it on
+    // first use. A single shared object is required so that the get and set of an
+    // unmapped arguments object's "callee" accessor — and the accessors across every
+    // such arguments object in the realm — are the same function under SameValue
+    // (test262 ThrowTypeError/unique-per-realm-*).
+    public static JSFunction GetOrCreateThrowTypeError()
+    {
+        if (JSEngine.Current is IJSExecutionContext context)
+        {
+            if (context.ThrowTypeError is JSFunction cached)
+                return cached;
+
+            var created = CreateFrozenThrowTypeErrorFunction("ThrowTypeError", "Cannot access callee in strict mode");
+            context.ThrowTypeError = created;
+            return created;
+        }
+
+        return CreateFrozenThrowTypeErrorFunction("ThrowTypeError", "Cannot access callee in strict mode");
+    }
+
     public static JSFunction CreateFrozenThrowTypeErrorFunction(string name, string message)
     {
         var throwTypeError = new JSFunction(

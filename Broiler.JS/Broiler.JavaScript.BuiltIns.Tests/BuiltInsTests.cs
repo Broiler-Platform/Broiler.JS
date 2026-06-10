@@ -4406,6 +4406,32 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void ThrowTypeError_Is_Shared_Across_Unmapped_Arguments_Callee()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // %ThrowTypeError% is a single per-realm intrinsic: the callee poison's get
+        // and set are the same function, and it is shared across every unmapped
+        // arguments object (strict, or non-strict with a non-simple parameter list).
+        var result = ctx.Execute(@"
+            function strict1() { 'use strict'; return arguments; }
+            function strict2() { 'use strict'; return arguments; }
+            function nonSimple(a, b = 0) { return arguments; }
+            var d1 = Object.getOwnPropertyDescriptor(strict1(), 'callee');
+            var d2 = Object.getOwnPropertyDescriptor(strict2(), 'callee');
+            var d3 = Object.getOwnPropertyDescriptor(nonSimple(1), 'callee');
+            [
+                d1.get === d1.set,
+                d1.get === d2.get,
+                d1.get === d2.set,
+                d1.get === d3.get,
+                typeof d1.get === 'function'
+            ].join('|');
+        ");
+        Assert.Equal("true|true|true|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Promise_Nested_Resolution_Assimilates_Inner_Promise()
     {
         EnsureBuiltInsLoaded();
