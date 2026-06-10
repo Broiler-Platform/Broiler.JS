@@ -518,6 +518,9 @@ public class FastScanner
             case ';':
                 return ReadSymbol(state, TokenTypes.SemiColon);
 
+            case '@':
+                return ReadSymbol(state, TokenTypes.At);
+
             case '~':
                 return ReadSymbol(state, TokenTypes.BitwiseNot);
 

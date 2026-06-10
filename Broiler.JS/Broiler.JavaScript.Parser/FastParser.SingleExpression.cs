@@ -25,6 +25,16 @@ partial class FastParser
         var begin = stream.Current;
         var token = begin;
 
+        if (token.Type == TokenTypes.At)
+        {
+            // A DecoratorList preceding a class expression (`x = @dec class {}`).
+            // Decorators are parsed and discarded; the class expression follows.
+            Decorators();
+            if (stream.Current.Keyword != FastKeywords.@class)
+                throw stream.Unexpected();
+            return ClassExpression(out node);
+        }
+
         if (afterDot)
         {
             // after .

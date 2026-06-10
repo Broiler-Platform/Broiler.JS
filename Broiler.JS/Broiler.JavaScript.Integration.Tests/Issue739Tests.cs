@@ -6,6 +6,15 @@ namespace Broiler.JavaScript.Integration.Tests;
 //
 // Fixed here:
 //
+//   Problems 3-10 (decorator syntax) — a DecoratorList (`@expr`) is now parsed before
+//   a class declaration, a class expression, and a class element. The grammar is
+//   enforced (DecoratorMemberExpression / DecoratorParenthesizedExpression /
+//   DecoratorCallExpression) so invalid decorator syntax still raises a SyntaxError.
+//   Decorators are parsed and discarded — the runtime semantics (calling the
+//   decorator, value replacement, addInitializer, accessor/field/method contexts) are
+//   not implemented, so a decorated class evaluates as its undecorated form, which is
+//   sufficient for the (parse-only) syntax/valid tests.
+//
 //   Problem 11 (`accessor` auto-accessor field) — `class { accessor x; accessor y=1 }`
 //   now parses. `accessor` is a contextual keyword that, inside a class and followed
 //   (no LineTerminator) by a ClassElementName, introduces an auto-accessor field;
@@ -68,6 +77,14 @@ public class Issue739Tests
     {
         using var ctx = new JSContext();
         return ctx.Eval(code).ToString();
+    }
+
+    // Compiles and runs `code`, returning "OK" on success or the CLR exception type +
+    // message. Used for parse-and-run (syntax/valid) cases.
+    private static string EvalOk(string code)
+    {
+        try { using var ctx = new JSContext(); ctx.Eval(code); return "OK"; }
+        catch (System.Exception e) { return e.GetType().Name + ":" + e.Message; }
     }
 
     // Evaluates `code` via indirect eval inside a JS try/catch and returns the JS error
@@ -239,6 +256,43 @@ public class Issue739Tests
         Assert.Equal("9", Eval("''+new Function('{x}','return x')({x:9})"));
         Assert.Equal("function", Eval("typeof new Function('//only a comment')"));
     }
+
+    // ---- Problems 3-10: decorator syntax parses (and is discarded) ----
+
+    [Theory]
+    [InlineData("function d(){} @d class C {}")]
+    [InlineData("function d(){return ()=>{};} @d() class C {}")]
+    [InlineData("var ns={d(){}}; @ns.d class C {}")]
+    [InlineData("var ns={d(){}}; @ns.d.e class C {}")]
+    [InlineData("function d(){} @(d) class C {}")]
+    [InlineData("function d(){} @d @d class C {}")]
+    [InlineData("function d(){} class C { @d m(){} }")]
+    [InlineData("function d(){} class C { @d x; }")]
+    [InlineData("function d(){} class C { @d accessor y; }")]
+    [InlineData("function d(){} class C { @d static m(){} }")]
+    [InlineData("function d(){} var C = @d class {};")]
+    [InlineData("function d(){} var C = @d @d class extends Object {};")]
+    [InlineData("function yield(){} var C = @yield class {};")]
+    [InlineData("function await(){} @await class C {}")]
+    [InlineData("var ns={yield(){},await(){},$(){}}; class C { @ns.yield @ns.await @ns.$ f; @ns.await static s; }")]
+    [InlineData("function d(){} class C { @d #p = 1; getp(){return this.#p;} }")]
+    public void DecoratorSyntaxParsesAndEvaluates(string code)
+        => Assert.Equal("OK", EvalOk(code));
+
+    [Theory]
+    [InlineData("@1 class C {}")]        // numeric literal
+    [InlineData("@'s' class C {}")]      // string literal
+    [InlineData("@a+b class C {}")]      // additive expression
+    [InlineData("@a=b class C {}")]      // assignment
+    [InlineData("@a?b:c class C {}")]    // conditional
+    [InlineData("@a[b] class C {}")]     // computed member is not allowed
+    [InlineData("@a().b class C {}")]    // member access after a call is not allowed
+    [InlineData("@a()() class C {}")]    // a second call is not allowed
+    [InlineData("@ class C {}")]         // missing decorator expression
+    [InlineData("@a.1 class C {}")]      // an IdentifierName must follow `.`
+    [InlineData("class C { @d }")]       // a decorator with no element
+    public void InvalidDecoratorSyntaxIsSyntaxError(string code)
+        => Assert.Equal("SyntaxError", SyntaxCheck(code));
 
     // ---- Problem 12: a static accessor may be named `constructor` ----
 
