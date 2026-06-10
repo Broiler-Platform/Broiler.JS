@@ -353,7 +353,15 @@ partial class FastCompiler
                 // strict mode it must not escape the block at all. The program body
                 // sits one level below RootScope, so "top level" is parent == root.
                 var isProgramTopLevel = previousScope.Parent == previousScope.RootScope;
-                if (previousScope.Function == null && isProgramTopLevel)
+                // A strict-mode eval (direct or indirect) has its own variable
+                // environment, so a top-level function declaration must NOT be
+                // instantiated on the global object (CreateGlobalFunctionBinding is
+                // only reached when varEnv is the global environment). It binds in
+                // the eval's own scope instead and is gone once the eval returns;
+                // otherwise `(0,eval)("'use strict'; function f(){}")` leaked `f`
+                // to the global object.
+                var isStrictEvalProgram = isDirectEvalCompilation && IsStrictMode;
+                if (previousScope.Function == null && isProgramTopLevel && !isStrictEvalProgram)
                     jsFVarScope.SetPostInit(JSContextBuilder.DeclareGlobalFunction(KeyOfName(functionName), jsf));
                 else
                     jsFVarScope.SetPostInit(jsf);
@@ -445,7 +453,7 @@ partial class FastCompiler
                 inMemberInitializer = true;
                 try
                 {
-                    value = Visit(member.Init);
+                    value = ApplyFieldFunctionName(member, name, Visit(member.Init));
                 }
                 finally
                 {

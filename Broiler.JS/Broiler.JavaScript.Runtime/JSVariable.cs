@@ -51,6 +51,12 @@ public class JSVariable
         return value;
     }
 
+    // NamedEvaluation for a non-computed class field initializer (ClassFieldDefinitionEvaluation):
+    // a public field names the function with the field name, a private field with the
+    // PrivateName string (e.g. "#field"). The name is known at compile time.
+    public static JSValue PrepareAnonymousFunctionNameForField(JSValue value, string name)
+        => PrepareAnonymousFunctionName(value, name);
+
     public static JSValue PrepareAnonymousFunctionNameForProperty(JSValue value, uint name)
         => PrepareAnonymousFunctionName(value, name.ToString(CultureInfo.InvariantCulture));
 

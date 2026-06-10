@@ -22,6 +22,28 @@ partial class FastCompiler
     private static readonly MethodInfo PrepareAnonymousFunctionNameForPropertyJSValueMethod = typeof(JSVariable)
         .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForProperty), [typeof(JSValue), typeof(JSValue)])
         ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForProperty(JSValue, JSValue) not found");
+    private static readonly MethodInfo PrepareAnonymousFunctionNameForFieldMethod = typeof(JSVariable)
+        .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForField), [typeof(JSValue), typeof(string)])
+        ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForField(JSValue, string) not found");
+
+    // ClassFieldDefinitionEvaluation: if a field initializer is an anonymous
+    // function definition, NamedEvaluation names it after the field. Computed keys
+    // resolve the name from the runtime key value; everything else uses the
+    // compile-time field name (which already carries the "#" for a private field).
+    private YExpression ApplyFieldFunctionName(AstClassProperty property, YExpression nameExpr, YExpression value)
+    {
+        if (!IsAnonymousFunctionDefinition(property.Init))
+            return value;
+
+        if (property.Computed)
+            return YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, value, nameExpr);
+
+        var fieldName = GetPropertyFunctionName(property);
+        if (fieldName == null)
+            return value;
+
+        return YExpression.Call(null, PrepareAnonymousFunctionNameForFieldMethod, value, YExpression.Constant(fieldName, typeof(string)));
+    }
 
     private static bool IsObjectLiteralProtoSetter(AstClassProperty property)
     {

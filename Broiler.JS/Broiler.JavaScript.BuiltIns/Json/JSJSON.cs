@@ -97,10 +97,44 @@ public partial class JSJSON : JSObject
         return ToLength(valueObject[KeyStrings.length]);
     }
 
+    // Builds the PropertyList from an array replacer per JSON.stringify step 5.b.
+    // Only String and Number values (and their wrapper objects) become keys;
+    // everything else (undefined, holes, booleans, etc.) is ignored. Duplicate
+    // keys are appended only once, preserving first-seen order.
+    private static List<string> BuildPropertyList(JSObject replacerArray)
+    {
+        var list = new List<string>();
+        var seen = new HashSet<string>();
+        var length = GetArrayLength(replacerArray);
+
+        for (uint index = 0; index < length; index++)
+        {
+            var v = replacerArray[index];
+
+            string item = null;
+            if (v is JSString)
+                item = v.ToString();
+            else if (v is JSNumber)
+                item = v.ToString();
+            else if (v is JSPrimitiveObject wrapper)
+            {
+                var primitive = wrapper.ValueOf();
+                if (primitive.IsString || primitive is JSNumber)
+                    item = primitive.ToString();
+            }
+
+            if (item != null && seen.Add(item))
+                list.Add(item);
+        }
+
+        return list;
+    }
+
     private static void StringifyArray(
         TextWriter sb,
         JSObject array,
         Func<(JSValue, JSValue, JSValue), JSValue> replacer,
+        List<string> propertyList,
         IndentedTextWriter indent,
         HashSet<JSObject> stack)
     {
@@ -123,13 +157,15 @@ public partial class JSJSON : JSObject
                     sb.WriteLine();
 
                 var jsValue = ToJson(array[index], JSValue.CreateString(index.ToString()));
+                // A PropertyList never filters array elements; only a function
+                // replacer is consulted here.
                 if (replacer != null)
                     jsValue = replacer((array, JSValue.CreateString(index.ToString()), jsValue));
 
                 if (jsValue.IsUndefined || jsValue is JSFunction)
                     jsValue = JSNull.Value;
 
-                Stringify(sb, jsValue, replacer, indent, stack);
+                Stringify(sb, jsValue, replacer, propertyList, indent, stack);
             }
 
             if (indent != null)
@@ -378,6 +414,7 @@ public partial class JSJSON : JSObject
 
         TextWriter sb = new StringWriter();
         Func<(JSValue target, JSValue key, JSValue value), JSValue> replacer = null;
+        List<string> propertyList = null;
         string indent = null;
 
         // build replacer...
@@ -401,19 +438,7 @@ public partial class JSJSON : JSObject
             }
             else if (r.IsArray && r is JSObject ra)
             {
-                StringMap<int> map = new();
-                var replacerLength = GetArrayLength(ra);
-
-                for (uint index = 0; index < replacerLength; index++)
-                    map.Put(ra[index].ToString()) = 1;
-
-                replacer = (item) =>
-                {
-                    if (map.TryGetValue(item.key.ToString(), out var _))
-                        return item.value;
-
-                    return JSUndefined.Value;
-                };
+                propertyList = BuildPropertyList(ra);
             }
         }
 
@@ -422,17 +447,20 @@ public partial class JSJSON : JSObject
         root[emptyKey] = f;
 
         f = ToJson(f, JSValue.EmptyString);
+        // Only a function replacer participates in SerializeJSONProperty for the
+        // root holder; a PropertyList (array replacer) restricts object keys only
+        // and must not be applied to the root value.
         if (replacer != null)
             f = replacer((root, JSValue.EmptyString, f));
 
         if (indent != null)
         {
             var writer = new IndentedTextWriter(sb, indent);
-            Stringify(writer, f, replacer, writer, []);
+            Stringify(writer, f, replacer, propertyList, writer, []);
         }
         else
         {
-            Stringify(sb, f, replacer, null, []);
+            Stringify(sb, f, replacer, propertyList, null, []);
         }
 
         return new JSString(sb.ToString());
@@ -442,7 +470,7 @@ public partial class JSJSON : JSObject
     {
         value = ToJson(value, JSValue.EmptyString);
         var sb = new StringWriter();
-        Stringify(sb, value, null, null, []);
+        Stringify(sb, value, null, null, null, []);
         return sb.ToString();
     }
 
@@ -502,6 +530,7 @@ public partial class JSJSON : JSObject
         TextWriter sb,
         JSValue target,
         Func<(JSValue, JSValue, JSValue), JSValue> replacer,
+        List<string> propertyList,
         IndentedTextWriter indent,
         HashSet<JSObject> stack)
     {
@@ -543,7 +572,7 @@ public partial class JSJSON : JSObject
 
         if (target is JSObject arrayObject && arrayObject.IsArray)
         {
-            StringifyArray(sb, arrayObject, replacer, indent, stack);
+            StringifyArray(sb, arrayObject, replacer, propertyList, indent, stack);
             return;
         }
 
@@ -566,24 +595,11 @@ public partial class JSJSON : JSObject
         // insertion order; SerializeJSONObject visits EnumerableOwnPropertyNames in
         // that same order. `keyText` is both the emitted property name and the key
         // handed to `toJSON`/the replacer.
-        void WriteMember(in StringSpan keyText, JSValue keyValue, in JSProperty value)
+        // Emits a single resolved member value under `keyText`, applying toJSON,
+        // the function replacer, and indentation. `jsValue` has already been read
+        // from the holder.
+        void EmitMember(in StringSpan keyText, JSValue keyValue, JSValue jsValue)
         {
-            if (value.IsEmpty || !value.IsEnumerable)
-                return;
-
-            JSValue jsValue;
-            if (!value.IsValue)
-            {
-                if (value.get == null)
-                    return;
-
-                jsValue = ((JSFunction)value.get).InvokeCallback(new Arguments(target));
-            }
-            else
-            {
-                jsValue = (JSValue)value.value;
-            }
-
             if (jsValue.IsUndefined || jsValue is JSFunction)
                 return;
 
@@ -610,22 +626,57 @@ public partial class JSJSON : JSObject
             if (indent != null)
                 sb.Write(' ');
 
-            Stringify(sb, jsValue, replacer, indent, stack);
+            Stringify(sb, jsValue, replacer, propertyList, indent, stack);
         }
 
-        // Integer-indexed properties (stored separately from named ones) are own
-        // enumerable string keys too and must be serialized — previously they were
-        // skipped entirely, so e.g. `JSON.stringify({0:'a',x:1})` dropped "0".
-        // ElementArray.AllValues() yields them in ascending index order.
-        foreach (var (index, element) in obj.GetElements(create: false).AllValues())
+        void WriteMember(in StringSpan keyText, JSValue keyValue, in JSProperty value)
         {
-            var indexText = index.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            WriteMember(indexText, JSValue.CreateString(indexText), element);
+            if (value.IsEmpty || !value.IsEnumerable)
+                return;
+
+            JSValue jsValue;
+            if (!value.IsValue)
+            {
+                if (value.get == null)
+                    return;
+
+                jsValue = ((JSFunction)value.get).InvokeCallback(new Arguments(target));
+            }
+            else
+            {
+                jsValue = (JSValue)value.value;
+            }
+
+            EmitMember(keyText, keyValue, jsValue);
         }
 
-        var pen = obj.GetOwnProperties().GetEnumerator();
-        while (pen.MoveNext(out var key, out var value))
-            WriteMember(key.Value, KeyStringCoreExtensions.GetJSString(value.key), value);
+        if (propertyList != null)
+        {
+            // SerializeJSONObject step 5: when a PropertyList is present, iterate it
+            // in order and read each key via [[Get]] (so inherited and non-enumerable
+            // listed keys are still serialized), ignoring own-property order.
+            foreach (var key in propertyList)
+            {
+                var keyValue = JSValue.CreateString(key);
+                EmitMember(key, keyValue, obj[KeyStrings.GetOrCreate(key)]);
+            }
+        }
+        else
+        {
+            // Integer-indexed properties (stored separately from named ones) are own
+            // enumerable string keys too and must be serialized — previously they were
+            // skipped entirely, so e.g. `JSON.stringify({0:'a',x:1})` dropped "0".
+            // ElementArray.AllValues() yields them in ascending index order.
+            foreach (var (index, element) in obj.GetElements(create: false).AllValues())
+            {
+                var indexText = index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                WriteMember(indexText, JSValue.CreateString(indexText), element);
+            }
+
+            var pen = obj.GetOwnProperties().GetEnumerator();
+            while (pen.MoveNext(out var key, out var value))
+                WriteMember(key.Value, KeyStringCoreExtensions.GetJSString(value.key), value);
+        }
 
         if (indent != null)
         {

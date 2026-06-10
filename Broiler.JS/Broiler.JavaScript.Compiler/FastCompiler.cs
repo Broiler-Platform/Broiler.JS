@@ -552,6 +552,13 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
         variable = current.CreateVariable(name, null, true);
         variable.IsDeletable = true;
+        // This is the eval var-environment's Annex B var binding, NOT a lexical
+        // one. CreateVariable(newScope: true) defaults IsLexical to true; leaving
+        // it set makes IsAnnexBHoistingBlocked treat the binding as a lexical
+        // blocker, so a second block declaring the same function name would have
+        // its Annex B copy-out suppressed (only the first block's value reached the
+        // var binding). Clearing it lets every block update the shared var binding.
+        variable.IsLexical = false;
         return variable;
     }
 

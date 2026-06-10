@@ -55,7 +55,39 @@ internal static class JSIntlDateTimeFormatEngine
         public List<Token> Tokens;
         // The CLDR skeleton key (e.g. "yMMMd"), used to find interval patterns.
         public string Skeleton;
+        // The resolved calendar (e.g. "buddhist"); null/"gregory" for the default.
+        public string Calendar;
     }
+
+    // Era-using calendars derived from the proleptic Gregorian year by a fixed
+    // offset, with a single modern era. (Era-boundary calendars such as japanese
+    // are not modelled.) Maps calendar -> (year offset, en era).
+    private static readonly Dictionary<string, (int YearOffset, string Era)> EraCalendars =
+        new(StringComparer.Ordinal)
+        {
+            ["buddhist"] = (543, "BE"),
+        };
+
+    // Calendars that display the year as a related (Gregorian) year plus a
+    // sexagenary cycle year-name (e.g. chinese "2017(丁酉)"). The lunisolar month/day
+    // arithmetic is not modelled; only the year presentation is.
+    private static readonly HashSet<string> CyclicYearCalendars =
+        new(StringComparer.Ordinal) { "chinese", "dangi" };
+
+    private static readonly string[] SexagenaryStems =
+        { "甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸" };
+    private static readonly string[] SexagenaryBranches =
+        { "子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥" };
+
+    // The sexagenary (stem+branch) year name for a Gregorian year, e.g. 2017 → 丁酉.
+    private static string SexagenaryYearName(int year)
+    {
+        var index = ((year - 4) % 60 + 60) % 60;
+        return SexagenaryStems[index % 10] + SexagenaryBranches[index % 12];
+    }
+
+    internal static bool IsSupportedCalendar(string calendar)
+        => calendar != null && (EraCalendars.ContainsKey(calendar) || CyclicYearCalendars.Contains(calendar));
 
     // ── en locale data ──
     private static readonly string[] MonthShort =
@@ -85,9 +117,10 @@ internal static class JSIntlDateTimeFormatEngine
 
     // ── Pattern resolution ──
     internal static Pattern ResolvePattern(
+        string localeTag,
         bool hasYear, string yearStyle, bool hasMonth, string monthStyle, bool hasDay, string dayStyle,
         bool hasHour, bool hasMinute, bool hasSecond, int fractionalSecondDigits, bool hasDayPeriodField,
-        string dateStyle, string timeStyle, bool hour12)
+        string dateStyle, string timeStyle, bool hour12, string calendar = null)
     {
         string datePattern = null;
         string timePattern = null;
@@ -122,15 +155,43 @@ internal static class JSIntlDateTimeFormatEngine
             var alphaMonth = monthStyle is "long" or "short" or "narrow";
 
             var date = new StringBuilder();
-            if (hasMonth && hasDay && hasYear)
-                date.Append(alphaMonth ? $"{monthTok} {dayTok}, {yearTok}" : $"{monthTok}/{dayTok}/{yearTok}");
-            else if (hasMonth && hasDay)
-                date.Append(alphaMonth ? $"{monthTok} {dayTok}" : $"{monthTok}/{dayTok}");
-            else if (hasYear && hasMonth)
-                date.Append(alphaMonth ? $"{monthTok} {yearTok}" : $"{monthTok}/{yearTok}");
-            else if (hasYear) date.Append(yearTok);
-            else if (hasMonth) date.Append(monthTok);
-            else if (hasDay) date.Append(dayTok);
+            if (alphaMonth)
+            {
+                // Spelled-out month: keep the en layout (locale word order for named
+                // months is not modelled here).
+                if (hasMonth && hasDay && hasYear)
+                    date.Append($"{monthTok} {dayTok}, {yearTok}");
+                else if (hasMonth && hasDay)
+                    date.Append($"{monthTok} {dayTok}");
+                else if (hasYear && hasMonth)
+                    date.Append($"{monthTok} {yearTok}");
+                else if (hasYear) date.Append(yearTok);
+                else if (hasMonth) date.Append(monthTok);
+                else if (hasDay) date.Append(dayTok);
+            }
+            else
+            {
+                // Numeric date: order the present fields per the locale's short-date
+                // convention (e.g. de → d.M.y, ja → y/M/d) instead of always M/d/y.
+                var (order, sep) = NumericDateLayout(localeTag);
+                var first = true;
+                foreach (var field in order)
+                {
+                    string tok = field switch
+                    {
+                        'd' => hasDay ? dayTok : null,
+                        'M' => hasMonth ? monthTok : null,
+                        'y' => hasYear ? yearTok : null,
+                        _ => null,
+                    };
+                    if (tok == null)
+                        continue;
+                    if (!first)
+                        date.Append(sep);
+                    date.Append(tok);
+                    first = false;
+                }
+            }
 
             var time = new StringBuilder();
             if (hasHour && hasMinute && hasSecond)
@@ -153,16 +214,151 @@ internal static class JSIntlDateTimeFormatEngine
             timePattern = time.Length > 0 ? time.ToString() : null;
         }
 
+        // No component or style options: ECMA-402 defaults to numeric
+        // year/month/day, laid out in the locale's short-date order.
+        if (datePattern == null && timePattern == null)
+            datePattern = DefaultNumericDate(localeTag);
+
+        if (datePattern != null && datePattern.IndexOf('y') >= 0)
+        {
+            // An era-using calendar (e.g. buddhist) appends the era after a date that
+            // shows a year, e.g. "M/d/y" -> "M/d/y G". A cyclic-year calendar (chinese,
+            // dangi) shows the year as relatedYear(yearName), so the year field becomes
+            // "r(U)". Both make the pattern structurally distinct from the gregorian one.
+            if (EraCalendars.ContainsKey(calendar ?? string.Empty))
+                datePattern += " G";
+            else if (CyclicYearCalendars.Contains(calendar ?? string.Empty))
+                datePattern = ReplaceYearField(datePattern, "r(U)");
+        }
+
         string combined = (datePattern, timePattern) switch
         {
-            (null, null) => "M/d/y",
+            (null, null) => DefaultNumericDate(localeTag),
             (not null, null) => datePattern,
             (null, not null) => timePattern,
             _ => datePattern + ", " + timePattern,
         };
 
         var tokens = Parse(combined);
-        return new Pattern { Tokens = tokens, Skeleton = SkeletonOf(tokens) };
+        return new Pattern { Tokens = tokens, Skeleton = SkeletonOf(tokens), Calendar = calendar };
+    }
+
+    // Derives the numeric-date field order (a permutation of 'd','M','y') and the
+    // separator between fields from the locale's short-date pattern. Falls back to
+    // the en convention (M/d/y) for an unknown/complex pattern, so en and locales
+    // whose pattern can't be parsed are unchanged.
+    // Replaces the run of year letters ('y') in a pattern with a replacement field,
+    // skipping quoted literals. Used to swap a numeric year for the chinese
+    // relatedYear(yearName) form.
+    private static string ReplaceYearField(string pattern, string replacement)
+    {
+        var sb = new StringBuilder(pattern.Length + replacement.Length);
+        var inQuote = false;
+        var replaced = false;
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+            if (c == '\'')
+            {
+                inQuote = !inQuote;
+                sb.Append(c);
+                continue;
+            }
+            if (!inQuote && c == 'y')
+            {
+                while (i + 1 < pattern.Length && pattern[i + 1] == 'y')
+                    i++;
+                if (!replaced)
+                {
+                    sb.Append(replacement);
+                    replaced = true;
+                }
+                continue;
+            }
+            sb.Append(c);
+        }
+        return sb.ToString();
+    }
+
+    // The default all-numeric date pattern (year/month/day) for a locale, e.g.
+    // "M/d/y" for en, "d.M.y" for de, "y/M/d" for ja.
+    private static string DefaultNumericDate(string localeTag)
+    {
+        var (order, sep) = NumericDateLayout(localeTag);
+        var sb = new StringBuilder();
+        for (var i = 0; i < order.Length; i++)
+        {
+            if (i > 0)
+                sb.Append(sep);
+            sb.Append(order[i]);
+        }
+        return sb.ToString();
+    }
+
+    private static (string Order, string Separator) NumericDateLayout(string localeTag)
+    {
+        var fallback = ("Mdy", "/");
+        if (string.IsNullOrEmpty(localeTag))
+            return fallback;
+
+        var tag = localeTag;
+        var uPos = tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase);
+        if (uPos >= 0)
+            tag = tag[..uPos];
+
+        CultureInfo culture;
+        try
+        {
+            culture = CultureInfo.GetCultureInfo(tag);
+        }
+        catch (CultureNotFoundException)
+        {
+            return fallback;
+        }
+
+        if (culture.IsNeutralCulture && tag.Equals("en", StringComparison.OrdinalIgnoreCase))
+            return fallback;
+
+        var shortPattern = culture.DateTimeFormat.ShortDatePattern;
+        if (string.IsNullOrEmpty(shortPattern))
+            return fallback;
+
+        var order = new StringBuilder(3);
+        string separator = null;
+        var inQuote = false;
+        for (var i = 0; i < shortPattern.Length; i++)
+        {
+            var c = shortPattern[i];
+            if (c == '\'')
+            {
+                inQuote = !inQuote;
+                continue;
+            }
+            if (inQuote)
+                continue;
+
+            var field = c is 'd' ? 'd' : c is 'M' ? 'M' : c is 'y' ? 'y' : '\0';
+            if (field != '\0')
+            {
+                if (order.Length == 0 || order[^1] != field)
+                {
+                    if (order.ToString().IndexOf(field) >= 0)
+                        return fallback; // repeated field group → too complex, keep en
+                    order.Append(field);
+                }
+            }
+            else if (order.Length == 1 && separator == null && !char.IsWhiteSpace(c))
+            {
+                // First separator run, immediately after the first field.
+                separator = c.ToString();
+            }
+        }
+
+        // Only use a clean d/M/y layout with a single-character separator.
+        if (order.Length != 3 || separator == null)
+            return fallback;
+
+        return (order.ToString(), separator);
     }
 
     private static List<Token> Parse(string pattern)
@@ -290,12 +486,23 @@ internal static class JSIntlDateTimeFormatEngine
     }
 
     // ── Field formatting ──
-    private static (string type, string value) FormatField(in Token token, in Fields f, int fractionalSecondDigits)
+    private static (string type, string value) FormatField(in Token token, in Fields f, int fractionalSecondDigits, string calendar)
     {
         switch (token.Field)
         {
+            case 'G':
+                // Era. Only era-using calendars emit a 'G' token.
+                return ("era", EraCalendars.TryGetValue(calendar ?? string.Empty, out var era) ? era.Era : "AD");
+            case 'U':
+                // Cyclic year name (sexagenary), used by chinese/dangi.
+                return ("yearName", SexagenaryYearName(f.Year));
+            case 'r':
+                // Related (Gregorian) year, used by chinese/dangi.
+                return ("relatedYear", f.Year.ToString(CultureInfo.InvariantCulture));
             case 'y':
                 var year = f.Year;
+                if (calendar != null && EraCalendars.TryGetValue(calendar, out var cal))
+                    year += cal.YearOffset;
                 return ("year", token.Count == 2
                     ? (year % 100).ToString("D2", CultureInfo.InvariantCulture)
                     : year.ToString(CultureInfo.InvariantCulture));
@@ -350,7 +557,7 @@ internal static class JSIntlDateTimeFormatEngine
                 parts.Add(new Part("literal", token.Literal, source));
                 continue;
             }
-            var (type, value) = FormatField(in token, in f, fractionalSecondDigits);
+            var (type, value) = FormatField(in token, in f, fractionalSecondDigits, pattern.Calendar);
             parts.Add(new Part(type, value, source));
         }
         return parts;
@@ -415,7 +622,7 @@ internal static class JSIntlDateTimeFormatEngine
             && IntervalPatterns.TryGetValue($"{pattern.Skeleton}|{fieldLetter}", out var intervalPatternText))
         {
             var intervalTokens = Parse(intervalPatternText);
-            return FormatIntervalPattern(intervalTokens, in start, in end, fractionalSecondDigits);
+            return FormatIntervalPattern(intervalTokens, in start, in end, fractionalSecondDigits, pattern.Calendar);
         }
 
         // Fallback "{0} – {1}".
@@ -431,7 +638,7 @@ internal static class JSIntlDateTimeFormatEngine
     // endRange/date1); a letter appearing once is shared. A literal between two fields of
     // the same source takes that source, otherwise it is shared.
     private static List<Part> FormatIntervalPattern(
-        List<Token> tokens, in Fields start, in Fields end, int fractionalSecondDigits)
+        List<Token> tokens, in Fields start, in Fields end, int fractionalSecondDigits, string calendar)
     {
         // Count field-letter occurrences.
         var counts = new Dictionary<char, int>();
@@ -479,8 +686,8 @@ internal static class JSIntlDateTimeFormatEngine
             }
             ref readonly var fields = ref start;
             var (type, value) = source == "endRange"
-                ? FormatField(in token, in end, fractionalSecondDigits)
-                : FormatField(in token, in fields, fractionalSecondDigits);
+                ? FormatField(in token, in end, fractionalSecondDigits, calendar)
+                : FormatField(in token, in fields, fractionalSecondDigits, calendar);
             parts.Add(new Part(type, value, source));
         }
         return parts;

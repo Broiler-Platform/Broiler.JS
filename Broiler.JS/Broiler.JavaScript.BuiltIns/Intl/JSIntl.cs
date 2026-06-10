@@ -73,6 +73,21 @@ public static class JSIntl
         "zh-min-nan",
     };
 
+    // Regular grandfathered tags that remain structurally valid language tags but
+    // whose canonical form is a single preferred subtag (UTS #35 §3.3, the CLDR
+    // language-alias "type" mappings). CanonicalizeUnicodeLocaleId replaces the
+    // whole tag with the preferred value. Irregular grandfathered tags (i-klingon,
+    // en-GB-oed, sgn-*, …) are not structurally valid and are rejected by the
+    // grammar before reaching this table.
+    private static readonly Dictionary<string, string> RegularGrandfatheredMappings = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["art-lojban"] = "jbo",
+        ["cel-gaulish"] = "xtg",
+        ["zh-guoyu"] = "zh",
+        ["zh-hakka"] = "hak",
+        ["zh-xiang"] = "hsn",
+    };
+
     public static JSValue GetIntlObject()
     {
         if (JSEngine.CurrentContext is JSObject global)
@@ -600,9 +615,11 @@ public static class JSIntl
             throw JSEngine.NewTypeError("Locale tag must be a string or object");
 
         var tagString = tag.StringValue;
-        ValidateLanguageTag(tagString);
-        ValidateLocaleOptions(tagString, ValidateOptionsArgument(a.GetAt(1)));
-        return tagString;
+        // ValidateLanguageTag also canonicalizes (e.g. grandfathered "art-lojban"
+        // -> "jbo"); the canonical form is what the Locale stores and reports.
+        var canonicalTag = ValidateLanguageTag(tagString);
+        ValidateLocaleOptions(canonicalTag, ValidateOptionsArgument(a.GetAt(1)));
+        return canonicalTag;
     }
 
     internal static JSObject ValidateOptionsArgument(JSValue options, bool coerce = true)
@@ -706,6 +723,11 @@ public static class JSIntl
             HasDuplicateVariantSubtag(tag) ||
             HasInvalidUnicodeExtensionKey(tag))
             throw JSEngine.NewRangeError("Invalid language tag");
+
+        // CanonicalizeUnicodeLocaleId: a regular grandfathered tag is replaced
+        // wholesale by its preferred form (e.g. "art-lojban" -> "jbo").
+        if (RegularGrandfatheredMappings.TryGetValue(tag, out var preferred))
+            return preferred;
 
         return tag;
     }
@@ -2324,6 +2346,8 @@ public class JSIntlNumberFormat : JSObject
             var notation = resolved?.Notation ?? "standard";
             if (notation == "scientific" || notation == "engineering")
                 magnitude = FormatScientificEngineering(Math.Abs(x), notation == "engineering", out roundedIsZero);
+            else if (notation == "compact")
+                magnitude = FormatCompact(Math.Abs(x), out roundedIsZero);
             else
                 magnitude = FormatFiniteMagnitude(Math.Abs(x), 0, 3, out roundedIsZero);
         }
@@ -2475,6 +2499,130 @@ public class JSIntlNumberFormat : JSObject
         return result;
     }
 
+    // Compact decimal units (descending by exponent) for the CJK locales exercised
+    // by test262. Each entry is (power-of-ten boundary, suffix); the suffix is shared
+    // by short and long compactDisplay in these locales. Intermediate powers (e.g.
+    // 10^5..10^7 for ja) reuse the lower unit, so the divisor is the largest unit
+    // whose exponent does not exceed the value's magnitude.
+    private static readonly (int Exp, string Suffix)[] CompactUnitsJa = [(12, "兆"), (8, "億"), (4, "万")];
+    private static readonly (int Exp, string Suffix)[] CompactUnitsKo = [(12, "조"), (8, "억"), (4, "만"), (3, "천")];
+    private static readonly (int Exp, string Suffix)[] CompactUnitsZhHant = [(12, "兆"), (8, "億"), (4, "萬")];
+    private static readonly (int Exp, string Suffix)[] CompactUnitsZhHans = [(12, "兆"), (8, "亿"), (4, "万")];
+
+    private static (int Exp, string Suffix)[] GetCompactUnits(string localeTag)
+    {
+        var tag = localeTag ?? string.Empty;
+        var dash = tag.IndexOf('-');
+        var language = (dash < 0 ? tag : tag[..dash]).ToLowerInvariant();
+        switch (language)
+        {
+            case "ja":
+                return CompactUnitsJa;
+            case "ko":
+                return CompactUnitsKo;
+            case "zh":
+                var lower = tag.ToLowerInvariant();
+                var isTraditional = lower.Contains("hant") || lower.Contains("-tw")
+                    || lower.Contains("-hk") || lower.Contains("-mo");
+                return isTraditional ? CompactUnitsZhHant : CompactUnitsZhHans;
+            default:
+                return null;
+        }
+    }
+
+    // Compact notation (notation: "compact"). The value is divided by the largest
+    // applicable compact unit and rounded with the default ECMA-402 "morePrecision"
+    // rule: the more precise of {maximumFractionDigits 0} and {maximumSignificantDigits
+    // 2}. That reduces to: when the reduced value's integer magnitude is ≤ 1 (i.e.
+    // < 100) keep 2 significant digits, otherwise round to an integer. The locale's
+    // compact suffix is appended as a "compact" part. Compact numbers are not grouped
+    // (CLDR useGrouping "min2": the ≤4-digit reduced values stay ungrouped). Only the
+    // CJK locales with embedded data are compacted; others fall back to standard
+    // formatting (unchanged behaviour).
+    private List<(string, string)> FormatCompact(double absX, out bool roundedIsZero)
+    {
+        var units = GetCompactUnits(locale);
+        if (units == null)
+            return FormatFiniteMagnitude(absX, 0, 3, out roundedIsZero);
+
+        string suffix = null;
+        var reduced = absX;
+        if (absX > 0 && !double.IsInfinity(absX))
+        {
+            var magnitude = CompactMagnitude(absX);
+            foreach (var (exp, sfx) in units)
+            {
+                if (magnitude >= exp)
+                {
+                    reduced = absX / Math.Pow(10, exp);
+                    suffix = sfx;
+                    break;
+                }
+            }
+        }
+
+        int maxFrac;
+        if (HasOption("maximumFractionDigits"))
+        {
+            maxFrac = ReadIntOption("maximumFractionDigits", 0);
+        }
+        else
+        {
+            // morePrecision default: keep 2 significant digits while the value is
+            // below 100, otherwise round to an integer.
+            var m = CompactMagnitude(reduced);
+            maxFrac = m <= 1 ? Math.Max(0, 1 - m) : 0;
+        }
+
+        var parts = FormatCompactMantissa(reduced, maxFrac, out roundedIsZero);
+        if (suffix != null)
+            parts.Add(("compact", suffix));
+        return parts;
+    }
+
+    private static int CompactMagnitude(double v)
+    {
+        if (v <= 0 || double.IsNaN(v) || double.IsInfinity(v))
+            return 0;
+
+        var m = (int)Math.Floor(Math.Log10(v));
+        if (Math.Pow(10, m) > v)
+            m--;
+        else if (Math.Pow(10, m + 1) <= v)
+            m++;
+        return m;
+    }
+
+    // Formats the reduced compact value (integer + optional fraction parts) without
+    // grouping, trimming trailing fraction zeros.
+    private List<(string, string)> FormatCompactMantissa(double reduced, int maxFrac, out bool roundedIsZero)
+    {
+        var clamped = Math.Clamp(maxFrac, 0, 15);
+        var rounded = Math.Round(reduced, clamped, MidpointRounding.AwayFromZero);
+        roundedIsZero = rounded == 0;
+
+        var fixedStr = rounded.ToString("F" + clamped, CultureInfo.InvariantCulture);
+        var dot = fixedStr.IndexOf('.');
+        var intDigits = dot < 0 ? fixedStr : fixedStr[..dot];
+        var fracDigits = dot < 0 ? string.Empty : fixedStr[(dot + 1)..];
+
+        while (fracDigits.Length > 0 && fracDigits.EndsWith('0'))
+            fracDigits = fracDigits[..^1];
+
+        intDigits = intDigits.TrimStart('0');
+        if (intDigits.Length == 0)
+            intDigits = "0";
+
+        var result = new List<(string, string)> { ("integer", intDigits) };
+        if (fracDigits.Length > 0)
+        {
+            result.Add(("decimal", DecimalSeparator()));
+            result.Add(("fraction", fracDigits));
+        }
+
+        return result;
+    }
+
     // ComputeExponentForMagnitude over floor(log10(absX)): scientific keeps the raw
     // base-10 magnitude; engineering rounds it down to a multiple of 3.
     private static int ComputeExponent(double absX, bool engineering)
@@ -2576,6 +2724,14 @@ public class JSIntlNumberFormat : JSObject
             return fallback;
         var d = v.DoubleValue;
         return double.IsNaN(d) ? fallback : (int)d;
+    }
+
+    private bool HasOption(string name)
+    {
+        if (options == null)
+            return false;
+        var v = options[KeyStrings.GetOrCreate(name)];
+        return v != null && !v.IsUndefined;
     }
 
     private CultureInfo Culture()
@@ -2920,6 +3076,7 @@ public class JSIntlDateTimeFormat : JSObject
 
     private JSIntlDateTimeFormatEngine.Pattern ResolveEnginePattern()
         => JSIntlDateTimeFormatEngine.ResolvePattern(
+            localeTag: localeTag,
             hasYear: OptionString(YearKey) != null,
             yearStyle: OptionString(YearKey),
             hasMonth: OptionString(MonthKey) != null,
@@ -2933,7 +3090,38 @@ public class JSIntlDateTimeFormat : JSObject
             hasDayPeriodField: false,
             dateStyle: OptionString(DateStyleKey),
             timeStyle: OptionString(TimeStyleKey),
-            hour12: ResolveHour12());
+            hour12: ResolveHour12(),
+            calendar: ResolvedCalendar());
+
+    // The resolved calendar: the requested -u-ca- value when it is one this engine
+    // supports (era-based Gregorian-derived calendars), otherwise "gregory".
+    internal string ResolvedCalendar()
+    {
+        var ca = UnicodeKeyword(localeTag, "ca");
+        return JSIntlDateTimeFormatEngine.IsSupportedCalendar(ca) ? ca : "gregory";
+    }
+
+    // Reads a Unicode (-u-) keyword value from a BCP-47 tag, e.g. "ca" from
+    // "en-u-ca-buddhist". Returns null when absent.
+    private static string UnicodeKeyword(string tag, string key)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return null;
+        var parts = tag.Split('-');
+        var u = System.Array.IndexOf(parts, "u");
+        if (u < 0)
+            return null;
+        for (var i = u + 1; i < parts.Length; i++)
+        {
+            if (parts[i].Length == 2 && string.Equals(parts[i], key, StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < parts.Length && parts[i + 1].Length > 2)
+                    return parts[i + 1].ToLowerInvariant();
+                return null;
+            }
+        }
+        return null;
+    }
 
     private JSIntlDateTimeFormatEngine.Fields ResolveFields(double clipped)
         => new(JSIntlDateTimeFormatEngine.ToZone(clipped, OptionString(TimeZoneKey)));
@@ -3110,7 +3298,7 @@ public class JSIntlDateTimeFormat : JSObject
 
         var result = new JSObject();
         result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.localeTag);
-        result[KeyStrings.GetOrCreate("calendar")] = JSValue.CreateString("gregory");
+        result[KeyStrings.GetOrCreate("calendar")] = JSValue.CreateString(@this.ResolvedCalendar());
         result[KeyStrings.GetOrCreate("numberingSystem")] = JSValue.CreateString("latn");
         result[KeyStrings.GetOrCreate("timeZone")] = JSValue.CreateString(TimeZoneInfo.Local.Id);
 
@@ -3153,12 +3341,25 @@ public class JSIntlDateTimeFormat : JSObject
     private static string FormatEnglishHour(DateTimeOffset value)
         => ((value.Hour % 12) == 0 ? 12 : value.Hour % 12).ToString(CultureInfo.InvariantCulture);
 
+    // CLDR day-period rule overrides for the ECMA-402 dayPeriod option. The bundled
+    // Broiler.Unicode tables (a) surface the fixed "midnight" period at 00:00, which
+    // the dayPeriod option never emits (browsers fold midnight into the surrounding
+    // flexible period, so 00:00 → "at night" for en), and (b) for "en" carry a
+    // mis-generated morning1/night1 split (morning1=0-720, night1=1260-1440) rather
+    // than the CLDR morning1=06:00-12:00 with night1 wrapping 21:00-06:00. The
+    // corrected rules keep the flexible periods contiguous; "noon" is retained (it
+    // IS surfaced by the option). Keyed by language subtag.
+    private static readonly Dictionary<string, string> DayPeriodRuleOverrides = new(StringComparer.Ordinal)
+    {
+        ["en"] = "noon@720;morning1=360-720;afternoon1=720-1080;evening1=1080-1260;night1=1260-360",
+    };
+
     // The localized day-period name for the time, from CLDR data: the day-period
     // rules pick the period (am/pm/noon/midnight/morning/…) and the ECMA-402
     // dayPeriod option (long/short/narrow) selects the CLDR width.
     private string FormatDayPeriod(DateTimeOffset value, string style)
     {
-        var period = CldrLocaleData.GetDayPeriod(localeTag, value.Hour, value.Minute);
+        var period = ResolveDayPeriodKey(localeTag, value.Hour, value.Minute);
         var width = style switch
         {
             "narrow" => "narrow",
@@ -3166,6 +3367,48 @@ public class JSIntlDateTimeFormat : JSObject
             _ => "wide",
         };
         return CldrLocaleData.GetDayPeriodName(localeTag, period, width);
+    }
+
+    private static string ResolveDayPeriodKey(string localeTag, int hour, int minute)
+    {
+        var dash = localeTag?.IndexOf('-') ?? -1;
+        var language = (dash < 0 ? localeTag ?? string.Empty : localeTag[..dash]).ToLowerInvariant();
+        if (DayPeriodRuleOverrides.TryGetValue(language, out var rules))
+            return MatchDayPeriodRules(rules, hour * 60 + minute) ?? (hour < 12 ? "am" : "pm");
+
+        return CldrLocaleData.GetDayPeriod(localeTag, hour, minute);
+    }
+
+    // Mirrors UnicodeCldr.LocaleData's day-period rule matcher: "@" ("at") rules
+    // win first, then half-open ranges (a from>before range wraps past midnight).
+    private static string MatchDayPeriodRules(string rules, int time)
+    {
+        foreach (var rule in rules.Split(';'))
+        {
+            var at = rule.IndexOf('@');
+            if (at >= 0)
+            {
+                if (int.Parse(rule[(at + 1)..], CultureInfo.InvariantCulture) == time)
+                    return rule[..at];
+                continue;
+            }
+
+            var eq = rule.IndexOf('=');
+            if (eq < 0)
+                continue;
+
+            var period = rule[..eq];
+            var dash = rule.IndexOf('-', eq + 1);
+            var from = int.Parse(rule[(eq + 1)..dash], CultureInfo.InvariantCulture);
+            var before = int.Parse(rule[(dash + 1)..], CultureInfo.InvariantCulture);
+            var matched = from <= before
+                ? time >= from && time < before
+                : time >= from || time < before;
+            if (matched)
+                return period;
+        }
+
+        return null;
     }
 
     public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())

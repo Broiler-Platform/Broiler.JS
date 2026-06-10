@@ -1284,19 +1284,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 if (i < pattern.Length && pattern[i] == ']')
                     i++;
 
-                // Scan for supplementary chars (surrogate pairs) in this class
+                // Scan for supplementary chars (surrogate pairs) in this class, or
+                // for a \D / \S / \W escape: those negated escapes include every
+                // supplementary code point, so a non-negated class containing one
+                // must also match a whole surrogate pair (not just the leading unit).
                 var supplementaryChars = new List<string>();
                 bool hasSupplementary = false;
+                bool classMatchesSupplementary = false;
 
                 int scanPos = i;
                 while (scanPos < pattern.Length && pattern[scanPos] != ']')
                 {
                     if (pattern[scanPos] == '\\' && scanPos + 1 < pattern.Length)
                     {
+                        var esc = pattern[scanPos + 1];
+                        if (!negated && (esc == 'D' || esc == 'S' || esc == 'W'))
+                            classMatchesSupplementary = true;
                         scanPos += 2;
                         continue;
                     }
-                    if (char.IsHighSurrogate(pattern[scanPos]) && scanPos + 1 < pattern.Length 
+                    if (char.IsHighSurrogate(pattern[scanPos]) && scanPos + 1 < pattern.Length
                         && char.IsLowSurrogate(pattern[scanPos + 1]))
                     {
                         hasSupplementary = true;
@@ -1305,7 +1312,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     scanPos++;
                 }
 
-                if (!hasSupplementary)
+                if (!hasSupplementary && !classMatchesSupplementary)
                 {
                     // Find end of class and skip
                     while (i < pattern.Length && pattern[i] != ']')
@@ -1380,8 +1387,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 }
                 else
                 {
-                    // [𝌆a-z] → (?:𝌆|[a-z])
+                    // [𝌆a-z] → (?:𝌆|[a-z]); a class containing \D/\S/\W also gets a
+                    // leading surrogate-pair alternative so a whole pair is consumed
+                    // as one code point before the single-unit class is tried, e.g.
+                    // [\D] → (?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[\D]).
                     sb.Append("(?:");
+                    if (classMatchesSupplementary)
+                        sb.Append(@"[\uD800-\uDBFF][\uDC00-\uDFFF]|");
                     for (int si = 0; si < supplementaryChars.Count; si++)
                     {
                         sb.Append(supplementaryChars[si]);
@@ -2170,6 +2182,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
         var sb = new StringBuilder(pattern.Length + 8);
         bool inClass = false;
         int groupsSeen = 0;
+        // Capturing groups whose '(' has been seen but whose ')' has not — i.e. the
+        // groups the current position is lexically nested inside. A backreference to
+        // one of these is a self/ancestor reference, which always matches the empty
+        // string in ECMAScript (the group is mid-match, and is reset on every
+        // quantifier iteration). groupStack records the number for each open group
+        // (0 = a non-capturing/lookaround group).
+        var groupStack = new Stack<int>();
+        var openCapturing = new HashSet<int>();
 
         for (int i = 0; i < pattern.Length; i++)
         {
@@ -2183,13 +2203,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     // Backreference \N — check if it's a forward reference
                     int refNum = 0;
                     int j = i + 1;
-                    
+
                     while (j < pattern.Length && pattern[j] >= '0' && pattern[j] <= '9')
                     {
                         refNum = refNum * 10 + (pattern[j] - '0');
                         j++;
                     }
-                    
+
                     if (refNum > totalGroups)
                     {
                         // Reference to non-existent group — treat as empty match
@@ -2197,7 +2217,18 @@ public partial class JSRegExp : JSObject, IJSRegExp
                         i = j - 1;
                         continue;
                     }
-                    
+
+                    if (openCapturing.Contains(refNum))
+                    {
+                        // Self/ancestor reference: the referenced group is still being
+                        // matched, so per ECMAScript it always matches the empty string.
+                        // .NET would instead reuse the previous iteration's capture
+                        // (e.g. /(z\1){3}/ on "zzz"), so emit an empty group here.
+                        sb.Append("(?:)");
+                        i = j - 1;
+                        continue;
+                    }
+
                     if (refNum > groupsSeen)
                     {
                         // Forward reference to not-yet-captured group — matches empty string per ES3
@@ -2205,7 +2236,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                         i = j - 1;
                         continue;
                     }
-                    
+
                     // Normal backreference — pass through
                     sb.Append(pattern, i, j - i);
                     i = j - 1;
@@ -2269,8 +2300,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 continue;
             }
 
-            if (c == '(' && (i + 1 >= pattern.Length || pattern[i + 1] != '?'))
-                groupsSeen++;
+            if (c == '(')
+            {
+                var capturing = i + 1 >= pattern.Length || pattern[i + 1] != '?';
+                if (capturing)
+                {
+                    groupsSeen++;
+                    groupStack.Push(groupsSeen);
+                    openCapturing.Add(groupsSeen);
+                }
+                else
+                {
+                    groupStack.Push(0);
+                }
+            }
+            else if (c == ')' && groupStack.Count > 0)
+            {
+                var closed = groupStack.Pop();
+                if (closed > 0)
+                    openCapturing.Remove(closed);
+            }
 
             sb.Append(c);
         }
@@ -2418,9 +2467,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static void AppendEsNonWhitespace(StringBuilder sb, string esWhitespaceChars, bool unicodeMode)
     {
         if (unicodeMode)
+            // A valid surrogate pair is one (non-whitespace) code point and is tried
+            // first; otherwise any non-whitespace code unit, INCLUDING a lone
+            // surrogate (an unpaired surrogate is itself a non-whitespace code point
+            // in ECMAScript, so \S must match it). The pair alternative being first
+            // means a real pair is never split by the single-unit fallback.
             sb.Append(@"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^")
               .Append(esWhitespaceChars)
-              .Append(@"\uD800-\uDFFF])");
+              .Append(@"])");
         else
             sb.Append("[^").Append(esWhitespaceChars).Append(']');
     }

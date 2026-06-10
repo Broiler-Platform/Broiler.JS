@@ -32,4 +32,21 @@ public partial class JSSymbol
 
         throw JSEngine.NewTypeError("Symbol.prototype.toString requires a symbol receiver");
     }
+
+    // Symbol.prototype.valueOf returns thisSymbolValue(this). Without it the
+    // lookup fell through to Object.prototype.valueOf, so `Symbol.prototype
+    // .valueOf()` returned the prototype object instead of throwing a TypeError
+    // for a non-symbol receiver.
+    [JSPrototypeMethod]
+    [JSExport("valueOf", Length = 0)]
+    public static JSValue ValueOf(in Arguments a)
+    {
+        if (a.This is JSSymbol symbol)
+            return symbol;
+
+        if (a.This is JSSymbolObject symbolObject)
+            return symbolObject.WrappedSymbol;
+
+        throw JSEngine.NewTypeError("Symbol.prototype.valueOf requires a symbol receiver");
+    }
 }

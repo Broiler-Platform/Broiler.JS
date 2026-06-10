@@ -467,7 +467,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
                     l.FastAddValue(KeyStrings.value, v, JSPropertyAttributes.ConfigurableValue);
                     l.FastAddValue(KeyStrings.writable, JSBoolean.True, JSPropertyAttributes.ConfigurableValue);
                     l.FastAddValue(KeyStrings.enumerable, JSBoolean.True, JSPropertyAttributes.ConfigurableValue);
-                    l.FastAddValue(KeyStrings.configurable, JSBoolean.False, JSPropertyAttributes.ConfigurableValue);
+                    // Integer-indexed elements are configurable since ES2021
+                    // ("normative: make TypedArray elements configurable").
+                    l.FastAddValue(KeyStrings.configurable, JSBoolean.True, JSPropertyAttributes.ConfigurableValue);
                     return l;
 
                 }
@@ -478,15 +480,14 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     public override JSValue DefineProperty(uint key, JSObject pd)
     {
-        // IntegerIndexedDefineOwnProperty checks IsValidIntegerIndex first and
-        // returns false for an out-of-bounds index WITHOUT converting the value
-        // (ToNumber happens only at the final element-set step).
+        // TypedArray [[DefineOwnProperty]] (ES2021+): for a valid integer index the
+        // element behaves as { writable: true, enumerable: true, configurable: true },
+        // so a descriptor that sets any of these to the opposite value, or that is an
+        // accessor, is rejected (returns false -> TypeError in defineProperty). An
+        // out-of-bounds index returns false WITHOUT converting the value (ToNumber
+        // happens only at the final element-set step).
         if (key >= length)
             return JSBoolean.False;
-
-        var hasValue = !pd.GetInternalProperty(KeyStrings.value, false).IsEmpty;
-        if (hasValue)
-            ValidateElementValue(pd[KeyStrings.value]);
 
         if (!pd.GetInternalProperty(KeyStrings.get, false).IsEmpty
             || !pd.GetInternalProperty(KeyStrings.set, false).IsEmpty)
@@ -494,7 +495,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return JSBoolean.False;
         }
 
-        if (!pd.GetInternalProperty(KeyStrings.configurable, false).IsEmpty && pd[KeyStrings.configurable].BooleanValue)
+        if (!pd.GetInternalProperty(KeyStrings.configurable, false).IsEmpty && !pd[KeyStrings.configurable].BooleanValue)
             return JSBoolean.False;
 
         if (!pd.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty && !pd[KeyStrings.enumerable].BooleanValue)
@@ -503,8 +504,12 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         if (!pd.GetInternalProperty(KeyStrings.writable, false).IsEmpty && !pd[KeyStrings.writable].BooleanValue)
             return JSBoolean.False;
 
-        if (hasValue)
-            SetValue(key, pd[KeyStrings.value], this, true);
+        if (!pd.GetInternalProperty(KeyStrings.value, false).IsEmpty)
+        {
+            var value = pd[KeyStrings.value];
+            ValidateElementValue(value);
+            SetValue(key, value, this, true);
+        }
 
         return JSUndefined.Value;
     }
