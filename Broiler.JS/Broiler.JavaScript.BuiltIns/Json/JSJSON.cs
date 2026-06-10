@@ -708,11 +708,14 @@ public partial class JSJSON : JSObject
         if (!primitive.IsObject)
             value = primitive;
 
-        var p = jobj.GetMethod(KeyStrings.toJSON);
-        if (p == null)
-            return value;
+        // SerializeJSONProperty: Get(value, "toJSON") then call only if IsCallable.
+        // A present-but-non-callable toJSON is ignored (must NOT throw), unlike the
+        // GetMethod abstract op which throws on a non-callable own property.
+        var toJson = jobj[KeyStrings.toJSON];
+        if (toJson is IJSFunction p)
+            return p.Delegate(new Arguments(value, key));
 
-        return p(new Arguments(value, key));
+        return value;
     }
 
 

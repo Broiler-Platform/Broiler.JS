@@ -64,6 +64,13 @@ partial class FastParser
         FastToken begin;
         FastToken token;
 
+        // Once an optional link (`?.`, `?.[`, `?.(`) appears, the rest of this chain
+        // short-circuits with it: `a?.b.c`, `a?.b()`, `a?.b[c]` must all yield undefined
+        // when `a` is nullish (and never read/call through the undefined). The chain is
+        // delimited by this SingleMemberExpression invocation — a parenthesized
+        // sub-expression parses in its own invocation, so `(a?.b).c` correctly resets.
+        var inOptional = false;
+
         while (true)
         {
             var m = stream.SkipNewLines();
@@ -94,14 +101,16 @@ partial class FastParser
 
                 case TokenTypes.OptionalIndex:
                 case TokenTypes.SquareBracketStart:
+                    inOptional |= token.Type == TokenTypes.OptionalIndex;
                     stream.Consume();
                     if (!ExpressionSequence(out var index, TokenTypes.SquareBracketEnd))
                         throw stream.Unexpected();
-                    node = node.Member(index, true, token.Type == TokenTypes.OptionalIndex);
+                    node = node.Member(index, true, inOptional);
                     continue;
 
                 case TokenTypes.BracketStart:
                 case TokenTypes.OptionalCall:
+                    inOptional |= token.Type == TokenTypes.OptionalCall;
                     stream.Consume();
                     if (!ArrayExpression(out var arguments))
                         throw stream.Unexpected();
@@ -111,11 +120,12 @@ partial class FastParser
                         asNew = false;
                     }
                     else
-                        node = new AstCallExpression(node, arguments, token.Type == TokenTypes.OptionalCall);
+                        node = new AstCallExpression(node, arguments, inOptional);
                     continue;
 
                 case TokenTypes.QuestionDot:
                 case TokenTypes.Dot:
+                    inOptional |= token.Type == TokenTypes.QuestionDot;
                     stream.Consume();
                     stream.SkipNewLines();
 
@@ -128,7 +138,7 @@ partial class FastParser
                         node = node.Member(
                             new AstIdentifier(hashToken, $"#{privateIdentifier.Name.Value}"),
                             false,
-                            token.Type == TokenTypes.QuestionDot);
+                            inOptional);
                         continue;
                     }
 
@@ -145,7 +155,7 @@ partial class FastParser
                             node = node.Member(
                                 new AstIdentifier(next.AsString()),
                                 false,
-                                token.Type == TokenTypes.QuestionDot);
+                                inOptional);
                             break;
                         default:
                             throw stream.Unexpected();
