@@ -22,6 +22,13 @@ public partial class JSBoolean : JSPrimitive
         if (target is JSPrimitiveObject { value: JSBoolean primitiveBoolean })
             return primitiveBoolean;
 
+        // Boolean.prototype itself has a [[BooleanData]] internal slot whose value
+        // is false (§20.3.3), so valueOf/toString invoked on it must succeed.
+        if (target is JSObject @object
+            && (JSEngine.Current as JSObject)?[Names.Boolean] is JSFunction booleanConstructor
+            && ReferenceEquals(@object, booleanConstructor.prototype))
+            return False;
+
         throw JSEngine.NewTypeError($"Boolean.prototype.{name} requires that 'this' be a Boolean");
     }
 

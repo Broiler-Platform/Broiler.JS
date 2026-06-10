@@ -26,6 +26,9 @@ public partial class JSFloat64Array : JSTypedArray
 
     public override bool SetValue(uint index, JSValue value, JSValue receiver, bool throwError = true)
     {
+        if (TrySetForeignReceiver(index, value, receiver, throwError, out var foreign))
+            return foreign;
+
         var number = (value ?? JSUndefined.Value).DoubleValue;
         if (index >= length)
             return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)

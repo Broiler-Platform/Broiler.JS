@@ -64,7 +64,10 @@ public partial class JSFinalizationRegistry : JSObject
         return JSUndefined.Value;
     }
 
-    private static bool CanBeHeldWeakly(JSValue value) => value is JSObject || value.IsSymbol;
+    // AO CanBeHeldWeakly: an object, or a non-registered (non-Symbol.for) symbol.
+    // A registered symbol cannot be held weakly, so delegate to the shared helper
+    // rather than accepting every symbol.
+    private static bool CanBeHeldWeakly(JSValue value) => JSSymbol.CanBeHeldWeakly(value);
 
     private void Register(JSValue target, JSValue holdings, JSValue unregisterToken)
     {
@@ -98,7 +101,17 @@ public partial class JSWeakRef : JSObject
     internal WeakReference<JSValue> weak;
     public JSWeakRef(JSValue value) : this() => weak = new WeakReference<JSValue>(value);
     [JSExport(Length = 1)]
-    public JSWeakRef(in Arguments a) : base(JSEngine.NewTargetPrototype) => weak = new WeakReference<JSValue>(a[0] ?? throw new JSException($"argument is missing"));
+    public JSWeakRef(in Arguments a) : base(JSEngine.NewTargetPrototype)
+    {
+        // §26.1.1.1: the target must be able to be held weakly (an object or a
+        // non-registered symbol); anything else (including a missing argument)
+        // is a TypeError.
+        var target = a[0] ?? JSUndefined.Value;
+        if (!JSSymbol.CanBeHeldWeakly(target))
+            throw JSEngine.NewTypeError("WeakRef: target must be an object or an unregistered symbol");
+
+        weak = new WeakReference<JSValue>(target);
+    }
 
     [JSExport]
     public JSValue Deref(in Arguments a)

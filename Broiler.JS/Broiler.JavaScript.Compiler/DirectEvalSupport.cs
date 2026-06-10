@@ -385,10 +385,17 @@ public static class DirectEvalSupport
                 throw new FastParseException(program.Start, "Invalid declaration in direct eval code");
             }
 
+            // `var arguments` (and likewise a function/class/catch binding named
+            // "arguments") is an early error only when the direct eval is in a
+            // PARAMETER INITIALIZER — signalled here by a non-empty parameterBindings,
+            // which is populated solely while a parameter initializer is compiled. In
+            // the function body it is allowed in non-strict mode (test262 12.2.1-11);
+            // strict mode is still rejected via the inheritStrictMode path.
+            var inParameterInitializer = parameterBindings?.Length > 0;
             var statements = program.Statements.GetFastEnumerator();
             while (statements.MoveNext(out var statement))
             {
-                if (IsRestrictedDeclaration(statement, inheritStrictMode, disallowArgumentsDeclaration))
+                if (IsRestrictedDeclaration(statement, inheritStrictMode, disallowArgumentsDeclaration && inParameterInitializer))
                     throw new FastParseException(statement.Start, "Invalid declaration in direct eval code");
             }
         }
@@ -528,6 +535,9 @@ public static class DirectEvalSupport
         if (inheritStrictMode && (name.Value.Equals("arguments") || name.Value.Equals("eval")))
             return true;
 
+        // `var arguments` is rejected only when the direct eval is in a parameter
+        // initializer (disallowArgumentsDeclaration); in the function body it is
+        // allowed (test262 12.2.1-11), where it just refers to the arguments object.
         return disallowArgumentsDeclaration && name.Value.Equals("arguments");
     }
 }

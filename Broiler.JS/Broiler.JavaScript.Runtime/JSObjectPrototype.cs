@@ -105,7 +105,10 @@ public partial class JSObject
         else if (a.This?.TypeOf() == JSConstants.Function)
             builtinTag = "Function";
         else
-            builtinTag = "Object";
+            // Boolean/Number/String (boxed primitives and their prototype objects,
+            // which carry the matching [[XxxData]] slot) are resolved in the
+            // BuiltIns layer via this hook; everything else tags as "Object".
+            builtinTag = GetBuiltinToStringTag?.Invoke(a.This) ?? "Object";
 
         var toStringTag = GetGlobalSymbolFactory?.Invoke("toStringTag");
         if (toStringTag != null && a.This is JSObject @object)

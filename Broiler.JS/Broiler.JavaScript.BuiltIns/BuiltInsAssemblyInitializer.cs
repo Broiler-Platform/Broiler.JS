@@ -166,6 +166,7 @@ internal static class BuiltInsAssemblyInitializer
             JSSymbol.CreateClass((JSContext)ctx, register);
         JSValue.GetGlobalSymbolFactory = static name => JSSymbol.GlobalSymbol(name);
         JSValue.GetSymbolByKeyFactory = static key => JSSymbol.FromKey(key);
+        JSValue.GetBuiltinToStringTag = static value => ResolveBuiltinToStringTag(value);
 
         // Initialize JSSymbolBuilder with the concrete JSSymbol type so the
         // ClassGenerator can emit symbol lookups without a direct reference.
@@ -347,6 +348,39 @@ internal static class BuiltInsAssemblyInitializer
         // Initialize builders for generator/async function types
         JSGeneratorFunctionBuilderV2.Initialize(typeof(JSGeneratorFunctionV2));
         JSAsyncFunctionBuilder.Initialize(typeof(JSAsyncFunction), typeof(JSValue));
+    }
+
+    // Object.prototype.toString (§20.1.3.6) builtin tags for values whose
+    // primitive internal slot lives in the BuiltIns layer: boxed primitives
+    // (new Number/Boolean/String, Object(symbol/bigint)) and the
+    // Number/Boolean/String prototype objects, which per spec carry a
+    // [[NumberData]]/[[BooleanData]]/[[StringData]] slot. Date and RegExp are
+    // intentionally excluded: in modern ECMAScript their prototypes are ordinary
+    // objects, so a type-based check would mis-tag e.g. RegExp.prototype as
+    // "[object RegExp]" instead of "[object Object]".
+    private static string ResolveBuiltinToStringTag(JSValue value)
+    {
+        if (value is JSPrimitiveObject boxed)
+        {
+            var primitive = boxed.value;
+            if (primitive.IsString) return "String";
+            if (primitive.IsNumber) return "Number";
+            if (primitive.IsBoolean) return "Boolean";
+            if (primitive.IsBigInt) return "BigInt";
+            if (primitive.IsSymbol) return "Symbol";
+        }
+
+        if (value is JSObject @object && JSEngine.Current is JSObject global)
+        {
+            if (global[Names.Number] is JSFunction number && ReferenceEquals(@object, number.prototype))
+                return "Number";
+            if (global[Names.Boolean] is JSFunction boolean && ReferenceEquals(@object, boolean.prototype))
+                return "Boolean";
+            if (global[Names.String] is JSFunction @string && ReferenceEquals(@object, @string.prototype))
+                return "String";
+        }
+
+        return null;
     }
 
     private static JSTypedArray CloneTypedArray(JSTypedArray typedArray, JSArrayBuffer clonedBuffer)
@@ -769,7 +803,12 @@ internal static class BuiltInsAssemblyInitializer
                 if (a.This.IsNullOrUndefined)
                     throw JSEngine.NewTypeError(JSException.Cannot_convert_undefined_or_null_to_object);
 
-                return JSValue.CreateString(a.This?.TypeOf() == JSConstants.Function ? "[object Function]" : "[object Object]");
+                // §20.1.3.5 Object.prototype.toLocaleString: return ? Invoke(O,
+                // "toString") — dispatch to the actual "toString" method (e.g.
+                // String/Number.prototype.toString), not the Object.prototype
+                // .toString "[object X]" tag. A plain object whose toString is the
+                // inherited Object.prototype.toString still yields "[object Object]".
+                return a.This.InvokeMethod(KeyStrings.toString, in Arguments.Empty);
             }, "toLocaleString"), JSPropertyAttributes.ConfigurableValue);
         }
 

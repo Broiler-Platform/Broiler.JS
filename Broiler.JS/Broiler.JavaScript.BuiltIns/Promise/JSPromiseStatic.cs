@@ -228,7 +228,7 @@ public partial class JSPromise
             // reject the returned promise rather than throwing synchronously.
             try
             {
-                GetPromiseResolve(constructor);
+                var promiseResolve = GetPromiseResolve(constructor);
                 var en = iterable.GetIterableEnumerator();
                 while (en.MoveNext(out var hasValue, out var item, out var _))
                 {
@@ -255,25 +255,18 @@ public partial class JSPromise
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
-                    if (item is JSPromise promise)
-                    {
-                        promise.Then(resolveElement.Delegate, rejectElement.Delegate);
-                        continue;
-                    }
+                    // PerformPromiseAll (§27.2.4.1.2): route every value through
+                    // Call(promiseResolve, constructor, « nextValue ») and then
+                    // Invoke(nextPromise, "then", « resolveElement, rejectElement »).
+                    // The "then" method is observable, so it must be invoked even for
+                    // a native promise rather than special-casing it via the internal
+                    // Then.
+                    var nextPromise = promiseResolve.InvokeFunction(new Arguments(constructor, item));
+                    var then = nextPromise[KeyStrings.then];
+                    if (!then.IsFunction)
+                        throw JSEngine.NewTypeError("Promise resolve did not return a thenable");
 
-                    // null/undefined (and other primitives) are not thenable; reading
-                    // ".then" off null/undefined would throw, so only probe objects.
-                    if (!item.IsNullOrUndefined)
-                    {
-                        var then = item[KeyStrings.then];
-                        if (then.IsFunction)
-                        {
-                            then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
-                            continue;
-                        }
-                    }
-
-                    resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
+                    then.InvokeFunction(new Arguments(nextPromise, resolveElement, rejectElement));
                 }
 
                 Settle();
@@ -397,13 +390,11 @@ public partial class JSPromise
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
+                    // PerformPromiseRace (§27.2.4.5.1): Invoke(nextPromise, "then", …)
+                    // for every value. The "then" method is observable, so it must be
+                    // invoked even for a native promise rather than special-casing it
+                    // via the internal Then.
                     var nextPromise = promiseResolve.InvokeFunction(new Arguments(constructor, item));
-                    if (nextPromise is JSPromise promise)
-                    {
-                        promise.Then(resolveElement.Delegate, rejectElement.Delegate);
-                        continue;
-                    }
-
                     var then = nextPromise[KeyStrings.then];
                     if (!then.IsFunction)
                         throw JSEngine.NewTypeError("Promise resolve did not return a thenable");
@@ -445,7 +436,7 @@ public partial class JSPromise
             // reject the returned promise rather than throwing synchronously.
             try
             {
-                GetPromiseResolve(constructor);
+                var promiseResolve = GetPromiseResolve(constructor);
                 var en = iterable.GetIterableEnumerator();
                 while (en.MoveNext(out var hasValue, out var item, out var _))
                 {
@@ -482,23 +473,15 @@ public partial class JSPromise
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
-                    if (item is JSPromise promise)
-                    {
-                        promise.Then(resolveElement.Delegate, rejectElement.Delegate);
-                        continue;
-                    }
+                    // PerformPromiseAllSettled (§27.2.4.8.2): Call(promiseResolve, …)
+                    // then Invoke(nextPromise, "then", …) for every value — the "then"
+                    // method is observable even for a native promise.
+                    var nextPromise = promiseResolve.InvokeFunction(new Arguments(constructor, item));
+                    var then = nextPromise[KeyStrings.then];
+                    if (!then.IsFunction)
+                        throw JSEngine.NewTypeError("Promise resolve did not return a thenable");
 
-                    if (!item.IsNullOrUndefined)
-                    {
-                        var then = item[KeyStrings.then];
-                        if (then.IsFunction)
-                        {
-                            then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
-                            continue;
-                        }
-                    }
-
-                    resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
+                    then.InvokeFunction(new Arguments(nextPromise, resolveElement, rejectElement));
                 }
 
                 Settle();
@@ -574,7 +557,7 @@ public partial class JSPromise
             // reject the returned promise rather than throwing synchronously.
             try
             {
-                GetPromiseResolve(constructor);
+                var promiseResolve = GetPromiseResolve(constructor);
                 var en = iterable.GetIterableEnumerator();
                 while (en.MoveNext(out var hasValue, out var item, out var _))
                 {
@@ -604,23 +587,15 @@ public partial class JSPromise
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
 
-                    if (item is JSPromise promise)
-                    {
-                        promise.Then(resolveElement.Delegate, rejectElement.Delegate);
-                        continue;
-                    }
+                    // PerformPromiseAny (§27.2.4.3.2): Call(promiseResolve, …) then
+                    // Invoke(nextPromise, "then", …) for every value — the "then"
+                    // method is observable even for a native promise.
+                    var nextPromise = promiseResolve.InvokeFunction(new Arguments(constructor, item));
+                    var then = nextPromise[KeyStrings.then];
+                    if (!then.IsFunction)
+                        throw JSEngine.NewTypeError("Promise resolve did not return a thenable");
 
-                    if (!item.IsNullOrUndefined)
-                    {
-                        var then = item[KeyStrings.then];
-                        if (then.IsFunction)
-                        {
-                            then.InvokeFunction(new Arguments(item, resolveElement, rejectElement));
-                            continue;
-                        }
-                    }
-
-                    resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, item));
+                    then.InvokeFunction(new Arguments(nextPromise, resolveElement, rejectElement));
                 }
 
                 RejectIfDone();

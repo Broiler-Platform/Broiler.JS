@@ -496,7 +496,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         }
     }
 
-    public IEnumerable<string> GetDirectEvalLexicalBindingNames()
+    public IEnumerable<string> GetDirectEvalLexicalBindingNames(bool excludeSimpleCatchBindings = false)
     {
         var scopes = new List<FastFunctionScope>();
         var current = this;
@@ -524,6 +524,10 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
                 if (!variable.IsLexical
                     || variable.IsTemp
                     || string.IsNullOrEmpty(variable.Name)
+                    // Per Annex B.3.4 a simple CatchParameter does not block a `var`
+                    // of the same name in non-strict direct eval, so it is excluded
+                    // from the conflict set there (strict mode still reports it).
+                    || (excludeSimpleCatchBindings && variable.IsSimpleCatchBinding)
                     || !seen.Add(NormalizeVisibleName(variable.Name)))
                 {
                     continue;
