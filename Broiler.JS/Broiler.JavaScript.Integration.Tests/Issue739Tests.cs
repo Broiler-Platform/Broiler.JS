@@ -13,6 +13,17 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   `this` to JSRegExp and threw for a plain object carrying an `exec` method. It is
 //   now a static [JSPrototypeMethod] that runs RegExpExec.
 //
+//   Problem 19 / 20 (duplicate named capture groups + an iterated \k<name>
+//   backreference) — ECMAScript clears a group's captures on each repetition of a
+//   quantified group, so /(?:(?:(?<x>a)|(?<x>b)|c)\k<x>){2}/ matches "aac" with
+//   groups.x === undefined. .NET's regex retains the previous capture across
+//   repetitions, so the conditional backreference (BuildNamedBackref) fired on a
+//   stale group and the match was lost ("Cannot get property groups of null"). The
+//   capture-group rewrite now prepends a balancing-group reset
+//   "(?(bjsgN)(?<-bjsgN>))" to each quantified group body, popping any stale capture
+//   at the start of every iteration. Applied only to patterns with duplicate named
+//   groups (the ES2025 feature that requires it), so other patterns are untouched.
+//
 //   Problem 15 / 16 (Reflect.setPrototypeOf must return false, not throw) — the
 //   ordinary [[SetPrototypeOf]] (§10.1.2) returns false for the not-extensible and
 //   cyclic cases; only Object.setPrototypeOf / the __proto__ setter turn that into a
@@ -24,11 +35,7 @@ namespace Broiler.JavaScript.Integration.Tests;
 // definition / invalid parameter list edge cases) and P2 eval ReferenceError
 // (parser/architectural); P3-P12 class decorators + `accessor` auto-accessors
 // (Stage-3); P14 super-call-in-arrow-eval this-init, P17 for-of head var-environment,
-// P18 Annex-B eval block-scoped function hoisting (architectural scope/eval). P19/P20
-// duplicate-named-group properties already work except the iterated `\k<name>` case,
-// which relies on ECMAScript clearing inner captures on each quantifier repetition —
-// .NET's regex engine retains the previous capture, so the conditional backreference
-// wrongly fires and the match is lost; fixing it needs a custom matcher.
+// P18 Annex-B eval block-scoped function hoisting (architectural scope/eval).
 public class Issue739Tests
 {
     private static string Eval(string code)
@@ -58,6 +65,38 @@ public class Issue739Tests
     public void RegExpTestOnNonObjectThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "try{RegExp.prototype.test.call(5,'');'no'}catch(e){e.constructor.name}"));
+
+    // ---- Problem 19 / 20: duplicate named groups with an iterated backreference ----
+
+    [Fact]
+    public void DuplicateNamedGroupsExecGroupsObject()
+        => Assert.Equal("b,a,c|x,y,z", Eval(
+            "var m=/(?:(?<x>a)|(?<y>a)(?<x>b))(?:(?<z>c)|(?<z>d))/;var r=m.exec('abc');" +
+            "[r.groups.x,r.groups.y,r.groups.z].join(',')+'|'+Object.keys(r.groups).join(',')"));
+
+    [Fact]
+    public void DuplicateNamedGroupsNonParticipatingIsUndefined()
+        => Assert.Equal("a,undefined,d", Eval(
+            "var m=/(?:(?<x>a)|(?<y>a)(?<x>b))(?:(?<z>c)|(?<z>d))/;var r=m.exec('ad');" +
+            "[r.groups.x,String(r.groups.y),r.groups.z].join(',')"));
+
+    [Fact]
+    public void DuplicateNamedGroupIteratedBackrefMatchesWithResetCapture()
+        => Assert.Equal("aac|undefined", Eval(
+            "var it=/(?:(?:(?<x>a)|(?<x>b)|c)\\k<x>){2}/;var r=it.exec('aac');" +
+            "r[0]+'|'+String(r.groups.x)"));
+
+    [Fact]
+    public void DuplicateNamedGroupIteratedBackrefKeepsLastIterationCapture()
+        => Assert.Equal("b,a", Eval(
+            "var it=/(?:(?:(?<x>a)|(?<x>b)|c)\\k<x>){2}/;" +
+            "[it.exec('aabb').groups.x, it.exec('aaaa').groups.x].join(',')"));
+
+    [Fact]
+    public void DuplicateNamedGroupIndicesGroupsObject()
+        => Assert.Equal("1,2|0,1|2,3", Eval(
+            "var m=/(?:(?<x>a)|(?<y>a)(?<x>b))(?:(?<z>c)|(?<z>d))/d;var r=m.exec('abc');" +
+            "[r.indices.groups.x.join(','),r.indices.groups.y.join(','),r.indices.groups.z.join(',')].join('|')"));
 
     // ---- Problem 15: Reflect.setPrototypeOf returns false on a cyclic change ----
 
