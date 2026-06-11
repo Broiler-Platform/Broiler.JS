@@ -202,7 +202,10 @@ public partial class JSString : JSPrimitive
         return base.GetValue(key, receiver, throwError);
     }
 
-    public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) => new IntKeyEnumerator(Length);
+    // Property-key enumeration (for-in, Object.keys, spread) must yield the index
+    // properties as String keys ("0", "1", …), not Numbers — otherwise destructuring
+    // a for-in key (`for (var {length:x} in "foo")`) reads `.length` off a number.
+    public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) => new StringIndexKeyEnumerator(Length);
 
     [JSExport]
     public override int Length => value.Length;
