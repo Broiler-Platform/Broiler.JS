@@ -217,4 +217,26 @@ public class Issue753Tests
     public void WithVarAssignsToOuterWhenPropertyAbsent()
         => Assert.Equal("7", Eval(
             "var o={};var y;with(o){var y=7;}(o.y===undefined?y:o.y).toString()"));
+
+    // ---- Problem 40: arguments @@iterator is %Array.prototype.values% ----
+
+    [Fact]
+    public void ArgumentsIteratorIsArrayPrototypeValues()
+        => Assert.Equal("true", Eval(
+            "function f(){return arguments[Symbol.iterator]===[][Symbol.iterator];}f(1,2).toString()"));
+
+    [Fact]
+    public void ArgumentsIteratorNameIsValues()
+        => Assert.Equal("values", Eval(
+            "function f(){return arguments[Symbol.iterator].name;}f()"));
+
+    [Fact]
+    public void ArgumentsIteratorRemainsLengthBound()
+        => Assert.Equal("1,2", Eval(
+            "function f(){arguments.length=2;return Array.from(arguments).join(',');}f(1,2,3,4)"));
+
+    [Fact]
+    public void MappedArgumentsIterationObservesLiveParameter()
+        => Assert.Equal("99,2", Eval(
+            "function f(a,b){a=99;return [...arguments].join(',');}f(1,2)"));
 }

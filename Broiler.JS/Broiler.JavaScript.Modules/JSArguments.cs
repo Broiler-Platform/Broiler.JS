@@ -3,6 +3,7 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Storage;
 
@@ -14,10 +15,19 @@ public class JSArguments: JSObject
 
     public static JSValue Callee(in Arguments a) => throw JSEngine.NewTypeError($"Cannot access callee in strict mode");
 
-    // The arguments object's @@iterator is %Array.prototype.values%, a CreateArrayIterator
-    // that re-reads "length" on every step. Using GetElementEnumerator (which walks the
-    // stored elements) ignored a shrunk "length": after `arguments.length = 2` the third
-    // next() must report done rather than yielding the still-stored third element.
+    // The per-realm %Array.prototype.values% intrinsic, used as the arguments object's
+    // @@iterator so it is === [][Symbol.iterator]. Undefined until the realm's Array
+    // prototype exists (early bootstrap), in which case the constructor falls back to the
+    // equivalent length-bound function below.
+    private static JSValue ArrayValuesIntrinsic
+        => (JSEngine.Current as IJSExecutionContext)?.IntrinsicArrayValues ?? JSValue.UndefinedValue;
+
+    // Fallback @@iterator for arguments before %Array.prototype.values% is available:
+    // a CreateArrayIterator-equivalent that re-reads "length" on every step. Using
+    // GetElementEnumerator (which walks the stored elements) ignored a shrunk "length":
+    // after `arguments.length = 2` the third next() must report done rather than yielding
+    // the still-stored third element. (%Array.prototype.values% itself is length-bound for
+    // array-likes, so the two behave identically.)
     public new JSValue Values(in Arguments a) => JSGeneratorBuilder.CreateFromEnumerator(new LengthBoundEnumerator(this), "Arguments");
 
     private struct LengthBoundEnumerator(JSArguments args) : IElementEnumerator
@@ -93,7 +103,9 @@ public class JSArguments: JSObject
         FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("Arguments"), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         ref var symbols = ref GetSymbols();
-        symbols.Put(JSValue.SymbolIterator.Key) = JSProperty.Property(new JSFunction(Values), JSPropertyAttributes.ConfigurableValue);
+        var iterator = ArrayValuesIntrinsic;
+        var iteratorFn = iterator.IsFunction ? iterator : new JSFunction(Values);
+        symbols.Put(JSValue.SymbolIterator.Key) = JSProperty.Property(iteratorFn, JSPropertyAttributes.ConfigurableValue);
         ref var elements = ref CreateElements();
         
         for (int i = 0; i < args.Length; i++)
