@@ -215,7 +215,6 @@ test/built-ins/Function/prototype/toString/built-in-function-object.js
 test/built-ins/Function/prototype/toString/line-terminator-normalisation-CR-LF.js
 test/built-ins/Function/prototype/toString/line-terminator-normalisation-CR.js
 test/built-ins/GeneratorFunction/instance-yield-expr-in-param.js
-test/built-ins/GeneratorPrototype/Symbol.toStringTag.js
 test/built-ins/GeneratorPrototype/return/try-finally-nested-try-catch-within-catch.js
 test/built-ins/GeneratorPrototype/return/try-finally-nested-try-catch-within-inner-try.js
 test/built-ins/GeneratorPrototype/throw/from-state-completed.js
@@ -251,9 +250,6 @@ test/built-ins/JSON/stringify/value-string-object.js
 test/built-ins/JSON/stringify/value-symbol.js
 test/built-ins/JSON/stringify/value-tojson-arguments.js
 test/built-ins/Map/prototype/entries/name.js
-test/built-ins/Map/prototype/forEach/callback-this-non-strict.js
-test/built-ins/Map/prototype/forEach/callback-this-strict.js
-test/built-ins/Map/prototype/forEach/second-parameter-as-callback-context.js
 test/built-ins/Map/prototype/get/name.js
 test/built-ins/Map/prototype/keys/name.js
 test/built-ins/Map/prototype/set/append-new-values-return-map.js
@@ -346,11 +342,7 @@ test/built-ins/Object/prop-desc.js
 test/built-ins/Object/prototype/setPrototypeOf-with-different-values.js
 test/built-ins/Object/prototype/setPrototypeOf-with-non-circular-values-__proto__.js
 test/built-ins/Object/prototype/setPrototypeOf-with-non-circular-values.js
-test/built-ins/Object/prototype/toString/Object.prototype.toString.call-boolean.js
-test/built-ins/Object/prototype/toString/Object.prototype.toString.call-number.js
 test/built-ins/Object/prototype/toString/Object.prototype.toString.call-regexp.js
-test/built-ins/Object/prototype/toString/Object.prototype.toString.call-string.js
-test/built-ins/Object/prototype/toString/symbol-tag-generators-builtin.js
 test/built-ins/Object/prototype/toString/symbol-tag-override-instances.js
 test/built-ins/Object/setPrototypeOf/set-failure-cycle.js
 test/built-ins/Object/subclass-object-arg.js
@@ -866,9 +858,6 @@ test/built-ins/RegExpStringIteratorPrototype/Symbol.toStringTag.js
 test/built-ins/RegExpStringIteratorPrototype/next/custom-regexpexec-not-callable.js
 test/built-ins/Set/prototype/add/name.js
 test/built-ins/Set/prototype/entries/name.js
-test/built-ins/Set/prototype/forEach/this-arg-explicit.js
-test/built-ins/Set/prototype/forEach/this-non-strict.js
-test/built-ins/Set/prototype/forEach/this-strict.js
 test/built-ins/Set/prototype/intersection/converts-negative-zero.js
 test/built-ins/Set/prototype/keys/keys.js
 test/built-ins/Set/prototype/symmetricDifference/converts-negative-zero.js
@@ -925,8 +914,6 @@ test/built-ins/String/prototype/toLowerCase/special_casing_conditional.js
 test/built-ins/String/prototype/toUpperCase/special_casing.js
 test/built-ins/String/prototype/trim/u180e.js
 test/built-ins/Symbol/prototype/Symbol.toPrimitive/prop-desc.js
-test/built-ins/Symbol/prototype/Symbol.toPrimitive/redefined-symbol-wrapper-ordinary-toprimitive.js
-test/built-ins/Symbol/prototype/Symbol.toPrimitive/removed-symbol-wrapper-ordinary-toprimitive.js
 test/built-ins/ThrowTypeError/unique-per-realm-function-proto.js
 test/built-ins/TypedArray/prototype/copyWithin/BigInt/non-negative-out-of-bounds-end.js
 test/built-ins/TypedArray/prototype/copyWithin/BigInt/undefined-end.js
@@ -1318,7 +1305,6 @@ test/language/expressions/call/eval-spread.js
 test/language/expressions/class/accessor-name-inst-computed-in.js
 test/language/expressions/class/accessor-name-static-computed-in.js
 test/language/expressions/class/elements/private-methods/prod-private-method-initialize-order.js
-test/language/expressions/class/elements/static-field-init-this-inside-arrow-function.js
 test/language/expressions/class/elements/static-private-method-subclass-receiver.js
 test/language/expressions/class/elements/super-access-from-arrow-func-on-field.js
 test/language/expressions/compound-assignment/add-whitespace.js
@@ -1345,9 +1331,7 @@ test/language/expressions/equals/bigint-and-number-extremes.js
 test/language/expressions/equals/bigint-and-object.js
 test/language/expressions/equals/bigint-and-string.js
 test/language/expressions/function/named-strict-error-reassign-fn-name-in-body-in-eval.js
-test/language/expressions/generators/has-instance.js
 test/language/expressions/generators/named-strict-error-reassign-fn-name-in-body-in-eval.js
-test/language/expressions/generators/prototype-value.js
 test/language/expressions/greater-than-or-equal/S11.8.4_A2.2_T1.js
 test/language/expressions/greater-than-or-equal/bigint-and-incomparable-string.js
 test/language/expressions/greater-than-or-equal/bigint-and-string.js
@@ -1447,7 +1431,6 @@ test/language/statements/class/definition/prototype-getter.js
 test/language/statements/class/elements/class-field-on-frozen-objects.js
 test/language/statements/class/elements/private-methods/prod-private-method-initialize-order.js
 test/language/statements/class/elements/privatefieldset-evaluation-order-1.js
-test/language/statements/class/elements/static-field-init-this-inside-arrow-function.js
 test/language/statements/class/elements/static-private-method-subclass-receiver.js
 test/language/statements/class/elements/super-access-from-arrow-func-on-field.js
 test/language/statements/class/elements/syntax/valid/grammar-field-named-get-followed-by-generator-asi.js
@@ -1550,8 +1533,6 @@ test/language/statements/for-in/head-lhs-let.js
 test/language/statements/for-in/identifier-let-allowed-as-lefthandside-expression-not-strict.js
 test/language/statements/for-in/order-enumerable-shadowed.js
 test/language/statements/for-in/order-property-added.js
-test/language/statements/for-of/head-lhs-async-escaped.js
-test/language/statements/for-of/head-lhs-async-parens.js
 test/language/statements/for-of/iterator-next-result-value-attr-error.js
 test/language/statements/for/head-lhs-let.js
 test/language/statements/for/scope-body-lex-open.js
@@ -1561,13 +1542,9 @@ test/language/statements/function/S13.2.2_A3_T1.js
 test/language/statements/function/S13.2.2_A3_T2.js
 test/language/statements/function/S13_A12_T1.js
 test/language/statements/function/S13_A15_T2.js
-test/language/statements/generators/has-instance.js
-test/language/statements/generators/prototype-value.js
 test/language/statements/let/syntax/let-closure-inside-condition.js
 test/language/statements/let/syntax/let-closure-inside-initialization.js
 test/language/statements/let/syntax/let-closure-inside-next-expression.js
-test/language/statements/switch/scope-lex-open-case.js
-test/language/statements/switch/scope-lex-open-dflt.js
 test/language/statements/try/completion-values.js
 test/language/statements/variable/S12.2_A4.js
 test/language/statements/variable/binding-resolution.js
@@ -1759,7 +1736,6 @@ test/staging/sm/misc/line-paragraph-separator-parse-as-lineterminator.js
 test/staging/sm/object/accessor-name.js
 test/staging/sm/object/defineProperty-proxy.js
 test/staging/sm/object/entries.js
-test/staging/sm/object/object-toString-01.js
 test/staging/sm/object/propertyIsEnumerable.js
 test/staging/sm/object/toPrimitive-callers.js
 test/staging/sm/object/toPrimitive.js
@@ -1770,10 +1746,6 @@ test/staging/sm/regress/regress-554955-3.js
 test/staging/sm/regress/regress-602621.js
 test/staging/sm/regress/regress-610026.js
 test/staging/sm/regress/regress-617405-2.js
-test/staging/sm/statements/for-inof-loop-const-declaration.js
-test/staging/sm/statements/for-inof-name-iteration-expression-contains-index-string.js
-test/staging/sm/statements/for-loop-declaration-contains-computed-name.js
-test/staging/sm/statements/for-loop-declaration-contains-initializer.js
 test/staging/sm/statements/regress-642975.js
 test/staging/sm/statements/try-completion.js
 test/staging/sm/strict/8.12.7-2.js
