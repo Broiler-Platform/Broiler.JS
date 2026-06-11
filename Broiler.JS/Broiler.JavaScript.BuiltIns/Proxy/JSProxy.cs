@@ -807,6 +807,17 @@ public partial class JSProxy : JSObject
         return target.TrySetPrototypeOf(proto, out error);
     }
 
+    // ToLength(Get(arrayLike, "length")): ToNumber, then clamp to [0, 2^53-1].
+    private static long ToArrayLikeLength(JSValue value)
+    {
+        var number = value.DoubleValue;
+        if (double.IsNaN(number) || number <= 0)
+            return 0;
+
+        const double maxSafeInteger = 9007199254740991.0; // 2^53 - 1
+        return number >= maxSafeInteger ? (long)maxSafeInteger : (long)System.Math.Floor(number);
+    }
+
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)
     {
         var target = RequireTarget();
@@ -816,11 +827,18 @@ public partial class JSProxy : JSObject
             var result = fx.InvokeFunction(new Arguments(handler, target));
             var array = new JSArray();
             var seenKeys = new HashSet<string>();
-            var en = result.GetElementEnumerator();
-            while (en.MoveNext(out var hasValue, out var value, out var _))
+
+            // §10.5.11 step 7 uses CreateListFromArrayLike on the trap result, which
+            // reads the array-like's "length" via [[Get]] (observing a length accessor)
+            // and then each index 0..length-1 via [[Get]] — a fast element walk would
+            // skip the observable "length" read.
+            if (result is not JSObject resultObject)
+                throw JSEngine.NewTypeError("Proxy ownKeys trap must return an array-like object");
+
+            var length = ToArrayLikeLength(resultObject[KeyStrings.length]);
+            for (long i = 0; i < length; i++)
             {
-                if (!hasValue)
-                    continue;
+                var value = resultObject[(uint)i];
 
                 if (!value.IsString && !value.IsSymbol)
                     throw JSEngine.NewTypeError("Proxy ownKeys trap must return only string and symbol keys");

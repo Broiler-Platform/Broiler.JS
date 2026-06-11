@@ -256,4 +256,26 @@ public class Issue747Tests
             ZipCloseHarness +
             "var it=Iterator.zipKeyed({a:mk('a'),b:mk('b',{done:true}),c:mk('d',{t:ExpErr})});" +
             "var r='NONE';try{it.next();}catch(e){r=e instanceof ExpErr?'ExpErr':'other';}r"));
+
+    // ---- Problem 34: Object.keys on a proxy reads the ownKeys result's `length` ----
+
+    [Fact]
+    public void ProxyOwnKeysReadsArrayLikeLengthObservably()
+        => Assert.Equal("get length,get 0,get 1,get 2", Eval(
+            "var log=[];var sym=Symbol();" +
+            "var res={get length(){log.push('get length');return 3;}," +
+            "get 0(){log.push('get 0');return 'a';},get 1(){log.push('get 1');return sym;}," +
+            "get 2(){log.push('get 2');return 'b';}};" +
+            "var p=new Proxy({},{ownKeys(){return res;}," +
+            "getOwnPropertyDescriptor(t,k){return{value:1,enumerable:k==='a',configurable:true};}});" +
+            "Object.keys(p);log.join(',')"));
+
+    [Fact]
+    public void ProxyOwnKeysSkipsSymbolForObjectKeys()
+        => Assert.Equal("a", Eval(
+            "var sym=Symbol();" +
+            "var res={length:3,0:'a',1:sym,2:'b'};" +
+            "var p=new Proxy({},{ownKeys(){return res;}," +
+            "getOwnPropertyDescriptor(t,k){return{value:1,enumerable:k==='a',configurable:true};}});" +
+            "Object.keys(p).join(',')"));
 }
