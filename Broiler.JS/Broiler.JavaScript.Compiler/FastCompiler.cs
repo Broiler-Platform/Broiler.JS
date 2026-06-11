@@ -350,7 +350,11 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             YExpression.Assign(temp.Variable, result)
         };
 
-        AppendAnnexBOuterBindingAssignments(statements, currentBinding, id.Name, temp.Variable);
+        // Annex B 3.3 Web Legacy Compatibility (the function-scope var copy-out)
+        // applies only to plain FunctionDeclarations; generator and async
+        // declarations nested in a block stay purely block-scoped.
+        if (expressionStatement.Expression is AstFunctionExpression { Generator: false, Async: false })
+            AppendAnnexBOuterBindingAssignments(statements, currentBinding, id.Name, temp.Variable);
         statements.Add(temp.Variable);
 
         return YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, statements);
@@ -423,7 +427,11 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             YExpression.Assign(currentBinding.Expression, temp.Variable)
         ]);
 
-        AppendAnnexBOuterBindingAssignments(statements, currentBinding, functionName, temp.Variable);
+        // Annex B 3.3 Web Legacy Compatibility (the function-scope var copy-out)
+        // applies only to plain FunctionDeclarations; generator and async
+        // declarations stay purely block-scoped.
+        if (!functionDeclaration.Generator && !functionDeclaration.Async)
+            AppendAnnexBOuterBindingAssignments(statements, currentBinding, functionName, temp.Variable);
 
         statements.Add(temp.Variable);
         return YExpression.Block(variables, statements);
@@ -453,7 +461,9 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             YExpression.Assign(blockBinding.Expression, temp.Variable),
         };
 
-        AppendAnnexBOuterBindingAssignments(statements, blockBinding, functionName, temp.Variable);
+        // Annex B 3.3 var copy-out is for plain FunctionDeclarations only.
+        if (!functionDeclaration.Generator && !functionDeclaration.Async)
+            AppendAnnexBOuterBindingAssignments(statements, blockBinding, functionName, temp.Variable);
         statements.Add(temp.Variable);
 
         var inner = YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, statements);

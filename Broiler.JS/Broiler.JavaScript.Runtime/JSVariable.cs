@@ -64,17 +64,36 @@ public class JSVariable
         => PrepareAnonymousFunctionName(value, name.ToString());
 
     public static JSValue PrepareAnonymousFunctionNameForProperty(JSValue value, JSValue name)
+        => PrepareAnonymousFunctionName(value, PropertyKeyToFunctionName(name));
+
+    // NamedEvaluation for a computed-key accessor (`get [expr]() {}` / `set [expr]() {}`):
+    // SetFunctionName receives the "get"/"set" prefix, so the name is "get [desc]" /
+    // "set foo" etc. The base name follows the same rules as PrepareAnonymousFunctionName
+    // ForProperty (symbols → "[desc]"/"" , numeric → string, string keys verbatim).
+    public static JSValue PrepareAnonymousFunctionNameForGetter(JSValue value, JSValue name)
+        => PrepareAnonymousFunctionName(value, "get " + PropertyKeyToFunctionName(name));
+
+    public static JSValue PrepareAnonymousFunctionNameForSetter(JSValue value, JSValue name)
+        => PrepareAnonymousFunctionName(value, "set " + PropertyKeyToFunctionName(name));
+
+    public static JSValue PrepareAnonymousFunctionNameForGetter(JSValue value, uint name)
+        => PrepareAnonymousFunctionName(value, "get " + name.ToString(CultureInfo.InvariantCulture));
+
+    public static JSValue PrepareAnonymousFunctionNameForSetter(JSValue value, uint name)
+        => PrepareAnonymousFunctionName(value, "set " + name.ToString(CultureInfo.InvariantCulture));
+
+    private static string PropertyKeyToFunctionName(JSValue name)
     {
         if (name is IJSSymbol symbol)
-            return PrepareAnonymousFunctionName(value, SymbolFunctionNamePrefix(symbol));
+            return SymbolFunctionNamePrefix(symbol);
 
         var propertyKey = name.ToKey(false);
         return propertyKey.Type switch
         {
-            KeyType.UInt => PrepareAnonymousFunctionName(value, propertyKey.Index.ToString(CultureInfo.InvariantCulture)),
-            KeyType.String => PrepareAnonymousFunctionName(value, propertyKey.KeyString.ToString()),
-            KeyType.Symbol => PrepareAnonymousFunctionName(value, SymbolFunctionNamePrefix(propertyKey.Symbol)),
-            _ => value,
+            KeyType.UInt => propertyKey.Index.ToString(CultureInfo.InvariantCulture),
+            KeyType.String => propertyKey.KeyString.ToString(),
+            KeyType.Symbol => SymbolFunctionNamePrefix(propertyKey.Symbol),
+            _ => string.Empty,
         };
     }
 

@@ -1811,9 +1811,39 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // escape (\d, \(, …) that must pass through untouched.
             if (c == '\\' && i + 1 < pattern.Length)
             {
+                // A \k<name> backreference: copy the whole <name> verbatim. A
+                // supplementary-plane character in the name is a surrogate pair that
+                // must not be wrapped in an atomic group (which would corrupt the name).
+                if (pattern[i + 1] == 'k' && i + 2 < pattern.Length && pattern[i + 2] == '<')
+                {
+                    var refEnd = pattern.IndexOf('>', i + 3);
+                    if (refEnd > 0)
+                    {
+                        sb.Append(pattern, i, refEnd - i + 1);
+                        i = refEnd;
+                        continue;
+                    }
+                }
+
                 sb.Append(c).Append(pattern[i + 1]);
                 i++;
                 continue;
+            }
+
+            // A named group (?<name> (but not a lookbehind (?<= / (?<!): copy the name
+            // verbatim so a supplementary-plane character in the group name is preserved
+            // rather than split into an atomic group, which would corrupt the name that
+            // RewriteCaptureGroups later extracts.
+            if (!inClass && c == '(' && i + 2 < pattern.Length && pattern[i + 1] == '?' && pattern[i + 2] == '<'
+                && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!')))
+            {
+                var nameEnd = pattern.IndexOf('>', i + 3);
+                if (nameEnd > 0)
+                {
+                    sb.Append(pattern, i, nameEnd - i + 1);
+                    i = nameEnd;
+                    continue;
+                }
             }
 
             if (!inClass && c == '[')

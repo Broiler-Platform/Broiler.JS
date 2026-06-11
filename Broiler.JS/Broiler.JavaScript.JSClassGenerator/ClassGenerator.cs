@@ -496,8 +496,10 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
         }
         fb.AppendLine("}");
 
+        // Use the JS export name (not the C# method name) so the function's `name`
+        // property matches its property key, e.g. [JSExport("entries")] GetEntries → "entries".
         var body = @$"new JSFunction({fb.ToString().Replace("\n", "\n\t\t\t")},
-                ""{method.Name}""
+                ""{name}""
                 {l}
             )";
 

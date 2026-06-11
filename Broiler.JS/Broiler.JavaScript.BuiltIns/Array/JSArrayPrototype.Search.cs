@@ -54,6 +54,12 @@ public partial class JSArray
         var @this = ToArrayLikeObject(a.This);
         var first = a.Get1();
         var length = GetArrayLikeLengthLong(@this);
+
+        // Spec § Array.prototype.indexOf step 3: if len is 0, return -1 BEFORE
+        // ToIntegerOrInfinity(fromIndex) so a fromIndex valueOf side effect is not observed.
+        if (length == 0)
+            return JSNumber.MinusOne;
+
         long fromIndex = ToIntegerOrInfinity(a[1]);
 
         if (fromIndex < 0)
@@ -91,13 +97,16 @@ public partial class JSArray
         var @this = ToArrayLikeObject(a.This);
         var first = a.Get1();
         var n = GetArrayLikeLength(@this);
+
+        // Spec § Array.prototype.lastIndexOf step 3: if len is 0, return -1 BEFORE
+        // ToIntegerOrInfinity(fromIndex) so a fromIndex valueOf side effect is not observed.
+        if (n == 0)
+            return JSNumber.MinusOne;
+
         var fromIndex = a.TryGetAt(1, out var value) ? ToIntegerOrInfinity(value) : long.MaxValue;
 
         if (fromIndex < 0)
             fromIndex += n;
-
-        if (n == 0)
-            return JSNumber.MinusOne;
 
         for (long i = Math.Min((long)n - 1, fromIndex); i >= 0; i--)
         {

@@ -56,6 +56,9 @@ public static class JSIntl
     private static readonly KeyString RoundingModeKey = KeyStrings.GetOrCreate("roundingMode");
     private static readonly KeyString RoundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
     private static readonly KeyString TrailingZeroDisplayKey = KeyStrings.GetOrCreate("trailingZeroDisplay");
+    // SetNumberFormatDigitOptions: roundingIncrement must be one of these values.
+    private static readonly int[] SanctionedRoundingIncrements =
+        [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
     private static readonly KeyString TimeZoneKey = KeyStrings.GetOrCreate("timeZone");
     private static readonly KeyString CollationKey = KeyStrings.GetOrCreate("collation");
     private static readonly KeyString LanguageKey = KeyStrings.GetOrCreate("language");
@@ -911,18 +914,25 @@ public static class JSIntl
 
         var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
 
-        // roundingIncrement is a numeric option; the string enums below are
-        // validated against their sanctioned value lists (a bad value, e.g. an
-        // empty string for trailingZeroDisplay, is a RangeError per
-        // SetNumberFormatDigitOptions).
-        ObserveOptions(options, RoundingIncrementKey);
-        _ = GetOption(options, RoundingModeKey, ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"], false, "halfExpand");
-        _ = GetOption(options, RoundingPriorityKey, ["auto", "morePrecision", "lessPrecision"], false, "auto");
-        _ = GetOption(options, TrailingZeroDisplayKey, ["auto", "stripIfInteger"], false, "auto");
+        // roundingIncrement is a numeric option restricted to a sanctioned set; the
+        // string enums below are validated against their sanctioned value lists (a bad
+        // value, e.g. an empty string for trailingZeroDisplay, is a RangeError per
+        // SetNumberFormatDigitOptions). All four always have a resolved value (their
+        // defaults) which resolvedOptions reflects.
+        var roundingIncrement = GetNumberOption(options, RoundingIncrementKey, 1, 5000) ?? 1;
+        if (System.Array.IndexOf(SanctionedRoundingIncrements, roundingIncrement) < 0)
+            throw JSEngine.NewRangeError("roundingIncrement value is out of range.");
+        var roundingMode = GetOption(options, RoundingModeKey, ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"], false, "halfExpand");
+        var roundingPriority = GetOption(options, RoundingPriorityKey, ["auto", "morePrecision", "lessPrecision"], false, "auto");
+        var trailingZeroDisplay = GetOption(options, TrailingZeroDisplayKey, ["auto", "stripIfInteger"], false, "auto");
 
         return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay)
         {
             DigitOptions = digitOptions,
+            RoundingIncrement = roundingIncrement,
+            RoundingMode = roundingMode,
+            RoundingPriority = roundingPriority,
+            TrailingZeroDisplay = trailingZeroDisplay,
         };
     }
 
@@ -975,6 +985,185 @@ public static class JSIntl
         }
 
         return string.IsNullOrEmpty(CultureInfo.CurrentCulture.Name) ? "en-US" : CultureInfo.CurrentCulture.Name;
+    }
+
+    // ResolveLocale, then drop any Unicode ("-u-") extension keyword whose key is not
+    // relevant to the service (ECMA-402 ResolveLocale keeps only the relevantExtensionKeys
+    // in the resolved [[Locale]]). So `ja-JP-u-cu-usd` resolves to `ja-JP` for a service
+    // that only cares about, say, `nu`.
+    internal static string ResolveLocale(JSValue locales, string[] relevantExtensionKeys)
+        => FilterUnicodeExtensionKeywords(ResolveLocale(locales), relevantExtensionKeys);
+
+    // The Unicode-extension keys each service uses to negotiate the resolved locale.
+    internal static readonly string[] NumberFormatRelevantKeys = ["nu"];
+    internal static readonly string[] DateTimeFormatRelevantKeys = ["ca", "hc", "nu"];
+
+    // Rebuilds a BCP-47 tag keeping only the "-u-" extension keywords whose key is in
+    // relevantKeys; attributes and irrelevant keys are dropped, and the whole "-u-"
+    // sequence is removed when nothing relevant survives. Other singleton extensions
+    // ("-t-", "-x-", …) are preserved.
+    private static string FilterUnicodeExtensionKeywords(string tag, string[] relevantKeys)
+    {
+        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", System.StringComparison.OrdinalIgnoreCase) < 0)
+            return tag;
+
+        var parts = tag.Split('-');
+        var u = -1;
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
+            {
+                u = i;
+                break;
+            }
+        }
+
+        if (u < 0)
+            return tag;
+
+        // Walk the "-u-" extension (up to the next singleton subtag or the end),
+        // grouping subtags into keywords: a 2-char subtag is a key, longer subtags are
+        // its type values (or leading attributes before the first key).
+        var end = u + 1;
+        var keywords = new List<(string Key, List<string> Types)>();
+        while (end < parts.Length && parts[end].Length != 1)
+        {
+            if (parts[end].Length == 2)
+                keywords.Add((parts[end].ToLowerInvariant(), new List<string>()));
+            else if (keywords.Count > 0)
+                keywords[^1].Types.Add(parts[end]);
+            // (a subtag before the first key is an attribute — dropped)
+            end++;
+        }
+
+        var sb = new StringBuilder();
+        for (var i = 0; i < u; i++)
+        {
+            if (i > 0)
+                sb.Append('-');
+            sb.Append(parts[i]);
+        }
+
+        var keptAny = false;
+        foreach (var (key, types) in keywords)
+        {
+            if (System.Array.IndexOf(relevantKeys, key) < 0)
+                continue;
+
+            if (!keptAny)
+            {
+                sb.Append("-u");
+                keptAny = true;
+            }
+
+            sb.Append('-').Append(key);
+            foreach (var type in types)
+                sb.Append('-').Append(type);
+        }
+
+        // Preserve any later singleton extensions ("-t-", "-x-", …) after the "-u-" run.
+        for (var i = end; i < parts.Length; i++)
+            sb.Append('-').Append(parts[i]);
+
+        return sb.ToString();
+    }
+
+    // Returns the type value of the Unicode ("-u-") extension keyword `key` in `tag`
+    // (e.g. GetUnicodeExtensionType("en-US-u-hc-h23", "hc") == "h23"), or null when the
+    // keyword is absent. A bare key with no type returns the empty string.
+    internal static string GetUnicodeExtensionType(string tag, string key)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return null;
+
+        var parts = tag.Split('-');
+        var u = -1;
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
+            {
+                u = i;
+                break;
+            }
+        }
+
+        if (u < 0)
+            return null;
+
+        var j = u + 1;
+        while (j < parts.Length && parts[j].Length != 1)
+        {
+            if (parts[j].Length == 2 && string.Equals(parts[j], key, System.StringComparison.OrdinalIgnoreCase))
+            {
+                var types = new List<string>();
+                var t = j + 1;
+                while (t < parts.Length && parts[t].Length >= 3)
+                {
+                    types.Add(parts[t].ToLowerInvariant());
+                    t++;
+                }
+
+                return types.Count == 0 ? string.Empty : string.Join("-", types);
+            }
+
+            j++;
+        }
+
+        return null;
+    }
+
+    // The CLDR-derived default hour cycle for a locale: "h12" for 12-hour regions (and
+    // English without a region), "h23" otherwise. A coarse approximation of the CLDR
+    // <hours> preference data, sufficient for the common cases.
+    internal static string DefaultHourCycle(string tag)
+    {
+        var region = RegionSubtag(tag);
+        if (region != null)
+            return JSIntlLocale.TwelveHourRegions.Contains(region) ? "h12" : "h23";
+
+        return LanguageSubtag(tag) == "en" ? "h12" : "h23";
+    }
+
+    private static string LanguageSubtag(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return null;
+
+        var dash = tag.IndexOf('-');
+        return (dash < 0 ? tag : tag.Substring(0, dash)).ToLowerInvariant();
+    }
+
+    private static string RegionSubtag(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return null;
+
+        var parts = tag.Split('-');
+        var i = 1;
+        if (i < parts.Length && parts[i].Length == 4 && IsAllAlphaSubtag(parts[i]))
+            i++; // skip script
+
+        if (i < parts.Length
+            && ((parts[i].Length == 2 && IsAllAlphaSubtag(parts[i])) || (parts[i].Length == 3 && IsAllDigitSubtag(parts[i]))))
+            return parts[i].ToUpperInvariant();
+
+        return null;
+    }
+
+    private static bool IsAllAlphaSubtag(string s)
+    {
+        foreach (var c in s)
+            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
+                return false;
+        return s.Length > 0;
+    }
+
+    private static bool IsAllDigitSubtag(string s)
+    {
+        foreach (var c in s)
+            if (c < '0' || c > '9')
+                return false;
+        return s.Length > 0;
     }
 
     internal static JSIntlDisplayNamesOptions ValidateDisplayNamesOptions(JSObject options)
@@ -2098,7 +2287,7 @@ public sealed class JSIntlLocale : JSObject
 
     // Regions that conventionally use a 12-hour clock; everything else defaults
     // to the 24-hour cycle. Approximation sufficient for sensible defaults.
-    private static readonly HashSet<string> TwelveHourRegions = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> TwelveHourRegions = new(StringComparer.Ordinal)
     {
         "US", "CA", "AU", "NZ", "IN", "PH", "PK", "BD", "EG", "MX", "CO", "SA",
     };
@@ -2474,6 +2663,13 @@ internal sealed class JSIntlNumberFormatResolved
     // so a getter on e.g. minimumFractionDigits fires once at construction rather
     // than on every format/resolvedOptions call.
     public JSObject DigitOptions { get; set; }
+
+    // SetNumberFormatDigitOptions rounding slots. These always have a resolved value
+    // (their defaults), so resolvedOptions reflects them unconditionally.
+    public int RoundingIncrement { get; set; } = 1;
+    public string RoundingMode { get; set; } = "halfExpand";
+    public string RoundingPriority { get; set; } = "auto";
+    public string TrailingZeroDisplay { get; set; } = "auto";
 }
 
 public class JSIntlNumberFormat : JSObject
@@ -2486,7 +2682,7 @@ public class JSIntlNumberFormat : JSObject
     {
         options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, requireNew: false);
         resolved = JSIntl.ValidateNumberFormatOptions(options);
-        locale = JSIntl.ResolveLocale(a.Get1());
+        locale = JSIntl.ResolveLocale(a.Get1(), JSIntl.NumberFormatRelevantKeys);
     }
 
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
@@ -3060,10 +3256,6 @@ public class JSIntlNumberFormat : JSObject
             var currencyKey = KeyStrings.GetOrCreate("currency");
             var unitKey = KeyStrings.GetOrCreate("unit");
             var useGroupingKey = KeyStrings.GetOrCreate("useGrouping");
-            var roundingIncrementKey = KeyStrings.GetOrCreate("roundingIncrement");
-            var roundingModeKey = KeyStrings.GetOrCreate("roundingMode");
-            var roundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
-            var trailingZeroDisplayKey = KeyStrings.GetOrCreate("trailingZeroDisplay");
             var minimumIntegerDigitsKey = KeyStrings.GetOrCreate("minimumIntegerDigits");
             var minimumFractionDigitsKey = KeyStrings.GetOrCreate("minimumFractionDigits");
             var maximumFractionDigitsKey = KeyStrings.GetOrCreate("maximumFractionDigits");
@@ -3076,14 +3268,6 @@ public class JSIntlNumberFormat : JSObject
                 result.CreateDataProperty(unitKey, @this.options[unitKey]);
             if (!@this.options[useGroupingKey].IsUndefined)
                 result.CreateDataProperty(useGroupingKey, @this.options[useGroupingKey]);
-            if (!@this.options[roundingIncrementKey].IsUndefined)
-                result.CreateDataProperty(roundingIncrementKey, @this.options[roundingIncrementKey]);
-            if (!@this.options[roundingModeKey].IsUndefined)
-                result.CreateDataProperty(roundingModeKey, @this.options[roundingModeKey]);
-            if (!@this.options[roundingPriorityKey].IsUndefined)
-                result.CreateDataProperty(roundingPriorityKey, @this.options[roundingPriorityKey]);
-            if (!@this.options[trailingZeroDisplayKey].IsUndefined)
-                result.CreateDataProperty(trailingZeroDisplayKey, @this.options[trailingZeroDisplayKey]);
             // Digit options reflect the construction-time snapshot (read once),
             // not the live options bag, so resolvedOptions does not re-trigger
             // option getters.
@@ -3138,6 +3322,13 @@ public class JSIntlNumberFormat : JSObject
                 result.CreateDataProperty(KeyStrings.GetOrCreate("compactDisplay"), JSValue.CreateString(r.CompactDisplay));
             if (r.UnitDisplay != null)
                 result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"), JSValue.CreateString(r.UnitDisplay));
+
+            // SetNumberFormatDigitOptions rounding slots are always present (spec order:
+            // after notation/compactDisplay/signDisplay).
+            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingIncrement"), JSValue.CreateNumber(r.RoundingIncrement));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingMode"), JSValue.CreateString(r.RoundingMode));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingPriority"), JSValue.CreateString(r.RoundingPriority));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("trailingZeroDisplay"), JSValue.CreateString(r.TrailingZeroDisplay));
         }
 
         return result;
@@ -3300,25 +3491,39 @@ public class JSIntlDateTimeFormat : JSObject
 
     private bool ResolveHour12()
     {
-        var hour12 = options?[Hour12Key];
-        if (hour12 != null && !hour12.IsUndefined)
-            return hour12.BooleanValue;
-        var cycle = OptionString(HourCycleKey);
-        if (cycle == "h23" || cycle == "h24")
-            return false;
-        return true; // en default
+        var hc = ResolveHourCycle();
+        return hc == "h11" || hc == "h12";
     }
 
-    // Resolves the hourCycle reported by resolvedOptions. hour12 takes precedence
-    // over an explicit hourCycle (mapping to h12 / h23); otherwise an explicit
-    // hourCycle is used as-is, falling back to the locale default (h12 for en).
-    // Kept consistent with ResolveHour12 so the two reported values never disagree.
+    // Resolves the hourCycle reported by resolvedOptions (CreateDateTimeFormat). The
+    // hour12 option wins, mapping to h11/h12 (true) or h23/h24 (false) depending on
+    // whether the locale default is a "0-based" cycle; otherwise an explicit hourCycle
+    // option wins, then the locale's -u-hc- extension, then the locale default.
+    // Kept as the single source of truth so ResolveHour12 never disagrees.
     private string ResolveHourCycle()
     {
+        var hcDefault = JSIntl.DefaultHourCycle(localeTag);
+
         var hour12 = options?[Hour12Key];
         if (hour12 != null && !hour12.IsUndefined)
-            return hour12.BooleanValue ? "h12" : "h23";
-        return OptionString(HourCycleKey) ?? "h12";
+        {
+            // hour12 true picks the 12-hour cycle (h11 when the locale default is a
+            // 0-based/24-hour cycle, else h12); hour12 false picks h23 (the common
+            // 24-hour cycle observed by other engines).
+            if (hour12.BooleanValue)
+                return hcDefault == "h11" || hcDefault == "h23" ? "h11" : "h12";
+            return "h23";
+        }
+
+        var option = OptionString(HourCycleKey);
+        if (option != null)
+            return option;
+
+        var ext = JSIntl.GetUnicodeExtensionType(localeTag, "hc");
+        if (!string.IsNullOrEmpty(ext) && (ext == "h11" || ext == "h12" || ext == "h23" || ext == "h24"))
+            return ext;
+
+        return hcDefault;
     }
 
     private JSIntlDateTimeFormatEngine.Pattern ResolveEnginePattern()
@@ -3669,7 +3874,7 @@ public class JSIntlDateTimeFormat : JSObject
     {
         options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a, requireNew: false);
         JSIntl.ValidateDateTimeFormatOptions(options);
-        localeTag = JSIntl.ResolveLocale(a.Get1());
+        localeTag = JSIntl.ResolveLocale(a.Get1(), JSIntl.DateTimeFormatRelevantKeys);
         locale = CultureInfo.CurrentCulture;
     }
 

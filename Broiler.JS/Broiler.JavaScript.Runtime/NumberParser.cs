@@ -463,6 +463,16 @@ public static class NumberParser
         if (totalDigits >= 16)
             return RefineEstimate(result, exponentBase10, desired3);
 
+        // Even with a <16-digit (exactly representable) significand, the single Math.Pow
+        // scaling above is only correctly rounded for an exact power of ten (10^0..10^22);
+        // beyond |exp| > 22 it accumulates rounding error (e.g. 1.23456789e+34), so refine
+        // against the exact integer significand.
+        if (Math.Abs(exponentBase10) > 22)
+        {
+            desired3 = new BigInteger((long)desired1 * integerPowersOfTen[Math.Max(totalDigits - 9, 0)] + desired2);
+            return RefineEstimate(result, exponentBase10, desired3);
+        }
+
         return result;
     }
 

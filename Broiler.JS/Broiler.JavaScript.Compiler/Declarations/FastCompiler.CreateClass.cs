@@ -430,6 +430,8 @@ partial class FastCompiler
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, StaticSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
+                        if (property.Computed)
+                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForGetterMethod, fx, name);
                         staticElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                         break;
                     }
@@ -437,6 +439,8 @@ partial class FastCompiler
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, InstanceSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
+                        if (property.Computed)
+                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForGetterMethod, fx, name);
                         if (isPrivateName)
                             PrivateElementFor(property, name).Getter = SharedMemberFunctionVar(fx, "#get");
                         else
@@ -452,12 +456,16 @@ partial class FastCompiler
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, StaticSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
+                        if (property.Computed)
+                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForSetterMethod, fx, name);
                         staticElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     else
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, InstanceSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
+                        if (property.Computed)
+                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForSetterMethod, fx, name);
                         if (isPrivateName)
                             PrivateElementFor(property, name).Setter = SharedMemberFunctionVar(fx, "#set");
                         else

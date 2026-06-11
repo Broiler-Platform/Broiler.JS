@@ -408,15 +408,30 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public override JSValue CreateInstance(in Arguments a)
     {
         // BoundFunction [[Construct]]: construct the (immediate) target directly
-        // with boundArgs ++ args, ignoring the bound `this`. The newTarget already
-        // sits on the execution context (defaulting to this bound function, which
-        // the target's CreateInstance maps to itself) so we delegate as-is.
+        // with boundArgs ++ args, ignoring the bound `this`.
         if (BoundConstructTarget != null)
         {
             if (!JSConstructorOperations.IsConstructor(this))
                 throw JSEngine.NewTypeError($"{name} is not a constructor");
 
-            return BoundConstructTarget.CreateInstance(BoundConstructArguments.CopyForBind(a));
+            // Spec step: "If SameValue(F, newTarget), set newTarget to target." So
+            // `new BF()` (whose default newTarget is the bound function itself) and
+            // Reflect.construct(BF, args, BF) build the target with newTarget = the
+            // bound target — while an explicit, different newTarget is preserved.
+            // Done here (not only at the `new` site) so Reflect.construct gets it too.
+            var boundEc = JSEngine.Current as IJSExecutionContext;
+            var savedNewTarget = boundEc?.CurrentNewTarget;
+            if (boundEc != null && (savedNewTarget == null || ReferenceEquals(savedNewTarget, this)))
+                boundEc.CurrentNewTarget = BoundConstructTarget;
+            try
+            {
+                return BoundConstructTarget.CreateInstance(BoundConstructArguments.CopyForBind(a));
+            }
+            finally
+            {
+                if (boundEc != null)
+                    boundEc.CurrentNewTarget = savedNewTarget;
+            }
         }
 
         static void ValidateProxyNewTarget(JSProxy proxy) => _ = proxy.RequireTarget();
