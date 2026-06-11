@@ -40,6 +40,11 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   toward zero first, so a fractional value in (-1, 0) floors to 0 instead of
 //   throwing a RangeError.
 //
+//   Problem 13 — a function created by the dynamic Function constructor must not
+//   expose an `anonymous` binding in its body: it is built via OrdinaryFunctionCreate
+//   (no self-name binding), with name "anonymous" and the `function anonymous(...)`
+//   toString stamped on afterward.
+//
 //   Problem 9 — three related Array/Proxy/Reflect bugs exposed by pop/shift via a
 //   Proxy: (a) Array [[Set]] of `length` with a different receiver redirects to the
 //   receiver's [[DefineOwnProperty]] (OrdinarySet) instead of mutating this array;
@@ -253,4 +258,34 @@ public class Issue755Tests
     public void ArrayPopViaProxyShrinksUnderlyingArray()
         => Assert.Equal("3,2,12", Eval(
             "var a=[1,2,3];var p=new Proxy(a,{});var r=Array.prototype.pop.call(p);[r,a.length,a.join('')].join(',')"));
+
+    // ---- Problem 13: dynamic Function has no `anonymous` self-binding ----
+
+    [Fact]
+    public void DynamicFunctionHasNoAnonymousBinding()
+        => Assert.Equal("undefined", Eval("new Function('return typeof anonymous')()"));
+
+    [Fact]
+    public void DynamicFunctionNestedHasNoAnonymousBinding()
+        => Assert.Equal("undefined", Eval(
+            "new Function('return function() { return typeof anonymous; }')()()"));
+
+    [Fact]
+    public void DynamicFunctionNameIsAnonymous()
+        => Assert.Equal("anonymous", Eval("new Function('a','return a').name"));
+
+    [Fact]
+    public void DynamicFunctionToStringUsesAnonymous()
+        => Assert.Equal("function anonymous(a,b\n) {\nreturn a+b\n}", Eval(
+            "new Function('a','b','return a+b').toString()"));
+
+    [Fact]
+    public void DynamicFunctionStillCallableWithLength()
+        => Assert.Equal("5,1", Eval(
+            "var f=new Function('a','return a*5');[f(1),f.length].join(',')"));
+
+    [Fact]
+    public void DynamicGeneratorFunctionNameIsAnonymous()
+        => Assert.Equal("anonymous,x", Eval(
+            "var GF=Object.getPrototypeOf(function*(){}).constructor;var g=GF('a','yield a');[g.name,g('x').next().value].join(',')"));
 }

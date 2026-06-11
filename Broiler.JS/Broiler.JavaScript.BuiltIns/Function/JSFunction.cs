@@ -323,6 +323,12 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     internal void SetNameProperty(string name, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableReadonlyValue)
         => GetOwnProperties().Put(KeyStrings.name, JSValue.CreateString(name), attributes);
 
+    // Override the source text reported by Function.prototype.toString. Used by the
+    // dynamic Function constructor, which builds the function from an *anonymous*
+    // function expression (so no self-name binding is created in the body) but must
+    // still toString as `function anonymous(...) { ... }` per CreateDynamicFunction.
+    internal void OverrideSource(in StringSpan source) => this.source = source;
+
     public override JSValue this[KeyString name]
     {
         get => base[name];
@@ -776,7 +782,13 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     {
         var len = args.Length;
         if (len == 0)
-            return CoreScript.Evaluate($"({functionKind} anonymous() {{\n\n}})", "internal");
+        {
+            // Build from an anonymous function expression so the body gets no
+            // `anonymous` self-binding (CreateDynamicFunction uses OrdinaryFunctionCreate,
+            // not a named function expression), then stamp the spec name/source.
+            var emptyFn = CoreScript.Evaluate($"({functionKind} () {{\n\n}})", "internal");
+            return FinalizeDynamicFunction(emptyFn, $"{functionKind} anonymous(\n) {{\n\n}}");
+        }
 
         JSValue body = null;
         var al = args.Length;
@@ -802,7 +814,14 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         var context = JSEngine.Current as IJSExecutionContext;
         context?.DispatchEvalEvent(ref bodyText, ref location);
         var parameterText = string.Join(",", sargs);
-        var source = $"({functionKind} anonymous({parameterText}\n) {{\n{bodyText}\n}})";
+
+        // The function is built from an *anonymous* function expression: the spec's
+        // CreateDynamicFunction uses OrdinaryFunctionCreate (no self-name binding),
+        // so the body must not see an `anonymous` binding (`new Function("return
+        // typeof anonymous")()` === "undefined"). The name "anonymous" and the
+        // toString source are stamped on afterward.
+        var source = $"({functionKind} ({parameterText}\n) {{\n{bodyText}\n}})";
+        var specSource = $"{functionKind} anonymous({parameterText}\n) {{\n{bodyText}\n}}";
 
         // §20.2.1.1.1 CreateDynamicFunction parses the parameter text and the body
         // text separately (as FormalParameters and FunctionBody) before assembling
@@ -813,11 +832,25 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         // own (against the same assembled shape, with the other part empty) so such an
         // injection surfaces as a SyntaxError.
         var loc = location ?? "internal";
-        _ = CoreScript.Compile($"({functionKind} anonymous({parameterText}\n) {{\n\n}})", loc, codeCache: null);
-        _ = CoreScript.Compile($"({functionKind} anonymous(\n) {{\n{bodyText}\n}})", loc, codeCache: null);
+        _ = CoreScript.Compile($"({functionKind} ({parameterText}\n) {{\n\n}})", loc, codeCache: null);
+        _ = CoreScript.Compile($"({functionKind} (\n) {{\n{bodyText}\n}})", loc, codeCache: null);
 
         _ = CoreScript.Compile(source, loc, codeCache: null);
-        return CoreScript.Evaluate(source, loc, context?.CodeCache);
+        return FinalizeDynamicFunction(CoreScript.Evaluate(source, loc, context?.CodeCache), specSource);
+    }
+
+    // Stamp the spec name ("anonymous") and toString source onto a freshly built
+    // dynamic function (see CreateDynamicFunction). The function itself is anonymous,
+    // so SetFunctionName is observable as the "anonymous" name property.
+    private static JSValue FinalizeDynamicFunction(JSValue function, string specSource)
+    {
+        if (function is JSFunction jsFunction)
+        {
+            jsFunction.SetNameProperty("anonymous");
+            jsFunction.OverrideSource(specSource);
+        }
+
+        return function;
     }
 
     internal static JSValue CoerceNonStrictThis(JSValue value)
