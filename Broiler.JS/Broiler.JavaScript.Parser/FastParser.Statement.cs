@@ -198,11 +198,21 @@ partial class FastParser
                     return Import(token, out node);
 
                 case FastKeywords.async:
-                    pendingAsyncStart = stream.Current;
+                    var asyncToken = stream.Current;
                     stream.Consume();
-                    if (stream.Current.Keyword != FastKeywords.function)
-                        throw stream.Unexpected();
-                    return Function(out node, true);
+                    // `async [no LineTerminator here] function` is an
+                    // AsyncFunctionDeclaration. Otherwise `async` is a plain
+                    // IdentifierReference — `async`, `async()`, `async = 1`, an
+                    // async arrow (`async x => …`), or `async\nfunction f(){}`
+                    // which ASIs into `async; function f(){}`. Reset and fall
+                    // through to the expression-statement path.
+                    if (stream.Current.Keyword == FastKeywords.function)
+                    {
+                        pendingAsyncStart = asyncToken;
+                        return Function(out node, true);
+                    }
+                    stream.Reset(asyncToken);
+                    break;
 
                 case FastKeywords.function:
                     return Function(out node);
