@@ -153,6 +153,13 @@ partial class FastParser
             }
             else if (ExpressionSequence(out test, TokenTypes.SemiColon, true))
             {
+                // A C-style for-head declaration (`for (const x = 0; …)`) is an
+                // ordinary LexicalDeclaration/VariableDeclaration: a `const` binding
+                // or a destructuring pattern must carry an initializer. (for-in/of
+                // ForBindings are exempt and validated above.)
+                if (declaration != null)
+                    ValidateDeclaratorInitializers(declaration);
+
                 // NOTE: do not reject a test clause whose AST happens to end in a
                 // `)` token (`for (; (a, b); …)`, `for (; x && (a, b); …)`). A
                 // parenthesised expression / sequence is a valid test, and its
