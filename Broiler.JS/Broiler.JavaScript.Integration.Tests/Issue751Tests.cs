@@ -35,6 +35,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   an object literal or class left the function anonymous ("native"). It is now named
 //   "get "/"set " + the property key (symbols → "get [desc]" / "get " for an
 //   undefined description), for object-literal and class accessors alike.
+//
+//   Problem 14 (Annex B block-level function hoisting) — Web Legacy Compatibility
+//   (B.3.2) was applied to ALL block-nested function declarations, so a generator or
+//   async function declared in a block leaked a function-scope var binding. It now
+//   applies only to plain FunctionDeclarations; generators and async functions stay
+//   block-scoped (no var copy-out, no pre-hoisted binding).
 public class Issue751Tests
 {
     private static string Eval(string code)
@@ -162,4 +168,30 @@ public class Issue751Tests
         => Assert.Equal("get id,set id", Eval(
             "var o={ get id(){}, set id(v){} };" +
             "[Object.getOwnPropertyDescriptor(o,'id').get.name,Object.getOwnPropertyDescriptor(o,'id').set.name].join(',')"));
+
+    // ---- Problem 14: Annex B block-level function hoisting ----
+
+    [Fact]
+    public void PlainFunctionInBlockStillHoists()
+        => Assert.Equal("function", Eval("(function(){ { function f(){} } return typeof f; })()"));
+
+    [Fact]
+    public void GeneratorInBlockDoesNotHoist()
+        => Assert.Equal("undefined", Eval("(function(){ { function* g(){} } return typeof g; })()"));
+
+    [Fact]
+    public void AsyncFunctionInBlockDoesNotHoist()
+        => Assert.Equal("undefined", Eval("(function(){ { async function af(){} } return typeof af; })()"));
+
+    [Fact]
+    public void AsyncGeneratorInBlockDoesNotHoist()
+        => Assert.Equal("undefined", Eval("(function(){ { async function* ag(){} } return typeof ag; })()"));
+
+    [Fact]
+    public void GeneratorInBlockIsVisibleInBlock()
+        => Assert.Equal("function", Eval("(function(){ var r; { function* g(){} r = typeof g; } return r; })()"));
+
+    [Fact]
+    public void NestedBlockGeneratorDoesNotHoist()
+        => Assert.Equal("undefined", Eval("(function(){ {{ function* g(){} }} return typeof g; })()"));
 }

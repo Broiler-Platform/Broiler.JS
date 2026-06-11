@@ -53,7 +53,11 @@ partial class FastParser
                 // gets a var-scoped binding in the enclosing function/program body.
                 // Register the candidate before adding the block-scoped Let binding
                 // so the conflict check does not see this declaration's own name.
-                RegisterAnnexBFunctionHoisting(id.Name);
+                // Web Legacy Compatibility (B.3.2) applies ONLY to plain
+                // FunctionDeclarations — generator, async, and async-generator
+                // declarations stay block-scoped and form no var binding.
+                if (!generator && !isAsync)
+                    RegisterAnnexBFunctionHoisting(id.Name);
 
                 // Annex B.3.4: when this declaration is the sole statement of an
                 // `if` clause it is scoped to its own implicit block, so it forms
