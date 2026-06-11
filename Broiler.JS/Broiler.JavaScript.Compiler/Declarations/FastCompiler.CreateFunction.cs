@@ -237,7 +237,6 @@ partial class FastCompiler
 
             evalShadowBoundary = previousEvalShadowBoundary;
 
-            vList.AddRange(s.VariableParameters);
             sList.AddRange(s.InitList);
 
             // Register the parameter-environment shadow bindings into this function's
@@ -260,6 +259,13 @@ partial class FastCompiler
 
             if (thisIsUninitialized && s.MemberInits != null)
                 InitMembers(sList, s);
+
+            // Collect the lambda's locals AFTER InitMembers: a member (field)
+            // initializer can allocate fresh temporaries while it is compiled (e.g.
+            // the by-address KeyString temp a private-method call needs). Snapshotting
+            // VariableParameters before InitMembers would omit those temps, leaving the
+            // IL generator unable to resolve them (KeyNotFoundException at emit time).
+            vList.AddRange(s.VariableParameters);
 
             sList.Add(YExpression.Label(r, JSUndefinedBuilder.Value));
 
