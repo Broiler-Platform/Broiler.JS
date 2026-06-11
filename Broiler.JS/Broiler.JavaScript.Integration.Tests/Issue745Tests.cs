@@ -39,12 +39,30 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   becomes a BigInt and is rejected with a TypeError; non-finite numbers serialize as
 //   null.
 //
-// Out of scope (architectural / data): P1/P27/P28 eval-scope ReferenceError families;
-// P2/P25 super/`this`-before-super; P5 Unicode Script_Extensions data; P10 duplicate
-// named groups with `{n}`-quantified unnamed alternatives; P13 Promise.race custom
-// constructor capability; P20 length-bound array iterator over arbitrary array-likes;
-// P18 duplicate-named-group same-alternative SyntaxError; P24 Intl.Locale BCP-47 tag
-// validation; P26/P30 and the remaining sm/staging cases.
+//   Problem 18 (duplicate named capture group) — two named groups may share a name only
+//   across separate alternatives of a disjunction; the same name twice in one
+//   alternative (`(?<x>a)(?<x>b)`, including nested / lookaround positions) is a
+//   SyntaxError. Separate-alternative duplicates keep parsing and matching.
+//
+//   Problem 25 (super computed property this-binding order) — super[Expression] and
+//   delete super[Expression] do GetThisBinding before evaluating the key, so an
+//   uninitialized `this` in a derived constructor throws ReferenceError before the key's
+//   side effects (`super[super()]`) run.
+//
+//   Problem 26 (class name in own heritage) — the class-name binding is created before
+//   the heritage and starts in its TDZ, so `class x extends x {}` throws a ReferenceError
+//   (not a TypeError from extending undefined).
+//
+//   Problem 30 (empty-description symbol name) — a method/property keyed by Symbol("")
+//   gets the name "[]" (empty-string description, not undefined); Symbol() still gets "".
+//
+// Out of scope (architectural / data): P1/P27/P28 eval-scope binding-capture
+// ReferenceError families (incl. NFE-name reassignment inside a direct eval); P2
+// super-call-in-arrow this-init; P5 Unicode Script_Extensions data; P10 duplicate named
+// groups with `{n}`-quantified unnamed alternatives (regex reset-prologue); P13
+// Promise.race custom-constructor capability (resolve scheduling); P20 length-bound array
+// iterator over arbitrary array-likes; P6 yield inside a computed method name; P24
+// Intl.Locale BCP-47 tag validation; the remaining sm/staging cases.
 public class Issue745Tests
 {
     private static string Eval(string code)
