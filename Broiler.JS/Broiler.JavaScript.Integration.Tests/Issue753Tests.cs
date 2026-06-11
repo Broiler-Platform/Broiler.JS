@@ -155,4 +155,22 @@ public class Issue753Tests
     public void IntlAcceptsLanguageWithPrivateUseExtension()
         => Assert.Equal("ok", Eval(
             "try{new Intl.ListFormat('en-x-foo');'ok';}catch(e){'threw';}"));
+
+    // ---- Problem 18: DateTimeFormat dateStyle/timeStyle coerced to string ----
+
+    [Fact]
+    public void DateTimeFormatDateStyleObjectOptionCoercedToString()
+        => Assert.Equal("full", Eval(
+            "new Intl.DateTimeFormat('en',{dateStyle:{toString(){return 'full';}}})" +
+            ".resolvedOptions().dateStyle"));
+
+    [Fact]
+    public void DateTimeFormatTimeStyleResolvedOptionsIsString()
+        => Assert.Equal("string", Eval(
+            "typeof new Intl.DateTimeFormat('en',{timeStyle:'short'}).resolvedOptions().timeStyle"));
+
+    [Fact]
+    public void DateTimeFormatInvalidDateStyleThrowsRangeError()
+        => Assert.Equal("RangeError", Eval(
+            "try{new Intl.DateTimeFormat('en',{dateStyle:'bogus'});'no throw';}catch(e){e.constructor.name;}"));
 }

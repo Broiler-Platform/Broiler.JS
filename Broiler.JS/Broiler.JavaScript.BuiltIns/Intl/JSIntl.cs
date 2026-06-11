@@ -3482,6 +3482,15 @@ public class JSIntlDateTimeFormat : JSObject
     private readonly string localeTag;
     private JSObject options;
 
+    // dateStyle / timeStyle are GetOption-coerced (to a string) and validated once at
+    // construction, then reported verbatim by resolvedOptions. Reading them from the
+    // raw user options object would surface the original (possibly non-string) value
+    // — e.g. `{ dateStyle: { toString() { return "full"; } } }` must resolve to the
+    // string "full", not the object.
+    internal static readonly string[] DateTimeStyleValues = { "full", "long", "medium", "short" };
+    private readonly string dateStyle;
+    private readonly string timeStyle;
+
     private string OptionString(KeyString key)
     {
         var value = options?[key];
@@ -3545,8 +3554,8 @@ public class JSIntlDateTimeFormat : JSObject
             hasSecond: OptionString(SecondKey) != null,
             fractionalSecondDigits: FractionalSecondDigits(),
             hasDayPeriodField: false,
-            dateStyle: OptionString(DateStyleKey),
-            timeStyle: OptionString(TimeStyleKey),
+            dateStyle: dateStyle,
+            timeStyle: timeStyle,
             hour12: ResolveHour12(),
             calendar: ResolvedCalendar());
 
@@ -3773,8 +3782,12 @@ public class JSIntlDateTimeFormat : JSObject
                 result.CreateDataProperty(KeyStrings.GetOrCreate("hourCycle"), JSValue.CreateString(@this.ResolveHourCycle()));
                 result.CreateDataProperty(KeyStrings.GetOrCreate("hour12"), @this.ResolveHour12() ? JSValue.BooleanTrue : JSValue.BooleanFalse);
             }
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "dateStyle");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeStyle");
+            // dateStyle / timeStyle report the coerced+validated string captured at
+            // construction (not the raw option value).
+            if (@this.dateStyle != null)
+                result.CreateDataProperty(DateStyleKey, JSValue.CreateString(@this.dateStyle));
+            if (@this.timeStyle != null)
+                result.CreateDataProperty(TimeStyleKey, JSValue.CreateString(@this.timeStyle));
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "weekday");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "era");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "year");
@@ -3879,6 +3892,11 @@ public class JSIntlDateTimeFormat : JSObject
     {
         options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a, requireNew: false);
         JSIntl.ValidateDateTimeFormatOptions(options);
+        // GetOption (coerce to string + validate against the sanctioned set, RangeError
+        // otherwise) is performed once here so resolvedOptions reports the coerced
+        // string rather than the raw option value.
+        dateStyle = JSIntl.GetOption(options, DateStyleKey, DateTimeStyleValues, false, null);
+        timeStyle = JSIntl.GetOption(options, TimeStyleKey, DateTimeStyleValues, false, null);
         localeTag = JSIntl.ResolveLocale(a.Get1(), JSIntl.DateTimeFormatRelevantKeys);
         locale = CultureInfo.CurrentCulture;
     }
