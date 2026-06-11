@@ -40,14 +40,22 @@ partial class JSDate
     {
         // Compute the time value with ECMAScript date math (ms since epoch) so the
         // full Date range is supported, including years outside .NET's 1–9999 window.
-        for (var i = 0; i < Math.Min(a.Length, 7); i++)
-        {
-            var part = a.GetAt(i).DoubleValue;
-            if (double.IsNaN(part) || double.IsInfinity(part))
-                return JSNumber.NaN;
-        }
+        // Each argument must be coerced to Number exactly once (Get7Double), then the
+        // NaN/Infinity scan and the integer reduction both read those cached doubles.
+        var (yD, moD, dD, hD, miD, sD, msD) = a.Get7Double();
+        if (double.IsNaN(yD) || double.IsInfinity(yD) ||
+            double.IsNaN(moD) || double.IsInfinity(moD) ||
+            double.IsNaN(dD) || double.IsInfinity(dD) ||
+            double.IsNaN(hD) || double.IsInfinity(hD) ||
+            double.IsNaN(miD) || double.IsInfinity(miD) ||
+            double.IsNaN(sD) || double.IsInfinity(sD) ||
+            double.IsNaN(msD) || double.IsInfinity(msD))
+            return JSNumber.NaN;
 
-        var (year, month, day, hour, minute, second, millisecond) = a.Get7Int();
+        int year = unchecked((int)JSValue.ToUint32(yD)), month = unchecked((int)JSValue.ToUint32(moD)),
+            day = unchecked((int)JSValue.ToUint32(dD)), hour = unchecked((int)JSValue.ToUint32(hD)),
+            minute = unchecked((int)JSValue.ToUint32(miD)), second = unchecked((int)JSValue.ToUint32(sD)),
+            millisecond = unchecked((int)JSValue.ToUint32(msD));
         year = year >= 0 && year < 100 ? year + 1900 : year;
 
         double time = JSDateMath.MakeTime(hour, minute, second, millisecond);

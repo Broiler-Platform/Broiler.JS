@@ -46,7 +46,10 @@ public class Issue667Tests
 
     [Fact]
     public void SourceEndingInTrailingSpacesParses()
-        => Assert.Equal("1", Eval("var x = 1  "));
+        // A trailing VariableStatement completes with an empty value (so the program
+        // completion carries the preceding expression's value); the point of this test
+        // is that the trailing whitespace before EOF does not produce a phantom token.
+        => Assert.Equal("1", Eval("var x = 1; x  "));
 
     [Fact]
     public void SwitchCaseFunctionDeclarationEndingInTrailingSpacesParses()

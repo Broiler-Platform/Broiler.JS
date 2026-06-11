@@ -298,7 +298,20 @@ public partial class JSObject
     public void FastAddRange(JSValue value)
     {
         if (value is not JSObject target)
-            return;
+        {
+            // §7.3.25 CopyDataProperties: undefined/null sources contribute nothing.
+            // Any other primitive is boxed via ToObject — a String wrapper exposes its
+            // characters as own enumerable index properties, so `{ ...'ab' }` and
+            // `let { ...rest } = 'ab'` copy { 0:'a', 1:'b' } (other primitive wrappers
+            // have no own enumerable properties and copy nothing).
+            if (value.IsNullOrUndefined)
+                return;
+
+            if (CreatePrimitiveObject(value) is not JSObject boxed)
+                return;
+
+            target = boxed;
+        }
 
         if (target.UseObservableSpreadCopy)
         {

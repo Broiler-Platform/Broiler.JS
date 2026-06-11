@@ -53,18 +53,33 @@ public partial class JSArray
     {
         var @this = ToArrayLikeObject(a.This);
         var first = a.Get1();
-        var length = GetArrayLikeLength(@this);
+        var length = GetArrayLikeLengthLong(@this);
         long fromIndex = ToIntegerOrInfinity(a[1]);
 
         if (fromIndex < 0)
-            fromIndex = fromIndex < -(long)length ? 0 : fromIndex + length;
+            fromIndex = fromIndex < -length ? 0 : fromIndex + length;
 
         if (fromIndex >= length)
             return JSNumber.MinusOne;
 
-        for (uint index = (uint)fromIndex; index < length; index++)
-            if (@this.TryGetElement(index, out var item) && first.StrictEquals(item))
+        // length is LengthOfArrayLike (ToLength → up to 2^53-1), so iterate with a
+        // long counter. Indices within the 32-bit array-index range use the fast
+        // element store; larger indices are probed via HasProperty/Get on their
+        // canonical numeric-string key (spec § Array.prototype.indexOf steps 9-10).
+        for (long index = fromIndex; index < length; index++)
+        {
+            if (index < uint.MaxValue)
+            {
+                if (@this.TryGetElement((uint)index, out var item) && first.StrictEquals(item))
+                    return new JSNumber(index);
+
+                continue;
+            }
+
+            var key = new JSNumber(index);
+            if (@this.HasProperty(key).BooleanValue && first.StrictEquals(@this[key]))
                 return new JSNumber(index);
+        }
 
         return JSNumber.MinusOne;
     }

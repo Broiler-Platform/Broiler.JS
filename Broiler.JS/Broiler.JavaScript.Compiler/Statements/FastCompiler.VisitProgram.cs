@@ -178,13 +178,14 @@ partial class FastCompiler
                     if (exp == null)
                         continue;
 
-                    // A top-level VariableStatement contributes its initializer value
-                    // to the script/eval completion (Broiler returns it, e.g.
-                    // `eval('var x = 1')` → 1). Wrap it here rather than in
-                    // VisitVariableDeclaration so that var declarations synthesized
-                    // inside desugared for-in/for-of bodies are left untouched.
-                    if (stmt is AstVariableDeclaration)
-                        exp = TrackCompletion(exp);
+                    // A VariableStatement and a LexicalDeclaration both complete with an
+                    // empty value (ECMA-262 — VariableStatement/Declaration Evaluation
+                    // return NormalCompletion(empty)), so they must NOT update the
+                    // script/eval completion value: `eval('var x = 1')` is undefined and
+                    // `eval('1; var x = 1')` is 1. Leaving the declaration unwrapped lets
+                    // the completion var retain the previous value-bearing statement's
+                    // result (UpdateEmpty). Declarations synthesized inside desugared
+                    // for-in/for-of bodies are likewise untouched.
 
                     blockList.Add(CallStackItemBuilder.Step(scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
                     blockList.Add(exp);

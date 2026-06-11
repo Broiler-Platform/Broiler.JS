@@ -115,18 +115,27 @@ public partial class JSDate
             return;
         }
 
-        for (var i = 0; i < Math.Min(a.Length, 7); i++)
+        // Coerce each supplied component to Number exactly once (Get7Double); the
+        // NaN/Infinity scan and the integer reduction both read the cached doubles so
+        // a valueOf side effect is observed a single time per argument, in order.
+        var (yD, moD, dD, hD, miD, sD, msD) = a.Get7Double();
+        if (double.IsNaN(yD) || double.IsInfinity(yD) ||
+            double.IsNaN(moD) || double.IsInfinity(moD) ||
+            double.IsNaN(dD) || double.IsInfinity(dD) ||
+            double.IsNaN(hD) || double.IsInfinity(hD) ||
+            double.IsNaN(miD) || double.IsInfinity(miD) ||
+            double.IsNaN(sD) || double.IsInfinity(sD) ||
+            double.IsNaN(msD) || double.IsInfinity(msD))
         {
-            var part = a.GetAt(i).DoubleValue;
-            if (double.IsNaN(part) || double.IsInfinity(part))
-            {
-                value = InvalidDate;
-                rawTimeMs = double.NaN;
-                return;
-            }
+            value = InvalidDate;
+            rawTimeMs = double.NaN;
+            return;
         }
 
-        var (year, month, day, hours, minutes, seconds, millis) = a.Get7Int();
+        int year = unchecked((int)JSValue.ToUint32(yD)), month = unchecked((int)JSValue.ToUint32(moD)),
+            day = unchecked((int)JSValue.ToUint32(dD)), hours = unchecked((int)JSValue.ToUint32(hD)),
+            minutes = unchecked((int)JSValue.ToUint32(miD)), seconds = unchecked((int)JSValue.ToUint32(sD)),
+            millis = unchecked((int)JSValue.ToUint32(msD));
 
         year = year >= 0 && year < 100 ? year + 1900 : year;
 
