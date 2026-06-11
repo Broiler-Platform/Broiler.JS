@@ -40,6 +40,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   toward zero first, so a fractional value in (-1, 0) floors to 0 instead of
 //   throwing a RangeError.
 //
+//   Problem 39/40 (partial) — a non-Unicode regex literal accepts an Annex B
+//   IdentityEscape of any character that is not a recognized escape: `\_`, `\C`, an
+//   accented letter or combining mark, and a malformed `\u`/`\x`/`\k` (`/\u/`,
+//   `/\x/`, `/\k/`). Both the lexer (it no longer falls back to division) and the
+//   runtime (it no longer hands .NET an unknown escape) are fixed. (The BMP-loop
+//   test files still fail at the lone-surrogate range — an orthogonal pre-existing
+//   `.source` serialization bug, not addressed here.)
+//
 //   Problem 35 — Generator.prototype.return run while the generator is suspended at
 //   a `yield` nested inside a try/catch must still execute the enclosing `finally`
 //   blocks: the state machine now unwinds the try-region stack explicitly (popping
@@ -363,4 +371,30 @@ public class Issue755Tests
         => Assert.Equal("E", Eval(
             "function E(){}function* g(){yield 1;}var it=g();" +
             "try{it.throw(new E());'no throw';}catch(e){e.constructor.name;}"));
+
+    // ---- Problem 39/40: Annex B IdentityEscape in a non-Unicode regex ----
+
+    [Fact]
+    public void RegexIdentityEscapeUnderscoreAndLetter()
+        => Assert.Equal("true,true,true", Eval(
+            "[/\\_/.test('_'),/\\C/.test('C'),/O\\PQ/.test('OPQ')].join(',')"));
+
+    [Fact]
+    public void RegexMalformedUnicodeHexNamedEscapesAreIdentity()
+        => Assert.Equal("true,true,true", Eval(
+            "[eval('/\\\\u/').test('u'),eval('/\\\\x/').test('x'),eval('/\\\\k/').test('k')].join(',')"));
+
+    [Fact]
+    public void RegexIdentityEscapeSourcePreserved()
+        => Assert.Equal("\\_,\\C,\\u", Eval(
+            "[/\\_/.source,/\\C/.source,eval('/\\\\u/').source].join(',')"));
+
+    [Fact]
+    public void RegexRecognizedEscapesUnaffected()
+        => Assert.Equal("true,false,true,true", Eval(
+            "[/\\d/.test('5'),/\\d/.test('d'),/\\u0041/.test('A'),/\\x41/.test('A')].join(',')"));
+
+    [Fact]
+    public void RegexNewRegExpMalformedUnicodeEscape()
+        => Assert.Equal("true", Eval("new RegExp('\\\\u').test('u').toString()"));
 }

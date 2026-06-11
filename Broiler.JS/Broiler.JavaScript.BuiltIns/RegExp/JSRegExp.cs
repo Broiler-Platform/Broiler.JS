@@ -2432,10 +2432,23 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if (c == '\\' && i + 1 < pattern.Length)
             {
                 char next = pattern[i + 1];
-                bool isLetter = (next >= 'a' && next <= 'z') || (next >= 'A' && next <= 'Z');
-                if (!inClass && isLetter && RecognizedEscapeLetters.IndexOf(next) < 0)
+
+                // `\u`/`\x`/`\k` are recognized only when well-formed (`\uHHHH`,
+                // `\xHH`, `\k<name>`); otherwise they are Annex B IdentityEscapes of
+                // the literal letter (.NET rejects a bare `\u`/`\x`/`\k`).
+                bool malformedU = next == 'u' && !(i + 5 < pattern.Length
+                    && IsHexDigit(pattern[i + 2]) && IsHexDigit(pattern[i + 3])
+                    && IsHexDigit(pattern[i + 4]) && IsHexDigit(pattern[i + 5]));
+                bool malformedX = next == 'x' && !(i + 3 < pattern.Length
+                    && IsHexDigit(pattern[i + 2]) && IsHexDigit(pattern[i + 3]));
+                bool malformedK = next == 'k' && !(i + 2 < pattern.Length && pattern[i + 2] == '<');
+
+                if (!inClass && (malformedU || malformedX || malformedK
+                    || (!IsSyntaxCharacter(next)
+                        && !(next >= '0' && next <= '9')
+                        && RecognizedEscapeLetters.IndexOf(next) < 0)))
                 {
-                    sb.Append(next); // IdentityEscape → literal letter
+                    sb.Append(next); // IdentityEscape → the literal character
                     i++;
                     continue;
                 }

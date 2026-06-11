@@ -324,6 +324,27 @@ internal static class RegExpValidator
     // regex; any other ASCII letter is an Annex B IdentityEscape (the literal letter).
     private const string RecognizedEscapeLetters = "bBcdDfknrsStuvwWx";
 
+    private static bool IsHexDigit(char c)
+        => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+
+    // ECMAScript SyntaxCharacter (plus `/`): after a backslash these stay escaped, so
+    // their IdentityEscape keeps the backslash; any other non-recognized character is
+    // equivalent escaped or not, so the backslash is dropped for the .NET compile check.
+    private static bool IsRegExpSyntaxCharacter(char c)
+        => c is '^' or '$' or '\\' or '.' or '*' or '+' or '?'
+            or '(' or ')' or '[' or ']' or '{' or '}' or '|' or '/';
+
+    // Whether the `u` at <paramref name="uIndex"/> begins a `\uHHHH` unicode escape.
+    private static bool IsUnicodeEscape(string pattern, int uIndex)
+        => uIndex + 4 < pattern.Length
+            && IsHexDigit(pattern[uIndex + 1]) && IsHexDigit(pattern[uIndex + 2])
+            && IsHexDigit(pattern[uIndex + 3]) && IsHexDigit(pattern[uIndex + 4]);
+
+    // Whether the `x` at <paramref name="xIndex"/> begins a `\xHH` hex escape.
+    private static bool IsHexEscape(string pattern, int xIndex)
+        => xIndex + 2 < pattern.Length
+            && IsHexDigit(pattern[xIndex + 1]) && IsHexDigit(pattern[xIndex + 2]);
+
     private static string NormalizeAnnexBControlEscapes(string pattern)
     {
         if (string.IsNullOrEmpty(pattern) || pattern.IndexOf('\\') < 0)
@@ -351,6 +372,28 @@ internal static class RegExpValidator
                         continue;
                     }
                 }
+                else if (next == 'u' && !IsUnicodeEscape(pattern, i + 1))
+                {
+                    // `\u` not forming `\uHHHH` (non-Unicode mode) → Annex B
+                    // IdentityEscape `u`. .NET rejects a bare `\u`.
+                    sb.Append('u');
+                    i++;
+                    continue;
+                }
+                else if (next == 'x' && !IsHexEscape(pattern, i + 1))
+                {
+                    // `\x` not forming `\xHH` → Annex B IdentityEscape `x`.
+                    sb.Append('x');
+                    i++;
+                    continue;
+                }
+                else if (next == 'k' && !(i + 2 < pattern.Length && pattern[i + 2] == '<'))
+                {
+                    // `\k` not forming a `\k<name>` backreference → IdentityEscape `k`.
+                    sb.Append('k');
+                    i++;
+                    continue;
+                }
                 else if (!inClass && next >= '1' && next <= '9')
                 {
                     // Decimal escape → drop the backslash, keep the digits literal.
@@ -361,10 +404,14 @@ internal static class RegExpValidator
                     continue;
                 }
                 else if (!inClass
-                    && ((next >= 'a' && next <= 'z') || (next >= 'A' && next <= 'Z'))
+                    && !IsRegExpSyntaxCharacter(next)
+                    && !(next >= '0' && next <= '9')
                     && RecognizedEscapeLetters.IndexOf(next) < 0)
                 {
-                    // Annex B IdentityEscape (`\C`, `\P`, …) → literal letter.
+                    // Annex B IdentityEscape of any character that is not a recognized
+                    // escape and not a SyntaxCharacter (`\C`, `\P`, `\_`, an accented
+                    // letter, a combining mark, …) → the literal character. .NET rejects
+                    // `\` + such a character; escaped or not it matches the same thing.
                     sb.Append(next);
                     i++;
                     continue;
