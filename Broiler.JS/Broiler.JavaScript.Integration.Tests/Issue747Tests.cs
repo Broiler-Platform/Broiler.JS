@@ -134,4 +134,39 @@ public class Issue747Tests
     [Fact]
     public void EvalBareLetDeclarationIsUndefined()
         => Assert.Equal("undefined", Eval("''+eval('let y = 1;')"));
+
+    // ---- Problem 9: yield* return/throw must not read `value` while not done ----
+
+    private const string YieldStarReturnHarness =
+        "var callCount=0;" +
+        "var spyValue=Object.defineProperty({done:false},'value',{get:function(){callCount+=1;}});" +
+        "var badIter={};badIter[Symbol.iterator]=function(){return{" +
+        "next:function(){return{done:false};}," +
+        "return:function(){return spyValue;}};};" +
+        "var delegationComplete=false;" +
+        "function* g(){try{yield* badIter;}finally{delegationComplete=true;}}" +
+        "var iter=g();iter.next();";
+
+    [Fact]
+    public void YieldStarReturnDoesNotReadValueWhileNotDone()
+        => Assert.Equal("0,false", Eval(
+            YieldStarReturnHarness + "iter.return();callCount+','+delegationComplete"));
+
+    [Fact]
+    public void YieldStarReturnReadsValueOnceWhenDone()
+        => Assert.Equal("1,true", Eval(
+            YieldStarReturnHarness + "iter.return();spyValue.done=true;iter.return();" +
+            "callCount+','+delegationComplete"));
+
+    [Fact]
+    public void YieldStarThrowDoesNotReadValueWhileNotDone()
+        => Assert.Equal("0,false", Eval(
+            "var callCount=0;" +
+            "var spyValue=Object.defineProperty({done:false},'value',{get:function(){callCount+=1;}});" +
+            "var badIter={};badIter[Symbol.iterator]=function(){return{" +
+            "next:function(){return{done:false};}," +
+            "throw:function(){return spyValue;}};};" +
+            "var delegationComplete=false;" +
+            "function* g(){try{yield* badIter;}catch(e){}finally{delegationComplete=true;}}" +
+            "var iter=g();iter.next();iter.throw();callCount+','+delegationComplete"));
 }
