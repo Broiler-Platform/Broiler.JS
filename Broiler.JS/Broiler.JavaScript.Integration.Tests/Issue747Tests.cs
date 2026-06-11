@@ -169,4 +169,23 @@ public class Issue747Tests
             "var delegationComplete=false;" +
             "function* g(){try{yield* badIter;}catch(e){}finally{delegationComplete=true;}}" +
             "var iter=g();iter.next();iter.throw();callCount+','+delegationComplete"));
+
+    // ---- Problems 37/38: spec-shared built-in function identity ----
+
+    [Fact]
+    public void NumberParseFloatIsGlobalParseFloat()
+        => Assert.Equal("true", Eval("''+(Number.parseFloat === parseFloat)"));
+
+    [Fact]
+    public void NumberParseIntIsGlobalParseInt()
+        => Assert.Equal("true", Eval("''+(Number.parseInt === parseInt)"));
+
+    [Fact]
+    public void TypedArrayToStringIsArrayToString()
+        => Assert.Equal("true", Eval(
+            "''+(Object.getPrototypeOf(Int8Array.prototype).toString === Array.prototype.toString)"));
+
+    [Fact]
+    public void NumberParseIntStillFunctionalAfterAlias()
+        => Assert.Equal("16,NaN", Eval("Number.parseInt('0x10')+','+Number.parseInt('0x')"));
 }

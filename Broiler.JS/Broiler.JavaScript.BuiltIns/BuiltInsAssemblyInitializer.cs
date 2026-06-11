@@ -574,6 +574,28 @@ internal static class BuiltInsAssemblyInitializer
         PatchToStringTags(context);
     }
 
+    // Aliases built-in functions that the spec requires to be the SAME object across
+    // two homes but which the source generator emits as distinct copies. Must run after
+    // the full registration chain (BuiltIns AND Globals) so both homes exist regardless
+    // of module-initializer order — invoked from DefaultBuiltInRegistry.Register.
+    internal static void PatchNumberConstructor(JSContext context)
+    {
+        if (context[KeyStrings.Number] is not JSFunction numberCtor)
+            return;
+
+        // Number.parseFloat and Number.parseInt are the SAME built-in function objects
+        // as the global parseFloat / parseInt (spec 21.1.2.12-13), so alias the global
+        // ones onto the constructor rather than keeping the distinct generated copies.
+        var parseFloatKey = KeyStrings.GetOrCreate("parseFloat");
+        var parseIntKey = KeyStrings.GetOrCreate("parseInt");
+
+        if (context[parseFloatKey] is IJSFunction globalParseFloat)
+            numberCtor.FastAddValue(parseFloatKey, (JSValue)globalParseFloat, JSPropertyAttributes.ConfigurableValue);
+
+        if (context[parseIntKey] is IJSFunction globalParseInt)
+            numberCtor.FastAddValue(parseIntKey, (JSValue)globalParseInt, JSPropertyAttributes.ConfigurableValue);
+    }
+
     private static JSFunction CreateNativeFunction(JSFunctionDelegate fx, string name, int length = 0)
         => new(fx, name, $"function {name}() {{ [native code] }}", length: length, createPrototype: false);
 
@@ -1649,6 +1671,16 @@ internal static class BuiltInsAssemblyInitializer
             var bytesPerElement = ctor[Names.BYTES_PER_ELEMENT];
             if (!bytesPerElement.IsUndefined)
                 ctorPrototype.FastAddValue(Names.BYTES_PER_ELEMENT, bytesPerElement, JSPropertyAttributes.ReadonlyValue);
+        }
+
+        // %TypedArray%.prototype.toString is the SAME built-in function object as
+        // Array.prototype.toString (spec 23.2.3.31), so alias it instead of installing a
+        // distinct copy (so `Int8Array.prototype.toString === Array.prototype.toString`).
+        if (context[KeyStrings.Array] is JSFunction arrayCtor
+            && arrayCtor.prototype is JSObject arrayPrototype
+            && arrayPrototype[KeyStrings.toString] is JSFunction arrayToString)
+        {
+            prototype.FastAddValue(KeyStrings.toString, arrayToString, JSPropertyAttributes.ConfigurableValue);
         }
 
         EnsureAccessorProperty(prototype, JSSymbol.toStringTag, "[Symbol.toStringTag]", static (in Arguments a) =>

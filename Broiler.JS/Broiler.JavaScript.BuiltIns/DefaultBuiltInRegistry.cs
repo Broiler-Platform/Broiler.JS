@@ -81,6 +81,12 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
 
         // Register built-in types from satellite assemblies.
         AdditionalRegistrations?.Invoke(context);
+
+        // Now that every satellite assembly (BuiltIns and Globals) has registered, alias
+        // the spec-shared built-in functions whose two homes live in different assemblies
+        // (Number.parseFloat/parseInt are the global parseFloat/parseInt objects).
+        BuiltInsAssemblyInitializer.PatchNumberConstructor(context);
+
         ApplyExperimentalFeatureFlags(context);
 
         // Set up Iterator.prototype helpers and prototype chain (ES2025).
