@@ -61,15 +61,19 @@ public partial class JSObject
     }
 
     // Brand check for a private member access (`obj.#x`). A private name must be
-    // present — as an own field or an inherited method/accessor on the real
-    // prototype chain — on the receiver, otherwise the access is a TypeError
-    // (PrivateFieldGet / PrivateMethodGet / PrivateSet abstract operations). The
-    // check uses the internal property lookup so it observes neither getters/setters
-    // nor Proxy traps. Field *initialization* never reaches here: it adds the field
-    // directly via FastAddValue rather than through GetValue/SetValue.
+    // present as an OWN element of the receiver (PrivateBrandCheck inspects
+    // O.[[PrivateBrands]] / [[PrivateElements]] directly — it never walks the
+    // prototype chain). Instance private fields/methods are installed own on each
+    // instance, and static private elements own on the class constructor, so an
+    // own-only lookup matches them all. Crucially, a subclass constructor inherits
+    // its super-class through the constructor prototype chain but does NOT carry the
+    // super-class's static private brand: `class C { static #g(){} static f(){
+    // return this.#g(); } } class D extends C {}; D.f()` must throw (test262
+    // static-private-method-subclass-receiver). The check observes neither
+    // getters/setters nor Proxy traps. Field *initialization* never reaches here.
     private void ThrowIfMissingPrivateMember(in KeyString key, bool reading)
     {
-        if (!GetInternalProperty(key).IsEmpty)
+        if (!GetInternalProperty(key, inherited: false).IsEmpty)
             return;
 
         ThrowMissingPrivateMember(in key, reading);
