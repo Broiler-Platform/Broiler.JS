@@ -40,6 +40,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   toward zero first, so a fractional value in (-1, 0) floors to 0 instead of
 //   throwing a RangeError.
 //
+//   Problem 35 — Generator.prototype.return run while the generator is suspended at
+//   a `yield` nested inside a try/catch must still execute the enclosing `finally`
+//   blocks: the state machine now unwinds the try-region stack explicitly (popping
+//   regions whose own catch/finally is running, or that cannot handle the
+//   completion) instead of relying on an outer frame that does not exist on a direct
+//   resume. Also: `throw()`/`return()` on a completed or suspended-start generator
+//   no longer runs the body.
+//
 //   Problem 17 — `delete` of an identifier that resolves through a `with`-fallback
 //   overlay (a captured outer `let`/`const`/`var` made resolvable inside a `with`
 //   body, e.g. when @@unscopables blocks the object property) returns false: it is
@@ -318,4 +326,41 @@ public class Issue755Tests
     public void DeleteWithObjectPropertyStillWorks()
         => Assert.Equal("true", Eval(
             "var o={p:1};with(o){delete p;}(o.p===undefined).toString()"));
+
+    // ---- Problem 35: generator return runs nested finally; throw on completed ----
+
+    [Fact]
+    public void GeneratorReturnRunsFinallyAroundYieldInCatch()
+        => Assert.Equal("f,42,true", Eval(
+            "var o=[];function* g(){try{try{throw 0;}catch(e){yield 1;}}finally{o.push('f');}}" +
+            "var it=g();it.next();var r=it.return(42);[o.join(','),r.value,r.done].join(',')"));
+
+    [Fact]
+    public void GeneratorReturnRunsFinallyAroundYieldInInnerTry()
+        => Assert.Equal("f,42,true", Eval(
+            "var o=[];function* g(){try{try{yield 1;}catch(e){throw e;}}finally{o.push('f');}}" +
+            "var it=g();it.next();var r=it.return(42);[o.join(','),r.value,r.done].join(',')"));
+
+    [Fact]
+    public void GeneratorReturnRunsBothNestedFinallies()
+        => Assert.Equal("inner,outer", Eval(
+            "var o=[];function* g(){try{try{yield 1;}finally{o.push('inner');}}finally{o.push('outer');}}" +
+            "var it=g();it.next();it.return(0);o.join(',')"));
+
+    [Fact]
+    public void GeneratorFinallyCanOverrideReturnValue()
+        => Assert.Equal("99", Eval(
+            "function* g(){try{yield 1;}finally{return 99;}}var it=g();it.next();it.return(5).value.toString()"));
+
+    [Fact]
+    public void GeneratorThrowOnCompletedThrowsValue()
+        => Assert.Equal("E", Eval(
+            "function E(){}function* g(){}var it=g();it.next();" +
+            "try{it.throw(new E());'no throw';}catch(e){e.constructor.name;}"));
+
+    [Fact]
+    public void GeneratorThrowOnSuspendedStartThrowsValue()
+        => Assert.Equal("E", Eval(
+            "function E(){}function* g(){yield 1;}var it=g();" +
+            "try{it.throw(new E());'no throw';}catch(e){e.constructor.name;}"));
 }
