@@ -36,6 +36,12 @@ public interface IJSExecutionContext : IJSContext
     /// <summary>Gets the global Object constructor for this context.</summary>
     JSValue Object { get; }
 
+    /// <summary>
+    /// Gets the per-realm %Array.prototype.values% intrinsic (=== the array
+    /// iterator), used as the @@iterator of arguments objects.
+    /// </summary>
+    JSValue IntrinsicArrayValues { get; }
+
     /// <summary>Gets or sets the current top of the call stack.</summary>
     CallStackItem Top { get; set; }
 

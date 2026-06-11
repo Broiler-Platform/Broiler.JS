@@ -487,10 +487,6 @@ partial class JSTypedArray
 
         if (relativeStart < 0)
             throw JSEngine.NewRangeError("Offset is out of bounds");
-        if (length == 0)
-        {
-            return JSNumber.MinusOne;
-        }
         if (relativeStart > length)
             throw JSEngine.NewRangeError("Offset is out of bounds");
         var targetArrayLength = (long)source.Length + relativeStart;
@@ -526,7 +522,7 @@ partial class JSTypedArray
                 }
             }
 
-            return this;
+            return JSValue.UndefinedValue;
         }
 
         var rs = (uint)relativeStart;
@@ -536,8 +532,7 @@ partial class JSTypedArray
             this[index + rs] = value;
         }
 
-        return this;
-
+        return JSValue.UndefinedValue;
     }
 
     [JSExport("slice", Length = 2)]

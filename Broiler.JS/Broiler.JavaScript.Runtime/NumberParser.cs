@@ -143,14 +143,17 @@ public static class NumberParser
 
         // The number can start with a plus or minus sign.
         bool negative = false;
+        bool signed = false;
         switch (firstChar)
         {
             case '-':
                 negative = true;
+                signed = true;
                 firstChar = reader.Read();
                 break;
 
             case '+':
+                signed = true;
                 firstChar = reader.Read();
                 break;
         }
@@ -174,8 +177,9 @@ public static class NumberParser
         if ((firstChar < '0' || firstChar > '9') && firstChar != '.')
             return double.NaN;
 
-        // Parse the number.
-        double result = ParseCore(reader, (char)firstChar, out ParseCoreStatus status, allowES3Octal: false);
+        // Parse the number. A leading sign restricts the grammar to StrDecimalLiteral,
+        // so the non-decimal prefixes (0x / 0o / 0b) are rejected: `+0b1` → NaN.
+        double result = ParseCore(reader, (char)firstChar, out ParseCoreStatus status, decimalOnly: signed, allowES3Octal: false);
 
         // Handle various error cases.
         switch (status)
@@ -633,6 +637,7 @@ public static class NumberParser
     internal static double ParseOctal(TextReader reader)
     {
         double result = 0;
+        int digitsRead = 0;
 
         // Read numeric digits 0-7.
         while (true)
@@ -644,10 +649,15 @@ public static class NumberParser
                 return double.NaN;
             else
                 break;
-            
+
+            digitsRead++;
             reader.Read();
         }
-        
+
+        // An octal prefix with no digits (e.g. "0o") is invalid → NaN.
+        if (digitsRead == 0)
+            return double.NaN;
+
         return result;
     }
 
@@ -659,6 +669,7 @@ public static class NumberParser
     internal static double ParseBinary(TextReader reader)
     {
         double result = 0;
+        int digitsRead = 0;
 
         // Read numeric digits 0-1.
         while (true)
@@ -672,10 +683,15 @@ public static class NumberParser
                 return double.NaN;
             else
                 break;
-            
+
+            digitsRead++;
             reader.Read();
         }
-        
+
+        // A binary prefix with no digits (e.g. "0b") is invalid → NaN.
+        if (digitsRead == 0)
+            return double.NaN;
+
         return result;
     }
 

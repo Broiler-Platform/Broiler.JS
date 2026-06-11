@@ -297,6 +297,12 @@ public partial class JSSet : JSObject
     {
         var other = GetSetLikeRecord(a.Get1(), "union");
 
+        // GetKeysIterator (which reads the keys() iterator's `next` method) happens
+        // BEFORE resultSetData is copied from this set. A set-like `next` getter may
+        // mutate this set (test262 clears it and adds a new key), and the copy must
+        // observe that mutation — so set up the iterator first, then snapshot.
+        var keys = other.GetKeys();
+
         var result = new JSSet(Arguments.Empty);
         for (var i = 0; i < store.Count; i++)
         {
@@ -305,7 +311,6 @@ public partial class JSSet : JSObject
                 result.Add(item);
         }
 
-        var keys = other.GetKeys();
         while (keys.MoveNext(out var item))
         {
             result.Add(item);
@@ -394,6 +399,11 @@ public partial class JSSet : JSObject
     {
         var other = GetSetLikeRecord(a.Get1(), "symmetricDifference");
 
+        // GetKeysIterator (reading the keys() iterator's `next` method) runs BEFORE
+        // resultSetData is copied from this set, so a set-like `next` getter that
+        // mutates this set is observed by the copy.
+        var keys = other.GetKeys();
+
         var result = new JSSet(Arguments.Empty);
         for (var i = 0; i < store.Count; i++)
         {
@@ -402,7 +412,6 @@ public partial class JSSet : JSObject
                 result.Add(item);
         }
 
-        var keys = other.GetKeys();
         while (keys.MoveNext(out var item))
         {
             if (!result.Remove(item))

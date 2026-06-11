@@ -76,6 +76,9 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     public JSObject ThrowTypeError { get; set; }
     public JSValue Object { get; private set; }
     public JSValue IntrinsicEval { get; private set; } = JSUndefined.Value;
+    // %Array.prototype.values% captured at realm init — the mapped/unmapped arguments
+    // object's @@iterator must be this exact intrinsic (=== [][Symbol.iterator]).
+    public JSValue IntrinsicArrayValues { get; private set; } = JSUndefined.Value;
     public event LogEventHandler Log;
     public event ErrorEventHandler Error;
     public event ConsoleEvent ConsoleEvent;
@@ -1081,6 +1084,15 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         }
 
         IntrinsicEval = this[KeyStrings.eval];
+        // Capture %Array.prototype.values% (=== Array.prototype[@@iterator]) so the
+        // arguments object can expose the genuine intrinsic as its @@iterator.
+        if (this[KeyStrings.GetOrCreate("Array")] is IJSFunction arrayCtor
+            && arrayCtor.Prototype is JSObject arrayProto)
+        {
+            var values = arrayProto[KeyStrings.GetOrCreate("values")];
+            if (values.IsFunction)
+                IntrinsicArrayValues = values;
+        }
         this[KeyStrings.globalThis] = this;
         this[KeyStrings.debug] = JSValue.CreateFunction(Debug);
 

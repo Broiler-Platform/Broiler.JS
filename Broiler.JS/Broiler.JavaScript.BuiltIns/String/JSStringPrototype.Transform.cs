@@ -85,7 +85,7 @@ public partial class JSString
         try
         {
             CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.ToString());
-            return new JSString(@this.ToLower(culture));
+            return new JSString(JSStringSpecialCasing.ToLocaleLower(@this, culture));
         }
         catch (CultureNotFoundException)
         {
