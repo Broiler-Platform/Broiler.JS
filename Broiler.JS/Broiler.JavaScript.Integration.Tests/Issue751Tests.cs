@@ -53,6 +53,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   (ß → SS, ﬁ → FI, İ → i̇, the Greek/Armenian expansions, …). The unconditional,
 //   locale-independent full mappings are now applied; toLocaleUpperCase combines them
 //   with culture-specific simple mapping (e.g. Turkish i → İ).
+//
+//   Problem 13 (supplementary-plane regex group names) — a group name containing an
+//   astral character (e.g. /(?<𝒜>x)/u, whether written literally, as a surrogate-pair
+//   escape, or as \u{...}) was corrupted because TransformUnicodeLoneSurrogates wrapped
+//   the name's surrogate pair in an atomic group before the name was extracted. That
+//   transform now copies (?<name> and \k<name> regions verbatim, so the name survives.
 public class Issue751Tests
 {
     private static string Eval(string code)
@@ -266,4 +272,27 @@ public class Issue751Tests
     [Fact]
     public void OrdinaryCaseMappingUnaffected()
         => Assert.Equal("HELLO,hello", Eval("['Hello'.toUpperCase(),'Hello'.toLowerCase()].join(',')"));
+
+    // ---- Problem 13: supplementary-plane (astral) regex group names ----
+
+    [Fact]
+    public void AstralGroupNameBraceEscape()
+        => Assert.Equal("z", Eval("/(?<\\u{1d49c}>z)/u.exec('z').groups['\\u{1d49c}']"));
+
+    [Fact]
+    public void AstralGroupNameLiteral()
+        => Assert.Equal("z", Eval("/(?<\\u{1d49c}>z)/u.exec('z').groups['\\uD835\\uDC9C']"));
+
+    [Fact]
+    public void AstralGroupNameBackreferenceMatches()
+        => Assert.Equal("zz", Eval("/(?<\\u{1d49c}>.)\\k<\\u{1d49c}>/u.exec('zz')[0]"));
+
+    [Fact]
+    public void BmpGroupNamesStillWork()
+        => Assert.Equal("x,x,x", Eval(
+            "[/(?<a>x)/.exec('x').groups.a,/(?<\\u{61}>x)/u.exec('x').groups.a,/(?<\\u03C0>x)/u.exec('x').groups['\\u03C0']].join(',')"));
+
+    [Fact]
+    public void LookbehindNotTreatedAsGroupName()
+        => Assert.Equal("b", Eval("/(?<=a)b/.exec('ab')[0]"));
 }
