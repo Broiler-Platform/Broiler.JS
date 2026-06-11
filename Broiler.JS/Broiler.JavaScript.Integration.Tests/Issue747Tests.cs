@@ -188,4 +188,26 @@ public class Issue747Tests
     [Fact]
     public void NumberParseIntStillFunctionalAfterAlias()
         => Assert.Equal("16,NaN", Eval("Number.parseInt('0x10')+','+Number.parseInt('0x')"));
+
+    // ---- Problems 23/24: Object.prototype.toString ToObject(this) before @@toStringTag ----
+
+    [Fact]
+    public void ToStringReadsTagFromPrimitiveWrapperPrototype()
+        => Assert.Equal("[object test262]", Eval(
+            "Boolean.prototype[Symbol.toStringTag]='test262';Object.prototype.toString.call(true)"));
+
+    [Fact]
+    public void ToStringReadsTagFromNumberPrimitive()
+        => Assert.Equal("[object test262]", Eval(
+            "Number.prototype[Symbol.toStringTag]='test262';Object.prototype.toString.call(0)"));
+
+    [Fact]
+    public void ToStringReadsDefaultSymbolTagFromPrimitive()
+        => Assert.Equal("[object Symbol]", Eval("Object.prototype.toString.call(Symbol())"));
+
+    [Fact]
+    public void ToStringReadsTagFromBigIntPrimitive()
+        => Assert.Equal("[object test262]", Eval(
+            "Object.defineProperty(BigInt.prototype,Symbol.toStringTag,{value:'test262'});" +
+            "Object.prototype.toString.call(1n)"));
 }
