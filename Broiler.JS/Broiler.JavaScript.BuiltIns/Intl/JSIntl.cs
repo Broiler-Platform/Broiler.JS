@@ -65,8 +65,13 @@ public static class JSIntl
     private static readonly KeyString ScriptKey = KeyStrings.GetOrCreate("script");
     private static readonly KeyString RegionKey = KeyStrings.GetOrCreate("region");
     private static readonly KeyString NumberingSystemKey = KeyStrings.GetOrCreate("numberingSystem");
+    // ECMAScript IsStructurallyValidLanguageTag matches UTS-35 `unicode_locale_id`,
+    // which REQUIRES a leading `unicode_language_id` (a language subtag). A wholly
+    // private-use tag (e.g. "x-private") has no language subtag and is therefore NOT
+    // structurally valid — unlike BCP-47 langtag, the standalone `privateuse`
+    // alternative is not part of the grammar, so it is intentionally absent here.
     private static readonly Regex StructurallyValidLanguageTagPattern = new(
-        @"^(?:(?:[A-Za-z]{2,3}(?:-[A-Za-z]{3}){0,3}|[A-Za-z]{4}|[A-Za-z]{5,8})(?:-[A-Za-z]{4})?(?:-(?:[A-Za-z]{2}|\d{3}))?(?:-(?:[0-9A-Za-z]{5,8}|\d[0-9A-Za-z]{3}))*(?:-(?:[0-9A-WY-Za-wy-z](?:-[0-9A-Za-z]{2,8})+))*(?:-x(?:-[0-9A-Za-z]{1,8})+)?|x(?:-[0-9A-Za-z]{1,8})+)$",
+        @"^(?:[A-Za-z]{2,3}(?:-[A-Za-z]{3}){0,3}|[A-Za-z]{4}|[A-Za-z]{5,8})(?:-[A-Za-z]{4})?(?:-(?:[A-Za-z]{2}|\d{3}))?(?:-(?:[0-9A-Za-z]{5,8}|\d[0-9A-Za-z]{3}))*(?:-(?:[0-9A-WY-Za-wy-z](?:-[0-9A-Za-z]{2,8})+))*(?:-x(?:-[0-9A-Za-z]{1,8})+)?$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
     private static readonly HashSet<string> InvalidGrandfatheredLanguageTags = new(StringComparer.OrdinalIgnoreCase)
     {

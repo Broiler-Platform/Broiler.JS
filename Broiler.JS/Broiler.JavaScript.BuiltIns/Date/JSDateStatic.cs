@@ -107,6 +107,12 @@ partial class JSDate
         if (!ExtendedDateTime::Broiler.DateTime.ExtendedIsoDateTime.TryParse(text, out var v) || v is null)
             return false;
 
+        // An ISO-8601 expanded year carries a mandatory sign; the year 0 must be
+        // written "+000000". "-000000" (negative zero) is explicitly invalid, so a
+        // parsed year of 0 with a leading '-' sign is rejected (Date.parse → NaN).
+        if (v.Year == 0 && text.AsSpan().TrimStart().StartsWith("-"))
+            return false;
+
         int milli = v.Nanosecond / 1_000_000;
         double wallClock = JSDateMath.MakeDate(
             JSDateMath.MakeDay(v.Year, v.Month - 1, v.Day),

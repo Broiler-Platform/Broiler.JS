@@ -118,4 +118,41 @@ public class Issue753Tests
     public void JsonStringifyDoesNotCallObjectValueOfProperty()
         => Assert.Equal("{\"valueOf\":3}", Eval(
             "JSON.stringify({valueOf:3})"));
+
+    // ---- Problem 33: Date.parse rejects -000000 (negative-zero extended year) ----
+
+    [Fact]
+    public void DateParseRejectsNegativeZeroExtendedYear()
+        => Assert.Equal("true", Eval(
+            "isNaN(Date.parse('-000000-03-31T00:45Z')).toString()"));
+
+    // ---- Problem 17: Set union / symmetricDifference snapshot order ----
+
+    [Fact]
+    public void SetUnionReadsKeysIteratorNextBeforeCopyingThis()
+        => Assert.Equal("4", Eval(
+            "var set=new Set([1,2,3]);" +
+            "var setLike={size:0,has(){throw new Error('no has');}," +
+            "keys(){return {get next(){set.clear();set.add(4);return function(){return {done:true};};}};}};" +
+            "[...set.union(setLike)].join(',')"));
+
+    [Fact]
+    public void SetSymmetricDifferenceReadsKeysIteratorNextBeforeCopyingThis()
+        => Assert.Equal("4", Eval(
+            "var set=new Set([1,2,3]);" +
+            "var setLike={size:0,has(){throw new Error('no has');}," +
+            "keys(){return {get next(){set.clear();set.add(4);return function(){return {done:true};};}};}};" +
+            "[...set.symmetricDifference(setLike)].join(',')"));
+
+    // ---- Problem 32: private-use-only locale tag is structurally invalid ----
+
+    [Fact]
+    public void IntlRejectsPrivateUseOnlyLocaleTag()
+        => Assert.Equal("RangeError", Eval(
+            "try{new Intl.ListFormat('x-private');'no throw';}catch(e){e.constructor.name;}"));
+
+    [Fact]
+    public void IntlAcceptsLanguageWithPrivateUseExtension()
+        => Assert.Equal("ok", Eval(
+            "try{new Intl.ListFormat('en-x-foo');'ok';}catch(e){'threw';}"));
 }
