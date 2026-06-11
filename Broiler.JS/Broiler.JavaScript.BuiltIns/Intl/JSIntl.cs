@@ -1068,6 +1068,104 @@ public static class JSIntl
         return sb.ToString();
     }
 
+    // Returns the type value of the Unicode ("-u-") extension keyword `key` in `tag`
+    // (e.g. GetUnicodeExtensionType("en-US-u-hc-h23", "hc") == "h23"), or null when the
+    // keyword is absent. A bare key with no type returns the empty string.
+    internal static string GetUnicodeExtensionType(string tag, string key)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return null;
+
+        var parts = tag.Split('-');
+        var u = -1;
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
+            {
+                u = i;
+                break;
+            }
+        }
+
+        if (u < 0)
+            return null;
+
+        var j = u + 1;
+        while (j < parts.Length && parts[j].Length != 1)
+        {
+            if (parts[j].Length == 2 && string.Equals(parts[j], key, System.StringComparison.OrdinalIgnoreCase))
+            {
+                var types = new List<string>();
+                var t = j + 1;
+                while (t < parts.Length && parts[t].Length >= 3)
+                {
+                    types.Add(parts[t].ToLowerInvariant());
+                    t++;
+                }
+
+                return types.Count == 0 ? string.Empty : string.Join("-", types);
+            }
+
+            j++;
+        }
+
+        return null;
+    }
+
+    // The CLDR-derived default hour cycle for a locale: "h12" for 12-hour regions (and
+    // English without a region), "h23" otherwise. A coarse approximation of the CLDR
+    // <hours> preference data, sufficient for the common cases.
+    internal static string DefaultHourCycle(string tag)
+    {
+        var region = RegionSubtag(tag);
+        if (region != null)
+            return JSIntlLocale.TwelveHourRegions.Contains(region) ? "h12" : "h23";
+
+        return LanguageSubtag(tag) == "en" ? "h12" : "h23";
+    }
+
+    private static string LanguageSubtag(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return null;
+
+        var dash = tag.IndexOf('-');
+        return (dash < 0 ? tag : tag.Substring(0, dash)).ToLowerInvariant();
+    }
+
+    private static string RegionSubtag(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return null;
+
+        var parts = tag.Split('-');
+        var i = 1;
+        if (i < parts.Length && parts[i].Length == 4 && IsAllAlphaSubtag(parts[i]))
+            i++; // skip script
+
+        if (i < parts.Length
+            && ((parts[i].Length == 2 && IsAllAlphaSubtag(parts[i])) || (parts[i].Length == 3 && IsAllDigitSubtag(parts[i]))))
+            return parts[i].ToUpperInvariant();
+
+        return null;
+    }
+
+    private static bool IsAllAlphaSubtag(string s)
+    {
+        foreach (var c in s)
+            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
+                return false;
+        return s.Length > 0;
+    }
+
+    private static bool IsAllDigitSubtag(string s)
+    {
+        foreach (var c in s)
+            if (c < '0' || c > '9')
+                return false;
+        return s.Length > 0;
+    }
+
     internal static JSIntlDisplayNamesOptions ValidateDisplayNamesOptions(JSObject options)
     {
         if (options == null)
@@ -2189,7 +2287,7 @@ public sealed class JSIntlLocale : JSObject
 
     // Regions that conventionally use a 12-hour clock; everything else defaults
     // to the 24-hour cycle. Approximation sufficient for sensible defaults.
-    private static readonly HashSet<string> TwelveHourRegions = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> TwelveHourRegions = new(StringComparer.Ordinal)
     {
         "US", "CA", "AU", "NZ", "IN", "PH", "PK", "BD", "EG", "MX", "CO", "SA",
     };
@@ -3393,25 +3491,39 @@ public class JSIntlDateTimeFormat : JSObject
 
     private bool ResolveHour12()
     {
-        var hour12 = options?[Hour12Key];
-        if (hour12 != null && !hour12.IsUndefined)
-            return hour12.BooleanValue;
-        var cycle = OptionString(HourCycleKey);
-        if (cycle == "h23" || cycle == "h24")
-            return false;
-        return true; // en default
+        var hc = ResolveHourCycle();
+        return hc == "h11" || hc == "h12";
     }
 
-    // Resolves the hourCycle reported by resolvedOptions. hour12 takes precedence
-    // over an explicit hourCycle (mapping to h12 / h23); otherwise an explicit
-    // hourCycle is used as-is, falling back to the locale default (h12 for en).
-    // Kept consistent with ResolveHour12 so the two reported values never disagree.
+    // Resolves the hourCycle reported by resolvedOptions (CreateDateTimeFormat). The
+    // hour12 option wins, mapping to h11/h12 (true) or h23/h24 (false) depending on
+    // whether the locale default is a "0-based" cycle; otherwise an explicit hourCycle
+    // option wins, then the locale's -u-hc- extension, then the locale default.
+    // Kept as the single source of truth so ResolveHour12 never disagrees.
     private string ResolveHourCycle()
     {
+        var hcDefault = JSIntl.DefaultHourCycle(localeTag);
+
         var hour12 = options?[Hour12Key];
         if (hour12 != null && !hour12.IsUndefined)
-            return hour12.BooleanValue ? "h12" : "h23";
-        return OptionString(HourCycleKey) ?? "h12";
+        {
+            // hour12 true picks the 12-hour cycle (h11 when the locale default is a
+            // 0-based/24-hour cycle, else h12); hour12 false picks h23 (the common
+            // 24-hour cycle observed by other engines).
+            if (hour12.BooleanValue)
+                return hcDefault == "h11" || hcDefault == "h23" ? "h11" : "h12";
+            return "h23";
+        }
+
+        var option = OptionString(HourCycleKey);
+        if (option != null)
+            return option;
+
+        var ext = JSIntl.GetUnicodeExtensionType(localeTag, "hc");
+        if (!string.IsNullOrEmpty(ext) && (ext == "h11" || ext == "h12" || ext == "h23" || ext == "h24"))
+            return ext;
+
+        return hcDefault;
     }
 
     private JSIntlDateTimeFormatEngine.Pattern ResolveEnginePattern()

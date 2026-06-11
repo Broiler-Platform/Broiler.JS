@@ -65,6 +65,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   now drops every keyword whose key is not relevant to the service (NumberFormat: nu;
 //   DateTimeFormat: ca/hc/nu), so ja-JP-u-cu-usd resolves to ja-JP while ja-JP-u-nu-latn
 //   is kept. Other singleton extensions (-x-, …) are preserved.
+//
+//   Problem 15 (DateTimeFormat hourCycle resolution) — resolvedOptions().hourCycle
+//   ignored the locale's -u-hc- extension and always fell back to "h12". It now resolves
+//   hour12 (mapping to h11/h12/h23 against the locale default), then the hourCycle
+//   option, then the -u-hc- extension, then the locale default (h12 for 12-hour regions
+//   / English, h23 otherwise).
 public class Issue751Tests
 {
     private static string Eval(string code)
@@ -328,4 +334,40 @@ public class Issue751Tests
     [Fact]
     public void PrivateExtensionPreserved()
         => Assert.Equal("en-US-x-priv", Eval("new Intl.NumberFormat('en-US-u-cu-usd-x-priv').resolvedOptions().locale"));
+
+    // ---- Problem 15: DateTimeFormat hourCycle resolution ----
+
+    private static string Hc(string locale, string opts)
+        => Eval($"new Intl.DateTimeFormat('{locale}', {opts}).resolvedOptions().hourCycle");
+
+    [Fact]
+    public void HourCycleFromLocaleExtension()
+        => Assert.Equal("h23,h11,h24", string.Join(",",
+            Hc("en-US-u-hc-h23", "{hour:'numeric'}"),
+            Hc("en-US-u-hc-h11", "{hour:'numeric'}"),
+            Hc("en-US-u-hc-h24", "{hour:'numeric'}")));
+
+    [Fact]
+    public void HourCycleOptionOverridesExtension()
+        => Assert.Equal("h12", Hc("en-US-u-hc-h23", "{hour:'numeric',hourCycle:'h12'}"));
+
+    [Fact]
+    public void HourCycleLocaleDefaults()
+        => Assert.Equal("h12,h23,h23", string.Join(",",
+            Hc("en-US", "{hour:'numeric'}"),
+            Hc("fr-FR", "{hour:'numeric'}"),
+            Hc("ja-JP", "{hour:'numeric'}")));
+
+    [Fact]
+    public void HourCycleFromHour12()
+        => Assert.Equal("h12,h23,h11", string.Join(",",
+            Hc("en-US", "{hour:'numeric',hour12:true}"),
+            Hc("en-US", "{hour:'numeric',hour12:false}"),
+            Hc("fr-FR", "{hour:'numeric',hour12:true}")));
+
+    [Fact]
+    public void Hour12ConsistentWithHourCycle()
+        => Assert.Equal("false,true", string.Join(",",
+            Eval("new Intl.DateTimeFormat('en-US-u-hc-h23',{hour:'numeric'}).resolvedOptions().hour12"),
+            Eval("new Intl.DateTimeFormat('en-US-u-hc-h11',{hour:'numeric'}).resolvedOptions().hour12")));
 }
