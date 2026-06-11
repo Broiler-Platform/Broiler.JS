@@ -199,4 +199,22 @@ public class Issue753Tests
     [Fact]
     public void ToLocaleLowerCaseAppliesFinalSigma()
         => Assert.Equal("aς", Eval("'A\\u03A3'.toLocaleLowerCase('en')"));
+
+    // ---- Problem 22: with + var binding resolved before initializer ----
+
+    [Fact]
+    public void WithVarBindingResolvedBeforeInitializerRecreatesDeletedProperty()
+        => Assert.Equal("true", Eval(
+            "var obj={test262id:1};with(obj){var test262id=delete obj.test262id;}" +
+            "(obj.test262id===true && typeof test262id==='undefined').toString()"));
+
+    [Fact]
+    public void WithVarAssignsToObjectWhenPropertyPresent()
+        => Assert.Equal("5", Eval(
+            "var o={x:1};with(o){var x=5;}o.x.toString()"));
+
+    [Fact]
+    public void WithVarAssignsToOuterWhenPropertyAbsent()
+        => Assert.Equal("7", Eval(
+            "var o={};var y;with(o){var y=7;}(o.y===undefined?y:o.y).toString()"));
 }

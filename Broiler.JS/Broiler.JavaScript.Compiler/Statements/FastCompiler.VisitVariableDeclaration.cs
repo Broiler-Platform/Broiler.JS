@@ -64,11 +64,24 @@ partial class FastCompiler
                             var key = KeyOfName(id.Name);
                             using var withObjectTemp = top.GetTempVariable(typeof(JSObject));
                             using var initTemp = top.GetTempVariable(typeof(JSValue));
+                            var resolveStep = YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key));
+                            var initStep = YExpression.Assign(initTemp.Expression, initExpr);
+                            // Inside a `with`, ResolveBinding (which with-object, if any, holds
+                            // the name) happens BEFORE the Initializer runs, per VariableDeclaration
+                            // semantics: the reference is resolved, then the Initializer runs, then
+                            // PutValue stores into that already-resolved reference. So
+                            // `with (o) { var x = delete o.x; }` resolves the target to o.x first,
+                            // and the later assignment re-creates o.x even though the initializer
+                            // deleted it. Outside any `with` (the common global/function-scope var),
+                            // keep the original init-then-resolve order — ResolveWithObject only
+                            // matters at global scope there, and reordering it is a needless change.
+                            var first = withBoundaries.Count > 0 ? resolveStep : initStep;
+                            var second = withBoundaries.Count > 0 ? initStep : resolveStep;
                             list.Add(
                                 YExpression.Block(
                                     new Sequence<YParameterExpression> { withObjectTemp.Variable, initTemp.Variable },
-                                    YExpression.Assign(initTemp.Expression, initExpr),
-                                    YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
+                                    first,
+                                    second,
                                     YExpression.Condition(
                                         YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject))),
                                         JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, initTemp.Expression, IsStrictMode),
