@@ -27,6 +27,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   arrow), and an arrow scope now binds its `this` to the enclosing `this` expression
 //   directly instead of falling back to a GetVariable("this") lookup that skipped the
 //   override. So `static f = () => this` captures the constructor.
+//
+//   Problem 32 (Map/Set forEach callback `this`) — forEach passed its own receiver
+//   (the Map/Set) as the callback's `this`. The thisArg is the SECOND argument
+//   (default undefined), and the callback is invoked via InvokeCallback so a sloppy
+//   callback's undefined `this` coerces to the global object (a strict one stays
+//   undefined). forEach.length stays 1.
 public class Issue749Tests
 {
     private static string Eval(string code)
@@ -130,4 +136,31 @@ public class Issue749Tests
     public void MethodNestedArrowThisUnaffected()
         => Assert.Equal("true", Eval(
             "var o = { m(){ return (()=>(()=>this)())(); } }; (o.m() === o).toString()"));
+
+    // ---- Problem 32: Map/Set forEach callback `this` is the thisArg, not the receiver ----
+
+    [Fact]
+    public void MapForEachNoThisArgIsGlobalInSloppy()
+        => Assert.Equal("true", Eval(
+            "var t=[]; new Map([[1,1]]).forEach(function(){t.push(this);}); (t[0]===globalThis).toString()"));
+
+    [Fact]
+    public void MapForEachUsesThisArgWhenSupplied()
+        => Assert.Equal("true", Eval(
+            "var t=[],o={}; new Map([[1,1]]).forEach(function(){t.push(this);}, o); (t[0]===o).toString()"));
+
+    [Fact]
+    public void SetForEachUsesThisArgWhenSupplied()
+        => Assert.Equal("true", Eval(
+            "var t=[],o={}; new Set([5]).forEach(function(){t.push(this);}, o); (t[0]===o).toString()"));
+
+    [Fact]
+    public void MapForEachStrictCallbackThisIsUndefined()
+        => Assert.Equal("true", Eval(
+            "'use strict'; var t=[]; new Map([[1,1]]).forEach(function(){t.push(this);}); (t[0]===undefined).toString()"));
+
+    [Fact]
+    public void MapAndSetForEachLengthIsOne()
+        => Assert.Equal("1,1", Eval(
+            "Map.prototype.forEach.length + ',' + Set.prototype.forEach.length"));
 }

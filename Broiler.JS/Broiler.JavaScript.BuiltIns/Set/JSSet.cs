@@ -1,3 +1,4 @@
+using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Iterator;
@@ -230,14 +231,15 @@ public partial class JSSet : JSObject
         }
     }
 
-    [JSExport("forEach")]
+    [JSExport("forEach", Length = 1)]
     public JSValue ForEach(in Arguments a)
     {
-        var fx = a.Get1();
-        if (!fx.IsFunction)
+        // callbackfn is the first argument; thisArg (the callback's `this`) is the
+        // SECOND argument, defaulting to undefined — NOT the forEach receiver.
+        // InvokeCallback applies the non-strict this-coercion like Array.forEach.
+        var (callback, thisArg) = a.Get2();
+        if (callback is not JSFunction fx)
             throw JSEngine.NewTypeError($"Function parameter expected");
-
-        var @this = a.This ?? this;
 
         for (var i = 0; i < store.Count; i++)
         {
@@ -245,7 +247,7 @@ public partial class JSSet : JSObject
             if (e is null)
                 continue;
 
-            fx.Call(@this, e, e, this);
+            fx.InvokeCallback(new Arguments(thisArg, e, e, this));
         }
 
         return JSUndefined.Value;

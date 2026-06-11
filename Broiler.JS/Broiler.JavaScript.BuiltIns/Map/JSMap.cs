@@ -1,3 +1,4 @@
+using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Iterator;
@@ -181,14 +182,16 @@ public partial class JSMap : JSObject
         }
     }
 
-    [JSExport("forEach")]
+    [JSExport("forEach", Length = 1)]
     public JSValue ForEach(in Arguments a)
     {
-        var fx = a.Get1();
-        if (!fx.IsFunction)
+        // callbackfn is the first argument; thisArg (the callback's `this`) is the
+        // SECOND argument, defaulting to undefined — NOT the forEach receiver (the
+        // Map). InvokeCallback applies the non-strict this-coercion (undefined →
+        // global object for a sloppy callback) like Array.prototype.forEach.
+        var (callback, thisArg) = a.Get2();
+        if (callback is not JSFunction fx)
             throw JSEngine.NewTypeError($"Function parameter expected");
-
-        var @this = a.This ?? this;
 
         for (var i = 0; i < store.Count; i++)
         {
@@ -196,7 +199,7 @@ public partial class JSMap : JSObject
             if (e.Deleted)
                 continue;
 
-            fx.Call(@this, e.Value, e.Key, this);
+            fx.InvokeCallback(new Arguments(thisArg, e.Value, e.Key, this));
         }
 
         return JSUndefined.Value;
