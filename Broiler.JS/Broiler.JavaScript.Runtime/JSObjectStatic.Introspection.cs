@@ -104,15 +104,21 @@ public partial class JSObject
 
         var r = JSValue.CreateArray();
 
-        // EnumerableOwnPropertyNames(O, key+value): iterate the own enumerable
-        // String-keyed properties (GetAllKeys already stringifies indices and
-        // excludes symbols / non-enumerable properties) and read each value.
+        // EnumerableOwnPropertyNames(O, key+value): snapshot the own enumerable
+        // String-keyed property names (GetAllKeys already stringifies indices and
+        // excludes symbols / non-enumerable properties) BEFORE reading any value,
+        // so a getter that mutates the object during enumeration cannot inject a
+        // freshly-added key into the result.
+        var keys = new List<JSValue>();
         var en = target.GetAllKeys(showEnumerableOnly: true, inherited: false);
         while (en.MoveNext(out var hasValue, out var key, out var _))
         {
-            if (!hasValue)
-                continue;
+            if (hasValue)
+                keys.Add(key);
+        }
 
+        foreach (var key in keys)
+        {
             var entry = JSValue.CreateArray();
             entry.AddArrayItem(key);
             entry.AddArrayItem(target[key]);
@@ -189,15 +195,17 @@ public partial class JSObject
         var r = JSValue.CreateArray();
 
         // EnumerableOwnPropertyNames(O, value): mirror Object.entries but keep
-        // only the values.
+        // only the values; snapshot the key names before reading any value.
+        var keys = new List<JSValue>();
         var en = target.GetAllKeys(showEnumerableOnly: true, inherited: false);
         while (en.MoveNext(out var hasValue, out var key, out var _))
         {
-            if (!hasValue)
-                continue;
-
-            r.AddArrayItem(target[key]);
+            if (hasValue)
+                keys.Add(key);
         }
+
+        foreach (var key in keys)
+            r.AddArrayItem(target[key]);
 
         return r;
     }

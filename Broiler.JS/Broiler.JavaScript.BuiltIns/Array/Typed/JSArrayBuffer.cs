@@ -74,11 +74,24 @@ public partial class JSArrayBuffer : JSObject
 
     private static int ToBufferLength(JSValue value, int defaultValue)
     {
-        var newLength = ToIntegerOrInfinity(value, defaultValue);
-        if (newLength < 0)
+        // ToIndex: a value below 0 or above 2^53-1 is a RangeError (the upper
+        // bound must be checked on the full double before the int cast, or a
+        // value like 2^53 silently wraps and a later allocation throws a plain
+        // Error instead of the spec-mandated RangeError).
+        if (value == null || value.IsUndefined)
+            return defaultValue;
+
+        var number = ToNumberPrimitive(value).DoubleValue;
+        if (double.IsNaN(number) || number == 0)
+            return 0;
+
+        if (number < 0 || number > 9007199254740991d)
             throw JSEngine.NewRangeError("Invalid ArrayBuffer length");
 
-        return newLength;
+        if (number > int.MaxValue)
+            throw JSEngine.NewRangeError("ArrayBuffer allocation failed");
+
+        return (int)number;
     }
 
     private static JSValue GetSpeciesConstructor(JSArrayBuffer source)

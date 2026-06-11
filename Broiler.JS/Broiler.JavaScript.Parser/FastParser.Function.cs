@@ -22,7 +22,10 @@ partial class FastParser
     bool FunctionExpression(out AstExpression node, bool isAsync = false, bool isStatement = false)
     {
         bool isRootAsync = this.isAsync;
-        var begin = stream.Current;
+        // For `async function …` the caller consumed `async` and recorded its token so
+        // the reported source text (Function.prototype.toString) begins at `async`.
+        var begin = isAsync && pendingAsyncStart != null ? pendingAsyncStart : stream.Current;
+        pendingAsyncStart = null;
         node = default;
         stream.Consume();
         var generator = false;

@@ -47,6 +47,7 @@ partial class FastParser
         // (`async => x`) — and must be left for the member/identifier parser.
         if (stream.Current.Keyword == FastKeywords.async && LooksLikeAsyncFunctionOrArrow())
         {
+            pendingAsyncStart = stream.Current;
             stream.Consume();
             hasAsync = true;
         }

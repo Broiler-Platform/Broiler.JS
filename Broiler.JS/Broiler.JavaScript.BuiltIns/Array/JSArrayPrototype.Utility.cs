@@ -244,20 +244,20 @@ public partial class JSArray
     internal static JSValue ToSpliced(in Arguments a)
     {
         var source = ToArrayLikeObject(a.This);
-        var length = GetArrayLikeLengthLong(source);
-        if (length > uint.MaxValue)
-            throw JSEngine.NewRangeError("Invalid array length");
-
-        var len = (uint)length;
+        // len is LengthOfArrayLike (ToLength → clamped to [0, 2^53-1]). The
+        // 2^32-1 limit is only enforced later against newLen (ArrayCreate), not
+        // against len itself, so the spec error ordering (TypeError for newLen
+        // beyond 2^53-1 vs RangeError for newLen beyond 2^32-1) is preserved.
+        long len = GetArrayLikeLengthLong(source);
 
         long relativeStart = a.TryGetAt(0, out var startArg)
             ? ToIntegerOrInfinity(startArg)
             : 0;
-        uint actualStart = relativeStart < 0
-            ? (uint)Math.Max(len + relativeStart, 0)
-            : (uint)Math.Min(relativeStart, len);
+        long actualStart = relativeStart < 0
+            ? Math.Max(len + relativeStart, 0)
+            : Math.Min(relativeStart, len);
 
-        uint insertCount = a.Length > 2 ? (uint)(a.Length - 2) : 0;
+        long insertCount = a.Length > 2 ? a.Length - 2 : 0;
 
         long actualSkipCount;
         if (a.Length == 0)
@@ -270,16 +270,23 @@ public partial class JSArray
             actualSkipCount = Math.Min(Math.Max(dc, 0), len - actualStart);
         }
 
-        var newLen = len - (uint)actualSkipCount + insertCount;
-        var result = new JSArray(newLen);
+        long newLen = len + insertCount - actualSkipCount;
+        // ArrayCreate would throw RangeError beyond 2^32-1; newLen beyond
+        // 2^53-1 is a TypeError per step 12 of Array.prototype.toSpliced.
+        if (newLen > MaxArrayLikeLength)
+            throw JSEngine.NewTypeError("Invalid array length");
+        if (newLen > uint.MaxValue)
+            throw JSEngine.NewRangeError("Invalid array length");
+
+        var result = new JSArray((uint)newLen);
 
         uint i = 0;
-        for (; i < actualStart; i++)
-            result[i] = source[i];
-        for (uint j = 0; j < insertCount; j++)
-            result[i++] = a[(int)(j + 2)];
-        for (uint k = actualStart + (uint)actualSkipCount; k < len; k++)
-            result[i++] = source[k];
+        for (long s = 0; s < actualStart; s++)
+            result[i++] = source[(uint)s];
+        for (int j = 0; j < insertCount; j++)
+            result[i++] = a[j + 2];
+        for (long k = actualStart + actualSkipCount; k < len; k++)
+            result[i++] = source[(uint)k];
 
         return result;
     }
