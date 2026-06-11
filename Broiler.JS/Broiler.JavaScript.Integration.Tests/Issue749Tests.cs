@@ -47,11 +47,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   generators keep their existing prototype path — their .prototype chain does not
 //   reach %AsyncIteratorPrototype%.)
 //
-//   Problem 38 (partial) — String.prototype.concat coerces each argument with the JS
-//   ToString abstract operation (.StringValue → ToPrimitive for objects) instead of the
-//   CLR ToString(), so an object's custom toString and a Symbol wrapper's toString are
-//   honoured and a raw Symbol throws. (Template-literal coercion is still CLR ToString —
-//   tracked separately.)
+//   Problem 38 — Symbol wrapper coercion to string. String.prototype.concat now coerces
+//   each argument via the JS ToString abstract operation, and a Symbol wrapper's CLR
+//   ToString() (used by template literals and other CLR string coercions) now delegates
+//   to the ordinary object ToString (GetMethod("toString") → Symbol.prototype.toString /
+//   a user override) instead of returning the bare wrapped description. So
+//   `Object(Symbol('d'))` stringifies to "Symbol(d)" (or a redefined toString's result).
 public class Issue749Tests
 {
     private static string Eval(string code)
@@ -244,4 +245,20 @@ public class Issue749Tests
     [Fact]
     public void ConcatPrimitivesUnchanged()
         => Assert.Equal("1atrue1,2null", Eval("''.concat(1,'a',true,[1,2],null)"));
+
+    [Fact]
+    public void SymbolWrapperStringifiesViaToString()
+        => Assert.Equal("Symbol(d)", Eval("'' + Object(Symbol('d')).toString()"));
+
+    [Fact]
+    public void SymbolWrapperInTemplateUsesToString()
+        => Assert.Equal("Symbol(d)", Eval(
+            "delete Symbol.prototype[Symbol.toPrimitive]; `${Object(Symbol('d'))}`"));
+
+    [Fact]
+    public void SymbolWrapperRedefinedToStringHonoured()
+        => Assert.Equal("foo", Eval(
+            "delete Symbol.prototype[Symbol.toPrimitive];" +
+            "Object.defineProperty(Symbol.prototype,'toString',{get:()=>()=>'foo'});" +
+            "`${Object(Symbol())}`"));
 }
