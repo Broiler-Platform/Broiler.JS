@@ -124,16 +124,29 @@ public partial class JSArrayBuffer : JSObject
     public byte[] Buffer => buffer;
 
     [JSExport(Length = 1)]
-    public JSArrayBuffer(in Arguments a) : this(JSEngine.NewTargetPrototype)
+    public JSArrayBuffer(in Arguments a) : this(ResolveNewTargetPrototype())
     {
-        // ArrayBuffer ( ... ): step 1 — if NewTarget is undefined (called as a plain
-        // function, not via `new`), throw a TypeError. A native [[Construct]] keeps
-        // its new.target in CurrentNewTarget, so both must be null to be a plain call.
+        int length = ToBufferLength(a.Get1(), 0);
+        buffer = new byte[length];
+    }
+
+    /// <summary>
+    /// ArrayBuffer ( … ) step 1: throw a TypeError when NewTarget is undefined
+    /// (called as a plain function, not via <c>new</c> / <c>Reflect.construct</c>),
+    /// then return the prototype to allocate from. The "requires new" check MUST
+    /// run before reading <see cref="JSEngine.NewTargetPrototype"/>: that read can
+    /// invoke a user-defined <c>get prototype</c> accessor on new.target, whose JS
+    /// frame consumes and clears CurrentNewTarget — so checking afterwards would
+    /// spuriously see no new target.
+    /// </summary>
+    private static JSObject ResolveNewTargetPrototype()
+    {
+        // A native [[Construct]] keeps its new.target in CurrentNewTarget, so both
+        // must be null to be a plain call.
         if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
             throw JSEngine.NewTypeError("Constructor ArrayBuffer requires 'new'");
 
-        int length = ToBufferLength(a.Get1(), 0);
-        buffer = new byte[length];
+        return JSEngine.NewTargetPrototype;
     }
 
     public JSArrayBuffer(int length) : this() => buffer = new byte[length];
