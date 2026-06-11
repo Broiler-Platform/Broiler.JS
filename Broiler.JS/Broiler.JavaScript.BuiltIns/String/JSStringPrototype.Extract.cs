@@ -124,8 +124,13 @@ public partial class JSString
         StringBuilder sb = new();
         sb.Append(@this);
 
+        // Each argument is coerced with the JS ToString abstract operation
+        // (.StringValue → ToPrimitive(string) for objects), NOT the CLR ToString():
+        // a Symbol wrapper must stringify through its toString ("Symbol(desc)"), and a
+        // raw Symbol must throw — appending the JSValue directly used its CLR ToString
+        // (the bare description).
         for (int i = 0; i < a.Length; i++)
-            sb.Append(a.GetAt(i));
+            sb.Append(a.GetAt(i).StringValue);
 
         return new JSString(sb.ToString());
     }

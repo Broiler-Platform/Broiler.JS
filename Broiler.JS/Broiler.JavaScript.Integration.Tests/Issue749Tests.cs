@@ -46,6 +46,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   level up) still supplies next/return/throw/@@iterator/@@toStringTag. (Async
 //   generators keep their existing prototype path — their .prototype chain does not
 //   reach %AsyncIteratorPrototype%.)
+//
+//   Problem 38 (partial) — String.prototype.concat coerces each argument with the JS
+//   ToString abstract operation (.StringValue → ToPrimitive for objects) instead of the
+//   CLR ToString(), so an object's custom toString and a Symbol wrapper's toString are
+//   honoured and a raw Symbol throws. (Template-literal coercion is still CLR ToString —
+//   tracked separately.)
 public class Issue749Tests
 {
     private static string Eval(string code)
@@ -218,4 +224,24 @@ public class Issue749Tests
     public void GeneratorToStringTagStillGenerator()
         => Assert.Equal("[object Generator]", Eval(
             "function* g(){} Object.prototype.toString.call(g())"));
+
+    // ---- Problem 38 (partial): String.prototype.concat coerces args via ToString ----
+
+    [Fact]
+    public void ConcatCoercesObjectViaToString()
+        => Assert.Equal("aZ", Eval("'a'.concat({toString(){return 'Z';}})"));
+
+    [Fact]
+    public void ConcatCoercesSymbolWrapperViaToString()
+        => Assert.Equal("Symbol(d)", Eval(
+            "delete Symbol.prototype[Symbol.toPrimitive]; ''.concat(Object(Symbol('d')))"));
+
+    [Fact]
+    public void ConcatRawSymbolThrows()
+        => Assert.Equal("TypeError", Eval(
+            "var r; try { ''.concat(Symbol()); r='no'; } catch(e){ r=e.constructor.name; } r"));
+
+    [Fact]
+    public void ConcatPrimitivesUnchanged()
+        => Assert.Equal("1atrue1,2null", Eval("''.concat(1,'a',true,[1,2],null)"));
 }
