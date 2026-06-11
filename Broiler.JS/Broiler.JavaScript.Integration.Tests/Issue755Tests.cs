@@ -39,6 +39,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   Problem 37/38 — A TypedArray constructor length is ToIndex: it truncates
 //   toward zero first, so a fractional value in (-1, 0) floors to 0 instead of
 //   throwing a RangeError.
+//
+//   Problem 9 — three related Array/Proxy/Reflect bugs exposed by pop/shift via a
+//   Proxy: (a) Array [[Set]] of `length` with a different receiver redirects to the
+//   receiver's [[DefineOwnProperty]] (OrdinarySet) instead of mutating this array;
+//   (b) Proxy invariant checks see an Array's virtual `length` (read via
+//   [[GetOwnProperty]]); (c) Reflect.defineProperty dispatches through the JSValue
+//   [[DefineOwnProperty]] overload so it actually shrinks/grows an Array's length,
+//   and returns false (rather than throwing) on an invariant violation.
 public class Issue755Tests
 {
     private static string Eval(string code)
@@ -203,4 +211,46 @@ public class Issue755Tests
     public void TypedArrayCtorCoercesLengthValues()
         => Assert.Equal("1,0,1,0", Eval(
             "[new Int8Array(true).length,new Int8Array(false).length,new Int8Array('1').length,new Int8Array(null).length].join(',')"));
+
+    // ---- Problem 9: Array length [[Set]] receiver redirect + Reflect.defineProperty ----
+
+    [Fact]
+    public void ReflectDefinePropertyShrinksArrayLength()
+        => Assert.Equal("true,0,", Eval(
+            "var a=[1,2,3];var ok=Reflect.defineProperty(a,'length',{value:0});[ok,a.length,a.join(',')].join(',')"));
+
+    [Fact]
+    public void ReflectDefinePropertyGrowsArrayLength()
+        => Assert.Equal("true,5", Eval(
+            "var a=[1,2,3];var ok=Reflect.defineProperty(a,'length',{value:5});[ok,a.length].join(',')"));
+
+    [Fact]
+    public void ReflectDefinePropertyReadonlyLengthReturnsFalse()
+        => Assert.Equal("false,3", Eval(
+            "var a=[1,2,3];Reflect.defineProperty(a,'length',{writable:false});" +
+            "var ok=Reflect.defineProperty(a,'length',{value:1});[ok,a.length].join(',')"));
+
+    [Fact]
+    public void ReflectDefinePropertyInvalidLengthThrowsRangeError()
+        => Assert.Equal("RangeError", Eval(
+            "try{Reflect.defineProperty([1],'length',{value:-1});'no throw';}catch(e){e.constructor.name;}"));
+
+    [Fact]
+    public void ObjectDefinePropertyReadonlyLengthStillThrows()
+        => Assert.Equal("TypeError", Eval(
+            "var a=[1,2,3];Object.defineProperty(a,'length',{writable:false});" +
+            "try{Object.defineProperty(a,'length',{value:1});'no throw';}catch(e){e.constructor.name;}"));
+
+    [Fact]
+    public void ArrayLengthSetWithForeignReceiverRedirects()
+        => Assert.Equal("gopd:length,dp:length", Eval(
+            "var log=[];var p=new Proxy([],{" +
+            "getOwnPropertyDescriptor:function(t,k){log.push('gopd:'+k);return Reflect.getOwnPropertyDescriptor(t,k);}," +
+            "defineProperty:function(t,k,d){log.push('dp:'+k);return Reflect.defineProperty(t,k,d);}});" +
+            "Reflect.set([],'length',0,p);log.join(',')"));
+
+    [Fact]
+    public void ArrayPopViaProxyShrinksUnderlyingArray()
+        => Assert.Equal("3,2,12", Eval(
+            "var a=[1,2,3];var p=new Proxy(a,{});var r=Array.prototype.pop.call(p);[r,a.length,a.join('')].join(',')"));
 }

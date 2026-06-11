@@ -543,7 +543,7 @@ public partial class JSObject
         return SetSymbolOnReceiver(name, value, receiver, JSPropertyAttributes.EnumerableConfigurableValue, throwError);
     }
 
-    private bool SetKeyStringOnReceiver(KeyString name, JSValue value, JSValue receiver, JSPropertyAttributes defaultAttributes, bool throwError)
+    protected bool SetKeyStringOnReceiver(KeyString name, JSValue value, JSValue receiver, JSPropertyAttributes defaultAttributes, bool throwError)
     {
         if (receiver != null && receiver is not JSObject)
         {
