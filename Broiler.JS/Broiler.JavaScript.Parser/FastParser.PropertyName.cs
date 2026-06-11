@@ -83,7 +83,15 @@ partial class FastParser
             if (stream.Current.Keyword == FastKeywords.@if)
                 throw stream.Unexpected();
 
-            if (!Expression(out node))
+            // A computed property name is an AssignmentExpression[+In]; `in` is a
+            // valid operator inside the brackets even when the enclosing context
+            // suppresses it (e.g. a class/object literal inside a for-head:
+            // `for (C = class { ['x' in obj]() {} }; ; )`).
+            var savedIn = considerInOfAsOperators;
+            considerInOfAsOperators = true;
+            var ok = Expression(out node);
+            considerInOfAsOperators = savedIn;
+            if (!ok)
                 throw stream.Unexpected();
 
             stream.Expect(TokenTypes.SquareBracketEnd);
