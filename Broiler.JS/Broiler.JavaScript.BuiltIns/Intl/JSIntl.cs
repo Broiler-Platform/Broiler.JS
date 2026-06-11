@@ -121,7 +121,18 @@ public static class JSIntl
         intl.FastAddValue(SupportedValuesOfKey,
             new JSFunction(static (in Arguments a) =>
             {
-                _ = a.Get1().StringValue;
+                var key = a.Get1().StringValue;
+                // Only the numbering-system enumeration is backed by real data so far;
+                // other keys (calendar, currency, …) return an empty list rather than
+                // throwing, until their data is wired up.
+                if (key == "numberingSystem")
+                {
+                    var list = JSValue.CreateArray();
+                    foreach (var ns in SupportedNumberingSystemsSorted)
+                        list.AddArrayItem(JSValue.CreateString(ns));
+                    return list;
+                }
+
                 return JSValue.CreateArray();
             }, "supportedValuesOf", "function supportedValuesOf() { [native code] }", length: 1, createPrototype: false),
             JSPropertyAttributes.ConfigurableValue);
@@ -1073,6 +1084,126 @@ public static class JSIntl
         return sb.ToString();
     }
 
+    // The numbering systems with simple digit mappings (ECMA-402 Table: "Numbering
+    // System Identifiers"), i.e. the `nu` values an implementation negotiates via
+    // ResolveLocale / reports from resolvedOptions. Algorithmic-only aliases ("native",
+    // "traditio", "finance") are intentionally absent — they are not valid `-u-nu-`
+    // values. Stored sorted (code-unit order) for supportedValuesOf.
+    internal static readonly string[] SupportedNumberingSystemsSorted =
+    {
+        "adlm", "ahom", "arab", "arabext", "bali", "beng", "bhks", "brah", "cakm",
+        "cham", "deva", "diak", "fullwide", "gara", "gong", "gonm", "gujr", "gukh",
+        "guru", "hanidec", "hmng", "hmnp", "java", "kali", "kawi", "khmr", "knda",
+        "krai", "lana", "lanatham", "laoo", "latn", "lepc", "limb", "mathbold",
+        "mathdbl", "mathmono", "mathsanb", "mathsans", "mlym", "modi", "mong", "mroo",
+        "mtei", "mymr", "mymrepka", "mymrpao", "mymrshan", "mymrtlng", "nagm", "newa",
+        "nkoo", "olck", "onao", "orya", "osma", "outlined", "rohg", "saur", "segment",
+        "shrd", "sind", "sinh", "sora", "sund", "sunu", "takr", "talu", "tamldec",
+        "telu", "thai", "tibt", "tirh", "tnsa", "vaii", "wara", "wcho",
+    };
+
+    private static readonly HashSet<string> SupportedNumberingSystems =
+        new(SupportedNumberingSystemsSorted, StringComparer.Ordinal);
+
+    internal static bool IsSupportedNumberingSystem(string value)
+        => value != null && SupportedNumberingSystems.Contains(value);
+
+    // ResolveLocale's negotiation of the `nu` (numbering system) relevant key. Returns
+    // the resolved numbering system and the resolved locale tag. Per spec: a supported
+    // `-u-nu-` value is used and reflected in the locale; a `numberingSystem` option that
+    // is supported and DIFFERENT overrides it and removes the `-u-nu-` from the locale; an
+    // unsupported value (in either place) falls through to "latn" with `-u-nu-` removed.
+    internal static (string NumberingSystem, string Locale) ResolveNumberingSystem(string localeTag, JSObject options)
+    {
+        var value = "latn";
+        var reflectInLocale = false;
+
+        var ext = GetUnicodeExtensionType(localeTag, "nu");
+        if (IsSupportedNumberingSystem(ext))
+        {
+            value = ext;
+            reflectInLocale = true;
+        }
+
+        var optionValue = options?[NumberingSystemKey];
+        if (optionValue != null && !optionValue.IsUndefined)
+        {
+            var requested = optionValue.StringValue;
+            if (IsSupportedNumberingSystem(requested) && !string.Equals(requested, value, StringComparison.Ordinal))
+            {
+                value = requested;
+                reflectInLocale = false;
+            }
+        }
+
+        var locale = reflectInLocale ? localeTag : RemoveUnicodeExtensionKeyword(localeTag, "nu");
+        return (value, locale);
+    }
+
+    // Rebuilds a BCP-47 tag dropping a single Unicode ("-u-") extension keyword (and the
+    // whole "-u-" sequence when nothing else survives). Sibling of
+    // FilterUnicodeExtensionKeywords, which keeps a set instead of removing one.
+    private static string RemoveUnicodeExtensionKeyword(string tag, string removeKey)
+    {
+        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase) < 0)
+            return tag;
+
+        var parts = tag.Split('-');
+        var u = -1;
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
+            {
+                u = i;
+                break;
+            }
+        }
+
+        if (u < 0)
+            return tag;
+
+        var end = u + 1;
+        var keywords = new List<(string Key, List<string> Types)>();
+        while (end < parts.Length && parts[end].Length != 1)
+        {
+            if (parts[end].Length == 2)
+                keywords.Add((parts[end].ToLowerInvariant(), new List<string>()));
+            else if (keywords.Count > 0)
+                keywords[^1].Types.Add(parts[end]);
+            end++;
+        }
+
+        var sb = new StringBuilder();
+        for (var i = 0; i < u; i++)
+        {
+            if (i > 0)
+                sb.Append('-');
+            sb.Append(parts[i]);
+        }
+
+        var keptAny = false;
+        foreach (var (key, types) in keywords)
+        {
+            if (string.Equals(key, removeKey, StringComparison.Ordinal))
+                continue;
+
+            if (!keptAny)
+            {
+                sb.Append("-u");
+                keptAny = true;
+            }
+
+            sb.Append('-').Append(key);
+            foreach (var type in types)
+                sb.Append('-').Append(type);
+        }
+
+        for (var i = end; i < parts.Length; i++)
+            sb.Append('-').Append(parts[i]);
+
+        return sb.ToString();
+    }
+
     // Returns the type value of the Unicode ("-u-") extension keyword `key` in `tag`
     // (e.g. GetUnicodeExtensionType("en-US-u-hc-h23", "hc") == "h23"), or null when the
     // keyword is absent. A bare key with no type returns the empty string.
@@ -1396,6 +1527,7 @@ public class JSIntlRelativeTimeFormat : JSObject
     }
 
     private readonly string locale;
+    private readonly string numberingSystem;
     private readonly string style;
     private readonly string numeric;
 
@@ -1408,14 +1540,14 @@ public class JSIntlRelativeTimeFormat : JSObject
         result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
         result.CreateDataProperty(KeyStrings.GetOrCreate("style"), JSValue.CreateString(@this.style));
         result.CreateDataProperty(KeyStrings.GetOrCreate("numeric"), JSValue.CreateString(@this.numeric));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString("latn"));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString(@this.numberingSystem));
         return result;
     }
 
     public JSIntlRelativeTimeFormat(in Arguments a) : this()
     {
         var options = JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a);
-        locale = JSIntl.ResolveLocale(a.Get1());
+        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(JSIntl.ResolveLocale(a.Get1()), options);
         style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), ["long", "short", "narrow"], false, "long");
         numeric = JSIntl.GetOption(options, KeyStrings.GetOrCreate("numeric"), ["always", "auto"], false, "always");
     }
@@ -1707,11 +1839,8 @@ public sealed class JSIntlDurationFormat : JSObject
 
     public JSIntlDurationFormat(string locale, JSObject options) : this()
     {
-        this.locale = locale;
+        (numberingSystem, this.locale) = JSIntl.ResolveNumberingSystem(locale, options);
         style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), StyleValues, false, "short");
-
-        var ns = options == null ? JSUndefined.Value : options[KeyStrings.GetOrCreate("numberingSystem")];
-        numberingSystem = ns.IsUndefined ? null : ns.StringValue;
 
         string prevStyle = null;
         for (var i = 0; i < Units.Length; i++)
@@ -2680,6 +2809,7 @@ internal sealed class JSIntlNumberFormatResolved
 public class JSIntlNumberFormat : JSObject
 {
     private readonly string locale;
+    private readonly string numberingSystem;
     private JSObject options;
     private JSIntlNumberFormatResolved resolved;
 
@@ -2687,7 +2817,8 @@ public class JSIntlNumberFormat : JSObject
     {
         options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, requireNew: false);
         resolved = JSIntl.ValidateNumberFormatOptions(options);
-        locale = JSIntl.ResolveLocale(a.Get1(), JSIntl.NumberFormatRelevantKeys);
+        var resolvedLocale = JSIntl.ResolveLocale(a.Get1(), JSIntl.NumberFormatRelevantKeys);
+        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(resolvedLocale, options);
     }
 
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
@@ -3250,7 +3381,7 @@ public class JSIntlNumberFormat : JSObject
 
         var result = new JSObject();
         result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString("latn"));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString(@this.numberingSystem));
 
         var styleKey = KeyStrings.GetOrCreate("style");
         var style = @this.options is null || @this.options[styleKey].IsUndefined ? "decimal" : @this.options[styleKey].StringValue;
@@ -3480,6 +3611,7 @@ public class JSIntlDateTimeFormat : JSObject
     private static readonly KeyString HourCycleKey = KeyStrings.GetOrCreate("hourCycle");
     private readonly CultureInfo locale;
     private readonly string localeTag;
+    private readonly string numberingSystem;
     private JSObject options;
 
     // dateStyle / timeStyle are GetOption-coerced (to a string) and validated once at
@@ -3765,13 +3897,12 @@ public class JSIntlDateTimeFormat : JSObject
         var result = new JSObject();
         result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.localeTag));
         result.CreateDataProperty(KeyStrings.GetOrCreate("calendar"), JSValue.CreateString(@this.ResolvedCalendar()));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString("latn"));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString(@this.numberingSystem));
         result.CreateDataProperty(KeyStrings.GetOrCreate("timeZone"), JSValue.CreateString(TimeZoneInfo.Local.Id));
 
         if (@this.options != null)
         {
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "calendar");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "numberingSystem");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeZone");
             // hourCycle / hour12 are RESOLVED values (not plain passthrough): when the
             // format includes an hour component, both are always present — hourCycle
@@ -3897,7 +4028,8 @@ public class JSIntlDateTimeFormat : JSObject
         // string rather than the raw option value.
         dateStyle = JSIntl.GetOption(options, DateStyleKey, DateTimeStyleValues, false, null);
         timeStyle = JSIntl.GetOption(options, TimeStyleKey, DateTimeStyleValues, false, null);
-        localeTag = JSIntl.ResolveLocale(a.Get1(), JSIntl.DateTimeFormatRelevantKeys);
+        var resolvedLocale = JSIntl.ResolveLocale(a.Get1(), JSIntl.DateTimeFormatRelevantKeys);
+        (numberingSystem, localeTag) = JSIntl.ResolveNumberingSystem(resolvedLocale, options);
         locale = CultureInfo.CurrentCulture;
     }
 
@@ -3905,6 +4037,7 @@ public class JSIntlDateTimeFormat : JSObject
     {
         this.locale = locale;
         localeTag = locale.Name;
+        numberingSystem = "latn";
     }
 
     private static JSObject CurrentPrototype()

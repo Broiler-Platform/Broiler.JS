@@ -239,4 +239,41 @@ public class Issue753Tests
     public void MappedArgumentsIterationObservesLiveParameter()
         => Assert.Equal("99,2", Eval(
             "function f(a,b){a=99;return [...arguments].join(',');}f(1,2)"));
+
+    // ---- Problem 27/28/34/35: numbering system resolution ----
+
+    [Fact]
+    public void NumberFormatResolvesSupportedNuExtension()
+        => Assert.Equal("arab", Eval(
+            "new Intl.NumberFormat('en-u-nu-arab').resolvedOptions().numberingSystem"));
+
+    [Fact]
+    public void NumberFormatIgnoresUnsupportedNumberingSystemOption()
+        => Assert.Equal("arab", Eval(
+            "new Intl.NumberFormat('en-u-nu-arab',{numberingSystem:'invalid'}).resolvedOptions().numberingSystem"));
+
+    [Fact]
+    public void NumberFormatOptionOverridesExtensionAndDropsItFromLocale()
+        => Assert.Equal("en|arab", Eval(
+            "var ro=new Intl.NumberFormat('en-u-nu-latn',{numberingSystem:'arab'}).resolvedOptions();ro.locale+'|'+ro.numberingSystem"));
+
+    [Fact]
+    public void NumberFormatUnsupportedExtensionFallsBackToLatnAndDropsExtension()
+        => Assert.Equal("en|latn", Eval(
+            "var ro=new Intl.NumberFormat('en-u-nu-invalid').resolvedOptions();ro.locale+'|'+ro.numberingSystem"));
+
+    [Fact]
+    public void DateTimeFormatDropsInvalidNuFromResolvedLocale()
+        => Assert.Equal("ja-JP", Eval(
+            "new Intl.DateTimeFormat('ja-JP-u-nu-native').resolvedOptions().locale"));
+
+    [Fact]
+    public void SupportedValuesOfNumberingSystemIncludesLatnAndArab()
+        => Assert.Equal("true", Eval(
+            "var a=Intl.supportedValuesOf('numberingSystem');(a.includes('latn')&&a.includes('arab')&&!a.includes('native')).toString()"));
+
+    [Fact]
+    public void SupportedValuesOfNumberingSystemIsSorted()
+        => Assert.Equal("true", Eval(
+            "var a=Intl.supportedValuesOf('numberingSystem');(JSON.stringify(a)===JSON.stringify([...a].sort())).toString()"));
 }
