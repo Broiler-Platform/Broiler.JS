@@ -538,8 +538,10 @@ partial class JSTypedArray
     [JSExport("slice", Length = 2)]
     public JSValue Slice(in Arguments a)
     {
-        var begin = a.TryGetAt(0, out var a1) ? a1.IntValue : 0;
-        var end = a.TryGetAt(1, out var a2) ? a2.IntValue : int.MaxValue;
+        // ToIntegerOrInfinity coerces start/end (valueOf, strings, booleans, NaN→0);
+        // an undefined end (explicit or absent) defaults to len, not 0.
+        var begin = ToIntegerOrInfinity(a.GetAt(0), 0);
+        var end = ToIntegerOrInfinity(a.GetAt(1), Length);
 
         int newLength;
 
@@ -640,8 +642,10 @@ partial class JSTypedArray
     [JSExport("subarray", Length = 2)]
     public JSValue SubArray(in Arguments a)
     {
-        var begin = a.TryGetAt(0, out var a1) ? a1.IntValue : 0;
-        var end = a.TryGetAt(1, out var a2) ? a2.IntValue : int.MaxValue;
+        // ToIntegerOrInfinity coerces start/end (valueOf, strings, booleans, NaN→0);
+        // an undefined end (explicit or absent) defaults to len, not 0.
+        var begin = ToIntegerOrInfinity(a.GetAt(0), 0);
+        var end = ToIntegerOrInfinity(a.GetAt(1), Length);
 
         int newLength;
 

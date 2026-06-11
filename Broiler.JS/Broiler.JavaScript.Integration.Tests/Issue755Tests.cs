@@ -1,0 +1,206 @@
+using Broiler.JavaScript.Engine;
+
+namespace Broiler.JavaScript.Integration.Tests;
+
+// Regression tests for https://github.com/MaiRat/Broiler.JS/issues/755
+//
+// Fixed here:
+//
+//   Problem 23 — Array.prototype[Symbol.unscopables] data property must be
+//   non-writable ({ writable:false, enumerable:false, configurable:true }).
+//
+//   Problem 26 — BigInt.asIntN()/asUintN() with a missing `bigint` argument is a
+//   TypeError (ToBigInt(undefined)), not a ReferenceError. The absent argument
+//   slot used to surface as a CLR null and NRE → ReferenceError.
+//
+//   Problem 27/28 — %TypedArray%.prototype.slice/subarray coerce start/end via
+//   ToIntegerOrInfinity (valueOf, strings, booleans, NaN→0) and treat an undefined
+//   end — explicit or absent — as len, not 0.
+//
+//   Problem 29 — Intl.DurationFormat.prototype.format/formatToParts reject a
+//   non-object/non-string argument with a TypeError, a string with a RangeError,
+//   and an object with no duration fields with a TypeError (ToDurationRecord).
+//
+//   Problem 30/31 — Date setters (setMinutes/setSeconds/setHours/setMonth/
+//   setFullYear and UTC variants): an explicitly-passed `undefined` optional
+//   component is "specified" (keyed off argument count), so ToNumber(undefined)=NaN
+//   makes the result NaN rather than reusing the current field value.
+//
+//   Problem 33 — A YieldExpression in a generator's FormalParameters and an
+//   AwaitExpression in an async function's FormalParameters are early SyntaxErrors.
+//
+//   Problem 34 — JSON.parse reviver / JSON.stringify replacer build the "" wrapper
+//   holder with CreateDataPropertyOrThrow, not [[Set]], so an inherited setter on
+//   Object.prototype[""] is not invoked.
+//
+//   Problem 36 — Object.entries/Object.values perform [[GetOwnProperty]] and
+//   [[Get]] interleaved per key (observable order for a Proxy).
+//
+//   Problem 37/38 — A TypedArray constructor length is ToIndex: it truncates
+//   toward zero first, so a fractional value in (-1, 0) floors to 0 instead of
+//   throwing a RangeError.
+public class Issue755Tests
+{
+    private static string Eval(string code)
+    {
+        using var ctx = new JSContext();
+        return ctx.Eval(code).ToString();
+    }
+
+    // ---- Problem 23: @@unscopables descriptor is non-writable ----
+
+    [Fact]
+    public void ArrayUnscopablesIsNonWritable()
+        => Assert.Equal("false", Eval(
+            "Object.getOwnPropertyDescriptor(Array.prototype, Symbol.unscopables).writable.toString()"));
+
+    [Fact]
+    public void ArrayUnscopablesIsConfigurableNonEnumerable()
+        => Assert.Equal("true,false,true", Eval(
+            "var d=Object.getOwnPropertyDescriptor(Array.prototype, Symbol.unscopables);" +
+            "[d.configurable,d.enumerable,d.value!==undefined].join(',')"));
+
+    // ---- Problem 26: BigInt.asIntN/asUintN missing argument → TypeError ----
+
+    [Fact]
+    public void BigIntAsIntNNoArgumentThrowsTypeError()
+        => Assert.Equal("TypeError", Eval(
+            "try{BigInt.asIntN();'no throw';}catch(e){e.constructor.name;}"));
+
+    [Fact]
+    public void BigIntAsIntNOneArgumentThrowsTypeError()
+        => Assert.Equal("TypeError", Eval(
+            "try{BigInt.asIntN(0);'no throw';}catch(e){e.constructor.name;}"));
+
+    [Fact]
+    public void BigIntAsUintNNoArgumentThrowsTypeError()
+        => Assert.Equal("TypeError", Eval(
+            "try{BigInt.asUintN();'no throw';}catch(e){e.constructor.name;}"));
+
+    // ---- Problem 27/28: TypedArray slice/subarray end coercion ----
+
+    [Fact]
+    public void TypedArraySliceUndefinedEndIsFullLength()
+        => Assert.Equal("40,41,42,43", Eval(
+            "Array.prototype.join.call(new Int8Array([40,41,42,43]).slice(0, undefined))"));
+
+    [Fact]
+    public void TypedArraySliceCoercesEnd()
+        => Assert.Equal("40,41|40|40,41,42", Eval(
+            "var s=new Int8Array([40,41,42,43]);var j=function(a){return Array.prototype.join.call(a);};" +
+            "[j(s.slice(0,{valueOf:function(){return 2;}})), j(s.slice(0,'1')), j(s.slice(0,-1))].join('|')"));
+
+    [Fact]
+    public void TypedArraySubarrayUndefinedEndIsFullLength()
+        => Assert.Equal("4", Eval(
+            "new Int8Array([40,41,42,43]).subarray(0, undefined).length.toString()"));
+
+    // ---- Problem 29: Intl.DurationFormat.format argument validation ----
+
+    [Fact]
+    public void DurationFormatRejectsNonObject()
+        => Assert.Equal("TypeError,TypeError,TypeError,TypeError", Eval(
+            "var df=new Intl.DurationFormat();function t(x){try{df.format(x);return 'no throw';}catch(e){return e.constructor.name;}}" +
+            "[t(undefined),t(null),t(1),t(2n)].join(',')"));
+
+    [Fact]
+    public void DurationFormatRejectsEmptyObject()
+        => Assert.Equal("TypeError,TypeError", Eval(
+            "var df=new Intl.DurationFormat();function t(x){try{df.format(x);return 'no throw';}catch(e){return e.constructor.name;}}" +
+            "[t({}),t({years:undefined})].join(',')"));
+
+    [Fact]
+    public void DurationFormatRejectsBadStringWithRangeError()
+        => Assert.Equal("RangeError", Eval(
+            "var df=new Intl.DurationFormat();try{df.format('bad string');'no throw';}catch(e){e.constructor.name;}"));
+
+    // ---- Problem 30/31: Date setters explicit undefined → NaN ----
+
+    [Fact]
+    public void SetMinutesExplicitUndefinedMsIsNaN()
+        => Assert.Equal("true", Eval(
+            "var d=new Date(2016,6);Number.isNaN(d.setMinutes(0,0,undefined)).toString()"));
+
+    [Fact]
+    public void SetSecondsExplicitUndefinedMsIsNaN()
+        => Assert.Equal("true", Eval(
+            "var d=new Date(2016,6);Number.isNaN(d.setSeconds(0,undefined)).toString()"));
+
+    [Fact]
+    public void SetMonthExplicitUndefinedDayIsNaN()
+        => Assert.Equal("true", Eval(
+            "var d=new Date(2016,6,7,11,36,23,2);Number.isNaN(d.setMonth(6,undefined)).toString()"));
+
+    [Fact]
+    public void SetFullYearExplicitUndefinedDayIsNaN()
+        => Assert.Equal("true", Eval(
+            "var d=new Date(2016,6,7,11,36,23,2);Number.isNaN(d.setFullYear(2016,6,undefined)).toString()"));
+
+    [Fact]
+    public void SetMinutesMissingMsKeepsCurrentField()
+        => Assert.Equal("false", Eval(
+            "var d=new Date(2016,6,1,0,0,0,2);Number.isNaN(d.setMinutes(0,0)).toString()"));
+
+    [Fact]
+    public void SetFullYearCoercesDayArgument()
+        => Assert.Equal("true", Eval(
+            "var d=new Date(2016,6,7,11,36,23,2);" +
+            "(d.setFullYear(2016,6,{valueOf:function(){return 2;}})===new Date(2016,6,2,11,36,23,2).getTime()).toString()"));
+
+    // ---- Problem 33: yield/await in parameters are early SyntaxErrors ----
+
+    [Fact]
+    public void YieldInGeneratorParameterIsSyntaxError()
+        => Assert.Equal("SyntaxError", Eval(
+            "try{eval('(function*(x = yield){})');'no throw';}catch(e){e.constructor.name;}"));
+
+    [Fact]
+    public void AwaitInAsyncFunctionParameterIsSyntaxError()
+        => Assert.Equal("SyntaxError", Eval(
+            "try{eval('(async function(x = await 1){})');'no throw';}catch(e){e.constructor.name;}"));
+
+    [Fact]
+    public void YieldInGeneratorBodyIsAllowed()
+        => Assert.Equal("function", Eval(
+            "(typeof eval('(function*(){ yield 1; })')).toString()"));
+
+    [Fact]
+    public void DynamicGeneratorFunctionYieldInParameterIsSyntaxError()
+        => Assert.Equal("SyntaxError", Eval(
+            "var GF=Object.getPrototypeOf(function*(){}).constructor;" +
+            "try{GF('x = yield','');'no throw';}catch(e){e.constructor.name;}"));
+
+    // ---- Problem 34: JSON wrapper holder uses CreateDataProperty, not [[Set]] ----
+
+    [Fact]
+    public void JsonParseReviverWrapperDoesNotInvokeInheritedSetter()
+        => Assert.Equal("object", Eval(
+            "var called=false;" +
+            "Object.defineProperty(Object.prototype,'',{configurable:true,set:function(){called=true;}});" +
+            "var w;JSON.parse('2',function(){w=this;});" +
+            "delete Object.prototype[''];" +
+            "(called?'setter-called':typeof w)"));
+
+    // ---- Problem 36: Object.entries/values interleave gOPD and Get per key ----
+
+    [Fact]
+    public void ObjectEntriesInterleavesDescriptorAndGet()
+        => Assert.Equal("|ownKeys|gopd:a|get:a|gopd:b|get:b", Eval(
+            "var log='';var o={a:1,b:2};" +
+            "var p=new Proxy(o,{ownKeys:function(t){log+='|ownKeys';return Object.keys(t);}," +
+            "getOwnPropertyDescriptor:function(t,k){log+='|gopd:'+k;return Object.getOwnPropertyDescriptor(t,k);}," +
+            "get:function(t,k){log+='|get:'+k;return t[k];}});" +
+            "Object.entries(p);log"));
+
+    // ---- Problem 37/38: TypedArray constructor length is ToIndex ----
+
+    [Fact]
+    public void TypedArrayCtorFractionalNegativeLengthFloorsToZero()
+        => Assert.Equal("0,0,0", Eval(
+            "[new Int8Array(-0.1).length,new Int8Array(-0.99999).length,new Int8Array(0.9).length].join(',')"));
+
+    [Fact]
+    public void TypedArrayCtorCoercesLengthValues()
+        => Assert.Equal("1,0,1,0", Eval(
+            "[new Int8Array(true).length,new Int8Array(false).length,new Int8Array('1').length,new Int8Array(null).length].join(',')"));
+}

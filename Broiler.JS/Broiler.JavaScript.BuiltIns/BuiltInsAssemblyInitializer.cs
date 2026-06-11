@@ -1632,7 +1632,8 @@ internal static class BuiltInsAssemblyInitializer
             // a null-prototype object, so Object.getPrototypeOf(...) is null.
             unscopables = new JSObject();
             unscopables.BasePrototypeObject = null;
-            symbols.Put(JSSymbol.unscopables.Key) = JSProperty.Property(unscopables, JSPropertyAttributes.ConfigurableValue);
+            // §23.1.3.40: { [[Writable]]: false, [[Enumerable]]: false, [[Configurable]]: true }
+            symbols.Put(JSSymbol.unscopables.Key) = JSProperty.Property(unscopables, JSPropertyAttributes.ConfigurableReadonlyValue);
         }
 
         // §23.1.3.40: each entry is CreateDataPropertyOrThrow(list, name, true), i.e.

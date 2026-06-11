@@ -397,8 +397,10 @@ public partial class JSJSON : JSObject
         if (receiver is not JSFunction function)
             return parsed;
 
+        // CreateDataPropertyOrThrow, not [[Set]]: an inherited setter on
+        // Object.prototype[""] must not be invoked when building the wrapper.
         var root = new JSObject();
-        root[""] = parsed;
+        CreateDataProperty(root, JSValue.EmptyString, parsed);
         return InternalizeJsonProperty(
                 root,
                 "",
@@ -445,9 +447,10 @@ public partial class JSJSON : JSObject
             }
         }
 
+        // CreateDataPropertyOrThrow, not [[Set]]: an inherited setter on
+        // Object.prototype[""] must not be invoked when building the wrapper.
         var root = new JSObject();
-        var emptyKey = KeyStrings.GetOrCreate(string.Empty);
-        root[emptyKey] = f;
+        CreateDataProperty(root, JSValue.EmptyString, f);
 
         f = ToJson(f, JSValue.EmptyString);
         // Only a function replacer participates in SerializeJSONProperty for the
