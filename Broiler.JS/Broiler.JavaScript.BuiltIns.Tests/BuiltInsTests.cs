@@ -12826,7 +12826,10 @@ public class BuiltInsTests
             // Generator / AsyncGenerator
             var GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
             results.push(hasTag(GeneratorFunction.prototype, 'GeneratorFunction'));
-            var genProto = Object.getPrototypeOf((function*(){})());
+            // Object.getPrototypeOf(g()) is the generator function's own .prototype
+            // (an ordinary object); the @@toStringTag own property lives on
+            // %GeneratorPrototype%, one level further up the chain.
+            var genProto = Object.getPrototypeOf(Object.getPrototypeOf((function*(){})()));
             results.push(hasTag(genProto, 'Generator'));
             var AsyncGeneratorFunction = Object.getPrototypeOf(async function*(){}).constructor;
             results.push(hasTag(AsyncGeneratorFunction.prototype, 'AsyncGeneratorFunction'));

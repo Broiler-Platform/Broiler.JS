@@ -158,6 +158,19 @@ public class JSGeneratorFunctionV2 : JSFunction
 
         var generator = JSGeneratorBuilder.CreateFromClrV2(new ClrGeneratorV2(this, @delegate, args, asyncGenerator));
 
+        // §27.5.3.x: the generator object is created via
+        // OrdinaryCreateFromConstructor(functionObject, "%GeneratorPrototype%"), whose
+        // [[Prototype]] is Get(functionObject, "prototype") — this generator function's
+        // OWN .prototype property (which itself inherits %GeneratorPrototype%). So
+        // `Object.getPrototypeOf(g()) === g.prototype`. Read it live so a reassigned
+        // g.prototype is honoured; fall back to the default when it is not an object.
+        // Only the SYNC path is rebound here: the async generator prototype chain
+        // (%AsyncGeneratorPrototype% → %AsyncIteratorPrototype% carrying @@asyncIterator)
+        // is wired separately and the function's .prototype does not reach it, so async
+        // generators keep the default object prototype that supports `for await`.
+        if (!asyncGenerator && generator is JSObject genObject && this[KeyStrings.prototype] is JSObject ownPrototype)
+            genObject.BasePrototypeObject = ownPrototype;
+
         if (primeOnInvoke && generator is IJSGenerator jsGenerator)
             jsGenerator.MoveNext(JSUndefined.Value, out _);
 

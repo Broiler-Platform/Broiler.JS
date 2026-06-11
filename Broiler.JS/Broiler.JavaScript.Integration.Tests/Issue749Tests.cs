@@ -38,6 +38,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   before the builtin tag is computed, so a raw Boolean/Number/String receiver tags
 //   as "[object Boolean/Number/String]" (not "[object Object]"); raw Symbol/BigInt tag
 //   via @@toStringTag.
+//
+//   Problem 31/39/40 (generator object [[Prototype]]) — a generator function's
+//   returned object is now created with [[Prototype]] = the function's own .prototype
+//   property (honoured live), per OrdinaryCreateFromConstructor, so
+//   Object.getPrototypeOf(g()) === g.prototype. The sync %GeneratorPrototype% (one
+//   level up) still supplies next/return/throw/@@iterator/@@toStringTag. (Async
+//   generators keep their existing prototype path — their .prototype chain does not
+//   reach %AsyncIteratorPrototype%.)
 public class Issue749Tests
 {
     private static string Eval(string code)
@@ -182,4 +190,32 @@ public class Issue749Tests
     public void ObjectToStringTagsRawSymbolAndBigInt()
         => Assert.Equal("[object Symbol],[object BigInt]", Eval(
             "var t=Object.prototype.toString; [t.call(Symbol()),t.call(1n)].join(',')"));
+
+    // ---- Problem 31/39/40: generator object's [[Prototype]] is the function's .prototype ----
+
+    [Fact]
+    public void GeneratorInstanceProtoIsFunctionPrototype()
+        => Assert.Equal("true", Eval(
+            "function* g(){} (Object.getPrototypeOf(g()) === g.prototype).toString()"));
+
+    [Fact]
+    public void GeneratorInstanceProtoChainHasGeneratorPrototype()
+        => Assert.Equal("Generator", Eval(
+            "function* g(){} Object.getPrototypeOf(g.prototype)[Symbol.toStringTag]"));
+
+    [Fact]
+    public void GeneratorStillIterates()
+        => Assert.Equal("1,2,3", Eval(
+            "function* g(){ yield 1; yield 2; return 3; } var it=g();" +
+            "[it.next().value, it.next().value, it.next().value].join(',')"));
+
+    [Fact]
+    public void GeneratorReassignedPrototypeHonoured()
+        => Assert.Equal("true", Eval(
+            "function* g(){} var p={}; g.prototype=p; (Object.getPrototypeOf(g())===p).toString()"));
+
+    [Fact]
+    public void GeneratorToStringTagStillGenerator()
+        => Assert.Equal("[object Generator]", Eval(
+            "function* g(){} Object.prototype.toString.call(g())"));
 }
