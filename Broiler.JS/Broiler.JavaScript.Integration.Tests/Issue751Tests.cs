@@ -59,6 +59,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   escape, or as \u{...}) was corrupted because TransformUnicodeLoneSurrogates wrapped
 //   the name's surrogate pair in an atomic group before the name was extracted. That
 //   transform now copies (?<name> and \k<name> regions verbatim, so the name survives.
+//
+//   Problem 37 (Intl resolved locale extension filtering) — the resolved [[Locale]] kept
+//   irrelevant Unicode ("-u-") extension keywords (e.g. ja-JP-u-cu-usd). ResolveLocale
+//   now drops every keyword whose key is not relevant to the service (NumberFormat: nu;
+//   DateTimeFormat: ca/hc/nu), so ja-JP-u-cu-usd resolves to ja-JP while ja-JP-u-nu-latn
+//   is kept. Other singleton extensions (-x-, …) are preserved.
 public class Issue751Tests
 {
     private static string Eval(string code)
@@ -295,4 +301,31 @@ public class Issue751Tests
     [Fact]
     public void LookbehindNotTreatedAsGroupName()
         => Assert.Equal("b", Eval("/(?<=a)b/.exec('ab')[0]"));
+
+    // ---- Problem 37: Intl resolved locale extension-key filtering ----
+
+    [Fact]
+    public void NumberFormatDropsIrrelevantExtensionKey()
+        => Assert.Equal("ja-JP", Eval("new Intl.NumberFormat('ja-JP-u-cu-usd').resolvedOptions().locale"));
+
+    [Fact]
+    public void NumberFormatKeepsRelevantNuKey()
+        => Assert.Equal("ja-JP-u-nu-latn", Eval("new Intl.NumberFormat('ja-JP-u-nu-latn').resolvedOptions().locale"));
+
+    [Fact]
+    public void NumberFormatDropsAllButRelevant()
+        => Assert.Equal("ja-JP-u-nu-latn", Eval("new Intl.NumberFormat('ja-JP-u-ca-japanese-cu-usd-nu-latn').resolvedOptions().locale"));
+
+    [Fact]
+    public void DateTimeFormatKeepsCalendarAndHourCycle()
+        => Assert.Equal("ja-JP-u-ca-japanese-hc-h23", Eval(
+            "new Intl.DateTimeFormat('ja-JP-u-ca-japanese-cu-usd-hc-h23').resolvedOptions().locale"));
+
+    [Fact]
+    public void LocaleWithoutExtensionUnchanged()
+        => Assert.Equal("en-US", Eval("new Intl.NumberFormat('en-US').resolvedOptions().locale"));
+
+    [Fact]
+    public void PrivateExtensionPreserved()
+        => Assert.Equal("en-US-x-priv", Eval("new Intl.NumberFormat('en-US-u-cu-usd-x-priv').resolvedOptions().locale"));
 }

@@ -987,6 +987,87 @@ public static class JSIntl
         return string.IsNullOrEmpty(CultureInfo.CurrentCulture.Name) ? "en-US" : CultureInfo.CurrentCulture.Name;
     }
 
+    // ResolveLocale, then drop any Unicode ("-u-") extension keyword whose key is not
+    // relevant to the service (ECMA-402 ResolveLocale keeps only the relevantExtensionKeys
+    // in the resolved [[Locale]]). So `ja-JP-u-cu-usd` resolves to `ja-JP` for a service
+    // that only cares about, say, `nu`.
+    internal static string ResolveLocale(JSValue locales, string[] relevantExtensionKeys)
+        => FilterUnicodeExtensionKeywords(ResolveLocale(locales), relevantExtensionKeys);
+
+    // The Unicode-extension keys each service uses to negotiate the resolved locale.
+    internal static readonly string[] NumberFormatRelevantKeys = ["nu"];
+    internal static readonly string[] DateTimeFormatRelevantKeys = ["ca", "hc", "nu"];
+
+    // Rebuilds a BCP-47 tag keeping only the "-u-" extension keywords whose key is in
+    // relevantKeys; attributes and irrelevant keys are dropped, and the whole "-u-"
+    // sequence is removed when nothing relevant survives. Other singleton extensions
+    // ("-t-", "-x-", …) are preserved.
+    private static string FilterUnicodeExtensionKeywords(string tag, string[] relevantKeys)
+    {
+        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", System.StringComparison.OrdinalIgnoreCase) < 0)
+            return tag;
+
+        var parts = tag.Split('-');
+        var u = -1;
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
+            {
+                u = i;
+                break;
+            }
+        }
+
+        if (u < 0)
+            return tag;
+
+        // Walk the "-u-" extension (up to the next singleton subtag or the end),
+        // grouping subtags into keywords: a 2-char subtag is a key, longer subtags are
+        // its type values (or leading attributes before the first key).
+        var end = u + 1;
+        var keywords = new List<(string Key, List<string> Types)>();
+        while (end < parts.Length && parts[end].Length != 1)
+        {
+            if (parts[end].Length == 2)
+                keywords.Add((parts[end].ToLowerInvariant(), new List<string>()));
+            else if (keywords.Count > 0)
+                keywords[^1].Types.Add(parts[end]);
+            // (a subtag before the first key is an attribute — dropped)
+            end++;
+        }
+
+        var sb = new StringBuilder();
+        for (var i = 0; i < u; i++)
+        {
+            if (i > 0)
+                sb.Append('-');
+            sb.Append(parts[i]);
+        }
+
+        var keptAny = false;
+        foreach (var (key, types) in keywords)
+        {
+            if (System.Array.IndexOf(relevantKeys, key) < 0)
+                continue;
+
+            if (!keptAny)
+            {
+                sb.Append("-u");
+                keptAny = true;
+            }
+
+            sb.Append('-').Append(key);
+            foreach (var type in types)
+                sb.Append('-').Append(type);
+        }
+
+        // Preserve any later singleton extensions ("-t-", "-x-", …) after the "-u-" run.
+        for (var i = end; i < parts.Length; i++)
+            sb.Append('-').Append(parts[i]);
+
+        return sb.ToString();
+    }
+
     internal static JSIntlDisplayNamesOptions ValidateDisplayNamesOptions(JSObject options)
     {
         if (options == null)
@@ -2503,7 +2584,7 @@ public class JSIntlNumberFormat : JSObject
     {
         options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, requireNew: false);
         resolved = JSIntl.ValidateNumberFormatOptions(options);
-        locale = JSIntl.ResolveLocale(a.Get1());
+        locale = JSIntl.ResolveLocale(a.Get1(), JSIntl.NumberFormatRelevantKeys);
     }
 
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
@@ -3681,7 +3762,7 @@ public class JSIntlDateTimeFormat : JSObject
     {
         options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a, requireNew: false);
         JSIntl.ValidateDateTimeFormatOptions(options);
-        localeTag = JSIntl.ResolveLocale(a.Get1());
+        localeTag = JSIntl.ResolveLocale(a.Get1(), JSIntl.DateTimeFormatRelevantKeys);
         locale = CultureInfo.CurrentCulture;
     }
 
