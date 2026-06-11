@@ -18,5 +18,10 @@ internal sealed class JSSymbolObject(JSSymbol symbol) : JSObject(GetPrototype())
     // short-circuited to the raw symbol (which can never be coerced).
     internal JSSymbol WrappedSymbol => symbol;
 
-    public override string ToString() => symbol.ToString();
+    // Stringify through the ordinary object ToString (GetMethod("toString") →
+    // Symbol.prototype.toString → "Symbol(desc)", or a user-overridden toString),
+    // NOT the bare wrapped description. CLR consumers that coerce a value to a string
+    // (template literals, String.prototype.concat) must observe the same result the
+    // JS ToString abstract operation produces for a Symbol wrapper.
+    public override string ToString() => base.ToString();
 }

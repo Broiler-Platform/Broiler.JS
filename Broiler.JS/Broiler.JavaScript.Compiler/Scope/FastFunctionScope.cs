@@ -378,6 +378,16 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             var t = CreateVariable("this", thisIsUninitialized ? null : ArgumentsBuilder.This(Arguments), initialize: !thisIsUninitialized);
             ThisExpression = t.Expression;
         }
+        else
+        {
+            // Arrow function: `this` is the enclosing scope's `this` expression
+            // captured at creation. Bind it directly so a read resolves to exactly
+            // that expression rather than falling back to a `GetVariable("this")`
+            // lookup, which walks past a caller-installed override (e.g. a static
+            // field initializer rebinding `this` to the class constructor) to the
+            // nearest real `this` binding.
+            ThisExpression = previousThis;
+        }
 
         if (previousNewTarget != null)
         {

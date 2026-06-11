@@ -41,15 +41,16 @@ partial class FastCompiler
         YParameterExpression? iterationValueVariable = null;
         YExpression? identifier = forInStatement.Init.Type switch
         {
-            // A bare-identifier head that resolves to a known binding is assigned
-            // directly (the enumerator writes the key into the variable). A FREE
-            // identifier (undeclared) must instead go through the per-iteration
-            // assignment path: in sloppy mode `for (x in o)` assigns to / creates the
-            // global `x`, exactly like `x = key`. Treating it as a read target made
-            // the enumerator out-parameter resolve `x` for reading and throw
-            // "x is not defined" before the first assignment.
-            FastNodeType.Identifier when TryGetStaticIdentifierVariable((AstIdentifier)forInStatement.Init, out var v) && v != null
-                => Visit(forInStatement.Init),
+            // A bare-identifier head (whether it resolves to a known binding or is a
+            // free/undeclared identifier) is assigned through the per-iteration
+            // assignment path (`x = key`), NOT used directly as the enumerator
+            // out-parameter. Passing the loop-target binding's value expression
+            // (a boxed `JSVariable.Value`) as the MoveNext out-argument did not
+            // write back to the binding, so `for (x of …)` / `for (x in …)` over an
+            // existing `var`/`let` `x` left it unchanged after the loop. Routing it
+            // through CreateForOfDestructuringAssignment assigns the real binding
+            // (and, for a free identifier in sloppy mode, creates/assigns the global)
+            // exactly like the member-expression and destructuring heads already do.
             FastNodeType.Identifier =>
                 CreateForOfDestructuringAssignment(
                     (AstExpression)forInStatement.Init,
@@ -122,11 +123,11 @@ partial class FastCompiler
         YParameterExpression? iterationValueVariable = null;
         YExpression? identifier = forOfStatement.Init.Type switch
         {
-            // See VisitForInStatement: a free (undeclared) identifier head must be
-            // assigned through the per-iteration path so a sloppy `for (x of o)`
-            // creates/assigns the global `x` instead of reading an undefined binding.
-            FastNodeType.Identifier when TryGetStaticIdentifierVariable((AstIdentifier)forOfStatement.Init, out var v) && v != null
-                => Visit(forOfStatement.Init),
+            // See VisitForInStatement: a bare-identifier head (declared or free) is
+            // assigned through the per-iteration path (`x = value`). Using the
+            // binding's boxed value expression directly as the MoveNext out-argument
+            // failed to persist the write, so `for (x of o)` over an existing
+            // `var`/`let` left it unchanged after the loop.
             FastNodeType.Identifier =>
                 CreateForOfDestructuringAssignment(
                     (AstExpression)forOfStatement.Init,
