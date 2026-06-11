@@ -396,29 +396,21 @@ public partial class JSPromise
                     if (!hasValue)
                         continue;
 
-                    var resolveElement = new JSFunction((in Arguments args) =>
-                    {
-                        var value = args.Get1();
-                        sc.Post(o => resolve.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), value);
-                        return JSUndefined.Value;
-                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
-                    var rejectElement = new JSFunction((in Arguments args) =>
-                    {
-                        var value = args.Get1();
-                        sc.Post(o => reject.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), value);
-                        return JSUndefined.Value;
-                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
-
-                    // PerformPromiseRace (§27.2.4.5.1): Invoke(nextPromise, "then", …)
-                    // for every value. The "then" method is observable, so it must be
-                    // invoked even for a native promise rather than special-casing it
-                    // via the internal Then.
+                    // PerformPromiseRace (§27.2.4.5.1): Invoke(nextPromise, "then",
+                    // « resultCapability.[[Resolve]], resultCapability.[[Reject]] ») for
+                    // every value. The capability's resolve/reject are passed DIRECTLY:
+                    // for a native nextPromise the observable "then" already schedules its
+                    // reaction as a job, and for a custom constructor (whose resolve is
+                    // captured by a user thenable's `then` and called later) the resolve
+                    // must run when the user invokes it — wrapping it in a deferred post
+                    // would both double-schedule native promises and never run a custom
+                    // synchronous resolve.
                     var nextPromise = promiseResolve.InvokeFunction(new Arguments(constructor, item));
                     var then = nextPromise[KeyStrings.then];
                     if (!then.IsFunction)
                         throw JSEngine.NewTypeError("Promise resolve did not return a thenable");
 
-                    then.InvokeFunction(new Arguments(nextPromise, resolveElement, rejectElement));
+                    then.InvokeFunction(new Arguments(nextPromise, resolve, reject));
                 }
             }
             catch (JSException ex)

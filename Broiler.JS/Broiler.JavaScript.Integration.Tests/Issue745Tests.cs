@@ -227,4 +227,18 @@ public class Issue745Tests
     public void DistinctNamedGroupsSameAlternativeParse()
         => Assert.Equal("ok", Eval(
             "var e='ok';try{new RegExp('(?<a>x)(?<b>y)');}catch(t){e=t.constructor.name;}e"));
+
+    // ---- Problem 13: Promise.race passes the capability resolve directly to then ----
+
+    [Fact]
+    public void PromiseRacePassesCapabilityResolveDirectlyToThen()
+        => Assert.Equal("0,3", Eval(
+            "var callCount=0;" +
+            "function C(executor){function resolve(v){callCount+=1;}executor(resolve, function(){});}" +
+            "C.resolve=function(v){return v;};" +
+            "var pResolve;var a={then:function(res,rej){pResolve=res;}};" +
+            "Promise.race.call(C,[a]);" +
+            "var before=callCount;" +
+            "pResolve(1);pResolve(2);pResolve(3);" +
+            "before + ',' + callCount"));
 }
