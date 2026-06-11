@@ -116,11 +116,14 @@ public partial class JSJSON : JSObject
                 item = v.ToString();
             else if (v is JSNumber)
                 item = v.ToString();
-            else if (v is JSPrimitiveObject wrapper)
+            else if (v is JSPrimitiveObject wrapper && (wrapper.value.IsString || wrapper.value is JSNumber))
             {
-                var primitive = wrapper.ValueOf();
-                if (primitive.IsString || primitive is JSNumber)
-                    item = primitive.ToString();
+                // The spec sets item to ToString(v) — ToString of the *object*, which
+                // runs ToPrimitive(v, String) and so invokes the object's own toString
+                // (not valueOf). wrapper.ToString() does exactly this; reading the
+                // [[NumberData]]/[[StringData]] slot directly would skip a user
+                // toString override (and a user valueOf must not be called at all).
+                item = wrapper.ToString();
             }
 
             if (item != null && seen.Add(item))
@@ -727,9 +730,11 @@ public partial class JSJSON : JSObject
             return value;
         }
 
-        var primitive = jobj.ValueOf();
-        if (!primitive.IsObject)
-            value = primitive;
+        // No ValueOf/ToPrimitive here: SerializeJSONProperty unwraps Number/String/
+        // Boolean/BigInt wrapper objects via their internal slot at serialization time
+        // (see the JSPrimitiveObject branch in Stringify), never by invoking a user
+        // valueOf. Calling jobj.ValueOf() here would run an object's own `valueOf`
+        // property (e.g. `{valueOf: 3}` → "3 is not a function").
 
         // SerializeJSONProperty: Get(value, "toJSON") then call only if IsCallable.
         // A present-but-non-callable toJSON is ignored (must NOT throw), unlike the

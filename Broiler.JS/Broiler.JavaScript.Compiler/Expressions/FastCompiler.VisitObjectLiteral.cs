@@ -388,6 +388,11 @@ partial class FastCompiler
                 continue;
             }
 
+            // super is permitted in (and scoped to) a method's parameter list as
+            // well as its body, e.g. `m(a = super.x) {}`. Both must be scanned so the
+            // home object is built; otherwise a method whose only super use is in a
+            // default-parameter initializer would resolve super against `this`.
+            detector.VisitParams(function.Params);
             detector.Visit(function.Body);
             if (detector.Found)
                 return true;
@@ -399,6 +404,23 @@ partial class FastCompiler
     private sealed class SuperUsageDetector : AstReduce
     {
         public bool Found;
+
+        // Scan a function's parameter list for super usage (default-value
+        // initializers and destructuring-pattern defaults).
+        public void VisitParams(IFastEnumerable<VariableDeclarator> @params)
+        {
+            if (@params == null)
+                return;
+
+            var en = @params.GetFastEnumerator();
+            while (en.MoveNext(out var param))
+            {
+                if (param.Identifier != null)
+                    Visit(param.Identifier);
+                if (param.Init != null)
+                    Visit(param.Init);
+            }
+        }
 
         protected override AstNode VisitCallExpression(AstCallExpression callExpression)
         {
@@ -438,7 +460,10 @@ partial class FastCompiler
             // Only arrow functions inherit the enclosing home object's super; a
             // nested non-arrow function introduces its own (absent) super binding.
             if (functionExpression.IsArrowFunction)
+            {
+                VisitParams(functionExpression.Params);
                 Visit(functionExpression.Body);
+            }
 
             return functionExpression;
         }

@@ -485,12 +485,19 @@ partial class FastCompiler
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, StaticSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
+                        // A computed-key method has no compile-time inferred name; set it
+                        // from the runtime key value (SetFunctionName) so `name` reflects the
+                        // key, e.g. `[Symbol('x')]() {}` → "[x]", `[1]() {}` → "1".
+                        if (property.Computed)
+                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, fx, name);
                         staticElements.Add(JSObjectBuilder.AddValue(name, fx, isPrivateName ? JSPropertyAttributes.ConfigurableReadonlyValue : JSPropertyAttributes.ConfigurableValue));
                     }
                     else
                     {
                         var fx = CreateFunction(property.Init as AstFunctionExpression, InstanceSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
+                        if (property.Computed)
+                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, fx, name);
                         if (isPrivateName)
                             PrivateElementFor(property, name).Method = SharedMemberFunctionVar(fx, "#m");
                         else

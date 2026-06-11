@@ -86,7 +86,7 @@ public class KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inhe
     private KeyEnumerator parent = null;
     // Own indexed elements only — never the user @@iterator (key enumeration must
     // not invoke the iterator protocol; see GetOwnIndexedElementEnumerator).
-    IElementEnumerator elements = jSObject.GetOwnIndexedElementEnumerator();
+    IElementEnumerator elements = jSObject.GetOwnIndexedElementEnumerator(showEnumerableOnly);
     PropertyValueEnumerator properties = new PropertyValueEnumerator(jSObject, showEnumerableOnly);
 
     public bool MoveNext(out bool hasValue, out JSValue value, out uint index)

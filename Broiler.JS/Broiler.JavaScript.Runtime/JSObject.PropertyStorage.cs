@@ -1385,8 +1385,25 @@ public partial class JSObject
     // is non-callable (e.g. `o[Symbol.iterator] = 'x'`) — so bypass it with the raw
     // element walk. Otherwise delegate to GetElementEnumerator so exotic objects
     // (arrays, typed arrays) keep their specialised, hole-aware element enumeration.
-    internal IElementEnumerator GetOwnIndexedElementEnumerator()
-        => HasIterator ? new ElementEnumerator(this) : GetElementEnumerator();
+    internal IElementEnumerator GetOwnIndexedElementEnumerator(bool enumerableOnly = false)
+    {
+        // Objects whose indexed data lives in the ordinary `elements` map (object
+        // literals, class prototypes, …) are walked directly so a non-enumerable
+        // indexed property (e.g. a computed-number class method `[1]() {}`) is
+        // skipped during key enumeration (Object.keys / for-in). A subclass that
+        // specialises element iteration (array, typed array, string, …) overrides
+        // GetElementEnumerator; honour that specialised, hole-aware walk for those
+        // (their indexed elements are always enumerable). An object carrying its
+        // own @@iterator takes the raw slot walk so the user iterator is not run.
+        if (!HasIterator)
+        {
+            var specialized = GetElementEnumerator();
+            if (specialized is not ElementEnumerator)
+                return specialized;
+        }
+
+        return new ElementEnumerator(this, enumerableOnly);
+    }
 
     public override IElementEnumerator GetIterableEnumerator()
     {
@@ -1444,17 +1461,33 @@ public partial class JSObject
         return GetIterableEnumerator();
     }
 
-    private readonly struct ElementEnumerator(JSObject @object) : IElementEnumerator
+    private readonly struct ElementEnumerator(JSObject @object, bool enumerableOnly = false) : IElementEnumerator
     {
         readonly IEnumerator<(uint Key, JSProperty Value)> en = @object.elements.AllValues().GetEnumerator();
+        readonly bool enumerableOnly = enumerableOnly;
+
+        // Advance to the next stored element, skipping non-enumerable ones when key
+        // enumeration requested enumerable-only (Object.keys / for-in).
+        private bool MoveNextSlot(out uint key, out JSProperty prop)
+        {
+            while (en?.MoveNext() ?? false)
+            {
+                (key, prop) = en.Current;
+                if (!enumerableOnly || prop.IsEnumerable)
+                    return true;
+            }
+
+            key = 0;
+            prop = default;
+            return false;
+        }
 
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
-            if (en?.MoveNext() ?? false)
+            if (MoveNextSlot(out var key, out var prop))
             {
-                var (Key, Value) = en.Current;
-                value = @object.GetValue(Value);
-                index = Key;
+                value = @object.GetValue(prop);
+                index = key;
                 hasValue = true;
                 return true;
             }
@@ -1467,10 +1500,9 @@ public partial class JSObject
 
         public bool MoveNext(out JSValue value)
         {
-            if (en?.MoveNext() ?? false)
+            if (MoveNextSlot(out var _, out var prop))
             {
-                var (Key, Value) = en.Current;
-                value = @object.GetValue(Value);
+                value = @object.GetValue(prop);
                 return true;
             }
 
@@ -1480,10 +1512,9 @@ public partial class JSObject
 
         public bool MoveNextOrDefault(out JSValue value, JSValue @default)
         {
-            if (en?.MoveNext() ?? false)
+            if (MoveNextSlot(out var _, out var prop))
             {
-                var (_, Value) = en.Current;
-                value = @object.GetValue(Value);
+                value = @object.GetValue(prop);
                 return true;
             }
 
@@ -1493,11 +1524,8 @@ public partial class JSObject
 
         public JSValue NextOrDefault(JSValue @default)
         {
-            if (en?.MoveNext() ?? false)
-            {
-                var (Key, Value) = en.Current;
-                return @object.GetValue(Value);
-            }
+            if (MoveNextSlot(out var _, out var prop))
+                return @object.GetValue(prop);
 
             return @default;
         }
