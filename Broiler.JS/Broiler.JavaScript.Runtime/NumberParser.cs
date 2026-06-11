@@ -518,6 +518,12 @@ public static class NumberParser
                     // Hex number.
                     reader.Read();
                     radix = 16;
+
+                    // The leading "0" is part of the "0x" prefix, not a parsed digit:
+                    // reset the count so an input with no hex digits after the prefix
+                    // (e.g. parseInt("0x") or parseInt("0x", 16)) returns NaN rather
+                    // than 0 (Number::parseInt step: NaN when the digit run is empty).
+                    digitCount = 0;
                 }
 
                 if (c >= '0' && c <= '9' && allowOctal == true)

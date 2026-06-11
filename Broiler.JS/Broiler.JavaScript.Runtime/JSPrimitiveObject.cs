@@ -35,6 +35,12 @@ public class JSPrimitiveObject : JSObject
 
     public override JSValue AddValue(string value) => CoerceOwnOverrides(preferString: false).AddValue(value);
 
+    // A boxed String exposes its characters as synthesized own index properties that
+    // are not held in the backing element store, so CopyDataProperties (object spread
+    // and object rest) must enumerate them through [[OwnPropertyKeys]]/[[Get]] rather
+    // than the fast direct-slot copy, which would observe an empty wrapper.
+    private protected override bool UseObservableSpreadCopy => value.IsString;
+
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
         var key = name.ToKey(false);

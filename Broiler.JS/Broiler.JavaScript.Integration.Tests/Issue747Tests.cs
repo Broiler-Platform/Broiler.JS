@@ -1,0 +1,281 @@
+using Broiler.JavaScript.Engine;
+
+namespace Broiler.JavaScript.Integration.Tests;
+
+// Regression tests for https://github.com/MaiRat/Broiler.JS/issues/747
+//
+// Fixed here:
+//
+//   Problem 16 (JSON.stringify of negative zero) — a finite number is now serialized
+//   with the spec Number::toString (ToECMAString), so JSON.stringify(-0) is "0" (not
+//   "-0") and large magnitudes use ECMAScript scientific notation ("1e+21").
+//
+//   Problem 22 (Date / Date.UTC argument coercion order) — each component argument is
+//   coerced to Number exactly once via Arguments.Get7Double; the NaN/Infinity scan and
+//   the integer reduction both read the cached doubles, so a valueOf side effect is
+//   observed a single time per argument (previously twice).
+//
+//   Problem 25 (Array.prototype.indexOf near the integer limit) — indexOf iterates with
+//   a long counter over the full LengthOfArrayLike range (up to 2^53-1); indices beyond
+//   the 32-bit array-index range are probed via HasProperty/Get on their numeric-string
+//   key instead of being lost to a uint truncation.
+//
+//   Problem 33 (Array.prototype.findLast / findLastIndex maximum index) — both use the
+//   long length and visit indices beyond 2^32-1 through their numeric-string key, so the
+//   first index visited for a length of 2^53-1 is 2^53-2 (was a uint-clamped value).
+//
+//   Problem 41 (object rest / spread over a string primitive) — CopyDataProperties boxes
+//   a primitive source via ToObject, so `let { ...rest } = 'ab'` and `{ ...'ab' }` copy
+//   the String wrapper's own enumerable index properties { 0:'a', 1:'b' }.
+//
+//   Problem 28 (parseInt of a bare "0x") — the leading "0" of a stripped "0x"/"0X" prefix
+//   no longer counts as a parsed digit, so parseInt("0x") and parseInt("0x", 16) are NaN.
+//
+//   Problem 31 (eval/script completion of a declaration) — a VariableStatement and a
+//   LexicalDeclaration complete with an empty value, so they no longer overwrite the
+//   script/eval completion: eval("var x = 1") is undefined and eval("1; var x = 1") is 1.
+
+public class Issue747Tests
+{
+    private static string Eval(string code)
+    {
+        using var ctx = new JSContext();
+        return ctx.Eval(code).ToString();
+    }
+
+    // ---- Problem 16: JSON.stringify of negative zero ----
+
+    [Fact]
+    public void JsonStringifyNegativeZeroIsZero()
+        => Assert.Equal("0", Eval("JSON.stringify(-0)"));
+
+    [Fact]
+    public void JsonStringifyNegativeZeroInArray()
+        => Assert.Equal("[0,0,1.5,1e+21]", Eval("JSON.stringify([-0, 0, 1.5, 1e21])"));
+
+    // ---- Problem 22: Date / Date.UTC coerce each argument exactly once ----
+
+    [Fact]
+    public void DateConstructorCoercesEachArgumentOnce()
+        => Assert.Equal("ymodhmisms", Eval(
+            "var log='';function mk(t){return {valueOf:function(){log+=t;return 1;}};}" +
+            "new Date(mk('y'),mk('mo'),mk('d'),mk('h'),mk('mi'),mk('s'),mk('ms'));log"));
+
+    [Fact]
+    public void DateUtcCoercesEachArgumentOnce()
+        => Assert.Equal("ymodhmisms", Eval(
+            "var log='';function mk(t){return {valueOf:function(){log+=t;return 1;}};}" +
+            "Date.UTC(mk('y'),mk('mo'),mk('d'),mk('h'),mk('mi'),mk('s'),mk('ms'));log"));
+
+    // ---- Problem 25: indexOf across the integer limit ----
+
+    [Fact]
+    public void IndexOfFindsPropertyNearIntegerLimit()
+        => Assert.Equal("9007199254740990", Eval(
+            "var o={length:9007199254740991};o[9007199254740990]='x';" +
+            "''+Array.prototype.indexOf.call(o,'x',9007199254740990)"));
+
+    // ---- Problem 33: findLast / findLastIndex maximum index ----
+
+    [Fact]
+    public void FindLastIndexVisitsMaximumIndexFirst()
+        => Assert.Equal("9007199254740990", Eval(
+            "var seen;Array.prototype.findLastIndex.call({length:9007199254740991}," +
+            "function(v,i){seen=i;return true;});''+seen"));
+
+    [Fact]
+    public void FindLastVisitsMaximumIndexFirst()
+        => Assert.Equal("4294967294", Eval(
+            "var seen;Array.prototype.findLast.call({length:4294967295}," +
+            "function(v,i){seen=i;return true;});''+seen"));
+
+    // ---- Problem 41: object rest / spread over a string primitive ----
+
+    [Fact]
+    public void ObjectRestOverStringPrimitiveCopiesIndices()
+        => Assert.Equal("f,o", Eval("var {...x}='fo';x[0]+','+x[1]"));
+
+    [Fact]
+    public void ObjectSpreadOverStringPrimitiveCopiesIndices()
+        => Assert.Equal("a,b", Eval("var o={...'ab'};o[0]+','+o[1]"));
+
+    [Fact]
+    public void ObjectSpreadOverNumberPrimitiveCopiesNothing()
+        => Assert.Equal("0", Eval("''+Object.keys({...42}).length"));
+
+    // ---- Problem 28: parseInt of a bare "0x" ----
+
+    [Fact]
+    public void ParseIntBare0xIsNaN()
+        => Assert.Equal("NaN", Eval("''+parseInt('0x')"));
+
+    [Fact]
+    public void ParseIntBare0xWithRadix16IsNaN()
+        => Assert.Equal("NaN", Eval("''+parseInt('0x',16)"));
+
+    [Fact]
+    public void ParseIntHexStillParses()
+        => Assert.Equal("31", Eval("''+parseInt('0x1f')"));
+
+    // ---- Problem 31: declaration completes empty ----
+
+    [Fact]
+    public void EvalOfBareVarDeclarationIsUndefined()
+        => Assert.Equal("undefined", Eval("''+eval('var x = 1;')"));
+
+    [Fact]
+    public void EvalVarAfterExpressionKeepsExpressionValue()
+        => Assert.Equal("1", Eval("''+eval('1; var x = 5;')"));
+
+    [Fact]
+    public void EvalLetAfterExpressionKeepsExpressionValue()
+        => Assert.Equal("1", Eval("''+eval('1; let y = 5;')"));
+
+    [Fact]
+    public void EvalBareLetDeclarationIsUndefined()
+        => Assert.Equal("undefined", Eval("''+eval('let y = 1;')"));
+
+    // ---- Problem 9: yield* return/throw must not read `value` while not done ----
+
+    private const string YieldStarReturnHarness =
+        "var callCount=0;" +
+        "var spyValue=Object.defineProperty({done:false},'value',{get:function(){callCount+=1;}});" +
+        "var badIter={};badIter[Symbol.iterator]=function(){return{" +
+        "next:function(){return{done:false};}," +
+        "return:function(){return spyValue;}};};" +
+        "var delegationComplete=false;" +
+        "function* g(){try{yield* badIter;}finally{delegationComplete=true;}}" +
+        "var iter=g();iter.next();";
+
+    [Fact]
+    public void YieldStarReturnDoesNotReadValueWhileNotDone()
+        => Assert.Equal("0,false", Eval(
+            YieldStarReturnHarness + "iter.return();callCount+','+delegationComplete"));
+
+    [Fact]
+    public void YieldStarReturnReadsValueOnceWhenDone()
+        => Assert.Equal("1,true", Eval(
+            YieldStarReturnHarness + "iter.return();spyValue.done=true;iter.return();" +
+            "callCount+','+delegationComplete"));
+
+    [Fact]
+    public void YieldStarThrowDoesNotReadValueWhileNotDone()
+        => Assert.Equal("0,false", Eval(
+            "var callCount=0;" +
+            "var spyValue=Object.defineProperty({done:false},'value',{get:function(){callCount+=1;}});" +
+            "var badIter={};badIter[Symbol.iterator]=function(){return{" +
+            "next:function(){return{done:false};}," +
+            "throw:function(){return spyValue;}};};" +
+            "var delegationComplete=false;" +
+            "function* g(){try{yield* badIter;}catch(e){}finally{delegationComplete=true;}}" +
+            "var iter=g();iter.next();iter.throw();callCount+','+delegationComplete"));
+
+    // ---- Problems 37/38: spec-shared built-in function identity ----
+
+    [Fact]
+    public void NumberParseFloatIsGlobalParseFloat()
+        => Assert.Equal("true", Eval("''+(Number.parseFloat === parseFloat)"));
+
+    [Fact]
+    public void NumberParseIntIsGlobalParseInt()
+        => Assert.Equal("true", Eval("''+(Number.parseInt === parseInt)"));
+
+    [Fact]
+    public void TypedArrayToStringIsArrayToString()
+        => Assert.Equal("true", Eval(
+            "''+(Object.getPrototypeOf(Int8Array.prototype).toString === Array.prototype.toString)"));
+
+    [Fact]
+    public void NumberParseIntStillFunctionalAfterAlias()
+        => Assert.Equal("16,NaN", Eval("Number.parseInt('0x10')+','+Number.parseInt('0x')"));
+
+    // ---- Problems 23/24: Object.prototype.toString ToObject(this) before @@toStringTag ----
+
+    [Fact]
+    public void ToStringReadsTagFromPrimitiveWrapperPrototype()
+        => Assert.Equal("[object test262]", Eval(
+            "Boolean.prototype[Symbol.toStringTag]='test262';Object.prototype.toString.call(true)"));
+
+    [Fact]
+    public void ToStringReadsTagFromNumberPrimitive()
+        => Assert.Equal("[object test262]", Eval(
+            "Number.prototype[Symbol.toStringTag]='test262';Object.prototype.toString.call(0)"));
+
+    [Fact]
+    public void ToStringReadsDefaultSymbolTagFromPrimitive()
+        => Assert.Equal("[object Symbol]", Eval("Object.prototype.toString.call(Symbol())"));
+
+    [Fact]
+    public void ToStringReadsTagFromBigIntPrimitive()
+        => Assert.Equal("[object test262]", Eval(
+            "Object.defineProperty(BigInt.prototype,Symbol.toStringTag,{value:'test262'});" +
+            "Object.prototype.toString.call(1n)"));
+
+    // ---- Problem 21: catch-binding destructuring NamedEvaluation (cover initializer) ----
+
+    [Fact]
+    public void CatchArrayPatternCoverInitializerDoesNotInferName()
+        => Assert.Equal("cover,", Eval(
+            "var r;try{throw [];}catch([cover=(function(){}), xCover=(0,function(){})])" +
+            "{r=cover.name+','+xCover.name;}r"));
+
+    [Fact]
+    public void CatchObjectPatternCoverInitializerDoesNotInferName()
+        => Assert.Equal("cover,", Eval(
+            "var r;try{throw {};}catch({cover=(function(){}), xCover=(0,function(){})})" +
+            "{r=cover.name+','+xCover.name;}r"));
+
+    [Fact]
+    public void CatchArrayPatternPlainAnonymousInitializerInfersName()
+        => Assert.Equal("fn", Eval(
+            "var r;try{throw [undefined];}catch([fn=function(){}]){r=fn.name;}r"));
+
+    // ---- Problem 14: Iterator.zip closes remaining iterators and propagates return() error ----
+
+    private const string ZipCloseHarness =
+        "function ExpErr(){} function T262(){}" +
+        "function mk(l,o){o=o||{};return{[Symbol.iterator](){return this;}," +
+        "next(){return o.done?{done:true}:{done:false,value:l};}," +
+        "return(){if(o.t)throw new o.t();return{done:true};}};}";
+
+    [Fact]
+    public void IteratorZipShortestPropagatesReturnError()
+        => Assert.Equal("ExpErr", Eval(
+            ZipCloseHarness +
+            "var it=Iterator.zip([mk('a'),mk('b',{done:true}),mk('c',{t:T262}),mk('d',{t:ExpErr})]);" +
+            "var r='NONE';try{it.next();}catch(e){r=e instanceof ExpErr?'ExpErr':'other';}r"));
+
+    [Fact]
+    public void IteratorZipCleanShortestCloseCompletes()
+        => Assert.Equal("[[1,4],[2,5]]", Eval(
+            "JSON.stringify([...Iterator.zip([[1,2,3],[4,5]])])"));
+
+    [Fact]
+    public void IteratorZipKeyedShortestPropagatesReturnError()
+        => Assert.Equal("ExpErr", Eval(
+            ZipCloseHarness +
+            "var it=Iterator.zipKeyed({a:mk('a'),b:mk('b',{done:true}),c:mk('d',{t:ExpErr})});" +
+            "var r='NONE';try{it.next();}catch(e){r=e instanceof ExpErr?'ExpErr':'other';}r"));
+
+    // ---- Problem 34: Object.keys on a proxy reads the ownKeys result's `length` ----
+
+    [Fact]
+    public void ProxyOwnKeysReadsArrayLikeLengthObservably()
+        => Assert.Equal("get length,get 0,get 1,get 2", Eval(
+            "var log=[];var sym=Symbol();" +
+            "var res={get length(){log.push('get length');return 3;}," +
+            "get 0(){log.push('get 0');return 'a';},get 1(){log.push('get 1');return sym;}," +
+            "get 2(){log.push('get 2');return 'b';}};" +
+            "var p=new Proxy({},{ownKeys(){return res;}," +
+            "getOwnPropertyDescriptor(t,k){return{value:1,enumerable:k==='a',configurable:true};}});" +
+            "Object.keys(p);log.join(',')"));
+
+    [Fact]
+    public void ProxyOwnKeysSkipsSymbolForObjectKeys()
+        => Assert.Equal("a", Eval(
+            "var sym=Symbol();" +
+            "var res={length:3,0:'a',1:sym,2:'b'};" +
+            "var p=new Proxy({},{ownKeys(){return res;}," +
+            "getOwnPropertyDescriptor(t,k){return{value:1,enumerable:k==='a',configurable:true};}});" +
+            "Object.keys(p).join(',')"));
+}

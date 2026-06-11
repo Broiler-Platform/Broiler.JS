@@ -508,16 +508,18 @@ public partial class JSArray
     public static JSValue FindLast(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
-        var length = GetArrayLikeLength(@this);
+        var length = GetArrayLikeLengthLong(@this);
         var (callback, thisArg) = a.Get2();
 
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.findLast");
 
-        for (var n = (long)length - 1; n >= 0; n--)
+        for (var n = length - 1; n >= 0; n--)
         {
             // findLast visits every index (holes read as undefined); it does not skip holes.
-            var item = @this[(uint)n];
+            // Indices beyond the 32-bit array-index range (length may be up to 2^53-1)
+            // are read through their canonical numeric-string property key.
+            var item = n <= uint.MaxValue ? @this[(uint)n] : @this[new JSNumber(n)];
 
             var index = new JSNumber(n);
             var itemParams = new Arguments(thisArg, item, index, @this);
@@ -533,16 +535,18 @@ public partial class JSArray
     public static JSValue FindLastIndex(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
-        var length = GetArrayLikeLength(@this);
+        var length = GetArrayLikeLengthLong(@this);
         var (callback, thisArg) = a.Get2();
 
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.findLastIndex");
 
-        for (var n = (long)length - 1; n >= 0; n--)
+        for (var n = length - 1; n >= 0; n--)
         {
             // findLastIndex visits every index (holes read as undefined); it does not skip holes.
-            var item = @this[(uint)n];
+            // Indices beyond the 32-bit array-index range are read through their canonical
+            // numeric-string property key.
+            var item = n <= uint.MaxValue ? @this[(uint)n] : @this[new JSNumber(n)];
 
             var index = new JSNumber(n);
             var itemParams = new Arguments(thisArg, item, index, @this);

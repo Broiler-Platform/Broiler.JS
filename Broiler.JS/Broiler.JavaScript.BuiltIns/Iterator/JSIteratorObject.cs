@@ -715,6 +715,22 @@ public partial class JSIteratorObject : JSObject
             CloseIteratorReverse(_iterators);
         }
 
+        // IteratorCloseAll on a NORMAL completion (e.g. "shortest" mode finishing because
+        // one input is exhausted): close the still-open iterators in reverse order and,
+        // unlike the abrupt-completion close, propagate the first error thrown by a
+        // return() method (subsequent return() errors are swallowed, matching
+        // IteratorClose's "if completion is a throw, keep it" rule).
+        private void CloseAllActivePropagating()
+        {
+            Exception? firstException = null;
+            for (int i = _iterators.Count - 1; i >= 0; i--)
+                if (_iterators[i] != null)
+                    CloseIteratorForReturn(_iterators[i], ref firstException);
+
+            if (firstException != null)
+                throw firstException;
+        }
+
         public bool MoveNext(out JSValue value)
         {
             if (_done)
@@ -792,13 +808,13 @@ public partial class JSIteratorObject : JSObject
                             }
 
                             _done = true;
-                            CloseAllActive();
+                            CloseAllActivePropagating();
                             value = JSUndefined.Value;
                             return false;
                         }
 
                         _done = true;
-                        CloseAllActive();
+                        CloseAllActivePropagating();
                         value = JSUndefined.Value;
                         return false;
                     }
@@ -829,7 +845,7 @@ public partial class JSIteratorObject : JSObject
                 if (!anyActive)
                 {
                     _done = true;
-                    CloseAllActive();
+                    CloseAllActivePropagating();
                     value = JSUndefined.Value;
                     return false;
                 }
@@ -953,6 +969,22 @@ public partial class JSIteratorObject : JSObject
             CloseIteratorReverse(_iterators);
         }
 
+        // IteratorCloseAll on a NORMAL completion (e.g. "shortest" mode finishing because
+        // one input is exhausted): close the still-open iterators in reverse order and,
+        // unlike the abrupt-completion close, propagate the first error thrown by a
+        // return() method (subsequent return() errors are swallowed, matching
+        // IteratorClose's "if completion is a throw, keep it" rule).
+        private void CloseAllActivePropagating()
+        {
+            Exception? firstException = null;
+            for (int i = _iterators.Count - 1; i >= 0; i--)
+                if (_iterators[i] != null)
+                    CloseIteratorForReturn(_iterators[i], ref firstException);
+
+            if (firstException != null)
+                throw firstException;
+        }
+
         public bool MoveNext(out JSValue value)
         {
             if (_done)
@@ -1033,13 +1065,13 @@ public partial class JSIteratorObject : JSObject
                             }
 
                             _done = true;
-                            CloseAllActive();
+                            CloseAllActivePropagating();
                             value = JSUndefined.Value;
                             return false;
                         }
 
                         _done = true;
-                        CloseAllActive();
+                        CloseAllActivePropagating();
                         value = JSUndefined.Value;
                         return false;
                     }
@@ -1070,7 +1102,7 @@ public partial class JSIteratorObject : JSObject
                 if (!anyActive)
                 {
                     _done = true;
-                    CloseAllActive();
+                    CloseAllActivePropagating();
                     value = JSUndefined.Value;
                     return false;
                 }

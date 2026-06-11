@@ -93,15 +93,38 @@ public partial class JSGenerator : JSObject, IJSGenerator
                 if (!delegatedResult.IsUndefined)
                 {
                     var delegatedDone = delegatedResult[KeyStrings.done].BooleanValue;
-                    var delegatedValue = delegatedResult[KeyStrings.value];
                     if (!delegatedDone)
                     {
+                        // Sync `yield*` performs GeneratorYield(innerReturnResult) when the
+                        // inner `return` result is not done: the result object is surfaced
+                        // unchanged and IteratorValue is NOT performed, so its `value` getter
+                        // must not run while delegation continues.
                         done = false;
-                        this.value = delegatedValue;
-                        return ValueObject;
+                        return delegatedResult;
                     }
 
+                    var delegatedValue = delegatedResult[KeyStrings.value];
                     cg.EndDelegation(delegatedValue);
+
+                    // The inner iterator's `return` completed (done): yield* completes with
+                    // a return completion of `delegatedValue`. Resume the generator body
+                    // with that return completion so enclosing `finally` blocks execute
+                    // before the generator finishes (a `finally` may override the result).
+                    if (!done && cg.IsSuspendedAtYield)
+                    {
+                        cg.InjectException(new GeneratorReturnCompletion(delegatedValue));
+                        try
+                        {
+                            return Next();
+                        }
+                        catch (GeneratorReturnCompletion ret)
+                        {
+                            done = true;
+                            this.value = JSUndefined.Value;
+                            return NewWithProperties().AddProperty(KeyStrings.value, ret.Value).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
+                        }
+                    }
+
                     done = true;
                     this.value = JSUndefined.Value;
                     return NewWithProperties().AddProperty(KeyStrings.value, delegatedValue).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
@@ -163,14 +186,16 @@ public partial class JSGenerator : JSObject, IJSGenerator
                 }
 
                 var delegatedDone = delegatedResult[KeyStrings.done].BooleanValue;
-                var delegatedValue = delegatedResult[KeyStrings.value];
                 if (!delegatedDone)
                 {
+                    // GeneratorYield(innerResult) of the inner `throw` result: surface it
+                    // unchanged without performing IteratorValue (no `value` read) while
+                    // delegation continues.
                     done = false;
-                    this.value = delegatedValue;
-                    return ValueObject;
+                    return delegatedResult;
                 }
 
+                var delegatedValue = delegatedResult[KeyStrings.value];
                 cg.EndDelegation(delegatedValue);
                 return Next(delegatedValue);
             }

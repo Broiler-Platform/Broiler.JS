@@ -384,7 +384,15 @@ partial class FastCompiler
                             // evaluated above against the outer `this`.
                             var top = this.scope.Top;
                             var savedThis = top.ThisExpression;
+                            var savedSuper = top.Super;
                             top.ThisExpression = retValue;
+                            // A static field initializer can reference super (e.g.
+                            // `static f = () => super.m()`); its [[HomeObject]] is the
+                            // constructor, so super property access resolves against the
+                            // constructor's prototype (StaticSuper). Without this the
+                            // enclosing scope has no super and an arrow that reads super
+                            // produces invalid IL.
+                            top.Super = StaticSuper();
                             try
                             {
                                 value = ApplyFieldFunctionName(property, name, Visit(property.Init));
@@ -392,6 +400,7 @@ partial class FastCompiler
                             finally
                             {
                                 top.ThisExpression = savedThis;
+                                top.Super = savedSuper;
                             }
                         }
                         // Deferred to after the class binding (see staticFieldInits).

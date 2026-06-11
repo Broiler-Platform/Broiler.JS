@@ -111,11 +111,19 @@ public partial class JSObject
             builtinTag = GetBuiltinToStringTag?.Invoke(a.This) ?? "Object";
 
         var toStringTag = GetGlobalSymbolFactory?.Invoke("toStringTag");
-        if (toStringTag != null && a.This is JSObject @object)
+        if (toStringTag != null)
         {
-            var tag = @object[toStringTag];
-            if (tag.IsString)
-                return JSValue.CreateString($"[object {tag}]");
+            // §20.1.3.6 does ToObject(this) (step 3) before reading @@toStringTag, so a
+            // primitive receiver reads the tag through its wrapper's prototype chain
+            // (e.g. Boolean.prototype[@@toStringTag], or Symbol.prototype's default
+            // "Symbol"). Box a non-object receiver to perform that lookup.
+            var tagHolder = a.This as JSObject ?? CreatePrimitiveObject?.Invoke(a.This) as JSObject;
+            if (tagHolder != null)
+            {
+                var tag = tagHolder[toStringTag];
+                if (tag.IsString)
+                    return JSValue.CreateString($"[object {tag}]");
+            }
         }
 
         return JSValue.CreateString($"[object {builtinTag}]");

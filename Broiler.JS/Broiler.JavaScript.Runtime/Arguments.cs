@@ -428,6 +428,40 @@ public readonly partial struct Arguments
         return (Args![0].IntValue, Args[1].IntValue, Args[2].IntValue, Args[3].IntValue, Args[4].IntValue, Args[5].IntValue, Args[6].IntValue);
     }
 
+    /// <summary>
+    /// Coerces up to the first seven arguments to Number exactly once each (the Date
+    /// constructor and Date.UTC must perform ToNumber on each component only once, in
+    /// left-to-right order). Absent components take their ECMAScript defaults
+    /// (year/month 0, day 1, time fields 0); those defaults are always finite so a
+    /// later NaN/Infinity scan over the full tuple is equivalent to scanning only the
+    /// supplied arguments.
+    /// </summary>
+    public (double, double, double, double, double, double, double) Get7Double()
+    {
+        if (Length == 0)
+            return (0, 0, 1, 0, 0, 0, 0);
+
+        if (Length == 1)
+            return (Arg0!.DoubleValue, 0, 1, 0, 0, 0, 0);
+
+        if (Length == 2)
+            return (Arg0!.DoubleValue, Arg1!.DoubleValue, 1, 0, 0, 0, 0);
+
+        if (Length == 3)
+            return (Arg0!.DoubleValue, Arg1!.DoubleValue, Arg2!.DoubleValue, 0, 0, 0, 0);
+
+        if (Length == 4)
+            return (Arg0!.DoubleValue, Arg1!.DoubleValue, Arg2!.DoubleValue, Arg3!.DoubleValue, 0, 0, 0);
+
+        if (Length == 5)
+            return (Args![0].DoubleValue, Args[1].DoubleValue, Args[2].DoubleValue, Args[3].DoubleValue, Args[4].DoubleValue, 0, 0);
+
+        if (Length == 6)
+            return (Args![0].DoubleValue, Args[1].DoubleValue, Args[2].DoubleValue, Args[3].DoubleValue, Args[4].DoubleValue, Args[5].DoubleValue, 0);
+
+        return (Args![0].DoubleValue, Args[1].DoubleValue, Args[2].DoubleValue, Args[3].DoubleValue, Args[4].DoubleValue, Args[5].DoubleValue, Args[6].DoubleValue);
+    }
+
     public JSValue[]? GetArgs() => Args;
 
     static readonly JSValue[] _Empty = [];
