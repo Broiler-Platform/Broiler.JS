@@ -228,6 +228,25 @@ public class Issue745Tests
         => Assert.Equal("ok", Eval(
             "var e='ok';try{new RegExp('(?<a>x)(?<b>y)');}catch(t){e=t.constructor.name;}e"));
 
+    // ---- Problem 20: arguments iterator re-reads length each step ----
+
+    [Fact]
+    public void ArgumentsIteratorHonoursShrunkLength()
+        => Assert.Equal("done", Eval(
+            "(function(a,b,c){var it=arguments[Symbol.iterator]();it.next();it.next();" +
+            "arguments.length=2;var r=it.next();return r.done && r.value===undefined ? 'done':'value';}(2,1,3))"));
+
+    [Fact]
+    public void ArgumentsForOfStillYieldsAllElements()
+        => Assert.Equal("1,2,3", Eval(
+            "(function(){var r=[];for(var x of arguments)r.push(x);return r.join(',');}(1,2,3))"));
+
+    [Fact]
+    public void ArrayPrototypeValuesOnArrayLikeHonoursLength()
+        => Assert.Equal("a,b", Eval(
+            "var o={0:'a',1:'b',2:'c',length:2};var it=Array.prototype.values.call(o);" +
+            "var r=[];var n;while(!(n=it.next()).done)r.push(n.value);r.join(',')"));
+
     // ---- Problem 13: Promise.race passes the capability resolve directly to then ----
 
     [Fact]

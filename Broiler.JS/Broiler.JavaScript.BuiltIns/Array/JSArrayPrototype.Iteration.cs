@@ -224,6 +224,53 @@ public partial class JSArray
         return true;
     }
 
+    // Length-bound value iterator (CreateArrayIterator, "value" kind) for generic
+    // array-likes such as a mapped arguments object: the length is re-read on every
+    // step from the receiver's "length" property, so shrinking it (arguments.length = 2)
+    // ends iteration early and growing it keeps later elements reachable. Real arrays /
+    // typed arrays use their own (hole-aware) element enumerator instead.
+    private struct ArrayLikeValueEnumerator(JSObject @object) : IElementEnumerator
+    {
+        private int index = -1;
+
+        public bool MoveNext(out JSValue value)
+        {
+            if (++index < GetArrayLikeLength(@object))
+            {
+                value = @object[(uint)index];
+                return true;
+            }
+
+            value = JSValue.UndefinedValue;
+            return false;
+        }
+
+        public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
+        {
+            if (MoveNext(out value))
+            {
+                hasValue = true;
+                index = (uint)this.index;
+                return true;
+            }
+
+            hasValue = false;
+            index = 0;
+            return false;
+        }
+
+        public bool MoveNextOrDefault(out JSValue value, JSValue @default)
+        {
+            if (MoveNext(out value))
+                return true;
+
+            value = @default;
+            return false;
+        }
+
+        public JSValue NextOrDefault(JSValue @default) => MoveNext(out var value) ? value : @default;
+    }
+
     private struct ArrayLikeEntryEnumerator(JSObject @object) : IElementEnumerator
     {
         private int index = -1;
@@ -666,6 +713,18 @@ public partial class JSArray
     [JSPrototypeMethod]
     [JSExport("values", Length = 0)]
     [Symbol("@@iterator")]
-    public new static JSValue Values(in Arguments a) => new JSGenerator(a.This.GetElementEnumerator(), "Array Iterator");
+    public new static JSValue Values(in Arguments a)
+    {
+        var receiver = a.This;
+        // Real arrays and typed arrays carry their own live, hole-aware element
+        // enumerators. A generic array-like (e.g. a mapped arguments object) needs the
+        // length-bound CreateArrayIterator behaviour that re-reads "length" each step,
+        // so shrinking it (arguments.length = 2) ends iteration before the stored
+        // elements are exhausted.
+        if (receiver is JSArray || receiver is IJSIntegerIndexedObject)
+            return new JSGenerator(receiver.GetElementEnumerator(), "Array Iterator");
+
+        return new JSGenerator(new ArrayLikeValueEnumerator(ToArrayLikeObject(receiver)), "Array Iterator");
+    }
 
 }
