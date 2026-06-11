@@ -4477,6 +4477,33 @@ public class BuiltInsTests
         Assert.Equal("true", result.ToString());
     }
 
+    [Theory]
+    // Intl resolvedOptions must build its result via CreateDataPropertyOrThrow, not
+    // ordinary assignment — so a setter installed on Object.prototype by client code
+    // (taint) is never invoked. Regression: the result was built with [[Set]].
+    [InlineData("new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })")]
+    [InlineData("new Intl.DateTimeFormat('en-US', { weekday: 'short', hour: 'numeric' })")]
+    [InlineData("new Intl.PluralRules('en-US')")]
+    [InlineData("new Intl.RelativeTimeFormat('en-US')")]
+    public void Intl_ResolvedOptions_Ignores_Object_Prototype_Taint(string ctor)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var keys = ['locale','calendar','numberingSystem','timeZone','style','numeric',
+                'currency','unit','useGrouping','minimumIntegerDigits','minimumFractionDigits',
+                'maximumFractionDigits','notation','signDisplay','type','granularity'];
+            keys.forEach(function(k){
+                Object.defineProperty(Object.prototype, k, {
+                    configurable: true, set: function(){ throw new Error('taint:' + k); }
+                });
+            });
+            try { (" + ctor + @").resolvedOptions(); 'ok'; }
+            catch (e) { 'threw:' + e.message; }
+        ");
+        Assert.Equal("ok", result.ToString());
+    }
+
     [Fact]
     public void ThrowTypeError_Is_Shared_Across_Unmapped_Arguments_Callee()
     {
