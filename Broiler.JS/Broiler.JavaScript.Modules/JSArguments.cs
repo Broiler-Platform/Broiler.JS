@@ -14,7 +14,63 @@ public class JSArguments: JSObject
 
     public static JSValue Callee(in Arguments a) => throw JSEngine.NewTypeError($"Cannot access callee in strict mode");
 
-    public new JSValue Values(in Arguments a) => JSGeneratorBuilder.CreateFromEnumerator(GetElementEnumerator(), "Arguments");
+    // The arguments object's @@iterator is %Array.prototype.values%, a CreateArrayIterator
+    // that re-reads "length" on every step. Using GetElementEnumerator (which walks the
+    // stored elements) ignored a shrunk "length": after `arguments.length = 2` the third
+    // next() must report done rather than yielding the still-stored third element.
+    public new JSValue Values(in Arguments a) => JSGeneratorBuilder.CreateFromEnumerator(new LengthBoundEnumerator(this), "Arguments");
+
+    private struct LengthBoundEnumerator(JSArguments args) : IElementEnumerator
+    {
+        private int index = -1;
+
+        private long CurrentLength()
+        {
+            var length = args[KeyStrings.length].DoubleValue;
+            if (double.IsNaN(length) || length <= 0)
+                return 0;
+
+            return length > uint.MaxValue ? uint.MaxValue : (long)length;
+        }
+
+        public bool MoveNext(out JSValue value)
+        {
+            if (++index < CurrentLength())
+            {
+                // Read through the indexer so a mapped parameter's live value is observed.
+                value = args[(uint)index];
+                return true;
+            }
+
+            value = JSValue.UndefinedValue;
+            return false;
+        }
+
+        public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
+        {
+            if (MoveNext(out value))
+            {
+                hasValue = true;
+                index = (uint)this.index;
+                return true;
+            }
+
+            hasValue = false;
+            index = 0;
+            return false;
+        }
+
+        public bool MoveNextOrDefault(out JSValue value, JSValue @default)
+        {
+            if (MoveNext(out value))
+                return true;
+
+            value = @default;
+            return false;
+        }
+
+        public JSValue NextOrDefault(JSValue @default) => MoveNext(out var value) ? value : @default;
+    }
 
     public static JSValue[] Empty = [];
 

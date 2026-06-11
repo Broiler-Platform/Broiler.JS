@@ -911,7 +911,14 @@ public static class JSIntl
 
         var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
 
-        ObserveOptions(options, RoundingIncrementKey, RoundingModeKey, RoundingPriorityKey, TrailingZeroDisplayKey);
+        // roundingIncrement is a numeric option; the string enums below are
+        // validated against their sanctioned value lists (a bad value, e.g. an
+        // empty string for trailingZeroDisplay, is a RangeError per
+        // SetNumberFormatDigitOptions).
+        ObserveOptions(options, RoundingIncrementKey);
+        _ = GetOption(options, RoundingModeKey, ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"], false, "halfExpand");
+        _ = GetOption(options, RoundingPriorityKey, ["auto", "morePrecision", "lessPrecision"], false, "auto");
+        _ = GetOption(options, TrailingZeroDisplayKey, ["auto", "stripIfInteger"], false, "auto");
 
         return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay)
         {
@@ -928,20 +935,30 @@ public static class JSIntl
         if (options == null)
             return null;
 
+        // Each digit option has a sanctioned [min, max] range (SetNumberFormatDigitOptions
+        // / GetNumberOption); a NaN or out-of-range value (e.g. maximumSignificantDigits: 0)
+        // is a RangeError. The original value is still snapshotted so downstream
+        // format/resolvedOptions reads observe the construction-time value.
         var snapshot = new JSObject();
-        foreach (var name in new[]
+        foreach (var (name, min, max) in new (string, int, int)[]
         {
-            "minimumIntegerDigits",
-            "minimumFractionDigits",
-            "maximumFractionDigits",
-            "minimumSignificantDigits",
-            "maximumSignificantDigits",
+            ("minimumIntegerDigits", 1, 21),
+            ("minimumFractionDigits", 0, 100),
+            ("maximumFractionDigits", 0, 100),
+            ("minimumSignificantDigits", 1, 21),
+            ("maximumSignificantDigits", 1, 21),
         })
         {
             var key = KeyStrings.GetOrCreate(name);
             var value = options[key];
             if (value != null && !value.IsUndefined)
+            {
+                var number = value.DoubleValue;
+                if (double.IsNaN(number) || number < min || number > max)
+                    throw JSEngine.NewRangeError($"Invalid {key} option");
+
                 snapshot.FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            }
         }
 
         return snapshot;
@@ -1024,6 +1041,12 @@ public static class JSIntl
             if (timeZone.Contains('\u2212'))
                 throw JSEngine.NewRangeError("Invalid timeZone option");
         }
+
+        // timeZoneName is constrained to the sanctioned set; any other value
+        // (empty string, surrounding whitespace, "offset", "generic", \u2026) is a
+        // RangeError per CreateDateTimeFormat.
+        _ = GetOption(options, KeyStrings.GetOrCreate("timeZoneName"),
+            ["short", "long", "shortOffset", "longOffset", "shortGeneric", "longGeneric"], false, null);
 
         // fractionalSecondDigits \u2208 {1, 2, 3} (GetNumberOption with min 1, max 3);
         // an out-of-range value (e.g. 0 or 4) is a RangeError.
@@ -3081,10 +3104,18 @@ public class JSIntlNumberFormat : JSObject
             else
                 result.CreateDataProperty(maximumFractionDigitsKey, JSValue.CreateNumber(3));
 
-            if (digits != null && !digits[minimumSignificantDigitsKey].IsUndefined)
-                result.CreateDataProperty(minimumSignificantDigitsKey, digits[minimumSignificantDigitsKey]);
-            if (digits != null && !digits[maximumSignificantDigitsKey].IsUndefined)
-                result.CreateDataProperty(maximumSignificantDigitsKey, digits[maximumSignificantDigitsKey]);
+            // When either significant-digit option is supplied the other gets its
+            // SetNumberFormatDigitOptions default (minimum → 1, maximum → 21), so
+            // both are reported together.
+            var hasMinSig = digits != null && !digits[minimumSignificantDigitsKey].IsUndefined;
+            var hasMaxSig = digits != null && !digits[maximumSignificantDigitsKey].IsUndefined;
+            if (hasMinSig || hasMaxSig)
+            {
+                result.CreateDataProperty(minimumSignificantDigitsKey,
+                    hasMinSig ? digits[minimumSignificantDigitsKey] : JSValue.CreateNumber(1));
+                result.CreateDataProperty(maximumSignificantDigitsKey,
+                    hasMaxSig ? digits[maximumSignificantDigitsKey] : JSValue.CreateNumber(21));
+            }
         }
         else
         {

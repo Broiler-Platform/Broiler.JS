@@ -49,6 +49,12 @@ partial class FastParser
         stream.Expect(TokenTypes.CurlyBracketStart);
 
         var nodes = new Sequence<AstClassProperty>();
+        // Skip line terminators before each element so a member's source span
+        // (Function.prototype.toString) starts at the element's own first token
+        // rather than the LineTerminator separating it from `{` or the previous
+        // element. Without this the first element after a newline reports the
+        // leading whitespace as part of its source text.
+        stream.SkipNewLines();
         while (!stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
         {
             // A ClassElement may be preceded by a DecoratorList. Decorators are parsed
@@ -63,6 +69,7 @@ partial class FastParser
                 throw stream.Unexpected();
 
             stream.CheckAndConsumeWithLineTerminator(TokenTypes.SemiColon);
+            stream.SkipNewLines();
         }
 
         // A ClassDeclaration binds its name (block-scoped) in the enclosing scope.

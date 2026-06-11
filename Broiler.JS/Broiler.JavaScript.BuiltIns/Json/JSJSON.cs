@@ -540,6 +540,13 @@ public partial class JSJSON : JSObject
         IndentedTextWriter indent,
         HashSet<JSObject> stack)
     {
+        // SerializeJSONProperty step 4 (a–d): a Number/String/Boolean/BigInt wrapper
+        // object is unwrapped to its primitive before serialization. In particular a
+        // BigInt wrapper (Object(1n)) unwraps to a BigInt, which step 10 then rejects
+        // with a TypeError rather than serializing as an empty object.
+        if (target is JSPrimitiveObject wrapper)
+            target = wrapper.value;
+
         if (target == null || target.IsNullOrUndefined)
         {
             sb.Write("null");
@@ -561,7 +568,8 @@ public partial class JSJSON : JSObject
         switch (target)
         {
             case JSNumber n:
-                sb.Write(n.value.ToString());
+                // Non-finite numbers (NaN, ±Infinity) serialize as null (SerializeJSONProperty step 9).
+                sb.Write(double.IsFinite(n.value) ? n.value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "null");
                 return;
 
             case JSString str:

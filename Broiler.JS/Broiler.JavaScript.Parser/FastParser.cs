@@ -30,6 +30,13 @@ public partial class FastParser(FastTokenStream stream) : IParser
 
     private bool inAsyncFunctionBody = false;
 
+    // The `async` keyword token of an async function declaration/expression whose
+    // `async` was just consumed by the caller, so FunctionExpression can anchor its
+    // source span (Function.prototype.toString) at `async` rather than `function`.
+    // Only consulted when the function being built is itself async (set right before
+    // the matching FunctionExpression call), and cleared on entry to FunctionExpression.
+    private FastToken pendingAsyncStart = null;
+
     private int functionDepth = 0;
 
     // Set while parsing a FunctionDeclaration that is the sole statement of an

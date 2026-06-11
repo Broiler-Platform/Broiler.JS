@@ -661,6 +661,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if (unicode && !RegExpUnicodeValidator.IsValidUnicodePattern(pattern))
                 throw JSEngine.NewSyntaxError("Invalid regular expression: invalid pattern in Unicode mode");
 
+            // ES2025 permits two named groups to share a name only when they are in
+            // separate alternatives of a disjunction; the same name twice in a single
+            // alternative (`(?<x>a)(?<x>b)`) is a SyntaxError.
+            ValidateDuplicateNamedGroups(pattern);
+
             // BROILER-PATCH: Transform ES3 empty character classes and forward backreferences
             // for .NET compatibility (tests 89, 90)
             pattern = TransformES3Patterns(pattern);
@@ -1194,6 +1199,79 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         return sb.ToString();
+    }
+
+    // ES2025 allows duplicate named capture groups only in SEPARATE alternatives of a
+    // disjunction (so at most one participates in any match). Two GroupSpecifiers with
+    // the same name reachable together in a single match (same alternative / nested /
+    // inside a lookaround of that alternative) are a SyntaxError. Walks the pattern with
+    // a stack of group-nesting frames; each frame tracks the names live in its CURRENT
+    // alternative branch and the union over all its alternatives (folded in at `|` and on
+    // close). Adding a name to a branch that already contains it — directly or bubbled up
+    // from a closed child group — is the error.
+    private static void ValidateDuplicateNamedGroups(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf("(?<", StringComparison.Ordinal) < 0)
+            return;
+
+        static void Conflict(string name)
+            => throw JSEngine.NewSyntaxError($"Invalid regular expression: Duplicate capture group name '{name}'");
+
+        var stack = new Stack<(HashSet<string> Current, HashSet<string> All)>();
+        stack.Push((new HashSet<string>(StringComparer.Ordinal), new HashSet<string>(StringComparer.Ordinal)));
+        var inClass = false;
+
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+
+            if (c == '\\') { i++; continue; }
+            if (inClass) { if (c == ']') inClass = false; continue; }
+            if (c == '[') { inClass = true; continue; }
+
+            if (c == '|')
+            {
+                var top = stack.Peek();
+                top.All.UnionWith(top.Current);
+                top.Current.Clear();
+                continue;
+            }
+
+            if (c == ')')
+            {
+                if (stack.Count > 1)
+                {
+                    var closed = stack.Pop();
+                    closed.All.UnionWith(closed.Current);
+                    var parent = stack.Peek();
+                    foreach (var n in closed.All)
+                        if (!parent.Current.Add(n))
+                            Conflict(n);
+                }
+                continue;
+            }
+
+            if (c != '(')
+                continue;
+
+            // A named capture (?<name>…), distinguished from lookbehind (?<= / (?<!.
+            if (i + 2 < pattern.Length && pattern[i + 1] == '?' && pattern[i + 2] == '<'
+                && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!')))
+            {
+                var nameEnd = pattern.IndexOf('>', i + 3);
+                if (nameEnd > i + 3)
+                {
+                    var name = pattern.Substring(i + 3, nameEnd - (i + 3));
+                    if (!stack.Peek().Current.Add(name))
+                        Conflict(name);
+                    i = nameEnd;
+                }
+            }
+
+            // Every grouping ( … ) — capturing, non-capturing or lookaround — opens a
+            // nested alternation frame whose names bubble up to the current alternative.
+            stack.Push((new HashSet<string>(StringComparer.Ordinal), new HashSet<string>(StringComparer.Ordinal)));
+        }
     }
 
     // Walks the pattern invoking onGroup(index, name) for each capturing group in

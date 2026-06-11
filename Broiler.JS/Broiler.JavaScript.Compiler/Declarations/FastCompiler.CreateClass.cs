@@ -157,6 +157,23 @@ partial class FastCompiler
         var staticElements = new Sequence<YBinding>();
         var staticBlocks = new Sequence<AstClassProperty>();
 
+        // The class name is an immutable (const-like) binding scoped to the class
+        // body, created BEFORE the ClassHeritage is evaluated so the heritage
+        // expression resolves the class name to this (still-uninitialized) binding
+        // rather than an outer one. `class x extends x {}` thus reads x in its TDZ
+        // and throws a ReferenceError (its runtime assignment happens far below,
+        // after the heritage has already run as the first emitted statement).
+        FastFunctionScope classNameScope = null;
+        FastFunctionScope.VariableScope innerNameVar = null;
+        if (id?.Name != null)
+        {
+            classNameScope = this.scope.Push(new FastFunctionScope(this.scope.Top));
+            // initialize: false → the binding starts in its temporal dead zone, so the
+            // heritage reading it (`class x extends x {}`) throws a ReferenceError. Its
+            // value is set further below once the class object exists.
+            innerNameVar = classNameScope.CreateVariable(id.Name, newScope: true, initialize: false);
+        }
+
         // need to save super..
         // create a super variable...
         YExpression superExp;
@@ -306,19 +323,13 @@ partial class FastCompiler
             PushPrivateNameScope(privateNameScope);
         }
 
-        // The class name is an immutable (const-like) binding scoped to the class
-        // body: the constructor, methods, accessors and static blocks close over
-        // it, and assigning to it (`class C { m() { C = 1; } }`) is a TypeError.
-        // It lives in a dedicated class scope pushed here so it does not leak to
-        // the enclosing scope and does not collide with the outer, mutable
-        // declaration binding, which is (re)created after this scope is popped.
-        FastFunctionScope classNameScope = null;
-        FastFunctionScope.VariableScope innerNameVar = null;
-        if (id?.Name != null)
-        {
-            classNameScope = this.scope.Push(new FastFunctionScope(this.scope.Top));
-            innerNameVar = classNameScope.CreateVariable(id.Name, newScope: true);
-        }
+        // The class-name binding (classNameScope / innerNameVar) was created above,
+        // before the heritage, so the constructor, methods, accessors and static
+        // blocks close over the same immutable binding; assigning to it
+        // (`class C { m() { C = 1; } }`) is a TypeError. It lives in a dedicated
+        // class scope so it does not leak to the enclosing scope and does not
+        // collide with the outer, mutable declaration binding, which is (re)created
+        // after this scope is popped.
 
         var en = body.Members.GetFastEnumerator();
         while (en.MoveNext(out var property))

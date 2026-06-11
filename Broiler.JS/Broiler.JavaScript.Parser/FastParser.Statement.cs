@@ -198,6 +198,7 @@ partial class FastParser
                     return Import(token, out node);
 
                 case FastKeywords.async:
+                    pendingAsyncStart = stream.Current;
                     stream.Consume();
                     if (stream.Current.Keyword != FastKeywords.function)
                         throw stream.Unexpected();
