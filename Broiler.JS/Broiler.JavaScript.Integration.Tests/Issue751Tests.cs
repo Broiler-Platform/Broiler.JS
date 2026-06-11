@@ -47,6 +47,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   construct path (not only at the `new` site), so Reflect.construct(BF, args, BF)
 //   builds the bound target with new.target = the target (an explicit, different
 //   newTarget is still preserved).
+//
+//   Problem 32/33 (toUpperCase/toLowerCase special casing) — these used .NET's simple
+//   1:1 mapping and missed the Unicode one-to-many expansions from SpecialCasing.txt
+//   (ß → SS, ﬁ → FI, İ → i̇, the Greek/Armenian expansions, …). The unconditional,
+//   locale-independent full mappings are now applied; toLocaleUpperCase combines them
+//   with culture-specific simple mapping (e.g. Turkish i → İ).
 public class Issue751Tests
 {
     private static string Eval(string code)
@@ -224,4 +230,40 @@ public class Issue751Tests
         => Assert.Equal("true", Eval(
             "function A(){ this.nt = new.target; } var BBA = A.bind(null).bind(null);" +
             "var o = new BBA(); o.nt === A && Object.getPrototypeOf(o) === A.prototype"));
+
+    // ---- Problem 32/33: toUpperCase/toLowerCase special casing ----
+
+    [Fact]
+    public void SharpSUpperCasesToSS()
+        => Assert.Equal("SS", Eval("'\\u00DF'.toUpperCase()"));
+
+    [Fact]
+    public void LatinLigaturesUpperCase()
+        => Assert.Equal("FF,FI,FL,FFI,FFL,ST,ST", Eval(
+            "['\\uFB00','\\uFB01','\\uFB02','\\uFB03','\\uFB04','\\uFB05','\\uFB06'].map(s=>s.toUpperCase()).join(',')"));
+
+    [Fact]
+    public void CapitalIWithDotLowerCases()
+        => Assert.Equal("i̇", Eval("'\\u0130'.toLowerCase()"));
+
+    [Fact]
+    public void GreekIotaSubscriptUpperCase()
+        => Assert.Equal("ΑΙ", Eval("'\\u1FB3'.toUpperCase()"));
+
+    [Fact]
+    public void ApostropheNAndArmenianUpperCase()
+        => Assert.Equal("ʼN,ԵՒ", Eval(
+            "['\\u0149','\\u0587'].map(s=>s.toUpperCase()).join(',')"));
+
+    [Fact]
+    public void LocaleUpperKeepsUnconditionalExpansion()
+        => Assert.Equal("SS", Eval("'\\u00DF'.toLocaleUpperCase('en')"));
+
+    [Fact]
+    public void TurkishLocaleUpperDottedI()
+        => Assert.Equal("İ", Eval("'i'.toLocaleUpperCase('tr')"));
+
+    [Fact]
+    public void OrdinaryCaseMappingUnaffected()
+        => Assert.Equal("HELLO,hello", Eval("['Hello'.toUpperCase(),'Hello'.toLowerCase()].join(',')"));
 }

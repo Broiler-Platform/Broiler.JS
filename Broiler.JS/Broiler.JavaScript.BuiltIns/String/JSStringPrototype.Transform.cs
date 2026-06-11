@@ -103,7 +103,7 @@ public partial class JSString
         try
         {
             CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.ToString());
-            return new JSString(@this.ToUpper(culture));
+            return new JSString(JSStringSpecialCasing.ToLocaleUpper(@this, culture));
         }
         catch (CultureNotFoundException)
         {
@@ -116,7 +116,7 @@ public partial class JSString
     internal static JSValue ToLowerCase(in Arguments a)
     {
         var @this = a.This.AsString();
-        return new JSString(@this.ToLowerInvariant());
+        return new JSString(JSStringSpecialCasing.ToLower(@this));
     }
 
     [JSPrototypeMethod]
@@ -124,7 +124,7 @@ public partial class JSString
     internal static JSValue ToUpperCase(in Arguments a)
     {
         var @this = a.This.AsString();
-        return new JSString(@this.ToUpperInvariant());
+        return new JSString(JSStringSpecialCasing.ToUpper(@this));
     }
 
     [JSPrototypeMethod]
