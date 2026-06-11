@@ -3278,6 +3278,18 @@ public class JSIntlDateTimeFormat : JSObject
         return true; // en default
     }
 
+    // Resolves the hourCycle reported by resolvedOptions. hour12 takes precedence
+    // over an explicit hourCycle (mapping to h12 / h23); otherwise an explicit
+    // hourCycle is used as-is, falling back to the locale default (h12 for en).
+    // Kept consistent with ResolveHour12 so the two reported values never disagree.
+    private string ResolveHourCycle()
+    {
+        var hour12 = options?[Hour12Key];
+        if (hour12 != null && !hour12.IsUndefined)
+            return hour12.BooleanValue ? "h12" : "h23";
+        return OptionString(HourCycleKey) ?? "h12";
+    }
+
     private JSIntlDateTimeFormatEngine.Pattern ResolveEnginePattern()
         => JSIntlDateTimeFormatEngine.ResolvePattern(
             localeTag: localeTag,
@@ -3511,8 +3523,15 @@ public class JSIntlDateTimeFormat : JSObject
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "calendar");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "numberingSystem");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeZone");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "hourCycle");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "hour12");
+            // hourCycle / hour12 are RESOLVED values (not plain passthrough): when the
+            // format includes an hour component, both are always present — hourCycle
+            // resolved from the hour12/hourCycle options (defaulting per locale) and
+            // hour12 derived to match. They appear right after timeZone per the spec.
+            if (@this.UsesHourFormatting())
+            {
+                result.CreateDataProperty(KeyStrings.GetOrCreate("hourCycle"), JSValue.CreateString(@this.ResolveHourCycle()));
+                result.CreateDataProperty(KeyStrings.GetOrCreate("hour12"), @this.ResolveHour12() ? JSValue.BooleanTrue : JSValue.BooleanFalse);
+            }
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "dateStyle");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeStyle");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "weekday");

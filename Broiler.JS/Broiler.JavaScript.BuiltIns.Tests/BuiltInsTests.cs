@@ -4504,6 +4504,26 @@ public class BuiltInsTests
         Assert.Equal("ok", result.ToString());
     }
 
+    [Theory]
+    // DateTimeFormat.resolvedOptions must report hourCycle and hour12 (resolved
+    // values) whenever the format includes an hour component, in the spec order
+    // (right after timeZone, before the date/time component fields). Regression:
+    // both were omitted entirely.
+    [InlineData("{ hour: 'numeric' }", "h12|true|locale,calendar,numberingSystem,timeZone,hourCycle,hour12,hour")]
+    [InlineData("{ hour: 'numeric', hour12: false }", "h23|false|locale,calendar,numberingSystem,timeZone,hourCycle,hour12,hour")]
+    [InlineData("{ hour: 'numeric', hourCycle: 'h11' }", "h11|true|locale,calendar,numberingSystem,timeZone,hourCycle,hour12,hour")]
+    [InlineData("{ year: 'numeric' }", "undefined|undefined|locale,calendar,numberingSystem,timeZone,year")]
+    public void DateTimeFormat_ResolvedOptions_Reports_HourCycle_And_Hour12(string options, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var r = new Intl.DateTimeFormat('en-US', " + options + @").resolvedOptions();
+            '' + r.hourCycle + '|' + r.hour12 + '|' + Object.keys(r).join(',');
+        ");
+        Assert.Equal(expected, result.ToString());
+    }
+
     [Fact]
     public void ThrowTypeError_Is_Shared_Across_Unmapped_Arguments_Callee()
     {
