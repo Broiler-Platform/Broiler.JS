@@ -41,6 +41,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   async function declared in a block leaked a function-scope var binding. It now
 //   applies only to plain FunctionDeclarations; generators and async functions stay
 //   block-scoped (no var copy-out, no pre-hoisted binding).
+//
+//   Problem 22 (bound function new.target remap) — BoundFunction [[Construct]] now
+//   performs "If SameValue(F, newTarget), set newTarget to target" inside the bound
+//   construct path (not only at the `new` site), so Reflect.construct(BF, args, BF)
+//   builds the bound target with new.target = the target (an explicit, different
+//   newTarget is still preserved).
 public class Issue751Tests
 {
     private static string Eval(string code)
@@ -194,4 +200,28 @@ public class Issue751Tests
     [Fact]
     public void NestedBlockGeneratorDoesNotHoist()
         => Assert.Equal("undefined", Eval("(function(){ {{ function* g(){} }} return typeof g; })()"));
+
+    // ---- Problem 22: bound function new.target remap ----
+
+    [Fact]
+    public void NewBoundFunctionRemapsNewTargetToTarget()
+        => Assert.Equal("true", Eval(
+            "function A(){ this.nt = new.target; } var BA = A.bind(null); (new BA()).nt === A"));
+
+    [Fact]
+    public void ReflectConstructBoundSelfRemapsNewTarget()
+        => Assert.Equal("true", Eval(
+            "function A(){ this.nt = new.target; } var BA = A.bind(null); Reflect.construct(BA, [], BA).nt === A"));
+
+    [Fact]
+    public void ReflectConstructBoundExplicitNewTargetPreserved()
+        => Assert.Equal("true", Eval(
+            "function A(){ this.nt = new.target; } function C(){} var BA = A.bind(null);" +
+            "var o = Reflect.construct(BA, [], C); o.nt === C && Object.getPrototypeOf(o) === C.prototype"));
+
+    [Fact]
+    public void ChainedBoundConstructRemapsToOriginalTarget()
+        => Assert.Equal("true", Eval(
+            "function A(){ this.nt = new.target; } var BBA = A.bind(null).bind(null);" +
+            "var o = new BBA(); o.nt === A && Object.getPrototypeOf(o) === A.prototype"));
 }
