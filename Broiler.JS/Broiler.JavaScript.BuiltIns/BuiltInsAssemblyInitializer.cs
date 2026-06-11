@@ -370,6 +370,18 @@ internal static class BuiltInsAssemblyInitializer
             if (primitive.IsSymbol) return "Symbol";
         }
 
+        // Object.prototype.toString performs ToObject(this) before computing the
+        // builtin tag, so a RAW primitive receiver (e.g. toString.call(true)) carries
+        // the same [[BooleanData]]/[[NumberData]]/[[StringData]] slot its wrapper would.
+        // (Symbol/BigInt primitives box to wrappers whose builtin tag is "Object"; their
+        // "Symbol"/"BigInt" tag comes from the @@toStringTag override instead.)
+        if (value is not JSObject)
+        {
+            if (value.IsString) return "String";
+            if (value.IsNumber) return "Number";
+            if (value.IsBoolean) return "Boolean";
+        }
+
         if (value is JSObject @object && JSEngine.Current is JSObject global)
         {
             if (global[Names.Number] is JSFunction number && ReferenceEquals(@object, number.prototype))

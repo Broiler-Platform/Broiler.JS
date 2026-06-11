@@ -33,6 +33,11 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   (default undefined), and the callback is invoked via InvokeCallback so a sloppy
 //   callback's undefined `this` coerces to the global object (a strict one stays
 //   undefined). forEach.length stays 1.
+//
+//   Problem 17 (Object.prototype.toString on a raw primitive) — ToObject(this) runs
+//   before the builtin tag is computed, so a raw Boolean/Number/String receiver tags
+//   as "[object Boolean/Number/String]" (not "[object Object]"); raw Symbol/BigInt tag
+//   via @@toStringTag.
 public class Issue749Tests
 {
     private static string Eval(string code)
@@ -163,4 +168,18 @@ public class Issue749Tests
     public void MapAndSetForEachLengthIsOne()
         => Assert.Equal("1,1", Eval(
             "Map.prototype.forEach.length + ',' + Set.prototype.forEach.length"));
+
+    // ---- Problem 17: Object.prototype.toString classifies raw primitives ----
+
+    [Fact]
+    public void ObjectToStringTagsRawPrimitives()
+        => Assert.Equal(
+            "[object Boolean],[object Number],[object String],[object Null],[object Undefined]",
+            Eval("var t=Object.prototype.toString;" +
+                 "[t.call(true),t.call(0),t.call('x'),t.call(null),t.call(undefined)].join(',')"));
+
+    [Fact]
+    public void ObjectToStringTagsRawSymbolAndBigInt()
+        => Assert.Equal("[object Symbol],[object BigInt]", Eval(
+            "var t=Object.prototype.toString; [t.call(Symbol()),t.call(1n)].join(',')"));
 }
