@@ -22,6 +22,18 @@ partial class FastCompiler
     private static readonly MethodInfo PrepareAnonymousFunctionNameForPropertyJSValueMethod = typeof(JSVariable)
         .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForProperty), [typeof(JSValue), typeof(JSValue)])
         ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForProperty(JSValue, JSValue) not found");
+    private static readonly MethodInfo PrepareAnonymousFunctionNameForGetterMethod = typeof(JSVariable)
+        .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForGetter), [typeof(JSValue), typeof(JSValue)])
+        ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForGetter(JSValue, JSValue) not found");
+    private static readonly MethodInfo PrepareAnonymousFunctionNameForSetterMethod = typeof(JSVariable)
+        .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForSetter), [typeof(JSValue), typeof(JSValue)])
+        ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForSetter(JSValue, JSValue) not found");
+    private static readonly MethodInfo PrepareAnonymousFunctionNameForGetterUIntMethod = typeof(JSVariable)
+        .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForGetter), [typeof(JSValue), typeof(uint)])
+        ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForGetter(JSValue, uint) not found");
+    private static readonly MethodInfo PrepareAnonymousFunctionNameForSetterUIntMethod = typeof(JSVariable)
+        .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForSetter), [typeof(JSValue), typeof(uint)])
+        ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForSetter(JSValue, uint) not found");
     private static readonly MethodInfo PrepareAnonymousFunctionNameForFieldMethod = typeof(JSVariable)
         .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForField), [typeof(JSValue), typeof(string)])
         ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForField(JSValue, string) not found");
@@ -69,6 +81,17 @@ partial class FastCompiler
                 return YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, value, key);
 
             return YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyKeyStringMethod, value, key);
+        }
+
+        // NamedEvaluation for a computed-key accessor: name the function "get "/"set "
+        // followed by the property key (the function is created anonymous because the key
+        // is not known at compile time).
+        static YExpression PrepareAnonymousAccessorName(YExpression value, YExpression key, bool isGetter)
+        {
+            if (key.Type == typeof(uint))
+                return YExpression.Call(null, isGetter ? PrepareAnonymousFunctionNameForGetterUIntMethod : PrepareAnonymousFunctionNameForSetterUIntMethod, value, key);
+
+            return YExpression.Call(null, isGetter ? PrepareAnonymousFunctionNameForGetterMethod : PrepareAnonymousFunctionNameForSetterMethod, value, key);
         }
 
         var properties = objectExpression.Properties;
@@ -149,12 +172,14 @@ partial class FastCompiler
 
                     if (p.Kind == AstPropertyKind.Get)
                     {
+                        value = PrepareAnonymousAccessorName(value, keyExp, isGetter: true);
                         elements.Add(JSObjectBuilder.AddGetter(keyExp, value));
                         continue;
                     }
 
                     if (p.Kind == AstPropertyKind.Set)
                     {
+                        value = PrepareAnonymousAccessorName(value, keyExp, isGetter: false);
                         elements.Add(JSObjectBuilder.AddSetter(keyExp, value));
                         continue;
                     }
@@ -280,12 +305,14 @@ partial class FastCompiler
 
                 if (p.Kind == AstPropertyKind.Get)
                 {
+                    value = PrepareAnonymousAccessorName(value, keyExp, isGetter: true);
                     statements.Add(JSObjectBuilder.AddGetter(temp.Variable, keyExp, value));
                     continue;
                 }
 
                 if (p.Kind == AstPropertyKind.Set)
                 {
+                    value = PrepareAnonymousAccessorName(value, keyExp, isGetter: false);
                     statements.Add(JSObjectBuilder.AddSetter(temp.Variable, keyExp, value));
                     continue;
                 }

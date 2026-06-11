@@ -293,8 +293,20 @@ internal static class NumberCoercion
             result /= Math.Pow(10, -exponentBase10 - 308);
         }
 
+        // The direct Math.Pow scaling above is only correctly rounded on the Clinger
+        // fast path: an exactly representable significand (< 2^53, i.e. < 16 decimal
+        // digits) multiplied/divided by an exact power of ten (10^0..10^22). Outside
+        // that range the single floating-point operation accumulates rounding error
+        // (e.g. 1.23456789e+34 → 1.2345678900000002e+34), so refine against the exact
+        // integer significand. Build desired3 for the <16-digit case where it is unset.
         if (totalDigits >= 16)
             return RefineEstimate(result, exponentBase10, desired3);
+
+        if (Math.Abs(exponentBase10) > 22)
+        {
+            desired3 = new BigInteger((long)desired1 * integerPowersOfTen[Math.Max(totalDigits - 9, 0)] + desired2);
+            return RefineEstimate(result, exponentBase10, desired3);
+        }
 
         return result;
     }

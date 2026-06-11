@@ -56,6 +56,9 @@ public static class JSIntl
     private static readonly KeyString RoundingModeKey = KeyStrings.GetOrCreate("roundingMode");
     private static readonly KeyString RoundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
     private static readonly KeyString TrailingZeroDisplayKey = KeyStrings.GetOrCreate("trailingZeroDisplay");
+    // SetNumberFormatDigitOptions: roundingIncrement must be one of these values.
+    private static readonly int[] SanctionedRoundingIncrements =
+        [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
     private static readonly KeyString TimeZoneKey = KeyStrings.GetOrCreate("timeZone");
     private static readonly KeyString CollationKey = KeyStrings.GetOrCreate("collation");
     private static readonly KeyString LanguageKey = KeyStrings.GetOrCreate("language");
@@ -911,18 +914,25 @@ public static class JSIntl
 
         var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
 
-        // roundingIncrement is a numeric option; the string enums below are
-        // validated against their sanctioned value lists (a bad value, e.g. an
-        // empty string for trailingZeroDisplay, is a RangeError per
-        // SetNumberFormatDigitOptions).
-        ObserveOptions(options, RoundingIncrementKey);
-        _ = GetOption(options, RoundingModeKey, ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"], false, "halfExpand");
-        _ = GetOption(options, RoundingPriorityKey, ["auto", "morePrecision", "lessPrecision"], false, "auto");
-        _ = GetOption(options, TrailingZeroDisplayKey, ["auto", "stripIfInteger"], false, "auto");
+        // roundingIncrement is a numeric option restricted to a sanctioned set; the
+        // string enums below are validated against their sanctioned value lists (a bad
+        // value, e.g. an empty string for trailingZeroDisplay, is a RangeError per
+        // SetNumberFormatDigitOptions). All four always have a resolved value (their
+        // defaults) which resolvedOptions reflects.
+        var roundingIncrement = GetNumberOption(options, RoundingIncrementKey, 1, 5000) ?? 1;
+        if (System.Array.IndexOf(SanctionedRoundingIncrements, roundingIncrement) < 0)
+            throw JSEngine.NewRangeError("roundingIncrement value is out of range.");
+        var roundingMode = GetOption(options, RoundingModeKey, ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"], false, "halfExpand");
+        var roundingPriority = GetOption(options, RoundingPriorityKey, ["auto", "morePrecision", "lessPrecision"], false, "auto");
+        var trailingZeroDisplay = GetOption(options, TrailingZeroDisplayKey, ["auto", "stripIfInteger"], false, "auto");
 
         return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay)
         {
             DigitOptions = digitOptions,
+            RoundingIncrement = roundingIncrement,
+            RoundingMode = roundingMode,
+            RoundingPriority = roundingPriority,
+            TrailingZeroDisplay = trailingZeroDisplay,
         };
     }
 
@@ -2474,6 +2484,13 @@ internal sealed class JSIntlNumberFormatResolved
     // so a getter on e.g. minimumFractionDigits fires once at construction rather
     // than on every format/resolvedOptions call.
     public JSObject DigitOptions { get; set; }
+
+    // SetNumberFormatDigitOptions rounding slots. These always have a resolved value
+    // (their defaults), so resolvedOptions reflects them unconditionally.
+    public int RoundingIncrement { get; set; } = 1;
+    public string RoundingMode { get; set; } = "halfExpand";
+    public string RoundingPriority { get; set; } = "auto";
+    public string TrailingZeroDisplay { get; set; } = "auto";
 }
 
 public class JSIntlNumberFormat : JSObject
@@ -3060,10 +3077,6 @@ public class JSIntlNumberFormat : JSObject
             var currencyKey = KeyStrings.GetOrCreate("currency");
             var unitKey = KeyStrings.GetOrCreate("unit");
             var useGroupingKey = KeyStrings.GetOrCreate("useGrouping");
-            var roundingIncrementKey = KeyStrings.GetOrCreate("roundingIncrement");
-            var roundingModeKey = KeyStrings.GetOrCreate("roundingMode");
-            var roundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
-            var trailingZeroDisplayKey = KeyStrings.GetOrCreate("trailingZeroDisplay");
             var minimumIntegerDigitsKey = KeyStrings.GetOrCreate("minimumIntegerDigits");
             var minimumFractionDigitsKey = KeyStrings.GetOrCreate("minimumFractionDigits");
             var maximumFractionDigitsKey = KeyStrings.GetOrCreate("maximumFractionDigits");
@@ -3076,14 +3089,6 @@ public class JSIntlNumberFormat : JSObject
                 result.CreateDataProperty(unitKey, @this.options[unitKey]);
             if (!@this.options[useGroupingKey].IsUndefined)
                 result.CreateDataProperty(useGroupingKey, @this.options[useGroupingKey]);
-            if (!@this.options[roundingIncrementKey].IsUndefined)
-                result.CreateDataProperty(roundingIncrementKey, @this.options[roundingIncrementKey]);
-            if (!@this.options[roundingModeKey].IsUndefined)
-                result.CreateDataProperty(roundingModeKey, @this.options[roundingModeKey]);
-            if (!@this.options[roundingPriorityKey].IsUndefined)
-                result.CreateDataProperty(roundingPriorityKey, @this.options[roundingPriorityKey]);
-            if (!@this.options[trailingZeroDisplayKey].IsUndefined)
-                result.CreateDataProperty(trailingZeroDisplayKey, @this.options[trailingZeroDisplayKey]);
             // Digit options reflect the construction-time snapshot (read once),
             // not the live options bag, so resolvedOptions does not re-trigger
             // option getters.
@@ -3138,6 +3143,13 @@ public class JSIntlNumberFormat : JSObject
                 result.CreateDataProperty(KeyStrings.GetOrCreate("compactDisplay"), JSValue.CreateString(r.CompactDisplay));
             if (r.UnitDisplay != null)
                 result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"), JSValue.CreateString(r.UnitDisplay));
+
+            // SetNumberFormatDigitOptions rounding slots are always present (spec order:
+            // after notation/compactDisplay/signDisplay).
+            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingIncrement"), JSValue.CreateNumber(r.RoundingIncrement));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingMode"), JSValue.CreateString(r.RoundingMode));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingPriority"), JSValue.CreateString(r.RoundingPriority));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("trailingZeroDisplay"), JSValue.CreateString(r.TrailingZeroDisplay));
         }
 
         return result;
