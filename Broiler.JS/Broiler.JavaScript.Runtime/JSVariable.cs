@@ -66,18 +66,23 @@ public class JSVariable
     public static JSValue PrepareAnonymousFunctionNameForProperty(JSValue value, JSValue name)
     {
         if (name is IJSSymbol symbol)
-            return PrepareAnonymousFunctionName(value, symbol.ToString().Length == 0 ? string.Empty : $"[{symbol}]");
+            return PrepareAnonymousFunctionName(value, SymbolFunctionNamePrefix(symbol));
 
         var propertyKey = name.ToKey(false);
         return propertyKey.Type switch
         {
             KeyType.UInt => PrepareAnonymousFunctionName(value, propertyKey.Index.ToString(CultureInfo.InvariantCulture)),
             KeyType.String => PrepareAnonymousFunctionName(value, propertyKey.KeyString.ToString()),
-            KeyType.Symbol => PrepareAnonymousFunctionName(value,
-                propertyKey.Symbol?.ToString() is { Length: > 0 } description ? $"[{description}]" : string.Empty),
+            KeyType.Symbol => PrepareAnonymousFunctionName(value, SymbolFunctionNamePrefix(propertyKey.Symbol)),
             _ => value,
         };
     }
+
+    // SetFunctionName with a symbol key: an undefined description (`Symbol()`) gives the
+    // empty name, while any other (including the empty string, `Symbol("")`) gives
+    // "[" + description + "]" — so `Symbol("")` yields "[]", not "".
+    private static string SymbolFunctionNamePrefix(IJSSymbol symbol)
+        => symbol == null || symbol.DescriptionIsUndefined ? string.Empty : $"[{symbol}]";
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private JSValue InferAnonymousFunctionName(JSValue value)

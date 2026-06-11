@@ -99,9 +99,20 @@ partial class FastCompiler
                 if (me.Object.Type == FastNodeType.Super)
                 {
                     var refError = JSExceptionBuilder.ThrowReferenceError("Unsupported reference to 'super'");
-                    return me.Computed
-                        ? YExpression.Block(VisitExpression(me.Property), refError)
-                        : refError;
+                    if (!me.Computed)
+                        return refError;
+
+                    // Evaluating the SuperProperty reference does GetThisBinding (step 2)
+                    // BEFORE the key Expression (step 3): in a derived constructor `this`
+                    // is in its TDZ until super() runs, so reading it must throw a
+                    // ReferenceError before any key side effect (`delete super[(super(),0)]`)
+                    // is evaluated. Read `this` first, then the key, then the
+                    // delete-of-super ReferenceError.
+                    using var thisTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                    return YExpression.Block(
+                        YExpression.Assign(thisTemp.Expression, scope.Top.ThisExpression),
+                        VisitExpression(me.Property),
+                        refError);
                 }
 
                 var targetObj = VisitExpression(me.Object);

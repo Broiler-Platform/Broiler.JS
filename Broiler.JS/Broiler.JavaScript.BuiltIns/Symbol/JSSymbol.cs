@@ -36,6 +36,8 @@ public partial class JSSymbol: JSPrimitive, IJSSymbol
 
     internal string Description => description;
 
+    public bool DescriptionIsUndefined => description == null;
+
     internal string ToDescriptiveString() => description == null ? "Symbol()" : $"Symbol({description})";
 
     public JSSymbol(string description) : base()

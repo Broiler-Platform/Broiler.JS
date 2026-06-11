@@ -26,10 +26,17 @@ partial class FastCompiler
         // would read super first, so spill the key into a temp evaluated up front.
         if (isSuper && memberExpression.Computed)
         {
+            // SuperProperty : super [ Expression ] evaluates GetThisBinding (step 2)
+            // BEFORE the key Expression (step 3). In a derived constructor `this` is in
+            // its TDZ until super() runs, so reading it must throw a ReferenceError
+            // before any key side effect (`super[super()]`) is evaluated. Read `this`
+            // into a temp first to force that ordering, then evaluate the key.
+            using var thisTemp = scope.Top.GetTempVariable(typeof(JSValue));
             using var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
             return YExpression.Block(
+                YExpression.Assign(thisTemp.Expression, target),
                 YExpression.Assign(keyTemp.Expression, VisitExpression(mp)),
-                JSValueBuilder.Index(target, super, keyTemp.Expression, memberExpression.Coalesce));
+                JSValueBuilder.Index(thisTemp.Expression, super, keyTemp.Expression, memberExpression.Coalesce));
         }
 
         switch (mp.Type)

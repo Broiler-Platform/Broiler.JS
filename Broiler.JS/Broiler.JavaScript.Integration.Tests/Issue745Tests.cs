@@ -136,6 +136,34 @@ public class Issue745Tests
         => Assert.Equal("1", Eval(
             "new Intl.NumberFormat(undefined,{maximumSignificantDigits:1}).resolvedOptions().minimumSignificantDigits + ''"));
 
+    // ---- Problem 25: super[key] does GetThisBinding before evaluating the key ----
+
+    [Fact]
+    public void SuperComputedReadChecksThisBeforeKey()
+        => Assert.Equal("ReferenceError", Eval(
+            "class B{constructor(){throw new Error('base');}}" +
+            "class D extends B{constructor(){return super[super()];}}" +
+            "var e;try{new D();}catch(x){e=x.constructor.name;}e"));
+
+    [Fact]
+    public void DeleteSuperComputedChecksThisBeforeKey()
+        => Assert.Equal("ReferenceError", Eval(
+            "class B{constructor(){throw new Error('base');}}" +
+            "class D extends B{constructor(){delete super[(super(),0)];}}" +
+            "var e;try{new D();}catch(x){e=x.constructor.name;}e"));
+
+    // ---- Problem 26: class name in its own heritage is a TDZ ReferenceError ----
+
+    [Fact]
+    public void ClassNameInOwnHeritageThrowsReferenceError()
+        => Assert.Equal("ReferenceError", Eval(
+            "var e;try{var x=(class x extends x {});}catch(t){e=t.constructor.name;}e"));
+
+    [Fact]
+    public void NamedClassStillResolvesOwnNameInBody()
+        => Assert.Equal("true", Eval(
+            "class B{} class C extends B { m(){ return C; } } (new C().m()===C)+''"));
+
     // ---- Problem 29: JSON.stringify unwraps wrappers; BigInt is a TypeError ----
 
     [Fact]
@@ -146,4 +174,18 @@ public class Issue745Tests
     [Fact]
     public void JsonStringifyNonFiniteNumbersBecomeNull()
         => Assert.Equal("[null,1.5,null]", Eval("JSON.stringify([NaN,1.5,Infinity])"));
+
+    // ---- Problem 30: empty-description symbol method name is "[]" not "" ----
+
+    [Fact]
+    public void EmptyDescriptionSymbolMethodNameIsBrackets()
+        => Assert.Equal("[]", Eval("var s=Symbol('');var o={[s](){}};o[s].name"));
+
+    [Fact]
+    public void UndefinedDescriptionSymbolMethodNameIsEmpty()
+        => Assert.Equal("", Eval("var s=Symbol();var o={[s](){}};o[s].name"));
+
+    [Fact]
+    public void NonEmptyDescriptionSymbolMethodNameIsBracketed()
+        => Assert.Equal("[foo]", Eval("var s=Symbol('foo');var o={[s](){}};o[s].name"));
 }
