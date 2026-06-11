@@ -17,6 +17,16 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   returned an IntKeyEnumerator (Number indices). Property-key enumeration must
 //   yield String keys, so destructuring a for-in key (`for (var {length:x} in "foo")`)
 //   reads `.length` off a string. The string primitive now enumerates "0","1",… keys.
+//
+//   Problem 16 (switch discriminant scope) — the discriminant Expression is compiled
+//   before the CaseBlock's lexical scope is pushed, so a closure in it captures the
+//   enclosing binding rather than a block-scoped `let` in the switch body.
+//
+//   Problem 33 (`this` in a static field arrow) — a static field initializer rebinds
+//   `this` to the class constructor via the home-object box (capturable by the deferred
+//   arrow), and an arrow scope now binds its `this` to the enclosing `this` expression
+//   directly instead of falling back to a GetVariable("this") lookup that skipped the
+//   override. So `static f = () => this` captures the constructor.
 public class Issue749Tests
 {
     private static string Eval(string code)
@@ -98,4 +108,26 @@ public class Issue749Tests
             "let v = 'outer'; let r;" +
             "switch (r = v, 0) { case 0: let v = 'inner'; }" +
             "r"));
+
+    // ---- Problem 33: `this` inside an arrow in a static field initializer ----
+
+    [Fact]
+    public void StaticFieldArrowCapturesConstructorThis()
+        => Assert.Equal("true", Eval(
+            "var C = class { static f = () => this; }; (C.f() === C).toString()"));
+
+    [Fact]
+    public void StaticFieldDirectThisStillConstructor()
+        => Assert.Equal("true", Eval(
+            "var C = class { static g = this; }; (C.g === C).toString()"));
+
+    [Fact]
+    public void InstanceFieldArrowStillCapturesInstance()
+        => Assert.Equal("7", Eval(
+            "class A { v = 7; f = () => this.v; } new A().f()"));
+
+    [Fact]
+    public void MethodNestedArrowThisUnaffected()
+        => Assert.Equal("true", Eval(
+            "var o = { m(){ return (()=>(()=>this)())(); } }; (o.m() === o).toString()"));
 }

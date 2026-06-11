@@ -385,7 +385,16 @@ partial class FastCompiler
                             var top = this.scope.Top;
                             var savedThis = top.ThisExpression;
                             var savedSuper = top.Super;
-                            top.ThisExpression = retValue;
+                            // Bind `this` to the constructor through the home-object box,
+                            // not the raw `retValue` temp. A static field initializer can
+                            // be an arrow (`static f = () => this`) whose function object is
+                            // built during the deferred field installation; the closure
+                            // rewriter snapshots a plain captured local at that moment, so a
+                            // raw temp is captured stale ([object Object]). The JSVariable box
+                            // (already assigned the constructor before the static field inits
+                            // run, same as StaticSuper) is captured by stable reference. A
+                            // direct `static g = this` reads the same box's current value.
+                            top.ThisExpression = JSVariable.ValueExpression(homeConstructorVar);
                             // A static field initializer can reference super (e.g.
                             // `static f = () => super.m()`); its [[HomeObject]] is the
                             // constructor, so super property access resolves against the
