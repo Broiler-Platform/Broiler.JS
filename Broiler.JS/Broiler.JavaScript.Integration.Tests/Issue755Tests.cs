@@ -40,6 +40,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   toward zero first, so a fractional value in (-1, 0) floors to 0 instead of
 //   throwing a RangeError.
 //
+//   Problem 17 — `delete` of an identifier that resolves through a `with`-fallback
+//   overlay (a captured outer `let`/`const`/`var` made resolvable inside a `with`
+//   body, e.g. when @@unscopables blocks the object property) returns false: it is
+//   a declarative/global binding, not the transient configurable property the
+//   overlay publishes for resolution.
+//
 //   Problem 13 — a function created by the dynamic Function constructor must not
 //   expose an `anonymous` binding in its body: it is built via OrdinaryFunctionCreate
 //   (no self-name binding), with name "anonymous" and the `function anonymous(...)`
@@ -288,4 +294,28 @@ public class Issue755Tests
     public void DynamicGeneratorFunctionNameIsAnonymous()
         => Assert.Equal("anonymous,x", Eval(
             "var GF=Object.getPrototypeOf(function*(){}).constructor;var g=GF('a','yield a');[g.name,g('x').next().value].join(',')"));
+
+    // ---- Problem 17: delete of a lexical binding inside `with` returns false ----
+
+    [Fact]
+    public void DeleteConstInsideWithUnscopableReturnsFalse()
+        => Assert.Equal("false", Eval(
+            "const c=1;var e={};e[Symbol.unscopables]={c:true};var r;with(e){r=delete c;}r.toString()"));
+
+    [Fact]
+    public void DeleteLexicalBindingsInsideWith()
+        => Assert.Equal("false,false,false,true", Eval(
+            "const c=1;let l=2;var v=3;g=4;var e={};" +
+            "e[Symbol.unscopables]={c:true,l:true,v:true,g:true};" +
+            "var r=[];with(e){r.push(delete c);r.push(delete l);r.push(delete v);r.push(delete g);}r.join(',')"));
+
+    [Fact]
+    public void DeleteSloppyEvalVarInsideWithStillReturnsTrue()
+        => Assert.Equal("true", Eval(
+            "function f(){ eval('var ev=1;'); with({}){ return delete ev; } } f().toString()"));
+
+    [Fact]
+    public void DeleteWithObjectPropertyStillWorks()
+        => Assert.Equal("true", Eval(
+            "var o={p:1};with(o){delete p;}(o.p===undefined).toString()"));
 }

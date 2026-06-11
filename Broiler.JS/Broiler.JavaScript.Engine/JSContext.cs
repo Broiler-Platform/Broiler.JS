@@ -134,6 +134,12 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         private readonly JSContext context;
         private readonly List<Entry> entries = [];
 
+        // True for the lexical-environment fallback overlay of a `with` statement
+        // (PushWithFallbackScope). Every binding it captures is a declarative /
+        // global outer binding (let/const/var/function/captured local) — none are
+        // deletable, so `delete` of a name held here returns false.
+        public readonly bool IsWithFallback;
+
         private sealed class Entry
         {
             public KeyString Name;
@@ -152,9 +158,10 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             public bool Shadowed;
         }
 
-        public DirectEvalScope(JSContext context, JSVariable[] variables, JSVariable[] shadowedVariables = null)
+        public DirectEvalScope(JSContext context, JSVariable[] variables, JSVariable[] shadowedVariables = null, bool isWithFallback = false)
         {
             this.context = context;
+            IsWithFallback = isWithFallback;
             HashSet<JSVariable> shadowed = shadowedVariables is { Length: > 0 }
                 ? [.. shadowedVariables]
                 : null;
@@ -304,6 +311,17 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         /// overlay is a shadowing (lexical-fallback) one. The return value says
         /// whether the name is overlaid at all.
         /// </summary>
+        public bool ContainsName(in KeyString name)
+        {
+            foreach (var entry in entries)
+            {
+                if (entry.Name.Key == name.Key)
+                    return true;
+            }
+
+            return false;
+        }
+
         public bool TryGetOverlayShadowing(in KeyString name, out bool isShadowing)
         {
             foreach (var entry in entries)
@@ -392,7 +410,24 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     /// path and are not shadow-isolated.
     /// </summary>
     public IDisposable PushWithFallbackScope(JSVariable[] variables, JSVariable[] shadowedVariables)
-        => new DirectEvalScope(this, variables, shadowedVariables);
+        => new DirectEvalScope(this, variables, shadowedVariables, isWithFallback: true);
+
+    /// <summary>
+    /// Whether <paramref name="name"/> currently resolves through an active
+    /// `with`-fallback overlay (the captured outer lexical environment). Such a
+    /// binding is a declarative/global binding that `delete` must not remove.
+    /// </summary>
+    private bool IsWithFallbackOverlayBinding(in KeyString name)
+    {
+        for (var i = activeDirectEvalScopes.Count - 1; i >= 0; i--)
+        {
+            var scope = activeDirectEvalScopes[i];
+            if (scope.ContainsName(name))
+                return scope.IsWithFallback;
+        }
+
+        return false;
+    }
 
     private sealed class DirectEvalActivationScope(JSContext context, CallStackItem owner) : IDisposable
     {
@@ -1002,6 +1037,16 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     {
         if (TryResolveWithObject(name, out var withObject))
             return withObject.Delete(name);
+
+        // A name resolved through a `with`-fallback overlay (the captured outer
+        // lexical environment made resolvable inside a `with` body, e.g. a top-level
+        // `let`/`const` that the unscopables list blocked from the object) is a
+        // declarative binding: `delete` of it returns false, never deleting. The
+        // overlay transiently publishes such a binding as a configurable global
+        // property so the body can read it, so without this guard the fall-through
+        // below would delete that transient property and wrongly report success.
+        if (IsWithFallbackOverlayBinding(name))
+            return JSValue.BooleanFalse;
 
         if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
         {
