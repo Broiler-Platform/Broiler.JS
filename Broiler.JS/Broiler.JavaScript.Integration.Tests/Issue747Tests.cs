@@ -229,4 +229,31 @@ public class Issue747Tests
     public void CatchArrayPatternPlainAnonymousInitializerInfersName()
         => Assert.Equal("fn", Eval(
             "var r;try{throw [undefined];}catch([fn=function(){}]){r=fn.name;}r"));
+
+    // ---- Problem 14: Iterator.zip closes remaining iterators and propagates return() error ----
+
+    private const string ZipCloseHarness =
+        "function ExpErr(){} function T262(){}" +
+        "function mk(l,o){o=o||{};return{[Symbol.iterator](){return this;}," +
+        "next(){return o.done?{done:true}:{done:false,value:l};}," +
+        "return(){if(o.t)throw new o.t();return{done:true};}};}";
+
+    [Fact]
+    public void IteratorZipShortestPropagatesReturnError()
+        => Assert.Equal("ExpErr", Eval(
+            ZipCloseHarness +
+            "var it=Iterator.zip([mk('a'),mk('b',{done:true}),mk('c',{t:T262}),mk('d',{t:ExpErr})]);" +
+            "var r='NONE';try{it.next();}catch(e){r=e instanceof ExpErr?'ExpErr':'other';}r"));
+
+    [Fact]
+    public void IteratorZipCleanShortestCloseCompletes()
+        => Assert.Equal("[[1,4],[2,5]]", Eval(
+            "JSON.stringify([...Iterator.zip([[1,2,3],[4,5]])])"));
+
+    [Fact]
+    public void IteratorZipKeyedShortestPropagatesReturnError()
+        => Assert.Equal("ExpErr", Eval(
+            ZipCloseHarness +
+            "var it=Iterator.zipKeyed({a:mk('a'),b:mk('b',{done:true}),c:mk('d',{t:ExpErr})});" +
+            "var r='NONE';try{it.next();}catch(e){r=e instanceof ExpErr?'ExpErr':'other';}r"));
 }
