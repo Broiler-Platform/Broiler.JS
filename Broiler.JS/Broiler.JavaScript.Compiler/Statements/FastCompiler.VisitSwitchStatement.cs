@@ -27,6 +27,14 @@ partial class FastCompiler
         bool allNumbers = true;
         bool allIntegers = true;
 
+        // The discriminant Expression is evaluated in the enclosing environment,
+        // BEFORE the CaseBlock's lexical environment is entered (spec
+        // sec-switch-statement-runtime-semantics-evaluation steps 1–6). Compile it
+        // now, while the switch's own block scope (with its `let`/`const`/class
+        // bindings) is not yet on the stack, so e.g.
+        // `switch (f = () => x, null) { case …: let x; }` captures the OUTER `x`.
+        var discriminant = VisitExpression(switchStatement.Target);
+
         var switchLexicalScope = this.scope.Push(new FastFunctionScope(this.scope.Top));
         var lexicalBindings = CollectSwitchLexicalBindings(switchStatement.Cases);
         var hoistingScope = switchStatement.HoistingScope;
@@ -250,8 +258,6 @@ partial class FastCompiler
                     }
                 }
             }
-
-            var discriminant = VisitExpression(switchStatement.Target);
 
             var lastLine = switchStatement.Start.Start.Line;
 

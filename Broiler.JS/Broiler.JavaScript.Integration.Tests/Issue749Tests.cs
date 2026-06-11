@@ -77,4 +77,25 @@ public class Issue749Tests
     [Fact]
     public void ArrayKeysIteratorStillNumeric()
         => Assert.Equal("number", Eval("typeof [10,20].keys().next().value"));
+
+    // ---- Problem 16: switch discriminant evaluated in the outer environment ----
+
+    [Fact]
+    public void SwitchDiscriminantCapturesOuterLexical()
+        => Assert.Equal("outside,inside,inside", Eval(
+            "let x = 'outside';" +
+            "var probeExpr, probeSelector, probeStmt;" +
+            "switch (probeExpr = function() { return x; }, null) {" +
+            "  case probeSelector = function() { return x; }, null:" +
+            "    probeStmt = function() { return x; };" +
+            "    let x = 'inside';" +
+            "}" +
+            "probeExpr() + ',' + probeSelector() + ',' + probeStmt()"));
+
+    [Fact]
+    public void SwitchDiscriminantSeesOuterBindingValue()
+        => Assert.Equal("outer", Eval(
+            "let v = 'outer'; let r;" +
+            "switch (r = v, 0) { case 0: let v = 'inner'; }" +
+            "r"));
 }
