@@ -71,6 +71,22 @@ public partial class JSObject
         return keys;
     }
 
+    // Snapshot O.[[OwnPropertyKeys]]() restricted to String keys, in list order.
+    // For a Proxy this triggers the ownKeys trap exactly once (showEnumerableOnly:
+    // false skips per-key descriptor lookups); the caller does its own per-key
+    // [[GetOwnProperty]] so the enumerable filter and [[Get]] stay interleaved.
+    private static List<JSValue> SnapshotOwnStringKeys(JSObject target)
+    {
+        var keys = new List<JSValue>();
+        var en = target.GetAllKeys(showEnumerableOnly: false, inherited: false);
+        while (en.MoveNext(out var hasValue, out var key, out var _))
+        {
+            if (hasValue && key is not IJSSymbol)
+                keys.Add(key);
+        }
+        return keys;
+    }
+
     private static bool HasDescriptorField(JSObject descriptor, KeyString key) =>
         !descriptor.GetInternalProperty(key, false).IsEmpty;
 
@@ -104,21 +120,19 @@ public partial class JSObject
 
         var r = JSValue.CreateArray();
 
-        // EnumerableOwnPropertyNames(O, key+value): snapshot the own enumerable
-        // String-keyed property names (GetAllKeys already stringifies indices and
-        // excludes symbols / non-enumerable properties) BEFORE reading any value,
-        // so a getter that mutates the object during enumeration cannot inject a
-        // freshly-added key into the result.
-        var keys = new List<JSValue>();
-        var en = target.GetAllKeys(showEnumerableOnly: true, inherited: false);
-        while (en.MoveNext(out var hasValue, out var key, out var _))
+        // EnumerableOwnProperties(O, key+value): snapshot the own String-keyed
+        // property names ([[OwnPropertyKeys]]) BEFORE reading any value, then for
+        // EACH key in order call [[GetOwnProperty]] and, if enumerable, [[Get]] —
+        // the descriptor lookup and value read must interleave per key (observable
+        // for a Proxy). Snapshotting the key list first also stops a getter that
+        // mutates the object from injecting a freshly-added key into the result.
+        foreach (var key in SnapshotOwnStringKeys(target))
         {
-            if (hasValue)
-                keys.Add(key);
-        }
+            if (target.GetOwnPropertyDescriptor(key) is not JSObject descriptor)
+                continue;
+            if (!descriptor[KeyStrings.enumerable].BooleanValue)
+                continue;
 
-        foreach (var key in keys)
-        {
             var entry = JSValue.CreateArray();
             entry.AddArrayItem(key);
             entry.AddArrayItem(target[key]);
@@ -194,18 +208,17 @@ public partial class JSObject
 
         var r = JSValue.CreateArray();
 
-        // EnumerableOwnPropertyNames(O, value): mirror Object.entries but keep
-        // only the values; snapshot the key names before reading any value.
-        var keys = new List<JSValue>();
-        var en = target.GetAllKeys(showEnumerableOnly: true, inherited: false);
-        while (en.MoveNext(out var hasValue, out var key, out var _))
+        // EnumerableOwnProperties(O, value): mirror Object.entries but keep only the
+        // values; the per-key [[GetOwnProperty]] / [[Get]] interleaving still holds.
+        foreach (var key in SnapshotOwnStringKeys(target))
         {
-            if (hasValue)
-                keys.Add(key);
-        }
+            if (target.GetOwnPropertyDescriptor(key) is not JSObject descriptor)
+                continue;
+            if (!descriptor[KeyStrings.enumerable].BooleanValue)
+                continue;
 
-        foreach (var key in keys)
             r.AddArrayItem(target[key]);
+        }
 
         return r;
     }

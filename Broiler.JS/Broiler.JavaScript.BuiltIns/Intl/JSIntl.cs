@@ -2139,22 +2139,44 @@ public sealed class JSIntlDurationFormat : JSObject
 
     private static void ValidateDurationArgument(JSValue duration)
     {
+        // ToDurationRecord(input): a non-object input is a TypeError, except a String
+        // (which the spec parses; every invalid string form here is a RangeError).
         if (duration is not JSObject durationObject)
-            return;
+        {
+            if (duration.IsString)
+                throw JSEngine.NewRangeError("Invalid duration string");
+            throw JSEngine.NewTypeError("Duration argument must be an object or string");
+        }
 
+        var any = false;
         var hasPositive = false;
         var hasNegative = false;
-        foreach (var (_, value) in durationObject.Entries)
+        foreach (var unit in Units)
         {
-            var numericValue = value.DoubleValue;
-            if (double.IsNaN(numericValue))
+            var value = durationObject[KeyStrings.GetOrCreate(unit)];
+            // A field left undefined is absent; reading by key also runs any getter.
+            if (value == null || value.IsUndefined)
                 continue;
+
+            any = true;
+            // ToIntegerIfIntegral runs ToNumber, which throws a TypeError for a BigInt.
+            if (value.IsBigInt)
+                throw JSEngine.NewTypeError($"Cannot convert a BigInt duration value for {unit}");
+            var numericValue = value.DoubleValue;
+            // ToIntegerIfIntegral: a non-finite or non-integral field is a RangeError.
+            if (double.IsNaN(numericValue) || double.IsInfinity(numericValue) || Math.Truncate(numericValue) != numericValue)
+                throw JSEngine.NewRangeError($"Invalid duration value for {unit}");
 
             hasPositive |= numericValue > 0;
             hasNegative |= numericValue < 0;
-            if (hasPositive && hasNegative)
-                throw JSEngine.NewRangeError("Invalid duration");
         }
+
+        // ToDurationRecord step: if no duration field was provided, throw a TypeError.
+        if (!any)
+            throw JSEngine.NewTypeError("Duration must specify at least one field");
+
+        if (hasPositive && hasNegative)
+            throw JSEngine.NewRangeError("Invalid duration: inconsistent sign");
     }
 }
 

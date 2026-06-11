@@ -83,7 +83,13 @@ partial class FastParser
 
             case FastKeywords.await:
                 if (ShouldParseAwaitAsExpression())
+                {
+                    // An async function's FormalParameters must not contain an
+                    // AwaitExpression (early Syntax error).
+                    if (inFormalParameters && inAsyncFunctionBody)
+                        throw stream.Unexpected();
                     return AwaitExpression(out node);
+                }
                 break;
 
             case FastKeywords.super:

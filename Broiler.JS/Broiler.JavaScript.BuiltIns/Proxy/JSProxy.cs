@@ -105,13 +105,34 @@ public partial class JSProxy : JSObject
 
     private static JSProperty GetOwnTargetProperty(JSObject target, in PropertyKey key)
     {
-        if (key.IsSymbol)
-            return target.GetInternalProperty(key.Symbol, false);
+        var property = key.IsSymbol
+            ? target.GetInternalProperty(key.Symbol, false)
+            : key.IsUInt
+                ? target.GetInternalProperty(key.Index, false)
+                : target.GetInternalProperty(in key.KeyString, false);
 
-        if (key.IsUInt)
-            return target.GetInternalProperty(key.Index, false);
+        if (!property.IsEmpty || key.IsSymbol)
+            return property;
 
-        return target.GetInternalProperty(in key.KeyString, false);
+        // The invariant checks read target.[[GetOwnProperty]] per spec. An exotic
+        // object can expose an own property that isn't backed by ordinary storage —
+        // most notably an Array's `length` — which GetInternalProperty misses. Fall
+        // back to [[GetOwnProperty]] so e.g. `Reflect.set(arr, "length", v, proxy)`
+        // (from pop/shift via a Proxy) sees `length` as a real (non-configurable)
+        // property rather than reporting it as absent.
+        var name = key.IsUInt ? JSValue.CreateNumber(key.Index) : key.KeyString.ToJSValue();
+        if (target.GetOwnPropertyDescriptor(name) is JSObject descriptor && IsDataDescriptor(descriptor))
+        {
+            bool Flag(KeyString field) => HasDescriptorField(descriptor, field) && descriptor[field].BooleanValue;
+            var attributes = JSPropertyAttributes.Value
+                | (Flag(KeyStrings.configurable) ? JSPropertyAttributes.Configurable : JSPropertyAttributes.Empty)
+                | (Flag(KeyStrings.enumerable) ? JSPropertyAttributes.Enumerable : JSPropertyAttributes.Empty)
+                | (Flag(KeyStrings.writable) ? JSPropertyAttributes.Empty : JSPropertyAttributes.Readonly);
+            var ks = key.IsUInt ? KeyString.Empty : key.KeyString;
+            return new JSProperty(in ks, descriptor[KeyStrings.value], attributes);
+        }
+
+        return property;
     }
 
     private static string CreateKeyIdentity(in PropertyKey key)

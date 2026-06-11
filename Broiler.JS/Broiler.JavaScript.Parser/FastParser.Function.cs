@@ -92,6 +92,7 @@ partial class FastParser
 
         var previousInGeneratorBody = inGeneratorBody;
         var previousInAsyncFunctionBody = inAsyncFunctionBody;
+        var previousInFormalParameters = inFormalParameters;
         try
         {
             functionDepth++;
@@ -105,9 +106,14 @@ partial class FastParser
             // needs for the regex-vs-division decision after the first yield/await.
             inGeneratorBody = generator;
             inAsyncFunctionBody = isAsync;
+            // A YieldExpression / AwaitExpression in these parameters is an early
+            // error (checked at the yield/await parse sites); the body is allowed.
+            inFormalParameters = true;
 
             if (!Parameters(out var declarators, TokenTypes.BracketEnd, false, FastVariableKind.Var))
                 throw stream.Unexpected();
+
+            inFormalParameters = false;
 
             if (!stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
                 throw stream.Unexpected();
@@ -121,6 +127,7 @@ partial class FastParser
         {
             inGeneratorBody = previousInGeneratorBody;
             inAsyncFunctionBody = previousInAsyncFunctionBody;
+            inFormalParameters = previousInFormalParameters;
             functionDepth--;
             scope.Dispose();
             this.isAsync = isRootAsync;

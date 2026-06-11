@@ -120,13 +120,20 @@ public readonly struct TypedArrayParameters
 
     private static int ToTypedArrayLength(JSValue value)
     {
+        // ToIndex: ToIntegerOrInfinity truncates toward zero FIRST (so -0.1 → -0,
+        // NaN/undefined → 0), and only then is the sign / upper-bound checked. A
+        // fractional value in (-1, 0) must not throw — it floors to 0.
         var numberLength = value.DoubleValue;
-        if (double.IsNaN(numberLength) || numberLength == 0)
+        if (double.IsNaN(numberLength))
             return 0;
 
-        if (double.IsInfinity(numberLength) || numberLength < 0 || numberLength > int.MaxValue)
+        var integer = Math.Truncate(numberLength);
+        if (integer < 0 || integer > 9007199254740991.0)
             throw JSEngine.NewRangeError("Invalid typed array length");
 
-        return (int)Math.Floor(numberLength);
+        if (integer > int.MaxValue)
+            throw JSEngine.NewRangeError("Invalid typed array length");
+
+        return (int)integer;
     }
 }

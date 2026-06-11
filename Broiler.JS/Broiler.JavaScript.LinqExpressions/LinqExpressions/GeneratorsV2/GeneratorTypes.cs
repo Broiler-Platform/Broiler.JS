@@ -268,31 +268,57 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
         }
         catch (Exception ex)
         {
-            var root = Root;
-            if (root != null)
+            return UnwindException(ex, lastValue);
+        }
+    }
+
+    // Unwinds <paramref name="ex"/> through the generator's try-region stack, running
+    // catch / finally handlers and popping regions that cannot handle it, until one
+    // handles it (a value is produced) or the stack empties (rethrow). This is done
+    // explicitly here rather than relying on outer GetNext frames to catch a rethrow:
+    // on a *direct resume* into a yield suspended inside a try/catch/finally (e.g.
+    // Generator.prototype.return parking a return completion there) there is no outer
+    // frame, so enclosing `finally` blocks would otherwise be skipped.
+    private GeneratorState UnwindException(Exception ex, JSValue lastValue)
+    {
+        while (true)
+        {
+            // A region whose own catch or finally is already running cannot handle an
+            // exception raised from within it — pop it and try the enclosing region.
+            if (Root is { } began && (began.CatchBegan || began.FinallyBegan))
             {
-                if (root.CatchBegan || root.FinallyBegan)
-                    throw;
-
-                // A "return" completion (Generator.prototype.return) runs `finally`
-                // blocks but is not observable by user `catch` clauses, so skip the
-                // catch handler and fall through to the finally below.
-                if (ex is not GeneratorReturnCompletion && root.Catch > 0)
-                    return GetNext(root.Catch, lastValue, ex);
-
-                if (root.Finally > 0)
-                {
-                    lastError = ex;
-                    var v = GetNext(root.Finally, lastValue);
-
-                    if (v.HasValue)
-                        return v;
-                }
-
-                throw;
+                Pop();
+                continue;
             }
 
-            throw;
+            var root = Root;
+            if (root == null)
+                throw ex;
+
+            // A user `catch` handles a real exception, but NOT a return completion
+            // (Generator.prototype.return only runs `finally` blocks and is invisible
+            // to user catch clauses).
+            if (ex is not GeneratorReturnCompletion && root.Catch > 0)
+                return GetNext(root.Catch, lastValue, ex);
+
+            if (root.Finally > 0)
+            {
+                // GetNext(Finally) runs the finally body. If the finally overrides the
+                // completion (its own return / yield) it returns a value; otherwise the
+                // body's trailing Throw(endId) pops this region and re-raises `ex`,
+                // which propagates out (already fully unwound through any inner frames).
+                lastError = ex;
+                var v = GetNext(root.Finally, lastValue);
+                if (v.HasValue)
+                    return v;
+
+                throw ex;
+            }
+
+            // This region cannot handle `ex` (a return completion with no finally, or
+            // a real exception with neither catch nor finally): pop it and unwind at
+            // the enclosing region.
+            Pop();
         }
     }
 

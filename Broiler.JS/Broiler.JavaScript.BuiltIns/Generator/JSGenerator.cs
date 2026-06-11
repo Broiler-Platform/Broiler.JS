@@ -207,12 +207,18 @@ public partial class JSGenerator : JSObject, IJSGenerator
             }
         }
 
-        if (cg != null)
+        // Only a generator suspended at a `yield` resumes its body with the thrown
+        // value. A suspended-start or already-completed generator (GeneratorResumeAbrupt
+        // with state "suspendedStart"/"completed") does NOT run the body: it becomes /
+        // stays completed and the throw completion is honored by re-throwing the value.
+        if (cg != null && !done && cg.IsSuspendedAtYield)
         {
             cg.InjectException(JSException.FromValue(value));
             return Next();
         }
 
+        done = true;
+        this.value = JSUndefined.Value;
         throw JSException.FromValue(value);
     }
 

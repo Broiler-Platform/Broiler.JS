@@ -84,10 +84,15 @@ public partial class JSReflect : JSObject
         // fresh own-only record before defining.
         var pd = JSObject.NormalizeDescriptor(userDesc);
 
+        // Dispatch through the JSValue [[DefineOwnProperty]] overload, which exotic
+        // objects override (e.g. JSArray routes `length` and integer indices to its
+        // own length/index handling). Calling the typed KeyString/uint overloads
+        // directly would bypass those overrides — so `Reflect.defineProperty(arr,
+        // "length", {value:0})` would not shrink the array, unlike Object.defineProperty.
         var result = key.Type switch
         {
-            KeyType.UInt => targetObject.DefineProperty(key.Index, pd),
-            KeyType.String => targetObject.DefineProperty(key.KeyString, pd),
+            KeyType.UInt => targetObject.DefineProperty(JSValue.CreateNumber(key.Index), pd),
+            KeyType.String => targetObject.DefineProperty(key.KeyString.ToJSValue(), pd),
             KeyType.Symbol => targetObject.DefineProperty(key.Symbol, pd),
             _ => throw JSEngine.NewTypeError($"Cannot define property {propertyKey}")
         };

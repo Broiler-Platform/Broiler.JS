@@ -80,7 +80,12 @@ partial class FastParser
         // assignment RHS, arguments, array elements, parentheses, ternary branches,
         // comma-sequences and the operand of another yield (all routed through here).
         if (inGeneratorBody && token.Keyword == FastKeywords.yield && !token.IsEscapedReservedWord)
+        {
+            // A generator's FormalParameters must not contain a YieldExpression.
+            if (inFormalParameters)
+                throw stream.Unexpected();
             return YieldExpression(out node);
+        }
 
         if (!SinglePrefixPostfixExpression(out node, out var isAsync, out var isGenerator))
         {

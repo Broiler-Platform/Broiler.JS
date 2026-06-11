@@ -30,6 +30,15 @@ public partial class FastParser(FastTokenStream stream) : IParser
 
     private bool inAsyncFunctionBody = false;
 
+    // Set while parsing the FormalParameters of the current function (cleared on
+    // entry to its body and on entry to any nested function's parameters/body). The
+    // FormalParameters of a generator must not contain a YieldExpression, and those
+    // of an async function must not contain an AwaitExpression — both are early
+    // (Syntax) errors. Combined with inGeneratorBody / inAsyncFunctionBody (which a
+    // nested non-generator/non-async function resets), this fires only for a yield/
+    // await that genuinely belongs to the enclosing generator/async parameter list.
+    private bool inFormalParameters = false;
+
     // The `async` keyword token of an async function declaration/expression whose
     // `async` was just consumed by the caller, so FunctionExpression can anchor its
     // source span (Function.prototype.toString) at `async` rather than `function`.

@@ -14,6 +14,14 @@ public partial class JSDate
     // including its low-32-bit wraparound for out-of-range / infinite operands.
     private static int CoercedIntValue(double coerced) => unchecked((int)(long)coerced);
 
+    // A trailing optional component argument that is *present* — even when its value
+    // is `undefined` — is "specified" per the spec (the spec keys "if X is not
+    // specified" off the argument count, not off undefined-ness). A specified arg is
+    // coerced with ToNumber (so undefined → NaN), and a non-finite specified
+    // component makes MakeDate/MakeTime → NaN → TimeClip → NaN. Only a genuinely
+    // absent argument falls back to the current field value.
+    private static bool Specified(in Arguments a, int index) => a.Length > index;
+
     /// <summary>
     /// The setDate() method sets the day of the Date object relative to the beginning of the currently set month.
     /// </summary>
@@ -59,8 +67,8 @@ public partial class JSDate
             // converting to/from a local-offset DateTimeOffset.
             var (_, _m, _d) = a.Get3();
             double t = 0;
-            double mv = _m.IsUndefined ? JSDateMath.MonthFromTime(t) : _m.DoubleValue;
-            double dv = _d.IsUndefined ? JSDateMath.DateFromTime(t) : _d.DoubleValue;
+            double mv = Specified(a, 1) ? _m.DoubleValue : JSDateMath.MonthFromTime(t);
+            double dv = Specified(a, 2) ? _d.DoubleValue : JSDateMath.DateFromTime(t);
             if (double.IsNaN(year) || double.IsInfinity(year)
                 || double.IsNaN(mv) || double.IsInfinity(mv)
                 || double.IsNaN(dv) || double.IsInfinity(dv))
@@ -70,13 +78,21 @@ public partial class JSDate
             return new JSNumber(SetTimeValue(JSDateMath.TimeClip(JSDateMath.UTC(newDate))));
         }
 
-        if (double.IsNaN(year))
+        // Coerce month then day (ToNumber, valueOf once each) before the NaN-year
+        // check so their side effects run in spec order. A present-but-undefined
+        // optional arg is "specified" → ToNumber(undefined)=NaN → result NaN.
+        var (_year, _month, _day) = a.Get3();
+        bool monthGiven = Specified(a, 1), dayGiven = Specified(a, 2);
+        double monthCoerced = monthGiven ? _month.DoubleValue : double.NaN;
+        double dayCoerced = dayGiven ? _day.DoubleValue : double.NaN;
+
+        if (double.IsNaN(year)
+            || (monthGiven && !double.IsFinite(monthCoerced))
+            || (dayGiven && !double.IsFinite(dayCoerced)))
             return new JSNumber(SetTimeValue(double.NaN));
 
-        var (_year, _month, _day) = a.Get3();
-
-        var month = _month.IsUndefined ? date.Month - 1 : _month.IntValue;
-        var day = (_day.IsUndefined ? date.Day : _day.IntValue);
+        var month = monthGiven ? CoercedIntValue(monthCoerced) : date.Month - 1;
+        var day = dayGiven ? CoercedIntValue(dayCoerced) : date.Day;
 
         // For years that .NET DateTimeOffset can handle (1–9999), use the fast path.
         if (year >= 1 && year <= 9999)
@@ -132,17 +148,22 @@ public partial class JSDate
         // returning on an invalid date: the spec performs all the ToNumber conversions
         // in order before the "if t is NaN, return NaN" step. Each value is read once
         // and reused via CoercedIntValue so valueOf is invoked exactly once per arg.
-        double minsCoerced = _mins.IsUndefined ? double.NaN : _mins.DoubleValue;
-        double secCoerced = _seconds.IsUndefined ? double.NaN : _seconds.DoubleValue;
-        double msCoerced = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+        bool minsGiven = Specified(a, 1), secGiven = Specified(a, 2), msGiven = Specified(a, 3);
+        double minsCoerced = minsGiven ? _mins.DoubleValue : double.NaN;
+        double secCoerced = secGiven ? _seconds.DoubleValue : double.NaN;
+        double msCoerced = msGiven ? _millis.DoubleValue : double.NaN;
 
         if (!valid)
             return JSNumber.NaN;
 
-        var hrs = _hours.IsUndefined ? date.Hour : CoercedIntValue(hours);
-        var mins = _mins.IsUndefined ? date.Minute : CoercedIntValue(minsCoerced);
-        var seconds = _seconds.IsUndefined ? date.Second : CoercedIntValue(secCoerced);
-        var millis = _millis.IsUndefined ? date.Millisecond : CoercedIntValue(msCoerced);
+        // A specified-but-non-finite component (e.g. an explicit `undefined`) → NaN.
+        if ((minsGiven && !double.IsFinite(minsCoerced)) || (secGiven && !double.IsFinite(secCoerced)) || (msGiven && !double.IsFinite(msCoerced)))
+            return new JSNumber(SetTimeValue(double.NaN));
+
+        var hrs = CoercedIntValue(hours);
+        var mins = minsGiven ? CoercedIntValue(minsCoerced) : date.Minute;
+        var seconds = secGiven ? CoercedIntValue(secCoerced) : date.Second;
+        var millis = msGiven ? CoercedIntValue(msCoerced) : date.Millisecond;
 
         try
         {
@@ -192,15 +213,19 @@ public partial class JSDate
 
         // Coerce every present argument (ToNumber) before returning on an invalid
         // date so all valueOf side effects run, in order. See SetHours for rationale.
-        double secCoerced = _seconds.IsUndefined ? double.NaN : _seconds.DoubleValue;
-        double msCoerced = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+        bool secGiven = Specified(a, 1), msGiven = Specified(a, 2);
+        double secCoerced = secGiven ? _seconds.DoubleValue : double.NaN;
+        double msCoerced = msGiven ? _millis.DoubleValue : double.NaN;
 
         if (!valid)
             return JSNumber.NaN;
 
-        var mins = _mins.IsUndefined ? date.Minute : CoercedIntValue(minutes);
-        var seconds = _seconds.IsUndefined ? date.Second : CoercedIntValue(secCoerced);
-        var millis = _millis.IsUndefined ? date.Millisecond : CoercedIntValue(msCoerced);
+        if ((secGiven && !double.IsFinite(secCoerced)) || (msGiven && !double.IsFinite(msCoerced)))
+            return new JSNumber(SetTimeValue(double.NaN));
+
+        var mins = CoercedIntValue(minutes);
+        var seconds = secGiven ? CoercedIntValue(secCoerced) : date.Second;
+        var millis = msGiven ? CoercedIntValue(msCoerced) : date.Millisecond;
 
         try
         {
@@ -228,13 +253,17 @@ public partial class JSDate
 
         // Coerce a present date argument (ToNumber) before returning on an invalid
         // date so its valueOf side effect runs. See SetHours for rationale.
-        double daysCoerced = _days.IsUndefined ? double.NaN : _days.DoubleValue;
+        bool daysGiven = Specified(a, 1);
+        double daysCoerced = daysGiven ? _days.DoubleValue : double.NaN;
 
         if (!valid)
             return JSNumber.NaN;
 
-        var month = _month.IsUndefined ? date.Month : CoercedIntValue(mnth);
-        var days = (_days.IsUndefined ? date.Day : CoercedIntValue(daysCoerced)) - 1;
+        if (daysGiven && !double.IsFinite(daysCoerced))
+            return new JSNumber(SetTimeValue(double.NaN));
+
+        var month = CoercedIntValue(mnth);
+        var days = (daysGiven ? CoercedIntValue(daysCoerced) : date.Day) - 1;
 
         try
         {
@@ -265,13 +294,17 @@ public partial class JSDate
 
         // Coerce a present ms argument (ToNumber) before returning on an invalid date
         // so its valueOf side effect runs, in order. See SetHours for rationale.
-        double msCoerced = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+        bool msGiven = Specified(a, 1);
+        double msCoerced = msGiven ? _millis.DoubleValue : double.NaN;
 
         if (!valid)
             return JSNumber.NaN;
 
-        var seconds = _seconds.IsUndefined ? date.Second : CoercedIntValue(secs);
-        var millis = _millis.IsUndefined ? date.Millisecond : CoercedIntValue(msCoerced);
+        if (msGiven && !double.IsFinite(msCoerced))
+            return new JSNumber(SetTimeValue(double.NaN));
+
+        var seconds = CoercedIntValue(secs);
+        var millis = msGiven ? CoercedIntValue(msCoerced) : date.Millisecond;
 
         try
         {
@@ -385,17 +418,18 @@ public partial class JSDate
         // "if t is NaN, return NaN" step, matching the spec's evaluation order.
         var (_year, _month, _day) = a.Get3();
 
+        bool monthGiven = Specified(a, 1), dayGiven = Specified(a, 2);
         double yearValue = _year.DoubleValue;
-        double monthArg = _month.IsUndefined ? double.NaN : _month.DoubleValue;
-        double dayArg = _day.IsUndefined ? double.NaN : _day.DoubleValue;
+        double monthArg = monthGiven ? _month.DoubleValue : double.NaN;
+        double dayArg = dayGiven ? _day.DoubleValue : double.NaN;
 
         // setUTCFullYear revives an invalid date: when the stored time value is NaN
         // it is treated as +0 (spec step 4) rather than returning NaN.
         if (double.IsNaN(t))
             t = 0;
 
-        double monthValue = _month.IsUndefined ? JSDateMath.MonthFromTime(t) : monthArg;
-        double dayValue = _day.IsUndefined ? JSDateMath.DateFromTime(t) : dayArg;
+        double monthValue = monthGiven ? monthArg : JSDateMath.MonthFromTime(t);
+        double dayValue = dayGiven ? dayArg : JSDateMath.DateFromTime(t);
 
         if (double.IsNaN(yearValue) || double.IsInfinity(yearValue)
             || double.IsNaN(monthValue) || double.IsInfinity(monthValue)
@@ -420,17 +454,18 @@ public partial class JSDate
         // "if t is NaN, return NaN" step, matching the spec's evaluation order.
         var (_hours, _mins, _seconds, _millis) = a.Get4();
 
+        bool minsGiven = Specified(a, 1), secGiven = Specified(a, 2), msGiven = Specified(a, 3);
         double hrs = _hours.DoubleValue;
-        double minsArg = _mins.IsUndefined ? double.NaN : _mins.DoubleValue;
-        double secondsArg = _seconds.IsUndefined ? double.NaN : _seconds.DoubleValue;
-        double millisArg = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+        double minsArg = minsGiven ? _mins.DoubleValue : double.NaN;
+        double secondsArg = secGiven ? _seconds.DoubleValue : double.NaN;
+        double millisArg = msGiven ? _millis.DoubleValue : double.NaN;
 
         if (double.IsNaN(t))
             return JSNumber.NaN;
 
-        double mins = _mins.IsUndefined ? JSDateMath.MinFromTime(t) : minsArg;
-        double seconds = _seconds.IsUndefined ? JSDateMath.SecFromTime(t) : secondsArg;
-        double millis = _millis.IsUndefined ? JSDateMath.MsFromTime(t) : millisArg;
+        double mins = minsGiven ? minsArg : JSDateMath.MinFromTime(t);
+        double seconds = secGiven ? secondsArg : JSDateMath.SecFromTime(t);
+        double millis = msGiven ? millisArg : JSDateMath.MsFromTime(t);
 
         if (double.IsNaN(hrs) || double.IsInfinity(hrs)
             || double.IsNaN(mins) || double.IsInfinity(mins)
@@ -483,15 +518,19 @@ public partial class JSDate
 
         // Coerce every present argument (ToNumber) before returning on an invalid
         // date so all valueOf side effects run, in order. See SetHours for rationale.
-        double secCoerced = _seconds.IsUndefined ? double.NaN : _seconds.DoubleValue;
-        double msCoerced = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+        bool secGiven = Specified(a, 1), msGiven = Specified(a, 2);
+        double secCoerced = secGiven ? _seconds.DoubleValue : double.NaN;
+        double msCoerced = msGiven ? _millis.DoubleValue : double.NaN;
 
         if (!valid)
             return JSNumber.NaN;
 
-        var mins = _mins.IsUndefined ? utc.Minute : CoercedIntValue(minutes);
-        var seconds = _seconds.IsUndefined ? utc.Second : CoercedIntValue(secCoerced);
-        var millis = _millis.IsUndefined ? utc.Millisecond : CoercedIntValue(msCoerced);
+        if ((secGiven && !double.IsFinite(secCoerced)) || (msGiven && !double.IsFinite(msCoerced)))
+            return new JSNumber(SetTimeValue(double.NaN));
+
+        var mins = CoercedIntValue(minutes);
+        var seconds = secGiven ? CoercedIntValue(secCoerced) : utc.Second;
+        var millis = msGiven ? CoercedIntValue(msCoerced) : utc.Millisecond;
 
         try
         {
@@ -523,13 +562,17 @@ public partial class JSDate
 
         // Coerce a present date argument (ToNumber) before returning on an invalid
         // date so its valueOf side effect runs. See SetHours for rationale.
-        double daysCoerced = _days.IsUndefined ? double.NaN : _days.DoubleValue;
+        bool daysGiven = Specified(a, 1);
+        double daysCoerced = daysGiven ? _days.DoubleValue : double.NaN;
 
         if (!valid)
             return JSNumber.NaN;
 
-        var month = _month.IsUndefined ? utc.Month : CoercedIntValue(mnth);
-        var days = (_days.IsUndefined ? utc.Day : CoercedIntValue(daysCoerced)) - 1;
+        if (daysGiven && !double.IsFinite(daysCoerced))
+            return new JSNumber(SetTimeValue(double.NaN));
+
+        var month = CoercedIntValue(mnth);
+        var days = (daysGiven ? CoercedIntValue(daysCoerced) : utc.Day) - 1;
 
         try
         {
@@ -562,13 +605,17 @@ public partial class JSDate
 
         // Coerce a present ms argument (ToNumber) before returning on an invalid date
         // so its valueOf side effect runs, in order. See SetHours for rationale.
-        double msCoerced = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+        bool msGiven = Specified(a, 1);
+        double msCoerced = msGiven ? _millis.DoubleValue : double.NaN;
 
         if (!valid)
             return JSNumber.NaN;
 
-        var seconds = _seconds.IsUndefined ? utc.Second : CoercedIntValue(secs);
-        var millis = _millis.IsUndefined ? utc.Millisecond : CoercedIntValue(msCoerced);
+        if (msGiven && !double.IsFinite(msCoerced))
+            return new JSNumber(SetTimeValue(double.NaN));
+
+        var seconds = CoercedIntValue(secs);
+        var millis = msGiven ? CoercedIntValue(msCoerced) : utc.Millisecond;
 
         try
         {

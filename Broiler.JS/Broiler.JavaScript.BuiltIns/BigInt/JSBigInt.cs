@@ -472,8 +472,8 @@ public partial class JSBigInt : JSPrimitive
     [JSExport("asIntN", Length = 2)]
     public static JSValue AsIntN(in Arguments a)
     {
-        var bits = ToBitsIndex(a[0]);
-        var n = ToBigInt(a[1]);
+        var bits = ToBitsIndex(a.GetAt(0));
+        var n = ToBigInt(a.GetAt(1));
 
         var buffer = n.ToByteArray();
 
@@ -535,8 +535,8 @@ public partial class JSBigInt : JSPrimitive
     [JSExport("asUintN", Length = 2)]
     public static JSValue AsUintN(in Arguments a)
     {
-        var bits = ToBitsIndex(a[0]);
-        var original = ToBigInt(a[1]);
+        var bits = ToBitsIndex(a.GetAt(0));
+        var original = ToBigInt(a.GetAt(1));
 
         var n = original;
         if (n.Sign == BigInteger.MinusOne.Sign)

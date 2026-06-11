@@ -263,8 +263,19 @@ public partial class JSArray : JSObject
 
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
     {
+        // Array exotic objects do not override [[Set]] — it is OrdinarySet. The
+        // `length` fast path applies only when writing to THIS array directly; when
+        // the receiver is a different object (e.g. `Reflect.set(arr, "length", v,
+        // proxy)` from a Proxy set trap, or pop/shift via a proxy), OrdinarySet must
+        // redirect to the receiver's [[GetOwnProperty]] + [[DefineOwnProperty]]
+        // instead of mutating this array's own length.
         if (name.Key == KeyStrings.length.Key)
-            return SetLengthValue(value, throwError);
+        {
+            if (receiver == null || ReferenceEquals(receiver, this))
+                return SetLengthValue(value, throwError);
+
+            return SetKeyStringOnReceiver(name, value, receiver, JSPropertyAttributes.EnumerableConfigurableValue, throwError);
+        }
 
         return base.SetValue(name, value, receiver, throwError);
     }
@@ -460,8 +471,11 @@ public partial class JSArray : JSObject
 
     private JSValue DefineIndexProperty(uint index, JSObject propertyDescription)
     {
+        // Adding an index at or beyond a non-writable length fails the
+        // [[DefineOwnProperty]] predicate — return false (Object.defineProperty's
+        // OrThrow caller converts it to a TypeError; Reflect.defineProperty returns it).
         if (index >= _length && IsLengthReadOnly())
-            throw JSEngine.NewTypeError("Cannot modify property length");
+            return JSValue.BooleanFalse;
 
         var result = base.DefineProperty(index, propertyDescription);
         if (_length <= index)
@@ -477,10 +491,14 @@ public partial class JSArray : JSObject
         var hasConfigurable = !propertyDescription.GetInternalProperty(KeyStrings.configurable, false).IsEmpty;
         var hasEnumerable = !propertyDescription.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty;
 
+        // [[DefineOwnProperty]] is a predicate: an invariant violation returns false
+        // (the OrThrow caller, e.g. Object.defineProperty, turns that into a throw;
+        // Reflect.defineProperty surfaces it as `false`). Only an invalid length
+        // *value* throws (RangeError) per ArraySetLength.
         if ((hasConfigurable && propertyDescription[KeyStrings.configurable].BooleanValue)
             || (hasEnumerable && propertyDescription[KeyStrings.enumerable].BooleanValue))
         {
-            throw JSEngine.NewTypeError("Cannot redefine array length");
+            return JSValue.BooleanFalse;
         }
 
         if (!hasValue)
@@ -502,7 +520,7 @@ public partial class JSArray : JSObject
         if (newLength >= oldLength)
         {
             if (newLength != oldLength && IsLengthReadOnly())
-                throw JSEngine.NewTypeError("Cannot modify property length");
+                return JSValue.BooleanFalse;
 
             _length = newLength;
             SetLengthWritable(newWritable);
@@ -510,7 +528,7 @@ public partial class JSArray : JSObject
         }
 
         if (IsLengthReadOnly())
-            throw JSEngine.NewTypeError("Cannot modify property length");
+            return JSValue.BooleanFalse;
 
         ref var elements = ref GetElements();
 

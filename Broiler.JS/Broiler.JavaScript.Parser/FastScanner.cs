@@ -968,17 +968,17 @@ public class FastScanner
                                 break;
                             }
 
-                            if (first == 'u')
+                            // `\u{...}` is a code-point escape: decode it specially so
+                            // the braces are not mistaken for quantifiers. Every other
+                            // `\u` (a `\uHHHH` escape, or an Annex B IdentityEscape such
+                            // as `/\u/`) is appended literally and the following
+                            // characters are scanned normally \u2014 the old code eagerly
+                            // consumed the char after `u`, which swallowed a closing `/`.
+                            if (first == 'u' && Next() == '{')
                             {
-                                first = Consume();
-                                if (CanConsume('{'))
-                                {
-                                    t.Append(ScanUnicodeCodePointEscapeContents());
-                                    break;
-                                }
-                                t.Append('\\');
-                                t.Append('u');
-                                t.Append(first);
+                                Consume(); // 'u' -> '{'
+                                Consume(); // '{' -> first hex digit
+                                t.Append(ScanUnicodeCodePointEscapeContents());
                                 break;
                             }
 
