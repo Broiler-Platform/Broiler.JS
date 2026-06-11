@@ -24,7 +24,150 @@ internal static class JSStringSpecialCasing
 
     // Invariant (non-locale) toUpperCase / toLowerCase.
     public static string ToUpper(string s) => Map(s, Upper, toUpper: true, culture: null);
-    public static string ToLower(string s) => Map(s, Lower, toUpper: false, culture: null);
+    public static string ToLower(string s) => ToLowerCore(s, culture: null);
+
+    // GREEK CAPITAL LETTER SIGMA and its two lowercase forms.
+    private const char GreekCapitalSigma = 'Σ';
+    private const char GreekSmallSigma = 'σ';
+    private const char GreekSmallFinalSigma = 'ς';
+
+    // Word_Break ∈ {MidLetter, MidNumLet, Single_Quote}: Case_Ignorable code points
+    // that are not covered by the Mn/Me/Cf/Lm/Sk general-category test below. Plus
+    // U+180E (MONGOLIAN VOWEL SEPARATOR), which some framework versions still report
+    // as a space separator rather than Format.
+    private static readonly HashSet<int> CaseIgnorablePunctuation = new()
+    {
+        0x0027, 0x002E, 0x003A, 0x00B7, 0x0387, 0x055F, 0x05F4, 0x0F0B, 0x180E,
+        0x2018, 0x2019, 0x2024, 0x2027, 0xFE13, 0xFE52, 0xFE55, 0xFF07, 0xFF0E, 0xFF1A,
+    };
+
+    private static bool IsCaseIgnorable(int cp)
+    {
+        switch (CharUnicodeInfo.GetUnicodeCategory(cp))
+        {
+            case UnicodeCategory.NonSpacingMark:   // Mn
+            case UnicodeCategory.EnclosingMark:    // Me
+            case UnicodeCategory.Format:           // Cf
+            case UnicodeCategory.ModifierLetter:   // Lm
+            case UnicodeCategory.ModifierSymbol:   // Sk
+                return true;
+        }
+
+        return CaseIgnorablePunctuation.Contains(cp);
+    }
+
+    // \p{Cased}: an upper/lower/title-case letter (the Other_Cased property points are
+    // approximated by category — sufficient because any Other_Cased point that is also
+    // Case_Ignorable, e.g. U+0345, is skipped by the ignorable test first).
+    private static bool IsCased(int cp)
+    {
+        switch (CharUnicodeInfo.GetUnicodeCategory(cp))
+        {
+            case UnicodeCategory.UppercaseLetter:  // Lu
+            case UnicodeCategory.LowercaseLetter:  // Ll
+            case UnicodeCategory.TitlecaseLetter:  // Lt
+                return true;
+        }
+
+        return false;
+    }
+
+    // Final_Sigma "Before C": there is a Cased character before C, with only
+    // Case_Ignorable characters between it and C. Scans code points backwards from
+    // index i, skipping Case_Ignorable; the first non-ignorable code point decides.
+    private static bool BeforeIsCased(string s, int i)
+    {
+        var idx = i;
+        while (idx > 0)
+        {
+            var prev = idx - 1;
+            if (prev > 0 && char.IsLowSurrogate(s[prev]) && char.IsHighSurrogate(s[prev - 1]))
+                prev--;
+
+            var cp = char.ConvertToUtf32(s, prev);
+            if (IsCaseIgnorable(cp))
+            {
+                idx = prev;
+                continue;
+            }
+
+            return IsCased(cp);
+        }
+
+        return false;
+    }
+
+    // Final_Sigma "After C": there is a Cased character after C, with only
+    // Case_Ignorable characters between. Returns true when such a character exists
+    // (so the caller uses the final-sigma form only when this is false).
+    private static bool AfterIsCased(string s, int j)
+    {
+        var idx = j;
+        while (idx < s.Length)
+        {
+            var cp = char.ConvertToUtf32(s, idx);
+            var len = cp > 0xFFFF ? 2 : 1;
+            if (IsCaseIgnorable(cp))
+            {
+                idx += len;
+                continue;
+            }
+
+            return IsCased(cp);
+        }
+
+        return false;
+    }
+
+    // Default lowercase with the SpecialCasing.txt Final_Sigma conditional mapping:
+    // GREEK CAPITAL LETTER SIGMA lowercases to the final form ς when it is preceded by
+    // a cased letter and NOT followed by one (ignoring case-ignorable characters),
+    // otherwise to σ. All other characters use the unconditional lower mapping.
+    private static string ToLowerCore(string s, CultureInfo culture)
+    {
+        if (string.IsNullOrEmpty(s) || s.IndexOf(GreekCapitalSigma) < 0)
+            return Map(s, Lower, toUpper: false, culture);
+
+        var sb = new StringBuilder(s.Length + 2);
+        for (var i = 0; i < s.Length;)
+        {
+            var cp = char.ConvertToUtf32(s, i);
+            var len = cp > 0xFFFF ? 2 : 1;
+            if (cp == GreekCapitalSigma)
+                sb.Append(BeforeIsCased(s, i) && !AfterIsCased(s, i + len) ? GreekSmallFinalSigma : GreekSmallSigma);
+            else if (Lower.TryGetValue(cp, out var mapped))
+                sb.Append(mapped);
+            else
+            {
+                var one = char.ConvertFromUtf32(cp);
+                sb.Append(culture != null ? culture.TextInfo.ToLower(one) : one.ToLowerInvariant());
+            }
+
+            i += len;
+        }
+
+        return sb.ToString();
+    }
+
+    // Locale toLocaleLowerCase: the culture-specific simple lowercase (Turkic İ → i,
+    // etc.) with the locale-independent Final_Sigma conditional applied on top. Σ → σ
+    // is length-preserving, so the contextual replacement can be done in place over the
+    // lowered result using the original string for context.
+    public static string ToLocaleLower(string s, CultureInfo culture)
+    {
+        var lowered = culture.TextInfo.ToLower(s);
+        if (s.IndexOf(GreekCapitalSigma) < 0 || lowered.Length != s.Length)
+            return lowered;
+
+        var chars = lowered.ToCharArray();
+        for (var i = 0; i < s.Length; i++)
+        {
+            if (s[i] == GreekCapitalSigma)
+                chars[i] = BeforeIsCased(s, i) && !AfterIsCased(s, i + 1) ? GreekSmallFinalSigma : GreekSmallSigma;
+        }
+
+        return new string(chars);
+    }
 
     // Locale toLocaleUpperCase: the unconditional expansions (ß → SS, …) are
     // locale-independent, while the simple 1:1 mappings honour the culture (e.g.

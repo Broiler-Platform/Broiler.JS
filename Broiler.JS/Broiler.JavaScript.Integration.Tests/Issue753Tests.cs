@@ -173,4 +173,30 @@ public class Issue753Tests
     public void DateTimeFormatInvalidDateStyleThrowsRangeError()
         => Assert.Equal("RangeError", Eval(
             "try{new Intl.DateTimeFormat('en',{dateStyle:'bogus'});'no throw';}catch(e){e.constructor.name;}"));
+
+    // ---- Problem 38/39: Greek Final_Sigma in toLowerCase / toLocaleLowerCase ----
+
+    [Fact]
+    public void ToLowerCaseUsesFinalSigmaWhenPrecededByCasedLetter()
+        => Assert.Equal("aς", Eval("'A\\u03A3'.toLowerCase()"));
+
+    [Fact]
+    public void ToLowerCaseUsesRegularSigmaWhenFollowedByCasedLetter()
+        => Assert.Equal("aσb", Eval("'A\\u03A3B'.toLowerCase()"));
+
+    [Fact]
+    public void ToLowerCaseFinalSigmaSkipsCaseIgnorableFullStop()
+        => Assert.Equal("a.ς", Eval("'A.\\u03A3'.toLowerCase()"));
+
+    [Fact]
+    public void ToLowerCaseLoneSigmaIsRegular()
+        => Assert.Equal("σ", Eval("'\\u03A3'.toLowerCase()"));
+
+    [Fact]
+    public void GreekWordFinalSigmaLowercases()
+        => Assert.Equal("σοφος", Eval("'\\u03A3\\u039F\\u03A6\\u039F\\u03A3'.toLowerCase()"));
+
+    [Fact]
+    public void ToLocaleLowerCaseAppliesFinalSigma()
+        => Assert.Equal("aς", Eval("'A\\u03A3'.toLocaleLowerCase('en')"));
 }
