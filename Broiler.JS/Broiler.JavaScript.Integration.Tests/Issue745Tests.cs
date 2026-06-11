@@ -56,13 +56,20 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   Problem 30 (empty-description symbol name) — a method/property keyed by Symbol("")
 //   gets the name "[]" (empty-string description, not undefined); Symbol() still gets "".
 //
+//   Problem 13 (Promise.race) — PerformPromiseRace invokes nextPromise.then with the
+//   result capability's resolve/reject directly (not deferred), so a custom constructor
+//   whose resolve is captured by a user thenable and invoked synchronously runs it.
+//
+//   Problem 20 (array/arguments value iterator) — CreateArrayIterator re-reads "length"
+//   each step. The arguments @@iterator and Array.prototype.values on a generic array-like
+//   now honour a shrunk length instead of walking the stored elements.
+//
 // Out of scope (architectural / data): P1/P27/P28 eval-scope binding-capture
 // ReferenceError families (incl. NFE-name reassignment inside a direct eval); P2
 // super-call-in-arrow this-init; P5 Unicode Script_Extensions data; P10 duplicate named
-// groups with `{n}`-quantified unnamed alternatives (regex reset-prologue); P13
-// Promise.race custom-constructor capability (resolve scheduling); P20 length-bound array
-// iterator over arbitrary array-likes; P6 yield inside a computed method name; P24
-// Intl.Locale BCP-47 tag validation; the remaining sm/staging cases.
+// groups MATCHING with `{n}`-quantified unnamed alternatives (regex reset-prologue +
+// .NET balancing groups); P6 yield inside a computed method name; P24 Intl.Locale BCP-47
+// tag validation; the remaining sm/staging cases.
 public class Issue745Tests
 {
     private static string Eval(string code)
