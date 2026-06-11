@@ -42,8 +42,13 @@ partial class FastCompiler
                 using var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
                 var v = this.scope.Top.CreateVariable(syntheticName, newScope: true);
                 var destrList = new Sequence<YExpression>();
-                // Destructure the caught exception into the pattern's bindings
-                CreateAssignment(destrList, catchParam, v.Expression, createVariable: true, newScope: true);
+                // Destructure the caught exception into the pattern's bindings. Pass
+                // suppressAnonymousFunctionNameInference so a per-element default that is
+                // not a plain anonymous function definition (e.g. `[x = (0, function(){})]`)
+                // does NOT adopt the binding name — matching the let/var declaration path
+                // (a covered/comma initializer is not an AnonymousFunctionDefinition).
+                CreateAssignment(destrList, catchParam, v.Expression, createVariable: true, newScope: true,
+                    suppressAnonymousFunctionNameInference: true);
                 // Collect all variables created in this scope (including destructured bindings)
                 var vars = new Sequence<YParameterExpression>();
                 var list = new Sequence<YExpression>();

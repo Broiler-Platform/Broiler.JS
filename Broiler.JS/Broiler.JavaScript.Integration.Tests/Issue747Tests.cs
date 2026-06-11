@@ -210,4 +210,23 @@ public class Issue747Tests
         => Assert.Equal("[object test262]", Eval(
             "Object.defineProperty(BigInt.prototype,Symbol.toStringTag,{value:'test262'});" +
             "Object.prototype.toString.call(1n)"));
+
+    // ---- Problem 21: catch-binding destructuring NamedEvaluation (cover initializer) ----
+
+    [Fact]
+    public void CatchArrayPatternCoverInitializerDoesNotInferName()
+        => Assert.Equal("cover,", Eval(
+            "var r;try{throw [];}catch([cover=(function(){}), xCover=(0,function(){})])" +
+            "{r=cover.name+','+xCover.name;}r"));
+
+    [Fact]
+    public void CatchObjectPatternCoverInitializerDoesNotInferName()
+        => Assert.Equal("cover,", Eval(
+            "var r;try{throw {};}catch({cover=(function(){}), xCover=(0,function(){})})" +
+            "{r=cover.name+','+xCover.name;}r"));
+
+    [Fact]
+    public void CatchArrayPatternPlainAnonymousInitializerInfersName()
+        => Assert.Equal("fn", Eval(
+            "var r;try{throw [undefined];}catch([fn=function(){}]){r=fn.name;}r"));
 }
