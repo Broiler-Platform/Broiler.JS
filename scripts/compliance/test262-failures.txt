@@ -91,7 +91,6 @@ test/built-ins/Array/prototype/indexOf/15.4.4.14-9-b-i-21.js
 test/built-ins/Array/prototype/indexOf/15.4.4.14-9-b-i-22.js
 test/built-ins/Array/prototype/indexOf/15.4.4.14-9-b-i-7.js
 test/built-ins/Array/prototype/indexOf/15.4.4.14-9-b-i-8.js
-test/built-ins/Array/prototype/indexOf/length-zero-returns-minus-one.js
 test/built-ins/Array/prototype/join/S15.4.4.5_A3.1_T2.js
 test/built-ins/Array/prototype/keys/iteration-mutable.js
 test/built-ins/Array/prototype/lastIndexOf/15.4.4.15-1-3.js
@@ -113,7 +112,6 @@ test/built-ins/Array/prototype/lastIndexOf/15.4.4.15-8-b-i-22.js
 test/built-ins/Array/prototype/lastIndexOf/15.4.4.15-8-b-i-7.js
 test/built-ins/Array/prototype/lastIndexOf/15.4.4.15-8-b-i-8.js
 test/built-ins/Array/prototype/lastIndexOf/length-near-integer-limit.js
-test/built-ins/Array/prototype/lastIndexOf/length-zero-returns-minus-one.js
 test/built-ins/Array/prototype/methods-called-as-functions.js
 test/built-ins/Array/prototype/pop/S15.4.4.6_A2_T2.js
 test/built-ins/Array/prototype/pop/S15.4.4.6_A3_T1.js
@@ -206,8 +204,6 @@ test/built-ins/FinalizationRegistry/prototype/unregister/unregister-symbol-token
 test/built-ins/Function/prop-desc.js
 test/built-ins/Function/prototype/S15.3.4_A4.js
 test/built-ins/Function/prototype/arguments/prop-desc.js
-test/built-ins/Function/prototype/bind/instance-construct-newtarget-boundtarget-bound.js
-test/built-ins/Function/prototype/bind/instance-construct-newtarget-self-reflect.js
 test/built-ins/Function/prototype/bind/instance-length-default-value.js
 test/built-ins/Function/prototype/caller-arguments/accessor-properties.js
 test/built-ins/Function/prototype/caller/prop-desc.js
@@ -249,13 +245,8 @@ test/built-ins/JSON/stringify/value-string-escape-unicode.js
 test/built-ins/JSON/stringify/value-string-object.js
 test/built-ins/JSON/stringify/value-symbol.js
 test/built-ins/JSON/stringify/value-tojson-arguments.js
-test/built-ins/Map/prototype/entries/name.js
-test/built-ins/Map/prototype/get/name.js
-test/built-ins/Map/prototype/keys/name.js
 test/built-ins/Map/prototype/set/append-new-values-return-map.js
-test/built-ins/Map/prototype/set/name.js
 test/built-ins/Map/prototype/set/replaces-a-value-returns-map.js
-test/built-ins/Map/prototype/values/name.js
 test/built-ins/MapIteratorPrototype/Symbol.toStringTag.js
 test/built-ins/Math/clz32/infinity.js
 test/built-ins/Math/clz32/int32bit.js
@@ -265,7 +256,6 @@ test/built-ins/Math/min/zeros.js
 test/built-ins/Math/pow/applying-the-exp-operator_A1.js
 test/built-ins/Math/round/S15.8.2.15_A7.js
 test/built-ins/Math/sign/sign-specialVals.js
-test/built-ins/Math/sqrt/results.js
 test/built-ins/Math/sumPrecise/sum.js
 test/built-ins/NativeErrors/nativeerror-tostring-message-throws-symbol.js
 test/built-ins/NativeErrors/nativeerror-tostring-message-throws-toprimitive.js
@@ -349,13 +339,9 @@ test/built-ins/Object/subclass-object-arg.js
 test/built-ins/Object/values/observable-operations.js
 test/built-ins/Promise/all/same-reject-function.js
 test/built-ins/Promise/any/resolve-from-same-thenable.js
-test/built-ins/Promise/exec-args.js
 test/built-ins/Promise/executor-call-context-sloppy.js
 test/built-ins/Promise/executor-call-context-strict.js
 test/built-ins/Promise/prototype/finally/invokes-then-with-function.js
-test/built-ins/Promise/reject-function-length.js
-test/built-ins/Promise/resolve-function-length.js
-test/built-ins/Promise/withResolvers/resolvers.js
 test/built-ins/Proxy/has/call-in-prototype-index.js
 test/built-ins/Proxy/proxy-no-prototype.js
 test/built-ins/Proxy/set/call-parameters-prototype-dunder-proto.js
@@ -370,15 +356,12 @@ test/built-ins/RegExp/S15.10.7_A2_T2.js
 test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/lookahead-quantifier-match-groups.js
-test/built-ins/RegExp/match-indices/indices-array-unicode-property-names.js
 test/built-ins/RegExp/named-groups/duplicate-names-exec.js
 test/built-ins/RegExp/named-groups/duplicate-names-match.js
 test/built-ins/RegExp/named-groups/groups-object-undefined.js
 test/built-ins/RegExp/named-groups/non-unicode-property-names-valid.js
 test/built-ins/RegExp/named-groups/non-unicode-property-names.js
 test/built-ins/RegExp/named-groups/string-replace-nocaptures.js
-test/built-ins/RegExp/named-groups/unicode-property-names-valid.js
-test/built-ins/RegExp/named-groups/unicode-property-names.js
 test/built-ins/RegExp/named-groups/unicode-references.js
 test/built-ins/RegExp/nullable-quantifier.js
 test/built-ins/RegExp/property-escapes/character-class.js
@@ -856,14 +839,11 @@ test/built-ins/RegExp/unicodeSets/generated/rgi-emoji-17.0.js
 test/built-ins/RegExp/unicode_full_case_folding.js
 test/built-ins/RegExpStringIteratorPrototype/Symbol.toStringTag.js
 test/built-ins/RegExpStringIteratorPrototype/next/custom-regexpexec-not-callable.js
-test/built-ins/Set/prototype/add/name.js
-test/built-ins/Set/prototype/entries/name.js
 test/built-ins/Set/prototype/intersection/converts-negative-zero.js
 test/built-ins/Set/prototype/keys/keys.js
 test/built-ins/Set/prototype/symmetricDifference/converts-negative-zero.js
 test/built-ins/Set/prototype/symmetricDifference/set-like-class-mutation.js
 test/built-ins/Set/prototype/union/converts-negative-zero.js
-test/built-ins/Set/prototype/values/name.js
 test/built-ins/SetIteratorPrototype/Symbol.toStringTag.js
 test/built-ins/ShadowRealm/WrappedFunction/length-throws-typeerror.js
 test/built-ins/ShadowRealm/WrappedFunction/name-throws-typeerror.js
@@ -907,11 +887,8 @@ test/built-ins/String/prototype/toLocaleLowerCase/Final_Sigma_U180E.js
 test/built-ins/String/prototype/toLocaleLowerCase/S15.5.4.17_A11.js
 test/built-ins/String/prototype/toLocaleLowerCase/special_casing_conditional.js
 test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A11.js
-test/built-ins/String/prototype/toLocaleUpperCase/special_casing.js
 test/built-ins/String/prototype/toLowerCase/Final_Sigma_U180E.js
-test/built-ins/String/prototype/toLowerCase/special_casing.js
 test/built-ins/String/prototype/toLowerCase/special_casing_conditional.js
-test/built-ins/String/prototype/toUpperCase/special_casing.js
 test/built-ins/String/prototype/trim/u180e.js
 test/built-ins/Symbol/prototype/Symbol.toPrimitive/prop-desc.js
 test/built-ins/ThrowTypeError/unique-per-realm-function-proto.js
@@ -1056,7 +1033,6 @@ test/intl402/DateTimeFormat/prototype/resolvedOptions/basic.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/calendar.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-timeStyle.js
-test/intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/offset-timezone-basic.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/offset-timezone-change.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/resolved-calendar-unicode-extensions-and-options.js
@@ -1170,8 +1146,6 @@ test/intl402/NumberFormat/constructor-option-read-order.js
 test/intl402/NumberFormat/constructor-options-numberingSystem-invalid.js
 test/intl402/NumberFormat/constructor-options-throwing-getters.js
 test/intl402/NumberFormat/constructor-roundingIncrement-invalid.js
-test/intl402/NumberFormat/constructor-roundingIncrement.js
-test/intl402/NumberFormat/constructor-trailingZeroDisplay.js
 test/intl402/NumberFormat/constructor-unit.js
 test/intl402/NumberFormat/currency-code-well-formed.js
 test/intl402/NumberFormat/currency-digits-nonstandard-notation.js
@@ -1231,11 +1205,9 @@ test/intl402/NumberFormat/prototype/resolvedOptions/basic.js
 test/intl402/NumberFormat/prototype/resolvedOptions/order.js
 test/intl402/NumberFormat/prototype/resolvedOptions/resolved-numbering-system-unicode-extensions-and-options.js
 test/intl402/NumberFormat/prototype/resolvedOptions/return-keys-order-default.js
-test/intl402/NumberFormat/prototype/resolvedOptions/roundingMode.js
 test/intl402/NumberFormat/test-option-currency.js
 test/intl402/NumberFormat/test-option-currencyDisplay.js
 test/intl402/NumberFormat/test-option-roundingPriority-mixed-options.js
-test/intl402/NumberFormat/test-option-roundingPriority.js
 test/intl402/NumberFormat/test-option-style.js
 test/intl402/NumberFormat/test-option-useGrouping-extended.js
 test/intl402/NumberFormat/test-option-useGrouping.js
@@ -1356,8 +1328,6 @@ test/language/expressions/new/S11.2.2_A4_T2.js
 test/language/expressions/new/S11.2.2_A4_T3.js
 test/language/expressions/object/computed-property-name-topropertykey-before-value-evaluation.js
 test/language/expressions/object/dstr/object-rest-proxy-gopd-not-called-on-excluded-keys.js
-test/language/expressions/object/fn-name-accessor-get.js
-test/language/expressions/object/fn-name-accessor-set.js
 test/language/expressions/object/literal-property-name-bigint.js
 test/language/expressions/object/method-definition/generator-invoke-fn-strict.js
 test/language/expressions/object/method-definition/generator-prop-name-yield-expr.js
@@ -1423,8 +1393,6 @@ test/language/module-code/top-level-await/new-await-script-code.js
 test/language/statements/async-function/syntax-declaration-no-line-terminator.js
 test/language/statements/class/arguments/access.js
 test/language/statements/class/definition/basics.js
-test/language/statements/class/definition/fn-name-accessor-get.js
-test/language/statements/class/definition/fn-name-accessor-set.js
 test/language/statements/class/definition/fn-name-gen-method.js
 test/language/statements/class/definition/fn-name-method.js
 test/language/statements/class/definition/prototype-getter.js
@@ -1605,8 +1573,6 @@ test/staging/sm/Function/function-name-property.js
 test/staging/sm/Function/function-toString-builtin-name.js
 test/staging/sm/Function/return-finally.js
 test/staging/sm/Function/strict-arguments.js
-test/staging/sm/JSON/parse-crockford-01.js
-test/staging/sm/JSON/parse-primitives.js
 test/staging/sm/JSON/stringify-boxed-primitives.js
 test/staging/sm/JSON/stringify-gap.js
 test/staging/sm/JSON/stringify-replacer-array-boxed-elements.js
@@ -1733,7 +1699,6 @@ test/staging/sm/misc/builtin-methods-reject-null-undefined-this.js
 test/staging/sm/misc/explicit-undefined-optional-argument.js
 test/staging/sm/misc/future-reserved-words.js
 test/staging/sm/misc/line-paragraph-separator-parse-as-lineterminator.js
-test/staging/sm/object/accessor-name.js
 test/staging/sm/object/defineProperty-proxy.js
 test/staging/sm/object/entries.js
 test/staging/sm/object/propertyIsEnumerable.js
