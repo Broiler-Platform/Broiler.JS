@@ -9,6 +9,20 @@ namespace Broiler.JavaScript.Compiler.Tests;
 
 public class CompilerTests
 {
+    [Theory]
+    // `continue <label>` must jump to the labelled loop's CONTINUE target (next
+    // iteration), not its break target. Regression: it previously exited the loop.
+    [InlineData("var s='';outer:for(var i=0;i<3;i++){for(var j=0;j<3;j++){if(j===1)continue outer;s+=''+i+j;}s+='X';}s;", "001020")]
+    [InlineData("var s='';loop:for(var a=0;a<3;a++){for(var b=0;b<3;b++){if(b>a)continue loop;s+=''+a+b;}}s;", "001011202122")]
+    [InlineData("var s='';lbl:for(var i=0;i<4;i++){if(i===2)continue lbl;s+=i;}s;", "013")]
+    [InlineData("var w='';var i=0;wl:while(i<3){i++;for(var j=0;j<3;j++){if(j===1)continue wl;w+=''+i+j;}}w;", "102030")]
+    public void Labeled_Continue_Targets_Continue_Not_Break(string code, string expected)
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval(code);
+        Assert.Equal(expected, result.ToString());
+    }
+
     [Fact]
     public void Compile_SimpleExpression_ProducesResult()
     {

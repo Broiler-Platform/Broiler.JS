@@ -293,7 +293,9 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         if (name != null)
         {
             var target = LoopScope.Get(name);
-            return target == null ? throw JSEngine.NewSyntaxError($"No label found for {name}") : YExpression.Continue(target.Break);
+            // `continue <label>` jumps to the labelled loop's CONTINUE target (next
+            // iteration), not its Break target — otherwise it exits the loop entirely.
+            return target == null ? throw JSEngine.NewSyntaxError($"No label found for {name}") : YExpression.Continue(target.Continue);
         }
 
         return YExpression.Continue(scope.Top.Loop.Top.Continue);

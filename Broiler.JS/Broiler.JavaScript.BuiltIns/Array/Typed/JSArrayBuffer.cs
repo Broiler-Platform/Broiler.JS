@@ -172,14 +172,18 @@ public partial class JSArrayBuffer : JSObject
     internal JSValue Transfer(in Arguments a)
     {
         var source = RequireArrayBuffer(a.This, "transfer");
+
+        // Coerce newLength (ToIndex, which may invoke valueOf) BEFORE the detached /
+        // immutable validation: the spec performs the argument conversion first, so
+        // its side effects must run even when the method ultimately throws.
+        int newLength = a.Length > 0
+            ? ToBufferLength(a.Get1(), source.buffer.Length)
+            : source.buffer.Length;
+
         if (source.isDetached)
             throw JSEngine.NewTypeError("Cannot transfer a detached ArrayBuffer");
         if (source.isImmutable)
             throw JSEngine.NewTypeError("Cannot transfer an immutable ArrayBuffer");
-
-        int newLength = a.Length > 0
-            ? ToBufferLength(a.Get1(), source.buffer.Length)
-            : source.buffer.Length;
 
         var newBuffer = new byte[newLength];
         System.Array.Copy(source.buffer, newBuffer, Math.Min(source.buffer.Length, newLength));
@@ -212,14 +216,17 @@ public partial class JSArrayBuffer : JSObject
     internal JSValue TransferToImmutable(in Arguments a)
     {
         var source = RequireArrayBuffer(a.This, "transferToImmutable");
+
+        // Coerce newLength (ToIndex, may invoke valueOf) BEFORE the detached /
+        // immutable validation, matching the spec evaluation order.
+        int newLength = a.Length > 0
+            ? ToBufferLength(a.Get1(), source.buffer.Length)
+            : source.buffer.Length;
+
         if (source.isDetached)
             throw JSEngine.NewTypeError("Cannot transfer a detached ArrayBuffer");
         if (source.isImmutable)
             throw JSEngine.NewTypeError("Cannot transfer an immutable ArrayBuffer");
-
-        int newLength = a.Length > 0
-            ? ToBufferLength(a.Get1(), source.buffer.Length)
-            : source.buffer.Length;
 
         var newBuffer = new byte[newLength];
         System.Array.Copy(source.buffer, newBuffer, Math.Min(source.buffer.Length, newLength));

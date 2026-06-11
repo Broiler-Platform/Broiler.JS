@@ -1188,10 +1188,10 @@ public class JSIntlRelativeTimeFormat : JSObject
             throw JSEngine.NewTypeError("Intl.RelativeTimeFormat.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
-        result[KeyStrings.GetOrCreate("style")] = JSValue.CreateString(@this.style);
-        result[KeyStrings.GetOrCreate("numeric")] = JSValue.CreateString(@this.numeric);
-        result[KeyStrings.GetOrCreate("numberingSystem")] = JSValue.CreateString("latn");
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), JSValue.CreateString(@this.style));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numeric"), JSValue.CreateString(@this.numeric));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString("latn"));
         return result;
     }
 
@@ -1229,8 +1229,8 @@ public sealed class JSIntlSegmenter : JSObject
             throw JSEngine.NewTypeError("Intl.Segmenter.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
-        result[KeyStrings.GetOrCreate("granularity")] = JSValue.CreateString(@this.Granularity);
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("granularity"), JSValue.CreateString(@this.Granularity));
         return result;
     }
 
@@ -1978,9 +1978,9 @@ public sealed class JSIntlListFormat : JSObject
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
-        result[KeyStrings.GetOrCreate("type")] = JSValue.CreateString(@this.type);
-        result[KeyStrings.GetOrCreate("style")] = JSValue.CreateString(@this.style);
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), JSValue.CreateString(@this.type));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), JSValue.CreateString(@this.style));
         return result;
     }
 }
@@ -2012,12 +2012,12 @@ public sealed class JSIntlDisplayNames : JSObject
             throw JSEngine.NewTypeError("Intl.DisplayNames.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
-        result[KeyStrings.GetOrCreate("style")] = JSValue.CreateString(@this.options.Style);
-        result[KeyStrings.GetOrCreate("type")] = JSValue.CreateString(@this.options.Type);
-        result[KeyStrings.GetOrCreate("fallback")] = JSValue.CreateString(@this.options.Fallback);
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), JSValue.CreateString(@this.options.Style));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), JSValue.CreateString(@this.options.Type));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("fallback"), JSValue.CreateString(@this.options.Fallback));
         if (@this.options.Type == "language")
-            result[KeyStrings.GetOrCreate("languageDisplay")] = JSValue.CreateString(@this.options.LanguageDisplay);
+            result.CreateDataProperty(KeyStrings.GetOrCreate("languageDisplay"), JSValue.CreateString(@this.options.LanguageDisplay));
         return result;
     }
 
@@ -2410,13 +2410,14 @@ public sealed class JSIntlPluralRules : JSObject
             throw JSEngine.NewTypeError("Intl.PluralRules.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
-        result[KeyStrings.GetOrCreate("type")] = JSValue.CreateString(@this.type);
-        result[KeyStrings.GetOrCreate("minimumIntegerDigits")] = JSValue.CreateNumber(1);
-        result[KeyStrings.GetOrCreate("minimumFractionDigits")] = JSValue.CreateNumber(0);
-        result[KeyStrings.GetOrCreate("maximumFractionDigits")] = JSValue.CreateNumber(0);
-        result[KeyStrings.GetOrCreate("pluralCategories")] = JSValue.CreateArray();
-        var categories = result[KeyStrings.GetOrCreate("pluralCategories")];
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), JSValue.CreateString(@this.type));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), JSValue.CreateNumber(1));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), JSValue.CreateNumber(0));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), JSValue.CreateNumber(0));
+        var pluralCategories = JSValue.CreateArray();
+        result.CreateDataProperty(KeyStrings.GetOrCreate("pluralCategories"), pluralCategories);
+        var categories = pluralCategories;
         if (categories is JSObject array)
         {
             foreach (var category in CldrLocaleData.GetPluralCategories(@this.locale, @this.type))
@@ -3024,12 +3025,12 @@ public class JSIntlNumberFormat : JSObject
             throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.locale);
-        result[KeyStrings.GetOrCreate("numberingSystem")] = JSValue.CreateString("latn");
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString("latn"));
 
         var styleKey = KeyStrings.GetOrCreate("style");
         var style = @this.options is null || @this.options[styleKey].IsUndefined ? "decimal" : @this.options[styleKey].StringValue;
-        result[KeyStrings.GetOrCreate("style")] = JSValue.CreateString(style);
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), JSValue.CreateString(style));
 
         if (@this.options != null)
         {
@@ -3047,50 +3048,50 @@ public class JSIntlNumberFormat : JSObject
             var maximumSignificantDigitsKey = KeyStrings.GetOrCreate("maximumSignificantDigits");
 
             if (!@this.options[currencyKey].IsUndefined)
-                result[currencyKey] = @this.options[currencyKey];
+                result.CreateDataProperty(currencyKey, @this.options[currencyKey]);
             if (!@this.options[unitKey].IsUndefined)
-                result[unitKey] = @this.options[unitKey];
+                result.CreateDataProperty(unitKey, @this.options[unitKey]);
             if (!@this.options[useGroupingKey].IsUndefined)
-                result[useGroupingKey] = @this.options[useGroupingKey];
+                result.CreateDataProperty(useGroupingKey, @this.options[useGroupingKey]);
             if (!@this.options[roundingIncrementKey].IsUndefined)
-                result[roundingIncrementKey] = @this.options[roundingIncrementKey];
+                result.CreateDataProperty(roundingIncrementKey, @this.options[roundingIncrementKey]);
             if (!@this.options[roundingModeKey].IsUndefined)
-                result[roundingModeKey] = @this.options[roundingModeKey];
+                result.CreateDataProperty(roundingModeKey, @this.options[roundingModeKey]);
             if (!@this.options[roundingPriorityKey].IsUndefined)
-                result[roundingPriorityKey] = @this.options[roundingPriorityKey];
+                result.CreateDataProperty(roundingPriorityKey, @this.options[roundingPriorityKey]);
             if (!@this.options[trailingZeroDisplayKey].IsUndefined)
-                result[trailingZeroDisplayKey] = @this.options[trailingZeroDisplayKey];
+                result.CreateDataProperty(trailingZeroDisplayKey, @this.options[trailingZeroDisplayKey]);
             // Digit options reflect the construction-time snapshot (read once),
             // not the live options bag, so resolvedOptions does not re-trigger
             // option getters.
             var digits = @this.resolved?.DigitOptions;
 
             if (digits != null && !digits[minimumIntegerDigitsKey].IsUndefined)
-                result[minimumIntegerDigitsKey] = digits[minimumIntegerDigitsKey];
+                result.CreateDataProperty(minimumIntegerDigitsKey, digits[minimumIntegerDigitsKey]);
             else
-                result[minimumIntegerDigitsKey] = JSValue.CreateNumber(1);
+                result.CreateDataProperty(minimumIntegerDigitsKey, JSValue.CreateNumber(1));
 
             if (digits != null && !digits[minimumFractionDigitsKey].IsUndefined)
-                result[minimumFractionDigitsKey] = digits[minimumFractionDigitsKey];
+                result.CreateDataProperty(minimumFractionDigitsKey, digits[minimumFractionDigitsKey]);
             else
-                result[minimumFractionDigitsKey] = JSValue.CreateNumber(0);
+                result.CreateDataProperty(minimumFractionDigitsKey, JSValue.CreateNumber(0));
 
             if (digits != null && !digits[maximumFractionDigitsKey].IsUndefined)
-                result[maximumFractionDigitsKey] = digits[maximumFractionDigitsKey];
+                result.CreateDataProperty(maximumFractionDigitsKey, digits[maximumFractionDigitsKey]);
             else
-                result[maximumFractionDigitsKey] = JSValue.CreateNumber(3);
+                result.CreateDataProperty(maximumFractionDigitsKey, JSValue.CreateNumber(3));
 
             if (digits != null && !digits[minimumSignificantDigitsKey].IsUndefined)
-                result[minimumSignificantDigitsKey] = digits[minimumSignificantDigitsKey];
+                result.CreateDataProperty(minimumSignificantDigitsKey, digits[minimumSignificantDigitsKey]);
             if (digits != null && !digits[maximumSignificantDigitsKey].IsUndefined)
-                result[maximumSignificantDigitsKey] = digits[maximumSignificantDigitsKey];
+                result.CreateDataProperty(maximumSignificantDigitsKey, digits[maximumSignificantDigitsKey]);
         }
         else
         {
-            result[KeyStrings.GetOrCreate("minimumIntegerDigits")] = JSValue.CreateNumber(1);
-            result[KeyStrings.GetOrCreate("minimumFractionDigits")] = JSValue.CreateNumber(0);
-            result[KeyStrings.GetOrCreate("maximumFractionDigits")] = JSValue.CreateNumber(3);
-            result[KeyStrings.GetOrCreate("useGrouping")] = JSValue.BooleanTrue;
+            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), JSValue.CreateNumber(1));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), JSValue.CreateNumber(0));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), JSValue.CreateNumber(3));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"), JSValue.BooleanTrue);
         }
 
         // notation/signDisplay always have a resolved value; compactDisplay and
@@ -3100,12 +3101,12 @@ public class JSIntlNumberFormat : JSObject
         var r = @this.resolved;
         if (r != null)
         {
-            result[KeyStrings.GetOrCreate("notation")] = JSValue.CreateString(r.Notation);
-            result[KeyStrings.GetOrCreate("signDisplay")] = JSValue.CreateString(r.SignDisplay);
+            result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), JSValue.CreateString(r.Notation));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("signDisplay"), JSValue.CreateString(r.SignDisplay));
             if (r.CompactDisplay != null)
-                result[KeyStrings.GetOrCreate("compactDisplay")] = JSValue.CreateString(r.CompactDisplay);
+                result.CreateDataProperty(KeyStrings.GetOrCreate("compactDisplay"), JSValue.CreateString(r.CompactDisplay));
             if (r.UnitDisplay != null)
-                result[KeyStrings.GetOrCreate("unitDisplay")] = JSValue.CreateString(r.UnitDisplay);
+                result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"), JSValue.CreateString(r.UnitDisplay));
         }
 
         return result;
@@ -3275,6 +3276,18 @@ public class JSIntlDateTimeFormat : JSObject
         if (cycle == "h23" || cycle == "h24")
             return false;
         return true; // en default
+    }
+
+    // Resolves the hourCycle reported by resolvedOptions. hour12 takes precedence
+    // over an explicit hourCycle (mapping to h12 / h23); otherwise an explicit
+    // hourCycle is used as-is, falling back to the locale default (h12 for en).
+    // Kept consistent with ResolveHour12 so the two reported values never disagree.
+    private string ResolveHourCycle()
+    {
+        var hour12 = options?[Hour12Key];
+        if (hour12 != null && !hour12.IsUndefined)
+            return hour12.BooleanValue ? "h12" : "h23";
+        return OptionString(HourCycleKey) ?? "h12";
     }
 
     private JSIntlDateTimeFormatEngine.Pattern ResolveEnginePattern()
@@ -3500,18 +3513,25 @@ public class JSIntlDateTimeFormat : JSObject
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result[KeyStrings.GetOrCreate("locale")] = JSValue.CreateString(@this.localeTag);
-        result[KeyStrings.GetOrCreate("calendar")] = JSValue.CreateString(@this.ResolvedCalendar());
-        result[KeyStrings.GetOrCreate("numberingSystem")] = JSValue.CreateString("latn");
-        result[KeyStrings.GetOrCreate("timeZone")] = JSValue.CreateString(TimeZoneInfo.Local.Id);
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.localeTag));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("calendar"), JSValue.CreateString(@this.ResolvedCalendar()));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString("latn"));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("timeZone"), JSValue.CreateString(TimeZoneInfo.Local.Id));
 
         if (@this.options != null)
         {
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "calendar");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "numberingSystem");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeZone");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "hourCycle");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "hour12");
+            // hourCycle / hour12 are RESOLVED values (not plain passthrough): when the
+            // format includes an hour component, both are always present — hourCycle
+            // resolved from the hour12/hourCycle options (defaulting per locale) and
+            // hour12 derived to match. They appear right after timeZone per the spec.
+            if (@this.UsesHourFormatting())
+            {
+                result.CreateDataProperty(KeyStrings.GetOrCreate("hourCycle"), JSValue.CreateString(@this.ResolveHourCycle()));
+                result.CreateDataProperty(KeyStrings.GetOrCreate("hour12"), @this.ResolveHour12() ? JSValue.BooleanTrue : JSValue.BooleanFalse);
+            }
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "dateStyle");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeStyle");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "weekday");
@@ -3650,6 +3670,10 @@ internal static class JSIntlResolvedOptionsExtensions
         var key = KeyStrings.GetOrCreate(name);
         var value = options?[key] ?? JSValue.UndefinedValue;
         if (!value.IsUndefined)
-            target[key] = value;
+            // CreateDataPropertyOrThrow: define an own property directly. Ordinary
+            // assignment ([[Set]]) would walk the prototype chain and could invoke a
+            // setter installed on Object.prototype by client code (ECMA-402 requires
+            // resolvedOptions to be unaffected by such taint).
+            target.CreateDataProperty(key, value);
     }
 }

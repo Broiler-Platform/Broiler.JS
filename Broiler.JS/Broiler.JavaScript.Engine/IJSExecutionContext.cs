@@ -25,6 +25,14 @@ public interface IJSExecutionContext : IJSContext
     /// </summary>
     JSObject AsyncFunctionPrototype { get; set; }
 
+    /// <summary>
+    /// Gets or sets the cached per-realm %ThrowTypeError% intrinsic — the single
+    /// shared, frozen function used as the poison getter/setter for the "callee"
+    /// property of unmapped arguments objects, so every reference compares equal
+    /// under <c>SameValue</c>.
+    /// </summary>
+    JSObject ThrowTypeError { get; set; }
+
     /// <summary>Gets the global Object constructor for this context.</summary>
     JSValue Object { get; }
 

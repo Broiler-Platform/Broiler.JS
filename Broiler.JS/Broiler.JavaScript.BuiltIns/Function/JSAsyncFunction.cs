@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
@@ -45,7 +46,14 @@ public class JSAsyncFunction
         }, "AsyncFunction", "function AsyncFunction() { [native code] }", 1, createPrototype: false);
         constructor.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
         constructor.prototype = prototype;
-        prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableValue);
+        // §27.7.3.2: AsyncFunction.prototype.constructor is non-writable
+        // (attributes { writable: false, enumerable: false, configurable: true }).
+        prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableReadonlyValue);
+
+        // §27.7.3.3: AsyncFunction.prototype[@@toStringTag] = "AsyncFunction".
+        // Async functions inherit this, so Object.prototype.toString on an async
+        // function (or a Proxy of one) reports "[object AsyncFunction]".
+        prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("AsyncFunction"), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         return prototype;
     }

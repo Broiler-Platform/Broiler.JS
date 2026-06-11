@@ -124,15 +124,25 @@ public partial class JSDate
     internal JSValue SetHours(in Arguments a)
     {
         var date = value;
-        if (!IsValid(date, a.Get1(), out var hours))
-            return JSNumber.NaN;
+        bool valid = IsValid(date, a.Get1(), out var hours);
 
         var (_hours, _mins, _seconds, _millis) = a.Get4();
 
+        // Coerce every present argument (ToNumber, possibly invoking valueOf) BEFORE
+        // returning on an invalid date: the spec performs all the ToNumber conversions
+        // in order before the "if t is NaN, return NaN" step. Each value is read once
+        // and reused via CoercedIntValue so valueOf is invoked exactly once per arg.
+        double minsCoerced = _mins.IsUndefined ? double.NaN : _mins.DoubleValue;
+        double secCoerced = _seconds.IsUndefined ? double.NaN : _seconds.DoubleValue;
+        double msCoerced = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+
+        if (!valid)
+            return JSNumber.NaN;
+
         var hrs = _hours.IsUndefined ? date.Hour : CoercedIntValue(hours);
-        var mins = _mins.IsUndefined ? date.Minute : _mins.IntValue;
-        var seconds = _seconds.IsUndefined ? date.Second : _seconds.IntValue;
-        var millis = _millis.IsUndefined ? date.Millisecond : _millis.IntValue;
+        var mins = _mins.IsUndefined ? date.Minute : CoercedIntValue(minsCoerced);
+        var seconds = _seconds.IsUndefined ? date.Second : CoercedIntValue(secCoerced);
+        var millis = _millis.IsUndefined ? date.Millisecond : CoercedIntValue(msCoerced);
 
         try
         {
@@ -176,13 +186,21 @@ public partial class JSDate
     internal JSValue SetMinutes(in Arguments a)
     {
         var date = value;
-        if (!IsValid(date, a.Get1(), out var minutes))
-            return JSNumber.NaN;
+        bool valid = IsValid(date, a.Get1(), out var minutes);
 
         var (_mins, _seconds, _millis) = a.Get3();
+
+        // Coerce every present argument (ToNumber) before returning on an invalid
+        // date so all valueOf side effects run, in order. See SetHours for rationale.
+        double secCoerced = _seconds.IsUndefined ? double.NaN : _seconds.DoubleValue;
+        double msCoerced = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+
+        if (!valid)
+            return JSNumber.NaN;
+
         var mins = _mins.IsUndefined ? date.Minute : CoercedIntValue(minutes);
-        var seconds = _seconds.IsUndefined ? date.Second : _seconds.IntValue;
-        var millis = _millis.IsUndefined ? date.Millisecond : _millis.IntValue;
+        var seconds = _seconds.IsUndefined ? date.Second : CoercedIntValue(secCoerced);
+        var millis = _millis.IsUndefined ? date.Millisecond : CoercedIntValue(msCoerced);
 
         try
         {
@@ -204,12 +222,19 @@ public partial class JSDate
     internal JSValue SetMonth(in Arguments a)
     {
         var date = value;
-        if (!IsValid(date, a.Get1(), out var mnth))
-            return JSNumber.NaN;
+        bool valid = IsValid(date, a.Get1(), out var mnth);
 
         var (_month, _days) = a.Get2();
+
+        // Coerce a present date argument (ToNumber) before returning on an invalid
+        // date so its valueOf side effect runs. See SetHours for rationale.
+        double daysCoerced = _days.IsUndefined ? double.NaN : _days.DoubleValue;
+
+        if (!valid)
+            return JSNumber.NaN;
+
         var month = _month.IsUndefined ? date.Month : CoercedIntValue(mnth);
-        var days = (_days.IsUndefined ? date.Day : _days.IntValue) - 1;
+        var days = (_days.IsUndefined ? date.Day : CoercedIntValue(daysCoerced)) - 1;
 
         try
         {
@@ -234,12 +259,19 @@ public partial class JSDate
     internal JSValue SetSeconds(in Arguments a)
     {
         var date = value;
-        if (!IsValid(date, a.Get1(), out var secs))
-            return JSNumber.NaN;
+        bool valid = IsValid(date, a.Get1(), out var secs);
 
         var (_seconds, _millis) = a.Get2();
+
+        // Coerce a present ms argument (ToNumber) before returning on an invalid date
+        // so its valueOf side effect runs, in order. See SetHours for rationale.
+        double msCoerced = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+
+        if (!valid)
+            return JSNumber.NaN;
+
         var seconds = _seconds.IsUndefined ? date.Second : CoercedIntValue(secs);
-        var millis = _millis.IsUndefined ? date.Millisecond : _millis.IntValue;
+        var millis = _millis.IsUndefined ? date.Millisecond : CoercedIntValue(msCoerced);
 
         try
         {
@@ -442,17 +474,24 @@ public partial class JSDate
     internal JSValue SetUTCMinutes(in Arguments a)
     {
         var date = value;
-        if (!IsValid(date, a.Get1(), out var minutes))
-            return JSNumber.NaN;
+        bool valid = IsValid(date, a.Get1(), out var minutes);
 
         var offset = date.Offset;
         var utc = date.ToUniversalTime();
 
         var (_mins, _seconds, _millis) = a.Get3();
 
+        // Coerce every present argument (ToNumber) before returning on an invalid
+        // date so all valueOf side effects run, in order. See SetHours for rationale.
+        double secCoerced = _seconds.IsUndefined ? double.NaN : _seconds.DoubleValue;
+        double msCoerced = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+
+        if (!valid)
+            return JSNumber.NaN;
+
         var mins = _mins.IsUndefined ? utc.Minute : CoercedIntValue(minutes);
-        var seconds = _seconds.IsUndefined ? utc.Second : _seconds.IntValue;
-        var millis = _millis.IsUndefined ? utc.Millisecond : _millis.IntValue;
+        var seconds = _seconds.IsUndefined ? utc.Second : CoercedIntValue(secCoerced);
+        var millis = _millis.IsUndefined ? utc.Millisecond : CoercedIntValue(msCoerced);
 
         try
         {
@@ -475,16 +514,22 @@ public partial class JSDate
     internal JSValue SetUTCMonth(in Arguments a)
     {
         var date = value;
-        if (!IsValid(date, a.Get1(), out var mnth))
-            return JSNumber.NaN;
+        bool valid = IsValid(date, a.Get1(), out var mnth);
 
         var offset = date.Offset;
         var utc = date.ToUniversalTime();
 
         var (_month, _days) = a.Get2();
 
+        // Coerce a present date argument (ToNumber) before returning on an invalid
+        // date so its valueOf side effect runs. See SetHours for rationale.
+        double daysCoerced = _days.IsUndefined ? double.NaN : _days.DoubleValue;
+
+        if (!valid)
+            return JSNumber.NaN;
+
         var month = _month.IsUndefined ? utc.Month : CoercedIntValue(mnth);
-        var days = (_days.IsUndefined ? utc.Day : _days.IntValue) - 1;
+        var days = (_days.IsUndefined ? utc.Day : CoercedIntValue(daysCoerced)) - 1;
 
         try
         {
@@ -508,16 +553,22 @@ public partial class JSDate
     internal JSValue SetUTCSeconds(in Arguments a)
     {
         var date = value;
-        if (!IsValid(date, a.Get1(), out var secs))
-            return JSNumber.NaN;
+        bool valid = IsValid(date, a.Get1(), out var secs);
 
         var offset = date.Offset;
         var utc = date.ToUniversalTime();
 
         var (_seconds, _millis) = a.Get2();
 
+        // Coerce a present ms argument (ToNumber) before returning on an invalid date
+        // so its valueOf side effect runs, in order. See SetHours for rationale.
+        double msCoerced = _millis.IsUndefined ? double.NaN : _millis.DoubleValue;
+
+        if (!valid)
+            return JSNumber.NaN;
+
         var seconds = _seconds.IsUndefined ? utc.Second : CoercedIntValue(secs);
-        var millis = _millis.IsUndefined ? utc.Millisecond : _millis.IntValue;
+        var millis = _millis.IsUndefined ? utc.Millisecond : CoercedIntValue(msCoerced);
 
         try
         {

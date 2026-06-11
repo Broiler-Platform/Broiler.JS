@@ -69,6 +69,11 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     // [[Prototype]], so it is created lazily once and cached here rather than
     // rebuilt per function. Populated by JSAsyncFunction via the interface.
     public JSObject AsyncFunctionPrototype { get; set; }
+
+    // The per-realm %ThrowTypeError% intrinsic. Created lazily once and shared by
+    // every unmapped arguments object's "callee" poison accessor so they compare
+    // equal under SameValue. Populated by JSFunction via the interface.
+    public JSObject ThrowTypeError { get; set; }
     public JSValue Object { get; private set; }
     public JSValue IntrinsicEval { get; private set; } = JSUndefined.Value;
     public event LogEventHandler Log;

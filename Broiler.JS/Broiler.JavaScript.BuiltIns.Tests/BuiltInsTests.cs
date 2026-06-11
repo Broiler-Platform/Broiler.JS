@@ -4323,6 +4323,233 @@ public class BuiltInsTests
         Assert.Equal("sync|then:ok", result.ToString());
     }
 
+    [Theory]
+    // Each multi-argument Date setter must coerce every PRESENT argument (ToNumber,
+    // invoking valueOf) in order, even when the receiver is an invalid date — the
+    // spec performs all the ToNumber conversions before the "if t is NaN, return NaN"
+    // step. Regression for early-returning after coercing only the first argument.
+    [InlineData("d.setMinutes(mk('min'), mk('sec'), mk('ms'));", "min|sec|ms")]
+    [InlineData("d.setSeconds(mk('sec'), mk('ms'));", "sec|ms")]
+    [InlineData("d.setMonth(mk('month'), mk('date'));", "month|date")]
+    [InlineData("d.setHours(mk('hr'), mk('min'), mk('sec'), mk('ms'));", "hr|min|sec|ms")]
+    [InlineData("d.setUTCMinutes(mk('min'), mk('sec'), mk('ms'));", "min|sec|ms")]
+    [InlineData("d.setUTCSeconds(mk('sec'), mk('ms'));", "sec|ms")]
+    [InlineData("d.setUTCMonth(mk('month'), mk('date'));", "month|date")]
+    public void Date_Setters_Coerce_All_Arguments_On_Invalid_Date(string call, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var order = [];
+            var mk = function(label) { return { valueOf: function(){ order.push(label); return 1; } }; };
+            var d = new Date(NaN);
+            " + call + @"
+            order.join('|');
+        ");
+
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
+    // Object.prototype.toString reports the builtin tag "Function" for every callable,
+    // but async/generator function objects inherit a @@toStringTag from their prototype
+    // that overrides it. A Proxy of such a function forwards the @@toStringTag Get to its
+    // target, so it reports the same tag. Regression for AsyncFunction.prototype lacking
+    // @@toStringTag (it returned "[object Function]" instead of "[object AsyncFunction]").
+    [InlineData("(function(){})", "[object Function]")]
+    [InlineData("(async function(){})", "[object AsyncFunction]")]
+    [InlineData("(function*(){})", "[object GeneratorFunction]")]
+    [InlineData("(async function*(){})", "[object AsyncGeneratorFunction]")]
+    [InlineData("new Proxy(function(){}, {})", "[object Function]")]
+    [InlineData("new Proxy(async function(){}, {})", "[object AsyncFunction]")]
+    public void Object_ToString_Reports_Function_Kind_Tag(string expr, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute("Object.prototype.toString.call(" + expr + ");");
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
+    // §27.x.3.2: the .prototype.constructor of the dynamic-function constructors is
+    // non-writable { writable: false, enumerable: false, configurable: true }.
+    [InlineData("(function*(){}).constructor")]
+    [InlineData("(async function*(){}).constructor")]
+    [InlineData("(async function(){}).constructor")]
+    public void Dynamic_Function_Prototype_Constructor_Is_NonWritable(string ctorExpr)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var C = " + ctorExpr + @";
+            var d = Object.getOwnPropertyDescriptor(C.prototype, 'constructor');
+            [d.writable, d.enumerable, d.configurable].join('|');
+        ");
+        Assert.Equal("false|false|true", result.ToString());
+    }
+
+    [Theory]
+    // Array exotic objects list "length" (non-enumerable) right after the integer
+    // indices in [[OwnPropertyKeys]], so non-enumerable own-key reflection must report
+    // it while enumerable-only walks must not. Regression for "length" being omitted.
+    [InlineData("Object.getOwnPropertyNames([1,2,3])", "0,1,2,length")]
+    [InlineData("Object.getOwnPropertyNames([])", "length")]
+    [InlineData("Reflect.ownKeys([1,2])", "0,1,length")]
+    [InlineData("Object.keys(Object.getOwnPropertyDescriptors([1,2]))", "0,1,length")]
+    [InlineData("Object.keys([1,2,3])", "0,1,2")]
+    public void Array_OwnKeys_Include_Length_Only_When_NonEnumerable(string expr, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(expr + ".join(',');");
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
+    // A property that is deleted and then recreated is a NEW property and must move
+    // to the end of the enumeration order (OrdinaryOwnPropertyKeys); integer-index
+    // keys still sort ascending ahead of string keys, and redefining a live property
+    // keeps its position. Regression for the revived key retaining its old position.
+    [InlineData("var o={}; o.p1=1;o.p2=2;o.p3=3;o.p4=4; delete o.p1; o.p1=1; return Object.keys(o);", "p2,p3,p4,p1")]
+    [InlineData("var o={a:1,b:2,c:3}; delete o.b; o.b=1; return Object.keys(o);", "a,c,b")]
+    [InlineData("var o={a:1,b:2,c:3}; delete o.a; o.a=1; return Object.keys(o);", "b,c,a")]
+    [InlineData("var o={a:1,b:2,c:3}; o.b=9; return Object.keys(o);", "a,b,c")]
+    [InlineData("var o={}; o.x=1;o[2]=1;o[0]=1;o[1]=1;o.y=1; delete o.x; o.x=1; return Object.keys(o);", "0,1,2,y,x")]
+    [InlineData("var o={a:1,b:2,c:3}; delete o.a; o.a=1; var r=[]; for(var k in o) r.push(k); return r;", "b,c,a")]
+    [InlineData("var o={a:1,b:2,c:3}; delete o.a; o.a=7; return Object.values(o);", "2,3,7")]
+    public void Object_Enumeration_Order_Moves_Recreated_Key_To_End(string body, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute("(function(){ " + body + " })().join(',');");
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Fact]
+    public void Array_Of_Is_Generic_Over_Constructor_This()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // Array.of called with a constructor as `this` must Construct it, propagate
+        // an abrupt completion from the constructor or from setting length, populate
+        // elements, and set length on the result.
+        var result = ctx.Execute(@"
+            var out = [];
+            function ThrowingCtor() { throw new Error('ctor'); }
+            try { Array.of.call(ThrowingCtor, 1, 2, 3); out.push('ctor:NO'); }
+            catch (e) { out.push('ctor:' + e.message); }
+
+            function LenThrows() {
+                Object.defineProperty(this, 'length', { set: function() { throw new Error('len'); } });
+            }
+            try { Array.of.call(LenThrows, 1); out.push('len:NO'); }
+            catch (e) { out.push('len:' + e.message); }
+
+            function MyArr(n) { this.received = n; }
+            var inst = Array.of.call(MyArr, 'a', 'b');
+            out.push('custom:' + (inst instanceof MyArr) + ',' + inst[0] + ',' + inst[1] + ',' + inst.length + ',' + inst.received);
+
+            out.push('plain:' + Array.of(7, 8, 9).join('') + ',' + Array.isArray(Array.of(1)));
+            out.join('|');
+        ");
+        Assert.Equal("ctor:ctor|len:len|custom:true,a,b,2,2|plain:789,true", result.ToString());
+    }
+
+    [Theory]
+    // ArrayBuffer.prototype.transfer / transferToFixedLength / transferToImmutable must
+    // coerce the newLength argument (ToIndex -> valueOf) BEFORE validating the receiver,
+    // so the side effect runs even when the method then throws for a detached buffer.
+    [InlineData("transfer")]
+    [InlineData("transferToFixedLength")]
+    [InlineData("transferToImmutable")]
+    public void ArrayBuffer_Transfer_Coerces_NewLength_Before_Validation(string method)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var called = false;
+            var newLen = { valueOf: function() { called = true; return 0; } };
+            var ab = new ArrayBuffer(8);
+            ab.transfer();           // detach the buffer
+            try { ab." + method + @"(newLen); } catch (e) { /* expected: detached throws */ }
+            called;
+        ");
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Theory]
+    // Intl resolvedOptions must build its result via CreateDataPropertyOrThrow, not
+    // ordinary assignment — so a setter installed on Object.prototype by client code
+    // (taint) is never invoked. Regression: the result was built with [[Set]].
+    [InlineData("new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })")]
+    [InlineData("new Intl.DateTimeFormat('en-US', { weekday: 'short', hour: 'numeric' })")]
+    [InlineData("new Intl.PluralRules('en-US')")]
+    [InlineData("new Intl.RelativeTimeFormat('en-US')")]
+    public void Intl_ResolvedOptions_Ignores_Object_Prototype_Taint(string ctor)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var keys = ['locale','calendar','numberingSystem','timeZone','style','numeric',
+                'currency','unit','useGrouping','minimumIntegerDigits','minimumFractionDigits',
+                'maximumFractionDigits','notation','signDisplay','type','granularity'];
+            keys.forEach(function(k){
+                Object.defineProperty(Object.prototype, k, {
+                    configurable: true, set: function(){ throw new Error('taint:' + k); }
+                });
+            });
+            try { (" + ctor + @").resolvedOptions(); 'ok'; }
+            catch (e) { 'threw:' + e.message; }
+        ");
+        Assert.Equal("ok", result.ToString());
+    }
+
+    [Theory]
+    // DateTimeFormat.resolvedOptions must report hourCycle and hour12 (resolved
+    // values) whenever the format includes an hour component, in the spec order
+    // (right after timeZone, before the date/time component fields). Regression:
+    // both were omitted entirely.
+    [InlineData("{ hour: 'numeric' }", "h12|true|locale,calendar,numberingSystem,timeZone,hourCycle,hour12,hour")]
+    [InlineData("{ hour: 'numeric', hour12: false }", "h23|false|locale,calendar,numberingSystem,timeZone,hourCycle,hour12,hour")]
+    [InlineData("{ hour: 'numeric', hourCycle: 'h11' }", "h11|true|locale,calendar,numberingSystem,timeZone,hourCycle,hour12,hour")]
+    [InlineData("{ year: 'numeric' }", "undefined|undefined|locale,calendar,numberingSystem,timeZone,year")]
+    public void DateTimeFormat_ResolvedOptions_Reports_HourCycle_And_Hour12(string options, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Execute(@"
+            var r = new Intl.DateTimeFormat('en-US', " + options + @").resolvedOptions();
+            '' + r.hourCycle + '|' + r.hour12 + '|' + Object.keys(r).join(',');
+        ");
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Fact]
+    public void ThrowTypeError_Is_Shared_Across_Unmapped_Arguments_Callee()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // %ThrowTypeError% is a single per-realm intrinsic: the callee poison's get
+        // and set are the same function, and it is shared across every unmapped
+        // arguments object (strict, or non-strict with a non-simple parameter list).
+        var result = ctx.Execute(@"
+            function strict1() { 'use strict'; return arguments; }
+            function strict2() { 'use strict'; return arguments; }
+            function nonSimple(a, b = 0) { return arguments; }
+            var d1 = Object.getOwnPropertyDescriptor(strict1(), 'callee');
+            var d2 = Object.getOwnPropertyDescriptor(strict2(), 'callee');
+            var d3 = Object.getOwnPropertyDescriptor(nonSimple(1), 'callee');
+            [
+                d1.get === d1.set,
+                d1.get === d2.get,
+                d1.get === d2.set,
+                d1.get === d3.get,
+                typeof d1.get === 'function'
+            ].join('|');
+        ");
+        Assert.Equal("true|true|true|true|true", result.ToString());
+    }
+
     [Fact]
     public void Promise_Nested_Resolution_Assimilates_Inner_Promise()
     {

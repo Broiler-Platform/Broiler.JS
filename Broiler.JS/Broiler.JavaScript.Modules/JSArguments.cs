@@ -28,7 +28,10 @@ public class JSArguments: JSObject
     {
         // arguments = args;
         ref var properties = ref GetOwnProperties(true);
-        var throwTypeError = JSFunction.CreateFrozenThrowTypeErrorFunction("ThrowTypeError", "Cannot access callee in strict mode");
+        // %ThrowTypeError% is a single shared per-realm intrinsic; reuse it (rather
+        // than minting a fresh function per arguments object) so the callee poison's
+        // get/set — and the accessors across arguments objects — are SameValue-equal.
+        var throwTypeError = JSFunction.GetOrCreateThrowTypeError();
         properties.Put(KeyStrings.length, JSValue.CreateNumber(args.Length), JSPropertyAttributes.ConfigurableValue);
         properties.Put(KeyStrings.callee, throwTypeError, throwTypeError, JSPropertyAttributes.Property);
         FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("Arguments"), JSPropertyAttributes.ConfigurableReadonlyValue);

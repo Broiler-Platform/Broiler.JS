@@ -129,11 +129,31 @@ public partial class JSArray
     [JSExport("of")]
     public static JSValue StaticOf(in Arguments a)
     {
+        var len = a.Length;
+
+        // Array.of is generic: when invoked with a constructor as the this value
+        // (e.g. Array.of.call(T, ...)), build the result via Construct(C, «len»),
+        // populate it with CreateDataPropertyOrThrow, and finish with a throwing
+        // Set(A, "length", len, true) — so an abrupt completion from the constructor
+        // or from setting length propagates instead of being swallowed.
+        var t = a.This;
+        if (JSConstructorOperations.IsConstructor(t) && t is JSObject ctor)
+        {
+            var result = ctor.CreateInstance(new Arguments(JSUndefined.Value, JSValue.CreateNumber(len))) as JSObject;
+            if (result == null)
+                throw JSEngine.NewTypeError("Array.of constructor must return an object");
+
+            for (var k = 0; k < len; k++)
+                result.CreateDataProperty(JSValue.CreateNumber(k), a.GetAt(k));
+
+            result.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(len));
+            return result;
+        }
+
         var r = new JSArray();
-        var al = a.Length;
         ref var rElements = ref r.CreateElements();
 
-        for (var ai = 0; ai < al; ai++)
+        for (var ai = 0; ai < len; ai++)
             rElements.Put(r._length++, a.GetAt(ai));
 
         return r;
