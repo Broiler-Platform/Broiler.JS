@@ -188,4 +188,25 @@ public class Issue745Tests
     [Fact]
     public void NonEmptyDescriptionSymbolMethodNameIsBracketed()
         => Assert.Equal("[foo]", Eval("var s=Symbol('foo');var o={[s](){}};o[s].name"));
+
+    // ---- Problem 18: duplicate named group in the same alternative is a SyntaxError ----
+
+    [Fact]
+    public void DuplicateNamedGroupSameAlternativeThrowsSyntaxError()
+        => Assert.Equal("SyntaxError", Eval(
+            "var e;try{new RegExp('(?<x>a)(?<x>b)');}catch(t){e=t.constructor.name;}e"));
+
+    [Fact]
+    public void DuplicateNamedGroupSeparateAlternativesParses()
+        => Assert.Equal("(?<x>a)|(?<x>b)", Eval("new RegExp('(?<x>a)|(?<x>b)').source"));
+
+    [Fact]
+    public void DuplicateNamedGroupNestedThrowsSyntaxError()
+        => Assert.Equal("SyntaxError", Eval(
+            "var e;try{new RegExp('(?<x>(?<x>a))');}catch(t){e=t.constructor.name;}e"));
+
+    [Fact]
+    public void DistinctNamedGroupsSameAlternativeParse()
+        => Assert.Equal("ok", Eval(
+            "var e='ok';try{new RegExp('(?<a>x)(?<b>y)');}catch(t){e=t.constructor.name;}e"));
 }
