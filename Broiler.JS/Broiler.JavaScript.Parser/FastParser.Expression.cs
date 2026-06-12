@@ -157,7 +157,7 @@ partial class FastParser
                 return true;
         }
 
-        if (!currentType.IsOperator())
+        if (!currentType.IsOperator() && !currentType.IsAssignmentOperator())
         {
             if (!considerInOfAsOperators && current.ContextualKeyword == FastKeywords.of)
                 return true;

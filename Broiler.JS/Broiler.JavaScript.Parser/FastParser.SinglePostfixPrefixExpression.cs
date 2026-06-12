@@ -227,7 +227,16 @@ partial class FastParser
     {
         var start = stream.Current;
         stream.Consume();
-        stream.SkipNewLines();
+
+        // `async [no LineTerminator here] function/BindingIdentifier/(` — a line
+        // break after `async` disqualifies it as an async function/arrow head, so
+        // it is a plain IdentifierReference (`async\nfunction f(){}` is `async;
+        // function f(){}`; `async\nx => {}` is `async; x => {}`).
+        if (stream.SkipNewLines().LinesSkipped)
+        {
+            stream.Reset(start);
+            return false;
+        }
 
         var t = stream.Current;
         bool result;

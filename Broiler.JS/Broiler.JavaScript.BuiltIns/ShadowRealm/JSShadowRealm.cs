@@ -54,12 +54,32 @@ public partial class JSShadowRealm : JSObject
         try
         {
             JSEngine.CurrentContext = evalRealm;
-            result = JSTailCall.Resolve(evalRealm.Eval(sourceText));
-        }
-        catch (Exception)
-        {
-            JSEngine.CurrentContext = outer;
-            throw JSEngine.NewTypeError("ShadowRealm.prototype.evaluate threw inside the inner realm");
+
+            // PerformShadowRealmEval distinguishes two failure phases:
+            //   * ParseScript / early-error failure  -> throw a SyntaxError
+            //   * abrupt completion while evaluating  -> throw a (wrapping) TypeError
+            // Both errors must be created in the CALLER realm, so reset the current
+            // context before constructing them.
+            JSFunctionDelegate compiled;
+            try
+            {
+                compiled = CoreScript.Compile(sourceText, codeCache: evalRealm.CodeCache);
+            }
+            catch (Exception)
+            {
+                JSEngine.CurrentContext = outer;
+                throw JSEngine.NewSyntaxError("ShadowRealm.prototype.evaluate: the provided source text could not be parsed");
+            }
+
+            try
+            {
+                result = JSTailCall.Resolve(compiled(new Arguments(evalRealm)));
+            }
+            catch (Exception)
+            {
+                JSEngine.CurrentContext = outer;
+                throw JSEngine.NewTypeError("ShadowRealm.prototype.evaluate threw inside the inner realm");
+            }
         }
         finally
         {

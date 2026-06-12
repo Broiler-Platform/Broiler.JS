@@ -6,6 +6,9 @@ public static class TokenTypesExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsOperator(this TokenTypes type) => type > TokenTypes.BeginOperators && type < TokenTypes.EndOperators;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsAssignmentOperator(this TokenTypes type) => type > TokenTypes.BeginAssignTokens && type < TokenTypes.EndAssignTokens;
 }
 
 /// <summary>

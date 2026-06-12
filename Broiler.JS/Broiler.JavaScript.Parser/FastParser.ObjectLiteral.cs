@@ -121,7 +121,21 @@ partial class FastParser
         bool isGenerator = stream.CheckAndConsume(TokenTypes.Multiply);
         if (PropertyName(out var key, out var computed, out var isPrivate, acceptKeywords: true))
         {
-            if (checkContextualKeyword && (isSet || isGet))
+            // A getter/setter is never a generator, so `get`/`set` followed by a
+            // generator marker `*` on a NEW line is not an accessor: ASI makes
+            // `get`/`set` a (data) field and the `*name(){}` a separate generator
+            // method (test262 grammar-field-named-{get,set}-followed-by-generator-asi).
+            // Leave it to the field path below. `get *a(){}` on the SAME line stays
+            // a SyntaxError (handled by the accessor recursion).
+            var getSetGeneratorAsi = isClass && (isSet || isGet);
+            if (getSetGeneratorAsi)
+            {
+                var genPeek = stream.SkipNewLines();
+                getSetGeneratorAsi = genPeek.LinesSkipped && stream.Current.Type == TokenTypes.Multiply;
+                genPeek.Undo();
+            }
+
+            if (checkContextualKeyword && (isSet || isGet) && !getSetGeneratorAsi)
             {
                 var accessorNameStart = Location;
                 if (ObjectProperty(out property, isClass: isClass, isAsync: isAsync))

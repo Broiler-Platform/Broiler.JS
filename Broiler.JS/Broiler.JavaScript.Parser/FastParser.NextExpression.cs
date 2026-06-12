@@ -176,7 +176,17 @@ partial class FastParser
 
             case TokenTypes.QuestionMark:
                 stream.CheckAndConsume(previousType);
-                if (!Expression(out var @true))
+
+                // The consequent of a ConditionalExpression is an
+                // AssignmentExpression[+In]: `in` is always a valid operator
+                // there, even inside a for-head where it is otherwise suppressed
+                // (`for (a ? b in c : d; …)`). The alternative is [?In] and keeps
+                // the surrounding setting.
+                var savedInConsequent = considerInOfAsOperators;
+                considerInOfAsOperators = true;
+                var okConsequent = Expression(out var @true);
+                considerInOfAsOperators = savedInConsequent;
+                if (!okConsequent)
                     throw stream.Unexpected();
 
                 stream.Expect(TokenTypes.Colon);
@@ -273,7 +283,15 @@ partial class FastParser
                 if (depth == 0)
                 {
                     previous = Combine(previous, previousType, node);
-                    if (!Expression(out var @true))
+
+                    // Consequent is [+In] (see the QuestionMark case above);
+                    // re-enable `in` while parsing it so a for-head's `[~In]`
+                    // does not leak into the ternary branch.
+                    var savedIn = considerInOfAsOperators;
+                    considerInOfAsOperators = true;
+                    var ok = Expression(out var @true);
+                    considerInOfAsOperators = savedIn;
+                    if (!ok)
                         throw stream.Unexpected();
 
                     stream.Expect(TokenTypes.Colon);
