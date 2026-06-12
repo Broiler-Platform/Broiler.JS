@@ -490,6 +490,13 @@ public class FastScanner
                 switch (Consume())
                 {
                     case '.':
+                        // `?.` is an OptionalChainingPunctuator only when NOT followed
+                        // by a DecimalDigit: `a ?.3 : b` is the conditional operator
+                        // with a fractional literal (`?` then `.3`), not optional
+                        // chaining. Emit `?` and leave `.3` to scan as a number.
+                        if (char.IsDigit(Next()))
+                            return state.Commit(TokenTypes.QuestionMark);
+
                         switch (Consume())
                         {
                             case '(':

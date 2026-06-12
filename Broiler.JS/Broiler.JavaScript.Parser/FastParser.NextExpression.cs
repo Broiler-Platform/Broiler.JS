@@ -154,6 +154,7 @@ partial class FastParser
             case TokenTypes.AssignMultiply:
             case TokenTypes.AssignBooleanAnd:
             case TokenTypes.AssignBooleanOr:
+            case TokenTypes.AssignCoalesce:
             case TokenTypes.AssignPower:
             case TokenTypes.AssignRightShift:
             case TokenTypes.AssignSubtract:
@@ -267,6 +268,7 @@ partial class FastParser
             case TokenTypes.AssignMultiply:
             case TokenTypes.AssignBooleanAnd:
             case TokenTypes.AssignBooleanOr:
+            case TokenTypes.AssignCoalesce:
             case TokenTypes.AssignPower:
             case TokenTypes.AssignRightShift:
             case TokenTypes.AssignSubtract:

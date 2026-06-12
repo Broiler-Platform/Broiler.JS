@@ -119,4 +119,41 @@ public class Issue763Tests
             "var n = 0; function k(){ n++; return 'm'; }"
             + " var o = { [k()](){} };"
             + " globalThis.r = n + '|' + o.m.name;"));
+
+    // Problem 41: `?.` is an optional-chaining punctuator only when NOT followed by
+    // a DecimalDigit. `true ?.30 : false` is the conditional operator with a
+    // fractional literal, not optional chaining.
+    [Fact]
+    public void OptionalChainPunctuatorDecimalLookahead()
+        => Assert.Equal("0.3", Drive("var v = true ?.30 : false; globalThis.r = '' + v;"));
+
+    [Theory]
+    [InlineData("var o = { a: { b: 5 } }; globalThis.r = '' + o?.a?.b;", "5")]
+    [InlineData("globalThis.r = '' + ((null)?.foo);", "undefined")]
+    [InlineData("var f = { g: () => 7 }; globalThis.r = '' + f?.g();", "7")]
+    public void OptionalChainingStillWorks(string code, string expected)
+        => Assert.Equal(expected, Drive(code));
+
+    // Problem 40: `??=` (logical nullish assignment) must parse a full
+    // AssignmentExpression RHS — including an arrow function — and perform
+    // NamedEvaluation, exactly like `||=`/`&&=`.
+    [Fact]
+    public void NullishAssignmentWithArrowNamedEvaluation()
+        => Assert.Equal("value", Drive("var value = undefined; value ??= () => {}; globalThis.r = value.name;"));
+
+    [Theory]
+    [InlineData("var x = null; x ??= 5; globalThis.r = '' + x;", "5")]
+    [InlineData("var x = 1; x ??= 9; globalThis.r = '' + x;", "1")]
+    [InlineData("var x = 0; x ||= () => 1; globalThis.r = typeof x;", "function")]
+    public void LogicalAssignmentOperators(string code, string expected)
+        => Assert.Equal(expected, Drive(code));
+
+    // Problem 45: a bare `yield` (no operand) may end a template substitution
+    // (`` `1${ yield }3${ 4 }5` ``); the closing `}` is re-scanned as the template
+    // tail, which the YieldExpression parser must accept as an operand terminator.
+    [Fact]
+    public void BareYieldEndingTemplateSubstitution()
+        => Assert.Equal("12345", Drive(
+            "var s; function* g(){ s = `1${ yield }3${ 4 }5`; }"
+            + " var it = g(); it.next(); it.next(2); globalThis.r = s;"));
 }
