@@ -777,10 +777,16 @@ public class FastScanner
                 switch (ch)
                 {
                     case '$':
-                        ch = Consume();
-                        if (ch == '{')
+                        // Only `${` begins a substitution. Peek at the next char rather
+                        // than consuming it: a lone `$` is literal content, and the
+                        // following char must be re-processed by the loop (it may end the
+                        // template — `` `$` `` — start its own `${`, or be an escape). The
+                        // old code consumed and appended it unconditionally, swallowing a
+                        // closing backtick or a subsequent `${`.
+                        if (Next() == '{')
                         {
-                            Consume();
+                            Consume(); // '$' -> '{'
+                            Consume(); // '{' -> after
                             // template part begin...
                             templateParts++;
                             templateBraceDepthStack.Push(templateBraceDepth);
@@ -789,7 +795,6 @@ public class FastScanner
                         }
 
                         t.Append('$');
-                        t.Append(ch);
                         continue;
 
                     case '`':
