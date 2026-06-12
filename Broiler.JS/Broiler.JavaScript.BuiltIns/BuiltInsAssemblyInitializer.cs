@@ -614,23 +614,21 @@ internal static class BuiltInsAssemblyInitializer
         Attach("PlainMonthDay", Temporal.JSTemporalPlainMonthDay.CreateClass(context, register: false));
         Attach("ZonedDateTime", Temporal.JSTemporalZonedDateTime.CreateClass(context, register: false));
 
-        // TODO: Temporal.Now (proposal §2) — a namespace exposing the current instant/date/
-        // time. Each method needs the host clock plus (for the zoned/ISO variants) a default
-        // time zone. Stubbed to throw until ZonedDateTime / time-zone support lands.
+        // Temporal.Now (proposal §2): the current instant/date/time. Backed by the host clock
+        // (DateTimeOffset.UtcNow) and the system local zone; see Temporal.JSTemporalNow.
         var now = new JSObject();
-        foreach (var method in new[] { "timeZoneId", "instant", "plainDateTimeISO", "zonedDateTimeISO", "plainDateISO", "plainTimeISO" })
-        {
-            var methodName = method;
-            now.FastAddValue(
-                KeyStrings.GetOrCreate(methodName),
-                new JSFunction(
-                    (in Arguments a) => throw JSEngine.NewError($"Temporal.Now.{methodName} is not yet implemented"),
-                    methodName,
-                    $"function {methodName}() {{ [native code] }}",
-                    createPrototype: false,
-                    length: 0),
+        void AddNow(string name, int length, JSFunctionDelegate fn)
+            => now.FastAddValue(
+                KeyStrings.GetOrCreate(name),
+                new JSFunction(fn, name, $"function {name}() {{ [native code] }}", createPrototype: false, length: length),
                 JSPropertyAttributes.ConfigurableValue);
-        }
+
+        AddNow("timeZoneId", 0, Temporal.JSTemporalNow.TimeZoneId);
+        AddNow("instant", 0, Temporal.JSTemporalNow.Instant);
+        AddNow("plainDateTimeISO", 0, Temporal.JSTemporalNow.PlainDateTimeISO);
+        AddNow("zonedDateTimeISO", 0, Temporal.JSTemporalNow.ZonedDateTimeISO);
+        AddNow("plainDateISO", 0, Temporal.JSTemporalNow.PlainDateISO);
+        AddNow("plainTimeISO", 0, Temporal.JSTemporalNow.PlainTimeISO);
         SetToStringTag(now, "Temporal.Now");
         temporal.FastAddValue(KeyStrings.GetOrCreate("Now"), now, JSPropertyAttributes.ConfigurableValue);
 

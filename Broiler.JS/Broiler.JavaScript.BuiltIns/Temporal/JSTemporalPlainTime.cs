@@ -40,6 +40,13 @@ public partial class JSTemporalPlainTime : JSObject
             throw JSEngine.NewRangeError("Temporal.PlainTime: time component out of range");
     }
 
+    // Factory used by sibling Temporal types (PlainDateTime.toPlainTime) to build a
+    // PlainTime from already-validated components without going through `new`.
+    internal static JSTemporalPlainTime Create(int h, int mi, int s, int ms, int us, int ns)
+        => new JSTemporalPlainTime(
+            ((((long)h * 60 + mi) * 60 + s) * 1000L + ms) * 1_000_000L + (long)us * 1000 + ns,
+            PlainTimePrototype);
+
     private JSTemporalPlainTime(long totalNanoseconds, JSObject prototype) : base(prototype)
     {
         nanosecond = (int)(totalNanoseconds % 1000); totalNanoseconds /= 1000;
@@ -213,15 +220,35 @@ public partial class JSTemporalPlainTime : JSObject
     public JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.PlainTime.prototype.valueOf, which is not supported. Use Temporal.PlainTime.compare for comparison.");
 
-    // TODO: toPlainDateTime / toZonedDateTime depend on Temporal.PlainDateTime /
-    // Temporal.ZonedDateTime, which are still stubs.
+    // toPlainDateTime combines this time with a PlainDate argument.
     [JSExport("toPlainDateTime", Length = 1)]
     public JSValue ToPlainDateTime(in Arguments a)
-        => throw JSEngine.NewError("Temporal.PlainTime.prototype.toPlainDateTime is not yet implemented (needs Temporal.PlainDateTime)");
+    {
+        var d = JSTemporalPlainDate.From(new Arguments(JSUndefined.Value, a.GetAt(0))) as JSTemporalPlainDate
+            ?? throw JSEngine.NewTypeError("expected a Temporal.PlainDate");
+        return new JSTemporalPlainDateTime(d.isoYear, d.isoMonth, d.isoDay,
+            hour, minute, second, millisecond, microsecond, nanosecond, JSTemporalPlainDateTime.PlainDateTimePrototype);
+    }
 
+    // toZonedDateTime({ plainDate, timeZone }): combine this time with a date and interpret
+    // it in the given zone.
     [JSExport("toZonedDateTime", Length = 1)]
     public JSValue ToZonedDateTime(in Arguments a)
-        => throw JSEngine.NewError("Temporal.PlainTime.prototype.toZonedDateTime is not yet implemented (needs Temporal.ZonedDateTime)");
+    {
+        if (a.GetAt(0) is not JSObject obj)
+            throw JSEngine.NewTypeError("Temporal.PlainTime.prototype.toZonedDateTime requires an object");
+
+        var tzValue = obj[KeyStrings.GetOrCreate("timeZone")];
+        if (tzValue.IsUndefined || !tzValue.IsString)
+            throw JSEngine.NewTypeError("Temporal.PlainTime.prototype.toZonedDateTime: timeZone must be a string");
+
+        var plainDateValue = obj[KeyStrings.GetOrCreate("plainDate")];
+        var d = JSTemporalPlainDate.From(new Arguments(JSUndefined.Value, plainDateValue)) as JSTemporalPlainDate
+            ?? throw JSEngine.NewTypeError("expected a Temporal.PlainDate");
+
+        return JSTemporalZonedDateTime.FromLocal(d.isoYear, d.isoMonth, d.isoDay,
+            hour, minute, second, millisecond, microsecond, nanosecond, tzValue.ToString());
+    }
 
     // ── helpers ─────────────────────────────────────────────────────────────────
 

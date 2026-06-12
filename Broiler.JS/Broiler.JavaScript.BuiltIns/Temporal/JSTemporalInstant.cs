@@ -184,6 +184,35 @@ public partial class JSTemporalInstant : JSObject
     public JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.Instant.prototype.valueOf, which is not supported. Use Temporal.Instant.compare for comparison.");
 
+    // toZonedDateTimeISO(timeZone): a ZonedDateTime at this instant with the ISO calendar.
+    [JSExport("toZonedDateTimeISO", Length = 1)]
+    public JSValue ToZonedDateTimeISO(in Arguments a)
+    {
+        var tz = a.GetAt(0);
+        if (tz == null || !tz.IsString)
+            throw JSEngine.NewTypeError("Temporal.Instant.prototype.toZonedDateTimeISO: time zone must be a string");
+        return JSTemporalZonedDateTime.CreateChecked(epochNanoseconds, tz.ToString());
+    }
+
+    // toZonedDateTime({ timeZone, calendar }): a ZonedDateTime at this instant.
+    [JSExport("toZonedDateTime", Length = 1)]
+    public JSValue ToZonedDateTime(in Arguments a)
+    {
+        if (a.GetAt(0) is not JSObject obj)
+            throw JSEngine.NewTypeError("Temporal.Instant.prototype.toZonedDateTime requires an object");
+
+        var calendar = obj[KeyStrings.GetOrCreate("calendar")];
+        if (calendar.IsUndefined)
+            throw JSEngine.NewTypeError("Temporal.Instant.prototype.toZonedDateTime requires a calendar");
+        if (!string.Equals(calendar.ToString(), "iso8601", StringComparison.OrdinalIgnoreCase))
+            throw JSEngine.NewRangeError($"Temporal.Instant: unsupported calendar \"{calendar}\" (only iso8601 is implemented)");
+
+        var tz = obj[KeyStrings.GetOrCreate("timeZone")];
+        if (tz.IsUndefined || !tz.IsString)
+            throw JSEngine.NewTypeError("Temporal.Instant.prototype.toZonedDateTime requires a timeZone string");
+        return JSTemporalZonedDateTime.CreateChecked(epochNanoseconds, tz.ToString());
+    }
+
     // ── helpers ─────────────────────────────────────────────────────────────────
 
     private static JSTemporalInstant RequireInstant(JSValue value)

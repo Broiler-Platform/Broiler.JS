@@ -626,7 +626,9 @@ public class Issue767Tests
         => Assert.Equal("2000000000", Eval(
             "new Temporal.Instant(1600000000n).round('second').epochNanoseconds.toString()"));
 
-    // ---- Remaining Temporal surface: stubs exist (typeof function) but throw ----
+    // ---- Remaining Temporal surface exists as constructors ----
+    // (PlainDateTime/PlainYearMonth/PlainMonthDay/ZonedDateTime are now implemented; see
+    //  Issue769Tests for their behavior.)
 
     [Fact]
     public void TemporalStubTypesExistAsConstructors()
@@ -635,26 +637,24 @@ public class Issue767Tests
             ".map(n => typeof Temporal[n]).join(',')"));
 
     [Fact]
-    public void TemporalStubConstructorThrows()
-        => Assert.Equal("Error", Eval(
-            "let t; try { new Temporal.PlainDateTime(2024, 1, 1); } catch (e) { t = e.constructor.name; } t"));
-
-    [Fact]
     public void TemporalNowIsAStubNamespace()
         => Assert.Equal("object,function", Eval(
             "typeof Temporal.Now + ',' + typeof Temporal.Now.instant"));
 
+    // Temporal.Now.instant() now returns a real instant (see Issue769Tests).
     [Fact]
-    public void TemporalNowMethodThrows()
-        => Assert.Equal("Error", Eval(
-            "let t; try { Temporal.Now.instant(); } catch (e) { t = e.constructor.name; } t"));
+    public void TemporalNowInstantReturnsInstant()
+        => Assert.Equal("[object Temporal.Instant]", Eval(
+            "Object.prototype.toString.call(Temporal.Now.instant())"));
 
+    // Duration's add/subtract/round/total now work for the calendar-independent case
+    // (see Issue769Tests); the methods still exist on the prototype.
     [Fact]
-    public void DurationStubMethodsExistAndThrow()
-        => Assert.Equal("function,function,function,function,Error", Eval(
+    public void DurationArithmeticMethodsExist()
+        => Assert.Equal("function,function,function,function,PT1H", Eval(
             "const p = Temporal.Duration.prototype;" +
-            "let t; try { new Temporal.Duration(0,0,0,0,1).round('hours'); } catch (e) { t = e.constructor.name; }" +
-            "typeof p.add + ',' + typeof p.subtract + ',' + typeof p.round + ',' + typeof p.total + ',' + t"));
+            "const r = new Temporal.Duration(0,0,0,0,1).round('hours').toString();" +
+            "typeof p.add + ',' + typeof p.subtract + ',' + typeof p.round + ',' + typeof p.total + ',' + r"));
 
     // ---- Newly implemented stub: Temporal.PlainTime ----
 
