@@ -584,6 +584,87 @@ internal static class BuiltInsAssemblyInitializer
         PatchArrayPrototype(context);
         PatchTypedArrayBuiltIns(context);
         PatchToStringTags(context);
+        PatchDisposableStacks(context);
+        PatchTemporal(context);
+    }
+
+    // Builds the Temporal namespace object and attaches the Temporal.Duration /
+    // Temporal.Instant constructors (registered via Register = false so they are NOT
+    // globals). Each constructor's prototype carries its "Temporal.X" @@toStringTag.
+    private static void PatchTemporal(JSContext context)
+    {
+        var temporal = new JSObject();
+
+        void Attach(string name, JSFunction ctor)
+        {
+            if (ctor.prototype is JSObject proto)
+                SetToStringTag(proto, $"Temporal.{name}");
+            temporal.FastAddValue(KeyStrings.GetOrCreate(name), ctor, JSPropertyAttributes.ConfigurableValue);
+        }
+
+        // Implemented types.
+        Attach("Duration", Temporal.JSTemporalDuration.CreateClass(context, register: false));
+        Attach("Instant", Temporal.JSTemporalInstant.CreateClass(context, register: false));
+
+        // Stub types (constructors exist but throw until implemented — see JSTemporalStubs.cs).
+        Attach("PlainDate", Temporal.JSTemporalPlainDate.CreateClass(context, register: false));
+        Attach("PlainTime", Temporal.JSTemporalPlainTime.CreateClass(context, register: false));
+        Attach("PlainDateTime", Temporal.JSTemporalPlainDateTime.CreateClass(context, register: false));
+        Attach("PlainYearMonth", Temporal.JSTemporalPlainYearMonth.CreateClass(context, register: false));
+        Attach("PlainMonthDay", Temporal.JSTemporalPlainMonthDay.CreateClass(context, register: false));
+        Attach("ZonedDateTime", Temporal.JSTemporalZonedDateTime.CreateClass(context, register: false));
+
+        // TODO: Temporal.Now (proposal §2) — a namespace exposing the current instant/date/
+        // time. Each method needs the host clock plus (for the zoned/ISO variants) a default
+        // time zone. Stubbed to throw until ZonedDateTime / time-zone support lands.
+        var now = new JSObject();
+        foreach (var method in new[] { "timeZoneId", "instant", "plainDateTimeISO", "zonedDateTimeISO", "plainDateISO", "plainTimeISO" })
+        {
+            var methodName = method;
+            now.FastAddValue(
+                KeyStrings.GetOrCreate(methodName),
+                new JSFunction(
+                    (in Arguments a) => throw JSEngine.NewError($"Temporal.Now.{methodName} is not yet implemented"),
+                    methodName,
+                    $"function {methodName}() {{ [native code] }}",
+                    createPrototype: false,
+                    length: 0),
+                JSPropertyAttributes.ConfigurableValue);
+        }
+        SetToStringTag(now, "Temporal.Now");
+        temporal.FastAddValue(KeyStrings.GetOrCreate("Now"), now, JSPropertyAttributes.ConfigurableValue);
+
+        SetToStringTag(temporal, "Temporal");
+        context.FastAddValue(KeyStrings.GetOrCreate("Temporal"), temporal, JSPropertyAttributes.ConfigurableValue);
+    }
+
+    // Explicit Resource Management: wire the symbol-keyed disposal aliases and toStringTags
+    // for the user-facing DisposableStack / AsyncDisposableStack built-ins. The source
+    // generator cannot key a [JSExport] on a well-known symbol, so the spec-mandated
+    // prototype[@@dispose] === prototype.dispose (same function object) is established here.
+    private static void PatchDisposableStacks(JSContext context)
+    {
+        if (context[KeyStrings.GetOrCreate("DisposableStack")] is JSFunction disposableStackCtor
+            && disposableStackCtor.prototype is JSObject disposableProto)
+        {
+            AliasSymbolMethod(disposableProto, JSSymbol.dispose, KeyStrings.GetOrCreate("dispose"));
+            SetToStringTag(disposableProto, "DisposableStack");
+        }
+
+        if (context[KeyStrings.GetOrCreate("AsyncDisposableStack")] is JSFunction asyncDisposableStackCtor
+            && asyncDisposableStackCtor.prototype is JSObject asyncDisposableProto)
+        {
+            AliasSymbolMethod(asyncDisposableProto, JSSymbol.asyncDispose, KeyStrings.GetOrCreate("disposeAsync"));
+            SetToStringTag(asyncDisposableProto, "AsyncDisposableStack");
+        }
+    }
+
+    // prototype[symbol] is the same function object as prototype[methodName].
+    private static void AliasSymbolMethod(JSObject prototype, JSSymbol symbol, in KeyString methodName)
+    {
+        var method = prototype[methodName];
+        if (method is JSFunction)
+            prototype.FastAddValue((IJSSymbol)symbol, method, JSPropertyAttributes.ConfigurableValue);
     }
 
     // Aliases built-in functions that the spec requires to be the SAME object across
@@ -1824,6 +1905,10 @@ internal static class BuiltInsAssemblyInitializer
         // ArrayBuffer.prototype[@@toStringTag] = "ArrayBuffer"
         if (context[KeyStrings.GetOrCreate("ArrayBuffer")] is JSFunction abCtor && abCtor.prototype is JSObject abProto)
             SetToStringTag(abProto, "ArrayBuffer");
+
+        // SharedArrayBuffer.prototype[@@toStringTag] = "SharedArrayBuffer"
+        if (context[KeyStrings.GetOrCreate("SharedArrayBuffer")] is JSFunction sabCtor && sabCtor.prototype is JSObject sabProto)
+            SetToStringTag(sabProto, "SharedArrayBuffer");
 
         // DataView.prototype[@@toStringTag] = "DataView"
         if (context[KeyStrings.GetOrCreate("DataView")] is JSFunction dvCtor && dvCtor.prototype is JSObject dvProto)

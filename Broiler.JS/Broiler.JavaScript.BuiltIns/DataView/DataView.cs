@@ -15,7 +15,49 @@ public partial class DataView : JSObject
 {
     internal readonly JSArrayBuffer buffer;
     internal readonly int byteOffset;
-    internal readonly int byteLength;
+
+    // A length-tracking DataView (no explicit byteLength over a resizable buffer) floats
+    // with the buffer; a fixed-length view stores explicitByteLength and can become out of
+    // bounds when the buffer shrinks. byteLength is computed so a resize() is observed.
+    private readonly bool isLengthTracking;
+    private readonly int explicitByteLength;
+
+    internal int byteLength => ComputeByteLength();
+
+    private int ComputeByteLength()
+    {
+        if (buffer.isDetached)
+            return 0;
+
+        var bufferByteLength = buffer.buffer.Length;
+        if (byteOffset > bufferByteLength)
+            return 0;
+
+        if (isLengthTracking)
+            return bufferByteLength - byteOffset;
+
+        if (byteOffset + explicitByteLength > bufferByteLength)
+            return 0; // out of bounds after a shrink
+
+        return explicitByteLength;
+    }
+
+    // GetViewByteLength after an IsViewOutOfBounds check: a detached or out-of-bounds view
+    // throws a TypeError (before the per-access RangeError bounds check).
+    private int RequireInBoundsByteLength()
+    {
+        if (buffer.isDetached)
+            throw JSEngine.NewTypeError("Cannot operate on a detached ArrayBuffer");
+
+        var bufferByteLength = buffer.buffer.Length;
+        if (byteOffset > bufferByteLength
+            || (!isLengthTracking && byteOffset + explicitByteLength > bufferByteLength))
+        {
+            throw JSEngine.NewTypeError("DataView is out of bounds");
+        }
+
+        return isLengthTracking ? bufferByteLength - byteOffset : explicitByteLength;
+    }
 
     [JSExport(Length = 1)]
     public DataView(in Arguments a) : this(JSEngine.NewTargetPrototype)
@@ -30,29 +72,33 @@ public partial class DataView : JSObject
         if (byteOffset < 0 || byteOffset > bufferByteLength)
             throw JSEngine.NewRangeError("Start offset is outside the bounds of the buffer.");
 
-        int byteLength;
         var byteLengthArg = a[2];
         if (byteLengthArg == null || byteLengthArg.IsUndefined)
         {
-            //optional, if not given it should be (buffer length - byte offset)
-            byteLength = bufferByteLength - byteOffset;
+            // No explicit length: a resizable buffer yields a length-tracking view; a
+            // fixed buffer yields a fixed view spanning (buffer length - byte offset).
+            if (buffer.IsResizable)
+                isLengthTracking = true;
+            else
+                explicitByteLength = bufferByteLength - byteOffset;
         }
         else
         {
-            byteLength = byteLengthArg.IntValue;
+            var byteLength = byteLengthArg.IntValue;
             if (byteLength < 0 || byteOffset + byteLength > bufferByteLength)
                 throw JSEngine.NewRangeError("Invalid DataView length.");
+
+            explicitByteLength = byteLength;
         }
 
         this.buffer = buffer;
-        this.byteLength = byteLength;
         this.byteOffset = byteOffset;
     }
 
     public DataView(JSArrayBuffer buffer, int byteOffset, int byteLength) : this()
     {
         this.buffer = buffer;
-        this.byteLength = byteLength;
+        this.explicitByteLength = byteLength;
         this.byteOffset = byteOffset;
     }
 
@@ -82,11 +128,20 @@ public partial class DataView : JSObject
     [JSExport]
     public JSValue Buffer => buffer;
 
+    // get DataView.prototype.byteLength / byteOffset: an out-of-bounds (or detached) view
+    // throws a TypeError rather than reporting a stale length/offset.
     [JSExport]
-    public int ByteLength => byteLength;
+    public int ByteLength => RequireInBoundsByteLength();
 
     [JSExport]
-    public int ByteOffset => byteOffset;
+    public int ByteOffset
+    {
+        get
+        {
+            RequireInBoundsByteLength();
+            return byteOffset;
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ToByteOffset(JSValue value)
@@ -123,7 +178,7 @@ public partial class DataView : JSObject
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
 
-        if (byteOffset < 0 || byteOffset > byteLength - 8)
+        if (byteOffset < 0 || byteOffset > RequireInBoundsByteLength() - 8)
             throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
 
         fixed (byte* ptr = &buffer.buffer[this.byteOffset + byteOffset])
@@ -153,7 +208,7 @@ public partial class DataView : JSObject
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
         
-        if (byteOffset < 0 || byteOffset > @this.byteLength - 4)
+        if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 4)
             throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
 
         var buffer = @this.buffer;
@@ -224,7 +279,7 @@ public partial class DataView : JSObject
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
 
-        if (byteOffset < 0 || byteOffset > @this.byteLength - 2)
+        if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 2)
             throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
 
         var buffer = @this.buffer;
@@ -286,7 +341,7 @@ public partial class DataView : JSObject
         var @this = this;
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
 
-        if (byteOffset < 0 || byteOffset > @this.byteLength - 1)
+        if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 1)
             throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
 
         var buffer = @this.buffer;
@@ -336,9 +391,9 @@ public partial class DataView : JSObject
         var @this = this;
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         
-        if (byteOffset < 0 || byteOffset > @this.byteLength - 1)
+        if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 1)
             throw JSEngine.NewRangeError($"{byteOffset} offset is outside the bounds of DataView");
-        
+
         var buffer = @this.buffer;
         return new JSNumber(buffer.buffer[@this.byteOffset + byteOffset]);
     }
@@ -501,7 +556,7 @@ public partial class DataView : JSObject
 
         var littleEndian = a[2]?.BooleanValue ?? false;
 
-        if (byteOffset < 0 || byteOffset > @this.byteLength - length)
+        if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - length)
             throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
 
         return (byteOffset, littleEndian, @this, value);

@@ -16,6 +16,12 @@ public partial class JSArrayBuffer : JSObject
 {
     private static JSArrayBuffer RequireArrayBuffer(JSValue value, string methodName)
     {
+        // The ArrayBuffer.prototype methods are not generic over a SharedArrayBuffer
+        // (IsSharedArrayBuffer(O) is true → TypeError), even though both share this C#
+        // base type.
+        if (value is SharedArrayBuffer)
+            throw JSEngine.NewTypeError($"ArrayBuffer.prototype.{methodName} is not generic for SharedArrayBuffer");
+
         if (value is JSArrayBuffer arrayBuffer)
             return arrayBuffer;
 
@@ -54,7 +60,7 @@ public partial class JSArrayBuffer : JSObject
         throw JSEngine.NewTypeError("Cannot convert object to primitive value");
     }
 
-    private static int ToIntegerOrInfinity(JSValue value, int defaultValue)
+    internal static int ToIntegerOrInfinity(JSValue value, int defaultValue)
     {
         if (value == null || value.IsUndefined)
             return defaultValue;
@@ -72,7 +78,7 @@ public partial class JSArrayBuffer : JSObject
         return (int)number;
     }
 
-    private static int ToBufferLength(JSValue value, int defaultValue)
+    internal static int ToBufferLength(JSValue value, int defaultValue)
     {
         // ToIndex: a value below 0 or above 2^53-1 is a RangeError (the upper
         // bound must be checked on the full double before the int cast, or a
@@ -120,14 +126,45 @@ public partial class JSArrayBuffer : JSObject
     internal byte[] buffer;
     internal bool isDetached;
     internal bool isImmutable;
+    // Maximum byte length of a resizable ArrayBuffer, or -1 for a fixed-length buffer.
+    // A resizable buffer is reallocated in place on resize(); views read buffer.buffer
+    // live, so they observe the new length automatically.
+    internal int maxByteLength = -1;
+    // True for a SharedArrayBuffer (single-agent here), which the ArrayBuffer.prototype
+    // methods reject.
+    internal bool isShared;
+
+    internal bool IsResizable => maxByteLength >= 0;
 
     public byte[] Buffer => buffer;
 
     [JSExport(Length = 1)]
     public JSArrayBuffer(in Arguments a) : this(ResolveNewTargetPrototype())
     {
+        // ToIndex(length) runs before the options bag is observed, matching the spec
+        // AllocateArrayBuffer evaluation order.
         int length = ToBufferLength(a.Get1(), 0);
+        int requestedMaxByteLength = ToMaxByteLengthOption(a.GetAt(1));
+
+        if (requestedMaxByteLength >= 0 && length > requestedMaxByteLength)
+            throw JSEngine.NewRangeError("ArrayBuffer byteLength exceeds maxByteLength");
+
         buffer = new byte[length];
+        maxByteLength = requestedMaxByteLength;
+    }
+
+    // GetArrayBufferMaxByteLengthOption: a non-object options bag (or a missing
+    // maxByteLength) selects a fixed-length buffer (-1); otherwise ToIndex the option.
+    internal static int ToMaxByteLengthOption(JSValue options)
+    {
+        if (options is not JSObject optionsObject)
+            return -1;
+
+        var maxByteLengthValue = optionsObject[KeyStrings.GetOrCreate("maxByteLength")];
+        if (maxByteLengthValue.IsUndefined)
+            return -1;
+
+        return ToBufferLength(maxByteLengthValue, 0);
     }
 
     /// <summary>
@@ -166,11 +203,22 @@ public partial class JSArrayBuffer : JSObject
     // §2.9  ArrayBuffer.prototype.byteLength (getter)
     // ---------------------------------------------------------------
 
+    // These ArrayBuffer.prototype accessors are not generic over a SharedArrayBuffer:
+    // IsSharedArrayBuffer(O) is true → TypeError (SharedArrayBuffer.prototype defines its
+    // own byteLength / maxByteLength / growable accessors instead).
+    private void RejectShared(string accessor)
+    {
+        if (isShared)
+            throw JSEngine.NewTypeError($"ArrayBuffer.prototype.{accessor} is not generic for SharedArrayBuffer");
+    }
+
     [JSExport("byteLength")]
     public int ByteLength
     {
         get
         {
+            RejectShared("byteLength");
+
             // §25.1.6.2 get ArrayBuffer.prototype.byteLength: if the buffer is
             // detached, return +0 rather than throwing.
             if (isDetached)
@@ -185,10 +233,89 @@ public partial class JSArrayBuffer : JSObject
     // ---------------------------------------------------------------
 
     [JSExport("detached")]
-    public bool Detached => isDetached;
+    public bool Detached
+    {
+        get
+        {
+            RejectShared("detached");
+            return isDetached;
+        }
+    }
 
     [JSExport("immutable")]
-    public bool Immutable => isImmutable;
+    public bool Immutable
+    {
+        get
+        {
+            RejectShared("immutable");
+            return isImmutable;
+        }
+    }
+
+    // ---------------------------------------------------------------
+    // get ArrayBuffer.prototype.maxByteLength
+    // ---------------------------------------------------------------
+
+    [JSExport("maxByteLength")]
+    public int MaxByteLength
+    {
+        get
+        {
+            RejectShared("maxByteLength");
+
+            if (isDetached)
+                return 0;
+
+            // For a fixed-length buffer the spec defines maxByteLength as its byteLength.
+            return IsResizable ? maxByteLength : buffer.Length;
+        }
+    }
+
+    // ---------------------------------------------------------------
+    // get ArrayBuffer.prototype.resizable
+    // ---------------------------------------------------------------
+
+    [JSExport("resizable")]
+    public bool Resizable
+    {
+        get
+        {
+            RejectShared("resizable");
+            return IsResizable;
+        }
+    }
+
+    // ---------------------------------------------------------------
+    // ArrayBuffer.prototype.resize(newLength)
+    // ---------------------------------------------------------------
+
+    [JSExport("resize", Length = 1)]
+    internal JSValue Resize(in Arguments a)
+    {
+        var source = RequireArrayBuffer(a.This, "resize");
+
+        // A fixed-length buffer cannot be resized; this is checked before the argument
+        // is coerced (the spec validates IsFixedLengthArrayBuffer before ToIndex).
+        if (!source.IsResizable)
+            throw JSEngine.NewTypeError("ArrayBuffer.prototype.resize: buffer is not resizable");
+
+        int newByteLength = ToBufferLength(a.Get1(), 0);
+
+        if (source.isDetached)
+            throw JSEngine.NewTypeError("Cannot resize a detached ArrayBuffer");
+
+        if (newByteLength > source.maxByteLength)
+            throw JSEngine.NewRangeError("ArrayBuffer.prototype.resize: newLength exceeds maxByteLength");
+
+        // Reallocate, preserving the overlapping prefix; grown bytes are zero. Views hold
+        // the JSArrayBuffer (not the raw array) and read buffer.buffer on each access, so
+        // they observe the new length without any further bookkeeping.
+        var resized = new byte[newByteLength];
+        System.Array.Copy(source.buffer, resized, Math.Min(source.buffer.Length, newByteLength));
+        source.buffer = resized;
+
+        return JSUndefined.Value;
+    }
 
     // ---------------------------------------------------------------
     // §2.9.1  ArrayBuffer.prototype.transfer(newLength?)
