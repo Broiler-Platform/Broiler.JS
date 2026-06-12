@@ -2,8 +2,6 @@
 # When workflow_dispatch input rerun_failed_only is enabled (the default),
 # these paths are rerun before the workflow falls back to the full suite.
 
-test/annexB/built-ins/RegExp/RegExp-control-escape-russian-letter.js
-test/annexB/built-ins/RegExp/RegExp-invalid-control-escape-character-class.js
 test/annexB/built-ins/RegExp/RegExp-leading-escape-BMP.js
 test/annexB/built-ins/RegExp/RegExp-trailing-escape-BMP.js
 test/annexB/built-ins/RegExp/legacy-accessors/index/this-not-regexp-constructor.js
@@ -1170,7 +1168,6 @@ test/language/expressions/assignment/S11.13.1_A6_T2.js
 test/language/expressions/assignment/S11.13.1_A6_T3.js
 test/language/expressions/assignment/destructuring/keyed-destructuring-property-reference-target-evaluation-order-with-bindings.js
 test/language/expressions/async-generator/default-proto.js
-test/language/expressions/await/await-BindingIdentifier-in-global.js
 test/language/expressions/call/11.2.3-3_3.js
 test/language/expressions/call/eval-spread-empty-leading.js
 test/language/expressions/call/eval-spread-empty-trailing.js
@@ -1199,7 +1196,6 @@ test/language/expressions/less-than-or-equal/bigint-and-string.js
 test/language/expressions/less-than/S11.8.1_A2.2_T1.js
 test/language/expressions/less-than/bigint-and-incomparable-string.js
 test/language/expressions/less-than/bigint-and-string.js
-test/language/expressions/logical-assignment/lgcl-nullish-assignment-operator-namedevaluation-arrow-function.js
 test/language/expressions/modulus/bigint-modulo-zero.js
 test/language/expressions/new/S11.2.2_A4_T1.js
 test/language/expressions/new/S11.2.2_A4_T2.js
@@ -1207,11 +1203,7 @@ test/language/expressions/new/S11.2.2_A4_T3.js
 test/language/expressions/object/computed-property-name-topropertykey-before-value-evaluation.js
 test/language/expressions/object/dstr/object-rest-proxy-gopd-not-called-on-excluded-keys.js
 test/language/expressions/object/method-definition/generator-invoke-fn-strict.js
-test/language/expressions/object/method-definition/generator-prop-name-yield-expr.js
-test/language/expressions/object/method-definition/name-prop-name-yield-expr.js
 test/language/expressions/optional-chaining/eval-optional-call.js
-test/language/expressions/optional-chaining/punctuator-decimal-lookahead.js
-test/language/expressions/optional-chaining/short-circuiting.js
 test/language/expressions/postfix-decrement/S11.3.2_A2.2_T1.js
 test/language/expressions/postfix-decrement/S11.3.2_A4_T1.js
 test/language/expressions/postfix-decrement/S11.3.2_A4_T2.js
@@ -1230,7 +1222,6 @@ test/language/expressions/unsigned-right-shift/bigint-non-primitive.js
 test/language/expressions/unsigned-right-shift/bigint-toprimitive.js
 test/language/expressions/unsigned-right-shift/bigint-wrapped-values.js
 test/language/expressions/unsigned-right-shift/bigint.js
-test/language/expressions/yield/rhs-template-middle.js
 test/language/expressions/yield/star-rhs-iter-nrml-res-done-no-value.js
 test/language/function-code/S10.2.1_A4_T1.js
 test/language/global-code/decl-func.js
@@ -1250,7 +1241,6 @@ test/language/literals/regexp/S7.8.5_A2.4_T2.js
 test/language/literals/regexp/u-astral.js
 test/language/literals/regexp/u-case-mapping.js
 test/language/literals/string/legacy-octal-escape-sequence.js
-test/language/module-code/top-level-await/new-await-script-code.js
 test/language/statements/class/arguments/access.js
 test/language/statements/class/definition/basics.js
 test/language/statements/class/definition/prototype-getter.js
@@ -1293,7 +1283,6 @@ test/language/statements/with/set-mutable-binding-idref-compound-assign-with-pro
 test/language/statements/with/set-mutable-binding-idref-with-proxy-env.js
 test/language/types/object/S8.6_A2_T2.js
 test/language/types/reference/put-value-prop-base-primitive.js
-test/language/white-space/after-regular-expression-literal-zwnbsp.js
 test/staging/built-ins/RegExp/escape/surrogate-pair.js
 test/staging/decorators/public-auto-accessor.js
 test/staging/sm/Array/from_proxy.js
@@ -1385,7 +1374,6 @@ test/staging/sm/Symbol/toStringTag.js
 test/staging/sm/TypedArray/indexOf-and-lastIndexOf.js
 test/staging/sm/TypedArray/set-toobject.js
 test/staging/sm/argumentsLengthOpt.js
-test/staging/sm/async-functions/async-contains-unicode-escape.js
 test/staging/sm/async-functions/async-property-name-error.js
 test/staging/sm/async-functions/await-in-arrow-parameters.js
 test/staging/sm/async-functions/toString.js
