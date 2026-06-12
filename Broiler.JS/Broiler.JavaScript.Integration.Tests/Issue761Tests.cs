@@ -25,6 +25,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   preserved verbatim; an untagged template literal containing one is an early
 //   SyntaxError. The scanner now defers (rather than throws) such escapes, marking
 //   the part's cooked value invalid.
+//
+//   Problems 43/44/47/48 — Other_ID_Start and Other_ID_Continue grandfathered
+//   characters. IsIdentifierStart was missing U+1885/U+1886 (Mongolian Ali Gali
+//   Baluda, category Mn) and IsIdentifierPart was missing U+30FB/U+FF65 (Katakana
+//   middle dots, category Po) — all carry the Other_ID_Start / Other_ID_Continue
+//   property and must be accepted in identifiers despite their non-letter Unicode
+//   category. (Unicode-17.0-only identifier characters remain limited by the host
+//   runtime's Unicode data version and are out of scope.)
 public class Issue761Tests
 {
     private static string Eval(string code)
@@ -32,6 +40,8 @@ public class Issue761Tests
         using var ctx = new JSContext();
         return ctx.Eval(code)?.ToString();
     }
+
+    private static string U(params int[] cps) => string.Concat(cps.Select(char.ConvertFromUtf32));
 
     // ---- Problem 37: line terminator between prefix unary operator and operand ----
 
@@ -174,4 +184,45 @@ public class Issue761Tests
         Assert.Equal("0", Eval("(`\\0`).charCodeAt(0).toString()"));
         Assert.Equal("hello 2!", Eval("`hello ${1+1}!`"));
     }
+
+    // ---- Problems 43/44/47/48: Other_ID_Start / Other_ID_Continue characters ----
+
+    [Theory]
+    [InlineData(0x1885)] // MONGOLIAN LETTER ALI GALI BALUDA (Other_ID_Start, Mn)
+    [InlineData(0x1886)] // MONGOLIAN LETTER ALI GALI THREE BALUDA (Other_ID_Start, Mn)
+    [InlineData(0x2118)] // SCRIPT CAPITAL P (Other_ID_Start, Sm)
+    [InlineData(0x212E)] // ESTIMATED SYMBOL (Other_ID_Start, So)
+    [InlineData(0x309B)] // KATAKANA-HIRAGANA VOICED SOUND MARK (Other_ID_Start, Sk)
+    [InlineData(0x309C)] // KATAKANA-HIRAGANA SEMI-VOICED SOUND MARK (Other_ID_Start, Sk)
+    public void OtherIdStartCharacterIsValidIdentifierStart(int cp)
+    {
+        Assert.Equal("7", Eval("var " + U(cp) + " = 7; " + U(cp)));
+        // Escaped form (\\uXXXX) must be accepted identically.
+        Assert.Equal("7", Eval("var \\u" + cp.ToString("X4") + " = 7; \\u" + cp.ToString("X4")));
+    }
+
+    [Theory]
+    [InlineData(0x00B7)] // MIDDLE DOT (Other_ID_Continue, Po)
+    [InlineData(0x0387)] // GREEK ANO TELEIA (Other_ID_Continue, Po)
+    [InlineData(0x30FB)] // KATAKANA MIDDLE DOT (Other_ID_Continue, Po)
+    [InlineData(0xFF65)] // HALFWIDTH KATAKANA MIDDLE DOT (Other_ID_Continue, Po)
+    [InlineData(0x200C)] // ZERO WIDTH NON-JOINER (Cf)
+    [InlineData(0x200D)] // ZERO WIDTH JOINER (Cf)
+    public void OtherIdContinueCharacterIsValidIdentifierPart(int cp)
+        => Assert.Equal("7", Eval("var a" + U(cp) + " = 7; a" + U(cp)));
+
+    [Fact]
+    public void IdentifierWithZwnjZwjAndKatakanaMiddleDots()
+        // The full identifier from test262 part-unicode-15.1.0.js: _<ZWNJ><ZWJ>・･
+        => Assert.Equal("7", Eval(
+            "var " + U('_', 0x200C, 0x200D, 0x30FB, 0xFF65) + " = 7; "
+                   + U('_', 0x200C, 0x200D, 0x30FB, 0xFF65)));
+
+    [Fact]
+    public void PrivateClassFieldWithOtherIdContinueCharacters()
+        // test262 part-unicode-15.1.0-class.js: a private field named #_<ZWNJ><ZWJ>・･
+        => Assert.Equal("7", Eval(
+            "class C { #" + U('_', 0x200C, 0x200D, 0x30FB, 0xFF65) + " = 7;"
+            + " get(){ return this.#" + U('_', 0x200C, 0x200D, 0x30FB, 0xFF65) + "; } }"
+            + " new C().get()"));
 }

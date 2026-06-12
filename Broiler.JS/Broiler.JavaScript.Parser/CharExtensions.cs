@@ -103,7 +103,12 @@ public static class CharExtensions
         if (codePoint < 0 || codePoint > 0x10FFFF || codePoint is >= 0xD800 and <= 0xDFFF)
             return false;
 
-        if (codePoint is '$' or '_' or 0x2118 or 0x212E or 0x309B or 0x309C)
+        // Other_ID_Start (grandfathered characters whose Unicode category is not a
+        // letter category but which the spec keeps valid as identifier starts):
+        // U+1885, U+1886 (Mongolian Ali Gali Baluda/Three Baluda — category Mn),
+        // U+2118 (SCRIPT CAPITAL P), U+212E (ESTIMATED SYMBOL), U+309B, U+309C
+        // (Katakana-Hiragana voiced/semi-voiced sound marks).
+        if (codePoint is '$' or '_' or 0x1885 or 0x1886 or 0x2118 or 0x212E or 0x309B or 0x309C)
             return true;
 
         return char.GetUnicodeCategory(codePoint.FromCodePoint(), 0) switch
@@ -133,7 +138,11 @@ public static class CharExtensions
         if (codePoint.IsIdentifierStart())
             return true;
 
-        if (codePoint is 0x200C or 0x200D or 0x00B7 or 0x0387 or 0x19DA)
+        // Other_ID_Continue (characters kept valid in identifier tails whose Unicode
+        // category is not an identifier-continue category): U+00B7, U+0387 (Po),
+        // U+1369..U+1371, U+19DA (No), U+200C/U+200D (ZWNJ/ZWJ, Cf), and U+30FB,
+        // U+FF65 (Katakana middle dots, Po).
+        if (codePoint is 0x200C or 0x200D or 0x00B7 or 0x0387 or 0x19DA or 0x30FB or 0xFF65)
             return true;
 
         if (codePoint >= 0x1369 && codePoint <= 0x1371)
