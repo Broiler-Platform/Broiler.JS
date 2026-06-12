@@ -1425,7 +1425,12 @@ public class FastScanner
                 : s.Commit(TokenTypes.Number, true);
         }
 
-        if (Peek() == '0')
+        // The `0x`/`0b`/`0o` radix prefixes can only begin the integer part. For a
+        // leading-dot literal (`first == '.'`) there is no integer part — position is
+        // already at the first fractional digit — so skip this block and fall through
+        // to fractional/exponent handling (otherwise the leading `0` of e.g. `.0_1` is
+        // mis-consumed here and the numeric separator is left dangling).
+        if (first != '.' && Peek() == '0')
         {
             switch (Consume())
             {
