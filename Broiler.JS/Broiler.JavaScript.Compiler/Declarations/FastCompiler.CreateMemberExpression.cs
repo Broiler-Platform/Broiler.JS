@@ -41,6 +41,11 @@ partial class FastCompiler
 
                         return VisitLiteral(l);
 
+                    case TokenTypes.BigInt:
+                        // A BigInt destructuring key (`let { 1n: a } = o`) keys by the
+                        // canonical value of its numeric part.
+                        return BigIntPropertyKey(l.StringValue);
+
                     default:
                         throw new NotImplementedException();
                 }

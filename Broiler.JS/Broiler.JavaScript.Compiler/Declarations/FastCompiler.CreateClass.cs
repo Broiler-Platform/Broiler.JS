@@ -33,6 +33,9 @@ partial class FastCompiler
         if (literal.TokenType == TokenTypes.String)
             return literal.StringValue;
 
+        if (literal.TokenType == TokenTypes.BigInt)
+            return BigIntLiteralToValue(literal.StringValue).ToString(System.Globalization.CultureInfo.InvariantCulture);
+
         return FormatNumericPropertyName(literal.NumericValue);
     }
 
@@ -55,7 +58,60 @@ partial class FastCompiler
             return VisitLiteral(literal);
         }
 
+        if (literal.TokenType == TokenTypes.BigInt)
+            return BigIntPropertyKey(literal.StringValue);
+
         throw new NotSupportedException();
+    }
+
+    // Builds the property-key expression for a BigInt literal property name. The key
+    // is the value's canonical decimal string; a value that fits in a uint is emitted
+    // as an integer key, mirroring the numeric-literal path (so `4294967295n` and
+    // `4294967295` resolve to the same slot).
+    private YExpression BigIntPropertyKey(string literalText)
+    {
+        var value = BigIntLiteralToValue(literalText);
+        if (value >= 0 && value <= uint.MaxValue)
+            return YExpression.Constant((uint)value);
+
+        return KeyOfName(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    // A BigInt literal property name uses the canonical value of its numeric part
+    // (`0n` → 0, `0x10n` → 16); the `n` suffix only marks the literal as a BigInt.
+    // Handles every radix prefix and `_` separators.
+    private static System.Numerics.BigInteger BigIntLiteralToValue(string literalText)
+    {
+        var text = literalText.Trim();
+        if (text.EndsWith('n'))
+            text = text[..^1];
+        text = text.Replace("_", "");
+
+        System.Numerics.BigInteger value;
+        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            value = ParseBigIntRadix(text.AsSpan(2), 16);
+        else if (text.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
+            value = ParseBigIntRadix(text.AsSpan(2), 8);
+        else if (text.StartsWith("0b", StringComparison.OrdinalIgnoreCase))
+            value = ParseBigIntRadix(text.AsSpan(2), 2);
+        else
+            value = text.Length == 0
+                ? System.Numerics.BigInteger.Zero
+                : System.Numerics.BigInteger.Parse(text, System.Globalization.CultureInfo.InvariantCulture);
+
+        return value;
+    }
+
+    private static System.Numerics.BigInteger ParseBigIntRadix(ReadOnlySpan<char> digits, int radix)
+    {
+        System.Numerics.BigInteger value = System.Numerics.BigInteger.Zero;
+        foreach (var c in digits)
+        {
+            int d = c <= '9' ? c - '0' : char.ToLowerInvariant(c) - 'a' + 10;
+            value = value * radix + d;
+        }
+
+        return value;
     }
 
     private static string GetPropertyFunctionName(AstClassProperty property, string prefix = null)
@@ -66,7 +122,7 @@ partial class FastCompiler
         string name = property.Key switch
         {
             AstIdentifier id => id.Name.Value,
-            AstLiteral literal when literal.TokenType == TokenTypes.String || literal.TokenType == TokenTypes.Number => FormatLiteralPropertyName(literal),
+            AstLiteral literal when literal.TokenType is TokenTypes.String or TokenTypes.Number or TokenTypes.BigInt => FormatLiteralPropertyName(literal),
             _ => null
         };
 

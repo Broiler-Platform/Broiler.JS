@@ -143,6 +143,32 @@ partial class FastParser
                     }
 
                     var next = stream.Current;
+
+                    // The scanner only fuses the *adjacent* forms `?.(` and `?.[` into
+                    // OptionalCall / OptionalIndex. When whitespace or a newline separates
+                    // `?.` from its brackets (`a ?. (b)`, `a ?.\n[b]`), it emits a bare
+                    // QuestionDot, so handle the optional call / computed access here.
+                    if (token.Type == TokenTypes.QuestionDot)
+                    {
+                        if (next.Type == TokenTypes.BracketStart)
+                        {
+                            stream.Consume();
+                            if (!ArrayExpression(out var optionalArguments))
+                                throw stream.Unexpected();
+                            node = new AstCallExpression(node, optionalArguments, inOptional);
+                            continue;
+                        }
+
+                        if (next.Type == TokenTypes.SquareBracketStart)
+                        {
+                            stream.Consume();
+                            if (!ExpressionSequence(out var optionalIndex, TokenTypes.SquareBracketEnd))
+                                throw stream.Unexpected();
+                            node = node.Member(optionalIndex, true, inOptional);
+                            continue;
+                        }
+                    }
+
                     switch (next.Type)
                     {
                         case TokenTypes.Identifier:

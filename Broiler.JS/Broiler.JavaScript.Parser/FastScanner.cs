@@ -712,7 +712,14 @@ public class FastScanner
             if (!ch.IsDigitPart(true, false))
                 break;
 
-            codePoint = checked(codePoint * 16 + ch.HexValue());
+            // A code point above U+10FFFF is a SyntaxError. Bound-check during
+            // accumulation rather than relying on `checked` overflow, which would
+            // surface as a non-SyntaxError for very long digit runs (e.g.
+            // `\u{100000000000000000000000000000}`); leading zeros stay in range.
+            codePoint = codePoint * 16 + ch.HexValue();
+            if (codePoint > 0x10FFFF)
+                throw Unexpected();
+
             ch = Consume();
         }
 
@@ -729,6 +736,9 @@ public class FastScanner
         }
     }
 
+    private static char HexDigit(int nibble)
+        => (char)(nibble < 10 ? '0' + nibble : 'a' + (nibble - 10));
+
     private string ScanUnicodeCodePointEscapeContents()
     {
         var ch = Peek();
@@ -743,7 +753,14 @@ public class FastScanner
             if (!ch.IsDigitPart(true, false))
                 break;
 
-            codePoint = checked(codePoint * 16 + ch.HexValue());
+            // A code point above U+10FFFF is a SyntaxError. Bound-check during
+            // accumulation (rather than relying on `checked` overflow, which would
+            // surface as a non-SyntaxError for very long digit runs like
+            // `\u{100000000000000000000000000000}`); leading zeros stay in range.
+            codePoint = codePoint * 16 + ch.HexValue();
+            if (codePoint > 0x10FFFF)
+                throw Unexpected();
+
             Consume();
             ch = Peek();
         }
@@ -774,10 +791,16 @@ public class FastScanner
                 switch (ch)
                 {
                     case '$':
-                        ch = Consume();
-                        if (ch == '{')
+                        // Only `${` begins a substitution. Peek at the next char rather
+                        // than consuming it: a lone `$` is literal content, and the
+                        // following char must be re-processed by the loop (it may end the
+                        // template — `` `$` `` — start its own `${`, or be an escape). The
+                        // old code consumed and appended it unconditionally, swallowing a
+                        // closing backtick or a subsequent `${`.
+                        if (Next() == '{')
                         {
-                            Consume();
+                            Consume(); // '$' -> '{'
+                            Consume(); // '{' -> after
                             // template part begin...
                             templateParts++;
                             templateBraceDepthStack.Push(templateBraceDepth);
@@ -786,7 +809,6 @@ public class FastScanner
                         }
 
                         t.Append('$');
-                        t.Append(ch);
                         continue;
 
                     case '`':
@@ -836,7 +858,13 @@ public class FastScanner
             case TokenTypes.Identifier:
                 scanRegExp = last.Keyword switch
                 {
-                    FastKeywords.instanceof or FastKeywords.@in or FastKeywords.@typeof or FastKeywords.@return or FastKeywords.await => true,
+                    // Keywords that introduce an expression or statement: a following
+                    // `/` begins a regex, never division (`new /x/()`, `typeof /x/`,
+                    // `delete /x/.source`, `case /x/:`, `return /x/`, `do /x/.test(s)`).
+                    FastKeywords.instanceof or FastKeywords.@in or FastKeywords.@typeof
+                        or FastKeywords.@return or FastKeywords.await or FastKeywords.@new
+                        or FastKeywords.@delete or FastKeywords.@void or FastKeywords.@throw
+                        or FastKeywords.@case or FastKeywords.@do or FastKeywords.@else => true,
                     // `yield` only introduces an expression (so a following `/` begins
                     // a regex) when it is a keyword — inside a generator body. In sloppy
                     // code outside a generator it is an ordinary identifier, after which
@@ -968,17 +996,29 @@ public class FastScanner
                                 break;
                             }
 
-                            // `\u{...}` is a code-point escape: decode it specially so
-                            // the braces are not mistaken for quantifiers. Every other
-                            // `\u` (a `\uHHHH` escape, or an Annex B IdentityEscape such
-                            // as `/\u/`) is appended literally and the following
-                            // characters are scanned normally \u2014 the old code eagerly
+                            // `\u{...}` is a code-point escape. Decode it, then re-emit as
+                            // fixed-width `\uHHHH` unit(s) (a surrogate pair for astral
+                            // code points). Emitting the raw decoded character corrupted
+                            // the pattern when the code point was a regex metacharacter \u2014
+                            // e.g. `/\u{3f}/u` became `/?/`, a stray quantifier \u2014 whereas a
+                            // `\uHHHH` escape is always a literal the RegExp runtime already
+                            // handles. Every other `\u` (a `\uHHHH` escape, or an Annex B
+                            // IdentityEscape such as `/\u/`) is appended literally and the
+                            // following characters scanned normally \u2014 the old code eagerly
                             // consumed the char after `u`, which swallowed a closing `/`.
                             if (first == 'u' && Next() == '{')
                             {
                                 Consume(); // 'u' -> '{'
                                 Consume(); // '{' -> first hex digit
-                                t.Append(ScanUnicodeCodePointEscapeContents());
+                                foreach (var cu in ScanUnicodeCodePointEscapeContents())
+                                {
+                                    t.Append('\\');
+                                    t.Append('u');
+                                    t.Append(HexDigit(cu >> 12));
+                                    t.Append(HexDigit((cu >> 8) & 0xF));
+                                    t.Append(HexDigit((cu >> 4) & 0xF));
+                                    t.Append(HexDigit(cu & 0xF));
+                                }
                                 break;
                             }
 
@@ -1338,6 +1378,8 @@ public class FastScanner
                     throw Unexpected();
 
                 codePoint = codePoint * 16 + current.HexValue();
+                if (codePoint > 0x10FFFF)
+                    throw Unexpected();
                 Consume();
                 current = Peek();
             }
@@ -1405,7 +1447,12 @@ public class FastScanner
                 : s.Commit(TokenTypes.Number, true);
         }
 
-        if (Peek() == '0')
+        // The `0x`/`0b`/`0o` radix prefixes can only begin the integer part. For a
+        // leading-dot literal (`first == '.'`) there is no integer part — position is
+        // already at the first fractional digit — so skip this block and fall through
+        // to fractional/exponent handling (otherwise the leading `0` of e.g. `.0_1` is
+        // mis-consumed here and the numeric separator is left dangling).
+        if (first != '.' && Peek() == '0')
         {
             switch (Consume())
             {

@@ -676,7 +676,15 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // u/v mode, where the same escapes are syntax errors (rejected above) and
             // \p/\P are Unicode property escapes handled later.
             if (!unicode && !unicodeSets)
+            {
                 pattern = TransformAnnexBIdentityEscapes(pattern);
+                // Annex B: a `-` adjacent to a CharacterClassEscape in a class is a
+                // literal (`[--\d]` = `-` or a digit), but .NET rejects the range.
+                pattern = NeutralizeAnnexBClassRangeDashes(pattern);
+                // Annex B: with no named groups, `\k<a>` is a literal (`k<a>`), not a
+                // backreference to an undefined group (which .NET rejects).
+                pattern = NeutralizeAnnexBUndefinedNamedBackref(pattern);
+            }
 
             // ECMAScript \s must match all Unicode whitespace (Zs category + BOM + line terminators).
             // .NET's \s only covers ASCII whitespace, so expand to the full set.
@@ -1934,8 +1942,16 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     }
                 }
 
-                // Not a surrogate pair – keep the single \uHHHH
-                sb.Append((char)hi);
+                // Not a surrogate pair. The single escape is decoded to its raw
+                // character so the later lone-surrogate / class transforms operate on
+                // real characters — but a code point that is itself a regex
+                // metacharacter (e.g. ? → ?, * → *) must keep a backslash,
+                // otherwise the decoded character is parsed as an operator and the
+                // pattern becomes invalid (`/\u{3f}/u` matched a literal `?`).
+                char decoded = (char)hi;
+                if (IsSyntaxCharacter(decoded) || decoded == '-')
+                    sb.Append('\\');
+                sb.Append(decoded);
                 i += 5;
                 continue;
             }
@@ -2418,6 +2434,108 @@ public partial class JSRegExp : JSObject, IJSRegExp
     // named backreference \k and \c). Any other ASCII letter is an Annex B
     // IdentityEscape that denotes the literal letter.
     private const string RecognizedEscapeLetters = "bBcdDfknrsStuvwWx";
+
+    // In a non-Unicode character class, a `-` adjacent to a CharacterClassEscape
+    // (`\d \D \w \W \s \S`) cannot form a range, so Annex B treats it as a literal
+    // `-` (e.g. `[--\d]` matches `-` or a digit). .NET rejects the range, so escape
+    // such a dash. A `-` between two ordinary atoms (`[a-z]`) is left untouched.
+    private static string NeutralizeAnnexBClassRangeDashes(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf('-') < 0)
+            return pattern;
+
+        var sb = new StringBuilder(pattern.Length);
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                sb.Append(c).Append(pattern[i + 1]);
+                i++;
+                continue;
+            }
+
+            if (c == '[') inClass = true;
+            else if (c == ']') inClass = false;
+            else if (c == '-' && inClass)
+            {
+                bool prevIsClassEscape = i >= 2 && pattern[i - 2] == '\\' && IsClassEscapeLetter(pattern[i - 1]);
+                bool nextIsClassEscape = i + 2 < pattern.Length && pattern[i + 1] == '\\' && IsClassEscapeLetter(pattern[i + 2]);
+                if (prevIsClassEscape || nextIsClassEscape)
+                {
+                    sb.Append("\\-");
+                    continue;
+                }
+            }
+
+            sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
+
+    private static bool IsClassEscapeLetter(char c)
+        => c is 'd' or 'D' or 'w' or 'W' or 's' or 'S';
+
+    // In a non-Unicode regex with NO named groups, `\k` is an Annex B IdentityEscape,
+    // so `\k<a>` matches the literal text `k<a>`. .NET rejects `\k<a>` as a reference to
+    // an undefined group, so drop the backslash. With named groups present, an undefined
+    // `\k<name>` is a real SyntaxError (left for the validator/.NET to reject).
+    private static string NeutralizeAnnexBUndefinedNamedBackref(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf("\\k<", StringComparison.Ordinal) < 0)
+            return pattern;
+
+        if (HasNamedGroup(pattern))
+            return pattern;
+
+        var sb = new StringBuilder(pattern.Length);
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                if (!inClass && pattern[i + 1] == 'k' && i + 2 < pattern.Length && pattern[i + 2] == '<')
+                {
+                    sb.Append('k');
+                    i++;
+                    continue;
+                }
+
+                sb.Append(c).Append(pattern[i + 1]);
+                i++;
+                continue;
+            }
+
+            if (c == '[') inClass = true;
+            else if (c == ']') inClass = false;
+
+            sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
+
+    private static bool HasNamedGroup(string pattern)
+    {
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+            if (c == '\\' && i + 1 < pattern.Length) { i++; continue; }
+            if (c == '[') { inClass = true; continue; }
+            if (c == ']') { inClass = false; continue; }
+            if (!inClass && c == '(' && i + 2 < pattern.Length && pattern[i + 1] == '?' && pattern[i + 2] == '<'
+                && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!')))
+                return true;
+        }
+
+        return false;
+    }
 
     private static string TransformAnnexBIdentityEscapes(string pattern)
     {

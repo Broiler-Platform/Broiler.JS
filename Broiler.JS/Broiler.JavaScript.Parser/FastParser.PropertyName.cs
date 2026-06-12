@@ -78,6 +78,13 @@ partial class FastParser
             return true;
         }
 
+        if (BigIntLiteral(out node))
+        {
+            computed = false;
+            isPrivate = false;
+            return true;
+        }
+
         if (stream.CheckAndConsume(TokenTypes.SquareBracketStart))
         {
             if (stream.Current.Keyword == FastKeywords.@if)

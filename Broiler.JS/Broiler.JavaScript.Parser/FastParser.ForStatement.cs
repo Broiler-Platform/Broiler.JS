@@ -85,6 +85,10 @@ partial class FastParser
                 }
                 considerInOfAsOperators = true;
             }
+            else if (current.Keyword == FastKeywords.async && TryParseAsyncForOfTarget(out var asyncTarget))
+            {
+                beginNode = asyncTarget;
+            }
             else if (ExpressionList(out var expressions))
             {
                 beginNode = expressions;
@@ -258,6 +262,31 @@ partial class FastParser
 
             if (!isOf && hasInit && declaration.Kind != FastVariableKind.Var)
                 throw new FastParseException(declaration.Start, "for-in loop variable declaration may not have an initializer");
+        }
+
+        // `async of` at the head of a for-of loop is ambiguous with an async arrow
+        // (`async of => …`). The grammar forbids it as the LHS of a sync for-of
+        // ([lookahead ∉ { async of }]) but permits it in `for await`, where `async`
+        // is the loop target and `of` the for-of keyword. The async-arrow lookahead
+        // would otherwise consume `async of` as arrow parameters and fail, so resolve
+        // it here. Only the bare `async of` form (not `async of => …`) is intercepted;
+        // a real async arrow keeps `=>` after `of` and is left to ExpressionList.
+        bool TryParseAsyncForOfTarget(out AstNode target)
+        {
+            target = null;
+            var asyncToken = stream.Current;
+            stream.Consume();
+            if (!IsOfKeyword(stream.Current))
+            {
+                stream.Reset(asyncToken);
+                return false;
+            }
+
+            if (!awaitOf)
+                throw new FastParseException(asyncToken, "'async' is not allowed as the left-hand side of a for-of loop");
+
+            target = new AstIdentifier(asyncToken);
+            return true;
         }
 
         static bool IsOfKeyword(FastToken token)
