@@ -7,6 +7,7 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Storage;
 using UnicodeEmoji.StringProperties;
+using Broiler.Unicode.Properties;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
 
@@ -223,7 +224,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
     // patterns with no named groups (the .NET numbering already matches).
     internal CaptureGroupMap captureMap;
 
-    [JSExport]
+    // NOTE: not [JSExport]. `lastIndex` is exposed to JS as a per-instance own data
+    // property added in the constructor (see below), not via a generated prototype
+    // accessor — see the LastIndex note in JSRegExpPrototype.cs.
     public int lastIndex = 0;
 
     public JSRegExp(in Arguments a) : base(JSEngine.NewTargetPrototype)
@@ -807,6 +810,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 }
             }
 
+            // ECMAScript permits a quantifier count up to 2^53-1, but .NET rejects
+            // any `{n}`/`{n,}`/`{n,m}` bound above Int32.MaxValue. Clamp such bounds
+            // to Int32.MaxValue — a count that large can never be satisfied by a real
+            // input, so the observable match behavior is unchanged.
+            pattern = ClampLargeQuantifiers(pattern);
+
             // Final transform: rename capturing groups to synthetic, source-ordered
             // names so .NET's group numbering and duplicate-name handling match
             // ECMAScript. Runs last so the capture layout reflects the user's groups
@@ -827,6 +836,97 @@ public partial class JSRegExp : JSObject, IJSRegExp
         {
             throw JSEngine.NewSyntaxError("Invalid regular expression");
         }
+    }
+
+    /// <summary>
+    /// Clamps quantifier bounds (<c>{n}</c>, <c>{n,}</c>, <c>{n,m}</c>) whose decimal
+    /// value exceeds <see cref="int.MaxValue"/> down to <c>2147483647</c>. ECMAScript
+    /// allows counts up to 2^53-1 while .NET caps them at Int32.MaxValue; a bound that
+    /// large is never satisfiable, so clamping preserves observable behavior. Literal
+    /// braces (inside a character class, escaped, or not forming a valid quantifier)
+    /// are left untouched.
+    /// </summary>
+    private static string ClampLargeQuantifiers(string pattern)
+    {
+        if (pattern.IndexOf('{') < 0)
+            return pattern;
+
+        // True when the decimal-digit run `s[start..end)` represents a value > Int32.MaxValue.
+        static bool ExceedsInt32(string s, int start, int end)
+        {
+            while (start < end - 1 && s[start] == '0')
+                start++; // ignore leading zeros (but keep at least one digit)
+            var len = end - start;
+            const string Max = "2147483647"; // int.MaxValue, 10 digits
+            if (len != Max.Length)
+                return len > Max.Length;
+            return string.CompareOrdinal(s, start, Max, 0, Max.Length) > 0;
+        }
+
+        StringBuilder sb = null;
+        bool inClass = false;
+        int i = 0;
+        while (i < pattern.Length)
+        {
+            var c = pattern[i];
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                sb?.Append(c).Append(pattern[i + 1]);
+                i += 2;
+                continue;
+            }
+
+            if (c == '[' && !inClass)
+                inClass = true;
+            else if (c == ']' && inClass)
+                inClass = false;
+
+            if (c == '{' && !inClass)
+            {
+                // Try to parse `{ digits (, digits?)? }`.
+                int j = i + 1;
+                int d1Start = j;
+                while (j < pattern.Length && char.IsAsciiDigit(pattern[j])) j++;
+                if (j > d1Start) // at least one digit
+                {
+                    int d1End = j;
+                    int d2Start = -1, d2End = -1;
+                    if (j < pattern.Length && pattern[j] == ',')
+                    {
+                        j++;
+                        d2Start = j;
+                        while (j < pattern.Length && char.IsAsciiDigit(pattern[j])) j++;
+                        d2End = j;
+                    }
+
+                    if (j < pattern.Length && pattern[j] == '}')
+                    {
+                        bool clamp1 = ExceedsInt32(pattern, d1Start, d1End);
+                        bool clamp2 = d2Start >= 0 && d2End > d2Start && ExceedsInt32(pattern, d2Start, d2End);
+                        if (clamp1 || clamp2)
+                        {
+                            sb ??= new StringBuilder(pattern.Length).Append(pattern, 0, i);
+                            sb.Append('{');
+                            sb.Append(clamp1 ? "2147483647" : pattern.Substring(d1Start, d1End - d1Start));
+                            if (d2Start >= 0)
+                            {
+                                sb.Append(',');
+                                if (d2End > d2Start)
+                                    sb.Append(clamp2 ? "2147483647" : pattern.Substring(d2Start, d2End - d2Start));
+                            }
+                            sb.Append('}');
+                            i = j + 1;
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            sb?.Append(c);
+            i++;
+        }
+
+        return sb?.ToString() ?? pattern;
     }
 
     /// <summary>
@@ -2015,36 +2115,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// </summary>
     private static readonly Dictionary<EmojiSequenceProperties, string> EmojiAlternationCache = new();
 
-    /// <summary>
-    /// Code-point ranges for the Unicode scripts we can expand to regex without a
-    /// full UCD. Keyed by normalized script name/alias. Not exhaustive — scripts
-    /// not present here raise a clear "not supported" SyntaxError. Ranges are an
-    /// approximation sufficient for common usage (notably the supplementary-plane
-    /// Han ideographs the test262 v/u-flag tests probe).
-    /// </summary>
-    private static readonly Dictionary<string, (int Lo, int Hi)[]> ScriptRanges = new(StringComparer.Ordinal)
-    {
-        ["han"] = new (int, int)[]
-        {
-            (0x2E80, 0x2E99), (0x2E9B, 0x2EF3), (0x2F00, 0x2FD5),
-            (0x3005, 0x3005), (0x3007, 0x3007), (0x3021, 0x3029), (0x3038, 0x303B),
-            (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
-            (0xF900, 0xFA6D), (0xFA70, 0xFAD9),
-            (0x20000, 0x2A6DF), (0x2A700, 0x2EBE0), (0x2F800, 0x2FA1D), (0x30000, 0x3134A),
-        },
-    };
-
-    /// <summary>
-    /// Code-point ranges for the Unicode binary properties we support directly.
-    /// Keyed by normalized property name.
-    /// </summary>
-    private static readonly Dictionary<string, (int Lo, int Hi)[]> BinaryPropertyRanges = new(StringComparer.Ordinal)
-    {
-        ["ascii"] = new (int, int)[] { (0x00, 0x7F) },
-        ["any"] = new (int, int)[] { (0x00, 0x10FFFF) },
-        ["asciihexdigit"] = new (int, int)[] { (0x30, 0x39), (0x41, 0x46), (0x61, 0x66) },
-    };
-
     private static Dictionary<string, string> BuildGeneralCategoryNames()
     {
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -2212,21 +2282,22 @@ public partial class JSRegExp : JSObject, IJSRegExp
             var value = NormalizeKey(inner.Substring(eq + 1));
 
             if (name is "gc" or "generalcategory")
+                return TranslateGeneralCategory(value, prefix, negated, inClass, inner);
+
+            if (name is "sc" or "script")
             {
-                if (GeneralCategoryNames.TryGetValue(value, out var shortName))
-                    return $"{prefix}{{{shortName}}}";
+                var ranges = UnicodeProperties.GetScript(value);
+                if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass) is { } expanded)
+                    return expanded;
 
                 throw NewUnsupportedPropertyError(inner);
             }
 
-            if (name is "sc" or "script" or "scx" or "scriptextensions")
+            if (name is "scx" or "scriptextensions")
             {
-                if (ScriptRanges.TryGetValue(value, out var ranges))
-                {
-                    var expanded = ExpandCodePointProperty(ranges, negated, inClass);
-                    if (expanded != null)
-                        return expanded;
-                }
+                var ranges = UnicodeProperties.GetScriptExtensions(value);
+                if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass) is { } expanded)
+                    return expanded;
 
                 throw NewUnsupportedPropertyError(inner);
             }
@@ -2238,20 +2309,17 @@ public partial class JSRegExp : JSObject, IJSRegExp
         // Lone `\p{Value}` form.
         var lone = NormalizeKey(inner);
 
-        if (GeneralCategoryNames.TryGetValue(lone, out var loneShort))
-            return $"{prefix}{{{loneShort}}}";
+        // A lone General_Category value (Lu, L, Letter, …).
+        if (UnicodeProperties.GetGeneralCategory(lone) != null
+            || (inClass && GeneralCategoryNames.ContainsKey(lone)))
+            return TranslateGeneralCategory(lone, prefix, negated, inClass, inner);
 
-        if (BinaryPropertyRanges.TryGetValue(lone, out var binaryRanges))
+        // Binary Unicode properties (ASCII, Alphabetic, Assigned, Emoji, …) come from
+        // the generated UCD 17.0.0 range tables in Broiler.Unicode.Properties.
+        var binaryRanges = UnicodeProperties.GetBinaryProperty(lone);
+        if (binaryRanges != null)
         {
             var expanded = ExpandCodePointProperty(binaryRanges, negated, inClass);
-            if (expanded != null)
-                return expanded;
-            throw NewUnsupportedPropertyError(inner);
-        }
-
-        if (ScriptRanges.TryGetValue(lone, out var scriptRanges))
-        {
-            var expanded = ExpandCodePointProperty(scriptRanges, negated, inClass);
             if (expanded != null)
                 return expanded;
             throw NewUnsupportedPropertyError(inner);
@@ -2273,6 +2341,29 @@ public partial class JSRegExp : JSObject, IJSRegExp
         // Anything else (native short categories like \p{L}, named blocks like
         // \p{IsBasicLatin}, or unknown lone names) is left for .NET to handle.
         return null;
+    }
+
+    /// <summary>
+    /// Translates a General_Category value (the <c>gc=…</c> dimension or a lone gc value).
+    /// Outside a character class it expands to the bundled UCD 17.0.0 code-point ranges so
+    /// supplementary-plane code points match by code point. Inside a class — where the
+    /// range expansion (with its surrogate-pair alternatives) cannot be nested — it falls
+    /// back to .NET's native category escape (<c>\p{Lu}</c>), which is code-unit based.
+    /// </summary>
+    private static string TranslateGeneralCategory(string value, string prefix, bool negated, bool inClass, string inner)
+    {
+        if (inClass)
+        {
+            if (GeneralCategoryNames.TryGetValue(value, out var shortName))
+                return $"{prefix}{{{shortName}}}";
+            throw NewUnsupportedPropertyError(inner);
+        }
+
+        var ranges = UnicodeProperties.GetGeneralCategory(value);
+        if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass) is { } expanded)
+            return expanded;
+
+        throw NewUnsupportedPropertyError(inner);
     }
 
     private static JSException NewUnsupportedPropertyError(string inner)
@@ -2358,13 +2449,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static string BuildPositiveCodePointMatcher((int Lo, int Hi)[] ranges)
     {
         var bmp = new StringBuilder();
+        var loneSurrogates = new List<string>();
         var supplementary = new List<string>();
 
         foreach (var (lo, hi) in ranges)
         {
             if (lo <= 0xFFFF)
             {
-                AppendClassRange(bmp, lo, System.Math.Min(hi, 0xFFFF));
+                AppendBmpRange(bmp, loneSurrogates, lo, System.Math.Min(hi, 0xFFFF));
                 if (hi <= 0xFFFF)
                     continue;
                 AppendSupplementaryRange(supplementary, 0x10000, hi);
@@ -2382,6 +2474,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
             sb.Append('[').Append(bmp).Append(']');
             first = false;
         }
+        foreach (var alt in loneSurrogates)
+        {
+            if (!first)
+                sb.Append('|');
+            sb.Append(alt);
+            first = false;
+        }
         foreach (var alt in supplementary)
         {
             if (!first)
@@ -2391,6 +2490,36 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
         sb.Append(')');
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Appends a BMP range [lo, hi] to the positive matcher, splitting the surrogate
+    /// block U+D800..U+DFFF out of the plain character class. A surrogate code point in
+    /// the pattern must, in Unicode mode, match only a *lone* surrogate in the input —
+    /// never one half of a well-formed pair — otherwise a property that contains
+    /// surrogates (e.g. <c>\p{Assigned}</c>, which includes the Cs category) would match
+    /// the lead unit of a supplementary code point and wrongly accept it.
+    /// </summary>
+    private static void AppendBmpRange(StringBuilder bmp, List<string> loneSurrogates, int lo, int hi)
+    {
+        if (lo < 0xD800)
+            AppendClassRange(bmp, lo, System.Math.Min(hi, 0xD7FF));
+
+        var highLo = System.Math.Max(lo, 0xD800);
+        var highHi = System.Math.Min(hi, 0xDBFF);
+        if (highLo <= highHi)
+            loneSurrogates.Add(SurrogateClass(highLo, highHi) + "(?![\\uDC00-\\uDFFF])");
+
+        var lowLo = System.Math.Max(lo, 0xDC00);
+        var lowHi = System.Math.Min(hi, 0xDFFF);
+        if (lowLo <= lowHi)
+            loneSurrogates.Add("(?<![\\uD800-\\uDBFF])" + SurrogateClass(lowLo, lowHi));
+
+        if (hi > 0xDFFF)
+            AppendClassRange(bmp, System.Math.Max(lo, 0xE000), hi);
+
+        static string SurrogateClass(int lo, int hi)
+            => lo == hi ? $"[\\u{lo:X4}]" : $"[\\u{lo:X4}-\\u{hi:X4}]";
     }
 
     /// <summary>
@@ -2406,17 +2535,22 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         if (highLo == highHi)
         {
-            alts.Add(Unit(highLo) + UnitRange(lowLo, lowHi));
+            alts.Add(Atom(highLo) + UnitRange(lowLo, lowHi));
             return;
         }
 
-        alts.Add(Unit(highLo) + UnitRange(lowLo, 0xDFFF));
+        alts.Add(Atom(highLo) + UnitRange(lowLo, 0xDFFF));
         if (highHi - highLo >= 2)
             alts.Add(UnitRange(highLo + 1, highHi - 1) + UnitRange(0xDC00, 0xDFFF));
-        alts.Add(Unit(highHi) + UnitRange(0xDC00, lowHi));
+        alts.Add(Atom(highHi) + UnitRange(0xDC00, lowHi));
 
         static string Unit(int u) => $"\\u{u:X4}";
-        static string UnitRange(int lo, int hi) => lo == hi ? Unit(lo) : $"[{Unit(lo)}-{Unit(hi)}]";
+        // A standalone single code unit is wrapped in a one-character class so the
+        // later lone-surrogate transform (which only special-cases bare high/low
+        // surrogate *characters*, not class bodies) copies it verbatim instead of
+        // inserting a `(?![\uDC00-\uDFFF])` guard that would break the pair.
+        static string Atom(int u) => $"[\\u{u:X4}]";
+        static string UnitRange(int lo, int hi) => lo == hi ? Atom(lo) : $"[{Unit(lo)}-{Unit(hi)}]";
     }
 
     private static void AppendClassRange(StringBuilder sb, int lo, int hi)

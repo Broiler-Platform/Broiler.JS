@@ -7183,10 +7183,12 @@ public class BuiltInsTests
     [Fact]
     public void RegExp_Unicode_Script_Han_Matches_Supplementary_Plane()
     {
-        // #642 problems 1/4: \p{Script=Han} (and lone \p{Han}) must match the
-        // supplementary-plane Han ideograph U+20BB7 ('𠮷'), including inside a
-        // capture group and under both the u and v flags, and must not match
-        // ASCII. \P{ASCII} must consume a full supplementary code point.
+        // #642 problems 1/4: \p{Script=Han} must match the supplementary-plane Han
+        // ideograph U+20BB7 ('𠮷'), including inside a capture group and under both the
+        // u and v flags, and must not match ASCII. \P{ASCII} must consume a full
+        // supplementary code point. (A *lone* \p{Han} is a SyntaxError per spec — a
+        // script value is only valid in the Script=/Script_Extensions= form — see
+        // RegExp_Lone_Script_Property_Is_SyntaxError.)
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
         var result = ctx.Eval(@"
@@ -7195,24 +7197,24 @@ public class BuiltInsTests
             [
                 exec(/\p{Script=Han}/u),
                 exec(/\p{Script=Han}/v),
-                exec(/\p{Han}/u),
                 /\p{Script=Han}/u.test('a'),
                 exec(/\p{ASCII}/u),
                 /\P{ASCII}/u.exec('a𠮷b')[0],
                 (function(){ var m = /(\p{Script=Han})(.)/u.exec(text); return m[1] + ',' + m[2] + ',' + m.index; })()
             ].join('|');
         ");
-        Assert.Equal("𠮷@0|𠮷@0|𠮷@0|false|a@2|𠮷|𠮷,a,0", result.ToString());
+        Assert.Equal("𠮷@0|𠮷@0|false|a@2|𠮷|𠮷,a,0", result.ToString());
     }
 
     [Fact]
     public void RegExp_Unsupported_Unicode_Property_Escapes_Throw_Clear_Error()
     {
-        // Scripts without bundled data and emoji string-properties should fail
-        // cleanly as SyntaxErrors rather than surfacing .NET's cryptic message.
+        // Unknown script values and emoji string-properties should fail cleanly as
+        // SyntaxErrors rather than surfacing .NET's cryptic message. (Real scripts such
+        // as Tibetan are now fully supported by the bundled UCD database.)
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
-        Assert.Throws<JSException>(() => ctx.Eval(@"/\p{Script=Tibetan}/u;"));
+        Assert.Throws<JSException>(() => ctx.Eval(@"/\p{Script=NotAScript}/u;"));
 
         // RGI_Emoji is a property of strings (UTS #51): valid only with the `v` flag.
         // Bare in `u` mode it must raise the clear "not supported" SyntaxError, not
@@ -7226,6 +7228,12 @@ public class BuiltInsTests
         // In `v` mode the same property is now supported: it expands to an
         // alternation of the bundled RGI emoji sequences (#659 problems 1/2).
         Assert.Equal("true", ctx.Eval(@"String(/^\p{RGI_Emoji}$/v.test('\u{1F600}'))").ToString());
+
+        // Tibetan (and every other script) is now backed by the bundled UCD database.
+        Assert.Equal("true", ctx.Eval(@"String(/\p{Script=Tibetan}/u.test('ༀ'))").ToString());
+
+        // A lone script value (no Script=/Script_Extensions=) is a SyntaxError.
+        Assert.Throws<JSException>(() => ctx.Eval(@"/\p{Han}/u;"));
     }
 
     [Fact]

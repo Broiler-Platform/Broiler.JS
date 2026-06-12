@@ -77,7 +77,11 @@ public partial class JSRegExp
         return this;
     }
 
-    [JSExport]
+    // NOTE: not [JSExport]. Per spec `lastIndex` is a per-instance own data property
+    // (installed at construction), not a property of %RegExp.prototype%. Exporting it
+    // here would install an accessor on the prototype whose getter casts `this` to a
+    // JSRegExp and throws "Failed to convert this to JSRegExp" when read off the
+    // prototype object itself (which is an ordinary object, not a RegExp instance).
     public int LastIndex
     {
         get => lastIndex; set => lastIndex = value;

@@ -123,6 +123,25 @@ partial class FastParser
         return scope != null && scope.DeclaresVariable(next.Span);
     }
 
+    // `let` is only the start of a LexicalDeclaration when the next token can begin a
+    // BindingList: `[`, `{`, or a BindingIdentifier. Otherwise (sloppy mode) `let` is an
+    // ordinary IdentifierReference — `let`, `let = 1`, `let.x`, `let in obj`, `let;`,
+    // `let: …` — and the caller parses it as an expression/label instead. `let [` is the
+    // restricted production and counts as a declaration even across a line terminator.
+    // In strict mode StrictModeValidator later rejects such identifier/label uses of
+    // `let` (IsRestrictedName). Consumes nothing — peeks past `let` and rewinds.
+    bool LetBeginsLexicalDeclaration()
+    {
+        var letPosition = stream.Current;
+        stream.Consume();
+        stream.LineTerminator();
+        var afterLet = stream.Current.Type;
+        stream.Reset(letPosition);
+        return afterLet is TokenTypes.SquareBracketStart
+            or TokenTypes.Identifier
+            or TokenTypes.CurlyBracketStart;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     bool SingleStatement(in StreamLocation begin, out AstStatement node)
     {
@@ -135,7 +154,11 @@ partial class FastParser
                     return VariableDeclaration(out node);
 
                 case FastKeywords.let:
-                    return VariableDeclaration(out node, FastVariableKind.Let);
+                    if (LetBeginsLexicalDeclaration())
+                        return VariableDeclaration(out node, FastVariableKind.Let);
+                    // `let` is an IdentifierReference here — fall through to the
+                    // labeled-statement / expression-statement handling below.
+                    break;
 
                 case FastKeywords.@const:
                     return VariableDeclaration(out node, FastVariableKind.Const);
