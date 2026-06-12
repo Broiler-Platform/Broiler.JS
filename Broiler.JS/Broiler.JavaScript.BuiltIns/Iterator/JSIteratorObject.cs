@@ -1,11 +1,13 @@
 using System;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
+using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Generator;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Extensions;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using System.Collections.Generic;
 
@@ -34,7 +36,32 @@ public partial class JSIteratorObject : JSObject
     // Constructors
     // ---------------------------------------------------------------
 
-    public JSIteratorObject(in Arguments a) : this(JSEngine.NewTargetPrototype) => throw JSEngine.NewTypeError("Iterator is not intended to be called as a constructor");
+    public JSIteratorObject(in Arguments a) : this(ResolveSubclassPrototype()) { }
+
+    /// <summary>
+    /// Iterator ( ) (ES2025 §27.1.3.1): the abstract %Iterator% constructor throws a
+    /// TypeError when NewTarget is undefined (a plain call) OR when NewTarget is the
+    /// %Iterator% intrinsic itself (`new Iterator()` / `Reflect.construct(Iterator, [],
+    /// Iterator)`). A genuine subclass — `class X extends Iterator { constructor(){ super(); } }`
+    /// — passes a distinct NewTarget and allocates from its prototype via
+    /// OrdinaryCreateFromConstructor (falling back to %Iterator.prototype% when the
+    /// subclass's <c>prototype</c> property is not an object).
+    /// </summary>
+    private static JSObject ResolveSubclassPrototype()
+    {
+        // A native [[Construct]] keeps its new.target in CurrentNewTarget; a plain call
+        // leaves both null.
+        var newTarget = JSEngine.NewTarget ?? (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget;
+        var iteratorConstructor = (JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Iterator")];
+
+        if (newTarget == null || newTarget.IsUndefined || ReferenceEquals(newTarget, iteratorConstructor))
+            throw JSEngine.NewTypeError("Iterator is not intended to be called as a constructor");
+
+        // OrdinaryCreateFromConstructor(newTarget, "%Iterator.prototype%"): the resolved
+        // prototype is newTarget.prototype, or %Iterator.prototype% when that is absent.
+        return JSEngine.NewTargetPrototype
+            ?? ((iteratorConstructor as JSFunction)?.prototype);
+    }
 
     internal JSIteratorObject(IElementEnumerator enumerator) : this() => _enumerator = enumerator;
 

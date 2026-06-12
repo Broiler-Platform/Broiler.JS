@@ -1,0 +1,426 @@
+using System;
+using System.Globalization;
+using System.Numerics;
+using System.Text;
+using System.Text.RegularExpressions;
+using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.BuiltIns.Number;
+using Broiler.JavaScript.ExpressionCompiler;
+using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine.Core;
+
+namespace Broiler.JavaScript.BuiltIns.Temporal;
+
+// Temporal.PlainTime (Temporal proposal §4): a wall-clock time of day with no date, calendar,
+// or time zone — six integer fields (hour…nanosecond). Everything here is calendar- and
+// zone-independent, so the full surface (construction, from/compare, with/add/subtract/
+// until/since/round/equals, ISO string round-tripping) is implementable. Arithmetic wraps
+// modulo 24 h (the day overflow is discarded, since a PlainTime has no date).
+//
+// Registered under the Temporal namespace (not as a global) via Register = false.
+[JSClassGenerator("PlainTime", Register = false)]
+public partial class JSTemporalPlainTime : JSObject
+{
+    private const long NanosecondsPerDay = 86_400_000_000_000;
+
+    internal readonly int hour, minute, second, millisecond, microsecond, nanosecond;
+
+    [JSExport(Length = 0)]
+    public JSTemporalPlainTime(in Arguments a) : base(ResolvePrototype())
+    {
+        hour = ToIntegerWithTruncation(a.GetAt(0));
+        minute = ToIntegerWithTruncation(a.GetAt(1));
+        second = ToIntegerWithTruncation(a.GetAt(2));
+        millisecond = ToIntegerWithTruncation(a.GetAt(3));
+        microsecond = ToIntegerWithTruncation(a.GetAt(4));
+        nanosecond = ToIntegerWithTruncation(a.GetAt(5));
+
+        if (!IsValidTime(hour, minute, second, millisecond, microsecond, nanosecond))
+            throw JSEngine.NewRangeError("Temporal.PlainTime: time component out of range");
+    }
+
+    private JSTemporalPlainTime(long totalNanoseconds, JSObject prototype) : base(prototype)
+    {
+        nanosecond = (int)(totalNanoseconds % 1000); totalNanoseconds /= 1000;
+        microsecond = (int)(totalNanoseconds % 1000); totalNanoseconds /= 1000;
+        millisecond = (int)(totalNanoseconds % 1000); totalNanoseconds /= 1000;
+        second = (int)(totalNanoseconds % 60); totalNanoseconds /= 60;
+        minute = (int)(totalNanoseconds % 60); totalNanoseconds /= 60;
+        hour = (int)totalNanoseconds;
+    }
+
+    private static JSObject ResolvePrototype()
+    {
+        if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
+            throw JSEngine.NewTypeError("Constructor Temporal.PlainTime requires 'new'");
+
+        return JSEngine.NewTargetPrototype ?? PlainTimePrototype;
+    }
+
+    internal static JSObject PlainTimePrototype
+    {
+        get
+        {
+            var temporal = (JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Temporal")] as JSObject;
+            return (temporal?[KeyStrings.GetOrCreate("PlainTime")] as JSFunction)?.prototype;
+        }
+    }
+
+    // ── accessors ───────────────────────────────────────────────────────────────
+
+    [JSExport("hour")] public double HourValue => hour;
+    [JSExport("minute")] public double MinuteValue => minute;
+    [JSExport("second")] public double SecondValue => second;
+    [JSExport("millisecond")] public double MillisecondValue => millisecond;
+    [JSExport("microsecond")] public double MicrosecondValue => microsecond;
+    [JSExport("nanosecond")] public double NanosecondValue => nanosecond;
+
+    // ── statics ─────────────────────────────────────────────────────────────────
+
+    [JSExport("from", Length = 1)]
+    internal static JSValue From(in Arguments a)
+    {
+        var item = a.GetAt(0);
+        var overflow = ReadOverflow(a.GetAt(1));
+
+        if (item is JSTemporalPlainTime t)
+            return new JSTemporalPlainTime(t.TotalNanoseconds(), PlainTimePrototype);
+
+        return ToTemporalTime(item, overflow);
+    }
+
+    [JSExport("compare", Length = 2)]
+    internal static JSValue Compare(in Arguments a)
+    {
+        var one = RequireTime(ToTemporalTime(a.GetAt(0), "constrain"));
+        var two = RequireTime(ToTemporalTime(a.GetAt(1), "constrain"));
+        var n1 = one.TotalNanoseconds();
+        var n2 = two.TotalNanoseconds();
+        return new JSNumber(n1 < n2 ? -1 : n1 > n2 ? 1 : 0);
+    }
+
+    // ── methods ─────────────────────────────────────────────────────────────────
+
+    [JSExport("with", Length = 1)]
+    public JSValue With(in Arguments a)
+    {
+        if (a.GetAt(0) is not JSObject obj)
+            throw JSEngine.NewTypeError("Temporal.PlainTime.prototype.with requires an object");
+
+        var overflow = ReadOverflow(a.GetAt(1));
+
+        var any = false;
+        int Read(string name, int current)
+        {
+            var v = obj[KeyStrings.GetOrCreate(name)];
+            if (v.IsUndefined) return current;
+            any = true;
+            return ToIntegerWithTruncation(v);
+        }
+
+        var h = Read("hour", hour);
+        var mi = Read("minute", minute);
+        var s = Read("second", second);
+        var ms = Read("millisecond", millisecond);
+        var us = Read("microsecond", microsecond);
+        var ns = Read("nanosecond", nanosecond);
+
+        if (!any)
+            throw JSEngine.NewTypeError("Temporal.PlainTime.prototype.with requires at least one time property");
+
+        return RegulateTime(h, mi, s, ms, us, ns, overflow);
+    }
+
+    [JSExport("add", Length = 1)]
+    public JSValue Add(in Arguments a) => AddDuration(a.GetAt(0), 1);
+
+    [JSExport("subtract", Length = 1)]
+    public JSValue Subtract(in Arguments a) => AddDuration(a.GetAt(0), -1);
+
+    private JSValue AddDuration(JSValue durationLike, int sign)
+    {
+        var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
+
+        // Only the time components participate; years/months/weeks/days are ignored because
+        // a PlainTime has no date, and any 24 h overflow wraps.
+        var durationNs = new BigInteger(d.HoursValue) * 3_600_000_000_000
+            + new BigInteger(d.MinutesValue) * 60_000_000_000
+            + new BigInteger(d.SecondsValue) * 1_000_000_000
+            + new BigInteger(d.MillisecondsValue) * 1_000_000
+            + new BigInteger(d.MicrosecondsValue) * 1_000
+            + new BigInteger(d.NanosecondsValue);
+
+        var total = TotalNanoseconds() + durationNs * sign;
+        var wrapped = (long)(((total % NanosecondsPerDay) + NanosecondsPerDay) % NanosecondsPerDay);
+        return new JSTemporalPlainTime(wrapped, PlainTimePrototype);
+    }
+
+    [JSExport("until", Length = 1)]
+    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), 1);
+
+    [JSExport("since", Length = 1)]
+    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), -1);
+
+    // TODO: until/since ignore the options bag (largestUnit/smallestUnit/roundingIncrement/
+    // roundingMode). The default behavior (largestUnit "hour", no rounding) is implemented;
+    // honoring the options requires RoundDuration on the resulting time difference.
+    private JSValue Difference(JSValue other, int sign)
+    {
+        var target = RequireTime(ToTemporalTime(other, "constrain"));
+        var diff = (target.TotalNanoseconds() - TotalNanoseconds()) * sign;
+
+        var s = Math.Sign(diff);
+        var abs = Math.Abs(diff);
+
+        var ns = abs % 1000; abs /= 1000;
+        var us = abs % 1000; abs /= 1000;
+        var ms = abs % 1000; abs /= 1000;
+        var sec = abs % 60; abs /= 60;
+        var min = abs % 60; abs /= 60;
+        var hr = abs;
+
+        return new JSTemporalDuration(0, 0, 0, 0, s * hr, s * min, s * sec, s * ms, s * us, s * ns,
+            JSTemporalDuration.DurationPrototype);
+    }
+
+    [JSExport("round", Length = 1)]
+    public JSValue Round(in Arguments a)
+    {
+        var (unit, increment) = ReadRoundTo(a.GetAt(0));
+        var unitNs = UnitNanoseconds(unit) * increment;
+        var rounded = RoundHalfExpand(TotalNanoseconds(), unitNs) % NanosecondsPerDay;
+        return new JSTemporalPlainTime(rounded, PlainTimePrototype);
+    }
+
+    [JSExport("equals", Length = 1)]
+    public JSValue Equals(in Arguments a)
+    {
+        var other = RequireTime(ToTemporalTime(a.GetAt(0), "constrain"));
+        return TotalNanoseconds() == other.TotalNanoseconds() ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+    }
+
+    [JSExport("toString", Length = 0)]
+    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString());
+
+    [JSExport("toJSON", Length = 0)]
+    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
+
+    [JSExport("toLocaleString", Length = 0)]
+    public JSValue ToLocaleString(in Arguments a) => new JSString(ToISOString());
+
+    [JSExport("valueOf", Length = 0)]
+    public JSValue ValueOf(in Arguments a)
+        => throw JSEngine.NewTypeError("Called Temporal.PlainTime.prototype.valueOf, which is not supported. Use Temporal.PlainTime.compare for comparison.");
+
+    // TODO: toPlainDateTime / toZonedDateTime depend on Temporal.PlainDateTime /
+    // Temporal.ZonedDateTime, which are still stubs.
+    [JSExport("toPlainDateTime", Length = 1)]
+    public JSValue ToPlainDateTime(in Arguments a)
+        => throw JSEngine.NewError("Temporal.PlainTime.prototype.toPlainDateTime is not yet implemented (needs Temporal.PlainDateTime)");
+
+    [JSExport("toZonedDateTime", Length = 1)]
+    public JSValue ToZonedDateTime(in Arguments a)
+        => throw JSEngine.NewError("Temporal.PlainTime.prototype.toZonedDateTime is not yet implemented (needs Temporal.ZonedDateTime)");
+
+    // ── helpers ─────────────────────────────────────────────────────────────────
+
+    internal long TotalNanoseconds()
+        => ((((long)hour * 60 + minute) * 60 + second) * 1000L + millisecond) * 1000L * 1000L
+           + (long)microsecond * 1000 + nanosecond;
+
+    private static JSTemporalPlainTime RequireTime(JSValue value)
+        => value as JSTemporalPlainTime ?? throw JSEngine.NewTypeError("expected a Temporal.PlainTime");
+
+    private static int ToIntegerWithTruncation(JSValue value)
+    {
+        if (value == null || value.IsUndefined)
+            return 0;
+
+        var number = value.DoubleValue; // ToNumber (throws TypeError for BigInt/Symbol)
+        if (double.IsNaN(number) || double.IsInfinity(number))
+            throw JSEngine.NewRangeError("Temporal.PlainTime: time component must be finite");
+
+        return (int)Math.Truncate(number);
+    }
+
+    private static bool IsValidTime(int h, int mi, int s, int ms, int us, int ns)
+        => h is >= 0 and <= 23 && mi is >= 0 and <= 59 && s is >= 0 and <= 59
+           && ms is >= 0 and <= 999 && us is >= 0 and <= 999 && ns is >= 0 and <= 999;
+
+    private static string ReadOverflow(JSValue options)
+    {
+        if (options.IsUndefined)
+            return "constrain";
+
+        if (options is not JSObject optionsObject)
+            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
+
+        var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
+        if (v.IsUndefined) return "constrain";
+
+        var overflow = v.ToString();
+        if (overflow is not ("constrain" or "reject"))
+            throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
+
+        return overflow;
+    }
+
+    // RegulateTime: either constrain each component into range, or reject an out-of-range value.
+    private static JSValue RegulateTime(int h, int mi, int s, int ms, int us, int ns, string overflow)
+    {
+        if (overflow == "reject")
+        {
+            if (!IsValidTime(h, mi, s, ms, us, ns))
+                throw JSEngine.NewRangeError("Temporal.PlainTime: time component out of range");
+        }
+        else
+        {
+            h = Math.Clamp(h, 0, 23);
+            mi = Math.Clamp(mi, 0, 59);
+            s = Math.Clamp(s, 0, 59);
+            ms = Math.Clamp(ms, 0, 999);
+            us = Math.Clamp(us, 0, 999);
+            ns = Math.Clamp(ns, 0, 999);
+        }
+
+        var total = ((((long)h * 60 + mi) * 60 + s) * 1000L + ms) * 1000L * 1000L + (long)us * 1000 + ns;
+        return new JSTemporalPlainTime(total, PlainTimePrototype);
+    }
+
+    private static JSValue ToTemporalTime(JSValue item, string overflow)
+    {
+        if (item is JSTemporalPlainTime t)
+            return new JSTemporalPlainTime(t.TotalNanoseconds(), PlainTimePrototype);
+
+        if (item.IsString)
+            return ParseTemporalTimeString(item.ToString());
+
+        if (item is not JSObject obj)
+            throw JSEngine.NewTypeError("Temporal.PlainTime: invalid value");
+
+        // ToTemporalTimeRecord (complete): absent components default to 0.
+        int Field(string name)
+        {
+            var v = obj[KeyStrings.GetOrCreate(name)];
+            return v.IsUndefined ? 0 : ToIntegerWithTruncation(v);
+        }
+
+        return RegulateTime(Field("hour"), Field("minute"), Field("second"),
+            Field("millisecond"), Field("microsecond"), Field("nanosecond"), overflow);
+    }
+
+    private static readonly Regex TimePattern = new(
+        @"^(?:(?:\d{4}|[+-−]\d{6})-\d{2}-\d{2})?[Tt ]?(\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?:[Zz]|[+-−]\d{2}:?\d{2})?$",
+        RegexOptions.CultureInvariant);
+
+    private static JSValue ParseTemporalTimeString(string text)
+    {
+        var match = TimePattern.Match(text);
+        if (!match.Success)
+            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainTime from \"{text}\"");
+
+        var h = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+        var mi = match.Groups[2].Success ? int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture) : 0;
+        var s = match.Groups[3].Success ? int.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
+
+        int ms = 0, us = 0, ns = 0;
+        if (match.Groups[4].Success)
+        {
+            var digits = match.Groups[4].Value.PadRight(9, '0');
+            ms = int.Parse(digits.Substring(0, 3), CultureInfo.InvariantCulture);
+            us = int.Parse(digits.Substring(3, 3), CultureInfo.InvariantCulture);
+            ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);
+        }
+
+        // A time string is parsed strictly (no constrain); 24:00 etc. is invalid.
+        if (!IsValidTime(h, mi, s, ms, us, ns))
+            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainTime from \"{text}\"");
+
+        return RegulateTime(h, mi, s, ms, us, ns, "reject");
+    }
+
+    private static (string unit, int increment) ReadRoundTo(JSValue roundTo)
+    {
+        string smallestUnit;
+        var increment = 1;
+
+        if (roundTo.IsString)
+        {
+            smallestUnit = roundTo.ToString();
+        }
+        else if (roundTo is JSObject obj)
+        {
+            var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
+            if (unitValue.IsUndefined)
+                throw JSEngine.NewRangeError("Temporal.PlainTime.round requires a smallestUnit");
+            smallestUnit = unitValue.ToString();
+
+            var incrementValue = obj[KeyStrings.GetOrCreate("roundingIncrement")];
+            if (!incrementValue.IsUndefined)
+            {
+                var n = incrementValue.DoubleValue;
+                if (double.IsNaN(n) || n < 1 || Math.Truncate(n) != n)
+                    throw JSEngine.NewRangeError("Temporal.PlainTime.round: invalid roundingIncrement");
+                increment = (int)n;
+            }
+        }
+        else
+        {
+            throw JSEngine.NewTypeError("Temporal.PlainTime.round requires an options object or string");
+        }
+
+        smallestUnit = smallestUnit switch
+        {
+            "hour" or "hours" => "hour",
+            "minute" or "minutes" => "minute",
+            "second" or "seconds" => "second",
+            "millisecond" or "milliseconds" => "millisecond",
+            "microsecond" or "microseconds" => "microsecond",
+            "nanosecond" or "nanoseconds" => "nanosecond",
+            _ => throw JSEngine.NewRangeError($"Temporal.PlainTime.round: invalid smallestUnit \"{smallestUnit}\""),
+        };
+
+        return (smallestUnit, increment);
+    }
+
+    private static long UnitNanoseconds(string unit) => unit switch
+    {
+        "hour" => 3_600_000_000_000,
+        "minute" => 60_000_000_000,
+        "second" => 1_000_000_000,
+        "millisecond" => 1_000_000,
+        "microsecond" => 1_000,
+        _ => 1,
+    };
+
+    private static long RoundHalfExpand(long value, long increment)
+    {
+        if (increment <= 1) return value;
+
+        var quotient = value / increment;
+        var remainder = value - quotient * increment;
+        if (remainder * 2 >= increment)
+            quotient += 1;
+
+        return quotient * increment;
+    }
+
+    // TemporalTimeToString with auto precision: "HH:MM:SS" plus the trimmed fractional second.
+    private string ToISOString()
+    {
+        var sb = new StringBuilder();
+        sb.Append(hour.ToString("00", CultureInfo.InvariantCulture))
+          .Append(':').Append(minute.ToString("00", CultureInfo.InvariantCulture))
+          .Append(':').Append(second.ToString("00", CultureInfo.InvariantCulture));
+
+        var fraction = millisecond * 1_000_000 + microsecond * 1_000 + nanosecond;
+        if (fraction != 0)
+        {
+            var digits = fraction.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0');
+            sb.Append('.').Append(digits);
+        }
+
+        return sb.ToString();
+    }
+}

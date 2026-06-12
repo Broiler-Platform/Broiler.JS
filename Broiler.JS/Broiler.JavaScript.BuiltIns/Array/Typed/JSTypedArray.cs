@@ -62,40 +62,82 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     // PatchTypedArrayBuiltIns), not an accessor on %TypedArray%.prototype.
     internal readonly int bytesPerElement;
 
-    [JSExport]
-    internal readonly int length;
+    // A length-tracking view (constructed with no explicit length over a *resizable*
+    // ArrayBuffer) recomputes its element count from the live buffer byte length; a
+    // fixed-length view stores the explicit count in explicitLength. `length` is computed
+    // so a buffer resize() — which reallocates buffer.buffer — is observed immediately,
+    // including a fixed-length view going out of bounds after a shrink.
+    internal bool isLengthTracking;
+    internal int explicitLength;
 
     [JSExport]
-    internal int ByteLength => buffer.buffer.Length;
-    
+    internal int length => ComputeLength();
+
+    private int ComputeLength()
+    {
+        if (buffer == null || buffer.isDetached)
+            return 0;
+
+        var bufferByteLength = buffer.buffer.Length;
+
+        // A shrink can leave the view's start past the end of the buffer.
+        if (byteOffset > bufferByteLength)
+            return 0;
+
+        if (isLengthTracking)
+            return (bufferByteLength - byteOffset) / bytesPerElement;
+
+        // A fixed-length view backed by a resizable buffer is out of bounds (length 0)
+        // once the buffer no longer spans its full extent.
+        if ((long)byteOffset + (long)explicitLength * bytesPerElement > bufferByteLength)
+            return 0;
+
+        return explicitLength;
+    }
+
+    [JSExport]
+    internal int ByteLength => length * bytesPerElement;
+
     public override int Length { get => length; set => throw new NotSupportedException(); }
     public bool HasIntegerIndexedElements => length > 0;
 
     public JSTypedArray(in Arguments a) : this(JSEngine.NewTargetPrototype) => throw JSEngine.NewTypeError("TypedArray is not a constructor");
 
-    public JSTypedArray(in TypedArrayParameters p): this(p.prototype) 
+    public JSTypedArray(in TypedArrayParameters p): this(p.prototype)
     {
         buffer = p.buffer;
-        length = p.length;
         byteOffset = p.byteOffset;
         bytesPerElement = p.bytesPerElement;
+        var len = p.length;
 
         if (p.copyFrom == null)
         {
             if (buffer == null)
             {
-                buffer = new JSArrayBuffer(length * bytesPerElement);
-            } 
-            else 
+                buffer = new JSArrayBuffer(len * bytesPerElement);
+                explicitLength = len < 0 ? 0 : len;
+            }
+            else
             {
-                var byteLength = length;
+                var byteLength = len;
                 if (byteLength == -1)
                 {
-                    byteLength = buffer.buffer.Length - byteOffset;
-                    if (byteLength % bytesPerElement != 0)
-                        throw JSEngine.NewRangeError($"byte length of TypedArray should be multiple of {bytesPerElement}");
+                    if (buffer.IsResizable)
+                    {
+                        // No explicit length over a resizable buffer → length-tracking view;
+                        // its byte length floats with the buffer (no multiple-of-element
+                        // constraint), validated only for offset/bounds below.
+                        isLengthTracking = true;
+                        byteLength = buffer.buffer.Length - byteOffset;
+                    }
+                    else
+                    {
+                        byteLength = buffer.buffer.Length - byteOffset;
+                        if (byteLength % bytesPerElement != 0)
+                            throw JSEngine.NewRangeError($"byte length of TypedArray should be multiple of {bytesPerElement}");
 
-                    length = byteLength / bytesPerElement;
+                        explicitLength = byteLength / bytesPerElement;
+                    }
                 }
                 else
                 {
@@ -104,6 +146,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
                         throw JSEngine.NewRangeError($"Start offset {byteOffset} is outside the bounds of the buffer");
 
                     byteLength = (int)requestedByteLength;
+                    explicitLength = len;
                 }
 
                 if (byteOffset < 0 || (byteOffset % bytesPerElement) != 0)
@@ -116,29 +159,24 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return;
         }
 
-        if(p.copyFrom == null)
-        {
-            return;
-        }
-
         var source = p.copyFrom;
 
         // copy..
-        length = -1;
+        len = -1;
         switch (source)
         {
             case JSArray array:
-                length = array.Length;
+                len = array.Length;
                 break;
             case JSString @string:
-                length = @string.Length;
+                len = @string.Length;
                 break;
             case JSTypedArray typed:
-                length = typed.Length;
+                len = typed.Length;
                 break;
         }
         var copyByIndex = false;
-        if (length == -1 && IsNonIterableArrayLike(source))
+        if (len == -1 && IsNonIterableArrayLike(source))
         {
             // No @@iterator method: %TypedArray%.from treats the source as an
             // array-like (ToObject, then ToLength(Get(source, "length"))). A
@@ -146,7 +184,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             // boolean) or a plain object such as {} becomes a zero-length result.
             // This must never fall through to the iterator path below, which
             // throws "<source> is not iterable".
-            length = source is JSObject arrayLike && arrayLike.Length >= 0
+            len = source is JSObject arrayLike && arrayLike.Length >= 0
                 ? arrayLike.Length
                 : 0;
             copyByIndex = true;
@@ -155,9 +193,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         IElementEnumerator en2;
         /*
          * If length is unknown, create a List and get its count
-         * 
+         *
          */
-        if (length == -1)
+        if (len == -1)
         {
             var en = source.GetIterableEnumerator();
             var elements = new List<JSValue>();
@@ -166,7 +204,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
                 if (hasValue)
                     elements.Add(item);
             }
-            length = elements.Count;
+            len = elements.Count;
             en2 = new ListElementEnumerator(elements.GetEnumerator());
         }
         else
@@ -174,7 +212,8 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             en2 = source.GetElementEnumerator();
         }
 
-        buffer = new JSArrayBuffer(length * bytesPerElement);
+        explicitLength = len;
+        buffer = new JSArrayBuffer(len * bytesPerElement);
 
         if (copyByIndex)
         {
