@@ -33,12 +33,36 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   property and must be accepted in identifiers despite their non-letter Unicode
 //   category. (Unicode-17.0-only identifier characters remain limited by the host
 //   runtime's Unicode data version and are out of scope.)
+//
+//   Problem 36 — `await`'s operand is a UnaryExpression, so `await a * b` is
+//   `(await a) * b` and the await expression participates in the enclosing operator
+//   chain. Parsing it as a full Expression mis-associated higher-precedence
+//   operators, and a trailing EndOfStatement() consumed the statement terminator —
+//   breaking automatic semicolon insertion for the enclosing statement (e.g.
+//   `let y = await x\n stmt`).
+//
+//   (Runtime follow-up exposed by the P36 parser fix) — `await` of a non-thenable
+//   value (a primitive, or an object with no `then` method) must still suspend for
+//   one microtask tick and resume the async function with that value, so the
+//   continuation after the await runs. The async driver previously resolved the
+//   whole function with the value, discarding everything after the await — a bug
+//   that was masked while `await` greedily consumed the rest of the expression.
 public class Issue761Tests
 {
     private static string Eval(string code)
     {
         using var ctx = new JSContext();
         return ctx.Eval(code)?.ToString();
+    }
+
+    // Drives an async body to completion (Execute pumps the event loop) and returns
+    // the value recorded in the global `r`.
+    private static string Drive(string body)
+    {
+        using var ctx = new JSContext();
+        ctx.Eval("globalThis.r = '<unset>';");
+        ctx.Execute(body);
+        return ctx.Eval("'' + globalThis.r").ToString();
     }
 
     private static string U(params int[] cps) => string.Concat(cps.Select(char.ConvertFromUtf32));
@@ -225,4 +249,67 @@ public class Issue761Tests
             "class C { #" + U('_', 0x200C, 0x200D, 0x30FB, 0xFF65) + " = 7;"
             + " get(){ return this.#" + U('_', 0x200C, 0x200D, 0x30FB, 0xFF65) + "; } }"
             + " new C().get()"));
+
+    // ---- Problem 36: await operand precedence and ASI ----
+
+    [Fact]
+    public void AwaitOperandIsUnaryExpressionMultiplicative()
+        // (await 2) * 2 == 4, not await(2 * 2)
+        => Assert.Equal("4", Drive(
+            "async function f(){ let x = 2; r = await Promise.resolve(2) * x; } f();"));
+
+    [Fact]
+    public void AwaitOperandIsUnaryExpressionAdditive()
+        => Assert.Equal("5", Drive(
+            "async function f(){ r = await Promise.resolve(2) + 3; } f();"));
+
+    [Fact]
+    public void AwaitOperandIsUnaryExpressionRelational()
+        => Assert.Equal("true", Drive(
+            "async function f(){ r = await Promise.resolve(2) < 5; } f();"));
+
+    [Fact]
+    public void AwaitExpressionAllowsAsiInEnclosingStatement()
+    {
+        // The newline after the await expression must let ASI terminate the
+        // `let`/expression statement so the next statement parses.
+        Assert.Equal("4", Drive(
+            "async function f(){ let x = 2\n let y = await Promise.resolve(2) * x\n r = y; } f();"));
+        Assert.Equal("parsed", Eval(
+            "async function f(){ let y = await Promise.resolve(5)\n return y; } 'parsed'"));
+    }
+
+    [Fact]
+    public void AwaitBeforeExponentiationIsSyntaxError()
+    {
+        var ex = Assert.Throws<Broiler.JavaScript.Runtime.JSException>(
+            () => Eval("async function f(){ return await 2 ** 2; }"));
+        Assert.Contains("exponentiation", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void ParenthesizedAwaitBeforeExponentiationIsAllowed()
+        => Assert.Equal("parsed", Eval(
+            "async function f(){ return (await 2) ** 2; } 'parsed'"));
+
+    [Fact]
+    public void AwaitOfNonThenableRunsContinuation()
+    {
+        // (await 1) + 1 == 2 — the continuation after awaiting a non-thenable runs.
+        Assert.Equal("2", Drive("async function f(){ r = await 1 + 1; } f();"));
+        // await of a non-thenable in a loop accumulates correctly.
+        Assert.Equal("3", Drive(
+            "async function f(){ let s = 0; for (let i = 0; i < 3; i++) { s += await i; } r = s; } f();"));
+        // await of undefined yields undefined (does not throw on a missing .then).
+        Assert.Equal("u", Drive(
+            "async function f(){ let v = await undefined; r = v === undefined ? 'u' : v; } f();"));
+    }
+
+    [Fact]
+    public void AwaitOfNonThenableSuspendsOneMicrotaskTick()
+        // Interleaving proves await(0) suspends rather than running synchronously.
+        => Assert.Equal("A1,main,A2,after", Drive(
+            "async function f(){ let log=[];"
+            + " (async()=>{ log.push('A1'); await 0; log.push('A2'); })();"
+            + " log.push('main'); await 0; log.push('after'); r = log.join(','); } f();"));
 }

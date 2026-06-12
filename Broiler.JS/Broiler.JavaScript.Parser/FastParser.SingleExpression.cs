@@ -295,37 +295,28 @@ partial class FastParser
             var begin = stream.Current;
             stream.Consume();
 
-            if (Expression(out var target))
-            {
-                // `await x ** y` is a SyntaxError: an await UnaryExpression cannot
-                // be the left operand of `**`. `await` greedily parses a full
-                // Expression, so detect the case where exponentiation is applied
-                // directly to the await operand — the leftmost, unparenthesised
-                // primary of the parsed target. `await (x ** y)` is unaffected.
-                for (var n = target; n is AstBinaryExpression bin && !n.WasParenthesized;)
-                {
-                    if (bin.Left is AstBinaryExpression && !bin.Left.WasParenthesized)
-                    {
-                        n = bin.Left;
-                        continue;
-                    }
+            // `await`'s operand is a UnaryExpression, not a full Expression: `await a
+            // * b` is `(await a) * b`, and the await expression participates in the
+            // enclosing operator-precedence chain handled by the caller. Parsing a
+            // full Expression here mis-associated higher-precedence operators (so
+            // `await a * b` became `await (a * b)`) and the trailing EndOfStatement()
+            // wrongly consumed the statement terminator — breaking ASI for the
+            // enclosing statement (e.g. `let y = await x\n stmt`).
+            if (!SinglePrefixPostfixExpression(out var target, out _, out _))
+                throw stream.Unexpected();
 
-                    if (bin.Operator == TokenTypes.Power)
-                        throw new FastParseException(begin,
-                            "Unary operator used immediately before exponentiation expression; parentheses must be used to disambiguate operator precedence");
+            // `await x ** y` is a SyntaxError: an await UnaryExpression cannot be the
+            // left operand of `**`. Parenthesised `(await x) ** y` is fine — there the
+            // `**` is applied outside this production and never reaches here.
+            if (stream.Current.Type == TokenTypes.Power)
+                throw new FastParseException(begin,
+                    "Unary operator used immediately before exponentiation expression; parentheses must be used to disambiguate operator precedence");
 
-                    break;
-                }
+            if (functionDepth == 0)
+                isAsync = true;
+            statement = new AstAwaitExpression(begin, PreviousToken, target);
 
-                if (functionDepth == 0)
-                    isAsync = true;
-                statement = new AstAwaitExpression(begin, PreviousToken, target);
-                EndOfStatement();
-
-                return true;
-            }
-
-            throw stream.Unexpected();
+            return true;
         }
     }
 }

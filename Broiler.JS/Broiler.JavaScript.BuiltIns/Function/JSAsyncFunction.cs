@@ -81,9 +81,15 @@ public class JSAsyncFunction
             if (!gen.MoveNext(lastResult, out var r))
                 return JSEngine.CreateResolvedOrRejectedPromise(r, true);
 
-            var then = r[KeyStrings.then];
-            if (then.IsUndefined)
-                return JSEngine.CreateResolvedOrRejectedPromise(r, true);
+            // Is the awaited value a thenable (an object with a callable `then`)? A
+            // non-thenable — a primitive, or an object without a `then` method — is
+            // NOT the final result of the async function: `await` of it still
+            // suspends for one microtask tick and then resumes the function with the
+            // value itself, so the continuation after the await (e.g. `(await 1) + 1`)
+            // runs. Previously a non-thenable resolved the whole async function with
+            // the value, discarding everything after the await.
+            var then = r.IsObject ? r[KeyStrings.then] : JSUndefined.Value;
+            var isThenable = then.IsFunction;
 
             // Resume on the synchronization context currently being pumped (matching how
             // JSPromise captures its context), falling back to the context captured at
@@ -101,6 +107,22 @@ public class JSAsyncFunction
                         continuationContext.Post(_ => action(), null);
                     else
                         ThreadPool.QueueUserWorkItem(_ => action());
+                }
+
+                if (!isThenable)
+                {
+                    Queue(() =>
+                    {
+                        try
+                        {
+                            resolve(ToPromise(gen, r));
+                        }
+                        catch (Exception ex)
+                        {
+                            reject(JSException.JSErrorFrom(ex));
+                        }
+                    });
+                    return;
                 }
 
                 r.InvokeMethod(in KeyStrings.then,
