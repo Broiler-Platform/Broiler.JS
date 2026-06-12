@@ -147,37 +147,19 @@ public partial class JSTemporalDuration : JSObject
     public JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.Duration.prototype.valueOf, which is not supported. Use Temporal.Duration.compare for comparison.");
 
-    // TODO: Temporal.Duration.prototype.add ( other [ , options ] )
-    //   Implement AddDurations: when both operands are calendar-independent (years =
-    //   months = weeks = 0) the addition is a straightforward time/day balance; otherwise
-    //   the spec requires a `relativeTo` PlainDate/ZonedDateTime and calendar arithmetic
-    //   (AddDuration → AddZonedDateTime / CalendarDateAdd). Currently unimplemented.
+    // add / subtract / round / total: the calendar-independent (time + 24h-day) cases are
+    // implemented in JSTemporalDuration.Arithmetic.cs; calendar-unit / relativeTo cases throw.
     [JSExport("add", Length = 1)]
-    public JSValue Add(in Arguments a)
-        => throw JSEngine.NewError("Temporal.Duration.prototype.add is not yet implemented");
+    public JSValue Add(in Arguments a) => AddSubtract(a.GetAt(0), a.GetAt(1), 1);
 
-    // TODO: Temporal.Duration.prototype.subtract ( other [ , options ] )
-    //   Same as add() with a negated operand; blocked on the same calendar arithmetic.
     [JSExport("subtract", Length = 1)]
-    public JSValue Subtract(in Arguments a)
-        => throw JSEngine.NewError("Temporal.Duration.prototype.subtract is not yet implemented");
+    public JSValue Subtract(in Arguments a) => AddSubtract(a.GetAt(0), a.GetAt(1), -1);
 
-    // TODO: Temporal.Duration.prototype.round ( roundTo )
-    //   Implement RoundDuration: read smallestUnit/largestUnit/roundingIncrement/
-    //   roundingMode/relativeTo, then balance + round. The calendar-independent case
-    //   (time units + days as 24h) is tractable; years/months/weeks rounding needs a
-    //   relativeTo calendar. Currently unimplemented.
     [JSExport("round", Length = 1)]
-    public JSValue Round(in Arguments a)
-        => throw JSEngine.NewError("Temporal.Duration.prototype.round is not yet implemented");
+    public JSValue Round(in Arguments a) => RoundImpl(a.GetAt(0));
 
-    // TODO: Temporal.Duration.prototype.total ( totalOf )
-    //   Implement TotalDuration: convert the whole duration to a single (possibly
-    //   fractional) unit. Time units + days are exact via the BigInteger total here;
-    //   calendar units need a relativeTo. Currently unimplemented.
     [JSExport("total", Length = 1)]
-    public JSValue Total(in Arguments a)
-        => throw JSEngine.NewError("Temporal.Duration.prototype.total is not yet implemented");
+    public JSValue Total(in Arguments a) => TotalImpl(a.GetAt(0));
 
     // ── statics ─────────────────────────────────────────────────────────────────
 

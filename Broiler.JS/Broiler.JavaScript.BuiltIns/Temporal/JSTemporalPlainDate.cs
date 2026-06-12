@@ -66,6 +66,9 @@ public partial class JSTemporalPlainDate : JSObject
     // ── accessors ───────────────────────────────────────────────────────────────
 
     [JSExport("calendarId")] public JSValue CalendarId => new JSString("iso8601");
+    // The ISO 8601 calendar has no eras; era / eraYear are present but undefined.
+    [JSExport("era")] public JSValue Era => JSUndefined.Value;
+    [JSExport("eraYear")] public JSValue EraYear => JSUndefined.Value;
     [JSExport("year")] public double YearValue => isoYear;
     [JSExport("month")] public double MonthValue => isoMonth;
     [JSExport("monthCode")] public JSValue MonthCode => new JSString($"M{isoMonth:00}");
@@ -221,23 +224,58 @@ public partial class JSTemporalPlainDate : JSObject
     public JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.PlainDate.prototype.valueOf, which is not supported. Use Temporal.PlainDate.compare for comparison.");
 
-    // TODO: toPlainDateTime / toPlainYearMonth / toPlainMonthDay / toZonedDateTime depend on
-    // Temporal.PlainDateTime / PlainYearMonth / PlainMonthDay / ZonedDateTime, still stubs.
+    // toPlainDateTime combines this date with a PlainTime (default midnight).
     [JSExport("toPlainDateTime", Length = 0)]
     public JSValue ToPlainDateTime(in Arguments a)
-        => throw JSEngine.NewError("Temporal.PlainDate.prototype.toPlainDateTime is not yet implemented (needs Temporal.PlainDateTime)");
+    {
+        var arg = a.GetAt(0);
+        if (arg == null || arg.IsUndefined)
+            return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, 0, 0, 0, 0, 0, 0, JSTemporalPlainDateTime.PlainDateTimePrototype);
+
+        var t = JSTemporalPlainTime.From(new Arguments(JSUndefined.Value, arg)) as JSTemporalPlainTime
+            ?? throw JSEngine.NewTypeError("expected a Temporal.PlainTime");
+        return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay,
+            t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond, JSTemporalPlainDateTime.PlainDateTimePrototype);
+    }
 
     [JSExport("toPlainYearMonth", Length = 0)]
     public JSValue ToPlainYearMonth(in Arguments a)
-        => throw JSEngine.NewError("Temporal.PlainDate.prototype.toPlainYearMonth is not yet implemented (needs Temporal.PlainYearMonth)");
+        => new JSTemporalPlainYearMonth(isoYear, isoMonth, isoDay, JSTemporalPlainYearMonth.PlainYearMonthPrototype);
 
     [JSExport("toPlainMonthDay", Length = 0)]
     public JSValue ToPlainMonthDay(in Arguments a)
-        => throw JSEngine.NewError("Temporal.PlainDate.prototype.toPlainMonthDay is not yet implemented (needs Temporal.PlainMonthDay)");
+        => new JSTemporalPlainMonthDay(isoMonth, isoDay, 1972, JSTemporalPlainMonthDay.PlainMonthDayPrototype);
 
+    // toZonedDateTime(timeZone | { timeZone, plainTime }): combine this date with a time
+    // (default midnight) and interpret it in the given zone.
     [JSExport("toZonedDateTime", Length = 1)]
     public JSValue ToZonedDateTime(in Arguments a)
-        => throw JSEngine.NewError("Temporal.PlainDate.prototype.toZonedDateTime is not yet implemented (needs Temporal.ZonedDateTime)");
+    {
+        var item = a.GetAt(0);
+        string timeZone;
+        var h = 0; var mi = 0; var s = 0; var ms = 0; var us = 0; var ns = 0;
+
+        if (item != null && item.IsString)
+            timeZone = item.ToString();
+        else if (item is JSObject obj)
+        {
+            var tzValue = obj[KeyStrings.GetOrCreate("timeZone")];
+            if (tzValue.IsUndefined || !tzValue.IsString)
+                throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.toZonedDateTime: timeZone must be a string");
+            timeZone = tzValue.ToString();
+
+            var plainTimeValue = obj[KeyStrings.GetOrCreate("plainTime")];
+            if (!plainTimeValue.IsUndefined)
+            {
+                var t = JSTemporalPlainTime.From(new Arguments(JSUndefined.Value, plainTimeValue)) as JSTemporalPlainTime
+                    ?? throw JSEngine.NewTypeError("expected a Temporal.PlainTime");
+                h = t.hour; mi = t.minute; s = t.second; ms = t.millisecond; us = t.microsecond; ns = t.nanosecond;
+            }
+        }
+        else throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.toZonedDateTime: invalid argument");
+
+        return JSTemporalZonedDateTime.FromLocal(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns, timeZone);
+    }
 
     // ── value coercion / validation ─────────────────────────────────────────────
 
