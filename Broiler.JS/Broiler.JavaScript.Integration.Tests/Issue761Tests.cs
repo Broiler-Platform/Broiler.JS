@@ -17,6 +17,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   terminators between its three tokens (`new\n.\ntarget`). The `new` operator
 //   lookahead and the meta-property parser now skip line terminators (whitespace
 //   and comments between the tokens already worked).
+//
+//   Problem 25 — A template literal may contain an invalid escape sequence
+//   (`\01`, `\8`, `\xg`, `\u0`, `\u{g`, `\u{10FFFFF}`, …) only when it is the
+//   operand of a tag (ES2018 template literal revision). In a tagged template the
+//   cooked TemplateStringsArray entry is `undefined` while the `.raw` value is
+//   preserved verbatim; an untagged template literal containing one is an early
+//   SyntaxError. The scanner now defers (rather than throws) such escapes, marking
+//   the part's cooked value invalid.
 public class Issue761Tests
 {
     private static string Eval(string code)
@@ -111,4 +119,59 @@ public class Issue761Tests
     public void NestedNewExpressionStillParses()
         => Assert.Equal("true", Eval(
             "function F(){}; (new new F().constructor) instanceof Function"));
+
+    // ---- Problem 25: invalid escape sequences in tagged / untagged templates ----
+
+    [Fact]
+    public void TaggedTemplateInvalidEscapeCookedIsUndefined()
+        => Assert.Equal("true", Eval(
+            "var c=(s=>s[0]);" +
+            "[c`\\01`,c`\\1`,c`\\8`,c`\\9`,c`\\xg`,c`\\xAg`,c`\\u0`,c`\\u0g`," +
+            " c`\\u00g`,c`\\u000g`,c`\\u{g`,c`\\u{0`,c`\\u{10FFFFF}`]" +
+            ".every(v => v === undefined)"));
+
+    // A single program (distinct source offsets) so the per-offset template-object
+    // cache does not alias the cases — this mirrors how the real test262 file is
+    // structured (every template at its own source position).
+    [Fact]
+    public void TaggedTemplateInvalidEscapeRawIsPreserved()
+        => Assert.Equal("\\01,\\9,\\xg,\\xAg,\\u0,\\u0g,\\u{g,\\u{0,\\u{10FFFFF}", Eval(
+            "var r=(s=>s.raw[0]);" +
+            "[r`\\01`,r`\\9`,r`\\xg`,r`\\xAg`,r`\\u0`,r`\\u0g`,r`\\u{g`,r`\\u{0`,r`\\u{10FFFFF}`].join(',')"));
+
+    [Fact]
+    public void TaggedTemplateInvalidEscapeBeforeSubstitution()
+        => Assert.Equal("\\u{10FFFFF}|undefined|inner|right|right", Eval(
+            "((s, val) => [s.raw[0], String(s[0]), val, s[1], s.raw[1]].join('|'))" +
+            "`\\u{10FFFFF}${'inner'}right`"));
+
+    [Fact]
+    public void TaggedTemplateValidEscapesStillCook()
+        => Assert.Equal("10,A,A,0", Eval(
+            "[(s=>s[0].charCodeAt(0))`\\n`," +   // \n => LF
+            " (s=>s[0])`\\u0041`," +             // A => 'A'
+            " (s=>s[0])`\\x41`," +               // \x41 => 'A'
+            " (s=>s[0].charCodeAt(0))`\\0`" +    // \0 => NUL
+            "].join(',')"));
+
+    [Theory]
+    [InlineData("`\\01`")]
+    [InlineData("`\\xg`")]
+    [InlineData("`\\u0`")]
+    [InlineData("`\\u{g`")]
+    [InlineData("`\\u{10FFFFF}`")]
+    [InlineData("`a${1}\\9b`")]
+    public void UntaggedTemplateInvalidEscapeIsSyntaxError(string source)
+    {
+        var ex = Assert.Throws<Broiler.JavaScript.Runtime.JSException>(() => Eval(source));
+        Assert.Contains("template", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void UntaggedTemplateValidEscapesStillWork()
+    {
+        Assert.Equal("aAb", Eval("`a\\u0041b`"));
+        Assert.Equal("0", Eval("(`\\0`).charCodeAt(0).toString()"));
+        Assert.Equal("hello 2!", Eval("`hello ${1+1}!`"));
+    }
 }

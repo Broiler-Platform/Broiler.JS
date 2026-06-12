@@ -48,6 +48,11 @@ public class FastScanner
     private int templateBraceDepth = 0;
     private readonly System.Collections.Generic.Stack<int> templateBraceDepthStack = new();
 
+    // Set while scanning a single template part when it contains an invalid escape
+    // sequence (deferred — a tagged template tolerates it with an undefined cooked
+    // value, an untagged one is an early SyntaxError). Reset per part.
+    private bool templateCookedInvalid = false;
+
     public SpanLocation Location => new(line, column);
 
     public Exception Unexpected()
@@ -114,6 +119,16 @@ public class FastScanner
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private (int position, int line, int column) SaveCursor() => (position, line, column);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void RestoreCursor(in (int position, int line, int column) cursor)
+    {
+        position = cursor.position;
+        line = cursor.line;
+        column = cursor.column;
+    }
+
     private char Peek()
     {
         if (position >= Text.Length)
@@ -567,12 +582,37 @@ public class FastScanner
         return lastToken.Type == TokenTypes.Empty || lastToken.Type == TokenTypes.LineTerminator;
     }
 
-    private bool ScanEscaped(char next, StringBuilder t)
+    private bool ScanEscaped(char next, StringBuilder t, bool deferInvalid = false)
     {
         if (next != '\\')
             return false;
 
         next = Consume();
+
+        // Template (strict) escape rules (ES2018 template literal revision): a
+        // DecimalEscape (`\1`-`\9`), a LegacyOctalEscapeSequence, and `\0` followed
+        // by a decimal digit are invalid escapes whose cooked value is undefined.
+        // Defer (mark + skip) rather than throw so a tagged template tolerates them;
+        // an untagged template literal is rejected later by the compiler.
+        if (deferInvalid)
+        {
+            if (next >= '1' && next <= '9')
+            {
+                templateCookedInvalid = true;
+                return true;
+            }
+
+            if (next == '0')
+            {
+                var d = Next();
+                if (d >= '0' && d <= '9')
+                {
+                    Consume();
+                    templateCookedInvalid = true;
+                    return true;
+                }
+            }
+        }
 
         switch (next)
         {
@@ -595,7 +635,39 @@ public class FastScanner
             case 'u':
                 if (CanConsumeNext('{'))
                 {
+                    if (deferInvalid)
+                    {
+                        // `\u{...}` may be malformed (no digits, non-hex, out of
+                        // range). Reuse the throwing scanner but roll the position
+                        // back on failure so the rest of the template part — and in
+                        // particular its terminating backtick — is rescanned normally.
+                        var save = SaveCursor();
+                        try
+                        {
+                            t.Append(ScanUnicodeCodePointEscape());
+                            return true;
+                        }
+                        catch (FastParseException)
+                        {
+                            RestoreCursor(save);
+                            templateCookedInvalid = true;
+                            return true;
+                        }
+                    }
                     t.Append(ScanUnicodeCodePointEscape());
+                    return true;
+                }
+
+                if (deferInvalid)
+                {
+                    var save = SaveCursor();
+                    if (ScanHexEscape(next, out var n2))
+                    {
+                        t.Append(n2);
+                        return true;
+                    }
+                    RestoreCursor(save);
+                    templateCookedInvalid = true;
                     return true;
                 }
 
@@ -607,6 +679,19 @@ public class FastScanner
                 throw Unexpected();
 
             case 'x':
+                if (deferInvalid)
+                {
+                    var save = SaveCursor();
+                    if (ScanHexEscape(next, out var hex2))
+                    {
+                        t.Append(hex2);
+                        return true;
+                    }
+                    RestoreCursor(save);
+                    templateCookedInvalid = true;
+                    return true;
+                }
+
                 if (ScanHexEscape(next, out var hex))
                 {
                     t.Append(hex);
@@ -782,6 +867,7 @@ public class FastScanner
     {
         var sb = pool.AllocateStringBuilder();
         var t = sb.Builder;
+        templateCookedInvalid = false;
 
         try
         {
@@ -805,7 +891,7 @@ public class FastScanner
                             templateParts++;
                             templateBraceDepthStack.Push(templateBraceDepth);
                             templateBraceDepth = 0;
-                            return state.Commit(part, t);
+                            return state.Commit(part, t, templateCookedInvalid);
                         }
 
                         t.Append('$');
@@ -813,7 +899,7 @@ public class FastScanner
 
                     case '`':
                         Consume();
-                        return state.Commit(TokenTypes.TemplateEnd, t);
+                        return state.Commit(TokenTypes.TemplateEnd, t, templateCookedInvalid);
 
                     case char.MaxValue:
                         break;
@@ -822,7 +908,7 @@ public class FastScanner
                 if (ch == char.MaxValue)
                     throw Unexpected();
 
-                if (ScanEscaped(ch, t))
+                if (ScanEscaped(ch, t, deferInvalid: true))
                     continue;
 
                 t.Append(ch);
@@ -1553,12 +1639,12 @@ public class FastScanner
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public FastToken Commit(TokenTypes type, StringBuilder builder = null)
+        public FastToken Commit(TokenTypes type, StringBuilder builder = null, bool cookedInvalid = false)
         {
             var cp = scanner.position;
             var start = scanner.Text.Offset + position;
             var location = scanner.Location;
-            var token = new FastToken(type, scanner.Text.Source, builder?.ToString(), null, start, cp - start, this.start, location);
+            var token = new FastToken(type, scanner.Text.Source, builder?.ToString(), null, start, cp - start, this.start, location, cookedInvalid: cookedInvalid);
             scanner = null;
             return token;
         }

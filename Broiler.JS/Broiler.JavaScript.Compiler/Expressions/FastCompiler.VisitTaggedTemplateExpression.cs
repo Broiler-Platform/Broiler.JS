@@ -28,6 +28,12 @@ partial class FastCompiler
         var e = template.Arguments.GetFastEnumerator();
         args.Add(null);
 
+        // Deterministic hash of the raw template contents, folded into the cache key
+        // below so that two distinct templates that happen to start at the same
+        // source offset (different compilations sharing the process-wide cache) do
+        // not alias one another's frozen template object.
+        var rawHash = unchecked((int)2166136261);
+
         while (e.MoveNext(out var p))
         {
             if (p.Type == FastNodeType.Literal)
@@ -47,8 +53,22 @@ partial class FastCompiler
                     else if (r.EndsWith("`"))
                         r = r.Substring(0, r.Length - 1);
 
+                    unchecked
+                    {
+                        foreach (var c in r)
+                            rawHash = (rawHash ^ c) * 16777619;
+                        rawHash = (rawHash ^ 0x1F) * 16777619; // part separator
+                    }
+
                     raw.Add(JSStringBuilder.New(YExpression.Constant(r)));
-                    parts.Add(new YElementInit(JSArrayBuilder._Add, JSStringBuilder.New(YExpression.Constant(l.StringValue))));
+
+                    // A template part with an invalid escape sequence has no cooked
+                    // value: its TemplateStringsArray entry is `undefined` (ES2018
+                    // template literal revision). The raw value is still preserved.
+                    var cooked = l.Start.CookedInvalid
+                        ? (YExpression)JSUndefinedBuilder.Value
+                        : JSStringBuilder.New(YExpression.Constant(l.StringValue));
+                    parts.Add(new YElementInit(JSArrayBuilder._Add, cooked));
                     continue;
                 }
             }
@@ -62,8 +82,11 @@ partial class FastCompiler
 
         var unfrozenArray = JSArrayBuilder.New(parts);
 
-        // Use source position as a stable cache key for template object identity (ES2015 §12.2.9.3)
-        var cacheKey = template.Start.Span.Offset;
+        // Use source position (combined with a hash of the raw contents) as a
+        // stable cache key for template object identity (ES2015 12.2.9.3). The
+        // raw-content hash disambiguates distinct templates that share a source
+        // offset across separate compilations using the process-wide cache.
+        var cacheKey = unchecked((template.Start.Span.Offset * 397) ^ rawHash);
         var partsArray = YExpression.Call(null, GetOrCreateTemplateObjectMethod, YExpression.Constant(cacheKey), unfrozenArray);
         args[0] = partsArray;
 
