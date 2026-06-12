@@ -68,6 +68,16 @@ partial class FastParser
         if (hasAsync)
             inAsyncFunctionBody = true;
 
+        // The operand of a prefix unary operator (delete/void/typeof/new/+/-/~/!) may
+        // be separated from the operator by line terminators — they carry no ASI
+        // restriction in this position. HasUnaryOperator's failed lookahead for a
+        // further operator leaves the stream parked on the intervening LineTerminator
+        // token (it skips then undoes), and only an identifier operand recovers from
+        // that downstream; a number/literal/parenthesized operand would fail. Skip the
+        // line terminator here so every operand kind is reached uniformly.
+        if (previous != UnaryOperator.None)
+            stream.SkipNewLines();
+
         try
         {
             if (!SingleMemberExpression(out node, previous == UnaryOperator.@new, hasAsync))
@@ -183,12 +193,19 @@ partial class FastParser
             switch (token.Keyword)
             {
                 case FastKeywords.@new:
-                    if (stream.Next.Type == TokenTypes.Dot)
+                    // `new . target` (NewTarget) may have line terminators between its
+                    // three tokens (`new\n.\ntarget`), so look past them when deciding
+                    // whether this `new` introduces the meta-property; if so, defer to
+                    // SingleMemberExpression to parse it.
+                    stream.Consume();
+                    var newProbe = stream.SkipNewLines();
+                    var isNewTarget = stream.Current.Type == TokenTypes.Dot;
+                    newProbe.Undo();
+                    if (isNewTarget)
                     {
                         m.Undo();
                         return false;
                     }
-                    stream.Consume();
                     unaryOperator = UnaryOperator.@new;
                     return true;
 
