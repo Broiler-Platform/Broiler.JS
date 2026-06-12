@@ -188,4 +188,19 @@ public class Issue765Tests
     public void LoneScriptNameIsSyntaxError()
         => Assert.Equal("true", Eval(
             "var t = false; try { new RegExp('\\\\p{Han}', 'u'); } catch (e) { t = e instanceof SyntaxError; } '' + t;"));
+
+    // General_Category via the UCD 17.0.0 database — code-point (not code-unit)
+    // semantics so supplementary-plane categories match correctly, including the
+    // group categories and long names; in-class use still works via the .NET fallback.
+    [Theory]
+    [InlineData(@"/^\p{Lu}+$/u", "ABC", "true")]
+    [InlineData(@"/^\p{Letter}+$/u", "aπ你", "true")]
+    [InlineData(@"/^\p{gc=Nd}$/u", "5", "true")]
+    [InlineData(@"/^\p{L}$/u", "𐐀", "true")]                 // supplementary letter (Deseret)
+    [InlineData(@"/^\p{Cased_Letter}$/u", "A", "true")]
+    [InlineData(@"/^\p{Lu}$/u", "a", "false")]
+    [InlineData(@"/^[\p{L}\p{Nd}]+$/u", "a5", "true")]        // in-class (NET fallback)
+    [InlineData(@"/^[^\p{N}]$/u", "a", "true")]               // negated in-class
+    public void GeneralCategoryEscapes(string regex, string input, string expected)
+        => Assert.Equal(expected, Eval($"'' + {regex}.test({System.Text.Json.JsonSerializer.Serialize(input)})"));
 }

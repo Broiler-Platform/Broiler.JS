@@ -2282,12 +2282,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             var value = NormalizeKey(inner.Substring(eq + 1));
 
             if (name is "gc" or "generalcategory")
-            {
-                if (GeneralCategoryNames.TryGetValue(value, out var shortName))
-                    return $"{prefix}{{{shortName}}}";
-
-                throw NewUnsupportedPropertyError(inner);
-            }
+                return TranslateGeneralCategory(value, prefix, negated, inClass, inner);
 
             if (name is "sc" or "script")
             {
@@ -2314,8 +2309,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
         // Lone `\p{Value}` form.
         var lone = NormalizeKey(inner);
 
-        if (GeneralCategoryNames.TryGetValue(lone, out var loneShort))
-            return $"{prefix}{{{loneShort}}}";
+        // A lone General_Category value (Lu, L, Letter, …).
+        if (UnicodeProperties.GetGeneralCategory(lone) != null
+            || (inClass && GeneralCategoryNames.ContainsKey(lone)))
+            return TranslateGeneralCategory(lone, prefix, negated, inClass, inner);
 
         // Binary Unicode properties (ASCII, Alphabetic, Assigned, Emoji, …) come from
         // the generated UCD 17.0.0 range tables in Broiler.Unicode.Properties.
@@ -2344,6 +2341,29 @@ public partial class JSRegExp : JSObject, IJSRegExp
         // Anything else (native short categories like \p{L}, named blocks like
         // \p{IsBasicLatin}, or unknown lone names) is left for .NET to handle.
         return null;
+    }
+
+    /// <summary>
+    /// Translates a General_Category value (the <c>gc=…</c> dimension or a lone gc value).
+    /// Outside a character class it expands to the bundled UCD 17.0.0 code-point ranges so
+    /// supplementary-plane code points match by code point. Inside a class — where the
+    /// range expansion (with its surrogate-pair alternatives) cannot be nested — it falls
+    /// back to .NET's native category escape (<c>\p{Lu}</c>), which is code-unit based.
+    /// </summary>
+    private static string TranslateGeneralCategory(string value, string prefix, bool negated, bool inClass, string inner)
+    {
+        if (inClass)
+        {
+            if (GeneralCategoryNames.TryGetValue(value, out var shortName))
+                return $"{prefix}{{{shortName}}}";
+            throw NewUnsupportedPropertyError(inner);
+        }
+
+        var ranges = UnicodeProperties.GetGeneralCategory(value);
+        if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass) is { } expanded)
+            return expanded;
+
+        throw NewUnsupportedPropertyError(inner);
     }
 
     private static JSException NewUnsupportedPropertyError(string inner)
