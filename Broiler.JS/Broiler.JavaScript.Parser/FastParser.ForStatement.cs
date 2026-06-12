@@ -51,7 +51,11 @@ partial class FastParser
             var current = stream.Current;
 
             if (current.IsKeyword
-                && current.Keyword is FastKeywords.var or FastKeywords.let or FastKeywords.@const)
+                && (current.Keyword is FastKeywords.var or FastKeywords.@const
+                    // `let` heads a ForDeclaration only when a BindingList follows; a bare
+                    // `let` (e.g. `for (let; ;)`, `for (let = 1; ;)`, `for (let in obj)`) is
+                    // an IdentifierReference and flows through the expression path below.
+                    || (current.Keyword is FastKeywords.let && LetBeginsLexicalDeclaration())))
             {
                 // Disable `in`/`of` as binary operators while parsing the
                 // variable declaration so that `for (var x = 3 in obj)` is

@@ -68,4 +68,49 @@ public class Issue765Tests
         => Assert.Equal("true", Eval(
             "var d = Object.getOwnPropertyDescriptor(/a/, 'lastIndex');"
             + " '' + (d.writable && !d.enumerable && !d.configurable);"));
+
+    // P18: in sloppy mode `let` is an IdentifierReference when not followed by a
+    // BindingList, including in the C-style for-head (`for (let; ;)`,
+    // `for (let = 3; ;)`).
+    [Fact]
+    public void LetAsIdentifierInForHead()
+        => Assert.Equal("1|3", Eval(
+            "var let, out = [];"
+            + " let = 1; for (let; ;) break; out.push(let);"
+            + " let = 2; for (let = 3; ;) break; out.push(let);"
+            + " out.join('|');"));
+
+    // P33/P34: `let` as the LeftHandSideExpression of a for-in head.
+    [Fact]
+    public void LetAsIdentifierInForInHead()
+        => Assert.Equal("key", Eval(
+            "var obj = Object.create(null); obj.key = 1; var let;"
+            + " for (let in obj) ; '' + let;"));
+
+    // Normal lexical declarations must be unaffected.
+    [Fact]
+    public void LetLexicalDeclarationStillWorks()
+        => Assert.Equal("2|3|6", Eval(
+            "let a = 2; let [b] = [3]; var s = 0; for (let i of [1,2,3]) s += i;"
+            + " a + '|' + b + '|' + s;"));
+
+    // P20: `let` is a valid LabelIdentifier in sloppy mode.
+    [Fact]
+    public void LetAsLabelSloppy()
+        => Assert.Equal("done", Eval("let: { break let; } 'done';"));
+
+    // P20: `let` as a label is a SyntaxError in strict mode.
+    [Fact]
+    public void LetAsLabelStrictThrows()
+        => Assert.Equal("true", Eval(
+            "var t = false;"
+            + " try { eval(\"'use strict'; let: 42\"); } catch (e) { t = e instanceof SyntaxError; }"
+            + " '' + t;"));
+
+    [Fact]
+    public void EscapedLetAsLabelStrictThrows()
+        => Assert.Equal("true", Eval(
+            "var t = false;"
+            + " try { eval(\"'use strict'; l\\\\u0065t: 42\"); } catch (e) { t = e instanceof SyntaxError; }"
+            + " '' + t;"));
 }
