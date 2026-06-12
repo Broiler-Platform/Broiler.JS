@@ -135,13 +135,55 @@ public partial class JSTemporalDuration : JSObject
     }
 
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToStringMethod(in Arguments a)
+    {
+        var optionsArg = a.GetAt(0);
+        var digits = -1; // "auto"
+        var roundingMode = "trunc";
+        string smallestUnit = null;
+
+        if (optionsArg != null && !optionsArg.IsUndefined)
+        {
+            if (optionsArg is not JSObject options)
+                throw JSEngine.NewTypeError("Temporal.Duration.toString options must be an object or undefined");
+
+            digits = TemporalRoundingOptions.GetFractionalSecondDigits(options);
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, "trunc");
+
+            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
+            if (!su.IsUndefined)
+            {
+                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
+                if (smallestUnit is "hour" or "minute")
+                    throw JSEngine.NewRangeError($"Temporal.Duration.toString: smallestUnit \"{smallestUnit}\" is not supported");
+            }
+        }
+
+        // ToSecondsStringPrecisionRecord: precision -1 = auto, 0..9 = fixed fractional-second
+        // digits; incrementNs is the rounding step applied to the seconds field.
+        int precision;
+        long incrementNs;
+        if (smallestUnit != null)
+        {
+            (precision, incrementNs) = smallestUnit switch
+            {
+                "second" => (0, 1_000_000_000L),
+                "millisecond" => (3, 1_000_000L),
+                "microsecond" => (6, 1_000L),
+                _ => (9, 1L), // nanosecond
+            };
+        }
+        else if (digits == -1) { precision = -1; incrementNs = 1; }
+        else { precision = digits; incrementNs = TemporalRoundingOptions.Pow10(9 - digits); }
+
+        return new JSString(ToISOString(precision, incrementNs, roundingMode));
+    }
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString(-1, 1, "trunc"));
 
     [JSExport("toLocaleString", Length = 0)]
-    public JSValue ToLocaleString(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToLocaleString(in Arguments a) => new JSString(ToISOString(-1, 1, "trunc"));
 
     [JSExport("valueOf", Length = 0)]
     public JSValue ValueOf(in Arguments a)
@@ -369,9 +411,10 @@ public partial class JSTemporalDuration : JSObject
         return numerator / denominator;
     }
 
-    // TemporalDurationToString (auto precision): ISO-8601 with the fractional seconds field
-    // assembled from seconds/ms/us/ns.
-    private string ToISOString()
+    // TemporalDurationToString: ISO-8601 with the seconds field assembled from seconds/ms/us/ns.
+    // `precision` controls the fractional-second digits (-1 = auto, 0..9 = fixed); `incrementNs`
+    // and `roundingMode` round the combined seconds value to that precision.
+    private string ToISOString(int precision, long incrementNs, string roundingMode)
     {
         var sign = DurationSign();
         var sb = new StringBuilder();
@@ -388,27 +431,36 @@ public partial class JSTemporalDuration : JSObject
         DatePart(weeks, 'W');
         DatePart(days, 'D');
 
-        // Combine sub-second components into a single fractional-seconds value.
-        var totalSubSecondNs = new BigInteger(Math.Abs(milliseconds)) * 1_000_000
+        // Combine the whole-seconds and sub-second components into a single nanosecond magnitude,
+        // then round it to the requested precision (applying the sign so ceil/floor behave).
+        var totalSecondsNs = new BigInteger(Math.Abs(seconds)) * 1_000_000_000
+            + new BigInteger(Math.Abs(milliseconds)) * 1_000_000
             + new BigInteger(Math.Abs(microseconds)) * 1_000
             + new BigInteger(Math.Abs(nanoseconds));
-        var wholeSeconds = new BigInteger(Math.Abs(seconds)) + totalSubSecondNs / 1_000_000_000;
-        var fraction = totalSubSecondNs % 1_000_000_000;
 
-        var hasTime = hours != 0 || minutes != 0 || wholeSeconds != 0 || fraction != 0;
+        if (incrementNs > 1)
+        {
+            var signed = sign < 0 ? -totalSecondsNs : totalSecondsNs;
+            signed = TemporalRoundingOptions.RoundToIncrement(signed, incrementNs, roundingMode);
+            totalSecondsNs = BigInteger.Abs(signed);
+        }
+
+        var wholeSeconds = totalSecondsNs / 1_000_000_000;
+        var fraction = (long)(totalSecondsNs % 1_000_000_000);
+
+        // With a fixed precision the seconds field is always emitted; with auto it appears only
+        // when nonzero.
+        var showSeconds = wholeSeconds != 0 || fraction != 0 || precision >= 0;
+        var hasTime = hours != 0 || minutes != 0 || showSeconds;
         if (hasTime)
         {
             sb.Append('T');
             if (hours != 0) sb.Append(Math.Abs(hours).ToString("0", CultureInfo.InvariantCulture)).Append('H');
             if (minutes != 0) sb.Append(Math.Abs(minutes).ToString("0", CultureInfo.InvariantCulture)).Append('M');
-            if (wholeSeconds != 0 || fraction != 0)
+            if (showSeconds)
             {
                 sb.Append(wholeSeconds.ToString(CultureInfo.InvariantCulture));
-                if (fraction != 0)
-                {
-                    var frac = fraction.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0');
-                    sb.Append('.').Append(frac);
-                }
+                JSTemporalInstant.AppendFraction(sb, fraction, precision);
                 sb.Append('S');
             }
         }

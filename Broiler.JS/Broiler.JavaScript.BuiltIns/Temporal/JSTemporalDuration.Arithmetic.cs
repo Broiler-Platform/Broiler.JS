@@ -100,7 +100,13 @@ public partial class JSTemporalDuration
 
         var totalNs = TimePlusDaysNanoseconds() + sign * other.TimePlusDaysNanoseconds();
         var largest = MaxUnit(DefaultLargestUnit(), other.DefaultLargestUnit());
-        return BalanceFromNanoseconds(totalNs, largest);
+        var result = (JSTemporalDuration)BalanceFromNanoseconds(totalNs, largest);
+
+        // The balanced result must itself be a valid duration (e.g. the combined time must not
+        // overflow the 2^53-seconds limit); otherwise this is a RangeError.
+        RejectDuration(result.years, result.months, result.weeks, result.days, result.hours,
+            result.minutes, result.seconds, result.milliseconds, result.microseconds, result.nanoseconds);
+        return result;
     }
 
     private static string MaxUnit(string a, string b) => UnitIndex(a) <= UnitIndex(b) ? a : b;
