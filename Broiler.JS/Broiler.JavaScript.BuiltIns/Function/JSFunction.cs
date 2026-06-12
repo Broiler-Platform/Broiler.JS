@@ -454,7 +454,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             return prototype;
         }
 
-        if (prototype == null)
+        if (!JSConstructorOperations.IsConstructor(this))
             throw JSEngine.NewTypeError($"{name} is not a constructor");
 
         var ec = JSEngine.Current as IJSExecutionContext;
@@ -468,7 +468,13 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             ? ResolveInstancePrototype(previousNewTarget)
             : prototype;
 
-        JSValue obj = new JSObject { BasePrototypeObject = instancePrototype };
+        // OrdinaryCreateFromConstructor: when the resolved prototype is not an
+        // object (the function's `prototype` property was overwritten with a
+        // primitive), the new instance falls back to %Object.prototype% — which a
+        // default `new JSObject()` already adopts.
+        JSValue obj = instancePrototype != null
+            ? new JSObject { BasePrototypeObject = instancePrototype }
+            : new JSObject();
         var a1 = a.OverrideThis(obj);
         if (ec != null)
             ec.CurrentNewTarget = previousNewTarget ?? this;
