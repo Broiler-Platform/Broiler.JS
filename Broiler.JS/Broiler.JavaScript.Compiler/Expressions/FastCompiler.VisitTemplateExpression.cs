@@ -19,6 +19,13 @@ partial class FastCompiler
             if (item.Type == FastNodeType.Literal)
             {
                 var l = item as AstLiteral;
+
+                // An invalid escape sequence is allowed only in a tagged template
+                // (where its cooked value is undefined). In a normal template
+                // literal it is an early SyntaxError.
+                if (l.Start.CookedInvalid)
+                    throw new FastParseException(l.Start, "Invalid escape sequence in template literal");
+
                 var txt = l.TokenType == TokenTypes.TemplatePart ? l.Start.CookedText : l.StringValue;
 
                 size += txt.Length;

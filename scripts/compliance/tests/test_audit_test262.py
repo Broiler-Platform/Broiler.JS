@@ -76,34 +76,39 @@ class AuditTest262Tests(unittest.TestCase):
         self.assertEqual(8, summary["suiteTestsDiscovered"])
         self.assertEqual(1, summary["unsupportedFlaggedTests"])
         self.assertEqual({"module": 1}, summary["unsupportedFlagCounts"])
-        self.assertEqual(1, summary["unsupportedFeaturedTests"])
-        self.assertEqual({"Temporal": 1}, summary["unsupportedFeatureCounts"])
+        # Feature metadata never marks a test unsupported, so the Temporal test is
+        # script-host-verifiable rather than excluded.
+        self.assertEqual(0, summary["unsupportedFeaturedTests"])
+        self.assertEqual({}, summary["unsupportedFeatureCounts"])
         self.assertEqual(1, summary["negativeTests"])
         self.assertEqual(1, summary["hostHarnessDependentTests"])
-        self.assertEqual(4, summary["scriptHostExcludedTests"])
+        self.assertEqual(3, summary["scriptHostExcludedTests"])
         self.assertEqual(
-            {"Temporal": 1, "hostHarness": 1, "module": 1, "negative": 1},
+            {"hostHarness": 1, "module": 1, "negative": 1},
             summary["scriptHostBlockerCounts"],
         )
-        self.assertEqual(4, summary["scriptHostVerifiableTests"])
+        self.assertEqual(5, summary["scriptHostVerifiableTests"])
         self.assertEqual(1, summary["asyncScriptHostVerifiableTests"])
         self.assertEqual(3, summary["manifestEntries"])
         self.assertEqual(3, summary["manifestUniqueTests"])
         self.assertEqual(3, summary["manifestScriptHostVerifiableTests"])
         self.assertEqual(
-            [{"bucket": "test/language", "count": 4}],
+            [{"bucket": "test/language", "count": 5}],
             summary["topLevelCounts"]["scriptHostVerifiable"],
         )
         self.assertEqual(
-            [{"bucket": "test/language", "count": 4}],
+            [{"bucket": "test/language", "count": 3}],
             summary["topLevelCounts"]["excluded"],
         )
         self.assertEqual(
-            [{"bucket": "test/language/no-strict.js", "count": 1}],
+            [
+                {"bucket": "test/language/no-strict.js", "count": 1},
+                {"bucket": "test/language/temporal.js", "count": 1},
+            ],
             summary["largestUncoveredScriptHostVerifiableBuckets"],
         )
         self.assertAlmostEqual(3 * 100.0 / 8, summary["manifestCoverageOfSuitePercent"])
-        expected_script_host_coverage = 3 * 100.0 / 4
+        expected_script_host_coverage = 3 * 100.0 / 5
         self.assertAlmostEqual(
             expected_script_host_coverage,
             summary["manifestCoverageOfScriptHostVerifiablePercent"],
@@ -136,13 +141,15 @@ class AuditTest262Tests(unittest.TestCase):
             [],
         )
 
+        # Only the module-flagged test is unsupported now; the feature-tagged test
+        # (Temporal) is script-host-verifiable rather than excluded.
         self.assertEqual(
-            [unsupported_path, unsupported_feature_path],
+            [unsupported_path],
             summary["manifestUnsupportedTests"],
         )
         self.assertEqual([negative_path], summary["manifestNegativeTests"])
         self.assertEqual([host_harness_path], summary["manifestHostHarnessTests"])
-        self.assertEqual(0, summary["manifestScriptHostVerifiableTests"])
+        self.assertEqual(1, summary["manifestScriptHostVerifiableTests"])
 
     def test_directory_bucket_rejects_non_positive_depth(self) -> None:
         with self.assertRaises(ValueError):

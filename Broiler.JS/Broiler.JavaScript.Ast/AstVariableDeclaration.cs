@@ -11,6 +11,13 @@ public enum FastVariableKind
     Let,
     Const,
     Var,
+
+    // A block/switch-nested FunctionDeclaration binding. Used only as a scope-tracking
+    // marker inside FastScopeItem (never set on an AstVariableDeclaration node): it is
+    // a lexical binding like Let/Const, but Annex B 3.3.4 allows duplicate function
+    // declarations of the same name in one block in sloppy mode (strict mode rejects
+    // them — enforced by SyntaxValidation, which knows the strictness).
+    Function,
 }
 
 public class AstVariableDeclaration : AstStatement

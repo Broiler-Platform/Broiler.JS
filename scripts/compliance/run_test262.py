@@ -37,15 +37,12 @@ ALL_SHARDS = -1
 TEMP_DIRECTORY = Path(tempfile.gettempdir()) / "broiler-test262"
 UNSUPPORTED_FLAGS = {"module", "raw"}
 TEST_FIXTURE_SUFFIX = "_FIXTURE.js"
-UNSUPPORTED_FEATURES = {
-    "Atomics",
-    "SharedArrayBuffer",
-    "Temporal",
-    "iterator-helpers",
-    "dynamic-import",
-    "explicit-resource-management",
-    "resizable-arraybuffer",
-}
+# No test262 feature is excluded: every feature is treated as either already
+# supported or something that must be implemented rather than skipped, so feature
+# metadata never causes a test to be filtered out or marked "skipped". (Kept as an
+# empty set so the shared classification contract — also consumed by
+# audit_test262.py — stays intact.)
+UNSUPPORTED_FEATURES: set[str] = set()
 USER_AGENT = "Broiler.JS compliance runner"
 DOWNLOAD_TIMEOUT_SECONDS = 120
 MAX_ARCHIVE_SIZE_BYTES = 256 * 1024 * 1024

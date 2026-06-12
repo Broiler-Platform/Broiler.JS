@@ -490,8 +490,15 @@ public static void ValidateProgram(
 
             var previous = IsStrictMode;
             var prevMethod = _inMethodProperty;
+            var prevBody = _functionBodyBlock;
             IsStrictMode = functionStrict;
             _inMethodProperty = false;
+            // The function body's own block is a var-scoped environment: top-level
+            // FunctionDeclarations in it are var-declared, so duplicates are allowed
+            // (even in strict mode). Record it so VisitBlock skips the lexical
+            // duplicate-FunctionDeclaration check for it (but still checks nested
+            // blocks, which are genuine lexical scopes).
+            _functionBodyBlock = functionExpression.Body as AstBlock;
             try
             {
                 return base.VisitFunctionExpression(functionExpression);
@@ -500,8 +507,11 @@ public static void ValidateProgram(
             {
                 IsStrictMode = previous;
                 _inMethodProperty = prevMethod;
+                _functionBodyBlock = prevBody;
             }
         }
+
+        private AstBlock _functionBodyBlock;
 
         protected override AstNode VisitVariableDeclaration(AstVariableDeclaration variableDeclaration)
         {
@@ -665,6 +675,54 @@ public static void ValidateProgram(
                 throw new FastParseException(withStatement.Start, "Strict mode code may not include a with statement");
 
             return base.VisitWithStatement(withStatement);
+        }
+
+        protected override AstNode VisitBlock(AstBlock block)
+        {
+            // Annex B 3.3.4 (duplicate block-nested FunctionDeclarations of the same
+            // name) is a sloppy-mode-only allowance: in strict mode they are a
+            // duplicate lexical declaration. The parser permits them (the Function
+            // kind), so reject them here, where the strictness is known. The function
+            // body block itself is var-scoped (skipped via _functionBodyBlock).
+            if (IsStrictMode && block != _functionBodyBlock)
+            {
+                HashSet<string> functionNames = null;
+                CheckDuplicateFunctionDeclarations(block.Statements, ref functionNames);
+            }
+
+            return base.VisitBlock(block);
+        }
+
+        protected override AstNode VisitSwitchStatement(AstSwitchStatement switchStatement)
+        {
+            // All case clauses of a switch share one lexical block scope, so a
+            // strict-mode duplicate FunctionDeclaration check spans every clause.
+            if (IsStrictMode)
+            {
+                HashSet<string> functionNames = null;
+                var cases = switchStatement.Cases.GetFastEnumerator();
+                while (cases.MoveNext(out var @case))
+                    CheckDuplicateFunctionDeclarations(@case.Statements, ref functionNames);
+            }
+
+            return base.VisitSwitchStatement(switchStatement);
+        }
+
+        private static void CheckDuplicateFunctionDeclarations(
+            IFastEnumerable<AstStatement> statements, ref HashSet<string> functionNames)
+        {
+            var e = statements.GetFastEnumerator();
+            while (e.MoveNext(out var statement))
+            {
+                if (statement is not AstExpressionStatement
+                    { Expression: AstFunctionExpression { IsStatement: true, Id: { } id } })
+                    continue;
+
+                functionNames ??= new HashSet<string>(StringComparer.Ordinal);
+                if (!functionNames.Add(id.Name.Value))
+                    throw new FastParseException(id.Start,
+                        $"{id.Name} is already defined in current scope at {id.Start.Start}");
+            }
         }
 
         protected override AstNode VisitIfStatement(AstIfStatement ifStatement)

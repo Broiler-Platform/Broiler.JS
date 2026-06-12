@@ -25,11 +25,13 @@ partial class FastParser
 
         if (current.Keyword == FastKeywords.@new)
         {
-            // next must be .target...
-            if (stream.Next.Type != TokenTypes.Dot)
+            // next must be .target... (line terminators may separate the tokens:
+            // `new\n.\ntarget`).
+            stream.Consume();
+            stream.SkipNewLines();
+            if (stream.Current.Type != TokenTypes.Dot)
                 throw stream.Unexpected();
 
-            stream.Consume();
             stream.Consume();
 
             if (!stream.CheckAndConsume(TokenTypes.Identifier, out var id))

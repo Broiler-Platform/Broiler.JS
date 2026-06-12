@@ -75,13 +75,17 @@ partial class FastParser
                     // script, or eval body is var-scoped: it contributes to
                     // VarDeclaredNames (not LexicallyDeclaredNames), so duplicate
                     // function declarations and a same-named `var` are allowed (the
-                    // last declaration wins). Only a block/switch-nested declaration
-                    // is lexical and conflicts on redeclaration.
+                    // last declaration wins). A block/switch-nested declaration is
+                    // lexical, but Annex B 3.3.4 permits duplicate FunctionDeclarations
+                    // of the same name in one block in sloppy mode, so mark it with the
+                    // dedicated Function kind (vs a let/const/class lexical binding,
+                    // which still conflicts); strict mode rejects the duplicate in
+                    // SyntaxValidation.
                     var top = variableScope.Top;
                     var kind = top.NodeType == FastNodeType.Block
                         && (top.Parent == null || top.Parent.NodeType == FastNodeType.FunctionExpression)
                         ? FastVariableKind.Var
-                        : FastVariableKind.Let;
+                        : FastVariableKind.Function;
                     top.AddVariable(id.Start, id.Name, kind);
                 }
             }

@@ -48,7 +48,7 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
     /// </summary>
     public bool HasLexicalBinding(in StringSpan name)
         => Variables.TryGetValue(name.Value, out var v)
-            && v.kind is FastVariableKind.Let or FastVariableKind.Const;
+            && v.kind is FastVariableKind.Let or FastVariableKind.Const or FastVariableKind.Function;
 
     /// <summary>
     /// Returns true if this scope declares <paramref name="name"/> as any kind
@@ -71,6 +71,18 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
             {
                 if (pn.kind != FastVariableKind.Var)
                 {
+                    // Annex B 3.3.4: two FunctionDeclarations binding the same name in
+                    // one block/switch scope are allowed in sloppy mode (the last one
+                    // wins at runtime). A function declaration still conflicts with a
+                    // let/const/class binding of the same name. Strict mode forbids the
+                    // duplicate too, but that is enforced later in SyntaxValidation
+                    // (the parser does not track strictness).
+                    if (pn.kind == FastVariableKind.Function && kind == FastVariableKind.Function)
+                    {
+                        n.Variables[name.Value] = (name, kind);
+                        return;
+                    }
+
                     if (throwError)
                     {
                         throw new FastParseException(token, $"{name} is already defined in current scope at {token.Start}");
