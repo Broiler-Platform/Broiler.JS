@@ -198,11 +198,11 @@ partial class FastCompiler
                 return YExpression.Block(new YExpression[]
                 {
                     YExpression.Assign(keyTemp.Variable, name),
-                    JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, keyTemp.Variable, args, spread, me.Coalesce || coalesce),
+                    JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, keyTemp.Variable, args, spread, me.Coalesce, coalesce),
                 });
             }
 
-            return JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, name, args, spread, me.Coalesce || coalesce);
+            return JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, name, args, spread, me.Coalesce, coalesce);
         }
         else
         {

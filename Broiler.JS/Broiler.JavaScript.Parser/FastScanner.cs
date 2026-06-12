@@ -255,7 +255,10 @@ public class FastScanner
         bool lineTerminator = false;
         bool skipped = false;
 
-        while (char.IsWhiteSpace(first))
+        // U+FEFF ZERO WIDTH NO-BREAK SPACE (ZWNBSP/BOM) is ECMAScript WhiteSpace, but
+        // .NET reclassified it out of White_Space so char.IsWhiteSpace returns false
+        // for it; treat it as whitespace explicitly.
+        while (char.IsWhiteSpace(first) || first == '﻿')
         {
             if (first.IsLineTerminator())
                 lineTerminator = true;
@@ -490,6 +493,13 @@ public class FastScanner
                 switch (Consume())
                 {
                     case '.':
+                        // `?.` is an OptionalChainingPunctuator only when NOT followed
+                        // by a DecimalDigit: `a ?.3 : b` is the conditional operator
+                        // with a fractional literal (`?` then `.3`), not optional
+                        // chaining. Emit `?` and leave `.3` to scan as a number.
+                        if (char.IsDigit(Next()))
+                            return state.Commit(TokenTypes.QuestionMark);
+
                         switch (Consume())
                         {
                             case '(':

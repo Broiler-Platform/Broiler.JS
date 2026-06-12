@@ -57,6 +57,32 @@ partial class FastCompiler
         return YExpression.Call(null, PrepareAnonymousFunctionNameForFieldMethod, value, YExpression.Constant(fieldName, typeof(string)));
     }
 
+    // A computed PropertyName whose value is an anonymous function/accessor is used
+    // both as the property key and for NamedEvaluation of the value. Returning the
+    // same key node for both emits it twice, so it is evaluated twice — a spec
+    // violation (PropertyName must be evaluated once) that, inside a generator, also
+    // suspends a `yield` key twice so the property is never added. When that double
+    // use applies (and the key is not a literal constant, which is side-effect free),
+    // rewrite the in-place key (`keyExp`) so it evaluates once into a temp and returns
+    // it, and hand back a side-effect-free read of that temp for the name. The temp is
+    // assigned by the key argument (evaluated first by the Add* call) before the value
+    // argument reads it.
+    private YExpression SpillComputedPropertyKey(ref YExpression keyExp, bool keyIsLiteral, AstClassProperty p)
+    {
+        if (keyIsLiteral || !IsAnonymousFunctionDefinition(p.Init))
+            return keyExp;
+
+        if (p.Kind is not (AstPropertyKind.Data or AstPropertyKind.Method or AstPropertyKind.Constructor
+            or AstPropertyKind.Get or AstPropertyKind.Set))
+            return keyExp;
+
+        var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
+        var keyForName = keyTemp.Variable;
+        keyExp = YExpression.Block(YExpression.Assign(keyTemp.Variable, keyExp), keyTemp.Variable);
+        keyTemp.Dispose();
+        return keyForName;
+    }
+
     private static bool IsObjectLiteralProtoSetter(AstClassProperty property)
     {
         if (property.Computed || !property.UsesColon || property.Kind != AstPropertyKind.Data)
@@ -163,23 +189,34 @@ partial class FastCompiler
                 if (p.Computed)
                 {
                     // there is a possibility of numeric index
-                    var keyExp = pKey.IsUIntLiteral(out var num) ? YExpression.Constant(num) : Visit(pKey);
+                    var keyIsLiteral = pKey.IsUIntLiteral(out var num);
+                    var keyExp = keyIsLiteral ? YExpression.Constant(num) : Visit(pKey);
+
+                    // When the value is an anonymous function/accessor, the computed
+                    // PropertyName is consumed twice: as the property key and for
+                    // NamedEvaluation of the value. Emitting the same key expression
+                    // node twice evaluates it twice — a spec violation that, in a
+                    // generator, suspends a `yield` key twice so the property is never
+                    // added. Spill it into a temp so the key is evaluated once (in the
+                    // add) and the name reads the stored value.
+                    var keyForName = SpillComputedPropertyKey(ref keyExp, keyIsLiteral, p);
+
                     if (p.Kind is AstPropertyKind.Data or AstPropertyKind.Method or AstPropertyKind.Constructor
                         && IsAnonymousFunctionDefinition(p.Init))
                     {
-                        value = PrepareAnonymousFunctionName(value, keyExp);
+                        value = PrepareAnonymousFunctionName(value, keyForName);
                     }
 
                     if (p.Kind == AstPropertyKind.Get)
                     {
-                        value = PrepareAnonymousAccessorName(value, keyExp, isGetter: true);
+                        value = PrepareAnonymousAccessorName(value, keyForName, isGetter: true);
                         elements.Add(JSObjectBuilder.AddGetter(keyExp, value));
                         continue;
                     }
 
                     if (p.Kind == AstPropertyKind.Set)
                     {
-                        value = PrepareAnonymousAccessorName(value, keyExp, isGetter: false);
+                        value = PrepareAnonymousAccessorName(value, keyForName, isGetter: false);
                         elements.Add(JSObjectBuilder.AddSetter(keyExp, value));
                         continue;
                     }
@@ -296,23 +333,29 @@ partial class FastCompiler
 
             if (p.Computed)
             {
-                var keyExp = pKey.IsUIntLiteral(out var num) ? YExpression.Constant(num) : Visit(pKey);
+                var keyIsLiteral = pKey.IsUIntLiteral(out var num);
+                var keyExp = keyIsLiteral ? YExpression.Constant(num) : Visit(pKey);
+
+                // See the fast path above: spill the computed PropertyName so it is
+                // evaluated exactly once when it is also used for NamedEvaluation.
+                var keyForName = SpillComputedPropertyKey(ref keyExp, keyIsLiteral, p);
+
                 if (p.Kind is AstPropertyKind.Data or AstPropertyKind.Method or AstPropertyKind.Constructor
                     && IsAnonymousFunctionDefinition(p.Init))
                 {
-                    value = PrepareAnonymousFunctionName(value, keyExp);
+                    value = PrepareAnonymousFunctionName(value, keyForName);
                 }
 
                 if (p.Kind == AstPropertyKind.Get)
                 {
-                    value = PrepareAnonymousAccessorName(value, keyExp, isGetter: true);
+                    value = PrepareAnonymousAccessorName(value, keyForName, isGetter: true);
                     statements.Add(JSObjectBuilder.AddGetter(temp.Variable, keyExp, value));
                     continue;
                 }
 
                 if (p.Kind == AstPropertyKind.Set)
                 {
-                    value = PrepareAnonymousAccessorName(value, keyExp, isGetter: false);
+                    value = PrepareAnonymousAccessorName(value, keyForName, isGetter: false);
                     statements.Add(JSObjectBuilder.AddSetter(temp.Variable, keyExp, value));
                     continue;
                 }

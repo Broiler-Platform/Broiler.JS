@@ -124,9 +124,9 @@ public class JSValueBuilder
     private static MethodInfo _PropertyOrUndefinedUInt = type.PublicMethod(nameof(JSValue.PropertyOrUndefined), typeof(uint));
     private static MethodInfo _PropertyOrUndefined = type.PublicMethod(nameof(JSValue.PropertyOrUndefined), typeof(JSValue));
 
-    public static Expression InvokeMethod(Expression targetTemp, Expression methodTemp, Expression target, Expression name, IFastEnumerable<Expression> args, bool spread, bool coalesce)
+    public static Expression InvokeMethod(Expression targetTemp, Expression methodTemp, Expression target, Expression name, IFastEnumerable<Expression> args, bool spread, bool memberCoalesce, bool callCoalesce = false)
     {
-        if (!coalesce)
+        if (!memberCoalesce && !callCoalesce)
             return JSValueExtensionsBuilder.InvokeMethod(target, name, args, spread);
 
         var method = _Index;
@@ -145,8 +145,24 @@ public class JSValueBuilder
             name = Expression.Convert(name, typeof(uint));
         }
 
-        return Expression.Block(Expression.Assign(targetTemp, target), Expression.Assign(methodTemp, Expression.MakeIndex(targetTemp, method, name)),
-            Expression.Condition(IsNullOrUndefined(methodTemp), JSUndefinedBuilder.Value, JSFunctionBuilder.InvokeFunction(methodTemp, ArgumentsBuilder.New(targetTemp, args, spread))));
+        // `a.b?.()` (callCoalesce): the receiver is evaluated normally and the call
+        // short-circuits only when the resolved method is nullish.
+        Expression call = JSFunctionBuilder.InvokeFunction(methodTemp, ArgumentsBuilder.New(targetTemp, args, spread));
+        if (callCoalesce)
+            call = Expression.Condition(IsNullOrUndefined(methodTemp), JSUndefinedBuilder.Value, call);
+
+        var accessAndCall = Expression.Block(
+            Expression.Assign(methodTemp, Expression.MakeIndex(targetTemp, method, name)),
+            call);
+
+        // `a?.b()` (memberCoalesce): if the RECEIVER is nullish the whole chain is
+        // undefined — the property must NOT be accessed (it would throw) and the
+        // method must NOT be called.
+        Expression body = memberCoalesce
+            ? Expression.Condition(IsNullOrUndefined(targetTemp), JSUndefinedBuilder.Value, accessAndCall)
+            : accessAndCall;
+
+        return Expression.Block(Expression.Assign(targetTemp, target), body);
     }
 
     public static Expression Index(Expression target, Expression super, uint i, bool coalesce = false)

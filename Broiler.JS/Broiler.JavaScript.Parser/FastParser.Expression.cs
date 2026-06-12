@@ -48,6 +48,12 @@ partial class FastParser
                 case TokenTypes.BracketEnd:
                 case TokenTypes.SquareBracketEnd:
                 case TokenTypes.Colon:
+                // A bare `yield` ending a template substitution (`` `${ yield }` ``)
+                // is followed by the template tail, which the scanner emits as a
+                // TemplatePart/TemplateEnd (the closing `}` is re-scanned as template
+                // text). Treat those as operand terminators, like the other closers.
+                case TokenTypes.TemplatePart:
+                case TokenTypes.TemplateEnd:
                     statement = new AstYieldExpression(begin, PreviousToken, null);
                     return true;
             }

@@ -1,0 +1,209 @@
+using Broiler.JavaScript.Engine;
+
+namespace Broiler.JavaScript.Integration.Tests;
+
+// Regression tests for https://github.com/MaiRat/Broiler.JS/issues/763 problem 6.
+//
+// A `yield` reachable through a branch inside a `for` loop with an update clause
+// (e.g. `for (...; ...; i++) { if (cond) yield x; }`) crashed at runtime with a
+// NullReferenceException surfaced as "Object reference not set to an instance of
+// an object." The completion-tracking wrapper turned the conditional body into a
+// value-producing expression (`#cv = if (cond) yield x`), so the generator state
+// machine nested the yield's suspend/resume inside an assignment RHS. The resume
+// `goto` then jumped into the middle of evaluating that RHS, skipping the
+// assignment-target setup and corrupting the IL stack. GeneratorRewriter now
+// spills a value-producing yield-bearing conditional into a temp and distributes
+// the production into each branch, keeping every yield at statement level (where
+// FlattenBlocks already hoists it safely).
+public class Issue763Tests
+{
+    private static string Drive(string body)
+    {
+        using var ctx = new JSContext();
+        ctx.Eval("globalThis.r = '<unset>';");
+        ctx.Execute(body);
+        return ctx.Eval("'' + globalThis.r").ToString();
+    }
+
+    [Fact]
+    public void ConditionalYieldInForLoopDoesNotCrash()
+        => Assert.Equal("0,1,2", Drive(
+            "function* g(){ for (var i = 0; i < 3; i++) { if (i >= 0) yield i; } }"
+            + " var s = []; for (var x of g()) s.push(x); globalThis.r = s.join(',');"));
+
+    [Fact]
+    public void ConditionalYieldWithElseInForLoop()
+        => Assert.Equal("a,b,a", Drive(
+            "function* g(){ for (var i = 0; i < 3; i++) { if (i === 1) yield 'b'; else yield 'a'; } }"
+            + " var s = []; for (var x of g()) s.push(x); globalThis.r = s.join(',');"));
+
+    [Fact]
+    public void TernaryYieldInForLoop()
+        => Assert.Equal("0,1,2", Drive(
+            "function* g(){ for (var i = 0; i < 3; i++) { var t = (i > 0) ? yield i : yield i; } }"
+            + " var s = []; var it = g(); var r = it.next();"
+            + " while (!r.done) { s.push(r.value); r = it.next(); } globalThis.r = s.join(',');"));
+
+    [Fact]
+    public void SwitchYieldInForLoop()
+        => Assert.Equal("0,one,2", Drive(
+            "function* g(){ for (var i = 0; i < 3; i++) { switch (i) { case 1: yield 'one'; break; default: yield i; } } }"
+            + " var s = []; for (var x of g()) s.push(x); globalThis.r = s.join(',');"));
+
+    [Fact]
+    public void InvalidControlEscapeRegExpFallsBackToLiteral()
+        // annexB/built-ins/RegExp/RegExp-control-escape-russian-letter.js shape:
+        // `\c` + invalid control letter must match the literal `\c`, driven from a
+        // generator whose for-loop body yields conditionally.
+        => Assert.Equal("ok", Drive(
+            "function* invalid(){ for (var a = 0; a <= 0x7F; a++) { let l = String.fromCharCode(a);"
+            + " if (!l.match(/[0-9A-Za-z_\\$(|)\\[\\]\\/\\\\^]/)) yield l; } yield ''; }"
+            + " var bad = false;"
+            + " for (let l of invalid()) { var src = '\\\\c' + l; var re = new RegExp(src);"
+            + " if (re.exec(src) === null) bad = true; if (re.exec(src.substring(1)) !== null) bad = true; }"
+            + " globalThis.r = bad ? 'fail' : 'ok';"));
+
+    [Fact]
+    public void AsyncGeneratorConditionalYieldInForLoop()
+        => Assert.Equal("0,10,20", Drive(
+            "async function* g(){ for (var i = 0; i < 3; i++) { if (i >= 0) yield i * 10; } }"
+            + " (async () => { var s = []; for await (var x of g()) s.push(x);"
+            + " globalThis.r = s.join(','); })();"));
+
+    // Problem 12: a unicode-escaped `await` used as an async-arrow binding
+    // identifier (`async await => 1`) must be a SyntaxError, exactly like the
+    // unescaped `async await => 1`. The escape strips the keyword identity, so the
+    // scanner produced a plain identifier that slipped past the `await` keyword
+    // rejection. Escaped `async`, and escaped `await`/`async` used as ordinary
+    // identifiers outside async code, remain valid.
+    [Theory]
+    [InlineData("async aw\\u0061it => 1;")]
+    [InlineData("async await => 1;")]
+    public void EscapedAwaitAsAsyncArrowParamIsSyntaxError(string code)
+        => Assert.Equal("SyntaxError", Drive(
+            "try { eval(" + System.Text.Json.JsonSerializer.Serialize(code)
+            + "); globalThis.r = 'no-throw'; }"
+            + " catch (e) { globalThis.r = e.constructor.name; }"));
+
+    [Theory]
+    [InlineData("var \\u0061sync = 7; globalThis.r = '' + \\u0061sync;", "7")]
+    [InlineData("var o = { \\u0061sync() { return 3; } }; globalThis.r = '' + o.async();", "3")]
+    [InlineData("async function f() { return 1; } globalThis.r = 'ok';", "ok")]
+    public void EscapedContextualKeywordsStillValid(string code, string expected)
+        => Assert.Equal(expected, Drive(code));
+
+    // Problem 8: a `yield` in a computed PropertyName of an object-literal
+    // method/getter/setter crashed (the property was never added, leaving the
+    // object null). The computed key was emitted twice — once as the key and once
+    // for NamedEvaluation of the (anonymous) method — so the `yield` suspended
+    // twice and the object assignment was never reached. The key is now evaluated
+    // once into a temp shared by both uses.
+    [Theory]
+    [InlineData("obj = { *[yield](){} };")]
+    [InlineData("obj = { [yield](){} };")]
+    [InlineData("obj = { get [yield](){ return 1; } };")]
+    [InlineData("obj = { set [yield](v){} };")]
+    [InlineData("obj = { [yield]: function(){} };")]
+    public void YieldInComputedMethodKeyAddsProperty(string objLiteral)
+        => Assert.Equal("K", Drive(
+            "var obj = null;"
+            + " var it = (function*(){ " + objLiteral + " })();"
+            + " it.next(); it.next('K');"
+            + " globalThis.r = (obj === null) ? 'null' : Object.keys(obj).join(',');"));
+
+    // The computed PropertyName must be evaluated exactly once even when it also
+    // names an anonymous method value (a latent bug in non-generator code too).
+    [Fact]
+    public void ComputedMethodKeyEvaluatedOnce()
+        => Assert.Equal("1|m", Drive(
+            "var n = 0; function k(){ n++; return 'm'; }"
+            + " var o = { [k()](){} };"
+            + " globalThis.r = n + '|' + o.m.name;"));
+
+    // Problem 41: `?.` is an optional-chaining punctuator only when NOT followed by
+    // a DecimalDigit. `true ?.30 : false` is the conditional operator with a
+    // fractional literal, not optional chaining.
+    [Fact]
+    public void OptionalChainPunctuatorDecimalLookahead()
+        => Assert.Equal("0.3", Drive("var v = true ?.30 : false; globalThis.r = '' + v;"));
+
+    [Theory]
+    [InlineData("var o = { a: { b: 5 } }; globalThis.r = '' + o?.a?.b;", "5")]
+    [InlineData("globalThis.r = '' + ((null)?.foo);", "undefined")]
+    [InlineData("var f = { g: () => 7 }; globalThis.r = '' + f?.g();", "7")]
+    public void OptionalChainingStillWorks(string code, string expected)
+        => Assert.Equal(expected, Drive(code));
+
+    // Problem 40: `??=` (logical nullish assignment) must parse a full
+    // AssignmentExpression RHS — including an arrow function — and perform
+    // NamedEvaluation, exactly like `||=`/`&&=`.
+    [Fact]
+    public void NullishAssignmentWithArrowNamedEvaluation()
+        => Assert.Equal("value", Drive("var value = undefined; value ??= () => {}; globalThis.r = value.name;"));
+
+    [Theory]
+    [InlineData("var x = null; x ??= 5; globalThis.r = '' + x;", "5")]
+    [InlineData("var x = 1; x ??= 9; globalThis.r = '' + x;", "1")]
+    [InlineData("var x = 0; x ||= () => 1; globalThis.r = typeof x;", "function")]
+    public void LogicalAssignmentOperators(string code, string expected)
+        => Assert.Equal(expected, Drive(code));
+
+    // Problem 45: a bare `yield` (no operand) may end a template substitution
+    // (`` `1${ yield }3${ 4 }5` ``); the closing `}` is re-scanned as the template
+    // tail, which the YieldExpression parser must accept as an operand terminator.
+    [Fact]
+    public void BareYieldEndingTemplateSubstitution()
+        => Assert.Equal("12345", Drive(
+            "var s; function* g(){ s = `1${ yield }3${ 4 }5`; }"
+            + " var it = g(); it.next(); it.next(2); globalThis.r = s;"));
+
+    // Problems 38/39: at the top level of a script (where top-level await does not
+    // apply), `await` is an ordinary identifier. `await instanceof X` /
+    // `new await instanceof await` must parse `await` as an IdentifierReference —
+    // `instanceof`/`in` are binary operators that cannot begin await's operand.
+    [Fact]
+    public void AwaitAsIdentifierBeforeInstanceof()
+        => Assert.Equal("true", Drive(
+            "async function await(){ return 1; }"
+            + " globalThis.r = '' + (await instanceof Function);"));
+
+    [Fact]
+    public void AwaitClassNameWithNewAndInstanceof()
+        => Assert.Equal("true", Drive(
+            "class await {}"
+            + " globalThis.r = '' + (new await instanceof await);"));
+
+    // Problem 43: U+FEFF ZERO WIDTH NO-BREAK SPACE is ECMAScript WhiteSpace (.NET's
+    // char.IsWhiteSpace excludes it), so it must be skipped between tokens — here
+    // after a regular-expression literal.
+    [Theory]
+    [InlineData("var re = /x/g﻿; globalThis.r = re.source;", "x")]
+    [InlineData("var﻿x = 5; globalThis.r = '' + x;", "5")]
+    [InlineData("var y = 7﻿; globalThis.r = '' + y;", "7")]
+    public void ZeroWidthNoBreakSpaceIsWhitespace(string code, string expected)
+        => Assert.Equal(expected, Drive(code));
+
+    // Problem 42 (partial): an optional method call `a?.b()` must short-circuit on a
+    // nullish *receiver* (`a`), not on the resolved method. Previously the receiver
+    // was indexed unconditionally, so `undefined?.f()` threw instead of yielding
+    // undefined; and a plain `()` in a chain wrongly short-circuited when the method
+    // was nullish. An explicit `?.()` still short-circuits on a nullish callee.
+    [Theory]
+    [InlineData("globalThis.r = '' + (undefined?.f());", "undefined")]
+    [InlineData("globalThis.r = '' + (null?.f());", "undefined")]
+    [InlineData("var o = { g(){ return 42; } }; globalThis.r = '' + o?.g();", "42")]
+    [InlineData("var a = { b: { c(){ return 7; } } }; globalThis.r = '' + a?.b?.c();", "7")]
+    [InlineData("var n = { b: null }; globalThis.r = '' + (n?.b?.c());", "undefined")]
+    [InlineData("var o = { g(){ return 1; } }; globalThis.r = '' + (o.miss?.());", "undefined")]
+    [InlineData("var o = { v: 9, m(){ return this.v; } }; globalThis.r = '' + o?.m();", "9")]
+    public void OptionalMethodCallShortCircuitsOnReceiver(string code, string expected)
+        => Assert.Equal(expected, Drive(code));
+
+    // `a?.b()` with a non-nullish receiver but a non-callable member must throw a
+    // TypeError (the `?.` guards the receiver, not the call).
+    [Fact]
+    public void OptionalMethodCallThrowsWhenMethodNotCallable()
+        => Assert.Equal("TypeError", Drive(
+            "var o = {}; try { o?.missing(); globalThis.r = 'no-throw'; }"
+            + " catch (e) { globalThis.r = e.constructor.name; }"));
+}

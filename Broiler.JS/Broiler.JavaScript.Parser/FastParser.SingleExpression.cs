@@ -111,6 +111,16 @@ partial class FastParser
             if (inGeneratorBody && id.Start.Keyword == FastKeywords.yield)
                 throw stream.Unexpected();
 
+            // `await` is reserved throughout an async function/arrow, so it cannot be
+            // an IdentifierReference there. A unicode-escaped form such as
+            // `await` is classified by the scanner as a plain identifier (the
+            // escape strips its keyword identity, and `await` is allowed escaped as an
+            // ordinary identifier outside async code), so it bypasses the `await`
+            // keyword handling above; reject it here by name. The unescaped form is
+            // already an AwaitExpression / early error via that keyword path.
+            if (inAsyncFunctionBody && id.Name.Equals("await"))
+                throw stream.Unexpected();
+
             node = id;
             return true;
         }
@@ -286,7 +296,14 @@ partial class FastParser
                 or TokenTypes.Comma
                 or TokenTypes.BracketEnd
                 or TokenTypes.SquareBracketEnd
-                or TokenTypes.CurlyBracketEnd)
+                or TokenTypes.CurlyBracketEnd
+                // `instanceof`/`in` are binary operators that require a left operand
+                // and cannot begin `await`'s UnaryExpression operand. `await
+                // instanceof X` / `await in X` therefore use `await` as an
+                // IdentifierReference (valid at the top level of a script, where
+                // top-level await does not apply), not an AwaitExpression.
+                or TokenTypes.InstanceOf
+                or TokenTypes.In)
                 && (next.Type <= TokenTypes.BeginAssignTokens || next.Type >= TokenTypes.EndAssignTokens);
         }
 
