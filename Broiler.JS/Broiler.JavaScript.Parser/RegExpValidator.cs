@@ -109,7 +109,10 @@ internal static class RegExpValidator
             // rejected by .NET. Only reached for non-Unicode patterns (u-mode
             // rejects them above), so neutralise them for the compile check.
             if (!unicode)
+            {
                 pattern = NormalizeAnnexBControlEscapes(pattern);
+                pattern = NeutralizeAnnexBClassRangeDashes(pattern);
+            }
 
             _ = new Regex(pattern, options);
             return true;
@@ -344,6 +347,51 @@ internal static class RegExpValidator
     private static bool IsHexEscape(string pattern, int xIndex)
         => xIndex + 2 < pattern.Length
             && IsHexDigit(pattern[xIndex + 1]) && IsHexDigit(pattern[xIndex + 2]);
+
+    // In a non-Unicode character class, a `-` adjacent to a CharacterClassEscape
+    // (`\d \D \w \W \s \S`) cannot form a range, so Annex B treats it as a literal
+    // `-` (e.g. `[--\d]` = `-` or a digit). .NET instead rejects the range, so
+    // escape such a dash to keep the literal meaning. A `-` between two ordinary
+    // atoms (`[a-z]`) is untouched.
+    private static string NeutralizeAnnexBClassRangeDashes(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf('-') < 0)
+            return pattern;
+
+        var sb = new System.Text.StringBuilder(pattern.Length);
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                sb.Append(c).Append(pattern[i + 1]);
+                i++;
+                continue;
+            }
+
+            if (c == '[') inClass = true;
+            else if (c == ']') inClass = false;
+            else if (c == '-' && inClass)
+            {
+                bool prevIsClassEscape = i >= 2 && pattern[i - 2] == '\\' && IsClassEscapeLetter(pattern[i - 1]);
+                bool nextIsClassEscape = i + 2 < pattern.Length && pattern[i + 1] == '\\' && IsClassEscapeLetter(pattern[i + 2]);
+                if (prevIsClassEscape || nextIsClassEscape)
+                {
+                    sb.Append("\\-");
+                    continue;
+                }
+            }
+
+            sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
+
+    private static bool IsClassEscapeLetter(char c)
+        => c is 'd' or 'D' or 'w' or 'W' or 's' or 'S';
 
     private static string NormalizeAnnexBControlEscapes(string pattern)
     {

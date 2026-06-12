@@ -676,7 +676,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // u/v mode, where the same escapes are syntax errors (rejected above) and
             // \p/\P are Unicode property escapes handled later.
             if (!unicode && !unicodeSets)
+            {
                 pattern = TransformAnnexBIdentityEscapes(pattern);
+                // Annex B: a `-` adjacent to a CharacterClassEscape in a class is a
+                // literal (`[--\d]` = `-` or a digit), but .NET rejects the range.
+                pattern = NeutralizeAnnexBClassRangeDashes(pattern);
+            }
 
             // ECMAScript \s must match all Unicode whitespace (Zs category + BOM + line terminators).
             // .NET's \s only covers ASCII whitespace, so expand to the full set.
@@ -2426,6 +2431,50 @@ public partial class JSRegExp : JSObject, IJSRegExp
     // named backreference \k and \c). Any other ASCII letter is an Annex B
     // IdentityEscape that denotes the literal letter.
     private const string RecognizedEscapeLetters = "bBcdDfknrsStuvwWx";
+
+    // In a non-Unicode character class, a `-` adjacent to a CharacterClassEscape
+    // (`\d \D \w \W \s \S`) cannot form a range, so Annex B treats it as a literal
+    // `-` (e.g. `[--\d]` matches `-` or a digit). .NET rejects the range, so escape
+    // such a dash. A `-` between two ordinary atoms (`[a-z]`) is left untouched.
+    private static string NeutralizeAnnexBClassRangeDashes(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf('-') < 0)
+            return pattern;
+
+        var sb = new StringBuilder(pattern.Length);
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                sb.Append(c).Append(pattern[i + 1]);
+                i++;
+                continue;
+            }
+
+            if (c == '[') inClass = true;
+            else if (c == ']') inClass = false;
+            else if (c == '-' && inClass)
+            {
+                bool prevIsClassEscape = i >= 2 && pattern[i - 2] == '\\' && IsClassEscapeLetter(pattern[i - 1]);
+                bool nextIsClassEscape = i + 2 < pattern.Length && pattern[i + 1] == '\\' && IsClassEscapeLetter(pattern[i + 2]);
+                if (prevIsClassEscape || nextIsClassEscape)
+                {
+                    sb.Append("\\-");
+                    continue;
+                }
+            }
+
+            sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
+
+    private static bool IsClassEscapeLetter(char c)
+        => c is 'd' or 'D' or 'w' or 'W' or 's' or 'S';
 
     private static string TransformAnnexBIdentityEscapes(string pattern)
     {
