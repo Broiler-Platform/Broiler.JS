@@ -169,4 +169,23 @@ public class Issue765Tests
         => Assert.Equal("false|true", Eval(
             "var s = String.fromCodePoint(0x1000C);"
             + " /^\\p{Assigned}$/u.test(s) + '|' + /^\\P{Assigned}$/u.test(s);"));
+
+    // P6 + the whole Script / Script_Extensions category: backed by the UCD 17.0.0
+    // database (long names and short aliases; BMP and supplementary plane).
+    [Theory]
+    [InlineData(@"/^\p{Script=Greek}+$/u", "αβγ", "true")]
+    [InlineData(@"/^\p{sc=Latn}+$/u", "abc", "true")]
+    [InlineData(@"/^\p{Script=Han}$/u", "𠮷", "true")]            // supplementary
+    [InlineData(@"/^\p{Script=Hiragana}$/u", "あ", "true")]
+    [InlineData(@"/^\p{Script=Greek}$/u", "a", "false")]
+    [InlineData(@"/^\p{Script_Extensions=Greek}$/u", "·", "true")] // U+0387 via scx
+    [InlineData(@"/^\p{scx=Latn}$/u", "·", "true")]                // U+00B7 in many scx
+    [InlineData(@"/^\p{Script=Linear_B}$/u", "𐀀", "true")]        // supplementary
+    public void ScriptPropertyEscapes(string regex, string input, string expected)
+        => Assert.Equal(expected, Eval($"'' + {regex}.test({System.Text.Json.JsonSerializer.Serialize(input)})"));
+
+    [Fact]
+    public void LoneScriptNameIsSyntaxError()
+        => Assert.Equal("true", Eval(
+            "var t = false; try { new RegExp('\\\\p{Han}', 'u'); } catch (e) { t = e instanceof SyntaxError; } '' + t;"));
 }

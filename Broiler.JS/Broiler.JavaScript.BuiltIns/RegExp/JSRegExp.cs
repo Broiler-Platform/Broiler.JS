@@ -2115,25 +2115,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// </summary>
     private static readonly Dictionary<EmojiSequenceProperties, string> EmojiAlternationCache = new();
 
-    /// <summary>
-    /// Code-point ranges for the Unicode scripts we can expand to regex without a
-    /// full UCD. Keyed by normalized script name/alias. Not exhaustive — scripts
-    /// not present here raise a clear "not supported" SyntaxError. Ranges are an
-    /// approximation sufficient for common usage (notably the supplementary-plane
-    /// Han ideographs the test262 v/u-flag tests probe).
-    /// </summary>
-    private static readonly Dictionary<string, (int Lo, int Hi)[]> ScriptRanges = new(StringComparer.Ordinal)
-    {
-        ["han"] = new (int, int)[]
-        {
-            (0x2E80, 0x2E99), (0x2E9B, 0x2EF3), (0x2F00, 0x2FD5),
-            (0x3005, 0x3005), (0x3007, 0x3007), (0x3021, 0x3029), (0x3038, 0x303B),
-            (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
-            (0xF900, 0xFA6D), (0xFA70, 0xFAD9),
-            (0x20000, 0x2A6DF), (0x2A700, 0x2EBE0), (0x2F800, 0x2FA1D), (0x30000, 0x3134A),
-        },
-    };
-
     private static Dictionary<string, string> BuildGeneralCategoryNames()
     {
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -2308,14 +2289,20 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 throw NewUnsupportedPropertyError(inner);
             }
 
-            if (name is "sc" or "script" or "scx" or "scriptextensions")
+            if (name is "sc" or "script")
             {
-                if (ScriptRanges.TryGetValue(value, out var ranges))
-                {
-                    var expanded = ExpandCodePointProperty(ranges, negated, inClass);
-                    if (expanded != null)
-                        return expanded;
-                }
+                var ranges = UnicodeProperties.GetScript(value);
+                if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass) is { } expanded)
+                    return expanded;
+
+                throw NewUnsupportedPropertyError(inner);
+            }
+
+            if (name is "scx" or "scriptextensions")
+            {
+                var ranges = UnicodeProperties.GetScriptExtensions(value);
+                if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass) is { } expanded)
+                    return expanded;
 
                 throw NewUnsupportedPropertyError(inner);
             }
@@ -2336,14 +2323,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
         if (binaryRanges != null)
         {
             var expanded = ExpandCodePointProperty(binaryRanges, negated, inClass);
-            if (expanded != null)
-                return expanded;
-            throw NewUnsupportedPropertyError(inner);
-        }
-
-        if (ScriptRanges.TryGetValue(lone, out var scriptRanges))
-        {
-            var expanded = ExpandCodePointProperty(scriptRanges, negated, inClass);
             if (expanded != null)
                 return expanded;
             throw NewUnsupportedPropertyError(inner);

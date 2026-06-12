@@ -429,14 +429,14 @@ partial class JSRegExp
         {
             var name = NormalizeKey(inner.Substring(0, eq));
             var val = NormalizeKey(inner.Substring(eq + 1));
-            if (name is "sc" or "script" or "scx" or "scriptextensions")
-                ScriptRanges.TryGetValue(val, out ranges);
+            if (name is "sc" or "script")
+                ranges = UnicodeProperties.GetScript(val);
+            else if (name is "scx" or "scriptextensions")
+                ranges = UnicodeProperties.GetScriptExtensions(val);
         }
         else
         {
             ranges = UnicodeProperties.GetBinaryProperty(normalized);
-            if (ranges == null)
-                ScriptRanges.TryGetValue(normalized, out ranges);
         }
 
         if (ranges == null)
