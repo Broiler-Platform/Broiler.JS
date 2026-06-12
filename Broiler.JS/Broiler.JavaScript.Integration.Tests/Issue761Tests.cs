@@ -312,4 +312,63 @@ public class Issue761Tests
             "async function f(){ let log=[];"
             + " (async()=>{ log.push('A1'); await 0; log.push('A2'); })();"
             + " log.push('main'); await 0; log.push('after'); r = log.join(','); } f();"));
+
+    // ---- Problems 21/22/23: duplicate block-nested function declarations ----
+
+    [Fact]
+    public void SloppyDuplicateFunctionDeclarationInBlockIsAllowed()
+        // Annex B 3.3.4: the last declaration wins.
+        => Assert.Equal("2", Eval("{ function a(){return 1} function a(){return 2} } a()"));
+
+    [Fact]
+    public void SloppyDuplicateFunctionDeclarationInSwitchIsAllowed()
+        => Assert.Equal("2", Eval(
+            "switch(0){ default: function a(){return 1} function a(){return 2} } a()"));
+
+    [Fact]
+    public void SloppyDuplicateFunctionDeclarationInFunctionBlockIsAllowed()
+        => Assert.Equal("ok", Eval(
+            "function f(){ { function a(){} function a(){} } return 'ok'; } f()"));
+
+    [Fact]
+    public void StrictDuplicateFunctionDeclarationInBlockIsSyntaxError()
+    {
+        var ex = Assert.Throws<Broiler.JavaScript.Runtime.JSException>(
+            () => Eval("'use strict'; { function a(){} function a(){} }"));
+        Assert.Contains("already defined", ex.Message);
+    }
+
+    [Fact]
+    public void StrictDuplicateFunctionDeclarationAcrossSwitchClausesIsSyntaxError()
+    {
+        var ex = Assert.Throws<Broiler.JavaScript.Runtime.JSException>(
+            () => Eval("'use strict'; switch(0){ case 1: function a(){} default: function a(){} }"));
+        Assert.Contains("already defined", ex.Message);
+    }
+
+    [Fact]
+    public void StrictDuplicateFunctionDeclarationInNestedBlockIsSyntaxError()
+    {
+        var ex = Assert.Throws<Broiler.JavaScript.Runtime.JSException>(
+            () => Eval("function f(){ 'use strict'; { function a(){} function a(){} } }"));
+        Assert.Contains("already defined", ex.Message);
+    }
+
+    [Fact]
+    public void StrictFunctionBodyTopLevelDuplicateFunctionsAllowed()
+        // A function body is a var-scoped environment: top-level duplicate function
+        // declarations are allowed even in strict mode.
+        => Assert.Equal("2", Eval(
+            "function f(){ 'use strict'; function a(){return 1} function a(){return 2} return a(); } f()"));
+
+    [Fact]
+    public void StrictBlockWithDistinctFunctionNamesIsAllowed()
+        => Assert.Equal("ok", Eval("'use strict'; { function a(){} function b(){} } 'ok'"));
+
+    [Fact]
+    public void BlockFunctionStillConflictsWithLexicalBinding()
+    {
+        Assert.Throws<Broiler.JavaScript.Runtime.JSException>(() => Eval("{ let a; function a(){} }"));
+        Assert.Throws<Broiler.JavaScript.Runtime.JSException>(() => Eval("{ function a(){} let a; }"));
+    }
 }
