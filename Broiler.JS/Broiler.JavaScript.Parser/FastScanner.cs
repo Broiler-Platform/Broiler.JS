@@ -729,6 +729,9 @@ public class FastScanner
         }
     }
 
+    private static char HexDigit(int nibble)
+        => (char)(nibble < 10 ? '0' + nibble : 'a' + (nibble - 10));
+
     private string ScanUnicodeCodePointEscapeContents()
     {
         var ch = Peek();
@@ -968,17 +971,29 @@ public class FastScanner
                                 break;
                             }
 
-                            // `\u{...}` is a code-point escape: decode it specially so
-                            // the braces are not mistaken for quantifiers. Every other
-                            // `\u` (a `\uHHHH` escape, or an Annex B IdentityEscape such
-                            // as `/\u/`) is appended literally and the following
-                            // characters are scanned normally \u2014 the old code eagerly
+                            // `\u{...}` is a code-point escape. Decode it, then re-emit as
+                            // fixed-width `\uHHHH` unit(s) (a surrogate pair for astral
+                            // code points). Emitting the raw decoded character corrupted
+                            // the pattern when the code point was a regex metacharacter \u2014
+                            // e.g. `/\u{3f}/u` became `/?/`, a stray quantifier \u2014 whereas a
+                            // `\uHHHH` escape is always a literal the RegExp runtime already
+                            // handles. Every other `\u` (a `\uHHHH` escape, or an Annex B
+                            // IdentityEscape such as `/\u/`) is appended literally and the
+                            // following characters scanned normally \u2014 the old code eagerly
                             // consumed the char after `u`, which swallowed a closing `/`.
                             if (first == 'u' && Next() == '{')
                             {
                                 Consume(); // 'u' -> '{'
                                 Consume(); // '{' -> first hex digit
-                                t.Append(ScanUnicodeCodePointEscapeContents());
+                                foreach (var cu in ScanUnicodeCodePointEscapeContents())
+                                {
+                                    t.Append('\\');
+                                    t.Append('u');
+                                    t.Append(HexDigit(cu >> 12));
+                                    t.Append(HexDigit((cu >> 8) & 0xF));
+                                    t.Append(HexDigit((cu >> 4) & 0xF));
+                                    t.Append(HexDigit(cu & 0xF));
+                                }
                                 break;
                             }
 

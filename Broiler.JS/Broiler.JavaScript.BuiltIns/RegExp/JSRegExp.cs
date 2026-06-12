@@ -1934,8 +1934,16 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     }
                 }
 
-                // Not a surrogate pair – keep the single \uHHHH
-                sb.Append((char)hi);
+                // Not a surrogate pair. The single escape is decoded to its raw
+                // character so the later lone-surrogate / class transforms operate on
+                // real characters — but a code point that is itself a regex
+                // metacharacter (e.g. ? → ?, * → *) must keep a backslash,
+                // otherwise the decoded character is parsed as an operator and the
+                // pattern becomes invalid (`/\u{3f}/u` matched a literal `?`).
+                char decoded = (char)hi;
+                if (IsSyntaxCharacter(decoded) || decoded == '-')
+                    sb.Append('\\');
+                sb.Append(decoded);
                 i += 5;
                 continue;
             }
