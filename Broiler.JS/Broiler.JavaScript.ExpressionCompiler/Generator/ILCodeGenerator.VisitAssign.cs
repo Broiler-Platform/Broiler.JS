@@ -131,9 +131,57 @@ public partial class ILCodeGenerator
     private CodeInfo AssignField(DataSource exp, YFieldExpression yFieldExpression, int savedIndex = -1)
     {
         if (!yFieldExpression.FieldInfo.IsStatic)
+        {
+            // A generator-rewritten `return` emits a real `ret`/branch as a value
+            // sub-expression (completion tracking can lift the assignment target to
+            // a boxed field, so a loop body's `return` becomes `box.Value = <return>`,
+            // possibly nested inside a conditional). Evaluating that RHS while the
+            // target reference sits on the evaluation stack leaves the stack
+            // unbalanced where the transfer fires, which the CLR rejects as an
+            // invalid program. Spill the target to a temp first — preserving
+            // target-before-value evaluation order — so the stack holds only the
+            // value when the transfer happens.
+            if (exp.Expression != null && ControlTransferScanner.MayTransfer(exp.Expression))
+            {
+                using var targetTemp = il.NewTemp(yFieldExpression.Target.Type);
+                Visit(yFieldExpression.Target);
+                il.EmitSaveLocal(targetTemp.LocalIndex);
+                VisitSave(exp, savedIndex);
+                using var valueTemp = il.NewTemp(yFieldExpression.FieldInfo.FieldType);
+                il.EmitSaveLocal(valueTemp.LocalIndex);
+                il.EmitLoadLocal(targetTemp.LocalIndex);
+                il.EmitLoadLocal(valueTemp.LocalIndex);
+                il.Emit(OpCodes.Stfld, yFieldExpression.FieldInfo);
+                return true;
+            }
+
             Visit(yFieldExpression.Target);
+        }
         VisitSave(exp, savedIndex);
         il.Emit(OpCodes.Stfld, yFieldExpression.FieldInfo);
         return true;
+    }
+
+    // Detects whether evaluating an expression may transfer control out of itself
+    // (a generator-rewritten `return`) — i.e. emit a `ret`/branch while a value is
+    // mid-computation. Nested lambdas have their own IL stream and are skipped.
+    private sealed class ControlTransferScanner : YExpressionMapVisitor
+    {
+        private bool found;
+
+        public static bool MayTransfer(YExpression exp)
+        {
+            var scanner = new ControlTransferScanner();
+            scanner.Visit(exp);
+            return scanner.found;
+        }
+
+        protected override YExpression VisitReturn(YReturnExpression node)
+        {
+            found = true;
+            return node;
+        }
+
+        protected override YExpression VisitLambda(YLambdaExpression node) => node;
     }
 }
