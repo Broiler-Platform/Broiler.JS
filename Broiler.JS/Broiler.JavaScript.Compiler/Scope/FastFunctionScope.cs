@@ -220,10 +220,11 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public AstFunctionExpression Function { get; }
 
+    private YExpression _thisExpression;
     public YExpression ThisExpression
     {
-        get => field ??= GetVariable("this", true).Expression;
-        internal set;
+        get => _thisExpression ??= GetVariable("this", true).Expression;
+        internal set => _thisExpression = value;
     }
 
     // new.target is lexically scoped exactly like `this`: an ordinary function
@@ -414,6 +415,13 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     public FastFunctionScope(FastFunctionScope p)
     {
         Function = p.Function;
+        // A nested block does not change `this`; inherit the enclosing scope's
+        // binding. Copy the (possibly still-unresolved) backing field rather than
+        // forcing resolution: when the parent's `this` was set explicitly to a
+        // non-variable expression — e.g. a static field initializer rebinding it to
+        // the class constructor box — the lazy GetVariable("this") fallback would
+        // otherwise walk PAST that override to an outer real `this` binding.
+        _thisExpression = p._thisExpression;
         TopScope = p.TopScope;
         RootScope = p.RootScope;
         MemberInits = p.MemberInits;
