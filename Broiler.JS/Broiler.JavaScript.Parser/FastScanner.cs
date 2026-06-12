@@ -712,7 +712,14 @@ public class FastScanner
             if (!ch.IsDigitPart(true, false))
                 break;
 
-            codePoint = checked(codePoint * 16 + ch.HexValue());
+            // A code point above U+10FFFF is a SyntaxError. Bound-check during
+            // accumulation rather than relying on `checked` overflow, which would
+            // surface as a non-SyntaxError for very long digit runs (e.g.
+            // `\u{100000000000000000000000000000}`); leading zeros stay in range.
+            codePoint = codePoint * 16 + ch.HexValue();
+            if (codePoint > 0x10FFFF)
+                throw Unexpected();
+
             ch = Consume();
         }
 
@@ -746,7 +753,14 @@ public class FastScanner
             if (!ch.IsDigitPart(true, false))
                 break;
 
-            codePoint = checked(codePoint * 16 + ch.HexValue());
+            // A code point above U+10FFFF is a SyntaxError. Bound-check during
+            // accumulation (rather than relying on `checked` overflow, which would
+            // surface as a non-SyntaxError for very long digit runs like
+            // `\u{100000000000000000000000000000}`); leading zeros stay in range.
+            codePoint = codePoint * 16 + ch.HexValue();
+            if (codePoint > 0x10FFFF)
+                throw Unexpected();
+
             Consume();
             ch = Peek();
         }
@@ -1358,6 +1372,8 @@ public class FastScanner
                     throw Unexpected();
 
                 codePoint = codePoint * 16 + current.HexValue();
+                if (codePoint > 0x10FFFF)
+                    throw Unexpected();
                 Consume();
                 current = Peek();
             }
