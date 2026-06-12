@@ -681,6 +681,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // Annex B: a `-` adjacent to a CharacterClassEscape in a class is a
                 // literal (`[--\d]` = `-` or a digit), but .NET rejects the range.
                 pattern = NeutralizeAnnexBClassRangeDashes(pattern);
+                // Annex B: with no named groups, `\k<a>` is a literal (`k<a>`), not a
+                // backreference to an undefined group (which .NET rejects).
+                pattern = NeutralizeAnnexBUndefinedNamedBackref(pattern);
             }
 
             // ECMAScript \s must match all Unicode whitespace (Zs category + BOM + line terminators).
@@ -2475,6 +2478,64 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
     private static bool IsClassEscapeLetter(char c)
         => c is 'd' or 'D' or 'w' or 'W' or 's' or 'S';
+
+    // In a non-Unicode regex with NO named groups, `\k` is an Annex B IdentityEscape,
+    // so `\k<a>` matches the literal text `k<a>`. .NET rejects `\k<a>` as a reference to
+    // an undefined group, so drop the backslash. With named groups present, an undefined
+    // `\k<name>` is a real SyntaxError (left for the validator/.NET to reject).
+    private static string NeutralizeAnnexBUndefinedNamedBackref(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf("\\k<", StringComparison.Ordinal) < 0)
+            return pattern;
+
+        if (HasNamedGroup(pattern))
+            return pattern;
+
+        var sb = new StringBuilder(pattern.Length);
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                if (!inClass && pattern[i + 1] == 'k' && i + 2 < pattern.Length && pattern[i + 2] == '<')
+                {
+                    sb.Append('k');
+                    i++;
+                    continue;
+                }
+
+                sb.Append(c).Append(pattern[i + 1]);
+                i++;
+                continue;
+            }
+
+            if (c == '[') inClass = true;
+            else if (c == ']') inClass = false;
+
+            sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
+
+    private static bool HasNamedGroup(string pattern)
+    {
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+            if (c == '\\' && i + 1 < pattern.Length) { i++; continue; }
+            if (c == '[') { inClass = true; continue; }
+            if (c == ']') { inClass = false; continue; }
+            if (!inClass && c == '(' && i + 2 < pattern.Length && pattern[i + 1] == '?' && pattern[i + 2] == '<'
+                && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!')))
+                return true;
+        }
+
+        return false;
+    }
 
     private static string TransformAnnexBIdentityEscapes(string pattern)
     {

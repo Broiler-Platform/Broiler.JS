@@ -112,6 +112,7 @@ internal static class RegExpValidator
             {
                 pattern = NormalizeAnnexBControlEscapes(pattern);
                 pattern = NeutralizeAnnexBClassRangeDashes(pattern);
+                pattern = NeutralizeAnnexBUndefinedNamedBackref(pattern);
             }
 
             _ = new Regex(pattern, options);
@@ -392,6 +393,51 @@ internal static class RegExpValidator
 
     private static bool IsClassEscapeLetter(char c)
         => c is 'd' or 'D' or 'w' or 'W' or 's' or 'S';
+
+    // In a non-Unicode regex with NO named groups, `\k` is not a named backreference
+    // — it is an Annex B IdentityEscape, so `\k<a>` matches the literal text `k<a>`
+    // (e.g. `/\k<a>/.test("k<a>")` is true). .NET rejects `\k<a>` as a reference to an
+    // undefined group, so drop the backslash. When named groups ARE present, an
+    // undefined `\k<name>` is a real SyntaxError and is left for .NET to reject.
+    private static string NeutralizeAnnexBUndefinedNamedBackref(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf("\\k<", System.StringComparison.Ordinal) < 0)
+            return pattern;
+
+        var hasNamed = false;
+        ScanGroupNames(pattern, _ => hasNamed = true);
+        if (hasNamed)
+            return pattern;
+
+        var sb = new System.Text.StringBuilder(pattern.Length);
+        var inClass = false;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                if (!inClass && pattern[i + 1] == 'k' && i + 2 < pattern.Length && pattern[i + 2] == '<')
+                {
+                    // Drop the backslash; `k`, `<`, the name, and `>` are literal regex chars.
+                    sb.Append('k');
+                    i++;
+                    continue;
+                }
+
+                sb.Append(c).Append(pattern[i + 1]);
+                i++;
+                continue;
+            }
+
+            if (c == '[') inClass = true;
+            else if (c == ']') inClass = false;
+
+            sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
 
     private static string NormalizeAnnexBControlEscapes(string pattern)
     {
