@@ -91,4 +91,32 @@ public class Issue763Tests
     [InlineData("async function f() { return 1; } globalThis.r = 'ok';", "ok")]
     public void EscapedContextualKeywordsStillValid(string code, string expected)
         => Assert.Equal(expected, Drive(code));
+
+    // Problem 8: a `yield` in a computed PropertyName of an object-literal
+    // method/getter/setter crashed (the property was never added, leaving the
+    // object null). The computed key was emitted twice — once as the key and once
+    // for NamedEvaluation of the (anonymous) method — so the `yield` suspended
+    // twice and the object assignment was never reached. The key is now evaluated
+    // once into a temp shared by both uses.
+    [Theory]
+    [InlineData("obj = { *[yield](){} };")]
+    [InlineData("obj = { [yield](){} };")]
+    [InlineData("obj = { get [yield](){ return 1; } };")]
+    [InlineData("obj = { set [yield](v){} };")]
+    [InlineData("obj = { [yield]: function(){} };")]
+    public void YieldInComputedMethodKeyAddsProperty(string objLiteral)
+        => Assert.Equal("K", Drive(
+            "var obj = null;"
+            + " var it = (function*(){ " + objLiteral + " })();"
+            + " it.next(); it.next('K');"
+            + " globalThis.r = (obj === null) ? 'null' : Object.keys(obj).join(',');"));
+
+    // The computed PropertyName must be evaluated exactly once even when it also
+    // names an anonymous method value (a latent bug in non-generator code too).
+    [Fact]
+    public void ComputedMethodKeyEvaluatedOnce()
+        => Assert.Equal("1|m", Drive(
+            "var n = 0; function k(){ n++; return 'm'; }"
+            + " var o = { [k()](){} };"
+            + " globalThis.r = n + '|' + o.m.name;"));
 }
