@@ -75,6 +75,10 @@ partial class FastParser
                 {
                     left = num;
                 }
+                else if (BigIntLiteral(out var big))
+                {
+                    left = big;
+                }
                 else if (!modulePattern && stream.CheckAndConsume(TokenTypes.SquareBracketStart))
                 {
                     // Computed property name: { [expr]: target }. The key is an

@@ -53,4 +53,19 @@ partial class FastParser
         node = default;
         return false;
     }
+
+    // A BigInt literal is a valid LiteralPropertyName (e.g. `{ 0n: 1 }`,
+    // `class C { 1n(){} }`, `let { 1n: a } = o`); its key is the string form of the
+    // numeric value, computed by the compiler.
+    bool BigIntLiteral(out AstExpression node)
+    {
+        if (stream.CheckAndConsume(TokenTypes.BigInt, out var token))
+        {
+            node = new AstLiteral(TokenTypes.BigInt, token);
+            return true;
+        }
+
+        node = default;
+        return false;
+    }
 }
