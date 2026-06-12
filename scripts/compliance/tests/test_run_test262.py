@@ -158,12 +158,14 @@ class RunTest262Tests(unittest.TestCase):
             "test/language/c2-module-block.js",
             "/*---\nflags:\n  - module\n---*/\nexport {};\n",
         )
-        self.write_test(
+        # A feature-tagged test is no longer excluded (feature metadata never
+        # filters a test out), so it is script-host-verifiable like any other.
+        temporal_path = self.write_test(
             "test/language/c3-temporal.js",
             "/*---\nfeatures: [Temporal]\n---*/\nTemporal.Duration();\n",
         )
         self.write_test("test/language/host-harness.js", "$262.createRealm();\n")
-        second_path = self.write_test(
+        self.write_test(
             "test/language/d-async.js",
             "/*---\nflags: [async]\n---*/\n$DONE();\n",
         )
@@ -181,16 +183,19 @@ class RunTest262Tests(unittest.TestCase):
             shard_index=1,
         )
 
-        self.assertEqual([second_path], selected_paths)
+        # Verifiable: a.js, c3-temporal.js, d-async.js (module/negative/host-harness
+        # blocked, fixture excluded). Sorted, shard 1 of 2 (modulo) selects index 1.
+        self.assertEqual([temporal_path], selected_paths)
         self.assertEqual("all-script-host-verifiable", selection["selectionMode"])
         self.assertEqual(7, selection["candidateCount"])
-        self.assertEqual(2, selection["selectedCountBeforeSharding"])
+        self.assertEqual(3, selection["selectedCountBeforeSharding"])
         self.assertEqual(2, selection["shardCount"])
         self.assertEqual(1, selection["shardIndex"])
 
-    def test_select_paths_skips_iterator_helpers_feature_tests(self) -> None:
+    def test_select_paths_includes_feature_tests(self) -> None:
+        # Feature metadata (e.g. iterator-helpers) never excludes a test.
         first_path = self.write_test("test/language/a.js", "1 + 1;\n")
-        self.write_test(
+        feature_path = self.write_test(
             "test/built-ins/Iterator/from/name.js",
             "/*---\nfeatures: [iterator-helpers]\n---*/\nIterator.from([]);\n",
         )
@@ -204,9 +209,9 @@ class RunTest262Tests(unittest.TestCase):
             shard_index=0,
         )
 
-        self.assertEqual([first_path], selected_paths)
+        self.assertEqual(sorted([first_path, feature_path]), selected_paths)
         self.assertEqual(2, selection["candidateCount"])
-        self.assertEqual(1, selection["selectedCountBeforeSharding"])
+        self.assertEqual(2, selection["selectedCountBeforeSharding"])
 
     def test_parse_metadata_supports_inline_and_block_style_lists(self) -> None:
         metadata, _ = run_test262.parse_metadata(
