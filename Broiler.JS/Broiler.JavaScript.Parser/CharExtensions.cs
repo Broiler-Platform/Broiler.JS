@@ -7,7 +7,12 @@ public static class CharExtensions
 {
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static string FromCodePoint(this int cp) => char.ConvertFromUtf32(cp);
+    internal static string FromCodePoint(this int cp)
+        // A `\u{…}` escape may name a lone surrogate code point (e.g. `\u{D83E}`),
+        // which is a valid UTF-16 code unit in a JS string/template but rejected by
+        // char.ConvertFromUtf32. Emit the single code unit directly for that range;
+        // out-of-range code points (> U+10FFFF) still throw and surface as errors.
+        => cp is >= 0xD800 and <= 0xDFFF ? ((char)cp).ToString() : char.ConvertFromUtf32(cp);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int HexValue(this char ch)
