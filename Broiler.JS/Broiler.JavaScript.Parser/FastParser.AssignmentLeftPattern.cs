@@ -113,9 +113,16 @@ partial class FastParser
                     // A computed key has no implicit shorthand binding target.
                     if (computed || left is AstLiteral)
                         throw stream.Unexpected();
-                    if (left.Start.IsKeyword || left.Start.IsEscapedReservedWord)
+                    // A shorthand property's name is also its BindingIdentifier, so it
+                    // follows the same rules as a simple binding: contextual keywords
+                    // (`async`, `let`, `static`, `await`/`yield` outside their reserved
+                    // contexts, …) are valid, only true reserved words are rejected.
+                    var shorthand = left.Start;
+                    if (shorthand.IsEscapedReservedWord
+                        || (shorthand.IsKeyword && shorthand.Keyword == FastKeywords.yield && inGeneratorBody)
+                        || (shorthand.IsKeyword && shorthand.Keyword != FastKeywords.await && shorthand.Keyword != FastKeywords.yield && IsDisallowedBindingKeyword(shorthand.Keyword)))
                         throw stream.Unexpected();
-                    variableScope.Top.AddVariable(left.Start, left.Start.Span, kind);
+                    variableScope.Top.AddVariable(shorthand, shorthand.Span, kind);
                     right = left;
                 }
 
