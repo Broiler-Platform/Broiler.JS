@@ -247,18 +247,46 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
     protected override Exp VisitConditional(YConditionalExpression node)
     {
         var conditional = base.VisitConditional(node);
-        if (node.Type != typeof(void) || conditional is not YConditionalExpression rewritten)
+        if (conditional is not YConditionalExpression rewritten)
             return conditional;
 
         static Exp ToVoid(Exp expression) => expression.Type == typeof(void)
             ? expression
             : Expression.Block(expression, Expression.Empty);
 
-        return new YConditionalExpression(
-            rewritten.test,
-            ToVoid(rewritten.@true),
-            rewritten.@false == null ? null : ToVoid(rewritten.@false),
-            typeof(void));
+        if (node.Type == typeof(void))
+        {
+            return new YConditionalExpression(
+                rewritten.test,
+                ToVoid(rewritten.@true),
+                rewritten.@false == null ? null : ToVoid(rewritten.@false),
+                typeof(void));
+        }
+
+        // A value-producing conditional that contains a yield/return suspension is
+        // unsafe: the suspension lowers to `return state; <jump label>; value`, and
+        // when this conditional is the operand of an enclosing expression (e.g. the
+        // RHS of the completion-tracking assignment `#cv = if (c) yield x`), the
+        // resume `goto` lands in the middle of evaluating that operand. The setup of
+        // the enclosing expression (the assignment target, prior call arguments,
+        // etc.) is skipped, corrupting the IL stack and faulting at runtime.
+        // FlattenBlocks already hoists suspensions out of `target = block(...)`, so
+        // make the branches statements: spill the conditional's value into a temp and
+        // distribute the production into each branch (`if (c) temp = A else temp = B;
+        // temp`). Each yield is now at statement level inside a branch where
+        // FlattenBlocks can hoist it cleanly.
+        if (rewritten.@false == null || !node.HasYield())
+            return conditional;
+
+        var temp = Expression.Parameter(node.Type);
+        return Expression.Block(
+            new Sequence<ParameterExpression> { temp },
+            new YConditionalExpression(
+                rewritten.test,
+                ToVoid(Expression.Assign(temp, rewritten.@true)),
+                ToVoid(Expression.Assign(temp, rewritten.@false)),
+                typeof(void)),
+            temp);
     }
 
     protected override Exp VisitLambda(LambdaExpression yLambdaExpression)
