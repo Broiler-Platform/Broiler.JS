@@ -112,7 +112,8 @@ partial class FastParser
 
                 case TokenTypes.BracketStart:
                 case TokenTypes.OptionalCall:
-                    inOptional |= token.Type == TokenTypes.OptionalCall;
+                    var isOptionalCall = token.Type == TokenTypes.OptionalCall;
+                    inOptional |= isOptionalCall;
                     stream.Consume();
                     if (!ArrayExpression(out var arguments))
                         throw stream.Unexpected();
@@ -122,7 +123,13 @@ partial class FastParser
                         asNew = false;
                     }
                     else
-                        node = new AstCallExpression(node, arguments, inOptional);
+                        // Mark the call optional only for an EXPLICIT `?.()`; a plain
+                        // `()` that merely sits in an optional chain (`a?.b()`) must NOT
+                        // short-circuit on the method being nullish — the receiver
+                        // short-circuit is already carried by the callee member's
+                        // coalesce flag, and `a?.b()` with a non-nullish `a` and a
+                        // non-callable `b` must throw a TypeError.
+                        node = new AstCallExpression(node, arguments, isOptionalCall);
                     continue;
 
                 case TokenTypes.QuestionDot:
@@ -157,7 +164,8 @@ partial class FastParser
                             stream.Consume();
                             if (!ArrayExpression(out var optionalArguments))
                                 throw stream.Unexpected();
-                            node = new AstCallExpression(node, optionalArguments, inOptional);
+                            // `a ?. (b)` — an explicit optional call.
+                            node = new AstCallExpression(node, optionalArguments, true);
                             continue;
                         }
 

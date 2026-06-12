@@ -182,4 +182,28 @@ public class Issue763Tests
     [InlineData("var y = 7﻿; globalThis.r = '' + y;", "7")]
     public void ZeroWidthNoBreakSpaceIsWhitespace(string code, string expected)
         => Assert.Equal(expected, Drive(code));
+
+    // Problem 42 (partial): an optional method call `a?.b()` must short-circuit on a
+    // nullish *receiver* (`a`), not on the resolved method. Previously the receiver
+    // was indexed unconditionally, so `undefined?.f()` threw instead of yielding
+    // undefined; and a plain `()` in a chain wrongly short-circuited when the method
+    // was nullish. An explicit `?.()` still short-circuits on a nullish callee.
+    [Theory]
+    [InlineData("globalThis.r = '' + (undefined?.f());", "undefined")]
+    [InlineData("globalThis.r = '' + (null?.f());", "undefined")]
+    [InlineData("var o = { g(){ return 42; } }; globalThis.r = '' + o?.g();", "42")]
+    [InlineData("var a = { b: { c(){ return 7; } } }; globalThis.r = '' + a?.b?.c();", "7")]
+    [InlineData("var n = { b: null }; globalThis.r = '' + (n?.b?.c());", "undefined")]
+    [InlineData("var o = { g(){ return 1; } }; globalThis.r = '' + (o.miss?.());", "undefined")]
+    [InlineData("var o = { v: 9, m(){ return this.v; } }; globalThis.r = '' + o?.m();", "9")]
+    public void OptionalMethodCallShortCircuitsOnReceiver(string code, string expected)
+        => Assert.Equal(expected, Drive(code));
+
+    // `a?.b()` with a non-nullish receiver but a non-callable member must throw a
+    // TypeError (the `?.` guards the receiver, not the call).
+    [Fact]
+    public void OptionalMethodCallThrowsWhenMethodNotCallable()
+        => Assert.Equal("TypeError", Drive(
+            "var o = {}; try { o?.missing(); globalThis.r = 'no-throw'; }"
+            + " catch (e) { globalThis.r = e.constructor.name; }"));
 }
