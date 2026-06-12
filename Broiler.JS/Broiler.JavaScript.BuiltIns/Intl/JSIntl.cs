@@ -2929,11 +2929,66 @@ public class JSIntlNumberFormat : JSObject
             _ => signBit ? "-" : null, // "auto"
         };
 
+        List<(string, string)> assembled;
         if (isCurrency)
-            return AssembleCurrencyParts(magnitude, sign, currency);
+            assembled = AssembleCurrencyParts(magnitude, sign, currency);
+        else
+        {
+            var plain = AssemblePlainParts(magnitude, sign);
+            assembled = isUnit ? AssembleUnitParts(plain, x) : plain;
+        }
 
-        var plain = AssemblePlainParts(magnitude, sign);
-        return isUnit ? AssembleUnitParts(plain, x) : plain;
+        return MapNumberingSystemDigits(assembled);
+    }
+
+    // Translates the ASCII digits produced by the formatter into the resolved
+    // numbering system's digits (e.g. "arab" 0-9 → ٠-٩, "hanidec" → 〇一二…). Only the
+    // numeric digit-bearing parts are remapped; separators, symbols and literals keep
+    // the locale's characters.
+    private List<(string, string)> MapNumberingSystemDigits(List<(string, string)> parts)
+    {
+        if (numberingSystem == null || numberingSystem == "latn")
+            return parts;
+
+        for (var i = 0; i < parts.Count; i++)
+        {
+            var (type, value) = parts[i];
+            if (type is not ("integer" or "fraction" or "exponentInteger"))
+                continue;
+
+            var sb = new StringBuilder(value.Length);
+            foreach (var c in value)
+                sb.Append(c is >= '0' and <= '9' ? MapDigit(numberingSystem, c - '0') : c.ToString());
+            parts[i] = (type, sb.ToString());
+        }
+
+        return parts;
+    }
+
+    // CLDR numbering systems whose digits 0-9 are a contiguous code-point range,
+    // keyed by the code point of digit zero.
+    private static readonly Dictionary<string, int> ContiguousDigitZero = new()
+    {
+        ["arab"] = 0x0660, ["arabext"] = 0x06F0, ["beng"] = 0x09E6, ["deva"] = 0x0966,
+        ["fullwide"] = 0xFF10, ["gujr"] = 0x0AE6, ["guru"] = 0x0A66, ["khmr"] = 0x17E0,
+        ["knda"] = 0x0CE6, ["laoo"] = 0x0ED0, ["mlym"] = 0x0D66, ["mymr"] = 0x1040,
+        ["orya"] = 0x0B66, ["tamldec"] = 0x0BE6, ["telu"] = 0x0C66, ["thai"] = 0x0E50,
+        ["tibt"] = 0x0F20,
+    };
+
+    // Numbering systems whose digits are not a contiguous range.
+    private static readonly Dictionary<string, string[]> AlgorithmicDigits = new()
+    {
+        ["hanidec"] = new[] { "〇", "一", "二", "三", "四", "五", "六", "七", "八", "九" },
+    };
+
+    private static string MapDigit(string numberingSystem, int d)
+    {
+        if (AlgorithmicDigits.TryGetValue(numberingSystem, out var glyphs))
+            return glyphs[d];
+        if (ContiguousDigitZero.TryGetValue(numberingSystem, out var zero))
+            return char.ConvertFromUtf32(zero + d);
+        return ((char)('0' + d)).ToString();
     }
 
     private static List<(string, string)> AssemblePlainParts(List<(string, string)> magnitude, string sign)
@@ -3207,6 +3262,13 @@ public class JSIntlNumberFormat : JSObject
 
     private List<(string, string)> FormatFiniteMagnitude(double magnitude, int defaultMinFrac, int defaultMaxFrac, out bool roundedIsZero)
     {
+        // When significant-digit options are present and roundingPriority is "auto",
+        // the digit count is governed by ToRawPrecision (roundingType significantDigits)
+        // rather than by the fraction-digit rules (SetNumberFormatDigitOptions).
+        if ((HasOption("minimumSignificantDigits") || HasOption("maximumSignificantDigits"))
+            && (resolved?.RoundingPriority ?? "auto") == "auto")
+            return FormatSignificantDigits(magnitude, out roundedIsZero);
+
         var minFrac = ReadIntOption("minimumFractionDigits", defaultMinFrac);
         var maxFrac = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
         if (maxFrac < minFrac)
@@ -3239,6 +3301,106 @@ public class JSIntlNumberFormat : JSObject
             result.Add(("fraction", fracDigits));
         }
         return result;
+    }
+
+    // Formats a magnitude using ToRawPrecision (roundingType significantDigits):
+    // the value is rounded to at most maximumSignificantDigits and padded with
+    // trailing zeros up to minimumSignificantDigits.
+    private List<(string, string)> FormatSignificantDigits(double magnitude, out bool roundedIsZero)
+    {
+        var minSig = ReadIntOption("minimumSignificantDigits", 1);
+        var maxSig = ReadIntOption("maximumSignificantDigits", 21);
+        if (maxSig < minSig)
+            maxSig = minSig;
+        var minInt = ReadIntOption("minimumIntegerDigits", 1);
+
+        var (intDigits, fracDigits) = ToRawPrecision(magnitude, minSig, maxSig);
+        roundedIsZero = magnitude == 0;
+
+        intDigits = intDigits.TrimStart('0');
+        if (intDigits.Length == 0)
+            intDigits = "0";
+        while (intDigits.Length < minInt)
+            intDigits = "0" + intDigits;
+
+        var result = new List<(string, string)>();
+        AppendIntegerParts(result, intDigits);
+        if (fracDigits.Length > 0)
+        {
+            result.Add(("decimal", DecimalSeparator()));
+            result.Add(("fraction", fracDigits));
+        }
+        return result;
+    }
+
+    // ToRawPrecision (ECMA-402): renders x with between minSig and maxSig significant
+    // digits, returning the integer- and fraction-digit strings. The most significant
+    // digit sits at 10^e; trailing zeros are trimmed down to minSig.
+    private static (string intDigits, string fracDigits) ToRawPrecision(double x, int minSig, int maxSig)
+    {
+        if (x == 0)
+            return ("0", new string('0', System.Math.Max(0, minSig - 1)));
+
+        var e = (int)System.Math.Floor(System.Math.Log10(x));
+
+        // n = x rounded to maxSig significant digits, expressed as an integer digit
+        // string. Use the round-trip decimal expansion to avoid the precision loss of
+        // scaling by Math.Pow at extreme exponents.
+        var digits = SignificantDigitString(x, maxSig, ref e);
+
+        // Trim trailing zeros down to minSig significant digits.
+        var sig = digits.Length;
+        while (sig > minSig && digits[sig - 1] == '0')
+            sig--;
+        digits = digits.Substring(0, sig);
+
+        if (e >= 0)
+        {
+            var intLen = e + 1;
+            if (digits.Length <= intLen)
+                return (digits.PadRight(intLen, '0'), string.Empty);
+            return (digits.Substring(0, intLen), digits.Substring(intLen));
+        }
+
+        return ("0", new string('0', -e - 1) + digits);
+    }
+
+    // Returns the maxSig most-significant decimal digits of x (>0) as a digit string of
+    // length maxSig, adjusting e if rounding carried into a new leading digit.
+    private static string SignificantDigitString(double x, int maxSig, ref int e)
+    {
+        // "R" round-trips the double; strip sign/point/exponent to recover the exact
+        // significant digits, then round half-away-from-zero to maxSig of them.
+        var r = x.ToString("E" + (maxSig + 2), CultureInfo.InvariantCulture); // d.ddddE±xxx
+        var eIdx = r.IndexOf('E');
+        var mantissa = r[..eIdx].Replace(".", string.Empty); // leading digit + fraction digits
+        var exp = int.Parse(r[(eIdx + 1)..], CultureInfo.InvariantCulture);
+        e = exp; // most-significant digit is at 10^exp
+
+        if (mantissa.Length <= maxSig)
+            return mantissa.PadRight(maxSig, '0');
+
+        // Round the (maxSig+...) digit string to maxSig digits, half away from zero.
+        var keep = mantissa[..maxSig];
+        var roundUp = mantissa[maxSig] >= '5';
+        if (!roundUp)
+            return keep;
+
+        var arr = keep.ToCharArray();
+        var i = arr.Length - 1;
+        while (i >= 0)
+        {
+            if (arr[i] != '9') { arr[i]++; break; }
+            arr[i] = '0';
+            i--;
+        }
+        if (i < 0)
+        {
+            // Carry past the most-significant digit (e.g. 999.. -> 1000..).
+            e += 1;
+            return "1" + new string('0', maxSig - 1);
+        }
+        return new string(arr);
     }
 
     private void AppendIntegerParts(List<(string, string)> result, string intDigits)
