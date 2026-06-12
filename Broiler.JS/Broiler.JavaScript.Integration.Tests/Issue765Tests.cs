@@ -128,4 +128,21 @@ public class Issue765Tests
     [InlineData(@"/^\p{ASCII_Hex_Digit}$/u", "g", "false")]
     public void BinaryPropertyEscapes(string regex, string input, string expected)
         => Assert.Equal(expected, Eval($"'' + {regex}.test({System.Text.Json.JsonSerializer.Serialize(input)})"));
+
+    // The astral-range matcher emits standalone surrogate units as one-char classes
+    // so the lone-surrogate transform no longer breaks supplementary-plane matches
+    // (Variation_Selector U+E0100–E01EF), while a genuine lone surrogate still must
+    // not match a surrogate pair.
+    [Fact]
+    public void AstralPropertyEscapeMatchesSupplementaryCodePoints()
+        => Assert.Equal("true|true|false", Eval(
+            "var re = /\\p{Variation_Selector}/u;"
+            + " re.test(String.fromCodePoint(0xE0100)) + '|'"
+            + " + re.test(String.fromCodePoint(0xE01EF)) + '|'"
+            + " + re.test('a');"));
+
+    [Fact]
+    public void LoneHighSurrogateDoesNotMatchSurrogatePair()
+        => Assert.Equal("false", Eval(
+            "'' + /\\uD800[\\uDC00-\\uDFFF]/u.test(String.fromCodePoint(0x10000))"));
 }

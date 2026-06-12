@@ -2184,6 +2184,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 (0xFF02, 0xFF02), (0xFF07, 0xFF07), (0xFF62, 0xFF63),
             },
             "Quotation_Mark", "QMark");
+        Add(new (int, int)[]
+            {
+                (0x180B, 0x180D), (0x180F, 0x180F), (0xFE00, 0xFE0F), (0xE0100, 0xE01EF),
+            },
+            "Variation_Selector", "VS");
 
         return map;
 
@@ -2561,17 +2566,22 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         if (highLo == highHi)
         {
-            alts.Add(Unit(highLo) + UnitRange(lowLo, lowHi));
+            alts.Add(Atom(highLo) + UnitRange(lowLo, lowHi));
             return;
         }
 
-        alts.Add(Unit(highLo) + UnitRange(lowLo, 0xDFFF));
+        alts.Add(Atom(highLo) + UnitRange(lowLo, 0xDFFF));
         if (highHi - highLo >= 2)
             alts.Add(UnitRange(highLo + 1, highHi - 1) + UnitRange(0xDC00, 0xDFFF));
-        alts.Add(Unit(highHi) + UnitRange(0xDC00, lowHi));
+        alts.Add(Atom(highHi) + UnitRange(0xDC00, lowHi));
 
         static string Unit(int u) => $"\\u{u:X4}";
-        static string UnitRange(int lo, int hi) => lo == hi ? Unit(lo) : $"[{Unit(lo)}-{Unit(hi)}]";
+        // A standalone single code unit is wrapped in a one-character class so the
+        // later lone-surrogate transform (which only special-cases bare high/low
+        // surrogate *characters*, not class bodies) copies it verbatim instead of
+        // inserting a `(?![\uDC00-\uDFFF])` guard that would break the pair.
+        static string Atom(int u) => $"[\\u{u:X4}]";
+        static string UnitRange(int lo, int hi) => lo == hi ? Atom(lo) : $"[{Unit(lo)}-{Unit(hi)}]";
     }
 
     private static void AppendClassRange(StringBuilder sb, int lo, int hi)
