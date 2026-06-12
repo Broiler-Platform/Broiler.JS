@@ -145,4 +145,28 @@ public class Issue765Tests
     public void LoneHighSurrogateDoesNotMatchSurrogatePair()
         => Assert.Equal("false", Eval(
             "'' + /\\uD800[\\uDC00-\\uDFFF]/u.test(String.fromCodePoint(0x10000))"));
+
+    // The full UCD 17.0.0 binary-property database (Broiler.Unicode.Properties) backs
+    // large properties like Alphabetic/Assigned/Cased that previously raised
+    // "not supported yet".
+    [Theory]
+    [InlineData(@"/^\p{Alphabetic}+$/u", "abcπ你", "true")]
+    [InlineData(@"/^\p{Alpha}+$/u", "abc", "true")]
+    [InlineData(@"/^\p{Alphabetic}$/u", "1", "false")]
+    [InlineData(@"/^\p{White_Space}$/u", " ", "true")]
+    [InlineData(@"/^\p{Cased}$/u", "A", "true")]
+    [InlineData(@"/^\p{Emoji_Presentation}$/u", "🐸", "true")]
+    [InlineData(@"/^\p{ID_Start}$/u", "_", "false")]
+    [InlineData(@"/^\p{ID_Continue}$/u", "_", "true")]
+    public void LargeBinaryPropertyEscapes(string regex, string input, string expected)
+        => Assert.Equal(expected, Eval($"'' + {regex}.test({System.Text.Json.JsonSerializer.Serialize(input)})"));
+
+    // Assigned includes the surrogate category (Cs); a supplementary code point that
+    // sits in an unassigned gap (U+1000C, between Linear B blocks) must NOT match
+    // \p{Assigned} even though its lead surrogate U+D800 is itself assigned.
+    [Fact]
+    public void AssignedDoesNotMatchSupplementaryGapViaSurrogate()
+        => Assert.Equal("false|true", Eval(
+            "var s = String.fromCodePoint(0x1000C);"
+            + " /^\\p{Assigned}$/u.test(s) + '|' + /^\\P{Assigned}$/u.test(s);"));
 }

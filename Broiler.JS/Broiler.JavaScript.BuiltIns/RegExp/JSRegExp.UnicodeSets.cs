@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 using UnicodeEmoji.StringProperties;
+using Broiler.Unicode.Properties;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
 
@@ -433,7 +434,8 @@ partial class JSRegExp
         }
         else
         {
-            if (!BinaryPropertyRanges.TryGetValue(normalized, out ranges))
+            ranges = UnicodeProperties.GetBinaryProperty(normalized);
+            if (ranges == null)
                 ScriptRanges.TryGetValue(normalized, out ranges);
         }
 

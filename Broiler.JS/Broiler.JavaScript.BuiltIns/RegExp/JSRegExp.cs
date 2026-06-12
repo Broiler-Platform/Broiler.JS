@@ -7,6 +7,7 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Storage;
 using UnicodeEmoji.StringProperties;
+using Broiler.Unicode.Properties;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
 
@@ -2133,78 +2134,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
         },
     };
 
-    /// <summary>
-    /// Code-point ranges for the Unicode binary properties we support directly.
-    /// Keyed by normalized property name.
-    /// </summary>
-    private static readonly Dictionary<string, (int Lo, int Hi)[]> BinaryPropertyRanges = BuildBinaryPropertyRanges();
-
-    // Code-point ranges (Unicode 17.0.0) for the Unicode binary properties we support
-    // directly, keyed by every normalized alias. Only properties with small, fully
-    // enumerable code-point sets are listed here; larger properties (Alphabetic,
-    // Assigned, Cased, …) need a full Unicode database and stay unsupported.
-    private static Dictionary<string, (int Lo, int Hi)[]> BuildBinaryPropertyRanges()
-    {
-        var map = new Dictionary<string, (int Lo, int Hi)[]>(StringComparer.Ordinal);
-
-        void Add((int Lo, int Hi)[] ranges, params string[] names)
-        {
-            foreach (var name in names)
-                map[NormalizeBinaryPropertyName(name)] = ranges;
-        }
-
-        Add(new (int, int)[] { (0x00, 0x7F) }, "ASCII");
-        Add(new (int, int)[] { (0x00, 0x10FFFF) }, "Any");
-        Add(new (int, int)[] { (0x30, 0x39), (0x41, 0x46), (0x61, 0x66) },
-            "ASCII_Hex_Digit", "AHex");
-        Add(new (int, int)[]
-            {
-                (0x30, 0x39), (0x41, 0x46), (0x61, 0x66),
-                (0xFF10, 0xFF19), (0xFF21, 0xFF26), (0xFF41, 0xFF46),
-            },
-            "Hex_Digit", "Hex");
-        Add(new (int, int)[]
-            {
-                (0x61C, 0x61C), (0x200E, 0x200F), (0x202A, 0x202E), (0x2066, 0x2069),
-            },
-            "Bidi_Control", "Bidi_C");
-        Add(new (int, int)[]
-            {
-                (0x09, 0x0D), (0x20, 0x20), (0x85, 0x85), (0xA0, 0xA0), (0x1680, 0x1680),
-                (0x2000, 0x200A), (0x2028, 0x2029), (0x202F, 0x202F), (0x205F, 0x205F),
-                (0x3000, 0x3000),
-            },
-            "White_Space", "space");
-        Add(new (int, int)[] { (0x200C, 0x200D) }, "Join_Control", "Join_C");
-        Add(new (int, int)[]
-            {
-                (0x22, 0x22), (0x27, 0x27), (0xAB, 0xAB), (0xBB, 0xBB),
-                (0x2018, 0x201F), (0x2039, 0x203A), (0x2E42, 0x2E42),
-                (0x300C, 0x300F), (0x301D, 0x301F), (0xFE41, 0xFE44),
-                (0xFF02, 0xFF02), (0xFF07, 0xFF07), (0xFF62, 0xFF63),
-            },
-            "Quotation_Mark", "QMark");
-        Add(new (int, int)[]
-            {
-                (0x180B, 0x180D), (0x180F, 0x180F), (0xFE00, 0xFE0F), (0xE0100, 0xE01EF),
-            },
-            "Variation_Selector", "VS");
-
-        return map;
-
-        static string NormalizeBinaryPropertyName(string s)
-        {
-            var sb = new StringBuilder(s.Length);
-            foreach (var ch in s)
-            {
-                if (ch == '_' || ch == ' ')
-                    continue;
-                sb.Append(char.ToLowerInvariant(ch));
-            }
-            return sb.ToString();
-        }
-    }
-
     private static Dictionary<string, string> BuildGeneralCategoryNames()
     {
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -2401,7 +2330,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
         if (GeneralCategoryNames.TryGetValue(lone, out var loneShort))
             return $"{prefix}{{{loneShort}}}";
 
-        if (BinaryPropertyRanges.TryGetValue(lone, out var binaryRanges))
+        // Binary Unicode properties (ASCII, Alphabetic, Assigned, Emoji, …) come from
+        // the generated UCD 17.0.0 range tables in Broiler.Unicode.Properties.
+        var binaryRanges = UnicodeProperties.GetBinaryProperty(lone);
+        if (binaryRanges != null)
         {
             var expanded = ExpandCodePointProperty(binaryRanges, negated, inClass);
             if (expanded != null)
@@ -2518,13 +2450,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static string BuildPositiveCodePointMatcher((int Lo, int Hi)[] ranges)
     {
         var bmp = new StringBuilder();
+        var loneSurrogates = new List<string>();
         var supplementary = new List<string>();
 
         foreach (var (lo, hi) in ranges)
         {
             if (lo <= 0xFFFF)
             {
-                AppendClassRange(bmp, lo, System.Math.Min(hi, 0xFFFF));
+                AppendBmpRange(bmp, loneSurrogates, lo, System.Math.Min(hi, 0xFFFF));
                 if (hi <= 0xFFFF)
                     continue;
                 AppendSupplementaryRange(supplementary, 0x10000, hi);
@@ -2542,6 +2475,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
             sb.Append('[').Append(bmp).Append(']');
             first = false;
         }
+        foreach (var alt in loneSurrogates)
+        {
+            if (!first)
+                sb.Append('|');
+            sb.Append(alt);
+            first = false;
+        }
         foreach (var alt in supplementary)
         {
             if (!first)
@@ -2551,6 +2491,36 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
         sb.Append(')');
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Appends a BMP range [lo, hi] to the positive matcher, splitting the surrogate
+    /// block U+D800..U+DFFF out of the plain character class. A surrogate code point in
+    /// the pattern must, in Unicode mode, match only a *lone* surrogate in the input —
+    /// never one half of a well-formed pair — otherwise a property that contains
+    /// surrogates (e.g. <c>\p{Assigned}</c>, which includes the Cs category) would match
+    /// the lead unit of a supplementary code point and wrongly accept it.
+    /// </summary>
+    private static void AppendBmpRange(StringBuilder bmp, List<string> loneSurrogates, int lo, int hi)
+    {
+        if (lo < 0xD800)
+            AppendClassRange(bmp, lo, System.Math.Min(hi, 0xD7FF));
+
+        var highLo = System.Math.Max(lo, 0xD800);
+        var highHi = System.Math.Min(hi, 0xDBFF);
+        if (highLo <= highHi)
+            loneSurrogates.Add(SurrogateClass(highLo, highHi) + "(?![\\uDC00-\\uDFFF])");
+
+        var lowLo = System.Math.Max(lo, 0xDC00);
+        var lowHi = System.Math.Min(hi, 0xDFFF);
+        if (lowLo <= lowHi)
+            loneSurrogates.Add("(?<![\\uD800-\\uDBFF])" + SurrogateClass(lowLo, lowHi));
+
+        if (hi > 0xDFFF)
+            AppendClassRange(bmp, System.Math.Max(lo, 0xE000), hi);
+
+        static string SurrogateClass(int lo, int hi)
+            => lo == hi ? $"[\\u{lo:X4}]" : $"[\\u{lo:X4}-\\u{hi:X4}]";
     }
 
     /// <summary>
