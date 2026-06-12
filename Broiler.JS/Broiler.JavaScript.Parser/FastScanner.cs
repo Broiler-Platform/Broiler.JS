@@ -858,7 +858,13 @@ public class FastScanner
             case TokenTypes.Identifier:
                 scanRegExp = last.Keyword switch
                 {
-                    FastKeywords.instanceof or FastKeywords.@in or FastKeywords.@typeof or FastKeywords.@return or FastKeywords.await => true,
+                    // Keywords that introduce an expression or statement: a following
+                    // `/` begins a regex, never division (`new /x/()`, `typeof /x/`,
+                    // `delete /x/.source`, `case /x/:`, `return /x/`, `do /x/.test(s)`).
+                    FastKeywords.instanceof or FastKeywords.@in or FastKeywords.@typeof
+                        or FastKeywords.@return or FastKeywords.await or FastKeywords.@new
+                        or FastKeywords.@delete or FastKeywords.@void or FastKeywords.@throw
+                        or FastKeywords.@case or FastKeywords.@do or FastKeywords.@else => true,
                     // `yield` only introduces an expression (so a following `/` begins
                     // a regex) when it is a keyword — inside a generator body. In sloppy
                     // code outside a generator it is an ordinary identifier, after which
