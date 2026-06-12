@@ -69,4 +69,26 @@ public class Issue763Tests
             "async function* g(){ for (var i = 0; i < 3; i++) { if (i >= 0) yield i * 10; } }"
             + " (async () => { var s = []; for await (var x of g()) s.push(x);"
             + " globalThis.r = s.join(','); })();"));
+
+    // Problem 12: a unicode-escaped `await` used as an async-arrow binding
+    // identifier (`async await => 1`) must be a SyntaxError, exactly like the
+    // unescaped `async await => 1`. The escape strips the keyword identity, so the
+    // scanner produced a plain identifier that slipped past the `await` keyword
+    // rejection. Escaped `async`, and escaped `await`/`async` used as ordinary
+    // identifiers outside async code, remain valid.
+    [Theory]
+    [InlineData("async aw\\u0061it => 1;")]
+    [InlineData("async await => 1;")]
+    public void EscapedAwaitAsAsyncArrowParamIsSyntaxError(string code)
+        => Assert.Equal("SyntaxError", Drive(
+            "try { eval(" + System.Text.Json.JsonSerializer.Serialize(code)
+            + "); globalThis.r = 'no-throw'; }"
+            + " catch (e) { globalThis.r = e.constructor.name; }"));
+
+    [Theory]
+    [InlineData("var \\u0061sync = 7; globalThis.r = '' + \\u0061sync;", "7")]
+    [InlineData("var o = { \\u0061sync() { return 3; } }; globalThis.r = '' + o.async();", "3")]
+    [InlineData("async function f() { return 1; } globalThis.r = 'ok';", "ok")]
+    public void EscapedContextualKeywordsStillValid(string code, string expected)
+        => Assert.Equal(expected, Drive(code));
 }
