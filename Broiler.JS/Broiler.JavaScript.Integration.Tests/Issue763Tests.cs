@@ -156,4 +156,30 @@ public class Issue763Tests
         => Assert.Equal("12345", Drive(
             "var s; function* g(){ s = `1${ yield }3${ 4 }5`; }"
             + " var it = g(); it.next(); it.next(2); globalThis.r = s;"));
+
+    // Problems 38/39: at the top level of a script (where top-level await does not
+    // apply), `await` is an ordinary identifier. `await instanceof X` /
+    // `new await instanceof await` must parse `await` as an IdentifierReference —
+    // `instanceof`/`in` are binary operators that cannot begin await's operand.
+    [Fact]
+    public void AwaitAsIdentifierBeforeInstanceof()
+        => Assert.Equal("true", Drive(
+            "async function await(){ return 1; }"
+            + " globalThis.r = '' + (await instanceof Function);"));
+
+    [Fact]
+    public void AwaitClassNameWithNewAndInstanceof()
+        => Assert.Equal("true", Drive(
+            "class await {}"
+            + " globalThis.r = '' + (new await instanceof await);"));
+
+    // Problem 43: U+FEFF ZERO WIDTH NO-BREAK SPACE is ECMAScript WhiteSpace (.NET's
+    // char.IsWhiteSpace excludes it), so it must be skipped between tokens — here
+    // after a regular-expression literal.
+    [Theory]
+    [InlineData("var re = /x/g﻿; globalThis.r = re.source;", "x")]
+    [InlineData("var﻿x = 5; globalThis.r = '' + x;", "5")]
+    [InlineData("var y = 7﻿; globalThis.r = '' + y;", "7")]
+    public void ZeroWidthNoBreakSpaceIsWhitespace(string code, string expected)
+        => Assert.Equal(expected, Drive(code));
 }

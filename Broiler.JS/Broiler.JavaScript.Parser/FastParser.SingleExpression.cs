@@ -296,7 +296,14 @@ partial class FastParser
                 or TokenTypes.Comma
                 or TokenTypes.BracketEnd
                 or TokenTypes.SquareBracketEnd
-                or TokenTypes.CurlyBracketEnd)
+                or TokenTypes.CurlyBracketEnd
+                // `instanceof`/`in` are binary operators that require a left operand
+                // and cannot begin `await`'s UnaryExpression operand. `await
+                // instanceof X` / `await in X` therefore use `await` as an
+                // IdentifierReference (valid at the top level of a script, where
+                // top-level await does not apply), not an AwaitExpression.
+                or TokenTypes.InstanceOf
+                or TokenTypes.In)
                 && (next.Type <= TokenTypes.BeginAssignTokens || next.Type >= TokenTypes.EndAssignTokens);
         }
 

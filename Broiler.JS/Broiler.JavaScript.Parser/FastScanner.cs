@@ -255,7 +255,10 @@ public class FastScanner
         bool lineTerminator = false;
         bool skipped = false;
 
-        while (char.IsWhiteSpace(first))
+        // U+FEFF ZERO WIDTH NO-BREAK SPACE (ZWNBSP/BOM) is ECMAScript WhiteSpace, but
+        // .NET reclassified it out of White_Space so char.IsWhiteSpace returns false
+        // for it; treat it as whitespace explicitly.
+        while (char.IsWhiteSpace(first) || first == '﻿')
         {
             if (first.IsLineTerminator())
                 lineTerminator = true;
