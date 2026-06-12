@@ -2137,12 +2137,68 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// Code-point ranges for the Unicode binary properties we support directly.
     /// Keyed by normalized property name.
     /// </summary>
-    private static readonly Dictionary<string, (int Lo, int Hi)[]> BinaryPropertyRanges = new(StringComparer.Ordinal)
+    private static readonly Dictionary<string, (int Lo, int Hi)[]> BinaryPropertyRanges = BuildBinaryPropertyRanges();
+
+    // Code-point ranges (Unicode 17.0.0) for the Unicode binary properties we support
+    // directly, keyed by every normalized alias. Only properties with small, fully
+    // enumerable code-point sets are listed here; larger properties (Alphabetic,
+    // Assigned, Cased, …) need a full Unicode database and stay unsupported.
+    private static Dictionary<string, (int Lo, int Hi)[]> BuildBinaryPropertyRanges()
     {
-        ["ascii"] = new (int, int)[] { (0x00, 0x7F) },
-        ["any"] = new (int, int)[] { (0x00, 0x10FFFF) },
-        ["asciihexdigit"] = new (int, int)[] { (0x30, 0x39), (0x41, 0x46), (0x61, 0x66) },
-    };
+        var map = new Dictionary<string, (int Lo, int Hi)[]>(StringComparer.Ordinal);
+
+        void Add((int Lo, int Hi)[] ranges, params string[] names)
+        {
+            foreach (var name in names)
+                map[NormalizeBinaryPropertyName(name)] = ranges;
+        }
+
+        Add(new (int, int)[] { (0x00, 0x7F) }, "ASCII");
+        Add(new (int, int)[] { (0x00, 0x10FFFF) }, "Any");
+        Add(new (int, int)[] { (0x30, 0x39), (0x41, 0x46), (0x61, 0x66) },
+            "ASCII_Hex_Digit", "AHex");
+        Add(new (int, int)[]
+            {
+                (0x30, 0x39), (0x41, 0x46), (0x61, 0x66),
+                (0xFF10, 0xFF19), (0xFF21, 0xFF26), (0xFF41, 0xFF46),
+            },
+            "Hex_Digit", "Hex");
+        Add(new (int, int)[]
+            {
+                (0x61C, 0x61C), (0x200E, 0x200F), (0x202A, 0x202E), (0x2066, 0x2069),
+            },
+            "Bidi_Control", "Bidi_C");
+        Add(new (int, int)[]
+            {
+                (0x09, 0x0D), (0x20, 0x20), (0x85, 0x85), (0xA0, 0xA0), (0x1680, 0x1680),
+                (0x2000, 0x200A), (0x2028, 0x2029), (0x202F, 0x202F), (0x205F, 0x205F),
+                (0x3000, 0x3000),
+            },
+            "White_Space", "space");
+        Add(new (int, int)[] { (0x200C, 0x200D) }, "Join_Control", "Join_C");
+        Add(new (int, int)[]
+            {
+                (0x22, 0x22), (0x27, 0x27), (0xAB, 0xAB), (0xBB, 0xBB),
+                (0x2018, 0x201F), (0x2039, 0x203A), (0x2E42, 0x2E42),
+                (0x300C, 0x300F), (0x301D, 0x301F), (0xFE41, 0xFE44),
+                (0xFF02, 0xFF02), (0xFF07, 0xFF07), (0xFF62, 0xFF63),
+            },
+            "Quotation_Mark", "QMark");
+
+        return map;
+
+        static string NormalizeBinaryPropertyName(string s)
+        {
+            var sb = new StringBuilder(s.Length);
+            foreach (var ch in s)
+            {
+                if (ch == '_' || ch == ' ')
+                    continue;
+                sb.Append(char.ToLowerInvariant(ch));
+            }
+            return sb.ToString();
+        }
+    }
 
     private static Dictionary<string, string> BuildGeneralCategoryNames()
     {

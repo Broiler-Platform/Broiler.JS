@@ -113,4 +113,19 @@ public class Issue765Tests
             "var t = false;"
             + " try { eval(\"'use strict'; l\\\\u0065t: 42\"); } catch (e) { t = e instanceof SyntaxError; }"
             + " '' + t;"));
+
+    // P42/P43/P46 etc.: small, fully-enumerable Unicode binary properties (and their
+    // aliases) are supported as `\p{…}`/`\P{…}` escapes in u-mode.
+    [Theory]
+    [InlineData(@"/^\p{ASCII_Hex_Digit}+$/u", "0aF", "true")]
+    [InlineData(@"/^\p{AHex}+$/u", "0aF", "true")]
+    [InlineData(@"/^\p{Hex}+$/u", "０Ｆ", "true")]   // fullwidth hex digits
+    [InlineData(@"/^\p{Bidi_Control}$/u", "‎", "true")]
+    [InlineData(@"/^\p{Join_C}$/u", "‍", "true")]
+    [InlineData(@"/^\p{White_Space}$/u", " ", "true")]
+    [InlineData(@"/^\p{QMark}$/u", "«", "true")]
+    [InlineData(@"/^\P{ASCII_Hex_Digit}$/u", "g", "true")]   // negation
+    [InlineData(@"/^\p{ASCII_Hex_Digit}$/u", "g", "false")]
+    public void BinaryPropertyEscapes(string regex, string input, string expected)
+        => Assert.Equal(expected, Eval($"'' + {regex}.test({System.Text.Json.JsonSerializer.Serialize(input)})"));
 }
