@@ -276,7 +276,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (arg == null || arg.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.withCalendar requires a calendar");
         return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond,
-            TemporalCalendar.Canonicalize(arg.StringValue, includeArithmetic: true), PlainDateTimePrototype);
+            TemporalCalendar.ToSlotValue(arg, includeArithmetic: true), PlainDateTimePrototype);
     }
 
     [JSExport("add", Length = 1)]
@@ -539,9 +539,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     {
         if (calendar == null || calendar.IsUndefined)
             return "iso8601";
-        if (calendar is JSTemporalPlainDateTime dt) return dt.calendarId;
-        if (calendar is JSTemporalPlainDate d) return d.calendarId;
-        return TemporalCalendar.Canonicalize(calendar.StringValue, includeArithmetic: true);
+        return TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
     }
 
     private static int MonthFromCode(string code)
@@ -579,7 +577,7 @@ public partial class JSTemporalPlainDateTime : JSObject
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
         var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
         if (v.IsUndefined) return "constrain";
-        var overflow = v.ToString();
+        var overflow = v.StringValue;
         if (overflow is not ("constrain" or "reject"))
             throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
         return overflow;
@@ -597,10 +595,11 @@ public partial class JSTemporalPlainDateTime : JSObject
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
         var largestRaw = o[KeyStrings.GetOrCreate("largestUnit")];
-        string largestUnit = largestRaw.IsUndefined || largestRaw.ToString() == "auto" ? null : NormalizeUnit(largestRaw.ToString());
+        string largestUnit = largestRaw.IsUndefined ? null
+            : largestRaw.StringValue is "auto" ? null : NormalizeUnit(largestRaw.StringValue);
 
         var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
-        var smallestUnit = smallestRaw.IsUndefined ? "nanosecond" : NormalizeUnit(smallestRaw.ToString());
+        var smallestUnit = smallestRaw.IsUndefined ? "nanosecond" : NormalizeUnit(smallestRaw.StringValue);
 
         TemporalRoundingOptions.GetRoundingIncrement(o);
         TemporalRoundingOptions.GetRoundingMode(o, "trunc");
@@ -981,7 +980,7 @@ public partial class JSTemporalPlainDateTime : JSObject
             var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
             if (unitValue.IsUndefined)
                 throw JSEngine.NewRangeError("Temporal.PlainDateTime.round requires a smallestUnit");
-            smallestUnit = unitValue.ToString();
+            smallestUnit = unitValue.StringValue;
 
             // GetRoundingIncrementOption (finite, integer, 1 … 10^9) and GetRoundingModeOption.
             increment = TemporalRoundingOptions.GetRoundingIncrement(obj);

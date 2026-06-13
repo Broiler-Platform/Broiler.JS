@@ -202,7 +202,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var arg = a.GetAt(0);
         if (arg == null || arg.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.withCalendar requires a calendar");
-        return new JSTemporalZonedDateTime(epochNanoseconds, timeZoneId, TemporalCalendar.Canonicalize(arg.StringValue), ZonedDateTimePrototype);
+        return new JSTemporalZonedDateTime(epochNanoseconds, timeZoneId, TemporalCalendar.ToSlotValue(arg), ZonedDateTimePrototype);
     }
 
     [JSExport("startOfDay", Length = 0)]
@@ -692,8 +692,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static string CanonicalizeCalendar(JSValue calendar)
     {
         if (calendar == null || calendar.IsUndefined) return "iso8601";
-        if (calendar is JSTemporalZonedDateTime zdt) return zdt.calendarId;
-        return TemporalCalendar.Canonicalize(calendar.StringValue);
+        return TemporalCalendar.ToSlotValue(calendar);
     }
 
     private static string ReadOverflow(JSValue options)
@@ -703,7 +702,7 @@ public partial class JSTemporalZonedDateTime : JSObject
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
         var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
         if (v.IsUndefined) return "constrain";
-        var overflow = v.ToString();
+        var overflow = v.StringValue;
         if (overflow is not ("constrain" or "reject"))
             throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
         return overflow;

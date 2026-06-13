@@ -334,7 +334,7 @@ public partial class JSTemporalPlainTime : JSObject
         var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
         if (v.IsUndefined) return "constrain";
 
-        var overflow = v.ToString();
+        var overflow = v.StringValue;
         if (overflow is not ("constrain" or "reject"))
             throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
 

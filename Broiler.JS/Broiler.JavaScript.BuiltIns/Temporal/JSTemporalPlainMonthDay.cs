@@ -164,8 +164,8 @@ public partial class JSTemporalPlainMonthDay : JSObject
     private static void RequireCalendar(JSValue calendar)
     {
         if (calendar == null || calendar.IsUndefined) return;
-        var id = calendar.ToString();
-        if (!string.Equals(id, "iso8601", StringComparison.OrdinalIgnoreCase))
+        var id = TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
+        if (id != "iso8601")
             throw JSEngine.NewRangeError($"Temporal.PlainMonthDay: unsupported calendar \"{id}\" (only iso8601 is implemented)");
     }
 
@@ -184,7 +184,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
         var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
         if (v.IsUndefined) return "constrain";
-        var overflow = v.ToString();
+        var overflow = v.StringValue;
         if (overflow is not ("constrain" or "reject"))
             throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
         return overflow;

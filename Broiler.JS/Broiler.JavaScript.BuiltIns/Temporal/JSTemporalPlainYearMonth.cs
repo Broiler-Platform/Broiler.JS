@@ -445,8 +445,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
     private static string CanonicalizeCalendar(JSValue calendar)
     {
         if (calendar == null || calendar.IsUndefined) return "iso8601";
-        if (calendar is JSTemporalPlainYearMonth ym) return ym.calendarId;
-        return TemporalCalendar.Canonicalize(calendar.StringValue, includeArithmetic: true);
+        return TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
     }
 
     private static int MonthFromCode(string code)
@@ -464,7 +463,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
         var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
         if (v.IsUndefined) return "constrain";
-        var overflow = v.ToString();
+        var overflow = v.StringValue;
         if (overflow is not ("constrain" or "reject"))
             throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
         return overflow;
@@ -476,8 +475,10 @@ public partial class JSTemporalPlainYearMonth : JSObject
         if (options is not JSObject optionsObject)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
         var v = optionsObject[KeyStrings.GetOrCreate("largestUnit")];
-        if (v.IsUndefined || v.ToString() == "auto") return defaultUnit;
-        return v.ToString() switch
+        if (v.IsUndefined) return defaultUnit;
+        var s = v.StringValue;
+        if (s == "auto") return defaultUnit;
+        return s switch
         {
             "year" or "years" => "year",
             "month" or "months" => "month",

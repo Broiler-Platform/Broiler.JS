@@ -245,7 +245,7 @@ public partial class JSTemporalPlainDate : JSObject
         var arg = a.GetAt(0);
         if (arg == null || arg.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.withCalendar requires a calendar");
-        return new JSTemporalPlainDate(isoYear, isoMonth, isoDay, TemporalCalendar.Canonicalize(arg.StringValue, includeArithmetic: true), PlainDatePrototype);
+        return new JSTemporalPlainDate(isoYear, isoMonth, isoDay, TemporalCalendar.ToSlotValue(arg, includeArithmetic: true), PlainDatePrototype);
     }
 
     [JSExport("add", Length = 1)]
@@ -427,8 +427,7 @@ public partial class JSTemporalPlainDate : JSObject
         if (calendar == null || calendar.IsUndefined)
             return "iso8601";
 
-        if (calendar is JSTemporalPlainDate date) return date.calendarId;
-        return TemporalCalendar.Canonicalize(calendar.StringValue, includeArithmetic: true);
+        return TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
     }
 
     private static int MonthFromCode(string code)
@@ -471,7 +470,7 @@ public partial class JSTemporalPlainDate : JSObject
         var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
         if (v.IsUndefined) return "constrain";
 
-        var overflow = v.ToString();
+        var overflow = v.StringValue;
         if (overflow is not ("constrain" or "reject"))
             throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
 
@@ -511,7 +510,7 @@ public partial class JSTemporalPlainDate : JSObject
     {
         var v = options[KeyStrings.GetOrCreate(name)];
         if (v.IsUndefined) return null;
-        var s = v.ToString();
+        var s = v.StringValue;
         if (s == "auto" && name == "largestUnit") return null;
         return s switch
         {

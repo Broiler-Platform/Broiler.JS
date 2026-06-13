@@ -126,14 +126,14 @@ public partial class JSTemporalDuration
 
         if (roundTo.IsString)
         {
-            smallestUnit = NormalizeUnit(roundTo.ToString(), allowAuto: false);
+            smallestUnit = NormalizeUnit(roundTo.StringValue, allowAuto: false);
             options = JSUndefined.Value;
         }
         else if (roundTo is JSObject obj)
         {
             var su = obj[KeyStrings.GetOrCreate("smallestUnit")];
             var lu = obj[KeyStrings.GetOrCreate("largestUnit")];
-            if (!lu.IsUndefined) largestUnit = NormalizeUnit(lu.ToString(), allowAuto: true);
+            if (!lu.IsUndefined) largestUnit = NormalizeUnit(lu.StringValue, allowAuto: true);
 
             var inc = obj[KeyStrings.GetOrCreate("roundingIncrement")];
             if (!inc.IsUndefined)
@@ -145,9 +145,9 @@ public partial class JSTemporalDuration
             }
 
             var rm = obj[KeyStrings.GetOrCreate("roundingMode")];
-            if (!rm.IsUndefined) roundingMode = NormalizeRoundingMode(rm.ToString());
+            if (!rm.IsUndefined) roundingMode = NormalizeRoundingMode(rm.StringValue);
 
-            if (!su.IsUndefined) smallestUnit = NormalizeUnit(su.ToString(), allowAuto: false);
+            if (!su.IsUndefined) smallestUnit = NormalizeUnit(su.StringValue, allowAuto: false);
             if (smallestUnit == null && largestUnit == "auto")
                 throw JSEngine.NewRangeError("Temporal.Duration.round requires either smallestUnit or largestUnit");
         }
@@ -203,7 +203,7 @@ public partial class JSTemporalDuration
 
         if (totalOf.IsString)
         {
-            unit = NormalizeUnit(totalOf.ToString(), allowAuto: false);
+            unit = NormalizeUnit(totalOf.StringValue, allowAuto: false);
             options = JSUndefined.Value;
         }
         else if (totalOf is JSObject obj)
@@ -211,7 +211,7 @@ public partial class JSTemporalDuration
             var u = obj[KeyStrings.GetOrCreate("unit")];
             if (u.IsUndefined)
                 throw JSEngine.NewRangeError("Temporal.Duration.prototype.total requires a unit");
-            unit = NormalizeUnit(u.ToString(), allowAuto: false);
+            unit = NormalizeUnit(u.StringValue, allowAuto: false);
         }
         else throw JSEngine.NewTypeError("Temporal.Duration.prototype.total requires an options object or string");
 
