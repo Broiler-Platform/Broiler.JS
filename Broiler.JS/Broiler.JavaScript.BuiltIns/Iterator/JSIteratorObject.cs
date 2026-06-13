@@ -346,11 +346,12 @@ public partial class JSIteratorObject : JSObject
 
     internal static JSValue StaticReturn(in Arguments a)
     {
+        // return() requires the iterator brand ([[Iterated]] / a generator state) — an arbitrary
+        // object (e.g. WrapForValidIteratorPrototype.return.call({})) is a TypeError.
         return a.This switch
         {
             JSIteratorObject iterator => iterator.Return(in a),
             JSGenerator generator => generator.Return(in a),
-            JSObject => IteratorResult(a.Length > 0 ? a.Get1() : JSUndefined.Value, true),
             _ => throw JSEngine.NewTypeError("Iterator.prototype.return called on incompatible receiver")
         };
     }
