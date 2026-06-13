@@ -1140,6 +1140,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         }
         this[KeyStrings.globalThis] = this;
         this[KeyStrings.debug] = JSValue.CreateFunction(Debug);
+        InstallDynamicImport();
 
         // The global object inherits from Object.prototype (as in Node's
         // `globalThis`), so that `Object.getPrototypeOf(globalThis)` is
@@ -1309,6 +1310,57 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     /// <summary>
     /// Quickly evaluates the code, does not wait for promises and timeouts/intervals.
     /// </summary>
+    /// <summary>
+    /// Host hook invoked by a dynamic <c>import(specifier)</c> in a plain script. Given the
+    /// ToString-coerced module specifier, it returns a task for the module namespace object. When
+    /// left unset the engine ships no module loader for plain scripts, so dynamic import rejects
+    /// with a TypeError. (Inside an ES module the compiler uses the module's own injected loader and
+    /// never reaches this hook.)
+    /// </summary>
+    public Func<string, Task<JSValue>> HostImportModule { get; set; }
+
+    // Installs the global `import` loader that the compiler's ImportCall falls back to in a plain
+    // script. `import` is a reserved word, so this property is reachable only through that fallback
+    // (and is non-enumerable to stay out of global property enumeration).
+    private void InstallDynamicImport()
+        => this.FastAddValue(
+            KeyStrings.GetOrCreate("import"),
+            JSValue.CreateFunction((in Arguments a) => DynamicImport(a.GetAt(0))),
+            JSPropertyAttributes.ConfigurableValue);
+
+    // HostImportModuleDynamically: always returns a promise. The specifier is ToString-coerced (an
+    // abrupt completion rejecting the promise rather than throwing synchronously), then forwarded to
+    // HostImportModule, or rejected with a TypeError when no loader is configured.
+    private JSValue DynamicImport(JSValue specifier)
+    {
+        string moduleSpecifier;
+        try
+        {
+            moduleSpecifier = specifier.StringValue; // ToString — may run user code and throw
+        }
+        catch (JSException ex)
+        {
+            return RejectedPromise(ex.Error);
+        }
+
+        var loader = HostImportModule;
+        if (loader == null)
+            return RejectedPromise(JSEngine.NewTypeError(
+                $"Cannot import module \"{moduleSpecifier}\": dynamic import is not supported in this host").Error);
+
+        try
+        {
+            return JSEngine.ClrInterop.Marshal(loader(moduleSpecifier));
+        }
+        catch (JSException ex)
+        {
+            return RejectedPromise(ex.Error);
+        }
+    }
+
+    private static JSValue RejectedPromise(JSValue reason)
+        => (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) => reject(reason));
+
     public JSValue Eval(string code, string codeFilePath = null, JSValue @this = null)
     {
         @this ??= this;
