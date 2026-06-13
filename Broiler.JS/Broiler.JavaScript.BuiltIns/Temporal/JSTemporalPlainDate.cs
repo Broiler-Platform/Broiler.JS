@@ -304,7 +304,7 @@ public partial class JSTemporalPlainDate : JSObject
 
     [JSExport("toPlainYearMonth", Length = 0)]
     public JSValue ToPlainYearMonth(in Arguments a)
-        => new JSTemporalPlainYearMonth(isoYear, isoMonth, isoDay, JSTemporalPlainYearMonth.PlainYearMonthPrototype);
+        => new JSTemporalPlainYearMonth(isoYear, isoMonth, isoDay, calendarId, JSTemporalPlainYearMonth.PlainYearMonthPrototype);
 
     [JSExport("toPlainMonthDay", Length = 0)]
     public JSValue ToPlainMonthDay(in Arguments a)

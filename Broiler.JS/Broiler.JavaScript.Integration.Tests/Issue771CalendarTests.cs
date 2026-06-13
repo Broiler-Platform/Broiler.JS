@@ -166,4 +166,53 @@ public class Issue771CalendarTests
     public void DateTimeUnsupportedCalendarThrows()
         => Assert.Equal("RangeError", ErrorName(
             "new Temporal.PlainDateTime(2000, 1, 1, 0, 0, 0, 0, 0, 0, 'hebrew');"));
+
+    // --- PlainYearMonth (Problem 8) ---
+
+    [Fact]
+    public void YearMonthGregoryEraAndYear()
+        => Assert.Equal("gregory:ce:2000:2000", Eval(
+            "const d = new Temporal.PlainYearMonth(2000, 3, 'gregory');" +
+            "d.calendarId + ':' + d.era + ':' + d.eraYear + ':' + d.year"));
+
+    [Fact]
+    public void YearMonthToStringShowsReferenceDayAndCalendar()
+        => Assert.Equal("2000-03-01[u-ca=gregory]", Eval("new Temporal.PlainYearMonth(2000, 3, 'gregory').toString()"));
+
+    [Fact]
+    public void YearMonthToStringNeverHidesCalendar()
+        => Assert.Equal("2000-03", Eval("new Temporal.PlainYearMonth(2000, 3, 'gregory').toString({ calendarName:'never' })"));
+
+    [Fact]
+    public void YearMonthBuddhistFromYear()
+        => Assert.Equal("2000-01:be", Eval(
+            "const d = Temporal.PlainYearMonth.from({ year: 2543, month: 1, calendar: 'buddhist' });" +
+            "d.toString({ calendarName: 'never' }) + ':' + d.era"));
+
+    [Fact]
+    public void YearMonthAddPreservesCalendar()
+        => Assert.Equal("gregory:2001", Eval(
+            "const d = new Temporal.PlainYearMonth(2000, 3, 'gregory').add({ years: 1 });" +
+            "d.calendarId + ':' + d.year"));
+
+    [Fact]
+    public void PlainDateToPlainYearMonthPreservesCalendar()
+        => Assert.Equal("gregory:ce", Eval(
+            "const ym = Temporal.PlainDate.from('2000-03-15[u-ca=gregory]').toPlainYearMonth();" +
+            "ym.calendarId + ':' + ym.era"));
+
+    [Fact]
+    public void YearMonthHarnessReferenceDayExpressionWorks()
+        => Assert.Equal("1", Eval(
+            "const ym = new Temporal.PlainYearMonth(2000, 3, 'gregory');" +
+            "(Number(ym.toString({ calendarName: 'always' }).slice(1).split('-')[2].slice(0, 2))) + ''"));
+
+    [Fact]
+    public void YearMonthSinceDifferentCalendarsThrows()
+        => Assert.Equal("RangeError", ErrorName(
+            "new Temporal.PlainYearMonth(2000, 3, 'gregory').since(Temporal.PlainYearMonth.from({ year: 2543, month: 1, calendar: 'buddhist' }));"));
+
+    [Fact]
+    public void YearMonthUnsupportedCalendarThrows()
+        => Assert.Equal("RangeError", ErrorName("new Temporal.PlainYearMonth(2000, 1, 'hebrew');"));
 }
