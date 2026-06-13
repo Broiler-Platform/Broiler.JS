@@ -24,6 +24,10 @@ namespace Broiler.JavaScript.Integration.Tests;
 //         invalid values with a RangeError.
 //       - Temporal.PlainYearMonth.from/with accepted a non-positive `month` field (constrain clamped
 //         it to 1); a month below 1 is now a RangeError regardless of overflow.
+//   * Problem 28 — the ISO string parsers accepted the U+2212 minus sign (in the year sign and the
+//     UTC offset). Only the ASCII hyphen-minus is valid, so a U+2212 now yields a RangeError.
+//   * Problem 17 — a six-digit extended year of "-000000" (negative zero) was accepted; it is now a
+//     RangeError, while year zero ("0000" / "+000000") and ordinary negative years stay valid.
 //
 // Out of scope: the non-ISO calendars that are still unimplemented for the calendar-independent types
 // (Problems 5/8/10/12/13/15/18/22/24/25/29), relativeTo rounding (Problems 2/11/16) and
@@ -169,4 +173,40 @@ public class Issue779Tests
     [Fact] // an out-of-range *upper* month still constrains by default
     public void YearMonthHighMonthConstrains()
         => Assert.Equal("0001-12", Eval("Temporal.PlainYearMonth.from({year:1, month:13}).toString()"));
+
+    // ───────── Problem 28: U+2212 variant minus sign is rejected (RangeError) ─────────
+    // − appears in both the UTC offset and the (extended) year sign position.
+
+    [Theory]
+    [InlineData("Temporal.PlainDate.from('1976-11-18T15:23:30.12−02:00')")]
+    [InlineData("Temporal.PlainDate.from('−009999-11-18T15:23:30.12')")]
+    [InlineData("Temporal.PlainDateTime.from('−009999-11-18')")]
+    [InlineData("Temporal.PlainYearMonth.from('−009999-11')")]
+    [InlineData("Temporal.PlainMonthDay.from('−009999-11-18')")]
+    [InlineData("Temporal.Instant.from('1976-11-18T15:23:30.12−02:00')")]
+    [InlineData("Temporal.Duration.from('−PT1H')")]
+    public void VariantMinusSignThrowsRangeError(string code)
+        => Assert.Equal("RangeError", ErrorName(code));
+
+    [Fact] // the ASCII hyphen-minus offset is still accepted
+    public void AsciiMinusOffsetAccepted()
+        => Assert.Equal("1976-11-18", Eval("Temporal.PlainDate.from('1976-11-18T15:23:30.12-02:00').toString()"));
+
+    // ───────── Problem 17: minus-zero extended year (-000000) is rejected ─────────
+
+    [Theory]
+    [InlineData("Temporal.PlainDate.from('-000000-10-31')")]
+    [InlineData("Temporal.PlainDate.from('-000000-10-31T00:45')")]
+    [InlineData("Temporal.PlainDateTime.from('-000000-10-31')")]
+    [InlineData("Temporal.PlainYearMonth.from('-000000-10')")]
+    [InlineData("Temporal.Instant.from('-000000-10-31T00:45+01:00')")]
+    public void MinusZeroExtendedYearThrowsRangeError(string code)
+        => Assert.Equal("RangeError", ErrorName(code));
+
+    [Theory] // year zero is representable; only the *minus-zero* six-digit form is invalid
+    [InlineData("Temporal.PlainDate.from('0000-10-31').toString()", "0000-10-31")]
+    [InlineData("Temporal.PlainDate.from('+000000-10-31').toString()", "0000-10-31")]
+    [InlineData("Temporal.PlainDate.from('-009999-11-18').toString()", "-009999-11-18")]
+    public void YearZeroAndNegativeYearsAccepted(string call, string expected)
+        => Assert.Equal(expected, Eval(call));
 }

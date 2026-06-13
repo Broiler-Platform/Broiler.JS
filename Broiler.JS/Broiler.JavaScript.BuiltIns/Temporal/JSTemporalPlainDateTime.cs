@@ -714,7 +714,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     }
 
     private static readonly Regex DateTimePattern = new(
-        @"^(\d{4}|[+-−]\d{6})-(\d{2})-(\d{2})(?:[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?)?(?:\[[^\]]*\])*$",
+        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})(?:[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?)?(?:\[[^\]]*\])*$",
         RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalDateTimeString(string text)

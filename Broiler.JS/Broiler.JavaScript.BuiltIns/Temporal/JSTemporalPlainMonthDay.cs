@@ -228,11 +228,16 @@ public partial class JSTemporalPlainMonthDay : JSObject
         RegexOptions.CultureInvariant);
 
     private static readonly Regex FullDatePattern = new(
-        @"^(\d{4}|[+-−]\d{6})-(\d{2})-(\d{2})(?:[Tt ].*)?(?:\[[^\]]*\])*$",
+        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})(?:[Tt ].*)?(?:\[[^\]]*\])*$",
         RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalMonthDayString(string text)
     {
+        // Only the ASCII hyphen-minus is a valid sign; reject the U+2212 variant the lenient
+        // time/offset tail would otherwise accept.
+        if (text.Contains('−'))
+            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
+
         var full = FullDatePattern.Match(text);
         if (full.Success)
         {
