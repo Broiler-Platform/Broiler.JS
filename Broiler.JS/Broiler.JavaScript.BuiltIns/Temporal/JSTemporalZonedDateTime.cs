@@ -319,8 +319,88 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     [JSExport("round", Length = 1)]
     public JSValue Round(in Arguments a) => throw NotImplementedArithmetic("round");
+
     [JSExport("with", Length = 1)]
-    public JSValue With(in Arguments a) => throw NotImplementedArithmetic("with");
+    public JSValue With(in Arguments a)
+    {
+        if (a.GetAt(0) is not JSObject fields)
+            throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.with requires an object");
+        var options = a.GetAt(1);
+
+        // Merge the date/time fields onto the current local wall-clock datetime, reusing the
+        // calendar-aware PlainDateTime.with (which rejects calendar/timeZone fields, applies the
+        // overflow option and validates era / monthCode / partial era pairs).
+        var l = Local();
+        var current = new JSTemporalPlainDateTime(l.y, l.mo, l.d, l.h, l.mi, l.s, l.ms, l.us, l.ns, calendarId,
+            JSTemporalPlainDateTime.PlainDateTimePrototype);
+        var updated = (JSTemporalPlainDateTime)current.With(new Arguments(JSUndefined.Value, fields, options));
+
+        var offsetOption = ReadOffsetOption(options);
+        ReadDisambiguation(options); // validated; only "compatible" behaviour is applied below
+
+        // The receiver's offset is part of the merged fields, so an absent (or undefined) offset means
+        // "keep the current offset" (offsetOption "prefer"); an explicit string overrides it.
+        long candidateOffset;
+        var offsetField = fields[KeyStrings.GetOrCreate("offset")];
+        if (offsetField.IsUndefined)
+            candidateOffset = OffsetNanoseconds();
+        else if (!offsetField.IsString || !TryParseOffsetString(offsetField.StringValue, out candidateOffset))
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.with: invalid offset");
+
+        var localNs = LocalNanoseconds(updated.isoYear, updated.isoMonth, updated.isoDay,
+            updated.hour, updated.minute, updated.second, updated.millisecond, updated.microsecond, updated.nanosecond);
+
+        BigInteger epoch;
+        if (offsetOption == "use")
+            epoch = localNs - candidateOffset;
+        else if (offsetOption == "ignore")
+            epoch = localNs - WallOffset(updated);
+        else
+        {
+            // "prefer" / "reject": keep the candidate offset if it is valid for the new local time,
+            // otherwise fall back (prefer) or throw (reject).
+            var candidateEpoch = localNs - candidateOffset;
+            if (GetOffsetNanosecondsFor(candidateEpoch) == candidateOffset)
+                epoch = candidateEpoch;
+            else if (offsetOption == "reject")
+                throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.with: offset does not match the time zone");
+            else
+                epoch = localNs - WallOffset(updated);
+        }
+
+        if (!IsValid(epoch))
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
+        return new JSTemporalZonedDateTime(epoch, timeZoneId, calendarId, ZonedDateTimePrototype);
+    }
+
+    private long WallOffset(JSTemporalPlainDateTime dt)
+        => GetOffsetForLocal(timeZoneId, dt.isoYear, dt.isoMonth, dt.isoDay, dt.hour, dt.minute, dt.second);
+
+    // GetTemporalOffsetOption: prefer (default) / use / ignore / reject.
+    private static string ReadOffsetOption(JSValue options)
+    {
+        if (options == null || options.IsUndefined) return "prefer";
+        if (options is not JSObject o)
+            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
+        var v = o[KeyStrings.GetOrCreate("offset")];
+        if (v.IsUndefined) return "prefer";
+        var s = v.StringValue;
+        return s is "prefer" or "use" or "ignore" or "reject" ? s
+            : throw JSEngine.NewRangeError($"Temporal: invalid offset option \"{s}\"");
+    }
+
+    // GetTemporalDisambiguationOption: compatible (default) / earlier / later / reject.
+    private static string ReadDisambiguation(JSValue options)
+    {
+        if (options == null || options.IsUndefined) return "compatible";
+        if (options is not JSObject o)
+            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
+        var v = o[KeyStrings.GetOrCreate("disambiguation")];
+        if (v.IsUndefined) return "compatible";
+        var s = v.StringValue;
+        return s is "compatible" or "earlier" or "later" or "reject" ? s
+            : throw JSEngine.NewRangeError($"Temporal: invalid disambiguation \"{s}\"");
+    }
 
     private static JSException NotImplementedArithmetic(string method)
         => JSEngine.NewError($"Temporal.ZonedDateTime.prototype.{method} is not yet implemented (calendar/DST arithmetic)");

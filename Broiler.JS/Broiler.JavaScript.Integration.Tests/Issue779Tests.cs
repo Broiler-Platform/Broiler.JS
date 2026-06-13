@@ -50,8 +50,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     (year/month) are rounded by nudging between the surrounding calendar boundaries, and
 //     week/day/time units use their fixed nanosecond length. A ZonedDateTime relativeTo (DST) or a
 //     non-ISO calendar relativeTo remains unimplemented.
+//   * Problem 6 — Temporal.ZonedDateTime.prototype.with bailed out as "not yet implemented". It now
+//     merges the date/time fields onto the local wall-clock datetime via the calendar-aware
+//     PlainDateTime.with and re-resolves the instant in the zone, preserving the offset ("prefer")
+//     and validating the overflow / offset / disambiguation options. (DST gap/overlap disambiguation
+//     beyond "compatible", and ZonedDateTime.round, are still unimplemented.)
 //
-// Out of scope: calendar/DST arithmetic on ZonedDateTime (add/subtract/with/round — Problems 6/16),
+// Out of scope: ZonedDateTime.round and DST gap/overlap disambiguation (Problem 16),
 // a ZonedDateTime/PlainDateTime or non-ISO-calendar relativeTo for Duration rounding, and the
 // non-ISO calendars for PlainMonthDay (lunisolar/arithmetic families).
 public class Issue779Tests
@@ -391,4 +396,40 @@ public class Issue779Tests
     [Fact] // a calendar-unit round without relativeTo is still a RangeError
     public void DurationRoundCalendarUnitNoRelativeToThrows()
         => Assert.Equal("RangeError", ErrorName("new Temporal.Duration(1,2,3).round({largestUnit:'years'})"));
+
+    // ───────── Problem 6: ZonedDateTime.prototype.with ─────────
+
+    private const string Zdt = "var z = Temporal.ZonedDateTime.from('2024-06-15T12:30:45+00:00[UTC]');";
+
+    [Theory]
+    [InlineData("z.with({year:2025})", "2025-06-15T12:30:45+00:00[UTC]")]
+    [InlineData("z.with({month:1})", "2024-01-15T12:30:45+00:00[UTC]")]
+    [InlineData("z.with({day:1})", "2024-06-01T12:30:45+00:00[UTC]")]
+    [InlineData("z.with({hour:0})", "2024-06-15T00:30:45+00:00[UTC]")]
+    [InlineData("z.with({year:2000,month:2,day:29})", "2000-02-29T12:30:45+00:00[UTC]")]
+    [InlineData("z.with({month:2, day:31})", "2024-02-29T12:30:45+00:00[UTC]")]        // constrain (default)
+    [InlineData("z.with({year:2025, offset:undefined})", "2025-06-15T12:30:45+00:00[UTC]")] // offset preserved
+    public void ZonedDateTimeWith(string call, string expected)
+        => Assert.Equal(expected, Eval(Zdt + call + ".toString()"));
+
+    [Theory]
+    [InlineData("z.with({month:2, day:31}, {overflow:'reject'})")] // day out of range
+    [InlineData("z.with({calendar:'iso8601'})")]                   // calendar field rejected
+    [InlineData("z.with({timeZone:'UTC'})")]                       // timeZone field rejected
+    public void ZonedDateTimeWithThrows(string call)
+    {
+        var name = ErrorName(Zdt + call);
+        Assert.True(name is "RangeError" or "TypeError", $"expected RangeError/TypeError, got {name}");
+    }
+
+    [Theory] // invalid offset / disambiguation options are RangeErrors
+    [InlineData("z.with({year:2025}, {offset:'bogus'})")]
+    [InlineData("z.with({year:2025}, {disambiguation:'bogus'})")]
+    public void ZonedDateTimeWithInvalidOptions(string call)
+        => Assert.Equal("RangeError", ErrorName(Zdt + call));
+
+    [Fact] // a non-ISO Gregorian-family calendar year is resolved through the calendar (buddhist = ISO+543)
+    public void ZonedDateTimeWithBuddhistYear()
+        => Assert.Equal("2024-06-15T12:00:00+00:00[UTC][u-ca=buddhist]",
+            Eval("Temporal.ZonedDateTime.from('2024-06-15T12:00:00+00:00[UTC][u-ca=buddhist]').with({year:2567}).toString()"));
 }
