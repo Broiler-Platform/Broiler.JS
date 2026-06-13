@@ -2,6 +2,7 @@ using System;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
+using UnicodeCldr.LocaleData;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
@@ -23,19 +24,31 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 internal static class TemporalArithmeticCalendar
 {
     internal static bool IsArithmetic(string id) =>
-        id is "coptic" or "ethiopic" or "islamic-civil" or "islamic-tbla" or "hebrew";
+        id is "coptic" or "ethiopic" or "ethioaa" or "islamic-civil" or "islamic-tbla"
+            or "islamic-umalqura" or "hebrew";
 
-    private static bool IsSolar13(string id) => id is "coptic" or "ethiopic";
+    private static bool IsSolar13(string id) => id is "coptic" or "ethiopic" or "ethioaa";
+
+    // islamic-umalqura uses ICU's sighting-based month-length table over 1300–1600 AH and falls
+    // back to the tabular (islamic-civil) arithmetic outside that span. A given Hijri year is
+    // table-driven only when it is both this calendar and inside the tabulated range.
+    private static bool UmalquraTable(string id, int year) => id == "islamic-umalqura" && CldrUmmAlQura.IsTabulated(year);
 
     // Epoch-day number (days from the ISO 1970-01-01 epoch) of the calendar's year 1, month 1,
     // day 1, derived from the standard Rata Die epochs (RD of 1970-01-01 is 719163):
     //   coptic RD 103605, ethiopic RD 2796, islamic-civil RD 227015, islamic-tbla RD 227014.
+    // The ethioaa (Ethiopic Amete Alem) calendar shares the ethiopic day arithmetic but numbers its
+    // years 5500 higher (ethioaa year = ethiopic year + 5500); since 5500 is divisible by 4 the leap
+    // rule is unchanged, and its epoch is shifted so that ethioaa 5501/1/1 coincides with ethiopic
+    // 1/1/1 (RD 2796 − (365·5500 + 1375) = RD −2006079).
     private static long Epoch(string id) => id switch
     {
         "coptic" => 103605 - 719163,
         "ethiopic" => 2796 - 719163,
+        "ethioaa" => -2006079 - 719163,
         "islamic-civil" => 227015 - 719163,
         "islamic-tbla" => 227014 - 719163,
+        "islamic-umalqura" => 227015 - 719163, // civil (Friday) epoch; used for the out-of-table fallback
         _ => throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{id}\""),
     };
 
@@ -45,6 +58,7 @@ internal static class TemporalArithmeticCalendar
     internal static bool InLeapYear(string id, int year)
     {
         if (id == "hebrew") return HebrewLeap(year);
+        if (UmalquraTable(id, year)) return CldrUmmAlQura.YearLength(year) == 355;
         return IsSolar13(id)
             ? Mod(year, 4) == 3
             : Mod(11 * year + 14, 30) < 11; // tabular Islamic 30-year intercalation
@@ -53,6 +67,7 @@ internal static class TemporalArithmeticCalendar
     internal static int DaysInYear(string id, int year)
     {
         if (id == "hebrew") return (int)(HebrewNewYear(year + 1) - HebrewNewYear(year));
+        if (UmalquraTable(id, year)) return CldrUmmAlQura.YearLength(year);
         if (IsSolar13(id)) return InLeapYear(id, year) ? 366 : 365;
         return InLeapYear(id, year) ? 355 : 354;
     }
@@ -60,6 +75,7 @@ internal static class TemporalArithmeticCalendar
     internal static int DaysInMonth(string id, int year, int month)
     {
         if (id == "hebrew") return HebrewMonthLength(year, month);
+        if (UmalquraTable(id, year)) return CldrUmmAlQura.MonthLength(year, month);
         if (IsSolar13(id))
             return month <= 12 ? 30 : (InLeapYear(id, year) ? 6 : 5);
         if (month == 12)
@@ -74,6 +90,12 @@ internal static class TemporalArithmeticCalendar
         {
             var epoch = HebrewNewYear(year);
             for (int m = 1; m < month; m++) epoch += HebrewMonthLength(year, m);
+            return epoch + day - 1;
+        }
+        if (UmalquraTable(id, year))
+        {
+            var epoch = Epoch(id) + CldrUmmAlQura.YearStartDay(year);
+            for (int m = 1; m < month; m++) epoch += CldrUmmAlQura.MonthLength(year, m);
             return epoch + day - 1;
         }
         if (IsSolar13(id))
@@ -172,6 +194,7 @@ internal static class TemporalArithmeticCalendar
     {
         "coptic" or "hebrew" => ("am", calYear),
         "ethiopic" => calYear >= 1 ? ("am", calYear) : ("aa", calYear + 5500),
+        "ethioaa" => ("aa", calYear), // single Amete Alem era for any sign
         _ => calYear >= 1 ? ("ah", calYear) : ("bh", 1 - calYear), // islamic-civil / islamic-tbla
     };
 
@@ -195,6 +218,9 @@ internal static class TemporalArithmeticCalendar
                     "aa" or "mundi" or "ethioaa" => eraYear - 5500,
                     _ => throw JSEngine.NewRangeError($"Temporal: invalid era \"{era}\" for the ethiopic calendar"),
                 };
+            case "ethioaa":
+                if (e is "aa" or "mundi" or "ethioaa") return eraYear;
+                throw JSEngine.NewRangeError($"Temporal: invalid era \"{era}\" for the ethioaa calendar");
             default: // islamic-civil / islamic-tbla
                 return e switch
                 {
