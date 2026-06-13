@@ -198,4 +198,66 @@ public class Issue771Tests
         => Assert.Equal("RangeError", ErrorName(
             "const a = Temporal.Duration.from({seconds: Number.MAX_SAFE_INTEGER});" +
             "a.add({seconds: Number.MAX_SAFE_INTEGER});"));
+
+    // --- ZonedDateTime.until / since (Problems 2 & 3): DST-aware calendar difference ---
+
+    private const string Zdt =
+        "const a = Temporal.ZonedDateTime.from('2020-01-01T00:00:00+00:00[UTC]');" +
+        "const b = Temporal.ZonedDateTime.from('2021-03-15T12:30:45+00:00[UTC]');";
+
+    [Fact]
+    public void ZonedUntilDefaultLargestUnitIsHour()
+        => Assert.Equal("PT10548H30M45S", Eval(Zdt + "a.until(b).toString()"));
+
+    [Fact]
+    public void ZonedUntilLargestUnitDay()
+        => Assert.Equal("P439DT12H30M45S", Eval(Zdt + "a.until(b, {largestUnit:'day'}).toString()"));
+
+    [Fact]
+    public void ZonedUntilLargestUnitWeek()
+        => Assert.Equal("P62W5DT12H30M45S", Eval(Zdt + "a.until(b, {largestUnit:'week'}).toString()"));
+
+    [Fact]
+    public void ZonedUntilLargestUnitMonth()
+        => Assert.Equal("P14M14DT12H30M45S", Eval(Zdt + "a.until(b, {largestUnit:'month'}).toString()"));
+
+    [Fact]
+    public void ZonedUntilLargestUnitYear()
+        => Assert.Equal("P1Y2M14DT12H30M45S", Eval(Zdt + "a.until(b, {largestUnit:'year'}).toString()"));
+
+    [Fact]
+    public void ZonedSinceIsTheNegationOfUntil()
+        => Assert.Equal("P1Y2M14DT12H30M45S", Eval(Zdt + "b.since(a, {largestUnit:'year'}).toString()"));
+
+    [Fact]
+    public void ZonedUntilSameInstantIsBlank()
+        => Assert.Equal("PT0S", Eval(Zdt + "a.until(a).toString()"));
+
+    [Fact]
+    public void ZonedUntilNegativeDirection()
+        => Assert.Equal("-P439DT12H30M45S", Eval(Zdt + "b.until(a, {largestUnit:'day'}).toString()"));
+
+    [Fact]
+    public void ZonedUntilNonObjectOptionsThrowsTypeError()
+        => Assert.Equal("TypeError", ErrorName(Zdt + "a.until(b, 'nope');"));
+
+    [Fact]
+    public void ZonedUntilInvalidLargestUnitThrowsRangeError()
+        => Assert.Equal("RangeError", ErrorName(Zdt + "a.until(b, {largestUnit:'bogus'});"));
+
+    // Spring-forward: the wall clock advances two hours but only one real hour elapses.
+    [Fact]
+    public void ZonedUntilSpringForwardCountsRealHours()
+        => Assert.Equal("PT1H", Eval(
+            "const x = Temporal.ZonedDateTime.from('2020-03-08T01:30:00-05:00[America/New_York]');" +
+            "const y = Temporal.ZonedDateTime.from('2020-03-08T03:30:00-04:00[America/New_York]');" +
+            "x.until(y, {largestUnit:'hour'}).toString()"));
+
+    // A calendar day spanning the spring-forward transition is still one day (a 23-hour day).
+    [Fact]
+    public void ZonedUntilSpringForwardDayIsOneDay()
+        => Assert.Equal("P1D", Eval(
+            "const x = Temporal.ZonedDateTime.from('2020-03-08T00:00:00-05:00[America/New_York]');" +
+            "const y = Temporal.ZonedDateTime.from('2020-03-09T00:00:00-04:00[America/New_York]');" +
+            "x.until(y, {largestUnit:'day'}).toString()"));
 }
