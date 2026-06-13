@@ -222,7 +222,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime.from: invalid value");
 
-        return FromPropertyBag(obj);
+        return FromPropertyBag(obj, a.GetAt(1));
     }
 
     [JSExport("compare", Length = 2)]
@@ -852,7 +852,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (item.IsString)
             return ParseZonedDateTimeString(item.ToString());
         if (item is JSObject obj)
-            return FromPropertyBag(obj);
+            return FromPropertyBag(obj, JSUndefined.Value); // default overflow ("constrain")
         throw JSEngine.NewTypeError("Temporal.ZonedDateTime: invalid value");
     }
 
@@ -1019,10 +1019,8 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     // ── building from a property bag ──────────────────────────────────────────────
 
-    private static JSValue FromPropertyBag(JSObject obj)
+    private static JSValue FromPropertyBag(JSObject obj, JSValue options)
     {
-        var calendarId = CanonicalizeCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
-
         var tzValue = obj[KeyStrings.GetOrCreate("timeZone")];
         if (tzValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime: missing timeZone");
@@ -1032,53 +1030,28 @@ public partial class JSTemporalZonedDateTime : JSObject
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime: timeZone must be a string");
         var timeZoneId = CanonicalizeTimeZone(tzValue.ToString());
 
-        var yearValue = obj[KeyStrings.GetOrCreate("year")];
-        var eraValue = obj[KeyStrings.GetOrCreate("era")];
-        var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
-        var monthValue = obj[KeyStrings.GetOrCreate("month")];
-        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var dayValue = obj[KeyStrings.GetOrCreate("day")];
+        // Resolve the wall-clock date-time by reusing Temporal.PlainDateTime's property-bag
+        // resolution: it reads the same year / era / month(Code) / day / time / calendar fields
+        // (ignoring the timeZone / offset ones), applies the overflow option, and handles the
+        // non-Gregorian calendars — so an out-of-range month/day is constrained rather than rejected
+        // with "invalid ISO date", and a non-ISO calendar resolves correctly.
+        var pdt = (JSTemporalPlainDateTime)JSTemporalPlainDateTime.From(new Arguments(JSUndefined.Value, obj, options));
 
-        var hasYear = !yearValue.IsUndefined;
-        var hasEra = !eraValue.IsUndefined;
-        var hasEraYear = !eraYearValue.IsUndefined;
-        if (!hasYear && !(hasEra && hasEraYear))
-            throw JSEngine.NewTypeError("Temporal.ZonedDateTime: missing year (or era and eraYear)");
-        if (dayValue.IsUndefined) throw JSEngine.NewTypeError("Temporal.ZonedDateTime: missing day");
-        if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.ZonedDateTime: missing month / monthCode");
-
-        var month = monthCodeValue.IsUndefined ? ToIntegerWithTruncation(monthValue) : MonthFromCode(monthCodeValue.ToString());
-        if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToIntegerWithTruncation(monthValue) != month)
-            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: month and monthCode disagree");
-
-        var year = TemporalCalendar.ResolveIsoYear(calendarId,
-            hasYear, hasYear ? ToIntegerWithTruncation(yearValue) : 0,
-            hasEra, hasEra ? eraValue.StringValue : null,
-            hasEraYear, hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0);
-
-        int Field(string name) { var v = obj[KeyStrings.GetOrCreate(name)]; return v.IsUndefined ? 0 : ToIntegerWithTruncation(v); }
-        var day = ToIntegerWithTruncation(dayValue);
-        var hour = Field("hour"); var minute = Field("minute"); var second = Field("second");
-        var ms = Field("millisecond"); var us = Field("microsecond"); var ns = Field("nanosecond");
-
-        if (!IsValidISODate(year, month, day))
-            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: invalid ISO date");
-
-        var localNs = LocalNanoseconds(year, month, day, hour, minute, second, ms, us, ns);
+        var localNs = LocalNanoseconds(pdt.isoYear, pdt.isoMonth, pdt.isoDay,
+            pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond);
 
         long offsetNs;
         var offsetValue = obj[KeyStrings.GetOrCreate("offset")];
         if (!offsetValue.IsUndefined && offsetValue.IsString && TryParseOffsetString(offsetValue.ToString(), out var explicitOffset))
             offsetNs = explicitOffset;
         else
-            offsetNs = GetOffsetForLocal(timeZoneId, year, month, day, hour, minute, second);
+            offsetNs = GetOffsetForLocal(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second);
 
         var epochNs = localNs - offsetNs;
         if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
 
-        return new JSTemporalZonedDateTime(epochNs, timeZoneId, calendarId, ZonedDateTimePrototype);
+        return new JSTemporalZonedDateTime(epochNs, timeZoneId, pdt.calendarId, ZonedDateTimePrototype);
     }
 
     private static BigInteger LocalNanoseconds(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns)

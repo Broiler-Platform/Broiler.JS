@@ -30,6 +30,11 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     invalid value passed without error. They are now read and validated (an invalid value →
 //     RangeError, a Symbol → TypeError); the rounding / display behaviour they request is validated
 //     but not yet applied (only "compatible" disambiguation and the full serialization are honoured).
+//   * Problem 1 — Temporal.ZonedDateTime.from from a property bag ignored the overflow option and
+//     mishandled the non-Gregorian calendars: it checked the raw fields with IsValidISODate and
+//     threw "invalid ISO date" for an out-of-range month/day (instead of constraining) or for a
+//     non-ISO calendar. The wall-clock date-time is now resolved through Temporal.PlainDateTime's
+//     property-bag resolution (overflow-applied, calendar-aware) before the zone offset is resolved.
 public class Issue781Tests
 {
     private static string Eval(string code)
@@ -199,4 +204,36 @@ public class Issue781Tests
     [InlineData("z.since(z, { smallestUnit: Symbol() })")]
     public void SymbolOptionValueThrowsTypeError(string expr)
         => Assert.Equal("TypeError", ErrorName("const z = new Temporal.ZonedDateTime(0n, 'UTC');" + expr));
+
+    // ───────────── Problem 1: ZonedDateTime.from applies overflow / non-ISO calendars ─────────────
+
+    // An out-of-range month / day is constrained (the default and explicit "constrain"), not
+    // rejected with "invalid ISO date".
+    [Theory]
+    [InlineData("Temporal.ZonedDateTime.from({ year: 2000, month: 13, day: 1, timeZone: 'UTC' }).month", "12")]
+    [InlineData("Temporal.ZonedDateTime.from({ year: 2000, month: 13, day: 1, timeZone: 'UTC' }, { overflow: 'constrain' }).month", "12")]
+    [InlineData("Temporal.ZonedDateTime.from({ year: 2001, month: 2, day: 31, timeZone: 'UTC' }).day", "28")]
+    public void FromConstrainsOutOfRangeFields(string code, string expected)
+        => Assert.Equal(expected, Eval($"String({code})"));
+
+    // overflow "reject" still rejects an out-of-range field.
+    [Theory]
+    [InlineData("Temporal.ZonedDateTime.from({ year: 2000, month: 13, day: 1, timeZone: 'UTC' }, { overflow: 'reject' })")]
+    [InlineData("Temporal.ZonedDateTime.from({ year: 2001, month: 2, day: 31, timeZone: 'UTC' }, { overflow: 'reject' })")]
+    public void FromRejectThrowsRangeError(string code)
+        => Assert.Equal("RangeError", ErrorName(code));
+
+    // A Gregorian-family (non-ISO) calendar in the property bag resolves instead of throwing.
+    [Theory]
+    [InlineData("gregory")]
+    [InlineData("buddhist")]
+    [InlineData("japanese")]
+    public void FromGregorianFamilyCalendarResolves(string calendar)
+        => Assert.Equal(calendar,
+            Eval($"Temporal.ZonedDateTime.from({{ year: 2000, month: 1, day: 1, timeZone: 'UTC', calendar: '{calendar}' }}).calendarId"));
+
+    // A missing timeZone is still a TypeError.
+    [Fact]
+    public void FromMissingTimeZoneThrowsTypeError()
+        => Assert.Equal("TypeError", ErrorName("Temporal.ZonedDateTime.from({ year: 2000, month: 1, day: 1 })"));
 }
