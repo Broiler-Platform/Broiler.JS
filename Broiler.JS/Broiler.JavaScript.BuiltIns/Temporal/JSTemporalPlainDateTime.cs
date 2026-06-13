@@ -369,8 +369,16 @@ public partial class JSTemporalPlainDateTime : JSObject
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: cannot compute the difference between date-times of different calendars");
         var largestUnit = ReadDifferenceSettings(options);
 
-        var (a1, a2) = sign == 1 ? (this, target) : (target, this);
-        var (years, months, weeks, days, h, mi, s, ms, us, ns) = DifferenceISODateTime(a1, a2, largestUnit);
+        // `since` is `-(this.until(other))`: always measure from the receiver (so the year/month
+        // balancing anchors on the receiver) and negate for since, rather than swapping the operands.
+        var (years, months, weeks, days, h, mi, s, ms, us, ns) = DifferenceISODateTime(this, target, largestUnit);
+        if (sign == -1)
+        {
+            years = JSTemporalPlainDate.Negate(years); months = JSTemporalPlainDate.Negate(months);
+            weeks = JSTemporalPlainDate.Negate(weeks); days = JSTemporalPlainDate.Negate(days);
+            h = JSTemporalPlainDate.Negate(h); mi = JSTemporalPlainDate.Negate(mi); s = JSTemporalPlainDate.Negate(s);
+            ms = JSTemporalPlainDate.Negate(ms); us = JSTemporalPlainDate.Negate(us); ns = JSTemporalPlainDate.Negate(ns);
+        }
         return new JSTemporalDuration(years, months, weeks, days, h, mi, s, ms, us, ns, JSTemporalDuration.DurationPrototype);
     }
 
@@ -833,7 +841,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         var dateLargestUnit = largestUnit is "hour" or "minute" or "second" or "millisecond" or "microsecond" or "nanosecond" ? "day" : largestUnit;
         var (years, months, weeks, days) = a.NonIso
             ? NonIsoDateDifference(a.calendarId, a.isoYear, a.isoMonth, a.isoDay, by, bm, bd, dateLargestUnit)
-            : DifferenceISODate(a.isoYear, a.isoMonth, a.isoDay, by, bm, bd, dateLargestUnit);
+            : JSTemporalPlainDate.DiffCalendarDate(a.isoYear, a.isoMonth, a.isoDay, by, bm, bd, dateLargestUnit);
 
         // Distribute days into hours when largestUnit is a time unit.
         var t = timeDiff;
@@ -910,57 +918,6 @@ public partial class JSTemporalPlainDateTime : JSObject
         var epoch = DaysFromCivil(newYear, newMonth, regulatedDay) + days + weeks * 7;
         var (ry, rm, rd) = CivilFromDays(epoch);
         return ((int)ry, (int)rm, (int)rd);
-    }
-
-    private static (double years, double months, double weeks, double days) DifferenceISODate(
-        int ay, int am, int ad, int by, int bm, int bd, string largestUnit)
-    {
-        var startEpoch = DaysFromCivil(ay, am, ad);
-        var endEpoch = DaysFromCivil(by, bm, bd);
-
-        if (largestUnit is "day" or "week")
-        {
-            var totalDays = endEpoch - startEpoch;
-            if (largestUnit == "week")
-                return (0, 0, totalDays / 7, totalDays % 7);
-            return (0, 0, 0, totalDays);
-        }
-
-        var sign = CompareISODate(ay, am, ad, by, bm, bd);
-        if (sign == 0) return (0, 0, 0, 0);
-        var step = -sign;
-
-        long years = by - ay;
-        var (my, mm, md) = AddYearsMonths(ay, am, ad, years, 0);
-        if (CompareISODate(my, mm, md, by, bm, bd) == step)
-        {
-            years -= step;
-            (my, mm, md) = AddYearsMonths(ay, am, ad, years, 0);
-        }
-
-        long months = 0;
-        while (true)
-        {
-            var (ny, nm, nd) = AddYearsMonths(my, mm, md, 0, step);
-            var cmp = CompareISODate(ny, nm, nd, by, bm, bd);
-            if (cmp == step) break;
-            months += step; my = ny; mm = nm; md = nd;
-            if (cmp == 0) break;
-        }
-
-        var days = DaysFromCivil(by, bm, bd) - DaysFromCivil(my, mm, md);
-
-        if (largestUnit == "month") { months += years * 12; years = 0; }
-        return (years, months, 0, days);
-    }
-
-    private static (int y, int m, int d) AddYearsMonths(int year, int month, int day, long years, long months)
-    {
-        var total = (long)month - 1 + months;
-        var newYear = (int)(year + years + FloorDiv(total, 12));
-        var newMonth = (int)(((total % 12) + 12) % 12) + 1;
-        var newDay = Math.Min(day, DaysInMonthOf(newYear, newMonth));
-        return (newYear, newMonth, newDay);
     }
 
     private static int IsoDayOfWeek(int year, int month, int day)

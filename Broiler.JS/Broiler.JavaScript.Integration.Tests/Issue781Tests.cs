@@ -51,6 +51,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     relativeTo date and compares the resulting instants, reusing the round/total relativeTo
 //     machinery (an ISO / Gregorian-family PlainDate relativeTo; a ZonedDateTime / PlainDateTime /
 //     non-ISO-calendar relativeTo remains unimplemented).
+//   * Problems 18/23 — Temporal.PlainDate / PlainDateTime until / since balanced the year/month/day
+//     difference by stepping months one at a time from an already day-constrained intermediate, so a
+//     month-end "wrap" (e.g. Jan 29 -> Feb 28) miscounted a whole month and the residual days. The
+//     ISO date difference now follows the reference dateUntil: a candidate month count "surpasses"
+//     the end when the *unconstrained* (start-day-preserving) date passes it, and the residual is
+//     measured from the day-constrained intermediate. since is now -(this.until(other)) (anchored on
+//     the receiver, then negated — +0 not -0), rather than swapping the operands. Applies to the
+//     Gregorian-family (ISO) calendars; the non-ISO calendars share a separate difference path.
 public class Issue781Tests
 {
     private static string Eval(string code)
@@ -386,4 +394,42 @@ public class Issue781Tests
     [Fact]
     public void DurationCompareCalendarUnitsNoRelativeToThrows()
         => Assert.Equal("RangeError", ErrorName("Temporal.Duration.compare({ months: 1 }, { days: 30 })"));
+
+    // ───────────── Problems 18/23: PlainDate.until year/month/day balancing ─────────────
+
+    // A whole month counts only when the start day-of-month fits the target month (no constraining),
+    // so the residual days are measured from the day-constrained intermediate, not by stepping months
+    // from an already-constrained date. Values taken from the test262 until/wrapping-at-end-of-month
+    // and basic-arithmetic tests.
+    [Theory]
+    // Jan→Feb (non-leap 1970): only Jan 28 makes a whole month; 29/30/31 are 30/29/28 days.
+    [InlineData("1970-01-28", "1970-02-28", "months", "P1M")]
+    [InlineData("1970-01-29", "1970-02-28", "months", "P30D")]
+    [InlineData("1970-01-30", "1970-02-28", "months", "P29D")]
+    [InlineData("1970-01-31", "1970-02-28", "months", "P28D")]
+    // Jan→Feb (leap 1972): Jan 29 fits Feb 29.
+    [InlineData("1972-01-29", "1972-02-29", "months", "P1M")]
+    [InlineData("1972-01-30", "1972-02-29", "months", "P30D")]
+    // Passing through a shorter month.
+    [InlineData("1970-08-30", "1970-11-30", "months", "P3M")]
+    [InlineData("1970-08-31", "1970-11-30", "months", "P2M30D")]
+    [InlineData("1970-01-29", "1970-03-28", "months", "P1M28D")]
+    // Years.
+    [InlineData("2019-12-30", "2021-07-16", "years", "P1Y6M16D")]
+    [InlineData("1970-12-31", "1973-04-30", "years", "P2Y3M30D")]
+    [InlineData("1970-12-31", "1973-04-30", "months", "P27M30D")]
+    [InlineData("1970-01-31", "1971-05-30", "years", "P1Y3M30D")]
+    public void UntilBalancesMonthsAndDays(string start, string end, string largestUnit, string expected)
+        => Assert.Equal(expected, Eval(
+            $"Temporal.PlainDate.from('{start}').until('{end}', {{ largestUnit: '{largestUnit}' }}).toString()"));
+
+    // Negative (backward) differences, with expectations from the test262 basic-arithmetic cases.
+    [Theory]
+    [InlineData("1970-02-28", "1970-01-29", "months", "-P30D")]
+    [InlineData("2021-08-17", "2021-07-16", "months", "-P1M1D")]   // negative 1 month and 1 day
+    [InlineData("2021-08-13", "2021-07-16", "months", "-P28D")]    // 28 days across a 31-day month
+    [InlineData("2021-09-16", "2021-07-16", "months", "-P2M")]     // negative 2 months
+    public void UntilBalancesNegativeDifference(string start, string end, string largestUnit, string expected)
+        => Assert.Equal(expected, Eval(
+            $"Temporal.PlainDate.from('{start}').until('{end}', {{ largestUnit: '{largestUnit}' }}).toString()"));
 }

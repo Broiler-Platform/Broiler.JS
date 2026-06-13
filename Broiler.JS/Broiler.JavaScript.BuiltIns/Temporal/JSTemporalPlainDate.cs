@@ -302,17 +302,19 @@ public partial class JSTemporalPlainDate : JSObject
             throw JSEngine.NewRangeError("Temporal.PlainDate: cannot compute the difference between dates of different calendars");
         var largestUnit = ReadDifferenceSettings(options);
 
-        // `since` is `until` with the operands swapped. Difference is computed in calendar space
-        // for the arithmetic calendars and in ISO space otherwise.
+        // `since` is `-(this.until(other))`: the difference is always measured *from the receiver*
+        // (so the year/month balancing anchors on the receiver's day-of-month), then negated for
+        // since. Swapping the operands instead would re-anchor on the other date and give the wrong
+        // result at month boundaries. Computed in calendar space for the arithmetic calendars.
         var self = CalendarYmd();
         var othr = target.CalendarYmd();
-        var (ay, am, ad, by, bm, bd) = sign == 1
-            ? (self.y, self.m, self.d, othr.y, othr.m, othr.d)
-            : (othr.y, othr.m, othr.d, self.y, self.m, self.d);
 
         var (years, months, weeks, days) = NonIso
-            ? TemporalNonIso.Difference(calendarId, ay, am, ad, by, bm, bd, largestUnit)
-            : DifferenceISODate(ay, am, ad, by, bm, bd, largestUnit);
+            ? TemporalNonIso.Difference(calendarId, self.y, self.m, self.d, othr.y, othr.m, othr.d, largestUnit)
+            : DifferenceISODate(self.y, self.m, self.d, othr.y, othr.m, othr.d, largestUnit);
+
+        if (sign == -1) { years = Negate(years); months = Negate(months); weeks = Negate(weeks); days = Negate(days); }
+
         return new JSTemporalDuration(years, months, weeks, days, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
     }
 
@@ -707,34 +709,30 @@ public partial class JSTemporalPlainDate : JSObject
             return (0, 0, 0, totalDays);
         }
 
-        // largestUnit year or month: step whole years, then whole months, then count days.
-        var sign = CompareISODate(ay, am, ad, by, bm, bd); // -1 if a<b, +1 if a>b
+        // largestUnit year or month: count whole years, then whole months, then the residual days.
+        // Mirrors the Temporal reference's iso8601 dateUntil: a candidate year/month count "surpasses"
+        // the end when the *unconstrained* (start.day-preserving) date passes it, so e.g. Jan 29 + 1
+        // month is treated as Feb 29 (which surpasses Feb 28) and does not count as a whole month —
+        // the residual is then measured from the day-constrained intermediate.
+        var sign = -CompareISODate(ay, am, ad, by, bm, bd); // +1 when end is after start
         if (sign == 0) return (0, 0, 0, 0);
-        var step = -sign; // +1 when end is after start
 
-        long years = by - ay;
-        var (my, mm, md) = AddYearsMonths(ay, am, ad, years, 0);
-        if (CompareISODate(my, mm, md, by, bm, bd) == step)
+        long years = 0;
+        var candidateYears = (long)by - ay;
+        if (candidateYears != 0) candidateYears -= sign;
+        while (!ISODateSurpasses(sign, ay, am, ad, by, bm, bd, candidateYears, 0))
         {
-            // overshot — back off one year
-            years -= step;
-            (my, mm, md) = AddYearsMonths(ay, am, ad, years, 0);
+            years = candidateYears;
+            candidateYears += sign;
         }
 
         long months = 0;
-        while (true)
+        var candidateMonths = (long)sign;
+        while (!ISODateSurpasses(sign, ay, am, ad, by, bm, bd, years, candidateMonths))
         {
-            var (ny, nm, nd) = AddYearsMonths(my, mm, md, 0, step);
-            var cmp = CompareISODate(ny, nm, nd, by, bm, bd);
-            if (cmp == step)
-                break; // one more month would overshoot the end
-
-            months += step; my = ny; mm = nm; md = nd;
-            if (cmp == 0)
-                break; // landed exactly on the end
+            months = candidateMonths;
+            candidateMonths += sign;
         }
-
-        var days = DaysFromCivil(by, bm, bd) - DaysFromCivil(my, mm, md);
 
         if (largestUnit == "month")
         {
@@ -742,7 +740,39 @@ public partial class JSTemporalPlainDate : JSObject
             years = 0;
         }
 
+        var (iy, im) = BalanceISOYearMonth(ay + years, (long)am + months);
+        var cd = Math.Min(ad, DaysInMonthOf(iy, im));
+        var days = DaysFromCivil(by, bm, bd) - DaysFromCivil(iy, im, cd);
+
         return (years, months, 0, days);
+    }
+
+    // Normalizes a (year, month) where month may be outside 1..12 into a canonical year + 1..12 month.
+    private static (int year, int month) BalanceISOYearMonth(long year, long month)
+    {
+        var y = year + FloorDiv(month - 1, 12);
+        var m = (int)(((month - 1) % 12 + 12) % 12) + 1;
+        return ((int)y, m);
+    }
+
+    // ISODateSurpasses: true when adding `years` (and then `months`) to the start date — keeping the
+    // *unconstrained* start day — produces a date that passes the end in the direction of `sign`.
+    private static bool ISODateSurpasses(int sign, int sy, int sm, int sd, int ey, int em, int ed, long years, long months)
+    {
+        var y0 = sy + years;
+        if (CompareSurpasses(sign, y0, sm, sd, ey, em, ed)) return true;
+        if (months == 0) return false;
+        var (my, mm) = BalanceISOYearMonth(y0, (long)sm + months);
+        return CompareSurpasses(sign, my, mm, sd, ey, em, ed);
+    }
+
+    // True when (year, month, day) lies strictly beyond (ty, tm, td) in the direction of `sign`.
+    private static bool CompareSurpasses(int sign, long year, int month, int day, int ty, int tm, int td)
+    {
+        if (year != ty) return sign * (year - ty) > 0;
+        if (month != tm) return sign * (month - tm) > 0;
+        if (day != td) return sign * (day - td) > 0;
+        return false;
     }
 
     // Adds whole years and months with the ISO "constrain" overflow (clamp day to month).
@@ -784,6 +814,10 @@ public partial class JSTemporalPlainDate : JSObject
     internal static (double years, double months, double weeks, double days) DiffCalendarDate(
         int ay, int am, int ad, int by, int bm, int bd, string largestUnit)
         => DifferenceISODate(ay, am, ad, by, bm, bd, largestUnit);
+
+    // Negates a duration component, mapping +0 to +0 (rather than -0) so a zero field of a `since`
+    // result compares SameValue with the +0 the spec produces.
+    internal static double Negate(double v) => v == 0 ? 0d : -v;
 
     private static int IsoDayOfWeek(int year, int month, int day)
     {
