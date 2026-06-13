@@ -318,7 +318,96 @@ public partial class JSTemporalZonedDateTime : JSObject
     public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
 
     [JSExport("round", Length = 1)]
-    public JSValue Round(in Arguments a) => throw NotImplementedArithmetic("round");
+    public JSValue Round(in Arguments a)
+    {
+        var roundTo = a.GetAt(0);
+        if (roundTo == null || roundTo.IsUndefined)
+            throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.round requires an options argument");
+
+        string smallestUnit;
+        var increment = 1;
+        var roundingMode = "halfExpand";
+        if (roundTo.IsString)
+            smallestUnit = roundTo.StringValue;
+        else if (roundTo is JSObject obj)
+        {
+            var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
+            if (unitValue.IsUndefined)
+                throw JSEngine.NewRangeError("Temporal.ZonedDateTime.round requires a smallestUnit");
+            smallestUnit = unitValue.StringValue;
+            increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
+        }
+        else throw JSEngine.NewTypeError("Temporal.ZonedDateTime.round requires an options object or string");
+
+        smallestUnit = smallestUnit switch
+        {
+            "day" or "days" => "day",
+            "hour" or "hours" => "hour",
+            "minute" or "minutes" => "minute",
+            "second" or "seconds" => "second",
+            "millisecond" or "milliseconds" => "millisecond",
+            "microsecond" or "microseconds" => "microsecond",
+            "nanosecond" or "nanoseconds" => "nanosecond",
+            _ => throw JSEngine.NewRangeError($"Temporal.ZonedDateTime.round: invalid smallestUnit \"{smallestUnit}\""),
+        };
+
+        var l = Local();
+        var dayStart = StartOfDayEpochNs(l.y, l.mo, l.d);
+
+        if (smallestUnit == "day")
+        {
+            // Round to a day boundary using the actual (DST-aware) length of the local day.
+            var (ty, tm, td) = CivilFromDays(DaysFromCivil(l.y, l.mo, l.d) + 1);
+            var dayLengthNs = StartOfDayEpochNs((int)ty, (int)tm, (int)td) - dayStart;
+            var rounded = TemporalRoundingOptions.RoundToIncrement(epochNanoseconds - dayStart, dayLengthNs, roundingMode);
+            var epoch = dayStart + rounded;
+            if (!IsValid(epoch)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
+            return new JSTemporalZonedDateTime(epoch, timeZoneId, calendarId, ZonedDateTimePrototype);
+        }
+
+        // Time unit: cap the increment at the next unit and require it to divide evenly.
+        var maxIncrement = smallestUnit switch
+        {
+            "hour" => 24L,
+            "minute" or "second" => 60L,
+            _ => 1000L, // millisecond / microsecond / nanosecond
+        };
+        TemporalRoundingOptions.ValidateRoundingIncrement(increment, maxIncrement, inclusive: false);
+
+        // Round the wall-clock time of day, carrying any overflow into the date, then re-resolve in
+        // the zone keeping the current offset when it is still valid ("prefer").
+        var wallNs = ((((((long)l.h * 60 + l.mi) * 60 + l.s) * 1000L + l.ms) * 1000 + l.us) * 1000) + l.ns;
+        var unitNs = smallestUnit switch
+        {
+            "hour" => 3_600_000_000_000L,
+            "minute" => 60_000_000_000L,
+            "second" => 1_000_000_000L,
+            "millisecond" => 1_000_000L,
+            "microsecond" => 1_000L,
+            _ => 1L, // nanosecond
+        } * increment;
+        var roundedNs = (long)TemporalRoundingOptions.RoundToIncrement(wallNs, unitNs, roundingMode);
+        var dayspill = FloorDiv(roundedNs, NanosecondsPerDay);
+        var wrapped = roundedNs - (long)dayspill * NanosecondsPerDay;
+        var (ny, nm, nd) = CivilFromDays(DaysFromCivil(l.y, l.mo, l.d) + (long)dayspill);
+
+        var nh = (int)(wrapped / 3_600_000_000_000);
+        var nmi = (int)(wrapped / 60_000_000_000 % 60);
+        var ns2 = (int)(wrapped / 1_000_000_000 % 60);
+        var nms = (int)(wrapped / 1_000_000 % 1000);
+        var nus = (int)(wrapped / 1_000 % 1000);
+        var nns = (int)(wrapped % 1000);
+
+        var localNs = LocalNanoseconds((int)ny, (int)nm, (int)nd, nh, nmi, ns2, nms, nus, nns);
+        var oldOffset = OffsetNanoseconds();
+        var candidate = localNs - oldOffset;
+        var resolved = GetOffsetNanosecondsFor(candidate) == oldOffset
+            ? candidate
+            : localNs - GetOffsetForLocal(timeZoneId, (int)ny, (int)nm, (int)nd, nh, nmi, ns2);
+        if (!IsValid(resolved)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
+        return new JSTemporalZonedDateTime(resolved, timeZoneId, calendarId, ZonedDateTimePrototype);
+    }
 
     [JSExport("with", Length = 1)]
     public JSValue With(in Arguments a)

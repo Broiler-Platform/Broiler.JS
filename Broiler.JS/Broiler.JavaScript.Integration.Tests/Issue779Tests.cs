@@ -54,9 +54,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     merges the date/time fields onto the local wall-clock datetime via the calendar-aware
 //     PlainDateTime.with and re-resolves the instant in the zone, preserving the offset ("prefer")
 //     and validating the overflow / offset / disambiguation options. (DST gap/overlap disambiguation
-//     beyond "compatible", and ZonedDateTime.round, are still unimplemented.)
+//     beyond "compatible" is still unimplemented.)
+//   * Problem 16 — Temporal.ZonedDateTime.prototype.round now rounds to a day boundary using the
+//     (DST-aware) local day length, or rounds the wall-clock time of day for hour/minute/second/
+//     sub-second units (carrying day overflow and re-resolving the offset), validating smallestUnit
+//     (day…nanosecond) and the increment.
 //
-// Out of scope: ZonedDateTime.round and DST gap/overlap disambiguation (Problem 16),
+// Out of scope: DST gap/overlap disambiguation beyond "compatible",
 // a ZonedDateTime/PlainDateTime or non-ISO-calendar relativeTo for Duration rounding, and the
 // non-ISO calendars for PlainMonthDay (lunisolar/arithmetic families).
 public class Issue779Tests
@@ -432,4 +436,34 @@ public class Issue779Tests
     public void ZonedDateTimeWithBuddhistYear()
         => Assert.Equal("2024-06-15T12:00:00+00:00[UTC][u-ca=buddhist]",
             Eval("Temporal.ZonedDateTime.from('2024-06-15T12:00:00+00:00[UTC][u-ca=buddhist]').with({year:2567}).toString()"));
+
+    // ───────── Problem 16: ZonedDateTime.prototype.round ─────────
+
+    private const string Zr = "var z = Temporal.ZonedDateTime.from('2024-06-15T12:34:56.789+00:00[UTC]');";
+
+    [Theory]
+    [InlineData("z.round('day')", "2024-06-16T00:00:00+00:00[UTC]")]                          // 12:34 → next midnight
+    [InlineData("z.round({smallestUnit:'day', roundingMode:'floor'})", "2024-06-15T00:00:00+00:00[UTC]")]
+    [InlineData("z.round('hour')", "2024-06-15T13:00:00+00:00[UTC]")]
+    [InlineData("z.round('minute')", "2024-06-15T12:35:00+00:00[UTC]")]
+    [InlineData("z.round('second')", "2024-06-15T12:34:57+00:00[UTC]")]
+    [InlineData("z.round({smallestUnit:'minute', roundingIncrement:15})", "2024-06-15T12:30:00+00:00[UTC]")]
+    public void ZonedDateTimeRound(string call, string expected)
+        => Assert.Equal(expected, Eval(Zr + call + ".toString()"));
+
+    [Fact] // rounding up at end of day carries into the next day
+    public void ZonedDateTimeRoundDaySpill()
+        => Assert.Equal("2024-06-16T00:00:00+00:00[UTC]",
+            Eval("Temporal.ZonedDateTime.from('2024-06-15T23:59:59+00:00[UTC]').round('hour').toString()"));
+
+    [Theory]
+    [InlineData("z.round('year')")]                                       // calendar unit not allowed
+    [InlineData("z.round('week')")]
+    [InlineData("z.round({smallestUnit:'hour', roundingIncrement:7})")]    // 7 doesn't divide 24
+    public void ZonedDateTimeRoundInvalid(string call)
+        => Assert.Equal("RangeError", ErrorName(Zr + call));
+
+    [Fact]
+    public void ZonedDateTimeRoundRequiresSmallestUnit()
+        => Assert.Equal("RangeError", ErrorName(Zr + "z.round({})"));
 }
