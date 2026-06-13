@@ -61,10 +61,14 @@ internal static class TemporalCalendar
             {
                 case "coptic": return "coptic";
                 case "ethiopic": return "ethiopic";
+                case "ethioaa":
+                case "ethiopic-amete-alem": return "ethioaa";
                 case "islamic-civil":
                 case "islamicc": return "islamic-civil";
                 case "islamic-tbla": return "islamic-tbla";
+                case "islamic-umalqura": return "islamic-umalqura";
                 case "hebrew": return "hebrew";
+                case "persian": return "persian";
                 case "chinese": return "chinese";
                 case "dangi": return "dangi";
             }
@@ -77,8 +81,8 @@ internal static class TemporalCalendar
     {
         var lower = id.ToLowerInvariant();
         return lower is "iso8601" or "gregory" or "gregorian" or "buddhist" or "roc" or "minguo" or "japanese"
-            or "coptic" or "ethiopic" or "islamic-civil" or "islamicc" or "islamic-tbla" or "hebrew"
-            or "chinese" or "dangi";
+            or "coptic" or "ethiopic" or "ethioaa" or "ethiopic-amete-alem" or "islamic-civil" or "islamicc"
+            or "islamic-tbla" or "islamic-umalqura" or "hebrew" or "persian" or "chinese" or "dangi";
     }
 
     // The calendar's displayed year for a proleptic-Gregorian (ISO) year. The japanese calendar's
