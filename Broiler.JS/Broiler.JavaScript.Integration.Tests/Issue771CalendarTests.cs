@@ -119,4 +119,51 @@ public class Issue771CalendarTests
     public void EqualsConsidersCalendar()
         => Assert.Equal("false", Eval(
             "new Temporal.PlainDate(2000, 3, 6, 'gregory').equals(new Temporal.PlainDate(2000, 3, 6)) + ''"));
+
+    // --- PlainDateTime (Problem 7) ---
+
+    [Fact]
+    public void DateTimeGregoryEraAndYear()
+        => Assert.Equal("gregory:ce:2000:2000", Eval(
+            "const d = new Temporal.PlainDateTime(2000, 3, 6, 12, 0, 0, 0, 0, 0, 'gregory');" +
+            "d.calendarId + ':' + d.era + ':' + d.eraYear + ':' + d.year"));
+
+    [Fact]
+    public void DateTimeToStringShowsAnnotation()
+        => Assert.Equal("2000-03-06T12:30:45[u-ca=gregory]", Eval(
+            "new Temporal.PlainDateTime(2000, 3, 6, 12, 30, 45, 0, 0, 0, 'gregory').toString()"));
+
+    [Fact]
+    public void DateTimeAddPreservesCalendar()
+        => Assert.Equal("gregory:2001", Eval(
+            "const d = new Temporal.PlainDateTime(2000, 3, 6, 12, 0, 0, 0, 0, 0, 'gregory').add({ years: 1 });" +
+            "d.calendarId + ':' + d.year"));
+
+    [Fact]
+    public void DateTimeBuddhistFromYear()
+        => Assert.Equal("2000-01-01T05:00:00:be", Eval(
+            "const d = Temporal.PlainDateTime.from({ year: 2543, month: 1, day: 1, hour: 5, calendar: 'buddhist' });" +
+            "d.toString({ calendarName: 'never' }) + ':' + d.era"));
+
+    [Fact]
+    public void DateTimeToPlainDatePreservesCalendar()
+        => Assert.Equal("gregory:ce", Eval(
+            "const d = new Temporal.PlainDateTime(2000, 3, 6, 12, 0, 0, 0, 0, 0, 'gregory').toPlainDate();" +
+            "d.calendarId + ':' + d.era"));
+
+    [Fact]
+    public void DateTimeParsesCalendarAnnotation()
+        => Assert.Equal("roc:89", Eval(
+            "const d = Temporal.PlainDateTime.from('2000-03-06T12:00[u-ca=roc]'); d.calendarId + ':' + d.year"));
+
+    [Fact]
+    public void DateTimeSinceDifferentCalendarsThrows()
+        => Assert.Equal("RangeError", ErrorName(
+            "new Temporal.PlainDateTime(2000, 3, 6, 0, 0, 0, 0, 0, 0, 'gregory')" +
+            ".since(new Temporal.PlainDateTime(2000, 1, 1, 0, 0, 0, 0, 0, 0, 'buddhist'));"));
+
+    [Fact]
+    public void DateTimeUnsupportedCalendarThrows()
+        => Assert.Equal("RangeError", ErrorName(
+            "new Temporal.PlainDateTime(2000, 1, 1, 0, 0, 0, 0, 0, 0, 'hebrew');"));
 }
