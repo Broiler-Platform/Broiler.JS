@@ -153,7 +153,7 @@ public partial class JSTemporalDuration
         }
         else throw JSEngine.NewTypeError("Temporal.Duration.prototype.round requires an options object or string");
 
-        var hasRelativeTo = TryGetRelativeTo(options, out _);
+        var relDate = GetRelativeIsoDate(options);
         smallestUnit ??= "nanosecond";
 
         if (largestUnit == "auto")
@@ -174,17 +174,13 @@ public partial class JSTemporalDuration
             TemporalRoundingOptions.ValidateRoundingIncrement((long)increment, maxIncrement, inclusive: false);
         }
 
-        if (HasCalendarUnits || UnitIndex(smallestUnit) < UnitIndex("day") || UnitIndex(largestUnit) < UnitIndex("day"))
-        {
-            if (!hasRelativeTo)
-                throw JSEngine.NewRangeError(
-                    "Temporal.Duration.prototype.round with calendar units (years, months, weeks) requires a relativeTo option");
-            throw JSEngine.NewError(
-                "Temporal.Duration.prototype.round with a relativeTo calendar/time-zone is not yet implemented");
-        }
-        if (hasRelativeTo)
-            throw JSEngine.NewError(
-                "Temporal.Duration.prototype.round with a relativeTo is not yet implemented");
+        var needsCalendar = HasCalendarUnits || UnitIndex(smallestUnit) < UnitIndex("day") || UnitIndex(largestUnit) < UnitIndex("day");
+        if (needsCalendar && relDate == null)
+            throw JSEngine.NewRangeError(
+                "Temporal.Duration.prototype.round with calendar units (years, months, weeks) requires a relativeTo option");
+
+        if (relDate != null)
+            return RoundRelative(relDate, smallestUnit, largestUnit, (long)increment, roundingMode);
 
         var unitNs = TimeUnitNanoseconds(smallestUnit) * (long)increment;
         var rounded = RoundToIncrement(TimePlusDaysNanoseconds(), unitNs, roundingMode);
@@ -215,25 +211,165 @@ public partial class JSTemporalDuration
         }
         else throw JSEngine.NewTypeError("Temporal.Duration.prototype.total requires an options object or string");
 
-        var hasRelativeTo = TryGetRelativeTo(options, out _);
+        var relDate = GetRelativeIsoDate(options);
 
         if (HasCalendarUnits || UnitIndex(unit) < UnitIndex("day"))
         {
-            if (!hasRelativeTo)
+            if (relDate == null)
                 throw JSEngine.NewRangeError(
                     "Temporal.Duration.prototype.total with calendar units (years, months, weeks) requires a relativeTo option");
-            throw JSEngine.NewError(
-                "Temporal.Duration.prototype.total with a relativeTo calendar/time-zone is not yet implemented");
         }
-        if (hasRelativeTo)
-            throw JSEngine.NewError(
-                "Temporal.Duration.prototype.total with a relativeTo is not yet implemented");
+
+        if (relDate != null)
+            return new JSNumber(TotalRelative(relDate, unit));
 
         var totalNs = TimePlusDaysNanoseconds();
         var unitNs = TimeUnitNanoseconds(unit);
         var whole = BigInteger.DivRem(totalNs, unitNs, out var remainder);
         var result = (double)whole + (double)remainder / unitNs;
         return new JSNumber(result);
+    }
+
+    // ── relativeTo (PlainDate) calendar rounding ──────────────────────────────────
+    //
+    // Implements RoundDuration / TotalDuration for an ISO (or Gregorian-family) Temporal.PlainDate
+    // relativeTo, where a day is exactly 24 hours. The duration's date part is added to relativeTo to
+    // find the end date; the time part is folded onto the nanosecond timeline. Calendar units
+    // (year/month) are rounded by the spec's "nudge" between the two surrounding calendar boundaries,
+    // while week/day/time units have a fixed nanosecond length. A ZonedDateTime relativeTo (DST) or a
+    // non-ISO calendar relativeTo is not handled here.
+    private static BigInteger FloorDivBig(BigInteger a, BigInteger b)
+    {
+        var q = BigInteger.DivRem(a, b, out var r);
+        if (r != 0 && r.Sign != b.Sign) q -= 1;
+        return q;
+    }
+
+    private BigInteger TimeComponentsNs()
+        => ((((((BigInteger)(long)hours * 60 + (long)minutes) * 60 + (long)seconds) * 1000
+              + (long)milliseconds) * 1000 + (long)microseconds) * 1000) + (long)nanoseconds;
+
+    // Resolves relativeTo to an ISO/Gregorian-family PlainDate, or null when absent. A ZonedDateTime /
+    // PlainDateTime relativeTo or a non-ISO calendar is not yet supported.
+    private static JSTemporalPlainDate GetRelativeIsoDate(JSValue options)
+    {
+        if (!TryGetRelativeTo(options, out var rel)) return null;
+        if (rel is JSTemporalZonedDateTime)
+            throw JSEngine.NewError("Temporal.Duration: a Temporal.ZonedDateTime relativeTo is not yet implemented");
+        if (rel is JSTemporalPlainDateTime)
+            throw JSEngine.NewError("Temporal.Duration: a Temporal.PlainDateTime relativeTo is not yet implemented");
+        var date = JSTemporalPlainDate.ToRelativeDate(rel);
+        if (TemporalCalendarMath.IsNonIso(date.calendarId))
+            throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{date.calendarId}\" calendar is not yet implemented");
+        return date;
+    }
+
+    // The end of this duration measured from relativeTo, on the nanosecond timeline (epoch days × a
+    // 24-hour day plus the time components), and relativeTo's own start in the same units.
+    private (BigInteger endNs, BigInteger startNs, long startEpoch) RelativeEndpoints(JSTemporalPlainDate r)
+    {
+        var startEpoch = JSTemporalPlainDate.EpochDaysFor(r.isoYear, r.isoMonth, r.isoDay);
+        var (ey, em, ed) = JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay,
+            (long)years, (long)months, (long)weeks, (long)days);
+        var endNs = (BigInteger)JSTemporalPlainDate.EpochDaysFor(ey, em, ed) * NanosecondsPerDay + TimeComponentsNs();
+        return (endNs, (BigInteger)startEpoch * NanosecondsPerDay, startEpoch);
+    }
+
+    private JSValue RoundRelative(JSTemporalPlainDate r, string smallestUnit, string largestUnit, long increment, string roundingMode)
+    {
+        var (endNs, startNs, startEpoch) = RelativeEndpoints(r);
+
+        if (smallestUnit is "year" or "month")
+        {
+            var roundedUnits = (long)NudgeCalendarUnit(r, endNs, startNs, smallestUnit == "year", increment, roundingMode);
+            var (ny, nm, nd) = smallestUnit == "year"
+                ? JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, roundedUnits, 0, 0, 0)
+                : JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, 0, roundedUnits, 0, 0);
+            var (fy, fmo, fw, fd) = JSTemporalPlainDate.DiffCalendarDate(r.isoYear, r.isoMonth, r.isoDay, ny, nm, nd, largestUnit);
+            return new JSTemporalDuration(fy, fmo, fw, fd, 0, 0, 0, 0, 0, 0, DurationPrototype);
+        }
+
+        var smallestNs = (smallestUnit == "week" ? 7 * (BigInteger)NanosecondsPerDay : TimeUnitNanoseconds(smallestUnit)) * increment;
+        var roundedNs = RoundToIncrement(endNs - startNs, smallestNs, roundingMode);
+
+        if (UnitIndex(largestUnit) <= UnitIndex("week"))
+        {
+            // Rebalance the whole-day part into the calendar; keep the sub-day remainder (same sign as
+            // the rounded total) as time components.
+            var wholeDays = (long)BigInteger.DivRem(roundedNs, NanosecondsPerDay, out var subNs);
+            var (ny, nm, nd) = JSTemporalPlainDate.DateFromEpochDays(startEpoch + wholeDays);
+            var (fy, fmo, fw, fd) = JSTemporalPlainDate.DiffCalendarDate(r.isoYear, r.isoMonth, r.isoDay, ny, nm, nd, largestUnit);
+            var (h, mi, s, ms, us, ns) = BalanceTimeOnly(subNs);
+            return new JSTemporalDuration(fy, fmo, fw, fd, h, mi, s, ms, us, ns, DurationPrototype);
+        }
+
+        return BalanceFromNanoseconds(roundedNs, largestUnit);
+    }
+
+    private double TotalRelative(JSTemporalPlainDate r, string unit)
+    {
+        var (endNs, startNs, _) = RelativeEndpoints(r);
+
+        if (unit is "year" or "month")
+        {
+            var (whole, sign, progress, unitLen) = CalendarNudgeBounds(r, endNs, startNs, unit == "year");
+            if (unitLen.IsZero) return whole;
+            return whole + sign * (double)progress / (double)unitLen;
+        }
+
+        var unitNs = unit == "week" ? 7 * (BigInteger)NanosecondsPerDay : TimeUnitNanoseconds(unit);
+        return (double)(endNs - startNs) / (double)unitNs;
+    }
+
+    // Rounds the (fractional) number of year/month units from relativeTo to the duration's end to a
+    // whole multiple of `increment` under `roundingMode`.
+    private static BigInteger NudgeCalendarUnit(JSTemporalPlainDate r, BigInteger endNs, BigInteger startNs,
+        bool isYear, long increment, string roundingMode)
+    {
+        var (whole, sign, progress, unitLen) = CalendarNudgeBounds(r, endNs, startNs, isYear);
+        if (unitLen.IsZero) return 0;
+        var num = (BigInteger)(long)whole * unitLen + sign * progress;
+        var rounded = RoundToIncrement(num, unitLen * increment, roundingMode);
+        return rounded / unitLen;
+    }
+
+    // The whole-unit count toward the end, the direction sign, and the |end − floorBoundary| /
+    // |ceilBoundary − floorBoundary| nanosecond spans that locate the end between the two surrounding
+    // calendar boundaries.
+    private static (double whole, int sign, BigInteger progress, BigInteger unitLen) CalendarNudgeBounds(
+        JSTemporalPlainDate r, BigInteger endNs, BigInteger startNs, bool isYear)
+    {
+        var sign = endNs > startNs ? 1 : (endNs < startNs ? -1 : 0);
+        if (sign == 0) return (0, 0, BigInteger.Zero, BigInteger.Zero);
+
+        var (ey, em, ed) = JSTemporalPlainDate.DateFromEpochDays((long)FloorDivBig(endNs, NanosecondsPerDay));
+        var diff = JSTemporalPlainDate.DiffCalendarDate(r.isoYear, r.isoMonth, r.isoDay, ey, em, ed, isYear ? "year" : "month");
+        var whole = isYear ? diff.years : diff.months;
+        var w = (long)whole;
+
+        var (fy, fm, fd) = isYear
+            ? JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, w, 0, 0, 0)
+            : JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, 0, w, 0, 0);
+        var (cy, cm, cd) = isYear
+            ? JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, w + sign, 0, 0, 0)
+            : JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, 0, w + sign, 0, 0);
+
+        var floorNs = (BigInteger)JSTemporalPlainDate.EpochDaysFor(fy, fm, fd) * NanosecondsPerDay;
+        var ceilNs = (BigInteger)JSTemporalPlainDate.EpochDaysFor(cy, cm, cd) * NanosecondsPerDay;
+        return (whole, sign, BigInteger.Abs(endNs - floorNs), BigInteger.Abs(ceilNs - floorNs));
+    }
+
+    // Splits a signed sub-day nanosecond count into time components that all share its sign.
+    private static (double h, double mi, double s, double ms, double us, double ns) BalanceTimeOnly(BigInteger ns)
+    {
+        var sign = ns.Sign;
+        var a = BigInteger.Abs(ns);
+        var h = a / 3_600_000_000_000; a %= 3_600_000_000_000;
+        var mi = a / 60_000_000_000; a %= 60_000_000_000;
+        var s = a / 1_000_000_000; a %= 1_000_000_000;
+        var ms = a / 1_000_000; a %= 1_000_000;
+        var us = a / 1_000; a %= 1_000;
+        return (sign * (double)h, sign * (double)mi, sign * (double)s, sign * (double)ms, sign * (double)us, sign * (double)a);
     }
 
     // ── balancing / rounding helpers ──────────────────────────────────────────────

@@ -44,10 +44,16 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     fields (era/eraYear/year/month/monthCode/day/dayOfYear/daysInMonth/daysInYear/monthsInYear/
 //     inLeapYear) through the same TemporalCalendarMath as PlainDate. Calendar/DST arithmetic
 //     (add/subtract/with/round) on ZonedDateTime remains unimplemented (Problems 6/16).
+//   * Problems 2/11 — Temporal.Duration.round / total with a relativeTo bailed out as "not yet
+//     implemented". They now work for an ISO (or Gregorian-family) PlainDate relativeTo: the date
+//     part is added to relativeTo and the time folded onto a 24h-day timeline, calendar units
+//     (year/month) are rounded by nudging between the surrounding calendar boundaries, and
+//     week/day/time units use their fixed nanosecond length. A ZonedDateTime relativeTo (DST) or a
+//     non-ISO calendar relativeTo remains unimplemented.
 //
 // Out of scope: calendar/DST arithmetic on ZonedDateTime (add/subtract/with/round — Problems 6/16),
-// relativeTo duration rounding (Problems 2/11/14) and the non-ISO calendars for PlainMonthDay
-// (lunisolar/arithmetic families).
+// a ZonedDateTime/PlainDateTime or non-ISO-calendar relativeTo for Duration rounding, and the
+// non-ISO calendars for PlainMonthDay (lunisolar/arithmetic families).
 public class Issue779Tests
 {
     private static string ErrorName(string code)
@@ -352,4 +358,37 @@ public class Issue779Tests
     [Fact] // an unknown calendar identifier is still a RangeError
     public void ZonedDateTimeUnknownCalendarRejected()
         => Assert.Equal("RangeError", ErrorName("Temporal.ZonedDateTime.from('2024-06-15T12:00+00:00[UTC][u-ca=not-a-calendar]')"));
+
+    // ───────── Problems 2/11: Duration.round / total with a PlainDate relativeTo ─────────
+    // ISO (and Gregorian-family) PlainDate relativeTo, where a day is exactly 24h.
+
+    private static string Dur(string ctor, string call)
+        => Eval($"var d = new Temporal.Duration({ctor}); var r = d.{call}; [r.years,r.months,r.weeks,r.days,r.hours,r.minutes,r.seconds].join(',')");
+
+    [Theory]
+    [InlineData("0,11,0,396", "round({largestUnit:'years', relativeTo: new Temporal.PlainDate(2017,1,1)})", "2,0,0,0,0,0,0")]
+    [InlineData("5,5,5,5,5,5,5,5,5,5", "round({smallestUnit:'years', relativeTo: new Temporal.PlainDate(2020,1,1)})", "6,0,0,0,0,0,0")]
+    [InlineData("0,0,0,40", "round({smallestUnit:'months', relativeTo: new Temporal.PlainDate(2020,1,1)})", "0,1,0,0,0,0,0")]
+    [InlineData("0,0,0,1,12", "round({smallestUnit:'days', largestUnit:'days', relativeTo: new Temporal.PlainDate(2020,1,1)})", "0,0,0,2,0,0,0")]
+    [InlineData("0,0,0,10", "round({smallestUnit:'weeks', largestUnit:'weeks', relativeTo: new Temporal.PlainDate(2020,1,1)})", "0,0,1,0,0,0,0")]
+    [InlineData("0,0,0,0,25", "round({largestUnit:'days', relativeTo: new Temporal.PlainDate(2020,1,1)})", "0,0,0,1,1,0,0")]
+    public void DurationRoundRelativeTo(string ctor, string call, string expected)
+        => Assert.Equal(expected, Dur(ctor, call));
+
+    [Fact] // halfExpand is the default rounding mode, and negative durations round away from zero too
+    public void DurationRoundRelativeToNegative()
+        => Assert.Equal("-6,0,0,0,0,0,0",
+            Dur("5,5,5,5,5,5,5,5,5,5", "negated().round({smallestUnit:'years', relativeTo: new Temporal.PlainDate(2020,1,1)})"));
+
+    [Theory]
+    [InlineData("0,1,0,0", "months", "1")]          // exactly one calendar month
+    [InlineData("0,1,0,0", "days", "31")]           // January 2020 has 31 days
+    [InlineData("0,1,0,15", "months", "1.5172413793103448")] // 1 + 15/29 (Feb 2020)
+    public void DurationTotalRelativeTo(string ctor, string unit, string expected)
+        => Assert.Equal(expected,
+            Eval($"String(new Temporal.Duration({ctor}).total({{unit:'{unit}', relativeTo: new Temporal.PlainDate(2020,1,1)}}))"));
+
+    [Fact] // a calendar-unit round without relativeTo is still a RangeError
+    public void DurationRoundCalendarUnitNoRelativeToThrows()
+        => Assert.Equal("RangeError", ErrorName("new Temporal.Duration(1,2,3).round({largestUnit:'years'})"));
 }

@@ -744,6 +744,36 @@ public partial class JSTemporalPlainDate : JSObject
         return (newYear, newMonth, newDay);
     }
 
+    // ── internal calendar primitives reused by Temporal.Duration relativeTo rounding ──────────
+    // These expose the (already-tested) ISO epoch-day arithmetic for the ISO and Gregorian-family
+    // calendars, which share the ISO month/day structure.
+
+    // Converts a Temporal.Duration relativeTo option (a PlainDate, or a string / property bag that
+    // resolves to one) to a PlainDate.
+    internal static JSTemporalPlainDate ToRelativeDate(JSValue item)
+        => (JSTemporalPlainDate)ToTemporalDate(item, "constrain");
+
+    internal static long EpochDaysFor(int year, int month, int day) => DaysFromCivil(year, month, day);
+
+    internal static (int y, int m, int d) DateFromEpochDays(long epoch)
+    {
+        var (y, m, d) = CivilFromDays(epoch);
+        return ((int)y, (int)m, (int)d);
+    }
+
+    // relativeTo + (years, months, weeks, days) using the ISO "constrain" overflow; throws a
+    // RangeError if the result leaves the representable range.
+    internal static (int y, int m, int d) AddCalendarDate(int year, int month, int day,
+        long years, long months, long weeks, long days)
+    {
+        var r = (JSTemporalPlainDate)AddISODate(year, month, day, years, months, weeks, days, "constrain");
+        return (r.isoYear, r.isoMonth, r.isoDay);
+    }
+
+    internal static (double years, double months, double weeks, double days) DiffCalendarDate(
+        int ay, int am, int ad, int by, int bm, int bd, string largestUnit)
+        => DifferenceISODate(ay, am, ad, by, bm, bd, largestUnit);
+
     private static int IsoDayOfWeek(int year, int month, int day)
     {
         var epoch = DaysFromCivil(year, month, day);
