@@ -257,17 +257,20 @@ public partial class JSTemporalPlainMonthDay : JSObject
         RegexOptions.CultureInvariant);
 
     private static readonly Regex FullDatePattern = new(
-        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})(?:[Tt ].*)?(?:\[[^\]]*\])*$",
+        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})" +
+        TemporalIsoString.TimeAndOffsetTail + TemporalIsoString.AnnotationsTail + "$",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalMonthDayString(string text)
     {
-        // Only the ASCII hyphen-minus is a valid sign; reject the U+2212 variant the lenient
-        // time/offset tail would otherwise accept.
+        // Only the ASCII hyphen-minus is a valid sign; reject the U+2212 variant the time/offset
+        // tail would otherwise accept.
         if (text.Contains('−'))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
+
+        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
 
         var calMatch = CalendarAnnotation.Match(text);
         var calendarId = calMatch.Success ? ResolveCalendarId(calMatch.Groups[1].Value, text) : "iso8601";

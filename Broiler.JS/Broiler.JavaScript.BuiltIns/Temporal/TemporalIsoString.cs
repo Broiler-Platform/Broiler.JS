@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
@@ -20,6 +21,28 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 // designator through the strict calendar / time-zone canonicalizers.
 internal static class TemporalIsoString
 {
+    // The time-of-day + UTC-offset tail permitted after the date in a Temporal date / date-time
+    // string: an optional T / space separator and HH[:MM[:SS]] with a fraction allowed only on the
+    // smallest (seconds) component, then an optional Z or numeric UTC offset. Mirrors the strict
+    // PlainDateTime time grammar so the date-only parsers reject a fraction on the minutes or hours.
+    internal const string TimeAndOffsetTail =
+        @"(?:[Tt ]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?" +
+        @"(?:[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?";
+
+    // Trailing [..] annotations (a time-zone annotation and/or one or more key=value annotations).
+    internal const string AnnotationsTail = @"(?:\[[^\]]*\])*";
+
+    private static readonly Regex CalendarAnnotationPattern =
+        new(@"\[!?u-ca=[^\]]+\]", RegexOptions.CultureInvariant);
+
+    // A Temporal string carries at most one calendar (u-ca) annotation; more than one is a
+    // RangeError regardless of the critical (!) flag.
+    internal static void RejectMultipleCalendarAnnotations(string text)
+    {
+        if (CalendarAnnotationPattern.Matches(text).Count > 1)
+            throw JSEngine.NewRangeError($"Temporal: more than one calendar annotation in \"{text}\"");
+    }
+
     // A date or date-time. Time, fraction, and Z / numeric-offset designators are all optional; the
     // date portion is validated separately by IsValidDate.
     private static readonly Regex DateTimePattern = new(

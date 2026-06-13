@@ -566,7 +566,8 @@ public partial class JSTemporalPlainDate : JSObject
     }
 
     private static readonly Regex DatePattern = new(
-        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})(?:[Tt \[].*)?$",
+        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})" +
+        TemporalIsoString.TimeAndOffsetTail + TemporalIsoString.AnnotationsTail + "$",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
@@ -574,9 +575,11 @@ public partial class JSTemporalPlainDate : JSObject
     private static JSValue ParseTemporalDateString(string text)
     {
         // Only the ASCII hyphen-minus is a valid sign; the date itself is parsed strictly below, but
-        // the lenient time/offset tail would otherwise let a U+2212 variant minus sign slip through.
+        // the time/offset tail would otherwise let a U+2212 variant minus sign slip through.
         if (text.Contains('−'))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
+
+        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
 
         var match = DatePattern.Match(text);
         if (!match.Success)
