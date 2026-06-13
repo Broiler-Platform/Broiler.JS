@@ -62,6 +62,9 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   * Problem 3 — the %TypedArray%.prototype methods ignored a view going out of bounds after its
 //     backing resizable ArrayBuffer was shrunk (length returned 0, so they silently no-op'd). They
 //     now call ValidateTypedArray and throw a TypeError when the view is out of bounds (or detached).
+//   * Problems 19/23 — findLast / findLastIndex were inherited from Array.prototype (no
+//     ValidateTypedArray); they are now %TypedArray% methods that validate the receiver and search
+//     from the end, so an out-of-bounds view throws TypeError.
 //
 // Out of scope: DST gap/overlap disambiguation beyond "compatible",
 // a ZonedDateTime/PlainDateTime or non-ISO-calendar relativeTo for Duration rounding, and the
@@ -507,4 +510,21 @@ public class Issue779Tests
     [Fact] // methods on a detached buffer also throw TypeError
     public void TypedArrayDetachedThrows()
         => Assert.Equal("TypeError", ErrorName("var ab = new ArrayBuffer(8); var td = new Int32Array(ab); ab.transfer(); td.fill(0)"));
+
+    // ───────── Problems 19/23: findLast / findLastIndex are %TypedArray% methods ─────────
+    // They were inherited from Array.prototype (no ValidateTypedArray); now they are TypedArray
+    // methods that validate the receiver, and they search from the end.
+
+    [Theory]
+    [InlineData("new Int32Array([5,10,15,20]).findLast(x=>x>12)", "20")]
+    [InlineData("new Int32Array([5,10,15,20]).findLastIndex(x=>x>12)", "3")]
+    [InlineData("new Int32Array([5,10,15,20]).findLastIndex(x=>x>99)", "-1")]
+    public void TypedArrayFindLast(string call, string expected)
+        => Assert.Equal(expected, Eval(call));
+
+    [Theory] // out of bounds → TypeError (Problem 19/23 return-abrupt-from-this-out-of-bounds)
+    [InlineData("ta.findLast(()=>true)")]
+    [InlineData("ta.findLastIndex(()=>true)")]
+    public void TypedArrayFindLastOutOfBoundsThrows(string call)
+        => Assert.Equal("TypeError", ErrorName(Oob + call));
 }

@@ -258,6 +258,38 @@ partial class JSTypedArray
 
     }
 
+    [JSExport("findLast", Length = 1)]
+    public JSValue FindLast(in Arguments a)
+    {
+        ValidateTypedArray("findLast");
+        var (callback, thisArg) = a.Get2();
+        if (callback is not JSFunction fn)
+            throw JSEngine.NewTypeError($"{callback} is not a function in %TypedArray%.prototype.findLast");
+        for (int i = Length - 1; i >= 0; i--)
+        {
+            var item = this[(uint)i];
+            if (fn.InvokeCallback(new Arguments(thisArg, item, new JSNumber(i), this)).BooleanValue)
+                return item;
+        }
+        return JSUndefined.Value;
+    }
+
+    [JSExport("findLastIndex", Length = 1)]
+    public JSValue FindLastIndex(in Arguments a)
+    {
+        ValidateTypedArray("findLastIndex");
+        var (callback, thisArg) = a.Get2();
+        if (callback is not JSFunction fn)
+            throw JSEngine.NewTypeError($"{callback} is not a function in %TypedArray%.prototype.findLastIndex");
+        for (int i = Length - 1; i >= 0; i--)
+        {
+            var item = this[(uint)i];
+            if (fn.InvokeCallback(new Arguments(thisArg, item, new JSNumber(i), this)).BooleanValue)
+                return new JSNumber(i);
+        }
+        return JSNumber.MinusOne;
+    }
+
     [JSExport("forEach", Length = 1)]
     public JSValue ForEach(in Arguments a)
     {
