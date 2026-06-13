@@ -100,6 +100,8 @@ public partial class JSTemporalPlainYearMonth : JSObject
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with requires an object");
         if (!obj[KeyStrings.GetOrCreate("calendar")].IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with does not accept a calendar field");
+        if (!obj[KeyStrings.GetOrCreate("timeZone")].IsUndefined)
+            throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with does not accept a timeZone field");
 
         var overflow = ReadOverflow(a.GetAt(1));
 
@@ -208,13 +210,31 @@ public partial class JSTemporalPlainYearMonth : JSObject
     }
 
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString(ReadCalendarName(a.GetAt(0))));
 
     [JSExport("toJSON", Length = 0)]
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a) => new JSString(ToISOString());
+
+    // GetTemporalShowCalendarNameOption.
+    private static string ReadCalendarName(JSValue options)
+    {
+        if (options == null || options.IsUndefined) return "auto";
+        if (options is not JSObject optionsObject)
+            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
+
+        var v = optionsObject[KeyStrings.GetOrCreate("calendarName")];
+        if (v.IsUndefined) return "auto";
+
+        var name = v.StringValue;
+        return name switch
+        {
+            "auto" or "always" or "never" or "critical" => name,
+            _ => throw JSEngine.NewRangeError($"Temporal: invalid calendarName \"{name}\""),
+        };
+    }
 
     [JSExport("valueOf", Length = 0)]
     public JSValue ValueOf(in Arguments a)
@@ -405,8 +425,10 @@ public partial class JSTemporalPlainYearMonth : JSObject
         return (m <= 2 ? y + 1 : y, m, d);
     }
 
-    // YYYY-MM, expanding to ±YYYYYY outside 0000–9999.
-    private string ToISOString()
+    // TemporalYearMonthToString: "YYYY-MM" (expanding to ±YYYYYY outside 0000–9999). When the
+    // calendar is shown ("always"/"critical") the reference ISO day and a [u-ca=…] annotation are
+    // appended — the round-trippable form needed because YYYY-MM alone omits the day.
+    private string ToISOString(string showCalendar = "auto")
     {
         var sb = new StringBuilder();
         if (isoYear < 0 || isoYear > 9999)
@@ -415,6 +437,13 @@ public partial class JSTemporalPlainYearMonth : JSObject
             sb.Append(isoYear.ToString("0000", CultureInfo.InvariantCulture));
 
         sb.Append('-').Append(isoMonth.ToString("00", CultureInfo.InvariantCulture));
+
+        if (showCalendar is "always" or "critical")
+        {
+            sb.Append('-').Append(referenceISODay.ToString("00", CultureInfo.InvariantCulture));
+            sb.Append(showCalendar == "critical" ? "[!u-ca=iso8601]" : "[u-ca=iso8601]");
+        }
+
         return sb.ToString();
     }
 }

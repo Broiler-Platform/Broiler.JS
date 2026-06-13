@@ -260,4 +260,98 @@ public class Issue771Tests
             "const x = Temporal.ZonedDateTime.from('2020-03-08T00:00:00-05:00[America/New_York]');" +
             "const y = Temporal.ZonedDateTime.from('2020-03-09T00:00:00-04:00[America/New_York]');" +
             "x.until(y, {largestUnit:'day'}).toString()"));
+
+    // --- Problem 10: PlainYearMonth.toString honors the calendarName option ---
+
+    [Fact]
+    public void PlainYearMonthToStringAutoOmitsDayAndCalendar()
+        => Assert.Equal("1976-11", Eval("new Temporal.PlainYearMonth(1976, 11).toString()"));
+
+    [Fact]
+    public void PlainYearMonthToStringAlwaysShowsReferenceDayAndCalendar()
+        => Assert.Equal("1976-11-01[u-ca=iso8601]", Eval(
+            "new Temporal.PlainYearMonth(1976, 11).toString({calendarName:'always'})"));
+
+    [Fact]
+    public void PlainYearMonthToStringCriticalUsesBang()
+        => Assert.Equal("1976-11-01[!u-ca=iso8601]", Eval(
+            "new Temporal.PlainYearMonth(1976, 11).toString({calendarName:'critical'})"));
+
+    [Fact]
+    public void PlainYearMonthToStringNeverOmitsCalendar()
+        => Assert.Equal("1976-11", Eval(
+            "new Temporal.PlainYearMonth(1976, 11).toString({calendarName:'never'})"));
+
+    // The harness assertPlainYearMonth() expression that previously hit "slice of undefined".
+    [Fact]
+    public void PlainYearMonthHarnessReferenceDayExpressionWorks()
+        => Assert.Equal("1", Eval(
+            "const ym = new Temporal.PlainYearMonth(1976, 11);" +
+            "(Number(ym.toString({ calendarName: 'always' }).slice(1).split('-')[2].slice(0, 2))) + ''"));
+
+    [Fact]
+    public void PlainYearMonthToStringRejectsInvalidCalendarName()
+        => Assert.Equal("RangeError", ErrorName("new Temporal.PlainYearMonth(1976,11).toString({calendarName:'bogus'});"));
+
+    [Fact]
+    public void PlainYearMonthToStringRejectsNonObjectOptions()
+        => Assert.Equal("TypeError", ErrorName("new Temporal.PlainYearMonth(1976,11).toString(42);"));
+
+    // --- Problem 11: Duration.round validates roundingIncrement before the relativeTo path ---
+
+    [Fact]
+    public void DurationRoundOutOfRangeIncrementIsRangeError()
+        => Assert.Equal("RangeError", ErrorName(
+            "new Temporal.Duration(1).round({smallestUnit:'years', relativeTo:new Temporal.PlainDate(2000,1,1), roundingIncrement: 1e9 + 1});"));
+
+    [Fact]
+    public void DurationRoundNonDividingIncrementIsRangeError()
+        => Assert.Equal("RangeError", ErrorName(
+            "const d = new Temporal.Duration(5,5,5,5,5,5,5,5,5,5);" +
+            "d.round({relativeTo: Temporal.PlainDate.from('2020-01-01'), smallestUnit:'hours', roundingIncrement: 11});"));
+
+    [Fact]
+    public void DurationRoundIncrementEqualToMaxIsRangeError()
+        => Assert.Equal("RangeError", ErrorName(
+            "const d = new Temporal.Duration(5,5,5,5,5,5,5,5,5,5);" +
+            "d.round({relativeTo: Temporal.PlainDate.from('2020-01-01'), smallestUnit:'minutes', roundingIncrement: 60});"));
+
+    // Pure-time rounding also rejects an increment that does not divide its unit evenly.
+    [Fact]
+    public void DurationRoundPureTimeNonDividingIncrementIsRangeError()
+        => Assert.Equal("RangeError", ErrorName(
+            "Temporal.Duration.from({seconds:30}).round({smallestUnit:'seconds', roundingIncrement: 7});"));
+
+    // --- Problem 9 (Temporal subset): GetOptionsObject / ToTemporalTimeRecord TypeErrors ---
+
+    [Fact]
+    public void PlainTimeSinceRejectsPrimitiveOptions()
+        => Assert.Equal("TypeError", ErrorName(
+            "new Temporal.PlainTime(15,23,30).since(new Temporal.PlainTime(16,23,30), 'hello');"));
+
+    [Fact]
+    public void PlainTimeUntilRejectsNullOptions()
+        => Assert.Equal("TypeError", ErrorName(
+            "new Temporal.PlainTime(15,23,30).until(new Temporal.PlainTime(16,23,30), null);"));
+
+    [Fact]
+    public void PlainTimeToStringRejectsPrimitiveOptions()
+        => Assert.Equal("TypeError", ErrorName("new Temporal.PlainTime(12,56,32).toString(1);"));
+
+    [Fact]
+    public void PlainTimeFromEmptyObjectIsTypeError()
+        => Assert.Equal("TypeError", ErrorName("Temporal.PlainTime.from({});"));
+
+    [Fact]
+    public void PlainTimeFromOnlyPluralFieldIsTypeError()
+        => Assert.Equal("TypeError", ErrorName("Temporal.PlainTime.from({minutes: 12});"));
+
+    [Fact]
+    public void PlainTimeFromIgnoresPluralFieldWhenSingularPresent()
+        => Assert.Equal("00:30:00", Eval("Temporal.PlainTime.from({hours: 2, minute: 30}).toString()"));
+
+    [Fact]
+    public void PlainYearMonthWithRejectsTimeZoneField()
+        => Assert.Equal("TypeError", ErrorName(
+            "Temporal.PlainYearMonth.from('2019-10').with({year:2021, timeZone:'UTC'});"));
 }

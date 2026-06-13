@@ -164,14 +164,21 @@ public partial class JSTemporalPlainTime : JSObject
     }
 
     [JSExport("until", Length = 1)]
-    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), 1);
+    public JSValue Until(in Arguments a) { GetOptionsObject(a.GetAt(1)); return Difference(a.GetAt(0), 1); }
 
     [JSExport("since", Length = 1)]
-    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), -1);
+    public JSValue Since(in Arguments a) { GetOptionsObject(a.GetAt(1)); return Difference(a.GetAt(0), -1); }
 
-    // TODO: until/since ignore the options bag (largestUnit/smallestUnit/roundingIncrement/
-    // roundingMode). The default behavior (largestUnit "hour", no rounding) is implemented;
-    // honoring the options requires RoundDuration on the resulting time difference.
+    // GetOptionsObject: a non-undefined options argument must be an object (a primitive raises a
+    // TypeError). The option values themselves (largestUnit/smallestUnit/roundingIncrement/
+    // roundingMode) are not yet honored — until/since use largestUnit "hour" with no rounding.
+    private static void GetOptionsObject(JSValue options)
+    {
+        if (options == null || options.IsUndefined) return;
+        if (options is not JSObject)
+            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
+    }
+
     private JSValue Difference(JSValue other, int sign)
     {
         var target = RequireTime(ToTemporalTime(other, "constrain"));
@@ -208,7 +215,11 @@ public partial class JSTemporalPlainTime : JSObject
     }
 
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToStringMethod(in Arguments a)
+    {
+        GetOptionsObject(a.GetAt(0));
+        return new JSString(ToISOString());
+    }
 
     [JSExport("toJSON", Length = 0)]
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
@@ -326,15 +337,25 @@ public partial class JSTemporalPlainTime : JSObject
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainTime: invalid value");
 
-        // ToTemporalTimeRecord (complete): absent components default to 0.
+        // ToTemporalTimeRecord: absent components default to 0, but at least one recognized
+        // (singular) field must be present — an empty bag, or one with only unrecognized keys
+        // like the plural "minutes", is a TypeError.
+        var any = false;
         int Field(string name)
         {
             var v = obj[KeyStrings.GetOrCreate(name)];
-            return v.IsUndefined ? 0 : ToIntegerWithTruncation(v);
+            if (v.IsUndefined) return 0;
+            any = true;
+            return ToIntegerWithTruncation(v);
         }
 
-        return RegulateTime(Field("hour"), Field("minute"), Field("second"),
-            Field("millisecond"), Field("microsecond"), Field("nanosecond"), overflow);
+        var h = Field("hour"); var mi = Field("minute"); var s = Field("second");
+        var ms = Field("millisecond"); var us = Field("microsecond"); var ns = Field("nanosecond");
+
+        if (!any)
+            throw JSEngine.NewTypeError("Temporal.PlainTime: object has no time properties");
+
+        return RegulateTime(h, mi, s, ms, us, ns, overflow);
     }
 
     private static readonly Regex TimePattern = new(
