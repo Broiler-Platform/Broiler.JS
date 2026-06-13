@@ -78,6 +78,30 @@ internal static class TemporalCalendar
         throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{id}\"");
     }
 
+    // ToTemporalCalendarSlotValue: resolves a calendar argument (a `calendar` property-bag field, a
+    // constructor's calendar argument, or a withCalendar argument) to a canonical calendar id. The
+    // value must either be a Temporal object that carries a calendar — in which case its calendar is
+    // adopted directly, without coercion — or a calendar-identifier String. Anything else (null, a
+    // number, a bigint, a Symbol, a plain object, or a Temporal type without a calendar such as
+    // Temporal.Duration) is a TypeError; an unrecognized identifier String is a RangeError.
+    internal static string ToSlotValue(JSValue calendar, bool includeArithmetic = false)
+    {
+        switch (calendar)
+        {
+            case JSTemporalPlainDate d: return d.calendarId;
+            case JSTemporalPlainDateTime dt: return dt.calendarId;
+            case JSTemporalPlainYearMonth ym: return ym.calendarId;
+            case JSTemporalZonedDateTime zdt: return zdt.calendarId;
+            case JSTemporalPlainMonthDay: return "iso8601";
+        }
+
+        if (calendar == null || !calendar.IsString)
+            throw JSEngine.NewTypeError(
+                "Temporal: calendar must be a calendar identifier string or a Temporal object with a calendar");
+
+        return Canonicalize(calendar.StringValue, includeArithmetic);
+    }
+
     internal static bool IsSupported(string id)
     {
         var lower = id.ToLowerInvariant();

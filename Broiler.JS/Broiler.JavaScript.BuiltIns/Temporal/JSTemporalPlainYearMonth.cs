@@ -162,7 +162,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         if (!monthCodeValue.IsUndefined) { month = MonthFromCode(monthCodeValue.ToString()); any = true; }
         if (!monthValue.IsUndefined)
         {
-            var m = ToIntegerWithTruncation(monthValue);
+            var m = ToPositiveIntegerWithTruncation(monthValue);
             if (!monthCodeValue.IsUndefined && m != month)
                 throw JSEngine.NewRangeError("Temporal.PlainYearMonth.with: month and monthCode disagree");
             month = m; any = true;
@@ -219,7 +219,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         }
         if (!monthValue.IsUndefined)
         {
-            var m = ToIntegerWithTruncation(monthValue);
+            var m = ToPositiveIntegerWithTruncation(monthValue);
             if (!monthCodeValue.IsUndefined && m != month)
                 throw JSEngine.NewRangeError("Temporal.PlainYearMonth.with: month and monthCode disagree");
             month = m; any = true;
@@ -343,7 +343,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var target = Require(ToTemporalYearMonth(other, "constrain"));
         if (calendarId != target.calendarId)
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: cannot compute the difference between year-months of different calendars");
-        var largestUnit = ReadLargestUnit(options, "year");
+        var largestUnit = ReadDifferenceSettings(options);
 
         if (NonIso)
         {
@@ -442,11 +442,20 @@ public partial class JSTemporalPlainYearMonth : JSObject
         return (int)Math.Truncate(number);
     }
 
+    // ToPositiveIntegerWithTruncation: the `month` field must be a positive integer (≥ 1) regardless
+    // of the overflow option — only the upper bound is subject to constrain/reject.
+    private static int ToPositiveIntegerWithTruncation(JSValue value)
+    {
+        var n = ToIntegerWithTruncation(value);
+        if (n < 1)
+            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: month must be a positive integer");
+        return n;
+    }
+
     private static string CanonicalizeCalendar(JSValue calendar)
     {
         if (calendar == null || calendar.IsUndefined) return "iso8601";
-        if (calendar is JSTemporalPlainYearMonth ym) return ym.calendarId;
-        return TemporalCalendar.Canonicalize(calendar.StringValue, includeArithmetic: true);
+        return TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
     }
 
     private static int MonthFromCode(string code)
@@ -464,24 +473,54 @@ public partial class JSTemporalPlainYearMonth : JSObject
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
         var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
         if (v.IsUndefined) return "constrain";
-        var overflow = v.ToString();
+        var overflow = v.StringValue;
         if (overflow is not ("constrain" or "reject"))
             throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
         return overflow;
     }
 
-    private static string ReadLargestUnit(JSValue options, string defaultUnit)
+    // GetDifferenceSettings for until/since: the only valid units are year (largest) and month
+    // (smallest). Validates largestUnit/smallestUnit (smallestUnit must not be larger than
+    // largestUnit), roundingIncrement and roundingMode, and returns the resolved largestUnit. A
+    // smallestUnit/increment finer than the default is validated here but the rounding is not yet
+    // applied — see the TODO above Difference.
+    private static string ReadDifferenceSettings(JSValue options)
     {
-        if (options == null || options.IsUndefined) return defaultUnit;
-        if (options is not JSObject optionsObject)
+        if (options == null || options.IsUndefined) return "year";
+        if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-        var v = optionsObject[KeyStrings.GetOrCreate("largestUnit")];
-        if (v.IsUndefined || v.ToString() == "auto") return defaultUnit;
-        return v.ToString() switch
+
+        var largestUnit = ReadYearMonthUnit(o, "largestUnit");
+        var smallestUnit = ReadYearMonthUnit(o, "smallestUnit") ?? "month";
+        TemporalRoundingOptions.GetRoundingIncrement(o);
+        TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+
+        // largestUnit "auto"/absent resolves to the larger of "year" and smallestUnit, i.e. "year".
+        largestUnit ??= "year";
+
+        // year ranks above month; smallestUnit must not be larger (rank smaller) than largestUnit.
+        if (UnitRank(smallestUnit) < UnitRank(largestUnit))
+            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: smallestUnit must not be larger than largestUnit");
+
+        return largestUnit;
+    }
+
+    private static int UnitRank(string unit) => unit == "year" ? 0 : 1;
+
+    // Reads a year/month unit option (largestUnit / smallestUnit), normalizing the plural form;
+    // returns null for an absent option (or "auto" for largestUnit) and throws a RangeError for any
+    // value that is not "year" or "month".
+    private static string ReadYearMonthUnit(JSObject options, string name)
+    {
+        var v = options[KeyStrings.GetOrCreate(name)];
+        if (v.IsUndefined) return null;
+        var s = v.StringValue;
+        if (s == "auto" && name == "largestUnit") return null;
+        return s switch
         {
             "year" or "years" => "year",
             "month" or "months" => "month",
-            var other => throw JSEngine.NewRangeError($"Temporal.PlainYearMonth: invalid largestUnit \"{other}\""),
+            _ => throw JSEngine.NewRangeError($"Temporal.PlainYearMonth: invalid {name} \"{s}\""),
         };
     }
 
@@ -518,7 +557,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth: missing month / monthCode");
 
-        var month = monthCodeValue.IsUndefined ? ToIntegerWithTruncation(monthValue) : MonthFromCode(monthCodeValue.ToString());
+        var month = monthCodeValue.IsUndefined ? ToPositiveIntegerWithTruncation(monthValue) : MonthFromCode(monthCodeValue.ToString());
         if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToIntegerWithTruncation(monthValue) != month)
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: month and monthCode disagree");
 
@@ -531,11 +570,16 @@ public partial class JSTemporalPlainYearMonth : JSObject
     }
 
     private static readonly Regex YearMonthPattern = new(
-        @"^(\d{4}|[+-−]\d{6})-(\d{2})(?:-(\d{2}))?(?:[Tt ].*)?(?:\[[^\]]*\])*$",
+        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})(?:-(\d{2}))?(?:[Tt ].*)?(?:\[[^\]]*\])*$",
         RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalYearMonthString(string text)
     {
+        // Only the ASCII hyphen-minus is a valid sign; reject the U+2212 variant the lenient
+        // time/offset tail would otherwise accept.
+        if (text.Contains('−'))
+            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainYearMonth from \"{text}\"");
+
         var match = YearMonthPattern.Match(text);
         if (!match.Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainYearMonth from \"{text}\"");

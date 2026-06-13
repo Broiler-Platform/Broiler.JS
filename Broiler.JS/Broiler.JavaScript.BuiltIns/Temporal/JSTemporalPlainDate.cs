@@ -204,8 +204,8 @@ public partial class JSTemporalPlainDate : JSObject
 
     // Resolves the receiver's new ISO year from a with()-bag's year / era / eraYear fields,
     // defaulting to the receiver's current year when none are present. Providing a calendar
-    // `year` overrides any era pair (and vice versa); a partial era pair is completed from the
-    // receiver.
+    // `year` overrides any era pair (and vice versa); era and eraYear must be supplied *together* —
+    // a partial pair is a TypeError (it is not completed from the receiver).
     private int ResolveWithYear(JSObject obj, ref bool any)
     {
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
@@ -228,8 +228,6 @@ public partial class JSTemporalPlainDate : JSObject
         }
         else if (hasEra || hasEraYear)
         {
-            if (!hasEra) { eraValue = Era; hasEra = !eraValue.IsUndefined; }
-            if (!hasEraYear) { eraYearValue = EraYear; hasEraYear = !eraYearValue.IsUndefined; }
             era = hasEra ? eraValue.StringValue : null;
             eraYear = hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0;
         }
@@ -245,7 +243,7 @@ public partial class JSTemporalPlainDate : JSObject
         var arg = a.GetAt(0);
         if (arg == null || arg.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.withCalendar requires a calendar");
-        return new JSTemporalPlainDate(isoYear, isoMonth, isoDay, TemporalCalendar.Canonicalize(arg.StringValue, includeArithmetic: true), PlainDatePrototype);
+        return new JSTemporalPlainDate(isoYear, isoMonth, isoDay, TemporalCalendar.ToSlotValue(arg, includeArithmetic: true), PlainDatePrototype);
     }
 
     [JSExport("add", Length = 1)]
@@ -427,8 +425,7 @@ public partial class JSTemporalPlainDate : JSObject
         if (calendar == null || calendar.IsUndefined)
             return "iso8601";
 
-        if (calendar is JSTemporalPlainDate date) return date.calendarId;
-        return TemporalCalendar.Canonicalize(calendar.StringValue, includeArithmetic: true);
+        return TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
     }
 
     private static int MonthFromCode(string code)
@@ -471,7 +468,7 @@ public partial class JSTemporalPlainDate : JSObject
         var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
         if (v.IsUndefined) return "constrain";
 
-        var overflow = v.ToString();
+        var overflow = v.StringValue;
         if (overflow is not ("constrain" or "reject"))
             throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
 
@@ -511,7 +508,7 @@ public partial class JSTemporalPlainDate : JSObject
     {
         var v = options[KeyStrings.GetOrCreate(name)];
         if (v.IsUndefined) return null;
-        var s = v.ToString();
+        var s = v.StringValue;
         if (s == "auto" && name == "largestUnit") return null;
         return s switch
         {
@@ -569,13 +566,18 @@ public partial class JSTemporalPlainDate : JSObject
     }
 
     private static readonly Regex DatePattern = new(
-        @"^(\d{4}|[+-−]\d{6})-(\d{2})-(\d{2})(?:[Tt \[].*)?$",
+        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})(?:[Tt \[].*)?$",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalDateString(string text)
     {
+        // Only the ASCII hyphen-minus is a valid sign; the date itself is parsed strictly below, but
+        // the lenient time/offset tail would otherwise let a U+2212 variant minus sign slip through.
+        if (text.Contains('−'))
+            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
+
         var match = DatePattern.Match(text);
         if (!match.Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
@@ -741,6 +743,36 @@ public partial class JSTemporalPlainDate : JSObject
         var newDay = Math.Min(day, DaysInMonthOf(newYear, newMonth));
         return (newYear, newMonth, newDay);
     }
+
+    // ── internal calendar primitives reused by Temporal.Duration relativeTo rounding ──────────
+    // These expose the (already-tested) ISO epoch-day arithmetic for the ISO and Gregorian-family
+    // calendars, which share the ISO month/day structure.
+
+    // Converts a Temporal.Duration relativeTo option (a PlainDate, or a string / property bag that
+    // resolves to one) to a PlainDate.
+    internal static JSTemporalPlainDate ToRelativeDate(JSValue item)
+        => (JSTemporalPlainDate)ToTemporalDate(item, "constrain");
+
+    internal static long EpochDaysFor(int year, int month, int day) => DaysFromCivil(year, month, day);
+
+    internal static (int y, int m, int d) DateFromEpochDays(long epoch)
+    {
+        var (y, m, d) = CivilFromDays(epoch);
+        return ((int)y, (int)m, (int)d);
+    }
+
+    // relativeTo + (years, months, weeks, days) using the ISO "constrain" overflow; throws a
+    // RangeError if the result leaves the representable range.
+    internal static (int y, int m, int d) AddCalendarDate(int year, int month, int day,
+        long years, long months, long weeks, long days)
+    {
+        var r = (JSTemporalPlainDate)AddISODate(year, month, day, years, months, weeks, days, "constrain");
+        return (r.isoYear, r.isoMonth, r.isoDay);
+    }
+
+    internal static (double years, double months, double weeks, double days) DiffCalendarDate(
+        int ay, int am, int ad, int by, int bm, int bd, string largestUnit)
+        => DifferenceISODate(ay, am, ad, by, bm, bd, largestUnit);
 
     private static int IsoDayOfWeek(int year, int month, int day)
     {

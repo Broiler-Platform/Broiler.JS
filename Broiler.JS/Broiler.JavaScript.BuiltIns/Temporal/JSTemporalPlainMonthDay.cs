@@ -13,21 +13,24 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 
 // Temporal.PlainMonthDay (Temporal proposal §10): a calendar month and day (e.g. "--06-15"),
 // carrying an ISO reference year (default 1972, a leap year so 02-29 is representable) used
-// only for round-tripping. Only the ISO 8601 calendar is supported. Registered under the
-// Temporal namespace via Register = false.
+// only for round-tripping. The ISO 8601 calendar and the Gregorian-family calendars (gregory,
+// buddhist, roc, japanese) — which share the ISO month/day structure — are supported; the
+// lunisolar / arithmetic non-ISO calendars are not yet implemented for PlainMonthDay. Registered
+// under the Temporal namespace via Register = false.
 [JSClassGenerator("PlainMonthDay", Register = false)]
 public partial class JSTemporalPlainMonthDay : JSObject
 {
     private const int DefaultReferenceYear = 1972;
 
     internal readonly int isoMonth, isoDay, referenceISOYear;
+    internal readonly string calendarId;
 
     [JSExport(Length = 2)]
     public JSTemporalPlainMonthDay(in Arguments a) : base(ResolvePrototype())
     {
         isoMonth = ToIntegerWithTruncation(a.GetAt(0));
         isoDay = ToIntegerWithTruncation(a.GetAt(1));
-        RequireCalendar(a.GetAt(2));
+        calendarId = ResolveCalendar(a.GetAt(2));
         var refYear = a.GetAt(3);
         referenceISOYear = refYear == null || refYear.IsUndefined ? DefaultReferenceYear : ToIntegerWithTruncation(refYear);
 
@@ -35,9 +38,12 @@ public partial class JSTemporalPlainMonthDay : JSObject
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: invalid ISO month-day");
     }
 
-    internal JSTemporalPlainMonthDay(int isoMonth, int isoDay, int referenceISOYear, JSObject prototype) : base(prototype)
+    internal JSTemporalPlainMonthDay(int isoMonth, int isoDay, int referenceISOYear, JSObject prototype)
+        : this(isoMonth, isoDay, referenceISOYear, "iso8601", prototype) { }
+
+    internal JSTemporalPlainMonthDay(int isoMonth, int isoDay, int referenceISOYear, string calendarId, JSObject prototype) : base(prototype)
     {
-        this.isoMonth = isoMonth; this.isoDay = isoDay; this.referenceISOYear = referenceISOYear;
+        this.isoMonth = isoMonth; this.isoDay = isoDay; this.referenceISOYear = referenceISOYear; this.calendarId = calendarId;
     }
 
     private static JSObject ResolvePrototype()
@@ -59,7 +65,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
     // ── accessors ───────────────────────────────────────────────────────────────
 
-    [JSExport("calendarId")] public JSValue CalendarId => new JSString("iso8601");
+    [JSExport("calendarId")] public JSValue CalendarId => new JSString(calendarId);
     [JSExport("monthCode")] public JSValue MonthCode => new JSString($"M{isoMonth:00}");
     [JSExport("day")] public double DayValue => isoDay;
 
@@ -72,7 +78,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         var overflow = ReadOverflow(a.GetAt(1));
 
         if (item is JSTemporalPlainMonthDay md)
-            return new JSTemporalPlainMonthDay(md.isoMonth, md.isoDay, md.referenceISOYear, PlainMonthDayPrototype);
+            return new JSTemporalPlainMonthDay(md.isoMonth, md.isoDay, md.referenceISOYear, md.calendarId, PlainMonthDayPrototype);
 
         return ToTemporalMonthDay(item, overflow);
     }
@@ -109,7 +115,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires at least one field");
 
-        return RegulateMonthDay(month, day, overflow);
+        return RegulateMonthDay(month, day, overflow, calendarId);
     }
 
     [JSExport("equals", Length = 1)]
@@ -117,6 +123,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
     {
         var other = Require(ToTemporalMonthDay(a.GetAt(0), "constrain"));
         return isoMonth == other.isoMonth && isoDay == other.isoDay && referenceISOYear == other.referenceISOYear
+            && calendarId == other.calendarId
             ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }
 
@@ -131,11 +138,29 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         var year = ToIntegerWithTruncation(yearValue);
         var day = Math.Clamp(isoDay, 1, DaysInMonthOf(year, isoMonth));
-        return new JSTemporalPlainDate(year, isoMonth, day, JSTemporalPlainDate.PlainDatePrototype);
+        return new JSTemporalPlainDate(year, isoMonth, day, calendarId, JSTemporalPlainDate.PlainDatePrototype);
     }
 
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString(ReadCalendarName(a.GetAt(0))));
+
+    // GetTemporalShowCalendarNameOption (shared shape with PlainDate).
+    private static string ReadCalendarName(JSValue options)
+    {
+        if (options == null || options.IsUndefined) return "auto";
+        if (options is not JSObject optionsObject)
+            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
+
+        var v = optionsObject[KeyStrings.GetOrCreate("calendarName")];
+        if (v.IsUndefined) return "auto";
+
+        var name = v.StringValue;
+        return name switch
+        {
+            "auto" or "always" or "never" or "critical" => name,
+            _ => throw JSEngine.NewRangeError($"Temporal: invalid calendarName \"{name}\""),
+        };
+    }
 
     [JSExport("toJSON", Length = 0)]
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
@@ -161,12 +186,16 @@ public partial class JSTemporalPlainMonthDay : JSObject
         return (int)Math.Truncate(number);
     }
 
-    private static void RequireCalendar(JSValue calendar)
+    // ToTemporalCalendarSlotValue restricted to the calendars PlainMonthDay supports: iso8601 and
+    // the Gregorian-family calendars (gregory, buddhist, roc, japanese) all share the ISO month/day
+    // structure. The lunisolar / arithmetic non-ISO calendars are not yet implemented here.
+    private static string ResolveCalendar(JSValue calendar)
     {
-        if (calendar == null || calendar.IsUndefined) return;
-        var id = calendar.ToString();
-        if (!string.Equals(id, "iso8601", StringComparison.OrdinalIgnoreCase))
-            throw JSEngine.NewRangeError($"Temporal.PlainMonthDay: unsupported calendar \"{id}\" (only iso8601 is implemented)");
+        if (calendar == null || calendar.IsUndefined) return "iso8601";
+        var id = TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
+        if (TemporalCalendarMath.IsNonIso(id))
+            throw JSEngine.NewRangeError($"Temporal.PlainMonthDay: calendar \"{id}\" is not yet implemented (only iso8601 and the Gregorian-family calendars are supported)");
+        return id;
     }
 
     private static int MonthFromCode(string code)
@@ -184,7 +213,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
         var v = optionsObject[KeyStrings.GetOrCreate("overflow")];
         if (v.IsUndefined) return "constrain";
-        var overflow = v.ToString();
+        var overflow = v.StringValue;
         if (overflow is not ("constrain" or "reject"))
             throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
         return overflow;
@@ -193,7 +222,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
     private static JSValue ToTemporalMonthDay(JSValue item, string overflow)
     {
         if (item is JSTemporalPlainMonthDay md)
-            return new JSTemporalPlainMonthDay(md.isoMonth, md.isoDay, md.referenceISOYear, PlainMonthDayPrototype);
+            return new JSTemporalPlainMonthDay(md.isoMonth, md.isoDay, md.referenceISOYear, md.calendarId, PlainMonthDayPrototype);
 
         if (item.IsString)
             return ParseTemporalMonthDayString(item.ToString());
@@ -201,7 +230,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay: invalid value");
 
-        RequireCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
+        var calendarId = ResolveCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
 
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
@@ -220,7 +249,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToIntegerWithTruncation(monthValue) != month)
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month and monthCode disagree");
 
-        return RegulateMonthDay(month, ToIntegerWithTruncation(dayValue), overflow);
+        return RegulateMonthDay(month, ToIntegerWithTruncation(dayValue), overflow, calendarId);
     }
 
     private static readonly Regex MonthDayPattern = new(
@@ -228,11 +257,21 @@ public partial class JSTemporalPlainMonthDay : JSObject
         RegexOptions.CultureInvariant);
 
     private static readonly Regex FullDatePattern = new(
-        @"^(\d{4}|[+-−]\d{6})-(\d{2})-(\d{2})(?:[Tt ].*)?(?:\[[^\]]*\])*$",
+        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})(?:[Tt ].*)?(?:\[[^\]]*\])*$",
         RegexOptions.CultureInvariant);
+
+    private static readonly Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalMonthDayString(string text)
     {
+        // Only the ASCII hyphen-minus is a valid sign; reject the U+2212 variant the lenient
+        // time/offset tail would otherwise accept.
+        if (text.Contains('−'))
+            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
+
+        var calMatch = CalendarAnnotation.Match(text);
+        var calendarId = calMatch.Success ? ResolveCalendarId(calMatch.Groups[1].Value, text) : "iso8601";
+
         var full = FullDatePattern.Match(text);
         if (full.Success)
         {
@@ -240,7 +279,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
             var fd = int.Parse(full.Groups[3].Value, CultureInfo.InvariantCulture);
             if (!IsValidISODate(DefaultReferenceYear, fm, fd))
                 throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
-            return new JSTemporalPlainMonthDay(fm, fd, DefaultReferenceYear, PlainMonthDayPrototype);
+            return new JSTemporalPlainMonthDay(fm, fd, DefaultReferenceYear, calendarId, PlainMonthDayPrototype);
         }
 
         var match = MonthDayPattern.Match(text);
@@ -252,10 +291,19 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (!IsValidISODate(DefaultReferenceYear, month, day))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
 
-        return new JSTemporalPlainMonthDay(month, day, DefaultReferenceYear, PlainMonthDayPrototype);
+        return new JSTemporalPlainMonthDay(month, day, DefaultReferenceYear, calendarId, PlainMonthDayPrototype);
     }
 
-    private static JSValue RegulateMonthDay(int month, int day, string overflow)
+    // Canonicalizes a [u-ca=…] annotation value, rejecting calendars PlainMonthDay does not implement.
+    private static string ResolveCalendarId(string id, string text)
+    {
+        var canonical = TemporalCalendar.Canonicalize(id, includeArithmetic: true);
+        if (TemporalCalendarMath.IsNonIso(canonical))
+            throw JSEngine.NewRangeError($"Temporal.PlainMonthDay: calendar \"{canonical}\" is not yet implemented (from \"{text}\")");
+        return canonical;
+    }
+
+    private static JSValue RegulateMonthDay(int month, int day, string overflow, string calendarId)
     {
         if (overflow == "reject")
         {
@@ -268,7 +316,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
             day = Math.Clamp(day, 1, DaysInMonthOf(DefaultReferenceYear, month));
         }
 
-        return new JSTemporalPlainMonthDay(month, day, DefaultReferenceYear, PlainMonthDayPrototype);
+        return new JSTemporalPlainMonthDay(month, day, DefaultReferenceYear, calendarId, PlainMonthDayPrototype);
     }
 
     // ── ISO helpers ───────────────────────────────────────────────────────────────
@@ -286,11 +334,16 @@ public partial class JSTemporalPlainMonthDay : JSObject
     private static bool IsValidISODate(int year, int month, int day)
         => month is >= 1 and <= 12 && day >= 1 && day <= DaysInMonthOf(year, month);
 
-    // MM-DD for the ISO calendar; a non-1972 reference year is prefixed as YYYY-MM-DD.
-    private string ToISOString()
+    private string ToISOString() => ToISOString("auto");
+
+    // MM-DD for the ISO calendar. The reference year is prefixed (YYYY-MM-DD) when it is not the
+    // default or when a non-ISO calendar is attached (so the value round-trips). The calendar is
+    // annotated when showCalendar forces it (always/critical) or, for "auto", when it is not iso8601.
+    private string ToISOString(string showCalendar)
     {
+        var nonIsoCalendar = calendarId != "iso8601";
         var sb = new StringBuilder();
-        if (referenceISOYear != DefaultReferenceYear)
+        if (referenceISOYear != DefaultReferenceYear || nonIsoCalendar)
         {
             if (referenceISOYear < 0 || referenceISOYear > 9999)
                 sb.Append(referenceISOYear < 0 ? '-' : '+').Append(Math.Abs(referenceISOYear).ToString("000000", CultureInfo.InvariantCulture));
@@ -301,6 +354,9 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         sb.Append(isoMonth.ToString("00", CultureInfo.InvariantCulture))
           .Append('-').Append(isoDay.ToString("00", CultureInfo.InvariantCulture));
+
+        if (showCalendar is "always" or "critical" || (showCalendar == "auto" && nonIsoCalendar))
+            sb.Append(showCalendar == "critical" ? $"[!u-ca={calendarId}]" : $"[u-ca={calendarId}]");
         return sb.ToString();
     }
 }

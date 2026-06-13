@@ -355,7 +355,7 @@ public partial class JSTemporalDuration : JSObject
     }
 
     private static readonly Regex DurationPattern = new(
-        @"^([+-−])?[Pp](?:(\d+)[Yy])?(?:(\d+)[Mm])?(?:(\d+)[Ww])?(?:(\d+)[Dd])?(?:[Tt](?:(\d+)(?:[.,](\d{1,9}))?[Hh])?(?:(\d+)(?:[.,](\d{1,9}))?[Mm])?(?:(\d+)(?:[.,](\d{1,9}))?[Ss])?)?$",
+        @"^([+-])?[Pp](?:(\d+)[Yy])?(?:(\d+)[Mm])?(?:(\d+)[Ww])?(?:(\d+)[Dd])?(?:[Tt](?:(\d+)(?:[.,](\d{1,9}))?[Hh])?(?:(\d+)(?:[.,](\d{1,9}))?[Mm])?(?:(\d+)(?:[.,](\d{1,9}))?[Ss])?)?$",
         RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalDurationString(string text)

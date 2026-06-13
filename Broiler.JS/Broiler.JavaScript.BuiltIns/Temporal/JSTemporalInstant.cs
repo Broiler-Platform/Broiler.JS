@@ -397,7 +397,7 @@ public partial class JSTemporalInstant : JSObject
     }
 
     private static readonly Regex InstantPattern = new(
-        @"^(\d{4}|[+-−]\d{6})-(\d{2})-(\d{2})[Tt ](\d{2}):(\d{2})(?::(\d{2})(?:[.,](\d{1,9}))?)?(?:[Zz]|([+-−])(\d{2}):?(\d{2}))$",
+        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})[Tt ](\d{2}):(\d{2})(?::(\d{2})(?:[.,](\d{1,9}))?)?(?:[Zz]|([+-])(\d{2}):?(\d{2}))$",
         RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalInstant(string text)
