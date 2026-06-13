@@ -39,10 +39,15 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     calendars (gregory, buddhist, roc, japanese) share the ISO month/day structure, so the
 //     month-day now carries the calendar id (from / with / constructor / parsing / calendarId /
 //     equals / toString). The lunisolar and arithmetic non-ISO calendars remain unimplemented here.
+//   * Problems 5/8/10/12/13/15/18/22/24/25/29 (accessor half) — Temporal.ZonedDateTime rejected the
+//     arithmetic / lunisolar calendars at Canonicalize. It now accepts them and derives its date
+//     fields (era/eraYear/year/month/monthCode/day/dayOfYear/daysInMonth/daysInYear/monthsInYear/
+//     inLeapYear) through the same TemporalCalendarMath as PlainDate. Calendar/DST arithmetic
+//     (add/subtract/with/round) on ZonedDateTime remains unimplemented (Problems 6/16).
 //
-// Out of scope: the non-ISO calendars that are still unimplemented for the calendar-independent types
-// (Problems 5/8/10/12/13/15/18/22/24/25/29), relativeTo rounding (Problems 2/11/16) and
-// ZonedDateTime with/round arithmetic (Problems 6/16).
+// Out of scope: calendar/DST arithmetic on ZonedDateTime (add/subtract/with/round — Problems 6/16),
+// relativeTo duration rounding (Problems 2/11/14) and the non-ISO calendars for PlainMonthDay
+// (lunisolar/arithmetic families).
 public class Issue779Tests
 {
     private static string ErrorName(string code)
@@ -319,4 +324,32 @@ public class Issue779Tests
     public void PlainMonthDayNonIsoCalendarRejected()
         => Assert.Equal("RangeError",
             ErrorName("Temporal.PlainMonthDay.from({calendar:'chinese', monthCode:'M06', day:15})"));
+
+    // ───────── Problems 5/8/…: ZonedDateTime non-ISO calendar accessors ─────────
+    // ZonedDateTime accepts the arithmetic / lunisolar calendars and derives its date fields through
+    // the same calendar math as PlainDate (projecting the local wall-clock date). (Calendar/DST
+    // arithmetic — add/subtract/with/round — remains unimplemented; that is Problems 6/16.)
+
+    [Fact]
+    public void ZonedDateTimeNonIsoCalendarAccepted()
+        => Assert.Equal("chinese",
+            Eval("Temporal.ZonedDateTime.from('2024-06-15T12:00:00+00:00[UTC][u-ca=chinese]').calendarId"));
+
+    [Fact] // the ZonedDateTime fields match the PlainDateTime fields for the same local date/calendar
+    public void ZonedDateTimeNonIsoFieldsMatchPlainDate()
+        => Assert.Equal("true", Eval(
+            @"var z = Temporal.ZonedDateTime.from('2024-06-15T12:00:00+00:00[UTC][u-ca=hebrew]');
+              var d = Temporal.PlainDate.from('2024-06-15').withCalendar('hebrew');
+              String(z.year===d.year && z.month===d.month && z.monthCode===d.monthCode && z.day===d.day
+                     && z.daysInMonth===d.daysInMonth && z.daysInYear===d.daysInYear
+                     && z.monthsInYear===d.monthsInYear && z.inLeapYear===d.inLeapYear)"));
+
+    [Fact] // Gregorian-family era/eraYear still resolve on ZonedDateTime
+    public void ZonedDateTimeGregoryEra()
+        => Assert.Equal("ce,2024", Eval(
+            "var z = Temporal.ZonedDateTime.from('2024-06-15T12:00:00+00:00[UTC][u-ca=gregory]'); [z.era, z.eraYear].join(',')"));
+
+    [Fact] // an unknown calendar identifier is still a RangeError
+    public void ZonedDateTimeUnknownCalendarRejected()
+        => Assert.Equal("RangeError", ErrorName("Temporal.ZonedDateTime.from('2024-06-15T12:00+00:00[UTC][u-ca=not-a-calendar]')"));
 }

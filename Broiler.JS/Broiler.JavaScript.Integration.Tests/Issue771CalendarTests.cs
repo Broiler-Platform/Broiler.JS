@@ -272,7 +272,7 @@ public class Issue771CalendarTests
             "new Temporal.ZonedDateTime(0n, 'UTC', 'gregory')" +
             ".since(Temporal.ZonedDateTime.from({ year: 2543, month: 1, day: 1, timeZone: 'UTC', calendar: 'buddhist' }));"));
 
-    [Fact]
+    [Fact] // a calendar identifier that is not a real calendar is still a RangeError
     public void ZonedUnsupportedCalendarThrows()
-        => Assert.Equal("RangeError", ErrorName("new Temporal.ZonedDateTime(0n, 'UTC', 'hebrew');"));
+        => Assert.Equal("RangeError", ErrorName("new Temporal.ZonedDateTime(0n, 'UTC', 'not-a-calendar');"));
 }
