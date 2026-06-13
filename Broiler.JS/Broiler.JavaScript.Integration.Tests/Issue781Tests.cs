@@ -35,6 +35,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     threw "invalid ISO date" for an out-of-range month/day (instead of constraining) or for a
 //     non-ISO calendar. The wall-clock date-time is now resolved through Temporal.PlainDateTime's
 //     property-bag resolution (overflow-applied, calendar-aware) before the zone offset is resolved.
+//   * Problems 9/28 — Temporal.PlainDate / PlainDateTime / ZonedDateTime.prototype.with on a
+//     non-Gregorian (era) calendar resolved the fields through the Gregorian path, so an { era,
+//     eraYear } pair hit EraToIso and threw "invalid era" for the calendar's own eras (am / ah / bh
+//     / aa). with() now merges the bag fields onto the receiver's calendar fields and re-resolves in
+//     calendar space (CalendarMergeFields + the calendar's date-from-fields), so the era mapping,
+//     the year/monthCode re-resolution and the month/monthCode & year/era consistency checks all use
+//     the active calendar.
 public class Issue781Tests
 {
     private static string Eval(string code)
@@ -262,4 +269,65 @@ public class Issue781Tests
     [InlineData("new Temporal.Duration(0, 0, 4294967295).weeks", "4294967295")]
     public void MaxDateFieldIsValid(string code, string expected)
         => Assert.Equal(expected, Eval($"String({code})"));
+
+    // ───────────── Problems 9/28: .with() on a non-ISO (era) calendar ─────────────
+
+    // Providing { era, eraYear } no longer routes through the Gregorian EraToIso (which rejected
+    // "am" / "ah" / "bh" with "invalid era"); the calendar's own era mapping is used.
+    [Theory]
+    [InlineData("coptic", "am")]
+    [InlineData("ethiopic", "am")]
+    [InlineData("islamic-civil", "ah")]
+    [InlineData("islamic-umalqura", "ah")]
+    public void WithEraOnNonIsoCalendarResolves(string calendar, string era)
+    {
+        var code =
+            $"const d = Temporal.PlainDate.from({{ year: 1400, month: 3, day: 5, calendar: '{calendar}' }});" +
+            $"d.with({{ era: '{era}', eraYear: 1402 }}).year";
+        Assert.Equal("1402", Eval(code));
+    }
+
+    // Changing a single field keeps the others (in calendar space).
+    [Theory]
+    [InlineData("d.with({ day: 12 }).day", "12")]
+    [InlineData("d.with({ year: 1700 }).year", "1700")]
+    [InlineData("d.with({ monthCode: 'M02' }).monthCode", "M02")]
+    public void WithSingleFieldOnCopticKeepsOthers(string expr, string expected)
+        => Assert.Equal(expected, Eval(
+            "const d = Temporal.PlainDate.from({ year: 1726, month: 5, day: 10, calendar: 'coptic' });" + expr));
+
+    // The calendar id is preserved through with().
+    [Fact]
+    public void WithPreservesNonIsoCalendar()
+        => Assert.Equal("coptic", Eval(
+            "Temporal.PlainDate.from({ year: 1726, month: 5, day: 10, calendar: 'coptic' }).with({ day: 1 }).calendarId"));
+
+    // Inconsistent / incomplete fields are still validated.
+    [Theory]
+    [InlineData("d.with({ month: 5, monthCode: 'M06' })")]   // month / monthCode disagree -> RangeError
+    public void WithInconsistentFieldsThrowsRangeError(string expr)
+        => Assert.Equal("RangeError", ErrorName(
+            "const d = Temporal.PlainDate.from({ year: 1726, month: 5, day: 10, calendar: 'coptic' });" + expr));
+
+    [Theory]
+    [InlineData("d.with({ eraYear: 1700 })")]                // eraYear without era -> TypeError
+    [InlineData("d.with({})")]                               // no fields -> TypeError
+    public void WithBadFieldsThrowsTypeError(string expr)
+        => Assert.Equal("TypeError", ErrorName(
+            "const d = Temporal.PlainDate.from({ year: 1726, month: 5, day: 10, calendar: 'coptic' });" + expr));
+
+    // PlainDateTime.with on a non-ISO calendar keeps the time and resolves the date.
+    [Fact]
+    public void PlainDateTimeWithNonIsoKeepsTime()
+        => Assert.Equal("15:30", Eval(
+            "const dt = Temporal.PlainDateTime.from({ year: 1726, month: 5, day: 10, hour: 15, minute: 30, calendar: 'coptic' });" +
+            "const r = dt.with({ day: 12 });" +
+            "String(r.hour).padStart(2,'0') + ':' + String(r.minute).padStart(2,'0')"));
+
+    // ZonedDateTime.with delegates to the same non-ISO resolution.
+    [Fact]
+    public void ZonedDateTimeWithNonIsoResolves()
+        => Assert.Equal("12", Eval(
+            "Temporal.ZonedDateTime.from({ year: 1726, month: 5, day: 10, timeZone: 'UTC', calendar: 'coptic' })" +
+            ".with({ day: 12 }).day.toString()"));
 }

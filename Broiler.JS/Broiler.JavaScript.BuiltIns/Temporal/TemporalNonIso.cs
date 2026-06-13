@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
@@ -35,6 +36,51 @@ internal static class TemporalNonIso
         var (year, month) = ResolveYearMonth(obj, calendarId, typeName);
         var day = ToPositiveIntegerWithTruncation(obj[KeyStrings.GetOrCreate("day")], typeName);
         return RegulateToIso(calendarId, year, month, day, overflow);
+    }
+
+    // CalendarMergeFields + the calendar's date-from-fields for a non-Gregorian `.with()`: the
+    // partial fields from the `bag` override the receiver's current calendar fields, then the merged
+    // set is resolved to an ISO date. Per CalendarFieldKeysToIgnore the year/era/eraYear fields form
+    // one mutually-overriding group and month/monthCode another, so supplying any member of a group
+    // drops the receiver's whole group (e.g. a new `year` re-resolves the receiver's monthCode against
+    // it, and a new `monthCode` ignores the receiver's month). Consistency between supplied fields
+    // (year vs era/eraYear, month vs monthCode) is validated by the shared ToIsoFromBag resolution.
+    internal static (int y, int m, int d) WithToIso(
+        JSObject bag, string calendarId, string overflow, string typeName, int isoYear, int isoMonth, int isoDay)
+    {
+        var (curY, curM, curD) = CalendarYmd(calendarId, isoYear, isoMonth, isoDay);
+
+        var bagYear = bag[KeyStrings.GetOrCreate("year")];
+        var bagEra = bag[KeyStrings.GetOrCreate("era")];
+        var bagEraYear = bag[KeyStrings.GetOrCreate("eraYear")];
+        var bagMonth = bag[KeyStrings.GetOrCreate("month")];
+        var bagMonthCode = bag[KeyStrings.GetOrCreate("monthCode")];
+        var bagDay = bag[KeyStrings.GetOrCreate("day")];
+
+        var hasYearGroup = !bagYear.IsUndefined || !bagEra.IsUndefined || !bagEraYear.IsUndefined;
+        var hasMonthGroup = !bagMonth.IsUndefined || !bagMonthCode.IsUndefined;
+        if (!hasYearGroup && !hasMonthGroup && bagDay.IsUndefined)
+            throw JSEngine.NewTypeError($"{typeName}.with requires at least one date property");
+
+        var merged = new JSObject();
+        if (hasYearGroup)
+        {
+            if (!bagYear.IsUndefined) merged[KeyStrings.GetOrCreate("year")] = bagYear;
+            if (!bagEra.IsUndefined) merged[KeyStrings.GetOrCreate("era")] = bagEra;
+            if (!bagEraYear.IsUndefined) merged[KeyStrings.GetOrCreate("eraYear")] = bagEraYear;
+        }
+        else merged[KeyStrings.GetOrCreate("year")] = new JSNumber(curY);
+
+        if (hasMonthGroup)
+        {
+            if (!bagMonth.IsUndefined) merged[KeyStrings.GetOrCreate("month")] = bagMonth;
+            if (!bagMonthCode.IsUndefined) merged[KeyStrings.GetOrCreate("monthCode")] = bagMonthCode;
+        }
+        else merged[KeyStrings.GetOrCreate("monthCode")] = new JSString(TemporalCalendarMath.MonthCode(calendarId, curY, curM));
+
+        merged[KeyStrings.GetOrCreate("day")] = bagDay.IsUndefined ? new JSNumber(curD) : bagDay;
+
+        return ToIsoFromBag(merged, calendarId, overflow, typeName);
     }
 
     // Resolves a Temporal.PlainYearMonth property bag (year + month / monthCode, no day) for a

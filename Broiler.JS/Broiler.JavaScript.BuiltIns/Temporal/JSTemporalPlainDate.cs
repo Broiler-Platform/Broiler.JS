@@ -175,6 +175,14 @@ public partial class JSTemporalPlainDate : JSObject
 
         var overflow = ReadOverflow(a.GetAt(1));
 
+        // The non-Gregorian calendars merge the with-bag fields onto the receiver's calendar fields
+        // and re-resolve in calendar space (see TemporalNonIso.WithToIso).
+        if (NonIso)
+        {
+            var (ny, nm, nd) = TemporalNonIso.WithToIso(obj, calendarId, overflow, "Temporal.PlainDate", isoYear, isoMonth, isoDay);
+            return new JSTemporalPlainDate(ny, nm, nd, calendarId, PlainDatePrototype);
+        }
+
         var any = false;
         var month = isoMonth;
         var day = isoDay;

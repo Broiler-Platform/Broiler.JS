@@ -190,6 +190,9 @@ public partial class JSTemporalPlainDateTime : JSObject
 
         var overflow = ReadOverflow(a.GetAt(1));
 
+        if (NonIso)
+            return WithNonIso(obj, overflow);
+
         var any = false;
         var month = isoMonth; var day = isoDay;
 
@@ -221,6 +224,35 @@ public partial class JSTemporalPlainDateTime : JSObject
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires at least one field");
 
         return RegulateDateTime(year, month, day, h, mi, s, ms, us, ns, overflow, calendarId);
+    }
+
+    // with() for a non-Gregorian calendar: the date is merged and re-resolved in calendar space
+    // (TemporalNonIso.WithToIso) and the wall-clock time is taken from the bag (defaulting to the
+    // receiver's). A bag with only time fields keeps the receiver's date; at least one field overall
+    // is required.
+    private JSValue WithNonIso(JSObject obj, string overflow)
+    {
+        var any = false;
+        int Read(string name, int current) { var v = obj[KeyStrings.GetOrCreate(name)]; if (v.IsUndefined) return current; any = true; return ToIntegerWithTruncation(v); }
+        var h = Read("hour", hour); var mi = Read("minute", minute); var s = Read("second", second);
+        var ms = Read("millisecond", millisecond); var us = Read("microsecond", microsecond); var ns = Read("nanosecond", nanosecond);
+
+        var hasDateField = !obj[KeyStrings.GetOrCreate("year")].IsUndefined
+            || !obj[KeyStrings.GetOrCreate("era")].IsUndefined || !obj[KeyStrings.GetOrCreate("eraYear")].IsUndefined
+            || !obj[KeyStrings.GetOrCreate("month")].IsUndefined || !obj[KeyStrings.GetOrCreate("monthCode")].IsUndefined
+            || !obj[KeyStrings.GetOrCreate("day")].IsUndefined;
+
+        int ny = isoYear, nm = isoMonth, nd = isoDay;
+        if (hasDateField)
+        {
+            (ny, nm, nd) = TemporalNonIso.WithToIso(obj, calendarId, overflow, "Temporal.PlainDateTime", isoYear, isoMonth, isoDay);
+            any = true;
+        }
+
+        if (!any)
+            throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires at least one field");
+
+        return RegulateDateTime(ny, nm, nd, h, mi, s, ms, us, ns, overflow, calendarId, dateAlreadyResolved: true);
     }
 
     // Resolves the new ISO year from a with()-bag's year / era / eraYear fields (see PlainDate).
