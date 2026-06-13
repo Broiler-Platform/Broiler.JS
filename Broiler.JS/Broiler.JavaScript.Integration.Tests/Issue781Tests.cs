@@ -46,6 +46,11 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     from the receiver (on both the Gregorian-family and the era-bearing non-ISO calendars), so
 //     providing only eraYear (or only era) passed silently. Per CalendarFieldKeysToIgnore an era /
 //     eraYear field ignores the receiver's era group, so a partial pair is now a TypeError.
+//   * Problem 14 — Temporal.Duration.compare with calendar units (years/months/weeks) threw "a
+//     relativeTo calendar is not supported". It now adds each duration's date part to the (shared)
+//     relativeTo date and compares the resulting instants, reusing the round/total relativeTo
+//     machinery (an ISO / Gregorian-family PlainDate relativeTo; a ZonedDateTime / PlainDateTime /
+//     non-ISO-calendar relativeTo remains unimplemented).
 public class Issue781Tests
 {
     private static string Eval(string code)
@@ -357,4 +362,28 @@ public class Issue781Tests
     [InlineData("Temporal.PlainYearMonth.from({ year: 2000, month: 5, calendar: 'gregory' }).with({ year: 1990 }).year", "1990")]
     public void YearMonthWithCompleteYearWorks(string code, string expected)
         => Assert.Equal(expected, Eval($"String({code})"));
+
+    // ───────────── Problem 14: Duration.compare with a relativeTo ─────────────
+
+    // With a (PlainDate) relativeTo, calendar units are weighed against the calendar: 1 month from
+    // 2000-01-01 is 31 days (> 30), but from 2000-02-01 (leap February) is 29 days (< 30).
+    [Theory]
+    [InlineData("Temporal.Duration.compare({ months: 1 }, { days: 30 }, { relativeTo: '2000-01-01' })", "1")]
+    [InlineData("Temporal.Duration.compare({ months: 1 }, { days: 30 }, { relativeTo: '2000-02-01' })", "-1")]
+    [InlineData("Temporal.Duration.compare({ years: 1 }, { days: 365 }, { relativeTo: '2000-01-01' })", "1")]  // 2000 is a leap year (366 d)
+    [InlineData("Temporal.Duration.compare({ months: 1 }, { days: 31 }, { relativeTo: '2000-01-01' })", "0")]
+    public void DurationCompareWithRelativeToWeighsCalendar(string code, string expected)
+        => Assert.Equal(expected, Eval($"String({code})"));
+
+    // A relativeTo property bag (with a Gregorian-family calendar) also works.
+    [Fact]
+    public void DurationCompareWithRelativeToPropertyBag()
+        => Assert.Equal("1", Eval(
+            "String(Temporal.Duration.compare({ months: 1 }, { days: 30 }, " +
+            "{ relativeTo: { year: 2000, month: 1, day: 1 } }))"));
+
+    // Calendar units without a relativeTo are still a RangeError.
+    [Fact]
+    public void DurationCompareCalendarUnitsNoRelativeToThrows()
+        => Assert.Equal("RangeError", ErrorName("Temporal.Duration.compare({ months: 1 }, { days: 30 })"));
 }
