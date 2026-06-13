@@ -107,9 +107,10 @@ public class Issue771CalendarTests
             "const d = Temporal.PlainDate.from('2000-03-06[u-ca=gregory]'); d.calendarId + ':' + d.era"));
 
     [Fact] // #773 added japanese + the arithmetic and lunisolar calendars; #775 added persian,
-           // ethioaa and islamic-umalqura, but the Indian national calendar remains unsupported.
+           // ethioaa and islamic-umalqura; #777 added the indian calendar. The sighting-based
+           // islamic-rgsa calendar is still unsupported.
     public void UnsupportedCalendarThrowsRangeError()
-        => Assert.Equal("RangeError", ErrorName("new Temporal.PlainDate(2000, 1, 1, 'indian');"));
+        => Assert.Equal("RangeError", ErrorName("new Temporal.PlainDate(2000, 1, 1, 'islamic-rgsa');"));
 
     [Fact]
     public void IsoCalendarHasNoEra()
@@ -163,10 +164,11 @@ public class Issue771CalendarTests
             "new Temporal.PlainDateTime(2000, 3, 6, 0, 0, 0, 0, 0, 0, 'gregory')" +
             ".since(new Temporal.PlainDateTime(2000, 1, 1, 0, 0, 0, 0, 0, 0, 'buddhist'));"));
 
-    [Fact] // #775 wired the non-ISO calendars into PlainDateTime; the indian calendar stays unsupported.
+    [Fact] // #775 wired the non-ISO calendars into PlainDateTime; #777 added indian. The
+           // sighting-based islamic-rgsa calendar stays unsupported.
     public void DateTimeUnsupportedCalendarThrows()
         => Assert.Equal("RangeError", ErrorName(
-            "new Temporal.PlainDateTime(2000, 1, 1, 0, 0, 0, 0, 0, 0, 'indian');"));
+            "new Temporal.PlainDateTime(2000, 1, 1, 0, 0, 0, 0, 0, 0, 'islamic-rgsa');"));
 
     // --- PlainYearMonth (Problem 8) ---
 
@@ -213,9 +215,9 @@ public class Issue771CalendarTests
         => Assert.Equal("RangeError", ErrorName(
             "new Temporal.PlainYearMonth(2000, 3, 'gregory').since(Temporal.PlainYearMonth.from({ year: 2543, month: 1, calendar: 'buddhist' }));"));
 
-    [Fact]
+    [Fact] // #777 wired the non-ISO calendars into PlainYearMonth; islamic-rgsa stays unsupported.
     public void YearMonthUnsupportedCalendarThrows()
-        => Assert.Equal("RangeError", ErrorName("new Temporal.PlainYearMonth(2000, 1, 'hebrew');"));
+        => Assert.Equal("RangeError", ErrorName("new Temporal.PlainYearMonth(2000, 1, 'islamic-rgsa');"));
 
     // --- ZonedDateTime (Problem 4) ---
 

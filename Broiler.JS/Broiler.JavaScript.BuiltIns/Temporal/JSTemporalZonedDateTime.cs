@@ -16,10 +16,10 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 // Temporal.ZonedDateTime (Temporal proposal §6): an exact instant (epoch nanoseconds) paired
 // with a time zone and the ISO 8601 calendar. Time-zone offsets are resolved through three
 // kinds of zone: "UTC", a fixed numeric offset ("+01:00"), and a named IANA zone (resolved
-// via .NET TimeZoneInfo, which handles DST transitions for ordinary years). The complete
-// calendar+DST arithmetic surface (round / until / since with rounding) is not yet wired;
-// those methods throw. Construction, from(), compare(), the accessor surface and the
-// to* conversions are implemented. Registered under the Temporal namespace via Register = false.
+// via .NET TimeZoneInfo, which handles DST transitions for ordinary years). Construction, from(),
+// compare(), the accessor surface, the to* conversions and the DST-aware add / subtract / until /
+// since arithmetic are implemented; round / with (and difference rounding) are not yet wired and
+// throw. Registered under the Temporal namespace via Register = false.
 [JSClassGenerator("ZonedDateTime", Register = false)]
 public partial class JSTemporalZonedDateTime : JSObject
 {
@@ -251,12 +251,12 @@ public partial class JSTemporalZonedDateTime : JSObject
     public JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.ZonedDateTime.prototype.valueOf, which is not supported. Use Temporal.ZonedDateTime.compare for comparison.");
 
-    // Calendar + DST arithmetic. until/since are implemented (DST-aware, honoring `largestUnit`);
-    // add/subtract/round/with remain to be wired.
+    // Calendar + DST arithmetic. add/subtract/until/since are implemented (DST-aware); round/with
+    // remain to be wired.
     [JSExport("add", Length = 1)]
-    public JSValue Add(in Arguments a) => throw NotImplementedArithmetic("add");
+    public JSValue Add(in Arguments a) => AddDuration(a.GetAt(0), a.GetAt(1), 1);
     [JSExport("subtract", Length = 1)]
-    public JSValue Subtract(in Arguments a) => throw NotImplementedArithmetic("subtract");
+    public JSValue Subtract(in Arguments a) => AddDuration(a.GetAt(0), a.GetAt(1), -1);
 
     [JSExport("until", Length = 1)]
     public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), 1);
@@ -271,6 +271,79 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     private static JSException NotImplementedArithmetic(string method)
         => JSEngine.NewError($"Temporal.ZonedDateTime.prototype.{method} is not yet implemented (calendar/DST arithmetic)");
+
+    // AddDurationToZonedDateTime: the date part (years/months/weeks/days) is added to the wall-clock
+    // date in this zone — keeping the same clock time and re-resolving the zone offset, so a day is a
+    // calendar day that absorbs any DST transition — and then the time part (hours … nanoseconds) is
+    // added to the resulting instant on the exact (epoch-nanosecond) timeline. When the duration has
+    // no date part the whole addition is a pure instant shift (matching the spec's fast path, which
+    // also avoids re-resolving the offset across a DST gap/overlap).
+    private JSValue AddDuration(JSValue durationLike, JSValue options, int sign)
+    {
+        // Per spec the duration is coerced before the options object is read.
+        var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
+        var overflow = ReadOverflow(options);
+
+        var years = sign * (long)d.YearsValue;
+        var months = sign * (long)d.MonthsValue;
+        var weeks = sign * (long)d.WeeksValue;
+        var days = sign * (long)d.DaysValue;
+        var timeNs = sign * DurationTimeNanoseconds(d);
+
+        BigInteger resultNs;
+        if (years == 0 && months == 0 && weeks == 0 && days == 0)
+        {
+            resultNs = epochNanoseconds + timeNs;
+        }
+        else
+        {
+            var l = Local();
+            var (ry, rm, rd) = AddISODate(l.y, l.mo, l.d, years, months, weeks, days, overflow);
+            var intermediateNs = EpochNsForLocal(ry, rm, rd, l.h, l.mi, l.s, l.ms, l.us, l.ns);
+            resultNs = intermediateNs + timeNs;
+        }
+
+        if (!IsValid(resultNs))
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: result is out of range");
+        return new JSTemporalZonedDateTime(resultNs, timeZoneId, calendarId, ZonedDateTimePrototype);
+    }
+
+    private static BigInteger DurationTimeNanoseconds(JSTemporalDuration d)
+        => (BigInteger)(long)d.HoursValue * 3_600_000_000_000
+         + (BigInteger)(long)d.MinutesValue * 60_000_000_000
+         + (BigInteger)(long)d.SecondsValue * 1_000_000_000
+         + (BigInteger)(long)d.MillisecondsValue * 1_000_000
+         + (BigInteger)(long)d.MicrosecondsValue * 1_000
+         + (long)d.NanosecondsValue;
+
+    // Adds whole years + months (balancing the month and clamping/rejecting the day) then weeks +
+    // days on the epoch-day axis, for the ISO calendar. Years/days far outside the representable ISO
+    // range raise a RangeError (the intermediate date-time must be within limits).
+    private static (int y, int m, int d) AddISODate(int year, int month, int day, long years, long months, long weeks, long days, string overflow)
+    {
+        var totalMonths = (long)month - 1 + months;
+        var newYear = year + years + (long)FloorDiv(totalMonths, 12);
+        var newMonth = (int)(((totalMonths % 12) + 12) % 12) + 1;
+        if (newYear < -400000 || newYear > 400000)
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: result is out of range");
+
+        var maxDay = DaysInMonthOf(newYear, newMonth);
+        long regulatedDay;
+        if (overflow == "reject")
+        {
+            if (day > maxDay)
+                throw JSEngine.NewRangeError("Temporal.ZonedDateTime: day out of range for resulting month");
+            regulatedDay = day;
+        }
+        else regulatedDay = Math.Min((long)day, maxDay);
+
+        var epochDay = DaysFromCivil(newYear, newMonth, regulatedDay) + days + weeks * 7;
+        if (epochDay < -100_000_001 || epochDay > 100_000_001)
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: result is out of range");
+
+        var (ry, rm, rd) = CivilFromDays(epochDay);
+        return ((int)ry, (int)rm, (int)rd);
+    }
 
     // DifferenceTemporalZonedDateTime: the signed difference between two instants in this zone,
     // expressed as a Duration. When `largestUnit` is a time unit the result is the plain

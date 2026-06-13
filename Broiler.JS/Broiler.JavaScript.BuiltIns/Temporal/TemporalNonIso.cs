@@ -29,12 +29,32 @@ internal static class TemporalNonIso
     // regulated and projected onto an ISO date.
     internal static (int y, int m, int d) ToIsoFromBag(JSObject obj, string calendarId, string overflow, string typeName)
     {
+        if (obj[KeyStrings.GetOrCreate("day")].IsUndefined)
+            throw JSEngine.NewTypeError($"{typeName}: missing day");
+
+        var (year, month) = ResolveYearMonth(obj, calendarId, typeName);
+        var day = ToPositiveIntegerWithTruncation(obj[KeyStrings.GetOrCreate("day")], typeName);
+        return RegulateToIso(calendarId, year, month, day, overflow);
+    }
+
+    // Resolves a Temporal.PlainYearMonth property bag (year + month / monthCode, no day) for a
+    // non-Gregorian calendar to the stored ISO date of day 1 of that calendar month.
+    internal static (int y, int m, int d) YearMonthToIso(JSObject obj, string calendarId, string overflow, string typeName)
+    {
+        var (year, month) = ResolveYearMonth(obj, calendarId, typeName);
+        return RegulateToIso(calendarId, year, month, 1, overflow);
+    }
+
+    // Resolves the (calendar year, calendar month-ordinal) from a property bag: the year comes from
+    // `year` and/or { era, eraYear } (era-less for the lunisolar calendars), the month from `month`
+    // and/or `monthCode` (with an optional leap "L" suffix).
+    private static (int year, int month) ResolveYearMonth(JSObject obj, string calendarId, string typeName)
+    {
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
         var eraValue = obj[KeyStrings.GetOrCreate("era")];
         var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var dayValue = obj[KeyStrings.GetOrCreate("day")];
 
         var hasYear = !yearValue.IsUndefined;
         var hasEra = !eraValue.IsUndefined;
@@ -43,8 +63,6 @@ internal static class TemporalNonIso
 
         if (!hasYear && !(hasEraSupport && hasEra && hasEraYear))
             throw JSEngine.NewTypeError($"{typeName}: missing year (or era and eraYear)");
-        if (dayValue.IsUndefined)
-            throw JSEngine.NewTypeError($"{typeName}: missing day");
         if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
             throw JSEngine.NewTypeError($"{typeName}: missing month / monthCode");
 
@@ -77,7 +95,7 @@ internal static class TemporalNonIso
         if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToPositiveIntegerWithTruncation(monthValue, typeName) != month)
             throw JSEngine.NewRangeError($"{typeName}: month and monthCode disagree");
 
-        return RegulateToIso(calendarId, year, month, ToPositiveIntegerWithTruncation(dayValue, typeName), overflow);
+        return (year, month);
     }
 
     // Constrains/validates a (year, month, day) in a non-Gregorian calendar and returns it as ISO.

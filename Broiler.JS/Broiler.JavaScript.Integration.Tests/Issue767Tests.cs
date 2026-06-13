@@ -856,11 +856,11 @@ public class Issue767Tests
         => Assert.Equal("TypeError", Eval(
             "let t; try { new Temporal.PlainDate(2024, 1, 1).valueOf(); } catch (e) { t = e.constructor.name; } t"));
 
-    [Fact] // the Indian national calendar is not implemented; the arithmetic + lunisolar (#773) and
-           // persian / ethioaa / islamic-umalqura (#775) calendars are supported for PlainDate.
+    [Fact] // the arithmetic + lunisolar (#773), persian / ethioaa / islamic-umalqura (#775) and
+           // indian (#777) calendars are supported; the sighting-based islamic-rgsa is not.
     public void PlainDateUnsupportedCalendarThrows()
         => Assert.Equal("RangeError", Eval(
-            "let t; try { new Temporal.PlainDate(2024, 1, 1, 'indian'); } catch (e) { t = e.constructor.name; } t"));
+            "let t; try { new Temporal.PlainDate(2024, 1, 1, 'islamic-rgsa'); } catch (e) { t = e.constructor.name; } t"));
 
     [Fact]
     public void PlainDateToStringTag()

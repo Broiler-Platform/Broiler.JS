@@ -16,6 +16,10 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 //   hebrew             — lunisolar but fully deterministic (molad + the four dehiyyot postponement
 //                        rules of the 19-year Metonic cycle): 12 months, or 13 in a leap year where
 //                        the leap month Adar I (ordinal 6, month code "M05L") precedes Adar II.
+//   indian             — the reformed Indian national (Saka) calendar: solar, 12 months anchored to
+//                        the Gregorian year (Saka year + 78). Chaitra (month 1) is 30 days (31 in a
+//                        leap Saka year, when Saka + 78 is a Gregorian leap year), months 2–6 are 31
+//                        days and months 7–12 are 30 days. Single era "saka".
 //
 // Unlike the Gregorian family these have a different month/day structure than ISO, so every date
 // field is computed by converting the stored ISO date to an epoch-day count and back through the
@@ -25,7 +29,7 @@ internal static class TemporalArithmeticCalendar
 {
     internal static bool IsArithmetic(string id) =>
         id is "coptic" or "ethiopic" or "ethioaa" or "islamic-civil" or "islamic-tbla"
-            or "islamic-umalqura" or "hebrew";
+            or "islamic-umalqura" or "hebrew" or "indian";
 
     private static bool IsSolar13(string id) => id is "coptic" or "ethiopic" or "ethioaa";
 
@@ -57,6 +61,7 @@ internal static class TemporalArithmeticCalendar
 
     internal static bool InLeapYear(string id, int year)
     {
+        if (id == "indian") return GregorianLeap(year + 78);
         if (id == "hebrew") return HebrewLeap(year);
         if (UmalquraTable(id, year)) return CldrUmmAlQura.YearLength(year) == 355;
         return IsSolar13(id)
@@ -66,6 +71,7 @@ internal static class TemporalArithmeticCalendar
 
     internal static int DaysInYear(string id, int year)
     {
+        if (id == "indian") return GregorianLeap(year + 78) ? 366 : 365;
         if (id == "hebrew") return (int)(HebrewNewYear(year + 1) - HebrewNewYear(year));
         if (UmalquraTable(id, year)) return CldrUmmAlQura.YearLength(year);
         if (IsSolar13(id)) return InLeapYear(id, year) ? 366 : 365;
@@ -74,6 +80,7 @@ internal static class TemporalArithmeticCalendar
 
     internal static int DaysInMonth(string id, int year, int month)
     {
+        if (id == "indian") return IndianMonthLength(GregorianLeap(year + 78), month);
         if (id == "hebrew") return HebrewMonthLength(year, month);
         if (UmalquraTable(id, year)) return CldrUmmAlQura.MonthLength(year, month);
         if (IsSolar13(id))
@@ -86,6 +93,7 @@ internal static class TemporalArithmeticCalendar
     // Epoch days of (year, month, day) via the calendar's closed-form day count.
     internal static long EpochDaysFromYmd(string id, int year, int month, int day)
     {
+        if (id == "indian") return IndianEpochDays(year, month, day);
         if (id == "hebrew")
         {
             var epoch = HebrewNewYear(year);
@@ -109,6 +117,7 @@ internal static class TemporalArithmeticCalendar
 
     internal static (int year, int month, int day) YmdFromEpochDays(string id, long epoch)
     {
+        if (id == "indian") return IndianYmdFromEpochDays(epoch);
         int year;
         if (id == "hebrew")
         {
@@ -195,6 +204,7 @@ internal static class TemporalArithmeticCalendar
         "coptic" or "hebrew" => ("am", calYear),
         "ethiopic" => calYear >= 1 ? ("am", calYear) : ("aa", calYear + 5500),
         "ethioaa" => ("aa", calYear), // single Amete Alem era for any sign
+        "indian" => ("saka", calYear), // single Saka era for any sign
         _ => calYear >= 1 ? ("ah", calYear) : ("bh", 1 - calYear), // islamic-civil / islamic-tbla
     };
 
@@ -221,6 +231,9 @@ internal static class TemporalArithmeticCalendar
             case "ethioaa":
                 if (e is "aa" or "mundi" or "ethioaa") return eraYear;
                 throw JSEngine.NewRangeError($"Temporal: invalid era \"{era}\" for the ethioaa calendar");
+            case "indian":
+                if (e is "saka" or "shaka") return eraYear;
+                throw JSEngine.NewRangeError($"Temporal: invalid era \"{era}\" for the indian calendar");
             default: // islamic-civil / islamic-tbla
                 return e switch
                 {
@@ -294,6 +307,70 @@ internal static class TemporalArithmeticCalendar
             11 => 30,           // Av
             _ => 29,            // 12 Elul
         };
+    }
+
+    // ── Indian national (Saka) calendar arithmetic ──────────────────────────────
+    //
+    // Anchored to the Gregorian year: Saka year S begins on 1 Chaitra, which is 22 March of
+    // Gregorian year S + 78 in a common year and 21 March when that Gregorian year is a leap year
+    // (so the extra day is absorbed by a 31-day Chaitra and the following months are unchanged).
+
+    private static bool GregorianLeap(int y) => (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
+
+    private static int IndianMonthLength(bool leap, int month)
+        => month == 1 ? (leap ? 31 : 30) : (month <= 6 ? 31 : 30);
+
+    private static long IndianEpochDays(int year, int month, int day)
+    {
+        var gregorianYear = year + 78;
+        var leap = GregorianLeap(gregorianYear);
+        var epoch = DaysFromCivil(gregorianYear, 3, leap ? 21 : 22);
+        for (var m = 1; m < month; m++) epoch += IndianMonthLength(leap, m);
+        return epoch + day - 1;
+    }
+
+    private static (int year, int month, int day) IndianYmdFromEpochDays(long epoch)
+    {
+        var (gy, _, _) = CivilFromDays(epoch);
+        var year = (int)gy - 78;
+        while (IndianEpochDays(year + 1, 1, 1) <= epoch) year++;
+        while (IndianEpochDays(year, 1, 1) > epoch) year--;
+
+        var leap = GregorianLeap(year + 78);
+        var dayOfYear = epoch - IndianEpochDays(year, 1, 1);
+        var month = 1;
+        while (dayOfYear >= IndianMonthLength(leap, month))
+        {
+            dayOfYear -= IndianMonthLength(leap, month);
+            month++;
+        }
+        return (year, month, (int)dayOfYear + 1);
+    }
+
+    // Howard Hinnant's days_from_civil / civil_from_days about the ISO 1970-01-01 epoch (used by the
+    // Gregorian-anchored Indian calendar).
+    private static long DaysFromCivil(long y, long m, long d)
+    {
+        y -= m <= 2 ? 1 : 0;
+        var era = (y >= 0 ? y : y - 399) / 400;
+        var yoe = y - era * 400;
+        var doy = (153 * (m > 2 ? m - 3 : m + 9) + 2) / 5 + d - 1;
+        var doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+        return era * 146097 + doe - 719468;
+    }
+
+    private static (long y, long m, long d) CivilFromDays(long z)
+    {
+        z += 719468;
+        var era = (z >= 0 ? z : z - 146096) / 146097;
+        var doe = z - era * 146097;
+        var yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+        var y = yoe + era * 400;
+        var doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+        var mp = (5 * doy + 2) / 153;
+        var d = doy - (153 * mp + 2) / 5 + 1;
+        var m = mp < 10 ? mp + 3 : mp - 9;
+        return (m <= 2 ? y + 1 : y, m, d);
     }
 
     private static long FloorDiv(long a, long b)

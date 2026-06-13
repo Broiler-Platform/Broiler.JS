@@ -164,20 +164,56 @@ public partial class JSTemporalPlainTime : JSObject
     }
 
     [JSExport("until", Length = 1)]
-    public JSValue Until(in Arguments a) { GetOptionsObject(a.GetAt(1)); return Difference(a.GetAt(0), 1); }
+    public JSValue Until(in Arguments a) { ReadDifferenceSettings(a.GetAt(1)); return Difference(a.GetAt(0), 1); }
 
     [JSExport("since", Length = 1)]
-    public JSValue Since(in Arguments a) { GetOptionsObject(a.GetAt(1)); return Difference(a.GetAt(0), -1); }
+    public JSValue Since(in Arguments a) { ReadDifferenceSettings(a.GetAt(1)); return Difference(a.GetAt(0), -1); }
 
     // GetOptionsObject: a non-undefined options argument must be an object (a primitive raises a
-    // TypeError). The option values themselves (largestUnit/smallestUnit/roundingIncrement/
-    // roundingMode) are not yet honored — until/since use largestUnit "hour" with no rounding.
+    // TypeError).
     private static void GetOptionsObject(JSValue options)
     {
         if (options == null || options.IsUndefined) return;
         if (options is not JSObject)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
     }
+
+    // GetDifferenceSettings for until/since: validates largestUnit / smallestUnit (time units only —
+    // a calendar unit is a RangeError, and smallestUnit must not be larger than largestUnit),
+    // roundingIncrement (finite integer in 1 … the unit maximum, dividing it evenly) and
+    // roundingMode. (The options are validated here but the difference still uses largestUnit "hour"
+    // with no rounding applied — see the TODO above Difference.)
+    private static void ReadDifferenceSettings(JSValue options)
+    {
+        if (options == null || options.IsUndefined) return;
+        if (options is not JSObject o)
+            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
+
+        var largestRaw = o[KeyStrings.GetOrCreate("largestUnit")];
+        string largestUnit = largestRaw.IsUndefined ? null : TemporalRoundingOptions.NormalizeTimeUnit(largestRaw.StringValue, allowAuto: true);
+        if (largestUnit == "auto") largestUnit = null;
+
+        var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
+        var smallestUnit = smallestRaw.IsUndefined ? "nanosecond" : TemporalRoundingOptions.NormalizeTimeUnit(smallestRaw.StringValue, allowAuto: false);
+
+        var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
+        TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+
+        largestUnit ??= TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("hour")
+            ? smallestUnit : "hour";
+        if (TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex(largestUnit))
+            throw JSEngine.NewRangeError("Temporal.PlainTime: smallestUnit must not be larger than largestUnit");
+
+        TemporalRoundingOptions.ValidateRoundingIncrement(increment, MaximumRoundingIncrement(smallestUnit), inclusive: false);
+    }
+
+    // MaximumTemporalDurationRoundingIncrement for a time unit.
+    private static long MaximumRoundingIncrement(string unit) => unit switch
+    {
+        "hour" => 24,
+        "minute" or "second" => 60,
+        _ => 1000, // millisecond / microsecond / nanosecond
+    };
 
     private JSValue Difference(JSValue other, int sign)
     {
@@ -201,9 +237,10 @@ public partial class JSTemporalPlainTime : JSObject
     [JSExport("round", Length = 1)]
     public JSValue Round(in Arguments a)
     {
-        var (unit, increment) = ReadRoundTo(a.GetAt(0));
+        var (unit, increment, roundingMode) = ReadRoundTo(a.GetAt(0));
         var unitNs = UnitNanoseconds(unit) * increment;
-        var rounded = RoundHalfExpand(TotalNanoseconds(), unitNs) % NanosecondsPerDay;
+        var rounded = (long)TemporalRoundingOptions.RoundToIncrement(TotalNanoseconds(), unitNs, roundingMode) % NanosecondsPerDay;
+        if (rounded < 0) rounded += NanosecondsPerDay;
         return new JSTemporalPlainTime(rounded, PlainTimePrototype);
     }
 
@@ -388,10 +425,11 @@ public partial class JSTemporalPlainTime : JSObject
         return RegulateTime(h, mi, s, ms, us, ns, "reject");
     }
 
-    private static (string unit, int increment) ReadRoundTo(JSValue roundTo)
+    private static (string unit, int increment, string roundingMode) ReadRoundTo(JSValue roundTo)
     {
         string smallestUnit;
         var increment = 1;
+        var roundingMode = "halfExpand";
 
         if (roundTo.IsString)
         {
@@ -399,37 +437,28 @@ public partial class JSTemporalPlainTime : JSObject
         }
         else if (roundTo is JSObject obj)
         {
+            // GetRoundingIncrementOption and GetRoundingModeOption are read before the (required)
+            // smallestUnit, matching the spec's option-reading order.
+            increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
+
             var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
             if (unitValue.IsUndefined)
                 throw JSEngine.NewRangeError("Temporal.PlainTime.round requires a smallestUnit");
-            smallestUnit = unitValue.ToString();
-
-            var incrementValue = obj[KeyStrings.GetOrCreate("roundingIncrement")];
-            if (!incrementValue.IsUndefined)
-            {
-                var n = incrementValue.DoubleValue;
-                if (double.IsNaN(n) || n < 1 || Math.Truncate(n) != n)
-                    throw JSEngine.NewRangeError("Temporal.PlainTime.round: invalid roundingIncrement");
-                increment = (int)n;
-            }
+            smallestUnit = unitValue.StringValue;
         }
         else
         {
             throw JSEngine.NewTypeError("Temporal.PlainTime.round requires an options object or string");
         }
 
-        smallestUnit = smallestUnit switch
-        {
-            "hour" or "hours" => "hour",
-            "minute" or "minutes" => "minute",
-            "second" or "seconds" => "second",
-            "millisecond" or "milliseconds" => "millisecond",
-            "microsecond" or "microseconds" => "microsecond",
-            "nanosecond" or "nanoseconds" => "nanosecond",
-            _ => throw JSEngine.NewRangeError($"Temporal.PlainTime.round: invalid smallestUnit \"{smallestUnit}\""),
-        };
+        smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(smallestUnit, allowAuto: false);
 
-        return (smallestUnit, increment);
+        // ValidateTemporalRoundingIncrement: the increment must divide the next unit evenly and not
+        // reach it (e.g. round to "hour" allows 1,2,3,4,6,8,12 but not 24).
+        TemporalRoundingOptions.ValidateRoundingIncrement(increment, MaximumRoundingIncrement(smallestUnit), inclusive: false);
+
+        return (smallestUnit, increment, roundingMode);
     }
 
     private static long UnitNanoseconds(string unit) => unit switch
@@ -441,18 +470,6 @@ public partial class JSTemporalPlainTime : JSObject
         "microsecond" => 1_000,
         _ => 1,
     };
-
-    private static long RoundHalfExpand(long value, long increment)
-    {
-        if (increment <= 1) return value;
-
-        var quotient = value / increment;
-        var remainder = value - quotient * increment;
-        if (remainder * 2 >= increment)
-            quotient += 1;
-
-        return quotient * increment;
-    }
 
     // TemporalTimeToString with auto precision: "HH:MM:SS" plus the trimmed fractional second.
     private string ToISOString()
