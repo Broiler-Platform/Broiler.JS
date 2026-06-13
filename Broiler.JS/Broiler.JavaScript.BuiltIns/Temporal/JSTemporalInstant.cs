@@ -129,35 +129,129 @@ public partial class JSTemporalInstant : JSObject
     }
 
     [JSExport("until", Length = 1)]
-    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), 1);
+    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), 1);
 
     [JSExport("since", Length = 1)]
-    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), -1);
+    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
 
-    private JSValue Difference(JSValue other, int sign)
+    // DifferenceTemporalInstant: the difference between two instants, expressed as a Duration of
+    // time units. The options bag (largestUnit / smallestUnit / roundingIncrement / roundingMode)
+    // is honored per GetDifferenceSettings; only time units are valid (an Instant has no date).
+    private JSValue Difference(JSValue other, JSValue optionsArg, int sign)
     {
         var target = RequireInstant(ToTemporalInstant(other));
+
+        var largestUnit = "auto";
+        var smallestUnit = "nanosecond";
+        var roundingMode = "trunc";
+        var increment = 1;
+
+        if (optionsArg != null && !optionsArg.IsUndefined)
+        {
+            if (optionsArg is not JSObject options)
+                throw JSEngine.NewTypeError("Temporal.Instant difference options must be an object or undefined");
+
+            var lu = options[KeyStrings.GetOrCreate("largestUnit")];
+            if (!lu.IsUndefined)
+                largestUnit = TemporalRoundingOptions.NormalizeTimeUnit(lu.StringValue, allowAuto: true);
+
+            increment = TemporalRoundingOptions.GetRoundingIncrement(options);
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, "trunc");
+
+            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
+            if (!su.IsUndefined)
+                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
+        }
+
+        // largestUnit defaults to the larger of "second" and the chosen smallestUnit.
+        if (largestUnit == "auto")
+            largestUnit = TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("second")
+                ? smallestUnit : "second";
+
+        if (TemporalRoundingOptions.UnitIndex(largestUnit) > TemporalRoundingOptions.UnitIndex(smallestUnit))
+            throw JSEngine.NewRangeError("Temporal.Instant: largestUnit must be larger than or equal to smallestUnit");
+
+        var maxIncrement = smallestUnit switch
+        {
+            "hour" => 24L,
+            "minute" or "second" => 60L,
+            _ => 1000L, // millisecond / microsecond / nanosecond
+        };
+        TemporalRoundingOptions.ValidateRoundingIncrement(increment, maxIncrement, inclusive: false);
+
+        // The "since" direction is the negation of "until"; rounding a negated value with the
+        // requested mode is equivalent to negating both the mode and the rounded result.
         var diff = (target.epochNanoseconds - epochNanoseconds) * sign;
+        var unitNs = (BigInteger)UnitNanoseconds(smallestUnit) * increment;
+        var rounded = TemporalRoundingOptions.RoundToIncrement(diff, unitNs, roundingMode);
+        return BalanceTimeDuration(rounded, largestUnit);
+    }
 
-        // Default largest unit is "second"; express the difference as seconds + sub-second
-        // components (no rounding options are honored in this minimal implementation).
-        var seconds = FloorDiv(diff, 1_000_000_000);
-        var rest = diff - seconds * 1_000_000_000;
-        var milliseconds = rest / 1_000_000; rest %= 1_000_000;
-        var microseconds = rest / 1_000; rest %= 1_000;
-        var nanoseconds = rest;
+    // BalanceTimeDuration: distribute a signed nanosecond total into time components, from
+    // `largestUnit` (hour … nanosecond) downward.
+    private static JSValue BalanceTimeDuration(BigInteger totalNs, string largestUnit)
+    {
+        var sign = totalNs.Sign;
+        var ns = BigInteger.Abs(totalNs);
+        var li = TemporalRoundingOptions.UnitIndex(largestUnit);
 
-        return new JSTemporalDuration(0, 0, 0, 0, 0, 0,
-            (double)seconds, (double)milliseconds, (double)microseconds, (double)nanoseconds,
+        BigInteger hours = 0, minutes = 0, seconds = 0, millis = 0, micros = 0;
+        if (li <= TemporalRoundingOptions.UnitIndex("hour")) { hours = ns / 3_600_000_000_000; ns %= 3_600_000_000_000; }
+        if (li <= TemporalRoundingOptions.UnitIndex("minute")) { minutes = ns / 60_000_000_000; ns %= 60_000_000_000; }
+        if (li <= TemporalRoundingOptions.UnitIndex("second")) { seconds = ns / 1_000_000_000; ns %= 1_000_000_000; }
+        if (li <= TemporalRoundingOptions.UnitIndex("millisecond")) { millis = ns / 1_000_000; ns %= 1_000_000; }
+        if (li <= TemporalRoundingOptions.UnitIndex("microsecond")) { micros = ns / 1_000; ns %= 1_000; }
+        var nanos = ns;
+
+        double S(BigInteger v) => sign * (double)v;
+        return new JSTemporalDuration(0, 0, 0, 0, S(hours), S(minutes), S(seconds), S(millis), S(micros), S(nanos),
             JSTemporalDuration.DurationPrototype);
     }
 
     [JSExport("round", Length = 1)]
     public JSValue Round(in Arguments a)
     {
-        var smallestUnit = ReadRoundingUnit(a.GetAt(0));
-        var increment = UnitNanoseconds(smallestUnit);
-        var rounded = RoundToIncrement(epochNanoseconds, increment);
+        var roundTo = a.GetAt(0) ?? JSUndefined.Value;
+        if (roundTo.IsUndefined)
+            throw JSEngine.NewTypeError("Temporal.Instant.prototype.round requires an argument");
+
+        string smallestUnit;
+        var increment = 1;
+        var roundingMode = "halfExpand";
+
+        if (roundTo.IsString)
+        {
+            smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(roundTo.StringValue, allowAuto: false);
+        }
+        else if (roundTo is JSObject options)
+        {
+            // The increment and mode are read before smallestUnit, matching the spec ordering
+            // (so a bad roundingIncrement / roundingMode is reported before "missing smallestUnit").
+            increment = TemporalRoundingOptions.GetRoundingIncrement(options);
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, "halfExpand");
+
+            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
+            if (su.IsUndefined)
+                throw JSEngine.NewRangeError("Temporal.Instant.round requires a smallestUnit");
+            smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
+        }
+        else throw JSEngine.NewTypeError("Temporal.Instant.round requires an options object or string");
+
+        // Instant rounding is relative to a whole day, so the increment may go up to the number of
+        // smallestUnits in a day (inclusive) and must divide it evenly.
+        var dayUnits = smallestUnit switch
+        {
+            "hour" => 24L,
+            "minute" => 1440L,
+            "second" => 86400L,
+            "millisecond" => 86_400_000L,
+            "microsecond" => 86_400_000_000L,
+            _ => 86_400_000_000_000L, // nanosecond
+        };
+        TemporalRoundingOptions.ValidateRoundingIncrement(increment, dayUnits, inclusive: true);
+
+        var unitNs = (BigInteger)UnitNanoseconds(smallestUnit) * increment;
+        var rounded = TemporalRoundingOptions.RoundToIncrement(epochNanoseconds, unitNs, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.Instant.round: result is out of range");
 
@@ -172,7 +266,54 @@ public partial class JSTemporalInstant : JSObject
     }
 
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToStringMethod(in Arguments a)
+    {
+        var optionsArg = a.GetAt(0);
+        var digits = -1; // "auto"
+        var roundingMode = "trunc";
+        string smallestUnit = null;
+
+        if (optionsArg != null && !optionsArg.IsUndefined)
+        {
+            if (optionsArg is not JSObject options)
+                throw JSEngine.NewTypeError("Temporal.Instant.toString options must be an object or undefined");
+
+            digits = TemporalRoundingOptions.GetFractionalSecondDigits(options);
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, "trunc");
+
+            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
+            if (!su.IsUndefined)
+            {
+                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
+                if (smallestUnit == "hour")
+                    throw JSEngine.NewRangeError("Temporal.Instant.toString: smallestUnit cannot be \"hour\"");
+            }
+        }
+
+        // ToSecondsStringPrecisionRecord: precision -2 = minutes (no seconds), -1 = auto,
+        // 0..9 = a fixed number of fractional-second digits; incrementNs is the rounding step.
+        int precision;
+        long incrementNs;
+        if (smallestUnit != null)
+        {
+            (precision, incrementNs) = smallestUnit switch
+            {
+                "minute" => (-2, 60_000_000_000L),
+                "second" => (0, 1_000_000_000L),
+                "millisecond" => (3, 1_000_000L),
+                "microsecond" => (6, 1_000L),
+                _ => (9, 1L), // nanosecond
+            };
+        }
+        else if (digits == -1) { precision = -1; incrementNs = 1; }
+        else { precision = digits; incrementNs = TemporalRoundingOptions.Pow10(9 - digits); }
+
+        var rounded = TemporalRoundingOptions.RoundToIncrement(epochNanoseconds, incrementNs, roundingMode);
+        if (!IsValid(rounded))
+            throw JSEngine.NewRangeError("Temporal.Instant.toString: result is out of range");
+
+        return new JSString(FormatISO(rounded, precision));
+    }
 
     [JSExport("toJSON", Length = 0)]
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
@@ -237,37 +378,6 @@ public partial class JSTemporalInstant : JSObject
          + new BigInteger(d.MicrosecondsValue) * 1_000
          + new BigInteger(d.NanosecondsValue);
 
-    private static string ReadRoundingUnit(JSValue options)
-    {
-        string unit;
-        if (options.IsString)
-        {
-            unit = options.ToString();
-        }
-        else if (options is JSObject optionsObject)
-        {
-            var v = optionsObject[KeyStrings.GetOrCreate("smallestUnit")];
-            if (v.IsUndefined)
-                throw JSEngine.NewRangeError("Temporal.Instant.round requires a smallestUnit");
-            unit = v.ToString();
-        }
-        else
-        {
-            throw JSEngine.NewTypeError("Temporal.Instant.round requires an options object or string");
-        }
-
-        return unit switch
-        {
-            "hour" or "hours" => "hour",
-            "minute" or "minutes" => "minute",
-            "second" or "seconds" => "second",
-            "millisecond" or "milliseconds" => "millisecond",
-            "microsecond" or "microseconds" => "microsecond",
-            "nanosecond" or "nanoseconds" => "nanosecond",
-            _ => throw JSEngine.NewRangeError($"Temporal.Instant.round: invalid smallestUnit \"{unit}\""),
-        };
-    }
-
     private static long UnitNanoseconds(string unit) => unit switch
     {
         "hour" => 3_600_000_000_000,
@@ -277,19 +387,6 @@ public partial class JSTemporalInstant : JSObject
         "microsecond" => 1_000,
         _ => 1,
     };
-
-    // RoundNumberToIncrement with the default half-expand rounding mode.
-    private static BigInteger RoundToIncrement(BigInteger value, long increment)
-    {
-        if (increment <= 1) return value;
-
-        var quotient = FloorDiv(value, increment);
-        var remainder = value - quotient * increment;
-        if (remainder * 2 >= increment)
-            quotient += 1;
-
-        return quotient * increment;
-    }
 
     private static BigInteger FloorDiv(BigInteger a, BigInteger b)
     {
@@ -374,10 +471,15 @@ public partial class JSTemporalInstant : JSObject
         return (m <= 2 ? y + 1 : y, m, d);
     }
 
-    private string ToISOString()
+    private string ToISOString() => FormatISO(epochNanoseconds, precision: -1);
+
+    // Renders epoch nanoseconds as an ISO-8601 UTC string. `precision` controls the seconds field:
+    // -2 omits seconds (minute precision), -1 emits the minimal (auto) fractional part, and 0..9
+    // emits exactly that many fractional digits.
+    private static string FormatISO(BigInteger ns, int precision)
     {
-        var totalSeconds = FloorDiv(epochNanoseconds, 1_000_000_000);
-        var fraction = epochNanoseconds - totalSeconds * 1_000_000_000; // [0, 1e9)
+        var totalSeconds = FloorDiv(ns, 1_000_000_000);
+        var fraction = ns - totalSeconds * 1_000_000_000; // [0, 1e9)
 
         var days = (long)FloorDiv(totalSeconds, 86400);
         var secondsOfDay = (long)(totalSeconds - new BigInteger(days) * 86400);
@@ -396,16 +498,32 @@ public partial class JSTemporalInstant : JSObject
         sb.Append('-').Append(m.ToString("00", CultureInfo.InvariantCulture))
           .Append('-').Append(d.ToString("00", CultureInfo.InvariantCulture))
           .Append('T').Append(hour.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(minute.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(second.ToString("00", CultureInfo.InvariantCulture));
+          .Append(':').Append(minute.ToString("00", CultureInfo.InvariantCulture));
 
-        if (fraction != 0)
+        if (precision != -2)
         {
-            var frac = fraction.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0');
-            sb.Append('.').Append(frac);
+            sb.Append(':').Append(second.ToString("00", CultureInfo.InvariantCulture));
+            AppendFraction(sb, (long)fraction, precision);
         }
 
         sb.Append('Z');
         return sb.ToString();
+    }
+
+    // Appends the fractional-second part for a 0..999_999_999 nanosecond value. precision -1 trims
+    // trailing zeros (and omits the field entirely when zero); 0 omits it; 1..9 zero-pads to width.
+    internal static void AppendFraction(StringBuilder sb, long fractionNs, int precision)
+    {
+        if (precision == 0) return;
+        if (precision < 0)
+        {
+            if (fractionNs == 0) return;
+            var frac = fractionNs.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0');
+            sb.Append('.').Append(frac);
+            return;
+        }
+
+        var digits = fractionNs.ToString("000000000", CultureInfo.InvariantCulture).Substring(0, precision);
+        sb.Append('.').Append(digits);
     }
 }

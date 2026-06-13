@@ -214,6 +214,19 @@ public abstract class AstReduce : AstMapVisitor<AstNode>
         return node;
     }
 
+    protected override AstNode VisitImportCall(AstImportCall node)
+    {
+        var sourceModified = Modified(node.Source, out var source);
+
+        var options = node.Options;
+        var optionsModified = options != null && Modified(options, out options);
+
+        if (sourceModified || optionsModified)
+            return new AstImportCall(node.Start, source, options, node.End);
+
+        return node;
+    }
+
     protected override AstNode VisitSuper(AstSuper super) => super;
 
     protected override AstNode VisitArrayExpression(AstArrayExpression arrayExpression)

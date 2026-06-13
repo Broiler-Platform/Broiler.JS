@@ -29,6 +29,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     internal readonly BigInteger epochNanoseconds;
     internal readonly string timeZoneId;
+    internal readonly string calendarId;
 
     [JSExport(Length = 2)]
     public JSTemporalZonedDateTime(in Arguments a) : base(ResolvePrototype())
@@ -43,13 +44,17 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         epochNanoseconds = ns;
         timeZoneId = CanonicalizeTimeZone(tzArg.ToString());
-        RequireCalendar(a.GetAt(2));
+        calendarId = CanonicalizeCalendar(a.GetAt(2));
     }
 
-    internal JSTemporalZonedDateTime(BigInteger epochNanoseconds, string timeZoneId, JSObject prototype) : base(prototype)
+    internal JSTemporalZonedDateTime(BigInteger epochNanoseconds, string timeZoneId, JSObject prototype)
+        : this(epochNanoseconds, timeZoneId, "iso8601", prototype) { }
+
+    internal JSTemporalZonedDateTime(BigInteger epochNanoseconds, string timeZoneId, string calendarId, JSObject prototype) : base(prototype)
     {
         this.epochNanoseconds = epochNanoseconds;
         this.timeZoneId = timeZoneId;
+        this.calendarId = calendarId;
     }
 
     private static JSObject ResolvePrototype()
@@ -95,16 +100,16 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     // ── accessors ───────────────────────────────────────────────────────────────
 
-    [JSExport("calendarId")] public JSValue CalendarId => new JSString("iso8601");
+    [JSExport("calendarId")] public JSValue CalendarId => new JSString(calendarId);
     [JSExport("timeZoneId")] public JSValue TimeZoneId => new JSString(timeZoneId);
     // The ISO 8601 calendar has no eras; era / eraYear are present but undefined.
-    [JSExport("era")] public JSValue Era => JSUndefined.Value;
-    [JSExport("eraYear")] public JSValue EraYear => JSUndefined.Value;
+    [JSExport("era")] public JSValue Era => TemporalCalendar.Era(calendarId, Local().y);
+    [JSExport("eraYear")] public JSValue EraYear => TemporalCalendar.EraYear(calendarId, Local().y);
 
     [JSExport("epochMilliseconds")] public double EpochMilliseconds => (double)FloorDiv(epochNanoseconds, 1_000_000);
     [JSExport("epochNanoseconds")] public JSValue EpochNanoseconds => new JSBigInt(epochNanoseconds);
 
-    [JSExport("year")] public double YearValue => Local().y;
+    [JSExport("year")] public double YearValue => TemporalCalendar.Year(calendarId, Local().y);
     [JSExport("month")] public double MonthValue => Local().mo;
     [JSExport("monthCode")] public JSValue MonthCode => new JSString($"M{Local().mo:00}");
     [JSExport("day")] public double DayValue => Local().d;
@@ -151,7 +156,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         ReadOverflow(a.GetAt(1)); // validate options shape
 
         if (item is JSTemporalZonedDateTime zdt)
-            return new JSTemporalZonedDateTime(zdt.epochNanoseconds, zdt.timeZoneId, ZonedDateTimePrototype);
+            return new JSTemporalZonedDateTime(zdt.epochNanoseconds, zdt.timeZoneId, zdt.calendarId, ZonedDateTimePrototype);
 
         if (item.IsString)
             return ParseZonedDateTimeString(item.ToString());
@@ -178,6 +183,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     {
         var other = Require(ToZonedDateTime(a.GetAt(0)));
         return epochNanoseconds == other.epochNanoseconds && timeZoneId == other.timeZoneId
+            && calendarId == other.calendarId
             ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }
 
@@ -187,21 +193,23 @@ public partial class JSTemporalZonedDateTime : JSObject
         var tz = a.GetAt(0);
         if (tz == null || !tz.IsString)
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.withTimeZone: time zone must be a string");
-        return new JSTemporalZonedDateTime(epochNanoseconds, CanonicalizeTimeZone(tz.ToString()), ZonedDateTimePrototype);
+        return new JSTemporalZonedDateTime(epochNanoseconds, CanonicalizeTimeZone(tz.ToString()), calendarId, ZonedDateTimePrototype);
     }
 
     [JSExport("withCalendar", Length = 1)]
     public JSValue WithCalendar(in Arguments a)
     {
-        RequireCalendar(a.GetAt(0));
-        return new JSTemporalZonedDateTime(epochNanoseconds, timeZoneId, ZonedDateTimePrototype);
+        var arg = a.GetAt(0);
+        if (arg == null || arg.IsUndefined)
+            throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.withCalendar requires a calendar");
+        return new JSTemporalZonedDateTime(epochNanoseconds, timeZoneId, TemporalCalendar.Canonicalize(arg.StringValue), ZonedDateTimePrototype);
     }
 
     [JSExport("startOfDay", Length = 0)]
     public JSValue StartOfDay(in Arguments a)
     {
         var l = Local();
-        return new JSTemporalZonedDateTime(StartOfDayEpochNs(l.y, l.mo, l.d), timeZoneId, ZonedDateTimePrototype);
+        return new JSTemporalZonedDateTime(StartOfDayEpochNs(l.y, l.mo, l.d), timeZoneId, calendarId, ZonedDateTimePrototype);
     }
 
     [JSExport("toInstant", Length = 0)]
@@ -212,7 +220,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     public JSValue ToPlainDate(in Arguments a)
     {
         var l = Local();
-        return new JSTemporalPlainDate(l.y, l.mo, l.d, JSTemporalPlainDate.PlainDatePrototype);
+        return new JSTemporalPlainDate(l.y, l.mo, l.d, calendarId, JSTemporalPlainDate.PlainDatePrototype);
     }
 
     [JSExport("toPlainTime", Length = 0)]
@@ -226,12 +234,12 @@ public partial class JSTemporalZonedDateTime : JSObject
     public JSValue ToPlainDateTime(in Arguments a)
     {
         var l = Local();
-        return new JSTemporalPlainDateTime(l.y, l.mo, l.d, l.h, l.mi, l.s, l.ms, l.us, l.ns,
+        return new JSTemporalPlainDateTime(l.y, l.mo, l.d, l.h, l.mi, l.s, l.ms, l.us, l.ns, calendarId,
             JSTemporalPlainDateTime.PlainDateTimePrototype);
     }
 
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString(ReadCalendarName(a.GetAt(0))));
 
     [JSExport("toJSON", Length = 0)]
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
@@ -243,15 +251,19 @@ public partial class JSTemporalZonedDateTime : JSObject
     public JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.ZonedDateTime.prototype.valueOf, which is not supported. Use Temporal.ZonedDateTime.compare for comparison.");
 
-    // Calendar + DST arithmetic is not yet implemented.
+    // Calendar + DST arithmetic. until/since are implemented (DST-aware, honoring `largestUnit`);
+    // add/subtract/round/with remain to be wired.
     [JSExport("add", Length = 1)]
     public JSValue Add(in Arguments a) => throw NotImplementedArithmetic("add");
     [JSExport("subtract", Length = 1)]
     public JSValue Subtract(in Arguments a) => throw NotImplementedArithmetic("subtract");
+
     [JSExport("until", Length = 1)]
-    public JSValue Until(in Arguments a) => throw NotImplementedArithmetic("until");
+    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), 1);
+
     [JSExport("since", Length = 1)]
-    public JSValue Since(in Arguments a) => throw NotImplementedArithmetic("since");
+    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
+
     [JSExport("round", Length = 1)]
     public JSValue Round(in Arguments a) => throw NotImplementedArithmetic("round");
     [JSExport("with", Length = 1)]
@@ -259,6 +271,223 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     private static JSException NotImplementedArithmetic(string method)
         => JSEngine.NewError($"Temporal.ZonedDateTime.prototype.{method} is not yet implemented (calendar/DST arithmetic)");
+
+    // DifferenceTemporalZonedDateTime: the signed difference between two instants in this zone,
+    // expressed as a Duration. When `largestUnit` is a time unit the result is the plain
+    // epoch-nanosecond difference balanced into time components; otherwise it is the DST-aware
+    // calendar difference (a "day" may be 23 h or 25 h across a transition). The smallestUnit /
+    // roundingIncrement / roundingMode options are validated only via `largestUnit` here — like
+    // the PlainDate/PlainDateTime difference methods, no rounding is applied yet.
+    private JSValue Difference(JSValue otherValue, JSValue options, int sign)
+    {
+        var other = Require(ToZonedDateTime(otherValue));
+        if (calendarId != other.calendarId)
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: cannot compute the difference between date-times of different calendars");
+        var largestUnit = ReadLargestUnit(options, "hour");
+
+        var result = IsTimeUnit(largestUnit)
+            ? DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit)
+            : DifferenceCalendar(epochNanoseconds, other.epochNanoseconds, largestUnit);
+
+        if (sign < 0)
+            result = new JSTemporalDuration(
+                -result.YearsValue, -result.MonthsValue, -result.WeeksValue, -result.DaysValue,
+                -result.HoursValue, -result.MinutesValue, -result.SecondsValue,
+                -result.MillisecondsValue, -result.MicrosecondsValue, -result.NanosecondsValue,
+                JSTemporalDuration.DurationPrototype);
+
+        return result;
+    }
+
+    private static bool IsTimeUnit(string unit) => unit is "hour" or "minute" or "second"
+        or "millisecond" or "microsecond" or "nanosecond";
+
+    // The difference as a pure time duration (no calendar units), balanced from `largestUnit` down.
+    private static JSTemporalDuration DifferenceTimeOnly(BigInteger ns1, BigInteger ns2, string largestUnit)
+        => BalanceTimeDuration(ns2 - ns1, largestUnit);
+
+    // DifferenceZonedDateTime for a calendar `largestUnit` (year/month/week/day). Follows the
+    // proposal's day-correction loop: the wall-clock time-of-day difference is combined with a
+    // calendar date difference, correcting the intermediate date until the residual real time
+    // runs in the same direction as the overall difference (which absorbs DST offset shifts).
+    private JSTemporalDuration DifferenceCalendar(BigInteger ns1, BigInteger ns2, string largestUnit)
+    {
+        if (ns1 == ns2)
+            return new JSTemporalDuration(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
+
+        var start = LocalAt(ns1);
+        var end = LocalAt(ns2);
+        var sign = ns2 > ns1 ? 1 : -1;
+
+        var timeNs = TimeOfDayNs(end) - TimeOfDayNs(start);
+        var dayCorrection = Math.Sign(timeNs) == -sign ? 1 : 0;
+
+        int iy = end.y, im = end.mo, id = end.d;
+        BigInteger residual;
+        while (true)
+        {
+            var epochDay = DaysFromCivil(end.y, end.mo, end.d) - (long)dayCorrection * sign;
+            var (cy, cm, cd) = CivilFromDays(epochDay);
+            iy = (int)cy; im = (int)cm; id = (int)cd;
+
+            var intermediateNs = EpochNsForLocal(iy, im, id, start.h, start.mi, start.s, start.ms, start.us, start.ns);
+            residual = ns2 - intermediateNs;
+            if (residual == 0 || residual.Sign == sign)
+                break;
+
+            dayCorrection++;
+            if (dayCorrection > 3) // the loop is guaranteed to settle within two corrections
+                break;
+        }
+
+        var (years, months, weeks, days) = DifferenceISODate(start.y, start.mo, start.d, iy, im, id, largestUnit);
+        var time = BalanceTimeDuration(residual, "hour");
+
+        return new JSTemporalDuration(years, months, weeks, days,
+            time.HoursValue, time.MinutesValue, time.SecondsValue,
+            time.MillisecondsValue, time.MicrosecondsValue, time.NanosecondsValue,
+            JSTemporalDuration.DurationPrototype);
+    }
+
+    // Distributes a signed nanosecond total into time components, from `largestUnit` downward.
+    private static JSTemporalDuration BalanceTimeDuration(BigInteger totalNs, string largestUnit)
+    {
+        var sign = totalNs.Sign;
+        var ns = BigInteger.Abs(totalNs);
+
+        BigInteger hours = 0, minutes = 0, seconds = 0, millis = 0, micros = 0;
+        bool At(string u) => UnitRank(largestUnit) <= UnitRank(u);
+        if (At("hour")) { hours = ns / 3_600_000_000_000; ns %= 3_600_000_000_000; }
+        if (At("minute")) { minutes = ns / 60_000_000_000; ns %= 60_000_000_000; }
+        if (At("second")) { seconds = ns / 1_000_000_000; ns %= 1_000_000_000; }
+        if (At("millisecond")) { millis = ns / 1_000_000; ns %= 1_000_000; }
+        if (At("microsecond")) { micros = ns / 1_000; ns %= 1_000; }
+        var nanos = ns;
+
+        double S(BigInteger v) => sign * (double)v;
+        return new JSTemporalDuration(0, 0, 0, 0, S(hours), S(minutes), S(seconds), S(millis), S(micros), S(nanos),
+            JSTemporalDuration.DurationPrototype);
+    }
+
+    private static readonly string[] UnitRankOrder =
+        { "year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond" };
+
+    private static int UnitRank(string unit) => System.Array.IndexOf(UnitRankOrder, unit);
+
+    private static string ReadLargestUnit(JSValue options, string defaultUnit)
+    {
+        if (options == null || options.IsUndefined)
+            return defaultUnit;
+        if (options is not JSObject optionsObject)
+            throw JSEngine.NewTypeError("Temporal.ZonedDateTime difference options must be an object or undefined");
+        var v = optionsObject[KeyStrings.GetOrCreate("largestUnit")];
+        if (v.IsUndefined || v.StringValue == "auto")
+            return defaultUnit;
+        return NormalizeUnit(v.StringValue);
+    }
+
+    private static string NormalizeUnit(string u) => u switch
+    {
+        "year" or "years" => "year",
+        "month" or "months" => "month",
+        "week" or "weeks" => "week",
+        "day" or "days" => "day",
+        "hour" or "hours" => "hour",
+        "minute" or "minutes" => "minute",
+        "second" or "seconds" => "second",
+        "millisecond" or "milliseconds" => "millisecond",
+        "microsecond" or "microseconds" => "microsecond",
+        "nanosecond" or "nanoseconds" => "nanosecond",
+        _ => throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: invalid unit \"{u}\""),
+    };
+
+    // The wall-clock time of day, in nanoseconds since local midnight.
+    private static long TimeOfDayNs((int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) l)
+        => ((((long)l.h * 60 + l.mi) * 60 + l.s) * 1000L + l.ms) * 1_000_000L + (long)l.us * 1000 + l.ns;
+
+    // Local wall-clock components for an arbitrary epoch instant in this zone.
+    private (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) LocalAt(BigInteger epochNs)
+    {
+        var local = epochNs + GetOffsetNanosecondsFor(epochNs);
+        var totalSeconds = FloorDiv(local, 1_000_000_000);
+        var fraction = (long)(local - totalSeconds * 1_000_000_000);
+
+        var days = (long)FloorDiv(totalSeconds, 86400);
+        var secondsOfDay = (long)(totalSeconds - new BigInteger(days) * 86400);
+        var (y, m, d) = CivilFromDays(days);
+
+        var h = (int)(secondsOfDay / 3600);
+        var mi = (int)(secondsOfDay % 3600 / 60);
+        var s = (int)(secondsOfDay % 60);
+        var ms = (int)(fraction / 1_000_000);
+        var us = (int)(fraction / 1000 % 1000);
+        var ns = (int)(fraction % 1000);
+        return ((int)y, (int)m, (int)d, h, mi, s, ms, us, ns);
+    }
+
+    // The epoch instant for a local wall-clock datetime in this zone ("compatible" disambiguation).
+    private BigInteger EpochNsForLocal(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns)
+        => LocalNanoseconds(y, mo, d, h, mi, s, ms, us, ns) - GetOffsetForLocal(timeZoneId, y, mo, d, h, mi, s);
+
+    // DifferenceISODate from a start to an end date (ISO calendar), per the chosen largestUnit.
+    private static (double years, double months, double weeks, double days) DifferenceISODate(
+        int ay, int am, int ad, int by, int bm, int bd, string largestUnit)
+    {
+        var startEpoch = DaysFromCivil(ay, am, ad);
+        var endEpoch = DaysFromCivil(by, bm, bd);
+
+        if (largestUnit is "day" or "week")
+        {
+            var totalDays = endEpoch - startEpoch;
+            if (largestUnit == "week")
+                return (0, 0, totalDays / 7, totalDays % 7);
+            return (0, 0, 0, totalDays);
+        }
+
+        var sign = CompareISODate(ay, am, ad, by, bm, bd);
+        if (sign == 0) return (0, 0, 0, 0);
+        var step = -sign;
+
+        long years = by - ay;
+        var (my, mm, md) = AddYearsMonths(ay, am, ad, years, 0);
+        if (CompareISODate(my, mm, md, by, bm, bd) == step)
+        {
+            years -= step;
+            (my, mm, md) = AddYearsMonths(ay, am, ad, years, 0);
+        }
+
+        long months = 0;
+        while (true)
+        {
+            var (ny, nm, nd) = AddYearsMonths(my, mm, md, 0, step);
+            var cmp = CompareISODate(ny, nm, nd, by, bm, bd);
+            if (cmp == step) break;
+            months += step; my = ny; mm = nm; md = nd;
+            if (cmp == 0) break;
+        }
+
+        var days = DaysFromCivil(by, bm, bd) - DaysFromCivil(my, mm, md);
+
+        if (largestUnit == "month") { months += years * 12; years = 0; }
+        return (years, months, 0, days);
+    }
+
+    private static int CompareISODate(int y1, int m1, int d1, int y2, int m2, int d2)
+    {
+        if (y1 != y2) return y1 < y2 ? -1 : 1;
+        if (m1 != m2) return m1 < m2 ? -1 : 1;
+        if (d1 != d2) return d1 < d2 ? -1 : 1;
+        return 0;
+    }
+
+    private static (int y, int m, int d) AddYearsMonths(int year, int month, int day, long years, long months)
+    {
+        var total = (long)month - 1 + months;
+        var newYear = (int)(year + years + FloorDiv(total, 12));
+        var newMonth = (int)(((total % 12) + 12) % 12) + 1;
+        var newDay = Math.Min(day, DaysInMonthOf(newYear, newMonth));
+        return (newYear, newMonth, newDay);
+    }
 
     // ── time-zone offset resolution ───────────────────────────────────────────────
 
@@ -268,7 +497,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static JSValue ToZonedDateTime(JSValue item)
     {
         if (item is JSTemporalZonedDateTime zdt)
-            return new JSTemporalZonedDateTime(zdt.epochNanoseconds, zdt.timeZoneId, ZonedDateTimePrototype);
+            return new JSTemporalZonedDateTime(zdt.epochNanoseconds, zdt.timeZoneId, zdt.calendarId, ZonedDateTimePrototype);
         if (item.IsString)
             return ParseZonedDateTimeString(item.ToString());
         if (item is JSObject obj)
@@ -387,12 +616,11 @@ public partial class JSTemporalZonedDateTime : JSObject
         return id;
     }
 
-    private static void RequireCalendar(JSValue calendar)
+    private static string CanonicalizeCalendar(JSValue calendar)
     {
-        if (calendar == null || calendar.IsUndefined) return;
-        var id = calendar.ToString();
-        if (!string.Equals(id, "iso8601", StringComparison.OrdinalIgnoreCase))
-            throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: unsupported calendar \"{id}\" (only iso8601 is implemented)");
+        if (calendar == null || calendar.IsUndefined) return "iso8601";
+        if (calendar is JSTemporalZonedDateTime zdt) return zdt.calendarId;
+        return TemporalCalendar.Canonicalize(calendar.StringValue);
     }
 
     private static string ReadOverflow(JSValue options)
@@ -429,7 +657,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     private static JSValue FromPropertyBag(JSObject obj)
     {
-        RequireCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
+        var calendarId = CanonicalizeCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
 
         var tzValue = obj[KeyStrings.GetOrCreate("timeZone")];
         if (tzValue.IsUndefined)
@@ -441,11 +669,17 @@ public partial class JSTemporalZonedDateTime : JSObject
         var timeZoneId = CanonicalizeTimeZone(tzValue.ToString());
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
+        var eraValue = obj[KeyStrings.GetOrCreate("era")];
+        var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
 
-        if (yearValue.IsUndefined) throw JSEngine.NewTypeError("Temporal.ZonedDateTime: missing year");
+        var hasYear = !yearValue.IsUndefined;
+        var hasEra = !eraValue.IsUndefined;
+        var hasEraYear = !eraYearValue.IsUndefined;
+        if (!hasYear && !(hasEra && hasEraYear))
+            throw JSEngine.NewTypeError("Temporal.ZonedDateTime: missing year (or era and eraYear)");
         if (dayValue.IsUndefined) throw JSEngine.NewTypeError("Temporal.ZonedDateTime: missing day");
         if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime: missing month / monthCode");
@@ -454,8 +688,12 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToIntegerWithTruncation(monthValue) != month)
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: month and monthCode disagree");
 
+        var year = TemporalCalendar.ResolveIsoYear(calendarId,
+            hasYear, hasYear ? ToIntegerWithTruncation(yearValue) : 0,
+            hasEra, hasEra ? eraValue.StringValue : null,
+            hasEraYear, hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0);
+
         int Field(string name) { var v = obj[KeyStrings.GetOrCreate(name)]; return v.IsUndefined ? 0 : ToIntegerWithTruncation(v); }
-        var year = ToIntegerWithTruncation(yearValue);
         var day = ToIntegerWithTruncation(dayValue);
         var hour = Field("hour"); var minute = Field("minute"); var second = Field("second");
         var ms = Field("millisecond"); var us = Field("microsecond"); var ns = Field("nanosecond");
@@ -476,7 +714,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
 
-        return new JSTemporalZonedDateTime(epochNs, timeZoneId, ZonedDateTimePrototype);
+        return new JSTemporalZonedDateTime(epochNs, timeZoneId, calendarId, ZonedDateTimePrototype);
     }
 
     private static BigInteger LocalNanoseconds(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns)
@@ -511,8 +749,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (!match.Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
 
-        if (match.Groups[14].Success && !string.Equals(match.Groups[14].Value, "iso8601", StringComparison.OrdinalIgnoreCase))
-            throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: unsupported calendar \"{match.Groups[14].Value}\"");
+        var calendarId = match.Groups[14].Success ? TemporalCalendar.Canonicalize(match.Groups[14].Value) : "iso8601";
 
         var year = int.Parse(match.Groups[1].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
         var month = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
@@ -555,7 +792,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: parsed value is out of range");
 
-        return new JSTemporalZonedDateTime(epochNs, timeZoneId, ZonedDateTimePrototype);
+        return new JSTemporalZonedDateTime(epochNs, timeZoneId, calendarId, ZonedDateTimePrototype);
     }
 
     // ── ISO helpers ───────────────────────────────────────────────────────────────
@@ -643,7 +880,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     }
 
     // YYYY-MM-DDTHH:MM:SS[.fff]±HH:MM[timeZoneId]
-    private string ToISOString()
+    private string ToISOString(string showCalendar = "auto")
     {
         var l = Local();
         var offsetNs = OffsetNanoseconds();
@@ -669,6 +906,25 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         sb.Append(FormatOffset(offsetNs));
         sb.Append('[').Append(timeZoneId).Append(']');
+        sb.Append(JSTemporalPlainDate.FormatCalendarAnnotation(calendarId, showCalendar));
         return sb.ToString();
+    }
+
+    // GetTemporalShowCalendarNameOption (shared shape with PlainDate).
+    private static string ReadCalendarName(JSValue options)
+    {
+        if (options == null || options.IsUndefined) return "auto";
+        if (options is not JSObject optionsObject)
+            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
+
+        var v = optionsObject[KeyStrings.GetOrCreate("calendarName")];
+        if (v.IsUndefined) return "auto";
+
+        var name = v.StringValue;
+        return name switch
+        {
+            "auto" or "always" or "never" or "critical" => name,
+            _ => throw JSEngine.NewRangeError($"Temporal: invalid calendarName \"{name}\""),
+        };
     }
 }

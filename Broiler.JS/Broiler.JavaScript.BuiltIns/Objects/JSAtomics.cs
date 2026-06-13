@@ -1,9 +1,11 @@
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using System.Numerics;
+using System.Threading.Tasks;
 using Broiler.JavaScript.BuiltIns.Array.Typed;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Number;
+using Broiler.JavaScript.BuiltIns.Promise;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 
@@ -323,6 +325,57 @@ public partial class JSAtomics : JSObject
         // A mismatch returns immediately; a match would block until notified, but with no
         // other agent it can only time out.
         return new JSString(matches ? "timed-out" : "not-equal");
+    }
+
+    // Atomics.waitAsync( typedArray, index, value, timeout ): like wait, but never blocks the
+    // agent — it returns a result record { async, value }. A value mismatch or a zero timeout
+    // settles synchronously (async: false); a matching value with a positive timeout yields a
+    // promise (async: true) which, with no other agent to wake it, resolves to "timed-out".
+    [JSExport("waitAsync", Length = 4)]
+    public static JSValue WaitAsync(in Arguments a)
+    {
+        var typedArray = ValidateIntegerTypedArray(a.GetAt(0), waitable: true, out var kind);
+
+        if (!typedArray.buffer.isShared)
+            throw JSEngine.NewTypeError("Atomics.waitAsync requires a SharedArrayBuffer");
+
+        var index = ValidateAtomicAccess(typedArray, a.GetAt(1));
+
+        BigInteger expectedBig = default;
+        long expected = 0;
+        if (kind == ElementKind.BigInt64)
+            expectedBig = JSBigInt.Coerce(a.GetAt(2) ?? JSUndefined.Value).value;
+        else
+            expected = (long)(int)ToIntegerOperand(a.GetAt(2) ?? JSUndefined.Value);
+
+        // q = ToNumber(timeout); a NaN timeout means +∞, otherwise it is clamped to ≥ 0.
+        var q = (a.GetAt(3) ?? JSUndefined.Value).DoubleValue;
+        var timeout = double.IsNaN(q) ? double.PositiveInfinity : Math.Max(q, 0);
+
+        RevalidateAtomicAccess(typedArray, index);
+
+        var current = typedArray.GetValue((uint)index, typedArray);
+        bool matches = kind == ElementKind.BigInt64
+            ? ((JSBigInt)current).value == TruncateToBigElement(kind, expectedBig)
+            : (long)current.DoubleValue == TruncateToElement(kind, expected);
+
+        if (!matches)
+            return WaitAsyncResult(false, new JSString("not-equal"));
+
+        if (timeout == 0)
+            return WaitAsyncResult(false, new JSString("timed-out"));
+
+        var promise = Task.FromResult<JSValue>(new JSString("timed-out")).ToPromise();
+        return WaitAsyncResult(true, promise);
+    }
+
+    // The { async, value } result record returned by Atomics.waitAsync.
+    private static JSObject WaitAsyncResult(bool async, JSValue value)
+    {
+        var result = new JSObject();
+        result[KeyStrings.GetOrCreate("async")] = async ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        result[KeyStrings.GetOrCreate("value")] = value;
+        return result;
     }
 
     [JSExport("notify", Length = 3)]

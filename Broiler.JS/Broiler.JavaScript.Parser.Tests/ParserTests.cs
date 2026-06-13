@@ -408,6 +408,60 @@ public class ParserTests
         Assert.Equal(string.Empty, Assert.IsType<AstLiteral>(parts[2]).Start.CookedText);
     }
 
+    // Dynamic import() — an ImportCall is a CallExpression that may appear anywhere an
+    // expression may, including nested inside other import calls (issue #771, Problems 12 & 28).
+    [Theory]
+    [InlineData("import('./mod.js');")]
+    [InlineData("var p = import('./mod.js');")]
+    [InlineData("import('./mod.js').then(m => m);")]
+    [InlineData("import('./mod.js', { with: { type: 'json' } });")]
+    [InlineData("import('./mod.js', { with: { type: 'json' } },);")]
+    [InlineData("let f = () => { import(import(import('./mod.js'))); };")]
+    [InlineData("async () => { await import('./mod.js'); };")]
+    public void ParseProgram_DynamicImport_Succeeds(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        Assert.NotNull(program);
+    }
+
+    [Fact]
+    public void ParseProgram_DynamicImport_ProducesImportCallNode()
+    {
+        var stream = new FastTokenStream(new StringSpan("import('./mod.js');"));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements.ToArray()));
+        var importCall = Assert.IsType<AstImportCall>(statement.Expression);
+        Assert.Equal(FastNodeType.ImportCall, importCall.Type);
+        Assert.Null(importCall.Options);
+    }
+
+    [Fact]
+    public void ParseProgram_DynamicImport_WithOptions_CapturesSecondArgument()
+    {
+        var stream = new FastTokenStream(new StringSpan("import('./mod.js', opts);"));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements.ToArray()));
+        var importCall = Assert.IsType<AstImportCall>(statement.Expression);
+        Assert.NotNull(importCall.Options);
+    }
+
+    [Fact]
+    public void ParseProgram_StaticImportDeclaration_StillParses()
+    {
+        var stream = new FastTokenStream(new StringSpan("import x from './mod.js';"));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        Assert.IsType<AstImportStatement>(Assert.Single(program.Statements.ToArray()));
+    }
+
     private static void AssertAsyncMethod(AstNode node, string expectedName)
     {
         var property = Assert.IsType<AstClassProperty>(node);

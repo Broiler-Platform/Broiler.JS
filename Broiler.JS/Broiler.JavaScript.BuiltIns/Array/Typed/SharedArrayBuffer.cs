@@ -1,7 +1,9 @@
 using System;
 using Broiler.JavaScript.ExpressionCompiler;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
@@ -106,9 +108,37 @@ public partial class SharedArrayBuffer : JSArrayBuffer
         else end = Math.Min(end, len);
 
         int newLen = Math.Max(end - begin, 0);
-        var result = new SharedArrayBuffer(newLen);
-        System.Array.Copy(source.buffer, begin, result.buffer, 0, newLen);
-        return result;
+
+        // The new buffer is allocated through SpeciesConstructor(O, %SharedArrayBuffer%); the
+        // result must itself be a (distinct, large-enough) SharedArrayBuffer.
+        var ctor = GetSharedSpeciesConstructor(source);
+        var created = ctor?.CreateInstance(JSValue.CreateNumber(newLen)) ?? new SharedArrayBuffer(newLen);
+        if (created is not SharedArrayBuffer target)
+            throw JSEngine.NewTypeError("SharedArrayBuffer species constructor did not return a SharedArrayBuffer");
+        if (ReferenceEquals(target, source))
+            throw JSEngine.NewTypeError("SharedArrayBuffer species constructor returned the original SharedArrayBuffer");
+        if (target.buffer.Length < newLen)
+            throw JSEngine.NewTypeError("SharedArrayBuffer species constructor returned a too-small SharedArrayBuffer");
+
+        System.Array.Copy(source.buffer, begin, target.buffer, 0, newLen);
+        return target;
+    }
+
+    private static JSValue GetSharedSpeciesConstructor(SharedArrayBuffer source)
+    {
+        var defaultConstructor = (JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("SharedArrayBuffer")];
+        var constructor = source[KeyStrings.constructor];
+        if (!constructor.IsObject)
+            return defaultConstructor;
+
+        var species = constructor[(IJSSymbol)JSSymbol.species];
+        if (species.IsNullOrUndefined)
+            return defaultConstructor;
+
+        if (species is not IJSFunction)
+            throw JSEngine.NewTypeError("SharedArrayBuffer species constructor is not a constructor");
+
+        return species;
     }
 
     // Internal allocation used by slice; not reachable from JS without `new`.

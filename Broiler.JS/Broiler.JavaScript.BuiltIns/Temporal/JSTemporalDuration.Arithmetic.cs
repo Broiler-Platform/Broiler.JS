@@ -100,7 +100,13 @@ public partial class JSTemporalDuration
 
         var totalNs = TimePlusDaysNanoseconds() + sign * other.TimePlusDaysNanoseconds();
         var largest = MaxUnit(DefaultLargestUnit(), other.DefaultLargestUnit());
-        return BalanceFromNanoseconds(totalNs, largest);
+        var result = (JSTemporalDuration)BalanceFromNanoseconds(totalNs, largest);
+
+        // The balanced result must itself be a valid duration (e.g. the combined time must not
+        // overflow the 2^53-seconds limit); otherwise this is a RangeError.
+        RejectDuration(result.years, result.months, result.weeks, result.days, result.hours,
+            result.minutes, result.seconds, result.milliseconds, result.microseconds, result.nanoseconds);
+        return result;
     }
 
     private static string MaxUnit(string a, string b) => UnitIndex(a) <= UnitIndex(b) ? a : b;
@@ -133,7 +139,7 @@ public partial class JSTemporalDuration
             if (!inc.IsUndefined)
             {
                 var n = inc.DoubleValue;
-                if (double.IsNaN(n) || n < 1 || double.IsInfinity(n) || Math.Truncate(n) != n)
+                if (double.IsNaN(n) || double.IsInfinity(n) || n < 1 || n > 1_000_000_000 || Math.Truncate(n) != n)
                     throw JSEngine.NewRangeError("Temporal.Duration.round: invalid roundingIncrement");
                 increment = n;
             }
@@ -153,6 +159,21 @@ public partial class JSTemporalDuration
         if (largestUnit == "auto")
             largestUnit = MaxUnit(DefaultLargestUnit(), smallestUnit);
 
+        // A time-unit smallestUnit caps the rounding increment at the number of those units in the
+        // next-larger unit, and the increment must divide it evenly. This validation is independent
+        // of the calendar/relativeTo machinery, so run it up front — a bad increment is a RangeError
+        // even on the paths that later bail out as "not yet implemented".
+        if (UnitIndex(smallestUnit) >= UnitIndex("hour"))
+        {
+            var maxIncrement = smallestUnit switch
+            {
+                "hour" => 24L,
+                "minute" or "second" => 60L,
+                _ => 1000L, // millisecond / microsecond / nanosecond
+            };
+            TemporalRoundingOptions.ValidateRoundingIncrement((long)increment, maxIncrement, inclusive: false);
+        }
+
         if (HasCalendarUnits || UnitIndex(smallestUnit) < UnitIndex("day") || UnitIndex(largestUnit) < UnitIndex("day"))
         {
             if (!hasRelativeTo)
@@ -164,8 +185,6 @@ public partial class JSTemporalDuration
         if (hasRelativeTo)
             throw JSEngine.NewError(
                 "Temporal.Duration.prototype.round with a relativeTo is not yet implemented");
-
-        ValidateTimeRoundingIncrement(smallestUnit, (long)increment);
 
         var unitNs = TimeUnitNanoseconds(smallestUnit) * (long)increment;
         var rounded = RoundToIncrement(TimePlusDaysNanoseconds(), unitNs, roundingMode);
@@ -264,21 +283,6 @@ public partial class JSTemporalDuration
             or "halfCeil" or "halfFloor" or "halfExpand" or "halfTrunc" or "halfEven" => mode,
         _ => throw JSEngine.NewRangeError($"Temporal.Duration: invalid roundingMode \"{mode}\""),
     };
-
-    // The maximum roundingIncrement allowed for each time unit (a divisor of the next-larger
-    // unit). Day has no maximum.
-    private static void ValidateTimeRoundingIncrement(string unit, long increment)
-    {
-        var max = unit switch
-        {
-            "hour" => 24L,
-            "minute" or "second" => 60L,
-            "millisecond" or "microsecond" or "nanosecond" => 1000L,
-            _ => 0L, // day: unbounded
-        };
-        if (max != 0 && increment >= max)
-            throw JSEngine.NewRangeError($"Temporal.Duration.round: roundingIncrement {increment} out of range for {unit}");
-    }
 
     // RoundNumberToIncrement: rounds `value` to a multiple of `increment` per `roundingMode`.
     private static BigInteger RoundToIncrement(BigInteger value, BigInteger increment, string roundingMode)

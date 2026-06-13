@@ -218,6 +218,10 @@ partial class FastParser
                     return Export(token, out node);
 
                 case FastKeywords.import:
+                    // `import(...)` (dynamic ImportCall) and `import.meta` are expressions, not
+                    // import declarations — fall through to the expression-statement path.
+                    if (stream.Next.Type == TokenTypes.BracketStart || stream.Next.Type == TokenTypes.Dot)
+                        break;
                     return Import(token, out node);
 
                 case FastKeywords.async:

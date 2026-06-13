@@ -28,6 +28,7 @@ public partial class JSTemporalPlainDateTime : JSObject
 
     internal readonly int isoYear, isoMonth, isoDay;
     internal readonly int hour, minute, second, millisecond, microsecond, nanosecond;
+    internal readonly string calendarId;
 
     [JSExport(Length = 3)]
     public JSTemporalPlainDateTime(in Arguments a) : base(ResolvePrototype())
@@ -41,7 +42,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         millisecond = ToIntegerWithTruncation(a.GetAt(6));
         microsecond = ToIntegerWithTruncation(a.GetAt(7));
         nanosecond = ToIntegerWithTruncation(a.GetAt(8));
-        RequireCalendar(a.GetAt(9));
+        calendarId = CanonicalizeCalendar(a.GetAt(9));
 
         if (!IsValidTime(hour, minute, second, millisecond, microsecond, nanosecond))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: time component out of range");
@@ -52,11 +53,18 @@ public partial class JSTemporalPlainDateTime : JSObject
     internal JSTemporalPlainDateTime(
         int isoYear, int isoMonth, int isoDay,
         int hour, int minute, int second, int millisecond, int microsecond, int nanosecond,
-        JSObject prototype) : base(prototype)
+        JSObject prototype)
+        : this(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, "iso8601", prototype) { }
+
+    internal JSTemporalPlainDateTime(
+        int isoYear, int isoMonth, int isoDay,
+        int hour, int minute, int second, int millisecond, int microsecond, int nanosecond,
+        string calendarId, JSObject prototype) : base(prototype)
     {
         this.isoYear = isoYear; this.isoMonth = isoMonth; this.isoDay = isoDay;
         this.hour = hour; this.minute = minute; this.second = second;
         this.millisecond = millisecond; this.microsecond = microsecond; this.nanosecond = nanosecond;
+        this.calendarId = calendarId;
     }
 
     private static JSObject ResolvePrototype()
@@ -78,11 +86,11 @@ public partial class JSTemporalPlainDateTime : JSObject
 
     // ── accessors ───────────────────────────────────────────────────────────────
 
-    [JSExport("calendarId")] public JSValue CalendarId => new JSString("iso8601");
+    [JSExport("calendarId")] public JSValue CalendarId => new JSString(calendarId);
     // The ISO 8601 calendar has no eras; era / eraYear are present but undefined.
-    [JSExport("era")] public JSValue Era => JSUndefined.Value;
-    [JSExport("eraYear")] public JSValue EraYear => JSUndefined.Value;
-    [JSExport("year")] public double YearValue => isoYear;
+    [JSExport("era")] public JSValue Era => TemporalCalendar.Era(calendarId, isoYear);
+    [JSExport("eraYear")] public JSValue EraYear => TemporalCalendar.EraYear(calendarId, isoYear);
+    [JSExport("year")] public double YearValue => TemporalCalendar.Year(calendarId, isoYear);
     [JSExport("month")] public double MonthValue => isoMonth;
     [JSExport("monthCode")] public JSValue MonthCode => new JSString($"M{isoMonth:00}");
     [JSExport("day")] public double DayValue => isoDay;
@@ -140,10 +148,9 @@ public partial class JSTemporalPlainDateTime : JSObject
         var overflow = ReadOverflow(a.GetAt(1));
 
         var any = false;
-        var year = isoYear; var month = isoMonth; var day = isoDay;
+        var month = isoMonth; var day = isoDay;
 
-        var yearValue = obj[KeyStrings.GetOrCreate("year")];
-        if (!yearValue.IsUndefined) { year = ToIntegerWithTruncation(yearValue); any = true; }
+        var year = ResolveWithYear(obj, ref any);
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
@@ -170,7 +177,41 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires at least one field");
 
-        return RegulateDateTime(year, month, day, h, mi, s, ms, us, ns, overflow);
+        return RegulateDateTime(year, month, day, h, mi, s, ms, us, ns, overflow, calendarId);
+    }
+
+    // Resolves the new ISO year from a with()-bag's year / era / eraYear fields (see PlainDate).
+    private int ResolveWithYear(JSObject obj, ref bool any)
+    {
+        var yearValue = obj[KeyStrings.GetOrCreate("year")];
+        var eraValue = obj[KeyStrings.GetOrCreate("era")];
+        var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
+
+        if (yearValue.IsUndefined && eraValue.IsUndefined && eraYearValue.IsUndefined)
+            return isoYear;
+
+        any = true;
+        var hasYear = !yearValue.IsUndefined;
+        var hasEra = !eraValue.IsUndefined;
+        var hasEraYear = !eraYearValue.IsUndefined;
+
+        string era = null;
+        var eraYear = 0;
+        if (hasYear)
+        {
+            hasEra = hasEraYear = false;
+        }
+        else if (hasEra || hasEraYear)
+        {
+            if (!hasEra) { eraValue = Era; hasEra = !eraValue.IsUndefined; }
+            if (!hasEraYear) { eraYearValue = EraYear; hasEraYear = !eraYearValue.IsUndefined; }
+            era = hasEra ? eraValue.StringValue : null;
+            eraYear = hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0;
+        }
+
+        return TemporalCalendar.ResolveIsoYear(calendarId,
+            hasYear, hasYear ? ToIntegerWithTruncation(yearValue) : 0,
+            hasEra, era, hasEraYear, eraYear);
     }
 
     [JSExport("withPlainTime", Length = 0)]
@@ -178,18 +219,21 @@ public partial class JSTemporalPlainDateTime : JSObject
     {
         var arg = a.GetAt(0);
         if (arg == null || arg.IsUndefined)
-            return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, 0, 0, 0, 0, 0, 0, PlainDateTimePrototype);
+            return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, 0, 0, 0, 0, 0, 0, calendarId, PlainDateTimePrototype);
 
         var t = RequireTime(JSTemporalPlainTime.From(new Arguments(JSUndefined.Value, arg)));
         return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay,
-            t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond, PlainDateTimePrototype);
+            t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond, calendarId, PlainDateTimePrototype);
     }
 
     [JSExport("withCalendar", Length = 1)]
     public JSValue WithCalendar(in Arguments a)
     {
-        RequireCalendar(a.GetAt(0));
-        return Clone();
+        var arg = a.GetAt(0);
+        if (arg == null || arg.IsUndefined)
+            throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.withCalendar requires a calendar");
+        return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond,
+            TemporalCalendar.Canonicalize(arg.StringValue), PlainDateTimePrototype);
     }
 
     [JSExport("add", Length = 1)]
@@ -216,7 +260,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (!IsValidISODateTime(ny, nm, nd, h, mi, s, ms, us, ns))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: result is out of range");
 
-        return new JSTemporalPlainDateTime(ny, nm, nd, h, mi, s, ms, us, ns, PlainDateTimePrototype);
+        return new JSTemporalPlainDateTime(ny, nm, nd, h, mi, s, ms, us, ns, calendarId, PlainDateTimePrototype);
     }
 
     [JSExport("until", Length = 1)]
@@ -230,6 +274,8 @@ public partial class JSTemporalPlainDateTime : JSObject
     private JSValue Difference(JSValue other, JSValue options, int sign)
     {
         var target = RequireDateTime(ToTemporalDateTime(other, "constrain"));
+        if (calendarId != target.calendarId)
+            throw JSEngine.NewRangeError("Temporal.PlainDateTime: cannot compute the difference between date-times of different calendars");
         var largestUnit = ReadLargestUnit(options, "day");
 
         var (a1, a2) = sign == 1 ? (this, target) : (target, this);
@@ -248,7 +294,7 @@ public partial class JSTemporalPlainDateTime : JSObject
             var roundedDays = RoundHalfExpand(total, NanosecondsPerDay) / NanosecondsPerDay;
             var epoch = DaysFromCivil(isoYear, isoMonth, isoDay) + roundedDays;
             var (ry, rm, rd) = CivilFromDays(epoch);
-            return new JSTemporalPlainDateTime((int)ry, (int)rm, (int)rd, 0, 0, 0, 0, 0, 0, PlainDateTimePrototype);
+            return new JSTemporalPlainDateTime((int)ry, (int)rm, (int)rd, 0, 0, 0, 0, 0, 0, calendarId, PlainDateTimePrototype);
         }
 
         var unitNs = UnitNanoseconds(unit) * increment;
@@ -258,18 +304,18 @@ public partial class JSTemporalPlainDateTime : JSObject
         var ep = DaysFromCivil(isoYear, isoMonth, isoDay) + dayspill;
         var (cy, cm, cd) = CivilFromDays(ep);
         var (hh, mm, ss, l, mc, nn) = FromTimeNanoseconds(wrapped);
-        return new JSTemporalPlainDateTime((int)cy, (int)cm, (int)cd, hh, mm, ss, l, mc, nn, PlainDateTimePrototype);
+        return new JSTemporalPlainDateTime((int)cy, (int)cm, (int)cd, hh, mm, ss, l, mc, nn, calendarId, PlainDateTimePrototype);
     }
 
     [JSExport("equals", Length = 1)]
     public JSValue Equals(in Arguments a)
     {
         var other = RequireDateTime(ToTemporalDateTime(a.GetAt(0), "constrain"));
-        return CompareTo(other) == 0 ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return CompareTo(other) == 0 && calendarId == other.calendarId ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }
 
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString(ReadCalendarName(a.GetAt(0))));
 
     [JSExport("toJSON", Length = 0)]
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
@@ -277,13 +323,31 @@ public partial class JSTemporalPlainDateTime : JSObject
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a) => new JSString(ToISOString());
 
+    // GetTemporalShowCalendarNameOption (shared shape with PlainDate).
+    private static string ReadCalendarName(JSValue options)
+    {
+        if (options == null || options.IsUndefined) return "auto";
+        if (options is not JSObject optionsObject)
+            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
+
+        var v = optionsObject[KeyStrings.GetOrCreate("calendarName")];
+        if (v.IsUndefined) return "auto";
+
+        var name = v.StringValue;
+        return name switch
+        {
+            "auto" or "always" or "never" or "critical" => name,
+            _ => throw JSEngine.NewRangeError($"Temporal: invalid calendarName \"{name}\""),
+        };
+    }
+
     [JSExport("valueOf", Length = 0)]
     public JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.PlainDateTime.prototype.valueOf, which is not supported. Use Temporal.PlainDateTime.compare for comparison.");
 
     [JSExport("toPlainDate", Length = 0)]
     public JSValue ToPlainDate(in Arguments a)
-        => new JSTemporalPlainDate(isoYear, isoMonth, isoDay, JSTemporalPlainDate.PlainDatePrototype);
+        => new JSTemporalPlainDate(isoYear, isoMonth, isoDay, calendarId, JSTemporalPlainDate.PlainDatePrototype);
 
     [JSExport("toPlainTime", Length = 0)]
     public JSValue ToPlainTime(in Arguments a)
@@ -291,7 +355,7 @@ public partial class JSTemporalPlainDateTime : JSObject
 
     [JSExport("toPlainYearMonth", Length = 0)]
     public JSValue ToPlainYearMonth(in Arguments a)
-        => new JSTemporalPlainYearMonth(isoYear, isoMonth, isoDay, JSTemporalPlainYearMonth.PlainYearMonthPrototype);
+        => new JSTemporalPlainYearMonth(isoYear, isoMonth, isoDay, calendarId, JSTemporalPlainYearMonth.PlainYearMonthPrototype);
 
     [JSExport("toPlainMonthDay", Length = 0)]
     public JSValue ToPlainMonthDay(in Arguments a)
@@ -310,7 +374,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     // ── helpers ─────────────────────────────────────────────────────────────────
 
     internal JSTemporalPlainDateTime Clone()
-        => new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, PlainDateTimePrototype);
+        => new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, calendarId, PlainDateTimePrototype);
 
     internal long TimeNanoseconds()
         => ((((long)hour * 60 + minute) * 60 + second) * 1000L + millisecond) * 1_000_000L
@@ -351,13 +415,13 @@ public partial class JSTemporalPlainDateTime : JSObject
         return (int)Math.Truncate(number);
     }
 
-    private static void RequireCalendar(JSValue calendar)
+    private static string CanonicalizeCalendar(JSValue calendar)
     {
         if (calendar == null || calendar.IsUndefined)
-            return;
-        var id = calendar.ToString();
-        if (!string.Equals(id, "iso8601", StringComparison.OrdinalIgnoreCase))
-            throw JSEngine.NewRangeError($"Temporal.PlainDateTime: unsupported calendar \"{id}\" (only iso8601 is implemented)");
+            return "iso8601";
+        if (calendar is JSTemporalPlainDateTime dt) return dt.calendarId;
+        if (calendar is JSTemporalPlainDate d) return d.calendarId;
+        return TemporalCalendar.Canonicalize(calendar.StringValue);
     }
 
     private static int MonthFromCode(string code)
@@ -415,7 +479,7 @@ public partial class JSTemporalPlainDateTime : JSObject
             return dt.Clone();
 
         if (item is JSTemporalPlainDate d)
-            return new JSTemporalPlainDateTime(d.isoYear, d.isoMonth, d.isoDay, 0, 0, 0, 0, 0, 0, PlainDateTimePrototype);
+            return new JSTemporalPlainDateTime(d.isoYear, d.isoMonth, d.isoDay, 0, 0, 0, 0, 0, 0, d.calendarId, PlainDateTimePrototype);
 
         if (item.IsString)
             return ParseTemporalDateTimeString(item.ToString());
@@ -423,15 +487,20 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime: invalid value");
 
-        RequireCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
+        var calendarId = CanonicalizeCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
+        var eraValue = obj[KeyStrings.GetOrCreate("era")];
+        var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
 
-        if (yearValue.IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.PlainDateTime: missing year");
+        var hasYear = !yearValue.IsUndefined;
+        var hasEra = !eraValue.IsUndefined;
+        var hasEraYear = !eraYearValue.IsUndefined;
+        if (!hasYear && !(hasEra && hasEraYear))
+            throw JSEngine.NewTypeError("Temporal.PlainDateTime: missing year (or era and eraYear)");
         if (dayValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime: missing day");
         if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
@@ -441,13 +510,18 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToIntegerWithTruncation(monthValue) != month)
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: month and monthCode disagree");
 
+        var isoYear = TemporalCalendar.ResolveIsoYear(calendarId,
+            hasYear, hasYear ? ToIntegerWithTruncation(yearValue) : 0,
+            hasEra, hasEra ? eraValue.StringValue : null,
+            hasEraYear, hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0);
+
         int Field(string name) { var v = obj[KeyStrings.GetOrCreate(name)]; return v.IsUndefined ? 0 : ToIntegerWithTruncation(v); }
 
-        return RegulateDateTime(ToIntegerWithTruncation(yearValue), month, ToIntegerWithTruncation(dayValue),
-            Field("hour"), Field("minute"), Field("second"), Field("millisecond"), Field("microsecond"), Field("nanosecond"), overflow);
+        return RegulateDateTime(isoYear, month, ToIntegerWithTruncation(dayValue),
+            Field("hour"), Field("minute"), Field("second"), Field("millisecond"), Field("microsecond"), Field("nanosecond"), overflow, calendarId);
     }
 
-    private static JSValue RegulateDateTime(int year, int month, int day, int h, int mi, int s, int ms, int us, int ns, string overflow)
+    private static JSValue RegulateDateTime(int year, int month, int day, int h, int mi, int s, int ms, int us, int ns, string overflow, string calendarId = "iso8601")
     {
         if (overflow == "reject")
         {
@@ -465,7 +539,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (!IsValidISODateTime(year, month, day, h, mi, s, ms, us, ns))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
 
-        return new JSTemporalPlainDateTime(year, month, day, h, mi, s, ms, us, ns, PlainDateTimePrototype);
+        return new JSTemporalPlainDateTime(year, month, day, h, mi, s, ms, us, ns, calendarId, PlainDateTimePrototype);
     }
 
     private static readonly Regex DateTimePattern = new(
@@ -499,8 +573,13 @@ public partial class JSTemporalPlainDateTime : JSObject
             || !IsValidISODateTime(year, month, day, h, mi, s, ms, us, ns))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDateTime from \"{text}\"");
 
-        return new JSTemporalPlainDateTime(year, month, day, h, mi, s, ms, us, ns, PlainDateTimePrototype);
+        var calMatch = CalendarAnnotation.Match(text);
+        var calendarId = calMatch.Success ? TemporalCalendar.Canonicalize(calMatch.Groups[1].Value) : "iso8601";
+
+        return new JSTemporalPlainDateTime(year, month, day, h, mi, s, ms, us, ns, calendarId, PlainDateTimePrototype);
     }
+
+    private static readonly Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
     private static long DurationTimeNanoseconds(JSTemporalDuration d)
         => (long)d.HoursValue * 3_600_000_000_000 + (long)d.MinutesValue * 60_000_000_000
@@ -764,8 +843,8 @@ public partial class JSTemporalPlainDateTime : JSObject
         return (m <= 2 ? y + 1 : y, m, d);
     }
 
-    // YYYY-MM-DDTHH:MM:SS with auto fractional-second precision.
-    private string ToISOString()
+    // YYYY-MM-DDTHH:MM:SS with auto fractional-second precision, plus the calendar annotation.
+    private string ToISOString(string showCalendar = "auto")
     {
         var sb = new StringBuilder();
         if (isoYear < 0 || isoYear > 9999)
@@ -786,6 +865,7 @@ public partial class JSTemporalPlainDateTime : JSObject
             sb.Append('.').Append(digits);
         }
 
+        sb.Append(JSTemporalPlainDate.FormatCalendarAnnotation(calendarId, showCalendar));
         return sb.ToString();
     }
 }
