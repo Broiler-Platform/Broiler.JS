@@ -35,6 +35,10 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     PlainDateTime.toZonedDateTime (disambiguation) and PlainMonthDay.toString (calendarName) now
 //     read and validate the option (null/invalid → RangeError, Symbol → TypeError) and honour valid
 //     values. (The PlainTime.toString and PlainYearMonth.since/until cases were fixed above.)
+//   * Problem 9 — Temporal.PlainMonthDay rejected every non-ISO calendar. The Gregorian-family
+//     calendars (gregory, buddhist, roc, japanese) share the ISO month/day structure, so the
+//     month-day now carries the calendar id (from / with / constructor / parsing / calendarId /
+//     equals / toString). The lunisolar and arithmetic non-ISO calendars remain unimplemented here.
 //
 // Out of scope: the non-ISO calendars that are still unimplemented for the calendar-independent types
 // (Problems 5/8/10/12/13/15/18/22/24/25/29), relativeTo rounding (Problems 2/11/16) and
@@ -268,4 +272,51 @@ public class Issue779Tests
     public void ToZonedDateTimeDisambiguationAccepted()
         => Assert.Equal("2000-01-01T12:00:00+00:00[UTC]",
             Eval("Temporal.PlainDateTime.from('2000-01-01T12:00').toZonedDateTime('UTC', {disambiguation:'earlier'}).toString()"));
+
+    // ───────── Problem 9: PlainMonthDay Gregorian-family calendar support ─────────
+    // gregory/buddhist/roc/japanese share the ISO month/day structure, so the month-day carries the
+    // calendar id (the lunisolar / arithmetic non-ISO calendars remain unimplemented for MonthDay).
+
+    [Fact]
+    public void PlainMonthDayCalendarIdPreserved()
+        => Assert.Equal("gregory", Eval("Temporal.PlainMonthDay.from({calendar:'gregory', monthCode:'M01', day:1}).calendarId"));
+
+    [Fact]
+    public void PlainMonthDayConstructorCalendar()
+        => Assert.Equal("gregory", Eval("new Temporal.PlainMonthDay(6, 15, 'gregory').calendarId"));
+
+    [Fact]
+    public void PlainMonthDayGregoryMonthAndCode()
+        => Assert.Equal("M06,15,gregory",
+            Eval("var m=Temporal.PlainMonthDay.from({calendar:'gregory', year:1972, month:6, day:15}); [m.monthCode, m.day, m.calendarId].join(',')"));
+
+    [Theory] // overflow handling matches the ISO calendar (Feb 29/30)
+    [InlineData("Temporal.PlainMonthDay.from({calendar:'gregory', monthCode:'M02', day:29}).day", "29")]
+    [InlineData("Temporal.PlainMonthDay.from({calendar:'gregory', monthCode:'M02', day:30}).day", "29")]
+    public void PlainMonthDayGregoryOverflowConstrain(string call, string expected)
+        => Assert.Equal(expected, Eval(call));
+
+    [Fact]
+    public void PlainMonthDayGregoryOverflowReject()
+        => Assert.Equal("RangeError",
+            ErrorName("Temporal.PlainMonthDay.from({calendar:'gregory', monthCode:'M02', day:30}, {overflow:'reject'})"));
+
+    [Theory] // toString shows the reference year + calendar annotation for non-ISO calendars
+    [InlineData("Temporal.PlainMonthDay.from({calendar:'gregory', monthCode:'M06', day:15}).toString()", "1972-06-15[u-ca=gregory]")]
+    [InlineData("Temporal.PlainMonthDay.from({monthCode:'M06', day:15}).toString()", "06-15")]
+    [InlineData("Temporal.PlainMonthDay.from('1972-06-15[u-ca=gregory]').calendarId", "gregory")]
+    public void PlainMonthDayToStringAndParse(string call, string expected)
+        => Assert.Equal(expected, Eval(call));
+
+    [Fact] // equals is calendar-sensitive
+    public void PlainMonthDayEqualsCalendarSensitive()
+        => Assert.Equal("false",
+            Eval(@"var a=Temporal.PlainMonthDay.from({monthCode:'M06',day:15});
+                   var b=Temporal.PlainMonthDay.from({calendar:'gregory',monthCode:'M06',day:15});
+                   String(a.equals(b))"));
+
+    [Fact] // a lunisolar / arithmetic calendar is still rejected for PlainMonthDay
+    public void PlainMonthDayNonIsoCalendarRejected()
+        => Assert.Equal("RangeError",
+            ErrorName("Temporal.PlainMonthDay.from({calendar:'chinese', monthCode:'M06', day:15})"));
 }
