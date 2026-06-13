@@ -236,4 +236,30 @@ public class Issue781Tests
     [Fact]
     public void FromMissingTimeZoneThrowsTypeError()
         => Assert.Equal("TypeError", ErrorName("Temporal.ZonedDateTime.from({ year: 2000, month: 1, day: 1 })"));
+
+    // ───────────── Problems 13/19: Temporal.Duration range limits ─────────────
+
+    // `days` is bounded only by the total-time limit, not by 2^32 — a large day count (well over
+    // 2^32 ≈ 4.29e9, but under 2^53 seconds) is valid.
+    [Theory]
+    [InlineData("new Temporal.Duration(0, 0, 0, 104249991374).days", "104249991374")]
+    [InlineData("Temporal.Duration.from({ days: 104249991374 }).days", "104249991374")]
+    public void LargeDayCountIsValid(string code, string expected)
+        => Assert.Equal(expected, Eval($"String({code})"));
+
+    // years / months / weeks remain bounded by 2^32; the boundary value (2^32) is out of range,
+    // 2^32 − 1 is valid.
+    [Theory]
+    [InlineData("new Temporal.Duration(4294967296)")]                 // years = 2^32
+    [InlineData("new Temporal.Duration(0, 4294967296)")]              // months = 2^32
+    [InlineData("new Temporal.Duration(0, 0, 4294967296)")]           // weeks = 2^32
+    [InlineData("new Temporal.Duration(0, 0, 0, 200000000000)")]      // days push total time past 2^53 s
+    public void OutOfRangeDurationThrowsRangeError(string code)
+        => Assert.Equal("RangeError", ErrorName(code));
+
+    [Theory]
+    [InlineData("new Temporal.Duration(4294967295).years", "4294967295")]   // years = 2^32 − 1
+    [InlineData("new Temporal.Duration(0, 0, 4294967295).weeks", "4294967295")]
+    public void MaxDateFieldIsValid(string code, string expected)
+        => Assert.Equal(expected, Eval($"String({code})"));
 }

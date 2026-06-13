@@ -310,15 +310,22 @@ public partial class JSTemporalDuration : JSObject
         Check(years); Check(months); Check(weeks); Check(days); Check(hours);
         Check(minutes); Check(seconds); Check(milliseconds); Check(microseconds); Check(nanoseconds);
 
-        if (Math.Abs(years) >= 4294967296d || Math.Abs(months) >= 4294967296d
-            || Math.Abs(weeks) >= 4294967296d || Math.Abs(days) >= 4294967296d)
-        {
+        // Only years, months and weeks are bounded by 2^32; days are limited only by the total-time
+        // bound below (a duration may carry up to ~1.04e11 days — 2^53 seconds — of elapsed time).
+        if (Math.Abs(years) >= 4294967296d || Math.Abs(months) >= 4294967296d || Math.Abs(weeks) >= 4294967296d)
             throw JSEngine.NewRangeError("Temporal.Duration date fields are out of range");
-        }
 
-        var totalSeconds = Math.Abs(days) * 86400 + Math.Abs(hours) * 3600 + Math.Abs(minutes) * 60
-            + Math.Abs(seconds) + Math.Abs(milliseconds) / 1e3 + Math.Abs(microseconds) / 1e6 + Math.Abs(nanoseconds) / 1e9;
-        if (totalSeconds >= 9007199254740992d) // 2^53
+        // The total elapsed time (days + the time components) must be under 2^53 seconds. The
+        // components are integer-valued, so the sum is computed exactly in nanoseconds via BigInteger
+        // to honour the precise mathematical boundary (a floating-point sum would round near 2^53).
+        var totalNs = (BigInteger)days * 86_400_000_000_000
+            + (BigInteger)hours * 3_600_000_000_000
+            + (BigInteger)minutes * 60_000_000_000
+            + (BigInteger)seconds * 1_000_000_000
+            + (BigInteger)milliseconds * 1_000_000
+            + (BigInteger)microseconds * 1_000
+            + (BigInteger)nanoseconds;
+        if (BigInteger.Abs(totalNs) >= (BigInteger)9007199254740992d * 1_000_000_000) // 2^53 seconds
             throw JSEngine.NewRangeError("Temporal.Duration is out of range");
     }
 
