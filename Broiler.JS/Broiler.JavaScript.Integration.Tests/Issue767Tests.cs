@@ -856,10 +856,11 @@ public class Issue767Tests
         => Assert.Equal("TypeError", Eval(
             "let t; try { new Temporal.PlainDate(2024, 1, 1).valueOf(); } catch (e) { t = e.constructor.name; } t"));
 
-    [Fact]
+    [Fact] // 'persian' (Solar Hijri) is not implemented; the arithmetic + lunisolar calendars
+           // (incl. hebrew/chinese) became supported for PlainDate in #773.
     public void PlainDateUnsupportedCalendarThrows()
         => Assert.Equal("RangeError", Eval(
-            "let t; try { new Temporal.PlainDate(2024, 1, 1, 'hebrew'); } catch (e) { t = e.constructor.name; } t"));
+            "let t; try { new Temporal.PlainDate(2024, 1, 1, 'persian'); } catch (e) { t = e.constructor.name; } t"));
 
     [Fact]
     public void PlainDateToStringTag()

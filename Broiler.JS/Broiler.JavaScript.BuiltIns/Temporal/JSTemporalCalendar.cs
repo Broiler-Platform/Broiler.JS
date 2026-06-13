@@ -7,58 +7,120 @@ using Broiler.JavaScript.Engine.Core;
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
 // Calendar support for the proleptic-Gregorian family used by the Temporal types: iso8601,
-// gregory, buddhist and roc. Every one of these shares the ISO 8601 day/month/leap-year
+// gregory, buddhist, roc and japanese. Every one of these shares the ISO 8601 day/month/leap-year
 // arithmetic and differs only in how the proleptic-Gregorian year is *numbered* and split into
-// an era + era-year. The lunisolar and other Intl calendars (chinese, hebrew, japanese, …) are
-// not implemented; Canonicalize rejects them with a RangeError.
+// an era + era-year. The japanese calendar additionally splits the same proleptic-Gregorian
+// timeline into regnal eras whose boundaries fall mid-year, so its era / eraYear depend on the
+// full date (year/month/day) rather than the year alone. The lunisolar and 13-month Intl
+// calendars (chinese, dangi, hebrew, islamic-*, ethiopic, coptic, …) use a different month/day
+// structure and are not implemented; Canonicalize rejects them with a RangeError.
 internal static class TemporalCalendar
 {
+    // Japanese regnal eras (ICU4X / Temporal `Intl.Era-monthcode`). Each modern era begins on a
+    // specific proleptic-Gregorian date; listed newest-first so the first match wins. Dates before
+    // Meiji fall back to the Gregorian ce/bce eras, and the calendar's `year` equals the ISO year.
+    private static readonly (string code, int y, int m, int d)[] JapaneseEras =
+    {
+        ("reiwa", 2019, 5, 1),
+        ("heisei", 1989, 1, 8),
+        ("showa", 1926, 12, 25),
+        ("taisho", 1912, 7, 30),
+        ("meiji", 1868, 10, 23),
+    };
+
+    private static int CompareDate(int y1, int m1, int d1, int y2, int m2, int d2)
+    {
+        if (y1 != y2) return y1 < y2 ? -1 : 1;
+        if (m1 != m2) return m1 < m2 ? -1 : 1;
+        if (d1 != d2) return d1 < d2 ? -1 : 1;
+        return 0;
+    }
+
     // Canonicalizes a calendar identifier (case-insensitively, folding aliases). Throws a
-    // RangeError for any calendar outside the supported proleptic-Gregorian family.
-    internal static string Canonicalize(string id)
+    // RangeError for any unsupported calendar. The non-Gregorian calendars (the arithmetic
+    // coptic / ethiopic / islamic-* / hebrew and the lunisolar chinese / dangi) are only
+    // implemented for Temporal.PlainDate, so they are accepted only when `includeArithmetic` is
+    // set; the other Temporal types reject them.
+    internal static string Canonicalize(string id, bool includeArithmetic = false)
     {
         var lower = id.ToLowerInvariant();
-        return lower switch
+        switch (lower)
         {
-            "iso8601" => "iso8601",
-            "gregory" or "gregorian" => "gregory",
-            "buddhist" => "buddhist",
-            "roc" or "minguo" => "roc",
-            _ => throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{id}\""),
-        };
+            case "iso8601": return "iso8601";
+            case "gregory":
+            case "gregorian": return "gregory";
+            case "buddhist": return "buddhist";
+            case "roc":
+            case "minguo": return "roc";
+            case "japanese": return "japanese";
+        }
+
+        if (includeArithmetic)
+        {
+            switch (lower)
+            {
+                case "coptic": return "coptic";
+                case "ethiopic": return "ethiopic";
+                case "islamic-civil":
+                case "islamicc": return "islamic-civil";
+                case "islamic-tbla": return "islamic-tbla";
+                case "hebrew": return "hebrew";
+                case "chinese": return "chinese";
+                case "dangi": return "dangi";
+            }
+        }
+
+        throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{id}\"");
     }
 
     internal static bool IsSupported(string id)
     {
         var lower = id.ToLowerInvariant();
-        return lower is "iso8601" or "gregory" or "gregorian" or "buddhist" or "roc" or "minguo";
+        return lower is "iso8601" or "gregory" or "gregorian" or "buddhist" or "roc" or "minguo" or "japanese"
+            or "coptic" or "ethiopic" or "islamic-civil" or "islamicc" or "islamic-tbla" or "hebrew"
+            or "chinese" or "dangi";
     }
 
-    // The calendar's displayed year for a proleptic-Gregorian (ISO) year.
+    // The calendar's displayed year for a proleptic-Gregorian (ISO) year. The japanese calendar's
+    // `year` is the ISO year (the regnal year lives on era/eraYear), so it takes the default.
     internal static int Year(string calendarId, int isoYear) => calendarId switch
     {
         "buddhist" => isoYear + 543,
         "roc" => isoYear - 1911,
-        _ => isoYear, // iso8601, gregory
+        _ => isoYear, // iso8601, gregory, japanese
     };
 
-    // The era code for an ISO year, or null for the era-less ISO calendar.
-    internal static JSValue Era(string calendarId, int isoYear) => calendarId switch
+    // The era code for an ISO date, or null for the era-less ISO calendar. Only the japanese
+    // calendar reads month/day (its era boundaries are mid-year); the others depend on the year.
+    internal static JSValue Era(string calendarId, int isoYear, int isoMonth, int isoDay) => calendarId switch
     {
         "gregory" => new JSString(isoYear >= 1 ? "ce" : "bce"),
         "buddhist" => new JSString("be"),
         "roc" => new JSString(isoYear >= 1912 ? "roc" : "broc"),
+        "japanese" => new JSString(JapaneseEra(isoYear, isoMonth, isoDay).code),
         _ => JSUndefined.Value,
     };
 
-    // The era-year for an ISO year, or undefined for the ISO calendar.
-    internal static JSValue EraYear(string calendarId, int isoYear) => calendarId switch
+    // The era-year for an ISO date, or undefined for the ISO calendar.
+    internal static JSValue EraYear(string calendarId, int isoYear, int isoMonth, int isoDay) => calendarId switch
     {
         "gregory" => new JSNumber(isoYear >= 1 ? isoYear : 1 - isoYear),
         "buddhist" => new JSNumber(isoYear + 543),
         "roc" => new JSNumber(isoYear >= 1912 ? isoYear - 1911 : 1912 - isoYear),
+        "japanese" => new JSNumber(JapaneseEra(isoYear, isoMonth, isoDay).eraYear),
         _ => JSUndefined.Value,
     };
+
+    // Resolves a proleptic-Gregorian (ISO) date to its japanese era code and era-year. Dates on or
+    // after a regnal era's start belong to that era (eraYear counts from 1 at the era's start year);
+    // dates before Meiji use the Gregorian ce/bce eras.
+    private static (string code, int eraYear) JapaneseEra(int isoYear, int isoMonth, int isoDay)
+    {
+        foreach (var e in JapaneseEras)
+            if (CompareDate(isoYear, isoMonth, isoDay, e.y, e.m, e.d) >= 0)
+                return (e.code, isoYear - e.y + 1);
+        return isoYear >= 1 ? ("ce", isoYear) : ("bce", 1 - isoYear);
+    }
 
     // Resolves a property-bag's year fields (year and/or era + eraYear) to a proleptic-Gregorian
     // (ISO) year. era and eraYear must be supplied together; when both `year` and the era pair are
@@ -120,6 +182,19 @@ internal static class TemporalCalendar
                     "roc" or "minguo" => eraYear + 1911,
                     "broc" or "before-roc" => 1912 - eraYear,
                     _ => throw JSEngine.NewRangeError($"Temporal: invalid era \"{era}\" for the roc calendar"),
+                };
+            case "japanese":
+                // A regnal era + eraYear maps to the ISO year regardless of month/day: the era's
+                // start year is eraYear 1. The era named here only seeds the year; the date's
+                // *displayed* era is recomputed from the resulting (year, month, day), so e.g.
+                // { era: "reiwa", eraYear: 1 } in April resolves to Heisei 31.
+                foreach (var je in JapaneseEras)
+                    if (e == je.code) return je.y + eraYear - 1;
+                return e switch
+                {
+                    "ce" or "ad" => eraYear,
+                    "bce" or "bc" => 1 - eraYear,
+                    _ => throw JSEngine.NewRangeError($"Temporal: invalid era \"{era}\" for the japanese calendar"),
                 };
             default:
                 throw JSEngine.NewRangeError($"Temporal: invalid era \"{era}\"");

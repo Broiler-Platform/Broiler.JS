@@ -62,8 +62,8 @@ public partial class JSTemporalPlainYearMonth : JSObject
     // ── accessors ───────────────────────────────────────────────────────────────
 
     [JSExport("calendarId")] public JSValue CalendarId => new JSString(calendarId);
-    [JSExport("era")] public JSValue Era => TemporalCalendar.Era(calendarId, isoYear);
-    [JSExport("eraYear")] public JSValue EraYear => TemporalCalendar.EraYear(calendarId, isoYear);
+    [JSExport("era")] public JSValue Era => TemporalCalendar.Era(calendarId, isoYear, isoMonth, referenceISODay);
+    [JSExport("eraYear")] public JSValue EraYear => TemporalCalendar.EraYear(calendarId, isoYear, isoMonth, referenceISODay);
     [JSExport("year")] public double YearValue => TemporalCalendar.Year(calendarId, isoYear);
     [JSExport("month")] public double MonthValue => isoMonth;
     [JSExport("monthCode")] public JSValue MonthCode => new JSString($"M{isoMonth:00}");

@@ -88,8 +88,8 @@ public partial class JSTemporalPlainDateTime : JSObject
 
     [JSExport("calendarId")] public JSValue CalendarId => new JSString(calendarId);
     // The ISO 8601 calendar has no eras; era / eraYear are present but undefined.
-    [JSExport("era")] public JSValue Era => TemporalCalendar.Era(calendarId, isoYear);
-    [JSExport("eraYear")] public JSValue EraYear => TemporalCalendar.EraYear(calendarId, isoYear);
+    [JSExport("era")] public JSValue Era => TemporalCalendar.Era(calendarId, isoYear, isoMonth, isoDay);
+    [JSExport("eraYear")] public JSValue EraYear => TemporalCalendar.EraYear(calendarId, isoYear, isoMonth, isoDay);
     [JSExport("year")] public double YearValue => TemporalCalendar.Year(calendarId, isoYear);
     [JSExport("month")] public double MonthValue => isoMonth;
     [JSExport("monthCode")] public JSValue MonthCode => new JSString($"M{isoMonth:00}");

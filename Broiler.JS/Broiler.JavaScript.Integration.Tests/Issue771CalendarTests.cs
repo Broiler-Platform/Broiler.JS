@@ -106,9 +106,10 @@ public class Issue771CalendarTests
         => Assert.Equal("gregory:ce", Eval(
             "const d = Temporal.PlainDate.from('2000-03-06[u-ca=gregory]'); d.calendarId + ':' + d.era"));
 
-    [Fact]
+    [Fact] // persian (Solar Hijri) is not implemented; #773 added japanese + the arithmetic and
+           // lunisolar (chinese/dangi) calendars, but persian/indian/umalqura remain unsupported.
     public void UnsupportedCalendarThrowsRangeError()
-        => Assert.Equal("RangeError", ErrorName("new Temporal.PlainDate(2000, 1, 1, 'hebrew');"));
+        => Assert.Equal("RangeError", ErrorName("new Temporal.PlainDate(2000, 1, 1, 'persian');"));
 
     [Fact]
     public void IsoCalendarHasNoEra()

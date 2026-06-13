@@ -103,8 +103,8 @@ public partial class JSTemporalZonedDateTime : JSObject
     [JSExport("calendarId")] public JSValue CalendarId => new JSString(calendarId);
     [JSExport("timeZoneId")] public JSValue TimeZoneId => new JSString(timeZoneId);
     // The ISO 8601 calendar has no eras; era / eraYear are present but undefined.
-    [JSExport("era")] public JSValue Era => TemporalCalendar.Era(calendarId, Local().y);
-    [JSExport("eraYear")] public JSValue EraYear => TemporalCalendar.EraYear(calendarId, Local().y);
+    [JSExport("era")] public JSValue Era { get { var l = Local(); return TemporalCalendar.Era(calendarId, l.y, l.mo, l.d); } }
+    [JSExport("eraYear")] public JSValue EraYear { get { var l = Local(); return TemporalCalendar.EraYear(calendarId, l.y, l.mo, l.d); } }
 
     [JSExport("epochMilliseconds")] public double EpochMilliseconds => (double)FloorDiv(epochNanoseconds, 1_000_000);
     [JSExport("epochNanoseconds")] public JSValue EpochNanoseconds => new JSBigInt(epochNanoseconds);
