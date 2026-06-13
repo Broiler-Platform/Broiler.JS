@@ -897,18 +897,32 @@ public partial class JSTemporalZonedDateTime : JSObject
         catch { return null; }
     }
 
+    // ToTemporalTimeZoneIdentifier: a time-zone slot value supplied as a String is a bare time-zone
+    // identifier (UTC, a numeric offset, or an IANA name) or a full Temporal ISO string, in which
+    // case its time-zone designator — a [TimeZone] annotation, a Z (UTC) designator, or a numeric
+    // UTC offset — is extracted and canonicalized.
     private static string CanonicalizeTimeZone(string id)
     {
-        if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase))
-            return "UTC";
+        if (TryCanonicalizeTimeZoneIdentifier(id, out var canonical))
+            return canonical;
 
-        if (TryFixedOffset(id, out var offsetNs))
-            return FormatOffset(offsetNs);
+        if (TemporalIsoString.TryExtractTimeZone(id, out var designator) &&
+            TryCanonicalizeTimeZoneIdentifier(designator, out canonical))
+            return canonical;
 
-        if (ResolveNamedZone(id) == null)
-            throw JSEngine.NewRangeError($"Temporal: unknown time zone \"{id}\"");
+        throw JSEngine.NewRangeError($"Temporal: unknown time zone \"{id}\"");
+    }
 
-        return id;
+    // Resolves a *bare* time-zone identifier (no surrounding ISO string): UTC, a numeric UTC offset,
+    // or a named IANA zone. Returns false for anything else rather than throwing.
+    private static bool TryCanonicalizeTimeZoneIdentifier(string id, out string canonical)
+    {
+        if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
+        if (TryFixedOffset(id, out var offsetNs)) { canonical = FormatOffset(offsetNs); return true; }
+        if (ResolveNamedZone(id) != null) { canonical = id; return true; }
+
+        canonical = null;
+        return false;
     }
 
     private static string CanonicalizeCalendar(JSValue calendar)

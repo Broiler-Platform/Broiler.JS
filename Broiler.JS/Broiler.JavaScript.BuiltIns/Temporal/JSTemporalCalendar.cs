@@ -43,39 +43,51 @@ internal static class TemporalCalendar
     // set; the other Temporal types reject them.
     internal static string Canonicalize(string id, bool includeArithmetic = false)
     {
+        if (TryCanonicalizeName(id, includeArithmetic, out var canonical))
+            return canonical;
+
+        throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{id}\"");
+    }
+
+    // Folds a bare calendar identifier to its canonical form, returning false (rather than throwing)
+    // for anything unrecognized — used both by Canonicalize and by the slot-value path, which falls
+    // back to parsing the value as a Temporal ISO string.
+    private static bool TryCanonicalizeName(string id, bool includeArithmetic, out string canonical)
+    {
         var lower = id.ToLowerInvariant();
         switch (lower)
         {
-            case "iso8601": return "iso8601";
+            case "iso8601": canonical = "iso8601"; return true;
             case "gregory":
-            case "gregorian": return "gregory";
-            case "buddhist": return "buddhist";
+            case "gregorian": canonical = "gregory"; return true;
+            case "buddhist": canonical = "buddhist"; return true;
             case "roc":
-            case "minguo": return "roc";
-            case "japanese": return "japanese";
+            case "minguo": canonical = "roc"; return true;
+            case "japanese": canonical = "japanese"; return true;
         }
 
         if (includeArithmetic)
         {
             switch (lower)
             {
-                case "coptic": return "coptic";
-                case "ethiopic": return "ethiopic";
+                case "coptic": canonical = "coptic"; return true;
+                case "ethiopic": canonical = "ethiopic"; return true;
                 case "ethioaa":
-                case "ethiopic-amete-alem": return "ethioaa";
+                case "ethiopic-amete-alem": canonical = "ethioaa"; return true;
                 case "islamic-civil":
-                case "islamicc": return "islamic-civil";
-                case "islamic-tbla": return "islamic-tbla";
-                case "islamic-umalqura": return "islamic-umalqura";
-                case "hebrew": return "hebrew";
-                case "persian": return "persian";
-                case "indian": return "indian";
-                case "chinese": return "chinese";
-                case "dangi": return "dangi";
+                case "islamicc": canonical = "islamic-civil"; return true;
+                case "islamic-tbla": canonical = "islamic-tbla"; return true;
+                case "islamic-umalqura": canonical = "islamic-umalqura"; return true;
+                case "hebrew": canonical = "hebrew"; return true;
+                case "persian": canonical = "persian"; return true;
+                case "indian": canonical = "indian"; return true;
+                case "chinese": canonical = "chinese"; return true;
+                case "dangi": canonical = "dangi"; return true;
             }
         }
 
-        throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{id}\"");
+        canonical = null;
+        return false;
     }
 
     // ToTemporalCalendarSlotValue: resolves a calendar argument (a `calendar` property-bag field, a
@@ -99,7 +111,21 @@ internal static class TemporalCalendar
             throw JSEngine.NewTypeError(
                 "Temporal: calendar must be a calendar identifier string or a Temporal object with a calendar");
 
-        return Canonicalize(calendar.StringValue, includeArithmetic);
+        return CanonicalizeIdentifierOrIsoString(calendar.StringValue, includeArithmetic);
+    }
+
+    // ParseTemporalCalendarString: a calendar slot value supplied as a String is either a bare
+    // calendar identifier or a full Temporal ISO string, in which case its [u-ca=…] annotation is
+    // adopted (defaulting to iso8601). An unrecognized non-ISO string is a RangeError.
+    private static string CanonicalizeIdentifierOrIsoString(string value, bool includeArithmetic)
+    {
+        if (TryCanonicalizeName(value, includeArithmetic, out var canonical))
+            return canonical;
+
+        if (TemporalIsoString.TryExtractCalendar(value, out var annotation))
+            return annotation == null ? "iso8601" : Canonicalize(annotation, includeArithmetic);
+
+        throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{value}\"");
     }
 
     internal static bool IsSupported(string id)
