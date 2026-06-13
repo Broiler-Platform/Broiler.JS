@@ -135,7 +135,25 @@ public partial class JSTemporalPlainMonthDay : JSObject
     }
 
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString(ReadCalendarName(a.GetAt(0))));
+
+    // GetTemporalShowCalendarNameOption (shared shape with PlainDate).
+    private static string ReadCalendarName(JSValue options)
+    {
+        if (options == null || options.IsUndefined) return "auto";
+        if (options is not JSObject optionsObject)
+            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
+
+        var v = optionsObject[KeyStrings.GetOrCreate("calendarName")];
+        if (v.IsUndefined) return "auto";
+
+        var name = v.StringValue;
+        return name switch
+        {
+            "auto" or "always" or "never" or "critical" => name,
+            _ => throw JSEngine.NewRangeError($"Temporal: invalid calendarName \"{name}\""),
+        };
+    }
 
     [JSExport("toJSON", Length = 0)]
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
@@ -291,8 +309,11 @@ public partial class JSTemporalPlainMonthDay : JSObject
     private static bool IsValidISODate(int year, int month, int day)
         => month is >= 1 and <= 12 && day >= 1 && day <= DaysInMonthOf(year, month);
 
-    // MM-DD for the ISO calendar; a non-1972 reference year is prefixed as YYYY-MM-DD.
-    private string ToISOString()
+    private string ToISOString() => ToISOString("auto");
+
+    // MM-DD for the ISO calendar; a non-1972 reference year is prefixed as YYYY-MM-DD. The calendar
+    // (always iso8601) is annotated only when showCalendar forces it.
+    private string ToISOString(string showCalendar)
     {
         var sb = new StringBuilder();
         if (referenceISOYear != DefaultReferenceYear)
@@ -306,6 +327,10 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         sb.Append(isoMonth.ToString("00", CultureInfo.InvariantCulture))
           .Append('-').Append(isoDay.ToString("00", CultureInfo.InvariantCulture));
+
+        // iso8601 is the implied calendar, so it is shown only when explicitly requested.
+        if (showCalendar is "always" or "critical")
+            sb.Append(showCalendar == "critical" ? "[!u-ca=iso8601]" : "[u-ca=iso8601]");
         return sb.ToString();
     }
 }

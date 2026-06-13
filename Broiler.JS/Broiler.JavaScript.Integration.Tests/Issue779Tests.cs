@@ -31,6 +31,10 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   * Problem 30 — Temporal.PlainDate/PlainDateTime.prototype.with on a Gregorian-family non-ISO
 //     calendar completed a partial era pair ({era} or {eraYear} alone) from the receiver instead of
 //     rejecting it; era and eraYear must be supplied together, so a partial pair is now a TypeError.
+//   * Problem 26 — two remaining string-option paths ignored their option entirely:
+//     PlainDateTime.toZonedDateTime (disambiguation) and PlainMonthDay.toString (calendarName) now
+//     read and validate the option (null/invalid → RangeError, Symbol → TypeError) and honour valid
+//     values. (The PlainTime.toString and PlainYearMonth.since/until cases were fixed above.)
 //
 // Out of scope: the non-ISO calendars that are still unimplemented for the calendar-independent types
 // (Problems 5/8/10/12/13/15/18/22/24/25/29), relativeTo rounding (Problems 2/11/16) and
@@ -237,4 +241,31 @@ public class Issue779Tests
     public void PlainDateTimePartialEraPairThrowsTypeError()
         => Assert.Equal("TypeError",
             ErrorName("Temporal.PlainDateTime.from({year:2024, month:6, day:15, calendar:'gregory'}).with({eraYear:1})"));
+
+    // ───────── Problem 26: null (and other non-string) option values → RangeError ─────────
+    // null stringifies to "null", an invalid value for these string options (a Symbol is a TypeError,
+    // covered above). These paths previously ignored the option entirely.
+
+    [Theory]
+    [InlineData("Temporal.PlainTime.from('12:00').toString({roundingMode: null})")]
+    [InlineData("Temporal.PlainTime.from('12:00').toString({smallestUnit: null})")]
+    [InlineData("var l=Temporal.PlainYearMonth.from('2000-06'),e=Temporal.PlainYearMonth.from('1999-01'); l.since(e,{roundingIncrement:null})")]
+    [InlineData("var l=Temporal.PlainYearMonth.from('2000-06'),e=Temporal.PlainYearMonth.from('1999-01'); l.since(e,{roundingMode:null})")]
+    [InlineData("var l=Temporal.PlainYearMonth.from('2000-06'),e=Temporal.PlainYearMonth.from('1999-01'); l.until(e,{smallestUnit:null})")]
+    [InlineData("Temporal.PlainDateTime.from('2000-01-01T12:00').toZonedDateTime('UTC', {disambiguation: null})")]
+    [InlineData("Temporal.PlainMonthDay.from('01-15').toString({calendarName: null})")]
+    public void NullOptionValueThrowsRangeError(string code)
+        => Assert.Equal("RangeError", ErrorName(code));
+
+    [Theory] // the disambiguation / calendarName options are honoured for valid values
+    [InlineData("Temporal.PlainMonthDay.from('01-15').toString({calendarName:'always'})", "01-15[u-ca=iso8601]")]
+    [InlineData("Temporal.PlainMonthDay.from('01-15').toString({calendarName:'critical'})", "01-15[!u-ca=iso8601]")]
+    [InlineData("Temporal.PlainMonthDay.from('01-15').toString({calendarName:'never'})", "01-15")]
+    public void PlainMonthDayToStringCalendarName(string call, string expected)
+        => Assert.Equal(expected, Eval(call));
+
+    [Fact] // disambiguation:'earlier' is accepted (compatible behaviour)
+    public void ToZonedDateTimeDisambiguationAccepted()
+        => Assert.Equal("2000-01-01T12:00:00+00:00[UTC]",
+            Eval("Temporal.PlainDateTime.from('2000-01-01T12:00').toZonedDateTime('UTC', {disambiguation:'earlier'}).toString()"));
 }
