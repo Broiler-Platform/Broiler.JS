@@ -20,6 +20,16 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     fractional minutes / hours are a RangeError.
 //   * Problem 15 — those parsers accepted more than one [u-ca=…] calendar annotation; a Temporal
 //     string may carry at most one, so two or more (critical or not) are now a RangeError.
+//   * Problem 7 (subset) — Temporal.ZonedDateTime.prototype.with accepted a Temporal object (a
+//     date-ish type carrying its own calendar / time zone) as its fields argument.
+//     RejectObjectWithCalendarOrTimeZone now rejects such an object (and a `calendar` / `timeZone`
+//     property) with a TypeError.
+//   * Problem 24 — Temporal.ZonedDateTime.from (disambiguation / offset), since / until
+//     (smallestUnit / roundingIncrement / roundingMode) and toString (offset / roundingMode /
+//     smallestUnit / timeZoneName / fractionalSecondDigits) silently ignored these options, so an
+//     invalid value passed without error. They are now read and validated (an invalid value →
+//     RangeError, a Symbol → TypeError); the rounding / display behaviour they request is validated
+//     but not yet applied (only "compatible" disambiguation and the full serialization are honoured).
 public class Issue781Tests
 {
     private static string Eval(string code)
@@ -123,4 +133,70 @@ public class Issue781Tests
     [InlineData("Temporal.PlainDate.from('1970-01-01[!u-ca=gregory]').calendarId", "gregory")]
     public void SingleCalendarAnnotationIsAccepted(string code, string expected)
         => Assert.Equal(expected, Eval(code));
+
+    // ───────────── Problem 7: ZonedDateTime.with rejects a Temporal object ─────────────
+
+    [Theory]
+    [InlineData("Temporal.PlainDate.from('2000-01-01')")]
+    [InlineData("Temporal.PlainDateTime.from('2000-01-01T00:00')")]
+    [InlineData("Temporal.PlainTime.from('12:00')")]
+    [InlineData("Temporal.PlainYearMonth.from('2000-01')")]
+    [InlineData("Temporal.PlainMonthDay.from('01-01')")]
+    [InlineData("new Temporal.ZonedDateTime(0n, 'UTC')")]
+    public void ZonedDateTimeWithTemporalObjectThrowsTypeError(string value)
+        => Assert.Equal("TypeError",
+            ErrorName($"new Temporal.ZonedDateTime(0n, 'UTC').with({value})"));
+
+    // A `calendar` or `timeZone` field in the property bag is also rejected (TypeError).
+    [Theory]
+    [InlineData("new Temporal.ZonedDateTime(0n, 'UTC').with({ year: 2024, calendar: 'iso8601' })")]
+    [InlineData("new Temporal.ZonedDateTime(0n, 'UTC').with({ year: 2024, timeZone: 'UTC' })")]
+    public void ZonedDateTimeWithCalendarOrTimeZoneFieldThrowsTypeError(string code)
+        => Assert.Equal("TypeError", ErrorName(code));
+
+    // A plain property bag still works.
+    [Fact]
+    public void ZonedDateTimeWithPlainBagWorks()
+        => Assert.Equal("2024", Eval("String(new Temporal.ZonedDateTime(0n, 'UTC').with({ year: 2024 }).year)"));
+
+    // ───────────── Problem 24: ZonedDateTime option values are validated ─────────────
+
+    // from: the disambiguation / offset options are validated (an invalid string → RangeError).
+    [Theory]
+    [InlineData("Temporal.ZonedDateTime.from({ year: 2000, month: 1, day: 1, timeZone: 'UTC' }, { disambiguation: null })")]
+    [InlineData("Temporal.ZonedDateTime.from({ year: 2000, month: 1, day: 1, timeZone: 'UTC' }, { disambiguation: 'bogus' })")]
+    [InlineData("Temporal.ZonedDateTime.from({ year: 2000, month: 1, day: 1, timeZone: 'UTC' }, { offset: null })")]
+    [InlineData("Temporal.ZonedDateTime.from({ year: 2000, month: 1, day: 1, timeZone: 'UTC' }, { offset: 'bogus' })")]
+    public void FromInvalidOptionThrowsRangeError(string code)
+        => Assert.Equal("RangeError", ErrorName(code));
+
+    // since / until: smallestUnit / roundingIncrement / roundingMode are validated.
+    [Theory]
+    [InlineData("a.since(b, { smallestUnit: null })")]
+    [InlineData("a.since(b, { smallestUnit: 'bogus' })")]
+    [InlineData("a.until(b, { roundingMode: null })")]
+    [InlineData("a.until(b, { roundingIncrement: 0 })")]
+    public void DifferenceInvalidOptionThrowsRangeError(string expr)
+        => Assert.Equal("RangeError", ErrorName(
+            "const a = new Temporal.ZonedDateTime(0n, 'UTC');" +
+            "const b = new Temporal.ZonedDateTime(1000000000n, 'UTC');" + expr));
+
+    // toString: offset / roundingMode / smallestUnit / timeZoneName are validated.
+    [Theory]
+    [InlineData("z.toString({ offset: null })")]
+    [InlineData("z.toString({ offset: 'bogus' })")]
+    [InlineData("z.toString({ roundingMode: null })")]
+    [InlineData("z.toString({ smallestUnit: null })")]
+    [InlineData("z.toString({ smallestUnit: 'year' })")]
+    [InlineData("z.toString({ timeZoneName: null })")]
+    [InlineData("z.toString({ timeZoneName: 'bogus' })")]
+    public void ToStringInvalidOptionThrowsRangeError(string expr)
+        => Assert.Equal("RangeError", ErrorName("const z = new Temporal.ZonedDateTime(0n, 'UTC');" + expr));
+
+    // A Symbol option value is a TypeError (it cannot be coerced to a string / number).
+    [Theory]
+    [InlineData("z.toString({ roundingMode: Symbol() })")]
+    [InlineData("z.since(z, { smallestUnit: Symbol() })")]
+    public void SymbolOptionValueThrowsTypeError(string expr)
+        => Assert.Equal("TypeError", ErrorName("const z = new Temporal.ZonedDateTime(0n, 'UTC');" + expr));
 }

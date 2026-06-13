@@ -206,7 +206,12 @@ public partial class JSTemporalZonedDateTime : JSObject
     internal static JSValue From(in Arguments a)
     {
         var item = a.GetAt(0);
-        ReadOverflow(a.GetAt(1)); // validate options shape
+        // Validate the options bag (overflow / disambiguation / offset) for every input form; an
+        // invalid value is a RangeError and a Symbol a TypeError, even when the offset / disambiguation
+        // is not subsequently applied (only "compatible" / the offset field are honoured below).
+        ReadOverflow(a.GetAt(1));
+        ReadDisambiguation(a.GetAt(1));
+        ReadOffsetOption(a.GetAt(1));
 
         if (item is JSTemporalZonedDateTime zdt)
             return new JSTemporalZonedDateTime(zdt.epochNanoseconds, zdt.timeZoneId, zdt.calendarId, ZonedDateTimePrototype);
@@ -292,7 +297,35 @@ public partial class JSTemporalZonedDateTime : JSObject
     }
 
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString(ReadCalendarName(a.GetAt(0))));
+    public JSValue ToStringMethod(in Arguments a)
+    {
+        var options = a.GetAt(0);
+        var showCalendar = ReadCalendarName(options);
+        ValidateToStringOptions(options); // fractionalSecondDigits / smallestUnit / roundingMode / offset / timeZoneName
+        return new JSString(ToISOString(showCalendar));
+    }
+
+    // Reads and validates the remaining toString options. The precision (fractionalSecondDigits /
+    // smallestUnit / roundingMode) and the offset / time-zone-name display options are validated (an
+    // invalid value is a RangeError, a Symbol a TypeError) but not yet applied — the serialization
+    // below always shows the full sub-second precision, offset and time-zone name.
+    private static void ValidateToStringOptions(JSValue options)
+    {
+        if (options is not JSObject o) return; // a non-object was already rejected by ReadCalendarName
+
+        TemporalRoundingOptions.GetFractionalSecondDigits(o);
+        var smallestUnit = o[KeyStrings.GetOrCreate("smallestUnit")];
+        if (!smallestUnit.IsUndefined) TemporalRoundingOptions.NormalizeTimeUnit(smallestUnit.StringValue, allowAuto: false);
+        TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+
+        var offset = o[KeyStrings.GetOrCreate("offset")];
+        if (!offset.IsUndefined && offset.StringValue is not ("auto" or "never"))
+            throw JSEngine.NewRangeError($"Temporal: invalid offset display option \"{offset.StringValue}\"");
+
+        var timeZoneName = o[KeyStrings.GetOrCreate("timeZoneName")];
+        if (!timeZoneName.IsUndefined && timeZoneName.StringValue is not ("auto" or "never" or "critical"))
+            throw JSEngine.NewRangeError($"Temporal: invalid timeZoneName display option \"{timeZoneName.StringValue}\"");
+    }
 
     [JSExport("toJSON", Length = 0)]
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
@@ -414,6 +447,16 @@ public partial class JSTemporalZonedDateTime : JSObject
     {
         if (a.GetAt(0) is not JSObject fields)
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.with requires an object");
+
+        // RejectObjectWithCalendarOrTimeZone: the fields argument must be a plain property bag, not
+        // a Temporal object that carries its own calendar / time zone (a Temporal date-ish type, or
+        // an object with a `calendar` or `timeZone` property). The calendar / timeZone property
+        // checks are also enforced by the PlainDateTime.with delegation below.
+        if (fields is JSTemporalPlainDate or JSTemporalPlainDateTime or JSTemporalPlainTime
+            or JSTemporalPlainYearMonth or JSTemporalPlainMonthDay or JSTemporalZonedDateTime)
+            throw JSEngine.NewTypeError(
+                "Temporal.ZonedDateTime.prototype.with: argument must be a plain object, not a Temporal object");
+
         var options = a.GetAt(1);
 
         // Merge the date/time fields onto the current local wall-clock datetime, reusing the
@@ -579,6 +622,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (calendarId != other.calendarId)
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: cannot compute the difference between date-times of different calendars");
         var largestUnit = ReadLargestUnit(options, "hour");
+        ValidateDifferenceRounding(options); // smallestUnit / roundingIncrement / roundingMode
 
         var result = IsTimeUnit(largestUnit)
             ? DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit)
@@ -668,6 +712,18 @@ public partial class JSTemporalZonedDateTime : JSObject
         { "year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond" };
 
     private static int UnitRank(string unit) => System.Array.IndexOf(UnitRankOrder, unit);
+
+    // Reads and validates the remaining since/until difference options. These are validated (an
+    // invalid value is a RangeError, a Symbol a TypeError) even though the rounding they request is
+    // not yet applied to the ZonedDateTime difference — matching the calendar-difference TODO.
+    private static void ValidateDifferenceRounding(JSValue options)
+    {
+        if (options is not JSObject o) return; // a non-object was already rejected by ReadLargestUnit
+        var smallestUnit = o[KeyStrings.GetOrCreate("smallestUnit")];
+        if (!smallestUnit.IsUndefined) NormalizeUnit(smallestUnit.StringValue);
+        TemporalRoundingOptions.GetRoundingIncrement(o);
+        TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+    }
 
     private static string ReadLargestUnit(JSValue options, string defaultUnit)
     {
