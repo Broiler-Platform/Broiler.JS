@@ -28,6 +28,9 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     UTC offset). Only the ASCII hyphen-minus is valid, so a U+2212 now yields a RangeError.
 //   * Problem 17 — a six-digit extended year of "-000000" (negative zero) was accepted; it is now a
 //     RangeError, while year zero ("0000" / "+000000") and ordinary negative years stay valid.
+//   * Problem 30 — Temporal.PlainDate/PlainDateTime.prototype.with on a Gregorian-family non-ISO
+//     calendar completed a partial era pair ({era} or {eraYear} alone) from the receiver instead of
+//     rejecting it; era and eraYear must be supplied together, so a partial pair is now a TypeError.
 //
 // Out of scope: the non-ISO calendars that are still unimplemented for the calendar-independent types
 // (Problems 5/8/10/12/13/15/18/22/24/25/29), relativeTo rounding (Problems 2/11/16) and
@@ -209,4 +212,29 @@ public class Issue779Tests
     [InlineData("Temporal.PlainDate.from('-009999-11-18').toString()", "-009999-11-18")]
     public void YearZeroAndNegativeYearsAccepted(string call, string expected)
         => Assert.Equal(expected, Eval(call));
+
+    // ───────── Problem 30: era / eraYear must be supplied together in .with() ─────────
+    // On a Gregorian-family non-ISO calendar, a partial era pair must NOT be completed from the
+    // receiver — it is a TypeError.
+
+    private const string Greg = "var d = Temporal.PlainDate.from({year:2024, month:6, day:15, calendar:'gregory'});";
+
+    [Theory]
+    [InlineData("d.with({eraYear:1})")]
+    [InlineData("d.with({era:'bce'})")]
+    public void PartialEraPairInWithThrowsTypeError(string call)
+        => Assert.Equal("TypeError", ErrorName(Greg + call));
+
+    [Fact] // era + eraYear together is accepted (bce 1 == ISO year 0)
+    public void EraAndEraYearTogetherAccepted()
+        => Assert.Equal("0,bce,1", Eval(Greg + "var r = d.with({era:'bce', eraYear:1}); [r.year, r.era, r.eraYear].join(',')"));
+
+    [Fact] // a plain year supersedes the era pair
+    public void YearSupersedesEraPair()
+        => Assert.Equal("-2,bce,3", Eval(Greg + "var r = d.with({year:-2}); [r.year, r.era, r.eraYear].join(',')"));
+
+    [Fact] // PlainDateTime behaves the same
+    public void PlainDateTimePartialEraPairThrowsTypeError()
+        => Assert.Equal("TypeError",
+            ErrorName("Temporal.PlainDateTime.from({year:2024, month:6, day:15, calendar:'gregory'}).with({eraYear:1})"));
 }

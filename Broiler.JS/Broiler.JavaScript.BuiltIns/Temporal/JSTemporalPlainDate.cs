@@ -204,8 +204,8 @@ public partial class JSTemporalPlainDate : JSObject
 
     // Resolves the receiver's new ISO year from a with()-bag's year / era / eraYear fields,
     // defaulting to the receiver's current year when none are present. Providing a calendar
-    // `year` overrides any era pair (and vice versa); a partial era pair is completed from the
-    // receiver.
+    // `year` overrides any era pair (and vice versa); era and eraYear must be supplied *together* —
+    // a partial pair is a TypeError (it is not completed from the receiver).
     private int ResolveWithYear(JSObject obj, ref bool any)
     {
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
@@ -228,8 +228,6 @@ public partial class JSTemporalPlainDate : JSObject
         }
         else if (hasEra || hasEraYear)
         {
-            if (!hasEra) { eraValue = Era; hasEra = !eraValue.IsUndefined; }
-            if (!hasEraYear) { eraYearValue = EraYear; hasEraYear = !eraYearValue.IsUndefined; }
             era = hasEra ? eraValue.StringValue : null;
             eraYear = hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0;
         }

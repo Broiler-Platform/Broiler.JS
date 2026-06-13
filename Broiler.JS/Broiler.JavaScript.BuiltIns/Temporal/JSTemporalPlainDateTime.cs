@@ -246,8 +246,8 @@ public partial class JSTemporalPlainDateTime : JSObject
         }
         else if (hasEra || hasEraYear)
         {
-            if (!hasEra) { eraValue = Era; hasEra = !eraValue.IsUndefined; }
-            if (!hasEraYear) { eraYearValue = EraYear; hasEraYear = !eraYearValue.IsUndefined; }
+            // era and eraYear must be supplied together; a partial pair is a TypeError (raised by
+            // ResolveIsoYear) rather than being completed from the receiver.
             era = hasEra ? eraValue.StringValue : null;
             eraYear = hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0;
         }
