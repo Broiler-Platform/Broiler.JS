@@ -58,6 +58,28 @@ partial class FastParser
 
             node = new AstMeta(new AstIdentifier(current.AsString()), new AstIdentifier(id));
         }
+        else if (current.Keyword == FastKeywords.@import && stream.Next.Type == TokenTypes.BracketStart)
+        {
+            // Dynamic import — `import( AssignmentExpression [, options] ,opt )` — a CallExpression
+            // that evaluates to a Promise. The argument list is parsed like ordinary call
+            // arguments so a trailing comma and the second options argument are handled.
+            var importToken = current;
+            stream.Consume(); // `import`
+            stream.Consume(); // `(`
+
+            if (!ArrayExpression(out var importArgs))
+                throw stream.Unexpected();
+
+            var en = importArgs.GetFastEnumerator();
+            AstExpression source = null, options = null;
+            if (en.MoveNext(out var first)) source = first;
+            if (en.MoveNext(out var second)) options = second;
+
+            if (source == null || en.MoveNext(out _))
+                throw stream.Unexpected(); // require exactly one specifier (plus optional options)
+
+            node = new AstImportCall(importToken, source, options, (options ?? source).End);
+        }
         else if (!SingleExpression(out node, asyncFunction: asyncFunction))
         {
             return false;

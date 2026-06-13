@@ -47,5 +47,6 @@ public enum FastNodeType
     ImportStatement,
     Meta,
     TaggedTemplateExpression,
-    AwaitExpression
+    AwaitExpression,
+    ImportCall
 }

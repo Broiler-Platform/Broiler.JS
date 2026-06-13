@@ -58,4 +58,22 @@ public class ModulesTests
 
         Assert.NotNull(result);
     }
+
+    // Dynamic import() — issue #771, Problems 12 & 28. In a module context the ImportCall is
+    // wired to the host loader and evaluates to a Promise that settles to the module namespace
+    // (or rejects for a missing module); that end-to-end async flow is exercised by the
+    // file-based module runner. Here we lock in that it parses and compiles everywhere an
+    // expression may appear.
+    [Fact]
+    public void DynamicImport_InsideUncalledFunction_CompilesWithoutExecuting()
+    {
+        // The syntax/valid test262 cases define (but never call) functions containing nested
+        // import() — they only need to compile. A primitive Eval context has no module loader,
+        // so this would throw if the import were executed; that it does not proves it is inert.
+        using var ctx = new JSModuleContext();
+
+        var result = ctx.Eval("typeof (() => import(import(import('./mod.js'))))");
+
+        Assert.Equal("function", result.ToString());
+    }
 }
