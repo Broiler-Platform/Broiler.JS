@@ -201,11 +201,11 @@ public partial class JSTemporalPlainYearMonth : JSObject
             any = true;
             if (!TemporalCalendarMath.HasEra(calendarId))
                 throw JSEngine.NewTypeError($"Temporal: the {calendarId} calendar does not use eras");
-            // Complete a partial { era, eraYear } pair from the receiver's current era.
-            var (curEra, curEraYear) = TemporalCalendarMath.Era(calendarId, c.y);
-            var era = hasEra ? eraValue.StringValue : curEra;
-            var eraYear = hasEraYear ? ToIntegerWithTruncation(eraYearValue) : curEraYear;
-            year = TemporalCalendarMath.YearFromEra(calendarId, era, eraYear);
+            // era and eraYear must be supplied *together* — providing eraYear ignores (does not
+            // complete) the receiver's era, so a partial pair is a TypeError.
+            if (!hasEra || !hasEraYear)
+                throw JSEngine.NewTypeError("Temporal: era and eraYear must be provided together");
+            year = TemporalCalendarMath.YearFromEra(calendarId, eraValue.StringValue, ToIntegerWithTruncation(eraYearValue));
         }
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
@@ -265,8 +265,8 @@ public partial class JSTemporalPlainYearMonth : JSObject
         }
         else if (hasEra || hasEraYear)
         {
-            if (!hasEra) { eraValue = Era; hasEra = !eraValue.IsUndefined; }
-            if (!hasEraYear) { eraYearValue = EraYear; hasEraYear = !eraYearValue.IsUndefined; }
+            // era and eraYear must be supplied *together* — providing eraYear ignores (does not
+            // complete) the receiver's era, so a partial pair is a TypeError (via ResolveIsoYear).
             era = hasEra ? eraValue.StringValue : null;
             eraYear = hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0;
         }

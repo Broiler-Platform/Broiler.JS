@@ -42,6 +42,10 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     calendar space (CalendarMergeFields + the calendar's date-from-fields), so the era mapping,
 //     the year/monthCode re-resolution and the month/monthCode & year/era consistency checks all use
 //     the active calendar.
+//   * Problem 29 — Temporal.PlainYearMonth.prototype.with completed a partial { era, eraYear } pair
+//     from the receiver (on both the Gregorian-family and the era-bearing non-ISO calendars), so
+//     providing only eraYear (or only era) passed silently. Per CalendarFieldKeysToIgnore an era /
+//     eraYear field ignores the receiver's era group, so a partial pair is now a TypeError.
 public class Issue781Tests
 {
     private static string Eval(string code)
@@ -330,4 +334,27 @@ public class Issue781Tests
         => Assert.Equal("12", Eval(
             "Temporal.ZonedDateTime.from({ year: 1726, month: 5, day: 10, timeZone: 'UTC', calendar: 'coptic' })" +
             ".with({ day: 12 }).day.toString()"));
+
+    // ───────────── Problem 29: PlainYearMonth.with rejects a partial era pair ─────────────
+
+    // eraYear (or era) without its partner is a TypeError — it is not completed from the receiver,
+    // for both the Gregorian family and the era-bearing non-ISO calendars.
+    [Theory]
+    [InlineData("gregory", "{ eraYear: 5 }")]
+    [InlineData("buddhist", "{ eraYear: 5 }")]
+    [InlineData("japanese", "{ eraYear: 5 }")]
+    [InlineData("roc", "{ era: 'roc' }")]
+    [InlineData("coptic", "{ eraYear: 5 }")]
+    [InlineData("ethiopic", "{ eraYear: 5 }")]
+    [InlineData("islamic-civil", "{ era: 'ah' }")]
+    public void YearMonthWithPartialEraThrowsTypeError(string calendar, string bag)
+        => Assert.Equal("TypeError", ErrorName(
+            $"Temporal.PlainYearMonth.from({{ year: 1400, month: 3, calendar: '{calendar}' }}).with({bag})"));
+
+    // A complete era pair, or a plain year, still works.
+    [Theory]
+    [InlineData("Temporal.PlainYearMonth.from({ year: 2000, month: 5, calendar: 'gregory' }).with({ era: 'ce', eraYear: 1999 }).year", "1999")]
+    [InlineData("Temporal.PlainYearMonth.from({ year: 2000, month: 5, calendar: 'gregory' }).with({ year: 1990 }).year", "1990")]
+    public void YearMonthWithCompleteYearWorks(string code, string expected)
+        => Assert.Equal(expected, Eval($"String({code})"));
 }
