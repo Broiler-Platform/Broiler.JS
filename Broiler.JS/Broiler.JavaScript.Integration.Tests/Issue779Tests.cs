@@ -59,6 +59,9 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     (DST-aware) local day length, or rounds the wall-clock time of day for hour/minute/second/
 //     sub-second units (carrying day overflow and re-resolving the offset), validating smallestUnit
 //     (day…nanosecond) and the increment.
+//   * Problem 3 — the %TypedArray%.prototype methods ignored a view going out of bounds after its
+//     backing resizable ArrayBuffer was shrunk (length returned 0, so they silently no-op'd). They
+//     now call ValidateTypedArray and throw a TypeError when the view is out of bounds (or detached).
 //
 // Out of scope: DST gap/overlap disambiguation beyond "compatible",
 // a ZonedDateTime/PlainDateTime or non-ISO-calendar relativeTo for Duration rounding, and the
@@ -466,4 +469,42 @@ public class Issue779Tests
     [Fact]
     public void ZonedDateTimeRoundRequiresSmallestUnit()
         => Assert.Equal("RangeError", ErrorName(Zr + "z.round({})"));
+
+    // ───────── Problem 3: TypedArray methods on an out-of-bounds resizable buffer ─────────
+    // A fixed-length view backed by a resizable ArrayBuffer goes out of bounds when the buffer is
+    // shrunk below the view's extent; the %TypedArray%.prototype methods must then throw TypeError.
+
+    private const string Oob =
+        "var rab = new ArrayBuffer(16, {maxByteLength:32}); var ta = new Int32Array(rab, 0, 4); rab.resize(8); ";
+
+    [Theory]
+    [InlineData("ta.at(0)")]
+    [InlineData("ta.fill(0)")]
+    [InlineData("ta.every(()=>true)")]
+    [InlineData("ta.forEach(()=>{})")]
+    [InlineData("ta.indexOf(0)")]
+    [InlineData("ta.join()")]
+    [InlineData("ta.map(x=>x)")]
+    [InlineData("ta.slice()")]
+    [InlineData("ta.sort()")]
+    [InlineData("ta.entries()")]
+    [InlineData("ta.keys()")]
+    [InlineData("ta.values()")]
+    [InlineData("ta.copyWithin(0,1)")]
+    [InlineData("ta.reverse()")]
+    public void TypedArrayOutOfBoundsThrows(string call)
+        => Assert.Equal("TypeError", ErrorName(Oob + call));
+
+    [Fact] // out of bounds → length 0; regrowing the buffer restores the view
+    public void TypedArrayOutOfBoundsLengthAndRegrow()
+        => Assert.Equal("0,4", Eval(Oob + "var before = ta.length; rab.resize(16); [before, ta.length].join(',')"));
+
+    [Fact] // a length-tracking view shrinks with the buffer instead of going out of bounds
+    public void TypedArrayLengthTrackingShrinks()
+        => Assert.Equal("4,2", Eval(
+            "var rab = new ArrayBuffer(16, {maxByteLength:32}); var lt = new Int32Array(rab); var b = lt.length; rab.resize(8); [b, lt.length].join(',')"));
+
+    [Fact] // methods on a detached buffer also throw TypeError
+    public void TypedArrayDetachedThrows()
+        => Assert.Equal("TypeError", ErrorName("var ab = new ArrayBuffer(8); var td = new Int32Array(ab); ab.transfer(); td.fill(0)"));
 }

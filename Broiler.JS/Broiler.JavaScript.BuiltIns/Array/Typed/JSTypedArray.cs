@@ -98,6 +98,32 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     [JSExport]
     internal int ByteLength => length * bytesPerElement;
 
+    // IsTypedArrayOutOfBounds: a view backed by a resizable buffer can be left out of bounds by a
+    // shrink — a length-tracking view whose start is past the new end, or a fixed-length view whose
+    // extent no longer fits. (A detached buffer is handled separately by ValidateTypedArray.)
+    internal bool IsOutOfBounds
+    {
+        get
+        {
+            if (buffer == null || buffer.isDetached) return false;
+            var bufferByteLength = buffer.buffer.Length;
+            if (byteOffset > bufferByteLength) return true;
+            if (!isLengthTracking && (long)byteOffset + (long)explicitLength * bytesPerElement > bufferByteLength)
+                return true;
+            return false;
+        }
+    }
+
+    // ValidateTypedArray: the receiver's buffer must not be detached and the view must be in bounds;
+    // otherwise the method is a TypeError. Called at the start of the %TypedArray%.prototype methods.
+    internal void ValidateTypedArray(string method)
+    {
+        if (buffer == null || buffer.isDetached)
+            throw JSEngine.NewTypeError($"TypedArray.prototype.{method} called on a TypedArray backed by a detached ArrayBuffer");
+        if (IsOutOfBounds)
+            throw JSEngine.NewTypeError($"TypedArray.prototype.{method} called on an out-of-bounds TypedArray");
+    }
+
     public override int Length { get => length; set => throw new NotSupportedException(); }
     public bool HasIntegerIndexedElements => length > 0;
 
