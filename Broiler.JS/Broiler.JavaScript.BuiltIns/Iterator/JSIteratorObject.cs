@@ -416,6 +416,10 @@ public partial class JSIteratorObject : JSObject
 
     internal static JSValue StaticTake(in Arguments a)
     {
+        // Iterator.prototype.take step 2: "If O is not an Object, throw a TypeError" — checked before
+        // ToNumber(limit), so a non-object receiver is a TypeError even when the limit is invalid.
+        if (a.This is not JSObject)
+            throw JSEngine.NewTypeError("Iterator.prototype.take called on a non-object");
         var n = ReadIteratorLimitOrClose(a.This, a.Get1(), "Iterator.prototype.take");
         var en = EnumeratorFrom(a.This);
         return new JSIteratorObject(new TakeEnumerator(en, n));
@@ -423,6 +427,8 @@ public partial class JSIteratorObject : JSObject
 
     internal static JSValue StaticDrop(in Arguments a)
     {
+        if (a.This is not JSObject)
+            throw JSEngine.NewTypeError("Iterator.prototype.drop called on a non-object");
         var n = ReadIteratorLimitOrClose(a.This, a.Get1(), "Iterator.prototype.drop");
         var en = EnumeratorFrom(a.This);
         return new JSIteratorObject(new DropEnumerator(en, n));
@@ -1213,11 +1219,19 @@ public partial class JSIteratorObject : JSObject
     {
         private uint _count;
 
+        // %Iterator.prototype.map% step: an abrupt completion from the mapper closes the underlying
+        // iterator (IfAbruptCloseIterator) before the error propagates; the close error is swallowed.
+        private JSValue Invoke(JSValue item)
+        {
+            try { return fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))); }
+            catch { CloseIteratorIfPossible(source); throw; }
+        }
+
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
             if (source.MoveNext(out hasValue, out var item, out index))
             {
-                value = fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++)));
+                value = Invoke(item);
                 return true;
             }
 
@@ -1229,7 +1243,7 @@ public partial class JSIteratorObject : JSObject
         {
             if (source.MoveNext(out var item))
             {
-                value = fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++)));
+                value = Invoke(item);
                 return true;
             }
 
@@ -1241,7 +1255,7 @@ public partial class JSIteratorObject : JSObject
         {
             if (source.MoveNext(out var item))
             {
-                value = fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++)));
+                value = Invoke(item);
                 return true;
             }
 
@@ -1252,7 +1266,7 @@ public partial class JSIteratorObject : JSObject
         public JSValue NextOrDefault(JSValue @default)
         {
             if (source.MoveNext(out var item))
-                return fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++)));
+                return Invoke(item);
 
             return @default;
         }
@@ -1273,11 +1287,19 @@ public partial class JSIteratorObject : JSObject
         private uint index = 0;
         private uint predicateCount = 0;
 
+        // %Iterator.prototype.filter% step: an abrupt completion from the predicate closes the underlying
+        // iterator (IfAbruptCloseIterator) before the error propagates; the close error is swallowed.
+        private bool Test(JSValue item)
+        {
+            try { return fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(predicateCount++))).BooleanValue; }
+            catch { CloseIteratorIfPossible(source); throw; }
+        }
+
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
             while (source.MoveNext(out var item))
             {
-                if (fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(predicateCount++))).BooleanValue)
+                if (Test(item))
                 {
                     value = item;
                     hasValue = true;
@@ -1297,7 +1319,7 @@ public partial class JSIteratorObject : JSObject
         {
             while (source.MoveNext(out var item))
             {
-                if (fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(predicateCount++))).BooleanValue)
+                if (Test(item))
                 {
                     value = item;
                     return true;
@@ -1312,7 +1334,7 @@ public partial class JSIteratorObject : JSObject
         {
             while (source.MoveNext(out var item))
             {
-                if (fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(predicateCount++))).BooleanValue)
+                if (Test(item))
                 {
                     value = item;
                     return true;
@@ -1327,7 +1349,7 @@ public partial class JSIteratorObject : JSObject
         {
             while (source.MoveNext(out var item))
             {
-                if (fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(predicateCount++))).BooleanValue)
+                if (Test(item))
                     return item;
             }
 
@@ -1478,6 +1500,15 @@ public partial class JSIteratorObject : JSObject
         private IElementEnumerator _inner;
         private uint _count;
 
+        // %Iterator.prototype.flatMap% step: an abrupt completion from the mapper, or from obtaining the
+        // mapped value's iterator (GetIteratorFlattenable), closes the underlying iterator before the
+        // error propagates (IfAbruptCloseIterator); the close error is swallowed.
+        private IElementEnumerator MapItem(JSValue item)
+        {
+            try { return GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++)))); }
+            catch { CloseIteratorIfPossible(source); throw; }
+        }
+
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
             while (true)
@@ -1488,7 +1519,7 @@ public partial class JSIteratorObject : JSObject
                 if (!source.MoveNext(out var item))
                 { value = JSUndefined.Value; hasValue = false; index = 0; return false; }
 
-                _inner = GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))));
+                _inner = MapItem(item);
             }
         }
 
@@ -1500,7 +1531,7 @@ public partial class JSIteratorObject : JSObject
                 if (!source.MoveNext(out var item))
                 { value = JSUndefined.Value; return false; }
 
-                _inner = GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))));
+                _inner = MapItem(item);
             }
         }
 
@@ -1511,7 +1542,7 @@ public partial class JSIteratorObject : JSObject
                 if (_inner != null && _inner.MoveNext(out value)) return true;
                 if (!source.MoveNext(out var item))
                 { value = @default; return false; }
-                _inner = GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))));
+                _inner = MapItem(item);
             }
         }
 
@@ -1522,7 +1553,7 @@ public partial class JSIteratorObject : JSObject
                 if (_inner != null && _inner.MoveNext(out var v)) return v;
                 if (!source.MoveNext(out var item)) return @default;
 
-                _inner = GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))));
+                _inner = MapItem(item);
             }
         }
 

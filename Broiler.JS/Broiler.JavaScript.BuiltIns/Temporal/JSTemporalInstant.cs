@@ -151,16 +151,25 @@ public partial class JSTemporalInstant : JSObject
             if (optionsArg is not JSObject options)
                 throw JSEngine.NewTypeError("Temporal.Instant difference options must be an object or undefined");
 
+            // GetDifferenceSettings reads every option — largestUnit, roundingIncrement, roundingMode,
+            // smallestUnit, in that order — and coerces each (calendar units included) before any is
+            // validated against the allowed group, so a disallowed unit is reported only afterwards.
             var lu = options[KeyStrings.GetOrCreate("largestUnit")];
             if (!lu.IsUndefined)
-                largestUnit = TemporalRoundingOptions.NormalizeTimeUnit(lu.StringValue, allowAuto: true);
+                largestUnit = TemporalRoundingOptions.NormalizeAnyUnit(lu.StringValue, allowAuto: true);
 
             increment = TemporalRoundingOptions.GetRoundingIncrement(options);
             roundingMode = TemporalRoundingOptions.GetRoundingMode(options, "trunc");
 
             var su = options[KeyStrings.GetOrCreate("smallestUnit")];
             if (!su.IsUndefined)
-                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
+                smallestUnit = TemporalRoundingOptions.NormalizeAnyUnit(su.StringValue, allowAuto: false);
+
+            // Only time units (hour … nanosecond) are valid for an Instant difference.
+            if (largestUnit != "auto" && TemporalRoundingOptions.UnitIndex(largestUnit) < TemporalRoundingOptions.UnitIndex("hour"))
+                throw JSEngine.NewRangeError($"Temporal.Instant: invalid largestUnit \"{largestUnit}\"");
+            if (TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("hour"))
+                throw JSEngine.NewRangeError($"Temporal.Instant: invalid smallestUnit \"{smallestUnit}\"");
         }
 
         // largestUnit defaults to the larger of "second" and the chosen smallestUnit.

@@ -351,6 +351,8 @@ public partial class JSArray
     [JSExport("entries")]
     public new static JSValue Entries(in Arguments a)
     {
+        if (a.This is Typed.JSTypedArray taE)
+            return taE.GetArrayIterator(Typed.JSTypedArray.ArrayIteratorKind.Entry);
         var array = ToArrayLikeObject(a.This);
         return new JSGenerator(new ArrayLikeEntryEnumerator(array), "Array Iterator");
     }
@@ -586,6 +588,8 @@ public partial class JSArray
     [JSExport("keys")]
     public new static JSValue Keys(in Arguments a)
     {
+        if (a.This is Typed.JSTypedArray taK)
+            return taK.GetArrayIterator(Typed.JSTypedArray.ArrayIteratorKind.Key);
         var @this = ToArrayLikeObject(a.This);
         var length = GetArrayLikeLength(@this);
         return new JSGenerator(new IntKeyEnumerator((int)length), "Array Iterator");
@@ -720,10 +724,14 @@ public partial class JSArray
     public new static JSValue Values(in Arguments a)
     {
         var receiver = a.This;
-        // Real arrays and typed arrays carry their own live, hole-aware element
-        // enumerators. A generic array-like (e.g. a mapped arguments object) needs the
-        // length-bound CreateArrayIterator behaviour that re-reads "length" each step,
-        // so shrinking it (arguments.length = 2) ends iteration before the stored
+        // A typed-array receiver uses the CreateArrayIterator typed-array path: each step re-validates
+        // the view and throws a TypeError once a resize leaves it out of bounds (so the generic
+        // Array.prototype.values applied to a resizable-backed typed array matches %TypedArray%.values).
+        if (receiver is Typed.JSTypedArray taV)
+            return taV.GetArrayIterator(Typed.JSTypedArray.ArrayIteratorKind.Value);
+        // Real arrays carry their own live, hole-aware element enumerators. A generic array-like (e.g. a
+        // mapped arguments object) needs the length-bound CreateArrayIterator behaviour that re-reads
+        // "length" each step, so shrinking it (arguments.length = 2) ends iteration before the stored
         // elements are exhausted.
         if (receiver is JSArray || receiver is IJSIntegerIndexedObject)
             return new JSGenerator(receiver.GetElementEnumerator(), "Array Iterator");

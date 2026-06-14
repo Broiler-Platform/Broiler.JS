@@ -341,13 +341,16 @@ public partial class JSTemporalPlainYearMonth : JSObject
     [JSExport("since", Length = 1)]
     public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
 
-    // TODO: until/since honor only `largestUnit` (year[default]/month); rounding is not applied.
+    // until/since honor largestUnit (year[default]/month) and round to smallestUnit at the given
+    // roundingIncrement / roundingMode. Both year-months are anchored at day 1 of their month (per
+    // DifferenceTemporalPlainYearMonth), so the difference reduces to a date difference. Rounding is
+    // applied for the ISO calendar only; the arithmetic calendars return the unrounded difference.
     private JSValue Difference(JSValue other, JSValue options, int sign)
     {
         var target = Require(ToTemporalYearMonth(other, "constrain"));
         if (calendarId != target.calendarId)
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: cannot compute the difference between year-months of different calendars");
-        var largestUnit = ReadDifferenceSettings(options);
+        var (largestUnit, smallestUnit, increment, roundingMode) = ReadDifferenceSettings(options);
 
         if (NonIso)
         {
@@ -360,14 +363,13 @@ public partial class JSTemporalPlainYearMonth : JSObject
             return new JSTemporalDuration(cy, cm, 0, 0, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
         }
 
-        var (ay, am, by, bm) = sign == 1
-            ? (isoYear, isoMonth, target.isoYear, target.isoMonth)
-            : (target.isoYear, target.isoMonth, isoYear, isoMonth);
+        // The difference is measured from the receiver (day 1) and negated for "since"; the rounding mode
+        // is correspondingly negated before rounding (GetDifferenceSettings).
+        var mode = sign == -1 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
+        var (years, months, _, _) = JSTemporalPlainDate.DifferenceISODateRounded(
+            isoYear, isoMonth, 1, target.isoYear, target.isoMonth, 1, largestUnit, smallestUnit, increment, mode);
 
-        long totalMonths = ((long)by * 12 + (bm - 1)) - ((long)ay * 12 + (am - 1));
-        double years = 0, months;
-        if (largestUnit == "year") { years = totalMonths / 12; months = totalMonths % 12; }
-        else months = totalMonths;
+        if (sign == -1) { years = -years; months = -months; }
 
         return new JSTemporalDuration(years, months, 0, 0, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
     }
@@ -485,20 +487,33 @@ public partial class JSTemporalPlainYearMonth : JSObject
     }
 
     // GetDifferenceSettings for until/since: the only valid units are year (largest) and month
-    // (smallest). Validates largestUnit/smallestUnit (smallestUnit must not be larger than
-    // largestUnit), roundingIncrement and roundingMode, and returns the resolved largestUnit. A
-    // smallestUnit/increment finer than the default is validated here but the rounding is not yet
-    // applied — see the TODO above Difference.
-    private static string ReadDifferenceSettings(JSValue options)
+    // (smallest). Validates largestUnit/smallestUnit (smallestUnit must not be larger than largestUnit),
+    // roundingIncrement and roundingMode, and returns all four (rounding is applied in Difference for the
+    // ISO calendar).
+    private static (string largestUnit, string smallestUnit, int increment, string roundingMode) ReadDifferenceSettings(JSValue options)
     {
-        if (options == null || options.IsUndefined) return "year";
+        if (options == null || options.IsUndefined) return ("year", "month", 1, "trunc");
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
-        var largestUnit = ReadYearMonthUnit(o, "largestUnit");
-        var smallestUnit = ReadYearMonthUnit(o, "smallestUnit") ?? "month";
-        TemporalRoundingOptions.GetRoundingIncrement(o);
-        TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+        // GetDifferenceSettings reads largestUnit, roundingIncrement, roundingMode, smallestUnit in that
+        // order, coercing each unit (week/day/time units included) before any is validated against the
+        // allowed group, so a disallowed-unit RangeError is reported only after every option is read.
+        var largestRaw = o[KeyStrings.GetOrCreate("largestUnit")];
+        var largestUnit = largestRaw.IsUndefined ? null : TemporalRoundingOptions.NormalizeAnyUnit(largestRaw.StringValue, allowAuto: true);
+        if (largestUnit == "auto") largestUnit = null;
+
+        var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
+        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+
+        var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
+        var smallestUnit = smallestRaw.IsUndefined ? "month" : TemporalRoundingOptions.NormalizeAnyUnit(smallestRaw.StringValue, allowAuto: false);
+
+        // Only "year" and "month" are valid for a PlainYearMonth difference.
+        if (largestUnit is not (null or "year" or "month"))
+            throw JSEngine.NewRangeError($"Temporal.PlainYearMonth: invalid largestUnit \"{largestUnit}\"");
+        if (smallestUnit is not ("year" or "month"))
+            throw JSEngine.NewRangeError($"Temporal.PlainYearMonth: invalid smallestUnit \"{smallestUnit}\"");
 
         // largestUnit "auto"/absent resolves to the larger of "year" and smallestUnit, i.e. "year".
         largestUnit ??= "year";
@@ -507,27 +522,10 @@ public partial class JSTemporalPlainYearMonth : JSObject
         if (UnitRank(smallestUnit) < UnitRank(largestUnit))
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: smallestUnit must not be larger than largestUnit");
 
-        return largestUnit;
+        return (largestUnit, smallestUnit, increment, roundingMode);
     }
 
     private static int UnitRank(string unit) => unit == "year" ? 0 : 1;
-
-    // Reads a year/month unit option (largestUnit / smallestUnit), normalizing the plural form;
-    // returns null for an absent option (or "auto" for largestUnit) and throws a RangeError for any
-    // value that is not "year" or "month".
-    private static string ReadYearMonthUnit(JSObject options, string name)
-    {
-        var v = options[KeyStrings.GetOrCreate(name)];
-        if (v.IsUndefined) return null;
-        var s = v.StringValue;
-        if (s == "auto" && name == "largestUnit") return null;
-        return s switch
-        {
-            "year" or "years" => "year",
-            "month" or "months" => "month",
-            _ => throw JSEngine.NewRangeError($"Temporal.PlainYearMonth: invalid {name} \"{s}\""),
-        };
-    }
 
     private static JSValue ToTemporalYearMonth(JSValue item, string overflow)
     {

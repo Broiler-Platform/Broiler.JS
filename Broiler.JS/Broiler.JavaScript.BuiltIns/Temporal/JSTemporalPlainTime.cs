@@ -180,15 +180,24 @@ public partial class JSTemporalPlainTime : JSObject
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
+        // GetDifferenceSettings reads largestUnit, roundingIncrement, roundingMode, smallestUnit in that
+        // order, coercing each unit (calendar units included) before any is validated against the allowed
+        // group, so a disallowed-unit RangeError is reported only after every option has been read.
         var largestRaw = o[KeyStrings.GetOrCreate("largestUnit")];
-        string largestUnit = largestRaw.IsUndefined ? null : TemporalRoundingOptions.NormalizeTimeUnit(largestRaw.StringValue, allowAuto: true);
+        string largestUnit = largestRaw.IsUndefined ? null : TemporalRoundingOptions.NormalizeAnyUnit(largestRaw.StringValue, allowAuto: true);
         if (largestUnit == "auto") largestUnit = null;
-
-        var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
-        var smallestUnit = smallestRaw.IsUndefined ? "nanosecond" : TemporalRoundingOptions.NormalizeTimeUnit(smallestRaw.StringValue, allowAuto: false);
 
         var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
         TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+
+        var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
+        var smallestUnit = smallestRaw.IsUndefined ? "nanosecond" : TemporalRoundingOptions.NormalizeAnyUnit(smallestRaw.StringValue, allowAuto: false);
+
+        // Only time units (hour … nanosecond) are valid for a PlainTime difference.
+        if (largestUnit != null && TemporalRoundingOptions.UnitIndex(largestUnit) < TemporalRoundingOptions.UnitIndex("hour"))
+            throw JSEngine.NewRangeError($"Temporal.PlainTime: invalid largestUnit \"{largestUnit}\"");
+        if (TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("hour"))
+            throw JSEngine.NewRangeError($"Temporal.PlainTime: invalid smallestUnit \"{smallestUnit}\"");
 
         largestUnit ??= TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("hour")
             ? smallestUnit : "hour";
@@ -465,17 +474,64 @@ public partial class JSTemporalPlainTime : JSObject
         return RegulateTime(h, mi, s, ms, us, ns, overflow);
     }
 
-    private static readonly Regex TimePattern = new(
-        @"^(?:(?:\d{4}|\+\d{6}|-(?!000000)\d{6})-\d{2}-\d{2})?[Tt ]?(\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?:[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?(?:\[[^\]]*\])*$",
+    // A full date + required separator + time, with an optional Z / numeric-offset designator. The
+    // date's fraction-bearing component is the seconds only (the date-only parsers reject minutes/hours
+    // fractions). Groups: 1=hour 2=minute 3=second 4=fraction, named "off"=Z/offset designator.
+    private static readonly Regex DateTimeFormPattern = new(
+        @"^(?:\d{4}|\+\d{6}|-(?!000000)\d{6})-\d{2}-\d{2}[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?<off>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?$",
         RegexOptions.CultureInvariant);
+
+    // A bare time-of-day (after any leading time designator has been removed), with an optional Z /
+    // numeric-offset designator. Same capture groups as DateTimeFormPattern.
+    private static readonly Regex BareTimeFormPattern = new(
+        @"^(\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?<off>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?$",
+        RegexOptions.CultureInvariant);
+
+    // The maximal trailing run of [..] annotations (used to peel annotations off before parsing).
+    private static readonly Regex TrailingAnnotationsPattern = new(@"(?:\[[^\]]*\])*$", RegexOptions.CultureInvariant);
+
+    // Date forms that make a designator-less time string ambiguous: a year-month (YYYY-MM / YYYYMM with
+    // a valid month) or a month-day (MM-DD / MMDD / --MM-DD with a valid month and day). Such a string —
+    // e.g. "2021-12" (year-month) or "1130" (month-day "Nov 30") — could be intended as a calendar date,
+    // so it is rejected as a PlainTime unless prefixed with the time designator "T".
+    private static readonly Regex AmbiguousYearMonthPattern =
+        new(@"^(?:\d{4}|\+\d{6}|-\d{6})-?(\d{2})$", RegexOptions.CultureInvariant);
+    private static readonly Regex AmbiguousMonthDayPattern =
+        new(@"^(?:--)?(\d{2})-?(\d{2})$", RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalTimeString(string text)
     {
         TemporalIsoString.RejectInvalidAnnotations(text);
 
-        var match = TimePattern.Match(text);
-        if (!match.Success)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainTime from \"{text}\"");
+        // Peel off the trailing [..] annotations; a PlainTime ignores both the time-zone annotation and
+        // the calendar, so only the date/time core is examined.
+        var core = text.Substring(0, TrailingAnnotationsPattern.Match(text).Index);
+
+        Match match;
+        var dt = DateTimeFormPattern.Match(core);
+        if (dt.Success)
+        {
+            match = dt;
+        }
+        else
+        {
+            // A bare time-of-day. The only valid designator is "T"/"t"; a space is not accepted. Without
+            // a designator the string must be unambiguous with a calendar date.
+            var hasDesignator = core.Length > 0 && core[0] is 'T' or 't';
+            var body = hasDesignator ? core.Substring(1) : core;
+            if (!hasDesignator && IsAmbiguousTimeString(body))
+                throw JSEngine.NewRangeError($"Temporal.PlainTime: \"{text}\" is ambiguous and requires a time designator");
+
+            match = BareTimeFormPattern.Match(body);
+            if (!match.Success)
+                throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainTime from \"{text}\"");
+        }
+
+        // A Z (UTC) designator implies a wall clock anchored to UTC, which a (zone-less) PlainTime cannot
+        // carry — it is a RangeError, distinct from a plain numeric offset (which is merely ignored).
+        var off = match.Groups["off"];
+        if (off.Success && off.Value is "Z" or "z")
+            throw JSEngine.NewRangeError($"Temporal.PlainTime: a UTC (Z) designator is not valid for a PlainTime: \"{text}\"");
 
         var h = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
         var mi = match.Groups[2].Success ? int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture) : 0;
@@ -490,11 +546,42 @@ public partial class JSTemporalPlainTime : JSObject
             ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);
         }
 
-        // A time string is parsed strictly (no constrain); 24:00 etc. is invalid.
+        // A leap second (:60) parsed from a string collapses to :59 (ParseISODateTime), regardless of
+        // overflow; only a property bag with overflow "reject" rejects it.
+        if (s == 60) s = 59;
+
+        // A time string is parsed strictly (no constrain) otherwise; 24:00 etc. is invalid.
         if (!IsValidTime(h, mi, s, ms, us, ns))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainTime from \"{text}\"");
 
         return RegulateTime(h, mi, s, ms, us, ns, "reject");
+    }
+
+    // Whether a designator-less time body would also be a valid year-month or month-day (Feb 29 allowed,
+    // since a month-day's reference year is a leap year). See AmbiguousYearMonthPattern / *MonthDay*.
+    private static bool IsAmbiguousTimeString(string body)
+    {
+        var ym = AmbiguousYearMonthPattern.Match(body);
+        if (ym.Success && int.Parse(ym.Groups[1].Value, CultureInfo.InvariantCulture) is >= 1 and <= 12)
+            return true;
+
+        var md = AmbiguousMonthDayPattern.Match(body);
+        if (md.Success)
+        {
+            var month = int.Parse(md.Groups[1].Value, CultureInfo.InvariantCulture);
+            var day = int.Parse(md.Groups[2].Value, CultureInfo.InvariantCulture);
+            var maxDay = month switch
+            {
+                1 or 3 or 5 or 7 or 8 or 10 or 12 => 31,
+                4 or 6 or 9 or 11 => 30,
+                2 => 29, // a month-day's reference year is a leap year, so Feb 29 is valid
+                _ => 0,
+            };
+            if (month is >= 1 and <= 12 && day >= 1 && day <= maxDay)
+                return true;
+        }
+
+        return false;
     }
 
     private static (string unit, int increment, string roundingMode) ReadRoundTo(JSValue roundTo)
