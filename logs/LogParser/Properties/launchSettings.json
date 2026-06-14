@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "LogParser": {
-      "commandName": "Project",
-      "commandLineArgs": "D:\\Broiler.JS\\logs --output=json"
-    }
-  }
-}

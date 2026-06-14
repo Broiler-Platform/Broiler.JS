@@ -898,11 +898,14 @@ jobs:
           # --most-common-problems narrows the report to the three most common
           # type/context/message combinations so the emitted markdown can be
           # posted directly as a focused GitHub issue body.
-          dotnet run --project logs/LogParser -- \
+          # --no-launch-profile keeps `dotnet run` from emitting the
+          # "Using launch settings from ..." banner to stdout, which would
+          # otherwise corrupt the redirected markdown/JSON output.
+          dotnet run --project logs/LogParser --no-launch-profile -- \
             "$LOGPARSER_LOGS_DIR" \
             --most-common-problems > "$issue_body_path"
 
-          dotnet run --project logs/LogParser -- \
+          dotnet run --project logs/LogParser --no-launch-profile -- \
             "$LOGPARSER_LOGS_DIR" \
             --most-common-problems \
             --output json > "$issue_json_path"
