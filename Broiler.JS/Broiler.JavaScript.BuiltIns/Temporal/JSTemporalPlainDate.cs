@@ -801,6 +801,11 @@ public partial class JSTemporalPlainDate : JSObject
     internal static JSTemporalPlainDate ToRelativeDate(JSValue item)
         => (JSTemporalPlainDate)ToTemporalDate(item, "constrain");
 
+    // A PlainDate from ISO fields (used when a Temporal.Duration relativeTo is a PlainDateTime, whose
+    // date is taken with a fixed 24-hour day).
+    internal static JSTemporalPlainDate FromIso(int year, int month, int day, string calendarId)
+        => new JSTemporalPlainDate(year, month, day, calendarId, PlainDatePrototype);
+
     internal static long EpochDaysFor(int year, int month, int day) => DaysFromCivil(year, month, day);
 
     internal static (int y, int m, int d) DateFromEpochDays(long epoch)

@@ -249,15 +249,26 @@ public partial class JSTemporalDuration : JSObject
         // ToRelativeTemporalObject resolves (and validates) relativeTo whenever it is present, even when
         // the comparison itself does not need it — an unparsable or otherwise invalid relativeTo string
         // is a RangeError regardless of the durations' units.
-        var relative = relativeTo.IsNullOrUndefined ? null : GetRelativeIsoDate(options);
+        JSTemporalZonedDateTime relZoned = null;
+        JSTemporalPlainDate relDate = null;
+        if (!relativeTo.IsNullOrUndefined)
+            TryResolveRelativeTo(options, out relZoned, out relDate);
+
+        if (relZoned != null)
+        {
+            // Add each duration to the (shared) zoned relativeTo and compare the resulting instants,
+            // so a day spans its real DST-adjusted length.
+            var e1 = relZoned.AddDurationEpochNs(d1);
+            var e2 = relZoned.AddDurationEpochNs(d2);
+            return new JSNumber(e1 < e2 ? -1 : e1 > e2 ? 1 : 0);
+        }
 
         if (calendarUnits)
         {
             // Add each duration's date part to the (shared) relativeTo date and compare the resulting
-            // instants on the 24-hour-day timeline (reusing the round/total relativeTo machinery; a
-            // ZonedDateTime / PlainDateTime / non-ISO-calendar relativeTo is still unsupported there).
-            var (end1, _, _) = d1.RelativeEndpoints(relative);
-            var (end2, _, _) = d2.RelativeEndpoints(relative);
+            // instants on the 24-hour-day timeline.
+            var (end1, _, _) = d1.RelativeEndpoints(relDate);
+            var (end2, _, _) = d2.RelativeEndpoints(relDate);
             return new JSNumber(end1 < end2 ? -1 : end1 > end2 ? 1 : 0);
         }
 

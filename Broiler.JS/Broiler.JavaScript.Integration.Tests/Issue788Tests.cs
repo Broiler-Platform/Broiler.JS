@@ -42,12 +42,19 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     a property bag validates the explicit offset against the named time zone (offset option defaults
 //     to "reject"); (d) ZonedDateTime.prototype.hoursInDay throws when the start of day for today or
 //     tomorrow is out of range.
+//   * Problem 2 — Temporal.Duration.prototype.round / total and Temporal.Duration.compare now support a
+//     true Temporal.ZonedDateTime relativeTo (the proposal's RoundRelativeDuration / TotalRelativeDuration
+//     over a zoned timeline: NudgeToCalendarUnit / NudgeToZonedTime / BubbleRelativeDuration, where a
+//     calendar day spans its real 23/24/25-hour DST length). A Temporal.PlainDateTime relativeTo is
+//     supported via its date (a fixed 24-hour day). Implemented in JSTemporalZonedDateTime.Rounding.cs.
 //
-// Out of scope (large, separate features documented across the prior Temporal issues): Problem 2 + the
-// rest of Problem 1 (Temporal.Duration with a true ZonedDateTime relativeTo + the full
-// RoundRelativeDuration / NudgeToCalendarUnit machinery; PlainDate/PlainDateTime/PlainYearMonth
-// since/until smallestUnit rounding and its rounded-date-out-of-range cases; the "balances-up-to-weeks"
-// week-nudge); Problem 3 (resizable-ArrayBuffer-backed TypedArrays;
+// Out of scope (documented in the prior Temporal issues): the rest of Problem 1/Problem 2 — a zoned
+// relativeTo supplied as a *string* with a [TimeZone] annotation or a *property bag* with a timeZone
+// field still falls back to its ISO date (a 24-hour day; correct only with no DST transition), so the
+// real-IANA-zone intl402 DST tests and the ZonedDateTime.prototype.since/until smallestUnit rounding
+// remain; PlainDate/PlainDateTime/PlainYearMonth since/until smallestUnit rounding and its
+// rounded-date-out-of-range cases; the "balances-up-to-weeks" week-nudge in the PlainDate path; the
+// add/subtract result-out-of-range-3 float boundary. Problem 3 (resizable-ArrayBuffer-backed TypedArrays;
 // Atomics cannot-suspend; the %IteratorHelperPrototype% brand check); Problem 4 (Iterator-helper
 // map/filter/flatMap close-iterator-once and the dynamic-import / DateTimeFormat slices); Problem 10
 // (Promise.all/race iterator no-close).
@@ -253,6 +260,42 @@ public class Issue788Tests
     [InlineData("new Temporal.Duration(0).round({ largestUnit: 'years', relativeTo: '-271821-04-19' }).toString()", "PT0S")]
     [InlineData("new Temporal.Duration(0).round({ largestUnit: 'years', relativeTo: '-271821-04-20T00:00+00:00[UTC]' }).toString()", "PT0S")]
     public void Duration_Round_ValidRelativeToString_Accepted(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code));
+    }
+
+    // ── Problem 2: Temporal.Duration round/total/compare with a ZonedDateTime relativeTo ─
+
+    [Theory]
+    // A 25-hour duration relative to a fixed (no-DST) zone rounds to 1 day 1 hour (a day = 24 h).
+    [InlineData("new Temporal.Duration(0,0,0,0,25).round({ largestUnit: 'days', relativeTo: new Temporal.ZonedDateTime(0n, '+04:30') }).toString()", "P1DT1H")]
+    // 8 months rounds up to 1 year (halfExpand) relative to a UTC ZonedDateTime.
+    [InlineData("Temporal.Duration.from({ months: 8 }).round({ smallestUnit: 'year', relativeTo: new Temporal.ZonedDateTime(0n, 'UTC') }).toString()", "P1Y")]
+    // A zero/blank duration rounds to zero with a ZonedDateTime relativeTo.
+    [InlineData("new Temporal.Duration().round({ largestUnit: 'years', relativeTo: new Temporal.ZonedDateTime(0n, 'UTC') }).toString()", "PT0S")]
+    // A PlainDateTime relativeTo is supported (its date, 24-hour day).
+    [InlineData("new Temporal.Duration().round({ largestUnit: 'years', relativeTo: new Temporal.PlainDateTime(2000, 1, 1) }).toString()", "PT0S")]
+    public void Duration_Round_ZonedRelativeTo(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code));
+    }
+
+    [Theory]
+    // total over a zoned timeline: 2 months 15 days from 1970-01-01 UTC = 2 + 15/31 months.
+    [InlineData("Temporal.Duration.from({ months: 2, days: 15 }).total({ unit: 'months', relativeTo: new Temporal.ZonedDateTime(0n, 'UTC') })", "2.4838709677419355")]
+    // A duration of whole days totals to a whole number of hours (24 h/day, no DST).
+    [InlineData("new Temporal.Duration(0,0,0,1).total({ unit: 'hours', relativeTo: new Temporal.ZonedDateTime(1000000000000000000n, '+04:30') })", "24")]
+    public void Duration_Total_ZonedRelativeTo(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code));
+    }
+
+    [Theory]
+    // compare over a zoned timeline: 1 day and 24 hours are equal relative to a no-DST zone.
+    [InlineData("Temporal.Duration.compare(new Temporal.Duration(0,0,0,1), new Temporal.Duration(0,0,0,0,24), { relativeTo: new Temporal.ZonedDateTime(0n, 'UTC') })", "0")]
+    // 1 year 1 day vs 1 year 25 hours relative to a no-DST zone: the day is 24 h, so 25 h is longer.
+    [InlineData("Temporal.Duration.compare(new Temporal.Duration(1,0,0,1), new Temporal.Duration(1,0,0,0,25), { relativeTo: new Temporal.ZonedDateTime(0n, 'UTC') })", "-1")]
+    public void Duration_Compare_ZonedRelativeTo(string code, string expected)
     {
         Assert.Equal(expected, Eval(code));
     }

@@ -1,0 +1,417 @@
+using System;
+using System.Numerics;
+using Broiler.JavaScript.BuiltIns.Number;
+using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine.Core;
+
+namespace Broiler.JavaScript.BuiltIns.Temporal;
+
+// Temporal.Duration round / total / compare with a Temporal.ZonedDateTime relativeTo. Implements the
+// proposal's RoundRelativeDuration / TotalRelativeDuration over a zoned timeline, where a calendar day
+// may be 23 h / 24 h / 25 h across a DST transition. The duration's date part is added to the relativeTo
+// in wall-clock space (re-resolving the zone offset) and the time part on the exact epoch-nanosecond
+// timeline; rounding then nudges between the two surrounding calendar (or zoned-day) boundaries.
+public partial class JSTemporalZonedDateTime
+{
+    // A calendar date part (years/months/weeks/days) plus a signed nanosecond time part.
+    private readonly struct InternalDuration
+    {
+        public readonly long Years, Months, Weeks, Days;
+        public readonly BigInteger Time;
+        public InternalDuration(long y, long mo, long w, long d, BigInteger t) { Years = y; Months = mo; Weeks = w; Days = d; Time = t; }
+    }
+
+    private static int DateDurationSign(long y, long mo, long w, long d)
+        => y != 0 ? Math.Sign(y) : mo != 0 ? Math.Sign(mo) : w != 0 ? Math.Sign(w) : d != 0 ? Math.Sign(d) : 0;
+
+    private static int InternalDurationSign(in InternalDuration x)
+    {
+        var ds = DateDurationSign(x.Years, x.Months, x.Weeks, x.Days);
+        return ds != 0 ? ds : x.Time.Sign;
+    }
+
+    private static bool IsCalendarUnit(string u) => u is "year" or "month" or "week";
+
+    private static long TimeUnitNs(string unit) => unit switch
+    {
+        "day" => NanosecondsPerDay,
+        "hour" => 3_600_000_000_000,
+        "minute" => 60_000_000_000,
+        "second" => 1_000_000_000,
+        "millisecond" => 1_000_000,
+        "microsecond" => 1_000,
+        _ => 1, // nanosecond
+    };
+
+    private static string LargerUnit(string a, string b) => UnitRank(a) <= UnitRank(b) ? a : b;
+
+    // ── entry points (called from Temporal.Duration) ────────────────────────────
+
+    // AddZonedDateTime(this, duration): the resulting instant, in epoch-nanoseconds.
+    internal BigInteger AddDurationEpochNs(JSTemporalDuration d)
+    {
+        var years = (long)d.YearsValue; var months = (long)d.MonthsValue;
+        var weeks = (long)d.WeeksValue; var days = (long)d.DaysValue;
+        var timeNs = DurationTimeNanoseconds(d);
+
+        BigInteger result;
+        if (years == 0 && months == 0 && weeks == 0 && days == 0)
+            result = epochNanoseconds + timeNs;
+        else
+        {
+            var l = Local();
+            var (ry, rm, rd) = AddISODate(l.y, l.mo, l.d, years, months, weeks, days, "constrain");
+            result = EpochNsForLocal(ry, rm, rd, l.h, l.mi, l.s, l.ms, l.us, l.ns) + timeNs;
+        }
+        if (!IsValid(result))
+            throw JSEngine.NewRangeError("Temporal.Duration: result is out of range");
+        return result;
+    }
+
+    internal JSValue RoundDurationRelative(JSTemporalDuration d, string smallestUnit, string largestUnit, long increment, string roundingMode)
+    {
+        var target = AddDurationEpochNs(d);
+        var diff = DifferenceInternal(epochNanoseconds, target, largestUnit);
+        var rounded = RoundRelativeDuration(diff, epochNanoseconds, target, largestUnit, increment, smallestUnit, roundingMode);
+        return BuildDuration(rounded, largestUnit);
+    }
+
+    internal double TotalDurationRelative(JSTemporalDuration d, string unit)
+    {
+        var target = AddDurationEpochNs(d);
+        var diff = DifferenceInternal(epochNanoseconds, target, unit);
+
+        if (IsCalendarUnit(unit) || unit == "day")
+        {
+            var sign = InternalDurationSign(diff) < 0 ? -1 : 1;
+            var o = Local();
+            var n = NudgeToCalendarUnit(sign, diff, epochNanoseconds, target, o, 1, unit, "trunc");
+            return n.total!.Value;
+        }
+
+        // A time unit: the whole elapsed nanoseconds (date part is zero for a time-unit largestUnit)
+        // divided by the unit length.
+        var totalNs = diff.Time + (BigInteger)diff.Days * NanosecondsPerDay;
+        return (double)totalNs / TimeUnitNs(unit);
+    }
+
+    // The signed difference between two instants in this zone as an InternalDuration. For a time-unit
+    // largestUnit the date part is zero and the whole nanosecond difference is the time part; otherwise
+    // it is the DST-aware calendar difference plus the residual sub-day nanoseconds.
+    private InternalDuration DifferenceInternal(BigInteger ns1, BigInteger ns2, string largestUnit)
+    {
+        if (IsTimeUnit(largestUnit) || ns1 == ns2)
+            return new InternalDuration(0, 0, 0, 0, ns2 - ns1);
+
+        var start = LocalAt(ns1);
+        var end = LocalAt(ns2);
+        var sign = ns2 > ns1 ? 1 : -1;
+
+        var timeNs = TimeOfDayNs(end) - TimeOfDayNs(start);
+        var dayCorrection = Math.Sign(timeNs) == -sign ? 1 : 0;
+
+        int iy = end.y, im = end.mo, id = end.d;
+        BigInteger residual;
+        while (true)
+        {
+            var epochDay = DaysFromCivil(end.y, end.mo, end.d) - (long)dayCorrection * sign;
+            var (cy, cm, cd) = CivilFromDays(epochDay);
+            iy = (int)cy; im = (int)cm; id = (int)cd;
+
+            var intermediateNs = EpochNsForLocal(iy, im, id, start.h, start.mi, start.s, start.ms, start.us, start.ns);
+            residual = ns2 - intermediateNs;
+            if (residual == 0 || residual.Sign == sign)
+                break;
+
+            dayCorrection++;
+            if (dayCorrection > 3)
+                break;
+        }
+
+        var (years, months, weeks, days) = DifferenceISODate(start.y, start.mo, start.d, iy, im, id, largestUnit);
+        return new InternalDuration((long)years, (long)months, (long)weeks, (long)days, residual);
+    }
+
+    // ── RoundRelativeDuration ───────────────────────────────────────────────────
+
+    private InternalDuration RoundRelativeDuration(InternalDuration dur, BigInteger originEpochNs, BigInteger destEpochNs,
+        string largestUnit, long increment, string smallestUnit, string roundingMode)
+    {
+        var irregular = IsCalendarUnit(smallestUnit) || smallestUnit == "day";
+        var sign = InternalDurationSign(dur) < 0 ? -1 : 1;
+        var o = Local();
+
+        InternalDuration result;
+        BigInteger nudgedEpochNs;
+        bool didExpand;
+
+        if (irregular)
+        {
+            var n = NudgeToCalendarUnit(sign, dur, originEpochNs, destEpochNs, o, increment, smallestUnit, roundingMode);
+            result = n.duration; nudgedEpochNs = n.nudgedEpochNs; didExpand = n.didExpand;
+        }
+        else
+        {
+            var n = NudgeToZonedTime(sign, dur, o, increment, smallestUnit, roundingMode);
+            result = n.duration; nudgedEpochNs = n.nudgedEpochNs; didExpand = n.didExpand;
+        }
+
+        if (didExpand && smallestUnit != "week")
+            result = BubbleRelativeDuration(sign, result, nudgedEpochNs, o, largestUnit, LargerUnit(smallestUnit, "day"));
+
+        return result;
+    }
+
+    private readonly struct NudgeResult
+    {
+        public readonly InternalDuration duration;
+        public readonly BigInteger nudgedEpochNs;
+        public readonly bool didExpand;
+        public readonly double? total;
+        public NudgeResult(InternalDuration d, BigInteger n, bool e, double? t) { duration = d; nudgedEpochNs = n; didExpand = e; total = t; }
+    }
+
+    private NudgeResult NudgeToCalendarUnit(int sign, in InternalDuration dur, BigInteger originEpochNs, BigInteger destEpochNs,
+        (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o, long increment, string unit, string roundingMode)
+    {
+        var didExpand = false;
+        var w = ComputeNudgeWindow(sign, dur, originEpochNs, o, increment, unit, false);
+
+        var inBounds = sign == 1
+            ? w.StartEpochNs <= destEpochNs && destEpochNs <= w.EndEpochNs
+            : w.EndEpochNs <= destEpochNs && destEpochNs <= w.StartEpochNs;
+        if (!inBounds && unit is "year" or "month")
+        {
+            w = ComputeNudgeWindow(sign, dur, originEpochNs, o, increment, unit, true);
+            didExpand = true;
+        }
+
+        var numerator = destEpochNs - w.StartEpochNs;
+        var denominator = w.EndEpochNs - w.StartEpochNs;
+        var absNum = BigInteger.Abs(numerator);
+        var absDen = BigInteger.Abs(denominator);
+
+        bool isEnd;
+        if (numerator.IsZero) isEnd = false;
+        else if (absNum == absDen) isEnd = true;
+        else
+        {
+            var cmp = (absNum * 2).CompareTo(absDen);
+            var even = (Math.Abs(w.R1) / increment) % 2 == 0;
+            isEnd = ApplyRoundingPicksEnd(cmp, even, UnsignedRoundingMode(roundingMode, sign < 0));
+        }
+
+        double? total = null;
+        if (increment == 1 && !absDen.IsZero)
+            total = (double)w.R1 + sign * (double)absNum / (double)absDen;
+
+        didExpand = didExpand || isEnd;
+        var chosen = isEnd ? w.EndDur : w.StartDur;
+        var resultDur = new InternalDuration(chosen.y, chosen.mo, chosen.w, chosen.d, BigInteger.Zero);
+        var nudgedEpochNs = didExpand ? w.EndEpochNs : w.StartEpochNs;
+        return new NudgeResult(resultDur, nudgedEpochNs, didExpand, total);
+    }
+
+    private readonly struct NudgeWindow
+    {
+        public readonly long R1, R2;
+        public readonly BigInteger StartEpochNs, EndEpochNs;
+        public readonly (long y, long mo, long w, long d) StartDur, EndDur;
+        public NudgeWindow(long r1, long r2, BigInteger s, BigInteger e, (long, long, long, long) sd, (long, long, long, long) ed)
+        { R1 = r1; R2 = r2; StartEpochNs = s; EndEpochNs = e; StartDur = sd; EndDur = ed; }
+    }
+
+    private NudgeWindow ComputeNudgeWindow(int sign, in InternalDuration dur, BigInteger originEpochNs,
+        (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o, long increment, string unit, bool additionalShift)
+    {
+        long r1, r2;
+        (long y, long mo, long w, long d) startDur, endDur;
+        switch (unit)
+        {
+            case "year":
+            {
+                var years = dur.Years / increment * increment;
+                r1 = additionalShift ? years + increment * sign : years;
+                r2 = r1 + increment * sign;
+                startDur = (r1, 0, 0, 0); endDur = (r2, 0, 0, 0);
+                break;
+            }
+            case "month":
+            {
+                var months = dur.Months / increment * increment;
+                r1 = additionalShift ? months + increment * sign : months;
+                r2 = r1 + increment * sign;
+                startDur = (dur.Years, r1, 0, 0); endDur = (dur.Years, r2, 0, 0);
+                break;
+            }
+            case "week":
+            {
+                var (ws_y, ws_mo, ws_d) = AddISODate(o.y, o.mo, o.d, dur.Years, dur.Months, 0, 0, "constrain");
+                var (we_y, we_mo, we_d) = CivilFromDays(DaysFromCivil(ws_y, ws_mo, ws_d) + dur.Days);
+                var until = DifferenceISODate(ws_y, ws_mo, ws_d, (int)we_y, (int)we_mo, (int)we_d, "week");
+                var weeks = (dur.Weeks + (long)until.weeks) / increment * increment;
+                r1 = weeks;
+                r2 = r1 + increment * sign;
+                startDur = (dur.Years, dur.Months, r1, 0); endDur = (dur.Years, dur.Months, r2, 0);
+                break;
+            }
+            default: // "day"
+            {
+                var days = dur.Days / increment * increment;
+                r1 = days;
+                r2 = r1 + increment * sign;
+                startDur = (dur.Years, dur.Months, dur.Weeks, r1); endDur = (dur.Years, dur.Months, dur.Weeks, r2);
+                break;
+            }
+        }
+
+        var startEpochNs = DateDurationSign(startDur.y, startDur.mo, startDur.w, startDur.d) == 0
+            ? originEpochNs
+            : DateAddEpochNs(o, startDur.y, startDur.mo, startDur.w, startDur.d);
+        var endEpochNs = DateAddEpochNs(o, endDur.y, endDur.mo, endDur.w, endDur.d);
+
+        return new NudgeWindow(r1, r2, startEpochNs, endEpochNs, startDur, endDur);
+    }
+
+    private NudgeResult NudgeToZonedTime(int sign, in InternalDuration dur,
+        (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o, long increment, string unit, string roundingMode)
+    {
+        var (sy, sm, sd) = AddISODate(o.y, o.mo, o.d, dur.Years, dur.Months, dur.Weeks, dur.Days, "constrain");
+        var startEpochNs = EpochNsForLocal(sy, sm, sd, o.h, o.mi, o.s, o.ms, o.us, o.ns);
+        var (ey, em, ed) = CivilFromDays(DaysFromCivil(sy, sm, sd) + sign);
+        var endEpochNs = EpochNsForLocal((int)ey, (int)em, (int)ed, o.h, o.mi, o.s, o.ms, o.us, o.ns);
+
+        var daySpan = endEpochNs - startEpochNs;
+        if (daySpan.Sign != sign)
+            throw JSEngine.NewRangeError("Temporal.Duration: time zone returned inconsistent Instants");
+
+        var unitNs = (BigInteger)TimeUnitNs(unit) * increment;
+        var rounded = TemporalRoundingOptions.RoundToIncrement(dur.Time, unitNs, roundingMode);
+        var beyond = rounded - daySpan;
+        var didRoundBeyondDay = beyond.Sign != -sign;
+
+        long dayDelta;
+        BigInteger nudgedEpochNs, roundedFinal;
+        if (didRoundBeyondDay)
+        {
+            dayDelta = sign;
+            roundedFinal = TemporalRoundingOptions.RoundToIncrement(beyond, unitNs, roundingMode);
+            nudgedEpochNs = endEpochNs + roundedFinal;
+        }
+        else
+        {
+            dayDelta = 0;
+            roundedFinal = rounded;
+            nudgedEpochNs = startEpochNs + rounded;
+        }
+
+        var resultDur = new InternalDuration(dur.Years, dur.Months, dur.Weeks, dur.Days + dayDelta, roundedFinal);
+        return new NudgeResult(resultDur, nudgedEpochNs, didRoundBeyondDay, null);
+    }
+
+    // Bubbles an expanded smaller unit up into the larger calendar units (weeks do not bubble into
+    // months unless largestUnit is week).
+    private InternalDuration BubbleRelativeDuration(int sign, InternalDuration dur, BigInteger nudgedEpochNs,
+        (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o, string largestUnit, string smallestUnit)
+    {
+        if (smallestUnit == largestUnit) return dur;
+
+        var largestIdx = UnitRank(largestUnit);
+        var smallestIdx = UnitRank(smallestUnit);
+        for (var unitIdx = smallestIdx - 1; unitIdx >= largestIdx; unitIdx--)
+        {
+            var unit = UnitRankOrder[unitIdx];
+            if (unit == "week" && largestUnit != "week") continue;
+
+            (long y, long mo, long w, long d) endDur;
+            switch (unit)
+            {
+                case "year": endDur = (dur.Years + sign, 0, 0, 0); break;
+                case "month": endDur = (dur.Years, dur.Months + sign, 0, 0); break;
+                case "week": endDur = (dur.Years, dur.Months, dur.Weeks + sign, 0); break;
+                default: continue;
+            }
+
+            var endEpochNs = DateAddEpochNs(o, endDur.y, endDur.mo, endDur.w, endDur.d);
+            var didExpandToEnd = nudgedEpochNs.CompareTo(endEpochNs) != -sign;
+            if (didExpandToEnd)
+                dur = new InternalDuration(endDur.y, endDur.mo, endDur.w, endDur.d, BigInteger.Zero);
+            else
+                break;
+        }
+        return dur;
+    }
+
+    // Adds a calendar date duration to the relativeTo wall clock and resolves the resulting instant.
+    private BigInteger DateAddEpochNs((int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o,
+        long years, long months, long weeks, long days)
+    {
+        var (ny, nm, nd) = AddISODate(o.y, o.mo, o.d, years, months, weeks, days, "constrain");
+        return EpochNsForLocal(ny, nm, nd, o.h, o.mi, o.s, o.ms, o.us, o.ns);
+    }
+
+    // ── rounding-mode helpers ───────────────────────────────────────────────────
+
+    private static string UnsignedRoundingMode(string mode, bool negative) => mode switch
+    {
+        "ceil" => negative ? "zero" : "infinity",
+        "floor" => negative ? "infinity" : "zero",
+        "expand" => "infinity",
+        "trunc" => "zero",
+        "halfCeil" => negative ? "half-zero" : "half-infinity",
+        "halfFloor" => negative ? "half-infinity" : "half-zero",
+        "halfExpand" => "half-infinity",
+        "halfTrunc" => "half-zero",
+        "halfEven" => "half-even",
+        _ => "half-infinity",
+    };
+
+    // Given cmp = sign(2·|numerator| − |denominator|), whether to pick the END (r2) boundary.
+    private static bool ApplyRoundingPicksEnd(int cmp, bool even, string unsignedMode) => unsignedMode switch
+    {
+        "zero" => false,
+        "infinity" => true,
+        "half-zero" => cmp > 0,
+        "half-infinity" => cmp >= 0,
+        "half-even" => cmp > 0 || (cmp == 0 && !even),
+        _ => false,
+    };
+
+    // ── TemporalDurationFromInternal ────────────────────────────────────────────
+
+    private static JSValue BuildDuration(in InternalDuration x, string largestUnit)
+    {
+        var sign = x.Time.Sign;
+        var t = BigInteger.Abs(x.Time);
+
+        BigInteger seconds = t / 1_000_000_000;
+        var sub = (long)(t % 1_000_000_000);
+        long nanoseconds = sub % 1000;
+        long microseconds = sub / 1000 % 1000;
+        long milliseconds = sub / 1_000_000 % 1000;
+
+        BigInteger minutes = 0, hours = 0, days = 0;
+        var rank = UnitRank(largestUnit);
+        if (rank <= UnitRank("minute")) { minutes = seconds / 60; seconds %= 60; }
+        if (rank <= UnitRank("hour")) { hours = minutes / 60; minutes %= 60; }
+        if (rank <= UnitRank("day")) { days = hours / 24; hours %= 24; }
+
+        double S(BigInteger v) => sign * (double)v;
+        return new JSTemporalDuration(
+            x.Years, x.Months, x.Weeks, x.Days + sign * (double)days,
+            S(hours), S(minutes), S(seconds), sign * milliseconds, sign * microseconds, sign * nanoseconds,
+            JSTemporalDuration.DurationPrototype);
+    }
+
+    // ToRelativeTemporalObject's ZonedDateTime branch. Only an actual Temporal.ZonedDateTime object is
+    // routed through the DST-aware machinery here; a property bag carrying a timeZone field or a string
+    // with a [TimeZone] annotation falls back to its ISO date (a 24-hour day — correct whenever the
+    // duration spans no DST transition, which the bag / string relativeTo cases exercised do not).
+    internal static JSTemporalZonedDateTime ToZonedRelative(JSValue rel)
+    {
+        if (rel is JSTemporalZonedDateTime z)
+            return new JSTemporalZonedDateTime(z.epochNanoseconds, z.timeZoneId, z.calendarId, ZonedDateTimePrototype);
+        return null;
+    }
+}

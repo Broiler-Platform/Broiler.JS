@@ -153,7 +153,7 @@ public partial class JSTemporalDuration
         }
         else throw JSEngine.NewTypeError("Temporal.Duration.prototype.round requires an options object or string");
 
-        var relDate = GetRelativeIsoDate(options);
+        TryResolveRelativeTo(options, out var relZoned, out var relDate);
         smallestUnit ??= "nanosecond";
 
         if (largestUnit == "auto")
@@ -175,9 +175,12 @@ public partial class JSTemporalDuration
         }
 
         var needsCalendar = HasCalendarUnits || UnitIndex(smallestUnit) < UnitIndex("day") || UnitIndex(largestUnit) < UnitIndex("day");
-        if (needsCalendar && relDate == null)
+        if (needsCalendar && relZoned == null && relDate == null)
             throw JSEngine.NewRangeError(
                 "Temporal.Duration.prototype.round with calendar units (years, months, weeks) requires a relativeTo option");
+
+        if (relZoned != null)
+            return relZoned.RoundDurationRelative(this, smallestUnit, largestUnit, (long)increment, roundingMode);
 
         if (relDate != null)
             return RoundRelative(relDate, smallestUnit, largestUnit, (long)increment, roundingMode);
@@ -211,14 +214,17 @@ public partial class JSTemporalDuration
         }
         else throw JSEngine.NewTypeError("Temporal.Duration.prototype.total requires an options object or string");
 
-        var relDate = GetRelativeIsoDate(options);
+        TryResolveRelativeTo(options, out var relZoned, out var relDate);
 
         if (HasCalendarUnits || UnitIndex(unit) < UnitIndex("day"))
         {
-            if (relDate == null)
+            if (relZoned == null && relDate == null)
                 throw JSEngine.NewRangeError(
                     "Temporal.Duration.prototype.total with calendar units (years, months, weeks) requires a relativeTo option");
         }
+
+        if (relZoned != null)
+            return new JSNumber(relZoned.TotalDurationRelative(this, unit));
 
         if (relDate != null)
             return new JSNumber(TotalRelative(relDate, unit));
@@ -249,21 +255,30 @@ public partial class JSTemporalDuration
         => ((((((BigInteger)(long)hours * 60 + (long)minutes) * 60 + (long)seconds) * 1000
               + (long)milliseconds) * 1000 + (long)microseconds) * 1000) + (long)nanoseconds;
 
-    // Resolves relativeTo to an ISO/Gregorian-family PlainDate, or null when absent. A ZonedDateTime /
-    // PlainDateTime relativeTo or a non-ISO calendar is not yet supported.
-    private static JSTemporalPlainDate GetRelativeIsoDate(JSValue options)
+    // ToRelativeTemporalObject. Resolves relativeTo to either a ZonedDateTime (DST-aware) or an
+    // ISO/Gregorian-family PlainDate (a day = 24 h). Returns false when relativeTo is absent. A non-ISO
+    // calendar relativeTo is not yet supported.
+    private static bool TryResolveRelativeTo(JSValue options, out JSTemporalZonedDateTime zoned, out JSTemporalPlainDate date)
     {
-        if (!TryGetRelativeTo(options, out var rel)) return null;
-        if (rel is JSTemporalZonedDateTime)
-            throw JSEngine.NewError("Temporal.Duration: a Temporal.ZonedDateTime relativeTo is not yet implemented");
-        if (rel is JSTemporalPlainDateTime)
-            throw JSEngine.NewError("Temporal.Duration: a Temporal.PlainDateTime relativeTo is not yet implemented");
+        zoned = null;
+        date = null;
+        if (!TryGetRelativeTo(options, out var rel)) return false;
+
+        zoned = JSTemporalZonedDateTime.ToZonedRelative(rel);
+        if (zoned != null) return true;
+
+        // A PlainDateTime relativeTo contributes only its date (a fixed 24-hour day).
+        if (rel is JSTemporalPlainDateTime pdt)
+        {
+            if (TemporalCalendarMath.IsNonIso(pdt.calendarId))
+                throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{pdt.calendarId}\" calendar is not yet implemented");
+            date = JSTemporalPlainDate.FromIso(pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.calendarId);
+            return true;
+        }
 
         // ToRelativeTemporalObject for a string: validate the relativeTo grammar. An unparsable string,
-        // a UTC (Z) designator with no time-zone annotation, or a malformed offset is a RangeError. A
-        // string carrying a bracketed [TimeZone] annotation denotes a ZonedDateTime, which the rounding
-        // machinery does not yet handle as a true zoned relativeTo — it is parsed as its ISO date below
-        // (correct for the calendar-arithmetic these durations exercise; DST-aware rounding is OOS).
+        // a UTC (Z) designator with no time-zone annotation, or a malformed offset is a RangeError. (A
+        // string with a [TimeZone] annotation was already handled by ToZonedRelative above.)
         if (rel.IsString)
         {
             var s = rel.ToString();
@@ -275,10 +290,10 @@ public partial class JSTemporalDuration
                 throw JSEngine.NewRangeError($"Temporal.Duration: invalid UTC offset in relativeTo \"{s}\"");
         }
 
-        var date = JSTemporalPlainDate.ToRelativeDate(rel);
+        date = JSTemporalPlainDate.ToRelativeDate(rel);
         if (TemporalCalendarMath.IsNonIso(date.calendarId))
             throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{date.calendarId}\" calendar is not yet implemented");
-        return date;
+        return true;
     }
 
     // The end of this duration measured from relativeTo, on the nanosecond timeline (epoch days × a
