@@ -372,6 +372,11 @@ public partial class JSTemporalPlainTime : JSObject
     private static JSTemporalPlainTime RequireTime(JSValue value)
         => value as JSTemporalPlainTime ?? throw JSEngine.NewTypeError("expected a Temporal.PlainTime");
 
+    // ToTemporalTime for callers in other Temporal types (e.g. ZonedDateTime.withPlainTime). Accepts
+    // a PlainTime, a property bag, or a time string and returns a PlainTime instance.
+    internal static JSTemporalPlainTime ToTemporalTimeObject(JSValue item)
+        => RequireTime(ToTemporalTime(item, "constrain"));
+
     private static int ToIntegerWithTruncation(JSValue value)
     {
         if (value == null || value.IsUndefined)
