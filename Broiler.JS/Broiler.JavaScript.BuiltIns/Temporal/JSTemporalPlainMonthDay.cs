@@ -167,10 +167,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
-    {
-        TemporalIsoString.RejectIncompatibleStyle(a.GetAt(1), dateAllowed: true, timeAllowed: false);
-        return new JSString(ToISOString());
-    }
+        => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1));
 
     [JSExport("valueOf", Length = 0)]
     public JSValue ValueOf(in Arguments a)
@@ -275,6 +272,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
 
         TemporalIsoString.RejectMultipleCalendarAnnotations(text);
+        TemporalIsoString.RejectInvalidAnnotations(text);
 
         var calMatch = CalendarAnnotation.Match(text);
         var calendarId = calMatch.Success ? ResolveCalendarId(calMatch.Groups[1].Value, text) : "iso8601";

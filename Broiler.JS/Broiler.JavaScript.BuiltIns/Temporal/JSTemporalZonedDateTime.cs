@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
 using System.Text;
@@ -211,13 +212,13 @@ public partial class JSTemporalZonedDateTime : JSObject
         // is not subsequently applied (only "compatible" / the offset field are honoured below).
         ReadOverflow(a.GetAt(1));
         ReadDisambiguation(a.GetAt(1));
-        ReadOffsetOption(a.GetAt(1));
+        var offsetOption = ReadOffsetOption(a.GetAt(1), "reject");
 
         if (item is JSTemporalZonedDateTime zdt)
             return new JSTemporalZonedDateTime(zdt.epochNanoseconds, zdt.timeZoneId, zdt.calendarId, ZonedDateTimePrototype);
 
         if (item.IsString)
-            return ParseZonedDateTimeString(item.ToString());
+            return ParseZonedDateTimeString(item.ToString(), offsetOption);
 
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime.from: invalid value");
@@ -330,8 +331,12 @@ public partial class JSTemporalZonedDateTime : JSObject
     [JSExport("toJSON", Length = 0)]
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
 
+    // A ZonedDateTime formats in its own time zone with the zone name shown by default; the zone is
+    // injected into the formatter options (a conflicting timeZone option is a RangeError). Direct
+    // DateTimeFormat.format on a ZonedDateTime is a TypeError, but toLocaleString is allowed.
     [JSExport("toLocaleString", Length = 0)]
-    public JSValue ToLocaleString(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToLocaleString(in Arguments a)
+        => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1), defaultTimeZone: timeZoneId);
 
     [JSExport("valueOf", Length = 0)]
     public JSValue ValueOf(in Arguments a)
@@ -508,14 +513,15 @@ public partial class JSTemporalZonedDateTime : JSObject
     private long WallOffset(JSTemporalPlainDateTime dt)
         => GetOffsetForLocal(timeZoneId, dt.isoYear, dt.isoMonth, dt.isoDay, dt.hour, dt.minute, dt.second);
 
-    // GetTemporalOffsetOption: prefer (default) / use / ignore / reject.
-    private static string ReadOffsetOption(JSValue options)
+    // GetTemporalOffsetOption: use / ignore / prefer / reject. The fallback differs by caller —
+    // ZonedDateTime.from defaults to "reject", prototype.with to "prefer".
+    private static string ReadOffsetOption(JSValue options, string @default = "prefer")
     {
-        if (options == null || options.IsUndefined) return "prefer";
+        if (options == null || options.IsUndefined) return @default;
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
         var v = o[KeyStrings.GetOrCreate("offset")];
-        if (v.IsUndefined) return "prefer";
+        if (v.IsUndefined) return @default;
         var s = v.StringValue;
         return s is "prefer" or "use" or "ignore" or "reject" ? s
             : throw JSEngine.NewRangeError($"Temporal: invalid offset option \"{s}\"");
@@ -892,6 +898,39 @@ public partial class JSTemporalZonedDateTime : JSObject
         catch { return 0; }
     }
 
+    // GetPossibleEpochNanoseconds, expressed as the distinct UTC offsets (ns) the zone yields for a
+    // local wall-clock time: two around a fall-back transition, one normally, none inside a
+    // spring-forward gap. Used by InterpretISODateTimeOffset to validate an explicit offset.
+    private static List<long> CandidateOffsetsForLocal(string timeZoneId, int y, int mo, int d, int h, int mi, int s)
+    {
+        if (TryFixedOffset(timeZoneId, out var fixedNs))
+            return [fixedNs];
+
+        var tz = ResolveNamedZone(timeZoneId);
+        if (tz == null) return [0];
+
+        DateTime local;
+        try
+        {
+            var clampedYear = Math.Clamp(y, 1, 9999);
+            local = new DateTime(clampedYear, mo, d, h, mi, s, DateTimeKind.Unspecified);
+        }
+        catch { return [0]; }
+
+        if (tz.IsAmbiguousTime(local))
+        {
+            var result = new List<long>();
+            foreach (var off in tz.GetAmbiguousTimeOffsets(local))
+                result.Add((long)off.Ticks * 100);
+            return result;
+        }
+
+        if (tz.IsInvalidTime(local))
+            return []; // a spring-forward gap: no instant has this local time
+
+        return [(long)tz.GetUtcOffset(local).Ticks * 100];
+    }
+
     private (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) Local()
     {
         var local = epochNanoseconds + GetOffsetNanosecondsFor(epochNanoseconds);
@@ -1099,7 +1138,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         @"\[(?!u-ca=)([^\]]+)\](?:\[u-ca=([^\]]+)\])?$",
         RegexOptions.CultureInvariant);
 
-    private static JSValue ParseZonedDateTimeString(string text)
+    private static JSValue ParseZonedDateTimeString(string text, string offsetOption = "reject")
     {
         var match = ZonedPattern.Match(text);
         if (!match.Success)
@@ -1140,7 +1179,26 @@ public partial class JSTemporalZonedDateTime : JSObject
             var oh = int.Parse(match.Groups[10].Value, CultureInfo.InvariantCulture);
             var om = match.Groups[11].Success ? int.Parse(match.Groups[11].Value, CultureInfo.InvariantCulture) : 0;
             var os = match.Groups[12].Success ? int.Parse(match.Groups[12].Value, CultureInfo.InvariantCulture) : 0;
-            offsetNs = (long)sign * ((long)oh * 3600 + om * 60 + os) * 1_000_000_000;
+            var explicitOffset = (long)sign * ((long)oh * 3600 + om * 60 + os) * 1_000_000_000;
+
+            // InterpretISODateTimeOffset (offsetBehaviour "option"): the explicit offset is honoured
+            // verbatim only for "use"; "ignore" drops it for the zone's own offset; "prefer"/"reject"
+            // require it to be one of the zone's offsets for the local time — a mismatch is a
+            // RangeError under "reject" (the default for from) and falls back to the zone under "prefer".
+            if (offsetOption == "use")
+                offsetNs = explicitOffset;
+            else if (offsetOption == "ignore")
+                offsetNs = GetOffsetForLocal(timeZoneId, year, month, day, hour, minute, second);
+            else
+            {
+                var candidates = CandidateOffsetsForLocal(timeZoneId, year, month, day, hour, minute, second);
+                if (candidates.Contains(explicitOffset))
+                    offsetNs = explicitOffset;
+                else if (offsetOption == "reject")
+                    throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: offset does not match the time zone in \"{text}\"");
+                else // "prefer": no match — use the zone's own offset
+                    offsetNs = GetOffsetForLocal(timeZoneId, year, month, day, hour, minute, second);
+            }
         }
         else offsetNs = GetOffsetForLocal(timeZoneId, year, month, day, hour, minute, second);
 

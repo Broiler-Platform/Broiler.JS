@@ -335,10 +335,7 @@ public partial class JSTemporalPlainDate : JSObject
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
-    {
-        TemporalIsoString.RejectIncompatibleStyle(a.GetAt(1), dateAllowed: true, timeAllowed: false);
-        return new JSString(ToISOString());
-    }
+        => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1));
 
     // GetTemporalShowCalendarNameOption.
     private static string ReadCalendarName(JSValue options)
@@ -594,6 +591,7 @@ public partial class JSTemporalPlainDate : JSObject
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
 
         TemporalIsoString.RejectMultipleCalendarAnnotations(text);
+        TemporalIsoString.RejectInvalidAnnotations(text);
 
         var match = DatePattern.Match(text);
         if (!match.Success)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using Broiler.JavaScript.BuiltIns.Date;
+using UnicodeCldr.LocaleData;
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
 
@@ -20,7 +21,13 @@ internal static class JSIntlDateTimeFormatEngine
     internal readonly struct Fields
     {
         public readonly int Year, Month, Day, Hour, Minute, Second, Millisecond;
-        public Fields(double wallClockMs)
+        // The pre-rendered time-zone display name (computed where the time zone + style are known),
+        // emitted by the 'z' token. Null for a wall clock that carries no zone (plain types).
+        public readonly string TimeZoneName;
+        // The pre-rendered flexible day-period name (CLDR, e.g. "in the morning"), emitted by the 'B'
+        // token for the ECMA-402 dayPeriod option. Null when no dayPeriod is requested.
+        public readonly string DayPeriod;
+        public Fields(double wallClockMs, string timeZoneName = null, string dayPeriod = null)
         {
             Year = (int)JSDateMath.YearFromTime(wallClockMs);
             Month = JSDateMath.MonthFromTime(wallClockMs) + 1; // 0-indexed -> 1-indexed
@@ -29,7 +36,72 @@ internal static class JSIntlDateTimeFormatEngine
             Minute = JSDateMath.MinFromTime(wallClockMs);
             Second = JSDateMath.SecFromTime(wallClockMs);
             Millisecond = JSDateMath.MsFromTime(wallClockMs);
+            TimeZoneName = timeZoneName;
+            DayPeriod = dayPeriod;
         }
+
+        // Explicit wall-clock fields, used when formatting a Temporal plain type: its own clock is
+        // formatted directly, with no time-zone conversion (the formatter's time zone is ignored).
+        public Fields(int year, int month, int day, int hour, int minute, int second, int millisecond, string timeZoneName = null, string dayPeriod = null)
+        {
+            Year = year; Month = month; Day = day;
+            Hour = hour; Minute = minute; Second = second; Millisecond = millisecond;
+            TimeZoneName = timeZoneName;
+            DayPeriod = dayPeriod;
+        }
+    }
+
+    // The localized time-zone display name for the ECMA-402 timeZoneName option. UTC carries its CLDR
+    // names; the long/short/generic styles use the bundled CLDR metazone names (English) when the zone
+    // is covered; everything else (offset styles, uncovered zones/locales) uses the GMT offset.
+    internal static string FormatTimeZoneName(string localeTag, string timeZone, string style, double epochMs)
+    {
+        if (!string.IsNullOrEmpty(timeZone) && timeZone.Equals("UTC", StringComparison.OrdinalIgnoreCase))
+            return style switch
+            {
+                "long" or "longGeneric" => "Coordinated Universal Time",
+                "longOffset" or "shortOffset" => "GMT",
+                _ => "UTC",
+            };
+
+        if (style is not ("shortOffset" or "longOffset"))
+        {
+            var name = CldrLocaleData.GetTimeZoneName(localeTag, timeZone, style, IsDaylight(timeZone, epochMs));
+            if (!string.IsNullOrEmpty(name))
+                return name;
+        }
+
+        var offsetMs = ToZone(epochMs, timeZone) - epochMs;
+        return GmtOffset(offsetMs, style is "longOffset" or "long" or "longGeneric");
+    }
+
+    // Whether daylight-saving time is in effect for a named IANA zone at the instant (false for an
+    // offset/UTC identifier or an unknown zone), selecting the standard vs daylight metazone name.
+    private static bool IsDaylight(string timeZone, double epochMs)
+    {
+        if (string.IsNullOrEmpty(timeZone))
+            return false;
+        try
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
+            var clamped = Math.Clamp(epochMs,
+                DateTimeOffset.MinValue.ToUnixTimeMilliseconds(), DateTimeOffset.MaxValue.ToUnixTimeMilliseconds());
+            return tz.IsDaylightSavingTime(DateTimeOffset.FromUnixTimeMilliseconds((long)clamped));
+        }
+        catch { return false; }
+    }
+
+    // "GMT", "GMT-8", "GMT+5:30" (short) / "GMT-08:00", "GMT+05:30" (long); zero offset is "GMT".
+    private static string GmtOffset(double offsetMs, bool longForm)
+    {
+        var minutes = (int)(Math.Round(offsetMs / 60000.0));
+        if (minutes == 0) return "GMT";
+        var sign = minutes < 0 ? "-" : "+";
+        minutes = Math.Abs(minutes);
+        var h = minutes / 60;
+        var m = minutes % 60;
+        if (longForm) return $"GMT{sign}{h:D2}:{m:D2}";
+        return m == 0 ? $"GMT{sign}{h}" : $"GMT{sign}{h}:{m:D2}";
     }
 
     internal readonly struct Token
@@ -96,6 +168,16 @@ internal static class JSIntlDateTimeFormatEngine
         { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
     private static readonly string[] MonthNarrow =
         { "J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D" };
+    private static readonly string[] WeekdayWide =
+        { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+    private static readonly string[] WeekdayShort =
+        { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+    private static readonly string[] WeekdayNarrow =
+        { "S", "M", "T", "W", "T", "F", "S" };
+
+    // 0 = Sunday .. 6 = Saturday for a Gregorian/ISO date, valid across the full ±275760-year range.
+    private static int DayOfWeek(in Fields f)
+        => JSDateMath.WeekDay(JSDateMath.MakeDate(JSDateMath.MakeDay(f.Year, f.Month - 1, f.Day), 0));
 
     // CLDR en intervalFormats fallback: "{0} – {1}" (U+2013 with surrounding spaces).
     internal const string RangeSeparator = " – ";
@@ -120,7 +202,9 @@ internal static class JSIntlDateTimeFormatEngine
         string localeTag,
         bool hasYear, string yearStyle, bool hasMonth, string monthStyle, bool hasDay, string dayStyle,
         bool hasHour, bool hasMinute, bool hasSecond, int fractionalSecondDigits, bool hasDayPeriodField,
-        string dateStyle, string timeStyle, bool hour12, string calendar = null)
+        string dateStyle, string timeStyle, bool hour12, string calendar = null,
+        bool hasWeekday = false, string weekdayStyle = null, bool hasTimeZoneName = false,
+        string hourCycle = null)
     {
         string datePattern = null;
         string timePattern = null;
@@ -193,25 +277,56 @@ internal static class JSIntlDateTimeFormatEngine
                 }
             }
 
+            // The hour token follows the resolved hour cycle: h12 → "h" (1-12), h23 → "HH" (0-23),
+            // h11 → "K" (0-11), h24 → "k" (1-24). The 12-hour cycles (h11/h12) also show a dayPeriod.
+            var cycle = hourCycle ?? (hour12 ? "h12" : "h23");
+            var (hourTok, showDayPeriod) = cycle switch
+            {
+                "h11" => ("K", true),
+                "h24" => ("k", false),
+                "h23" => ("HH", false),
+                _ => ("h", true), // h12
+            };
+
+            // The dayPeriod option renders a flexible day-period name ('B') in place of AM/PM and
+            // implies a 12-hour hour.
+            string ap;
+            if (hasDayPeriodField) { hourTok = "h"; ap = " B"; }
+            else ap = showDayPeriod ? " a" : "";
+
             var time = new StringBuilder();
             if (hasHour && hasMinute && hasSecond)
-                time.Append(hour12 ? "h:mm:ss a" : "HH:mm:ss");
+                time.Append($"{hourTok}:mm:ss{ap}");
             else if (hasHour && hasMinute)
-                time.Append(hour12 ? "h:mm a" : "HH:mm");
+                time.Append($"{hourTok}:mm{ap}");
             else if (hasMinute && hasSecond)
                 time.Append("mm:ss");
             else if (hasHour)
-                time.Append(hour12 ? "h a" : "HH");
+                time.Append($"{hourTok}{ap}");
+            else if (hasDayPeriodField)
+                time.Append("B"); // dayPeriod with no hour: the period name alone
             else if (hasMinute)
                 time.Append("mm");
             else if (hasSecond)
                 time.Append("ss");
 
-            if (fractionalSecondDigits >= 1 && fractionalSecondDigits <= 3 && (hasSecond))
-                time.Append('.').Append(new string('S', fractionalSecondDigits));
+            if (fractionalSecondDigits >= 1 && fractionalSecondDigits <= 3)
+            {
+                // A fractional-seconds field without a seconds field still renders (the digits alone),
+                // so a lone fractionalSecondDigits option does not collapse to the default date.
+                if (hasSecond) time.Append('.');
+                time.Append(new string('S', fractionalSecondDigits));
+            }
 
             datePattern = date.Length > 0 ? date.ToString() : null;
             timePattern = time.Length > 0 ? time.ToString() : null;
+
+            // A weekday is prefixed to the date (en CLDR layout): "EEEE, <date>", or stands alone.
+            if (hasWeekday)
+            {
+                var weekdayTok = weekdayStyle switch { "short" => "EEE", "narrow" => "EEEEE", _ => "EEEE" };
+                datePattern = datePattern != null ? weekdayTok + ", " + datePattern : weekdayTok;
+            }
         }
 
         // No component or style options: ECMA-402 defaults to numeric
@@ -238,6 +353,11 @@ internal static class JSIntlDateTimeFormatEngine
             (null, not null) => timePattern,
             _ => datePattern + ", " + timePattern,
         };
+
+        // A time-zone name follows the date/time, separated by a space ("… z"). It is added for the
+        // explicit timeZoneName option and for the long/full time styles (which include the zone).
+        if (hasTimeZoneName || timeStyle is "long" or "full")
+            combined = combined.Length > 0 ? combined + " z" : "z";
 
         var tokens = Parse(combined);
         return new Pattern { Tokens = tokens, Skeleton = SkeletonOf(tokens), Calendar = calendar };
@@ -539,9 +659,26 @@ internal static class JSIntlDateTimeFormatEngine
                 var digits = token.Count;
                 var ms = f.Millisecond.ToString("D3", CultureInfo.InvariantCulture);
                 return ("fractionalSecond", digits <= 3 ? ms.Substring(0, digits) : ms.PadRight(digits, '0'));
+            case 'E':
+            case 'c':
+                var dow = DayOfWeek(in f);
+                return ("weekday", token.Count switch
+                {
+                    5 => WeekdayNarrow[dow],
+                    >= 4 => WeekdayWide[dow],
+                    _ => WeekdayShort[dow],
+                });
+            case 'z':
+            case 'O':
+            case 'v':
+            case 'V':
+                return ("timeZoneName", f.TimeZoneName ?? string.Empty);
             case 'a':
             case 'b':
                 return ("dayPeriod", f.Hour < 12 ? "AM" : "PM");
+            case 'B':
+                // Flexible day period (ECMA-402 dayPeriod option), pre-rendered from CLDR.
+                return ("dayPeriod", f.DayPeriod ?? string.Empty);
             default:
                 return ("literal", new string(token.Field, token.Count));
         }
