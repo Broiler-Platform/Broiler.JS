@@ -412,7 +412,11 @@ public partial class JSTemporalPlainYearMonth : JSObject
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
 
     [JSExport("toLocaleString", Length = 0)]
-    public JSValue ToLocaleString(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToLocaleString(in Arguments a)
+    {
+        TemporalIsoString.RejectIncompatibleStyle(a.GetAt(1), dateAllowed: true, timeAllowed: false);
+        return new JSString(ToISOString());
+    }
 
     // GetTemporalShowCalendarNameOption.
     private static string ReadCalendarName(JSValue options)

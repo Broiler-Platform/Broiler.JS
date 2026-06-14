@@ -101,6 +101,26 @@ public class Issue783Tests
     public void MinutePrecisionOffsetTimeZoneSucceeds(string s, string expected)
         => Assert.Equal(expected, Eval($"Temporal.Instant.fromEpochMilliseconds(0).toZonedDateTimeISO({s}).timeZoneId"));
 
+    // ───────────── Problem 4 (subset): toLocaleString style incompatibility ─────────────
+
+    [Theory]
+    [InlineData("Temporal.PlainDate.from('2020-01-01').toLocaleString('en', {dateStyle:'full', timeStyle:'full'})")]
+    [InlineData("Temporal.PlainDate.from('2020-01-01').toLocaleString('en', {timeStyle:'short'})")]
+    [InlineData("Temporal.PlainYearMonth.from('2020-01').toLocaleString('en', {dateStyle:'full', timeStyle:'full'})")]
+    [InlineData("Temporal.PlainMonthDay.from('01-01').toLocaleString('en', {timeStyle:'short'})")]
+    [InlineData("Temporal.PlainTime.from('12:30').toLocaleString('en', {dateStyle:'full', timeStyle:'full'})")]
+    [InlineData("Temporal.PlainTime.from('12:30').toLocaleString('en', {dateStyle:'short'})")]
+    public void ToLocaleStringIncompatibleStyleThrows(string code)
+        => Assert.Equal("TypeError", ErrorName(code));
+
+    // A compatible style (or no options) does not throw.
+    [Theory]
+    [InlineData("Temporal.PlainDate.from('2020-01-01').toLocaleString('en', {dateStyle:'full'})")]
+    [InlineData("Temporal.PlainTime.from('12:30').toLocaleString('en', {timeStyle:'short'})")]
+    [InlineData("Temporal.PlainDate.from('2020-01-01').toLocaleString()")]
+    public void ToLocaleStringCompatibleStyleSucceeds(string code)
+        => Assert.Equal("NONE", ErrorName(code));
+
     // ───────────── Problem 5: persian calendar over the full ISO range ─────────────
 
     [Fact]

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal;
@@ -211,6 +213,20 @@ internal static class TemporalIsoString
 
         calendar = null;
         return false;
+    }
+
+    // The toLocaleString options of a Temporal date/time type may not request a component the type
+    // does not carry: a date-only type (PlainDate / PlainYearMonth / PlainMonthDay) rejects
+    // timeStyle, and the time-only PlainTime rejects dateStyle, with a TypeError (matching the spec's
+    // per-type Intl.DateTimeFormat field restrictions). The options argument is only inspected when it
+    // is an object; other coercion is left to the (stubbed) formatter.
+    internal static void RejectIncompatibleStyle(JSValue options, bool dateAllowed, bool timeAllowed)
+    {
+        if (options is not JSObject o) return;
+        if (!timeAllowed && !o[KeyStrings.GetOrCreate("timeStyle")].IsUndefined)
+            throw JSEngine.NewTypeError("Temporal: timeStyle is not allowed for a date-only type");
+        if (!dateAllowed && !o[KeyStrings.GetOrCreate("dateStyle")].IsUndefined)
+            throw JSEngine.NewTypeError("Temporal: dateStyle is not allowed for a time-only type");
     }
 
     // ParseTemporalTimeZoneString: succeeds only when the string carries a time-zone designator —
