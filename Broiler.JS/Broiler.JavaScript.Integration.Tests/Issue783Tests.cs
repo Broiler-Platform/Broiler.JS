@@ -5,6 +5,38 @@ using Broiler.JavaScript.Engine;
 namespace Broiler.JavaScript.Integration.Tests;
 
 // Regression tests for https://github.com/MaiRat/Broiler.JS/issues/783
+//
+// Fixed here:
+//   * Problem 7 — a top-level / block-scoped `using` declaration crashed with a
+//     NullReferenceException: FastCompiler.Scoped read scope.Function.Async when emitting the
+//     disposable try/finally, but Function is null at the program / block root. A root `using` now
+//     disposes synchronously (at end of script for a top-level one).
+//   * Problems 6/8 — a numeric UTC offset used as a *time-zone identifier* must be minute precision
+//     with valid components. A sub-minute (seconds / fractional) offset (-07:00:01, -07:00:00.1) or
+//     a leap-second offset designator (the annotation [+23:59:60]) is now a RangeError; a leap
+//     second in the *time* part with a valid zone designator still succeeds.
+//   * Problem 5 — the persian calendar now covers the whole supported ISO range: .NET's
+//     PersianCalendar (Persian years 1-9378, whose Nowruz dates match the Iranian authority table
+//     used by test262's persian-new-year-dates fixture) in range, ICU's arithmetic 33-year-cycle
+//     algorithm outside it (the extreme / non-positive-year cases need only round-trip + year
+//     arithmetic, which the authority table does not cover that far out).
+//   * Problem 1 (subset) — PlainDateTime ISODateTimeWithinLimits now compares strictly (was
+//     inclusive), so a date-time exactly one day outside the instant limits — midnight at the
+//     boundary date — is out of range (with({nanosecond:0}) / withPlainTime(midnight) on the minimum
+//     boundary throw RangeError; withPlainTime now validates the combined date-time). PlainYearMonth
+//     string parsing rejects the bare year-month format with a non-iso8601 calendar and rejects
+//     annotations with a malformed (e.g. uppercase) key.
+//   * Problem 9 — adding/subtracting whole years on the lunisolar calendars (chinese / dangi) now
+//     preserves the month *code*, so a leap month (M03L) constrains to the matching common month
+//     (M03) under overflow "constrain" and is a RangeError under "reject", instead of keeping the
+//     bare ordinal (which produced M04).
+//
+// Out of scope (large, separate features): Problem 2 (Temporal.Duration with a ZonedDateTime
+// relativeTo — round/total/compare) and the date-component RoundRelativeDuration the since/until
+// "throws-if-rounded-date-outside-valid-iso-range" cases need; Problem 3 (Intl.DateTimeFormat
+// formatting Temporal objects — toLocaleString is still an ISO stub, so the PlainDate.valueOf path
+// is never reached); Problem 4 (resizable-ArrayBuffer-backed TypedArray TypeErrors, and the Temporal
+// toLocaleString dateStyle+timeStyle validation that belongs with the Intl-Temporal integration).
 public class Issue783Tests
 {
     private static string Eval(string code)
