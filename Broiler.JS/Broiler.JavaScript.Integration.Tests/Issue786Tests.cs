@@ -15,12 +15,18 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     the underlying iterator's return method now propagates (it was swallowed). Iterator.prototype
 //     .take now closes the underlying iterator when its limit is reached (IteratorClose on a normal
 //     completion), so a throwing return propagates and the return method is actually invoked.
+//   * Problem 1 (subset) — Temporal.ZonedDateTime.from(string) now validates the explicit numeric
+//     offset against the named IANA time zone (InterpretISODateTimeOffset). The offset option for
+//     from defaults to "reject" (not "prefer"), so an offset the zone does not yield for the local
+//     time is a RangeError; "use" honours it verbatim and "ignore" drops it for the zone's offset.
 //
-// Out of scope (large, separate features documented in the issue): Problems 1/2 (Temporal.Duration
-// with a ZonedDateTime relativeTo + RoundRelativeDuration); Problems 3/6/7/8 (Intl.DateTimeFormat
-// formatting Temporal objects — toLocaleString is still an ISO stub); Problem 4 (resizable
-// ArrayBuffer-backed TypedArrays); Problem 5 (Temporal toLocaleString options); the flatMap slice of
-// Problem 9 (lazy inner-iterator close).
+// Out of scope (large, separate features documented in the issue): Problem 2 + the rest of Problem 1
+// (Temporal.Duration with a ZonedDateTime relativeTo + RoundRelativeDuration; ZDT.hoursInDay
+// start-of-day throw); Problems 3/6/7/8 (Intl.DateTimeFormat formatting Temporal objects —
+// toLocaleString is still an ISO stub, exact-output CLDR feature); Problem 4 (resizable
+// ArrayBuffer-backed TypedArrays; Atomics cannot-suspend conflicts with the engine's
+// AgentCanSuspend=true design; the %IteratorHelperPrototype% brand check); Problem 5 (Temporal
+// toLocaleString options); the flatMap slice of Problem 9 (lazy inner-iterator close).
 public class Issue786Tests
 {
     private static string ErrorName(string code)
@@ -122,6 +128,30 @@ public class Issue786Tests
             helper.next();
             helper.next();";
         Assert.Equal("Test262Error", ErrorNameWithCustomError(code));
+    }
+
+    // ── Problem 1 (subset): ZonedDateTime.from offset must match the IANA time zone ──
+
+    [Theory]
+    // Default offset option for from is "reject": an explicit offset that is not one the zone yields
+    // for the local time is a RangeError.
+    [InlineData("Temporal.ZonedDateTime.from('2000-01-01T00:00+05:00[UTC]')")]
+    [InlineData("Temporal.ZonedDateTime.from('2020-06-01T12:00-10:00[America/New_York]')")]
+    [InlineData("Temporal.ZonedDateTime.from('2000-01-01T00:00+04:00[+05:00]')")]
+    public void ZonedDateTimeFrom_OffsetMismatch_Throws(string code)
+    {
+        Assert.Equal("RangeError", ErrorName(code));
+    }
+
+    [Theory]
+    // A matching offset is accepted; "use" / "ignore" bypass the match check.
+    [InlineData("Temporal.ZonedDateTime.from('2000-01-01T00:00+00:00[UTC]').toString()", "2000-01-01T00:00:00+00:00[UTC]")]
+    [InlineData("Temporal.ZonedDateTime.from('2020-06-01T12:00-04:00[America/New_York]').epochNanoseconds > 0n", "true")]
+    [InlineData("Temporal.ZonedDateTime.from('2000-01-01T00:00+05:00[UTC]', { offset: 'use' }).toString()", "1999-12-31T19:00:00+00:00[UTC]")]
+    [InlineData("Temporal.ZonedDateTime.from('2000-01-01T00:00+05:00[UTC]', { offset: 'ignore' }).toString()", "2000-01-01T00:00:00+00:00[UTC]")]
+    public void ZonedDateTimeFrom_OffsetMatchOrOverride_Accepted(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code));
     }
 
     private static string ErrorNameWithCustomError(string code)
