@@ -16,6 +16,13 @@ namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
 partial class JSTypedArray
 {
+    // Get(O, k) for the iteration methods: the element value, or undefined when k is past the view's
+    // *live* length. The %TypedArray%.prototype iterators capture the length once (TypedArrayLength at
+    // the start) and then index 0…len-1 with an ordinary [[Get]], so when the backing resizable buffer is
+    // grown mid-iteration the extra elements are never visited, and when it is shrunk the now-out-of-bounds
+    // indices read as undefined rather than truncating the iteration.
+    private JSValue ReadElement(int k) => k < length ? this[(uint)k] : JSUndefined.Value;
+
     [JSExport("toString")]
     private new JSValue ToString(in Arguments a) => new JSString(ToString());
 
@@ -74,7 +81,7 @@ partial class JSTypedArray
 
 
     [JSExport("entries")]
-    public new JSValue Entries(in Arguments a) { ValidateTypedArray("entries"); return new JSGenerator(GetEntries(), "Array Iterator"); }
+    public new JSValue Entries(in Arguments a) { ValidateTypedArray("entries"); return GetArrayIterator(ArrayIteratorKind.Entry); }
 
     [JSExport("every", Length = 1)]
     public JSValue Every(in Arguments a)
@@ -83,10 +90,10 @@ partial class JSTypedArray
         var (first, thisArg) = a.Get2();
         if (first is not JSFunction fn)
             throw JSEngine.NewTypeError($"First argument is not function");
-        var en = GetElementEnumerator();
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+        var len = Length;
+        for (int k = 0; k < len; k++)
         {
-            var itemArgs = new Arguments(thisArg, item, new JSNumber(index), this);
+            var itemArgs = new Arguments(thisArg, ReadElement(k), new JSNumber(k), this);
             if (!fn.InvokeCallback(itemArgs).BooleanValue)
                 return JSBoolean.False;
         }
@@ -121,15 +128,13 @@ partial class JSTypedArray
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.filter");
         var values = new List<JSValue>();
-        var en = GetElementEnumerator();
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+        var len = Length;
+        for (int k = 0; k < len; k++)
         {
-            if (!hasValue) continue;
-            var itemParams = new Arguments(thisArg, item, new JSNumber(index), this);
+            var item = ReadElement(k);
+            var itemParams = new Arguments(thisArg, item, new JSNumber(k), this);
             if (fn.InvokeCallback(itemParams).BooleanValue)
-            {
                 values.Add(item);
-            }
         }
 
         var result = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), values.Count);
@@ -219,17 +224,13 @@ partial class JSTypedArray
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.filter");
 
-        var en = GetElementEnumerator();
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+        var len = Length;
+        for (int k = 0; k < len; k++)
         {
-            // ignore holes...
-            if (!hasValue)
-                continue;
-            var itemParams = new Arguments(thisArg, item, new JSNumber(index), this);
+            var item = ReadElement(k);
+            var itemParams = new Arguments(thisArg, item, new JSNumber(k), this);
             if (fn.InvokeCallback(itemParams).BooleanValue)
-            {
                 return item;
-            }
         }
         return JSUndefined.Value;
     }
@@ -241,21 +242,15 @@ partial class JSTypedArray
         var (callback, thisArg) = a.Get2();
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.find");
-        var en = GetElementEnumerator();
-        while (en.MoveNext(out var hasValue, out var item, out var n))
+        var len = Length;
+        for (int k = 0; k < len; k++)
         {
-            // ignore holes...
-            if (!hasValue)
-                continue;
-            var index = new JSNumber(n);
-            var itemParams = new Arguments(thisArg, item, index, this);
+            var index = new JSNumber(k);
+            var itemParams = new Arguments(thisArg, ReadElement(k), index, this);
             if (fn.InvokeCallback(itemParams).BooleanValue)
-            {
                 return index;
-            }
         }
         return JSNumber.MinusOne;
-
     }
 
     [JSExport("findLast", Length = 1)]
@@ -297,14 +292,10 @@ partial class JSTypedArray
         var (callback, thisArg) = a.Get2();
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.find");
-        var en = GetElementEnumerator();
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+        var len = Length;
+        for (int k = 0; k < len; k++)
         {
-            // ignore holes...
-            if (!hasValue)
-                continue;
-            var n = new JSNumber(index);
-            var itemParams = new Arguments(thisArg, item, n, this);
+            var itemParams = new Arguments(thisArg, ReadElement(k), new JSNumber(k), this);
             fn.InvokeCallback(itemParams);
         }
         return JSUndefined.Value;
@@ -390,7 +381,7 @@ partial class JSTypedArray
     }
 
     [JSExport("keys", Length = 0)]
-    public new JSValue Keys(in Arguments a) { ValidateTypedArray("keys"); return GetKeys(); }
+    public new JSValue Keys(in Arguments a) { ValidateTypedArray("keys"); return GetArrayIterator(ArrayIteratorKind.Key); }
 
     [JSExport("lastIndexOf", Length = 1)]
     public JSValue LastIndexOf(in Arguments a)
@@ -435,14 +426,10 @@ partial class JSTypedArray
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.find");
         var values = new List<JSValue>();
-        var en = GetElementEnumerator();
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+        var len = Length;
+        for (int k = 0; k < len; k++)
         {
-            if (!hasValue)
-            {
-                continue;
-            }
-            var itemArgs = new Arguments(thisArg, item, new JSNumber(index), this);
+            var itemArgs = new Arguments(thisArg, ReadElement(k), new JSNumber(k), this);
             values.Add(fn.InvokeCallback(itemArgs));
         }
 
@@ -460,18 +447,17 @@ partial class JSTypedArray
         var (callback, initialValue) = a.Get2();
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.reduce");
-        var en = GetElementEnumerator();
-        uint index = 0;
+        var len = Length;
+        int k = 0;
         if (a.Length == 1)
         {
-            if (!en.MoveNext(out initialValue))
+            if (len == 0)
                 throw JSEngine.NewTypeError($"No initial value provided and array is empty");
+            initialValue = ReadElement(k++);
         }
-        while (en.MoveNext(out var hasValue, out var item, out index))
+        for (; k < len; k++)
         {
-            if (!hasValue)
-                continue;
-            var itemArgs = new Arguments(JSUndefined.Value, initialValue, item, new JSNumber(index), this);
+            var itemArgs = new Arguments(JSUndefined.Value, initialValue, ReadElement(k), new JSNumber(k), this);
             initialValue = fn.InvokeCallback(itemArgs);
         }
         return initialValue;
@@ -541,6 +527,11 @@ partial class JSTypedArray
             throw JSEngine.NewRangeError("Offset is out of bounds");
         if (source is JSTypedArray typedArray)
         {
+            // SetTypedArrayFromTypedArray: a source view left detached or out of bounds by a resize is a
+            // TypeError (its element count can no longer be trusted).
+            if (typedArray.buffer == null || typedArray.buffer.isDetached || typedArray.IsOutOfBounds)
+                throw JSEngine.NewTypeError("TypedArray.prototype.set: the source TypedArray is detached or out of bounds");
+
             var src = typedArray.buffer.buffer;
             var target = buffer.buffer;
             int sourceBytesPerElement = typedArray.bytesPerElement;
@@ -586,24 +577,33 @@ partial class JSTypedArray
     public JSValue Slice(in Arguments a)
     {
         ValidateTypedArray("slice");
-        // ToIntegerOrInfinity coerces start/end (valueOf, strings, booleans, NaN→0);
-        // an undefined end (explicit or absent) defaults to len, not 0.
+        // The source length is captured once, before coercion. ToIntegerOrInfinity coerces start/end
+        // (valueOf, strings, booleans, NaN→0); an undefined end (explicit or absent) defaults to len.
+        var srcLen = Length;
         var begin = ToIntegerOrInfinity(a.GetAt(0), 0);
-        var end = ToIntegerOrInfinity(a.GetAt(1), Length);
+        var end = ToIntegerOrInfinity(a.GetAt(1), srcLen);
 
-        int newLength;
+        begin = begin < 0 ? Math.Max(srcLen + begin, 0) : Math.Min(begin, srcLen);
+        end = end < 0 ? Math.Max(srcLen + end, 0) : Math.Min(end, srcLen);
+        var count = (int)Math.Max(end - begin, 0);
+        var startIndex = (int)begin;
 
-        begin = begin < 0 ? Math.Max(Length + begin, 0) : Math.Min(begin, Length);
-        end = end < 0 ? Math.Max(Length + end, 0) : Math.Min(end, Length);
-        newLength = Math.Max(end - begin, 0);
+        var r = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), count);
 
-        var r = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), newLength);
+        if (count > 0)
+        {
+            // Coercing start/end (and creating the species result) may have detached or resized the
+            // backing buffer: re-validate (an out-of-bounds view is a TypeError) and re-read the live
+            // length, copying only the elements that are still in bounds (the rest stay zero).
+            if (buffer == null || buffer.isDetached || IsOutOfBounds)
+                throw JSEngine.NewTypeError("TypedArray.prototype.slice called on an out-of-bounds TypedArray");
 
-        for (int i = 0; i < newLength; i++)
-            r[(uint)i] = this[(uint)(begin + i)];
+            var n = Math.Min(count, Math.Max(Length - startIndex, 0));
+            for (int i = 0; i < n; i++)
+                r[(uint)i] = this[(uint)(startIndex + i)];
+        }
 
         return r;
-
     }
 
     [JSExport("some", Length = 1)]
@@ -613,12 +613,10 @@ partial class JSTypedArray
         var (callback, thisArg) = a.Get2();
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"First argument is not function");
-        var en = GetElementEnumerator();
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+        var len = Length;
+        for (int k = 0; k < len; k++)
         {
-            if (!hasValue)
-                continue;
-            var itemArgs = new Arguments(thisArg, item, new JSNumber(index), this);
+            var itemArgs = new Arguments(thisArg, ReadElement(k), new JSNumber(k), this);
             if (fn.InvokeCallback(itemArgs).BooleanValue)
                 return JSBoolean.True;
         }
@@ -712,7 +710,7 @@ partial class JSTypedArray
 
     [JSExport("values", Length = 0)]
     [Symbol("@@iterator")]
-    public new JSValue Values(in Arguments a) { ValidateTypedArray("values"); return new JSGenerator(GetElementEnumerator(), "Array Iterator"); }
+    public new JSValue Values(in Arguments a) { ValidateTypedArray("values"); return GetArrayIterator(ArrayIteratorKind.Value); }
 
     [JSExport("toLocaleString", Length = 0)]
     internal JSValue ToLocaleString(in Arguments a)

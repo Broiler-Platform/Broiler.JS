@@ -48,6 +48,18 @@ public partial class JSPromise
         }
     }
 
+    // IteratorStepValue: advancing the iterator (reading next(), then its `done` / `value`). An abrupt
+    // completion *here* sets the iterator record's [[done]] to true, so — unlike a per-element body error
+    // (IfAbruptCloseIterator) — it must NOT close the iterator. The `stepping` flag, set only around this
+    // call, lets the surrounding catch tell a step error from a body error.
+    private static bool StepIterator(IElementEnumerator en, out bool hasValue, out JSValue item, ref bool stepping)
+    {
+        stepping = true;
+        var moved = en.MoveNext(out hasValue, out item, out var _);
+        stepping = false;
+        return moved;
+    }
+
     private static JSValue CreatePromiseFromConstructor(JSValue constructor, Action<JSValue, JSValue> executor)
     {
         if (!IsConstructor(constructor))
@@ -243,11 +255,12 @@ public partial class JSPromise
             // "resolve" method, or while obtaining or stepping the iterable, must
             // reject the returned promise rather than throwing synchronously.
             IElementEnumerator en = null;
+            var stepping = false;
             try
             {
                 var promiseResolve = GetPromiseResolve(constructor);
                 en = iterable.GetIterableEnumerator();
-                while (en.MoveNext(out var hasValue, out var item, out var _))
+                while (StepIterator(en, out var hasValue, out var item, ref stepping))
                 {
                     if (!hasValue)
                         continue;
@@ -290,7 +303,7 @@ public partial class JSPromise
             }
             catch (JSException ex)
             {
-                CloseIteratorOnError(en);
+                if (!stepping) CloseIteratorOnError(en);
                 reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
             }
         });
@@ -382,6 +395,7 @@ public partial class JSPromise
             // throwing @@iterator, next, or result-property access), must reject the
             // returned promise rather than throwing synchronously.
             IElementEnumerator en = null;
+            var stepping = false;
             try
             {
                 // PerformPromiseRace (§27.2.4.5.1) routes every value through
@@ -391,7 +405,7 @@ public partial class JSPromise
                 // be called per element rather than special-casing native promises.
                 var promiseResolve = GetPromiseResolve(constructor);
                 en = iterable.GetIterableEnumerator();
-                while (en.MoveNext(out var hasValue, out var item, out var _))
+                while (StepIterator(en, out var hasValue, out var item, ref stepping))
                 {
                     if (!hasValue)
                         continue;
@@ -415,7 +429,7 @@ public partial class JSPromise
             }
             catch (JSException ex)
             {
-                CloseIteratorOnError(en);
+                if (!stepping) CloseIteratorOnError(en);
                 reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
             }
         });
@@ -447,11 +461,12 @@ public partial class JSPromise
             // "resolve" method, or while obtaining or stepping the iterable, must
             // reject the returned promise rather than throwing synchronously.
             IElementEnumerator en = null;
+            var stepping = false;
             try
             {
                 var promiseResolve = GetPromiseResolve(constructor);
                 en = iterable.GetIterableEnumerator();
-                while (en.MoveNext(out var hasValue, out var item, out var _))
+                while (StepIterator(en, out var hasValue, out var item, ref stepping))
                 {
                     if (!hasValue)
                         continue;
@@ -501,7 +516,7 @@ public partial class JSPromise
             }
             catch (JSException ex)
             {
-                CloseIteratorOnError(en);
+                if (!stepping) CloseIteratorOnError(en);
                 reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
             }
         });
@@ -570,11 +585,12 @@ public partial class JSPromise
             // "resolve" method, or while obtaining or stepping the iterable, must
             // reject the returned promise rather than throwing synchronously.
             IElementEnumerator en = null;
+            var stepping = false;
             try
             {
                 var promiseResolve = GetPromiseResolve(constructor);
                 en = iterable.GetIterableEnumerator();
-                while (en.MoveNext(out var hasValue, out var item, out var _))
+                while (StepIterator(en, out var hasValue, out var item, ref stepping))
                 {
                     if (!hasValue)
                         continue;
@@ -617,7 +633,7 @@ public partial class JSPromise
             }
             catch (JSException ex)
             {
-                CloseIteratorOnError(en);
+                if (!stepping) CloseIteratorOnError(en);
                 reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
             }
         });

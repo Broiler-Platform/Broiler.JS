@@ -293,14 +293,16 @@ public partial class JSTemporalPlainDate : JSObject
     [JSExport("since", Length = 1)]
     public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
 
-    // TODO: until/since honor only the `largestUnit` option (day[default]/week/month/year);
-    // smallestUnit/roundingIncrement/roundingMode rounding is not yet applied.
+    // until/since honor largestUnit (day[default]/week/month/year) and round to smallestUnit at the
+    // given roundingIncrement / roundingMode (GetDifferenceSettings + RoundRelativeDuration). Rounding
+    // to a unit coarser than "day" (or with a non-1 increment) is applied for the ISO calendar only;
+    // the arithmetic calendars still return the unrounded largestUnit-balanced difference.
     private JSValue Difference(JSValue other, JSValue options, int sign)
     {
         var target = RequireDate(ToTemporalDate(other, "constrain"));
         if (calendarId != target.calendarId)
             throw JSEngine.NewRangeError("Temporal.PlainDate: cannot compute the difference between dates of different calendars");
-        var largestUnit = ReadDifferenceSettings(options);
+        var (largestUnit, smallestUnit, increment, roundingMode) = ReadDifferenceSettings(options);
 
         // `since` is `-(this.until(other))`: the difference is always measured *from the receiver*
         // (so the year/month balancing anchors on the receiver's day-of-month), then negated for
@@ -309,9 +311,19 @@ public partial class JSTemporalPlainDate : JSObject
         var self = CalendarYmd();
         var othr = target.CalendarYmd();
 
-        var (years, months, weeks, days) = NonIso
-            ? TemporalNonIso.Difference(calendarId, self.y, self.m, self.d, othr.y, othr.m, othr.d, largestUnit)
-            : DifferenceISODate(self.y, self.m, self.d, othr.y, othr.m, othr.d, largestUnit);
+        double years, months, weeks, days;
+        if (NonIso)
+        {
+            (years, months, weeks, days) = TemporalNonIso.Difference(calendarId, self.y, self.m, self.d, othr.y, othr.m, othr.d, largestUnit);
+        }
+        else
+        {
+            // The rounding mode is negated for "since" (the operands are negated), then the rounded
+            // result is negated back below.
+            var mode = sign == -1 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
+            (years, months, weeks, days) = DifferenceISODateRounded(self.y, self.m, self.d, othr.y, othr.m, othr.d,
+                largestUnit, smallestUnit, increment, mode);
+        }
 
         if (sign == -1) { years = Negate(years); months = Negate(months); weeks = Negate(weeks); days = Negate(days); }
 
@@ -492,43 +504,43 @@ public partial class JSTemporalPlainDate : JSObject
     // with a smallestUnit/increment beyond "day"/1 is validated here but not yet applied — see TODO.)
     private static readonly string[] DateUnits = { "year", "month", "week", "day" };
 
-    private static string ReadDifferenceSettings(JSValue options)
+    private static (string largestUnit, string smallestUnit, int increment, string roundingMode) ReadDifferenceSettings(JSValue options)
     {
         if (options == null || options.IsUndefined)
-            return "day";
+            return ("day", "day", 1, "trunc");
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
-        var largestUnit = ReadUnitOption(o, "largestUnit");
-        var smallestUnit = ReadUnitOption(o, "smallestUnit") ?? "day";
-        TemporalRoundingOptions.GetRoundingIncrement(o);
-        TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+        // GetDifferenceSettings reads largestUnit, roundingIncrement, roundingMode, smallestUnit in that
+        // order, coercing each unit (time units included) before any is validated against the allowed
+        // group, so a disallowed-unit RangeError is reported only after every option has been read.
+        var largestRaw = o[KeyStrings.GetOrCreate("largestUnit")];
+        var largestUnit = largestRaw.IsUndefined ? null : TemporalRoundingOptions.NormalizeAnyUnit(largestRaw.StringValue, allowAuto: true);
+        if (largestUnit == "auto") largestUnit = null;
 
+        var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
+        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+
+        var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
+        var smallestUnit = smallestRaw.IsUndefined ? null : TemporalRoundingOptions.NormalizeAnyUnit(smallestRaw.StringValue, allowAuto: false);
+
+        // Only date units (year > month > week > day) are valid for a PlainDate difference.
+        if (largestUnit != null && System.Array.IndexOf(DateUnits, largestUnit) < 0)
+            throw JSEngine.NewRangeError($"Temporal.PlainDate: invalid largestUnit \"{largestUnit}\"");
+        if (smallestUnit != null && System.Array.IndexOf(DateUnits, smallestUnit) < 0)
+            throw JSEngine.NewRangeError($"Temporal.PlainDate: invalid smallestUnit \"{smallestUnit}\"");
+
+        smallestUnit ??= "day";
         largestUnit ??= System.Array.IndexOf(DateUnits, smallestUnit) < System.Array.IndexOf(DateUnits, "day")
             ? smallestUnit : "day";
 
         if (System.Array.IndexOf(DateUnits, smallestUnit) < System.Array.IndexOf(DateUnits, largestUnit))
             throw JSEngine.NewRangeError("Temporal.PlainDate: smallestUnit must not be larger than largestUnit");
 
-        return largestUnit;
-    }
-
-    // Reads largestUnit / smallestUnit, normalizing the plural form; returns null for "auto" or an
-    // absent option, and throws a RangeError for any unit that is not a valid date unit.
-    private static string ReadUnitOption(JSObject options, string name)
-    {
-        var v = options[KeyStrings.GetOrCreate(name)];
-        if (v.IsUndefined) return null;
-        var s = v.StringValue;
-        if (s == "auto" && name == "largestUnit") return null;
-        return s switch
-        {
-            "year" or "years" => "year",
-            "month" or "months" => "month",
-            "week" or "weeks" => "week",
-            "day" or "days" => "day",
-            _ => throw JSEngine.NewRangeError($"Temporal.PlainDate: invalid {name} \"{s}\""),
-        };
+        // ValidateTemporalRoundingIncrement: a date unit's rounding increment must be a positive integer
+        // (the increment never reaches the next unit, so only the 1…∞ check from GetRoundingIncrement
+        // applies — there is no fixed divisor as there is for the sub-day units).
+        return (largestUnit, smallestUnit, increment, roundingMode);
     }
 
     private static JSValue ToTemporalDate(JSValue item, string overflow)
@@ -752,6 +764,155 @@ public partial class JSTemporalPlainDate : JSObject
         var days = DaysFromCivil(by, bm, bd) - DaysFromCivil(iy, im, cd);
 
         return (years, months, 0, days);
+    }
+
+    // ── RoundRelativeDuration over the ISO day axis (no time / no time zone) ─────
+
+    // The ISO date difference start→end balanced to largestUnit, then rounded to smallestUnit at the
+    // given increment / rounding mode. For the default (smallestUnit "day", increment 1) the exact
+    // largestUnit-balanced difference is returned unchanged. Shared with Temporal.PlainYearMonth.
+    internal static (double years, double months, double weeks, double days) DifferenceISODateRounded(
+        int sy, int sm, int sd, int ey, int em, int ed,
+        string largestUnit, string smallestUnit, int increment, string roundingMode)
+    {
+        var (years, months, weeks, days) = DifferenceISODate(sy, sm, sd, ey, em, ed, largestUnit);
+        if (smallestUnit == "day" && increment == 1)
+            return (years, months, weeks, days);
+
+        var (ry, rmo, rw, rd) = RoundDateDifference(sy, sm, sd, (long)years, (long)months, (long)weeks, (long)days,
+            ey, em, ed, largestUnit, smallestUnit, increment, roundingMode);
+        return (ry, rmo, rw, rd);
+    }
+
+    private static int DateDurationSign(long y, long mo, long w, long d)
+        => y != 0 ? Math.Sign(y) : mo != 0 ? Math.Sign(mo) : w != 0 ? Math.Sign(w) : d != 0 ? Math.Sign(d) : 0;
+
+    // The epoch-day number reached by adding a calendar date duration to the start date (constrain).
+    private static long AddDateGetDays(int sy, int sm, int sd, long y, long mo, long w, long d)
+    {
+        var r = (JSTemporalPlainDate)AddISODate(sy, sm, sd, y, mo, w, d, "constrain");
+        return DaysFromCivil(r.isoYear, r.isoMonth, r.isoDay);
+    }
+
+    // NudgeToCalendarUnit + BubbleRelativeDuration: bracket the difference between the start (r1) and end
+    // (r2) boundaries in the smallest unit (measured on the day axis), pick one per the rounding mode,
+    // then roll an expanded unit up toward largestUnit.
+    private static (long y, long mo, long w, long d) RoundDateDifference(
+        int sy, int sm, int sd, long years, long months, long weeks, long days,
+        int ey, int em, int ed, string largestUnit, string smallestUnit, int increment, string roundingMode)
+    {
+        var sign = DateDurationSign(years, months, weeks, days);
+        if (sign == 0) return (0, 0, 0, 0);
+
+        var destDays = DaysFromCivil(ey, em, ed);
+
+        long r1;
+        (long y, long mo, long w, long d) startDur, endDur;
+        switch (smallestUnit)
+        {
+            case "year":
+                r1 = years / increment * increment;
+                startDur = (r1, 0, 0, 0); endDur = (r1 + increment * sign, 0, 0, 0);
+                break;
+            case "month":
+                r1 = months / increment * increment;
+                startDur = (years, r1, 0, 0); endDur = (years, r1 + increment * sign, 0, 0);
+                break;
+            case "week":
+            {
+                // The weeks count includes the days residual beyond the years+months part.
+                var afterYM = AddDateGetDays(sy, sm, sd, years, months, 0, 0);
+                var (wy, wm, wd) = CivilFromDays(afterYM);
+                var (wey, wem, wed) = CivilFromDays(afterYM + days);
+                var until = DifferenceISODate((int)wy, (int)wm, (int)wd, (int)wey, (int)wem, (int)wed, "week");
+                var totalWeeks = weeks + (long)until.weeks;
+                r1 = totalWeeks / increment * increment;
+                startDur = (years, months, r1, 0); endDur = (years, months, r1 + increment * sign, 0);
+                break;
+            }
+            default: // day
+                r1 = days / increment * increment;
+                startDur = (years, months, weeks, r1); endDur = (years, months, weeks, r1 + increment * sign);
+                break;
+        }
+
+        var startDays = DateDurationSign(startDur.y, startDur.mo, startDur.w, startDur.d) == 0
+            ? DaysFromCivil(sy, sm, sd)
+            : AddDateGetDays(sy, sm, sd, startDur.y, startDur.mo, startDur.w, startDur.d);
+        var endDays = AddDateGetDays(sy, sm, sd, endDur.y, endDur.mo, endDur.w, endDur.d);
+
+        var didExpand = false;
+        if (smallestUnit is "year" or "month")
+        {
+            // A calendar irregularity (e.g. a leap month) may put the end outside the bracket; shift it.
+            var inBounds = sign == 1
+                ? startDays <= destDays && destDays <= endDays
+                : endDays <= destDays && destDays <= startDays;
+            if (!inBounds)
+            {
+                r1 += increment * sign;
+                if (smallestUnit == "year") { startDur = (r1, 0, 0, 0); endDur = (r1 + increment * sign, 0, 0, 0); }
+                else { startDur = (years, r1, 0, 0); endDur = (years, r1 + increment * sign, 0, 0); }
+                startDays = AddDateGetDays(sy, sm, sd, startDur.y, startDur.mo, startDur.w, startDur.d);
+                endDays = AddDateGetDays(sy, sm, sd, endDur.y, endDur.mo, endDur.w, endDur.d);
+                didExpand = true;
+            }
+        }
+
+        var numerator = destDays - startDays;
+        var denominator = endDays - startDays;
+        var absNum = Math.Abs(numerator);
+        var absDen = Math.Abs(denominator);
+
+        bool isEnd;
+        if (numerator == 0) isEnd = false;
+        else if (absNum == absDen) isEnd = true;
+        else
+        {
+            var cmp = (absNum * 2).CompareTo(absDen);
+            var even = Math.Abs(r1) / increment % 2 == 0;
+            isEnd = TemporalRoundingOptions.ApplyRoundingPicksEnd(cmp, even,
+                TemporalRoundingOptions.UnsignedRoundingMode(roundingMode, sign < 0));
+        }
+
+        didExpand = didExpand || isEnd;
+        var chosen = isEnd ? endDur : startDur;
+        var nudgedDays = isEnd ? endDays : startDays;
+
+        if (didExpand && smallestUnit != "week")
+            chosen = BubbleDateDuration(sign, sy, sm, sd, chosen, nudgedDays, largestUnit,
+                System.Array.IndexOf(DateUnits, smallestUnit) <= System.Array.IndexOf(DateUnits, "day") ? smallestUnit : "day");
+
+        return chosen;
+    }
+
+    private static (long y, long mo, long w, long d) BubbleDateDuration(
+        int sign, int sy, int sm, int sd, (long y, long mo, long w, long d) dur, long nudgedDays,
+        string largestUnit, string smallestUnit)
+    {
+        if (smallestUnit == largestUnit) return dur;
+
+        var largestIdx = System.Array.IndexOf(DateUnits, largestUnit);
+        var smallestIdx = System.Array.IndexOf(DateUnits, smallestUnit);
+        for (var idx = smallestIdx - 1; idx >= largestIdx; idx--)
+        {
+            var unit = DateUnits[idx];
+            if (unit == "week" && largestUnit != "week") continue;
+
+            (long y, long mo, long w, long d) endDur = unit switch
+            {
+                "year" => (dur.y + sign, 0, 0, 0),
+                "month" => (dur.y, dur.mo + sign, 0, 0),
+                "week" => (dur.y, dur.mo, dur.w + sign, 0),
+                _ => dur,
+            };
+
+            var endDays = AddDateGetDays(sy, sm, sd, endDur.y, endDur.mo, endDur.w, endDur.d);
+            var didExpandToEnd = nudgedDays.CompareTo(endDays) != -sign;
+            if (didExpandToEnd) dur = endDur;
+            else break;
+        }
+        return dur;
     }
 
     // Normalizes a (year, month) where month may be outside 1..12 into a canonical year + 1..12 month.

@@ -246,7 +246,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     public JSValue Equals(in Arguments a)
     {
         var other = Require(ToZonedDateTime(a.GetAt(0)));
-        return epochNanoseconds == other.epochNanoseconds && timeZoneId == other.timeZoneId
+        return epochNanoseconds == other.epochNanoseconds && TimeZoneEquals(timeZoneId, other.timeZoneId)
             && calendarId == other.calendarId
             ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }
@@ -1089,6 +1089,20 @@ public partial class JSTemporalZonedDateTime : JSObject
         try { return TimeZoneInfo.FindSystemTimeZoneById(id); }
         catch { return null; }
     }
+
+    // TimeZoneEquals (used by ZonedDateTime.prototype.equals): two identifiers denote the same zone when
+    // they are the same string or resolve to the same primary IANA identifier. IANA keeps backward
+    // aliases (e.g. "Asia/Calcutta" for "Asia/Kolkata"); the identifier is preserved on the instance, but
+    // equality compares the primary. Canonicalizing each through the IANA→Windows→IANA mapping collapses
+    // an alias and its primary to one string (a numeric offset / UTC has no Windows mapping, so it falls
+    // back to its already-canonical identifier — these only ever match an identical string).
+    private static bool TimeZoneEquals(string a, string b)
+        => a == b || PrimaryTimeZoneIdentifier(a) == PrimaryTimeZoneIdentifier(b);
+
+    private static string PrimaryTimeZoneIdentifier(string id)
+        => TimeZoneInfo.TryConvertIanaIdToWindowsId(id, out var windows) &&
+           TimeZoneInfo.TryConvertWindowsIdToIanaId(windows, out var primary)
+            ? primary : id;
 
     // ToTemporalTimeZoneIdentifier: a time-zone slot value supplied as a String is a bare time-zone
     // identifier (UTC, a numeric offset, or an IANA name) or a full Temporal ISO string, in which

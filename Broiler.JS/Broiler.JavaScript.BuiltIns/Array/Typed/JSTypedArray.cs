@@ -114,6 +114,17 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         }
     }
 
+    // IsTypedArrayFixedLength: a length-tracking view, or any view onto a (non-shared) resizable
+    // ArrayBuffer, is NOT fixed-length — its element count can change under it — so it can never be made
+    // non-extensible. A view onto a fixed-length buffer, or onto a growable *shared* buffer, is fixed.
+    internal bool IsFixedLength =>
+        !isLengthTracking && !(buffer != null && buffer.IsResizable && !buffer.isShared);
+
+    // [[PreventExtensions]] for an integer-indexed exotic object (10.4.5.2): it succeeds only for a
+    // fixed-length view, so Object.{preventExtensions,seal,freeze} on a length-tracking / resizable-backed
+    // typed array fails (a TypeError, even when the view is currently empty).
+    public override bool PreventExtensions() => IsFixedLength && base.PreventExtensions();
+
     // ValidateTypedArray: the receiver's buffer must not be detached and the view must be in bounds;
     // otherwise the method is a TypeError. Called at the start of the %TypedArray%.prototype methods.
     internal void ValidateTypedArray(string method)
@@ -842,5 +853,57 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
             return @default;
         }
+    }
+
+    internal enum ArrayIteratorKind { Key, Value, Entry }
+
+    internal JSGenerator GetArrayIterator(ArrayIteratorKind kind) => new(new ArrayIteratorEnumerator(this, kind), "Array Iterator");
+
+    // The %ArrayIteratorPrototype%.next semantics for a typed array (CreateArrayIterator): each step
+    // re-derives the length from the live buffer and, if the view's buffer is detached or the view has
+    // been left out of bounds by a resize, throws a TypeError. A length-tracking view simply yields fewer
+    // elements after a shrink (no throw); a fixed-length view that no longer fits throws.
+    sealed class ArrayIteratorEnumerator(JSTypedArray typedArray, ArrayIteratorKind kind) : IElementEnumerator
+    {
+        private int index = -1;
+
+        private bool Step(out JSValue value, out uint idx)
+        {
+            if (typedArray.buffer == null || typedArray.buffer.isDetached || typedArray.IsOutOfBounds)
+                throw JSEngine.NewTypeError("TypedArray iterator: the backing ArrayBuffer is detached or out of bounds");
+
+            if (++index < typedArray.length)
+            {
+                idx = (uint)index;
+                value = kind switch
+                {
+                    ArrayIteratorKind.Key => new JSNumber(index),
+                    ArrayIteratorKind.Value => typedArray[(uint)index],
+                    _ => new JSArray(new JSNumber(index), typedArray[(uint)index]),
+                };
+                return true;
+            }
+
+            idx = 0;
+            value = JSUndefined.Value;
+            return false;
+        }
+
+        public bool MoveNext(out bool hasValue, out JSValue value, out uint idx)
+        {
+            hasValue = Step(out value, out idx);
+            return hasValue;
+        }
+
+        public bool MoveNext(out JSValue value) => Step(out value, out _);
+
+        public bool MoveNextOrDefault(out JSValue value, JSValue @default)
+        {
+            if (Step(out value, out _)) return true;
+            value = @default;
+            return false;
+        }
+
+        public JSValue NextOrDefault(JSValue @default) => Step(out var value, out _) ? value : @default;
     }
 }

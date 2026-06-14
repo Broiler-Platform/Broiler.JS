@@ -40,6 +40,27 @@ internal static class TemporalRoundingOptions
         _ => throw JSEngine.NewRangeError($"Temporal: invalid unit \"{u}\""),
     };
 
+    // Canonicalizes any (possibly plural) temporal unit name — calendar units included — to its singular
+    // form, accepting "auto" only when allowAuto is set. GetTemporalUnitValuedOption performs only this
+    // value coercion; the difference-settings readers must coerce *every* unit option (and read the
+    // rounding options between them) before rejecting one that is outside the type's allowed unit group,
+    // so a disallowed-but-recognized unit (e.g. "week" for Temporal.Instant) must not throw here.
+    internal static string NormalizeAnyUnit(string u, bool allowAuto) => u switch
+    {
+        "auto" when allowAuto => "auto",
+        "year" or "years" => "year",
+        "month" or "months" => "month",
+        "week" or "weeks" => "week",
+        "day" or "days" => "day",
+        "hour" or "hours" => "hour",
+        "minute" or "minutes" => "minute",
+        "second" or "seconds" => "second",
+        "millisecond" or "milliseconds" => "millisecond",
+        "microsecond" or "microseconds" => "microsecond",
+        "nanosecond" or "nanoseconds" => "nanosecond",
+        _ => throw JSEngine.NewRangeError($"Temporal: invalid unit \"{u}\""),
+    };
+
     // GetRoundingModeOption.
     internal static string GetRoundingMode(JSObject options, string fallback)
     {
@@ -53,6 +74,45 @@ internal static class TemporalRoundingOptions
         "ceil" or "floor" or "expand" or "trunc"
             or "halfCeil" or "halfFloor" or "halfExpand" or "halfTrunc" or "halfEven" => mode,
         _ => throw JSEngine.NewRangeError($"Temporal: invalid roundingMode \"{mode}\""),
+    };
+
+    // NegateRoundingMode: a "since" difference negates the operands, so the rounding mode is mirrored
+    // (ceil ↔ floor, halfCeil ↔ halfFloor); the symmetric modes are unchanged.
+    internal static string NegateRoundingMode(string mode) => mode switch
+    {
+        "ceil" => "floor",
+        "floor" => "ceil",
+        "halfCeil" => "halfFloor",
+        "halfFloor" => "halfCeil",
+        _ => mode,
+    };
+
+    // GetUnsignedRoundingMode: collapses the nine signed rounding modes to the direction they imply for a
+    // value of the given sign (zero = toward zero, infinity = away from zero, half-* = the tie-break).
+    internal static string UnsignedRoundingMode(string mode, bool negative) => mode switch
+    {
+        "ceil" => negative ? "zero" : "infinity",
+        "floor" => negative ? "infinity" : "zero",
+        "expand" => "infinity",
+        "trunc" => "zero",
+        "halfCeil" => negative ? "half-zero" : "half-infinity",
+        "halfFloor" => negative ? "half-infinity" : "half-zero",
+        "halfExpand" => "half-infinity",
+        "halfTrunc" => "half-zero",
+        "halfEven" => "half-even",
+        _ => "half-infinity",
+    };
+
+    // Given cmp = sign(2·|numerator| − |denominator|) and whether the lower boundary's unit count is even,
+    // whether ApplyUnsignedRoundingMode picks the END (upper) boundary rather than the start (lower) one.
+    internal static bool ApplyRoundingPicksEnd(int cmp, bool even, string unsignedMode) => unsignedMode switch
+    {
+        "zero" => false,
+        "infinity" => true,
+        "half-zero" => cmp > 0,
+        "half-infinity" => cmp >= 0,
+        "half-even" => cmp > 0 || (cmp == 0 && !even),
+        _ => false,
     };
 
     // GetRoundingIncrementOption: ToIntegerWithTruncation, then a 1 … 10^9 range check.
