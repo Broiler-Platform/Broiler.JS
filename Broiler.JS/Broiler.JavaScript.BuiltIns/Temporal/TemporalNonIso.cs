@@ -167,6 +167,30 @@ internal static class TemporalNonIso
         return ((int)iy, (int)im, (int)id);
     }
 
+    // After shifting the year by a whole number of years, the spec preserves the *month code* (not
+    // the bare ordinal): a leap month (e.g. chinese "M03L") re-resolves to the same leap month in the
+    // target year, or — when that year has no such leap month — constrains to the matching common
+    // month ("M03") under overflow "constrain" and is a RangeError under "reject". A common month
+    // re-resolves by code too, so its ordinal shifts across a leap month present in only one of the
+    // years. Calendars without leap months map code↔ordinal identically.
+    private static int ResolveMonthAfterYearShift(string calendarId, int year, int month, int targetYear, string overflow)
+    {
+        if (year == targetYear)
+            return month;
+
+        var (num, leap) = ParseMonthCode(TemporalCalendarMath.MonthCode(calendarId, year, month));
+        if (!leap)
+        {
+            var ord = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, targetYear, num, false);
+            return Math.Min(ord, TemporalCalendarMath.MonthsInYear(calendarId, targetYear));
+        }
+
+        if (overflow == "reject")
+            return TemporalCalendarMath.OrdinalFromMonthCode(calendarId, targetYear, num, true); // throws if absent
+        try { return TemporalCalendarMath.OrdinalFromMonthCode(calendarId, targetYear, num, true); }
+        catch (JSException) { return TemporalCalendarMath.OrdinalFromMonthCode(calendarId, targetYear, num, false); }
+    }
+
     // Steps `monthsToAdd` whole months from (year, month) honouring each year's own month count
     // (12 or 13), which varies year-to-year for the lunisolar and Hebrew calendars.
     private static (int year, int month) AddCalendarMonths(string calendarId, int year, long month, long monthsToAdd)
@@ -197,7 +221,7 @@ internal static class TemporalNonIso
         long years, long months, long weeks, long days, string overflow)
     {
         var newYear = (int)(year + years);
-        var newMonth = Math.Min(month, TemporalCalendarMath.MonthsInYear(calendarId, newYear));
+        var newMonth = ResolveMonthAfterYearShift(calendarId, year, month, newYear, overflow);
         (newYear, newMonth) = AddCalendarMonths(calendarId, newYear, newMonth, months);
 
         var maxDay = TemporalCalendarMath.DaysInMonth(calendarId, newYear, newMonth);

@@ -125,6 +125,38 @@ public class Issue783Tests
     public void ValidYearMonthStringSucceeds(string s, string expected)
         => Assert.Equal(expected, Eval($"Temporal.PlainYearMonth.from('{s}').toString()"));
 
+    // ───────────── Problem 9: leap-month year arithmetic (chinese / dangi) ─────────────
+
+    private static string ChineseAdd(string from, string dur, string opts = "")
+        => Eval($"let d=Temporal.PlainDate.from({{{from},calendar:'chinese'}}).add({dur}{opts});" +
+                "[d.year,d.monthCode,d.day].join('/')");
+
+    [Fact]
+    public void AddYearToLeapMonthConstrainsToCommonMonth()
+        // 1966-M03L lands in 1967, which has no leap third month, so it constrains to M03.
+        => Assert.Equal("1967/M03/1", ChineseAdd("year:1966,monthCode:'M03L',day:1", "{years:1}"));
+
+    [Fact]
+    public void SubtractYearFromLeapMonthConstrainsToCommonMonth()
+        => Assert.Equal("1965/M03/1",
+            Eval("let d=Temporal.PlainDate.from({year:1966,monthCode:'M03L',day:1,calendar:'chinese'}).subtract({years:1});" +
+                 "[d.year,d.monthCode,d.day].join('/')"));
+
+    [Fact]
+    public void AddYearToLeapMonthDayConstrained()
+        // 1938-M07L-30 -> 1939-M07-29 (the common seventh month of 1939 has 29 days).
+        => Assert.Equal("1939/M07/29", ChineseAdd("year:1938,monthCode:'M07L',day:30", "{years:1}"));
+
+    [Fact]
+    public void AddYearToLeapMonthRejectThrows()
+        => Assert.Equal("RangeError",
+            ErrorName("Temporal.PlainDate.from({year:1966,monthCode:'M03L',day:1,calendar:'chinese'}).add({years:1}, {overflow:'reject'})"));
+
+    [Fact]
+    public void AddMonthsAcrossLeapMonth()
+        // 2019-M04 + 13 months -> 2020-M04L (2020 has a leap fourth month).
+        => Assert.Equal("2020/M04L/1", ChineseAdd("year:2019,monthCode:'M04',day:1", "{months:13}"));
+
     // The arithmetic algorithm must agree with System.Globalization.PersianCalendar (the previous
     // backend, verified against the Iranian authority table) across its supported overlap, so the
     // persian-calendar-authority Nowrúz fixtures keep passing.
