@@ -7,6 +7,7 @@
 
 **/bin/
 **/obj/
+**/Properties/launchSettings.json
 **/TestResults/
 **/Generated/
 /.vs/Broiler.JS.slnx/DesignTimeBuild/.dtbcache.v2
