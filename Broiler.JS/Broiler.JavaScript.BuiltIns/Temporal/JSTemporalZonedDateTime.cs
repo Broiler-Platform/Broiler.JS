@@ -1166,7 +1166,12 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (!IsValidISODate(year, month, day) || hour > 23 || minute > 59 || second > 59)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
 
-        var timeZoneId = CanonicalizeTimeZone(match.Groups[13].Value);
+        // A time-zone annotation may carry the RFC 9557 critical flag "!" (e.g. [!UTC]); strip it
+        // before canonicalizing the identifier.
+        var timeZoneAnnotation = match.Groups[13].Value;
+        if (timeZoneAnnotation.StartsWith("!", StringComparison.Ordinal))
+            timeZoneAnnotation = timeZoneAnnotation.Substring(1);
+        var timeZoneId = CanonicalizeTimeZone(timeZoneAnnotation);
         var localNs = LocalNanoseconds(year, month, day, hour, minute, second, ms, us, ns);
 
         long offsetNs;

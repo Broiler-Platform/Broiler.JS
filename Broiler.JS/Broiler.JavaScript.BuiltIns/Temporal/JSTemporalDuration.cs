@@ -48,10 +48,16 @@ public partial class JSTemporalDuration : JSObject
         double minutes, double seconds, double milliseconds, double microseconds, double nanoseconds,
         JSObject prototype) : base(prototype)
     {
-        this.years = years; this.months = months; this.weeks = weeks; this.days = days; this.hours = hours;
-        this.minutes = minutes; this.seconds = seconds; this.milliseconds = milliseconds;
-        this.microseconds = microseconds; this.nanoseconds = nanoseconds;
+        // A Temporal.Duration field is never negative zero (CreateDurationRecord stores mathematical
+        // values); operations like negated() / since / balancing can produce -0 from `-1 * 0`, so
+        // canonicalize every component here.
+        this.years = NoNegativeZero(years); this.months = NoNegativeZero(months); this.weeks = NoNegativeZero(weeks);
+        this.days = NoNegativeZero(days); this.hours = NoNegativeZero(hours); this.minutes = NoNegativeZero(minutes);
+        this.seconds = NoNegativeZero(seconds); this.milliseconds = NoNegativeZero(milliseconds);
+        this.microseconds = NoNegativeZero(microseconds); this.nanoseconds = NoNegativeZero(nanoseconds);
     }
+
+    private static double NoNegativeZero(double v) => v == 0 ? 0.0 : v;
 
     private static JSObject ResolvePrototype()
     {
