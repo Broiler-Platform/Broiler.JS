@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal;
@@ -41,6 +43,29 @@ internal static class TemporalIsoString
     {
         if (CalendarAnnotationPattern.Matches(text).Count > 1)
             throw JSEngine.NewRangeError($"Temporal: more than one calendar annotation in \"{text}\"");
+    }
+
+    // Each trailing [..] annotation is either a TimeZoneIdentifier (no '=') or a key=value
+    // Annotation whose AnnotationKey is lowercase ASCII (a-z then a-z/0-9/-/_) and whose
+    // AnnotationValue is one or more '-'-separated alphanumeric components. A malformed key (e.g.
+    // the uppercase "U-CA" / "FOO") or value is a RangeError.
+    private static readonly Regex AnnotationBracketPattern = new(@"\[([^\]]*)\]", RegexOptions.CultureInvariant);
+    private static readonly Regex AnnotationKeyPattern = new(@"^[a-z_][a-z0-9_-]*$", RegexOptions.CultureInvariant);
+    private static readonly Regex AnnotationValuePattern = new(@"^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$", RegexOptions.CultureInvariant);
+
+    internal static void RejectMalformedAnnotations(string text)
+    {
+        foreach (Match m in AnnotationBracketPattern.Matches(text))
+        {
+            var content = m.Groups[1].Value;
+            if (content.StartsWith("!", StringComparison.Ordinal)) content = content.Substring(1);
+            var eq = content.IndexOf('=');
+            if (eq < 0) continue; // a time-zone annotation, validated elsewhere
+            var key = content.Substring(0, eq);
+            var value = content.Substring(eq + 1);
+            if (!AnnotationKeyPattern.IsMatch(key) || !AnnotationValuePattern.IsMatch(value))
+                throw JSEngine.NewRangeError($"Temporal: malformed annotation \"[{m.Groups[1].Value}]\"");
+        }
     }
 
     // A date or date-time. Time, fraction, and Z / numeric-offset designators are all optional; the
@@ -188,6 +213,20 @@ internal static class TemporalIsoString
 
         calendar = null;
         return false;
+    }
+
+    // The toLocaleString options of a Temporal date/time type may not request a component the type
+    // does not carry: a date-only type (PlainDate / PlainYearMonth / PlainMonthDay) rejects
+    // timeStyle, and the time-only PlainTime rejects dateStyle, with a TypeError (matching the spec's
+    // per-type Intl.DateTimeFormat field restrictions). The options argument is only inspected when it
+    // is an object; other coercion is left to the (stubbed) formatter.
+    internal static void RejectIncompatibleStyle(JSValue options, bool dateAllowed, bool timeAllowed)
+    {
+        if (options is not JSObject o) return;
+        if (!timeAllowed && !o[KeyStrings.GetOrCreate("timeStyle")].IsUndefined)
+            throw JSEngine.NewTypeError("Temporal: timeStyle is not allowed for a date-only type");
+        if (!dateAllowed && !o[KeyStrings.GetOrCreate("dateStyle")].IsUndefined)
+            throw JSEngine.NewTypeError("Temporal: dateStyle is not allowed for a time-only type");
     }
 
     // ParseTemporalTimeZoneString: succeeds only when the string carries a time-zone designator —

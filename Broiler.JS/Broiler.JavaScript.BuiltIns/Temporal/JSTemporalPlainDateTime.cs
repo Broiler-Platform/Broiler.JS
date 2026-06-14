@@ -294,11 +294,20 @@ public partial class JSTemporalPlainDateTime : JSObject
     {
         var arg = a.GetAt(0);
         if (arg == null || arg.IsUndefined)
-            return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, 0, 0, 0, 0, 0, 0, calendarId, PlainDateTimePrototype);
+            return CombineWithTime(0, 0, 0, 0, 0, 0);
 
         var t = RequireTime(JSTemporalPlainTime.From(new Arguments(JSUndefined.Value, arg)));
-        return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay,
-            t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond, calendarId, PlainDateTimePrototype);
+        return CombineWithTime(t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond);
+    }
+
+    // Replaces the wall-clock time on the receiver's calendar date, validating that the combined
+    // date-time is still within the supported ISO range (a date at the range boundary can have its
+    // earliest in-range time, so a midnight time may push it out of range).
+    private JSValue CombineWithTime(int h, int mi, int s, int ms, int us, int ns)
+    {
+        if (!IsValidISODateTime(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns))
+            throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
+        return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns, calendarId, PlainDateTimePrototype);
     }
 
     [JSExport("withCalendar", Length = 1)]
@@ -889,7 +898,10 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (!IsValidISODate(year, month, day)) return false;
         var dayNs = new BigInteger(DaysFromCivil(year, month, day)) * NanosecondsPerDay
                     + ((((long)h * 60 + mi) * 60 + s) * 1000L + ms) * 1_000_000L + (long)us * 1000 + ns;
-        return dayNs >= MinEpochNanoseconds && dayNs <= MaxEpochNanoseconds;
+        // ISODateTimeWithinLimits compares strictly against nsMinInstant − nsPerDay / nsMaxInstant +
+        // nsPerDay, so a date-time exactly one day outside the instant limits (e.g. midnight at the
+        // boundary date) is out of range; only the boundary date with a non-zero sub-day part fits.
+        return dayNs > MinEpochNanoseconds && dayNs < MaxEpochNanoseconds;
     }
 
     private static int CompareISODate(int y1, int m1, int d1, int y2, int m2, int d2)

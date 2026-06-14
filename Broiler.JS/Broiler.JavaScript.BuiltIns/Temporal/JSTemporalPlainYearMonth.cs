@@ -412,7 +412,11 @@ public partial class JSTemporalPlainYearMonth : JSObject
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
 
     [JSExport("toLocaleString", Length = 0)]
-    public JSValue ToLocaleString(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToLocaleString(in Arguments a)
+    {
+        TemporalIsoString.RejectIncompatibleStyle(a.GetAt(1), dateAllowed: true, timeAllowed: false);
+        return new JSString(ToISOString());
+    }
 
     // GetTemporalShowCalendarNameOption.
     private static string ReadCalendarName(JSValue options)
@@ -590,6 +594,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainYearMonth from \"{text}\"");
 
         TemporalIsoString.RejectMultipleCalendarAnnotations(text);
+        TemporalIsoString.RejectMalformedAnnotations(text);
 
         var match = YearMonthPattern.Match(text);
         if (!match.Success)
@@ -603,6 +608,11 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
         var calMatch = CalendarAnnotation.Match(text);
         var calendarId = calMatch.Success ? TemporalCalendar.Canonicalize(calMatch.Groups[1].Value, includeArithmetic: true) : "iso8601";
+
+        // The bare year-month format (no day component) can only carry the iso8601 calendar; any
+        // other calendar needs a reference day, i.e. the full date format (YYYY-MM-DD[u-ca=…]).
+        if (!match.Groups[3].Success && calendarId != "iso8601")
+            throw JSEngine.NewRangeError($"Temporal.PlainYearMonth: a non-iso8601 calendar requires a day in \"{text}\"");
 
         // For a non-Gregorian calendar the parsed ISO date (with its reference day) is projected to
         // the calendar year-month and re-anchored on day 1 of that month.
