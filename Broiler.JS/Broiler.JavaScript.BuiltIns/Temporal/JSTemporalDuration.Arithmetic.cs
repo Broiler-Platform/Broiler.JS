@@ -258,6 +258,23 @@ public partial class JSTemporalDuration
             throw JSEngine.NewError("Temporal.Duration: a Temporal.ZonedDateTime relativeTo is not yet implemented");
         if (rel is JSTemporalPlainDateTime)
             throw JSEngine.NewError("Temporal.Duration: a Temporal.PlainDateTime relativeTo is not yet implemented");
+
+        // ToRelativeTemporalObject for a string: validate the relativeTo grammar. An unparsable string,
+        // a UTC (Z) designator with no time-zone annotation, or a malformed offset is a RangeError. A
+        // string carrying a bracketed [TimeZone] annotation denotes a ZonedDateTime, which the rounding
+        // machinery does not yet handle as a true zoned relativeTo — it is parsed as its ISO date below
+        // (correct for the calendar-arithmetic these durations exercise; DST-aware rounding is OOS).
+        if (rel.IsString)
+        {
+            var s = rel.ToString();
+            if (!TemporalIsoString.TryParseRelative(s, out var tz, out var hasZ, out var offset))
+                throw JSEngine.NewRangeError($"Temporal.Duration: cannot parse relativeTo \"{s}\"");
+            if (tz == null && hasZ)
+                throw JSEngine.NewRangeError("Temporal.Duration: relativeTo with a UTC (Z) designator requires a time-zone annotation");
+            if (offset != null && !TemporalIsoString.IsStrictOffset(offset))
+                throw JSEngine.NewRangeError($"Temporal.Duration: invalid UTC offset in relativeTo \"{s}\"");
+        }
+
         var date = JSTemporalPlainDate.ToRelativeDate(rel);
         if (TemporalCalendarMath.IsNonIso(date.calendarId))
             throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{date.calendarId}\" calendar is not yet implemented");
@@ -275,9 +292,19 @@ public partial class JSTemporalDuration
         return (endNs, (BigInteger)startEpoch * NanosecondsPerDay, startEpoch);
     }
 
+    // The instant implied by adding the whole duration to relativeTo must land on a representable ISO
+    // date; otherwise rounding / totalling it is a RangeError (e.g. a duration carrying ~2^53 seconds of
+    // time reaches ~10^11 days, far beyond the ±10^8-day ISO range).
+    private static void ValidateRelativeEndInRange(BigInteger endNs)
+    {
+        if (!JSTemporalPlainDate.IsEpochDayInIsoRange(FloorDivBig(endNs, NanosecondsPerDay)))
+            throw JSEngine.NewRangeError("Temporal.Duration: result is out of range");
+    }
+
     private JSValue RoundRelative(JSTemporalPlainDate r, string smallestUnit, string largestUnit, long increment, string roundingMode)
     {
         var (endNs, startNs, startEpoch) = RelativeEndpoints(r);
+        ValidateRelativeEndInRange(endNs);
 
         if (smallestUnit is "year" or "month")
         {
@@ -309,6 +336,7 @@ public partial class JSTemporalDuration
     private double TotalRelative(JSTemporalPlainDate r, string unit)
     {
         var (endNs, startNs, _) = RelativeEndpoints(r);
+        ValidateRelativeEndInRange(endNs);
 
         if (unit is "year" or "month")
         {

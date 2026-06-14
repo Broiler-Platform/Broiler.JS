@@ -271,4 +271,26 @@ internal static class TemporalIsoString
 
         return designator != null;
     }
+
+    // For ToRelativeTemporalObject: parse a relativeTo string and surface its time-zone annotation, the
+    // presence of a UTC (Z) designator, and any numeric offset (so the caller can apply the relativeTo
+    // rules — a [TimeZone] annotation → ZonedDateTime, a Z with no annotation → RangeError, etc.).
+    internal static bool TryParseRelative(string text, out string timeZoneAnnotation, out bool hasZ, out string offset)
+    {
+        timeZoneAnnotation = null;
+        hasZ = false;
+        offset = null;
+        if (!TryParse(text, out var parsed)) return false;
+        timeZoneAnnotation = parsed.TimeZoneAnnotation;
+        hasZ = parsed.HasZ;
+        offset = parsed.Offset;
+        return true;
+    }
+
+    // A numeric UTC offset with consistent separators: ±HH, ±HH:MM(:SS(.fff)?)?, or ±HHMM(SS(.fff)?)?.
+    // A mixed-separator offset such as "+00:0000" is rejected (the lenient parse pattern accepts it).
+    private static readonly Regex StrictOffsetPattern = new(
+        @"^[+-]\d{2}(:\d{2}(:\d{2}([.,]\d{1,9})?)?|\d{2}(\d{2}([.,]\d{1,9})?)?)?$", RegexOptions.CultureInvariant);
+
+    internal static bool IsStrictOffset(string offset) => StrictOffsetPattern.IsMatch(offset);
 }

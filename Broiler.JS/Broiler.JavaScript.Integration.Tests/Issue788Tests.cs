@@ -33,10 +33,21 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     transition, or null); %Iterator.prototype%[@@dispose] (closes via return()) and its accessor
 //     %Iterator.prototype%[@@toStringTag] (get "Iterator" / SetterThatIgnoresPrototypeProperties);
 //     %AsyncIteratorPrototype%[@@asyncDispose].
+//   * Problem 1 (contained subset) — RangeError paths that do not require a true ZonedDateTime
+//     relativeTo: (a) Temporal.Duration.compare now resolves/validates the relativeTo option whenever
+//     it is present (an unparsable string, a UTC-"Z" designator with no time-zone annotation, or a
+//     malformed offset is a RangeError); (b) Duration.round/total with a PlainDate relativeTo reject a
+//     result whose implied instant falls outside the ISO date range (a ~2^53-second time component, or
+//     a calendar part plus days, reaches far beyond the representable range); (c) ZonedDateTime.from on
+//     a property bag validates the explicit offset against the named time zone (offset option defaults
+//     to "reject"); (d) ZonedDateTime.prototype.hoursInDay throws when the start of day for today or
+//     tomorrow is out of range.
 //
-// Out of scope (large, separate features documented across the prior Temporal issues): Problems 1/2
-// (Temporal.Duration with a ZonedDateTime relativeTo + RoundRelativeDuration; the since/until
-// rounded-date-out-of-range cases); Problem 3 (resizable-ArrayBuffer-backed TypedArrays;
+// Out of scope (large, separate features documented across the prior Temporal issues): Problem 2 + the
+// rest of Problem 1 (Temporal.Duration with a true ZonedDateTime relativeTo + the full
+// RoundRelativeDuration / NudgeToCalendarUnit machinery; PlainDate/PlainDateTime/PlainYearMonth
+// since/until smallestUnit rounding and its rounded-date-out-of-range cases; the "balances-up-to-weeks"
+// week-nudge); Problem 3 (resizable-ArrayBuffer-backed TypedArrays;
 // Atomics cannot-suspend; the %IteratorHelperPrototype% brand check); Problem 4 (Iterator-helper
 // map/filter/flatMap close-iterator-once and the dynamic-import / DateTimeFormat slices); Problem 10
 // (Promise.all/race iterator no-close).
@@ -189,5 +200,60 @@ public class Issue788Tests
         var derived = Eval("var o = Object.create(Object.getPrototypeOf(Object.getPrototypeOf([][Symbol.iterator]())));" +
             "o[Symbol.toStringTag] = 'mine'; o[Symbol.toStringTag];");
         Assert.Equal("mine", derived);
+    }
+
+    // ── Problem 1 (contained subset): RangeError paths not needing a zoned relativeTo ─
+
+    [Theory]
+    // Duration.compare resolves/validates relativeTo even when the durations have no calendar units.
+    [InlineData("Temporal.Duration.compare(new Temporal.Duration(0,0,0,31), new Temporal.Duration(0,0,0,31), { relativeTo: 'bad string' })")]
+    [InlineData("Temporal.Duration.compare(new Temporal.Duration(0,0,0,31), new Temporal.Duration(0,0,0,31), { relativeTo: 'iso8601' })")]
+    [InlineData("Temporal.Duration.compare(new Temporal.Duration(0,0,0,31), new Temporal.Duration(0,0,0,31), { relativeTo: 'P1YT1H' })")]
+    // A UTC (Z) designator with no time-zone annotation is not a valid relativeTo.
+    [InlineData("Temporal.Duration.compare(new Temporal.Duration(0,0,0,31), new Temporal.Duration(0,0,0,31), { relativeTo: '2019-11-01T00:00Z' })")]
+    // A mixed-separator offset is malformed.
+    [InlineData("Temporal.Duration.compare(new Temporal.Duration(0,0,0,31), new Temporal.Duration(0,0,0,31), { relativeTo: '2025-01-01T00:00:00+00:0000' })")]
+    public void Duration_Compare_InvalidRelativeToString_Throws(string code)
+    {
+        Assert.Equal("RangeError", ErrorName(code));
+    }
+
+    [Theory]
+    // A ~2^53-second time component rounded/totalled to a calendar unit reaches outside the ISO range.
+    [InlineData("new Temporal.Duration(0,0,0,0,0,0,Number.MAX_SAFE_INTEGER).round({ smallestUnit: 'year', relativeTo: new Temporal.PlainDate(2020,1,1) })")]
+    [InlineData("new Temporal.Duration(0,0,0,0,0,0,Number.MIN_SAFE_INTEGER).round({ smallestUnit: 'week', relativeTo: new Temporal.PlainDate(2020,1,1) })")]
+    [InlineData("new Temporal.Duration(0,0,0,0,0,0,Number.MAX_SAFE_INTEGER).total({ unit: 'month', relativeTo: new Temporal.PlainDate(2020,1,1) })")]
+    // A calendar part plus a ~2^53-second time overflows when totalled in days.
+    [InlineData("Temporal.Duration.from({ years: 1, seconds: 2**53 - 1 }).total({ relativeTo: new Temporal.PlainDate(2000,1,1), unit: 'days' })")]
+    public void Duration_RoundTotal_OutOfRange_Throws(string code)
+    {
+        Assert.Equal("RangeError", ErrorName(code));
+    }
+
+    [Theory]
+    // ZonedDateTime.from validates the explicit offset against the named time zone (default "reject").
+    [InlineData("Temporal.ZonedDateTime.from({ year: 2020, month: 3, day: 8, hour: 1, offset: '-04:00', timeZone: 'UTC' })")]
+    [InlineData("Temporal.ZonedDateTime.from('2020-03-08T01:00-04:00[UTC]')")]
+    public void ZonedDateTime_From_OffsetMismatch_Throws(string code)
+    {
+        Assert.Equal("RangeError", ErrorName(code));
+    }
+
+    [Fact]
+    public void ZonedDateTime_HoursInDay_StartOfDayOutOfRange_Throws()
+    {
+        Assert.Equal("RangeError",
+            ErrorName("new Temporal.ZonedDateTime(-864n * 10n**19n, '-01').hoursInDay"));
+        Assert.Equal("RangeError",
+            ErrorName("new Temporal.ZonedDateTime(864n * 10n**19n, '-01').hoursInDay"));
+    }
+
+    [Theory]
+    // A valid PlainDate / ZonedDateTime relativeTo string is still accepted (no regression).
+    [InlineData("new Temporal.Duration(0).round({ largestUnit: 'years', relativeTo: '-271821-04-19' }).toString()", "PT0S")]
+    [InlineData("new Temporal.Duration(0).round({ largestUnit: 'years', relativeTo: '-271821-04-20T00:00+00:00[UTC]' }).toString()", "PT0S")]
+    public void Duration_Round_ValidRelativeToString_Accepted(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code));
     }
 }

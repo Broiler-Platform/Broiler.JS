@@ -198,6 +198,10 @@ public partial class JSTemporalZonedDateTime : JSObject
             var todayStart = StartOfDayEpochNs(l.y, l.mo, l.d);
             var (ty, tm, td) = CivilFromDays(startEpoch + 1);
             var tomorrowStart = StartOfDayEpochNs((int)ty, (int)tm, (int)td);
+            // GetStartOfDay for either boundary may fall outside the representable instant range at the
+            // extreme epoch limits (a RangeError, not a saturated value).
+            if (!IsValid(todayStart) || !IsValid(tomorrowStart))
+                throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.hoursInDay: start of day is out of range");
             return (double)(tomorrowStart - todayStart) / 3_600_000_000_000d;
         }
     }
@@ -1194,10 +1198,34 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         long offsetNs;
         var offsetValue = obj[KeyStrings.GetOrCreate("offset")];
-        if (!offsetValue.IsUndefined && offsetValue.IsString && TryParseOffsetString(offsetValue.ToString(), out var explicitOffset))
-            offsetNs = explicitOffset;
+        long explicitOffset = 0;
+        var hasExplicitOffset = !offsetValue.IsUndefined && offsetValue.IsString
+            && TryParseOffsetString(offsetValue.ToString(), out explicitOffset);
+        long ZoneOffset() => GetOffsetForLocal(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second);
+
+        if (!hasExplicitOffset)
+            offsetNs = ZoneOffset();
         else
-            offsetNs = GetOffsetForLocal(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second);
+        {
+            // InterpretISODateTimeOffset: the explicit offset is honoured verbatim only for "use";
+            // "ignore" drops it; "prefer"/"reject" (the latter is the default for from) require it to be
+            // one of the zone's offsets for the local time — a mismatch is a RangeError under "reject".
+            var offsetOption = ReadOffsetOption(options, "reject");
+            if (offsetOption == "use")
+                offsetNs = explicitOffset;
+            else if (offsetOption == "ignore")
+                offsetNs = ZoneOffset();
+            else
+            {
+                var candidates = CandidateOffsetsForLocal(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second);
+                if (candidates.Contains(explicitOffset))
+                    offsetNs = explicitOffset;
+                else if (offsetOption == "reject")
+                    throw JSEngine.NewRangeError("Temporal.ZonedDateTime: offset does not match the time zone");
+                else
+                    offsetNs = ZoneOffset(); // "prefer"
+            }
+        }
 
         var epochNs = localNs - offsetNs;
         if (!IsValid(epochNs))

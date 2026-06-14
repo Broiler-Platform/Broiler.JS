@@ -246,12 +246,16 @@ public partial class JSTemporalDuration : JSObject
         if (calendarUnits && relativeTo.IsNullOrUndefined)
             throw JSEngine.NewRangeError("Temporal.Duration.compare with calendar units requires a relativeTo option");
 
+        // ToRelativeTemporalObject resolves (and validates) relativeTo whenever it is present, even when
+        // the comparison itself does not need it — an unparsable or otherwise invalid relativeTo string
+        // is a RangeError regardless of the durations' units.
+        var relative = relativeTo.IsNullOrUndefined ? null : GetRelativeIsoDate(options);
+
         if (calendarUnits)
         {
             // Add each duration's date part to the (shared) relativeTo date and compare the resulting
             // instants on the 24-hour-day timeline (reusing the round/total relativeTo machinery; a
             // ZonedDateTime / PlainDateTime / non-ISO-calendar relativeTo is still unsupported there).
-            var relative = GetRelativeIsoDate(options);
             var (end1, _, _) = d1.RelativeEndpoints(relative);
             var (end2, _, _) = d2.RelativeEndpoints(relative);
             return new JSNumber(end1 < end2 ? -1 : end1 > end2 ? 1 : 0);
