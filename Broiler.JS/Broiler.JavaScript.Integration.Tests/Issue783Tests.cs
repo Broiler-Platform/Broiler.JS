@@ -121,6 +121,26 @@ public class Issue783Tests
     public void ToLocaleStringCompatibleStyleSucceeds(string code)
         => Assert.Equal("NONE", ErrorName(code));
 
+    // ───────────── Problem 4 (subset): Iterator.prototype.constructor setter ─────────────
+
+    [Theory]
+    [InlineData("Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor').set.call(undefined,'')")]
+    [InlineData("Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor').set.call(null,'')")]
+    [InlineData("Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor').set.call(true,'')")]
+    [InlineData("Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor').set.call(Iterator.prototype,'')")]
+    [InlineData("Iterator.prototype.constructor = ''")]
+    public void IteratorConstructorSetterThrows(string code)
+        => Assert.Equal("TypeError", ErrorName(code));
+
+    // On any other object the setter creates an own data property (it does not recurse through the
+    // inherited accessor).
+    [Fact]
+    public void IteratorConstructorSetterCreatesOwnProperty()
+        => Assert.Equal("x", Eval(
+            "let o=Object.create(Iterator.prototype);" +
+            "Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor').set.call(o,'x');" +
+            "o.constructor"));
+
     // ───────────── Problem 5: persian calendar over the full ISO range ─────────────
 
     [Fact]

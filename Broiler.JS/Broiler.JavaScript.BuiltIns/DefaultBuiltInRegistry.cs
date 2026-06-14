@@ -181,11 +181,23 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
                 createPrototype: false,
                 length: 0),
             JSPropertyAttributes.ConfigurableProperty);
+        // The setter is SetterThatIgnoresPrototypeProperties(this, %Iterator.prototype%,
+        // "constructor", V): a non-object receiver, or the home prototype itself, is a TypeError
+        // (the latter emulates assigning to a non-writable data property); otherwise an own data
+        // property is created/updated, bypassing this inherited accessor.
         JSObjectFastPropertyExtensions.FastAddSetter(
             proto,
             KeyStrings.constructor,
             new JSFunction(
-                static (in Arguments a) => JSUndefined.Value,
+                (in Arguments a) =>
+                {
+                    if (a.This is not JSObject o)
+                        throw JSEngine.NewTypeError("Iterator.prototype.constructor setter requires an object receiver");
+                    if (ReferenceEquals(o, proto))
+                        throw JSEngine.NewTypeError("Cannot assign to the constructor of Iterator.prototype");
+                    o.FastAddValue(KeyStrings.constructor, a.Get1(), JSPropertyAttributes.EnumerableConfigurableValue);
+                    return JSUndefined.Value;
+                },
                 "set constructor",
                 "function set constructor() { [native code] }",
                 createPrototype: false,
