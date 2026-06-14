@@ -815,7 +815,20 @@ public partial class JSTemporalZonedDateTime : JSObject
                 break;
         }
 
-        var (years, months, weeks, days) = DifferenceISODate(start.y, start.mo, start.d, iy, im, id, largestUnit);
+        // The date portion is differenced in the instance's calendar: the ISO start / intermediate
+        // dates are projected to the calendar's (year, month, day) so a non-ISO calendar counts whole
+        // years/months by its own month lengths and leap months, not the ISO ones.
+        double years, months, weeks, days;
+        if (TemporalCalendarMath.IsNonIso(calendarId))
+        {
+            var s = TemporalNonIso.CalendarYmd(calendarId, start.y, start.mo, start.d);
+            var e = TemporalNonIso.CalendarYmd(calendarId, iy, im, id);
+            (years, months, weeks, days) = TemporalNonIso.Difference(calendarId, s.y, s.m, s.d, e.y, e.m, e.d, largestUnit);
+        }
+        else
+        {
+            (years, months, weeks, days) = DifferenceISODate(start.y, start.mo, start.d, iy, im, id, largestUnit);
+        }
         var time = BalanceTimeDuration(residual, "hour");
 
         return new JSTemporalDuration(years, months, weeks, days,
