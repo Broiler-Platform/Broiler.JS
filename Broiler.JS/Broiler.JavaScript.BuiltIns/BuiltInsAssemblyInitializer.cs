@@ -331,6 +331,38 @@ internal static class BuiltInsAssemblyInitializer
             DefaultBuiltInRegistry.AddProto(proto, "some", JSIteratorObject.StaticSome, 1);
             DefaultBuiltInRegistry.AddProto(proto, "every", JSIteratorObject.StaticEvery, 1);
             DefaultBuiltInRegistry.AddProto(proto, "find", JSIteratorObject.StaticFind, 1);
+
+            // %IteratorPrototype% [ @@dispose ] (): close the iterator by calling its return method.
+            proto.FastAddValue((IJSSymbol)JSSymbol.dispose, CreateNativeFunction(static (in Arguments a) =>
+            {
+                var iterator = a.This;
+                var ret = iterator[KeyStrings.GetOrCreate("return")]; // GetMethod(O, "return")
+                if (!ret.IsNullOrUndefined)
+                {
+                    if (ret is not IJSFunction returnFn)
+                        throw JSEngine.NewTypeError("Iterator.prototype[Symbol.dispose]: return is not a function");
+                    returnFn.InvokeFunction(new Arguments(iterator));
+                }
+                return JSUndefined.Value;
+            }, "[Symbol.dispose]", 0), JSPropertyAttributes.ConfigurableValue);
+
+            // %IteratorPrototype% [ @@toStringTag ] is an accessor: the getter reports "Iterator"; the
+            // setter is SetterThatIgnoresPrototypeProperties (a non-object receiver, or %Iterator.prototype%
+            // itself, is a TypeError — the latter emulates assigning to a non-writable data property — and
+            // any other receiver gets an own data property instead, bypassing this inherited accessor).
+            proto.FastAddProperty(
+                (IJSSymbol)JSSymbol.toStringTag,
+                CreateNativeGetter(static (in Arguments a) => JSValue.CreateString("Iterator"), "get [Symbol.toStringTag]"),
+                CreateNativeFunction((in Arguments a) =>
+                {
+                    if (a.This is not JSObject receiver)
+                        throw JSEngine.NewTypeError("Iterator.prototype[Symbol.toStringTag] setter requires an object receiver");
+                    if (ReferenceEquals(receiver, proto))
+                        throw JSEngine.NewTypeError("Cannot assign to Symbol.toStringTag of Iterator.prototype");
+                    receiver.FastAddValue((IJSSymbol)JSSymbol.toStringTag, a.Get1(), JSPropertyAttributes.EnumerableConfigurableValue);
+                    return JSUndefined.Value;
+                }, "set [Symbol.toStringTag]", 1),
+                JSPropertyAttributes.ConfigurableProperty);
         };
 
         // Wire factory delegates for JSPromise so Core can create
@@ -1944,6 +1976,29 @@ internal static class BuiltInsAssemblyInitializer
             BasePrototypeObject = currentAsyncGeneratorPrototype
         };
         asyncIteratorPrototype.FastAddValue((IJSSymbol)JSSymbol.asyncIterator, CreateNativeFunction(static (in Arguments a) => a.This, "[Symbol.asyncIterator]"), JSPropertyAttributes.ConfigurableValue);
+
+        // %AsyncIteratorPrototype% [ @@asyncDispose ] (): returns a promise that closes the async
+        // iterator via its return method (the fulfillment value of return is ignored).
+        asyncIteratorPrototype.FastAddValue((IJSSymbol)JSSymbol.asyncDispose, CreateNativeFunction(static (in Arguments a) =>
+        {
+            var iterator = a.This;
+            return new JSPromise((resolve, reject) =>
+            {
+                try
+                {
+                    var ret = iterator[KeyStrings.GetOrCreate("return")]; // GetMethod(O, "return")
+                    if (ret.IsNullOrUndefined) { resolve(JSUndefined.Value); return; }
+                    if (ret is not IJSFunction returnFn)
+                        throw JSEngine.NewTypeError("AsyncIterator.prototype[Symbol.asyncDispose]: return is not a function");
+                    var result = returnFn.InvokeFunction(new Arguments(iterator));
+                    if (!result.IsObject)
+                        throw JSEngine.NewTypeError("AsyncIterator.prototype[Symbol.asyncDispose]: return must return an object");
+                    resolve(JSUndefined.Value);
+                }
+                catch (JSException ex) { reject(ex.Error); }
+            });
+        }, "[Symbol.asyncDispose]", 0), JSPropertyAttributes.ConfigurableValue);
+
         asyncGeneratorPrototype.BasePrototypeObject = asyncIteratorPrototype;
         generator.prototype.BasePrototypeObject = asyncGeneratorPrototype;
     }

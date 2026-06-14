@@ -660,6 +660,11 @@ public partial class JSTemporalPlainDate : JSObject
         return epoch >= MinEpochDays && epoch <= MaxEpochDays;
     }
 
+    // Whether an epoch-day count lands on a representable ISO date (used by Temporal.Duration relativeTo
+    // rounding to reject a result whose implied instant falls outside the ISO date range).
+    internal static bool IsEpochDayInIsoRange(System.Numerics.BigInteger epochDays)
+        => epochDays >= MinEpochDays && epochDays <= MaxEpochDays;
+
     private static int CompareISODate(int y1, int m1, int d1, int y2, int m2, int d2)
     {
         if (y1 != y2) return y1 < y2 ? -1 : 1;
@@ -795,6 +800,11 @@ public partial class JSTemporalPlainDate : JSObject
     // resolves to one) to a PlainDate.
     internal static JSTemporalPlainDate ToRelativeDate(JSValue item)
         => (JSTemporalPlainDate)ToTemporalDate(item, "constrain");
+
+    // A PlainDate from ISO fields (used when a Temporal.Duration relativeTo is a PlainDateTime, whose
+    // date is taken with a fixed 24-hour day).
+    internal static JSTemporalPlainDate FromIso(int year, int month, int day, string calendarId)
+        => new JSTemporalPlainDate(year, month, day, calendarId, PlainDatePrototype);
 
     internal static long EpochDaysFor(int year, int month, int day) => DaysFromCivil(year, month, day);
 

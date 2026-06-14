@@ -287,31 +287,30 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var overflow = ReadOverflow(options);
         var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
 
-        // Balance the time + week + day components down to whole days.
-        var days = (long)d.DaysValue + (long)d.WeeksValue * 7;
-        var timeNs = (long)d.HoursValue * 3_600_000_000_000 + (long)d.MinutesValue * 60_000_000_000
-            + (long)d.SecondsValue * 1_000_000_000 + (long)d.MillisecondsValue * 1_000_000
-            + (long)d.MicrosecondsValue * 1_000 + (long)d.NanosecondsValue;
-        days += timeNs / 86_400_000_000_000;
+        // AddDurationToYearMonth: only the year and month components may be non-zero — a duration that
+        // carries any weeks, days or sub-day time is a RangeError (the result is a year-month, so there
+        // is nowhere for finer units to go).
+        if (d.WeeksValue != 0 || d.DaysValue != 0 || d.HoursValue != 0 || d.MinutesValue != 0
+            || d.SecondsValue != 0 || d.MillisecondsValue != 0 || d.MicrosecondsValue != 0 || d.NanosecondsValue != 0)
+            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: only years and months can be added or subtracted");
 
         var years = sign * (long)d.YearsValue;
         var months = sign * (long)d.MonthsValue;
-        var extraDays = sign * days;
 
-        // Operate on the first day of the month (for additions) or the last (for subtractions),
-        // mirroring the spec so that whole-day movement lands in the intended month.
+        // The years/months are always added to the *first* day of the receiver's month (the spec uses a
+        // reference day of 1), so the day can never overflow the resulting month; overflow only governs
+        // how the year/month themselves are resolved in the target calendar (e.g. a leap month absent in
+        // the target year is constrained or rejected).
         if (NonIso)
         {
             var c = CalendarYmd();
-            var startDayCal = sign < 0 ? TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m) : 1;
-            var (ay, amo, ad) = TemporalNonIso.AddToIso(calendarId, c.y, c.m, startDayCal,
-                years, months, 0, extraDays, overflow);
+            var (ay, amo, ad) = TemporalNonIso.AddToIso(calendarId, c.y, c.m, 1,
+                years, months, 0, 0, overflow);
             return YearMonthFromIsoDate(ay, amo, ad, calendarId);
         }
 
-        // The duration is added to the first of the receiver's month (the sign is already folded into
-        // years / months / extraDays). That intermediate date must itself be a valid ISO date within
-        // the representable range — the boundary months -271821-04 and +275760-09 only partially
+        // The reference date is the first of the receiver's month. It must itself be a valid ISO date
+        // within the representable range — the boundary months -271821-04 and +275760-09 only partially
         // overlap it, so e.g. (-271821-04).add(zero) starts from -271821-04-01, which is before the
         // minimum ISO date and is a RangeError.
         const int startDay = 1;
@@ -321,11 +320,8 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var total = (long)isoMonth - 1 + months;
         var ny = (int)(isoYear + years + FloorDiv(total, 12));
         var nm = (int)(((total % 12) + 12) % 12) + 1;
-        var clampedDay = Math.Min(startDay, DaysInMonthOf(ny, nm));
-        var epoch = DaysFromCivil(ny, nm, clampedDay) + extraDays;
-        var (ry, rm, _) = CivilFromDays(epoch);
 
-        return RegulateYearMonth((int)ry, (int)rm, overflow, calendarId);
+        return RegulateYearMonth(ny, nm, overflow, calendarId);
     }
 
     // Builds a PlainYearMonth from an ISO date by taking the calendar (year, month) that ISO date

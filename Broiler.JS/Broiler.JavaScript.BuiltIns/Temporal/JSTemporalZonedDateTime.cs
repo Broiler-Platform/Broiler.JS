@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
@@ -197,6 +198,10 @@ public partial class JSTemporalZonedDateTime : JSObject
             var todayStart = StartOfDayEpochNs(l.y, l.mo, l.d);
             var (ty, tm, td) = CivilFromDays(startEpoch + 1);
             var tomorrowStart = StartOfDayEpochNs((int)ty, (int)tm, (int)td);
+            // GetStartOfDay for either boundary may fall outside the representable instant range at the
+            // extreme epoch limits (a RangeError, not a saturated value).
+            if (!IsValid(todayStart) || !IsValid(tomorrowStart))
+                throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.hoursInDay: start of day is out of range");
             return (double)(tomorrowStart - todayStart) / 3_600_000_000_000d;
         }
     }
@@ -269,6 +274,99 @@ public partial class JSTemporalZonedDateTime : JSObject
     {
         var l = Local();
         return new JSTemporalZonedDateTime(StartOfDayEpochNs(l.y, l.mo, l.d), timeZoneId, calendarId, ZonedDateTimePrototype);
+    }
+
+    // Replaces the wall-clock time of day, keeping the date, calendar and time zone. An absent argument
+    // means the start of the day (midnight, after disambiguation); otherwise the argument is coerced to
+    // a Temporal.PlainTime. The new local datetime is re-resolved in the zone with "compatible"
+    // disambiguation (GetOffsetForLocal handles gaps / folds).
+    [JSExport("withPlainTime", Length = 0)]
+    public JSValue WithPlainTime(in Arguments a)
+    {
+        var l = Local();
+        var arg = a.GetAt(0);
+        if (arg == null || arg.IsUndefined)
+            return new JSTemporalZonedDateTime(StartOfDayEpochNs(l.y, l.mo, l.d), timeZoneId, calendarId, ZonedDateTimePrototype);
+
+        var t = JSTemporalPlainTime.ToTemporalTimeObject(arg);
+        var localNs = LocalNanoseconds(l.y, l.mo, l.d, t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond);
+        var epoch = localNs - GetOffsetForLocal(timeZoneId, l.y, l.mo, l.d, t.hour, t.minute, t.second);
+        if (!IsValid(epoch)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.withPlainTime: result is out of range");
+        return new JSTemporalZonedDateTime(epoch, timeZoneId, calendarId, ZonedDateTimePrototype);
+    }
+
+    // Returns the ZonedDateTime of the nearest UTC-offset transition of the time zone after ("next") or
+    // before ("previous") this instant, or null when the zone has no such transition (a fixed-offset or
+    // non-DST zone, or none within the search horizon).
+    [JSExport("getTimeZoneTransition", Length = 1)]
+    public JSValue GetTimeZoneTransition(in Arguments a)
+    {
+        var arg = a.GetAt(0);
+        if (arg == null || arg.IsUndefined)
+            throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.getTimeZoneTransition requires a direction");
+
+        string direction;
+        if (arg.IsString)
+            direction = arg.ToString();
+        else if (arg is JSObject o)
+        {
+            var dv = o[KeyStrings.GetOrCreate("direction")];
+            if (dv.IsUndefined)
+                throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.getTimeZoneTransition: direction is required");
+            direction = dv.StringValue;
+        }
+        else
+            throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.getTimeZoneTransition: invalid direction");
+
+        if (direction is not ("next" or "previous"))
+            throw JSEngine.NewRangeError($"Temporal.ZonedDateTime.prototype.getTimeZoneTransition: invalid direction \"{direction}\"");
+
+        // Offset (fixed and UTC) zones have no transitions.
+        if (TryFixedOffset(timeZoneId, out _)) return JSNull.Value;
+        var tz = ResolveNamedZone(timeZoneId);
+        if (tz == null) return JSNull.Value;
+
+        var transition = FindTransition(tz, epochNanoseconds, direction == "next");
+        if (transition == null) return JSNull.Value;
+        return new JSTemporalZonedDateTime(transition.Value, timeZoneId, calendarId, ZonedDateTimePrototype);
+    }
+
+    // Finds the first UTC-offset change strictly after (forward) or before (!forward) startNs by scanning
+    // in day steps to bracket a transition, then binary-searching to nanosecond precision. The search
+    // horizon (~50 years) covers every real IANA zone's transitions; beyond it the method reports none.
+    private static BigInteger? FindTransition(TimeZoneInfo tz, BigInteger startNs, bool forward)
+    {
+        long OffsetAt(BigInteger ns) => (long)tz.GetUtcOffset(EpochNsToUtcDateTime(ns)).Ticks * 100;
+
+        var dayNs = (BigInteger)86_400_000_000_000L;
+        var dir = forward ? BigInteger.One : BigInteger.MinusOne;
+        var lastT = startNs;
+        var lastOffset = OffsetAt(startNs);
+
+        const int maxDays = 366 * 50;
+        for (var i = 1; i <= maxDays; i++)
+        {
+            var t = startNs + dir * dayNs * i;
+            if (!IsValid(t)) return null;
+            var off = OffsetAt(t);
+            if (off != lastOffset)
+            {
+                // The transition lies between the lower and upper of {lastT, t}; binary-search the first
+                // nanosecond carrying the upper bound's offset.
+                var lo = BigInteger.Min(lastT, t);
+                var hi = BigInteger.Max(lastT, t);
+                var loOffset = OffsetAt(lo);
+                while (hi - lo > 1)
+                {
+                    var mid = (lo + hi) / 2;
+                    if (OffsetAt(mid) == loOffset) lo = mid; else hi = mid;
+                }
+                return hi;
+            }
+            lastT = t;
+            lastOffset = off;
+        }
+        return null;
     }
 
     [JSExport("toInstant", Length = 0)]
@@ -1100,10 +1198,34 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         long offsetNs;
         var offsetValue = obj[KeyStrings.GetOrCreate("offset")];
-        if (!offsetValue.IsUndefined && offsetValue.IsString && TryParseOffsetString(offsetValue.ToString(), out var explicitOffset))
-            offsetNs = explicitOffset;
+        long explicitOffset = 0;
+        var hasExplicitOffset = !offsetValue.IsUndefined && offsetValue.IsString
+            && TryParseOffsetString(offsetValue.ToString(), out explicitOffset);
+        long ZoneOffset() => GetOffsetForLocal(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second);
+
+        if (!hasExplicitOffset)
+            offsetNs = ZoneOffset();
         else
-            offsetNs = GetOffsetForLocal(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second);
+        {
+            // InterpretISODateTimeOffset: the explicit offset is honoured verbatim only for "use";
+            // "ignore" drops it; "prefer"/"reject" (the latter is the default for from) require it to be
+            // one of the zone's offsets for the local time — a mismatch is a RangeError under "reject".
+            var offsetOption = ReadOffsetOption(options, "reject");
+            if (offsetOption == "use")
+                offsetNs = explicitOffset;
+            else if (offsetOption == "ignore")
+                offsetNs = ZoneOffset();
+            else
+            {
+                var candidates = CandidateOffsetsForLocal(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second);
+                if (candidates.Contains(explicitOffset))
+                    offsetNs = explicitOffset;
+                else if (offsetOption == "reject")
+                    throw JSEngine.NewRangeError("Temporal.ZonedDateTime: offset does not match the time zone");
+                else
+                    offsetNs = ZoneOffset(); // "prefer"
+            }
+        }
 
         var epochNs = localNs - offsetNs;
         if (!IsValid(epochNs))
@@ -1166,7 +1288,12 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (!IsValidISODate(year, month, day) || hour > 23 || minute > 59 || second > 59)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
 
-        var timeZoneId = CanonicalizeTimeZone(match.Groups[13].Value);
+        // A time-zone annotation may carry the RFC 9557 critical flag "!" (e.g. [!UTC]); strip it
+        // before canonicalizing the identifier.
+        var timeZoneAnnotation = match.Groups[13].Value;
+        if (timeZoneAnnotation.StartsWith("!", StringComparison.Ordinal))
+            timeZoneAnnotation = timeZoneAnnotation.Substring(1);
+        var timeZoneId = CanonicalizeTimeZone(timeZoneAnnotation);
         var localNs = LocalNanoseconds(year, month, day, hour, minute, second, ms, us, ns);
 
         long offsetNs;
