@@ -974,11 +974,30 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static bool TryCanonicalizeTimeZoneIdentifier(string id, out string canonical)
     {
         if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
-        if (TryFixedOffset(id, out var offsetNs)) { canonical = FormatOffset(offsetNs); return true; }
+        if (TryOffsetTimeZoneIdentifier(id, out var offsetNs)) { canonical = FormatOffset(offsetNs); return true; }
         if (ResolveNamedZone(id) != null) { canonical = id; return true; }
 
         canonical = null;
         return false;
+    }
+
+    // A numeric UTC offset used as a *time-zone identifier* must be minute precision (±HH[:MM]) with
+    // valid component ranges; a sub-minute (seconds / fractional) offset or an out-of-range component
+    // (e.g. the leap-second offset +23:59:60) is not a valid time zone and is rejected by the caller.
+    private static readonly Regex OffsetTimeZoneIdentifierPattern = new(
+        @"^([+-])(\d{2})(?::?(\d{2}))?$", RegexOptions.CultureInvariant);
+
+    private static bool TryOffsetTimeZoneIdentifier(string id, out long offsetNs)
+    {
+        offsetNs = 0;
+        var m = OffsetTimeZoneIdentifierPattern.Match(id);
+        if (!m.Success) return false;
+        var hours = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+        var minutes = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
+        if (hours > 23 || minutes > 59) return false;
+        var sign = m.Groups[1].Value is "-" or "−" ? -1 : 1;
+        offsetNs = (long)sign * ((long)hours * 3600 + minutes * 60) * 1_000_000_000;
+        return true;
     }
 
     private static string CanonicalizeCalendar(JSValue calendar)

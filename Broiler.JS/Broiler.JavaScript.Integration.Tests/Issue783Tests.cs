@@ -1,0 +1,113 @@
+using System;
+using System.Globalization;
+using Broiler.JavaScript.Engine;
+
+namespace Broiler.JavaScript.Integration.Tests;
+
+// Regression tests for https://github.com/MaiRat/Broiler.JS/issues/783
+public class Issue783Tests
+{
+    private static string Eval(string code)
+    {
+        using var ctx = new JSContext();
+        return ctx.Eval(code).ToString();
+    }
+
+    private static string ErrorName(string code)
+    {
+        using var ctx = new JSContext();
+        return ctx.Eval($"let __t='NONE'; try {{ {code} }} catch (e) {{ __t = e.constructor.name; }} __t").ToString();
+    }
+
+    // ───────────── Problem 7: top-level / block-scoped `using` no longer NREs ─────────────
+
+    [Theory]
+    [InlineData("let log=[]; { using x = { [Symbol.dispose](){ log.push('d'); } }; log.push('b'); } log.join(',')", "b,d")]
+    [InlineData("let o=[]; { using a={[Symbol.dispose](){o.push(1);}}; using b={[Symbol.dispose](){o.push(2);}}; } o.join(',')", "2,1")]
+    public void UsingDeclarationDisposes(string code, string expected)
+        => Assert.Equal(expected, Eval(code));
+
+    // A top-level `using` disposes at the end of script evaluation (observed in a later evaluation).
+    [Fact]
+    public void TopLevelUsingDisposesAtScriptEnd()
+    {
+        using var ctx = new JSContext();
+        ctx.Eval("globalThis.r=[]; using x = { [Symbol.dispose](){ r.push('g'); } }; r.push('a');");
+        Assert.Equal("a,g", ctx.Eval("r.join(',')").ToString());
+    }
+
+    [Fact]
+    public void UsingAllowsNullAndUndefinedInitializer()
+        => Assert.Equal("ok", Eval("{ using a = null; using b = undefined; } 'ok'"));
+
+    // ───────────── Problems 6/8: invalid time-zone designators in an ISO string ─────────────
+
+    // A leap second inside a time-zone offset designator (annotation or bare) is not a valid zone.
+    [Theory]
+    [InlineData("Temporal.ZonedDateTime.from('2000-05-02T12:34:56+23:59[+23:59:60]')")]
+    [InlineData("Temporal.ZonedDateTime.from({year:2000,month:5,day:2,hour:12,timeZone:'2000-05-02T12:34:56+23:59[+23:59:60]'})")]
+    public void LeapSecondInTimeZoneOffsetThrows(string code)
+        => Assert.Equal("RangeError", ErrorName(code));
+
+    // A sub-minute (seconds / fractional) offset is not a valid time-zone identifier.
+    [Theory]
+    [InlineData("'2021-08-19T17:30-07:00:01'")]
+    [InlineData("'2021-08-19T17:30-07:00:00.1'")]
+    [InlineData("'2021-08-19T17:30'")] // no zone designator at all
+    public void SubMinuteOffsetTimeZoneThrows(string s)
+        => Assert.Equal("RangeError", ErrorName($"Temporal.Instant.fromEpochMilliseconds(0).toZonedDateTimeISO({s})"));
+
+    // A leap second in the *time* with a valid zone designator is still fine (collapses to :59).
+    [Fact]
+    public void LeapSecondInTimeWithValidZoneSucceeds()
+        => Assert.Equal("UTC", Eval("Temporal.ZonedDateTime.from('2016-12-31T23:59:60+00:00[UTC]').timeZoneId"));
+
+    // A minute-precision offset designator is a valid offset time zone.
+    [Theory]
+    [InlineData("'2021-08-19T17:30-07:00'", "-07:00")]
+    [InlineData("'2021-08-19T17:30Z'", "UTC")]
+    public void MinutePrecisionOffsetTimeZoneSucceeds(string s, string expected)
+        => Assert.Equal(expected, Eval($"Temporal.Instant.fromEpochMilliseconds(0).toZonedDateTimeISO({s}).timeZoneId"));
+
+    // ───────────── Problem 5: persian calendar over the full ISO range ─────────────
+
+    [Fact]
+    public void PersianExtremeDatesRoundTrip()
+    {
+        // Minimum / maximum of the supported ISO range, expressed in the persian calendar.
+        Assert.Equal("-272442-1-9",
+            Eval("let d=Temporal.PlainDate.from({year:-272442,monthCode:'M01',day:9,calendar:'persian'});" +
+                 "[d.year,d.month,d.day].join('-')"));
+        Assert.Equal("275139-7-12",
+            Eval("let d=Temporal.PlainDate.from({year:275139,monthCode:'M07',day:12,calendar:'persian'});" +
+                 "[d.year,d.month,d.day].join('-')"));
+    }
+
+    [Fact]
+    public void PersianNegativeYearRoundTrips()
+        => Assert.Equal("-621-10-11", // numbers print unpadded
+            Eval("let d=Temporal.PlainDate.from({era:'ap',eraYear:-621,month:10,day:11,calendar:'persian'});" +
+                 "[d.year,d.month,d.day].join('-')"));
+
+    // The arithmetic algorithm must agree with System.Globalization.PersianCalendar (the previous
+    // backend, verified against the Iranian authority table) across its supported overlap, so the
+    // persian-calendar-authority Nowrúz fixtures keep passing.
+    [Fact]
+    public void PersianMatchesDotNetOverOverlap()
+    {
+        var pc = new PersianCalendar();
+        var epoch1970 = new DateTime(1970, 1, 1);
+        using var ctx = new JSContext();
+        // Sample one date per year across the .NET-supported range.
+        for (int y = 1; y <= 9377; y += 7)
+        {
+            var dt = pc.ToDateTime(y, 1, 1, 0, 0, 0, 0);
+            long iso = (long)(dt.Date - epoch1970).TotalDays;
+            var isoStr = epoch1970.AddDays(iso).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var got = ctx.Eval(
+                $"let d=Temporal.PlainDate.from({{year:{y},monthCode:'M01',day:1,calendar:'persian'}});" +
+                "d.withCalendar('iso8601').toString()").ToString();
+            Assert.Equal(isoStr, got);
+        }
+    }
+}

@@ -40,7 +40,7 @@ partial class FastCompiler
 
             var d = scope.Disposable;
             var dispose = d.CallExpression<IJSDisposableStack, JSValue>(() => (j) => j.Dispose());
-            if (scope.Function.Async)
+            if (scope.Function?.Async ?? false)
             {
                 // we will move everything inside await dispose...
                 list.Add(YExpression.TryFinally(r, YExpression.Yield(dispose)));
