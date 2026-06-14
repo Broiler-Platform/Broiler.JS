@@ -3917,7 +3917,7 @@ public class JSIntlDateTimeFormat : JSObject
         // The display name is always computed (default style "short") so it is available whenever the
         // resolved pattern emits a zone token — the explicit option, or a long/full time style.
         var style = OptionString(KeyStrings.GetOrCreate("timeZoneName")) ?? "short";
-        var zoneName = JSIntlDateTimeFormatEngine.FormatTimeZoneName(tz, style, clipped);
+        var zoneName = JSIntlDateTimeFormatEngine.FormatTimeZoneName(localeTag, tz, style, clipped);
         var wall = JSIntlDateTimeFormatEngine.ToZone(clipped, tz);
         var dayPeriod = DayPeriodName(JSDateMath.HourFromTime(wall), JSDateMath.MinFromTime(wall));
         return new(wall, zoneName, dayPeriod);
@@ -4015,13 +4015,12 @@ public class JSIntlDateTimeFormat : JSObject
                     if (!v.IsUndefined) resolved[key] = v;
                 }
 
-            // ZonedDateTime formats in its own zone; a different explicit timeZone is a RangeError.
-            var existing = resolved[TimeZoneKey];
-            if (existing.IsUndefined)
-                resolved[TimeZoneKey] = JSValue.CreateString(defaultTimeZone);
-            else if (existing.StringValue != defaultTimeZone)
-                throw JSEngine.NewRangeError(
-                    $"Temporal.ZonedDateTime.toLocaleString: timeZone option \"{existing.StringValue}\" conflicts with the instance's \"{defaultTimeZone}\"");
+            // ZonedDateTime formats in its own zone; supplying any timeZone option (even a matching
+            // one) is a TypeError.
+            if (!resolved[TimeZoneKey].IsUndefined)
+                throw JSEngine.NewTypeError(
+                    "Temporal.ZonedDateTime.toLocaleString: the timeZone option is not allowed");
+            resolved[TimeZoneKey] = JSValue.CreateString(defaultTimeZone);
             options = resolved;
         }
 

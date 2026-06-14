@@ -216,9 +216,9 @@ public class Issue786Tests
 
     [Fact]
     public void ZonedDateTime_ToLocaleString_FormatsInOwnZone()
-        // Midnight in New York (epoch 05:00 UTC) renders as its own wall clock with the zone name,
-        // proving the instance's zone — not UTC — is applied and included by default.
-        => Assert.Equal("1/1/1970, 12:00:00 AM GMT-5", Eval(
+        // Midnight in New York (epoch 05:00 UTC) renders as its own wall clock with the zone name
+        // (the bundled CLDR short metazone name), proving the instance's zone — not UTC — is applied.
+        => Assert.Equal("1/1/1970, 12:00:00 AM EST", Eval(
             "Temporal.ZonedDateTime.from('1970-01-01T00:00[America/New_York]').toLocaleString('en-US')"));
 
     [Fact]
@@ -278,6 +278,29 @@ public class Issue786Tests
     public void ZonedDateTime_ToLocaleString_IncludesZoneNameByDefault()
         => Assert.Equal("true", Eval(
             "'' + new Temporal.ZonedDateTime(0n, 'UTC').toLocaleString('en-US').includes('UTC')"));
+
+    [Theory]
+    // CLDR metazone names (bundled for en): standard vs daylight selected by DST at the instant,
+    // with a GMT-offset fallback when the metazone lacks the requested width.
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'long', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969 Eastern Standard Time")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'long', timeZone:'America/New_York'}).format(new Date(Date.UTC(2024,6,1)))", "6/30/2024 Eastern Daylight Time")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'short', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969 EST")]
+    [InlineData("new Temporal.ZonedDateTime(0n, 'Europe/Vienna').toLocaleString('en-US', {timeZoneName:'long'})", "1/1/1970, 1:00:00 AM Central European Standard Time")]
+    public void DateTimeFormat_RendersCldrZoneName(string code, string expected)
+        => Assert.Equal(expected, Eval(code));
+
+    [Fact]
+    public void DateTimeFormat_ShortAndLongZoneNamesDiffer()
+        => Assert.Equal("true", Eval(
+            "const z = new Temporal.ZonedDateTime(0n, 'Europe/Vienna');" +
+            "'' + (z.toLocaleString('en-US', {timeZoneName:'short'}) !== z.toLocaleString('en-US', {timeZoneName:'long'}))"));
+
+    [Theory]
+    // ZonedDateTime.toLocaleString rejects any timeZone option (even one matching its own zone).
+    [InlineData("new Temporal.ZonedDateTime(0n, 'UTC').toLocaleString('en-US', {timeZone:'Europe/Vienna'})")]
+    [InlineData("new Temporal.ZonedDateTime(0n, 'UTC').toLocaleString('en-US', {timeZone:'UTC'})")]
+    public void ZonedDateTime_ToLocaleString_TimeZoneOptionThrows(string code)
+        => Assert.Equal("TypeError", ErrorName(code));
 
     [Theory]
     // era / timeZoneName are supplementary: requesting only them still formats the type's defaults,

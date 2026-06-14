@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using Broiler.JavaScript.BuiltIns.Date;
+using UnicodeCldr.LocaleData;
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
 
@@ -51,9 +52,9 @@ internal static class JSIntlDateTimeFormatEngine
     }
 
     // The localized time-zone display name for the ECMA-402 timeZoneName option. UTC carries its CLDR
-    // names; every other zone uses the GMT offset (a CLDR offset/generic/specific zone-name database
-    // is not bundled), which satisfies the offset styles and is self-consistent for the rest.
-    internal static string FormatTimeZoneName(string timeZone, string style, double epochMs)
+    // names; the long/short/generic styles use the bundled CLDR metazone names (English) when the zone
+    // is covered; everything else (offset styles, uncovered zones/locales) uses the GMT offset.
+    internal static string FormatTimeZoneName(string localeTag, string timeZone, string style, double epochMs)
     {
         if (!string.IsNullOrEmpty(timeZone) && timeZone.Equals("UTC", StringComparison.OrdinalIgnoreCase))
             return style switch
@@ -63,8 +64,31 @@ internal static class JSIntlDateTimeFormatEngine
                 _ => "UTC",
             };
 
+        if (style is not ("shortOffset" or "longOffset"))
+        {
+            var name = CldrLocaleData.GetTimeZoneName(localeTag, timeZone, style, IsDaylight(timeZone, epochMs));
+            if (!string.IsNullOrEmpty(name))
+                return name;
+        }
+
         var offsetMs = ToZone(epochMs, timeZone) - epochMs;
         return GmtOffset(offsetMs, style is "longOffset" or "long" or "longGeneric");
+    }
+
+    // Whether daylight-saving time is in effect for a named IANA zone at the instant (false for an
+    // offset/UTC identifier or an unknown zone), selecting the standard vs daylight metazone name.
+    private static bool IsDaylight(string timeZone, double epochMs)
+    {
+        if (string.IsNullOrEmpty(timeZone))
+            return false;
+        try
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
+            var clamped = Math.Clamp(epochMs,
+                DateTimeOffset.MinValue.ToUnixTimeMilliseconds(), DateTimeOffset.MaxValue.ToUnixTimeMilliseconds());
+            return tz.IsDaylightSavingTime(DateTimeOffset.FromUnixTimeMilliseconds((long)clamped));
+        }
+        catch { return false; }
     }
 
     // "GMT", "GMT-8", "GMT+5:30" (short) / "GMT-08:00", "GMT+05:30" (long); zero offset is "GMT".
