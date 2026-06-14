@@ -23,7 +23,10 @@ internal static class JSIntlDateTimeFormatEngine
         // The pre-rendered time-zone display name (computed where the time zone + style are known),
         // emitted by the 'z' token. Null for a wall clock that carries no zone (plain types).
         public readonly string TimeZoneName;
-        public Fields(double wallClockMs, string timeZoneName = null)
+        // The pre-rendered flexible day-period name (CLDR, e.g. "in the morning"), emitted by the 'B'
+        // token for the ECMA-402 dayPeriod option. Null when no dayPeriod is requested.
+        public readonly string DayPeriod;
+        public Fields(double wallClockMs, string timeZoneName = null, string dayPeriod = null)
         {
             Year = (int)JSDateMath.YearFromTime(wallClockMs);
             Month = JSDateMath.MonthFromTime(wallClockMs) + 1; // 0-indexed -> 1-indexed
@@ -33,15 +36,17 @@ internal static class JSIntlDateTimeFormatEngine
             Second = JSDateMath.SecFromTime(wallClockMs);
             Millisecond = JSDateMath.MsFromTime(wallClockMs);
             TimeZoneName = timeZoneName;
+            DayPeriod = dayPeriod;
         }
 
         // Explicit wall-clock fields, used when formatting a Temporal plain type: its own clock is
         // formatted directly, with no time-zone conversion (the formatter's time zone is ignored).
-        public Fields(int year, int month, int day, int hour, int minute, int second, int millisecond, string timeZoneName = null)
+        public Fields(int year, int month, int day, int hour, int minute, int second, int millisecond, string timeZoneName = null, string dayPeriod = null)
         {
             Year = year; Month = month; Day = day;
             Hour = hour; Minute = minute; Second = second; Millisecond = millisecond;
             TimeZoneName = timeZoneName;
+            DayPeriod = dayPeriod;
         }
     }
 
@@ -258,7 +263,12 @@ internal static class JSIntlDateTimeFormatEngine
                 "h23" => ("HH", false),
                 _ => ("h", true), // h12
             };
-            var ap = showDayPeriod ? " a" : "";
+
+            // The dayPeriod option renders a flexible day-period name ('B') in place of AM/PM and
+            // implies a 12-hour hour.
+            string ap;
+            if (hasDayPeriodField) { hourTok = "h"; ap = " B"; }
+            else ap = showDayPeriod ? " a" : "";
 
             var time = new StringBuilder();
             if (hasHour && hasMinute && hasSecond)
@@ -269,6 +279,8 @@ internal static class JSIntlDateTimeFormatEngine
                 time.Append("mm:ss");
             else if (hasHour)
                 time.Append($"{hourTok}{ap}");
+            else if (hasDayPeriodField)
+                time.Append("B"); // dayPeriod with no hour: the period name alone
             else if (hasMinute)
                 time.Append("mm");
             else if (hasSecond)
@@ -640,6 +652,9 @@ internal static class JSIntlDateTimeFormatEngine
             case 'a':
             case 'b':
                 return ("dayPeriod", f.Hour < 12 ? "AM" : "PM");
+            case 'B':
+                // Flexible day period (ECMA-402 dayPeriod option), pre-rendered from CLDR.
+                return ("dayPeriod", f.DayPeriod ?? string.Empty);
             default:
                 return ("literal", new string(token.Field, token.Count));
         }

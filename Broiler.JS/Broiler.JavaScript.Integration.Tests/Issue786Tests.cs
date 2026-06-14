@@ -262,6 +262,18 @@ public class Issue786Tests
         => Assert.True(Eval($"new Temporal.PlainTime(0,0).toLocaleString('en', {{ {option}, timeZone:'UTC' }})").Contains(expected),
             $"{option} should include {expected}");
 
+    [Theory]
+    // dayPeriod renders the CLDR flexible day-period name; Temporal types and Date agree, and the
+    // formatter's time zone is honoured (not the system zone).
+    [InlineData("new Temporal.PlainTime(11, 46).toLocaleString('en', {dayPeriod:'short'})", "in the morning")]
+    [InlineData("new Temporal.PlainTime(15, 0).toLocaleString('en', {dayPeriod:'short'})", "in the afternoon")]
+    [InlineData("new Temporal.PlainTime(11, 46, 40).toLocaleString('en', {dayPeriod:'short', hour:'numeric'})", "11 in the morning")]
+    // Date(0)/Instant(0n) are UTC midnight ("at night"); both paths honour timeZone:UTC and agree.
+    [InlineData("new Date(0).toLocaleString('en', {dayPeriod:'short', timeZone:'UTC'})", "at night")]
+    [InlineData("new Temporal.Instant(0n).toLocaleString('en', {dayPeriod:'short', timeZone:'UTC'})", "at night")]
+    public void DayPeriod_RendersCldrName(string code, string expected)
+        => Assert.Equal(expected, Eval(code));
+
     [Fact]
     public void ZonedDateTime_ToLocaleString_IncludesZoneNameByDefault()
         => Assert.Equal("true", Eval(

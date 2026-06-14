@@ -3918,7 +3918,9 @@ public class JSIntlDateTimeFormat : JSObject
         // resolved pattern emits a zone token — the explicit option, or a long/full time style.
         var style = OptionString(KeyStrings.GetOrCreate("timeZoneName")) ?? "short";
         var zoneName = JSIntlDateTimeFormatEngine.FormatTimeZoneName(tz, style, clipped);
-        return new(JSIntlDateTimeFormatEngine.ToZone(clipped, tz), zoneName);
+        var wall = JSIntlDateTimeFormatEngine.ToZone(clipped, tz);
+        var dayPeriod = DayPeriodName(JSDateMath.HourFromTime(wall), JSDateMath.MinFromTime(wall));
+        return new(wall, zoneName, dayPeriod);
     }
 
     // ── Temporal integration (FormatDateTimePattern / HandleDateTimeValue) ───────────────────────
@@ -4090,9 +4092,9 @@ public class JSIntlDateTimeFormat : JSObject
         JSTemporalPlainDate d => new TemporalMeta(TemporalFields.Date, DateDefaults, "date", d.calendarId,
             new JSIntlDateTimeFormatEngine.Fields(d.isoYear, d.isoMonth, d.isoDay, 0, 0, 0, 0)),
         JSTemporalPlainDateTime dt => new TemporalMeta(TemporalFields.Date | TemporalFields.Time, DateDefaults | TimeDefaults, "datetime", dt.calendarId,
-            new JSIntlDateTimeFormatEngine.Fields(dt.isoYear, dt.isoMonth, dt.isoDay, dt.hour, dt.minute, dt.second, dt.millisecond)),
+            new JSIntlDateTimeFormatEngine.Fields(dt.isoYear, dt.isoMonth, dt.isoDay, dt.hour, dt.minute, dt.second, dt.millisecond, dayPeriod: DayPeriodName(dt.hour, dt.minute))),
         JSTemporalPlainTime t => new TemporalMeta(TemporalFields.Time, TimeDefaults, "time", "iso8601",
-            new JSIntlDateTimeFormatEngine.Fields(1970, 1, 1, t.hour, t.minute, t.second, t.millisecond)),
+            new JSIntlDateTimeFormatEngine.Fields(1970, 1, 1, t.hour, t.minute, t.second, t.millisecond, dayPeriod: DayPeriodName(t.hour, t.minute))),
         JSTemporalPlainYearMonth ym => new TemporalMeta(TemporalFields.Era | TemporalFields.Year | TemporalFields.Month, TemporalFields.Year | TemporalFields.Month, "yearmonth", ym.calendarId,
             new JSIntlDateTimeFormatEngine.Fields(ym.isoYear, ym.isoMonth, ym.referenceISODay, 0, 0, 0, 0)),
         JSTemporalPlainMonthDay md => new TemporalMeta(TemporalFields.Month | TemporalFields.Day, TemporalFields.Month | TemporalFields.Day, "monthday", md.calendarId,
@@ -4177,7 +4179,7 @@ public class JSIntlDateTimeFormat : JSObject
             hasDay: f.HasFlag(TemporalFields.Day), dayStyle: f.HasFlag(TemporalFields.Day) ? (OptionString(DayKey) ?? "numeric") : null,
             hasHour: f.HasFlag(TemporalFields.Hour), hasMinute: f.HasFlag(TemporalFields.Minute), hasSecond: f.HasFlag(TemporalFields.Second),
             fractionalSecondDigits: f.HasFlag(TemporalFields.FractionalSecond) ? FractionalSecondDigits() : 0,
-            hasDayPeriodField: false,
+            hasDayPeriodField: f.HasFlag(TemporalFields.DayPeriod),
             dateStyle: null, timeStyle: null,
             hour12: ResolveHour12(),
             calendar: ResolvedCalendar(),
@@ -4229,10 +4231,10 @@ public class JSIntlDateTimeFormat : JSObject
 
         if (SupportsDayPeriod())
         {
-            var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
-            var dayPeriod = FormatDayPeriod(localTime, DayPeriodStyle());
+            var (h, m) = WallHourMinute(clipped);
+            var dayPeriod = DayPeriodNameForStyle(h, m, DayPeriodStyle());
             if (UsesHourFormatting())
-                return new JSString($"{FormatEnglishHour(localTime)} {dayPeriod}");
+                return new JSString($"{FormatEnglishHour(h)} {dayPeriod}");
 
             return new JSString(dayPeriod);
         }
@@ -4305,13 +4307,13 @@ public class JSIntlDateTimeFormat : JSObject
 
         if (@this.SupportsDayPeriod())
         {
-            var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
+            var (h, m) = @this.WallHourMinute(clipped);
             var dayPeriodParts = JSValue.CreateArray();
             if (@this.UsesHourFormatting())
             {
                 var hourPart = new JSObject();
                 hourPart[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("hour");
-                hourPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(FormatEnglishHour(localTime));
+                hourPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(FormatEnglishHour(h));
                 var literalPart = new JSObject();
                 literalPart[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("literal");
                 literalPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(" ");
@@ -4321,7 +4323,7 @@ public class JSIntlDateTimeFormat : JSObject
 
             var dayPeriodPart = new JSObject();
             dayPeriodPart[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("dayPeriod");
-            dayPeriodPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(@this.FormatDayPeriod(localTime, @this.DayPeriodStyle()));
+            dayPeriodPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(@this.DayPeriodNameForStyle(h, m, @this.DayPeriodStyle()));
             dayPeriodParts.AddArrayItem(dayPeriodPart);
             return dayPeriodParts;
         }
@@ -4425,8 +4427,17 @@ public class JSIntlDateTimeFormat : JSObject
     private string DayPeriodStyle()
         => options?[DayPeriodKey]?.StringValue ?? string.Empty;
 
-    private static string FormatEnglishHour(DateTimeOffset value)
-        => ((value.Hour % 12) == 0 ? 12 : value.Hour % 12).ToString(CultureInfo.InvariantCulture);
+    private static string FormatEnglishHour(DateTimeOffset value) => FormatEnglishHour(value.Hour);
+
+    private static string FormatEnglishHour(int hour)
+        => ((hour % 12) == 0 ? 12 : hour % 12).ToString(CultureInfo.InvariantCulture);
+
+    // The wall-clock hour/minute in the formatter's time zone (system local when unset), full range.
+    private (int hour, int minute) WallHourMinute(double clipped)
+    {
+        var wall = JSIntlDateTimeFormatEngine.ToZone(clipped, OptionString(TimeZoneKey));
+        return (JSDateMath.HourFromTime(wall), JSDateMath.MinFromTime(wall));
+    }
 
     // CLDR day-period rule overrides for the ECMA-402 dayPeriod option. The bundled
     // Broiler.Unicode tables (a) surface the fixed "midnight" period at 00:00, which
@@ -4445,15 +4456,25 @@ public class JSIntlDateTimeFormat : JSObject
     // rules pick the period (am/pm/noon/midnight/morning/…) and the ECMA-402
     // dayPeriod option (long/short/narrow) selects the CLDR width.
     private string FormatDayPeriod(DateTimeOffset value, string style)
+        => DayPeriodNameForStyle(value.Hour, value.Minute, style);
+
+    private static string DayPeriodWidth(string style) => style switch
     {
-        var period = ResolveDayPeriodKey(localeTag, value.Hour, value.Minute);
-        var width = style switch
-        {
-            "narrow" => "narrow",
-            "short" => "abbreviated",
-            _ => "wide",
-        };
-        return CldrLocaleData.GetDayPeriodName(localeTag, period, width);
+        "narrow" => "narrow",
+        "short" => "abbreviated",
+        _ => "wide",
+    };
+
+    private string DayPeriodNameForStyle(int hour, int minute, string style)
+        => CldrLocaleData.GetDayPeriodName(localeTag, ResolveDayPeriodKey(localeTag, hour, minute), DayPeriodWidth(style));
+
+    // The flexible day-period name for the dayPeriod option at a wall-clock time, or null when the
+    // option is absent. Pre-renders the 'B' token for Temporal formatting so it matches the legacy
+    // FormatDayPeriod path.
+    private string DayPeriodName(int hour, int minute)
+    {
+        var style = OptionString(DayPeriodKey);
+        return style == null ? null : DayPeriodNameForStyle(hour, minute, style);
     }
 
     private static string ResolveDayPeriodKey(string localeTag, int hour, int minute)
