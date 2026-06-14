@@ -1509,11 +1509,25 @@ public partial class JSIteratorObject : JSObject
             catch { CloseIteratorIfPossible(source); throw; }
         }
 
+        // IfAbruptCloseIterator(innerNext, iterated): an abrupt completion while stepping the inner
+        // iterator closes the *outer* (source) iterator before the error propagates.
+        private bool StepInner(out bool hasValue, out JSValue value, out uint index)
+        {
+            try { return _inner.MoveNext(out hasValue, out value, out index); }
+            catch { CloseIteratorIfPossible(source); throw; }
+        }
+
+        private bool StepInner(out JSValue value)
+        {
+            try { return _inner.MoveNext(out value); }
+            catch { CloseIteratorIfPossible(source); throw; }
+        }
+
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
             while (true)
             {
-                if (_inner != null && _inner.MoveNext(out hasValue, out value, out index))
+                if (_inner != null && StepInner(out hasValue, out value, out index))
                     return true;
 
                 if (!source.MoveNext(out var item))
@@ -1527,7 +1541,7 @@ public partial class JSIteratorObject : JSObject
         {
             while (true)
             {
-                if (_inner != null && _inner.MoveNext(out value)) return true;
+                if (_inner != null && StepInner(out value)) return true;
                 if (!source.MoveNext(out var item))
                 { value = JSUndefined.Value; return false; }
 
@@ -1539,7 +1553,7 @@ public partial class JSIteratorObject : JSObject
         {
             while (true)
             {
-                if (_inner != null && _inner.MoveNext(out value)) return true;
+                if (_inner != null && StepInner(out value)) return true;
                 if (!source.MoveNext(out var item))
                 { value = @default; return false; }
                 _inner = MapItem(item);
@@ -1550,34 +1564,28 @@ public partial class JSIteratorObject : JSObject
         {
             while (true)
             {
-                if (_inner != null && _inner.MoveNext(out var v)) return v;
+                if (_inner != null && StepInner(out var v)) return v;
                 if (!source.MoveNext(out var item)) return @default;
 
                 _inner = MapItem(item);
             }
         }
 
-        public JSValue Return()
+        // %IteratorHelperPrototype%.return for flatMap closes *both* the active inner iterator (when
+        // one is alive) and the outer (source) iterator, surfacing the first close error if any.
+        private JSValue CloseBoth(JSValue value)
         {
-            if (_inner is IReturnableEnumerator innerReturnable)
-                return innerReturnable.Return();
-
-            if (source is IReturnableEnumerator sourceReturnable)
-                return sourceReturnable.Return();
-
-            return IteratorResult(JSUndefined.Value, true);
-        }
-
-        public JSValue Return(JSValue value)
-        {
-            if (_inner is IReturnableEnumerator innerReturnable)
-                return innerReturnable.Return();
-
-            if (source is IReturnableEnumerator sourceReturnable)
-                return sourceReturnable.Return();
-
+            Exception firstException = null;
+            CloseIteratorForReturn(_inner, ref firstException);
+            CloseIteratorForReturn(source, ref firstException);
+            if (firstException != null)
+                throw firstException;
             return IteratorResult(value, true);
         }
+
+        public JSValue Return() => CloseBoth(JSUndefined.Value);
+
+        public JSValue Return(JSValue value) => CloseBoth(value);
     }
 
     private readonly record struct ConcatSource(JSObject Iterable, JSValue IteratorMethod);
