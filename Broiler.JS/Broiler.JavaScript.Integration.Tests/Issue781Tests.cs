@@ -68,6 +68,9 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     unconstrained start day too, fixing the arithmetic (fixed-month-count) calendars — coptic,
 //     ethiopic, islamic-*, persian, indian, etc. The lunisolar calendars (chinese/dangi/hebrew),
 //     which need the reference's leap-month cycle logic, remain unimplemented.
+//   * Problem 2 — the indian calendar reported its era as "saka"; the canonical Intl.Era-monthcode
+//     code is "shaka". The era property is now "shaka" (the "saka" spelling stays accepted as an
+//     input alias), fixing the indian-calendar era assertions.
 public class Issue781Tests
 {
     private static string Eval(string code)
@@ -477,4 +480,17 @@ public class Issue781Tests
         => Assert.Equal(expected, Eval(
             $"Temporal.PlainDate.from({{ year: 1970, monthCode: '{startMonthCode}', day: {startDay}, calendar: 'coptic' }})" +
             $".until(Temporal.PlainDate.from({{ year: 1970, monthCode: 'M13', day: 5, calendar: 'coptic' }}), {{ largestUnit: 'months' }}).toString()"));
+
+    // ───────────── Problem 2: the indian calendar's canonical era is "shaka" (not "saka") ─────────────
+
+    [Fact]
+    public void IndianEraIsShaka()
+        => Assert.Equal("shaka",
+            Eval("Temporal.PlainDate.from('1957-03-22').withCalendar('indian').era"));
+
+    // The "saka" spelling is still accepted as an input alias.
+    [Fact]
+    public void IndianEraAcceptsSakaAlias()
+        => Assert.Equal("1922",
+            Eval("String(Temporal.PlainDate.from({ era: 'saka', eraYear: 1922, month: 1, day: 1, calendar: 'indian' }).eraYear)"));
 }
