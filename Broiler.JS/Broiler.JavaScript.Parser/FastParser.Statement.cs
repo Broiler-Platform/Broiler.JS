@@ -287,8 +287,14 @@ partial class FastParser
 
         if (ExpressionSequence(out var expression, TokenTypes.SemiColon))
         {
+            // A `{` directly after an expression statement is only valid when a line terminator
+            // separates them — ASI then ends the statement and the `{` opens a new block (e.g.
+            // `x = 5⏎{ … }`). On the same line (`x = 5 { … }`) no semicolon is inserted, so it is a
+            // genuine error. (stream.Previous is the token immediately before the `{`: a line
+            // terminator when ASI applies, the `;` when the statement was already terminated.)
             if (stream.Current.Type == TokenTypes.CurlyBracketStart
-                && stream.Previous.Type != TokenTypes.SemiColon)
+                && stream.Previous.Type != TokenTypes.SemiColon
+                && stream.Previous.Type != TokenTypes.LineTerminator)
                 throw stream.Unexpected();
 
             node = new AstExpressionStatement(token, PreviousToken, expression);
