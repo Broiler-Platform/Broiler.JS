@@ -60,8 +60,11 @@ public partial class DataView : JSObject
     }
 
     [JSExport(Length = 1)]
-    public DataView(in Arguments a) : this(JSEngine.NewTargetPrototype)
+    public DataView(in Arguments a) : this()
     {
+        // The byteOffset / byteLength RangeErrors below are thrown BEFORE the instance prototype is
+        // resolved (deferred to JSFunction.CreateInstance's post-construction step), so a throwing
+        // new.target `get prototype` accessor is not observed when the offset is out of range.
         var buffer = a[0] as JSArrayBuffer ?? throw JSEngine.NewTypeError("First argument to DataView constructor must be an ArrayBuffer.");
         var byteOffset = a[1]?.IntValue ?? 0; //optional, if not available assign 0
 

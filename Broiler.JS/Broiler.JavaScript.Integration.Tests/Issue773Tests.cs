@@ -398,11 +398,12 @@ public class Issue773Tests
             Eval(@"var d = Temporal.PlainDate.from({year:2024, month:1, day:1, calendar:'dangi'});
                    d.withCalendar('iso8601').toString() + ',' + Temporal.PlainDate.from({year:2025,month:1,day:1,calendar:'dangi'}).inLeapYear"));
 
-    [Fact] // dates outside the backing calendar's astronomical range throw RangeError
-    public void ChineseOutOfRangeThrows()
-        => Assert.Equal("RangeError",
-            Eval(@"try { Temporal.PlainDate.from({year:1500, month:1, day:1, calendar:'chinese'}); 'no throw'; }
-                   catch (e) { e.constructor.name; }"));
+    [Fact] // chinese years below the .NET calendar's span (≤1900) are served by the astronomical
+           // fallback (issue #794); CNY 1500 = 1500-02-09
+    public void ChineseBelowDotNetRange_UsesAstronomicalFallback()
+        => Assert.Equal("1500-02-09",
+            Eval(@"Temporal.PlainDate.from({year:1500, month:1, day:1, calendar:'chinese'})
+                     .withCalendar('iso8601').toString()"));
 
     // ──────────────────────── Dynamic import() (Problem 1) ────────────────────────
 

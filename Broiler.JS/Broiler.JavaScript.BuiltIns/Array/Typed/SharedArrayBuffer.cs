@@ -21,8 +21,13 @@ namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 public partial class SharedArrayBuffer : JSArrayBuffer
 {
     [JSExport(Length = 1)]
-    public SharedArrayBuffer(in Arguments a) : base(ResolveSharedPrototype())
+    public SharedArrayBuffer(in Arguments a) : base()
     {
+        // Step 1: a plain call is a TypeError; then validate byteLength vs maxByteLength — both
+        // before the instance prototype is resolved (deferred to JSFunction.CreateInstance), so a
+        // throwing new.target `get prototype` is never observed.
+        RequireConstructor("SharedArrayBuffer");
+
         int length = ToBufferLength(a.Get1(), 0);
         int requestedMaxByteLength = ToMaxByteLengthOption(a.GetAt(1));
 
@@ -32,14 +37,6 @@ public partial class SharedArrayBuffer : JSArrayBuffer
         buffer = new byte[length];
         maxByteLength = requestedMaxByteLength;
         isShared = true;
-    }
-
-    private static JSObject ResolveSharedPrototype()
-    {
-        if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
-            throw JSEngine.NewTypeError("Constructor SharedArrayBuffer requires 'new'");
-
-        return JSEngine.NewTargetPrototype;
     }
 
     private static SharedArrayBuffer RequireShared(JSValue value, string methodName)

@@ -288,6 +288,12 @@ public partial class JSTemporalDuration
                 throw JSEngine.NewRangeError("Temporal.Duration: relativeTo with a UTC (Z) designator requires a time-zone annotation");
             if (offset != null && !TemporalIsoString.IsStrictOffset(offset))
                 throw JSEngine.NewRangeError($"Temporal.Duration: invalid UTC offset in relativeTo \"{s}\"");
+            // A [time-zone] annotation must be a valid identifier even though the relativeTo is then
+            // consumed as a 24-hour-day PlainDate — e.g. a sub-minute offset zone "[-00:44:30]" is a
+            // RangeError. (Only the identifier is checked; no instant is computed, so a date at the
+            // ISO limit is not spuriously rejected.)
+            if (tz != null)
+                JSTemporalZonedDateTime.ValidateTimeZoneIdentifier(tz);
         }
 
         date = JSTemporalPlainDate.ToRelativeDate(rel);
@@ -452,8 +458,39 @@ public partial class JSTemporalDuration
         }
         var nanos = ns;
 
-        double S(BigInteger v) => sign * (double)v;
+        double S(BigInteger v) => sign * NearestDouble(v);
         return new JSTemporalDuration(0, 0, 0, S(days), S(hours), S(minutes), S(seconds), S(millis), S(micros), S(nanos), DurationPrototype);
+    }
+
+    // Converts a non-negative integer to the nearest IEEE-754 double (ties to even), matching
+    // ECMAScript's ℝ→𝔽 — unlike .NET's (double)BigInteger, which truncates toward zero. The two agree
+    // for magnitudes below 2^53 (where every integer is representable); they differ only for the very
+    // large components a near-limit Temporal.Duration can produce, where rounding a component up may
+    // push the duration over the maximum (then rejected as a RangeError).
+    internal static double NearestDouble(BigInteger v)
+    {
+        var neg = v.Sign < 0;
+        var a = BigInteger.Abs(v);
+        var lo = (double)a; // .NET truncates toward zero, so lo ≤ a
+        if (double.IsInfinity(lo)) return neg ? double.NegativeInfinity : double.PositiveInfinity;
+
+        var loBig = new BigInteger(lo);
+        double chosen;
+        if (loBig == a)
+        {
+            chosen = lo;
+        }
+        else
+        {
+            var hi = Math.BitIncrement(lo);
+            if (double.IsInfinity(hi)) return neg ? -lo : lo;
+            var dLo = a - loBig;
+            var dHi = new BigInteger(hi) - a;
+            chosen = dLo < dHi ? lo
+                : dHi < dLo ? hi
+                : (BitConverter.DoubleToInt64Bits(lo) & 1) == 0 ? lo : hi; // tie → even
+        }
+        return neg ? -chosen : chosen;
     }
 
     private static string NormalizeRoundingMode(string mode) => mode switch

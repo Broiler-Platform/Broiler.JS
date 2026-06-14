@@ -91,6 +91,182 @@ internal static class TemporalNonIso
         return RegulateToIso(calendarId, year, month, 1, overflow);
     }
 
+    // ── Temporal.PlainMonthDay reference-date resolution (non-Gregorian calendars) ──
+    // A PlainMonthDay stores an ISO reference date whose calendar projection has the requested
+    // (monthCode, day). The reference year mirrors the ISO 1972: the *latest* calendar year on or
+    // before 1972 in which the month-day is representable, or — when the month code never occurs in
+    // that range (e.g. a leap month whose first occurrence is in the future) — the *earliest* year
+    // after 1972. NOTE this matches the test262 reference years across the .NET-backed chinese span
+    // for the common cases; a handful of rare lunisolar leap edge cases (where ICU4X uses calendar
+    // data we do not reproduce — e.g. the disputed 2033 leap month) are not guaranteed to match.
+    private const int MonthDayReferenceYear = 1972;
+    // The reference search is bounded to the span over which the lunisolar back ends agree with ICU
+    // (1900 onward; before that ICU's chinese/dangi data is not "accurately calculable" and a rare
+    // leap month is taken from its first *future* occurrence instead). The arithmetic calendars are
+    // deterministic, so the bound only ever excludes far-past lunisolar leap months.
+    private const int MonthDaySearchLowYear = 1900;
+    private const int MonthDaySearchHighYear = 2100;
+
+    // The ordinal of (codeNumber, isLeap) in calendar year `y`, or -1 when that month code does not
+    // occur that year (absent leap month, an out-of-range number such as "M15", or a year outside the
+    // back end's supported span).
+    private static int MonthDayOrdinal(string calendarId, int y, int codeNumber, bool isLeap)
+    {
+        try
+        {
+            var ord = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, y, codeNumber, isLeap);
+            return ord < 1 || ord > TemporalCalendarMath.MonthsInYear(calendarId, y) ? -1 : ord;
+        }
+        catch (JSException) { return -1; }
+        catch (ArgumentOutOfRangeException) { return -1; }
+    }
+
+    // The reference ISO date for (codeNumber, isLeap, targetDay): the date whose calendar projection
+    // is that month-day and whose ISO value is the *latest on or before* ISO 1972-12-31, or — when no
+    // occurrence falls in that range (e.g. a leap month whose first occurrence is in the future) — the
+    // *earliest after* it. (The reference *year* is therefore the ISO year of that date, which can
+    // differ from the calendar year — a late-calendar-month day rolls into the next ISO year.) Null
+    // when the month-day never occurs in the searched span.
+    private static (int y, int m, int d)? MonthDayExact(string calendarId, int codeNumber, bool isLeap, int targetDay)
+    {
+        var threshold = DaysFromCivil(MonthDayReferenceYear, 12, 31);
+        var bestBelow = long.MinValue;
+        var bestAbove = long.MaxValue;
+        for (var y = MonthDaySearchLowYear; y <= MonthDaySearchHighYear; y++)
+        {
+            var ord = MonthDayOrdinal(calendarId, y, codeNumber, isLeap);
+            if (ord < 0 || targetDay > TemporalCalendarMath.DaysInMonth(calendarId, y, ord)) continue;
+            var epoch = TemporalCalendarMath.EpochDaysFromYmd(calendarId, y, ord, targetDay);
+            if (epoch <= threshold) { if (epoch > bestBelow) bestBelow = epoch; }
+            else if (epoch < bestAbove) bestAbove = epoch;
+        }
+
+        var chosen = bestBelow != long.MinValue ? bestBelow : (bestAbove != long.MaxValue ? bestAbove : (long?)null);
+        if (chosen == null) return null;
+        if (chosen < MinEpochDays || chosen > MaxEpochDays)
+            throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
+        var (iy, im, id) = CivilFromDays(chosen.Value);
+        return ((int)iy, (int)im, (int)id);
+    }
+
+    // The greatest month length (codeNumber, isLeap) ever attains across the search range; 0 when
+    // the month code never occurs.
+    private static int MonthDayMaxLength(string calendarId, int codeNumber, bool isLeap)
+    {
+        var max = 0;
+        for (var y = MonthDaySearchLowYear; y <= MonthDaySearchHighYear; y++)
+        {
+            var ord = MonthDayOrdinal(calendarId, y, codeNumber, isLeap);
+            if (ord >= 0) max = Math.Max(max, TemporalCalendarMath.DaysInMonth(calendarId, y, ord));
+        }
+        return max;
+    }
+
+    // Resolves a (monthCode, day) to its ISO reference date in a non-Gregorian calendar. Under
+    // "constrain" a day past the month's length is clamped to the longest the month code reaches,
+    // and a leap month code whose length cannot reach the day falls back to its regular month
+    // (dropping the "L"); under "reject" an unrepresentable month-day is a RangeError.
+    internal static (int y, int m, int d) MonthDayFromCode(string calendarId, string monthCode, int day, string overflow)
+    {
+        var (codeNumber, isLeap) = ParseMonthCode(monthCode);
+        return MonthDayCore(calendarId, codeNumber, isLeap, day, overflow);
+    }
+
+    // Resolves a (year, month-ordinal, day) bag to a PlainMonthDay reference date: the calendar
+    // (year, month, day) is regulated, projected to its month code, then the year is dropped.
+    internal static (int y, int m, int d) MonthDayFromYearMonth(string calendarId, int year, int month, int day, string overflow)
+    {
+        var (iy, im, id) = RegulateToIso(calendarId, year, month, day, overflow);
+        var (cy, cm, cd) = CalendarYmd(calendarId, iy, im, id);
+        var (codeNumber, isLeap) = ParseMonthCode(TemporalCalendarMath.MonthCode(calendarId, cy, cm));
+        return MonthDayCore(calendarId, codeNumber, isLeap, cd, overflow);
+    }
+
+    // Resolves a Temporal.PlainMonthDay property bag for a non-Gregorian calendar to an ISO
+    // reference date. A monthCode without a year resolves directly through the reference search; a
+    // year (or era/eraYear) present resolves the calendar (year, month/monthCode, day) first and
+    // then drops the year.
+    internal static (int y, int m, int d) MonthDayFromBag(JSObject obj, string calendarId, string overflow, string typeName)
+    {
+        if (obj[KeyStrings.GetOrCreate("day")].IsUndefined)
+            throw JSEngine.NewTypeError($"{typeName}: missing day");
+        var day = ToPositiveIntegerWithTruncation(obj[KeyStrings.GetOrCreate("day")], typeName);
+
+        var yearValue = obj[KeyStrings.GetOrCreate("year")];
+        var eraValue = obj[KeyStrings.GetOrCreate("era")];
+        var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
+        var monthValue = obj[KeyStrings.GetOrCreate("month")];
+        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+
+        var hasYear = !yearValue.IsUndefined
+            || (TemporalCalendarMath.HasEra(calendarId) && !eraValue.IsUndefined && !eraYearValue.IsUndefined);
+
+        if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
+            throw JSEngine.NewTypeError($"{typeName}: missing month / monthCode");
+        if (!hasYear && monthCodeValue.IsUndefined)
+            throw JSEngine.NewTypeError($"{typeName}: month requires either monthCode or year");
+
+        if (hasYear)
+        {
+            var (year, month) = ResolveYearMonth(obj, calendarId, overflow, typeName);
+            return MonthDayFromYearMonth(calendarId, year, month, day, overflow);
+        }
+
+        return MonthDayFromCode(calendarId, monthCodeValue.ToString(), day, overflow);
+    }
+
+    private static (int y, int m, int d) MonthDayCore(string calendarId, int codeNumber, bool isLeap, int day, string overflow)
+    {
+        if (day < 1)
+            throw JSEngine.NewRangeError("Temporal.PlainMonthDay: day must be positive");
+
+        var exact = MonthDayExact(calendarId, codeNumber, isLeap, day);
+        if (exact != null) return exact.Value;
+
+        if (overflow == "reject")
+            throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
+
+        if (!isLeap)
+        {
+            var rmax = MonthDayMaxLength(calendarId, codeNumber, false);
+            if (rmax == 0) throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
+            return MonthDayExact(calendarId, codeNumber, false, Math.Min(day, rmax))
+                   ?? throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
+        }
+
+        // Leap month constrain: keep the leap month while it can hold the (clamped) day, otherwise
+        // fall back to the regular month with the same number.
+        var lmax = MonthDayMaxLength(calendarId, codeNumber, true);
+        var regMax = MonthDayMaxLength(calendarId, codeNumber, false);
+        if (regMax == 0)
+            throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
+
+        var clamped = Math.Min(day, Math.Max(lmax, regMax));
+        if (lmax > 0 && clamped <= lmax)
+        {
+            var asLeap = MonthDayExact(calendarId, codeNumber, true, clamped);
+            if (asLeap != null) return asLeap.Value;
+        }
+        return MonthDayExact(calendarId, codeNumber, false, Math.Min(clamped, regMax))
+               ?? throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
+    }
+
+    // The (monthCode, day) of a stored ISO reference date in a non-Gregorian calendar.
+    internal static (string monthCode, int day) MonthDayFields(string calendarId, int isoYear, int isoMonth, int isoDay)
+    {
+        var (cy, cm, cd) = CalendarYmd(calendarId, isoYear, isoMonth, isoDay);
+        return (TemporalCalendarMath.MonthCode(calendarId, cy, cm), cd);
+    }
+
+    // Temporal.PlainMonthDay.prototype.toPlainDate for a non-Gregorian calendar: combine the stored
+    // month code + day with the supplied year (constraining the day into that calendar month).
+    internal static (int y, int m, int d) MonthDayToPlainDate(string calendarId, int year, string monthCode, int day)
+    {
+        var (codeNumber, isLeap) = ParseMonthCode(monthCode);
+        var ordinal = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, isLeap);
+        return RegulateToIso(calendarId, year, ordinal, day, "constrain");
+    }
+
     // Resolves the (calendar year, calendar month-ordinal) from a property bag: the year comes from
     // `year` and/or { era, eraYear } (era-less for the lunisolar calendars), the month from `month`
     // and/or `monthCode` (with an optional leap "L" suffix).
@@ -198,7 +374,16 @@ internal static class TemporalNonIso
         if (overflow == "reject")
             return TemporalCalendarMath.OrdinalFromMonthCode(calendarId, targetYear, num, true); // throws if absent
         try { return TemporalCalendarMath.OrdinalFromMonthCode(calendarId, targetYear, num, true); }
-        catch (JSException) { return TemporalCalendarMath.OrdinalFromMonthCode(calendarId, targetYear, num, false); }
+        catch (JSException)
+        {
+            // The leap month does not exist in the target year. The lunisolar calendars constrain a
+            // leap month MnnL back onto the regular month with the same number (Mnn). The Hebrew
+            // calendar is different: its leap month is Adar I (M05L), which sits *before* the regular
+            // Adar (M06); when a year has only one Adar both collapse onto M06, so M05L constrains to
+            // M06 rather than to M05 (Shevat).
+            var fallbackNum = (calendarId == "hebrew" && num == 5) ? 6 : num;
+            return TemporalCalendarMath.OrdinalFromMonthCode(calendarId, targetYear, fallbackNum, false);
+        }
     }
 
     // Steps `monthsToAdd` whole months from (year, month) honouring each year's own month count
@@ -274,17 +459,33 @@ internal static class TemporalNonIso
         // only counted when the start day-of-month does not have to be clamped into the target month
         // (so e.g. the 30th of a 30-day month "surpasses" the 29th of the following 29-day month and
         // does not count as a full month). The residual days are then measured from the day-clamped
-        // intermediate. Mirrors the reference calendar untilCalendar (the leap-month cycle handling of
-        // the lunisolar calendars is not reproduced here).
+        // intermediate. Mirrors the reference calendar untilCalendar.
+        //
+        // The whole-year step projects the start *month* into the candidate year preserving its
+        // monthCode (ResolveMonthAfterYearShift), not its raw ordinal: across a leap-month boundary
+        // the lunisolar/Hebrew calendars give the same monthCode a different ordinal from year to
+        // year, so anchoring on the bare ordinal `am` would miscount a whole-year difference by a
+        // spurious ±1 month.
         long years = 0;
+        int cy, cm;
         if (largestUnit == "year")
         {
             years = by - ay;
-            if (CompareDate(ay + (int)years, am, ad, by, bm, bd) == step) years -= step;
+            cy = ay + (int)years;
+            cm = ResolveMonthAfterYearShift(calendarId, ay, am, cy, "constrain");
+            if (CompareDate(cy, cm, ad, by, bm, bd) == step)
+            {
+                years -= step;
+                cy = ay + (int)years;
+                cm = ResolveMonthAfterYearShift(calendarId, ay, am, cy, "constrain");
+            }
+        }
+        else
+        {
+            cy = ay; cm = am;
         }
 
         long months = 0;
-        int cy = ay + (int)years, cm = am;
         while (true)
         {
             var (ny, nm) = AddCalendarMonths(calendarId, cy, cm, step);

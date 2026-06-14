@@ -341,10 +341,12 @@ public class Issue779Tests
                    var b=Temporal.PlainMonthDay.from({calendar:'gregory',monthCode:'M06',day:15});
                    String(a.equals(b))"));
 
-    [Fact] // a lunisolar / arithmetic calendar is still rejected for PlainMonthDay
-    public void PlainMonthDayNonIsoCalendarRejected()
-        => Assert.Equal("RangeError",
-            ErrorName("Temporal.PlainMonthDay.from({calendar:'chinese', monthCode:'M06', day:15})"));
+    [Fact] // a lunisolar / arithmetic calendar is now supported for PlainMonthDay (issue #794):
+           // it stores an ISO reference date whose chinese projection is M06-15.
+    public void PlainMonthDayNonIsoCalendarAccepted()
+        => Assert.Equal("M06,15", Eval(
+            "(function(){var d=Temporal.PlainMonthDay.from({calendar:'chinese', monthCode:'M06', day:15});" +
+            "return d.monthCode+','+d.day;})()"));
 
     // ───────── Problems 5/8/…: ZonedDateTime non-ISO calendar accessors ─────────
     // ZonedDateTime accepts the arithmetic / lunisolar calendars and derives its date fields through
