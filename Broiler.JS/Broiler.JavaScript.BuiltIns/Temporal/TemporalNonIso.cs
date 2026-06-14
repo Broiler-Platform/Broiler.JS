@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
@@ -35,6 +36,51 @@ internal static class TemporalNonIso
         var (year, month) = ResolveYearMonth(obj, calendarId, typeName);
         var day = ToPositiveIntegerWithTruncation(obj[KeyStrings.GetOrCreate("day")], typeName);
         return RegulateToIso(calendarId, year, month, day, overflow);
+    }
+
+    // CalendarMergeFields + the calendar's date-from-fields for a non-Gregorian `.with()`: the
+    // partial fields from the `bag` override the receiver's current calendar fields, then the merged
+    // set is resolved to an ISO date. Per CalendarFieldKeysToIgnore the year/era/eraYear fields form
+    // one mutually-overriding group and month/monthCode another, so supplying any member of a group
+    // drops the receiver's whole group (e.g. a new `year` re-resolves the receiver's monthCode against
+    // it, and a new `monthCode` ignores the receiver's month). Consistency between supplied fields
+    // (year vs era/eraYear, month vs monthCode) is validated by the shared ToIsoFromBag resolution.
+    internal static (int y, int m, int d) WithToIso(
+        JSObject bag, string calendarId, string overflow, string typeName, int isoYear, int isoMonth, int isoDay)
+    {
+        var (curY, curM, curD) = CalendarYmd(calendarId, isoYear, isoMonth, isoDay);
+
+        var bagYear = bag[KeyStrings.GetOrCreate("year")];
+        var bagEra = bag[KeyStrings.GetOrCreate("era")];
+        var bagEraYear = bag[KeyStrings.GetOrCreate("eraYear")];
+        var bagMonth = bag[KeyStrings.GetOrCreate("month")];
+        var bagMonthCode = bag[KeyStrings.GetOrCreate("monthCode")];
+        var bagDay = bag[KeyStrings.GetOrCreate("day")];
+
+        var hasYearGroup = !bagYear.IsUndefined || !bagEra.IsUndefined || !bagEraYear.IsUndefined;
+        var hasMonthGroup = !bagMonth.IsUndefined || !bagMonthCode.IsUndefined;
+        if (!hasYearGroup && !hasMonthGroup && bagDay.IsUndefined)
+            throw JSEngine.NewTypeError($"{typeName}.with requires at least one date property");
+
+        var merged = new JSObject();
+        if (hasYearGroup)
+        {
+            if (!bagYear.IsUndefined) merged[KeyStrings.GetOrCreate("year")] = bagYear;
+            if (!bagEra.IsUndefined) merged[KeyStrings.GetOrCreate("era")] = bagEra;
+            if (!bagEraYear.IsUndefined) merged[KeyStrings.GetOrCreate("eraYear")] = bagEraYear;
+        }
+        else merged[KeyStrings.GetOrCreate("year")] = new JSNumber(curY);
+
+        if (hasMonthGroup)
+        {
+            if (!bagMonth.IsUndefined) merged[KeyStrings.GetOrCreate("month")] = bagMonth;
+            if (!bagMonthCode.IsUndefined) merged[KeyStrings.GetOrCreate("monthCode")] = bagMonthCode;
+        }
+        else merged[KeyStrings.GetOrCreate("monthCode")] = new JSString(TemporalCalendarMath.MonthCode(calendarId, curY, curM));
+
+        merged[KeyStrings.GetOrCreate("day")] = bagDay.IsUndefined ? new JSNumber(curD) : bagDay;
+
+        return ToIsoFromBag(merged, calendarId, overflow, typeName);
     }
 
     // Resolves a Temporal.PlainYearMonth property bag (year + month / monthCode, no day) for a
@@ -187,35 +233,36 @@ internal static class TemporalNonIso
             return (0, 0, 0, totalDays);
         }
 
-        var sign = CompareDate(ay, am, ad, by, bm, bd); // -1 if a<b, +1 if a>b
-        if (sign == 0) return (0, 0, 0, 0);
-        var step = -sign;
+        var step = -CompareDate(ay, am, ad, by, bm, bd); // +1 when end is after start
+        if (step == 0) return (0, 0, 0, 0);
 
+        // The year/month counting anchors on the *unconstrained* start day (`ad`): a whole month is
+        // only counted when the start day-of-month does not have to be clamped into the target month
+        // (so e.g. the 30th of a 30-day month "surpasses" the 29th of the following 29-day month and
+        // does not count as a full month). The residual days are then measured from the day-clamped
+        // intermediate. Mirrors the reference calendar untilCalendar (the leap-month cycle handling of
+        // the lunisolar calendars is not reproduced here).
         long years = 0;
-        var (my, mm, md) = (ay, am, ad);
         if (largestUnit == "year")
         {
             years = by - ay;
-            (my, mm, md) = AddCalendarYearsMonths(calendarId, ay, am, ad, years, 0);
-            if (CompareDate(my, mm, md, by, bm, bd) == step)
-            {
-                years -= step;
-                (my, mm, md) = AddCalendarYearsMonths(calendarId, ay, am, ad, years, 0);
-            }
+            if (CompareDate(ay + (int)years, am, ad, by, bm, bd) == step) years -= step;
         }
 
         long months = 0;
+        int cy = ay + (int)years, cm = am;
         while (true)
         {
-            var (ny, nm, nd) = AddCalendarYearsMonths(calendarId, my, mm, md, 0, step);
-            var cmp = CompareDate(ny, nm, nd, by, bm, bd);
-            if (cmp == step) break;
-            months += step; my = ny; mm = nm; md = nd;
+            var (ny, nm) = AddCalendarMonths(calendarId, cy, cm, step);
+            var cmp = CompareDate(ny, nm, ad, by, bm, bd);
+            if (cmp == step) break; // adding one more month would surpass the end
+            months += step; cy = ny; cm = nm;
             if (cmp == 0) break;
         }
 
+        var curDay = Math.Min(ad, TemporalCalendarMath.DaysInMonth(calendarId, cy, cm));
         var daysOut = TemporalCalendarMath.EpochDaysFromYmd(calendarId, by, bm, bd)
-                    - TemporalCalendarMath.EpochDaysFromYmd(calendarId, my, mm, md);
+                    - TemporalCalendarMath.EpochDaysFromYmd(calendarId, cy, cm, curDay);
 
         return (years, months, 0, daysOut);
     }

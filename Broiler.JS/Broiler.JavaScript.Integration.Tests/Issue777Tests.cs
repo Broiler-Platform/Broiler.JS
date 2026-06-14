@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.Integration.Tests;
 //
 // Fixed here:
 //   * Problem 1 — the Indian national (Saka) calendar (Gregorian-anchored solar arithmetic, single
-//     "saka" era) for Temporal.PlainDate / PlainDateTime / PlainYearMonth.
+//     "shaka" era) for Temporal.PlainDate / PlainDateTime / PlainYearMonth.
 //   * Problems 3/4/6/7/9 — the non-ISO calendars (chinese, hebrew, dangi, islamic-civil, ethiopic,
 //     …) were rejected by Temporal.PlainYearMonth at Canonicalize; PlainYearMonth now supports them
 //     (accessors / from / with / add / subtract / since / until / toPlainDate / parsing), sharing
@@ -44,9 +44,9 @@ public class Issue777Tests
         => Assert.Equal("2000-03-21",
             Eval("Temporal.PlainDate.from({year:1922, month:1, day:1, calendar:'indian'}).withCalendar('iso8601').toString()"));
 
-    [Fact] // ISO → indian fields: single "saka" era, eraYear == year
+    [Fact] // ISO → indian fields: single "shaka" era, eraYear == year
     public void IndianFieldsFromIso()
-        => Assert.Equal("1879,1,M01,1,saka,1879",
+        => Assert.Equal("1879,1,M01,1,shaka,1879",
             Eval(@"var d = Temporal.PlainDate.from('1957-03-22').withCalendar('indian');
                    [d.year, d.month, d.monthCode, d.day, d.era, d.eraYear].join(',')"));
 
@@ -63,9 +63,9 @@ public class Issue777Tests
                    var d = Temporal.PlainDate.from({year:1921, month:1, day:1, calendar:'indian'});
                    [dim(2), dim(7), dim(12), d.monthsInYear].join(',')"));
 
-    [Fact] // add a whole year keeps the month/day and stays in the saka era
+    [Fact] // add a whole year keeps the month/day and stays in the shaka era
     public void IndianAddYear()
-        => Assert.Equal("1923,M01,1,saka,1923",
+        => Assert.Equal("1923,M01,1,shaka,1923",
             Eval(@"var d = Temporal.PlainDate.from({year:1922, monthCode:'M01', day:1, calendar:'indian'}).add({years:1});
                    [d.year, d.monthCode, d.day, d.era, d.eraYear].join(',')"));
 
@@ -77,7 +77,7 @@ public class Issue777Tests
 
     [Fact] // PlainDateTime also supports indian
     public void IndianDateTime()
-        => Assert.Equal("1922,M01,saka,1922",
+        => Assert.Equal("1922,M01,shaka,1922",
             Eval(@"var d = Temporal.PlainDateTime.from({year:1922, month:1, day:1, hour:5, calendar:'indian'});
                    [d.year, d.monthCode, d.era, d.eraYear].join(',')"));
 
@@ -132,7 +132,7 @@ public class Issue777Tests
 
     [Fact] // indian also works for PlainYearMonth
     public void YearMonthIndian()
-        => Assert.Equal("1922,M01,saka,1922",
+        => Assert.Equal("1922,M01,shaka,1922",
             Eval(@"var ym = Temporal.PlainYearMonth.from({year:1922, month:1, calendar:'indian'});
                    [ym.year, ym.monthCode, ym.era, ym.eraYear].join(',')"));
 

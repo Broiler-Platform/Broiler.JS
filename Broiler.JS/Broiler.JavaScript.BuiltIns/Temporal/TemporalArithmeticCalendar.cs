@@ -19,7 +19,7 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 //   indian             — the reformed Indian national (Saka) calendar: solar, 12 months anchored to
 //                        the Gregorian year (Saka year + 78). Chaitra (month 1) is 30 days (31 in a
 //                        leap Saka year, when Saka + 78 is a Gregorian leap year), months 2–6 are 31
-//                        days and months 7–12 are 30 days. Single era "saka".
+//                        days and months 7–12 are 30 days. Single era "shaka".
 //
 // Unlike the Gregorian family these have a different month/day structure than ISO, so every date
 // field is computed by converting the stored ISO date to an epoch-day count and back through the
@@ -204,7 +204,7 @@ internal static class TemporalArithmeticCalendar
         "coptic" or "hebrew" => ("am", calYear),
         "ethiopic" => calYear >= 1 ? ("am", calYear) : ("aa", calYear + 5500),
         "ethioaa" => ("aa", calYear), // single Amete Alem era for any sign
-        "indian" => ("saka", calYear), // single Saka era for any sign
+        "indian" => ("shaka", calYear), // single Shaka era for any sign
         _ => calYear >= 1 ? ("ah", calYear) : ("bh", 1 - calYear), // islamic-civil / islamic-tbla
     };
 
