@@ -209,6 +209,10 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
                 len = @string.Length;
                 break;
             case JSTypedArray typed:
+                // InitializeTypedArrayFromTypedArray: a source view left detached or out of bounds by
+                // a resize has no usable element count, so it is a TypeError.
+                if (typed.buffer == null || typed.buffer.isDetached || typed.IsOutOfBounds)
+                    throw JSEngine.NewTypeError("Cannot construct a TypedArray from a detached or out-of-bounds TypedArray");
                 len = typed.Length;
                 break;
         }
