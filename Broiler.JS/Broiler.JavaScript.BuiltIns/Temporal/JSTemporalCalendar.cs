@@ -188,8 +188,8 @@ internal static class TemporalCalendar
     {
         if (calendarId == "iso8601")
         {
-            if (hasEra || hasEraYear)
-                throw JSEngine.NewRangeError("Temporal: the iso8601 calendar does not use eras");
+            // The ISO calendar has no eras: era / eraYear are not ISO calendar fields, so they are
+            // ignored entirely (not an error) and only `year` resolves the ISO year.
             if (!hasYear)
                 throw JSEngine.NewTypeError("Temporal: missing year");
             return year;

@@ -377,14 +377,15 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
     private string ToISOString() => ToISOString("auto");
 
-    // MM-DD for the ISO calendar. The reference year is prefixed (YYYY-MM-DD) when it is not the
-    // default or when a non-ISO calendar is attached (so the value round-trips). The calendar is
-    // annotated when showCalendar forces it (always/critical) or, for "auto", when it is not iso8601.
+    // MM-DD for the ISO calendar. Per TemporalMonthDayToString the reference year is prefixed
+    // (YYYY-MM-DD) when showCalendar forces the calendar to appear (always/critical) or when a
+    // non-ISO calendar is attached (so the value round-trips). The calendar is annotated when
+    // showCalendar forces it (always/critical) or, for "auto", when it is not iso8601.
     private string ToISOString(string showCalendar)
     {
         var nonIsoCalendar = calendarId != "iso8601";
         var sb = new StringBuilder();
-        if (referenceISOYear != DefaultReferenceYear || nonIsoCalendar)
+        if (showCalendar is "always" or "critical" || nonIsoCalendar)
         {
             if (referenceISOYear < 0 || referenceISOYear > 9999)
                 sb.Append(referenceISOYear < 0 ? '-' : '+').Append(Math.Abs(referenceISOYear).ToString("000000", CultureInfo.InvariantCulture));

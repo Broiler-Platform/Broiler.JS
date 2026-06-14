@@ -217,6 +217,16 @@ public partial class JSTemporalPlainDate : JSObject
     private int ResolveWithYear(JSObject obj, ref bool any)
     {
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
+
+        // The ISO calendar has no eras: era / eraYear are not fields, so they are ignored and only
+        // `year` (defaulting to the receiver's) resolves the year.
+        if (calendarId == "iso8601")
+        {
+            if (yearValue.IsUndefined) return isoYear;
+            any = true;
+            return ToIntegerWithTruncation(yearValue);
+        }
+
         var eraValue = obj[KeyStrings.GetOrCreate("era")];
         var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
 
