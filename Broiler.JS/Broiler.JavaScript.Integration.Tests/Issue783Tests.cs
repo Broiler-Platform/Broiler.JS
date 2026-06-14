@@ -30,13 +30,20 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     preserves the month *code*, so a leap month (M03L) constrains to the matching common month
 //     (M03) under overflow "constrain" and is a RangeError under "reject", instead of keeping the
 //     bare ordinal (which produced M04).
+//   * Problem 4 (subset a) — Temporal.PlainDate/PlainYearMonth/PlainMonthDay.prototype.toLocaleString
+//     reject a timeStyle option, and PlainTime.prototype.toLocaleString rejects dateStyle, with a
+//     TypeError (the formatter itself is still an ISO stub — that is problem 3).
+//   * Problem 4 (subset b) — Iterator.prototype.constructor's set accessor (a no-op before) now
+//     implements SetterThatIgnoresPrototypeProperties: a non-object receiver, or the
+//     %Iterator.prototype% home object, is a TypeError; any other object gets an own data property.
 //
 // Out of scope (large, separate features): Problem 2 (Temporal.Duration with a ZonedDateTime
 // relativeTo — round/total/compare) and the date-component RoundRelativeDuration the since/until
 // "throws-if-rounded-date-outside-valid-iso-range" cases need; Problem 3 (Intl.DateTimeFormat
 // formatting Temporal objects — toLocaleString is still an ISO stub, so the PlainDate.valueOf path
-// is never reached); Problem 4 (resizable-ArrayBuffer-backed TypedArray TypeErrors, and the Temporal
-// toLocaleString dateStyle+timeStyle validation that belongs with the Intl-Temporal integration).
+// is never reached); the rest of Problem 4 (resizable-ArrayBuffer-backed TypedArray TypeErrors, which
+// need length-tracking resizable buffers, and the %IteratorHelperPrototype% brand check for
+// iterator-helper methods called on a generator).
 public class Issue783Tests
 {
     private static string Eval(string code)
