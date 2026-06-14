@@ -54,6 +54,13 @@ public partial class FastParser(FastTokenStream stream) : IParser
     // with one in — the enclosing block/switch scope.
     private bool nestedFunctionClause = false;
 
+    // Set while parsing the body of an `if`/`while`/`do`/`for`/`with`/label clause,
+    // whose grammar is a single Statement (not a StatementListItem). A LexicalDeclaration
+    // (`let`/`const`/`class`) is not a Statement, so it is a SyntaxError there — and a
+    // `let` followed by `{`/identifier across a line terminator is just an `IdentifierReference`
+    // expression statement (ASI), not a declaration. Consumed (cleared) by Statement.
+    private bool singleStatementContext = false;
+
     public StreamLocation BeginUndo() => new(this, stream.Current);
 
     public StreamLocation Location

@@ -262,8 +262,9 @@ public partial class JSTemporalPlainDate : JSObject
 
     private JSValue AddDuration(JSValue durationLike, JSValue options, int sign)
     {
-        var overflow = ReadOverflow(options);
+        // Spec reads the duration argument before the overflow option.
         var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
+        var overflow = ReadOverflow(options);
 
         // A PlainDate balances the duration's time components down to whole (24 h) days,
         // then performs calendar date arithmetic.

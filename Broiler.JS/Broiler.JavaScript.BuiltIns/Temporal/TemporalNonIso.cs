@@ -33,7 +33,7 @@ internal static class TemporalNonIso
         if (obj[KeyStrings.GetOrCreate("day")].IsUndefined)
             throw JSEngine.NewTypeError($"{typeName}: missing day");
 
-        var (year, month) = ResolveYearMonth(obj, calendarId, typeName);
+        var (year, month) = ResolveYearMonth(obj, calendarId, overflow, typeName);
         var day = ToPositiveIntegerWithTruncation(obj[KeyStrings.GetOrCreate("day")], typeName);
         return RegulateToIso(calendarId, year, month, day, overflow);
     }
@@ -87,14 +87,14 @@ internal static class TemporalNonIso
     // non-Gregorian calendar to the stored ISO date of day 1 of that calendar month.
     internal static (int y, int m, int d) YearMonthToIso(JSObject obj, string calendarId, string overflow, string typeName)
     {
-        var (year, month) = ResolveYearMonth(obj, calendarId, typeName);
+        var (year, month) = ResolveYearMonth(obj, calendarId, overflow, typeName);
         return RegulateToIso(calendarId, year, month, 1, overflow);
     }
 
     // Resolves the (calendar year, calendar month-ordinal) from a property bag: the year comes from
     // `year` and/or { era, eraYear } (era-less for the lunisolar calendars), the month from `month`
     // and/or `monthCode` (with an optional leap "L" suffix).
-    private static (int year, int month) ResolveYearMonth(JSObject obj, string calendarId, string typeName)
+    private static (int year, int month) ResolveYearMonth(JSObject obj, string calendarId, string overflow, string typeName)
     {
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
         var eraValue = obj[KeyStrings.GetOrCreate("era")];
@@ -136,7 +136,17 @@ internal static class TemporalNonIso
         else
         {
             var (codeNumber, leapMonth) = ParseMonthCode(monthCodeValue.ToString());
-            month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, leapMonth);
+            // The hebrew leap month "M05L" (Adar I) exists only in leap years. Under overflow
+            // "constrain" a year that has no such leap month maps it to the regular Adar — which is
+            // coded "M06" — rather than throwing. (Reject, and every other calendar, fall through to
+            // OrdinalFromMonthCode, which throws when the leap month is absent.)
+            if (leapMonth && calendarId == "hebrew" && overflow != "reject")
+            {
+                try { month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, true); }
+                catch (JSException) { month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber + 1, false); }
+            }
+            else
+                month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, leapMonth);
         }
         if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToPositiveIntegerWithTruncation(monthValue, typeName) != month)
             throw JSEngine.NewRangeError($"{typeName}: month and monthCode disagree");

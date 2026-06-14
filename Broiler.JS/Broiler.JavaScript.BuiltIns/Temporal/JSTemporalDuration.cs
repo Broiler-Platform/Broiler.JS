@@ -122,16 +122,17 @@ public partial class JSTemporalDuration : JSObject
             return ToIntegerIfIntegral(v);
         }
 
-        var y = Read("years", years);
-        var mo = Read("months", months);
-        var w = Read("weeks", weeks);
+        // ToTemporalPartialDurationRecord reads the fields in alphabetical order.
         var d = Read("days", days);
         var h = Read("hours", hours);
-        var mi = Read("minutes", minutes);
-        var s = Read("seconds", seconds);
-        var ms = Read("milliseconds", milliseconds);
         var us = Read("microseconds", microseconds);
+        var ms = Read("milliseconds", milliseconds);
+        var mi = Read("minutes", minutes);
+        var mo = Read("months", months);
         var ns = Read("nanoseconds", nanoseconds);
+        var s = Read("seconds", seconds);
+        var w = Read("weeks", weeks);
+        var y = Read("years", years);
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.Duration.prototype.with requires at least one duration property");
@@ -379,9 +380,11 @@ public partial class JSTemporalDuration : JSObject
             return ToIntegerIfIntegral(v);
         }
 
-        var y = Field("years"); var mo = Field("months"); var w = Field("weeks"); var dd = Field("days");
-        var h = Field("hours"); var mi = Field("minutes"); var s = Field("seconds");
-        var ms = Field("milliseconds"); var us = Field("microseconds"); var ns = Field("nanoseconds");
+        // ToTemporalDurationRecord reads the fields in alphabetical order.
+        var dd = Field("days"); var h = Field("hours"); var us = Field("microseconds");
+        var ms = Field("milliseconds"); var mi = Field("minutes"); var mo = Field("months");
+        var ns = Field("nanoseconds"); var s = Field("seconds"); var w = Field("weeks");
+        var y = Field("years");
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.Duration: object has no duration properties");

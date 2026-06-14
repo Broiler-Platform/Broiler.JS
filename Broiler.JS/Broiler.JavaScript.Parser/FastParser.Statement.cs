@@ -18,6 +18,11 @@ partial class FastParser
         var begin = BeginUndo();
         var token = begin.Token;
 
+        // Consume the single-statement-context flag for this statement only; it must not
+        // leak into a nested block's StatementList (where lexical declarations are legal).
+        var single = singleStatementContext;
+        singleStatementContext = false;
+
         if (token.IsEscapedReservedWord)
             throw new FastParseException(token, "Keyword must not contain escaped characters");
 
@@ -47,7 +52,7 @@ partial class FastParser
                 return Class(out node);
         }
 
-        if (SingleStatement(begin, out node))
+        if (SingleStatement(begin, single, out node))
         {
             stream.CheckAndConsumeAny(TokenTypes.SemiColon, TokenTypes.LineTerminator);
             return true;
@@ -98,6 +103,7 @@ partial class FastParser
         // here we only suppress the enclosing-scope lexical registration.
         var wasNestedFunctionClause = nestedFunctionClause;
         nestedFunctionClause = stream.Current.Keyword == FastKeywords.function;
+        singleStatementContext = true;
         try
         {
             return Statement(out node);
@@ -143,7 +149,7 @@ partial class FastParser
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    bool SingleStatement(in StreamLocation begin, out AstStatement node)
+    bool SingleStatement(in StreamLocation begin, bool singleContext, out AstStatement node)
     {
         var token = begin.Token;
         if (token.IsKeyword)
@@ -155,7 +161,36 @@ partial class FastParser
 
                 case FastKeywords.let:
                     if (LetBeginsLexicalDeclaration())
+                    {
+                        if (singleContext)
+                        {
+                            // The body of an if/while/do/for/with is a single Statement, not a
+                            // StatementListItem, so a `let` LexicalDeclaration is a SyntaxError.
+                            // `let [` is the restricted production and counts as a declaration even
+                            // across a line terminator; `let {` / `let <id>` is only a declaration
+                            // when no line terminator follows (otherwise ASI makes `let` an
+                            // IdentifierReference — e.g. `if (false) let\n{}` is `let;` then `{}`).
+                            var letPosition = stream.Current;
+                            stream.Consume();
+                            var lineBreakAfterLet = stream.LineTerminator();
+                            var afterLet = stream.Current.Type;
+                            stream.Reset(letPosition);
+
+                            if (afterLet == TokenTypes.SquareBracketStart
+                                || (!lineBreakAfterLet
+                                    && (afterLet == TokenTypes.Identifier
+                                        || afterLet == TokenTypes.CurlyBracketStart)))
+                                throw new FastParseException(letPosition, "Lexical declaration cannot appear in a single-statement context");
+
+                            // `let` is an IdentifierReference expression statement. Build it
+                            // directly (the generic expression path rejects a following `{`).
+                            if (!ExpressionSequence(out var letExpression, TokenTypes.SemiColon))
+                                throw stream.Unexpected();
+                            node = new AstExpressionStatement(token, PreviousToken, letExpression);
+                            return true;
+                        }
                         return VariableDeclaration(out node, FastVariableKind.Let);
+                    }
                     // `let` is an IdentifierReference here — fall through to the
                     // labeled-statement / expression-statement handling below.
                     break;

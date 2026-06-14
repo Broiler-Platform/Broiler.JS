@@ -284,8 +284,9 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
     private JSValue AddDuration(JSValue durationLike, JSValue options, int sign)
     {
-        var overflow = ReadOverflow(options);
+        // Spec reads the duration argument before the overflow option.
         var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
+        var overflow = ReadOverflow(options);
 
         // AddDurationToYearMonth: only the year and month components may be non-zero — a duration that
         // carries any weeks, days or sub-day time is a RangeError (the result is a year-month, so there
