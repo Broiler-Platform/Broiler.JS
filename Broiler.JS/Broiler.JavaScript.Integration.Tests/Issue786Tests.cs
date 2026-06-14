@@ -241,6 +241,18 @@ public class Issue786Tests
     public void DateTimeFormat_RendersTimeZoneName(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
+    [Theory]
+    // hourCycle selects the hour token: h12 → 12, h23 → 00, h11 → 0, h24 → 24 (at midnight).
+    [InlineData("hour12: false", "00:00:00")]
+    [InlineData("hour12: true", "12:00:00")]
+    [InlineData("hourCycle: 'h23'", "00:00:00")]
+    [InlineData("hourCycle: 'h24'", "24:00:00")]
+    [InlineData("hourCycle: 'h11'", "0:00:00")]
+    [InlineData("hourCycle: 'h12'", "12:00:00")]
+    public void PlainTime_ToLocaleString_HourCycle(string option, string expected)
+        => Assert.True(Eval($"new Temporal.PlainTime(0,0).toLocaleString('en', {{ {option}, timeZone:'UTC' }})").Contains(expected),
+            $"{option} should include {expected}");
+
     [Fact]
     public void ZonedDateTime_ToLocaleString_IncludesZoneNameByDefault()
         => Assert.Equal("true", Eval(

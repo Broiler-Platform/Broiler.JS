@@ -174,7 +174,8 @@ internal static class JSIntlDateTimeFormatEngine
         bool hasYear, string yearStyle, bool hasMonth, string monthStyle, bool hasDay, string dayStyle,
         bool hasHour, bool hasMinute, bool hasSecond, int fractionalSecondDigits, bool hasDayPeriodField,
         string dateStyle, string timeStyle, bool hour12, string calendar = null,
-        bool hasWeekday = false, string weekdayStyle = null, bool hasTimeZoneName = false)
+        bool hasWeekday = false, string weekdayStyle = null, bool hasTimeZoneName = false,
+        string hourCycle = null)
     {
         string datePattern = null;
         string timePattern = null;
@@ -247,15 +248,27 @@ internal static class JSIntlDateTimeFormatEngine
                 }
             }
 
+            // The hour token follows the resolved hour cycle: h12 → "h" (1-12), h23 → "HH" (0-23),
+            // h11 → "K" (0-11), h24 → "k" (1-24). The 12-hour cycles (h11/h12) also show a dayPeriod.
+            var cycle = hourCycle ?? (hour12 ? "h12" : "h23");
+            var (hourTok, showDayPeriod) = cycle switch
+            {
+                "h11" => ("K", true),
+                "h24" => ("k", false),
+                "h23" => ("HH", false),
+                _ => ("h", true), // h12
+            };
+            var ap = showDayPeriod ? " a" : "";
+
             var time = new StringBuilder();
             if (hasHour && hasMinute && hasSecond)
-                time.Append(hour12 ? "h:mm:ss a" : "HH:mm:ss");
+                time.Append($"{hourTok}:mm:ss{ap}");
             else if (hasHour && hasMinute)
-                time.Append(hour12 ? "h:mm a" : "HH:mm");
+                time.Append($"{hourTok}:mm{ap}");
             else if (hasMinute && hasSecond)
                 time.Append("mm:ss");
             else if (hasHour)
-                time.Append(hour12 ? "h a" : "HH");
+                time.Append($"{hourTok}{ap}");
             else if (hasMinute)
                 time.Append("mm");
             else if (hasSecond)
