@@ -44,41 +44,37 @@ partial class FastParser
         }
         else if (current.Keyword == FastKeywords.@import && stream.Next.Type == TokenTypes.Dot)
         {
-            // import.meta — only valid when the syntactic goal symbol is Module.
-            // Parse it as a meta property so the compiler can reject it with a
-            // SyntaxError in Script / FunctionBody / FormalParameters contexts.
-            stream.Consume();
-            stream.Consume();
+            // `import.meta` (a meta property, Module-only) or a phased dynamic import
+            // `import.defer( … )` / `import.source( … )` (an ImportCall with a phase). The compiler
+            // currently treats the phased forms like a plain `import(…)`.
+            var importToken = current;
+            stream.Consume(); // `import`
+            stream.Consume(); // `.`
 
-            if (!stream.CheckAndConsume(TokenTypes.Identifier, out var id))
+            if (!stream.CheckAndConsume(TokenTypes.Identifier, out var id) || id.CookedText != null)
                 throw stream.Unexpected();
 
-            if (id.CookedText != null || !id.Span.Equals("meta"))
+            if (id.Span.Equals("meta"))
+            {
+                node = new AstMeta(new AstIdentifier(importToken.AsString()), new AstIdentifier(id));
+            }
+            else if ((id.Span.Equals("defer") || id.Span.Equals("source"))
+                     && stream.Current.Type == TokenTypes.BracketStart)
+            {
+                node = ParseImportCall(importToken);
+            }
+            else
+            {
                 throw stream.Unexpected();
-
-            node = new AstMeta(new AstIdentifier(current.AsString()), new AstIdentifier(id));
+            }
         }
         else if (current.Keyword == FastKeywords.@import && stream.Next.Type == TokenTypes.BracketStart)
         {
             // Dynamic import — `import( AssignmentExpression [, options] ,opt )` — a CallExpression
-            // that evaluates to a Promise. The argument list is parsed like ordinary call
-            // arguments so a trailing comma and the second options argument are handled.
+            // that evaluates to a Promise.
             var importToken = current;
             stream.Consume(); // `import`
-            stream.Consume(); // `(`
-
-            if (!ArrayExpression(out var importArgs))
-                throw stream.Unexpected();
-
-            var en = importArgs.GetFastEnumerator();
-            AstExpression source = null, options = null;
-            if (en.MoveNext(out var first)) source = first;
-            if (en.MoveNext(out var second)) options = second;
-
-            if (source == null || en.MoveNext(out _))
-                throw stream.Unexpected(); // require exactly one specifier (plus optional options)
-
-            node = new AstImportCall(importToken, source, options, (options ?? source).End);
+            node = ParseImportCall(importToken);
         }
         else if (!SingleExpression(out node, asyncFunction: asyncFunction))
         {
@@ -241,6 +237,27 @@ partial class FastParser
 
         return true;
 
+    }
+
+    // Parses the argument list of a dynamic ImportCall — `( AssignmentExpression [, options] ,opt )`
+    // — assuming `import` (and any phase keyword) is already consumed and the current token is `(`.
+    // Exactly one specifier is required; a second argument is the optional `options` object.
+    private AstImportCall ParseImportCall(FastToken importToken)
+    {
+        stream.Consume(); // `(`
+
+        if (!ArrayExpression(out var importArgs))
+            throw stream.Unexpected();
+
+        var en = importArgs.GetFastEnumerator();
+        AstExpression source = null, options = null;
+        if (en.MoveNext(out var first)) source = first;
+        if (en.MoveNext(out var second)) options = second;
+
+        if (source == null || en.MoveNext(out _))
+            throw stream.Unexpected(); // require exactly one specifier (plus optional options)
+
+        return new AstImportCall(importToken, source, options, (options ?? source).End);
     }
 
 }

@@ -59,6 +59,10 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     measured from the day-constrained intermediate. since is now -(this.until(other)) (anchored on
 //     the receiver, then negated — +0 not -0), rather than swapping the operands. Applies to the
 //     Gregorian-family (ISO) calendars; the non-ISO calendars share a separate difference path.
+//   * Problem 11 — the parser accepted `import(…)` and `import.meta` but rejected the phased dynamic
+//     import forms `import.defer(…)` / `import.source(…)` (the `import.meta` branch threw on any
+//     identifier other than "meta"). They now parse as an ImportCall (the compiler treats them like a
+//     plain `import(…)`), fixing the dynamic-import-syntax/valid/*import-defer* tests.
 public class Issue781Tests
 {
     private static string Eval(string code)
@@ -432,4 +436,25 @@ public class Issue781Tests
     public void UntilBalancesNegativeDifference(string start, string end, string largestUnit, string expected)
         => Assert.Equal(expected, Eval(
             $"Temporal.PlainDate.from('{start}').until('{end}', {{ largestUnit: '{largestUnit}' }}).toString()"));
+
+    // ───────────── Problem 11: phased dynamic import (import.defer / import.source) parses ─────────────
+
+    // `import.defer(specifier)` / `import.source(specifier)` are valid ImportCall syntax (here inside
+    // an un-called arrow, so only parsing/compilation is exercised) and no longer raise a SyntaxError.
+    [Theory]
+    [InlineData("let f = () => { import.defer('./x.js'); }; 'ok'")]
+    [InlineData("let f = () => { import.source('./x.js'); }; 'ok'")]
+    [InlineData("let f = () => import.defer(''); 'ok'")]
+    [InlineData("let f = async () => { await import.defer('./x.js'); }; 'ok'")]
+    public void PhasedDynamicImportParses(string code)
+        => Assert.Equal("ok", Eval(code));
+
+    // A plain dynamic import and an unknown phase keyword are still handled as before.
+    [Fact]
+    public void PlainDynamicImportStillParses()
+        => Assert.Equal("ok", Eval("let f = () => import('./x.js'); 'ok'"));
+
+    [Fact]
+    public void UnknownImportPhaseThrowsSyntaxError()
+        => Assert.Equal("SyntaxError", ErrorName("eval(\"import.bogus('./x.js')\")"));
 }
