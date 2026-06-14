@@ -1330,32 +1330,71 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     // ── parsing the ISO string ────────────────────────────────────────────────────
 
-    private static readonly Regex ZonedPattern = new(
-        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?" +
-        @"(?:([Zz])|([+-])(\d{2})(?::?(\d{2})(?::?(\d{2}))?)?)?" +
-        @"\[(?!u-ca=)([^\]]+)\](?:\[u-ca=([^\]]+)\])?$",
+    // The date-time + optional UTC-offset core of a ZonedDateTime string (the trailing RFC 9557
+    // annotations are peeled off and validated separately). The date may use the extended
+    // ("1976-11-18") or basic ("19761118") form, and the offset may carry sub-minute precision,
+    // including a fractional-seconds part (e.g. +01:35:00.000000000).
+    private const string YearField = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
+    private static readonly Regex ZonedCorePattern = new(
+        @"^(?:(?<y>" + YearField + @")-(?<mo>\d{2})-(?<d>\d{2})|(?<y>" + YearField + @")(?<mo>\d{2})(?<d>\d{2}))" +
+        @"[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
+        @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::?(?<om>\d{2})(?::?(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))?$",
         RegexOptions.CultureInvariant);
+
+    private static readonly Regex ZonedTrailingAnnotation = new(@"\[(!?)([^\]]*)\]$", RegexOptions.CultureInvariant);
 
     private static JSValue ParseZonedDateTimeString(string text, string offsetOption = "reject")
     {
-        var match = ZonedPattern.Match(text);
+        // Validate the trailing annotations (multiple/critical calendar, malformed key=value, critical
+        // unknown key, sub-minute offset annotation) before decomposing them.
+        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
+        TemporalIsoString.RejectMalformedAnnotations(text);
+        TemporalIsoString.RejectInvalidAnnotations(text);
+
+        // Peel the trailing [..] annotations off the date/time core. A ZonedDateTime requires exactly
+        // one time-zone annotation (the bracket whose contents carry no '='); the first [u-ca=…] sets
+        // the calendar and any further (non-critical) annotations are ignored.
+        var core = text;
+        var annotations = new List<(bool Critical, string Content)>();
+        while (true)
+        {
+            var am = ZonedTrailingAnnotation.Match(core);
+            if (!am.Success || am.Index + am.Length != core.Length) break;
+            annotations.Add((am.Groups[1].Value == "!", am.Groups[2].Value));
+            core = core.Substring(0, am.Index);
+        }
+        annotations.Reverse(); // restore left-to-right order so the first annotation of each kind wins
+
+        string timeZoneAnnotation = null, calendarValue = null;
+        foreach (var (_, content) in annotations)
+        {
+            var eq = content.IndexOf('=');
+            if (eq < 0) timeZoneAnnotation ??= content;
+            else if (content.Substring(0, eq).Equals("u-ca", StringComparison.Ordinal))
+                calendarValue ??= content.Substring(eq + 1);
+        }
+
+        if (timeZoneAnnotation == null)
+            throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
+
+        var match = ZonedCorePattern.Match(core);
         if (!match.Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
 
-        var calendarId = match.Groups[14].Success ? TemporalCalendar.Canonicalize(match.Groups[14].Value, includeArithmetic: true) : "iso8601";
+        var calendarId = calendarValue != null ? TemporalCalendar.Canonicalize(calendarValue, includeArithmetic: true) : "iso8601";
 
-        var year = int.Parse(match.Groups[1].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
-        var month = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
-        var day = int.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture);
-        var hour = int.Parse(match.Groups[4].Value, CultureInfo.InvariantCulture);
-        var minute = match.Groups[5].Success ? int.Parse(match.Groups[5].Value, CultureInfo.InvariantCulture) : 0;
-        var second = match.Groups[6].Success ? int.Parse(match.Groups[6].Value, CultureInfo.InvariantCulture) : 0;
+        var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
+        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
+        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
+        var hour = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture);
+        var minute = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
+        var second = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
         if (second == 60) second = 59; // leap second collapses
 
         int ms = 0, us = 0, ns = 0;
-        if (match.Groups[7].Success)
+        if (match.Groups["f"].Success)
         {
-            var digits = match.Groups[7].Value.PadRight(9, '0');
+            var digits = match.Groups["f"].Value.PadRight(9, '0');
             ms = int.Parse(digits.Substring(0, 3), CultureInfo.InvariantCulture);
             us = int.Parse(digits.Substring(3, 3), CultureInfo.InvariantCulture);
             ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);
@@ -1364,25 +1403,28 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (!IsValidISODate(year, month, day) || hour > 23 || minute > 59 || second > 59)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
 
-        // A time-zone annotation may carry the RFC 9557 critical flag "!" (e.g. [!UTC]); strip it
-        // before canonicalizing the identifier.
-        var timeZoneAnnotation = match.Groups[13].Value;
-        if (timeZoneAnnotation.StartsWith("!", StringComparison.Ordinal))
-            timeZoneAnnotation = timeZoneAnnotation.Substring(1);
         var timeZoneId = CanonicalizeTimeZone(timeZoneAnnotation);
         var localNs = LocalNanoseconds(year, month, day, hour, minute, second, ms, us, ns);
 
         long offsetNs;
-        var hasZ = match.Groups[8].Success;
-        var hasNumericOffset = match.Groups[9].Success;
+        var hasZ = match.Groups["z"].Success;
+        var hasNumericOffset = match.Groups["off"].Success;
         if (hasZ) offsetNs = 0;
         else if (hasNumericOffset)
         {
-            var sign = match.Groups[9].Value is "-" or "−" ? -1 : 1;
-            var oh = int.Parse(match.Groups[10].Value, CultureInfo.InvariantCulture);
-            var om = match.Groups[11].Success ? int.Parse(match.Groups[11].Value, CultureInfo.InvariantCulture) : 0;
-            var os = match.Groups[12].Success ? int.Parse(match.Groups[12].Value, CultureInfo.InvariantCulture) : 0;
-            var explicitOffset = (long)sign * ((long)oh * 3600 + om * 60 + os) * 1_000_000_000;
+            // The offset must use consistent separators (e.g. "+00:0000" mixes ':' with bare digits).
+            if (!TemporalIsoString.IsStrictOffset(match.Groups["off"].Value))
+                throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
+
+            var sign = match.Groups["osign"].Value is "-" or "−" ? -1 : 1;
+            var oh = int.Parse(match.Groups["oh"].Value, CultureInfo.InvariantCulture);
+            var om = match.Groups["om"].Success ? int.Parse(match.Groups["om"].Value, CultureInfo.InvariantCulture) : 0;
+            var os = match.Groups["os"].Success ? int.Parse(match.Groups["os"].Value, CultureInfo.InvariantCulture) : 0;
+            if (oh > 23 || om > 59 || os > 59)
+                throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
+            var offsetFractionNs = match.Groups["of"].Success
+                ? long.Parse(match.Groups["of"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture) : 0L;
+            var explicitOffset = (long)sign * ((long)(oh * 3600 + om * 60 + os) * 1_000_000_000 + offsetFractionNs);
 
             // InterpretISODateTimeOffset (offsetBehaviour "option"): the explicit offset is honoured
             // verbatim only for "use"; "ignore" drops it for the zone's own offset; "prefer"/"reject"
