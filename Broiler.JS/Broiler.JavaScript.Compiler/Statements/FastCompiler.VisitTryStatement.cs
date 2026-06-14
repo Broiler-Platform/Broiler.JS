@@ -2,6 +2,7 @@ using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
+using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -12,6 +13,38 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     protected override YExpression VisitTryStatement(AstTryStatement tryStatement)
+    {
+        // Inside a generator the body is rewritten into a state machine; the script/eval completion
+        // value is irrelevant there, so use the plain form (no completion tracking) to avoid
+        // disturbing that rewrite — mirroring VisitIfStatement.
+        if (scope.Top.Function?.Generator == true)
+            return BuildTryCore(tryStatement);
+
+        // A TryStatement's completion value is the value of its Block — or its Catch when the Block
+        // throws — with the Finally block's value always discarded, and an empty completion replaced
+        // by undefined (spec TryStatement evaluation + UpdateEmpty). Track it the same way as if /
+        // with / loops: the Block's and Catch's inner statements assign to `#cv` (it is on top of the
+        // completion stack while they are visited), `#cv` defaults to undefined, and is propagated to
+        // the enclosing completion variables. The Finally block is visited under a null boundary
+        // (BuildTryCore → VisitFinallyBlock) so its statements update no completion variable at all.
+        var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
+        var outerCompletionVars = GetCompletionVariables();
+
+        YExpression coreTry;
+        using (completionScopes.Push(completionVar))
+            coreTry = BuildTryCore(tryStatement);
+
+        return YExpression.Block(
+            new Sequence<YParameterExpression> { completionVar },
+            YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
+            YExpression.TailCallTransparentTryFinally(coreTry, PropagateCompletion(completionVar, outerCompletionVars)),
+            completionVar);
+    }
+
+    // Builds the underlying try/catch/finally expression. The Block and Catch are visited under the
+    // currently-active completion scope (so their values flow into the completion variable for a
+    // script/eval), while the Finally block is visited with completion tracking suppressed.
+    private YExpression BuildTryCore(AstTryStatement tryStatement)
     {
         var block = VisitStatement(tryStatement.Block);
         var cb = tryStatement.Catch;
@@ -30,7 +63,7 @@ partial class FastCompiler
                 var cbExp = YExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 
                 if (tryStatement.Finally != null)
-                    return YExpression.TryCatchFinally(block.ToJSValue(), VisitStatement(tryStatement.Finally).ToJSValue(), cbExp);
+                    return YExpression.TryCatchFinally(block.ToJSValue(), VisitFinallyBlock(tryStatement.Finally), cbExp);
 
                 return YExpression.TryCatch(block.ToJSValue(), cbExp);
             }
@@ -65,7 +98,7 @@ partial class FastCompiler
                 var cbExp = YExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 
                 if (tryStatement.Finally != null)
-                    return YExpression.TryCatchFinally(block.ToJSValue(), VisitStatement(tryStatement.Finally).ToJSValue(), cbExp);
+                    return YExpression.TryCatchFinally(block.ToJSValue(), VisitFinallyBlock(tryStatement.Finally), cbExp);
 
                 return YExpression.TryCatch(block.ToJSValue(), cbExp);
             }
@@ -77,7 +110,7 @@ partial class FastCompiler
                 var cbExp = YExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 
                 if (tryStatement.Finally != null)
-                    return YExpression.TryCatchFinally(block.ToJSValue(), VisitStatement(tryStatement.Finally).ToJSValue(), cbExp);
+                    return YExpression.TryCatchFinally(block.ToJSValue(), VisitFinallyBlock(tryStatement.Finally), cbExp);
 
                 return YExpression.TryCatch(block.ToJSValue(), cbExp);
             }
@@ -85,8 +118,17 @@ partial class FastCompiler
 
         var @finally = tryStatement.Finally;
         if (@finally != null)
-            return YExpression.TryFinally(block.ToJSValue(), VisitStatement(@finally).ToJSValue());
+            return YExpression.TryFinally(block.ToJSValue(), VisitFinallyBlock(@finally));
 
         return JSUndefinedBuilder.Value;
+    }
+
+    // A Finally block's completion value is always discarded, so it must update no completion
+    // variable — neither the try statement's own nor any enclosing one. Visiting it under a null
+    // completion boundary makes the inner statements' TrackCompletion a no-op.
+    private YExpression VisitFinallyBlock(AstStatement finallyStatement)
+    {
+        using (completionScopes.Push(null))
+            return VisitStatement(finallyStatement).ToJSValue();
     }
 }

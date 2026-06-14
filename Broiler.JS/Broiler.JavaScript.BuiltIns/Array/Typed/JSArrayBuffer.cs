@@ -139,10 +139,15 @@ public partial class JSArrayBuffer : JSObject
     public byte[] Buffer => buffer;
 
     [JSExport(Length = 1)]
-    public JSArrayBuffer(in Arguments a) : this(ResolveNewTargetPrototype())
+    public JSArrayBuffer(in Arguments a) : this()
     {
+        // Step 1: a plain call (no new.target) is a TypeError. This must precede every coercion.
+        RequireConstructor("ArrayBuffer");
+
         // ToIndex(length) runs before the options bag is observed, matching the spec
-        // AllocateArrayBuffer evaluation order.
+        // AllocateArrayBuffer evaluation order. The byteLength-vs-maxByteLength RangeError is thrown
+        // here, BEFORE the instance prototype is resolved (deferred to JSFunction.CreateInstance's
+        // post-construction step), so a throwing new.target `get prototype` is never observed.
         int length = ToBufferLength(a.Get1(), 0);
         int requestedMaxByteLength = ToMaxByteLengthOption(a.GetAt(1));
 
@@ -168,22 +173,19 @@ public partial class JSArrayBuffer : JSObject
     }
 
     /// <summary>
-    /// ArrayBuffer ( … ) step 1: throw a TypeError when NewTarget is undefined
-    /// (called as a plain function, not via <c>new</c> / <c>Reflect.construct</c>),
-    /// then return the prototype to allocate from. The "requires new" check MUST
-    /// run before reading <see cref="JSEngine.NewTargetPrototype"/>: that read can
-    /// invoke a user-defined <c>get prototype</c> accessor on new.target, whose JS
-    /// frame consumes and clears CurrentNewTarget — so checking afterwards would
-    /// spuriously see no new target.
+    /// ArrayBuffer / SharedArrayBuffer ( … ) step 1: throw a TypeError when NewTarget is undefined
+    /// (called as a plain function, not via <c>new</c> / <c>Reflect.construct</c>). The instance
+    /// prototype itself is resolved later (JSFunction.CreateInstance defers it past a successful
+    /// construction), so this check must NOT read <see cref="JSEngine.NewTargetPrototype"/> — both
+    /// because that read can invoke a user <c>get prototype</c> accessor and because the spec orders
+    /// the argument-validation RangeErrors before object creation.
     /// </summary>
-    private static JSObject ResolveNewTargetPrototype()
+    private protected static void RequireConstructor(string name)
     {
-        // A native [[Construct]] keeps its new.target in CurrentNewTarget, so both
-        // must be null to be a plain call.
+        // A native [[Construct]] keeps its new.target in CurrentNewTarget, so both must be null to
+        // be a plain call.
         if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
-            throw JSEngine.NewTypeError("Constructor ArrayBuffer requires 'new'");
-
-        return JSEngine.NewTargetPrototype;
+            throw JSEngine.NewTypeError($"Constructor {name} requires 'new'");
     }
 
     public JSArrayBuffer(int length) : this() => buffer = new byte[length];

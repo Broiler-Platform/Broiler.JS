@@ -463,7 +463,13 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             or "Function"
             or "AsyncFunction"
             or "GeneratorFunction"
-            or "AsyncGeneratorFunction";
+            or "AsyncGeneratorFunction"
+            // These validate their arguments (byteLength vs maxByteLength / byteOffset vs buffer
+            // length) and throw a RangeError BEFORE the object is created, so NewTarget.prototype —
+            // whose getter is observable — must not be read until after a successful construction.
+            or "ArrayBuffer"
+            or "SharedArrayBuffer"
+            or "DataView";
         var instancePrototype = !deferInstancePrototypeResolution && previousNewTarget != null
             ? ResolveInstancePrototype(previousNewTarget)
             : prototype;

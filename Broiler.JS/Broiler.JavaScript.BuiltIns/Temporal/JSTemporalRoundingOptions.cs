@@ -131,6 +131,18 @@ internal static class TemporalRoundingOptions
         return (int)increment;
     }
 
+    // MaximumTemporalDurationRoundingIncrement: the fixed divisor a time unit's rounding increment
+    // must divide into (24 h/day boundary for hours, 60 for minutes/seconds, 1000 for the sub-second
+    // units). The calendar units (year/month/week/day) have no fixed divisor and return 0 (the
+    // caller skips the divides-evenly check for them).
+    internal static long MaximumRoundingIncrement(string unit) => unit switch
+    {
+        "hour" => 24,
+        "minute" or "second" => 60,
+        "millisecond" or "microsecond" or "nanosecond" => 1000,
+        _ => 0,
+    };
+
     // ValidateTemporalRoundingIncrement: the increment must not exceed `dividend` (or dividend − 1
     // when not inclusive) and must divide it evenly.
     internal static void ValidateRoundingIncrement(long increment, long dividend, bool inclusive)

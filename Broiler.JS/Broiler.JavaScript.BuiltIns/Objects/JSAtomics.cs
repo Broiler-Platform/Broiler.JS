@@ -66,11 +66,15 @@ public partial class JSAtomics : JSObject
     private static bool IsBigIntKind(ElementKind kind)
         => kind is ElementKind.BigInt64 or ElementKind.BigUint64;
 
-    // ValidateAtomicAccess: ToIndex(requestIndex) then bounds-check against the live length.
+    // ValidateAtomicAccess: the array length is captured BEFORE ToIndex(requestIndex), so the
+    // bounds-check uses the length as it was on entry — even if coercing the index runs user code
+    // that grows the (growable shared) buffer. This is why e.g. Atomics.wait(ta, {valueOf grows},
+    // value, timeout) throws a RangeError without ever coercing value/timeout.
     private static int ValidateAtomicAccess(JSTypedArray typedArray, JSValue requestIndex)
     {
+        var length = typedArray.length;
         var accessIndex = ToIndex(requestIndex);
-        if (accessIndex >= typedArray.length)
+        if (accessIndex >= length)
             throw JSEngine.NewRangeError("Atomics access index is out of bounds");
 
         return accessIndex;

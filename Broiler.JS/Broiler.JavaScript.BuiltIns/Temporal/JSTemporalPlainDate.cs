@@ -266,12 +266,16 @@ public partial class JSTemporalPlainDate : JSObject
         var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
         var overflow = ReadOverflow(options);
 
-        // A PlainDate balances the duration's time components down to whole (24 h) days,
-        // then performs calendar date arithmetic.
+        // A PlainDate balances the duration's time components down to whole (24 h) days, then
+        // performs calendar date arithmetic. The running nanosecond total uses BigInteger because a
+        // near-maximum duration (e.g. ~1.7e13 seconds) overflows Int64 once scaled to nanoseconds.
         var timeNanoseconds =
-            (long)d.HoursValue * 3_600_000_000_000 + (long)d.MinutesValue * 60_000_000_000
-            + (long)d.SecondsValue * 1_000_000_000 + (long)d.MillisecondsValue * 1_000_000
-            + (long)d.MicrosecondsValue * 1_000 + (long)d.NanosecondsValue;
+            (System.Numerics.BigInteger)(long)d.HoursValue * 3_600_000_000_000
+            + (System.Numerics.BigInteger)(long)d.MinutesValue * 60_000_000_000
+            + (System.Numerics.BigInteger)(long)d.SecondsValue * 1_000_000_000
+            + (System.Numerics.BigInteger)(long)d.MillisecondsValue * 1_000_000
+            + (System.Numerics.BigInteger)(long)d.MicrosecondsValue * 1_000
+            + (long)d.NanosecondsValue;
         var extraDays = (long)(timeNanoseconds / 86_400_000_000_000);
 
         if (NonIso)
@@ -549,6 +553,12 @@ public partial class JSTemporalPlainDate : JSObject
         if (item is JSTemporalPlainDate d)
             return new JSTemporalPlainDate(d.isoYear, d.isoMonth, d.isoDay, d.calendarId, PlainDatePrototype);
 
+        // A Temporal.ZonedDateTime is consumed via its internal slots (its wall-clock ISO date in its
+        // own time zone + its calendar), NOT via its observable getters — GetISODateTimeFor +
+        // CreateTemporalDate. (Spec ToTemporalDate, ZonedDateTime branch.)
+        if (item is JSTemporalZonedDateTime zdt)
+            return zdt.ToPlainDateFromSlots();
+
         if (item.IsString)
             return ParseTemporalDateString(item.ToString());
 
@@ -604,6 +614,7 @@ public partial class JSTemporalPlainDate : JSObject
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
 
         TemporalIsoString.RejectMultipleCalendarAnnotations(text);
+        TemporalIsoString.RejectMalformedAnnotations(text);
         TemporalIsoString.RejectInvalidAnnotations(text);
 
         var match = DatePattern.Match(text);
@@ -785,11 +796,23 @@ public partial class JSTemporalPlainDate : JSObject
         return (ry, rmo, rw, rd);
     }
 
+    // Temporal.PlainDateTime calendar/day rounding: rounds an already-computed (day-borrowed) date
+    // duration toward `smallestUnit`, with the start (`startTimeNs`) and destination (`destTimeNs`)
+    // wall-clock times of day folding into the boundary progress (measured in nanoseconds). The end
+    // date `ey/em/ed` is the destination's actual ISO date. Returns only date units (the sub-unit
+    // time is consumed by the rounding).
+    internal static (long y, long mo, long w, long d) RoundDateTimeDateDifference(
+        int sy, int sm, int sd, long years, long months, long weeks, long days,
+        int ey, int em, int ed, long startTimeNs, long destTimeNs,
+        string largestUnit, string smallestUnit, int increment, string roundingMode)
+        => RoundDateDifference(sy, sm, sd, years, months, weeks, days, ey, em, ed,
+            largestUnit, smallestUnit, increment, roundingMode, startTimeNs, destTimeNs);
+
     private static int DateDurationSign(long y, long mo, long w, long d)
         => y != 0 ? Math.Sign(y) : mo != 0 ? Math.Sign(mo) : w != 0 ? Math.Sign(w) : d != 0 ? Math.Sign(d) : 0;
 
     // The epoch-day number reached by adding a calendar date duration to the start date (constrain).
-    private static long AddDateGetDays(int sy, int sm, int sd, long y, long mo, long w, long d)
+    internal static long AddDateGetDays(int sy, int sm, int sd, long y, long mo, long w, long d)
     {
         var r = (JSTemporalPlainDate)AddISODate(sy, sm, sd, y, mo, w, d, "constrain");
         return DaysFromCivil(r.isoYear, r.isoMonth, r.isoDay);
@@ -800,12 +823,18 @@ public partial class JSTemporalPlainDate : JSObject
     // then roll an expanded unit up toward largestUnit.
     private static (long y, long mo, long w, long d) RoundDateDifference(
         int sy, int sm, int sd, long years, long months, long weeks, long days,
-        int ey, int em, int ed, string largestUnit, string smallestUnit, int increment, string roundingMode)
+        int ey, int em, int ed, string largestUnit, string smallestUnit, int increment, string roundingMode,
+        long startTimeNs = 0, long destTimeNs = 0)
     {
-        var sign = DateDurationSign(years, months, weeks, days);
-        if (sign == 0) return (0, 0, 0, 0);
-
+        const long NsPerDay = 86_400_000_000_000;
         var destDays = DaysFromCivil(ey, em, ed);
+
+        // The overall sign is taken on the nanosecond axis so a same-date, time-only PlainDateTime
+        // difference (date duration zero) still rounds in the right direction.
+        var aNs = (System.Numerics.BigInteger)DaysFromCivil(sy, sm, sd) * NsPerDay + startTimeNs;
+        var fullDestNs = (System.Numerics.BigInteger)destDays * NsPerDay + destTimeNs;
+        var sign = fullDestNs > aNs ? 1 : fullDestNs < aNs ? -1 : 0;
+        if (sign == 0) return (0, 0, 0, 0);
 
         long r1;
         (long y, long mo, long w, long d) startDur, endDur;
@@ -833,22 +862,52 @@ public partial class JSTemporalPlainDate : JSObject
             }
             default: // day
                 r1 = days / increment * increment;
-                startDur = (years, months, weeks, r1); endDur = (years, months, weeks, r1 + increment * sign);
+                startDur = (years, months, weeks, r1); endDur = (years, months, weeks, r1 + (long)increment * sign);
                 break;
         }
 
-        var startDays = DateDurationSign(startDur.y, startDur.mo, startDur.w, startDur.d) == 0
-            ? DaysFromCivil(sy, sm, sd)
-            : AddDateGetDays(sy, sm, sd, startDur.y, startDur.mo, startDur.w, startDur.d);
-        var endDays = AddDateGetDays(sy, sm, sd, endDur.y, endDur.mo, endDur.w, endDur.d);
+        // The years+months+weeks anchor of the start (r1) boundary on the epoch-day axis.
+        long startDays;
+        long anchorDays = 0;
+        if (smallestUnit == "day")
+        {
+            // Day boundaries are linear on the epoch-day axis from the anchor (years+months+weeks), so
+            // they are computed arithmetically below — a large increment must not build an out-of-range
+            // intermediate date (the rounded result is just a day count, e.g. P1000000000D).
+            anchorDays = AddDateGetDays(sy, sm, sd, years, months, weeks, 0);
+            startDays = anchorDays + r1;
+        }
+        else
+        {
+            startDays = DateDurationSign(startDur.y, startDur.mo, startDur.w, startDur.d) == 0
+                ? DaysFromCivil(sy, sm, sd)
+                : AddDateGetDays(sy, sm, sd, startDur.y, startDur.mo, startDur.w, startDur.d);
+        }
+
+        // Progress between the boundaries is measured on the nanosecond axis (the start time of day
+        // is baked into both boundaries, the destination time into `destNs`), so a PlainDateTime's
+        // sub-day component participates in the rounding; a pure-date PlainDate passes time 0 and the
+        // ratio reduces to the day axis.
+        var startNs = (System.Numerics.BigInteger)startDays * NsPerDay + startTimeNs;
+
+        // An exact difference (the destination sits on the start boundary) needs no rounding, and the
+        // end boundary must not be built: for a coarse smallestUnit at the ISO limit (e.g.
+        // PlainYearMonth.since at +275760-09) the next-unit boundary is out of range.
+        if (startNs == fullDestNs)
+            return startDur;
+
+        var endDays = smallestUnit == "day"
+            ? anchorDays + r1 + (long)increment * sign
+            : AddDateGetDays(sy, sm, sd, endDur.y, endDur.mo, endDur.w, endDur.d);
+        var endNs = (System.Numerics.BigInteger)endDays * NsPerDay + startTimeNs;
 
         var didExpand = false;
         if (smallestUnit is "year" or "month")
         {
             // A calendar irregularity (e.g. a leap month) may put the end outside the bracket; shift it.
             var inBounds = sign == 1
-                ? startDays <= destDays && destDays <= endDays
-                : endDays <= destDays && destDays <= startDays;
+                ? startNs <= fullDestNs && fullDestNs <= endNs
+                : endNs <= fullDestNs && fullDestNs <= startNs;
             if (!inBounds)
             {
                 r1 += increment * sign;
@@ -856,14 +915,16 @@ public partial class JSTemporalPlainDate : JSObject
                 else { startDur = (years, r1, 0, 0); endDur = (years, r1 + increment * sign, 0, 0); }
                 startDays = AddDateGetDays(sy, sm, sd, startDur.y, startDur.mo, startDur.w, startDur.d);
                 endDays = AddDateGetDays(sy, sm, sd, endDur.y, endDur.mo, endDur.w, endDur.d);
+                startNs = (System.Numerics.BigInteger)startDays * NsPerDay + startTimeNs;
+                endNs = (System.Numerics.BigInteger)endDays * NsPerDay + startTimeNs;
                 didExpand = true;
             }
         }
 
-        var numerator = destDays - startDays;
-        var denominator = endDays - startDays;
-        var absNum = Math.Abs(numerator);
-        var absDen = Math.Abs(denominator);
+        var numerator = fullDestNs - startNs;
+        var denominator = endNs - startNs;
+        var absNum = System.Numerics.BigInteger.Abs(numerator);
+        var absDen = System.Numerics.BigInteger.Abs(denominator);
 
         bool isEnd;
         if (numerator == 0) isEnd = false;

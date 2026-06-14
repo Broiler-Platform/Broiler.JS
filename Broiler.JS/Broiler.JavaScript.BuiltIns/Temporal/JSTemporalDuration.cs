@@ -482,6 +482,15 @@ public partial class JSTemporalDuration : JSObject
             var signed = sign < 0 ? -totalSecondsNs : totalSecondsNs;
             signed = TemporalRoundingOptions.RoundToIncrement(signed, incrementNs, roundingMode);
             totalSecondsNs = BigInteger.Abs(signed);
+
+            // TemporalDurationFromInternal: the rounded duration must still be valid — rounding the
+            // seconds up (ceil/expand) can push the total elapsed time to/over the 2^53-second limit.
+            var roundedTimeNs = new BigInteger(Math.Abs(days)) * 86_400_000_000_000
+                + new BigInteger(Math.Abs(hours)) * 3_600_000_000_000
+                + new BigInteger(Math.Abs(minutes)) * 60_000_000_000
+                + totalSecondsNs;
+            if (roundedTimeNs >= (BigInteger)9007199254740992d * 1_000_000_000)
+                throw JSEngine.NewRangeError("Temporal.Duration: rounded duration is out of range");
         }
 
         var wholeSeconds = totalSecondsNs / 1_000_000_000;

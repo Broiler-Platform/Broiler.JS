@@ -370,18 +370,43 @@ public partial class JSTemporalPlainDateTime : JSObject
     [JSExport("since", Length = 1)]
     public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
 
-    // TODO: until/since honor only `largestUnit`; smallestUnit/roundingIncrement/roundingMode
-    // rounding is not yet applied.
+    // until/since honor largestUnit and round the difference to smallestUnit at the given
+    // roundingIncrement / roundingMode. A calendar (year/month/week/day) smallestUnit rounds the date
+    // part with the wall-clock time folded into the boundary progress; a time smallestUnit rounds the
+    // time, carrying any full-day overflow into the date and re-balancing.
     private JSValue Difference(JSValue other, JSValue options, int sign)
     {
         var target = RequireDateTime(ToTemporalDateTime(other, "constrain"));
         if (calendarId != target.calendarId)
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: cannot compute the difference between date-times of different calendars");
-        var largestUnit = ReadDifferenceSettings(options);
+        var (largestUnit, smallestUnit, increment, roundingMode) = ReadDifferenceSettings(options);
 
         // `since` is `-(this.until(other))`: always measure from the receiver (so the year/month
         // balancing anchors on the receiver) and negate for since, rather than swapping the operands.
         var (years, months, weeks, days, h, mi, s, ms, us, ns) = DifferenceISODateTime(this, target, largestUnit);
+
+        if (!(smallestUnit == "nanosecond" && increment == 1))
+        {
+            // `since` negates the operands, so it negates the rounding mode, rounds, then negates back.
+            var mode = sign == -1 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
+
+            if (smallestUnit is "year" or "month" or "week" or "day")
+            {
+                var (ry, rmo, rw, rd) = JSTemporalPlainDate.RoundDateTimeDateDifference(
+                    isoYear, isoMonth, isoDay, (long)years, (long)months, (long)weeks, (long)days,
+                    target.isoYear, target.isoMonth, target.isoDay, TimeNanoseconds(), target.TimeNanoseconds(),
+                    largestUnit, smallestUnit, increment, mode);
+                years = ry; months = rmo; weeks = rw; days = rd;
+                h = mi = s = ms = us = ns = 0;
+            }
+            else
+            {
+                (years, months, weeks, days, h, mi, s, ms, us, ns) = RoundTimeDifference(
+                    (long)years, (long)months, (long)weeks, (long)days, h, mi, s, ms, us, ns,
+                    largestUnit, smallestUnit, increment, mode);
+            }
+        }
+
         if (sign == -1)
         {
             years = JSTemporalPlainDate.Negate(years); months = JSTemporalPlainDate.Negate(months);
@@ -390,6 +415,74 @@ public partial class JSTemporalPlainDateTime : JSObject
             ms = JSTemporalPlainDate.Negate(ms); us = JSTemporalPlainDate.Negate(us); ns = JSTemporalPlainDate.Negate(ns);
         }
         return new JSTemporalDuration(years, months, weeks, days, h, mi, s, ms, us, ns, JSTemporalDuration.DurationPrototype);
+    }
+
+    // Rounds a date-time difference whose smallestUnit is a time unit: the residual time is rounded to
+    // the increment; any full-day overflow carries into the date part (re-balanced to largestUnit when
+    // that is coarser than a day). When largestUnit is itself a time unit there is no date part and
+    // the whole (day-free) time total is rounded and re-balanced.
+    private (double, double, double, double, double, double, double, double, double, double) RoundTimeDifference(
+        long years, long months, long weeks, long days,
+        double h, double mi, double s, double ms, double us, double ns,
+        string largestUnit, string smallestUnit, int increment, string roundingMode)
+    {
+        const long NsPerDayL = NanosecondsPerDay;
+        long unitNs = smallestUnit switch
+        {
+            "hour" => 3_600_000_000_000L,
+            "minute" => 60_000_000_000L,
+            "second" => 1_000_000_000L,
+            "millisecond" => 1_000_000L,
+            "microsecond" => 1_000L,
+            _ => 1L, // nanosecond
+        } * increment;
+
+        var timeNs = (BigInteger)(long)h * 3_600_000_000_000 + (long)mi * 60_000_000_000
+                   + (long)s * 1_000_000_000 + (long)ms * 1_000_000 + (long)us * 1_000 + (long)ns;
+
+        var isTimeLargest = largestUnit is "hour" or "minute" or "second" or "millisecond" or "microsecond" or "nanosecond";
+        if (isTimeLargest)
+        {
+            // A time largestUnit has no date part: fold the whole-day component into the total, round
+            // it, and balance from largestUnit downward.
+            var total = (BigInteger)days * NsPerDayL + timeNs;
+            var roundedTotal = TemporalRoundingOptions.RoundToIncrement(total, unitNs, roundingMode);
+            var (th, tm, ts, tms, tus, tns) = BalanceTime(roundedTotal, largestUnit);
+            return (0, 0, 0, 0, th, tm, ts, tms, tus, tns);
+        }
+
+        var rounded = TemporalRoundingOptions.RoundToIncrement(timeNs, unitNs, roundingMode);
+
+        // Calendar largestUnit: carry any whole days the rounding spilled into the date part.
+        var carryDays = (long)(rounded / NsPerDayL);
+        var residual = (long)(rounded - carryDays * NsPerDayL);
+        if (carryDays != 0)
+        {
+            var endDays = JSTemporalPlainDate.AddDateGetDays(isoYear, isoMonth, isoDay, years, months, weeks, days + carryDays);
+            var (ey, em, ed) = CivilFromDays(endDays);
+            var (by, bm, bw, bd) = JSTemporalPlainDate.DiffCalendarDate(isoYear, isoMonth, isoDay, (int)ey, (int)em, (int)ed, largestUnit);
+            years = (long)by; months = (long)bm; weeks = (long)bw; days = (long)bd;
+        }
+
+        var (rh, rmi, rs, rms, rus, rns) = FromTimeNanoseconds(Math.Abs(residual));
+        var sgn = Math.Sign(residual);
+        return (years, months, weeks, days, sgn * rh, sgn * rmi, sgn * rs, sgn * rms, sgn * rus, sgn * rns);
+    }
+
+    // Distributes a signed nanosecond total into time components from largestUnit downward.
+    private static (double h, double mi, double s, double ms, double us, double ns) BalanceTime(BigInteger totalNs, string largestUnit)
+    {
+        var sgn = totalNs.Sign;
+        var t = BigInteger.Abs(totalNs);
+        bool At(string u) => TemporalRoundingOptions.UnitIndex(largestUnit) <= TemporalRoundingOptions.UnitIndex(u);
+        BigInteger hr = 0, mn = 0, sc = 0, msv = 0, usv = 0;
+        if (At("hour")) { hr = t / 3_600_000_000_000; t %= 3_600_000_000_000; }
+        if (At("minute")) { mn = t / 60_000_000_000; t %= 60_000_000_000; }
+        if (At("second")) { sc = t / 1_000_000_000; t %= 1_000_000_000; }
+        if (At("millisecond")) { msv = t / 1_000_000; t %= 1_000_000; }
+        if (At("microsecond")) { usv = t / 1_000; t %= 1_000; }
+        double S(BigInteger v) => sgn * (double)v;
+        return (S(hr), S(mn), S(sc), S(msv), S(usv), sgn * (double)t);
     }
 
     [JSExport("round", Length = 1)]
@@ -649,14 +742,14 @@ public partial class JSTemporalPlainDateTime : JSObject
         return overflow;
     }
 
-    // GetDifferenceSettings for until/since: validates largestUnit, smallestUnit, roundingIncrement
-    // and roundingMode and returns the resolved largestUnit (year … nanosecond). smallestUnit must
-    // not be larger than largestUnit. (A smallestUnit/increment finer than "day"/1 is validated here
-    // but the rounding is not yet applied — see TODO above Difference.)
-    private static string ReadDifferenceSettings(JSValue options)
+    // GetDifferenceSettings for until/since: reads largestUnit, roundingIncrement, roundingMode and
+    // smallestUnit (spec order), validates that largestUnit is not finer than smallestUnit and that a
+    // sub-day smallestUnit's increment divides its unit evenly, and resolves the defaults
+    // (smallestUnit "nanosecond"; largestUnit = the larger of "day" and smallestUnit).
+    private static (string largestUnit, string smallestUnit, int increment, string roundingMode) ReadDifferenceSettings(JSValue options)
     {
         if (options == null || options.IsUndefined)
-            return "day";
+            return ("day", "nanosecond", 1, "trunc");
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
@@ -664,11 +757,11 @@ public partial class JSTemporalPlainDateTime : JSObject
         string largestUnit = largestRaw.IsUndefined ? null
             : largestRaw.StringValue is "auto" ? null : NormalizeUnit(largestRaw.StringValue);
 
+        var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
+        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+
         var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
         var smallestUnit = smallestRaw.IsUndefined ? "nanosecond" : NormalizeUnit(smallestRaw.StringValue);
-
-        TemporalRoundingOptions.GetRoundingIncrement(o);
-        TemporalRoundingOptions.GetRoundingMode(o, "trunc");
 
         // largestUnit "auto" resolves to the larger of "day" and smallestUnit.
         largestUnit ??= TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("day")
@@ -677,7 +770,11 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex(largestUnit))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: smallestUnit must not be larger than largestUnit");
 
-        return largestUnit;
+        var max = TemporalRoundingOptions.MaximumRoundingIncrement(smallestUnit);
+        if (max > 0)
+            TemporalRoundingOptions.ValidateRoundingIncrement(increment, max, inclusive: false);
+
+        return (largestUnit, smallestUnit, increment, roundingMode);
     }
 
     private static string NormalizeUnit(string u) => u switch
@@ -786,6 +883,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     private static JSValue ParseTemporalDateTimeString(string text)
     {
         TemporalIsoString.RejectMultipleCalendarAnnotations(text);
+        TemporalIsoString.RejectMalformedAnnotations(text);
         TemporalIsoString.RejectInvalidAnnotations(text);
 
         var match = DateTimePattern.Match(text);

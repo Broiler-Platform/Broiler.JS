@@ -50,6 +50,29 @@ public class Issue640Tests
     public void NewObjectNoArgumentCreatesOrdinaryObject()
         => Assert.Equal("true", Eval("var n=new Object(); '' + (Object.getPrototypeOf(n)===Object.prototype)"));
 
+    // ---- Object [[Construct]] with a SUBCLASS new.target ignores the value argument ----
+    // (ES §20.1.1.1 step 1 / OrdinaryCreateFromConstructor). test262
+    // built-ins/Object/subclass-object-arg.js.
+
+    // `new (class extends Object {})(value)` creates a fresh object with the subclass prototype and
+    // does NOT adopt the argument's properties.
+    [Fact]
+    public void NewSubclassOfObjectIgnoresArgument()
+        => Assert.Equal("undefined true", Eval(
+            "class O extends Object {} var o=new O({a:1}); typeof o.a + ' ' + (Object.getPrototypeOf(o)===O.prototype)"));
+
+    // Reflect.construct(Object, [value], Subclass) behaves the same.
+    [Fact]
+    public void ReflectConstructObjectWithSubclassNewTargetIgnoresArgument()
+        => Assert.Equal("undefined true", Eval(
+            "class O extends Object {} var o=Reflect.construct(Object,[{b:2}],O); typeof o.b + ' ' + (Object.getPrototypeOf(o)===O.prototype)"));
+
+    // The argument object's own prototype must NOT be mutated by the subclass construction.
+    [Fact]
+    public void SubclassConstructionDoesNotMutateArgumentPrototype()
+        => Assert.Equal("true", Eval(
+            "class O extends Object {} var inp={q:9}; new O(inp); '' + (Object.getPrototypeOf(inp)===Object.prototype)"));
+
     // ---- Problem 10: new.target in eval outside function code is a SyntaxError ----
 
     [Fact]
