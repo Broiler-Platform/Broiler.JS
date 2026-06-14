@@ -469,6 +469,8 @@ public partial class JSTemporalPlainTime : JSObject
 
     private static JSValue ParseTemporalTimeString(string text)
     {
+        TemporalIsoString.RejectInvalidAnnotations(text);
+
         var match = TimePattern.Match(text);
         if (!match.Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainTime from \"{text}\"");

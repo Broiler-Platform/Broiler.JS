@@ -391,6 +391,15 @@ public partial class JSIteratorObject : JSObject
         }
     }
 
+    // IteratorClose with a *normal* completion: unlike CloseIteratorIfPossible (used after a throw
+    // completion, where IteratorClose keeps the original error and swallows the return error), an
+    // error thrown while reading or invoking the underlying iterator's return method must propagate.
+    internal static void CloseIterator(IElementEnumerator enumerator)
+    {
+        if (enumerator is IReturnableEnumerator returnable)
+            returnable.Return();
+    }
+
     internal static JSValue StaticMap(in Arguments a)
     {
         var fn = ReadCallableOrClose(a.This, a.Get1(), "Iterator.prototype.map requires a callable argument");
@@ -588,7 +597,7 @@ public partial class JSIteratorObject : JSObject
 
             if (result)
             {
-                CloseIteratorIfPossible(en);
+                CloseIterator(en);
                 return JSBoolean.True;
             }
         }
@@ -618,7 +627,7 @@ public partial class JSIteratorObject : JSObject
 
             if (!result)
             {
-                CloseIteratorIfPossible(en);
+                CloseIterator(en);
                 return JSBoolean.False;
             }
         }
@@ -647,7 +656,7 @@ public partial class JSIteratorObject : JSObject
 
             if (result)
             {
-                CloseIteratorIfPossible(en);
+                CloseIterator(en);
                 return value;
             }
         }
@@ -1339,28 +1348,56 @@ public partial class JSIteratorObject : JSObject
     internal sealed class TakeEnumerator(IElementEnumerator source, int limit) : IElementEnumerator, IReturnableEnumerator
     {
         private int taken = 0;
+        private bool closed = false;
+
+        // When the take limit is reached (remaining hits 0) the helper completes with a *normal*
+        // completion, which per spec performs IteratorClose on the underlying iterator. A throwing
+        // return propagates; natural source exhaustion needs no close (the source is already done).
+        private void CloseOnLimit()
+        {
+            if (closed)
+                return;
+
+            closed = true;
+            if (source is IReturnableEnumerator returnable)
+                returnable.Return();
+        }
 
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
-            if (taken < limit && source.MoveNext(out hasValue, out value, out index))
+            if (taken < limit)
             {
-                taken++;
-                return true;
+                if (source.MoveNext(out hasValue, out value, out index))
+                {
+                    taken++;
+                    return true;
+                }
+
+                value = JSUndefined.Value; hasValue = false; index = 0;
+                return false;
             }
 
             value = JSUndefined.Value; hasValue = false; index = 0;
+            CloseOnLimit();
             return false;
         }
 
         public bool MoveNext(out JSValue value)
         {
-            if (taken < limit && source.MoveNext(out value))
+            if (taken < limit)
             {
-                taken++;
-                return true;
+                if (source.MoveNext(out value))
+                {
+                    taken++;
+                    return true;
+                }
+
+                value = JSUndefined.Value;
+                return false;
             }
 
             value = JSUndefined.Value;
+            CloseOnLimit();
             return false;
         }
 

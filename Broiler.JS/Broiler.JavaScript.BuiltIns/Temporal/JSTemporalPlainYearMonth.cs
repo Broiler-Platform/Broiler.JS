@@ -595,6 +595,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
         TemporalIsoString.RejectMultipleCalendarAnnotations(text);
         TemporalIsoString.RejectMalformedAnnotations(text);
+        TemporalIsoString.RejectInvalidAnnotations(text);
 
         var match = YearMonthPattern.Match(text);
         if (!match.Success)

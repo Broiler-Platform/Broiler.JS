@@ -784,6 +784,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     private static JSValue ParseTemporalDateTimeString(string text)
     {
         TemporalIsoString.RejectMultipleCalendarAnnotations(text);
+        TemporalIsoString.RejectInvalidAnnotations(text);
 
         var match = DateTimePattern.Match(text);
         if (!match.Success)

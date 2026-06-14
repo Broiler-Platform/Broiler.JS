@@ -68,6 +68,34 @@ internal static class TemporalIsoString
         }
     }
 
+    // RFC 9557 annotation rules shared by every Temporal string parser:
+    //   • At most one time-zone annotation (a bracket whose contents, after an optional critical "!",
+    //     carry no '='); a second one — e.g. "...[UTC][UTC]" — is a RangeError.
+    //   • An annotation flagged critical ("!") whose key is not one Temporal recognizes (only "u-ca"
+    //     is) — e.g. "...[!foo=bar]" — is a RangeError. A non-critical unknown annotation is ignored.
+    // (RejectMultipleCalendarAnnotations / RejectMalformedAnnotations cover the u-ca-specific checks.)
+    internal static void RejectInvalidAnnotations(string text)
+    {
+        var timeZoneCount = 0;
+        foreach (Match m in AnnotationBracketPattern.Matches(text))
+        {
+            var content = m.Groups[1].Value;
+            var critical = content.StartsWith("!", StringComparison.Ordinal);
+            if (critical) content = content.Substring(1);
+            var eq = content.IndexOf('=');
+            if (eq < 0)
+            {
+                if (++timeZoneCount > 1)
+                    throw JSEngine.NewRangeError($"Temporal: more than one time zone annotation in \"{text}\"");
+                continue;
+            }
+
+            var key = content.Substring(0, eq);
+            if (critical && !key.Equals("u-ca", StringComparison.Ordinal))
+                throw JSEngine.NewRangeError($"Temporal: unknown annotation with critical flag \"[{m.Groups[1].Value}]\" in \"{text}\"");
+        }
+    }
+
     // A date or date-time. Time, fraction, and Z / numeric-offset designators are all optional; the
     // date portion is validated separately by IsValidDate.
     private static readonly Regex DateTimePattern = new(

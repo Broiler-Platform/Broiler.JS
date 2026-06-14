@@ -594,6 +594,7 @@ public partial class JSTemporalPlainDate : JSObject
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
 
         TemporalIsoString.RejectMultipleCalendarAnnotations(text);
+        TemporalIsoString.RejectInvalidAnnotations(text);
 
         var match = DatePattern.Match(text);
         if (!match.Success)
