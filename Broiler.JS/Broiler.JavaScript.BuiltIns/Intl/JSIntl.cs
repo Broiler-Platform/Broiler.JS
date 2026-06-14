@@ -124,14 +124,22 @@ public static class JSIntl
             new JSFunction(static (in Arguments a) =>
             {
                 var key = a.Get1().StringValue;
-                // Only the numbering-system enumeration is backed by real data so far;
-                // other keys (calendar, currency, …) return an empty list rather than
-                // throwing, until their data is wired up.
+                // The numbering-system and calendar enumerations are backed by real data; other keys
+                // (currency, collation, …) return an empty list rather than throwing, until their data
+                // is wired up.
                 if (key == "numberingSystem")
                 {
                     var list = JSValue.CreateArray();
                     foreach (var ns in SupportedNumberingSystemsSorted)
                         list.AddArrayItem(JSValue.CreateString(ns));
+                    return list;
+                }
+
+                if (key == "calendar")
+                {
+                    var list = JSValue.CreateArray();
+                    foreach (var cal in AvailableCanonicalCalendars)
+                        list.AddArrayItem(JSValue.CreateString(cal));
                     return list;
                 }
 
@@ -1106,6 +1114,15 @@ public static class JSIntl
 
     private static readonly HashSet<string> SupportedNumberingSystems =
         new(SupportedNumberingSystemsSorted, StringComparer.Ordinal);
+
+    // AvailableCanonicalCalendars: the canonical calendar identifiers reported by
+    // Intl.supportedValuesOf("calendar"), in code-unit (ascending) order.
+    internal static readonly string[] AvailableCanonicalCalendars =
+    {
+        "buddhist", "chinese", "coptic", "dangi", "ethioaa", "ethiopic", "gregory", "hebrew",
+        "indian", "islamic", "islamic-civil", "islamic-rgsa", "islamic-tbla", "islamic-umalqura",
+        "iso8601", "japanese", "persian", "roc",
+    };
 
     internal static bool IsSupportedNumberingSystem(string value)
         => value != null && SupportedNumberingSystems.Contains(value);
@@ -4103,14 +4120,23 @@ public class JSIntlDateTimeFormat : JSObject
         _ => throw JSEngine.NewTypeError("Intl.DateTimeFormat: unsupported Temporal value"),
     };
 
-    // A non-iso8601 Temporal calendar must equal the formatter's resolved calendar.
-    private void CheckTemporalCalendar(string calendarId)
+    // The Temporal value's calendar must be compatible with the formatter's resolved calendar.
+    // For PlainDate / PlainDateTime / Instant / ZonedDateTime the iso8601 calendar is compatible with
+    // any calendar (HandleDateTimeTemporalDate's iso8601 exception); for PlainYearMonth / PlainMonthDay
+    // (exact = true) the calendars must be identical — even an iso8601 instance is a mismatch.
+    private void CheckTemporalCalendar(string calendarId, bool exact)
     {
         var formatterCalendar = ResolvedCalendar();
-        if (calendarId != "iso8601" && calendarId != formatterCalendar)
+        var compatible = exact
+            ? calendarId == formatterCalendar
+            : calendarId == "iso8601" || calendarId == formatterCalendar;
+        if (!compatible)
             throw JSEngine.NewRangeError(
                 $"Intl.DateTimeFormat: calendar \"{calendarId}\" does not match the formatter calendar \"{formatterCalendar}\"");
     }
+
+    // PlainYearMonth / PlainMonthDay require an exact calendar match (no iso8601 exception).
+    private static bool RequiresExactCalendar(string kind) => kind is "yearmonth" or "monthday";
 
     // The effective fields shared by both endpoints of a format/formatRange, or a TypeError when the
     // formatter and the Temporal type have no field in common.
@@ -4144,7 +4170,7 @@ public class JSIntlDateTimeFormat : JSObject
     private List<JSIntlDateTimeFormatEngine.Part> FormatTemporalToParts(JSValue value, bool zonedAllowed = false, bool enforceStyle = false)
     {
         var meta = ClassifyTemporal(value, zonedAllowed);
-        CheckTemporalCalendar(meta.CalendarId);
+        CheckTemporalCalendar(meta.CalendarId, RequiresExactCalendar(meta.Kind));
         var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in meta, enforceStyle));
         var fields = meta.Fields;
         return JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), null);
@@ -4160,7 +4186,7 @@ public class JSIntlDateTimeFormat : JSObject
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.formatRange: both arguments must be the same Temporal type");
         if (start.CalendarId != end.CalendarId)
             throw JSEngine.NewRangeError("Intl.DateTimeFormat.formatRange: the two arguments must have the same calendar");
-        CheckTemporalCalendar(start.CalendarId);
+        CheckTemporalCalendar(start.CalendarId, RequiresExactCalendar(start.Kind));
         var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in start, enforceStyle: false));
         var startFields = start.Fields;
         var endFields = end.Fields;
