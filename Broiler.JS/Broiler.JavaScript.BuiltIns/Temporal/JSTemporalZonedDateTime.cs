@@ -1275,8 +1275,17 @@ public partial class JSTemporalZonedDateTime : JSObject
         long offsetNs;
         var offsetValue = obj[KeyStrings.GetOrCreate("offset")];
         long explicitOffset = 0;
-        var hasExplicitOffset = !offsetValue.IsUndefined && offsetValue.IsString
-            && TryParseOffsetString(offsetValue.ToString(), out explicitOffset);
+        var hasExplicitOffset = false;
+        if (!offsetValue.IsUndefined)
+        {
+            // The offset field must be a String (a non-string is a TypeError) and a valid UTC offset
+            // (an unparseable value such as "00:00" / "+0" is a RangeError) — it is not silently ignored.
+            if (!offsetValue.IsString)
+                throw JSEngine.NewTypeError("Temporal.ZonedDateTime: the offset field must be a string");
+            if (!TryParseOffsetString(offsetValue.StringValue, out explicitOffset))
+                throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: invalid offset string \"{offsetValue.StringValue}\"");
+            hasExplicitOffset = true;
+        }
         long ZoneOffset() => GetOffsetForLocal(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second);
 
         if (!hasExplicitOffset)
