@@ -306,15 +306,33 @@ partial class JSTypedArray
     {
         ValidateTypedArray("includes");
         var (searchElement, fromIndex) = a.Get2();
-        var startIndex = fromIndex.AsInt32OrDefault();
+
+        // The length is captured before fromIndex coercion (spec step 4: a zero-length array returns
+        // false before ToIntegerOrInfinity runs). A fromIndex valueOf that resizes the buffer is then
+        // observed only by the element reads below — indices left out of bounds read as undefined.
+        var n = Length;
+        if (n == 0)
+            return JSBoolean.False;
+
+        // ToIntegerOrInfinity (not ToInt32): a +Infinity fromIndex is past the end → false, and
+        // -Infinity clamps to the start.
+        var startIndex = ToIntegerOrInfinity(fromIndex);
+        if (startIndex >= n)
+            return JSBoolean.False;
         if (startIndex < 0)
         {
-            startIndex = 0;
+            // A negative fromIndex counts back from the end; below the start it clamps to 0.
+            startIndex = n + startIndex;
+            if (startIndex < 0)
+                startIndex = 0;
         }
-        var en = GetElementEnumerator(startIndex);
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+
+        for (var k = startIndex; k < n; k++)
         {
-            if (hasValue && item.Equals(searchElement))
+            // An index that became out of bounds (a resize during coercion) reads as undefined.
+            var item = TryGetElement((uint)k, out var v) ? v : JSUndefined.Value;
+            // includes uses SameValueZero, so NaN matches NaN (and +0/-0 are equal).
+            if (item.SameValueZero(searchElement))
                 return JSBoolean.True;
         }
         return JSBoolean.False;
