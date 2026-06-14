@@ -20,7 +20,10 @@ internal static class JSIntlDateTimeFormatEngine
     internal readonly struct Fields
     {
         public readonly int Year, Month, Day, Hour, Minute, Second, Millisecond;
-        public Fields(double wallClockMs)
+        // The pre-rendered time-zone display name (computed where the time zone + style are known),
+        // emitted by the 'z' token. Null for a wall clock that carries no zone (plain types).
+        public readonly string TimeZoneName;
+        public Fields(double wallClockMs, string timeZoneName = null)
         {
             Year = (int)JSDateMath.YearFromTime(wallClockMs);
             Month = JSDateMath.MonthFromTime(wallClockMs) + 1; // 0-indexed -> 1-indexed
@@ -29,15 +32,47 @@ internal static class JSIntlDateTimeFormatEngine
             Minute = JSDateMath.MinFromTime(wallClockMs);
             Second = JSDateMath.SecFromTime(wallClockMs);
             Millisecond = JSDateMath.MsFromTime(wallClockMs);
+            TimeZoneName = timeZoneName;
         }
 
         // Explicit wall-clock fields, used when formatting a Temporal plain type: its own clock is
         // formatted directly, with no time-zone conversion (the formatter's time zone is ignored).
-        public Fields(int year, int month, int day, int hour, int minute, int second, int millisecond)
+        public Fields(int year, int month, int day, int hour, int minute, int second, int millisecond, string timeZoneName = null)
         {
             Year = year; Month = month; Day = day;
             Hour = hour; Minute = minute; Second = second; Millisecond = millisecond;
+            TimeZoneName = timeZoneName;
         }
+    }
+
+    // The localized time-zone display name for the ECMA-402 timeZoneName option. UTC carries its CLDR
+    // names; every other zone uses the GMT offset (a CLDR offset/generic/specific zone-name database
+    // is not bundled), which satisfies the offset styles and is self-consistent for the rest.
+    internal static string FormatTimeZoneName(string timeZone, string style, double epochMs)
+    {
+        if (!string.IsNullOrEmpty(timeZone) && timeZone.Equals("UTC", StringComparison.OrdinalIgnoreCase))
+            return style switch
+            {
+                "long" or "longGeneric" => "Coordinated Universal Time",
+                "longOffset" or "shortOffset" => "GMT",
+                _ => "UTC",
+            };
+
+        var offsetMs = ToZone(epochMs, timeZone) - epochMs;
+        return GmtOffset(offsetMs, style is "longOffset" or "long" or "longGeneric");
+    }
+
+    // "GMT", "GMT-8", "GMT+5:30" (short) / "GMT-08:00", "GMT+05:30" (long); zero offset is "GMT".
+    private static string GmtOffset(double offsetMs, bool longForm)
+    {
+        var minutes = (int)(Math.Round(offsetMs / 60000.0));
+        if (minutes == 0) return "GMT";
+        var sign = minutes < 0 ? "-" : "+";
+        minutes = Math.Abs(minutes);
+        var h = minutes / 60;
+        var m = minutes % 60;
+        if (longForm) return $"GMT{sign}{h:D2}:{m:D2}";
+        return m == 0 ? $"GMT{sign}{h}" : $"GMT{sign}{h}:{m:D2}";
     }
 
     internal readonly struct Token
@@ -139,7 +174,7 @@ internal static class JSIntlDateTimeFormatEngine
         bool hasYear, string yearStyle, bool hasMonth, string monthStyle, bool hasDay, string dayStyle,
         bool hasHour, bool hasMinute, bool hasSecond, int fractionalSecondDigits, bool hasDayPeriodField,
         string dateStyle, string timeStyle, bool hour12, string calendar = null,
-        bool hasWeekday = false, string weekdayStyle = null)
+        bool hasWeekday = false, string weekdayStyle = null, bool hasTimeZoneName = false)
     {
         string datePattern = null;
         string timePattern = null;
@@ -269,6 +304,11 @@ internal static class JSIntlDateTimeFormatEngine
             (null, not null) => timePattern,
             _ => datePattern + ", " + timePattern,
         };
+
+        // A time-zone name follows the date/time, separated by a space ("… z"). It is added for the
+        // explicit timeZoneName option and for the long/full time styles (which include the zone).
+        if (hasTimeZoneName || timeStyle is "long" or "full")
+            combined = combined.Length > 0 ? combined + " z" : "z";
 
         var tokens = Parse(combined);
         return new Pattern { Tokens = tokens, Skeleton = SkeletonOf(tokens), Calendar = calendar };
@@ -579,6 +619,11 @@ internal static class JSIntlDateTimeFormatEngine
                     >= 4 => WeekdayWide[dow],
                     _ => WeekdayShort[dow],
                 });
+            case 'z':
+            case 'O':
+            case 'v':
+            case 'V':
+                return ("timeZoneName", f.TimeZoneName ?? string.Empty);
             case 'a':
             case 'b':
                 return ("dayPeriod", f.Hour < 12 ? "AM" : "PM");

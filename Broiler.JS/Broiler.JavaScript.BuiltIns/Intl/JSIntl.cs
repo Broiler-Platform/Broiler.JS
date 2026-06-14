@@ -3877,7 +3877,8 @@ public class JSIntlDateTimeFormat : JSObject
             hour12: ResolveHour12(),
             calendar: ResolvedCalendar(),
             hasWeekday: OptionString(KeyStrings.GetOrCreate("weekday")) != null,
-            weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")));
+            weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")),
+            hasTimeZoneName: OptionString(KeyStrings.GetOrCreate("timeZoneName")) != null);
 
     // The resolved calendar: the requested -u-ca- value when it is one this engine
     // supports (era-based Gregorian-derived calendars), otherwise "gregory".
@@ -3910,7 +3911,14 @@ public class JSIntlDateTimeFormat : JSObject
     }
 
     private JSIntlDateTimeFormatEngine.Fields ResolveFields(double clipped)
-        => new(JSIntlDateTimeFormatEngine.ToZone(clipped, OptionString(TimeZoneKey)));
+    {
+        var tz = OptionString(TimeZoneKey);
+        // The display name is always computed (default style "short") so it is available whenever the
+        // resolved pattern emits a zone token — the explicit option, or a long/full time style.
+        var style = OptionString(KeyStrings.GetOrCreate("timeZoneName")) ?? "short";
+        var zoneName = JSIntlDateTimeFormatEngine.FormatTimeZoneName(tz, style, clipped);
+        return new(JSIntlDateTimeFormatEngine.ToZone(clipped, tz), zoneName);
+    }
 
     // ── Temporal integration (FormatDateTimePattern / HandleDateTimeValue) ───────────────────────
     // The field categories a Temporal type can supply to Intl.DateTimeFormat. A plain type that lacks
@@ -3950,10 +3958,11 @@ public class JSIntlDateTimeFormat : JSObject
         if (Has(DayPeriodKey)) f |= TemporalFields.DayPeriod;
         if (Has(KeyStrings.GetOrCreate("timeZoneName"))) f |= TemporalFields.TimeZoneName;
 
-        // A time-zone name is not a date/time *component*: a formatter requesting only timeZoneName is
-        // still "default", so a plain type formats its defaults (dropping the zone) rather than
-        // failing the no-overlap check.
-        var hadComponents = (f & ~TemporalFields.TimeZoneName) != TemporalFields.None;
+        // era and timeZoneName are *supplementary*: they are not date/time components for the
+        // defaulting decision, so a formatter requesting only those is still "default" (a plain type
+        // formats its defaults, dropping the unsupported supplementary field, instead of failing the
+        // no-overlap check). They are re-added to a supporting type in EffectiveTemporalFields.
+        var hadComponents = (f & ~SupplementaryFields) != TemporalFields.None;
 
         // Expand dateStyle / timeStyle into the component fields they render (en/CLDR layout, matching
         // the engine's hardcoded styles). timeStyle long/full also implies a time-zone name.
@@ -4014,7 +4023,7 @@ public class JSIntlDateTimeFormat : JSObject
         }
 
         var dtf = new JSIntlDateTimeFormat(new Arguments(JSUndefined.Value, locales, options ?? JSUndefined.Value));
-        return new JSString(JSIntlDateTimeFormatEngine.PartsToString(dtf.FormatTemporalToParts(temporal)));
+        return new JSString(JSIntlDateTimeFormatEngine.PartsToString(dtf.FormatTemporalToParts(temporal, zonedAllowed: true, enforceStyle: true)));
     }
 
     // The per-type formatting metadata: supported fields, default fields, an identity for same-type
@@ -4030,12 +4039,20 @@ public class JSIntlDateTimeFormat : JSObject
 
     private const TemporalFields DateDefaults = TemporalFields.Year | TemporalFields.Month | TemporalFields.Day;
     private const TemporalFields TimeDefaults = TemporalFields.Hour | TemporalFields.Minute | TemporalFields.Second;
+    // Fields that don't participate in the overlap/default decision; added back if the type supports them.
+    private const TemporalFields SupplementaryFields = TemporalFields.Era | TemporalFields.TimeZoneName;
 
-    // HandleDateTimeValue: classify a Temporal value (ZonedDateTime is a TypeError for format).
-    private TemporalMeta ClassifyTemporal(JSValue value) => value switch
+    // HandleDateTimeValue: classify a Temporal value. ZonedDateTime is a TypeError for
+    // DateTimeFormat.format, but toLocaleString (zonedAllowed) formats it in its own zone, with the
+    // zone name included by default.
+    private TemporalMeta ClassifyTemporal(JSValue value, bool zonedAllowed) => value switch
     {
-        JSTemporalZonedDateTime => throw JSEngine.NewTypeError(
-            "Intl.DateTimeFormat: cannot format a Temporal.ZonedDateTime; use zonedDateTime.toLocaleString() instead"),
+        JSTemporalZonedDateTime zdt => zonedAllowed
+            ? new TemporalMeta(TemporalFields.Date | TemporalFields.Time | TemporalFields.TimeZoneName,
+                DateDefaults | TimeDefaults | TemporalFields.TimeZoneName, "zoneddatetime", zdt.calendarId,
+                ResolveFields((double)(zdt.epochNanoseconds / 1_000_000)))
+            : throw JSEngine.NewTypeError(
+                "Intl.DateTimeFormat: cannot format a Temporal.ZonedDateTime; use zonedDateTime.toLocaleString() instead"),
         JSTemporalPlainDate d => new TemporalMeta(TemporalFields.Date, DateDefaults, "date", d.calendarId,
             new JSIntlDateTimeFormatEngine.Fields(d.isoYear, d.isoMonth, d.isoDay, 0, 0, 0, 0)),
         JSTemporalPlainDateTime dt => new TemporalMeta(TemporalFields.Date | TemporalFields.Time, DateDefaults | TimeDefaults, "datetime", dt.calendarId,
@@ -4062,29 +4079,38 @@ public class JSIntlDateTimeFormat : JSObject
 
     // The effective fields shared by both endpoints of a format/formatRange, or a TypeError when the
     // formatter and the Temporal type have no field in common.
-    private TemporalFields EffectiveTemporalFields(in TemporalMeta meta)
+    private TemporalFields EffectiveTemporalFields(in TemporalMeta meta, bool enforceStyle)
     {
-        // A whole-style request that the type cannot carry at all is rejected even when the other
-        // style overlaps: a date-only type (PlainDate / PlainYearMonth / PlainMonthDay) rejects
-        // timeStyle, and the time-only PlainTime rejects dateStyle.
-        if (timeStyle != null && (meta.Mask & TemporalFields.Time) == 0)
-            throw JSEngine.NewTypeError("Intl.DateTimeFormat: timeStyle is not supported for this Temporal type");
-        if (dateStyle != null && (meta.Mask & TemporalFields.Date) == 0)
-            throw JSEngine.NewTypeError("Intl.DateTimeFormat: dateStyle is not supported for this Temporal type");
+        // toLocaleString builds the formatter with a type-specific "required", so an incompatible
+        // whole style is a TypeError at that point: a date-only type (PlainDate / PlainYearMonth /
+        // PlainMonthDay) rejects timeStyle, and the time-only PlainTime rejects dateStyle. Direct
+        // DateTimeFormat.format uses required "any" and instead just drops the unsupported fields.
+        if (enforceStyle)
+        {
+            if (timeStyle != null && (meta.Mask & TemporalFields.Time) == 0)
+                throw JSEngine.NewTypeError("Intl.DateTimeFormat: timeStyle is not supported for this Temporal type");
+            if (dateStyle != null && (meta.Mask & TemporalFields.Date) == 0)
+                throw JSEngine.NewTypeError("Intl.DateTimeFormat: dateStyle is not supported for this Temporal type");
+        }
 
         var (requested, isDefault) = RequestedFields();
         var effective = isDefault ? meta.Defaults : requested & meta.Mask;
+
+        // An explicit supplementary field (era / timeZoneName) is honoured by a type that supports it
+        // even when the formatter is otherwise default; it never counts toward the overlap check.
+        effective |= requested & SupplementaryFields & meta.Mask;
+
         if (effective == TemporalFields.None)
             throw JSEngine.NewTypeError("Intl.DateTimeFormat: the format options and the Temporal type have no fields in common");
         return effective;
     }
 
     // FormatDateTimePattern: build the parts for a Temporal value, or throw TypeError/RangeError.
-    private List<JSIntlDateTimeFormatEngine.Part> FormatTemporalToParts(JSValue value)
+    private List<JSIntlDateTimeFormatEngine.Part> FormatTemporalToParts(JSValue value, bool zonedAllowed = false, bool enforceStyle = false)
     {
-        var meta = ClassifyTemporal(value);
+        var meta = ClassifyTemporal(value, zonedAllowed);
         CheckTemporalCalendar(meta.CalendarId);
-        var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in meta));
+        var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in meta, enforceStyle));
         var fields = meta.Fields;
         return JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), null);
     }
@@ -4093,14 +4119,14 @@ public class JSIntlDateTimeFormat : JSObject
     // calendar (else TypeError / RangeError), then the interval is formatted with one shared pattern.
     private List<JSIntlDateTimeFormatEngine.Part> FormatTemporalRangeToParts(JSValue startValue, JSValue endValue)
     {
-        var start = ClassifyTemporal(startValue);
-        var end = ClassifyTemporal(endValue);
+        var start = ClassifyTemporal(startValue, zonedAllowed: false);
+        var end = ClassifyTemporal(endValue, zonedAllowed: false);
         if (start.Kind != end.Kind)
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.formatRange: both arguments must be the same Temporal type");
         if (start.CalendarId != end.CalendarId)
             throw JSEngine.NewRangeError("Intl.DateTimeFormat.formatRange: the two arguments must have the same calendar");
         CheckTemporalCalendar(start.CalendarId);
-        var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in start));
+        var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in start, enforceStyle: false));
         var startFields = start.Fields;
         var endFields = end.Fields;
         return JSIntlDateTimeFormatEngine.FormatRangeToParts(pattern, in startFields, in endFields, FractionalSecondDigits());
@@ -4122,7 +4148,8 @@ public class JSIntlDateTimeFormat : JSObject
             hour12: ResolveHour12(),
             calendar: ResolvedCalendar(),
             hasWeekday: f.HasFlag(TemporalFields.Weekday),
-            weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")) ?? (dateStyle == "full" ? "long" : null));
+            weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")) ?? (dateStyle == "full" ? "long" : null),
+            hasTimeZoneName: f.HasFlag(TemporalFields.TimeZoneName));
 
     // The month width implied by dateStyle when no explicit month option is present.
     private string StyleMonthWidth() => dateStyle switch

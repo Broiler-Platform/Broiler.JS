@@ -216,9 +216,9 @@ public class Issue786Tests
 
     [Fact]
     public void ZonedDateTime_ToLocaleString_FormatsInOwnZone()
-        // Midnight in New York (epoch 05:00 UTC) renders as its own wall clock, proving the
-        // instance's zone — not UTC — is applied.
-        => Assert.Equal("1/1/1970, 12:00:00 AM", Eval(
+        // Midnight in New York (epoch 05:00 UTC) renders as its own wall clock with the zone name,
+        // proving the instance's zone — not UTC — is applied and included by default.
+        => Assert.Equal("1/1/1970, 12:00:00 AM GMT-5", Eval(
             "Temporal.ZonedDateTime.from('1970-01-01T00:00[America/New_York]').toLocaleString('en-US')"));
 
     [Fact]
@@ -231,6 +231,28 @@ public class Issue786Tests
         // timeZoneName is not a component: a plain date formats its default date, no overlap error.
         => Assert.Equal("1/5/2026", Eval(
             "new Intl.DateTimeFormat('en-US', {timeZoneName:'short'}).format(new Temporal.PlainDate(2026,1,5))"));
+
+    [Theory]
+    // timeZoneName rendering: UTC keeps its CLDR name; offset zones use the GMT offset.
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'short', timeZone:'UTC'}).format(new Date(0))", "1/1/1970 UTC")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'long', timeZone:'UTC'}).format(new Date(0))", "1/1/1970 Coordinated Universal Time")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969 GMT-5")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'longOffset', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969 GMT-05:00")]
+    public void DateTimeFormat_RendersTimeZoneName(string code, string expected)
+        => Assert.Equal(expected, Eval(code));
+
+    [Fact]
+    public void ZonedDateTime_ToLocaleString_IncludesZoneNameByDefault()
+        => Assert.Equal("true", Eval(
+            "'' + new Temporal.ZonedDateTime(0n, 'UTC').toLocaleString('en-US').includes('UTC')"));
+
+    [Theory]
+    // era / timeZoneName are supplementary: requesting only them still formats the type's defaults,
+    // and a time-only type does not fail the overlap check.
+    [InlineData("new Intl.DateTimeFormat('en-US', {era:'narrow'}).format(new Temporal.PlainTime(14, 46)).startsWith('2')", "true")]
+    [InlineData("new Temporal.PlainDate(2000,5,2,'gregory').toLocaleString('en-US', {era:'narrow'}).startsWith('5')", "true")]
+    public void DateTimeFormat_EraIsSupplementary(string code, string expected)
+        => Assert.Equal(expected, Eval(code));
 
     private static string ErrorNameWithCustomError(string code)
     {

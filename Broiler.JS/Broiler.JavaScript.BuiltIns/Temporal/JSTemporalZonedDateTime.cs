@@ -331,15 +331,12 @@ public partial class JSTemporalZonedDateTime : JSObject
     [JSExport("toJSON", Length = 0)]
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
 
-    // A ZonedDateTime formats in its own time zone: format the equivalent Instant with the zone
-    // injected (a conflicting timeZone option is a RangeError). Direct DateTimeFormat.format on a
-    // ZonedDateTime is a TypeError, but toLocaleString is allowed.
+    // A ZonedDateTime formats in its own time zone with the zone name shown by default; the zone is
+    // injected into the formatter options (a conflicting timeZone option is a RangeError). Direct
+    // DateTimeFormat.format on a ZonedDateTime is a TypeError, but toLocaleString is allowed.
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
-    {
-        var instant = new JSTemporalInstant(epochNanoseconds, JSTemporalInstant.InstantPrototype);
-        return Intl.JSIntlDateTimeFormat.TemporalToLocaleString(instant, a.GetAt(0), a.GetAt(1), defaultTimeZone: timeZoneId);
-    }
+        => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1), defaultTimeZone: timeZoneId);
 
     [JSExport("valueOf", Length = 0)]
     public JSValue ValueOf(in Arguments a)
