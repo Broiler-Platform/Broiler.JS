@@ -71,6 +71,11 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   * Problem 2 — the indian calendar reported its era as "saka"; the canonical Intl.Era-monthcode
 //     code is "shaka". The era property is now "shaka" (the "saka" spelling stays accepted as an
 //     input alias), fixing the indian-calendar era assertions.
+//   * Problem 3 (subset) — Temporal.PlainYearMonth.add/subtract did not validate that the
+//     intermediate date (day 1 of the receiver's month) is within the ISO date limits, and used the
+//     last day of the month for subtractions. It now always starts from day 1 (matching the current
+//     spec, which negates the duration for subtract) and rejects an out-of-range intermediate, so
+//     adding to the minimum year-month or subtracting past the maximum is a RangeError.
 public class Issue781Tests
 {
     private static string Eval(string code)
@@ -493,4 +498,22 @@ public class Issue781Tests
     public void IndianEraAcceptsSakaAlias()
         => Assert.Equal("1922",
             Eval("String(Temporal.PlainDate.from({ era: 'saka', eraYear: 1922, month: 1, day: 1, calendar: 'indian' }).eraYear)"));
+
+    // ───────────── Problem 3 (subset): PlainYearMonth.add/subtract ISO-range validation ─────────────
+
+    // The intermediate date (day 1 of the receiver's month) must be within the ISO date limits, so
+    // adding to the minimum year-month, or subtracting past the maximum, is a RangeError.
+    [Theory]
+    [InlineData("new Temporal.PlainYearMonth(-271821, 4).add(new Temporal.Duration())")]
+    [InlineData("new Temporal.PlainYearMonth(-271821, 4).add({ months: 1 })")]
+    [InlineData("new Temporal.PlainYearMonth(275760, 9).add({ months: 1 })")]
+    public void YearMonthAddOutOfRangeThrowsRangeError(string code)
+        => Assert.Equal("RangeError", ErrorName(code));
+
+    // A subtraction that stays representable still works (day 1 of the max month is in range).
+    [Theory]
+    [InlineData("new Temporal.PlainYearMonth(275760, 9).subtract({ months: 1 }).toString()", "+275760-08")]
+    [InlineData("new Temporal.PlainYearMonth(275760, 9).subtract({ years: 1 }).toString()", "+275759-09")]
+    public void YearMonthSubtractStaysRepresentable(string code, string expected)
+        => Assert.Equal(expected, Eval(code));
 }

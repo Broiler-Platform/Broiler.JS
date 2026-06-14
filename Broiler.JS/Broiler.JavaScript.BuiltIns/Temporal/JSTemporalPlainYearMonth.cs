@@ -309,7 +309,15 @@ public partial class JSTemporalPlainYearMonth : JSObject
             return YearMonthFromIsoDate(ay, amo, ad, calendarId);
         }
 
-        var startDay = sign < 0 ? DaysInMonthOf(isoYear, isoMonth) : 1;
+        // The duration is added to the first of the receiver's month (the sign is already folded into
+        // years / months / extraDays). That intermediate date must itself be a valid ISO date within
+        // the representable range — the boundary months -271821-04 and +275760-09 only partially
+        // overlap it, so e.g. (-271821-04).add(zero) starts from -271821-04-01, which is before the
+        // minimum ISO date and is a RangeError.
+        const int startDay = 1;
+        if (!IsWithinIsoDateLimits(isoYear, isoMonth, startDay))
+            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: date is out of range");
+
         var total = (long)isoMonth - 1 + months;
         var ny = (int)(isoYear + years + FloorDiv(total, 12));
         var nm = (int)(((total % 12) + 12) % 12) + 1;
@@ -640,6 +648,17 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
     private static bool IsValidISODate(int year, int month, int day)
         => month is >= 1 and <= 12 && day >= 1 && day <= DaysInMonthOf(year, month);
+
+    // ISODateWithinLimits: the full date (not just the year-month) must lie within the representable
+    // instant range, −271821-04-19 … +275760-09-13.
+    private static readonly long MinIsoEpochDays = DaysFromCivil(-271821, 4, 19);
+    private static readonly long MaxIsoEpochDays = DaysFromCivil(275760, 9, 13);
+    private static bool IsWithinIsoDateLimits(int year, int month, int day)
+    {
+        if (!IsValidISODate(year, month, day)) return false;
+        var epoch = DaysFromCivil(year, month, day);
+        return epoch >= MinIsoEpochDays && epoch <= MaxIsoEpochDays;
+    }
 
     // ISOYearMonthWithinLimits: the reference-day-1 of the month must lie within the
     // representable instant range, i.e. -271821-04 … +275760-09.
