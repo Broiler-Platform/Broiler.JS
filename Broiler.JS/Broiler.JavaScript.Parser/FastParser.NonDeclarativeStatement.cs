@@ -11,6 +11,7 @@ partial class FastParser
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool NonDeclarativeStatement(out AstStatement statement)
     {
+        singleStatementContext = true;
         if (!Statement(out statement))
             return false;
 

@@ -328,8 +328,9 @@ public partial class JSTemporalPlainDateTime : JSObject
 
     private JSValue AddDuration(JSValue durationLike, JSValue options, int sign)
     {
-        var overflow = ReadOverflow(options);
+        // Spec reads the duration argument before the overflow option.
         var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
+        var overflow = ReadOverflow(options);
 
         // AddDateTime: add the time first (carrying any day overflow into the date arithmetic). The
         // time total is computed in BigInteger so large sub-second durations (e.g. milliseconds at

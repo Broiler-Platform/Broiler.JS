@@ -374,6 +374,13 @@ public partial class JSTemporalInstant : JSObject
         if (item is JSTemporalInstant instant)
             return new JSTemporalInstant(instant.epochNanoseconds, InstantPrototype);
 
+        // A ZonedDateTime is converted using its epoch nanoseconds.
+        if (item is JSTemporalZonedDateTime zdt)
+            return new JSTemporalInstant(zdt.epochNanoseconds, InstantPrototype);
+
+        if (item is JSObject obj)
+            item = new JSString(obj.StringValue);
+
         if (item.IsString)
             return ParseTemporalInstant(item.ToString());
 
