@@ -233,35 +233,36 @@ internal static class TemporalNonIso
             return (0, 0, 0, totalDays);
         }
 
-        var sign = CompareDate(ay, am, ad, by, bm, bd); // -1 if a<b, +1 if a>b
-        if (sign == 0) return (0, 0, 0, 0);
-        var step = -sign;
+        var step = -CompareDate(ay, am, ad, by, bm, bd); // +1 when end is after start
+        if (step == 0) return (0, 0, 0, 0);
 
+        // The year/month counting anchors on the *unconstrained* start day (`ad`): a whole month is
+        // only counted when the start day-of-month does not have to be clamped into the target month
+        // (so e.g. the 30th of a 30-day month "surpasses" the 29th of the following 29-day month and
+        // does not count as a full month). The residual days are then measured from the day-clamped
+        // intermediate. Mirrors the reference calendar untilCalendar (the leap-month cycle handling of
+        // the lunisolar calendars is not reproduced here).
         long years = 0;
-        var (my, mm, md) = (ay, am, ad);
         if (largestUnit == "year")
         {
             years = by - ay;
-            (my, mm, md) = AddCalendarYearsMonths(calendarId, ay, am, ad, years, 0);
-            if (CompareDate(my, mm, md, by, bm, bd) == step)
-            {
-                years -= step;
-                (my, mm, md) = AddCalendarYearsMonths(calendarId, ay, am, ad, years, 0);
-            }
+            if (CompareDate(ay + (int)years, am, ad, by, bm, bd) == step) years -= step;
         }
 
         long months = 0;
+        int cy = ay + (int)years, cm = am;
         while (true)
         {
-            var (ny, nm, nd) = AddCalendarYearsMonths(calendarId, my, mm, md, 0, step);
-            var cmp = CompareDate(ny, nm, nd, by, bm, bd);
-            if (cmp == step) break;
-            months += step; my = ny; mm = nm; md = nd;
+            var (ny, nm) = AddCalendarMonths(calendarId, cy, cm, step);
+            var cmp = CompareDate(ny, nm, ad, by, bm, bd);
+            if (cmp == step) break; // adding one more month would surpass the end
+            months += step; cy = ny; cm = nm;
             if (cmp == 0) break;
         }
 
+        var curDay = Math.Min(ad, TemporalCalendarMath.DaysInMonth(calendarId, cy, cm));
         var daysOut = TemporalCalendarMath.EpochDaysFromYmd(calendarId, by, bm, bd)
-                    - TemporalCalendarMath.EpochDaysFromYmd(calendarId, my, mm, md);
+                    - TemporalCalendarMath.EpochDaysFromYmd(calendarId, cy, cm, curDay);
 
         return (years, months, 0, daysOut);
     }

@@ -63,6 +63,11 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     import forms `import.defer(…)` / `import.source(…)` (the `import.meta` branch threw on any
 //     identifier other than "meta"). They now parse as an ImportCall (the compiler treats them like a
 //     plain `import(…)`), fixing the dynamic-import-syntax/valid/*import-defer* tests.
+//   * Problems 18/23 (non-ISO) — the same month-end balancing bug existed in the non-ISO calendar
+//     difference path (TemporalNonIso.Difference). It now anchors the year/month counting on the
+//     unconstrained start day too, fixing the arithmetic (fixed-month-count) calendars — coptic,
+//     ethiopic, islamic-*, persian, indian, etc. The lunisolar calendars (chinese/dangi/hebrew),
+//     which need the reference's leap-month cycle logic, remain unimplemented.
 public class Issue781Tests
 {
     private static string Eval(string code)
@@ -457,4 +462,19 @@ public class Issue781Tests
     [Fact]
     public void UnknownImportPhaseThrowsSyntaxError()
         => Assert.Equal("SyntaxError", ErrorName("eval(\"import.bogus('./x.js')\")"));
+
+    // ───────────── Problems 18/23 (non-ISO): arithmetic-calendar until month/day balancing ─────────────
+
+    // The same month-end balancing now applies to the arithmetic (fixed-month-count) non-ISO
+    // calendars. Coptic Mesori (M12, 30 days) -> Pi Kogi Enavot (M13, the 5/6-day epagomenal month):
+    // only the 5th makes a whole month; the 28th/29th/30th are 7/6/5 days (test262 coptic values).
+    [Theory]
+    [InlineData("M12", 5, "P1M")]
+    [InlineData("M12", 28, "P7D")]
+    [InlineData("M12", 29, "P6D")]
+    [InlineData("M12", 30, "P5D")]
+    public void UntilBalancesCopticMonthEnd(string startMonthCode, int startDay, string expected)
+        => Assert.Equal(expected, Eval(
+            $"Temporal.PlainDate.from({{ year: 1970, monthCode: '{startMonthCode}', day: {startDay}, calendar: 'coptic' }})" +
+            $".until(Temporal.PlainDate.from({{ year: 1970, monthCode: 'M13', day: 5, calendar: 'coptic' }}), {{ largestUnit: 'months' }}).toString()"));
 }
