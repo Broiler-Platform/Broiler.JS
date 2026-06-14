@@ -164,8 +164,16 @@ public partial class JSDate
             return new JSString("Invalid Date");
 
         var (locale, format) = a.Get2();
-        string date = null;
 
+        // An Intl options object routes through Intl.DateTimeFormat (the spec behaviour). A bare
+        // .NET format string remains a Broiler extension; no options keeps the .NET "F" full format.
+        if (format is JSObject)
+        {
+            var dtf = new Intl.JSIntlDateTimeFormat(new Arguments(JSUndefined.Value, locale, format));
+            return dtf.Format(new Arguments(JSUndefined.Value, JSValue.CreateNumber(GetTimeMs())));
+        }
+
+        string date;
         if (locale.IsNullOrUndefined)
         {
             date = value.ToString("F", DateTimeFormatInfo.CurrentInfo);
@@ -173,21 +181,7 @@ public partial class JSDate
         else
         {
             var culture = CultureInfo.GetCultureInfo(locale.ToString());
-            if (format.IsNullOrUndefined)
-            {
-                date = value.ToString("F", culture);
-            }
-            else
-            {
-                if (format.IsString)
-                {
-                    date = value.ToString(format.ToString(), culture);
-                }
-                else
-                {
-                    throw JSEngine.NewTypeError("Options not supported, use .Net String Formats");
-                }
-            }
+            date = format.IsString ? value.ToString(format.ToString(), culture) : value.ToString("F", culture);
         }
 
         return new JSString(date);

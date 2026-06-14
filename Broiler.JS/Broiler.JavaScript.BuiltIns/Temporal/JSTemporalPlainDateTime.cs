@@ -490,7 +490,8 @@ public partial class JSTemporalPlainDateTime : JSObject
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
 
     [JSExport("toLocaleString", Length = 0)]
-    public JSValue ToLocaleString(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToLocaleString(in Arguments a)
+        => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1));
 
     // GetTemporalShowCalendarNameOption (shared shape with PlainDate).
     private static string ReadCalendarName(JSValue options)
@@ -778,7 +779,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     }
 
     private static readonly Regex DateTimePattern = new(
-        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})(?:[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?)?(?:\[[^\]]*\])*$",
+        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})(?:[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?:[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?(?:\[[^\]]*\])*$",
         RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalDateTimeString(string text)

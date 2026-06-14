@@ -19,6 +19,15 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     offset against the named IANA time zone (InterpretISODateTimeOffset). The offset option for
 //     from defaults to "reject" (not "prefer"), so an offset the zone does not yield for the local
 //     time is a RangeError; "use" honours it verbatim and "ignore" drops it for the zone's offset.
+//   * Problems 3/5/6/7 — Intl.DateTimeFormat now formats Temporal objects (HandleDateTimeValue):
+//     format / formatToParts / formatRange accept PlainDate/PlainDateTime/PlainTime/PlainYearMonth/
+//     PlainMonthDay/Instant, projecting each type's supported fields (dropping the rest, TypeError on
+//     no overlap, ZonedDateTime → TypeError). Plain types format their own wall clock; Instant uses
+//     the formatter's zone. Temporal.X.prototype.toLocaleString routes through the same path (so it
+//     agrees with DateTimeFormat.format), and Date.prototype.toLocaleString now honours an Intl
+//     options object. Engine gains weekday rendering, standalone fractional-seconds, and a
+//     dateStyle/timeStyle-vs-component conflict check. (Out of scope: timeZoneName rendering, non-ISO
+//     calendar/era output, the de/German default-locale style layout.)
 //
 // Out of scope (large, separate features documented in the issue): Problem 2 + the rest of Problem 1
 // (Temporal.Duration with a ZonedDateTime relativeTo + RoundRelativeDuration; ZDT.hoursInDay
@@ -153,6 +162,75 @@ public class Issue786Tests
     {
         Assert.Equal(expected, Eval(code));
     }
+
+    // ── Problems 3/5/6/7: Intl.DateTimeFormat formats Temporal objects ──────────
+
+    [Theory]
+    // Default en-US formatter projects each Temporal type's fields (exact CLDR output).
+    [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainDate(2021, 8, 4))", "8/4/2021")]
+    [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainYearMonth(2021, 8, 'gregory'))", "8/2021")]
+    [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainMonthDay(8, 4, 'gregory'))", "8/4")]
+    [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainDateTime(2021, 8, 4, 23, 30, 45))", "8/4/2021, 11:30:45 PM")]
+    [InlineData("new Intl.DateTimeFormat('en-US').format(new Temporal.PlainTime(0, 30, 45))", "12:30:45 AM")]
+    // A plain type uses its own wall clock, ignoring the formatter's time zone.
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZone:'Pacific/Apia'}).format(new Temporal.PlainDate(2021, 8, 4))", "8/4/2021")]
+    public void DateTimeFormat_FormatsTemporal(string code, string expected)
+        => Assert.Equal(expected, Eval(code));
+
+    [Fact]
+    public void Temporal_ToLocaleString_AgreesWithDateTimeFormat()
+    {
+        Assert.Equal("true", Eval(@"
+            const dt = new Temporal.PlainDateTime(1976, 11, 18, 15, 23, 30);
+            const dtf = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York' });
+            '' + (dt.toLocaleString('en-US', { timeZone: 'America/New_York' }) === dtf.format(dt))"));
+    }
+
+    [Theory]
+    // No field in common → TypeError.
+    [InlineData("new Intl.DateTimeFormat('en-US', {hour:'numeric'}).format(new Temporal.PlainDate(2021,8,4))")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {year:'numeric'}).format(new Temporal.PlainTime(1,2,3))")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {day:'numeric'}).format(new Temporal.PlainYearMonth(2021,8,'gregory'))")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {year:'numeric'}).format(new Temporal.PlainMonthDay(8,4,'gregory'))")]
+    // Style incompatible with the type → TypeError (even alongside the other style).
+    [InlineData("new Temporal.PlainDate(2021,8,4).toLocaleString('en-US', {timeStyle:'short'})")]
+    [InlineData("new Temporal.PlainTime(1,2,3).toLocaleString('en-US', {dateStyle:'full', timeStyle:'full'})")]
+    // Component combined with a style → TypeError at construction.
+    [InlineData("new Intl.DateTimeFormat('en-US', {weekday:'short', dateStyle:'short'})")]
+    // A ZonedDateTime cannot be formatted directly.
+    [InlineData("new Intl.DateTimeFormat('en-US').format(Temporal.ZonedDateTime.from('2021-08-04T00:00[UTC]'))")]
+    // formatRange of two different Temporal types → TypeError.
+    [InlineData("new Intl.DateTimeFormat('en-US').formatRange(new Temporal.PlainDate(2021,8,4), new Temporal.PlainTime(1,2,3))")]
+    public void DateTimeFormat_Temporal_Throws(string code)
+        => Assert.Equal("TypeError", ErrorName(code));
+
+    [Fact]
+    public void DateTimeFormat_FormatsTemporalRange()
+        => Assert.Equal("8/4/2021 – 8/5/2021", Eval(
+            "new Intl.DateTimeFormat('en-US').formatRange(new Temporal.PlainDate(2021,8,4), new Temporal.PlainDate(2021,8,5))"));
+
+    [Fact]
+    public void DateTimeFormat_WeekdayIsRendered()
+        => Assert.Equal("Wednesday", Eval(
+            "new Intl.DateTimeFormat('en-US', {weekday:'long'}).format(new Temporal.PlainDate(2021,8,4))"));
+
+    [Fact]
+    public void ZonedDateTime_ToLocaleString_FormatsInOwnZone()
+        // Midnight in New York (epoch 05:00 UTC) renders as its own wall clock, proving the
+        // instance's zone — not UTC — is applied.
+        => Assert.Equal("1/1/1970, 12:00:00 AM", Eval(
+            "Temporal.ZonedDateTime.from('1970-01-01T00:00[America/New_York]').toLocaleString('en-US')"));
+
+    [Fact]
+    public void Date_ToLocaleString_HonoursIntlOptions()
+        => Assert.Equal("2021", Eval(
+            "new Date(Date.UTC(2021,0,1)).toLocaleString('en-US', {year:'numeric', timeZone:'UTC'})"));
+
+    [Fact]
+    public void DateTimeFormat_TimeZoneNameOnlyOnPlainDate_DoesNotThrow()
+        // timeZoneName is not a component: a plain date formats its default date, no overlap error.
+        => Assert.Equal("1/5/2026", Eval(
+            "new Intl.DateTimeFormat('en-US', {timeZoneName:'short'}).format(new Temporal.PlainDate(2026,1,5))"));
 
     private static string ErrorNameWithCustomError(string code)
     {

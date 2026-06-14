@@ -327,10 +327,7 @@ public partial class JSTemporalPlainTime : JSObject
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
-    {
-        TemporalIsoString.RejectIncompatibleStyle(a.GetAt(1), dateAllowed: false, timeAllowed: true);
-        return new JSString(ToISOString());
-    }
+        => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1));
 
     [JSExport("valueOf", Length = 0)]
     public JSValue ValueOf(in Arguments a)

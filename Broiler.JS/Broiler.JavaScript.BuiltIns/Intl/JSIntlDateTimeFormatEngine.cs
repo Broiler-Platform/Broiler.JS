@@ -30,6 +30,14 @@ internal static class JSIntlDateTimeFormatEngine
             Second = JSDateMath.SecFromTime(wallClockMs);
             Millisecond = JSDateMath.MsFromTime(wallClockMs);
         }
+
+        // Explicit wall-clock fields, used when formatting a Temporal plain type: its own clock is
+        // formatted directly, with no time-zone conversion (the formatter's time zone is ignored).
+        public Fields(int year, int month, int day, int hour, int minute, int second, int millisecond)
+        {
+            Year = year; Month = month; Day = day;
+            Hour = hour; Minute = minute; Second = second; Millisecond = millisecond;
+        }
     }
 
     internal readonly struct Token
@@ -96,6 +104,16 @@ internal static class JSIntlDateTimeFormatEngine
         { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
     private static readonly string[] MonthNarrow =
         { "J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D" };
+    private static readonly string[] WeekdayWide =
+        { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+    private static readonly string[] WeekdayShort =
+        { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+    private static readonly string[] WeekdayNarrow =
+        { "S", "M", "T", "W", "T", "F", "S" };
+
+    // 0 = Sunday .. 6 = Saturday for a Gregorian/ISO date, valid across the full ±275760-year range.
+    private static int DayOfWeek(in Fields f)
+        => JSDateMath.WeekDay(JSDateMath.MakeDate(JSDateMath.MakeDay(f.Year, f.Month - 1, f.Day), 0));
 
     // CLDR en intervalFormats fallback: "{0} – {1}" (U+2013 with surrounding spaces).
     internal const string RangeSeparator = " – ";
@@ -120,7 +138,8 @@ internal static class JSIntlDateTimeFormatEngine
         string localeTag,
         bool hasYear, string yearStyle, bool hasMonth, string monthStyle, bool hasDay, string dayStyle,
         bool hasHour, bool hasMinute, bool hasSecond, int fractionalSecondDigits, bool hasDayPeriodField,
-        string dateStyle, string timeStyle, bool hour12, string calendar = null)
+        string dateStyle, string timeStyle, bool hour12, string calendar = null,
+        bool hasWeekday = false, string weekdayStyle = null)
     {
         string datePattern = null;
         string timePattern = null;
@@ -207,11 +226,23 @@ internal static class JSIntlDateTimeFormatEngine
             else if (hasSecond)
                 time.Append("ss");
 
-            if (fractionalSecondDigits >= 1 && fractionalSecondDigits <= 3 && (hasSecond))
-                time.Append('.').Append(new string('S', fractionalSecondDigits));
+            if (fractionalSecondDigits >= 1 && fractionalSecondDigits <= 3)
+            {
+                // A fractional-seconds field without a seconds field still renders (the digits alone),
+                // so a lone fractionalSecondDigits option does not collapse to the default date.
+                if (hasSecond) time.Append('.');
+                time.Append(new string('S', fractionalSecondDigits));
+            }
 
             datePattern = date.Length > 0 ? date.ToString() : null;
             timePattern = time.Length > 0 ? time.ToString() : null;
+
+            // A weekday is prefixed to the date (en CLDR layout): "EEEE, <date>", or stands alone.
+            if (hasWeekday)
+            {
+                var weekdayTok = weekdayStyle switch { "short" => "EEE", "narrow" => "EEEEE", _ => "EEEE" };
+                datePattern = datePattern != null ? weekdayTok + ", " + datePattern : weekdayTok;
+            }
         }
 
         // No component or style options: ECMA-402 defaults to numeric
@@ -539,6 +570,15 @@ internal static class JSIntlDateTimeFormatEngine
                 var digits = token.Count;
                 var ms = f.Millisecond.ToString("D3", CultureInfo.InvariantCulture);
                 return ("fractionalSecond", digits <= 3 ? ms.Substring(0, digits) : ms.PadRight(digits, '0'));
+            case 'E':
+            case 'c':
+                var dow = DayOfWeek(in f);
+                return ("weekday", token.Count switch
+                {
+                    5 => WeekdayNarrow[dow],
+                    >= 4 => WeekdayWide[dow],
+                    _ => WeekdayShort[dow],
+                });
             case 'a':
             case 'b':
                 return ("dayPeriod", f.Hour < 12 ? "AM" : "PM");
