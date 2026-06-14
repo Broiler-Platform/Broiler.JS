@@ -167,9 +167,11 @@ public partial class JSDate
 
         // An Intl options object routes through Intl.DateTimeFormat (the spec behaviour). A bare
         // .NET format string remains a Broiler extension; no options keeps the .NET "F" full format.
+        // toLocaleString uses ToDateTimeOptions(..., "all"): with no component/style it shows date+time.
         if (format is JSObject)
         {
-            var dtf = new Intl.JSIntlDateTimeFormat(new Arguments(JSUndefined.Value, locale, format));
+            var opts = Intl.JSIntlDateTimeFormat.ApplyAllDefaults(format);
+            var dtf = new Intl.JSIntlDateTimeFormat(new Arguments(JSUndefined.Value, locale, opts));
             return dtf.Format(new Arguments(JSUndefined.Value, JSValue.CreateNumber(GetTimeMs())));
         }
 

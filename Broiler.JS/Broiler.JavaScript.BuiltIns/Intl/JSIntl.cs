@@ -4027,6 +4027,39 @@ public class JSIntlDateTimeFormat : JSObject
         return new JSString(JSIntlDateTimeFormatEngine.PartsToString(dtf.FormatTemporalToParts(temporal, zonedAllowed: true, enforceStyle: true)));
     }
 
+    // The date/time component options whose presence suppresses defaulting (era / timeZoneName are
+    // supplementary and do not count).
+    private static readonly string[] DateTimeNeedsDefaultsKeys =
+    {
+        "weekday", "year", "month", "day", "dayPeriod", "hour", "minute", "second", "fractionalSecondDigits",
+    };
+
+    // ToDateTimeOptions(options, "any", "all"): when no date/time component or style is requested, the
+    // default is the full date+time. Used by Date.prototype.toLocaleString (the legacy [[Call]] uses
+    // defaults "all", unlike the Intl.DateTimeFormat constructor which uses "date"). Returns the
+    // options unchanged when defaults are not needed or it is not an object.
+    public static JSValue ApplyAllDefaults(JSValue options)
+    {
+        if (options is not JSObject o)
+            return options;
+        foreach (var name in DateTimeNeedsDefaultsKeys)
+            if (!o[KeyStrings.GetOrCreate(name)].IsUndefined)
+                return options;
+        if (!o[DateStyleKey].IsUndefined || !o[TimeStyleKey].IsUndefined)
+            return options;
+
+        var merged = new JSObject();
+        foreach (var name in DateTimeFormatOptionKeys)
+        {
+            var key = KeyStrings.GetOrCreate(name);
+            var v = o[key];
+            if (!v.IsUndefined) merged[key] = v;
+        }
+        foreach (var name in new[] { "year", "month", "day", "hour", "minute", "second" })
+            merged[KeyStrings.GetOrCreate(name)] = JSValue.CreateString("numeric");
+        return merged;
+    }
+
     // The per-type formatting metadata: supported fields, default fields, an identity for same-type
     // range checks, the calendar, and the wall-clock (or zone-projected) Fields.
     private readonly struct TemporalMeta

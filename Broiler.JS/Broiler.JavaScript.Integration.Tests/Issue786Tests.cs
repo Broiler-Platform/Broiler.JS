@@ -227,6 +227,15 @@ public class Issue786Tests
             "new Date(Date.UTC(2021,0,1)).toLocaleString('en-US', {year:'numeric', timeZone:'UTC'})"));
 
     [Fact]
+    public void Date_ToLocaleString_DefaultsToDateAndTime()
+        // ToDateTimeOptions(options, "any", "all"): an options object with no component/style shows
+        // the full date+time (a lone supplementary option like era does not suppress the defaults),
+        // matching Temporal.Instant.prototype.toLocaleString.
+        => Assert.Equal(
+            Eval("new Temporal.Instant(0n).toLocaleString('en-US', {timeZone:'UTC'})"),
+            Eval("new Date(0).toLocaleString('en-US', {timeZone:'UTC'})"));
+
+    [Fact]
     public void DateTimeFormat_TimeZoneNameOnlyOnPlainDate_DoesNotThrow()
         // timeZoneName is not a component: a plain date formats its default date, no overlap error.
         => Assert.Equal("1/5/2026", Eval(
