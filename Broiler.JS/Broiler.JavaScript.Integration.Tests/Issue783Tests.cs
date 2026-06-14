@@ -89,6 +89,42 @@ public class Issue783Tests
             Eval("let d=Temporal.PlainDate.from({era:'ap',eraYear:-621,month:10,day:11,calendar:'persian'});" +
                  "[d.year,d.month,d.day].join('-')"));
 
+    // ───────────── Problem 1 (subset): combined date-time out of ISO range ─────────────
+
+    [Theory]
+    [InlineData("new Temporal.PlainDateTime(-271821,4,19,0,0,0,0,0,1).withPlainTime(new Temporal.PlainTime())")]
+    [InlineData("new Temporal.PlainDateTime(-271821,4,19,0,0,0,0,0,1).withPlainTime()")]
+    [InlineData("new Temporal.PlainDateTime(-271821,4,19,0,0,0,0,0,1).with({nanosecond:0})")]
+    public void CombinedDateTimeOutOfRangeThrows(string code)
+        => Assert.Equal("RangeError", ErrorName(code));
+
+    // A within-range withPlainTime still works.
+    [Fact]
+    public void WithPlainTimeInRangeSucceeds()
+        => Assert.Equal("2020-01-01T12:30:00",
+            Eval("new Temporal.PlainDateTime(2020,1,1).withPlainTime(new Temporal.PlainTime(12,30)).toString()"));
+
+    // ───────────── Problem 1 (subset): invalid PlainYearMonth strings ─────────────
+
+    [Theory]
+    [InlineData("2020-13")]
+    [InlineData("1976-11[u-ca=gregory]")]   // bare year-month + non-iso calendar
+    [InlineData("1976-11[u-ca=hebrew]")]
+    [InlineData("1976-11[U-CA=iso8601]")]    // malformed (uppercase) annotation key
+    [InlineData("1976-11[u-CA=iso8601]")]
+    [InlineData("1976-11[FOO=bar]")]
+    [InlineData("+999999-01")]
+    [InlineData("-999999-01")]
+    public void InvalidYearMonthStringThrows(string s)
+        => Assert.Equal("RangeError", ErrorName($"Temporal.PlainYearMonth.from('{s}')"));
+
+    [Theory]
+    [InlineData("1976-11", "1976-11")]
+    [InlineData("1976-11[u-ca=iso8601]", "1976-11")]
+    [InlineData("1976-11-18[u-ca=gregory]", "1976-11-01[u-ca=gregory]")] // full date + non-iso calendar is allowed
+    public void ValidYearMonthStringSucceeds(string s, string expected)
+        => Assert.Equal(expected, Eval($"Temporal.PlainYearMonth.from('{s}').toString()"));
+
     // The arithmetic algorithm must agree with System.Globalization.PersianCalendar (the previous
     // backend, verified against the Iranian authority table) across its supported overlap, so the
     // persian-calendar-authority Nowrúz fixtures keep passing.

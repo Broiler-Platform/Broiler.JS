@@ -43,6 +43,29 @@ internal static class TemporalIsoString
             throw JSEngine.NewRangeError($"Temporal: more than one calendar annotation in \"{text}\"");
     }
 
+    // Each trailing [..] annotation is either a TimeZoneIdentifier (no '=') or a key=value
+    // Annotation whose AnnotationKey is lowercase ASCII (a-z then a-z/0-9/-/_) and whose
+    // AnnotationValue is one or more '-'-separated alphanumeric components. A malformed key (e.g.
+    // the uppercase "U-CA" / "FOO") or value is a RangeError.
+    private static readonly Regex AnnotationBracketPattern = new(@"\[([^\]]*)\]", RegexOptions.CultureInvariant);
+    private static readonly Regex AnnotationKeyPattern = new(@"^[a-z_][a-z0-9_-]*$", RegexOptions.CultureInvariant);
+    private static readonly Regex AnnotationValuePattern = new(@"^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$", RegexOptions.CultureInvariant);
+
+    internal static void RejectMalformedAnnotations(string text)
+    {
+        foreach (Match m in AnnotationBracketPattern.Matches(text))
+        {
+            var content = m.Groups[1].Value;
+            if (content.StartsWith("!", StringComparison.Ordinal)) content = content.Substring(1);
+            var eq = content.IndexOf('=');
+            if (eq < 0) continue; // a time-zone annotation, validated elsewhere
+            var key = content.Substring(0, eq);
+            var value = content.Substring(eq + 1);
+            if (!AnnotationKeyPattern.IsMatch(key) || !AnnotationValuePattern.IsMatch(value))
+                throw JSEngine.NewRangeError($"Temporal: malformed annotation \"[{m.Groups[1].Value}]\"");
+        }
+    }
+
     // A date or date-time. Time, fraction, and Z / numeric-offset designators are all optional; the
     // date portion is validated separately by IsValidDate.
     private static readonly Regex DateTimePattern = new(
