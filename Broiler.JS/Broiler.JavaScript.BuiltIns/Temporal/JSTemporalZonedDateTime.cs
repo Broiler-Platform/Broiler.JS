@@ -647,6 +647,26 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         var options = a.GetAt(1);
 
+        // PrepareCalendarFields reads and validates the offset field before the date-time fields are
+        // interpreted, so parse it up front: an absent offset keeps the current one, a present
+        // non-string offset is a TypeError (ToOffsetString requires a String after ToPrimitive), and
+        // an unparseable string such as "00:00" / "+0" is a RangeError — independent of whether the
+        // remaining partial fields form a recognized date-time set.
+        long candidateOffset;
+        var offsetField = fields[KeyStrings.GetOrCreate("offset")];
+        if (offsetField.IsUndefined)
+        {
+            candidateOffset = OffsetNanoseconds();
+        }
+        else
+        {
+            var offsetPrimitive = offsetField is JSObject offsetObj ? offsetObj.ToStringPrimitive() : offsetField;
+            if (!offsetPrimitive.IsString)
+                throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.with: the offset field must be a string");
+            if (!TryParseOffsetString(offsetPrimitive.StringValue, out candidateOffset))
+                throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.with: invalid offset");
+        }
+
         // Merge the date/time fields onto the current local wall-clock datetime, reusing the
         // calendar-aware PlainDateTime.with (which rejects calendar/timeZone fields, applies the
         // overflow option and validates era / monthCode / partial era pairs).
@@ -657,15 +677,6 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         var offsetOption = ReadOffsetOption(options);
         ReadDisambiguation(options); // validated; only "compatible" behaviour is applied below
-
-        // The receiver's offset is part of the merged fields, so an absent (or undefined) offset means
-        // "keep the current offset" (offsetOption "prefer"); an explicit string overrides it.
-        long candidateOffset;
-        var offsetField = fields[KeyStrings.GetOrCreate("offset")];
-        if (offsetField.IsUndefined)
-            candidateOffset = OffsetNanoseconds();
-        else if (!offsetField.IsString || !TryParseOffsetString(offsetField.StringValue, out candidateOffset))
-            throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.with: invalid offset");
 
         var localNs = LocalNanoseconds(updated.isoYear, updated.isoMonth, updated.isoDay,
             updated.hour, updated.minute, updated.second, updated.millisecond, updated.microsecond, updated.nanosecond);
