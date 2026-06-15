@@ -1415,6 +1415,11 @@ public partial class JSIteratorObject : JSObject
     {
         private int taken = 0;
         private bool closed = false;
+        // Once the helper completes — the source is naturally exhausted, or the take limit is reached —
+        // it stays done: a further next() must NOT pull from the source again (the spec's helper
+        // generator has returned). Without this latch a source that keeps producing a "done" result
+        // (e.g. a hand-written iterator) would be advanced one extra time per subsequent call.
+        private bool exhausted = false;
 
         // When the take limit is reached (remaining hits 0) the helper completes with a *normal*
         // completion, which per spec performs IteratorClose on the underlying iterator. A throwing
@@ -1431,6 +1436,10 @@ public partial class JSIteratorObject : JSObject
 
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
+            value = JSUndefined.Value; hasValue = false; index = 0;
+            if (exhausted)
+                return false;
+
             if (taken < limit)
             {
                 if (source.MoveNext(out hasValue, out value, out index))
@@ -1439,17 +1448,24 @@ public partial class JSIteratorObject : JSObject
                     return true;
                 }
 
+                // Natural source exhaustion: latch done (no IteratorClose needed).
+                exhausted = true;
                 value = JSUndefined.Value; hasValue = false; index = 0;
                 return false;
             }
 
-            value = JSUndefined.Value; hasValue = false; index = 0;
+            // Take limit reached: latch done and close the underlying iterator.
+            exhausted = true;
             CloseOnLimit();
             return false;
         }
 
         public bool MoveNext(out JSValue value)
         {
+            value = JSUndefined.Value;
+            if (exhausted)
+                return false;
+
             if (taken < limit)
             {
                 if (source.MoveNext(out value))
@@ -1458,21 +1474,27 @@ public partial class JSIteratorObject : JSObject
                     return true;
                 }
 
+                exhausted = true;
                 value = JSUndefined.Value;
                 return false;
             }
 
-            value = JSUndefined.Value;
+            exhausted = true;
             CloseOnLimit();
             return false;
         }
 
         public bool MoveNextOrDefault(out JSValue value, JSValue @default)
         {
-            if (taken < limit && source.MoveNext(out value))
+            if (!exhausted && taken < limit)
             {
-                taken++;
-                return true;
+                if (source.MoveNext(out value))
+                {
+                    taken++;
+                    return true;
+                }
+
+                exhausted = true;
             }
 
             value = @default;
@@ -1481,10 +1503,15 @@ public partial class JSIteratorObject : JSObject
 
         public JSValue NextOrDefault(JSValue @default)
         {
-            if (taken < limit && source.MoveNext(out var v))
+            if (!exhausted && taken < limit)
             {
-                taken++;
-                return v;
+                if (source.MoveNext(out var v))
+                {
+                    taken++;
+                    return v;
+                }
+
+                exhausted = true;
             }
 
             return @default;
@@ -1504,6 +1531,10 @@ public partial class JSIteratorObject : JSObject
     internal sealed class DropEnumerator(IElementEnumerator source, int count) : IElementEnumerator, IReturnableEnumerator
     {
         private bool _dropped;
+        // Once the source is exhausted — whether while dropping the leading `count` values or during
+        // later iteration — the helper stays done and must not pull from the source again (otherwise a
+        // hand-written iterator that keeps reporting "done" would be advanced one extra time).
+        private bool _exhausted;
 
         private void EnsureDropped()
         {
@@ -1513,20 +1544,50 @@ public partial class JSIteratorObject : JSObject
             _dropped = true;
 
             for (int i = 0; i < count; i++)
-                if (!source.MoveNext(out _)) break;
+                if (!source.MoveNext(out _)) { _exhausted = true; break; }
         }
 
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
-        { EnsureDropped(); return source.MoveNext(out hasValue, out value, out index); }
+        {
+            EnsureDropped();
+            if (!_exhausted && source.MoveNext(out hasValue, out value, out index))
+                return true;
+
+            _exhausted = true;
+            value = JSUndefined.Value; hasValue = false; index = 0;
+            return false;
+        }
 
         public bool MoveNext(out JSValue value)
-        { EnsureDropped(); return source.MoveNext(out value); }
+        {
+            EnsureDropped();
+            if (!_exhausted && source.MoveNext(out value))
+                return true;
+
+            _exhausted = true;
+            value = JSUndefined.Value;
+            return false;
+        }
 
         public bool MoveNextOrDefault(out JSValue value, JSValue @default)
-        { EnsureDropped(); return source.MoveNextOrDefault(out value, @default); }
+        {
+            EnsureDropped();
+            if (!_exhausted && source.MoveNextOrDefault(out value, @default))
+                return true;
+
+            _exhausted = true;
+            value = @default;
+            return false;
+        }
 
         public JSValue NextOrDefault(JSValue @default)
-        { EnsureDropped(); return source.NextOrDefault(@default); }
+        {
+            EnsureDropped();
+            if (_exhausted)
+                return @default;
+
+            return source.NextOrDefault(@default);
+        }
 
         public JSValue Return()
             => source is IReturnableEnumerator returnable
