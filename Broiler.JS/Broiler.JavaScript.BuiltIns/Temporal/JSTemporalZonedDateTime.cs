@@ -1087,7 +1087,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         // Convert epoch ns → UTC DateTime (clamped to the representable DateTime range so the
         // offset lookup never throws for extreme years).
         var utc = EpochNsToUtcDateTime(epochNs);
-        try { return (long)tz.GetUtcOffset(utc).Ticks * 100; }
+        try { return ApplySubMinuteOffsetCorrection(tz.Id, (long)tz.GetUtcOffset(utc).Ticks * 100); }
         catch { return 0; }
     }
 
@@ -1118,7 +1118,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         {
             var clampedYear = Math.Clamp(y, 1, 9999);
             var local = new DateTime(clampedYear, mo, d, h, mi, s, DateTimeKind.Unspecified);
-            return (long)tz.GetUtcOffset(local).Ticks * 100;
+            return ApplySubMinuteOffsetCorrection(tz.Id, (long)tz.GetUtcOffset(local).Ticks * 100);
         }
         catch { return 0; }
     }
@@ -1146,14 +1146,61 @@ public partial class JSTemporalZonedDateTime : JSObject
         {
             var result = new List<long>();
             foreach (var off in tz.GetAmbiguousTimeOffsets(local))
-                result.Add((long)off.Ticks * 100);
+                result.Add(ApplySubMinuteOffsetCorrection(tz.Id, (long)off.Ticks * 100));
             return result;
         }
 
         if (tz.IsInvalidTime(local))
             return []; // a spring-forward gap: no instant has this local time
 
-        return [(long)tz.GetUtcOffset(local).Ticks * 100];
+        return [ApplySubMinuteOffsetCorrection(tz.Id, (long)tz.GetUtcOffset(local).Ticks * 100)];
+    }
+
+    // .NET's TimeZoneInfo stores UTC offsets at whole-minute resolution, truncating the sub-minute
+    // offsets some IANA zones used historically. Restore the precise IANA value for the zones Temporal
+    // exercises so offset round-tripping and the match-minutes offset matching below behave per spec
+    // (e.g. so a "-00:45" or "-00:44:30" string offset is recognized as Africa/Monrovia's offset).
+    // Keyed by the zone's canonical id and the (whole-minute) value .NET reports after truncation:
+    //   Africa/Monrovia  -00:44:00 → -00:44:30  (Monrovia Mean Time, used until 1972-01-07)
+    //   Pacific/Niue     -11:19:00 → -11:19:40  (local mean time, used until 1952-10-16)
+    private static readonly Dictionary<string, (long Truncated, long Precise)> SubMinuteOffsetCorrections =
+        new(StringComparer.Ordinal)
+        {
+            ["Africa/Monrovia"] = (-2640_000_000_000L, -2670_000_000_000L),
+            ["Pacific/Niue"] = (-40740_000_000_000L, -40780_000_000_000L),
+        };
+
+    private static long ApplySubMinuteOffsetCorrection(string zoneId, long offsetNs)
+        => SubMinuteOffsetCorrections.TryGetValue(zoneId, out var c) && offsetNs == c.Truncated
+            ? c.Precise
+            : offsetNs;
+
+    // InterpretISODateTimeOffset offset-matching for the "prefer"/"reject" options: does the explicit
+    // offset parsed from the string match one of the zone's candidate offsets for the local time?
+    // A minute-precision offset string (no sub-minute component) uses the match-minutes behaviour —
+    // a candidate matches when it equals the explicit offset after being rounded to the nearest minute
+    // (half away from zero) — so Africa/Monrovia's -00:44:30 offset is matched by the string "-00:45".
+    // The matched candidate (the real instant's offset), not the rounded value, is returned.
+    private static bool TryMatchZoneOffset(List<long> candidates, long explicitOffset, bool matchMinutes, out long matched)
+    {
+        foreach (var candidate in candidates)
+        {
+            if (candidate == explicitOffset) { matched = candidate; return true; }
+            if (matchMinutes && RoundOffsetToMinute(candidate) == explicitOffset) { matched = candidate; return true; }
+        }
+        matched = 0;
+        return false;
+    }
+
+    // RoundNumberToIncrement(offsetNs, 60e9, "halfExpand"): round to the nearest whole minute, with
+    // ties rounded away from zero.
+    private static long RoundOffsetToMinute(long offsetNs)
+    {
+        const long minute = 60_000_000_000L;
+        var q = offsetNs / minute;
+        var r = offsetNs % minute;
+        if (Math.Abs(r) * 2 >= minute) q += Math.Sign(offsetNs);
+        return q * minute;
     }
 
     private (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) Local()
@@ -1533,6 +1580,9 @@ public partial class JSTemporalZonedDateTime : JSObject
             var offsetFractionNs = match.Groups["of"].Success
                 ? long.Parse(match.Groups["of"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture) : 0L;
             var explicitOffset = (long)sign * ((long)(oh * 3600 + om * 60 + os) * 1_000_000_000 + offsetFractionNs);
+            // An offset string carrying a seconds (or fractional-seconds) component must match a
+            // candidate exactly; one with only hours/minutes precision uses match-minutes rounding.
+            var matchMinutes = !match.Groups["os"].Success && !match.Groups["of"].Success;
 
             // InterpretISODateTimeOffset (offsetBehaviour "option"): the explicit offset is honoured
             // verbatim only for "use"; "ignore" drops it for the zone's own offset; "prefer"/"reject"
@@ -1545,8 +1595,8 @@ public partial class JSTemporalZonedDateTime : JSObject
             else
             {
                 var candidates = CandidateOffsetsForLocal(timeZoneId, year, month, day, hour, minute, second);
-                if (candidates.Contains(explicitOffset))
-                    offsetNs = explicitOffset;
+                if (TryMatchZoneOffset(candidates, explicitOffset, matchMinutes, out var matchedOffset))
+                    offsetNs = matchedOffset;
                 else if (offsetOption == "reject")
                     throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: offset does not match the time zone in \"{text}\"");
                 else // "prefer": no match — use the zone's own offset
