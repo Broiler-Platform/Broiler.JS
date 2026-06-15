@@ -54,7 +54,10 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     [JSExport]
     internal readonly JSArrayBuffer buffer;
-    [JSExport]
+
+    // The view's start offset within the buffer. Used internally for element indexing (it always
+    // reflects the real offset); the JS-visible `byteOffset` getter (ByteOffset, below) reports 0 when
+    // the view is detached or out of bounds.
     public readonly int byteOffset;
 
     // NOTE: BYTES_PER_ELEMENT is intentionally NOT exported here. Per spec it is a data
@@ -97,6 +100,11 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     [JSExport]
     internal int ByteLength => length * bytesPerElement;
+
+    // %TypedArray%.prototype.byteOffset: per spec the getter returns +0 when the view is out of bounds
+    // (a resizable buffer shrank past it) or its buffer is detached, rather than the stored offset.
+    [JSExport]
+    internal int ByteOffset => buffer == null || buffer.isDetached || IsOutOfBounds ? 0 : byteOffset;
 
     // IsTypedArrayOutOfBounds: a view backed by a resizable buffer can be left out of bounds by a
     // shrink — a length-tracking view whose start is past the new end, or a fixed-length view whose
