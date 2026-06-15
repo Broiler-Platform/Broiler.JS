@@ -2875,12 +2875,28 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
                     if (refNum > totalGroups)
                     {
-                        // Reference to a group that does not exist. In Annex B this
-                        // DecimalEscape is not a backreference — `\8`/`\9` (and any
-                        // over-large number) degrade to the literal digit characters
-                        // (an IdentityEscape), e.g. `/7\89/` matches "789". .NET would
-                        // instead reject the undefined-group reference.
-                        sb.Append(pattern, i + 1, j - (i + 1));
+                        // Reference to a group that does not exist. In Annex B (non-Unicode) this
+                        // DecimalEscape is not a backreference but a LegacyOctalEscapeSequence:
+                        // `\1`–`\7` (up to three octal digits, value ≤ 255) is the octal character,
+                        // while `\8`/`\9` degrade to the literal digit (an IdentityEscape), e.g.
+                        // `/7\89/` matches "789" but `/\1/` matches "\x01". Emit any octal value as a
+                        // \xHH escape so .NET does not re-read it as an (undefined) backreference.
+                        char d0 = pattern[i + 1];
+                        if (d0 <= '7')
+                        {
+                            int value = d0 - '0';
+                            int maxMore = d0 <= '3' ? 2 : 1; // ZeroToThree allows 3 digits, FourToSeven 2
+                            int p = i + 2;
+                            for (int k = 0; k < maxMore && p < pattern.Length && pattern[p] >= '0' && pattern[p] <= '7'; k++, p++)
+                                value = value * 8 + (pattern[p] - '0');
+                            sb.Append("\\x").Append(value.ToString("X2", CultureInfo.InvariantCulture));
+                            sb.Append(pattern, p, j - p); // any remaining digits are literal
+                        }
+                        else
+                        {
+                            // \8 / \9: the literal digit(s).
+                            sb.Append(pattern, i + 1, j - (i + 1));
+                        }
                         i = j - 1;
                         continue;
                     }
