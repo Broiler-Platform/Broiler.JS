@@ -281,6 +281,7 @@ public partial class JSTemporalInstant : JSObject
         var digits = -1; // "auto"
         var roundingMode = "trunc";
         string smallestUnit = null;
+        string timeZoneId = null;
 
         if (optionsArg != null && !optionsArg.IsUndefined)
         {
@@ -297,6 +298,12 @@ public partial class JSTemporalInstant : JSObject
                 if (smallestUnit == "hour")
                     throw JSEngine.NewRangeError("Temporal.Instant.toString: smallestUnit cannot be \"hour\"");
             }
+
+            // A timeZone option displays the instant in that zone (with its numeric offset) instead of
+            // UTC; it must be a valid time-zone identifier — a bare date-time string is a RangeError.
+            var tz = options[KeyStrings.GetOrCreate("timeZone")];
+            if (!tz.IsUndefined)
+                timeZoneId = JSTemporalZonedDateTime.ToTimeZoneIdentifier(tz);
         }
 
         // ToSecondsStringPrecisionRecord: precision -2 = minutes (no seconds), -1 = auto,
@@ -321,7 +328,16 @@ public partial class JSTemporalInstant : JSObject
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.Instant.toString: result is out of range");
 
-        return new JSString(FormatISO(rounded, precision));
+        if (timeZoneId == null)
+            return new JSString(FormatISO(rounded, precision));
+
+        // Display the instant in the requested zone: shift to its local wall clock and append the
+        // numeric UTC offset in place of the "Z" designator.
+        var offsetNs = JSTemporalZonedDateTime.OffsetNanosecondsForInstant(timeZoneId, rounded);
+        var localFraction = FormatISO(rounded + offsetNs, precision);
+        // Replace the trailing "Z" with the offset string.
+        return new JSString(localFraction.Substring(0, localFraction.Length - 1)
+            + JSTemporalZonedDateTime.FormatOffsetString(offsetNs));
     }
 
     [JSExport("toJSON", Length = 0)]

@@ -158,21 +158,13 @@ public partial class JSTemporalPlainDateTime : JSObject
 
     [JSExport("from", Length = 1)]
     internal static JSValue From(in Arguments a)
-    {
-        var item = a.GetAt(0);
-        var overflow = ReadOverflow(a.GetAt(1));
-
-        if (item is JSTemporalPlainDateTime dt)
-            return dt.Clone();
-
-        return ToTemporalDateTime(item, overflow);
-    }
+        => ToTemporalDateTime(a.GetAt(0), a.GetAt(1));
 
     [JSExport("compare", Length = 2)]
     internal static JSValue Compare(in Arguments a)
     {
-        var one = RequireDateTime(ToTemporalDateTime(a.GetAt(0), "constrain"));
-        var two = RequireDateTime(ToTemporalDateTime(a.GetAt(1), "constrain"));
+        var one = RequireDateTime(ToTemporalDateTime(a.GetAt(0)));
+        var two = RequireDateTime(ToTemporalDateTime(a.GetAt(1)));
         return new JSNumber(one.CompareTo(two));
     }
 
@@ -386,7 +378,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     // time, carrying any full-day overflow into the date and re-balancing.
     private JSValue Difference(JSValue other, JSValue options, int sign)
     {
-        var target = RequireDateTime(ToTemporalDateTime(other, "constrain"));
+        var target = RequireDateTime(ToTemporalDateTime(other));
         if (calendarId != target.calendarId)
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: cannot compute the difference between date-times of different calendars");
         var (largestUnit, smallestUnit, increment, roundingMode) = ReadDifferenceSettings(options);
@@ -522,7 +514,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     [JSExport("equals", Length = 1)]
     public JSValue Equals(in Arguments a)
     {
-        var other = RequireDateTime(ToTemporalDateTime(a.GetAt(0), "constrain"));
+        var other = RequireDateTime(ToTemporalDateTime(a.GetAt(0)));
         return CompareTo(other) == 0 && calendarId == other.calendarId ? JSValue.BooleanTrue : JSValue.BooleanFalse;
     }
 
@@ -802,16 +794,31 @@ public partial class JSTemporalPlainDateTime : JSObject
         _ => throw JSEngine.NewRangeError($"Temporal.PlainDateTime: invalid unit \"{u}\""),
     };
 
-    private static JSValue ToTemporalDateTime(JSValue item, string overflow)
+    private static JSValue ToTemporalDateTime(JSValue item) => ToTemporalDateTime(item, JSUndefined.Value);
+
+    // `options` is the raw options argument; the overflow option is read at the spec-mandated point
+    // (after the item's type is validated and its slots / fields / string are read) so an invalid
+    // primitive item throws a TypeError before the options bag is ever observed.
+    private static JSValue ToTemporalDateTime(JSValue item, JSValue options)
     {
         if (item is JSTemporalPlainDateTime dt)
+        {
+            ReadOverflow(options);
             return dt.Clone();
+        }
 
         if (item is JSTemporalPlainDate d)
+        {
+            ReadOverflow(options);
             return new JSTemporalPlainDateTime(d.isoYear, d.isoMonth, d.isoDay, 0, 0, 0, 0, 0, 0, d.calendarId, PlainDateTimePrototype);
+        }
 
         if (item.IsString)
-            return ParseTemporalDateTimeString(item.ToString());
+        {
+            var parsed = ParseTemporalDateTimeString(item.ToString());
+            ReadOverflow(options);
+            return parsed;
+        }
 
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime: invalid value");
@@ -824,10 +831,11 @@ public partial class JSTemporalPlainDateTime : JSObject
         // before the wall-clock time is attached.
         if (TemporalCalendarMath.IsNonIso(calendarId))
         {
-            var (cy, cm, cd) = TemporalNonIso.ToIsoFromBag(obj, calendarId, overflow, "Temporal.PlainDateTime");
+            var nonIsoOverflow = ReadOverflow(options);
+            var (cy, cm, cd) = TemporalNonIso.ToIsoFromBag(obj, calendarId, nonIsoOverflow, "Temporal.PlainDateTime");
             return RegulateDateTime(cy, cm, cd,
                 Field("hour"), Field("minute"), Field("second"), Field("millisecond"), Field("microsecond"), Field("nanosecond"),
-                overflow, calendarId, dateAlreadyResolved: true);
+                nonIsoOverflow, calendarId, dateAlreadyResolved: true);
         }
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
@@ -846,6 +854,8 @@ public partial class JSTemporalPlainDateTime : JSObject
             throw JSEngine.NewTypeError("Temporal.PlainDateTime: missing day");
         if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime: missing month / monthCode");
+
+        var overflow = ReadOverflow(options);
 
         var month = monthCodeValue.IsUndefined ? ToPositiveIntegerWithTruncation(monthValue) : MonthFromCodeIso(monthCodeValue.ToString());
         if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToPositiveIntegerWithTruncation(monthValue) != month)

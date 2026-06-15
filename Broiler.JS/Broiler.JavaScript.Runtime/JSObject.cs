@@ -267,6 +267,10 @@ public partial class JSObject : JSValue
 
     internal JSValue ToDefaultPrimitive() => ToPrimitiveDefault();
 
+    // ToPrimitive with the "string" hint (calls @@toPrimitive / toString-then-valueOf). The result
+    // is a primitive that the caller may still need to type-check (e.g. spec ToPrimitiveAndRequireString).
+    internal JSValue ToStringPrimitive() => ToPrimitive(preferString: true);
+
     private JSValue TryCallPrimitiveMethod(in KeyString key)
     {
         var method = this[key];

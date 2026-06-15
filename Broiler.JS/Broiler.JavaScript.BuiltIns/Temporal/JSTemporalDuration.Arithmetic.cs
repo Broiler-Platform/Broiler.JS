@@ -309,6 +309,11 @@ public partial class JSTemporalDuration
                 if (!TemporalIsoString.IsStrictOffset(off.StringValue))
                     throw JSEngine.NewRangeError($"Temporal.Duration: invalid offset string \"{off.StringValue}\"");
             }
+
+            // The timeZone field is resolved through ToTemporalTimeZoneIdentifier: a non-string /
+            // non-ZonedDateTime value is a TypeError and a string that is not a valid identifier — a
+            // bare date-time with no designator — is a RangeError.
+            JSTemporalZonedDateTime.ToTimeZoneIdentifier(relObj[KeyStrings.GetOrCreate("timeZone")]);
         }
 
         date = JSTemporalPlainDate.ToRelativeDate(rel);

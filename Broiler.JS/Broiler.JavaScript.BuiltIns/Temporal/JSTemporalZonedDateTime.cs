@@ -749,19 +749,24 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     // DifferenceTemporalZonedDateTime: the signed difference between two instants in this zone,
     // expressed as a Duration. When `largestUnit` is a time unit the result is the plain
-    // epoch-nanosecond difference balanced into time components; otherwise it is the DST-aware
-    // calendar difference (a "day" may be 23 h or 25 h across a transition). The smallestUnit /
-    // roundingIncrement / roundingMode options are validated only via `largestUnit` here — like
-    // the PlainDate/PlainDateTime difference methods, no rounding is applied yet.
+    // epoch-nanosecond difference, rounded to smallestUnit × roundingIncrement and balanced into
+    // time components; otherwise it is the DST-aware calendar difference (a "day" may be 23 h or
+    // 25 h across a transition), to which the rounding options are not yet applied.
     private JSValue Difference(JSValue otherValue, JSValue options, int sign)
     {
         var other = Require(ToZonedDateTime(otherValue));
         if (calendarId != other.calendarId)
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: cannot compute the difference between date-times of different calendars");
-        var (largestUnit, _, _, _) = ReadZonedDifferenceSettings(options);
+        var (largestUnit, smallestUnit, increment, roundingMode) = ReadZonedDifferenceSettings(options);
+
+        // A calendar-unit largestUnit (year/month/week/day) differences the dates in the receiver's
+        // time zone, which is only meaningful when both operands share that zone; the IANA identifiers
+        // are compared canonically (so e.g. "Asia/Calcutta" and "Asia/Kolkata" are the same zone).
+        if (!IsTimeUnit(largestUnit) && !TimeZoneEquals(timeZoneId, other.timeZoneId))
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: cannot compute a calendar-unit difference between date-times in different time zones");
 
         var result = IsTimeUnit(largestUnit)
-            ? DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit)
+            ? DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, sign < 0 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode)
             : DifferenceCalendar(epochNanoseconds, other.epochNanoseconds, largestUnit);
 
         if (sign < 0)
@@ -777,9 +782,26 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static bool IsTimeUnit(string unit) => unit is "hour" or "minute" or "second"
         or "millisecond" or "microsecond" or "nanosecond";
 
-    // The difference as a pure time duration (no calendar units), balanced from `largestUnit` down.
-    private static JSTemporalDuration DifferenceTimeOnly(BigInteger ns1, BigInteger ns2, string largestUnit)
-        => BalanceTimeDuration(ns2 - ns1, largestUnit);
+    // The difference as a pure time duration (no calendar units): the (ns2 − ns1) nanosecond
+    // difference rounded to smallestUnit × increment (with the caller's — for "since", negated —
+    // rounding mode), then balanced from `largestUnit` down.
+    private static JSTemporalDuration DifferenceTimeOnly(BigInteger ns1, BigInteger ns2, string largestUnit,
+        string smallestUnit, int increment, string roundingMode)
+    {
+        var unitNs = (BigInteger)TimeUnitNanoseconds(smallestUnit) * increment;
+        var rounded = TemporalRoundingOptions.RoundToIncrement(ns2 - ns1, unitNs, roundingMode);
+        return BalanceTimeDuration(rounded, largestUnit);
+    }
+
+    private static long TimeUnitNanoseconds(string unit) => unit switch
+    {
+        "hour" => 3_600_000_000_000,
+        "minute" => 60_000_000_000,
+        "second" => 1_000_000_000,
+        "millisecond" => 1_000_000,
+        "microsecond" => 1_000,
+        _ => 1, // nanosecond
+    };
 
     // DifferenceZonedDateTime for a calendar `largestUnit` (year/month/week/day). Follows the
     // proposal's day-correction loop: the wall-clock time-of-day difference is combined with a
@@ -1032,7 +1054,11 @@ public partial class JSTemporalZonedDateTime : JSObject
     // The offset of this zone at the instant `epochNanoseconds`, in nanoseconds.
     private long OffsetNanoseconds() => GetOffsetNanosecondsFor(epochNanoseconds);
 
-    private long GetOffsetNanosecondsFor(BigInteger epochNs)
+    private long GetOffsetNanosecondsFor(BigInteger epochNs) => OffsetNanosecondsForInstant(timeZoneId, epochNs);
+
+    // GetOffsetNanosecondsFor(timeZone, instant) as a static helper (used by Temporal.Instant.toString):
+    // the UTC offset, in nanoseconds, that the given zone applies at the instant.
+    internal static long OffsetNanosecondsForInstant(string timeZoneId, BigInteger epochNs)
     {
         if (TryFixedOffset(timeZoneId, out var fixedNs))
             return fixedNs;
@@ -1046,6 +1072,20 @@ public partial class JSTemporalZonedDateTime : JSObject
         try { return (long)tz.GetUtcOffset(utc).Ticks * 100; }
         catch { return 0; }
     }
+
+    // ToTemporalTimeZoneIdentifier for a slot value supplied as a JSValue: a ZonedDateTime contributes
+    // its own zone; a String is a bare identifier or an ISO string carrying a time-zone designator;
+    // anything else is a TypeError and an unrecognized identifier a RangeError.
+    internal static string ToTimeZoneIdentifier(JSValue value)
+    {
+        if (value is JSTemporalZonedDateTime zdt) return zdt.timeZoneId;
+        if (value == null || !value.IsString)
+            throw JSEngine.NewTypeError("Temporal: time zone must be a string identifier");
+        return CanonicalizeTimeZone(value.ToString());
+    }
+
+    // Formats a UTC offset (nanoseconds) as ±HH:MM[:SS] for display.
+    internal static string FormatOffsetString(long offsetNs) => FormatOffset(offsetNs);
 
     // The offset to apply to a *local* wall-clock datetime (used when building from fields).
     private static long GetOffsetForLocal(string timeZoneId, int y, int mo, int d, int h, int mi, int s)
@@ -1153,10 +1193,32 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static readonly Regex OffsetIdPattern = new(
         @"^([+-])(\d{2})(?::?(\d{2})(?::?(\d{2}))?)?$", RegexOptions.CultureInvariant);
 
+    private static Dictionary<string, string> _caseFoldedZoneIds;
+
     private static TimeZoneInfo ResolveNamedZone(string id)
     {
+        if (id == null) return null;
         try { return TimeZoneInfo.FindSystemTimeZoneById(id); }
-        catch { return null; }
+        catch { /* fall through to a case-insensitive lookup */ }
+
+        // IANA identifiers are matched case-insensitively, but some platforms' FindSystemTimeZoneById
+        // is case-sensitive, so fall back to a case-folded scan of the available zones (e.g. so
+        // "Africa/CAIRO" resolves to the "Africa/Cairo" zone).
+        var folded = _caseFoldedZoneIds ??= BuildCaseFoldedZoneIds();
+        if (folded.TryGetValue(id.ToUpperInvariant(), out var canonicalId))
+        {
+            try { return TimeZoneInfo.FindSystemTimeZoneById(canonicalId); }
+            catch { return null; }
+        }
+        return null;
+    }
+
+    private static Dictionary<string, string> BuildCaseFoldedZoneIds()
+    {
+        var map = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var tz in TimeZoneInfo.GetSystemTimeZones())
+            map[tz.Id.ToUpperInvariant()] = tz.Id;
+        return map;
     }
 
     // TimeZoneEquals (used by ZonedDateTime.prototype.equals): two identifiers denote the same zone when
@@ -1201,7 +1263,10 @@ public partial class JSTemporalZonedDateTime : JSObject
     {
         if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
         if (TryOffsetTimeZoneIdentifier(id, out var offsetNs)) { canonical = FormatOffset(offsetNs); return true; }
-        if (ResolveNamedZone(id) != null) { canonical = id; return true; }
+        // IANA identifiers match case-insensitively; the canonical (case-normalized) identifier is
+        // the resolved zone's Id, e.g. "Africa/CAIRO" → "Africa/Cairo".
+        var named = ResolveNamedZone(id);
+        if (named != null) { canonical = named.Id; return true; }
 
         canonical = null;
         return false;
@@ -1291,12 +1356,15 @@ public partial class JSTemporalZonedDateTime : JSObject
         var hasExplicitOffset = false;
         if (!offsetValue.IsUndefined)
         {
-            // The offset field must be a String (a non-string is a TypeError) and a valid UTC offset
-            // (an unparseable value such as "00:00" / "+0" is a RangeError) — it is not silently ignored.
-            if (!offsetValue.IsString)
+            // ToPrimitiveAndRequireString: an object offset is coerced with ToPrimitive (string hint,
+            // so its toString is observed), then the result must be a String (a non-string is a
+            // TypeError) and a valid UTC offset (an unparseable value such as "00:00" / "+0" is a
+            // RangeError) — it is not silently ignored.
+            var offsetPrimitive = offsetValue is JSObject offsetObj ? offsetObj.ToStringPrimitive() : offsetValue;
+            if (!offsetPrimitive.IsString)
                 throw JSEngine.NewTypeError("Temporal.ZonedDateTime: the offset field must be a string");
-            if (!TryParseOffsetString(offsetValue.StringValue, out explicitOffset))
-                throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: invalid offset string \"{offsetValue.StringValue}\"");
+            if (!TryParseOffsetString(offsetPrimitive.StringValue, out explicitOffset))
+                throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: invalid offset string \"{offsetPrimitive.StringValue}\"");
             hasExplicitOffset = true;
         }
         long ZoneOffset() => GetOffsetForLocal(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second);

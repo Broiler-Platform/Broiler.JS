@@ -164,19 +164,20 @@ public partial class JSTemporalPlainTime : JSObject
     }
 
     [JSExport("until", Length = 1)]
-    public JSValue Until(in Arguments a) { ReadDifferenceSettings(a.GetAt(1)); return Difference(a.GetAt(0), 1); }
+    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), 1);
 
     [JSExport("since", Length = 1)]
-    public JSValue Since(in Arguments a) { ReadDifferenceSettings(a.GetAt(1)); return Difference(a.GetAt(0), -1); }
+    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
 
     // GetDifferenceSettings for until/since: validates largestUnit / smallestUnit (time units only —
     // a calendar unit is a RangeError, and smallestUnit must not be larger than largestUnit),
     // roundingIncrement (finite integer in 1 … the unit maximum, dividing it evenly) and
-    // roundingMode. (The options are validated here but the difference still uses largestUnit "hour"
-    // with no rounding applied — see the TODO above Difference.)
-    private static void ReadDifferenceSettings(JSValue options)
+    // roundingMode, returning the resolved settings the difference rounds with.
+    private static (string largestUnit, string smallestUnit, long increment, string roundingMode)
+        ReadDifferenceSettings(JSValue options)
     {
-        if (options == null || options.IsUndefined) return;
+        if (options == null || options.IsUndefined)
+            return ("hour", "nanosecond", 1, "trunc");
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
@@ -188,7 +189,7 @@ public partial class JSTemporalPlainTime : JSObject
         if (largestUnit == "auto") largestUnit = null;
 
         var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
-        TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
 
         var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
         var smallestUnit = smallestRaw.IsUndefined ? "nanosecond" : TemporalRoundingOptions.NormalizeAnyUnit(smallestRaw.StringValue, allowAuto: false);
@@ -205,6 +206,7 @@ public partial class JSTemporalPlainTime : JSObject
             throw JSEngine.NewRangeError("Temporal.PlainTime: smallestUnit must not be larger than largestUnit");
 
         TemporalRoundingOptions.ValidateRoundingIncrement(increment, MaximumRoundingIncrement(smallestUnit), inclusive: false);
+        return (largestUnit, smallestUnit, increment, roundingMode);
     }
 
     // MaximumTemporalDurationRoundingIncrement for a time unit.
@@ -215,20 +217,52 @@ public partial class JSTemporalPlainTime : JSObject
         _ => 1000, // millisecond / microsecond / nanosecond
     };
 
-    private JSValue Difference(JSValue other, int sign)
+    // DifferenceTemporalPlainTime: the operand is coerced first, then the difference settings are
+    // read; the (other − this) nanosecond difference is rounded to smallestUnit × roundingIncrement
+    // (with the rounding mode negated for "since", which also negates the result) and balanced up to
+    // largestUnit.
+    private JSValue Difference(JSValue other, JSValue options, int sign)
     {
         var target = RequireTime(ToTemporalTime(other, "constrain"));
-        var diff = (target.TotalNanoseconds() - TotalNanoseconds()) * sign;
+        var (largestUnit, smallestUnit, increment, roundingMode) = ReadDifferenceSettings(options);
 
-        var s = Math.Sign(diff);
-        var abs = Math.Abs(diff);
+        var diff = target.TotalNanoseconds() - TotalNanoseconds(); // other − this
+        var mode = sign < 0 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
+        var unitNs = UnitNanoseconds(smallestUnit) * increment;
+        var rounded = (long)TemporalRoundingOptions.RoundToIncrement(diff, unitNs, mode) * sign;
 
-        var ns = abs % 1000; abs /= 1000;
-        var us = abs % 1000; abs /= 1000;
-        var ms = abs % 1000; abs /= 1000;
-        var sec = abs % 60; abs /= 60;
-        var min = abs % 60; abs /= 60;
-        var hr = abs;
+        return BalanceTimeDuration(rounded, largestUnit);
+    }
+
+    // BalanceTimeDuration: split a signed nanosecond count into time components, folding every unit
+    // larger than largestUnit into largestUnit (so largestUnit "minute" yields no hours, etc.).
+    private static JSTemporalDuration BalanceTimeDuration(long signedNs, string largestUnit)
+    {
+        var s = Math.Sign(signedNs);
+        var rem = Math.Abs(signedNs);
+
+        long hr = 0, min = 0, sec = 0, ms = 0, us = 0;
+        var ns = rem;
+        if (largestUnit != "nanosecond")
+        {
+            ns = rem % 1000; rem /= 1000; us = rem;
+            if (largestUnit != "microsecond")
+            {
+                us = rem % 1000; rem /= 1000; ms = rem;
+                if (largestUnit != "millisecond")
+                {
+                    ms = rem % 1000; rem /= 1000; sec = rem;
+                    if (largestUnit != "second")
+                    {
+                        sec = rem % 60; rem /= 60; min = rem;
+                        if (largestUnit != "minute")
+                        {
+                            min = rem % 60; rem /= 60; hr = rem;
+                        }
+                    }
+                }
+            }
+        }
 
         return new JSTemporalDuration(0, 0, 0, 0, s * hr, s * min, s * sec, s * ms, s * us, s * ns,
             JSTemporalDuration.DurationPrototype);

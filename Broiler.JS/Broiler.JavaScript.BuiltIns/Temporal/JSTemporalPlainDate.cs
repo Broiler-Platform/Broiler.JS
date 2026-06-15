@@ -143,21 +143,13 @@ public partial class JSTemporalPlainDate : JSObject
 
     [JSExport("from", Length = 1)]
     internal static JSValue From(in Arguments a)
-    {
-        var item = a.GetAt(0);
-        var overflow = ReadOverflow(a.GetAt(1));
-
-        if (item is JSTemporalPlainDate d)
-            return new JSTemporalPlainDate(d.isoYear, d.isoMonth, d.isoDay, d.calendarId, PlainDatePrototype);
-
-        return ToTemporalDate(item, overflow);
-    }
+        => ToTemporalDate(a.GetAt(0), a.GetAt(1));
 
     [JSExport("compare", Length = 2)]
     internal static JSValue Compare(in Arguments a)
     {
-        var one = RequireDate(ToTemporalDate(a.GetAt(0), "constrain"));
-        var two = RequireDate(ToTemporalDate(a.GetAt(1), "constrain"));
+        var one = RequireDate(ToTemporalDate(a.GetAt(0)));
+        var two = RequireDate(ToTemporalDate(a.GetAt(1)));
         return new JSNumber(CompareISODate(one.isoYear, one.isoMonth, one.isoDay, two.isoYear, two.isoMonth, two.isoDay));
     }
 
@@ -314,7 +306,7 @@ public partial class JSTemporalPlainDate : JSObject
     // the arithmetic calendars still return the unrounded largestUnit-balanced difference.
     private JSValue Difference(JSValue other, JSValue options, int sign)
     {
-        var target = RequireDate(ToTemporalDate(other, "constrain"));
+        var target = RequireDate(ToTemporalDate(other));
         if (calendarId != target.calendarId)
             throw JSEngine.NewRangeError("Temporal.PlainDate: cannot compute the difference between dates of different calendars");
         var (largestUnit, smallestUnit, increment, roundingMode) = ReadDifferenceSettings(options);
@@ -348,7 +340,7 @@ public partial class JSTemporalPlainDate : JSObject
     [JSExport("equals", Length = 1)]
     public JSValue Equals(in Arguments a)
     {
-        var other = RequireDate(ToTemporalDate(a.GetAt(0), "constrain"));
+        var other = RequireDate(ToTemporalDate(a.GetAt(0)));
         return isoYear == other.isoYear && isoMonth == other.isoMonth && isoDay == other.isoDay
             && calendarId == other.calendarId
             ? JSValue.BooleanTrue : JSValue.BooleanFalse;
@@ -558,19 +550,41 @@ public partial class JSTemporalPlainDate : JSObject
         return (largestUnit, smallestUnit, increment, roundingMode);
     }
 
-    private static JSValue ToTemporalDate(JSValue item, string overflow)
+    private static JSValue ToTemporalDate(JSValue item) => ToTemporalDate(item, JSUndefined.Value);
+
+    // `options` is the raw options argument; the overflow option is read at the spec-mandated point
+    // (after the item's type is validated and its slots / fields / string are read) so an invalid
+    // primitive item throws a TypeError before the options bag is ever observed.
+    private static JSValue ToTemporalDate(JSValue item, JSValue options)
     {
         if (item is JSTemporalPlainDate d)
+        {
+            ReadOverflow(options);
             return new JSTemporalPlainDate(d.isoYear, d.isoMonth, d.isoDay, d.calendarId, PlainDatePrototype);
+        }
 
-        // A Temporal.ZonedDateTime is consumed via its internal slots (its wall-clock ISO date in its
-        // own time zone + its calendar), NOT via its observable getters — GetISODateTimeFor +
-        // CreateTemporalDate. (Spec ToTemporalDate, ZonedDateTime branch.)
+        // A Temporal.ZonedDateTime / PlainDateTime is consumed via its internal slots (its wall-clock
+        // ISO date + calendar), NOT via its observable getters — GetISODateTimeFor / the stored ISO
+        // date + CreateTemporalDate. (Spec ToTemporalDate, ZonedDateTime / PlainDateTime branches.)
         if (item is JSTemporalZonedDateTime zdt)
-            return zdt.ToPlainDateFromSlots();
+        {
+            var result = zdt.ToPlainDateFromSlots();
+            ReadOverflow(options);
+            return result;
+        }
+
+        if (item is JSTemporalPlainDateTime pdt)
+        {
+            ReadOverflow(options);
+            return new JSTemporalPlainDate(pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.calendarId, PlainDatePrototype);
+        }
 
         if (item.IsString)
-            return ParseTemporalDateString(item.ToString());
+        {
+            var parsed = ParseTemporalDateString(item.ToString());
+            ReadOverflow(options);
+            return parsed;
+        }
 
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainDate: invalid value");
@@ -578,7 +592,10 @@ public partial class JSTemporalPlainDate : JSObject
         var calendarId = CanonicalizeCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
 
         if (TemporalCalendarMath.IsNonIso(calendarId))
-            return ToNonIsoCalendarDate(obj, calendarId, overflow);
+        {
+            var nonIsoOverflow = ReadOverflow(options);
+            return ToNonIsoCalendarDate(obj, calendarId, nonIsoOverflow);
+        }
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
         var eraValue = obj[KeyStrings.GetOrCreate("era")];
@@ -596,6 +613,8 @@ public partial class JSTemporalPlainDate : JSObject
             throw JSEngine.NewTypeError("Temporal.PlainDate: missing day");
         if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDate: missing month / monthCode");
+
+        var overflow = ReadOverflow(options);
 
         var month = monthCodeValue.IsUndefined ? ToPositiveIntegerWithTruncation(monthValue) : MonthFromCodeIso(monthCodeValue.ToString());
         if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToPositiveIntegerWithTruncation(monthValue) != month)
@@ -630,6 +649,8 @@ public partial class JSTemporalPlainDate : JSObject
         var match = DatePattern.Match(text);
         if (!match.Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
+
+        TemporalIsoString.RejectTimeTailForCalendarOnly(match, text);
 
         var year = int.Parse(match.Groups[1].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
         var month = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
@@ -1032,7 +1053,7 @@ public partial class JSTemporalPlainDate : JSObject
     // Converts a Temporal.Duration relativeTo option (a PlainDate, or a string / property bag that
     // resolves to one) to a PlainDate.
     internal static JSTemporalPlainDate ToRelativeDate(JSValue item)
-        => (JSTemporalPlainDate)ToTemporalDate(item, "constrain");
+        => (JSTemporalPlainDate)ToTemporalDate(item);
 
     // A PlainDate from ISO fields (used when a Temporal.Duration relativeTo is a PlainDateTime, whose
     // date is taken with a fixed 24-hour day).
