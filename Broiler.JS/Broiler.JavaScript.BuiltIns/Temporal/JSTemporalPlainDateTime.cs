@@ -714,12 +714,25 @@ public partial class JSTemporalPlainDateTime : JSObject
         return int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
     }
 
-    // A monthCode for the ISO calendar must be "M01".."M12" — a well-formed code whose number is
-    // outside that range (e.g. "M00", "M13") references a month that does not exist.
+    // A well-formed monthCode is "M" + two digits + an optional leap-month "L" marker; this SYNTAX is
+    // validated when the field is read (before the year is coerced), so a malformed code is a
+    // RangeError ahead of a bad year type, while its calendar SUITABILITY is a later check.
+    private static readonly Regex MonthCodeSyntaxPattern = new(@"^M\d{2}L?$", RegexOptions.CultureInvariant);
+
+    private static void ValidateMonthCodeSyntax(string code)
+    {
+        if (!MonthCodeSyntaxPattern.IsMatch(code))
+            throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
+    }
+
+    // A monthCode for the ISO calendar must be "M01".."M12" with no leap-month marker; a well-formed
+    // code outside that range (e.g. "M00", "M13", "M99L") references a month that does not exist.
+    // Assumes the syntax has already been validated by ValidateMonthCodeSyntax.
     private static int MonthFromCodeIso(string code)
     {
-        var month = MonthFromCode(code);
-        if (month is < 1 or > 12)
+        if (code.EndsWith("L", StringComparison.Ordinal) ||
+            !int.TryParse(code.AsSpan(1, 2), NumberStyles.None, CultureInfo.InvariantCulture, out var month) ||
+            month is < 1 or > 12)
             throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\" for the iso8601 calendar");
         return month;
     }
@@ -860,16 +873,24 @@ public partial class JSTemporalPlainDateTime : JSObject
 
         var overflow = ReadOverflow(options);
 
-        var month = monthCodeValue.IsUndefined ? ToPositiveIntegerWithTruncation(monthValue) : MonthFromCodeIso(monthCodeValue.ToString());
-        if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToPositiveIntegerWithTruncation(monthValue) != month)
-            throw JSEngine.NewRangeError("Temporal.PlainDateTime: month and monthCode disagree");
+        // Coerce in spec order (day, month, monthCode-syntax, year) so a malformed monthCode is a
+        // RangeError before the year is coerced, but a bad year *type* is a TypeError before a
+        // well-formed-but-unsuitable monthCode (checked last in MonthFromCodeIso).
+        var day = ToPositiveIntegerWithTruncation(dayValue);
+        var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
+        if (!monthCodeValue.IsUndefined)
+            ValidateMonthCodeSyntax(monthCodeValue.ToString());
 
         var isoYear = TemporalCalendar.ResolveIsoYear(calendarId,
             hasYear, hasYear ? ToIntegerWithTruncation(yearValue) : 0,
             hasEra, hasEra ? eraValue.StringValue : null,
             hasEraYear, hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0);
 
-        return RegulateDateTime(isoYear, month, ToPositiveIntegerWithTruncation(dayValue),
+        var month = monthCodeValue.IsUndefined ? monthFromMonth : MonthFromCodeIso(monthCodeValue.ToString());
+        if (monthFromMonth != -1 && !monthCodeValue.IsUndefined && monthFromMonth != month)
+            throw JSEngine.NewRangeError("Temporal.PlainDateTime: month and monthCode disagree");
+
+        return RegulateDateTime(isoYear, month, day,
             Field("hour"), Field("minute"), Field("second"), Field("millisecond"), Field("microsecond"), Field("nanosecond"), overflow, calendarId);
     }
 

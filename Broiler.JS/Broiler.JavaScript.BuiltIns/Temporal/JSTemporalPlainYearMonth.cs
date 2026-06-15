@@ -139,10 +139,8 @@ public partial class JSTemporalPlainYearMonth : JSObject
         if (!obj[KeyStrings.GetOrCreate("timeZone")].IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with does not accept a timeZone field");
 
-        var overflow = ReadOverflow(a.GetAt(1));
-
         if (NonIso)
-            return WithNonIso(obj, overflow);
+            return WithNonIso(obj, ReadOverflow(a.GetAt(1)));
 
         var any = false;
         var month = isoMonth;
@@ -162,6 +160,9 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with requires at least one field");
+
+        // GetTemporalOverflowOption runs only after the partial fields have been read and coerced.
+        var overflow = ReadOverflow(a.GetAt(1));
 
         return RegulateYearMonth(year, month, overflow, calendarId);
     }

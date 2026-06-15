@@ -89,8 +89,6 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (!obj[KeyStrings.GetOrCreate("calendar")].IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with does not accept a calendar field");
 
-        var overflow = ReadOverflow(a.GetAt(1));
-
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
@@ -108,15 +106,16 @@ public partial class JSTemporalPlainMonthDay : JSObject
                 // A numeric month has no year-independent meaning in a non-ISO calendar; resolve it
                 // against the stored reference year's calendar.
                 var refCalYear = TemporalNonIso.CalendarYmd(calendarId, referenceISOYear, isoMonth, isoDay).y;
-                code = TemporalCalendarMath.MonthCode(calendarId, refCalYear, ToIntegerWithTruncation(monthValue));
+                code = TemporalCalendarMath.MonthCode(calendarId, refCalYear, ToPositiveIntegerWithTruncation(monthValue));
                 any = true;
             }
-            if (!dayValue.IsUndefined) { day = ToIntegerWithTruncation(dayValue); any = true; }
+            if (!dayValue.IsUndefined) { day = ToPositiveIntegerWithTruncation(dayValue); any = true; }
 
             if (!any)
                 throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires at least one field");
 
-            var (ny, nm, nd) = TemporalNonIso.MonthDayFromCode(calendarId, code, day, overflow);
+            var nonIsoOverflow = ReadOverflow(a.GetAt(1));
+            var (ny, nm, nd) = TemporalNonIso.MonthDayFromCode(calendarId, code, day, nonIsoOverflow);
             return new JSTemporalPlainMonthDay(nm, nd, ny, calendarId, PlainMonthDayPrototype);
         }
 
@@ -125,16 +124,19 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (!monthCodeValue.IsUndefined) { month = MonthFromCode(monthCodeValue.ToString()); anyIso = true; }
         if (!monthValue.IsUndefined)
         {
-            var m = ToIntegerWithTruncation(monthValue);
+            var m = ToPositiveIntegerWithTruncation(monthValue);
             if (!monthCodeValue.IsUndefined && m != month)
                 throw JSEngine.NewRangeError("Temporal.PlainMonthDay.with: month and monthCode disagree");
             month = m; anyIso = true;
         }
 
-        if (!dayValue.IsUndefined) { isoDayOut = ToIntegerWithTruncation(dayValue); anyIso = true; }
+        if (!dayValue.IsUndefined) { isoDayOut = ToPositiveIntegerWithTruncation(dayValue); anyIso = true; }
 
         if (!anyIso)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires at least one field");
+
+        // GetTemporalOverflowOption runs only after the partial fields have been read and coerced.
+        var overflow = ReadOverflow(a.GetAt(1));
 
         return RegulateMonthDay(month, isoDayOut, overflow, calendarId, referenceISOYear);
     }
@@ -214,6 +216,16 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (double.IsNaN(number) || double.IsInfinity(number))
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: component must be finite");
         return (int)Math.Truncate(number);
+    }
+
+    // month / day fields must be a positive (≥ 1) integer (RangeError otherwise) — checked when the
+    // field is read, before the overflow option is processed.
+    private static int ToPositiveIntegerWithTruncation(JSValue value)
+    {
+        var n = ToIntegerWithTruncation(value);
+        if (n < 1)
+            throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month and day must be positive");
+        return n;
     }
 
     // ToTemporalCalendarSlotValue: the ISO 8601 and Gregorian-family calendars share the ISO
