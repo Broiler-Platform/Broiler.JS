@@ -528,6 +528,10 @@ partial class JSTypedArray
         return this;
     }
 
+    // True for the BigInt-valued typed arrays (BigInt64Array / BigUint64Array), whose elements cannot
+    // be mixed with the Number-valued typed arrays in set / construction.
+    private static bool IsBigIntArray(JSTypedArray array) => array is JSBigInt64Array or JSBigUint64Array;
+
     [JSExport("set", Length = 1)]
     public JSValue Set(in Arguments a)
     {
@@ -552,32 +556,38 @@ partial class JSTypedArray
             if ((long)typedArray.Length + relativeStart > length)
                 throw JSEngine.NewRangeError("Offset is out of bounds");
 
-            var src = typedArray.buffer.buffer;
-            var target = buffer.buffer;
-            int sourceBytesPerElement = typedArray.bytesPerElement;
-            int targetBytesPerElement = bytesPerElement;
-            // var maxLength = source.Length - (relativeStart * sourceBytesPerElement);
-            if (src == target && (relativeStart * targetBytesPerElement) >= typedArray.byteOffset)
+            // SetTypedArrayFromTypedArray: mixing a BigInt typed array with a Number one is a TypeError.
+            if (IsBigIntArray(this) != IsBigIntArray(typedArray))
+                throw JSEngine.NewTypeError("TypedArray.prototype.set: cannot set a BigInt typed array from a Number one (or vice versa)");
+
+            int sourceLength = typedArray.Length;
+
+            if (GetType() == typedArray.GetType())
             {
-                for (int i = source.Length - 1; i >= 0; i--)
+                // Same element type: a raw byte move, copying backwards when the views share a buffer and
+                // the destination starts after the source (so an overlap does not clobber unread bytes).
+                var src = typedArray.buffer.buffer;
+                var target = buffer.buffer;
+                int elementBytes = bytesPerElement;
+                bool backwards = src == target && (relativeStart * elementBytes) >= typedArray.byteOffset;
+                for (int k = 0; k < sourceLength; k++)
                 {
-                    var y = relativeStart + i;
-                    System.Array.Copy(src, typedArray.byteOffset + (i * sourceBytesPerElement),
+                    int i = backwards ? sourceLength - 1 - k : k;
+                    System.Array.Copy(src, typedArray.byteOffset + (i * elementBytes),
                         target,
-                        byteOffset + (y * targetBytesPerElement),
-                        sourceBytesPerElement);
+                        byteOffset + ((relativeStart + i) * elementBytes),
+                        elementBytes);
                 }
             }
             else
             {
-                for (int i = 0; i < source.Length; i++)
-                {
-                    var y = relativeStart + i;
-                    System.Array.Copy(src, typedArray.byteOffset + (i * sourceBytesPerElement),
-                        target,
-                        byteOffset + (y * targetBytesPerElement),
-                        sourceBytesPerElement);
-                }
+                // Different element types: read every source value first (so a shared backing buffer is
+                // safe against overlap), then write each through the target's element conversion.
+                var values = new JSValue[sourceLength];
+                for (int i = 0; i < sourceLength; i++)
+                    typedArray.TryGetElement((uint)i, out values[i]);
+                for (int i = 0; i < sourceLength; i++)
+                    this[(uint)(relativeStart + i)] = values[i];
             }
 
             return JSValue.UndefinedValue;

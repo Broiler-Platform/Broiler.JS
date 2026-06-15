@@ -325,8 +325,22 @@ public partial class JSArrayBuffer : JSObject
 
     [JSExport("transfer", Length = 0)]
     internal JSValue Transfer(in Arguments a)
+        => TransferImpl(in a, "transfer", preserveResizability: true);
+
+    // ---------------------------------------------------------------
+    // §2.9.2  ArrayBuffer.prototype.transferToFixedLength(newLength?)
+    // ---------------------------------------------------------------
+
+    [JSExport("transferToFixedLength", Length = 0)]
+    internal JSValue TransferToFixedLength(in Arguments a)
+        => TransferImpl(in a, "transferToFixedLength", preserveResizability: false);
+
+    // ArrayBufferCopyAndDetach: copies the source bytes into a new buffer of newLength and detaches
+    // the source. With preserveResizability the new buffer keeps the source's maxByteLength (so a
+    // resizable source yields a resizable result); transferToFixedLength always yields a fixed buffer.
+    private JSValue TransferImpl(in Arguments a, string method, bool preserveResizability)
     {
-        var source = RequireArrayBuffer(a.This, "transfer");
+        var source = RequireArrayBuffer(a.This, method);
 
         // Coerce newLength (ToIndex, which may invoke valueOf) BEFORE the detached /
         // immutable validation: the spec performs the argument conversion first, so
@@ -340,6 +354,10 @@ public partial class JSArrayBuffer : JSObject
         if (source.isImmutable)
             throw JSEngine.NewTypeError("Cannot transfer an immutable ArrayBuffer");
 
+        var newMaxByteLength = preserveResizability && source.IsResizable ? source.maxByteLength : -1;
+        if (newMaxByteLength >= 0 && newLength > newMaxByteLength)
+            throw JSEngine.NewRangeError("ArrayBuffer byteLength exceeds maxByteLength");
+
         var newBuffer = new byte[newLength];
         System.Array.Copy(source.buffer, newBuffer, Math.Min(source.buffer.Length, newLength));
 
@@ -347,20 +365,7 @@ public partial class JSArrayBuffer : JSObject
         source.isDetached = true;
         source.buffer = System.Array.Empty<byte>();
 
-        return new JSArrayBuffer(newBuffer);
-    }
-
-    // ---------------------------------------------------------------
-    // §2.9.2  ArrayBuffer.prototype.transferToFixedLength(newLength?)
-    // ---------------------------------------------------------------
-
-    [JSExport("transferToFixedLength", Length = 0)]
-    internal JSValue TransferToFixedLength(in Arguments a)
-    {
-        // In engines without resizable buffers the behaviour is identical
-        // to transfer().  Broiler.JavaScript does not support resizable ArrayBuffers,
-        // so the result is always a fixed-length buffer.
-        return Transfer(in a);
+        return new JSArrayBuffer(newBuffer) { maxByteLength = newMaxByteLength };
     }
 
     // ---------------------------------------------------------------
