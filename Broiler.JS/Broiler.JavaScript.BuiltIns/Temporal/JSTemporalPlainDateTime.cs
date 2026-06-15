@@ -183,11 +183,13 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (!obj[KeyStrings.GetOrCreate("timeZone")].IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with does not accept a timeZone field");
 
-        var overflow = ReadOverflow(a.GetAt(1));
-
         if (NonIso)
-            return WithNonIso(obj, overflow);
+            return WithNonIso(obj, ReadOverflow(a.GetAt(1)));
 
+        // PrepareCalendarFields (partial): read and coerce the present fields. day and month must be
+        // positive integers (ToPositiveIntegerWithTruncation), so a non-positive value is a RangeError
+        // here — before the options bag is validated — and at least one recognized field must be
+        // present. The month/monthCode consistency check and the overflow option come afterwards.
         var any = false;
         var month = isoMonth; var day = isoDay;
 
@@ -195,17 +197,13 @@ public partial class JSTemporalPlainDateTime : JSObject
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
-        if (!monthCodeValue.IsUndefined) { month = MonthFromCode(monthCodeValue.ToString()); any = true; }
-        if (!monthValue.IsUndefined)
-        {
-            var m = ToIntegerWithTruncation(monthValue);
-            if (!monthCodeValue.IsUndefined && m != month)
-                throw JSEngine.NewRangeError("Temporal.PlainDateTime.with: month and monthCode disagree");
-            month = m; any = true;
-        }
+        var monthFromCode = -1;
+        var monthFromMonth = -1;
+        if (!monthCodeValue.IsUndefined) { monthFromCode = MonthFromCode(monthCodeValue.ToString()); any = true; }
+        if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); any = true; }
 
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
-        if (!dayValue.IsUndefined) { day = ToIntegerWithTruncation(dayValue); any = true; }
+        if (!dayValue.IsUndefined) { day = ToPositiveIntegerWithTruncation(dayValue); any = true; }
 
         int Read(string name, int current) { var v = obj[KeyStrings.GetOrCreate(name)]; if (v.IsUndefined) return current; any = true; return ToIntegerWithTruncation(v); }
         var h = Read("hour", hour);
@@ -217,6 +215,18 @@ public partial class JSTemporalPlainDateTime : JSObject
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires at least one field");
+
+        var overflow = ReadOverflow(a.GetAt(1));
+
+        // Resolve month from month / monthCode (consistency checked here, after the overflow option).
+        if (monthFromCode != -1)
+        {
+            if (monthFromMonth != -1 && monthFromMonth != monthFromCode)
+                throw JSEngine.NewRangeError("Temporal.PlainDateTime.with: month and monthCode disagree");
+            month = monthFromCode;
+        }
+        else if (monthFromMonth != -1)
+            month = monthFromMonth;
 
         return RegulateDateTime(year, month, day, h, mi, s, ms, us, ns, overflow, calendarId);
     }
