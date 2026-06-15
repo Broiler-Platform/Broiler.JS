@@ -136,7 +136,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (!anyIso)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires at least one field");
 
-        return RegulateMonthDay(month, isoDayOut, overflow, calendarId);
+        return RegulateMonthDay(month, isoDayOut, overflow, calendarId, referenceISOYear);
     }
 
     [JSExport("equals", Length = 1)]
@@ -287,9 +287,6 @@ public partial class JSTemporalPlainMonthDay : JSObject
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay: missing day");
         if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay: missing month / monthCode");
-        // A month (not monthCode) without a year cannot resolve a reference year for 02-29 etc.
-        if (monthCodeValue.IsUndefined && yearValue.IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.PlainMonthDay: month requires either monthCode or year");
 
         var overflow = ReadOverflow(options);
 
@@ -297,7 +294,11 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToIntegerWithTruncation(monthValue) != month)
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month and monthCode disagree");
 
-        return RegulateMonthDay(month, ToIntegerWithTruncation(dayValue), overflow, calendarId);
+        // A bare month/day with no year resolves against the leap-year reference (1972) so that
+        // 02-29 is representable; a supplied year is used to validate/constrain the day instead.
+        var validationYear = yearValue.IsUndefined ? DefaultReferenceYear : ToIntegerWithTruncation(yearValue);
+
+        return RegulateMonthDay(month, ToIntegerWithTruncation(dayValue), overflow, calendarId, validationYear);
     }
 
     private static readonly Regex MonthDayPattern = new(
@@ -352,19 +353,25 @@ public partial class JSTemporalPlainMonthDay : JSObject
     private static string ResolveCalendarId(string id, string text)
         => TemporalCalendar.Canonicalize(id, includeArithmetic: true);
 
-    private static JSValue RegulateMonthDay(int month, int day, string overflow, string calendarId)
+    private static JSValue RegulateMonthDay(int month, int day, string overflow, string calendarId, int validationYear)
     {
+        // Month and day must be positive integers; a non-positive value is out of range no matter
+        // the overflow handling (constrain only clamps values that are too large).
+        if (month < 1 || day < 1)
+            throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
+
         if (overflow == "reject")
         {
-            if (!IsValidISODate(DefaultReferenceYear, month, day))
+            if (!IsValidISODate(validationYear, month, day))
                 throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
         }
         else
         {
-            month = Math.Clamp(month, 1, 12);
-            day = Math.Clamp(day, 1, DaysInMonthOf(DefaultReferenceYear, month));
+            month = Math.Min(month, 12);
+            day = Math.Min(day, DaysInMonthOf(validationYear, month));
         }
 
+        // The resolved value is always stored against the canonical leap-year reference (1972).
         return new JSTemporalPlainMonthDay(month, day, DefaultReferenceYear, calendarId, PlainMonthDayPrototype);
     }
 

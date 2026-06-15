@@ -17,15 +17,18 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 internal static class TemporalCalendar
 {
     // Japanese regnal eras (ICU4X / Temporal `Intl.Era-monthcode`). Each modern era begins on a
-    // specific proleptic-Gregorian date; listed newest-first so the first match wins. Dates before
-    // Meiji fall back to the Gregorian ce/bce eras, and the calendar's `year` equals the ISO year.
-    private static readonly (string code, int y, int m, int d)[] JapaneseEras =
+    // specific proleptic-Gregorian date (`y`/`m`/`d`); listed newest-first so the first match wins.
+    // `baseYear` is the Gregorian year of era-year 1 (eraYear = isoYear − baseYear + 1). For every
+    // era except Meiji this equals the start year, but the ICU Japanese calendar only begins the
+    // Meiji era at the 1873 Gregorian adoption while still numbering its years from 1868, so Meiji
+    // 1–5 (1868–1872) display as the Gregorian ce era. Dates before Meiji fall back to ce/bce.
+    private static readonly (string code, int y, int m, int d, int baseYear)[] JapaneseEras =
     {
-        ("reiwa", 2019, 5, 1),
-        ("heisei", 1989, 1, 8),
-        ("showa", 1926, 12, 25),
-        ("taisho", 1912, 7, 30),
-        ("meiji", 1868, 10, 23),
+        ("reiwa", 2019, 5, 1, 2019),
+        ("heisei", 1989, 1, 8, 1989),
+        ("showa", 1926, 12, 25, 1926),
+        ("taisho", 1912, 7, 30, 1912),
+        ("meiji", 1873, 1, 1, 1868),
     };
 
     private static int CompareDate(int y1, int m1, int d1, int y2, int m2, int d2)
@@ -173,7 +176,7 @@ internal static class TemporalCalendar
     {
         foreach (var e in JapaneseEras)
             if (CompareDate(isoYear, isoMonth, isoDay, e.y, e.m, e.d) >= 0)
-                return (e.code, isoYear - e.y + 1);
+                return (e.code, isoYear - e.baseYear + 1);
         return isoYear >= 1 ? ("ce", isoYear) : ("bce", 1 - isoYear);
     }
 
@@ -244,7 +247,7 @@ internal static class TemporalCalendar
                 // *displayed* era is recomputed from the resulting (year, month, day), so e.g.
                 // { era: "reiwa", eraYear: 1 } in April resolves to Heisei 31.
                 foreach (var je in JapaneseEras)
-                    if (e == je.code) return je.y + eraYear - 1;
+                    if (e == je.code) return je.baseYear + eraYear - 1;
                 return e switch
                 {
                     "ce" or "ad" => eraYear,

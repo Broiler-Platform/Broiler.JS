@@ -78,6 +78,14 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     private static bool IsValid(BigInteger ns) => ns >= MinEpochNanoseconds && ns <= MaxEpochNanoseconds;
 
+    // A parsed ZonedDateTime is representable only when both its exact instant is in range and its
+    // *wall-clock* time (the naive epoch ns of the local date-time) lies in [nsMin, nsMax + one day):
+    // a negative offset cannot pull the wall clock below the minimum instant's own wall clock, while a
+    // positive offset may push it up to (but not including) one day past the maximum. These exact
+    // bounds are validated against test262's ZonedDateTime "argument-string-limits" vectors.
+    private static bool IsLocalWithinLimits(BigInteger localNs)
+        => localNs >= MinEpochNanoseconds && localNs < MaxEpochNanoseconds + NanosecondsPerDay;
+
     // Factory used by sibling Temporal types (Instant/PlainDate*.to*ZonedDateTime) to build a
     // ZonedDateTime from an epoch instant + a time-zone string, canonicalizing the zone.
     internal static JSValue CreateChecked(BigInteger epochNs, string timeZone)
@@ -182,8 +190,11 @@ public partial class JSTemporalZonedDateTime : JSObject
     [JSExport("inLeapYear")] public bool InLeapYear => NonIso
         ? TemporalCalendarMath.InLeapYear(calendarId, CalendarYmd().y)
         : IsLeapYear(Local().y);
-    [JSExport("weekOfYear")] public double WeekOfYear { get { var l = Local(); return IsoWeek(l.y, l.mo, l.d).week; } }
-    [JSExport("yearOfWeek")] public double YearOfWeek { get { var l = Local(); return IsoWeek(l.y, l.mo, l.d).year; } }
+    // Only the ISO calendar defines a week-numbering system; other calendars return undefined.
+    [JSExport("weekOfYear")] public JSValue WeekOfYear
+        { get { if (calendarId != "iso8601") return JSUndefined.Value; var l = Local(); return new JSNumber(IsoWeek(l.y, l.mo, l.d).week); } }
+    [JSExport("yearOfWeek")] public JSValue YearOfWeek
+        { get { if (calendarId != "iso8601") return JSUndefined.Value; var l = Local(); return new JSNumber(IsoWeek(l.y, l.mo, l.d).year); } }
 
     [JSExport("offsetNanoseconds")] public double OffsetNanosecondsValue => OffsetNanoseconds();
     [JSExport("offset")] public JSValue Offset => new JSString(FormatOffset(OffsetNanoseconds()));
@@ -992,29 +1003,36 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         var sign = CompareISODate(ay, am, ad, by, bm, bd);
         if (sign == 0) return (0, 0, 0, 0);
-        var step = -sign;
+        var step = -sign; // +1 when the end is after the start
 
-        long years = by - ay;
-        var (my, mm, md) = AddYearsMonths(ay, am, ad, years, 0);
-        if (CompareISODate(my, mm, md, by, bm, bd) == step)
+        // Each candidate year/month offset is measured from the *original* start date, keeping its
+        // *unconstrained* day, not by stepping a constrained intermediate forward. This both avoids
+        // stranding the day at a short month in between (e.g. Dec 30 + N months landing on Feb 28 and
+        // over-counting the residual days) and makes a wrap such as Jan 29 + 1 month = Feb 29 surpass
+        // Feb 28, so it is not counted as a whole month. (Mirrors PlainDate's ISODateSurpasses.)
+        bool Surpasses(long yy, long mm)
         {
-            years -= step;
-            (my, mm, md) = AddYearsMonths(ay, am, ad, years, 0);
+            var total = (long)am - 1 + mm;
+            var ny = ay + yy + FloorDiv(total, 12);
+            var nm = (int)(((total % 12) + 12) % 12) + 1;
+            if (ny != by) return step * (ny - by) > 0;
+            if (nm != bm) return step * (nm - bm) > 0;
+            return step * (ad - bd) > 0;
         }
+
+        long years = 0;
+        var candidateYears = (long)by - ay;
+        if (candidateYears != 0) candidateYears -= step;
+        while (!Surpasses(candidateYears, 0)) { years = candidateYears; candidateYears += step; }
 
         long months = 0;
-        while (true)
-        {
-            var (ny, nm, nd) = AddYearsMonths(my, mm, md, 0, step);
-            var cmp = CompareISODate(ny, nm, nd, by, bm, bd);
-            if (cmp == step) break;
-            months += step; my = ny; mm = nm; md = nd;
-            if (cmp == 0) break;
-        }
-
-        var days = DaysFromCivil(by, bm, bd) - DaysFromCivil(my, mm, md);
+        var candidateMonths = (long)step;
+        while (!Surpasses(years, candidateMonths)) { months = candidateMonths; candidateMonths += step; }
 
         if (largestUnit == "month") { months += years * 12; years = 0; }
+
+        var (iy, im, id) = AddYearsMonths(ay, am, ad, years, months);
+        var days = DaysFromCivil(by, bm, bd) - DaysFromCivil(iy, im, id);
         return (years, months, 0, days);
     }
 
@@ -1427,8 +1445,8 @@ public partial class JSTemporalZonedDateTime : JSObject
     private const string YearField = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
     private static readonly Regex ZonedCorePattern = new(
         @"^(?:(?<y>" + YearField + @")-(?<mo>\d{2})-(?<d>\d{2})|(?<y>" + YearField + @")(?<mo>\d{2})(?<d>\d{2}))" +
-        @"[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
-        @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::?(?<om>\d{2})(?::?(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))?$",
+        @"(?:[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
+        @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::?(?<om>\d{2})(?::?(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))?)?$",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex ZonedTrailingAnnotation = new(@"\[(!?)([^\]]*)\]$", RegexOptions.CultureInvariant);
@@ -1476,7 +1494,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
         var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
         var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
-        var hour = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture);
+        var hour = match.Groups["h"].Success ? int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture) : 0;
         var minute = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
         var second = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
         if (second == 60) second = 59; // leap second collapses
@@ -1538,7 +1556,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         else offsetNs = GetOffsetForLocal(timeZoneId, year, month, day, hour, minute, second);
 
         var epochNs = localNs - offsetNs;
-        if (!IsValid(epochNs))
+        if (!IsValid(epochNs) || !IsLocalWithinLimits(localNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: parsed value is out of range");
 
         return new JSTemporalZonedDateTime(epochNs, timeZoneId, calendarId, ZonedDateTimePrototype);

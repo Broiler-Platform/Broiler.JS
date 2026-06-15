@@ -151,8 +151,11 @@ public partial class JSTemporalPlainDateTime : JSObject
     [JSExport("inLeapYear")] public bool InLeapYear => NonIso
         ? TemporalCalendarMath.InLeapYear(calendarId, CalendarYmd().y)
         : IsLeapYear(isoYear);
-    [JSExport("weekOfYear")] public double WeekOfYear => IsoWeek(isoYear, isoMonth, isoDay).week;
-    [JSExport("yearOfWeek")] public double YearOfWeek => IsoWeek(isoYear, isoMonth, isoDay).year;
+    // Only the ISO calendar defines a week-numbering system; other calendars return undefined.
+    [JSExport("weekOfYear")] public JSValue WeekOfYear
+        => calendarId == "iso8601" ? new JSNumber(IsoWeek(isoYear, isoMonth, isoDay).week) : JSUndefined.Value;
+    [JSExport("yearOfWeek")] public JSValue YearOfWeek
+        => calendarId == "iso8601" ? new JSNumber(IsoWeek(isoYear, isoMonth, isoDay).year) : JSUndefined.Value;
 
     // ── statics ─────────────────────────────────────────────────────────────────
 

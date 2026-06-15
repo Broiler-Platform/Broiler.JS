@@ -130,10 +130,11 @@ internal static class TemporalIsoString
     // A numeric UTC offset used as a *time-zone annotation* is restricted to minute precision.
     private static readonly Regex MinutePrecisionOffsetName = new(@"^[+-]\d{2}(?::?\d{2})?$", RegexOptions.CultureInvariant);
 
-    // A date or date-time. Time, fraction, and Z / numeric-offset designators are all optional; the
-    // date portion is validated separately by IsValidDate.
+    // A date or date-time. The date portion may use the extended (YYYY-MM-DD) or basic (YYYYMMDD)
+    // form — but not a mix — and is validated separately by IsValidDate. Time, fraction, and
+    // Z / numeric-offset designators are all optional.
     private static readonly Regex DateTimePattern = new(
-        @"^(?<y>\d{4}|\+\d{6}|-\d{6})-(?<mo>\d{2})-(?<d>\d{2})" +
+        @"^(?<y>\d{4}|\+\d{6}|-\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))" +
         @"(?:[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
         @"(?<offset>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?$",
         RegexOptions.CultureInvariant);

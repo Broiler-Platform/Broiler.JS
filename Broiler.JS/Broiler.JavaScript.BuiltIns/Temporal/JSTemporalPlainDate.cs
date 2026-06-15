@@ -136,8 +136,12 @@ public partial class JSTemporalPlainDate : JSObject
         ? TemporalCalendarMath.InLeapYear(calendarId, CalendarYmd().y)
         : IsLeapYear(isoYear);
 
-    [JSExport("weekOfYear")] public double WeekOfYear => IsoWeek(isoYear, isoMonth, isoDay).week;
-    [JSExport("yearOfWeek")] public double YearOfWeek => IsoWeek(isoYear, isoMonth, isoDay).year;
+    // Only the ISO calendar defines a week-numbering system; every other calendar (including the
+    // Gregorian-family gregory/buddhist/roc/japanese) returns undefined for week-of-year fields.
+    [JSExport("weekOfYear")] public JSValue WeekOfYear
+        => calendarId == "iso8601" ? new JSNumber(IsoWeek(isoYear, isoMonth, isoDay).week) : JSUndefined.Value;
+    [JSExport("yearOfWeek")] public JSValue YearOfWeek
+        => calendarId == "iso8601" ? new JSNumber(IsoWeek(isoYear, isoMonth, isoDay).year) : JSUndefined.Value;
 
     // ── statics ─────────────────────────────────────────────────────────────────
 
@@ -628,8 +632,10 @@ public partial class JSTemporalPlainDate : JSObject
         return RegulateISODate(isoYear, month, ToPositiveIntegerWithTruncation(dayValue), overflow, calendarId);
     }
 
+    // The date may use the extended (YYYY-MM-DD) or basic (YYYYMMDD) form, but not a mix.
     private static readonly Regex DatePattern = new(
-        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})" +
+        @"^(?:(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})-(?<mo>\d{2})-(?<d>\d{2})" +
+        @"|(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?<mo>\d{2})(?<d>\d{2}))" +
         TemporalIsoString.TimeAndOffsetTail + TemporalIsoString.AnnotationsTail + "$",
         RegexOptions.CultureInvariant);
 
@@ -652,9 +658,9 @@ public partial class JSTemporalPlainDate : JSObject
 
         TemporalIsoString.RejectTimeTailForCalendarOnly(match, text);
 
-        var year = int.Parse(match.Groups[1].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
-        var month = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
-        var day = int.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture);
+        var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
+        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
+        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
 
         if (!IsValidISODate(year, month, day))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
