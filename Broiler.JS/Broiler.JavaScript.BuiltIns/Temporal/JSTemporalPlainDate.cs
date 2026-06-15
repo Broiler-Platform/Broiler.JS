@@ -169,13 +169,12 @@ public partial class JSTemporalPlainDate : JSObject
         if (!obj[KeyStrings.GetOrCreate("calendar")].IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.with does not accept a calendar field");
 
-        var overflow = ReadOverflow(a.GetAt(1));
-
         // The non-Gregorian calendars merge the with-bag fields onto the receiver's calendar fields
         // and re-resolve in calendar space (see TemporalNonIso.WithToIso).
         if (NonIso)
         {
-            var (ny, nm, nd) = TemporalNonIso.WithToIso(obj, calendarId, overflow, "Temporal.PlainDate", isoYear, isoMonth, isoDay);
+            var nonIsoOverflow = ReadOverflow(a.GetAt(1));
+            var (ny, nm, nd) = TemporalNonIso.WithToIso(obj, calendarId, nonIsoOverflow, "Temporal.PlainDate", isoYear, isoMonth, isoDay);
             return new JSTemporalPlainDate(ny, nm, nd, calendarId, PlainDatePrototype);
         }
 
@@ -190,7 +189,7 @@ public partial class JSTemporalPlainDate : JSObject
         if (!monthCodeValue.IsUndefined) { month = MonthFromCode(monthCodeValue.ToString()); any = true; }
         if (!monthValue.IsUndefined)
         {
-            var m = ToIntegerWithTruncation(monthValue);
+            var m = ToPositiveIntegerWithTruncation(monthValue);
             if (!monthCodeValue.IsUndefined && m != month)
                 throw JSEngine.NewRangeError("Temporal.PlainDate.with: month and monthCode disagree");
             month = m;
@@ -198,10 +197,15 @@ public partial class JSTemporalPlainDate : JSObject
         }
 
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
-        if (!dayValue.IsUndefined) { day = ToIntegerWithTruncation(dayValue); any = true; }
+        if (!dayValue.IsUndefined) { day = ToPositiveIntegerWithTruncation(dayValue); any = true; }
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.with requires at least one date property");
+
+        // GetTemporalOverflowOption runs only after the partial fields have been read and coerced, so
+        // an invalid field value (e.g. day -1) is a RangeError before a non-object options is a
+        // TypeError.
+        var overflow = ReadOverflow(a.GetAt(1));
 
         return RegulateISODate(newIsoYear, month, day, overflow, calendarId);
     }
@@ -471,12 +475,26 @@ public partial class JSTemporalPlainDate : JSObject
         return int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
     }
 
-    // A monthCode for the ISO calendar must be "M01".."M12"; a well-formed code whose number is
-    // outside that range (e.g. "M00", "M13", "M19") references a month that does not exist.
+    // A well-formed monthCode is "M" + two digits + an optional leap-month "L" marker. This SYNTAX is
+    // validated when the field is read (before the year is coerced), so an ill-formed code such as
+    // "L99M" / "m1" / "M1" is a RangeError ahead of a bad year type — while a well-formed code's
+    // SUITABILITY for the calendar (MonthFromCodeIso) is a separate check made afterwards.
+    private static readonly Regex MonthCodeSyntaxPattern = new(@"^M\d{2}L?$", RegexOptions.CultureInvariant);
+
+    private static void ValidateMonthCodeSyntax(string code)
+    {
+        if (!MonthCodeSyntaxPattern.IsMatch(code))
+            throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
+    }
+
+    // A monthCode for the ISO calendar must be "M01".."M12" with no leap-month marker; a well-formed
+    // code outside that range (e.g. "M00", "M13", "M99L") references a month that does not exist.
+    // Assumes the syntax has already been validated by ValidateMonthCodeSyntax.
     private static int MonthFromCodeIso(string code)
     {
-        var month = MonthFromCode(code);
-        if (month is < 1 or > 12)
+        if (code.EndsWith("L", StringComparison.Ordinal) ||
+            !int.TryParse(code.AsSpan(1, 2), NumberStyles.None, CultureInfo.InvariantCulture, out var month) ||
+            month is < 1 or > 12)
             throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\" for the iso8601 calendar");
         return month;
     }
@@ -620,16 +638,25 @@ public partial class JSTemporalPlainDate : JSObject
 
         var overflow = ReadOverflow(options);
 
-        var month = monthCodeValue.IsUndefined ? ToPositiveIntegerWithTruncation(monthValue) : MonthFromCodeIso(monthCodeValue.ToString());
-        if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToPositiveIntegerWithTruncation(monthValue) != month)
-            throw JSEngine.NewRangeError("Temporal.PlainDate: month and monthCode disagree");
+        // Coerce the fields in the spec order (day, month, monthCode-syntax, year) so that an invalid
+        // value surfaces in that order: a malformed monthCode is a RangeError before the year is
+        // coerced, but a bad year *type* is a TypeError before a well-formed-but-unsuitable monthCode
+        // (e.g. "M99L") is a RangeError (which is checked last, in MonthFromCodeIso).
+        var day = ToPositiveIntegerWithTruncation(dayValue);
+        var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
+        if (!monthCodeValue.IsUndefined)
+            ValidateMonthCodeSyntax(monthCodeValue.ToString());
 
         var isoYear = TemporalCalendar.ResolveIsoYear(calendarId,
             hasYear, hasYear ? ToIntegerWithTruncation(yearValue) : 0,
             hasEra, hasEra ? eraValue.StringValue : null,
             hasEraYear, hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0);
 
-        return RegulateISODate(isoYear, month, ToPositiveIntegerWithTruncation(dayValue), overflow, calendarId);
+        var month = monthCodeValue.IsUndefined ? monthFromMonth : MonthFromCodeIso(monthCodeValue.ToString());
+        if (monthFromMonth != -1 && !monthCodeValue.IsUndefined && monthFromMonth != month)
+            throw JSEngine.NewRangeError("Temporal.PlainDate: month and monthCode disagree");
+
+        return RegulateISODate(isoYear, month, day, overflow, calendarId);
     }
 
     // The date may use the extended (YYYY-MM-DD) or basic (YYYYMMDD) form, but not a mix.
