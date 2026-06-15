@@ -321,18 +321,31 @@ public partial class JSTemporalDuration
         if (rel is JSObject relObj && !relObj[KeyStrings.GetOrCreate("timeZone")].IsUndefined)
         {
             var off = relObj[KeyStrings.GetOrCreate("offset")];
+            string offsetString = null;
             if (!off.IsUndefined)
             {
                 if (!off.IsString)
                     throw JSEngine.NewTypeError("Temporal.Duration: the relativeTo offset field must be a string");
                 if (!TemporalIsoString.IsStrictOffset(off.StringValue))
                     throw JSEngine.NewRangeError($"Temporal.Duration: invalid offset string \"{off.StringValue}\"");
+                offsetString = off.StringValue;
             }
 
             // The timeZone field is resolved through ToTemporalTimeZoneIdentifier: a non-string /
             // non-ZonedDateTime value is a TypeError and a string that is not a valid identifier — a
             // bare date-time with no designator — is a RangeError.
-            JSTemporalZonedDateTime.ToTimeZoneIdentifier(relObj[KeyStrings.GetOrCreate("timeZone")]);
+            var tzId = JSTemporalZonedDateTime.ToTimeZoneIdentifier(relObj[KeyStrings.GetOrCreate("timeZone")]);
+
+            // InterpretISODateTimeOffset: a bag offset must EXACTLY match the zone's offset for the
+            // local wall clock (no minute rounding, unlike the string form), so a rounded "-00:45" for
+            // a -00:44:30 zone is a RangeError. Resolve the bag's wall-clock date-time to check.
+            if (offsetString != null)
+            {
+                var bagDateTime = (JSTemporalPlainDateTime)JSTemporalPlainDateTime.From(new Arguments(JSUndefined.Value, relObj));
+                JSTemporalZonedDateTime.ValidateBagOffsetMatchesZone(
+                    tzId, bagDateTime.isoYear, bagDateTime.isoMonth, bagDateTime.isoDay,
+                    bagDateTime.hour, bagDateTime.minute, bagDateTime.second, offsetString);
+            }
         }
 
         ValidateRelativeBagTimeFields(rel);

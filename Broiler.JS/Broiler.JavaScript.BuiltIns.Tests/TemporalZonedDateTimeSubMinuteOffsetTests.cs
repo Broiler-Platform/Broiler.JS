@@ -102,4 +102,31 @@ public class TemporalZonedDateTimeSubMinuteOffsetTests
         """);
         Assert.Equal("-11:19:40", result.ToString());
     }
+
+    [Theory]
+    // Pacific/Niue's LMT→NUT change at 1952-10-16 is a 20-second fall-back, so local 23:59:59 is in a
+    // sub-minute fold: both -11:19:40 (LMT) and -11:20:00 (NUT) are valid offsets. The round-trip
+    // candidate detection (not .NET's whole-minute IsAmbiguousTime) recognizes both.
+    [InlineData("1952-10-15T23:59:59-11:19:40[Pacific/Niue]")] // exact first candidate
+    [InlineData("1952-10-15T23:59:59-11:20:00[Pacific/Niue]")] // exact second candidate (the fold)
+    [InlineData("1952-10-15T23:59:59-11:20[Pacific/Niue]")]    // minute precision rounds to a candidate
+    public void Niue_FoldOffsets_AreAccepted(string str)
+        => Assert.Equal("ok", Eval($"Temporal.ZonedDateTime.from('{str}'); 'ok';").ToString());
+
+    [Fact]
+    public void Niue_WrongSubMinuteOffsetInFold_Throws()
+        => Assert.Equal("RangeError", Eval("""
+            var err = "none";
+            try { Temporal.ZonedDateTime.from("1952-10-15T23:59:59-11:19:50[Pacific/Niue]"); }
+            catch (e) { err = e.constructor.name; }
+            err;
+        """).ToString());
+
+    [Fact]
+    public void PropertyBagOffset_FractionalSeconds_MatchesFixedOffsetZone()
+        // A fractional-second offset value parses and matches a fixed-offset zone exactly.
+        => Assert.Equal("ok", Eval("""
+            Temporal.ZonedDateTime.from({ year: 1970, month: 1, day: 1, offset: "+00:45:00.000000000", timeZone: "+00:45" });
+            'ok';
+        """).ToString());
 }

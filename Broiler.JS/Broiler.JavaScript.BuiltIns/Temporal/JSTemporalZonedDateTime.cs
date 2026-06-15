@@ -1166,34 +1166,50 @@ public partial class JSTemporalZonedDateTime : JSObject
     // GetPossibleEpochNanoseconds, expressed as the distinct UTC offsets (ns) the zone yields for a
     // local wall-clock time: two around a fall-back transition, one normally, none inside a
     // spring-forward gap. Used by InterpretISODateTimeOffset to validate an explicit offset.
+    //
+    // Implements the spec's GetNamedTimeZoneEpochNanoseconds: treat the wall clock as a UTC instant,
+    // take the zone's offset a day before and a day after, and keep each candidate offset only if the
+    // instant it implies actually has that offset (a round-trip). This resolves folds/gaps at full
+    // precision using the (sub-minute-corrected) offset function — unlike .NET's IsAmbiguousTime, which
+    // is whole-minute and misses e.g. Pacific/Niue's 20-second 1952 fold.
     private static List<long> CandidateOffsetsForLocal(string timeZoneId, int y, int mo, int d, int h, int mi, int s)
     {
         if (TryFixedOffset(timeZoneId, out var fixedNs))
             return [fixedNs];
 
-        var tz = ResolveNamedZone(timeZoneId);
-        if (tz == null) return [0];
+        if (ResolveNamedZone(timeZoneId) == null)
+            return [0];
 
-        DateTime local;
-        try
+        var localNs = LocalNanoseconds(y, mo, d, h, mi, s, 0, 0, 0);
+        const long dayNs = 86_400_000_000_000L;
+        var offsetBefore = OffsetNanosecondsForInstant(timeZoneId, localNs - dayNs);
+        var offsetAfter = OffsetNanosecondsForInstant(timeZoneId, localNs + dayNs);
+
+        var result = new List<long>(2);
+        void TryAdd(long candidateOffset)
         {
-            var clampedYear = Math.Clamp(y, 1, 9999);
-            local = new DateTime(clampedYear, mo, d, h, mi, s, DateTimeKind.Unspecified);
+            if (result.Contains(candidateOffset)) return;
+            // The candidate offset is valid for this wall clock only when the instant it implies
+            // actually reports it back (so a gap yields none, a fold both).
+            if (OffsetNanosecondsForInstant(timeZoneId, localNs - candidateOffset) == candidateOffset)
+                result.Add(candidateOffset);
         }
-        catch { return [0]; }
+        TryAdd(offsetBefore);
+        TryAdd(offsetAfter);
+        return result;
+    }
 
-        if (tz.IsAmbiguousTime(local))
-        {
-            var result = new List<long>();
-            foreach (var off in tz.GetAmbiguousTimeOffsets(local))
-                result.Add(ApplySubMinuteOffsetCorrection(tz.Id, (long)off.Ticks * 100));
-            return result;
-        }
-
-        if (tz.IsInvalidTime(local))
-            return []; // a spring-forward gap: no instant has this local time
-
-        return [ApplySubMinuteOffsetCorrection(tz.Id, (long)tz.GetUtcOffset(local).Ticks * 100)];
+    // ToRelativeTemporalObject for a property-bag relativeTo that carries a timeZone: the offset field,
+    // when present, must EXACTLY match one of the zone's offsets for the given local wall clock — a
+    // property bag uses match-exactly, with no minute rounding (unlike the string form, where
+    // ParseZonedDateTimeString allows the match-minutes fallback). A mismatch is a RangeError, so e.g.
+    // { offset: "-00:45", timeZone: "Africa/Monrovia" } is rejected (the zone offset is -00:44:30).
+    internal static void ValidateBagOffsetMatchesZone(string timeZoneId, int y, int mo, int d, int h, int mi, int s, string offsetString)
+    {
+        if (!TryParseOffsetString(offsetString, out var offsetNs))
+            throw JSEngine.NewRangeError($"Temporal: invalid offset string \"{offsetString}\"");
+        if (!CandidateOffsetsForLocal(timeZoneId, y, mo, d, h, mi, s).Contains(offsetNs))
+            throw JSEngine.NewRangeError($"Temporal: offset \"{offsetString}\" does not match the time zone \"{timeZoneId}\"");
     }
 
     // .NET's TimeZoneInfo stores UTC offsets at whole-minute resolution, truncating the sub-minute
@@ -1509,17 +1525,24 @@ public partial class JSTemporalZonedDateTime : JSObject
         => new BigInteger(DaysFromCivil(y, mo, d)) * NanosecondsPerDay
          + ((((long)h * 60 + mi) * 60 + s) * 1000L + ms) * 1_000_000L + (long)us * 1000 + ns;
 
+    // A UTC offset *value* (the offset field of a property bag, or a "with" offset): ±HH[:MM[:SS[.fff]]],
+    // which — unlike an offset time-zone *identifier* (OffsetIdPattern) — may carry sub-minute and
+    // fractional-second precision.
+    private static readonly Regex OffsetValuePattern = new(
+        @"^([+-])(\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?$", RegexOptions.CultureInvariant);
+
     private static bool TryParseOffsetString(string text, out long offsetNs)
     {
         offsetNs = 0;
         if (string.Equals(text, "Z", StringComparison.OrdinalIgnoreCase)) return true;
-        var m = OffsetIdPattern.Match(text);
+        var m = OffsetValuePattern.Match(text);
         if (!m.Success) return false;
         var sign = m.Groups[1].Value is "-" or "−" ? -1 : 1;
         var hours = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
         var minutes = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
         var seconds = m.Groups[4].Success ? int.Parse(m.Groups[4].Value, CultureInfo.InvariantCulture) : 0;
-        offsetNs = (long)sign * ((long)hours * 3600 + minutes * 60 + seconds) * 1_000_000_000;
+        var fractionNs = m.Groups[5].Success ? long.Parse(m.Groups[5].Value.PadRight(9, '0'), CultureInfo.InvariantCulture) : 0L;
+        offsetNs = (long)sign * (((long)hours * 3600 + minutes * 60 + seconds) * 1_000_000_000 + fractionNs);
         return true;
     }
 
