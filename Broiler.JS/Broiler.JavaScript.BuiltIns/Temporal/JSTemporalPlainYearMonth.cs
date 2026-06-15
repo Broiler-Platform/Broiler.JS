@@ -25,8 +25,8 @@ public partial class JSTemporalPlainYearMonth : JSObject
     [JSExport(Length = 2)]
     public JSTemporalPlainYearMonth(in Arguments a) : base(ResolvePrototype())
     {
-        isoYear = ToIntegerWithTruncation(a.GetAt(0));
-        isoMonth = ToIntegerWithTruncation(a.GetAt(1));
+        isoYear = ToIntegerWithTruncationArgument(a.GetAt(0));
+        isoMonth = ToIntegerWithTruncationArgument(a.GetAt(1));
         calendarId = CanonicalizeCalendar(a.GetAt(2));
         var refDay = a.GetAt(3);
         referenceISODay = refDay == null || refDay.IsUndefined ? 1 : ToIntegerWithTruncation(refDay);
@@ -134,15 +134,10 @@ public partial class JSTemporalPlainYearMonth : JSObject
     {
         if (a.GetAt(0) is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with requires an object");
-        if (!obj[KeyStrings.GetOrCreate("calendar")].IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with does not accept a calendar field");
-        if (!obj[KeyStrings.GetOrCreate("timeZone")].IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with does not accept a timeZone field");
-
-        var overflow = ReadOverflow(a.GetAt(1));
+        TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
 
         if (NonIso)
-            return WithNonIso(obj, overflow);
+            return WithNonIso(obj, ReadOverflow(a.GetAt(1)));
 
         var any = false;
         var month = isoMonth;
@@ -162,6 +157,9 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with requires at least one field");
+
+        // GetTemporalOverflowOption runs only after the partial fields have been read and coerced.
+        var overflow = ReadOverflow(a.GetAt(1));
 
         return RegulateYearMonth(year, month, overflow, calendarId);
     }
@@ -449,6 +447,16 @@ public partial class JSTemporalPlainYearMonth : JSObject
     {
         if (value == null || value.IsUndefined) return 0;
         var number = value.DoubleValue;
+        if (double.IsNaN(number) || double.IsInfinity(number))
+            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: component must be finite");
+        return (int)Math.Truncate(number);
+    }
+
+    // The constructor's required isoYear/isoMonth arguments are coerced with ToNumber first, so an
+    // absent / undefined argument (NaN) is a RangeError rather than silently defaulting to 0.
+    private static int ToIntegerWithTruncationArgument(JSValue value)
+    {
+        var number = value == null ? double.NaN : value.DoubleValue;
         if (double.IsNaN(number) || double.IsInfinity(number))
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: component must be finite");
         return (int)Math.Truncate(number);

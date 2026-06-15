@@ -36,6 +36,15 @@ DEFAULT_BROILER_DLL = str(
 ALL_SHARDS = -1
 TEMP_DIRECTORY = Path(tempfile.gettempdir()) / "broiler-test262"
 UNSUPPORTED_FLAGS = {"module", "raw"}
+# Broiler's single agent can block: Atomics.wait reports a value mismatch or a timeout
+# instead of suspending (there is no second agent, and notify wakes no one), i.e. its
+# [[CanBlock]] is true. Tests guarded by the CanBlockIsFalse flag describe a host whose
+# agent cannot block — AgentCanSuspend() is false, so Atomics.wait must throw TypeError —
+# which is not this agent, so those tests do not apply and are skipped. The complementary
+# CanBlockIsTrue tests, which exercise the actual wait behaviour, do apply and run.
+HOST_AGENT_CAN_BLOCK = True
+INAPPLICABLE_FLAGS = {"CanBlockIsFalse"} if HOST_AGENT_CAN_BLOCK else {"CanBlockIsTrue"}
+SKIPPED_FLAGS = UNSUPPORTED_FLAGS | INAPPLICABLE_FLAGS
 TEST_FIXTURE_SUFFIX = "_FIXTURE.js"
 # No test262 feature is excluded: every feature is treated as either already
 # supported or something that must be implemented rather than skipped, so feature
@@ -246,9 +255,14 @@ class Test262Repository:
     def read_text(self, path: str) -> str:
         if path not in self.text_cache:
             if self.suite_root is not None:
-                self.text_cache[path] = self._resolve_local_path(path).read_text(
-                    encoding="utf-8"
-                )
+                # Read with newline="" so the original line terminators (CR / CRLF / LS / PS) are
+                # preserved verbatim rather than universally translated to LF. Some tests — e.g. the
+                # Function.prototype.toString line-terminator-normalisation cases — assert on the exact
+                # source bytes, and the script host must see the same content a remote (byte) read would.
+                with open(
+                    self._resolve_local_path(path), encoding="utf-8", newline=""
+                ) as handle:
+                    self.text_cache[path] = handle.read()
             else:
                 url = (
                     f"https://raw.githubusercontent.com/tc39/test262/"
@@ -305,12 +319,30 @@ class Test262Repository:
         return files
 
 
+# The metadata block is delimited by `/*---` … `---*/`, each on its own line; the line terminator
+# after `---` and before `---*/` may be CR, CRLF, LF, LS, or PS. Match any of them so a test that uses
+# non-LF terminators (e.g. the Function.prototype.toString line-terminator-normalisation cases, whose
+# source is read with its terminators preserved) still has its metadata recognised.
+METADATA_BLOCK_PATTERN = re.compile(r"/\*---[\r\n  ](.*?)[\r\n  ]---\*/", re.S)
+
+
+def _normalize_newlines(text: str) -> str:
+    return (
+        text.replace("\r\n", "\n")
+        .replace("\r", "\n")
+        .replace(" ", "\n")
+        .replace(" ", "\n")
+    )
+
+
 def parse_metadata(source: str) -> tuple[dict[str, list[str]], str]:
-    match = re.search(r"/\*---\n(.*?)\n---\*/", source, re.S)
+    match = METADATA_BLOCK_PATTERN.search(source)
     if match is None:
         return {"features": [], "includes": [], "flags": []}, source
 
-    block = match.group(1)
+    # Normalise only the metadata block for the line-oriented field regexes below; the returned body
+    # retains its original line terminators so the script host sees the test's exact source.
+    block = _normalize_newlines(match.group(1))
     body = source[: match.start()] + source[match.end() :]
 
     def parse_list(name: str) -> list[str]:
@@ -345,11 +377,12 @@ def parse_metadata(source: str) -> tuple[dict[str, list[str]], str]:
 
 
 def parse_negative_metadata(source: str) -> dict[str, str] | None:
-    metadata_match = re.search(r"/\*---\n(.*?)\n---\*/", source, re.S)
+    metadata_match = METADATA_BLOCK_PATTERN.search(source)
     if metadata_match is None:
         return None
 
-    negative_match = re.search(r"(?m)^negative:\s*\n((?:[ \t]+.*\n?)*)", metadata_match.group(1))
+    block = _normalize_newlines(metadata_match.group(1))
+    negative_match = re.search(r"(?m)^negative:\s*\n((?:[ \t]+.*\n?)*)", block)
     if negative_match is None:
         return None
 
@@ -376,7 +409,7 @@ def classify_test(
     metadata, _ = parse_metadata(source)
     flags = list(metadata["flags"])
     features = list(metadata["features"])
-    unsupported_flags = sorted(UNSUPPORTED_FLAGS & set(flags))
+    unsupported_flags = sorted(SKIPPED_FLAGS & set(flags))
     unsupported_features = sorted(UNSUPPORTED_FEATURES & set(features))
     negative = parse_negative_metadata(source)
     host_harness_blockers: list[str] = []
@@ -696,7 +729,7 @@ def run_test(
     source = repo.read_text(path)
     metadata, body = parse_metadata(source)
 
-    unsupported = sorted(UNSUPPORTED_FLAGS & set(metadata["flags"]))
+    unsupported = sorted(SKIPPED_FLAGS & set(metadata["flags"]))
     unsupported_features = sorted(UNSUPPORTED_FEATURES & set(metadata["features"]))
     if unsupported or unsupported_features:
         reasons: list[str] = []

@@ -97,7 +97,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     // Builds a ZonedDateTime from a local wall-clock datetime in the given zone (used by the
     // PlainDate/PlainDateTime/PlainTime → ZonedDateTime conversions; "compatible" disambiguation).
-    internal static JSValue FromLocal(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns, string timeZone)
+    internal static JSValue FromLocal(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns, string timeZone, string calendarId = "iso8601")
     {
         var tz = CanonicalizeTimeZone(timeZone);
         var localNs = LocalNanoseconds(y, mo, d, h, mi, s, ms, us, ns);
@@ -105,7 +105,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var epochNs = localNs - offset;
         if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
-        return new JSTemporalZonedDateTime(epochNs, tz, ZonedDateTimePrototype);
+        return new JSTemporalZonedDateTime(epochNs, tz, calendarId, ZonedDateTimePrototype);
     }
 
     // ── accessors ───────────────────────────────────────────────────────────────

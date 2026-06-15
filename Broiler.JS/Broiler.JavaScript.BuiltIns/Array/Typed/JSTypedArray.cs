@@ -225,9 +225,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             // boolean) or a plain object such as {} becomes a zero-length result.
             // This must never fall through to the iterator path below, which
             // throws "<source> is not iterable".
-            len = source is JSObject arrayLike && arrayLike.Length >= 0
-                ? arrayLike.Length
-                : 0;
+            len = source is JSObject arrayLike ? ToArrayLikeLength(arrayLike) : 0;
             copyByIndex = true;
         }
 
@@ -288,6 +286,24 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
                 i++;
             }
         }
+    }
+
+    // LengthOfArrayLike(source) for the array-like constructor path: ToLength(Get(source, "length")) —
+    // a missing/NaN/negative length becomes 0 and the value is clamped to 2^53-1 — then
+    // AllocateTypedArrayBuffer must allocate len × elementSize bytes, so a length whose byte size
+    // cannot fit a data block (e.g. {length: 2**53} or {length: 2**32}) is a RangeError rather than
+    // silently wrapping to a smaller count.
+    private int ToArrayLikeLength(JSObject arrayLike)
+    {
+        var number = arrayLike[KeyStrings.length].DoubleValue;
+        var integer = double.IsNaN(number) ? 0 : Math.Truncate(number);
+        if (integer < 0)
+            integer = 0;
+
+        if (integer > 9007199254740991.0 || (long)integer * bytesPerElement > int.MaxValue)
+            throw JSEngine.NewRangeError("Invalid typed array length");
+
+        return (int)integer;
     }
 
     internal static JSTypedArray CreateTypedArrayFromConstructor(JSValue constructor, int length)

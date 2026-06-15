@@ -16,6 +16,22 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 // structure and are not implemented; Canonicalize rejects them with a RangeError.
 internal static class TemporalCalendar
 {
+    // RejectObjectWithCalendarOrTimeZone: a plain-object argument to a calendar type's with() (or
+    // similar) must not itself be a Temporal object (it carries its own calendar / time-zone), nor
+    // carry a "calendar" or "timeZone" own/inherited property — any of these is a TypeError.
+    internal static void RejectObjectWithCalendarOrTimeZone(JSObject obj)
+    {
+        if (obj is JSTemporalPlainDate or JSTemporalPlainDateTime or JSTemporalPlainMonthDay
+            or JSTemporalPlainTime or JSTemporalPlainYearMonth or JSTemporalZonedDateTime)
+            throw JSEngine.NewTypeError("Temporal: a Temporal object is not a valid fields object");
+
+        if (!obj[KeyStrings.GetOrCreate("calendar")].IsUndefined)
+            throw JSEngine.NewTypeError("Temporal: a fields object must not have a calendar property");
+
+        if (!obj[KeyStrings.GetOrCreate("timeZone")].IsUndefined)
+            throw JSEngine.NewTypeError("Temporal: a fields object must not have a timeZone property");
+    }
+
     // Japanese regnal eras (ICU4X / Temporal `Intl.Era-monthcode`). Each modern era begins on a
     // specific proleptic-Gregorian date (`y`/`m`/`d`); listed newest-first so the first match wins.
     // `baseYear` is the Gregorian year of era-year 1 (eraYear = isoYear − baseYear + 1). For every
