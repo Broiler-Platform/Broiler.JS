@@ -77,15 +77,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
     [JSExport("from", Length = 1)]
     internal static JSValue From(in Arguments a)
-    {
-        var item = a.GetAt(0);
-        var overflow = ReadOverflow(a.GetAt(1));
-
-        if (item is JSTemporalPlainMonthDay md)
-            return new JSTemporalPlainMonthDay(md.isoMonth, md.isoDay, md.referenceISOYear, md.calendarId, PlainMonthDayPrototype);
-
-        return ToTemporalMonthDay(item, overflow);
-    }
+        => ToTemporalMonthDay(a.GetAt(0), a.GetAt(1));
 
     // ── methods ─────────────────────────────────────────────────────────────────
 
@@ -150,7 +142,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
     [JSExport("equals", Length = 1)]
     public JSValue Equals(in Arguments a)
     {
-        var other = Require(ToTemporalMonthDay(a.GetAt(0), "constrain"));
+        var other = Require(ToTemporalMonthDay(a.GetAt(0)));
         return isoMonth == other.isoMonth && isoDay == other.isoDay && referenceISOYear == other.referenceISOYear
             && calendarId == other.calendarId
             ? JSValue.BooleanTrue : JSValue.BooleanFalse;
@@ -254,13 +246,25 @@ public partial class JSTemporalPlainMonthDay : JSObject
         return overflow;
     }
 
-    private static JSValue ToTemporalMonthDay(JSValue item, string overflow)
+    private static JSValue ToTemporalMonthDay(JSValue item) => ToTemporalMonthDay(item, JSUndefined.Value);
+
+    // `options` is the raw options argument: the overflow option is read at the spec-mandated point
+    // (after the item's type is validated and its fields/string are read), so an invalid primitive
+    // item throws a TypeError before the options bag is ever observed.
+    private static JSValue ToTemporalMonthDay(JSValue item, JSValue options)
     {
         if (item is JSTemporalPlainMonthDay md)
+        {
+            ReadOverflow(options);
             return new JSTemporalPlainMonthDay(md.isoMonth, md.isoDay, md.referenceISOYear, md.calendarId, PlainMonthDayPrototype);
+        }
 
         if (item.IsString)
-            return ParseTemporalMonthDayString(item.ToString());
+        {
+            var parsed = ParseTemporalMonthDayString(item.ToString());
+            ReadOverflow(options);
+            return parsed;
+        }
 
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay: invalid value");
@@ -269,7 +273,8 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         if (TemporalCalendarMath.IsNonIso(calendarId))
         {
-            var (ny, nm, nd) = TemporalNonIso.MonthDayFromBag(obj, calendarId, overflow, "Temporal.PlainMonthDay");
+            var nonIsoOverflow = ReadOverflow(options);
+            var (ny, nm, nd) = TemporalNonIso.MonthDayFromBag(obj, calendarId, nonIsoOverflow, "Temporal.PlainMonthDay");
             return new JSTemporalPlainMonthDay(nm, nd, ny, calendarId, PlainMonthDayPrototype);
         }
 
@@ -285,6 +290,8 @@ public partial class JSTemporalPlainMonthDay : JSObject
         // A month (not monthCode) without a year cannot resolve a reference year for 02-29 etc.
         if (monthCodeValue.IsUndefined && yearValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay: month requires either monthCode or year");
+
+        var overflow = ReadOverflow(options);
 
         var month = monthCodeValue.IsUndefined ? ToIntegerWithTruncation(monthValue) : MonthFromCode(monthCodeValue.ToString());
         if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToIntegerWithTruncation(monthValue) != month)
