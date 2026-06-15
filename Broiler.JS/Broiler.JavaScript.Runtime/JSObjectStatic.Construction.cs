@@ -487,6 +487,16 @@ public partial class JSObject
         return r;
     }
 
+    // B.3.1 __proto__ Property Names in Object Initializers: the `__proto__: value` form sets the new
+    // object's [[Prototype]] directly via [[SetPrototypeOf]], NOT via a "__proto__" property assignment
+    // (which a same-named own data property defined elsewhere in the literal would shadow). Only an
+    // Object or null value applies; any other value (including undefined) is silently ignored.
+    public static void SetObjectLiteralPrototype(JSObject target, JSValue value)
+    {
+        if (value is JSObject || value.IsNull)
+            target.SetPrototypeOf(value);
+    }
+
     [JSExport("preventExtensions")]
     internal static JSValue PreventExtensions(in Arguments a)
     {
@@ -561,13 +571,16 @@ public partial class JSObject
                 continue;
 
             var key = JSObjectCoreExtensions.CallWith(callbackfn, JSValue.UndefinedValue, item, JSValue.CreateNumber(index));
-            var keyStr = key.ToString();
-            var group = result[keyStr];
+            // ToPropertyKey: a Symbol key stays a Symbol, everything else coerces to a String. Keep the
+            // key as a JSValue (not a CLR string) so the property store canonicalises an array-index name
+            // such as "4" to an integer index — otherwise the group is unreachable as result[4].
+            var keyValue = key is IJSSymbol ? key : JSValue.CreateString(key.StringValue);
+            var group = result[keyValue];
 
             if (group.IsNullOrUndefined)
             {
                 group = JSValue.CreateArray();
-                result.FastAddValue(keyStr, group, JSPropertyAttributes.EnumerableConfigurableValue);
+                result.FastAddValue(keyValue, group, JSPropertyAttributes.EnumerableConfigurableValue);
             }
 
             group.AddArrayItem(item);

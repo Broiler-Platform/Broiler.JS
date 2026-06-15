@@ -237,7 +237,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             copyByIndex = true;
         }
 
-        IElementEnumerator en2;
+        IElementEnumerator en2 = null;
         /*
          * If length is unknown, create a List and get its count
          *
@@ -254,8 +254,11 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             len = elements.Count;
             en2 = new ListElementEnumerator(elements.GetEnumerator());
         }
-        else
+        else if (!copyByIndex)
         {
+            // The array-like (copyByIndex) path reads source[i] directly; only the iterable / typed /
+            // string paths need an element enumerator. GetElementEnumerator would re-inspect @@iterator
+            // and throw for a source whose @@iterator is null, which the array-like path tolerates.
             en2 = source.GetElementEnumerator();
         }
 
@@ -788,7 +791,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     internal JSGenerator GetKeys() => new(new IntKeyEnumerator(length), "Array Iterator");
 
     private static bool IsNonIterableArrayLike(JSValue source) =>
-        JSValue.SymbolIterator == null || source.PropertyOrUndefined(JSValue.SymbolIterator).IsUndefined;
+        // GetMethod(source, @@iterator) treats a null @@iterator the same as an absent (undefined) one,
+        // so a source whose @@iterator is null/undefined is consumed as an array-like, not iterated.
+        JSValue.SymbolIterator == null || source.PropertyOrUndefined(JSValue.SymbolIterator).IsNullOrUndefined;
 
     struct ElementEnumerator(JSTypedArray typedArray, int startIndex = 0) : IElementEnumerator
     {

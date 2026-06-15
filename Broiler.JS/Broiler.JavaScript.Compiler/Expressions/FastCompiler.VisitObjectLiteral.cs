@@ -382,7 +382,9 @@ partial class FastCompiler
 
             if (IsObjectLiteralProtoSetter(p))
             {
-                statements.Add(YExpression.Assign(JSValueBuilder.Index(temp.Variable, key), value));
+                // B.3.1: `__proto__: value` mutates [[Prototype]] directly, NOT via a property
+                // assignment (which a preceding/following own "__proto__" data property would shadow).
+                statements.Add(JSObjectBuilder.SetPrototype(temp.Variable, value));
                 continue;
             }
 

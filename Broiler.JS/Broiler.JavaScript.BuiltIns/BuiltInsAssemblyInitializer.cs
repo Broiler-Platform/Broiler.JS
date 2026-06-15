@@ -409,6 +409,11 @@ internal static class BuiltInsAssemblyInitializer
     // "[object RegExp]" instead of "[object Object]".
     private static string ResolveBuiltinToStringTag(JSValue value)
     {
+        // §20.1.3.6 step 14: an object with a [[RegExpMatcher]] internal slot (a real RegExp instance,
+        // whose compiled matcher is set — unlike %RegExp.prototype%, an ordinary object) tags as "RegExp".
+        if (value is JSRegExp { value: not null })
+            return "RegExp";
+
         if (value is JSPrimitiveObject boxed)
         {
             var primitive = boxed.value;
@@ -501,6 +506,9 @@ internal static class BuiltInsAssemblyInitializer
         PatchErrorConstructor(context, KeyStrings.ReferenceError, static (in Arguments a) => new JSReferenceError(in a), errorCtor);
         PatchErrorConstructor(context, KeyStrings.EvalError, static (in Arguments a) => new JSEvalError(in a), errorCtor);
         PatchErrorConstructor(context, KeyStrings.GetOrCreate("AggregateError"), static (in Arguments a) => new JSAggregateError(in a), errorCtor, 2);
+        // SuppressedError is an ordinary error constructor (its [[Prototype]] is Error) and, like the
+        // other error constructors, must be callable without `new` rather than throwing.
+        PatchErrorConstructor(context, KeyStrings.GetOrCreate("SuppressedError"), static (in Arguments a) => new JSSuppressedError(in a), errorCtor, 3);
     }
 
     private static void PatchLegacyDatePrototype(JSContext context)
@@ -1233,23 +1241,23 @@ internal static class BuiltInsAssemblyInitializer
 
         static JSValue RegExpExec(JSValue rx, JSValue input)
         {
+            // §22.2.7.1 RegExpExec: a callable "exec" property is used; otherwise (it is absent or any
+            // non-callable value such as null or a number) fall back to the builtin RegExpBuiltinExec,
+            // which requires a real RegExp receiver. A non-callable "exec" is NOT an error.
             var exec = rx[KeyStrings.GetOrCreate("exec")];
-            if (exec.IsUndefined)
+            if (exec.IsFunction)
             {
-                if (rx is not JSRegExp regExp)
-                    throw JSEngine.NewTypeError("RegExp.prototype[Symbol.replace] called on incompatible receiver");
+                var result = exec.InvokeFunction(new Arguments(rx, input));
+                if (!result.IsObject && !result.IsNull)
+                    throw JSEngine.NewTypeError("RegExp exec result must be an object or null");
 
-                return regExp.Exec(new Arguments(rx, input));
+                return result;
             }
 
-            if (!exec.IsFunction)
-                throw JSEngine.NewTypeError("RegExp exec property is not callable");
+            if (rx is not JSRegExp regExp)
+                throw JSEngine.NewTypeError("RegExp.prototype[Symbol.replace] called on incompatible receiver");
 
-            var result = exec.InvokeFunction(new Arguments(rx, input));
-            if (!result.IsObject && !result.IsNull)
-                throw JSEngine.NewTypeError("RegExp exec result must be an object or null");
-
-            return result;
+            return regExp.Exec(new Arguments(rx, input));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

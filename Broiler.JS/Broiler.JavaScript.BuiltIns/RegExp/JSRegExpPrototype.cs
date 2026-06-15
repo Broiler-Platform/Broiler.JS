@@ -258,10 +258,15 @@ public partial class JSRegExp
     [JSExport("toString")]
     public static JSValue ToString(in Arguments a)
     {
-        if (a.This is not JSRegExp regExp)
-            throw JSEngine.NewTypeError("RegExp.prototype.toString called on incompatible receiver");
+        // §22.2.6.13 RegExp.prototype.toString is generic: it requires only that the receiver be an
+        // Object and builds the result from its "source" and "flags" properties (each coerced with
+        // ToString), so it also works on RegExp.prototype itself and on non-RegExp objects.
+        if (a.This is not JSObject receiver)
+            throw JSEngine.NewTypeError("RegExp.prototype.toString called on a non-object receiver");
 
-        return JSValue.CreateString($"/{regExp.pattern}/{regExp.flags}");
+        var pattern = receiver[KeyStrings.GetOrCreate("source")].StringValue;
+        var flags = receiver[KeyStrings.GetOrCreate("flags")].StringValue;
+        return JSValue.CreateString($"/{pattern}/{flags}");
     }
 
     /// <summary>

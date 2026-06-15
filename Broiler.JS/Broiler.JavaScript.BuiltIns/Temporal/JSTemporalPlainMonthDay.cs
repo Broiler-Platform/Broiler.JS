@@ -91,6 +91,10 @@ public partial class JSTemporalPlainMonthDay : JSObject
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
+        // PrepareCalendarFields recognises « year, month, monthCode, day » for PlainMonthDay; "year" is
+        // a recognised field (used only for overflow resolution), so supplying it alone satisfies the
+        // "at least one field" requirement even though it does not change the month/day for ISO.
+        var hasYear = !obj[KeyStrings.GetOrCreate("year")].IsUndefined;
 
         if (NonIso)
         {
@@ -110,7 +114,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
             }
             if (!dayValue.IsUndefined) { day = ToPositiveIntegerWithTruncation(dayValue); any = true; }
 
-            if (!any)
+            if (!any && !hasYear)
                 throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires at least one field");
 
             var nonIsoOverflow = ReadOverflow(a.GetAt(1));
@@ -131,7 +135,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         if (!dayValue.IsUndefined) { isoDayOut = ToPositiveIntegerWithTruncation(dayValue); anyIso = true; }
 
-        if (!anyIso)
+        if (!anyIso && !hasYear)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires at least one field");
 
         // GetTemporalOverflowOption runs only after the partial fields have been read and coerced.

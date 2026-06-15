@@ -58,7 +58,10 @@ public partial class JSError : JSObject, IJSError
     {
         Exception = new JSException(this, function: function, filePath: filePath, line: line);
         var hasMessage = a.TryGetAt(0, out var messageValue);
-        var message = hasMessage ? messageValue.ToString() : string.Empty;
+        // The message is coerced with ToString (StringValue), so an object message observes its toString
+        // (a thrown value propagates) and a Symbol — directly or returned from toString — is a TypeError,
+        // rather than being silently stringified.
+        var message = hasMessage ? messageValue.StringValue : string.Empty;
 
         Message = message;
         Stack = CreateStack();

@@ -26,10 +26,19 @@ public partial class JSArray
 
         var t = a.This;
         var constructor = JSConstructorOperations.IsConstructor(t) && t is JSObject ctor ? ctor : null;
-        var iteratorMethod = JSValue.SymbolIterator == null ? JSUndefined.Value : f.PropertyOrUndefined(JSValue.SymbolIterator);
-        // A String is always iterable (by code point), even though @@iterator
-        // lookup on a primitive string value currently misses the prototype.
-        var useArrayLike = (iteratorMethod.IsUndefined || iteratorMethod.IsNull) && !f.IsString;
+        // GetMethod(items, @@iterator): a String normally resolves String.prototype[@@iterator] (via its
+        // wrapper) and iterates by code point, but if that method has been removed it must fall back to
+        // the array-like path (UTF-16 code units) rather than always iterating. Look the method up on the
+        // boxed string so a deleted/overridden @@iterator is observed.
+        JSValue iteratorMethod;
+        if (JSValue.SymbolIterator == null)
+            iteratorMethod = JSUndefined.Value;
+        else if (f.IsString)
+            iteratorMethod = ((JSObject)JSObject.CreatePrimitiveObject(f)).PropertyOrUndefined(JSValue.SymbolIterator);
+        else
+            iteratorMethod = f.PropertyOrUndefined(JSValue.SymbolIterator);
+
+        var useArrayLike = iteratorMethod.IsUndefined || iteratorMethod.IsNull;
 
         if (useArrayLike)
         {
@@ -48,9 +57,9 @@ public partial class JSArray
                     value = map.InvokeFunction(new Arguments(mapThis, value, new JSNumber(i)));
 
                 // Spec: CreateDataPropertyOrThrow — defines a fresh writable/enumerable/
-                // configurable data property, overwriting a non-writable existing one
-                // (rather than Set, which would throw on a non-writable target prop).
-                arrayLikeResult.CreateDataProperty(JSValue.CreateNumber(i), value);
+                // configurable data property; a failed define (e.g. a non-configurable existing
+                // element, or a non-extensible target) is a TypeError, not a silent no-op.
+                CreateDataPropertyOrThrow(arrayLikeResult, i, value);
             }
 
             if (arrayLikeResult is JSArray arrayLikeArray)
@@ -83,7 +92,7 @@ public partial class JSArray
                 if (!map.IsUndefined)
                     item = map.InvokeFunction(new Arguments(mapThis, item, new JSNumber(index)));
 
-                r.CreateDataProperty(JSValue.CreateNumber(index++), item);
+                CreateDataPropertyOrThrow(r, index++, item);
             }
             catch
             {

@@ -244,16 +244,26 @@ public partial class JSTemporalDuration : JSObject
         var calendarUnits = d1.years != 0 || d1.months != 0 || d1.weeks != 0
             || d2.years != 0 || d2.months != 0 || d2.weeks != 0;
 
-        if (calendarUnits && relativeTo.IsNullOrUndefined)
-            throw JSEngine.NewRangeError("Temporal.Duration.compare with calendar units requires a relativeTo option");
-
         // ToRelativeTemporalObject resolves (and validates) relativeTo whenever it is present, even when
         // the comparison itself does not need it — an unparsable or otherwise invalid relativeTo string
-        // is a RangeError regardless of the durations' units.
+        // is a RangeError regardless of the durations' units. The spec resolves relativeTo before the
+        // identical-durations short-circuit below, so an invalid relativeTo still throws here.
         JSTemporalZonedDateTime relZoned = null;
         JSTemporalPlainDate relDate = null;
         if (!relativeTo.IsNullOrUndefined)
             TryResolveRelativeTo(options, out relZoned, out relDate);
+
+        // If the two durations are identical in every field, the result is +0 regardless of relativeTo.
+        // The spec applies this short-circuit before the calendar-units requirement, so comparing a
+        // duration that has calendar units to itself returns 0 rather than throwing for a missing relativeTo.
+        if (d1.years == d2.years && d1.months == d2.months && d1.weeks == d2.weeks
+            && d1.days == d2.days && d1.hours == d2.hours && d1.minutes == d2.minutes
+            && d1.seconds == d2.seconds && d1.milliseconds == d2.milliseconds
+            && d1.microseconds == d2.microseconds && d1.nanoseconds == d2.nanoseconds)
+            return new JSNumber(0);
+
+        if (calendarUnits && relativeTo.IsNullOrUndefined)
+            throw JSEngine.NewRangeError("Temporal.Duration.compare with calendar units requires a relativeTo option");
 
         if (relZoned != null)
         {

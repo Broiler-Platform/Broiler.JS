@@ -154,10 +154,15 @@ public partial class JSArray
     [JSExport("toString")]
     internal new static JSValue ToString(in Arguments args)
     {
-        if (args.This.IsArray)
-            return Join(in args);
+        // §23.1.3.36 Array.prototype.toString: ToObject(this), then Get "join"; if it is not callable,
+        // fall back to %Object.prototype.toString%. This is generic (works on non-arrays and on a boxed
+        // primitive receiver) and honours an overridden / non-callable "join" instead of throwing.
+        var array = ToArrayLikeObject(args.This);
+        var join = array[KeyStrings.join];
+        if (join.IsFunction)
+            return join.InvokeFunction(new Arguments(array));
 
-        return args.This.InvokeMethod(KeyStrings.join, in args);
+        return JSObject.ToString(new Arguments(array));
     }
 
     [JSPrototypeMethod]

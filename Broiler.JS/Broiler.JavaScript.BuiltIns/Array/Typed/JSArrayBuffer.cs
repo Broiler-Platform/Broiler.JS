@@ -87,7 +87,10 @@ public partial class JSArrayBuffer : JSObject
         if (value == null || value.IsUndefined)
             return defaultValue;
 
-        var number = ToNumberPrimitive(value).DoubleValue;
+        // ToIndex: ToIntegerOrInfinity truncates toward zero FIRST, so a fractional value in (-1, 0)
+        // (e.g. -0.5) becomes -0 → 0 rather than a RangeError; only then is the sign / upper bound
+        // (2^53-1) checked on the resulting integer.
+        var number = Math.Truncate(ToNumberPrimitive(value).DoubleValue);
         if (double.IsNaN(number) || number == 0)
             return 0;
 
@@ -104,8 +107,12 @@ public partial class JSArrayBuffer : JSObject
     {
         var defaultConstructor = (JSEngine.Current as JSObject)?[KeyStrings.ArrayBuffer];
         var constructor = source[KeyStrings.constructor];
-        if (!constructor.IsObject)
+        // SpeciesConstructor: only an undefined "constructor" falls back to the default; any other
+        // non-object value (e.g. null or a number) is a TypeError.
+        if (constructor.IsUndefined)
             return defaultConstructor;
+        if (!constructor.IsObject)
+            throw JSEngine.NewTypeError("ArrayBuffer constructor property is not an object");
 
         var species = constructor[(IJSSymbol)JSSymbol.species];
         if (species.IsNullOrUndefined)

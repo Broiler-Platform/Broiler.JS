@@ -719,7 +719,16 @@ public static class JSIntl
         if (lengthValue.IsUndefined)
             return result;
 
-        var length = lengthValue.UIntValue;
+        // ToLength(Get(O, "length")): ToNumber (a Symbol length throws a TypeError via DoubleValue),
+        // truncate toward zero, then clamp a negative result to 0 — so a negative length yields an empty
+        // list and the indexed getters are never read (rather than wrapping the negative into a uint).
+        var lengthNumber = lengthValue.DoubleValue;
+        var lengthInteger = double.IsNaN(lengthNumber) ? 0 : Math.Truncate(lengthNumber);
+        if (lengthInteger < 0)
+            lengthInteger = 0;
+        else if (lengthInteger > 4294967295d)
+            lengthInteger = 4294967295d;
+        var length = (uint)lengthInteger;
         HashSet<string> seen = null;
         for (uint i = 0; i < length; i++)
         {
@@ -1651,6 +1660,58 @@ public sealed class JSIntlSegments : JSObject
             KeyStrings.GetOrCreate("containing"),
             new JSFunction(ContainingPrototype, "containing", "function containing() { [native code] }", createPrototype: false, length: 1),
             JSPropertyAttributes.ConfigurableValue);
+        // %Segments.prototype% [ @@iterator ] — a method (named "[Symbol.iterator]") returning a Segment
+        // Iterator over the segment data objects. Exposed as an own property so `segments[@@iterator]`
+        // is observable, in addition to the internal GetIterableEnumerator that backs for-of.
+        FastAddValue(
+            (IJSSymbol)JSSymbol.iterator,
+            JSValue.CreateFunction(static (in Arguments a) =>
+            {
+                if (a.This is not JSIntlSegments self)
+                    throw JSEngine.NewTypeError("%Segments.prototype%[Symbol.iterator] called on incompatible receiver");
+                return self.CreateSegmentIterator();
+            }, "[Symbol.iterator]", null, 0, false),
+            JSPropertyAttributes.ConfigurableValue);
+    }
+
+    // Creates a Segment Iterator: a one-shot iterator object whose next() walks the segment list and
+    // yields the same Segment Data objects as the for-of enumeration, and whose own @@iterator returns
+    // itself.
+    private JSValue CreateSegmentIterator()
+    {
+        var segments = this;
+        var list = Segments;
+        var index = 0;
+        var valueKey = KeyStrings.GetOrCreate("value");
+        var doneKey = KeyStrings.GetOrCreate("done");
+
+        var iterator = new JSObject();
+        iterator.FastAddValue(
+            KeyStrings.GetOrCreate("next"),
+            JSValue.CreateFunction((in Arguments a) =>
+            {
+                var result = new JSObject();
+                if (index < list.Count)
+                {
+                    var (start, length) = list[index];
+                    index++;
+                    result.FastAddValue(valueKey, segments.CreateSegmentDataObject(start, length), JSPropertyAttributes.EnumerableConfigurableValue);
+                    result.FastAddValue(doneKey, JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+                }
+                else
+                {
+                    result.FastAddValue(valueKey, JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
+                    result.FastAddValue(doneKey, JSValue.BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
+                }
+
+                return result;
+            }, "next", null, 0, false),
+            JSPropertyAttributes.ConfigurableValue);
+        iterator.FastAddValue(
+            (IJSSymbol)JSSymbol.iterator,
+            JSValue.CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false),
+            JSPropertyAttributes.ConfigurableValue);
+        return iterator;
     }
 
     private List<(int start, int length)> Segments => _segments ??= Compute(_input, _granularity);
@@ -1918,11 +1979,7 @@ public sealed class JSIntlDurationFormat : JSObject
         if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.format called on incompatible receiver");
 
-        var duration = a.Get1();
-        ValidateDurationArgument(duration);
-        if (duration is not JSObject durationObject)
-            return JSValue.CreateString(string.Empty);
-
+        var durationObject = ToDurationFormatRecord(a.Get1());
         return JSValue.CreateString(self.Format(durationObject));
     }
 
@@ -1931,11 +1988,8 @@ public sealed class JSIntlDurationFormat : JSObject
         if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.formatToParts called on incompatible receiver");
 
-        var duration = a.Get1();
-        ValidateDurationArgument(duration);
+        var durationObject = ToDurationFormatRecord(a.Get1());
         var parts = JSValue.CreateArray();
-        if (duration is not JSObject durationObject)
-            return parts;
 
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
@@ -2159,17 +2213,24 @@ public sealed class JSIntlDurationFormat : JSObject
             ? (intl[KeyStrings.GetOrCreate("DurationFormat")] as JSFunction)?.prototype
             : null;
 
-    private static void ValidateDurationArgument(JSValue duration)
+    // ToDurationRecord(input): a String is parsed as an ISO 8601 / Temporal duration (an invalid string
+    // is a RangeError), an object's unit fields are read and validated directly, and any other type is a
+    // TypeError. Returns the object whose unit getters the formatter then reads (a parsed string yields a
+    // Temporal.Duration, which exposes the same year/month/…/nanosecond properties).
+    private static JSObject ToDurationFormatRecord(JSValue duration)
     {
-        // ToDurationRecord(input): a non-object input is a TypeError, except a String
-        // (which the spec parses; every invalid string form here is a RangeError).
-        if (duration is not JSObject durationObject)
-        {
-            if (duration.IsString)
-                throw JSEngine.NewRangeError("Invalid duration string");
-            throw JSEngine.NewTypeError("Duration argument must be an object or string");
-        }
+        if (duration.IsString)
+            return (JSObject)JSTemporalDuration.From(new Arguments(JSUndefined.Value, duration));
 
+        if (duration is not JSObject durationObject)
+            throw JSEngine.NewTypeError("Duration argument must be an object or string");
+
+        ValidateDurationArgument(durationObject);
+        return durationObject;
+    }
+
+    private static void ValidateDurationArgument(JSObject durationObject)
+    {
         var any = false;
         var hasPositive = false;
         var hasNegative = false;
