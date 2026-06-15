@@ -18,7 +18,7 @@ public static class JSObjectFastPropertyExtensions
         ref var pr = ref target.GetOwnProperties();
         ref var existing = ref pr.Put(key.Key);
 
-        var getter = existing.get;
+        var getter = existing.IsProperty ? existing.get : null;
         existing = new JSProperty(key, getter, setter, attributes);
     }
 
@@ -28,7 +28,7 @@ public static class JSObjectFastPropertyExtensions
         ref var pr = ref target.GetOwnProperties();
         ref var existing = ref pr.Put(key.Key);
 
-        var setter = existing.set;
+        var setter = existing.IsProperty ? existing.set : null;
         existing = new JSProperty(key, getter, setter, attributes);
     }
 
@@ -38,7 +38,7 @@ public static class JSObjectFastPropertyExtensions
         ref var pr = ref target.GetSymbols();
         ref var existing = ref pr.Put(key.Key);
 
-        var getter = existing.get;
+        var getter = existing.IsProperty ? existing.get : null;
         existing = new JSProperty(key.Key, getter, setter, existing.value, attributes);
     }
 
@@ -47,7 +47,7 @@ public static class JSObjectFastPropertyExtensions
     {
         ref var pr = ref target.GetSymbols();
         ref var existing = ref pr.Put(key.Key);
-        var setter = existing.set;
+        var setter = existing.IsProperty ? existing.set : null;
         existing = new JSProperty(key.Key, getter, setter, existing.value, attributes);
     }
 
@@ -59,7 +59,7 @@ public static class JSObjectFastPropertyExtensions
 
         target.UpdateArrayLengthIfNeeded(key);
         
-        var getter = existing.get;
+        var getter = existing.IsProperty ? existing.get : null;
         existing = new JSProperty(key, getter, setter, existing.value, attributes);
     }
 
@@ -71,7 +71,7 @@ public static class JSObjectFastPropertyExtensions
 
         target.UpdateArrayLengthIfNeeded(key);
         
-        var setter = existing.set;
+        var setter = existing.IsProperty ? existing.set : null;
         existing = new JSProperty(key, getter, setter, existing.value, attributes);
     }
 

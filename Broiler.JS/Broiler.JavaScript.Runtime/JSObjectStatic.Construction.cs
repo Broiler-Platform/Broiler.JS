@@ -487,6 +487,16 @@ public partial class JSObject
         return r;
     }
 
+    // B.3.1 __proto__ Property Names in Object Initializers: the `__proto__: value` form sets the new
+    // object's [[Prototype]] directly via [[SetPrototypeOf]], NOT via a "__proto__" property assignment
+    // (which a same-named own data property defined elsewhere in the literal would shadow). Only an
+    // Object or null value applies; any other value (including undefined) is silently ignored.
+    public static void SetObjectLiteralPrototype(JSObject target, JSValue value)
+    {
+        if (value is JSObject || value.IsNull)
+            target.SetPrototypeOf(value);
+    }
+
     [JSExport("preventExtensions")]
     internal static JSValue PreventExtensions(in Arguments a)
     {

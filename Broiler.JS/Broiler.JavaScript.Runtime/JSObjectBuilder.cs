@@ -54,6 +54,14 @@ public class JSObjectBuilder
     public readonly static MethodInfo _FastAddValueKeyString =
         type.PublicMethod(nameof(JSObject.FastAddValue), typeof(KeyString), typeof(JSValue), typeof(JSPropertyAttributes));
 
+    readonly static MethodInfo _SetObjectLiteralPrototype =
+        type.PublicMethod(nameof(JSObject.SetObjectLiteralPrototype), typeof(JSObject), typeof(JSValue));
+
+    // B.3.1 object-initializer __proto__: sets the literal's [[Prototype]] directly (bypassing any
+    // same-named own property), applying only Object/null values.
+    public static Expression SetPrototype(Expression target, Expression value)
+        => Expression.Call(null, _SetObjectLiteralPrototype, target, value);
+
     readonly static MethodInfo _MintPrivateName =
         type.PublicMethod(nameof(JSObject.MintPrivateName), typeof(string));
 
