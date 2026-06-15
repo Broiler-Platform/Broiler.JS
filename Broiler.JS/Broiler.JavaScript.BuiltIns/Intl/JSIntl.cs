@@ -719,7 +719,16 @@ public static class JSIntl
         if (lengthValue.IsUndefined)
             return result;
 
-        var length = lengthValue.UIntValue;
+        // ToLength(Get(O, "length")): ToNumber (a Symbol length throws a TypeError via DoubleValue),
+        // truncate toward zero, then clamp a negative result to 0 — so a negative length yields an empty
+        // list and the indexed getters are never read (rather than wrapping the negative into a uint).
+        var lengthNumber = lengthValue.DoubleValue;
+        var lengthInteger = double.IsNaN(lengthNumber) ? 0 : Math.Truncate(lengthNumber);
+        if (lengthInteger < 0)
+            lengthInteger = 0;
+        else if (lengthInteger > 4294967295d)
+            lengthInteger = 4294967295d;
+        var length = (uint)lengthInteger;
         HashSet<string> seen = null;
         for (uint i = 0; i < length; i++)
         {
