@@ -78,6 +78,14 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     private static bool IsValid(BigInteger ns) => ns >= MinEpochNanoseconds && ns <= MaxEpochNanoseconds;
 
+    // A parsed ZonedDateTime is representable only when both its exact instant is in range and its
+    // *wall-clock* time (the naive epoch ns of the local date-time) lies in [nsMin, nsMax + one day):
+    // a negative offset cannot pull the wall clock below the minimum instant's own wall clock, while a
+    // positive offset may push it up to (but not including) one day past the maximum. These exact
+    // bounds are validated against test262's ZonedDateTime "argument-string-limits" vectors.
+    private static bool IsLocalWithinLimits(BigInteger localNs)
+        => localNs >= MinEpochNanoseconds && localNs < MaxEpochNanoseconds + NanosecondsPerDay;
+
     // Factory used by sibling Temporal types (Instant/PlainDate*.to*ZonedDateTime) to build a
     // ZonedDateTime from an epoch instant + a time-zone string, canonicalizing the zone.
     internal static JSValue CreateChecked(BigInteger epochNs, string timeZone)
@@ -1437,8 +1445,8 @@ public partial class JSTemporalZonedDateTime : JSObject
     private const string YearField = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
     private static readonly Regex ZonedCorePattern = new(
         @"^(?:(?<y>" + YearField + @")-(?<mo>\d{2})-(?<d>\d{2})|(?<y>" + YearField + @")(?<mo>\d{2})(?<d>\d{2}))" +
-        @"[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
-        @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::?(?<om>\d{2})(?::?(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))?$",
+        @"(?:[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
+        @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::?(?<om>\d{2})(?::?(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))?)?$",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex ZonedTrailingAnnotation = new(@"\[(!?)([^\]]*)\]$", RegexOptions.CultureInvariant);
@@ -1486,7 +1494,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
         var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
         var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
-        var hour = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture);
+        var hour = match.Groups["h"].Success ? int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture) : 0;
         var minute = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
         var second = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
         if (second == 60) second = 59; // leap second collapses
@@ -1548,7 +1556,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         else offsetNs = GetOffsetForLocal(timeZoneId, year, month, day, hour, minute, second);
 
         var epochNs = localNs - offsetNs;
-        if (!IsValid(epochNs))
+        if (!IsValid(epochNs) || !IsLocalWithinLimits(localNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: parsed value is out of range");
 
         return new JSTemporalZonedDateTime(epochNs, timeZoneId, calendarId, ZonedDateTimePrototype);

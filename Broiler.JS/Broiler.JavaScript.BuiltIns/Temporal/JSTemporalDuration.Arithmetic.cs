@@ -277,23 +277,29 @@ public partial class JSTemporalDuration
         }
 
         // ToRelativeTemporalObject for a string: validate the relativeTo grammar. An unparsable string,
-        // a UTC (Z) designator with no time-zone annotation, or a malformed offset is a RangeError. (A
-        // string with a [TimeZone] annotation was already handled by ToZonedRelative above.)
+        // a UTC (Z) designator with no time-zone annotation, or a malformed offset is a RangeError.
         if (rel.IsString)
         {
             var s = rel.ToString();
             if (!TemporalIsoString.TryParseRelative(s, out var tz, out var hasZ, out var offset))
                 throw JSEngine.NewRangeError($"Temporal.Duration: cannot parse relativeTo \"{s}\"");
-            if (tz == null && hasZ)
+
+            // A string with a [TimeZone] annotation is a ZonedDateTime relativeTo: parse it as one so
+            // its representable range is validated and a Z designator / numeric offset is honoured (the
+            // calendar-only PlainDate parser used below would reject those), then consume its local date
+            // as a 24-hour-day relativeTo.
+            if (tz != null)
+            {
+                date = JSTemporalZonedDateTime.ParseRelativeZonedDate(s);
+                if (TemporalCalendarMath.IsNonIso(date.calendarId))
+                    throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{date.calendarId}\" calendar is not yet implemented");
+                return true;
+            }
+
+            if (hasZ)
                 throw JSEngine.NewRangeError("Temporal.Duration: relativeTo with a UTC (Z) designator requires a time-zone annotation");
             if (offset != null && !TemporalIsoString.IsStrictOffset(offset))
                 throw JSEngine.NewRangeError($"Temporal.Duration: invalid UTC offset in relativeTo \"{s}\"");
-            // A [time-zone] annotation must be a valid identifier even though the relativeTo is then
-            // consumed as a 24-hour-day PlainDate — e.g. a sub-minute offset zone "[-00:44:30]" is a
-            // RangeError. (Only the identifier is checked; no instant is computed, so a date at the
-            // ISO limit is not spuriously rejected.)
-            if (tz != null)
-                JSTemporalZonedDateTime.ValidateTimeZoneIdentifier(tz);
         }
 
         // A relativeTo property bag carrying a timeZone is a ZonedDateTime relativeTo; its offset
