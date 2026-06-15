@@ -51,4 +51,15 @@ public class Issue808BindNonNumberLengthTests
             Object.defineProperty(fn, "length", { value: Infinity });
             String(fn.bind().length);
         """));
+
+    [Fact]
+    public void Bind_Length_InheritedLengthIgnored()
+        // After deleting the own "length", the inherited one (42) must not be used: HasOwnProperty is
+        // false, so the bound length defaults to 0.
+        => Assert.Equal("0", Eval("""
+            function bar(a, b) {}
+            Object.setPrototypeOf(bar, { length: 42 });
+            delete bar.length;
+            String(Function.prototype.bind.call(bar, null, 1).length);
+        """));
 }

@@ -716,18 +716,23 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             : target;
         var targetName = target[KeyStrings.name];
         var boundName = $"bound {(targetName.IsString ? targetName.StringValue : string.Empty)}";
-        // SetFunctionLength: only a Number-valued "length" contributes; a non-Number (e.g. a Symbol
-        // or string) is ignored and the bound function's length defaults to 0 — reading it must not
-        // attempt a ToNumber coercion that would throw (e.g. on a Symbol).
-        var targetLengthValue = target[KeyStrings.length];
+        // SetFunctionLength: the bound length is derived from the target's "length" only when it is an
+        // OWN property (HasOwnProperty) whose value is a Number; a missing-own or non-Number (Symbol,
+        // string, …) length is ignored and the bound length defaults to 0. Reading it must not attempt a
+        // ToNumber coercion that would throw (e.g. on a Symbol), and an inherited "length" must not leak.
         var boundArgsLength = Math.Max(a.Length - 1, 0);
         double boundLength = 0;
-        if (targetLengthValue.IsNumber)
+        if (target is JSObject targetObject
+            && !targetObject.GetOwnPropertyDescriptor(KeyStrings.length.ToJSValue()).IsUndefined)
         {
-            var targetLength = targetLengthValue.DoubleValue;
-            boundLength = double.IsNaN(targetLength) || targetLength <= 0
-                ? 0
-                : Math.Max(Math.Floor(targetLength) - boundArgsLength, 0);
+            var targetLengthValue = target[KeyStrings.length];
+            if (targetLengthValue.IsNumber)
+            {
+                var targetLength = targetLengthValue.DoubleValue;
+                boundLength = double.IsNaN(targetLength) || targetLength <= 0
+                    ? 0
+                    : Math.Max(Math.Floor(targetLength) - boundArgsLength, 0);
+            }
         }
         var copy = a;
         var fx = new JSFunction((in Arguments a2) => { return target.InvokeFunction(copy.CopyForBind(a2)); }, StringSpan.Empty, StringSpan.Empty, 0, createPrototype: false)
