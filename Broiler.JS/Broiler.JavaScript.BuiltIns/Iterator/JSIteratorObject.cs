@@ -63,12 +63,48 @@ public partial class JSIteratorObject : JSObject
             ?? ((iteratorConstructor as JSFunction)?.prototype);
     }
 
-    internal JSIteratorObject(IElementEnumerator enumerator) : this() => _enumerator = enumerator;
+    internal JSIteratorObject(IElementEnumerator enumerator) : this(HelperPrototype()) => _enumerator = enumerator;
+
+    // An engine iterator with an explicitly chosen prototype (the %WrapForValidIteratorPrototype%
+    // used by Iterator.from, vs the %IteratorHelperPrototype% used by map/filter/…).
+    internal JSIteratorObject(JSObject prototype, IElementEnumerator enumerator) : this(prototype) => _enumerator = enumerator;
+
+    // %IteratorHelperPrototype% and %WrapForValidIteratorPrototype% are per-realm objects whose
+    // [[Prototype]] is that realm's %Iterator.prototype%; they (not the base prototype) carry next /
+    // return. Keyed by the base prototype so each realm resolves its own pair. (Stored off-object so
+    // they do not appear among %Iterator.prototype%'s own properties, which test262 pins exactly.)
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSObject, JSObject> HelperPrototypes = new();
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSObject, JSObject> WrapPrototypes = new();
+
+    internal static void RegisterHelperPrototypes(JSObject baseProto, JSObject helperProto, JSObject wrapProto)
+    {
+        HelperPrototypes.AddOrUpdate(baseProto, helperProto);
+        WrapPrototypes.AddOrUpdate(baseProto, wrapProto);
+    }
+
+    private static JSObject BaseIteratorPrototype()
+        => ((JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Iterator")] as JSFunction)?.prototype;
+
+    private static JSObject HelperPrototype()
+    {
+        var b = BaseIteratorPrototype();
+        return b != null && HelperPrototypes.TryGetValue(b, out var h) ? h : b;
+    }
+
+    private static JSObject WrapPrototype()
+    {
+        var b = BaseIteratorPrototype();
+        return b != null && WrapPrototypes.TryGetValue(b, out var w) ? w : b;
+    }
 
     // ---------------------------------------------------------------
     // Iterator protocol – next / return
+    //
+    // These are NOT exported onto %Iterator.prototype%; they are registered on
+    // %IteratorHelperPrototype% / %WrapForValidIteratorPrototype% (see IteratorPrototypeSetup), so the
+    // base %Iterator.prototype% has no own "next"/"return" (per spec, and so its @@dispose finds no
+    // "return" to call).
     // ---------------------------------------------------------------
-    [JSExport("next")]
     internal JSValue Next(in Arguments a)
     {
         ThrowIfExecuting();
@@ -88,7 +124,6 @@ public partial class JSIteratorObject : JSObject
         return IteratorResult(JSUndefined.Value, true);
     }
 
-    [JSExport("return")]
     internal JSValue Return(in Arguments a)
     {
         var value = a.Length > 0 ? a.Get1() : JSUndefined.Value;
@@ -155,15 +190,17 @@ public partial class JSIteratorObject : JSObject
         if (obj is JSIteratorObject)
             return obj;
 
+        // A wrapper produced by Iterator.from uses %WrapForValidIteratorPrototype% (next / return,
+        // but no own @@toStringTag — it inherits "Iterator" from %Iterator.prototype%).
         if (obj.IsString)
-            return new JSIteratorObject(obj.GetElementEnumerator());
+            return new JSIteratorObject(WrapPrototype(), obj.GetElementEnumerator());
 
         if (obj is not JSObject @object)
             throw JSEngine.NewTypeError("Iterator.from requires an iterable or iterator argument");
 
         var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];
         if (iteratorMethod.IsNull || iteratorMethod.IsUndefined)
-            return new JSIteratorObject(GetDirectEnumerator(@object));
+            return new JSIteratorObject(WrapPrototype(), GetDirectEnumerator(@object));
 
         if (!iteratorMethod.IsFunction)
             throw JSEngine.NewTypeError("Iterator.from requires a callable @@iterator");
@@ -172,7 +209,7 @@ public partial class JSIteratorObject : JSObject
         if (!iterator.IsObject)
             throw JSEngine.NewTypeError("Iterator.from requires an object iterator result");
 
-        return new JSIteratorObject(new JSIterator(iterator));
+        return new JSIteratorObject(WrapPrototype(), new JSIterator(iterator));
     }
 
     // ---------------------------------------------------------------

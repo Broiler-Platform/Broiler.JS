@@ -318,8 +318,9 @@ internal static class BuiltInsAssemblyInitializer
         // does not directly reference JSIteratorObject.
         DefaultBuiltInRegistry.IteratorPrototypeSetup = static proto =>
         {
-            DefaultBuiltInRegistry.AddProto(proto, "next", JSIteratorObject.StaticNext, 0);
-            DefaultBuiltInRegistry.AddProto(proto, "return", JSIteratorObject.StaticReturn, 1);
+            // Per spec %Iterator.prototype% itself carries neither "next" nor "return"; those live on
+            // %IteratorHelperPrototype% / %WrapForValidIteratorPrototype% (created below). Only the
+            // iterator-helper methods, @@dispose, @@iterator and @@toStringTag sit on the base.
             DefaultBuiltInRegistry.AddProto(proto, "map", JSIteratorObject.StaticMap, 1);
             DefaultBuiltInRegistry.AddProto(proto, "filter", JSIteratorObject.StaticFilter, 1);
             DefaultBuiltInRegistry.AddProto(proto, "take", JSIteratorObject.StaticTake, 1);
@@ -363,6 +364,22 @@ internal static class BuiltInsAssemblyInitializer
                     return JSUndefined.Value;
                 }, "set [Symbol.toStringTag]", 1),
                 JSPropertyAttributes.ConfigurableProperty);
+
+            // %IteratorHelperPrototype% (the prototype of map/filter/take/drop/flatMap results):
+            // next / return plus a "Iterator Helper" @@toStringTag, inheriting from %Iterator.prototype%.
+            var helperProto = new JSObject { BasePrototypeObject = proto };
+            DefaultBuiltInRegistry.AddProto(helperProto, "next", JSIteratorObject.StaticNext, 0);
+            DefaultBuiltInRegistry.AddProto(helperProto, "return", JSIteratorObject.StaticReturn, 1);
+            helperProto.FastAddValue((IJSSymbol)JSSymbol.toStringTag,
+                JSValue.CreateString("Iterator Helper"), JSPropertyAttributes.ConfigurableReadonlyValue);
+
+            // %WrapForValidIteratorPrototype% (the prototype of Iterator.from wrappers): next / return,
+            // and no own @@toStringTag (so it inherits "Iterator" from %Iterator.prototype%).
+            var wrapProto = new JSObject { BasePrototypeObject = proto };
+            DefaultBuiltInRegistry.AddProto(wrapProto, "next", JSIteratorObject.StaticNext, 0);
+            DefaultBuiltInRegistry.AddProto(wrapProto, "return", JSIteratorObject.StaticReturn, 1);
+
+            JSIteratorObject.RegisterHelperPrototypes(proto, helperProto, wrapProto);
         };
 
         // Wire factory delegates for JSPromise so Core can create
