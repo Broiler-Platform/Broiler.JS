@@ -543,8 +543,17 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             // function's own .prototype (%Object.prototype%) would make
             // `new Object(1).constructor` resolve to Object instead of Number.
             var subclassing = previousNewTarget != null && !ReferenceEquals(previousNewTarget, this);
+            // When not subclassing, a native constructor that returns an object which already carries its
+            // own correct prototype must keep it rather than have this function's .prototype
+            // (%Object.prototype%) forced onto it. This covers a boxed primitive (Number/String/Boolean
+            // wrapper or a Symbol object) and `Object(value)` performing ToObject, which returns the
+            // *existing* argument object unchanged — clobbering its prototype would corrupt it (e.g.
+            // resetting a passed-in Date's prototype, or making `new Object(1).constructor` → Object).
+            // A freshly-allocated exotic instance (typed arrays, etc.) is returned distinct from the
+            // argument list and still receives the newTarget-derived prototype below.
             var keepsOwnPrototype = !subclassing
-                && (r is JSPrimitiveObject || r is Broiler.JavaScript.BuiltIns.Symbol.JSSymbolObject);
+                && (r is JSPrimitiveObject || r is Broiler.JavaScript.BuiltIns.Symbol.JSSymbolObject
+                    || ReturnedAnInputArgument(r, a));
             if ((!IsOrdinaryUserFunction && !keepsOwnPrototype) || ReferenceEquals(r, obj))
             {
                 if (deferInstancePrototypeResolution && previousNewTarget != null)
@@ -557,6 +566,19 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         }
 
         return obj;
+    }
+
+    // True when the constructor returned one of its own (positional) arguments — i.e. an object it did
+    // not allocate, such as `Object(existingObject)` returning that object via ToObject. Such a
+    // passthrough already has its own prototype and must not have the constructor's .prototype forced
+    // onto it.
+    private static bool ReturnedAnInputArgument(JSValue result, in Arguments a)
+    {
+        for (var i = 0; i < a.Length; i++)
+            if (ReferenceEquals(a.GetAt(i), result))
+                return true;
+
+        return false;
     }
 
     public JSValue InvokeSuper(in Arguments a)
