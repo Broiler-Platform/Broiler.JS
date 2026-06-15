@@ -650,6 +650,8 @@ public partial class JSTemporalPlainDate : JSObject
         if (!match.Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
 
+        TemporalIsoString.RejectTimeTailForCalendarOnly(match, text);
+
         var year = int.Parse(match.Groups[1].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
         var month = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
         var day = int.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture);

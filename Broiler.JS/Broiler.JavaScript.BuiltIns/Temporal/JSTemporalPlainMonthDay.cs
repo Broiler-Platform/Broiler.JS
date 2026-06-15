@@ -328,6 +328,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         var full = FullDatePattern.Match(text);
         if (full.Success)
         {
+            TemporalIsoString.RejectTimeTailForCalendarOnly(full, text);
             var fm = int.Parse(full.Groups[2].Value, CultureInfo.InvariantCulture);
             var fd = int.Parse(full.Groups[3].Value, CultureInfo.InvariantCulture);
             if (!IsValidISODate(DefaultReferenceYear, fm, fd))

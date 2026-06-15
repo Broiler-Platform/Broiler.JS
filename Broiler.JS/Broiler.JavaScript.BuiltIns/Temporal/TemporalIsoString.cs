@@ -28,8 +28,28 @@ internal static class TemporalIsoString
     // smallest (seconds) component, then an optional Z or numeric UTC offset. Mirrors the strict
     // PlainDateTime time grammar so the date-only parsers reject a fraction on the minutes or hours.
     internal const string TimeAndOffsetTail =
-        @"(?:[Tt ]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?" +
-        @"(?:[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?";
+        @"(?:[Tt ](?<th>\d{2})(?::?(?<tmin>\d{2})(?::?(?<tsec>\d{2})(?:[.,]\d{1,9})?)?)?" +
+        @"(?<toffset>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?";
+
+    // The calendar-only parsers (PlainDate / PlainYearMonth / PlainMonthDay) discard the optional
+    // time tail captured by TimeAndOffsetTail, but a string is still rejected (RangeError) when it
+    // carries a UTC (Z) designator — these types have no time zone — or an out-of-range wall-clock
+    // time component. (Spec ToTemporalDate / ToTemporalYearMonth / ToTemporalMonthDay: the parsed
+    // [[Z]] flag and an invalid time both throw, even though the time-of-day itself is unused.)
+    internal static void RejectTimeTailForCalendarOnly(Match m, string text)
+    {
+        var offset = m.Groups["toffset"];
+        if (offset.Success && (offset.Value == "Z" || offset.Value == "z"))
+            throw JSEngine.NewRangeError($"Temporal: \"{text}\" has a UTC (Z) designator but no time zone");
+
+        var h = m.Groups["th"];
+        if (!h.Success) return;
+        var hour = int.Parse(h.Value, CultureInfo.InvariantCulture);
+        var minute = m.Groups["tmin"].Success ? int.Parse(m.Groups["tmin"].Value, CultureInfo.InvariantCulture) : 0;
+        var second = m.Groups["tsec"].Success ? int.Parse(m.Groups["tsec"].Value, CultureInfo.InvariantCulture) : 0;
+        if (hour > 23 || minute > 59 || second > 60)
+            throw JSEngine.NewRangeError($"Temporal: \"{text}\" has an out-of-range time component");
+    }
 
     // Trailing [..] annotations (a time-zone annotation and/or one or more key=value annotations).
     internal const string AnnotationsTail = @"(?:\[[^\]]*\])*";
@@ -180,6 +200,7 @@ internal static class TemporalIsoString
         if (dt.Success)
         {
             if (!IsValidDate(dt.Groups["y"].Value, dt.Groups["mo"].Value, dt.Groups["d"].Value)) return false;
+            if (dt.Groups["h"].Success && !IsValidTime(dt)) return false;
             FillTime(ref parsed, dt);
             return true;
         }

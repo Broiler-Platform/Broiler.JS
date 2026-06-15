@@ -616,6 +616,8 @@ public partial class JSTemporalPlainYearMonth : JSObject
         if (!match.Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainYearMonth from \"{text}\"");
 
+        TemporalIsoString.RejectTimeTailForCalendarOnly(match, text);
+
         var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
         var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
 

@@ -33,6 +33,42 @@ public class TemporalFromOverflowOrderTests
         Assert.Equal("true|", result.ToString());
     }
 
+    [Theory]
+    // UTC (Z) designator — these calendar-only types have no time zone (problems 22, 23).
+    [InlineData("PlainDate", "2020-01-01T00:00Z")]
+    [InlineData("PlainYearMonth", "2020-01-01T00:00Z")]
+    [InlineData("PlainMonthDay", "01-01T00:00Z")]
+    // Out-of-range wall-clock time component, even though the time is discarded (problem 5).
+    [InlineData("PlainDate", "2020-01-01T25:00:00")]
+    [InlineData("PlainDate", "2020-01-01T00:99:00")]
+    [InlineData("PlainYearMonth", "2020-01-01T25:00:00")]
+    [InlineData("PlainMonthDay", "01-01T25:00:00")]
+    public void From_InvalidTimeTail_ThrowsRangeError(string type, string arg)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval($$"""
+            var threw = false;
+            try { Temporal.{{type}}.from("{{arg}}"); } catch (e) { threw = e instanceof RangeError; }
+            threw;
+        """);
+        Assert.True(result.BooleanValue);
+    }
+
+    [Theory]
+    // A numeric UTC offset (not a Z designator) and an in-range time are accepted and discarded.
+    [InlineData("PlainDate", "2020-01-01T23:59:60+05:00", "2020-01-01")]
+    [InlineData("PlainYearMonth", "2020-01-01T12:30:00", "2020-01")]
+    public void From_ValidTimeTail_IsAccepted(string type, string arg, string expected)
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval($$"""
+            Temporal.{{type}}.from("{{arg}}").toString();
+        """);
+        Assert.Equal(expected, result.ToString());
+    }
+
     [Fact]
     public void PlainDateFrom_PlainDateTime_UsesSlotsNotGetters()
     {
