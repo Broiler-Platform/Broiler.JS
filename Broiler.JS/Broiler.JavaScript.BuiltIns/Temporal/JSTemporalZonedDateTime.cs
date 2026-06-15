@@ -759,6 +759,12 @@ public partial class JSTemporalZonedDateTime : JSObject
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: cannot compute the difference between date-times of different calendars");
         var (largestUnit, smallestUnit, increment, roundingMode) = ReadZonedDifferenceSettings(options);
 
+        // A calendar-unit largestUnit (year/month/week/day) differences the dates in the receiver's
+        // time zone, which is only meaningful when both operands share that zone; the IANA identifiers
+        // are compared canonically (so e.g. "Asia/Calcutta" and "Asia/Kolkata" are the same zone).
+        if (!IsTimeUnit(largestUnit) && !TimeZoneEquals(timeZoneId, other.timeZoneId))
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: cannot compute a calendar-unit difference between date-times in different time zones");
+
         var result = IsTimeUnit(largestUnit)
             ? DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, sign < 0 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode)
             : DifferenceCalendar(epochNanoseconds, other.epochNanoseconds, largestUnit);
