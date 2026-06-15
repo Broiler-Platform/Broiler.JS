@@ -87,7 +87,10 @@ public partial class JSArrayBuffer : JSObject
         if (value == null || value.IsUndefined)
             return defaultValue;
 
-        var number = ToNumberPrimitive(value).DoubleValue;
+        // ToIndex: ToIntegerOrInfinity truncates toward zero FIRST, so a fractional value in (-1, 0)
+        // (e.g. -0.5) becomes -0 → 0 rather than a RangeError; only then is the sign / upper bound
+        // (2^53-1) checked on the resulting integer.
+        var number = Math.Truncate(ToNumberPrimitive(value).DoubleValue);
         if (double.IsNaN(number) || number == 0)
             return 0;
 
