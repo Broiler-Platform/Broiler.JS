@@ -21,6 +21,8 @@ public class Issue810ArraySortPrimitiveThisTests
     [InlineData("[].sort.call(false) instanceof Boolean", "true")]
     [InlineData("[].sort.call(0) instanceof Number", "true")]
     [InlineData("[].sort.call('') instanceof String", "true")]
+    [InlineData("[].sort.call(Symbol()) instanceof Symbol", "true")]
+    [InlineData("[].sort.call(0n) instanceof BigInt", "true")]
     public void Sort_BoxesPrimitiveReceiver(string expr, string expected)
         => Assert.Equal(expected, Eval($"String({expr});"));
 

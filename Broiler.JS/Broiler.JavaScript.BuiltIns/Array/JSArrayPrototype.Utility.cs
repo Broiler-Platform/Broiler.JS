@@ -173,7 +173,7 @@ public partial class JSArray
         var length = GetArrayLikeLength(source);
         var result = new JSArray(length);
         for (uint i = 0; i < length; i++)
-            result[i] = source[length - i - 1];
+            CreateDataPropertyOrThrow(result, i, source[length - i - 1]);
         return result;
     }
 
@@ -205,7 +205,7 @@ public partial class JSArray
 
         var result = new JSArray(len);
         for (uint index = 0; index < len; index++)
-            SetIndexedValue(result, index, values[(int)index]);
+            CreateDataPropertyOrThrow(result, index, values[(int)index]);
 
         return result;
     }
@@ -287,11 +287,11 @@ public partial class JSArray
 
         uint i = 0;
         for (long s = 0; s < actualStart; s++)
-            result[i++] = source[(uint)s];
+            CreateDataPropertyOrThrow(result, i++, source[(uint)s]);
         for (int j = 0; j < insertCount; j++)
-            result[i++] = a[j + 2];
+            CreateDataPropertyOrThrow(result, i++, a[j + 2]);
         for (long k = actualStart + actualSkipCount; k < len; k++)
-            result[i++] = source[(uint)k];
+            CreateDataPropertyOrThrow(result, i++, source[(uint)k]);
 
         return result;
     }
@@ -315,7 +315,7 @@ public partial class JSArray
 
         var result = new JSArray(len);
         for (uint i = 0; i < len; i++)
-            result[i] = i == (uint)actualIndex ? value : source[i];
+            CreateDataPropertyOrThrow(result, i, i == (uint)actualIndex ? value : source[i]);
 
         return result;
     }
