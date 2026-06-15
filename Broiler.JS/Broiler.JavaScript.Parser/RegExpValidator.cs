@@ -127,6 +127,12 @@ internal static class RegExpValidator
                 pattern = NeutralizeAnnexBUndefinedNamedBackref(pattern);
             }
 
+            // ECMAScript permits a quantifier count up to 2^53-1, but .NET rejects any
+            // `{n}`/`{n,}`/`{n,m}` bound above Int32.MaxValue. Clamp before the compile
+            // check so a literal like /a{2147483648}/ is not mis-classified as division
+            // (the RegExp runtime applies the same clamp).
+            pattern = ClampLargeQuantifiers(pattern);
+
             _ = new Regex(pattern, options);
             return true;
         }
@@ -136,6 +142,86 @@ internal static class RegExpValidator
         }
     }
 
+
+    // Replaces any `{n}`/`{n,}`/`{n,m}` quantifier bound greater than Int32.MaxValue
+    // with Int32.MaxValue (a count that large can never be satisfied by real input,
+    // so observable behaviour is unchanged). Mirrors JSRegExp.ClampLargeQuantifiers.
+    private static string ClampLargeQuantifiers(string pattern)
+    {
+        if (pattern.IndexOf('{') < 0)
+            return pattern;
+
+        static bool ExceedsInt32(string s, int start, int end)
+        {
+            while (start < end - 1 && s[start] == '0')
+                start++;
+            const string Max = "2147483647"; // int.MaxValue, 10 digits
+            var len = end - start;
+            if (len != Max.Length)
+                return len > Max.Length;
+            return string.CompareOrdinal(s, start, Max, 0, Max.Length) > 0;
+        }
+
+        System.Text.StringBuilder sb = null;
+        bool inClass = false;
+        int i = 0;
+        while (i < pattern.Length)
+        {
+            var c = pattern[i];
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                sb?.Append(c).Append(pattern[i + 1]);
+                i += 2;
+                continue;
+            }
+
+            if (c == '[' && !inClass) inClass = true;
+            else if (c == ']' && inClass) inClass = false;
+
+            if (c == '{' && !inClass)
+            {
+                int j = i + 1, d1Start = j;
+                while (j < pattern.Length && char.IsAsciiDigit(pattern[j])) j++;
+                if (j > d1Start)
+                {
+                    int d1End = j, d2Start = -1, d2End = -1;
+                    if (j < pattern.Length && pattern[j] == ',')
+                    {
+                        j++;
+                        d2Start = j;
+                        while (j < pattern.Length && char.IsAsciiDigit(pattern[j])) j++;
+                        d2End = j;
+                    }
+
+                    if (j < pattern.Length && pattern[j] == '}')
+                    {
+                        bool clamp1 = ExceedsInt32(pattern, d1Start, d1End);
+                        bool clamp2 = d2Start >= 0 && d2End > d2Start && ExceedsInt32(pattern, d2Start, d2End);
+                        if (clamp1 || clamp2)
+                        {
+                            sb ??= new System.Text.StringBuilder(pattern.Length).Append(pattern, 0, i);
+                            sb.Append('{');
+                            sb.Append(clamp1 ? "2147483647" : pattern.Substring(d1Start, d1End - d1Start));
+                            if (d2Start >= 0)
+                            {
+                                sb.Append(',');
+                                if (d2End > d2Start)
+                                    sb.Append(clamp2 ? "2147483647" : pattern.Substring(d2Start, d2End - d2Start));
+                            }
+                            sb.Append('}');
+                            i = j + 1;
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            sb?.Append(c);
+            i++;
+        }
+
+        return sb?.ToString() ?? pattern;
+    }
 
     private static bool ContainsSurrogate(string pattern)
     {
