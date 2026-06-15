@@ -26,10 +26,19 @@ public partial class JSArray
 
         var t = a.This;
         var constructor = JSConstructorOperations.IsConstructor(t) && t is JSObject ctor ? ctor : null;
-        var iteratorMethod = JSValue.SymbolIterator == null ? JSUndefined.Value : f.PropertyOrUndefined(JSValue.SymbolIterator);
-        // A String is always iterable (by code point), even though @@iterator
-        // lookup on a primitive string value currently misses the prototype.
-        var useArrayLike = (iteratorMethod.IsUndefined || iteratorMethod.IsNull) && !f.IsString;
+        // GetMethod(items, @@iterator): a String normally resolves String.prototype[@@iterator] (via its
+        // wrapper) and iterates by code point, but if that method has been removed it must fall back to
+        // the array-like path (UTF-16 code units) rather than always iterating. Look the method up on the
+        // boxed string so a deleted/overridden @@iterator is observed.
+        JSValue iteratorMethod;
+        if (JSValue.SymbolIterator == null)
+            iteratorMethod = JSUndefined.Value;
+        else if (f.IsString)
+            iteratorMethod = ((JSObject)JSObject.CreatePrimitiveObject(f)).PropertyOrUndefined(JSValue.SymbolIterator);
+        else
+            iteratorMethod = f.PropertyOrUndefined(JSValue.SymbolIterator);
+
+        var useArrayLike = iteratorMethod.IsUndefined || iteratorMethod.IsNull;
 
         if (useArrayLike)
         {
