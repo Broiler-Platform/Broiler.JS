@@ -561,13 +561,16 @@ public partial class JSObject
                 continue;
 
             var key = JSObjectCoreExtensions.CallWith(callbackfn, JSValue.UndefinedValue, item, JSValue.CreateNumber(index));
-            var keyStr = key.ToString();
-            var group = result[keyStr];
+            // ToPropertyKey: a Symbol key stays a Symbol, everything else coerces to a String. Keep the
+            // key as a JSValue (not a CLR string) so the property store canonicalises an array-index name
+            // such as "4" to an integer index — otherwise the group is unreachable as result[4].
+            var keyValue = key is IJSSymbol ? key : JSValue.CreateString(key.StringValue);
+            var group = result[keyValue];
 
             if (group.IsNullOrUndefined)
             {
                 group = JSValue.CreateArray();
-                result.FastAddValue(keyStr, group, JSPropertyAttributes.EnumerableConfigurableValue);
+                result.FastAddValue(keyValue, group, JSPropertyAttributes.EnumerableConfigurableValue);
             }
 
             group.AddArrayItem(item);
