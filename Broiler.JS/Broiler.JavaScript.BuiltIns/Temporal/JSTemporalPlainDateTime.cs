@@ -784,8 +784,14 @@ public partial class JSTemporalPlainDateTime : JSObject
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
         var largestRaw = o[KeyStrings.GetOrCreate("largestUnit")];
-        string largestUnit = largestRaw.IsUndefined ? null
-            : largestRaw.StringValue is "auto" ? null : NormalizeUnit(largestRaw.StringValue);
+        // ToString the option exactly once (GetTemporalUnit) — reading StringValue twice would invoke
+        // a non-string option's toString twice, which the order-of-operations tests observe.
+        string largestUnit = null;
+        if (!largestRaw.IsUndefined)
+        {
+            var largestText = largestRaw.StringValue;
+            largestUnit = largestText is "auto" ? null : NormalizeUnit(largestText);
+        }
 
         var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
         var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
