@@ -182,8 +182,11 @@ public partial class JSTemporalZonedDateTime : JSObject
     [JSExport("inLeapYear")] public bool InLeapYear => NonIso
         ? TemporalCalendarMath.InLeapYear(calendarId, CalendarYmd().y)
         : IsLeapYear(Local().y);
-    [JSExport("weekOfYear")] public double WeekOfYear { get { var l = Local(); return IsoWeek(l.y, l.mo, l.d).week; } }
-    [JSExport("yearOfWeek")] public double YearOfWeek { get { var l = Local(); return IsoWeek(l.y, l.mo, l.d).year; } }
+    // Only the ISO calendar defines a week-numbering system; other calendars return undefined.
+    [JSExport("weekOfYear")] public JSValue WeekOfYear
+        { get { if (calendarId != "iso8601") return JSUndefined.Value; var l = Local(); return new JSNumber(IsoWeek(l.y, l.mo, l.d).week); } }
+    [JSExport("yearOfWeek")] public JSValue YearOfWeek
+        { get { if (calendarId != "iso8601") return JSUndefined.Value; var l = Local(); return new JSNumber(IsoWeek(l.y, l.mo, l.d).year); } }
 
     [JSExport("offsetNanoseconds")] public double OffsetNanosecondsValue => OffsetNanoseconds();
     [JSExport("offset")] public JSValue Offset => new JSString(FormatOffset(OffsetNanoseconds()));
