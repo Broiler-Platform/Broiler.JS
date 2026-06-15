@@ -583,7 +583,11 @@ public partial class JSArray : JSObject
             throw JSEngine.NewRangeError("Invalid length");
         }
 
-        if (IsFrozen() || IsLengthReadOnly())
+        // ArraySetLength only fails when "length" itself is non-writable; a merely
+        // non-extensible array (Object.preventExtensions) keeps a writable length, so
+        // assigning to it must succeed rather than throw. (A frozen array already has a
+        // read-only length, so IsLengthReadOnly covers that case.)
+        if (IsLengthReadOnly())
         {
             if (throwError)
                 throw JSEngine.NewTypeError("Cannot modify property length");
