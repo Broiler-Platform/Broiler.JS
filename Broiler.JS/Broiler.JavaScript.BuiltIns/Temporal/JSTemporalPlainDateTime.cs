@@ -33,9 +33,9 @@ public partial class JSTemporalPlainDateTime : JSObject
     [JSExport(Length = 3)]
     public JSTemporalPlainDateTime(in Arguments a) : base(ResolvePrototype())
     {
-        isoYear = ToIntegerWithTruncation(a.GetAt(0));
-        isoMonth = ToIntegerWithTruncation(a.GetAt(1));
-        isoDay = ToIntegerWithTruncation(a.GetAt(2));
+        isoYear = ToIntegerWithTruncationArgument(a.GetAt(0));
+        isoMonth = ToIntegerWithTruncationArgument(a.GetAt(1));
+        isoDay = ToIntegerWithTruncationArgument(a.GetAt(2));
         hour = ToIntegerWithTruncation(a.GetAt(3));
         minute = ToIntegerWithTruncation(a.GetAt(4));
         second = ToIntegerWithTruncation(a.GetAt(5));
@@ -694,6 +694,18 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (value == null || value.IsUndefined)
             return 0;
         var number = value.DoubleValue;
+        if (double.IsNaN(number) || double.IsInfinity(number))
+            throw JSEngine.NewRangeError("Temporal.PlainDateTime: component must be finite");
+        return (int)Math.Truncate(number);
+    }
+
+    // The constructor's required date arguments (isoYear/isoMonth/isoDay) are coerced with
+    // ToIntegerWithTruncation (ToNumber first), so an absent / undefined argument (NaN) is a
+    // RangeError rather than silently defaulting to 0 (which is only correct for the optional time
+    // components handled by the overload above).
+    private static int ToIntegerWithTruncationArgument(JSValue value)
+    {
+        var number = value == null ? double.NaN : value.DoubleValue;
         if (double.IsNaN(number) || double.IsInfinity(number))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: component must be finite");
         return (int)Math.Truncate(number);

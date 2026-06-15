@@ -31,9 +31,9 @@ public partial class JSTemporalPlainDate : JSObject
     [JSExport(Length = 3)]
     public JSTemporalPlainDate(in Arguments a) : base(ResolvePrototype())
     {
-        isoYear = ToIntegerWithTruncation(a.GetAt(0));
-        isoMonth = ToIntegerWithTruncation(a.GetAt(1));
-        isoDay = ToIntegerWithTruncation(a.GetAt(2));
+        isoYear = ToIntegerWithTruncationArgument(a.GetAt(0));
+        isoMonth = ToIntegerWithTruncationArgument(a.GetAt(1));
+        isoDay = ToIntegerWithTruncationArgument(a.GetAt(2));
         calendarId = CanonicalizeCalendar(a.GetAt(3));
 
         if (!IsValidISODate(isoYear, isoMonth, isoDay))
@@ -165,9 +165,9 @@ public partial class JSTemporalPlainDate : JSObject
         if (a.GetAt(0) is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.with requires an object");
 
-        // A calendar field is not allowed in a with() bag.
-        if (!obj[KeyStrings.GetOrCreate("calendar")].IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.with does not accept a calendar field");
+        // The with()-bag must be a plain fields object: not a Temporal object and without a
+        // calendar / timeZone property (RejectObjectWithCalendarOrTimeZone).
+        TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
 
         // The non-Gregorian calendars merge the with-bag fields onto the receiver's calendar fields
         // and re-resolve in calendar space (see TemporalNonIso.WithToIso).
@@ -450,6 +450,19 @@ public partial class JSTemporalPlainDate : JSObject
             return 0;
 
         var number = value.DoubleValue; // ToNumber (throws TypeError for BigInt/Symbol)
+        if (double.IsNaN(number) || double.IsInfinity(number))
+            throw JSEngine.NewRangeError("Temporal.PlainDate: date component must be finite");
+
+        return (int)Math.Truncate(number);
+    }
+
+    // The PlainDate constructor's positional arguments are required: each is coerced with
+    // ToIntegerWithTruncation, which does ToNumber first, so an absent / undefined argument (NaN) — or
+    // a non-numeric string — is a RangeError rather than silently defaulting to 0. (The field-bag
+    // overload above keeps the undefined→0 shortcut for optional fields.)
+    private static int ToIntegerWithTruncationArgument(JSValue value)
+    {
+        var number = value == null ? double.NaN : value.DoubleValue; // ToNumber (TypeError for BigInt/Symbol)
         if (double.IsNaN(number) || double.IsInfinity(number))
             throw JSEngine.NewRangeError("Temporal.PlainDate: date component must be finite");
 

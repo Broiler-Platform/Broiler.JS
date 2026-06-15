@@ -86,8 +86,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
     {
         if (a.GetAt(0) is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires an object");
-        if (!obj[KeyStrings.GetOrCreate("calendar")].IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with does not accept a calendar field");
+        TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
