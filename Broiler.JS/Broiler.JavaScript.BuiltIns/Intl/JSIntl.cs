@@ -1651,6 +1651,58 @@ public sealed class JSIntlSegments : JSObject
             KeyStrings.GetOrCreate("containing"),
             new JSFunction(ContainingPrototype, "containing", "function containing() { [native code] }", createPrototype: false, length: 1),
             JSPropertyAttributes.ConfigurableValue);
+        // %Segments.prototype% [ @@iterator ] — a method (named "[Symbol.iterator]") returning a Segment
+        // Iterator over the segment data objects. Exposed as an own property so `segments[@@iterator]`
+        // is observable, in addition to the internal GetIterableEnumerator that backs for-of.
+        FastAddValue(
+            (IJSSymbol)JSSymbol.iterator,
+            JSValue.CreateFunction(static (in Arguments a) =>
+            {
+                if (a.This is not JSIntlSegments self)
+                    throw JSEngine.NewTypeError("%Segments.prototype%[Symbol.iterator] called on incompatible receiver");
+                return self.CreateSegmentIterator();
+            }, "[Symbol.iterator]", null, 0, false),
+            JSPropertyAttributes.ConfigurableValue);
+    }
+
+    // Creates a Segment Iterator: a one-shot iterator object whose next() walks the segment list and
+    // yields the same Segment Data objects as the for-of enumeration, and whose own @@iterator returns
+    // itself.
+    private JSValue CreateSegmentIterator()
+    {
+        var segments = this;
+        var list = Segments;
+        var index = 0;
+        var valueKey = KeyStrings.GetOrCreate("value");
+        var doneKey = KeyStrings.GetOrCreate("done");
+
+        var iterator = new JSObject();
+        iterator.FastAddValue(
+            KeyStrings.GetOrCreate("next"),
+            JSValue.CreateFunction((in Arguments a) =>
+            {
+                var result = new JSObject();
+                if (index < list.Count)
+                {
+                    var (start, length) = list[index];
+                    index++;
+                    result.FastAddValue(valueKey, segments.CreateSegmentDataObject(start, length), JSPropertyAttributes.EnumerableConfigurableValue);
+                    result.FastAddValue(doneKey, JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+                }
+                else
+                {
+                    result.FastAddValue(valueKey, JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
+                    result.FastAddValue(doneKey, JSValue.BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
+                }
+
+                return result;
+            }, "next", null, 0, false),
+            JSPropertyAttributes.ConfigurableValue);
+        iterator.FastAddValue(
+            (IJSSymbol)JSSymbol.iterator,
+            JSValue.CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false),
+            JSPropertyAttributes.ConfigurableValue);
+        return iterator;
     }
 
     private List<(int start, int length)> Segments => _segments ??= Compute(_input, _granularity);
