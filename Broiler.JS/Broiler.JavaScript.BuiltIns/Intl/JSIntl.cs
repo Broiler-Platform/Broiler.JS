@@ -1918,11 +1918,7 @@ public sealed class JSIntlDurationFormat : JSObject
         if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.format called on incompatible receiver");
 
-        var duration = a.Get1();
-        ValidateDurationArgument(duration);
-        if (duration is not JSObject durationObject)
-            return JSValue.CreateString(string.Empty);
-
+        var durationObject = ToDurationFormatRecord(a.Get1());
         return JSValue.CreateString(self.Format(durationObject));
     }
 
@@ -1931,11 +1927,8 @@ public sealed class JSIntlDurationFormat : JSObject
         if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.formatToParts called on incompatible receiver");
 
-        var duration = a.Get1();
-        ValidateDurationArgument(duration);
+        var durationObject = ToDurationFormatRecord(a.Get1());
         var parts = JSValue.CreateArray();
-        if (duration is not JSObject durationObject)
-            return parts;
 
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
@@ -2159,17 +2152,24 @@ public sealed class JSIntlDurationFormat : JSObject
             ? (intl[KeyStrings.GetOrCreate("DurationFormat")] as JSFunction)?.prototype
             : null;
 
-    private static void ValidateDurationArgument(JSValue duration)
+    // ToDurationRecord(input): a String is parsed as an ISO 8601 / Temporal duration (an invalid string
+    // is a RangeError), an object's unit fields are read and validated directly, and any other type is a
+    // TypeError. Returns the object whose unit getters the formatter then reads (a parsed string yields a
+    // Temporal.Duration, which exposes the same year/month/…/nanosecond properties).
+    private static JSObject ToDurationFormatRecord(JSValue duration)
     {
-        // ToDurationRecord(input): a non-object input is a TypeError, except a String
-        // (which the spec parses; every invalid string form here is a RangeError).
-        if (duration is not JSObject durationObject)
-        {
-            if (duration.IsString)
-                throw JSEngine.NewRangeError("Invalid duration string");
-            throw JSEngine.NewTypeError("Duration argument must be an object or string");
-        }
+        if (duration.IsString)
+            return (JSObject)JSTemporalDuration.From(new Arguments(JSUndefined.Value, duration));
 
+        if (duration is not JSObject durationObject)
+            throw JSEngine.NewTypeError("Duration argument must be an object or string");
+
+        ValidateDurationArgument(durationObject);
+        return durationObject;
+    }
+
+    private static void ValidateDurationArgument(JSObject durationObject)
+    {
         var any = false;
         var hasPositive = false;
         var hasNegative = false;
