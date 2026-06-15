@@ -1225,18 +1225,24 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
     // Emulates ECMAScript's per-repetition capture reset: at the start of every
     // iteration of a quantified group, pop any stale capture of the synthetic
-    // (bjsgN) groups declared inside it via a balancing group, i.e. prepend
-    // "(?(bjsgN)(?<-bjsgN>))" to the group body. Without this, a \k<name>
-    // backreference to a same-named group from a previous iteration keeps matching
-    // (or the conditional in BuildNamedBackref fires on a group that should have
-    // been cleared), so e.g. /(?:(?:(?<x>a)|(?<x>b)|c)\k<x>){2}/ fails to match
-    // "aac". Only invoked for patterns that contain duplicate named groups.
+    // (bjsgN) groups declared inside it via a balancing group, i.e. run
+    // "(?(bjsgN)(?<-bjsgN>))" before the group body. The reset must run whichever
+    // alternative the iteration takes, so the original body is wrapped in a
+    // non-capturing group and the reset is prepended ahead of it —
+    // "(?:RESET(?:BODY)){2}" — otherwise the reset would bind to BODY's first
+    // alternative only and a later iteration taking another branch (e.g. the `z`
+    // in "(?:(?<a>x)|(?<a>y)|z){2}") would keep the stale capture, so a trailing
+    // \k<a> backreference would wrongly still match. Only invoked for patterns that
+    // contain duplicate named groups.
     private static string InjectQuantifierCaptureResets(string pattern)
     {
         // One frame per open group: the offset just after the group's header
         // (where a reset prologue would go) and the bjsg numbers declared inside it.
         var stack = new List<(int HeaderEnd, List<int> Inner)>();
-        var insertions = new List<(int Pos, List<int> Names)>();
+        // Each insertion is the text to splice in just before character Pos. A quantified
+        // group with inner duplicates contributes a "RESET(?:" prefix at its header and a
+        // matching ")" before its closing paren.
+        var insertions = new List<(int Pos, string Text, int Tie)>();
         var inClass = false;
 
         for (var i = 0; i < pattern.Length; i++)
@@ -1288,22 +1294,30 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
                 var next = i + 1 < pattern.Length ? pattern[i + 1] : '\0';
                 if ((next == '*' || next == '+' || next == '?' || next == '{') && frame.Inner.Count > 0)
-                    insertions.Add((frame.HeaderEnd, frame.Inner));
+                {
+                    var reset = new StringBuilder();
+                    foreach (var n in frame.Inner)
+                        reset.Append("(?(bjsg").Append(n).Append(")(?<-bjsg").Append(n).Append(">))");
+                    reset.Append("(?:"); // open the wrapper around the original body
+                    // Tie 0 prefix sorts before any close inserted at the same position; the
+                    // wrapper close (Tie 1) sorts before the group's own ')'.
+                    insertions.Add((frame.HeaderEnd, reset.ToString(), 0));
+                    insertions.Add((i, ")", 1));
+                }
             }
         }
 
         if (insertions.Count == 0)
             return pattern;
 
-        insertions.Sort((a, b) => a.Pos.CompareTo(b.Pos));
+        insertions.Sort((a, b) => a.Pos != b.Pos ? a.Pos.CompareTo(b.Pos) : a.Tie.CompareTo(b.Tie));
         var sb = new StringBuilder(pattern.Length + insertions.Count * 24);
         var ins = 0;
         for (var i = 0; i <= pattern.Length; i++)
         {
             while (ins < insertions.Count && insertions[ins].Pos == i)
             {
-                foreach (var n in insertions[ins].Names)
-                    sb.Append("(?(bjsg").Append(n).Append(")(?<-bjsg").Append(n).Append(">))");
+                sb.Append(insertions[ins].Text);
                 ins++;
             }
 
