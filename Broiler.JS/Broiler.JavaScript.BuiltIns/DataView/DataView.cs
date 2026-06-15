@@ -66,13 +66,16 @@ public partial class DataView : JSObject
         // resolved (deferred to JSFunction.CreateInstance's post-construction step), so a throwing
         // new.target `get prototype` accessor is not observed when the offset is out of range.
         var buffer = a[0] as JSArrayBuffer ?? throw JSEngine.NewTypeError("First argument to DataView constructor must be an ArrayBuffer.");
-        var byteOffset = a[1]?.IntValue ?? 0; //optional, if not available assign 0
+        // ToIndex(byteOffset): a fractional value truncates toward zero, NaN / undefined become 0, and
+        // a negative or non-integral-index value (e.g. -Infinity, +Infinity) is a RangeError — observed
+        // before the offset is range-checked against the buffer.
+        var byteOffset = ToIndex(a[1]); //optional, if not available assign 0
 
         var bufferByteLength = buffer.buffer.Length;
 
-        // ToIndex rejects negatives; an offset at the very end of the buffer is a
-        // valid zero-length view, so only offsets strictly past the end are errors.
-        if (byteOffset < 0 || byteOffset > bufferByteLength)
+        // An offset at the very end of the buffer is a valid zero-length view, so only offsets strictly
+        // past the end are errors.
+        if (byteOffset > bufferByteLength)
             throw JSEngine.NewRangeError("Start offset is outside the bounds of the buffer.");
 
         var byteLengthArg = a[2];
@@ -83,19 +86,36 @@ public partial class DataView : JSObject
             if (buffer.IsResizable)
                 isLengthTracking = true;
             else
-                explicitByteLength = bufferByteLength - byteOffset;
+                explicitByteLength = (int)(bufferByteLength - byteOffset);
         }
         else
         {
-            var byteLength = byteLengthArg.IntValue;
-            if (byteLength < 0 || byteOffset + byteLength > bufferByteLength)
+            var byteLength = ToIndex(byteLengthArg);
+            if (byteOffset + byteLength > bufferByteLength)
                 throw JSEngine.NewRangeError("Invalid DataView length.");
 
-            explicitByteLength = byteLength;
+            explicitByteLength = (int)byteLength;
         }
 
         this.buffer = buffer;
-        this.byteOffset = byteOffset;
+        this.byteOffset = (int)byteOffset;
+    }
+
+    // ToIndex (abstract operation): ToNumber the argument (observing valueOf), truncate toward zero,
+    // and require the result to be an integer index in [0, 2^53-1]; undefined / NaN map to 0 and a
+    // negative or out-of-range value (including ±Infinity) is a RangeError. Returned as a long so the
+    // buffer-bounds comparisons happen before the value is narrowed to the int offset/length fields.
+    private static long ToIndex(JSValue value)
+    {
+        if (value == null || value.IsUndefined)
+            return 0;
+
+        var number = value.DoubleValue;
+        var integer = double.IsNaN(number) ? 0 : Math.Truncate(number);
+        if (integer < 0 || integer > 9007199254740991d) // 2^53 - 1
+            throw JSEngine.NewRangeError("DataView offset or length is out of range.");
+
+        return (long)integer;
     }
 
     public DataView(JSArrayBuffer buffer, int byteOffset, int byteLength) : this()
