@@ -119,9 +119,9 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         var d = first.DoubleValue;
-        var r = new JSNumber(Math.Log(d + Math.Sqrt((d * d) - 1.0)));
-
-        return r;
+        // Math.Acosh is correctly rounded; the naive log(d + sqrt(d²−1)) loses precision for d near 1
+        // (cancellation in d²−1) and for large d (overflow of d²).
+        return new JSNumber(Math.Acosh(d));
     }
 
     [JSExport]
@@ -284,7 +284,19 @@ public partial class JSMath : JSObject
         // ±0 (and NaN) through unchanged.
         if (d == 0.0 || double.IsNaN(d))
             return new JSNumber(d);
-        return new JSNumber(Math.Exp(d) - 1.0);
+        var u = Math.Exp(d);
+        // |d| tiny: e^d rounds to 1, so e^d − 1 underflows to 0 and loses all precision; expm1(d) ≈ d.
+        if (u == 1.0)
+            return new JSNumber(d);
+        var um1 = u - 1.0;
+        var logU = Math.Log(u);
+        // When e^d overflowed to +∞ (logU = +∞) or underflowed to 0 (logU = −∞), the correction is
+        // undefined but u − 1 (= +∞ or −1) is already exact.
+        if (double.IsInfinity(logU))
+            return new JSNumber(um1);
+        // Accurate expm1 = (e^d − 1) · d / ln(e^d): the relative errors of (u − 1) and ln(u) cancel,
+        // giving a result good to ~1 ulp where the direct e^d − 1 would not.
+        return new JSNumber(um1 * d / logU);
     }
 
     [JSExport]
@@ -410,9 +422,9 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         var d = first.DoubleValue;
-        var r = Math.Log(d) / LN2;
-
-        return new JSNumber(r);
+        // Math.Log2 is correctly rounded (and returns exact integers for powers of two); the naive
+        // Math.Log(d) / LN2 carries an extra rounding error that can exceed the test tolerance.
+        return new JSNumber(Math.Log2(d));
     }
 
     [JSExport(Length = 2)]
