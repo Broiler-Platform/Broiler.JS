@@ -1048,7 +1048,11 @@ public partial class JSTemporalZonedDateTime : JSObject
     // The offset of this zone at the instant `epochNanoseconds`, in nanoseconds.
     private long OffsetNanoseconds() => GetOffsetNanosecondsFor(epochNanoseconds);
 
-    private long GetOffsetNanosecondsFor(BigInteger epochNs)
+    private long GetOffsetNanosecondsFor(BigInteger epochNs) => OffsetNanosecondsForInstant(timeZoneId, epochNs);
+
+    // GetOffsetNanosecondsFor(timeZone, instant) as a static helper (used by Temporal.Instant.toString):
+    // the UTC offset, in nanoseconds, that the given zone applies at the instant.
+    internal static long OffsetNanosecondsForInstant(string timeZoneId, BigInteger epochNs)
     {
         if (TryFixedOffset(timeZoneId, out var fixedNs))
             return fixedNs;
@@ -1062,6 +1066,20 @@ public partial class JSTemporalZonedDateTime : JSObject
         try { return (long)tz.GetUtcOffset(utc).Ticks * 100; }
         catch { return 0; }
     }
+
+    // ToTemporalTimeZoneIdentifier for a slot value supplied as a JSValue: a ZonedDateTime contributes
+    // its own zone; a String is a bare identifier or an ISO string carrying a time-zone designator;
+    // anything else is a TypeError and an unrecognized identifier a RangeError.
+    internal static string ToTimeZoneIdentifier(JSValue value)
+    {
+        if (value is JSTemporalZonedDateTime zdt) return zdt.timeZoneId;
+        if (value == null || !value.IsString)
+            throw JSEngine.NewTypeError("Temporal: time zone must be a string identifier");
+        return CanonicalizeTimeZone(value.ToString());
+    }
+
+    // Formats a UTC offset (nanoseconds) as ±HH:MM[:SS] for display.
+    internal static string FormatOffsetString(long offsetNs) => FormatOffset(offsetNs);
 
     // The offset to apply to a *local* wall-clock datetime (used when building from fields).
     private static long GetOffsetForLocal(string timeZoneId, int y, int mo, int d, int h, int mi, int s)
