@@ -214,8 +214,12 @@ internal static class TemporalNonIso
 
         if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
             throw JSEngine.NewTypeError($"{typeName}: missing month / monthCode");
-        if (!hasYear && monthCodeValue.IsUndefined)
-            throw JSEngine.NewTypeError($"{typeName}: month requires either monthCode or year");
+        // A numeric `month` is calendar/year-dependent in these calendars, so it is only meaningful
+        // with a `year`; supplying `month` without a year (even alongside a `monthCode`) is a
+        // TypeError — a required-field check that precedes any month/monthCode conflict or
+        // out-of-range value, which are RangeErrors.
+        if (!hasYear && !monthValue.IsUndefined)
+            throw JSEngine.NewTypeError($"{typeName}: month requires a year");
 
         if (hasYear)
         {
