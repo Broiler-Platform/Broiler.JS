@@ -831,9 +831,12 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (!IsTimeUnit(largestUnit) && !TimeZoneEquals(timeZoneId, other.timeZoneId))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: cannot compute a calendar-unit difference between date-times in different time zones");
 
+        // `since` is `-(until)`, so it rounds the (this→other) difference with the negated mode and
+        // negates the result below — matching the PlainDate/PlainDateTime difference.
+        var diffMode = sign < 0 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
         var result = IsTimeUnit(largestUnit)
-            ? DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, sign < 0 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode)
-            : DifferenceCalendar(epochNanoseconds, other.epochNanoseconds, largestUnit);
+            ? DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, diffMode)
+            : DifferenceCalendar(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, diffMode);
 
         if (sign < 0)
             result = new JSTemporalDuration(
@@ -873,7 +876,8 @@ public partial class JSTemporalZonedDateTime : JSObject
     // proposal's day-correction loop: the wall-clock time-of-day difference is combined with a
     // calendar date difference, correcting the intermediate date until the residual real time
     // runs in the same direction as the overall difference (which absorbs DST offset shifts).
-    private JSTemporalDuration DifferenceCalendar(BigInteger ns1, BigInteger ns2, string largestUnit)
+    private JSTemporalDuration DifferenceCalendar(BigInteger ns1, BigInteger ns2, string largestUnit,
+        string smallestUnit = "nanosecond", int increment = 1, string roundingMode = "trunc")
     {
         if (ns1 == ns2)
             return new JSTemporalDuration(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
@@ -916,6 +920,38 @@ public partial class JSTemporalZonedDateTime : JSObject
         else
         {
             (years, months, weeks, days) = DifferenceISODate(start.y, start.mo, start.d, iy, im, id, largestUnit);
+
+            // RoundRelativeDuration (calendar smallestUnit): round the date difference toward the
+            // requested unit, with the time-of-day folded into the boundary progress. This reuses the
+            // PlainDateTime day-axis nudge, which is exact when the day is 24 h (UTC / fixed-offset
+            // zones); a DST day length is not yet modelled here. Range-check the rounded boundary so an
+            // increment that pushes the end date past the representable range is a RangeError.
+            if (smallestUnit is "year" or "month" or "week" or "day")
+            {
+                if (smallestUnit == "day")
+                {
+                    // The nudge consults the end boundary (anchor + the next day-increment multiple)
+                    // only when the difference does not land exactly on it; building that boundary as a
+                    // date past the representable range (±10^8 days from the epoch) is a RangeError, per
+                    // AddDateTime in NudgeToCalendarUnit.
+                    var exact = residual == 0 && years == 0 && months == 0 && weeks == 0
+                        && (long)days % increment == 0;
+                    if (!exact)
+                    {
+                        var r1Days = JSTemporalPlainDate.AddDateGetDays(start.y, start.mo, start.d,
+                            (long)years, (long)months, (long)weeks, (long)days);
+                        var boundaryDays = r1Days + (long)increment * sign;
+                        if (boundaryDays is < -100_000_000 or > 100_000_000)
+                            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: rounding result is out of range");
+                    }
+                }
+
+                var (ry, rmo, rw, rd) = JSTemporalPlainDate.RoundDateTimeDateDifference(
+                    start.y, start.mo, start.d, (long)years, (long)months, (long)weeks, (long)days,
+                    end.y, end.mo, end.d, TimeOfDayNs(start), TimeOfDayNs(end),
+                    largestUnit, smallestUnit, increment, roundingMode);
+                return new JSTemporalDuration(ry, rmo, rw, rd, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
+            }
         }
         var time = BalanceTimeDuration(residual, "hour");
 
