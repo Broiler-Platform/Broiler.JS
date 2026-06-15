@@ -501,6 +501,9 @@ internal static class BuiltInsAssemblyInitializer
         PatchErrorConstructor(context, KeyStrings.ReferenceError, static (in Arguments a) => new JSReferenceError(in a), errorCtor);
         PatchErrorConstructor(context, KeyStrings.EvalError, static (in Arguments a) => new JSEvalError(in a), errorCtor);
         PatchErrorConstructor(context, KeyStrings.GetOrCreate("AggregateError"), static (in Arguments a) => new JSAggregateError(in a), errorCtor, 2);
+        // SuppressedError is an ordinary error constructor (its [[Prototype]] is Error) and, like the
+        // other error constructors, must be callable without `new` rather than throwing.
+        PatchErrorConstructor(context, KeyStrings.GetOrCreate("SuppressedError"), static (in Arguments a) => new JSSuppressedError(in a), errorCtor, 3);
     }
 
     private static void PatchLegacyDatePrototype(JSContext context)
