@@ -309,7 +309,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
     // extracted. The date portion may use the extended (YYYY-MM-DD) or basic (YYYYMMDD) form — but
     // not a mix — mirroring TemporalIsoString.DateTimePattern.
     private static readonly Regex FullDatePattern = new(
-        @"^(?:\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))" +
+        @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))" +
         TemporalIsoString.TimeAndOffsetTail + TemporalIsoString.AnnotationsTail + "$",
         RegexOptions.CultureInvariant);
 
@@ -333,16 +333,43 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (full.Success)
         {
             TemporalIsoString.RejectTimeTailForCalendarOnly(full, text);
+            var fy = int.Parse(full.Groups["y"].Value, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
             var fm = int.Parse(full.Groups["mo"].Value, CultureInfo.InvariantCulture);
             var fd = int.Parse(full.Groups["d"].Value, CultureInfo.InvariantCulture);
-            if (!IsValidISODate(DefaultReferenceYear, fm, fd))
+            if (!IsValidISODate(fy, fm, fd))
                 throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
-            return new JSTemporalPlainMonthDay(fm, fd, DefaultReferenceYear, calendarId, PlainMonthDayPrototype);
+
+            // The iso8601 calendar discards the parsed year and anchors against the leap-year reference
+            // (1972). Any other calendar keeps the parsed date as its reference (ToTemporalMonthDay
+            // string path: CreateTemporalMonthDay with referenceISOYear), so the date must be
+            // representable — RejectDateRange — before being projected to the calendar's month-day.
+            if (calendarId == "iso8601")
+                return new JSTemporalPlainMonthDay(fm, fd, DefaultReferenceYear, calendarId, PlainMonthDayPrototype);
+
+            var epochDays = TemporalNonIso.DaysFromCivil(fy, fm, fd);
+            if (epochDays < TemporalNonIso.MinEpochDays || epochDays > TemporalNonIso.MaxEpochDays)
+                throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
+
+            // A Gregorian-family calendar shares the ISO month-day (anchored to the leap-year reference);
+            // a non-Gregorian calendar projects the representable ISO date to its own month-day.
+            if (!TemporalCalendarMath.IsNonIso(calendarId))
+                return new JSTemporalPlainMonthDay(fm, fd, DefaultReferenceYear, calendarId, PlainMonthDayPrototype);
+
+            var (cy, cm, cd) = TemporalNonIso.CalendarYmd(calendarId, fy, fm, fd);
+            var monthCode = TemporalCalendarMath.MonthCode(calendarId, cy, cm);
+            var (ny, nm, nd) = TemporalNonIso.MonthDayFromCode(calendarId, monthCode, cd, "constrain");
+            return new JSTemporalPlainMonthDay(nm, nd, ny, calendarId, PlainMonthDayPrototype);
         }
 
         var match = MonthDayPattern.Match(text);
         if (!match.Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
+
+        // A bare month-day (no year) carries no reference year, so it can only denote an iso8601
+        // month-day; any other calendar annotation needs the full date format (ParseTemporalMonthDayString
+        // throws "MM-DD format is only valid with iso8601 calendar").
+        if (calendarId != "iso8601")
+            throw JSEngine.NewRangeError($"Temporal.PlainMonthDay: a non-iso8601 calendar requires a year in \"{text}\"");
 
         var month = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
         var day = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
