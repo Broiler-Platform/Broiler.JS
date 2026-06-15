@@ -499,8 +499,11 @@ public partial class JSTemporalPlainTime : JSObject
             return ToIntegerWithTruncation(v);
         }
 
-        var h = Field("hour"); var mi = Field("minute"); var s = Field("second");
-        var ms = Field("millisecond"); var us = Field("microsecond"); var ns = Field("nanosecond");
+        // ToTemporalTimeRecord reads the time fields in alphabetical order (each is read and coerced
+        // immediately), so the property accesses are observed as hour, microsecond, millisecond,
+        // minute, nanosecond, second.
+        var h = Field("hour"); var us = Field("microsecond"); var ms = Field("millisecond");
+        var mi = Field("minute"); var ns = Field("nanosecond"); var s = Field("second");
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainTime: object has no time properties");
