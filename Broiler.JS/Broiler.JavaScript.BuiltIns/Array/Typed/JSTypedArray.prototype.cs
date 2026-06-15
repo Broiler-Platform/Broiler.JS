@@ -417,9 +417,15 @@ partial class JSTypedArray
         {
             startIndex = n - 1;
         }
+        else if (startIndex < 0)
+        {
+            startIndex += n;
+        }
+
+        // A fromIndex more negative than -length leaves no elements to search (k stays < 0).
         if (startIndex < 0)
         {
-            startIndex = n + startIndex;
+            return JSNumber.MinusOne;
         }
 
         var i = (uint)startIndex;
