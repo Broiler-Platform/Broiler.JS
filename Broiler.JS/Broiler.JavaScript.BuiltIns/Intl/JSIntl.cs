@@ -3920,9 +3920,12 @@ public class JSIntlDateTimeFormat : JSObject
         {
             if (parts[i].Length == 2 && string.Equals(parts[i], key, StringComparison.OrdinalIgnoreCase))
             {
-                if (i + 1 < parts.Length && parts[i + 1].Length > 2)
-                    return parts[i + 1].ToLowerInvariant();
-                return null;
+                // A Unicode keyword value may span several subtags, e.g. "ca" → "islamic-tbla"; collect
+                // all following type subtags (length 3–8) until the next key (length 2) or extension end.
+                var value = new List<string>();
+                for (var j = i + 1; j < parts.Length && parts[j].Length > 2; j++)
+                    value.Add(parts[j].ToLowerInvariant());
+                return value.Count > 0 ? string.Join("-", value) : null;
             }
         }
         return null;
