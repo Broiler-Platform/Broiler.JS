@@ -433,25 +433,25 @@ public partial class JSIteratorObject : JSObject
         return result;
     }
 
+    // %IteratorHelperPrototype% / %WrapForValidIteratorPrototype% next/return require the Iterator Helper
+    // (or Wrap) brand: the receiver must be one of these engine iterator objects. A generator or any
+    // other object (e.g. helperProto.next.call(generator)) lacks the slot and is a TypeError — generators
+    // expose their OWN next/return via %GeneratorPrototype%, never these helper methods.
     internal static JSValue StaticNext(in Arguments a)
     {
         return a.This switch
         {
             JSIteratorObject iterator => iterator.Next(in a),
-            JSGenerator generator => generator.Next(in a),
-            _ => throw JSEngine.NewTypeError("Iterator.prototype.next called on incompatible receiver")
+            _ => throw JSEngine.NewTypeError("Iterator Helper next called on incompatible receiver")
         };
     }
 
     internal static JSValue StaticReturn(in Arguments a)
     {
-        // return() requires the iterator brand ([[Iterated]] / a generator state) — an arbitrary
-        // object (e.g. WrapForValidIteratorPrototype.return.call({})) is a TypeError.
         return a.This switch
         {
             JSIteratorObject iterator => iterator.Return(in a),
-            JSGenerator generator => generator.Return(in a),
-            _ => throw JSEngine.NewTypeError("Iterator.prototype.return called on incompatible receiver")
+            _ => throw JSEngine.NewTypeError("Iterator Helper return called on incompatible receiver")
         };
     }
 
