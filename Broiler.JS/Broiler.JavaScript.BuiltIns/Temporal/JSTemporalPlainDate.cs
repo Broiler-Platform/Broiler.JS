@@ -632,12 +632,42 @@ public partial class JSTemporalPlainDate : JSObject
             return ToNonIsoCalendarDate(obj, calendarId, nonIsoOverflow);
         }
 
-        var yearValue = obj[KeyStrings.GetOrCreate("year")];
-        var eraValue = obj[KeyStrings.GetOrCreate("era")];
-        var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
-        var monthValue = obj[KeyStrings.GetOrCreate("month")];
-        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        // PrepareCalendarFields: read each recognised field in alphabetical order — day, [era, eraYear,]
+        // month, monthCode, year — coercing it as it is read, so the property accesses are observed in
+        // that order. The iso8601 calendar has no eras, so era / eraYear are not fields and are not read
+        // for it. A malformed monthCode is rejected (RangeError) as it is read, before the year is
+        // coerced; a well-formed-but-unsuitable code's value is validated later in MonthFromCodeIso, so
+        // a bad year *type* is a TypeError ahead of it.
+        var hasEras = calendarId != "iso8601";
+
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
+        var day = dayValue.IsUndefined ? 0 : ToPositiveIntegerWithTruncation(dayValue);
+
+        JSValue eraValue = JSUndefined.Value;
+        JSValue eraYearValue = JSUndefined.Value;
+        string eraStr = null;
+        var eraYearInt = 0;
+        if (hasEras)
+        {
+            eraValue = obj[KeyStrings.GetOrCreate("era")];
+            eraStr = eraValue.IsUndefined ? null : eraValue.StringValue;
+            eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
+            eraYearInt = eraYearValue.IsUndefined ? 0 : ToIntegerWithTruncation(eraYearValue);
+        }
+
+        var monthValue = obj[KeyStrings.GetOrCreate("month")];
+        var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
+
+        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        string monthCodeStr = null;
+        if (!monthCodeValue.IsUndefined)
+        {
+            monthCodeStr = monthCodeValue.StringValue; // ToString once
+            ValidateMonthCodeSyntax(monthCodeStr);
+        }
+
+        var yearValue = obj[KeyStrings.GetOrCreate("year")];
+        var yearInt = yearValue.IsUndefined ? 0 : ToIntegerWithTruncation(yearValue);
 
         var hasYear = !yearValue.IsUndefined;
         var hasEra = !eraValue.IsUndefined;
@@ -651,21 +681,10 @@ public partial class JSTemporalPlainDate : JSObject
 
         var overflow = ReadOverflow(options);
 
-        // Coerce the fields in the spec order (day, month, monthCode-syntax, year) so that an invalid
-        // value surfaces in that order: a malformed monthCode is a RangeError before the year is
-        // coerced, but a bad year *type* is a TypeError before a well-formed-but-unsuitable monthCode
-        // (e.g. "M99L") is a RangeError (which is checked last, in MonthFromCodeIso).
-        var day = ToPositiveIntegerWithTruncation(dayValue);
-        var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
-        if (!monthCodeValue.IsUndefined)
-            ValidateMonthCodeSyntax(monthCodeValue.ToString());
-
         var isoYear = TemporalCalendar.ResolveIsoYear(calendarId,
-            hasYear, hasYear ? ToIntegerWithTruncation(yearValue) : 0,
-            hasEra, hasEra ? eraValue.StringValue : null,
-            hasEraYear, hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0);
+            hasYear, yearInt, hasEra, eraStr, hasEraYear, eraYearInt);
 
-        var month = monthCodeValue.IsUndefined ? monthFromMonth : MonthFromCodeIso(monthCodeValue.ToString());
+        var month = monthCodeValue.IsUndefined ? monthFromMonth : MonthFromCodeIso(monthCodeStr);
         if (monthFromMonth != -1 && !monthCodeValue.IsUndefined && monthFromMonth != month)
             throw JSEngine.NewRangeError("Temporal.PlainDate: month and monthCode disagree");
 
