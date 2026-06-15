@@ -995,29 +995,36 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         var sign = CompareISODate(ay, am, ad, by, bm, bd);
         if (sign == 0) return (0, 0, 0, 0);
-        var step = -sign;
+        var step = -sign; // +1 when the end is after the start
 
-        long years = by - ay;
-        var (my, mm, md) = AddYearsMonths(ay, am, ad, years, 0);
-        if (CompareISODate(my, mm, md, by, bm, bd) == step)
+        // Each candidate year/month offset is measured from the *original* start date, keeping its
+        // *unconstrained* day, not by stepping a constrained intermediate forward. This both avoids
+        // stranding the day at a short month in between (e.g. Dec 30 + N months landing on Feb 28 and
+        // over-counting the residual days) and makes a wrap such as Jan 29 + 1 month = Feb 29 surpass
+        // Feb 28, so it is not counted as a whole month. (Mirrors PlainDate's ISODateSurpasses.)
+        bool Surpasses(long yy, long mm)
         {
-            years -= step;
-            (my, mm, md) = AddYearsMonths(ay, am, ad, years, 0);
+            var total = (long)am - 1 + mm;
+            var ny = ay + yy + FloorDiv(total, 12);
+            var nm = (int)(((total % 12) + 12) % 12) + 1;
+            if (ny != by) return step * (ny - by) > 0;
+            if (nm != bm) return step * (nm - bm) > 0;
+            return step * (ad - bd) > 0;
         }
+
+        long years = 0;
+        var candidateYears = (long)by - ay;
+        if (candidateYears != 0) candidateYears -= step;
+        while (!Surpasses(candidateYears, 0)) { years = candidateYears; candidateYears += step; }
 
         long months = 0;
-        while (true)
-        {
-            var (ny, nm, nd) = AddYearsMonths(my, mm, md, 0, step);
-            var cmp = CompareISODate(ny, nm, nd, by, bm, bd);
-            if (cmp == step) break;
-            months += step; my = ny; mm = nm; md = nd;
-            if (cmp == 0) break;
-        }
-
-        var days = DaysFromCivil(by, bm, bd) - DaysFromCivil(my, mm, md);
+        var candidateMonths = (long)step;
+        while (!Surpasses(years, candidateMonths)) { months = candidateMonths; candidateMonths += step; }
 
         if (largestUnit == "month") { months += years * 12; years = 0; }
+
+        var (iy, im, id) = AddYearsMonths(ay, am, ad, years, months);
+        var days = DaysFromCivil(by, bm, bd) - DaysFromCivil(iy, im, id);
         return (years, months, 0, days);
     }
 
