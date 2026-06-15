@@ -57,9 +57,9 @@ public partial class JSArray
                     value = map.InvokeFunction(new Arguments(mapThis, value, new JSNumber(i)));
 
                 // Spec: CreateDataPropertyOrThrow — defines a fresh writable/enumerable/
-                // configurable data property, overwriting a non-writable existing one
-                // (rather than Set, which would throw on a non-writable target prop).
-                arrayLikeResult.CreateDataProperty(JSValue.CreateNumber(i), value);
+                // configurable data property; a failed define (e.g. a non-configurable existing
+                // element, or a non-extensible target) is a TypeError, not a silent no-op.
+                CreateDataPropertyOrThrow(arrayLikeResult, i, value);
             }
 
             if (arrayLikeResult is JSArray arrayLikeArray)
@@ -92,7 +92,7 @@ public partial class JSArray
                 if (!map.IsUndefined)
                     item = map.InvokeFunction(new Arguments(mapThis, item, new JSNumber(index)));
 
-                r.CreateDataProperty(JSValue.CreateNumber(index++), item);
+                CreateDataPropertyOrThrow(r, index++, item);
             }
             catch
             {
