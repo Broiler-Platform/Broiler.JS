@@ -1236,23 +1236,23 @@ internal static class BuiltInsAssemblyInitializer
 
         static JSValue RegExpExec(JSValue rx, JSValue input)
         {
+            // §22.2.7.1 RegExpExec: a callable "exec" property is used; otherwise (it is absent or any
+            // non-callable value such as null or a number) fall back to the builtin RegExpBuiltinExec,
+            // which requires a real RegExp receiver. A non-callable "exec" is NOT an error.
             var exec = rx[KeyStrings.GetOrCreate("exec")];
-            if (exec.IsUndefined)
+            if (exec.IsFunction)
             {
-                if (rx is not JSRegExp regExp)
-                    throw JSEngine.NewTypeError("RegExp.prototype[Symbol.replace] called on incompatible receiver");
+                var result = exec.InvokeFunction(new Arguments(rx, input));
+                if (!result.IsObject && !result.IsNull)
+                    throw JSEngine.NewTypeError("RegExp exec result must be an object or null");
 
-                return regExp.Exec(new Arguments(rx, input));
+                return result;
             }
 
-            if (!exec.IsFunction)
-                throw JSEngine.NewTypeError("RegExp exec property is not callable");
+            if (rx is not JSRegExp regExp)
+                throw JSEngine.NewTypeError("RegExp.prototype[Symbol.replace] called on incompatible receiver");
 
-            var result = exec.InvokeFunction(new Arguments(rx, input));
-            if (!result.IsObject && !result.IsNull)
-                throw JSEngine.NewTypeError("RegExp exec result must be an object or null");
-
-            return result;
+            return regExp.Exec(new Arguments(rx, input));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
