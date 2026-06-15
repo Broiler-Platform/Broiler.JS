@@ -322,10 +322,35 @@ public partial class JSTemporalDuration
             JSTemporalZonedDateTime.ToTimeZoneIdentifier(relObj[KeyStrings.GetOrCreate("timeZone")]);
         }
 
+        ValidateRelativeBagTimeFields(rel);
+
         date = JSTemporalPlainDate.ToRelativeDate(rel);
         if (TemporalCalendarMath.IsNonIso(date.calendarId))
             throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{date.calendarId}\" calendar is not yet implemented");
         return true;
+    }
+
+    // A relativeTo *property bag* (not a Temporal object) has its wall-clock fields read and
+    // range-validated as part of ToRelativeTemporalObject, so a non-finite hour/minute/second/…
+    // is a RangeError even though only the date is ultimately consumed as a 24-hour-day relativeTo.
+    private static readonly string[] RelativeBagTimeFields =
+        { "hour", "minute", "second", "millisecond", "microsecond", "nanosecond" };
+
+    private static void ValidateRelativeBagTimeFields(JSValue rel)
+    {
+        if (rel is not JSObject bag) return;
+        if (rel is JSTemporalPlainDate or JSTemporalPlainDateTime or JSTemporalZonedDateTime
+            or JSTemporalPlainYearMonth or JSTemporalPlainMonthDay or JSTemporalPlainTime
+            or JSTemporalInstant or JSTemporalDuration) return;
+
+        foreach (var key in RelativeBagTimeFields)
+        {
+            var v = bag[KeyStrings.GetOrCreate(key)];
+            if (v == null || v.IsUndefined) continue;
+            var number = v.DoubleValue; // ToNumber → triggers the field's valueOf
+            if (double.IsNaN(number) || double.IsInfinity(number))
+                throw JSEngine.NewRangeError($"Temporal.Duration: relativeTo {key} must be finite");
+        }
     }
 
     // The end of this duration measured from relativeTo, on the nanosecond timeline (epoch days × a

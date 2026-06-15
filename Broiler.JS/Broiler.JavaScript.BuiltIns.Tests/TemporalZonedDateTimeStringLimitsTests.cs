@@ -87,4 +87,36 @@ public class TemporalZonedDateTimeStringLimitsTests
         using var ctx = new JSContext();
         Assert.Equal("2020-01-01", ctx.Eval("Temporal.PlainDate.from('20200101').toString();").ToString());
     }
+
+    // problem 29 — any non-finite field in a relativeTo property bag is a RangeError, including the
+    // wall-clock fields that are not otherwise used once the relativeTo resolves to a 24-hour-day date.
+    [Theory]
+    [InlineData("year")]
+    [InlineData("day")]
+    [InlineData("hour")]
+    [InlineData("minute")]
+    [InlineData("second")]
+    [InlineData("nanosecond")]
+    public void DurationRound_RelativeToBagInfiniteField_Throws(string prop)
+    {
+        Assert.True(Throws($$"""
+            const base = { year: 2000, month: 5, day: 2, hour: 15, minute: 30, second: 45, millisecond: 987, microsecond: 654, nanosecond: 321 };
+            new Temporal.Duration(1, 2, 3, 4, 5).round({ smallestUnit: "seconds", relativeTo: { ...base, {{prop}}: Infinity } });
+        """));
+    }
+
+    [Fact]
+    public void DurationRound_RelativeToBagInfiniteField_ReadsFieldOnce()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            const base = { year: 2000, month: 5, day: 2, hour: 15, minute: 30, second: 45 };
+            let calls = 0;
+            const obj = { valueOf() { calls++; return Infinity; } };
+            try { new Temporal.Duration(1, 2, 3, 4, 5).round({ smallestUnit: "seconds", relativeTo: { ...base, hour: obj } }); } catch (e) {}
+            calls;
+        """);
+        Assert.Equal(1, (int)result.DoubleValue);
+    }
 }
