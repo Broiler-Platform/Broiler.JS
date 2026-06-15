@@ -305,8 +305,11 @@ public partial class JSTemporalPlainMonthDay : JSObject
         @"^(?:--)?(\d{2})-?(\d{2})(?:\[[^\]]*\])*$",
         RegexOptions.CultureInvariant);
 
+    // A full calendar date (with an optional, discarded time tail) from which the month and day are
+    // extracted. The date portion may use the extended (YYYY-MM-DD) or basic (YYYYMMDD) form — but
+    // not a mix — mirroring TemporalIsoString.DateTimePattern.
     private static readonly Regex FullDatePattern = new(
-        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})" +
+        @"^(?:\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))" +
         TemporalIsoString.TimeAndOffsetTail + TemporalIsoString.AnnotationsTail + "$",
         RegexOptions.CultureInvariant);
 
@@ -330,8 +333,8 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (full.Success)
         {
             TemporalIsoString.RejectTimeTailForCalendarOnly(full, text);
-            var fm = int.Parse(full.Groups[2].Value, CultureInfo.InvariantCulture);
-            var fd = int.Parse(full.Groups[3].Value, CultureInfo.InvariantCulture);
+            var fm = int.Parse(full.Groups["mo"].Value, CultureInfo.InvariantCulture);
+            var fd = int.Parse(full.Groups["d"].Value, CultureInfo.InvariantCulture);
             if (!IsValidISODate(DefaultReferenceYear, fm, fd))
                 throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
             return new JSTemporalPlainMonthDay(fm, fd, DefaultReferenceYear, calendarId, PlainMonthDayPrototype);
