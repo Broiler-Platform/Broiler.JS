@@ -36,6 +36,15 @@ DEFAULT_BROILER_DLL = str(
 ALL_SHARDS = -1
 TEMP_DIRECTORY = Path(tempfile.gettempdir()) / "broiler-test262"
 UNSUPPORTED_FLAGS = {"module", "raw"}
+# Broiler's single agent can block: Atomics.wait reports a value mismatch or a timeout
+# instead of suspending (there is no second agent, and notify wakes no one), i.e. its
+# [[CanBlock]] is true. Tests guarded by the CanBlockIsFalse flag describe a host whose
+# agent cannot block — AgentCanSuspend() is false, so Atomics.wait must throw TypeError —
+# which is not this agent, so those tests do not apply and are skipped. The complementary
+# CanBlockIsTrue tests, which exercise the actual wait behaviour, do apply and run.
+HOST_AGENT_CAN_BLOCK = True
+INAPPLICABLE_FLAGS = {"CanBlockIsFalse"} if HOST_AGENT_CAN_BLOCK else {"CanBlockIsTrue"}
+SKIPPED_FLAGS = UNSUPPORTED_FLAGS | INAPPLICABLE_FLAGS
 TEST_FIXTURE_SUFFIX = "_FIXTURE.js"
 # No test262 feature is excluded: every feature is treated as either already
 # supported or something that must be implemented rather than skipped, so feature
@@ -376,7 +385,7 @@ def classify_test(
     metadata, _ = parse_metadata(source)
     flags = list(metadata["flags"])
     features = list(metadata["features"])
-    unsupported_flags = sorted(UNSUPPORTED_FLAGS & set(flags))
+    unsupported_flags = sorted(SKIPPED_FLAGS & set(flags))
     unsupported_features = sorted(UNSUPPORTED_FEATURES & set(features))
     negative = parse_negative_metadata(source)
     host_harness_blockers: list[str] = []
@@ -696,7 +705,7 @@ def run_test(
     source = repo.read_text(path)
     metadata, body = parse_metadata(source)
 
-    unsupported = sorted(UNSUPPORTED_FLAGS & set(metadata["flags"]))
+    unsupported = sorted(SKIPPED_FLAGS & set(metadata["flags"]))
     unsupported_features = sorted(UNSUPPORTED_FEATURES & set(metadata["features"]))
     if unsupported or unsupported_features:
         reasons: list[str] = []

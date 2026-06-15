@@ -533,6 +533,31 @@ includes: [assert.js, sta.js]
 
         self.assertEqual("skipped", result["status"])
 
+    def test_can_block_is_false_test_skipped(self) -> None:
+        # Broiler's agent can block, so a CanBlockIsFalse-flagged test (which assumes a
+        # host whose agent cannot block) is not applicable and is skipped.
+        path = self.write_test(
+            "test/built-ins/Atomics/wait/cannot-suspend.js",
+            "/*---\nflags: [CanBlockIsFalse]\n---*/\nthrow 0;\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        result = run_test262.run_test(
+            repo, TEST_ENGINE_PATH, path, {}, 30.0, 0,
+        )
+
+        self.assertEqual("skipped", result["status"])
+        self.assertIn("CanBlockIsFalse", result["reason"])
+
+    def test_can_block_is_true_test_not_skipped(self) -> None:
+        # The complementary CanBlockIsTrue tests exercise the real wait behaviour and
+        # remain script-host-verifiable.
+        classification = run_test262.classify_test(
+            "/*---\nflags: [CanBlockIsTrue]\n---*/\nok;\n"
+        )
+        self.assertEqual([], classification["unsupportedFlags"])
+        self.assertTrue(classification["isScriptHostVerifiable"])
+
     def test_build_summary_includes_new_metadata_fields(self) -> None:
         summary = run_test262.build_summary(
             TEST_SUITE_REF,
