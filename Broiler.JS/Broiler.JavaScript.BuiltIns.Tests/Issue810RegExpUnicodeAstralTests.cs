@@ -55,4 +55,30 @@ public class Issue810RegExpUnicodeAstralTests
     [Fact]
     public void NegatedAstralClass_DoesNotMatchTheExcludedAstralCharacter()
         => Assert.False(Test($"/[^{Centre}]/u.test('{Centre}')"));
+
+    // \u{...}-escaped astral members and ranges (problems 40 & 42): the scanner emits
+    // these as \uHHHH surrogate-escape pairs, which must also decode to whole code points.
+    [Fact]
+    public void BracedEscape_SingleAstral_Matches()
+        => Assert.True(Test(@"/[\u{1F438}]/u.test('\u{1F438}')"));
+
+    [Fact]
+    public void BracedEscape_MaxCodePoint_Matches()
+        => Assert.True(Test(@"/[\u{10FFFF}]/u.test('\u{10FFFF}')"));
+
+    [Theory]
+    [InlineData(@"\u{1F439}", true)]  // inside range
+    [InlineData(@"\u{1F438}", true)]  // lower bound
+    [InlineData(@"\u{1F43A}", true)]  // upper bound
+    [InlineData(@"\u{1F437}", false)] // below
+    [InlineData(@"\u{1F43B}", false)] // above
+    public void BracedEscape_AstralRange(string ch, bool expected)
+        => Assert.Equal(expected, Test($@"/[\u{{1F438}}-\u{{1F43A}}]/u.test('{ch}')"));
+
+    [Theory]
+    [InlineData(@"\u{10402}", true)]  // inside first sub-range
+    [InlineData(@"\u{1040A}", true)]  // inside second sub-range
+    [InlineData(@"\u{10406}", false)] // in the gap between the two sub-ranges
+    public void BracedEscape_MultipleAstralRanges(string ch, bool expected)
+        => Assert.Equal(expected, Test($@"/[\u{{10401}}-\u{{10404}}\u{{10408}}-\u{{1040B}}]/u.test('{ch}')"));
 }

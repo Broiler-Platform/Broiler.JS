@@ -140,10 +140,36 @@ internal static class RegExpValidator
     private static bool ContainsSurrogate(string pattern)
     {
         for (int i = 0; i < pattern.Length; i++)
+        {
             if (char.IsSurrogate(pattern[i]))
                 return true;
+
+            // The scanner emits an astral \u{...} escape as a \uHHHH surrogate-escape
+            // pair, so a \uHHHH escape whose value is itself a surrogate also defeats
+            // the raw .NET round-trip (an astral range becomes an invalid unit range).
+            if (pattern[i] == '\\' && i + 5 < pattern.Length && pattern[i + 1] == 'u'
+                && pattern[i + 2] != '{')
+            {
+                int v = 0;
+                bool hex = true;
+                for (int k = 0; k < 4; k++)
+                {
+                    int d = HexDigitValue(pattern[i + 2 + k]);
+                    if (d < 0) { hex = false; break; }
+                    v = (v << 4) | d;
+                }
+                if (hex && v >= 0xD800 && v <= 0xDFFF)
+                    return true;
+            }
+        }
         return false;
     }
+
+    private static int HexDigitValue(char c)
+        => c >= '0' && c <= '9' ? c - '0'
+         : c >= 'a' && c <= 'f' ? c - 'a' + 10
+         : c >= 'A' && c <= 'F' ? c - 'A' + 10
+         : -1;
 
     /// <summary>
     /// Performs lexer-time validation for regular expressions that use the
