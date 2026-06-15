@@ -133,13 +133,20 @@ public partial class JSTemporalDuration
         {
             var su = obj[KeyStrings.GetOrCreate("smallestUnit")];
             var lu = obj[KeyStrings.GetOrCreate("largestUnit")];
-            if (!lu.IsUndefined) largestUnit = NormalizeUnit(lu.StringValue, allowAuto: true);
+            var largestUnitProvided = !lu.IsUndefined;
+            if (largestUnitProvided) largestUnit = NormalizeUnit(lu.StringValue, allowAuto: true);
 
             var inc = obj[KeyStrings.GetOrCreate("roundingIncrement")];
             if (!inc.IsUndefined)
             {
+                // GetRoundingIncrementOption: ToIntegerWithTruncation(value) truncates a
+                // non-integer toward zero (so 2.5 -> 2) and only NaN / ±Infinity or an
+                // out-of-range [1, 1e9] result is a RangeError.
                 var n = inc.DoubleValue;
-                if (double.IsNaN(n) || double.IsInfinity(n) || n < 1 || n > 1_000_000_000 || Math.Truncate(n) != n)
+                if (double.IsNaN(n) || double.IsInfinity(n))
+                    throw JSEngine.NewRangeError("Temporal.Duration.round: invalid roundingIncrement");
+                n = Math.Truncate(n);
+                if (n < 1 || n > 1_000_000_000)
                     throw JSEngine.NewRangeError("Temporal.Duration.round: invalid roundingIncrement");
                 increment = n;
             }
@@ -148,7 +155,10 @@ public partial class JSTemporalDuration
             if (!rm.IsUndefined) roundingMode = NormalizeRoundingMode(rm.StringValue);
 
             if (!su.IsUndefined) smallestUnit = NormalizeUnit(su.StringValue, allowAuto: false);
-            if (smallestUnit == null && largestUnit == "auto")
+            // Step ordering aside, the receiver is only under-specified when *neither*
+            // smallestUnit nor largestUnit was supplied; an explicit largestUnit: "auto"
+            // is a valid largestUnit and must not be treated as missing.
+            if (smallestUnit == null && !largestUnitProvided)
                 throw JSEngine.NewRangeError("Temporal.Duration.round requires either smallestUnit or largestUnit");
         }
         else throw JSEngine.NewTypeError("Temporal.Duration.prototype.round requires an options object or string");

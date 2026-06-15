@@ -101,23 +101,22 @@ internal sealed class JSRegExpStringIterator : JSObject
 
     private JSValue RegExpExec()
     {
+        // RegExpExec: only a callable "exec" is invoked; any other value (undefined, null,
+        // or a non-callable primitive) falls back to the built-in RegExpBuiltinExec.
         var exec = regexp[KeyStrings.GetOrCreate("exec")];
-        if (exec.IsUndefined)
+        if (exec.IsFunction)
         {
-            if (regexp is not JSRegExp regExp)
-                throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] called on incompatible receiver");
+            var result = exec.InvokeFunction(new Arguments(regexp, input));
+            if (!result.IsObject && !result.IsNull)
+                throw JSEngine.NewTypeError("RegExp exec result must be an object or null");
 
-            return regExp.Exec(new Arguments(regexp, input));
+            return result;
         }
 
-        if (!exec.IsFunction)
-            throw JSEngine.NewTypeError("RegExp exec property is not callable");
+        if (regexp is not JSRegExp regExp)
+            throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] called on incompatible receiver");
 
-        var result = exec.InvokeFunction(new Arguments(regexp, input));
-        if (!result.IsObject && !result.IsNull)
-            throw JSEngine.NewTypeError("RegExp exec result must be an object or null");
-
-        return result;
+        return regExp.Exec(new Arguments(regexp, input));
     }
 
     private int GetObservableLastIndex()

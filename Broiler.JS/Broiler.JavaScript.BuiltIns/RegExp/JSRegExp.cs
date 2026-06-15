@@ -324,12 +324,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
     private JSValue ExecuteMatch(JSValue input)
     {
+        // RegExpExec: only a callable "exec" is invoked; any other value (undefined, null,
+        // or a non-callable primitive) falls back to the built-in RegExpBuiltinExec.
         var exec = this[KeyStrings.GetOrCreate("exec")];
-        if (exec.IsUndefined)
-            return Exec(new Arguments(this, input));
-
         if (!exec.IsFunction)
-            throw JSEngine.NewTypeError("RegExp exec property is not callable");
+            return Exec(new Arguments(this, input));
 
         var result = exec.InvokeFunction(new Arguments(this, input));
         if (!result.IsObject && !result.IsNull)
