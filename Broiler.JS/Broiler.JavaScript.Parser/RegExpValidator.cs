@@ -94,6 +94,18 @@ internal static class RegExpValidator
                 if (!RegExpUnicodeValidator.IsValidUnicodePattern(pattern))
                     return false;
                 pattern = NormalizeUnicodePropertyEscapes(pattern);
+
+                // A u-mode pattern that contains a surrogate code unit (an astral code
+                // point written literally, or a lone surrogate) cannot be validated by
+                // round-tripping the raw UTF-16 through a .NET Regex: .NET treats the
+                // surrogate code units individually, so an astral range such as
+                // [💩-💫] becomes the invalid UTF-16 range \uDCA9-\uD83D and is rejected,
+                // which would mis-classify a valid regex literal as division. The
+                // RegExpUnicodeValidator has already checked the syntax and the RegExp
+                // runtime applies surrogate-aware transforms before compiling, so accept
+                // it here without the (false-rejecting) .NET round-trip.
+                if (ContainsSurrogate(pattern))
+                    return true;
             }
 
             // ECMAScript permits group names .NET rejects (a leading `$`, names
@@ -124,6 +136,14 @@ internal static class RegExpValidator
         }
     }
 
+
+    private static bool ContainsSurrogate(string pattern)
+    {
+        for (int i = 0; i < pattern.Length; i++)
+            if (char.IsSurrogate(pattern[i]))
+                return true;
+        return false;
+    }
 
     /// <summary>
     /// Performs lexer-time validation for regular expressions that use the

@@ -1737,7 +1737,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // for a \D / \S / \W escape: those negated escapes include every
                 // supplementary code point, so a non-negated class containing one
                 // must also match a whole surrogate pair (not just the leading unit).
-                var supplementaryChars = new List<string>();
                 bool hasSupplementary = false;
                 bool classMatchesSupplementary = false;
 
@@ -1773,16 +1772,21 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     continue;
                 }
 
-                // We have supplementary chars - rebuild the class
+                // We have supplementary chars - rebuild the class as code-point-aware
+                // alternation. Single-unit (BMP) members stay in a [...] class; astral
+                // members and any range that reaches the supplementary planes become
+                // surrogate-decomposed alternatives.
                 sb ??= new StringBuilder(pattern.Length + 64);
                 sb.Append(pattern, start, classStart - start);
 
-                // Collect BMP parts and supplementary chars
-                var bmpParts = new StringBuilder();
                 i = classStart + 1; // skip '['
                 if (negated)
                     i++; // skip '^'
-                // Handle ] as first char
+
+                var bmpParts = new StringBuilder();
+                var alternatives = new List<string>();
+
+                // A leading ']' is a literal class member.
                 if (i < pattern.Length && pattern[i] == ']')
                 {
                     bmpParts.Append(']');
@@ -1791,6 +1795,8 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
                 while (i < pattern.Length && pattern[i] != ']')
                 {
+                    // A class escape (\d, \w, \uHHHH, ...) is left verbatim in the BMP
+                    // class; it is not treated as a decomposable range endpoint.
                     if (pattern[i] == '\\' && i + 1 < pattern.Length)
                     {
                         bmpParts.Append(pattern[i]);
@@ -1798,41 +1804,54 @@ public partial class JSRegExp : JSObject, IJSRegExp
                         i += 2;
                         continue;
                     }
-                    if (char.IsHighSurrogate(pattern[i]) && i + 1 < pattern.Length 
-                        && char.IsLowSurrogate(pattern[i + 1]))
+
+                    int lo = ReadClassCodePoint(pattern, ref i);
+
+                    // A range "lo-hi": the '-' is followed by a real member (not the
+                    // closing ']' and not a class escape that we cannot range against).
+                    if (i + 1 < pattern.Length && pattern[i] == '-'
+                        && pattern[i + 1] != ']' && pattern[i + 1] != '\\')
                     {
-                        supplementaryChars.Add(pattern.Substring(i, 2));
-                        i += 2;
+                        i++; // skip '-'
+                        int hi = ReadClassCodePoint(pattern, ref i);
+                        if (lo <= hi && (lo > 0xFFFF || hi > 0xFFFF))
+                        {
+                            // A range that reaches into the supplementary planes is
+                            // decomposed into surrogate-aware alternatives.
+                            AppendCodePointRangeAlternatives(alternatives, lo, hi);
+                        }
+                        else
+                        {
+                            // A pure-BMP range stays in the [...] class verbatim.
+                            AppendBmpCodePoint(bmpParts, lo);
+                            bmpParts.Append('-');
+                            AppendBmpCodePoint(bmpParts, hi);
+                        }
                         continue;
                     }
-                    bmpParts.Append(pattern[i]);
-                    i++;
+
+                    if (lo > 0xFFFF)
+                        alternatives.Add(EncodeSurrogatePair(lo));
+                    else
+                        AppendBmpCodePoint(bmpParts, lo);
                 }
 
                 // i now points at ']'
                 if (negated)
                 {
-                    // [^𝌆a-z] → (?:(?!𝌆)[^a-z\uD800-\uDFFF]|(?!𝌆)[\uD800-\uDBFF][\uDC00-\uDFFF])
-                    // Simplified: negative classes with supplementary chars are rare;
-                    // use a negative lookahead approach
+                    // [^𝌆a-z…] → exclude every collected member with lookaheads, then
+                    // match any single code point: a surrogate pair, a lone surrogate
+                    // (not part of a pair), or a BMP unit outside the excluded set.
                     sb.Append("(?:");
-                    foreach (var sp in supplementaryChars)
+                    foreach (var alt in alternatives)
                     {
                         sb.Append("(?!");
-                        sb.Append(sp);
+                        sb.Append(alt);
                         sb.Append(')');
                     }
-                    if (bmpParts.Length > 0)
-                    {
-                        sb.Append("(?:[^");
-                        sb.Append(bmpParts);
-                        sb.Append(@"\uD800-\uDFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])");
-                    }
-                    else
-                    {
-                        sb.Append(@"(?:[^\uD800-\uDFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF])");
-                    }
-                    sb.Append(')');
+                    sb.Append(@"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[^");
+                    sb.Append(bmpParts);
+                    sb.Append(@"\uD800-\uDFFF]))");
                 }
                 else
                 {
@@ -1843,9 +1862,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     sb.Append("(?:");
                     if (classMatchesSupplementary)
                         sb.Append(@"[\uD800-\uDBFF][\uDC00-\uDFFF]|");
-                    for (int si = 0; si < supplementaryChars.Count; si++)
+                    foreach (var alt in alternatives)
                     {
-                        sb.Append(supplementaryChars[si]);
+                        sb.Append(alt);
                         sb.Append('|');
                     }
                     if (bmpParts.Length > 0)
@@ -1871,6 +1890,68 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         sb.Append(pattern, start, pattern.Length - start);
         return sb.ToString();
+    }
+
+    // Reads one literal class member starting at p[i] (a BMP unit or an astral
+    // surrogate pair), advances i past it, and returns its code point.
+    private static int ReadClassCodePoint(string p, ref int i)
+    {
+        if (char.IsHighSurrogate(p[i]) && i + 1 < p.Length && char.IsLowSurrogate(p[i + 1]))
+        {
+            int cp = char.ConvertToUtf32(p[i], p[i + 1]);
+            i += 2;
+            return cp;
+        }
+        return p[i++];
+    }
+
+    // A single UTF-16 code unit as a fixed-width \uHHHH escape (safe inside a .NET class).
+    private static string Unit(int codeUnit) => "\\u" + codeUnit.ToString("X4");
+
+    private static int HighSurrogateOf(int cp) => 0xD800 + ((cp - 0x10000) >> 10);
+    private static int LowSurrogateOf(int cp) => 0xDC00 + ((cp - 0x10000) & 0x3FF);
+
+    // An astral code point as its \uHHHH\uHHHH surrogate-pair escape.
+    private static string EncodeSurrogatePair(int cp)
+        => Unit(HighSurrogateOf(cp)) + Unit(LowSurrogateOf(cp));
+
+    // Appends a BMP code point to a character-class body verbatim (matching the
+    // original literal-character handling).
+    private static void AppendBmpCodePoint(StringBuilder bmp, int cp) => bmp.Append((char)cp);
+
+    // A single low-surrogate sub-range "[\uLO-\uHI]" (or "\uLO" when degenerate).
+    private static string LowRange(int lo, int hi)
+        => lo == hi ? Unit(lo) : "[" + Unit(lo) + "-" + Unit(hi) + "]";
+
+    // Decomposes the code-point range [lo, hi] (which reaches into the supplementary
+    // planes) into surrogate-aware .NET sub-patterns, each matching one whole code
+    // point. Appends each as an alternative.
+    private static void AppendCodePointRangeAlternatives(List<string> alts, int lo, int hi)
+    {
+        // The BMP portion [lo, min(hi, 0xFFFF)] matches as single units.
+        if (lo <= 0xFFFF)
+        {
+            int bmpHi = System.Math.Min(hi, 0xFFFF);
+            alts.Add(lo == bmpHi ? Unit(lo) : "[" + Unit(lo) + "-" + Unit(bmpHi) + "]");
+            if (hi <= 0xFFFF)
+                return;
+            lo = 0x10000;
+        }
+
+        // The supplementary portion, decomposed by leading surrogate.
+        int hLo = HighSurrogateOf(lo), lLo = LowSurrogateOf(lo);
+        int hHi = HighSurrogateOf(hi), lLast = LowSurrogateOf(hi);
+
+        if (hLo == hHi)
+        {
+            alts.Add(Unit(hLo) + LowRange(lLo, lLast));
+            return;
+        }
+
+        alts.Add(Unit(hLo) + LowRange(lLo, 0xDFFF));
+        if (hHi - hLo >= 2)
+            alts.Add("[" + Unit(hLo + 1) + "-" + Unit(hHi - 1) + "]" + @"[\uDC00-\uDFFF]");
+        alts.Add(Unit(hHi) + LowRange(0xDC00, lLast));
     }
 
     /// <summary>
