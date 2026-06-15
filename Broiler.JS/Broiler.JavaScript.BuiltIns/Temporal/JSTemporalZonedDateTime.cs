@@ -749,19 +749,18 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     // DifferenceTemporalZonedDateTime: the signed difference between two instants in this zone,
     // expressed as a Duration. When `largestUnit` is a time unit the result is the plain
-    // epoch-nanosecond difference balanced into time components; otherwise it is the DST-aware
-    // calendar difference (a "day" may be 23 h or 25 h across a transition). The smallestUnit /
-    // roundingIncrement / roundingMode options are validated only via `largestUnit` here — like
-    // the PlainDate/PlainDateTime difference methods, no rounding is applied yet.
+    // epoch-nanosecond difference, rounded to smallestUnit × roundingIncrement and balanced into
+    // time components; otherwise it is the DST-aware calendar difference (a "day" may be 23 h or
+    // 25 h across a transition), to which the rounding options are not yet applied.
     private JSValue Difference(JSValue otherValue, JSValue options, int sign)
     {
         var other = Require(ToZonedDateTime(otherValue));
         if (calendarId != other.calendarId)
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: cannot compute the difference between date-times of different calendars");
-        var (largestUnit, _, _, _) = ReadZonedDifferenceSettings(options);
+        var (largestUnit, smallestUnit, increment, roundingMode) = ReadZonedDifferenceSettings(options);
 
         var result = IsTimeUnit(largestUnit)
-            ? DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit)
+            ? DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, sign < 0 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode)
             : DifferenceCalendar(epochNanoseconds, other.epochNanoseconds, largestUnit);
 
         if (sign < 0)
@@ -777,9 +776,26 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static bool IsTimeUnit(string unit) => unit is "hour" or "minute" or "second"
         or "millisecond" or "microsecond" or "nanosecond";
 
-    // The difference as a pure time duration (no calendar units), balanced from `largestUnit` down.
-    private static JSTemporalDuration DifferenceTimeOnly(BigInteger ns1, BigInteger ns2, string largestUnit)
-        => BalanceTimeDuration(ns2 - ns1, largestUnit);
+    // The difference as a pure time duration (no calendar units): the (ns2 − ns1) nanosecond
+    // difference rounded to smallestUnit × increment (with the caller's — for "since", negated —
+    // rounding mode), then balanced from `largestUnit` down.
+    private static JSTemporalDuration DifferenceTimeOnly(BigInteger ns1, BigInteger ns2, string largestUnit,
+        string smallestUnit, int increment, string roundingMode)
+    {
+        var unitNs = (BigInteger)TimeUnitNanoseconds(smallestUnit) * increment;
+        var rounded = TemporalRoundingOptions.RoundToIncrement(ns2 - ns1, unitNs, roundingMode);
+        return BalanceTimeDuration(rounded, largestUnit);
+    }
+
+    private static long TimeUnitNanoseconds(string unit) => unit switch
+    {
+        "hour" => 3_600_000_000_000,
+        "minute" => 60_000_000_000,
+        "second" => 1_000_000_000,
+        "millisecond" => 1_000_000,
+        "microsecond" => 1_000,
+        _ => 1, // nanosecond
+    };
 
     // DifferenceZonedDateTime for a calendar `largestUnit` (year/month/week/day). Follows the
     // proposal's day-correction loop: the wall-clock time-of-day difference is combined with a
