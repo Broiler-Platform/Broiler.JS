@@ -10510,8 +10510,10 @@ public class BuiltInsTests
             (function () {
               var fun = function () {};
               Object.defineProperty(fun, 'name', { value: 1337 });
+              // A non-Number "length" (here a String) is ignored by SetFunctionLength: the bound
+              // function's length defaults to 0 rather than coercing the value to a number.
               Object.defineProperty(fun, 'length', { value: '15' });
-              var nonStringName = fun.bind();
+              var nonNumberLength = fun.bind();
 
               Object.defineProperty(fun, 'length', { value: Number.MAX_SAFE_INTEGER });
               var maxSafeIntegerLength = fun.bind();
@@ -10520,15 +10522,15 @@ public class BuiltInsTests
               var negativeLength = fun.bind();
 
               return [
-                nonStringName.name,
-                String(nonStringName.length),
+                nonNumberLength.name,
+                String(nonNumberLength.length),
                 String(maxSafeIntegerLength.length),
                 String(negativeLength.length)
               ].join('|');
             })();
             """);
 
-        Assert.Equal("bound |15|9007199254740991|0", result.ToString());
+        Assert.Equal("bound |0|9007199254740991|0", result.ToString());
     }
 
     [Fact]
