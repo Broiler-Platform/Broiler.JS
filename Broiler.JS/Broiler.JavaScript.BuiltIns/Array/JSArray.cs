@@ -491,10 +491,23 @@ public partial class JSArray : JSObject
         var hasConfigurable = !propertyDescription.GetInternalProperty(KeyStrings.configurable, false).IsEmpty;
         var hasEnumerable = !propertyDescription.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty;
 
+        // ArraySetLength validates a supplied length *value* (ToUint32 must equal ToNumber) and throws
+        // RangeError for an invalid one BEFORE the ordinary descriptor invariants are checked — so
+        // e.g. {value: -1, configurable: true} is a RangeError (invalid value), not the TypeError the
+        // configurable-redefinition invariant would otherwise produce.
+        uint newLength = 0;
+        if (hasValue)
+        {
+            var newLengthNumber = propertyDescription[KeyStrings.value].DoubleValue;
+            if (double.IsNaN(newLengthNumber) || newLengthNumber < 0 || newLengthNumber > uint.MaxValue || newLengthNumber != System.Math.Truncate(newLengthNumber))
+                throw JSEngine.NewRangeError("Invalid length");
+
+            newLength = (uint)newLengthNumber;
+        }
+
         // [[DefineOwnProperty]] is a predicate: an invariant violation returns false
         // (the OrThrow caller, e.g. Object.defineProperty, turns that into a throw;
-        // Reflect.defineProperty surfaces it as `false`). Only an invalid length
-        // *value* throws (RangeError) per ArraySetLength.
+        // Reflect.defineProperty surfaces it as `false`).
         if ((hasConfigurable && propertyDescription[KeyStrings.configurable].BooleanValue)
             || (hasEnumerable && propertyDescription[KeyStrings.enumerable].BooleanValue))
         {
@@ -509,11 +522,6 @@ public partial class JSArray : JSObject
             return JSUndefined.Value;
         }
 
-        var newLengthNumber = propertyDescription[KeyStrings.value].DoubleValue;
-        if (double.IsNaN(newLengthNumber) || newLengthNumber < 0 || newLengthNumber > uint.MaxValue || newLengthNumber != System.Math.Truncate(newLengthNumber))
-            throw JSEngine.NewRangeError("Invalid length");
-
-        var newLength = (uint)newLengthNumber;
         var oldLength = _length;
         var newWritable = !hasWritable || propertyDescription[KeyStrings.writable].BooleanValue;
 

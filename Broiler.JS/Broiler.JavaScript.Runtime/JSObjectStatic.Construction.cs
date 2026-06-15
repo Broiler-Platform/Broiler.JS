@@ -65,6 +65,22 @@ public partial class JSObject
         var hasEnumerable = !descriptor.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty;
         var hasConfigurable = !descriptor.GetInternalProperty(KeyStrings.configurable, false).IsEmpty;
 
+        // ArraySetLength steps 3-5: when a length value is supplied, ToUint32 then ToNumber are *both*
+        // performed (each coerces the value, so a custom valueOf is invoked twice) and the results must
+        // agree under SameValueZero or it is an invalid length. This RangeError is produced BEFORE the
+        // ordinary descriptor invariants below (which throw TypeError) — so e.g. {value: -1,
+        // configurable: true} is a RangeError for the invalid value, not a TypeError for the
+        // configurable redefinition.
+        uint newLength = 0;
+        if (hasValue)
+        {
+            var rawValue = descriptor[KeyStrings.value];
+            newLength = ToUint32(rawValue.DoubleValue);
+            var numberLen = rawValue.DoubleValue;
+            if (newLength != numberLen)
+                throw NewRangeError("Invalid length");
+        }
+
         if (!descriptor[KeyStrings.get].IsUndefined
             || !descriptor[KeyStrings.set].IsUndefined
             || (hasEnumerable && descriptor[KeyStrings.enumerable].BooleanValue)
@@ -82,15 +98,6 @@ public partial class JSObject
             SetArrayLengthWritable(target, newWritable);
             return;
         }
-
-        // ArraySetLength steps 3-5: ToUint32 then ToNumber are *both* performed
-        // (each coerces the value, so a custom valueOf is invoked twice), and the
-        // results must agree under SameValueZero or it is an invalid length.
-        var rawValue = descriptor[KeyStrings.value];
-        var newLength = ToUint32(rawValue.DoubleValue);
-        var numberLen = rawValue.DoubleValue;
-        if (newLength != numberLen)
-            throw NewRangeError("Invalid length");
 
         // Step 9: when the new length is not smaller than the current one, defer to
         // ordinary [[DefineOwnProperty]] validation — redefining to the *same* value
