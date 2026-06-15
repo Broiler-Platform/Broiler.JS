@@ -966,7 +966,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     }
 
     private static readonly Regex DateTimePattern = new(
-        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})(?:[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?:[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?(?:\[[^\]]*\])*$",
+        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})(?:[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?:(?<z>[Zz])|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?(?:\[[^\]]*\])*$",
         RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalDateTimeString(string text)
@@ -978,6 +978,12 @@ public partial class JSTemporalPlainDateTime : JSObject
         var match = DateTimePattern.Match(text);
         if (!match.Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDateTime from \"{text}\"");
+
+        // A bare UTC (Z) designator denotes an exact instant with no wall-clock interpretation, so it
+        // is invalid for the calendar-date-time (non-zoned) grammar a PlainDateTime parses from. (A
+        // numeric UTC offset is allowed and simply ignored.)
+        if (match.Groups["z"].Success)
+            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDateTime from \"{text}\": a UTC (Z) designator requires a time zone");
 
         var year = int.Parse(match.Groups[1].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
         var month = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);

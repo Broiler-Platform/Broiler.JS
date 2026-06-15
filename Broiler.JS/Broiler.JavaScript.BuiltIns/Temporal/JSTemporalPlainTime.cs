@@ -89,12 +89,24 @@ public partial class JSTemporalPlainTime : JSObject
     internal static JSValue From(in Arguments a)
     {
         var item = a.GetAt(0);
-        var overflow = ReadOverflow(a.GetAt(1));
+        var options = a.GetAt(1);
 
         if (item is JSTemporalPlainTime t)
+        {
+            ReadOverflow(options); // GetTemporalOverflowOption still validates the options bag.
             return new JSTemporalPlainTime(t.TotalNanoseconds(), PlainTimePrototype);
+        }
 
-        return ToTemporalTime(item, overflow);
+        // ParseISODateTime runs before the options are validated, so an invalid string — e.g. one
+        // carrying a UTC (Z) designator — is a RangeError even when options is a bad (non-object) type.
+        if (item.IsString)
+        {
+            var parsed = ParseTemporalTimeString(item.ToString());
+            ReadOverflow(options);
+            return parsed;
+        }
+
+        return ToTemporalTime(item, ReadOverflow(options));
     }
 
     [JSExport("compare", Length = 2)]

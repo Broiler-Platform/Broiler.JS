@@ -262,7 +262,20 @@ public partial class JSTemporalDuration
     {
         zoned = null;
         date = null;
-        if (!TryGetRelativeTo(options, out var rel)) return false;
+        if (options == null || options.IsUndefined) return false;
+        if (options is not JSObject optionsObject)
+            throw JSEngine.NewTypeError("Temporal.Duration options must be an object or undefined");
+        var rel = optionsObject[KeyStrings.GetOrCreate("relativeTo")];
+
+        // GetTemporalRelativeToOption: only undefined means "absent". Any other value — including
+        // null — is passed to ToRelativeTemporalObject and converted.
+        if (rel == null || rel.IsUndefined) return false;
+
+        // ToRelativeTemporalObject: a value that is neither an Object nor a String — null, a boolean,
+        // a number, a bigint, a symbol — is a TypeError, not the RangeError used for an unparsable
+        // string. (This conversion happens before any unit/calendar validation.)
+        if (!rel.IsString && rel is not JSObject)
+            throw JSEngine.NewTypeError("Temporal.Duration: relativeTo must be a Temporal object, a property bag, or an ISO string");
 
         zoned = JSTemporalZonedDateTime.ToZonedRelative(rel);
         if (zoned != null) return true;
