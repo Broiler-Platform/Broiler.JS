@@ -975,8 +975,11 @@ public partial class JSTemporalPlainDateTime : JSObject
         return new JSTemporalPlainDateTime(year, month, day, h, mi, s, ms, us, ns, calendarId, PlainDateTimePrototype);
     }
 
+    // The calendar date may be written in extended (YYYY-MM-DD) or basic (YYYYMMDD) form; the two
+    // halves of the date must agree (both separators or neither), but the time may independently use
+    // either form.
     private static readonly Regex DateTimePattern = new(
-        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})(?:[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?:(?<z>[Zz])|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?(?:\[[^\]]*\])*$",
+        @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))(?:[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?(?:(?<z>[Zz])|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?(?:\[[^\]]*\])*$",
         RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalDateTimeString(string text)
@@ -995,17 +998,17 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (match.Groups["z"].Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDateTime from \"{text}\": a UTC (Z) designator requires a time zone");
 
-        var year = int.Parse(match.Groups[1].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
-        var month = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
-        var day = int.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture);
-        var h = match.Groups[4].Success ? int.Parse(match.Groups[4].Value, CultureInfo.InvariantCulture) : 0;
-        var mi = match.Groups[5].Success ? int.Parse(match.Groups[5].Value, CultureInfo.InvariantCulture) : 0;
-        var s = match.Groups[6].Success ? int.Parse(match.Groups[6].Value, CultureInfo.InvariantCulture) : 0;
+        var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
+        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
+        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
+        var h = match.Groups["h"].Success ? int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture) : 0;
+        var mi = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
+        var s = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
 
         int ms = 0, us = 0, ns = 0;
-        if (match.Groups[7].Success)
+        if (match.Groups["f"].Success)
         {
-            var digits = match.Groups[7].Value.PadRight(9, '0');
+            var digits = match.Groups["f"].Value.PadRight(9, '0');
             ms = int.Parse(digits.Substring(0, 3), CultureInfo.InvariantCulture);
             us = int.Parse(digits.Substring(3, 3), CultureInfo.InvariantCulture);
             ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);

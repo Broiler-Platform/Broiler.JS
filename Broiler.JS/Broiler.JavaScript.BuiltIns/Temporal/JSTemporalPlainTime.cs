@@ -527,7 +527,7 @@ public partial class JSTemporalPlainTime : JSObject
     // date's fraction-bearing component is the seconds only (the date-only parsers reject minutes/hours
     // fractions). Groups: 1=hour 2=minute 3=second 4=fraction, named "off"=Z/offset designator.
     private static readonly Regex DateTimeFormPattern = new(
-        @"^(?:\d{4}|\+\d{6}|-(?!000000)\d{6})-\d{2}-\d{2}[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?<off>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?$",
+        @"^(?:\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-\d{2}-\d{2}|\d{2}\d{2})[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?<off>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?$",
         RegexOptions.CultureInvariant);
 
     // A bare time-of-day (after any leading time designator has been removed), with an optional Z /
