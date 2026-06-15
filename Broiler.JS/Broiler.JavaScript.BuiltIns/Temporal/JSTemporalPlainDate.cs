@@ -418,6 +418,7 @@ public partial class JSTemporalPlainDate : JSObject
         var item = a.GetAt(0);
         string timeZone;
         var h = 0; var mi = 0; var s = 0; var ms = 0; var us = 0; var ns = 0;
+        var hasPlainTime = false;
 
         if (item != null && item.IsString)
             timeZone = item.ToString();
@@ -434,11 +435,16 @@ public partial class JSTemporalPlainDate : JSObject
                 var t = JSTemporalPlainTime.From(new Arguments(JSUndefined.Value, plainTimeValue)) as JSTemporalPlainTime
                     ?? throw JSEngine.NewTypeError("expected a Temporal.PlainTime");
                 h = t.hour; mi = t.minute; s = t.second; ms = t.millisecond; us = t.microsecond; ns = t.nanosecond;
+                hasPlainTime = true;
             }
         }
         else throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.toZonedDateTime: invalid argument");
 
-        return JSTemporalZonedDateTime.FromLocal(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns, timeZone, calendarId);
+        // With no explicit plainTime, the result is the zone's start of day (GetStartOfDay), which
+        // across a gap covering midnight is the transition instant — not midnight.
+        return hasPlainTime
+            ? JSTemporalZonedDateTime.FromLocal(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns, timeZone, calendarId)
+            : JSTemporalZonedDateTime.StartOfDayFor(isoYear, isoMonth, isoDay, timeZone, calendarId);
     }
 
     // ── value coercion / validation ─────────────────────────────────────────────

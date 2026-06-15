@@ -134,7 +134,7 @@ internal static class TemporalIsoString
     // form — but not a mix — and is validated separately by IsValidDate. Time, fraction, and
     // Z / numeric-offset designators are all optional.
     private static readonly Regex DateTimePattern = new(
-        @"^(?<y>\d{4}|\+\d{6}|-\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))" +
+        @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))" +
         @"(?:[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
         @"(?<offset>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?$",
         RegexOptions.CultureInvariant);
@@ -147,7 +147,7 @@ internal static class TemporalIsoString
         RegexOptions.CultureInvariant);
 
     private static readonly Regex YearMonthPattern = new(
-        @"^(?<y>\d{4}|\+\d{6}|-\d{6})-?(?<mo>\d{2})$", RegexOptions.CultureInvariant);
+        @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})-?(?<mo>\d{2})$", RegexOptions.CultureInvariant);
 
     private static readonly Regex MonthDayPattern = new(
         @"^(?:--)?(?<mo>\d{2})-?(?<d>\d{2})$", RegexOptions.CultureInvariant);

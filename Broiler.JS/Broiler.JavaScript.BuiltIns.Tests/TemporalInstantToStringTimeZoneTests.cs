@@ -18,6 +18,9 @@ public class TemporalInstantToStringTimeZoneTests
     [Theory]
     [InlineData("\"2021-08-19T17:30\"")]      // bare date-time string is not a time zone (problem 10)
     [InlineData("\"2021-08-19\"")]
+    // A negative-zero extended year (-000000) is invalid (issue #805 problem 10).
+    [InlineData("\"-000000-10-31T17:45Z\"")]
+    [InlineData("\"-000000-10-31T17:45+00:00[UTC]\"")]
     public void ToString_BareDateTimeTimeZone_ThrowsRangeError(string tz)
     {
         Load();
