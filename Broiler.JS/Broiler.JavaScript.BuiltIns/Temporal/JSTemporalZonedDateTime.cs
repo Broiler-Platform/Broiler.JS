@@ -426,31 +426,71 @@ public partial class JSTemporalZonedDateTime : JSObject
     public JSValue ToStringMethod(in Arguments a)
     {
         var options = a.GetAt(0);
+
+        // TemporalZonedDateTimeToString reads the options in this order: calendarName,
+        // fractionalSecondDigits, smallestUnit, roundingMode, offset (display), timeZoneName (display).
         var showCalendar = ReadCalendarName(options);
-        ValidateToStringOptions(options); // fractionalSecondDigits / smallestUnit / roundingMode / offset / timeZoneName
-        return new JSString(ToISOString(showCalendar));
-    }
+        var digits = -1; // "auto"
+        var roundingMode = "trunc";
+        string smallestUnit = null;
+        var showOffset = true;
+        var timeZoneNameMode = "auto";
 
-    // Reads and validates the remaining toString options. The precision (fractionalSecondDigits /
-    // smallestUnit / roundingMode) and the offset / time-zone-name display options are validated (an
-    // invalid value is a RangeError, a Symbol a TypeError) but not yet applied — the serialization
-    // below always shows the full sub-second precision, offset and time-zone name.
-    private static void ValidateToStringOptions(JSValue options)
-    {
-        if (options is not JSObject o) return; // a non-object was already rejected by ReadCalendarName
+        if (options is JSObject o)
+        {
+            digits = TemporalRoundingOptions.GetFractionalSecondDigits(o);
 
-        TemporalRoundingOptions.GetFractionalSecondDigits(o);
-        var smallestUnit = o[KeyStrings.GetOrCreate("smallestUnit")];
-        if (!smallestUnit.IsUndefined) TemporalRoundingOptions.NormalizeTimeUnit(smallestUnit.StringValue, allowAuto: false);
-        TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+            var su = o[KeyStrings.GetOrCreate("smallestUnit")];
+            if (!su.IsUndefined)
+            {
+                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
+                if (smallestUnit is "hour")
+                    throw JSEngine.NewRangeError("Temporal.ZonedDateTime.toString: smallestUnit cannot be \"hour\"");
+            }
 
-        var offset = o[KeyStrings.GetOrCreate("offset")];
-        if (!offset.IsUndefined && offset.StringValue is not ("auto" or "never"))
-            throw JSEngine.NewRangeError($"Temporal: invalid offset display option \"{offset.StringValue}\"");
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
 
-        var timeZoneName = o[KeyStrings.GetOrCreate("timeZoneName")];
-        if (!timeZoneName.IsUndefined && timeZoneName.StringValue is not ("auto" or "never" or "critical"))
-            throw JSEngine.NewRangeError($"Temporal: invalid timeZoneName display option \"{timeZoneName.StringValue}\"");
+            var offset = o[KeyStrings.GetOrCreate("offset")];
+            if (!offset.IsUndefined)
+                showOffset = offset.StringValue switch
+                {
+                    "auto" => true,
+                    "never" => false,
+                    _ => throw JSEngine.NewRangeError($"Temporal: invalid offset display option \"{offset.StringValue}\""),
+                };
+
+            var timeZoneName = o[KeyStrings.GetOrCreate("timeZoneName")];
+            if (!timeZoneName.IsUndefined)
+            {
+                timeZoneNameMode = timeZoneName.StringValue;
+                if (timeZoneNameMode is not ("auto" or "never" or "critical"))
+                    throw JSEngine.NewRangeError($"Temporal: invalid timeZoneName display option \"{timeZoneNameMode}\"");
+            }
+        }
+
+        // ToSecondsStringPrecisionRecord: precision -2 = minutes (no seconds), -1 = auto,
+        // 0..9 = a fixed number of fractional-second digits; incrementNs is the rounding step.
+        int precision;
+        long incrementNs;
+        if (smallestUnit != null)
+            (precision, incrementNs) = smallestUnit switch
+            {
+                "minute" => (-2, 60_000_000_000L),
+                "second" => (0, 1_000_000_000L),
+                "millisecond" => (3, 1_000_000L),
+                "microsecond" => (6, 1_000L),
+                _ => (9, 1L), // nanosecond
+            };
+        else if (digits == -1) { precision = -1; incrementNs = 1; }
+        else { precision = digits; incrementNs = TemporalRoundingOptions.Pow10(9 - digits); }
+
+        // Round the instant to the requested precision, then resolve the wall clock / offset from the
+        // rounded instant.
+        var rounded = TemporalRoundingOptions.RoundToIncrement(epochNanoseconds, incrementNs, roundingMode);
+        if (!IsValid(rounded))
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime.toString: result is out of range");
+
+        return new JSString(FormatToString(rounded, showCalendar, precision, showOffset, timeZoneNameMode));
     }
 
     [JSExport("toJSON", Length = 0)]
@@ -1696,33 +1736,54 @@ public partial class JSTemporalZonedDateTime : JSObject
         return sb.ToString();
     }
 
-    // YYYY-MM-DDTHH:MM:SS[.fff]±HH:MM[timeZoneId]
+    // YYYY-MM-DDTHH:MM:SS[.fff]±HH:MM[timeZoneId] at full (auto) precision.
     private string ToISOString(string showCalendar = "auto")
+        => FormatToString(epochNanoseconds, showCalendar, precision: -1, showOffset: true, timeZoneNameMode: "auto");
+
+    // Serializes the instant `epoch` in this zone's wall clock. precision controls the seconds field
+    // (-2 minutes only, -1 auto, 0..9 fixed); showOffset and timeZoneNameMode ("auto"/"never"/
+    // "critical") control the trailing ±HH:MM offset and [timeZone] annotation.
+    private string FormatToString(BigInteger epoch, string showCalendar, int precision, bool showOffset, string timeZoneNameMode)
     {
-        var l = Local();
-        var offsetNs = OffsetNanoseconds();
+        var offsetNs = GetOffsetNanosecondsFor(epoch);
+        var localNs = epoch + offsetNs;
+
+        var totalSeconds = FloorDiv(localNs, 1_000_000_000);
+        var fraction = (long)(localNs - totalSeconds * 1_000_000_000);
+        var days = (long)FloorDiv(totalSeconds, 86400);
+        var secondsOfDay = (long)(totalSeconds - new BigInteger(days) * 86400);
+        var (y, mo, d) = CivilFromDays(days);
+        var h = secondsOfDay / 3600;
+        var mi = secondsOfDay % 3600 / 60;
+        var s = secondsOfDay % 60;
 
         var sb = new StringBuilder();
-        if (l.y < 0 || l.y > 9999)
-            sb.Append(l.y < 0 ? '-' : '+').Append(Math.Abs(l.y).ToString("000000", CultureInfo.InvariantCulture));
+        if (y < 0 || y > 9999)
+            sb.Append(y < 0 ? '-' : '+').Append(Math.Abs(y).ToString("000000", CultureInfo.InvariantCulture));
         else
-            sb.Append(l.y.ToString("0000", CultureInfo.InvariantCulture));
+            sb.Append(y.ToString("0000", CultureInfo.InvariantCulture));
 
-        sb.Append('-').Append(l.mo.ToString("00", CultureInfo.InvariantCulture))
-          .Append('-').Append(l.d.ToString("00", CultureInfo.InvariantCulture))
-          .Append('T').Append(l.h.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(l.mi.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(l.s.ToString("00", CultureInfo.InvariantCulture));
+        sb.Append('-').Append(mo.ToString("00", CultureInfo.InvariantCulture))
+          .Append('-').Append(d.ToString("00", CultureInfo.InvariantCulture))
+          .Append('T').Append(h.ToString("00", CultureInfo.InvariantCulture))
+          .Append(':').Append(mi.ToString("00", CultureInfo.InvariantCulture));
 
-        var fraction = l.ms * 1_000_000 + l.us * 1_000 + l.ns;
-        if (fraction != 0)
+        if (precision != -2)
         {
-            var digits = fraction.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0');
-            sb.Append('.').Append(digits);
+            sb.Append(':').Append(s.ToString("00", CultureInfo.InvariantCulture));
+            JSTemporalInstant.AppendFraction(sb, fraction, precision);
         }
 
-        sb.Append(FormatOffset(offsetNs));
-        sb.Append('[').Append(timeZoneId).Append(']');
+        if (showOffset)
+            sb.Append(FormatOffset(offsetNs));
+
+        if (timeZoneNameMode != "never")
+        {
+            sb.Append('[');
+            if (timeZoneNameMode == "critical") sb.Append('!');
+            sb.Append(timeZoneId).Append(']');
+        }
+
         sb.Append(JSTemporalPlainDate.FormatCalendarAnnotation(calendarId, showCalendar));
         return sb.ToString();
     }
