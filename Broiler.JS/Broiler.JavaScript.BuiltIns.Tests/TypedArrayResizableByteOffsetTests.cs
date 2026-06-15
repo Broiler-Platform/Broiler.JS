@@ -63,4 +63,25 @@ public class TypedArrayResizableByteOffsetTests
             ab.resize(4);
             ta.byteOffset + '';
         """));
+
+    // values() iterator exhausted, then the buffer is resized so the view is out of bounds: the
+    // length/byteOffset read 0 and a further next() returns {done:true} without throwing (issue #805
+    // problem 7 — make-out-of-bounds-after-exhausted.js).
+    [Fact]
+    public void ValuesIterator_AfterExhaustedThenOutOfBounds()
+        => Assert.Equal("11,22,true,undefined,0,0,true,undefined", E("""
+            var rab = new ArrayBuffer(3, { maxByteLength: 5 });
+            var ta = new Int8Array(rab, 1);
+            ta[0] = 11; ta[1] = 22;
+            var it = ta.values(), out = [];
+            out.push(it.next().value);                       // 11
+            out.push(it.next().value);                       // 22
+            var r = it.next();                               // exhausted
+            out.push(r.done, String(r.value));               // true, "undefined"
+            rab.resize(0);                                    // ta now out of bounds
+            out.push(ta.length, ta.byteOffset);              // 0, 0
+            r = it.next();                                    // must not throw
+            out.push(r.done, String(r.value));               // true, "undefined"
+            out.join(',');
+        """));
 }
