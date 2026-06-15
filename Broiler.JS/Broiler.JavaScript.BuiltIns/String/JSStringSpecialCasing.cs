@@ -153,8 +153,23 @@ internal static class JSStringSpecialCasing
     // etc.) with the locale-independent Final_Sigma conditional applied on top. Σ → σ
     // is length-preserving, so the contextual replacement can be done in place over the
     // lowered result using the original string for context.
+    // tr (Turkish) and az (Azerbaijani) share the dotted/dotless-I casing behaviour.
+    private static bool IsTurkic(CultureInfo culture)
+    {
+        var lang = culture?.TwoLetterISOLanguageName;
+        return lang is "tr" or "az";
+    }
+
     public static string ToLocaleLower(string s, CultureInfo culture)
     {
+        // Turkic After_I (SpecialCasing.txt): when lowercasing in tr/az, a COMBINING DOT ABOVE
+        // (U+0307) following a LATIN CAPITAL LETTER I (U+0049) is absorbed and that I lowercases to
+        // the dotted "i" (U+0069) rather than the dotless "\u0131" an I alone yields. .NET's
+        // culture-aware ToLower does not implement this context, so collapse the "I + U+0307"
+        // sequence to "i" up front; ToLower then leaves the already-lowercase "i" unchanged.
+        if (IsTurkic(culture))
+            s = s.Replace("\u0049\u0307", "\u0069");
+
         var lowered = culture.TextInfo.ToLower(s);
         if (s.IndexOf(GreekCapitalSigma) < 0 || lowered.Length != s.Length)
             return lowered;
