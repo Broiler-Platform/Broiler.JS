@@ -484,12 +484,19 @@ public partial class JSIteratorObject : JSObject
     {
         try
         {
-            var n = limitValue.DoubleValue;
-
-            if (double.IsNaN(n) || n < 0)
+            // Iterator.prototype.{take,drop}: ToNumber(limit) — a NaN limit is a RangeError. Otherwise
+            // ToIntegerOrInfinity truncates toward zero *before* the sign check, so a value in (-1, 0]
+            // such as -0.9 or -0 becomes 0 (valid) rather than being rejected as negative. A strictly
+            // negative integer is a RangeError; +∞ means "no limit", clamped here to int.MaxValue.
+            var number = limitValue.DoubleValue;
+            if (double.IsNaN(number))
                 throw JSEngine.NewRangeError($"{methodName} requires a non-negative number");
 
-            return (int)n;
+            var integer = Math.Truncate(number);
+            if (integer < 0)
+                throw JSEngine.NewRangeError($"{methodName} requires a non-negative number");
+
+            return integer >= int.MaxValue ? int.MaxValue : (int)integer;
         }
         catch
         {
