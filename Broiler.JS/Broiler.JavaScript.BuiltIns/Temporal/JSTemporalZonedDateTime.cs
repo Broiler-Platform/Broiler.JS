@@ -108,6 +108,18 @@ public partial class JSTemporalZonedDateTime : JSObject
         return new JSTemporalZonedDateTime(epochNs, tz, calendarId, ZonedDateTimePrototype);
     }
 
+    // GetStartOfDay for a date in a zone (Temporal.PlainDate.prototype.toZonedDateTime with no
+    // plainTime): the first instant of the day, which across a gap covering midnight is the transition
+    // instant rather than midnight.
+    internal static JSValue StartOfDayFor(int y, int mo, int d, string timeZone, string calendarId = "iso8601")
+    {
+        var tz = CanonicalizeTimeZone(timeZone);
+        var epochNs = StartOfDayEpochNs(tz, y, mo, d);
+        if (!IsValid(epochNs))
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is out of range");
+        return new JSTemporalZonedDateTime(epochNs, tz, calendarId, ZonedDateTimePrototype);
+    }
+
     // ── accessors ───────────────────────────────────────────────────────────────
 
     [JSExport("calendarId")] public JSValue CalendarId => new JSString(calendarId);
@@ -206,9 +218,9 @@ public partial class JSTemporalZonedDateTime : JSObject
         {
             var l = Local();
             var startEpoch = DaysFromCivil(l.y, l.mo, l.d);
-            var todayStart = StartOfDayEpochNs(l.y, l.mo, l.d);
+            var todayStart = StartOfDayEpochNs(timeZoneId, l.y, l.mo, l.d);
             var (ty, tm, td) = CivilFromDays(startEpoch + 1);
-            var tomorrowStart = StartOfDayEpochNs((int)ty, (int)tm, (int)td);
+            var tomorrowStart = StartOfDayEpochNs(timeZoneId, (int)ty, (int)tm, (int)td);
             // GetStartOfDay for either boundary may fall outside the representable instant range at the
             // extreme epoch limits (a RangeError, not a saturated value).
             if (!IsValid(todayStart) || !IsValid(tomorrowStart))
@@ -291,7 +303,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     // near the instant-range boundary midnight in this zone can fall outside the valid limits.
     private BigInteger ValidStartOfDayEpochNs(int y, int mo, int d)
     {
-        var epoch = StartOfDayEpochNs(y, mo, d);
+        var epoch = StartOfDayEpochNs(timeZoneId, y, mo, d);
         if (!IsValid(epoch))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is outside the representable range");
         return epoch;
@@ -382,7 +394,10 @@ public partial class JSTemporalZonedDateTime : JSObject
                     var mid = (lo + hi) / 2;
                     if (OffsetAt(mid) == loOffset) lo = mid; else hi = mid;
                 }
-                return hi;
+                // OffsetAt resolves only to .NET ticks (100 ns), so for a pre-1970 (negative) instant the
+                // found boundary can sit up to 99 ns inside the transition tick. Real IANA transitions are
+                // whole-second (tick-aligned), so snap to the tick boundary (truncation toward zero).
+                return hi / 100 * 100;
             }
             lastT = t;
             lastOffset = off;
@@ -563,7 +578,7 @@ public partial class JSTemporalZonedDateTime : JSObject
             inclusive: smallestUnit == "day");
 
         var l = Local();
-        var dayStart = StartOfDayEpochNs(l.y, l.mo, l.d);
+        var dayStart = StartOfDayEpochNs(timeZoneId, l.y, l.mo, l.d);
 
         if (smallestUnit == "day")
         {
@@ -571,7 +586,7 @@ public partial class JSTemporalZonedDateTime : JSObject
             // day's start and the next day's start (GetStartOfDay) must be representable instants.
             if (!IsValid(dayStart)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is out of range");
             var (ty, tm, td) = CivilFromDays(DaysFromCivil(l.y, l.mo, l.d) + 1);
-            var tomorrowStart = StartOfDayEpochNs((int)ty, (int)tm, (int)td);
+            var tomorrowStart = StartOfDayEpochNs(timeZoneId, (int)ty, (int)tm, (int)td);
             if (!IsValid(tomorrowStart)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is out of range");
             var dayLengthNs = tomorrowStart - dayStart;
             var rounded = TemporalRoundingOptions.RoundToIncrement(epochNanoseconds - dayStart, dayLengthNs, roundingMode);
@@ -1278,11 +1293,30 @@ public partial class JSTemporalZonedDateTime : JSObject
         return ((int)y, (int)m, (int)d, h, mi, s, ms, us, ns);
     }
 
-    private BigInteger StartOfDayEpochNs(int y, int mo, int d)
+    // GetStartOfDay: the first instant of the calendar day `y-mo-d` in the zone. Normally this is local
+    // midnight; across a spring-forward whose gap covers midnight it is the transition instant (the
+    // first existing local time of the day) — which need be neither 00:00 nor 01:00 (e.g.
+    // America/Toronto 1919-03-31 sprang forward 23:30→00:30, so the day starts at 00:30).
+    private static BigInteger StartOfDayEpochNs(string timeZoneId, int y, int mo, int d)
     {
         var localMidnightNs = new BigInteger(DaysFromCivil(y, mo, d)) * NanosecondsPerDay;
-        var offset = GetOffsetForLocal(timeZoneId, y, mo, d, 0, 0, 0);
-        return localMidnightNs - offset;
+
+        // The earliest instant whose local time is this midnight: local midnight minus the largest of
+        // the zone's candidate offsets (a fall-back fold yields two; pick the earlier instant).
+        var candidates = CandidateOffsetsForLocal(timeZoneId, y, mo, d, 0, 0, 0);
+        if (candidates.Count > 0)
+        {
+            var maxOffset = candidates[0];
+            foreach (var o in candidates)
+                if (o > maxOffset) maxOffset = o;
+            return localMidnightNs - maxOffset;
+        }
+
+        // Midnight is inside a spring-forward gap: the day starts at the offset transition itself.
+        var tz = ResolveNamedZone(timeZoneId);
+        if (tz == null) return localMidnightNs;
+        var transition = FindTransition(tz, localMidnightNs - NanosecondsPerDay, forward: true);
+        return transition ?? localMidnightNs;
     }
 
     private static DateTime EpochNsToUtcDateTime(BigInteger epochNs)
@@ -1624,6 +1658,11 @@ public partial class JSTemporalZonedDateTime : JSObject
         var timeZoneId = CanonicalizeTimeZone(timeZoneAnnotation);
         var localNs = LocalNanoseconds(year, month, day, hour, minute, second, ms, us, ns);
 
+        // A date-only ZonedDateTime string (no time component, hence no offset/Z) resolves to the
+        // zone's start of day — GetStartOfDay, which across a gap covering midnight is the transition
+        // instant, not midnight-with-disambiguation.
+        var hasTime = match.Groups["h"].Success;
+
         long offsetNs;
         var hasZ = match.Groups["z"].Success;
         var hasNumericOffset = match.Groups["off"].Success;
@@ -1668,7 +1707,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         }
         else offsetNs = GetOffsetForLocal(timeZoneId, year, month, day, hour, minute, second);
 
-        var epochNs = localNs - offsetNs;
+        var epochNs = hasTime ? localNs - offsetNs : StartOfDayEpochNs(timeZoneId, year, month, day);
         if (!IsValid(epochNs) || !IsLocalWithinLimits(localNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: parsed value is out of range");
 
