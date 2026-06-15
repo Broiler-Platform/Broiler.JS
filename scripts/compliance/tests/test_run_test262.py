@@ -533,6 +533,36 @@ includes: [assert.js, sta.js]
 
         self.assertEqual("skipped", result["status"])
 
+    def test_parse_metadata_handles_non_lf_line_terminators(self) -> None:
+        # A test whose source uses CR / CRLF line terminators (e.g. the toString
+        # line-terminator-normalisation cases) must still have its metadata recognised, and the
+        # returned body must keep its original terminators so the script host sees the exact source.
+        source = (
+            "/*---\r\n"
+            "description: crlf\r\n"
+            "includes: [nativeFunctionMatcher.js]\r\n"
+            "flags: [onlyStrict]\r\n"
+            "---*/\r\n"
+            "var f = function () {};\r\n"
+        )
+        metadata, body = run_test262.parse_metadata(source)
+
+        self.assertEqual(["nativeFunctionMatcher.js"], metadata["includes"])
+        self.assertEqual(["onlyStrict"], metadata["flags"])
+        self.assertIn("\r\n", body)
+        self.assertNotIn("description: crlf", body)
+
+    def test_read_text_preserves_line_terminators(self) -> None:
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        (self.suite_root / "test" / "language" / "cr.js").write_bytes(
+            b"var s = 'a\\rb';\rthrow s;\r"
+        )
+
+        text = repo.read_text("test/language/cr.js")
+
+        self.assertIn("\r", text)
+        self.assertNotIn("\n", text)
+
     def test_can_block_is_false_test_skipped(self) -> None:
         # Broiler's agent can block, so a CanBlockIsFalse-flagged test (which assumes a
         # host whose agent cannot block) is not applicable and is skipped.
