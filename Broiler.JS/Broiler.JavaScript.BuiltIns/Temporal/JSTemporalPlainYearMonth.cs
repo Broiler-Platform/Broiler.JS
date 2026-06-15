@@ -365,12 +365,14 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
         if (NonIso)
         {
+            // The difference is always measured *from the receiver* (anchoring the year/month count on
+            // the receiver's month-day), then negated for "since" — swapping the operands instead would
+            // re-anchor on the other year-month and miscount at leap-month boundaries. Both year-months
+            // sit at day 1.
             var self = CalendarYmd();
             var oth = target.CalendarYmd();
-            var (cay, cam, cby, cbm) = sign == 1
-                ? (self.y, self.m, oth.y, oth.m)
-                : (oth.y, oth.m, self.y, self.m);
-            var (cy, cm, _, _) = TemporalNonIso.Difference(calendarId, cay, cam, 1, cby, cbm, 1, largestUnit);
+            var (cy, cm, _, _) = TemporalNonIso.Difference(calendarId, self.y, self.m, 1, oth.y, oth.m, 1, largestUnit);
+            if (sign == -1) { cy = JSTemporalPlainDate.Negate(cy); cm = JSTemporalPlainDate.Negate(cm); }
             return new JSTemporalDuration(cy, cm, 0, 0, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
         }
 

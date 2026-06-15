@@ -470,9 +470,24 @@ internal static class TemporalNonIso
         int cy, cm;
         if (largestUnit == "year")
         {
-            years = by - ay;
+            // The whole-year count compares the month *codes* (not bare ordinals): a leap month
+            // (e.g. chinese "M04L") is ordered just after its regular month ("M04") and before the
+            // next ("M05"), and the same code maps to a different ordinal from year to year across a
+            // leap-month boundary. When the target's month-day lies before the start's *within the
+            // year* (its code — or, for equal codes, its day — is smaller in the step direction) one
+            // fewer whole year has elapsed. Mirrors the reference calendar's untilCalendar.
+            long diffYears = by - ay;
+            var oneCode = TemporalCalendarMath.MonthCode(calendarId, ay, am);
+            var twoCode = TemporalCalendarMath.MonthCode(calendarId, by, bm);
+            var codeCmp = string.CompareOrdinal(twoCode, oneCode);
+            var diffInYearSign = codeCmp != 0 ? Math.Sign(codeCmp) : Math.Sign(bd - ad);
+            years = diffInYearSign * step < 0 ? diffYears - step : diffYears;
+
             cy = ay + (int)years;
             cm = ResolveMonthAfterYearShift(calendarId, ay, am, cy, "constrain");
+
+            // A day-constrained whole-year step may still surpass the target (e.g. a month-end day
+            // landing in a shorter month); roll back one more year.
             if (CompareDate(cy, cm, ad, by, bm, bd) == step)
             {
                 years -= step;
