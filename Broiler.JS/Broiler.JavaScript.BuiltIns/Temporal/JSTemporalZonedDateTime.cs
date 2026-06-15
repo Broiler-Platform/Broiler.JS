@@ -1153,10 +1153,32 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static readonly Regex OffsetIdPattern = new(
         @"^([+-])(\d{2})(?::?(\d{2})(?::?(\d{2}))?)?$", RegexOptions.CultureInvariant);
 
+    private static Dictionary<string, string> _caseFoldedZoneIds;
+
     private static TimeZoneInfo ResolveNamedZone(string id)
     {
+        if (id == null) return null;
         try { return TimeZoneInfo.FindSystemTimeZoneById(id); }
-        catch { return null; }
+        catch { /* fall through to a case-insensitive lookup */ }
+
+        // IANA identifiers are matched case-insensitively, but some platforms' FindSystemTimeZoneById
+        // is case-sensitive, so fall back to a case-folded scan of the available zones (e.g. so
+        // "Africa/CAIRO" resolves to the "Africa/Cairo" zone).
+        var folded = _caseFoldedZoneIds ??= BuildCaseFoldedZoneIds();
+        if (folded.TryGetValue(id.ToUpperInvariant(), out var canonicalId))
+        {
+            try { return TimeZoneInfo.FindSystemTimeZoneById(canonicalId); }
+            catch { return null; }
+        }
+        return null;
+    }
+
+    private static Dictionary<string, string> BuildCaseFoldedZoneIds()
+    {
+        var map = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var tz in TimeZoneInfo.GetSystemTimeZones())
+            map[tz.Id.ToUpperInvariant()] = tz.Id;
+        return map;
     }
 
     // TimeZoneEquals (used by ZonedDateTime.prototype.equals): two identifiers denote the same zone when
@@ -1201,7 +1223,10 @@ public partial class JSTemporalZonedDateTime : JSObject
     {
         if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
         if (TryOffsetTimeZoneIdentifier(id, out var offsetNs)) { canonical = FormatOffset(offsetNs); return true; }
-        if (ResolveNamedZone(id) != null) { canonical = id; return true; }
+        // IANA identifiers match case-insensitively; the canonical (case-normalized) identifier is
+        // the resolved zone's Id, e.g. "Africa/CAIRO" → "Africa/Cairo".
+        var named = ResolveNamedZone(id);
+        if (named != null) { canonical = named.Id; return true; }
 
         canonical = null;
         return false;

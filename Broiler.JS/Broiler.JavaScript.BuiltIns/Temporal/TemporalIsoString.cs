@@ -205,15 +205,16 @@ internal static class TemporalIsoString
             return true;
         }
 
-        if (YearMonthPattern.Match(core) is { Success: true } ym)
-        {
-            return IsValidDate(ym.Groups["y"].Value, ym.Groups["mo"].Value, "01");
-        }
+        // A no-separator 6-digit string (e.g. "152330") matches YearMonthPattern as YYYYMM and a
+        // 4-digit one matches MonthDayPattern; accept them only when they form a valid date, so an
+        // invalid date (month 30) falls through to the time grammar below ("152330" → 15:23:30).
+        if (YearMonthPattern.Match(core) is { Success: true } ym &&
+            IsValidDate(ym.Groups["y"].Value, ym.Groups["mo"].Value, "01"))
+            return true;
 
-        if (MonthDayPattern.Match(core) is { Success: true } md)
-        {
-            return IsValidDate("2000", md.Groups["mo"].Value, md.Groups["d"].Value);
-        }
+        if (MonthDayPattern.Match(core) is { Success: true } md &&
+            IsValidDate("2000", md.Groups["mo"].Value, md.Groups["d"].Value))
+            return true;
 
         var t = TimePattern.Match(core);
         if (t.Success)
