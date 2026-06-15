@@ -390,14 +390,16 @@ public partial class JSTemporalPlainDate : JSObject
     [JSExport("toPlainDateTime", Length = 0)]
     public JSValue ToPlainDateTime(in Arguments a)
     {
+        // The resulting PlainDateTime keeps this date's calendar (CreateTemporalDateTime with the
+        // PlainDate's [[Calendar]]), so e.g. a buddhist PlainDate yields a buddhist PlainDateTime.
         var arg = a.GetAt(0);
         if (arg == null || arg.IsUndefined)
-            return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, 0, 0, 0, 0, 0, 0, JSTemporalPlainDateTime.PlainDateTimePrototype);
+            return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, 0, 0, 0, 0, 0, 0, calendarId, JSTemporalPlainDateTime.PlainDateTimePrototype);
 
         var t = JSTemporalPlainTime.From(new Arguments(JSUndefined.Value, arg)) as JSTemporalPlainTime
             ?? throw JSEngine.NewTypeError("expected a Temporal.PlainTime");
         return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay,
-            t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond, JSTemporalPlainDateTime.PlainDateTimePrototype);
+            t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond, calendarId, JSTemporalPlainDateTime.PlainDateTimePrototype);
     }
 
     [JSExport("toPlainYearMonth", Length = 0)]
@@ -436,7 +438,7 @@ public partial class JSTemporalPlainDate : JSObject
         }
         else throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.toZonedDateTime: invalid argument");
 
-        return JSTemporalZonedDateTime.FromLocal(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns, timeZone);
+        return JSTemporalZonedDateTime.FromLocal(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns, timeZone, calendarId);
     }
 
     // ── value coercion / validation ─────────────────────────────────────────────

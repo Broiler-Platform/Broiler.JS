@@ -638,7 +638,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (tz == null || !tz.IsString)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.toZonedDateTime: time zone must be a string");
         ReadDisambiguation(a.GetAt(1));
-        return JSTemporalZonedDateTime.FromLocal(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, tz.ToString());
+        return JSTemporalZonedDateTime.FromLocal(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, tz.ToString(), calendarId);
     }
 
     // GetTemporalDisambiguationOption. The "compatible" behaviour is what FromLocal already applies;

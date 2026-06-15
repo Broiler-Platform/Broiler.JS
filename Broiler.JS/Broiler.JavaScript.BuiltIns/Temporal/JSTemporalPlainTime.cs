@@ -403,7 +403,7 @@ public partial class JSTemporalPlainTime : JSObject
             ?? throw JSEngine.NewTypeError("expected a Temporal.PlainDate");
 
         return JSTemporalZonedDateTime.FromLocal(d.isoYear, d.isoMonth, d.isoDay,
-            hour, minute, second, millisecond, microsecond, nanosecond, tzValue.ToString());
+            hour, minute, second, millisecond, microsecond, nanosecond, tzValue.ToString(), d.calendarId);
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────
