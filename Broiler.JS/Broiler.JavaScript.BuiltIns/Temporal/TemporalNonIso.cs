@@ -107,6 +107,15 @@ internal static class TemporalNonIso
     private const int MonthDaySearchLowYear = 1900;
     private const int MonthDaySearchHighYear = 2100;
 
+    // The reference search loop iterates *calendar* years, but the span above is expressed in ISO
+    // years. For a calendar whose year numbering differs from the ISO year (the arithmetic islamic /
+    // hebrew / coptic / ethiopic families), iterating 1900..2100 as calendar years would search the
+    // wrong ISO window entirely (e.g. islamic year 1900 ≈ ISO 2461), so project the ISO endpoints onto
+    // the calendar's own years. A one-year margin absorbs the new-year offset at each endpoint.
+    private static (int low, int high) MonthDaySearchYears(string calendarId)
+        => (CalendarYmd(calendarId, MonthDaySearchLowYear, 1, 1).y - 1,
+            CalendarYmd(calendarId, MonthDaySearchHighYear, 12, 31).y + 1);
+
     // The ordinal of (codeNumber, isLeap) in calendar year `y`, or -1 when that month code does not
     // occur that year (absent leap month, an out-of-range number such as "M15", or a year outside the
     // back end's supported span).
@@ -132,7 +141,8 @@ internal static class TemporalNonIso
         var threshold = DaysFromCivil(MonthDayReferenceYear, 12, 31);
         var bestBelow = long.MinValue;
         var bestAbove = long.MaxValue;
-        for (var y = MonthDaySearchLowYear; y <= MonthDaySearchHighYear; y++)
+        var (searchLow, searchHigh) = MonthDaySearchYears(calendarId);
+        for (var y = searchLow; y <= searchHigh; y++)
         {
             var ord = MonthDayOrdinal(calendarId, y, codeNumber, isLeap);
             if (ord < 0 || targetDay > TemporalCalendarMath.DaysInMonth(calendarId, y, ord)) continue;
@@ -154,7 +164,8 @@ internal static class TemporalNonIso
     private static int MonthDayMaxLength(string calendarId, int codeNumber, bool isLeap)
     {
         var max = 0;
-        for (var y = MonthDaySearchLowYear; y <= MonthDaySearchHighYear; y++)
+        var (searchLow, searchHigh) = MonthDaySearchYears(calendarId);
+        for (var y = searchLow; y <= searchHigh; y++)
         {
             var ord = MonthDayOrdinal(calendarId, y, codeNumber, isLeap);
             if (ord >= 0) max = Math.Max(max, TemporalCalendarMath.DaysInMonth(calendarId, y, ord));
@@ -312,14 +323,20 @@ internal static class TemporalNonIso
         else
         {
             var (codeNumber, leapMonth) = ParseMonthCode(monthCodeValue.ToString());
-            // The hebrew leap month "M05L" (Adar I) exists only in leap years. Under overflow
-            // "constrain" a year that has no such leap month maps it to the regular Adar — which is
-            // coded "M06" — rather than throwing. (Reject, and every other calendar, fall through to
-            // OrdinalFromMonthCode, which throws when the leap month is absent.)
-            if (leapMonth && calendarId == "hebrew" && overflow != "reject")
+            // A leap month code ("MnnL") exists only in a leap year that carries that particular leap
+            // month. Under overflow "constrain" a year without it falls back to the regular month with
+            // the same number ("Mnn") — except hebrew, whose leap month Adar I ("M05L") sits before the
+            // regular Adar ("M06"), so it collapses onto M06. Under "reject" (and for a non-leap code)
+            // OrdinalFromMonthCode throws when the month code is absent. (Mirrors the year-shift path
+            // in ResolveMonthAfterYearShift.)
+            if (leapMonth && overflow != "reject")
             {
                 try { month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, true); }
-                catch (JSException) { month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber + 1, false); }
+                catch (JSException)
+                {
+                    var fallbackNum = (calendarId == "hebrew" && codeNumber == 5) ? 6 : codeNumber;
+                    month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, fallbackNum, false);
+                }
             }
             else
                 month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, leapMonth);
