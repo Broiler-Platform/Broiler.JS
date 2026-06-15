@@ -125,8 +125,12 @@ public partial class SharedArrayBuffer : JSArrayBuffer
     {
         var defaultConstructor = (JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("SharedArrayBuffer")];
         var constructor = source[KeyStrings.constructor];
-        if (!constructor.IsObject)
+        // SpeciesConstructor: only an undefined "constructor" falls back to the default; any other
+        // non-object value (e.g. null or a number) is a TypeError.
+        if (constructor.IsUndefined)
             return defaultConstructor;
+        if (!constructor.IsObject)
+            throw JSEngine.NewTypeError("SharedArrayBuffer constructor property is not an object");
 
         var species = constructor[(IJSSymbol)JSSymbol.species];
         if (species.IsNullOrUndefined)
