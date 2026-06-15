@@ -209,6 +209,10 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
                 len = @string.Length;
                 break;
             case JSTypedArray typed:
+                // InitializeTypedArrayFromTypedArray: a source view left detached or out of bounds by
+                // a resize has no usable element count, so it is a TypeError.
+                if (typed.buffer == null || typed.buffer.isDetached || typed.IsOutOfBounds)
+                    throw JSEngine.NewTypeError("Cannot construct a TypedArray from a detached or out-of-bounds TypedArray");
                 len = typed.Length;
                 break;
         }
@@ -632,6 +636,22 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         }
 
         return base.GetValue(key, receiver, throwError);
+    }
+
+    // Generic Array.prototype methods (indexOf / lastIndexOf …) probe elements through
+    // TryGetElement rather than the indexer. A typed array stores its data in the backing buffer,
+    // not the ordinary element map, so the JSObject default would report every index as absent;
+    // resolve a valid in-bounds index to its element here (out-of-bounds / detached is "absent").
+    internal override bool TryGetElement(uint i, out JSValue value)
+    {
+        if (IsValidIntegerIndex(i))
+        {
+            value = GetValue(i, this, false);
+            return true;
+        }
+
+        value = null;
+        return false;
     }
 
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)

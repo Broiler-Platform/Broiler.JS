@@ -158,8 +158,23 @@ internal static class JSIntlDateTimeFormatEngine
         return SexagenaryStems[index % 10] + SexagenaryBranches[index % 12];
     }
 
+    // The islamic (Hijri) calendars share month/era names; the formatter converts the ISO date to the
+    // calendar's own year/month/day (TemporalNonIso) and renders these names rather than the Gregorian
+    // ones. The day/month arithmetic of the specific variant (civil / tbla / umalqura) is handled by
+    // the calendar conversion; only the (English) display names live here.
+    private static readonly HashSet<string> IslamicCalendars = new(StringComparer.Ordinal)
+        { "islamic", "islamic-civil", "islamic-rgsa", "islamic-tbla", "islamic-umalqura" };
+
+    private static bool NeedsCalendarConversion(string calendar) => calendar != null && IslamicCalendars.Contains(calendar);
+
+    private static readonly string[] IslamicMonthWide =
+        { "Muharram", "Safar", "Rabiʻ I", "Rabiʻ II", "Jumada I", "Jumada II", "Rajab", "Shaʻban", "Ramadan", "Shawwal", "Dhuʻl-Qiʻdah", "Dhuʻl-Hijjah" };
+    private static readonly string[] IslamicMonthShort =
+        { "Muh.", "Saf.", "Rab. I", "Rab. II", "Jum. I", "Jum. II", "Raj.", "Sha.", "Ram.", "Shaw.", "Dhuʻl-Q.", "Dhuʻl-H." };
+
     internal static bool IsSupportedCalendar(string calendar)
-        => calendar != null && (EraCalendars.ContainsKey(calendar) || CyclicYearCalendars.Contains(calendar));
+        => calendar != null && (EraCalendars.ContainsKey(calendar) || CyclicYearCalendars.Contains(calendar)
+            || IslamicCalendars.Contains(calendar));
 
     // ── en locale data ──
     private static readonly string[] MonthShort =
@@ -340,7 +355,7 @@ internal static class JSIntlDateTimeFormatEngine
             // shows a year, e.g. "M/d/y" -> "M/d/y G". A cyclic-year calendar (chinese,
             // dangi) shows the year as relatedYear(yearName), so the year field becomes
             // "r(U)". Both make the pattern structurally distinct from the gregorian one.
-            if (EraCalendars.ContainsKey(calendar ?? string.Empty))
+            if (EraCalendars.ContainsKey(calendar ?? string.Empty) || IslamicCalendars.Contains(calendar ?? string.Empty))
                 datePattern += " G";
             else if (CyclicYearCalendars.Contains(calendar ?? string.Empty))
                 datePattern = ReplaceYearField(datePattern, "r(U)");
@@ -612,6 +627,8 @@ internal static class JSIntlDateTimeFormatEngine
         {
             case 'G':
                 // Era. Only era-using calendars emit a 'G' token.
+                if (NeedsCalendarConversion(calendar))
+                    return ("era", "AH");
                 return ("era", EraCalendars.TryGetValue(calendar ?? string.Empty, out var era) ? era.Era : "AD");
             case 'U':
                 // Cyclic year name (sexagenary), used by chinese/dangi.
@@ -628,11 +645,12 @@ internal static class JSIntlDateTimeFormatEngine
                     : year.ToString(CultureInfo.InvariantCulture));
             case 'M':
             case 'L':
+                var islamic = NeedsCalendarConversion(calendar);
                 return ("month", token.Count switch
                 {
-                    >= 4 when token.Count == 4 => MonthWide[f.Month - 1],
-                    5 => MonthNarrow[f.Month - 1],
-                    3 => MonthShort[f.Month - 1],
+                    >= 4 when token.Count == 4 => (islamic ? IslamicMonthWide : MonthWide)[f.Month - 1],
+                    5 => islamic ? f.Month.ToString(CultureInfo.InvariantCulture) : MonthNarrow[f.Month - 1],
+                    3 => (islamic ? IslamicMonthShort : MonthShort)[f.Month - 1],
                     2 => f.Month.ToString("D2", CultureInfo.InvariantCulture),
                     _ => f.Month.ToString(CultureInfo.InvariantCulture),
                 });
@@ -686,6 +704,10 @@ internal static class JSIntlDateTimeFormatEngine
 
     internal static List<Part> FormatToParts(Pattern pattern, in Fields f, int fractionalSecondDigits, string source)
     {
+        // A calendar with its own months (the islamic family) renders the date's ISO year/month/day
+        // projected into that calendar; the time-of-day is unchanged.
+        var fields = NeedsCalendarConversion(pattern.Calendar) ? ConvertToCalendar(in f, pattern.Calendar) : f;
+
         var parts = new List<Part>(pattern.Tokens.Count);
         foreach (var token in pattern.Tokens)
         {
@@ -694,10 +716,16 @@ internal static class JSIntlDateTimeFormatEngine
                 parts.Add(new Part("literal", token.Literal, source));
                 continue;
             }
-            var (type, value) = FormatField(in token, in f, fractionalSecondDigits, pattern.Calendar);
+            var (type, value) = FormatField(in token, in fields, fractionalSecondDigits, pattern.Calendar);
             parts.Add(new Part(type, value, source));
         }
         return parts;
+    }
+
+    private static Fields ConvertToCalendar(in Fields f, string calendar)
+    {
+        var (cy, cm, cd) = Temporal.TemporalNonIso.CalendarYmd(calendar, f.Year, f.Month, f.Day);
+        return new Fields(cy, cm, cd, f.Hour, f.Minute, f.Second, f.Millisecond, f.TimeZoneName, f.DayPeriod);
     }
 
     internal static string PartsToString(List<Part> parts)

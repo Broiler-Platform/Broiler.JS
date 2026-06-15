@@ -413,33 +413,48 @@ public partial class JSTemporalInstant : JSObject
         return q;
     }
 
+    // A Temporal.Instant string is a date-time that *must* carry a UTC designator — either Z or a
+    // numeric UTC offset (which may run down to sub-minute precision with a fractional part). The
+    // date may use the extended ("1976-11-18") or basic ("19761118") form, the minutes/seconds of
+    // both the wall clock and the offset are optional, and any trailing RFC 9557 [..] annotations
+    // (time-zone and/or key=value) are permitted and ignored here.
+    private const string YearField = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
     private static readonly Regex InstantPattern = new(
-        @"^(\d{4}|\+\d{6}|-(?!000000)\d{6})-(\d{2})-(\d{2})[Tt ](\d{2}):(\d{2})(?::(\d{2})(?:[.,](\d{1,9}))?)?(?:[Zz]|([+-])(\d{2}):?(\d{2}))$",
+        @"^(?:(?<y>" + YearField + @")-(?<mo>\d{2})-(?<d>\d{2})|(?<y>" + YearField + @")(?<mo>\d{2})(?<d>\d{2}))" +
+        @"[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
+        @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::?(?<om>\d{2})(?::?(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))" +
+        TemporalIsoString.AnnotationsTail + "$",
         RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalInstant(string text)
     {
+        // The trailing annotations are validated even though their payload is ignored: more than one
+        // calendar/time-zone annotation, a malformed key=value, or a critical unknown key is a
+        // RangeError (shared with the other Temporal string parsers).
+        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
+        TemporalIsoString.RejectMalformedAnnotations(text);
+        TemporalIsoString.RejectInvalidAnnotations(text);
+
         var match = InstantPattern.Match(text);
         if (!match.Success)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
 
-        int Year()
-        {
-            var raw = match.Groups[1].Value.Replace('−', '-');
-            return int.Parse(raw, CultureInfo.InvariantCulture);
-        }
+        var year = int.Parse(match.Groups["y"].Value, CultureInfo.InvariantCulture);
+        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
+        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
+        var hour = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture);
+        var minute = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
+        var second = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
+        if (second == 60) second = 59; // a leap second collapses to :59
 
-        var year = Year();
-        var month = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
-        var day = int.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture);
-        var hour = int.Parse(match.Groups[4].Value, CultureInfo.InvariantCulture);
-        var minute = int.Parse(match.Groups[5].Value, CultureInfo.InvariantCulture);
-        var second = match.Groups[6].Success ? int.Parse(match.Groups[6].Value, CultureInfo.InvariantCulture) : 0;
+        if (month < 1 || month > 12 || day < 1 || day > DaysInMonthOf(year, month)
+            || hour > 23 || minute > 59 || second > 59)
+            throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
 
         var fractionNs = BigInteger.Zero;
-        if (match.Groups[7].Success)
+        if (match.Groups["f"].Success)
         {
-            var digits = match.Groups[7].Value.PadRight(9, '0');
+            var digits = match.Groups["f"].Value.PadRight(9, '0');
             fractionNs = BigInteger.Parse(digits, CultureInfo.InvariantCulture);
         }
 
@@ -447,13 +462,25 @@ public partial class JSTemporalInstant : JSObject
         var secondsOfDay = (long)hour * 3600 + (long)minute * 60 + second;
         var ns = (new BigInteger(days) * 86400 + secondsOfDay) * 1_000_000_000 + fractionNs;
 
-        // Apply the UTC offset (subtract to convert local → UTC).
-        if (match.Groups[8].Success)
+        // Apply the UTC offset (subtract to convert local → UTC); a Z designator means a zero offset.
+        if (match.Groups["off"].Success)
         {
-            var offsetSign = match.Groups[8].Value is "-" or "−" ? -1 : 1;
-            var offsetHours = int.Parse(match.Groups[9].Value, CultureInfo.InvariantCulture);
-            var offsetMinutes = int.Parse(match.Groups[10].Value, CultureInfo.InvariantCulture);
-            var offsetNs = (long)(offsetHours * 3600 + offsetMinutes * 60) * 1_000_000_000 * offsetSign;
+            // The offset must use consistent separators (e.g. "+00:0000" mixes ':' with bare digits).
+            if (!TemporalIsoString.IsStrictOffset(match.Groups["off"].Value))
+                throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
+
+            var offsetSign = match.Groups["osign"].Value == "-" ? -1 : 1;
+            var offsetHours = int.Parse(match.Groups["oh"].Value, CultureInfo.InvariantCulture);
+            var offsetMinutes = match.Groups["om"].Success ? int.Parse(match.Groups["om"].Value, CultureInfo.InvariantCulture) : 0;
+            var offsetSeconds = match.Groups["os"].Success ? int.Parse(match.Groups["os"].Value, CultureInfo.InvariantCulture) : 0;
+            if (offsetHours > 23 || offsetMinutes > 59 || offsetSeconds > 59)
+                throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
+
+            var offsetFractionNs = BigInteger.Zero;
+            if (match.Groups["of"].Success)
+                offsetFractionNs = BigInteger.Parse(match.Groups["of"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture);
+
+            var offsetNs = ((long)(offsetHours * 3600 + offsetMinutes * 60 + offsetSeconds) * 1_000_000_000 + offsetFractionNs) * offsetSign;
             ns -= offsetNs;
         }
 
@@ -462,6 +489,16 @@ public partial class JSTemporalInstant : JSObject
 
         return new JSTemporalInstant(ns, InstantPrototype);
     }
+
+    private static bool IsLeapYear(long y) => (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
+
+    private static int DaysInMonthOf(long year, int month) => month switch
+    {
+        1 or 3 or 5 or 7 or 8 or 10 or 12 => 31,
+        4 or 6 or 9 or 11 => 30,
+        2 => IsLeapYear(year) ? 29 : 28,
+        _ => 0,
+    };
 
     // Days from 1970-01-01 (Howard Hinnant's days_from_civil).
     private static long DaysFromCivil(long y, long m, long d)

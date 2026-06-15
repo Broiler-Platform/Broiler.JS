@@ -501,6 +501,7 @@ public partial class JSTemporalPlainTime : JSObject
 
     private static JSValue ParseTemporalTimeString(string text)
     {
+        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
         TemporalIsoString.RejectMalformedAnnotations(text);
         TemporalIsoString.RejectInvalidAnnotations(text);
 

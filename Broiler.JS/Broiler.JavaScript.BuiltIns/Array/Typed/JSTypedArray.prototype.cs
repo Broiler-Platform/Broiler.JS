@@ -306,15 +306,33 @@ partial class JSTypedArray
     {
         ValidateTypedArray("includes");
         var (searchElement, fromIndex) = a.Get2();
-        var startIndex = fromIndex.AsInt32OrDefault();
+
+        // The length is captured before fromIndex coercion (spec step 4: a zero-length array returns
+        // false before ToIntegerOrInfinity runs). A fromIndex valueOf that resizes the buffer is then
+        // observed only by the element reads below — indices left out of bounds read as undefined.
+        var n = Length;
+        if (n == 0)
+            return JSBoolean.False;
+
+        // ToIntegerOrInfinity (not ToInt32): a +Infinity fromIndex is past the end → false, and
+        // -Infinity clamps to the start.
+        var startIndex = ToIntegerOrInfinity(fromIndex);
+        if (startIndex >= n)
+            return JSBoolean.False;
         if (startIndex < 0)
         {
-            startIndex = 0;
+            // A negative fromIndex counts back from the end; below the start it clamps to 0.
+            startIndex = n + startIndex;
+            if (startIndex < 0)
+                startIndex = 0;
         }
-        var en = GetElementEnumerator(startIndex);
-        while (en.MoveNext(out var hasValue, out var item, out var index))
+
+        for (var k = startIndex; k < n; k++)
         {
-            if (hasValue && item.Equals(searchElement))
+            // An index that became out of bounds (a resize during coercion) reads as undefined.
+            var item = TryGetElement((uint)k, out var v) ? v : JSUndefined.Value;
+            // includes uses SameValueZero, so NaN matches NaN (and +0/-0 are equal).
+            if (item.SameValueZero(searchElement))
                 return JSBoolean.True;
         }
         return JSBoolean.False;
@@ -516,21 +534,23 @@ partial class JSTypedArray
         ValidateTypedArray("set");
         var (source, offset) = a.Get2();
         var relativeStart = ToIntegerOrInfinity(offset);
+        // The target length is captured before the source is measured: a source `length` getter (or a
+        // length-tracking source) may resize the target's backing buffer, but the bounds check below
+        // still uses the length the view had on entry.
         int length = Length;
 
         if (relativeStart < 0)
             throw JSEngine.NewRangeError("Offset is out of bounds");
-        if (relativeStart > length)
-            throw JSEngine.NewRangeError("Offset is out of bounds");
-        var targetArrayLength = (long)source.Length + relativeStart;
-        if (targetArrayLength > length)
-            throw JSEngine.NewRangeError("Offset is out of bounds");
+
         if (source is JSTypedArray typedArray)
         {
             // SetTypedArrayFromTypedArray: a source view left detached or out of bounds by a resize is a
             // TypeError (its element count can no longer be trusted).
             if (typedArray.buffer == null || typedArray.buffer.isDetached || typedArray.IsOutOfBounds)
                 throw JSEngine.NewTypeError("TypedArray.prototype.set: the source TypedArray is detached or out of bounds");
+
+            if ((long)typedArray.Length + relativeStart > length)
+                throw JSEngine.NewRangeError("Offset is out of bounds");
 
             var src = typedArray.buffer.buffer;
             var target = buffer.buffer;
@@ -563,12 +583,16 @@ partial class JSTypedArray
             return JSValue.UndefinedValue;
         }
 
+        // SetTypedArrayFromArrayLike: read source.length (a getter may resize the target's buffer),
+        // bounds-check against the captured target length, then copy element by element via [[Get]]
+        // (so a source Proxy / accessor source is observed correctly).
+        var srcLength = (long)ToIntegerOrInfinity(source[KeyStrings.length]);
+        if (srcLength + relativeStart > length)
+            throw JSEngine.NewRangeError("Offset is out of bounds");
+
         var rs = (uint)relativeStart;
-        var en = source.GetElementEnumerator();
-        while (en.MoveNext(out var hasValue, out var value, out var index))
-        {
-            this[index + rs] = value;
-        }
+        for (long i = 0; i < srcLength; i++)
+            this[rs + (uint)i] = source[JSValue.CreateNumber(i)];
 
         return JSValue.UndefinedValue;
     }
@@ -690,22 +714,24 @@ partial class JSTypedArray
     [JSExport("subarray", Length = 2)]
     public JSValue SubArray(in Arguments a)
     {
-        // subarray does NOT call ValidateTypedArray (it can be taken of an out-of-bounds view);
-        // it clamps to the live length below, so no validation is performed here.
-        // ToIntegerOrInfinity coerces start/end (valueOf, strings, booleans, NaN→0);
-        // an undefined end (explicit or absent) defaults to len, not 0.
+        // subarray does NOT call ValidateTypedArray (it can be taken of an out-of-bounds view).
+        // srcLength is captured *before* coercing start/end (spec MakeTypedArrayWithBufferWitnessRecord):
+        // an out-of-bounds view has length 0, and a start/end valueOf that resizes the buffer is
+        // observed only when the new view is created — so a shrink that leaves the requested extent
+        // past the buffer end surfaces as a RangeError from the species constructor (not silently
+        // clamped to the live length).
+        var srcLength = IsOutOfBounds ? 0 : Length;
+
+        // ToIntegerOrInfinity coerces start/end (valueOf, strings, booleans, NaN→0); an undefined end
+        // (explicit or absent) defaults to srcLength, not 0.
         var begin = ToIntegerOrInfinity(a.GetAt(0), 0);
-        var end = ToIntegerOrInfinity(a.GetAt(1), Length);
+        var end = ToIntegerOrInfinity(a.GetAt(1), srcLength);
 
-        int newLength;
+        begin = begin < 0 ? Math.Max(srcLength + begin, 0) : Math.Min(begin, srcLength);
+        end = end < 0 ? Math.Max(srcLength + end, 0) : Math.Min(end, srcLength);
+        var newLength = Math.Max(end - begin, 0);
 
-        begin = begin < 0 ? Math.Max(Length + begin, 0) : Math.Min(begin, Length);
-        end = end < 0 ? Math.Max(Length + end, 0) : Math.Min(end, Length);
-        newLength = Math.Max(end - begin, 0);
-        var r = GetSpeciesConstructor(this).CreateInstance(buffer, new JSNumber(byteOffset + begin * bytesPerElement), new JSNumber(newLength));
-
-        return r;
-
+        return GetSpeciesConstructor(this).CreateInstance(buffer, new JSNumber(byteOffset + begin * bytesPerElement), new JSNumber(newLength));
     }
 
     [JSExport("values", Length = 0)]

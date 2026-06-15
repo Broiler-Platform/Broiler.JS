@@ -296,6 +296,21 @@ public partial class JSTemporalDuration
                 JSTemporalZonedDateTime.ValidateTimeZoneIdentifier(tz);
         }
 
+        // A relativeTo property bag carrying a timeZone is a ZonedDateTime relativeTo; its offset
+        // field (when present) must be a String (else TypeError) and a valid UTC offset (else
+        // RangeError), even though it is then consumed here as a 24-hour-day PlainDate.
+        if (rel is JSObject relObj && !relObj[KeyStrings.GetOrCreate("timeZone")].IsUndefined)
+        {
+            var off = relObj[KeyStrings.GetOrCreate("offset")];
+            if (!off.IsUndefined)
+            {
+                if (!off.IsString)
+                    throw JSEngine.NewTypeError("Temporal.Duration: the relativeTo offset field must be a string");
+                if (!TemporalIsoString.IsStrictOffset(off.StringValue))
+                    throw JSEngine.NewRangeError($"Temporal.Duration: invalid offset string \"{off.StringValue}\"");
+            }
+        }
+
         date = JSTemporalPlainDate.ToRelativeDate(rel);
         if (TemporalCalendarMath.IsNonIso(date.calendarId))
             throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{date.calendarId}\" calendar is not yet implemented");

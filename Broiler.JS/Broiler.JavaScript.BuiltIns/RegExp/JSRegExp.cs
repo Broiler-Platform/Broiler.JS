@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System;
@@ -668,6 +669,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // separate alternatives of a disjunction; the same name twice in a single
             // alternative (`(?<x>a)(?<x>b)`) is a SyntaxError.
             ValidateDuplicateNamedGroups(pattern);
+
+            // Each (?<name>…) GroupSpecifier must be a valid RegExpIdentifierName; an exotic name
+            // such as (?<🦊>…) or (?<𝟚the>…) (an ID_Continue-only first character) is a SyntaxError.
+            ValidateNamedGroupNames(pattern);
 
             // BROILER-PATCH: Transform ES3 empty character classes and forward backreferences
             // for .NET compatibility (tests 89, 90)
@@ -1427,6 +1432,117 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
             onGroup(++index, null);
         }
+    }
+
+    // Validates every named-capture GroupSpecifier (?<name>…): the name must be a RegExpIdentifierName
+    // (first code point a RegExpIdentifierStart, the rest RegExpIdentifierParts), throwing a
+    // SyntaxError otherwise.
+    private static void ValidateNamedGroupNames(string pattern)
+    {
+        ScanCaptureGroups(pattern, (_, name) =>
+        {
+            if (name != null && !IsValidGroupName(name))
+                throw JSEngine.NewSyntaxError($"Invalid regular expression: invalid capture group name \"{name}\"");
+        });
+    }
+
+    // A GroupName's RegExpIdentifierName always uses Unicode escape rules (\u{…} and \u-escaped
+    // surrogate pairs are accepted) regardless of the regex's u/v flag.
+    private static bool IsValidGroupName(string name)
+    {
+        if (!TryDecodeGroupName(name, unicode: true, out var codePoints) || codePoints.Count == 0)
+            return false;
+        if (!IsRegExpIdentifierStart(codePoints[0]))
+            return false;
+        for (var k = 1; k < codePoints.Count; k++)
+            if (!IsRegExpIdentifierPart(codePoints[k]))
+                return false;
+        return true;
+    }
+
+    // Decodes a group-name's source text into Unicode code points: \uXXXX and (only in u/v mode)
+    // \u{…} escapes are resolved, and literal surrogate pairs are combined. Returns false for a
+    // malformed escape, a stray backslash, or a lone surrogate (none of which can appear in a name).
+    private static bool TryDecodeGroupName(string name, bool unicode, out List<int> codePoints)
+    {
+        codePoints = new List<int>(name.Length);
+        for (var i = 0; i < name.Length; i++)
+        {
+            var c = name[i];
+            if (c == '\\')
+            {
+                if (i + 1 >= name.Length || name[i + 1] != 'u') return false; // only \u escapes are legal
+                i += 2;
+                if (i < name.Length && name[i] == '{')
+                {
+                    if (!unicode) return false; // \u{…} is a u/v-mode-only escape
+                    var close = name.IndexOf('}', i + 1);
+                    if (close < 0 || close == i + 1) return false;
+                    if (!int.TryParse(name.AsSpan(i + 1, close - (i + 1)), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var cp) || cp > 0x10FFFF)
+                        return false;
+                    codePoints.Add(cp);
+                    i = close;
+                }
+                else
+                {
+                    if (i + 4 > name.Length ||
+                        !int.TryParse(name.AsSpan(i, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var unit))
+                        return false;
+                    i += 3;
+                    // In u/v mode a \u-escaped lead surrogate may pair with a following \u-escaped trail.
+                    if (unicode && unit is >= 0xD800 and <= 0xDBFF
+                        && i + 6 < name.Length && name[i + 1] == '\\' && name[i + 2] == 'u'
+                        && int.TryParse(name.AsSpan(i + 3, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var trail)
+                        && trail is >= 0xDC00 and <= 0xDFFF)
+                    {
+                        codePoints.Add(char.ConvertToUtf32((char)unit, (char)trail));
+                        i += 6;
+                    }
+                    else if (unit is >= 0xD800 and <= 0xDFFF)
+                    {
+                        return false; // a lone surrogate is not a valid identifier code point
+                    }
+                    else codePoints.Add(unit);
+                }
+            }
+            else if (char.IsHighSurrogate(c) && i + 1 < name.Length && char.IsLowSurrogate(name[i + 1]))
+            {
+                codePoints.Add(char.ConvertToUtf32(c, name[i + 1]));
+                i++;
+            }
+            else if (char.IsSurrogate(c))
+            {
+                return false; // a lone surrogate
+            }
+            else codePoints.Add(c);
+        }
+        return true;
+    }
+
+    private static bool IsRegExpIdentifierStart(int cp)
+    {
+        if (cp < 0 || cp > 0x10FFFF || cp is >= 0xD800 and <= 0xDFFF) return false;
+        if (cp is '$' or '_' or 0x1885 or 0x1886 or 0x2118 or 0x212E or 0x309B or 0x309C) return true;
+        return char.GetUnicodeCategory(char.ConvertFromUtf32(cp), 0) switch
+        {
+            UnicodeCategory.UppercaseLetter or UnicodeCategory.LowercaseLetter or UnicodeCategory.TitlecaseLetter
+            or UnicodeCategory.ModifierLetter or UnicodeCategory.OtherLetter or UnicodeCategory.LetterNumber => true,
+            _ => false,
+        };
+    }
+
+    private static bool IsRegExpIdentifierPart(int cp)
+    {
+        if (cp < 0 || cp > 0x10FFFF || cp is >= 0xD800 and <= 0xDFFF) return false;
+        if (IsRegExpIdentifierStart(cp)) return true;
+        if (cp is 0x200C or 0x200D or 0x00B7 or 0x0387 or 0x19DA or 0x30FB or 0xFF65) return true;
+        if (cp is >= 0x1369 and <= 0x1371) return true;
+        return char.GetUnicodeCategory(char.ConvertFromUtf32(cp), 0) switch
+        {
+            UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark
+            or UnicodeCategory.DecimalDigitNumber or UnicodeCategory.ConnectorPunctuation => true,
+            _ => false,
+        };
     }
 
     // Rewrites a JS \k<name> reference to its synthetic .NET form. A name shared by

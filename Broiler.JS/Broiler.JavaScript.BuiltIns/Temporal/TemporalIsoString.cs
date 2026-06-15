@@ -37,12 +37,17 @@ internal static class TemporalIsoString
     private static readonly Regex CalendarAnnotationPattern =
         new(@"\[!?u-ca=[^\]]+\]", RegexOptions.CultureInvariant);
 
-    // A Temporal string carries at most one calendar (u-ca) annotation; more than one is a
-    // RangeError regardless of the critical (!) flag.
+    // When a Temporal string carries more than one calendar (u-ca) annotation the first one wins and
+    // the rest are ignored — *unless* any of them is flagged critical ("!"), in which case the
+    // duplication is a RangeError (a critical annotation must not be silently dropped).
     internal static void RejectMultipleCalendarAnnotations(string text)
     {
-        if (CalendarAnnotationPattern.Matches(text).Count > 1)
-            throw JSEngine.NewRangeError($"Temporal: more than one calendar annotation in \"{text}\"");
+        var matches = CalendarAnnotationPattern.Matches(text);
+        if (matches.Count <= 1) return;
+
+        foreach (Match m in matches)
+            if (m.Value.StartsWith("[!", StringComparison.Ordinal))
+                throw JSEngine.NewRangeError($"Temporal: more than one calendar annotation in \"{text}\"");
     }
 
     // Each trailing [..] annotation is either a TimeZoneIdentifier (no '=') or a key=value
@@ -73,6 +78,9 @@ internal static class TemporalIsoString
     //     carry no '='); a second one — e.g. "...[UTC][UTC]" — is a RangeError.
     //   • An annotation flagged critical ("!") whose key is not one Temporal recognizes (only "u-ca"
     //     is) — e.g. "...[!foo=bar]" — is a RangeError. A non-critical unknown annotation is ignored.
+    //   • A time-zone annotation that is a numeric UTC offset may only carry minute precision
+    //     (±HH, ±HH:MM, ±HHMM); a sub-minute offset such as "[-07:00:01]" is a RangeError even though
+    //     the same offset is permitted on the wall clock.
     // (RejectMultipleCalendarAnnotations / RejectMalformedAnnotations cover the u-ca-specific checks.)
     internal static void RejectInvalidAnnotations(string text)
     {
@@ -87,6 +95,9 @@ internal static class TemporalIsoString
             {
                 if (++timeZoneCount > 1)
                     throw JSEngine.NewRangeError($"Temporal: more than one time zone annotation in \"{text}\"");
+                if ((content.StartsWith("+", StringComparison.Ordinal) || content.StartsWith("-", StringComparison.Ordinal))
+                    && !MinutePrecisionOffsetName.IsMatch(content))
+                    throw JSEngine.NewRangeError($"Temporal: sub-minute offset in time zone annotation \"[{m.Groups[1].Value}]\" in \"{text}\"");
                 continue;
             }
 
@@ -95,6 +106,9 @@ internal static class TemporalIsoString
                 throw JSEngine.NewRangeError($"Temporal: unknown annotation with critical flag \"[{m.Groups[1].Value}]\" in \"{text}\"");
         }
     }
+
+    // A numeric UTC offset used as a *time-zone annotation* is restricted to minute precision.
+    private static readonly Regex MinutePrecisionOffsetName = new(@"^[+-]\d{2}(?::?\d{2})?$", RegexOptions.CultureInvariant);
 
     // A date or date-time. Time, fraction, and Z / numeric-offset designators are all optional; the
     // date portion is validated separately by IsValidDate.

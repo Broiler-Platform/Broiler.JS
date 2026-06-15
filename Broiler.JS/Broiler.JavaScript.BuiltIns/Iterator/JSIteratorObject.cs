@@ -63,12 +63,48 @@ public partial class JSIteratorObject : JSObject
             ?? ((iteratorConstructor as JSFunction)?.prototype);
     }
 
-    internal JSIteratorObject(IElementEnumerator enumerator) : this() => _enumerator = enumerator;
+    internal JSIteratorObject(IElementEnumerator enumerator) : this(HelperPrototype()) => _enumerator = enumerator;
+
+    // An engine iterator with an explicitly chosen prototype (the %WrapForValidIteratorPrototype%
+    // used by Iterator.from, vs the %IteratorHelperPrototype% used by map/filter/…).
+    internal JSIteratorObject(JSObject prototype, IElementEnumerator enumerator) : this(prototype) => _enumerator = enumerator;
+
+    // %IteratorHelperPrototype% and %WrapForValidIteratorPrototype% are per-realm objects whose
+    // [[Prototype]] is that realm's %Iterator.prototype%; they (not the base prototype) carry next /
+    // return. Keyed by the base prototype so each realm resolves its own pair. (Stored off-object so
+    // they do not appear among %Iterator.prototype%'s own properties, which test262 pins exactly.)
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSObject, JSObject> HelperPrototypes = new();
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSObject, JSObject> WrapPrototypes = new();
+
+    internal static void RegisterHelperPrototypes(JSObject baseProto, JSObject helperProto, JSObject wrapProto)
+    {
+        HelperPrototypes.AddOrUpdate(baseProto, helperProto);
+        WrapPrototypes.AddOrUpdate(baseProto, wrapProto);
+    }
+
+    private static JSObject BaseIteratorPrototype()
+        => ((JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Iterator")] as JSFunction)?.prototype;
+
+    private static JSObject HelperPrototype()
+    {
+        var b = BaseIteratorPrototype();
+        return b != null && HelperPrototypes.TryGetValue(b, out var h) ? h : b;
+    }
+
+    private static JSObject WrapPrototype()
+    {
+        var b = BaseIteratorPrototype();
+        return b != null && WrapPrototypes.TryGetValue(b, out var w) ? w : b;
+    }
 
     // ---------------------------------------------------------------
     // Iterator protocol – next / return
+    //
+    // These are NOT exported onto %Iterator.prototype%; they are registered on
+    // %IteratorHelperPrototype% / %WrapForValidIteratorPrototype% (see IteratorPrototypeSetup), so the
+    // base %Iterator.prototype% has no own "next"/"return" (per spec, and so its @@dispose finds no
+    // "return" to call).
     // ---------------------------------------------------------------
-    [JSExport("next")]
     internal JSValue Next(in Arguments a)
     {
         ThrowIfExecuting();
@@ -88,7 +124,6 @@ public partial class JSIteratorObject : JSObject
         return IteratorResult(JSUndefined.Value, true);
     }
 
-    [JSExport("return")]
     internal JSValue Return(in Arguments a)
     {
         var value = a.Length > 0 ? a.Get1() : JSUndefined.Value;
@@ -155,15 +190,17 @@ public partial class JSIteratorObject : JSObject
         if (obj is JSIteratorObject)
             return obj;
 
+        // A wrapper produced by Iterator.from uses %WrapForValidIteratorPrototype% (next / return,
+        // but no own @@toStringTag — it inherits "Iterator" from %Iterator.prototype%).
         if (obj.IsString)
-            return new JSIteratorObject(obj.GetElementEnumerator());
+            return new JSIteratorObject(WrapPrototype(), obj.GetElementEnumerator());
 
         if (obj is not JSObject @object)
             throw JSEngine.NewTypeError("Iterator.from requires an iterable or iterator argument");
 
         var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];
         if (iteratorMethod.IsNull || iteratorMethod.IsUndefined)
-            return new JSIteratorObject(GetDirectEnumerator(@object));
+            return new JSIteratorObject(WrapPrototype(), GetDirectEnumerator(@object));
 
         if (!iteratorMethod.IsFunction)
             throw JSEngine.NewTypeError("Iterator.from requires a callable @@iterator");
@@ -172,7 +209,7 @@ public partial class JSIteratorObject : JSObject
         if (!iterator.IsObject)
             throw JSEngine.NewTypeError("Iterator.from requires an object iterator result");
 
-        return new JSIteratorObject(new JSIterator(iterator));
+        return new JSIteratorObject(WrapPrototype(), new JSIterator(iterator));
     }
 
     // ---------------------------------------------------------------
@@ -1509,11 +1546,25 @@ public partial class JSIteratorObject : JSObject
             catch { CloseIteratorIfPossible(source); throw; }
         }
 
+        // IfAbruptCloseIterator(innerNext, iterated): an abrupt completion while stepping the inner
+        // iterator closes the *outer* (source) iterator before the error propagates.
+        private bool StepInner(out bool hasValue, out JSValue value, out uint index)
+        {
+            try { return _inner.MoveNext(out hasValue, out value, out index); }
+            catch { CloseIteratorIfPossible(source); throw; }
+        }
+
+        private bool StepInner(out JSValue value)
+        {
+            try { return _inner.MoveNext(out value); }
+            catch { CloseIteratorIfPossible(source); throw; }
+        }
+
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
             while (true)
             {
-                if (_inner != null && _inner.MoveNext(out hasValue, out value, out index))
+                if (_inner != null && StepInner(out hasValue, out value, out index))
                     return true;
 
                 if (!source.MoveNext(out var item))
@@ -1527,7 +1578,7 @@ public partial class JSIteratorObject : JSObject
         {
             while (true)
             {
-                if (_inner != null && _inner.MoveNext(out value)) return true;
+                if (_inner != null && StepInner(out value)) return true;
                 if (!source.MoveNext(out var item))
                 { value = JSUndefined.Value; return false; }
 
@@ -1539,7 +1590,7 @@ public partial class JSIteratorObject : JSObject
         {
             while (true)
             {
-                if (_inner != null && _inner.MoveNext(out value)) return true;
+                if (_inner != null && StepInner(out value)) return true;
                 if (!source.MoveNext(out var item))
                 { value = @default; return false; }
                 _inner = MapItem(item);
@@ -1550,34 +1601,28 @@ public partial class JSIteratorObject : JSObject
         {
             while (true)
             {
-                if (_inner != null && _inner.MoveNext(out var v)) return v;
+                if (_inner != null && StepInner(out var v)) return v;
                 if (!source.MoveNext(out var item)) return @default;
 
                 _inner = MapItem(item);
             }
         }
 
-        public JSValue Return()
+        // %IteratorHelperPrototype%.return for flatMap closes *both* the active inner iterator (when
+        // one is alive) and the outer (source) iterator, surfacing the first close error if any.
+        private JSValue CloseBoth(JSValue value)
         {
-            if (_inner is IReturnableEnumerator innerReturnable)
-                return innerReturnable.Return();
-
-            if (source is IReturnableEnumerator sourceReturnable)
-                return sourceReturnable.Return();
-
-            return IteratorResult(JSUndefined.Value, true);
-        }
-
-        public JSValue Return(JSValue value)
-        {
-            if (_inner is IReturnableEnumerator innerReturnable)
-                return innerReturnable.Return();
-
-            if (source is IReturnableEnumerator sourceReturnable)
-                return sourceReturnable.Return();
-
+            Exception firstException = null;
+            CloseIteratorForReturn(_inner, ref firstException);
+            CloseIteratorForReturn(source, ref firstException);
+            if (firstException != null)
+                throw firstException;
             return IteratorResult(value, true);
         }
+
+        public JSValue Return() => CloseBoth(JSUndefined.Value);
+
+        public JSValue Return(JSValue value) => CloseBoth(value);
     }
 
     private readonly record struct ConcatSource(JSObject Iterable, JSValue IteratorMethod);
