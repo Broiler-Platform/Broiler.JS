@@ -32,6 +32,12 @@ public partial class JSIteratorObject : JSObject
     private bool _executing;
     private bool _started;
 
+    // A %WrapForValidIterator% produced by Iterator.from delegates to an underlying iterator record
+    // { [[Iterator]], [[NextMethod]] }: its next() calls the stored next method and returns the result
+    // verbatim (NOT validated to be an Object), and its return() forwards to the underlying "return".
+    private readonly JSObject _wrapIterator;
+    private readonly JSValue _wrapNextMethod;
+
     // ---------------------------------------------------------------
     // Constructors
     // ---------------------------------------------------------------
@@ -68,6 +74,14 @@ public partial class JSIteratorObject : JSObject
     // An engine iterator with an explicitly chosen prototype (the %WrapForValidIteratorPrototype%
     // used by Iterator.from, vs the %IteratorHelperPrototype% used by map/filter/…).
     internal JSIteratorObject(JSObject prototype, IElementEnumerator enumerator) : this(prototype) => _enumerator = enumerator;
+
+    // A delegating %WrapForValidIterator% (Iterator.from over an object/iterator): next()/return()
+    // forward to the underlying iterator and pass its results through unchanged.
+    internal JSIteratorObject(JSObject prototype, JSObject wrapIterator, JSValue wrapNextMethod) : this(prototype)
+    {
+        _wrapIterator = wrapIterator;
+        _wrapNextMethod = wrapNextMethod;
+    }
 
     // %IteratorHelperPrototype% and %WrapForValidIteratorPrototype% are per-realm objects whose
     // [[Prototype]] is that realm's %Iterator.prototype%; they (not the base prototype) carry next /
@@ -109,6 +123,25 @@ public partial class JSIteratorObject : JSObject
     {
         ThrowIfExecuting();
 
+        if (_wrapIterator != null)
+        {
+            // %WrapForValidIteratorPrototype%.next: Call([[NextMethod]], [[Iterator]]) and return the
+            // result verbatim (a non-Object result is NOT rejected here, unlike the iterator protocol).
+            if (!_wrapNextMethod.IsFunction)
+                throw JSEngine.NewTypeError("Iterator.from: the wrapped iterator's next method is not callable");
+
+            try
+            {
+                _executing = true;
+                _started = true;
+                return _wrapNextMethod.InvokeFunction(new Arguments(_wrapIterator));
+            }
+            finally
+            {
+                _executing = false;
+            }
+        }
+
         try
         {
             _executing = true;
@@ -128,6 +161,20 @@ public partial class JSIteratorObject : JSObject
     {
         var value = a.Length > 0 ? a.Get1() : JSUndefined.Value;
         ThrowIfExecuting();
+
+        if (_wrapIterator != null)
+        {
+            // %WrapForValidIteratorPrototype%.return: forward to the underlying iterator's "return"
+            // method if present; otherwise the wrapper is simply marked done.
+            _done = true;
+            var returnMethod = _wrapIterator[KeyStrings.GetOrCreate("return")];
+            if (returnMethod.IsNullOrUndefined)
+                return IteratorResult(JSUndefined.Value, true);
+            if (!returnMethod.IsFunction)
+                throw JSEngine.NewTypeError("Iterator.from: the wrapped iterator's return method is not callable");
+            return returnMethod.InvokeFunction(new Arguments(_wrapIterator));
+        }
+
         if (_done)
             return IteratorResult(value, true);
 
@@ -198,18 +245,33 @@ public partial class JSIteratorObject : JSObject
         if (obj is not JSObject @object)
             throw JSEngine.NewTypeError("Iterator.from requires an iterable or iterator argument");
 
+        // GetIteratorFlattenable: with no (or nullish) @@iterator the object is itself the iterator;
+        // otherwise its @@iterator is called to obtain one. The wrapper records { iterator, nextMethod }
+        // and delegates next()/return() to it, returning results verbatim (WrapForValidIterator).
         var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];
+        JSObject iterator;
         if (iteratorMethod.IsNull || iteratorMethod.IsUndefined)
-            return new JSIteratorObject(WrapPrototype(), GetDirectEnumerator(@object));
-
-        if (!iteratorMethod.IsFunction)
+        {
+            iterator = @object;
+        }
+        else if (!iteratorMethod.IsFunction)
+        {
             throw JSEngine.NewTypeError("Iterator.from requires a callable @@iterator");
+        }
+        else
+        {
+            var iteratorValue = iteratorMethod.InvokeFunction(new Arguments(@object));
+            if (iteratorValue is not JSObject iteratorObject)
+                throw JSEngine.NewTypeError("Iterator.from requires an object iterator result");
+            iterator = iteratorObject;
+        }
 
-        var iterator = iteratorMethod.InvokeFunction(new Arguments(@object));
-        if (!iterator.IsObject)
-            throw JSEngine.NewTypeError("Iterator.from requires an object iterator result");
+        // If the resolved iterator is already an Iterator instance, return it directly (no wrapper).
+        if (iterator is JSIteratorObject directIterator)
+            return directIterator;
 
-        return new JSIteratorObject(WrapPrototype(), new JSIterator(iterator));
+        var nextMethod = iterator[KeyStrings.next];
+        return new JSIteratorObject(WrapPrototype(), iterator, nextMethod);
     }
 
     // ---------------------------------------------------------------
