@@ -12,12 +12,12 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 // Those compute true new moons and principal solar terms and agree with ICU / the Temporal proposal
 // over their supported span (chinese ≈ 1901–2100, dangi ≈ 918–2050).
 //
-// For the chinese calendar BELOW the .NET span (calendar years ≤ 1900, which Temporal still requires
-// — test262's "non-approximated range" begins at 1899), an astronomical fallback
-// (UnicodeCldr.LocaleData.CldrChineseCalendar, the Calendrical Calculations algorithm ICU derives
-// from) takes over; it agrees with the .NET calendar across the whole 1901–2100 overlap, so the two
-// meet seamlessly at the boundary (both place the 1901 new year on 1901-02-19). Dangi is left to the
-// .NET calendar, whose range already covers every date Temporal exercises.
+// Outside the .NET span an astronomical fallback (UnicodeCldr.LocaleData.CldrChineseCalendar, the
+// Calendrical Calculations algorithm ICU derives from) takes over. For the chinese calendar it is
+// exact and agrees with the .NET calendar across the whole 1901–2100 overlap, so the two meet
+// seamlessly at the boundary (both place the 1901 new year on 1901-02-19). Temporal requires the far
+// past/future to be representable without throwing but not to be exact, so dangi years outside the
+// Korean .NET span (≈ 918–2050) reuse the same Beijing-meridian fallback as an approximation.
 //
 // Field conventions (matching Temporal / Intl.Era-monthcode):
 //   * `year` is the Gregorian year in which the calendar year began (the year of its new-year day).
@@ -36,20 +36,38 @@ internal static class TemporalLunisolarCalendar
 
     private static long ToEpochDays(DateTime dt) => (long)(dt.Date - Epoch1970).TotalDays;
 
-    // The first chinese calendar year and the first epoch day the .NET ChineseLunisolarCalendar
-    // supports (the 1901 new year, 1901-02-19). Years/dates below these are served by the
-    // astronomical fallback; above them the .NET calendar is used as before.
+    // The Gregorian-year span and epoch-day span each .NET back end supports (chinese ≈ 1901–2100,
+    // dangi ≈ 918–2050). Years/dates outside a back end's span are served by the astronomical
+    // fallback; inside it the .NET calendar is used. The .NET and fallback results agree across the
+    // overlap, so the two meet seamlessly at the boundary.
     private static readonly int ChineseNetMinYear =
         Chinese.ToDateTime(Chinese.GetYear(Chinese.MinSupportedDateTime), 1, 1, 0, 0, 0, 0).Year;
+    private static readonly int ChineseNetMaxYear =
+        Chinese.ToDateTime(Chinese.GetYear(Chinese.MaxSupportedDateTime), 1, 1, 0, 0, 0, 0).Year;
     private static readonly long ChineseNetMinEpoch = ToEpochDays(Chinese.MinSupportedDateTime);
+    private static readonly long ChineseNetMaxEpoch = ToEpochDays(Chinese.MaxSupportedDateTime);
+    private static readonly int KoreanNetMinYear =
+        Korean.ToDateTime(Korean.GetYear(Korean.MinSupportedDateTime), 1, 1, 0, 0, 0, 0).Year;
+    private static readonly int KoreanNetMaxYear =
+        Korean.ToDateTime(Korean.GetYear(Korean.MaxSupportedDateTime), 1, 1, 0, 0, 0, 0).Year;
+    private static readonly long KoreanNetMinEpoch = ToEpochDays(Korean.MinSupportedDateTime);
+    private static readonly long KoreanNetMaxEpoch = ToEpochDays(Korean.MaxSupportedDateTime);
 
-    // True when the chinese calendar year is below the .NET-supported span and must use the
-    // astronomical fallback.
-    private static bool ChineseAstroYear(string id, int year) => id == "chinese" && year < ChineseNetMinYear;
+    private static int NetMinYear(string id) => id == "dangi" ? KoreanNetMinYear : ChineseNetMinYear;
+    private static int NetMaxYear(string id) => id == "dangi" ? KoreanNetMaxYear : ChineseNetMaxYear;
+    private static long NetMinEpoch(string id) => id == "dangi" ? KoreanNetMinEpoch : ChineseNetMinEpoch;
+    private static long NetMaxEpoch(string id) => id == "dangi" ? KoreanNetMaxEpoch : ChineseNetMaxEpoch;
+
+    // True when (id, year) falls outside the .NET back end's supported span and must use the
+    // astronomical fallback. The fallback is the Beijing-meridian chinese algorithm; for the chinese
+    // calendar it is exact, and for dangi years outside the Korean .NET span (the far past/future
+    // Temporal requires not to throw but does not require to be exact) it is an approximation.
+    private static bool UseAstro(string id, int year) => year < NetMinYear(id) || year > NetMaxYear(id);
+    private static bool UseAstroEpoch(string id, long epoch) => epoch < NetMinEpoch(id) || epoch > NetMaxEpoch(id);
 
     // The leap-month ordinal (0 if none) for (id, year), from whichever backend serves the year.
     private static int LeapMonthOrdinal(string id, int year)
-        => ChineseAstroYear(id, year)
+        => UseAstro(id, year)
             ? CldrChineseCalendar.GetYear(year).LeapMonthOrdinal
             : LeapOrdinal(Cal(id), NetYear(Cal(id), id, year));
 
@@ -73,7 +91,7 @@ internal static class TemporalLunisolarCalendar
 
     internal static (int year, int month, int day) YmdFromEpochDays(string id, long epoch)
     {
-        if (id == "chinese" && epoch < ChineseNetMinEpoch)
+        if (UseAstroEpoch(id, epoch))
             return CldrChineseCalendar.FromEpochDay(epoch);
 
         var cal = Cal(id);
@@ -85,7 +103,7 @@ internal static class TemporalLunisolarCalendar
 
     internal static long EpochDaysFromYmd(string id, int year, int month, int day)
     {
-        if (ChineseAstroYear(id, year))
+        if (UseAstro(id, year))
         {
             var info = CldrChineseCalendar.GetYear(year);
             if (month < 1 || month > info.MonthCount || day < 1 || day > info.DaysInMonth(month))
@@ -104,35 +122,35 @@ internal static class TemporalLunisolarCalendar
 
     internal static int MonthsInYear(string id, int year)
     {
-        if (ChineseAstroYear(id, year)) return CldrChineseCalendar.GetYear(year).MonthCount;
+        if (UseAstro(id, year)) return CldrChineseCalendar.GetYear(year).MonthCount;
         var cal = Cal(id);
         return cal.GetMonthsInYear(NetYear(cal, id, year));
     }
 
     internal static bool InLeapYear(string id, int year)
     {
-        if (ChineseAstroYear(id, year)) return CldrChineseCalendar.GetYear(year).LeapMonthOrdinal != 0;
+        if (UseAstro(id, year)) return CldrChineseCalendar.GetYear(year).LeapMonthOrdinal != 0;
         var cal = Cal(id);
         return cal.IsLeapYear(NetYear(cal, id, year));
     }
 
     internal static int DaysInYear(string id, int year)
     {
-        if (ChineseAstroYear(id, year)) return CldrChineseCalendar.GetYear(year).DaysInYear;
+        if (UseAstro(id, year)) return CldrChineseCalendar.GetYear(year).DaysInYear;
         var cal = Cal(id);
         return cal.GetDaysInYear(NetYear(cal, id, year));
     }
 
     internal static int DaysInMonth(string id, int year, int month)
     {
-        if (ChineseAstroYear(id, year)) return CldrChineseCalendar.GetYear(year).DaysInMonth(month);
+        if (UseAstro(id, year)) return CldrChineseCalendar.GetYear(year).DaysInMonth(month);
         var cal = Cal(id);
         return cal.GetDaysInMonth(NetYear(cal, id, year), month);
     }
 
     internal static int DayOfYear(string id, int year, int month, int day)
     {
-        if (ChineseAstroYear(id, year))
+        if (UseAstro(id, year))
         {
             var info = CldrChineseCalendar.GetYear(year);
             return (int)(info.FirstEpochDayOfMonth(month) - info.NewYearEpochDay) + day;

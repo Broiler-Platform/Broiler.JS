@@ -65,6 +65,38 @@ public class TemporalNonIsoCalendarTests
         Assert.Equal(expected, result);
     }
 
+    [Theory]
+    // Extreme lunisolar years far outside the .NET back-end span must resolve (approximately)
+    // rather than throw (problem 10). In-range years stay exact.
+    [InlineData("chinese", 250000)]
+    [InlineData("chinese", -250000)]
+    [InlineData("dangi", 250000)]
+    [InlineData("dangi", -250000)]
+    public void From_LunisolarExtremeYears_DoNotThrow(string calendar, int year)
+    {
+        var result = Eval($$"""
+            let ok = false;
+            try { const d = Temporal.PlainDate.from({ calendar: "{{calendar}}", year: {{year}}, month: 1, day: 1 }); ok = d instanceof Temporal.PlainDate; }
+            catch (e) { ok = false; }
+            ok;
+        """);
+        Assert.Equal("true", result);
+    }
+
+    [Theory]
+    // In-range lunisolar dates remain exact across both back ends.
+    [InlineData("chinese", "{ year: 2100, month: 12, day: 29 }", "2100|12|29")]
+    [InlineData("chinese", "{ year: 1900, month: 1, day: 1 }", "1900|1|1")]
+    [InlineData("dangi", "{ year: 2050, month: 13, day: 29 }", "2050|13|29")]
+    public void From_LunisolarInRange_IsExact(string calendar, string spec, string expected)
+    {
+        var result = Eval($$"""
+            const d = Temporal.PlainDate.from(Object.assign({ calendar: "{{calendar}}" }, {{spec}}));
+            d.year + '|' + d.month + '|' + d.day;
+        """);
+        Assert.Equal(expected, result);
+    }
+
     [Fact]
     public void MonthDayFrom_IslamicCivil_ConstrainsDay()
     {
