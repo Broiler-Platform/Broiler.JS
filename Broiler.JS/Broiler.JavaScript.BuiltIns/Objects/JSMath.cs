@@ -27,7 +27,8 @@ public partial class JSMath : JSObject
     public readonly static double LOG10E = Math.Log10(E);
 
     [JSExportSameName]
-    public readonly static double LOG2E = Math.Log(E);
+    // Math.LOG2E is the base-2 logarithm of E (≈1.4426950408889634), not the natural log of E (=1).
+    public readonly static double LOG2E = Math.Log2(E);
 
     [JSExportSameName]
     public readonly static double PI = Math.PI;
