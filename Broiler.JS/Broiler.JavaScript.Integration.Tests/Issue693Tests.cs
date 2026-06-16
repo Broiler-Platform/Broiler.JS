@@ -177,7 +177,9 @@ public class Issue693Tests
         Assert.Equal("RangeError", Eval(
             "var nf = new Intl.NumberFormat('en');" +
             "var t; try { nf.formatRange(NaN, 1); t = 'no'; } catch (e) { t = e.constructor.name; } t;").ToString());
-        Assert.Equal("1–2", Eval("new Intl.NumberFormat('en').formatRange(1, 2);").ToString());
+        // The en number range separator is " – " (space, en dash, space), matching the
+        // " – " literal that intl402 formatRangeToParts/en-US.js expects.
+        Assert.Equal("1 – 2", Eval("new Intl.NumberFormat('en').formatRange(1, 2);").ToString());
     }
 
     // ---- Problem 9: constructor return-override preserves the returned object ----
