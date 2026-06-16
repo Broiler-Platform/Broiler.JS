@@ -8,6 +8,11 @@ internal static class UriHelper
     internal static Func<string, JSException> NewURIError = _ =>
         throw new InvalidOperationException("UriHelper.NewURIError delegate is not initialized.");
 
+    // Strict UTF-8 decoder: rejects overlong forms, values above U+10FFFF, and
+    // surrogate-range code points (which the default replacement decoder would
+    // silently turn into U+FFFD) so the Decode operation can raise a URIError.
+    private static readonly Encoding StrictUtf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
 
     /// <summary>
     /// Creates a 128 entry lookup table for the characters in the given string.
@@ -189,8 +194,20 @@ internal static class UriHelper
                         i += 2;
                     }
 
-                    // Decode the UTF-8 sequence.
-                    result.Append(Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length));
+                    // Decode the UTF-8 sequence. Per §19.2.6.5 the octets must form a
+                    // valid UTF-8 encoding of a single Unicode code point: an overlong
+                    // form, a value above U+10FFFF, or a code point in the surrogate
+                    // range (e.g. %ED%BF%BF, the CESU-8 encoding of U+DFFF) is malformed.
+                    // The default UTF-8 decoder substitutes U+FFFD rather than failing,
+                    // so decode strictly and translate its failure into a URIError.
+                    try
+                    {
+                        result.Append(StrictUtf8.GetString(utf8Bytes, 0, utf8Bytes.Length));
+                    }
+                    catch (DecoderFallbackException)
+                    {
+                        throw NewURIError("URI malformed");
+                    }
                 }
             }
             else

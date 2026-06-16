@@ -223,9 +223,16 @@ partial class FastCompiler
                 if (TryGetStaticIdentifierVariable(identifier, out var arrowVariable) && arrowVariable != null)
                     return arrowVariable.Expression;
 
-                return throwIfMissing
-                    ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
-                    : JSContextBuilder.Index(KeyOfName(identifier.Name));
+                // An arrow has no `arguments` of its own — it refers to the enclosing
+                // function's. An arrow's RootScope IS that enclosing function's scope, so
+                // fall through to materialise the binding there (the function may have
+                // referenced `arguments` only from inside this arrow, so it does not exist
+                // yet). At program scope there is no enclosing function, so `arguments`
+                // stays an unbound free reference.
+                if (scope.Top.RootScope.Function == null)
+                    return throwIfMissing
+                        ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
+                        : JSContextBuilder.Index(KeyOfName(identifier.Name));
             }
 
             var functionScope = scope.Top.RootScope;

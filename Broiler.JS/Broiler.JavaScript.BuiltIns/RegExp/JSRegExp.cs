@@ -723,6 +723,15 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // code unit, so expand it to also match surrogate pairs.
             if (unicode || unicodeSets)
             {
+                // The braced Unicode escape `\u{H..H}` is only valid in u/v mode. A
+                // regex literal has it rewritten to a fixed-width `\uHHHH` escape by the
+                // source scanner, but a `new RegExp(string, "u")` pattern reaches the
+                // translator with the brace form intact — which .NET rejects. Convert it
+                // up front (a surrogate-pair escape for a supplementary code point) so the
+                // surrogate/class transforms below, and ultimately .NET, only ever see the
+                // `\uHHHH` form.
+                pattern = TransformBracedUnicodeEscapes(pattern);
+
                 // v-mode (unicodeSets) extended character classes with set
                 // operations (A--B, A&&B), string literals \q{…}, and properties
                 // of strings expand to a literal alternation that .NET can match.
@@ -2345,6 +2354,77 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Rewrites the braced Unicode code-point escape <c>\u{H..H}</c> (valid only in
+    /// u/v mode) into the fixed-width <c>\uHHHH</c> form .NET understands — a
+    /// surrogate-pair escape for a supplementary code point — mirroring what the
+    /// source scanner already does for <c>/…/u</c> literals. A backslash-escaped
+    /// backslash (<c>\\u{…}</c>, where <c>u{…}</c> is literal) is left untouched.
+    /// </summary>
+    private static string TransformBracedUnicodeEscapes(string pattern)
+    {
+        if (pattern.IndexOf("\\u{", StringComparison.Ordinal) < 0)
+            return pattern;
+
+        var sb = new StringBuilder(pattern.Length);
+        int i = 0;
+        while (i < pattern.Length)
+        {
+            char c = pattern[i];
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                if (pattern[i + 1] == 'u' && i + 2 < pattern.Length && pattern[i + 2] == '{')
+                {
+                    int j = i + 3;
+                    int value = 0;
+                    bool any = false, overflow = false;
+                    while (j < pattern.Length && IsHex(pattern[j]))
+                    {
+                        value = value * 16 + HexVal(pattern[j]);
+                        if (value > 0x10FFFF) overflow = true;
+                        any = true;
+                        j++;
+                    }
+                    if (any && !overflow && j < pattern.Length && pattern[j] == '}')
+                    {
+                        AppendCodePointEscape(sb, value);
+                        i = j + 1;
+                        continue;
+                    }
+                }
+
+                // Any other escape (including a literal `\\`) is copied with its
+                // following char so that char can't be misread as starting a `\u{`.
+                sb.Append(c);
+                sb.Append(pattern[i + 1]);
+                i += 2;
+                continue;
+            }
+
+            sb.Append(c);
+            i++;
+        }
+
+        return sb.ToString();
+    }
+
+    // Appends a code point as one (BMP) or two (surrogate-pair) `\uHHHH` escapes.
+    // A BMP escape keeps its `\uHHHH` form rather than being decoded so a value that
+    // is itself a regex metacharacter (e.g. \u{3f} → `?`) is handled uniformly by the
+    // later surrogate/class transforms (which re-add the backslash where needed).
+    private static void AppendCodePointEscape(StringBuilder sb, int codePoint)
+    {
+        if (codePoint <= 0xFFFF)
+        {
+            sb.Append("\\u").Append(codePoint.ToString("X4"));
+            return;
+        }
+
+        int v = codePoint - 0x10000;
+        sb.Append("\\u").Append((0xD800 + (v >> 10)).ToString("X4"));
+        sb.Append("\\u").Append((0xDC00 + (v & 0x3FF)).ToString("X4"));
     }
 
     private static bool IsHex(char c) =>

@@ -548,6 +548,23 @@ public partial class JSTemporalPlainTime : JSObject
     private static readonly Regex AmbiguousMonthDayPattern =
         new(@"^(?:--)?(\d{2})-?(\d{2})$", RegexOptions.CultureInvariant);
 
+    // A numeric UTC offset: sign, hour, optional minute / second / fractional second. Mirrors the
+    // "off" group of the time patterns; used only to range-check the components.
+    private static readonly Regex NumericUtcOffsetPattern = new(
+        @"^[+-](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,]\d{1,9})?)?)?$", RegexOptions.CultureInvariant);
+
+    private static void ValidateNumericUtcOffset(string offset, string text)
+    {
+        var m = NumericUtcOffsetPattern.Match(offset);
+        if (!m.Success)
+            return; // shape already validated by the time pattern's "off" group
+        var oh = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+        var om = m.Groups[2].Success ? int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture) : 0;
+        var os = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
+        if (oh > 23 || om > 59 || os > 59)
+            throw JSEngine.NewRangeError($"Temporal.PlainTime: invalid UTC offset in \"{text}\"");
+    }
+
     private static JSValue ParseTemporalTimeString(string text)
     {
         TemporalIsoString.RejectMultipleCalendarAnnotations(text);
@@ -583,6 +600,12 @@ public partial class JSTemporalPlainTime : JSObject
         var off = match.Groups["off"];
         if (off.Success && off.Value is "Z" or "z")
             throw JSEngine.NewRangeError($"Temporal.PlainTime: a UTC (Z) designator is not valid for a PlainTime: \"{text}\"");
+
+        // A zone-less PlainTime ignores the *value* of a numeric UTC offset, but the offset must
+        // still be well-formed: its hour (00-23), minute (00-59) and second (00-59) components are
+        // range-checked, so e.g. "00:00-24:00" is rejected rather than silently parsed as 00:00.
+        if (off.Success)
+            ValidateNumericUtcOffset(off.Value, text);
 
         var h = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
         var mi = match.Groups[2].Success ? int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture) : 0;

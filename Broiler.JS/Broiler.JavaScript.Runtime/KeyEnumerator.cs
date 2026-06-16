@@ -1,4 +1,6 @@
-﻿using Broiler.JavaScript.Storage;
+﻿using System;
+using System.Collections.Generic;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Runtime;
 
@@ -81,21 +83,64 @@ public class PropertyEnumerator
     }
 }
 
-public class KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inherited) : IElementEnumerator
+public class KeyEnumerator : IElementEnumerator
 {
+    private readonly JSObject jSObject;
+    private readonly bool showEnumerableOnly;
+    private readonly bool inherited;
     private KeyEnumerator parent = null;
     // Own indexed elements only — never the user @@iterator (key enumeration must
     // not invoke the iterator protocol; see GetOwnIndexedElementEnumerator).
-    IElementEnumerator elements = jSObject.GetOwnIndexedElementEnumerator(showEnumerableOnly);
-    PropertyValueEnumerator properties = new PropertyValueEnumerator(jSObject, showEnumerableOnly);
+    IElementEnumerator elements;
+    PropertyValueEnumerator properties;
+
+    // The set of property names already produced while walking the prototype chain.
+    // for-in (EnumerateObjectProperties) must visit each name at most once, so a key
+    // shadowed by a nearer object is skipped on the ancestors. Shared with the parent
+    // enumerators; null when not walking the chain (inherited == false), where no
+    // de-duplication is needed.
+    private readonly HashSet<string> seen;
+
+    public KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inherited)
+        : this(jSObject, showEnumerableOnly, inherited,
+               inherited ? new HashSet<string>(StringComparer.Ordinal) : null)
+    {
+    }
+
+    private KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inherited, HashSet<string> seen)
+    {
+        this.jSObject = jSObject;
+        this.showEnumerableOnly = showEnumerableOnly;
+        this.inherited = inherited;
+        this.seen = seen;
+        elements = jSObject.GetOwnIndexedElementEnumerator(showEnumerableOnly);
+        properties = new PropertyValueEnumerator(jSObject, showEnumerableOnly);
+    }
+
+    // Records a name as produced; returns false if it (or a nearer same-named property)
+    // was already produced, so the caller skips it.
+    private bool Accept(string name) => seen == null || seen.Add(name);
+
+    private KeyEnumerator CreateParent()
+    {
+        if (!inherited)
+            return null;
+        var @base = (jSObject.prototypeChain as IJSPrototype)?.Object as JSObject;
+        return @base != null && @base != jSObject
+            ? new KeyEnumerator(@base, showEnumerableOnly, inherited, seen)
+            : null;
+    }
 
     public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
     {
         if (elements != null)
         {
-            if (elements.MoveNext(out var hasValueout, out var _, out var ui))
+            while (elements.MoveNext(out var hasValueout, out var _, out var ui))
             {
-                value = JSValue.CreateString(ui.ToString());
+                var name = ui.ToString();
+                if (!Accept(name))
+                    continue;
+                value = JSValue.CreateString(name);
                 hasValue = hasValueout;
                 index = ui;
                 return true;
@@ -103,11 +148,13 @@ public class KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inhe
 
             elements = null;
         }
-        
+
         if (properties.target != null)
         {
-            if (properties.MoveNext(out var key))
+            while (properties.MoveNext(out var key))
             {
+                if (!Accept(key.ToString()))
+                    continue;
                 value = JSObjectCoreExtensions.KeyStringToJSValue(key);
                 hasValue = true;
                 index = 0;
@@ -115,13 +162,7 @@ public class KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inhe
             }
 
             properties.target = null;
-
-            if (inherited)
-            {
-                var @base = (jSObject.prototypeChain as IJSPrototype)?.Object as JSObject;
-                if (@base != null && @base != jSObject)
-                    parent = new KeyEnumerator(@base, showEnumerableOnly, inherited);
-            }
+            parent = CreateParent();
         }
 
         if (parent != null)
@@ -147,29 +188,30 @@ public class KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inhe
                 if (!hasValueout)
                     continue;
 
-                value = JSValue.CreateString(ui.ToString());
+                var name = ui.ToString();
+                if (!Accept(name))
+                    continue;
+
+                value = JSValue.CreateString(name);
                 return true;
             }
 
             elements = null;
         }
-        
+
         if (properties.target != null)
         {
-            if (properties.MoveNext(out var key))
+            while (properties.MoveNext(out var key))
             {
+                if (!Accept(key.ToString()))
+                    continue;
+
                 value = JSObjectCoreExtensions.KeyStringToJSValue(key);
                 return true;
             }
 
             properties.target = null;
-
-            if (inherited)
-            {
-                var @base = (jSObject.prototypeChain as IJSPrototype)?.Object as JSObject;
-                if (@base != null && @base != jSObject)
-                    parent = new KeyEnumerator(@base, showEnumerableOnly, inherited);
-            }
+            parent = CreateParent();
         }
 
         if (parent != null)
@@ -186,88 +228,13 @@ public class KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inhe
 
     public bool MoveNextOrDefault(out JSValue value, JSValue @default)
     {
-        if (elements != null)
-        {
-            while (elements.MoveNext(out var hasValueout, out _, out var ui))
-            {
-                if (!hasValueout)
-                    continue;
-
-                value = JSValue.CreateString(ui.ToString());
-                return true;
-            }
-
-            elements = null;
-        }
-
-        if (properties.target != null)
-        {
-            if (properties.MoveNext(out var key))
-            {
-                value = JSObjectCoreExtensions.KeyStringToJSValue(key);
-                return true;
-            }
-
-            properties.target = null;
-
-            if (inherited)
-            {
-                var @base = (jSObject.prototypeChain as IJSPrototype)?.Object as JSObject;
-                if (@base != null && @base != jSObject)
-                    parent = new KeyEnumerator(@base, showEnumerableOnly, inherited);
-            }
-        }
-
-        if (parent != null)
-        {
-            if (parent.MoveNext(out value))
-                return true;
-
-            parent = null;
-        }
+        if (MoveNext(out value))
+            return true;
 
         value = @default;
         return false;
     }
 
     public JSValue NextOrDefault(JSValue @default)
-    {
-        if (elements != null)
-        {
-            while (elements.MoveNext(out var hasValueout, out var _, out var ui))
-            {
-                if (!hasValueout)
-                    continue;
-
-                return JSValue.CreateString(ui.ToString());
-            }
-
-            elements = null;
-        }
-
-        if (properties.target != null)
-        {
-            if (properties.MoveNext(out var key))
-                return JSObjectCoreExtensions.KeyStringToJSValue(key);
-
-            properties.target = null;
-
-            if (inherited)
-            {
-                var @base = (jSObject.prototypeChain as IJSPrototype)?.Object as JSObject;
-                if (@base != null && @base != jSObject)
-                    parent = new KeyEnumerator(@base, showEnumerableOnly, inherited);
-            }
-        }
-
-        if (parent != null)
-        {
-            if (parent.MoveNext(out var value))
-                return value;
-
-            parent = null;
-        }
-
-        return @default;
-    }
+        => MoveNext(out var value) ? value : @default;
 }

@@ -89,6 +89,13 @@ partial class FastParser
                 }
                 considerInOfAsOperators = true;
             }
+            else if (TryParseForUsingDeclaration(out declaration))
+            {
+                // `for (using x of …)` / `for (await using x of …)`: a lexical,
+                // disposed-per-iteration binding (only valid in a for-of head).
+                beginNode = declaration;
+                newScope = true;
+            }
             else if (current.Keyword == FastKeywords.async && TryParseAsyncForOfTarget(out var asyncTarget))
             {
                 beginNode = asyncTarget;
@@ -286,10 +293,66 @@ partial class FastParser
                 return false;
             }
 
+            // `async of => …` is an async arrow function whose single parameter is
+            // named `of` — i.e. the init expression of a C-style `for`, not a for-of
+            // head. Peek past `of` for the `=>`: when present, leave the whole
+            // expression to ExpressionList rather than treating `async` as a for-of
+            // target (which would wrongly reject `for (async of => {}; ; )`).
+            var ofToken = stream.Current;
+            stream.Consume();
+            var followedByArrow = stream.Current.Type == TokenTypes.Lambda;
+            stream.Reset(ofToken);
+
+            if (followedByArrow)
+            {
+                stream.Reset(asyncToken);
+                return false;
+            }
+
             if (!awaitOf)
                 throw new FastParseException(asyncToken, "'async' is not allowed as the left-hand side of a for-of loop");
 
             target = new AstIdentifier(asyncToken);
+            return true;
+        }
+
+        // A `using` ForBinding is only a declaration at the head of a for-of loop. It is
+        // recognised when `using` is followed (no LineTerminator) by a BindingIdentifier
+        // that is not the contextual `of` keyword and the `of` keyword follows the single
+        // binding — so `for (using of x)` / `for (using in x)` / `for (using; ;)` keep
+        // `using` as an ordinary IdentifierReference, and an initializer / for-in head
+        // (`for (using x = …)` / `for (using x in …)`) is left to fail as the SyntaxError
+        // it is. (The `await using` for-of head is not yet handled here: its desugaring
+        // does not currently compile, so it is left to the expression path rather than
+        // accepted and mis-compiled.)
+        bool TryParseForUsingDeclaration(out AstVariableDeclaration declaration)
+        {
+            declaration = null;
+            var start = stream.Current;
+
+            if (start.Keyword != FastKeywords.@using)
+                return false;
+
+            stream.Consume(); // using
+
+            var bindingToken = stream.Current;
+            if (bindingToken.Type != TokenTypes.Identifier || IsOfKeyword(bindingToken))
+            {
+                stream.Reset(start);
+                return false;
+            }
+
+            stream.Consume(); // BindingIdentifier
+            stream.SkipNewLines();
+            if (!IsOfKeyword(stream.Current))
+            {
+                stream.Reset(start);
+                return false;
+            }
+
+            var declarator = new VariableDeclarator(new AstIdentifier(bindingToken), null);
+            declaration = new AstVariableDeclaration(start, PreviousToken, declarator,
+                FastVariableKind.Const, @using: true);
             return true;
         }
 
@@ -514,7 +577,10 @@ partial class FastParser
                     test = AstIdentifierReplacer.Replace(test, changes) as AstExpression;
             }
 
-            statementList[0] = new AstVariableDeclaration(declaration.Start, declaration.End, scopedDeclarations, declaration.Kind);
+            // The per-iteration scoped declaration carries the original head's
+            // `using` / `await using` disposal markers, so a `for (using x of …)`
+            // binding is disposed at the end of each iteration's block scope.
+            statementList[0] = new AstVariableDeclaration(declaration.Start, declaration.End, scopedDeclarations, declaration.Kind, declaration.Using, declaration.AwaitUsing);
 
             var tempDeclarationKind = requiresReplacement && declaration.Kind == FastVariableKind.Const
                 ? FastVariableKind.Const
