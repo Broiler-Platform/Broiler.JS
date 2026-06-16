@@ -399,7 +399,17 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         }
     }
 
-    public IDisposable PushDirectEvalScope(JSVariable[] variables) => new DirectEvalScope(this, variables);
+    /// <summary>
+    /// Overlays the enclosing scope's <paramref name="variables"/> so a direct
+    /// eval body can resolve them. <paramref name="shadowedVariables"/> is the
+    /// function-owned subset whose writes must stay local: a function-local
+    /// binding that shadows a same-named program-level global must never leak its
+    /// eval-body writes to that global or its global-object property. Program-level
+    /// globals are resolvable through the normal dual-binding path and are not
+    /// shadow-isolated.
+    /// </summary>
+    public IDisposable PushDirectEvalScope(JSVariable[] variables, JSVariable[] shadowedVariables = null)
+        => new DirectEvalScope(this, variables, shadowedVariables);
 
     /// <summary>
     /// Pushes the lexical-environment fallback overlay for a `with` statement.

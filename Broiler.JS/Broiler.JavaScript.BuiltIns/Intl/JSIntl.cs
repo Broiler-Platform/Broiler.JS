@@ -3371,10 +3371,37 @@ public class JSIntlNumberFormat : JSObject
             && (resolved?.RoundingPriority ?? "auto") == "auto")
             return FormatSignificantDigits(magnitude, out roundedIsZero);
 
-        var minFrac = ReadIntOption("minimumFractionDigits", defaultMinFrac);
-        var maxFrac = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
-        if (maxFrac < minFrac)
-            maxFrac = minFrac;
+        // SetNumberFormatDigitOptions: when only one of the fraction-digit bounds is
+        // given, the other defaults are pulled toward it — a lone maximum lowers the
+        // default minimum (min(defaultMin, max)), a lone minimum raises the default
+        // maximum (max(defaultMax, min)). The previous code only ever raised the
+        // maximum, so e.g. currency (default 2/2) with maximumFractionDigits:0 wrongly
+        // kept two fraction digits.
+        var hasMinFrac = HasOption("minimumFractionDigits");
+        var hasMaxFrac = HasOption("maximumFractionDigits");
+        int minFrac, maxFrac;
+        if (hasMinFrac && hasMaxFrac)
+        {
+            minFrac = ReadIntOption("minimumFractionDigits", defaultMinFrac);
+            maxFrac = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
+            if (maxFrac < minFrac)
+                maxFrac = minFrac;
+        }
+        else if (hasMaxFrac)
+        {
+            maxFrac = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
+            minFrac = Math.Min(defaultMinFrac, maxFrac);
+        }
+        else if (hasMinFrac)
+        {
+            minFrac = ReadIntOption("minimumFractionDigits", defaultMinFrac);
+            maxFrac = Math.Max(defaultMaxFrac, minFrac);
+        }
+        else
+        {
+            minFrac = defaultMinFrac;
+            maxFrac = defaultMaxFrac;
+        }
         var minInt = ReadIntOption("minimumIntegerDigits", 1);
 
         var rounded = Math.Round(magnitude, Math.Clamp(maxFrac, 0, 15), MidpointRounding.AwayFromZero);
@@ -3626,22 +3653,86 @@ public class JSIntlNumberFormat : JSObject
 
     public static JSValue FormatRangePrototype(in Arguments a)
     {
-        if (a.This is not JSIntlNumberFormat)
+        if (a.This is not JSIntlNumberFormat self)
             throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatRange called on incompatible receiver");
 
-        var start = CoerceRangeValue(a[0]);
-        var end = CoerceRangeValue(a.GetAt(1));
-        return JSValue.CreateString($"{start}–{end}");
+        var sb = new StringBuilder();
+        foreach (var (_, value, _) in self.ComputeRangeParts(a[0], a.GetAt(1)))
+            sb.Append(value);
+        return JSValue.CreateString(sb.ToString());
     }
 
     public static JSValue FormatRangeToPartsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlNumberFormat)
+        if (a.This is not JSIntlNumberFormat self)
             throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatRangeToParts called on incompatible receiver");
 
-        var start = CoerceRangeValue(a[0]);
-        var end = CoerceRangeValue(a.GetAt(1));
-        return JSValue.CreateArray();
+        var typeKey = KeyStrings.GetOrCreate("type");
+        var valueKey = KeyStrings.GetOrCreate("value");
+        var sourceKey = KeyStrings.GetOrCreate("source");
+        var parts = JSValue.CreateArray();
+        foreach (var (type, value, source) in self.ComputeRangeParts(a[0], a.GetAt(1)))
+        {
+            var part = new JSObject();
+            part.FastAddValue(typeKey, JSValue.CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(valueKey, JSValue.CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(sourceKey, JSValue.CreateString(source), JSPropertyAttributes.EnumerableConfigurableValue);
+            parts.AddArrayItem(part);
+        }
+        return parts;
+    }
+
+    // PartitionNumberRangePattern (Intl.NumberFormat v3): format both endpoints, and
+    // when their formatted parts are identical render the single value prefixed by the
+    // approximately sign (every part shared); otherwise the start parts (source
+    // "startRange"), the locale range separator (shared) and the end parts (source
+    // "endRange").
+    internal List<(string type, string value, string source)> ComputeRangeParts(JSValue startValue, JSValue endValue)
+    {
+        var start = CoerceRangeOperand(startValue);
+        var end = CoerceRangeOperand(endValue);
+
+        var startParts = ComputeFormatParts(start);
+        var endParts = ComputeFormatParts(end);
+
+        static string Concat(List<(string, string)> parts)
+        {
+            var sb = new StringBuilder();
+            foreach (var (_, value) in parts)
+                sb.Append(value);
+            return sb.ToString();
+        }
+
+        var result = new List<(string, string, string)>();
+        if (Concat(startParts) == Concat(endParts))
+        {
+            result.Add(("approximatelySign", "~", "shared"));
+            foreach (var (type, value) in startParts)
+                result.Add((type, value, "shared"));
+            return result;
+        }
+
+        foreach (var (type, value) in startParts)
+            result.Add((type, value, "startRange"));
+        result.Add(("literal", " – ", "shared"));
+        foreach (var (type, value) in endParts)
+            result.Add((type, value, "endRange"));
+        return result;
+    }
+
+    // ToIntlMathematicalValue with the range-specific guards: a missing operand or a
+    // Symbol is a TypeError, NaN a RangeError. Returns the coerced numeric value.
+    private static JSValue CoerceRangeOperand(JSValue value)
+    {
+        if (value == null || value.IsUndefined)
+            throw JSEngine.NewTypeError("Invalid number range");
+        if (value.IsSymbol)
+            throw JSEngine.NewTypeError("Cannot convert a Symbol value to a number");
+        if (value.IsBigInt)
+            return value;
+        if (double.IsNaN(value.DoubleValue))
+            throw JSEngine.NewRangeError("Invalid number range");
+        return value;
     }
 
     private static string CoerceRangeValue(JSValue value)
@@ -3979,7 +4070,9 @@ public class JSIntlDateTimeFormat : JSObject
             hasWeekday: OptionString(KeyStrings.GetOrCreate("weekday")) != null,
             weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")),
             hasTimeZoneName: OptionString(KeyStrings.GetOrCreate("timeZoneName")) != null,
-            hourCycle: ResolveHourCycle());
+            hourCycle: ResolveHourCycle(),
+            hasEra: OptionString(KeyStrings.GetOrCreate("era")) != null,
+            eraStyle: OptionString(KeyStrings.GetOrCreate("era")));
 
     // The resolved calendar: the requested -u-ca- value when it is one this engine
     // supports (era-based Gregorian-derived calendars), otherwise "gregory".
@@ -4297,7 +4390,9 @@ public class JSIntlDateTimeFormat : JSObject
             hasWeekday: f.HasFlag(TemporalFields.Weekday),
             weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")) ?? (dateStyle == "full" ? "long" : null),
             hasTimeZoneName: f.HasFlag(TemporalFields.TimeZoneName),
-            hourCycle: ResolveHourCycle());
+            hourCycle: ResolveHourCycle(),
+            hasEra: f.HasFlag(TemporalFields.Era),
+            eraStyle: OptionString(KeyStrings.GetOrCreate("era")));
 
     // The month width implied by dateStyle when no explicit month option is present.
     private string StyleMonthWidth() => dateStyle switch

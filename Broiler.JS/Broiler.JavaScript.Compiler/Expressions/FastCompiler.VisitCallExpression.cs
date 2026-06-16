@@ -12,8 +12,8 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private static readonly System.Reflection.MethodInfo DirectEvalMethod = typeof(DirectEvalSupport)
-        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(CallStackItem), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool), typeof(JSValue), typeof(JSVariable), typeof(bool)])
-        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, CallStackItem, bool, bool, string[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool, JSValue, JSVariable, bool) not found");
+        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(CallStackItem), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool), typeof(JSValue), typeof(JSVariable), typeof(bool)])
+        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, CallStackItem, bool, bool, string[], JSVariable[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool, JSValue, JSVariable, bool) not found");
 
     protected override YExpression VisitCallExpression(AstCallExpression callExpression)
     {
@@ -96,6 +96,7 @@ partial class FastCompiler
             var paramArray = VisitArguments(null, arguments);
             var lexicalBindings = CaptureDirectEvalLexicalBindings();
             var capturedBindings = CaptureDirectEvalBindings();
+            var shadowedBindings = CaptureDirectEvalShadowedBindings();
             var capturedBindingLexicalNames = CaptureDirectEvalBindingLexicalNames();
             var parameterBindings = CaptureDirectEvalParameterBindings();
             var privateNames = CaptureDirectEvalPrivateNames();
@@ -144,7 +145,7 @@ partial class FastCompiler
                 thisArg = YExpression.Constant(null, typeof(JSValue));
             }
 
-            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), thisArg, activationOwner, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding), superValue, YExpression.Constant(inMemberInitializer), YExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding);
+            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), thisArg, activationOwner, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, shadowedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding), superValue, YExpression.Constant(inMemberInitializer), YExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding);
         }
 
     skipDirectEval:
@@ -337,6 +338,22 @@ partial class FastCompiler
         var bindings = new Sequence<YExpression>();
         foreach (var variable in scope.Top.GetVisibleVariables())
             bindings.Add(variable.CaptureExpression);
+
+        return YExpression.NewArrayInit(typeof(JSVariable), bindings);
+    }
+
+    // The function-owned subset of the direct-eval captured bindings whose writes
+    // must stay local. A function-local binding genuinely shadows a same-named
+    // program-level global, so an assignment to it inside the eval body must not
+    // leak to that global or its global-object property. A program-level global
+    // `var` is resolvable through the global environment and kept in sync with its
+    // property by the normal dual-binding path, so it is not isolated. Mirrors the
+    // `with`-fallback shadowed subset.
+    private YExpression CaptureDirectEvalShadowedBindings()
+    {
+        var bindings = new Sequence<YExpression>();
+        foreach (var variable in scope.Top.GetWithFallbackVariables())
+            bindings.Add(variable.Variable);
 
         return YExpression.NewArrayInit(typeof(JSVariable), bindings);
     }

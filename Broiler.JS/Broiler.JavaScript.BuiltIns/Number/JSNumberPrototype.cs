@@ -103,7 +103,7 @@ partial class JSNumber
             value = value is JSPrimitiveObject primitiveObject ? primitiveObject.ValueOf() : value;
             value = value is JSObject @object ? @object.ToDefaultPrimitive() : value;
             return value is JSBigInt bigint
-                ? new JSNumber((double)bigint.value)
+                ? new JSNumber(JSBigInt.ToNumber(bigint.value))
                 : new JSNumber(value.DoubleValue);
         }
 

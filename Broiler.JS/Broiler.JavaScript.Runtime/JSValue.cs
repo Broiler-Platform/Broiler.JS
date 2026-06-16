@@ -859,19 +859,35 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     public virtual JSValue this[KeyString name]
     {
         get => GetValue(name, this);
-        set => ThrowOnStrictPrimitiveAssignment(name);
+        // Route through SetValue so an inherited accessor's setter is invoked with
+        // this primitive as the receiver (OrdinarySet). Only when no setter handles
+        // the write does the primitive no-op (non-strict) / strict-throw apply,
+        // mirroring the JSValue-keyed indexer below.
+        set
+        {
+            if (!SetValue(name, value, this, IsStrictModeEnabled?.Invoke() == true))
+                ThrowOnStrictPrimitiveAssignment(name);
+        }
     }
 
     public virtual JSValue this[uint key]
     {
         get => GetValue(key, this);
-        set => ThrowOnStrictPrimitiveAssignment(key);
+        set
+        {
+            if (!SetValue(key, value, this, IsStrictModeEnabled?.Invoke() == true))
+                ThrowOnStrictPrimitiveAssignment(key);
+        }
     }
 
     public virtual JSValue this[IJSSymbol symbol]
     {
         get => GetValue(symbol, this);
-        set => ThrowOnStrictPrimitiveAssignment(symbol);
+        set
+        {
+            if (!SetValue(symbol, value, this, IsStrictModeEnabled?.Invoke() == true))
+                ThrowOnStrictPrimitiveAssignment(symbol);
+        }
     }
 
     public JSValue this[JSValue key]
@@ -944,11 +960,32 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         };
     }
 
-    public virtual bool SetValue(uint key, JSValue value, JSValue receiver, bool throwError = true) => false;
+    public virtual bool SetValue(uint key, JSValue value, JSValue receiver, bool throwError = true)
+        => prototypeChain != null && TryInvokeInheritedSetter(prototypeChain.GetInternalProperty(key), value, receiver);
 
-    internal protected virtual bool SetValue(KeyString key, JSValue value, JSValue receiver, bool throwError = true) => false;
+    internal protected virtual bool SetValue(KeyString key, JSValue value, JSValue receiver, bool throwError = true)
+        => prototypeChain != null && TryInvokeInheritedSetter(prototypeChain.GetInternalProperty(key), value, receiver);
 
-    internal protected virtual bool SetValue(IJSSymbol key, JSValue value, JSValue receiver, bool throwError = true) => false;
+    internal protected virtual bool SetValue(IJSSymbol key, JSValue value, JSValue receiver, bool throwError = true)
+        => prototypeChain != null && TryInvokeInheritedSetter(prototypeChain.GetInternalProperty(key), value, receiver);
+
+    // OrdinarySet on a primitive base value (number/string/boolean/symbol/bigint):
+    // an inherited accessor property's setter is invoked with the primitive as the
+    // receiver. A data property — or no property at all — cannot be created on a
+    // primitive, so those cases are left to the caller's no-op (non-strict) /
+    // ThrowOnStrictPrimitiveAssignment (strict) handling by returning false. The
+    // resolved property comes from the prototype chain's flattened descriptor set,
+    // mirroring the read path (GetValue), which already delegates to the chain.
+    private bool TryInvokeInheritedSetter(in JSProperty property, JSValue value, JSValue receiver)
+    {
+        if (property.IsProperty && property.set is IJSFunction setter)
+        {
+            setter.InvokeFunction(new Arguments(receiver ?? this, value));
+            return true;
+        }
+
+        return false;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool SetValue(JSValue key, JSValue value, JSValue receiver, bool throwError = true)

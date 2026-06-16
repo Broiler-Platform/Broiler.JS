@@ -212,7 +212,10 @@ public partial class JSTemporalInstant : JSObject
         if (li <= TemporalRoundingOptions.UnitIndex("microsecond")) { micros = ns / 1_000; ns %= 1_000; }
         var nanos = ns;
 
-        double S(BigInteger v) => sign * (double)v;
+        // Each component is the ℝ→𝔽 nearest double (ties to even), not .NET's
+        // (double)BigInteger which truncates toward zero — observable for the very large
+        // components a near-limit difference produces (#818 Problems 18/19).
+        double S(BigInteger v) => sign * JSTemporalDuration.NearestDouble(v);
         return new JSTemporalDuration(0, 0, 0, 0, S(hours), S(minutes), S(seconds), S(millis), S(micros), S(nanos),
             JSTemporalDuration.DurationPrototype);
     }
