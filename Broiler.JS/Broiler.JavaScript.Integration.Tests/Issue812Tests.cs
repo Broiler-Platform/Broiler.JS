@@ -170,4 +170,25 @@ public class Issue812Tests
     [Fact]
     public void Match_RegExpAndStringArguments_StillWork()
         => Assert.Equal("bb:b", Eval("'abbc'.match(/b+/)[0] + ':' + 'abc'.match('b')[0]"));
+
+    // Problem 79 — a PlainTime ISO string may carry a numeric UTC offset, which a
+    // zone-less PlainTime ignores, but the offset must still be well-formed: its
+    // hour (00-23), minute (00-59) and second (00-59) components are range-checked.
+    // "00:00-24:00" (offset hour 24) was silently parsed as 00:00 instead of throwing.
+
+    [Fact]
+    public void PlainTime_OffsetHourOutOfRange_ThrowsRangeError()
+        => Assert.Equal("RangeError", ErrorName("Temporal.PlainTime.from('00:00-24:00')"));
+
+    [Fact]
+    public void PlainTime_OffsetMinuteOutOfRange_ThrowsRangeError()
+        => Assert.Equal("RangeError", ErrorName("Temporal.PlainTime.from('00:00+05:60')"));
+
+    [Fact]
+    public void PlainTime_ValidOffsetIsIgnored()
+        => Assert.Equal("12:00:00", Eval("Temporal.PlainTime.from('12:00+01:00').toString()"));
+
+    [Fact]
+    public void PlainTime_MaxValidOffsetIsIgnored()
+        => Assert.Equal("12:00:00", Eval("Temporal.PlainTime.from('12:00-23:59').toString()"));
 }
