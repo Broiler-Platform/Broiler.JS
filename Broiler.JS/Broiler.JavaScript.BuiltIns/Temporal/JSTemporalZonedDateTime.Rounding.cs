@@ -153,7 +153,7 @@ public partial class JSTemporalZonedDateTime
         }
         else
         {
-            var n = NudgeToZonedTime(sign, dur, o, increment, smallestUnit, roundingMode);
+            var n = NudgeToZonedTime(sign, dur, o, increment, smallestUnit, largestUnit, roundingMode);
             result = n.duration; nudgedEpochNs = n.nudgedEpochNs; didExpand = n.didExpand;
         }
 
@@ -275,8 +275,23 @@ public partial class JSTemporalZonedDateTime
     }
 
     private NudgeResult NudgeToZonedTime(int sign, in InternalDuration dur,
-        (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o, long increment, string unit, string roundingMode)
+        (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o, long increment, string unit, string largestUnit, string roundingMode)
     {
+        // When the largest unit is itself a time unit the result is expressed purely as
+        // time (the date difference was already projected onto the elapsed nanoseconds by
+        // DifferenceInternal), so the rounded time must NOT roll into a day — e.g. a
+        // 1-day duration over a 25-hour DST day rounds to 36 hours, not 1 day (#818 P9).
+        if (IsTimeUnit(largestUnit))
+        {
+            var unitNsTime = (BigInteger)TimeUnitNs(unit) * increment;
+            var roundedTime = TemporalRoundingOptions.RoundToIncrement(dur.Time, unitNsTime, roundingMode);
+            var (ty, tm, td) = AddISODate(o.y, o.mo, o.d, dur.Years, dur.Months, dur.Weeks, dur.Days, "constrain");
+            var startNsTime = EpochNsForLocal(ty, tm, td, o.h, o.mi, o.s, o.ms, o.us, o.ns);
+            return new NudgeResult(
+                new InternalDuration(dur.Years, dur.Months, dur.Weeks, dur.Days, roundedTime),
+                startNsTime + roundedTime, false, null);
+        }
+
         var (sy, sm, sd) = AddISODate(o.y, o.mo, o.d, dur.Years, dur.Months, dur.Weeks, dur.Days, "constrain");
         var startEpochNs = EpochNsForLocal(sy, sm, sd, o.h, o.mi, o.s, o.ms, o.us, o.ns);
         var (ey, em, ed) = CivilFromDays(DaysFromCivil(sy, sm, sd) + sign);
@@ -289,7 +304,11 @@ public partial class JSTemporalZonedDateTime
         var unitNs = (BigInteger)TimeUnitNs(unit) * increment;
         var rounded = TemporalRoundingOptions.RoundToIncrement(dur.Time, unitNs, roundingMode);
         var beyond = rounded - daySpan;
-        var didRoundBeyondDay = beyond.Sign != -sign;
+        // The rounded time crosses into the next day only when it is STRICTLY past the
+        // day length; landing exactly on the day boundary (beyond == 0) keeps it as a
+        // time amount so a time-unit largestUnit reports e.g. 24 hours, not 1 day
+        // (#818 Problem 9).
+        var didRoundBeyondDay = beyond.Sign == sign;
 
         long dayDelta;
         BigInteger nudgedEpochNs, roundedFinal;
@@ -391,17 +410,19 @@ public partial class JSTemporalZonedDateTime
         long microseconds = sub / 1000 % 1000;
         long milliseconds = sub / 1_000_000 % 1000;
 
-        BigInteger minutes = 0, hours = 0, days = 0;
+        BigInteger minutes = 0, hours = 0;
         var rank = UnitRank(largestUnit);
         if (rank <= UnitRank("minute")) { minutes = seconds / 60; seconds %= 60; }
         if (rank <= UnitRank("hour")) { hours = minutes / 60; minutes %= 60; }
-        if (rank <= UnitRank("day")) { days = hours / 24; hours %= 24; }
+        // The day count comes from x.Days (the DST-aware calendar difference); x.Time is
+        // the sub-day remainder, whose hours must NOT be re-split into 24-hour days — in
+        // a 25-hour day a 24-hour remainder stays 24 hours, not 1 day (#818 Problem 9).
 
         // ℝ→𝔽 nearest double (ties to even) for the BigInteger components, not .NET's
         // truncating (double)BigInteger (#818 Problems 18/19).
         double S(BigInteger v) => sign * JSTemporalDuration.NearestDouble(v);
         return new JSTemporalDuration(
-            x.Years, x.Months, x.Weeks, x.Days + sign * JSTemporalDuration.NearestDouble(days),
+            x.Years, x.Months, x.Weeks, x.Days,
             S(hours), S(minutes), S(seconds), sign * milliseconds, sign * microseconds, sign * nanoseconds,
             JSTemporalDuration.DurationPrototype);
     }
