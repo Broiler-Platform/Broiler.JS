@@ -123,7 +123,7 @@ public class JSGeneratorFunctionV2 : JSFunction
         return prototype ??= CreateGeneratorFunctionPrototype(asyncGenerator);
     }
 
-    public JSGeneratorFunctionV2(JSGeneratorDelegateV2 @delegate, in StringSpan name, in StringSpan code, int length = 0, bool asyncGenerator = false, bool primeOnInvoke = false) : base(null, name, code, length)
+    public JSGeneratorFunctionV2(JSGeneratorDelegateV2 @delegate, in StringSpan name, in StringSpan code, int length = 0, bool asyncGenerator = false, bool primeOnInvoke = false, bool coerceThis = true) : base(null, name, code, length)
     {
         this.@delegate = @delegate;
         this.asyncGenerator = asyncGenerator;
@@ -145,7 +145,12 @@ public class JSGeneratorFunctionV2 : JSFunction
         }
         prototype = null;
 
-        CoerceThisOnInvoke = true;
+        // A non-strict generator coerces an undefined/null `this` to the global object on
+        // invocation (OrdinaryCallBindThis for a sloppy function); a strict generator must
+        // leave `this` untouched (e.g. `({ *m(){ "use strict"; } }).m()` sees `this` ===
+        // undefined). The compiler passes coerceThis = !isStrictFunction, mirroring the
+        // ordinary-function handling (EnableNonStrictThis / EnableStrictMode).
+        CoerceThisOnInvoke = coerceThis;
         f = InvokeFunction;
         BasePrototypeObject = GetGeneratorFunctionPrototype(asyncGenerator);
     }
