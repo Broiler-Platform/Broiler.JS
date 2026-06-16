@@ -111,7 +111,6 @@ test/built-ins/Array/prototype/slice/S15.4.4.10_A3_T2.js
 test/built-ins/Array/prototype/slice/create-non-array-invalid-len.js
 test/built-ins/Array/prototype/slice/create-proxied-array-invalid-len.js
 test/built-ins/Array/prototype/sort/S15.4.4.11_A6_T2.js
-test/built-ins/Array/prototype/sort/call-with-primitive.js
 test/built-ins/Array/prototype/sort/stability-2048-elements.js
 test/built-ins/Array/prototype/sort/stability-513-elements.js
 test/built-ins/Array/prototype/splice/S15.4.4.12_A6.1_T3.js
@@ -314,7 +313,6 @@ test/built-ins/RegExp/prototype/Symbol.replace/coerce-global.js
 test/built-ins/RegExp/prototype/Symbol.replace/coerce-lastindex.js
 test/built-ins/RegExp/prototype/Symbol.replace/coerce-unicode.js
 test/built-ins/RegExp/prototype/Symbol.replace/g-pos-decrement.js
-test/built-ins/RegExp/prototype/Symbol.replace/named-groups-fn.js
 test/built-ins/RegExp/prototype/Symbol.replace/named-groups.js
 test/built-ins/RegExp/prototype/Symbol.replace/poisoned-stdlib.js
 test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T6.js
@@ -344,7 +342,6 @@ test/built-ins/RegExp/unicodeSets/generated/character-union-character-class.js
 test/built-ins/RegExp/unicodeSets/generated/rgi-emoji-17.0.js
 test/built-ins/RegExp/unicode_full_case_folding.js
 test/built-ins/RegExpStringIteratorPrototype/Symbol.toStringTag.js
-test/built-ins/RegExpStringIteratorPrototype/next/custom-regexpexec-not-callable.js
 test/built-ins/Set/prototype/intersection/converts-negative-zero.js
 test/built-ins/Set/prototype/keys/keys.js
 test/built-ins/Set/prototype/symmetricDifference/converts-negative-zero.js
@@ -367,7 +364,6 @@ test/built-ins/String/prototype/padEnd/observable-operations.js
 test/built-ins/String/prototype/padStart/fill-string-non-strings.js
 test/built-ins/String/prototype/padStart/normal-operation.js
 test/built-ins/String/prototype/padStart/observable-operations.js
-test/built-ins/String/prototype/repeat/empty-string-returns-empty.js
 test/built-ins/String/prototype/replace/S15.5.4.11_A1_T16.js
 test/built-ins/String/prototype/replace/S15.5.4.11_A1_T17.js
 test/built-ins/String/prototype/replace/S15.5.4.11_A1_T4.js
@@ -378,8 +374,6 @@ test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024-0x0026.js
 test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024-0x0027.js
 test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024-0x0060.js
 test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024.js
-test/built-ins/String/prototype/replaceAll/this-tostring-abrupt.js
-test/built-ins/String/prototype/replaceAll/this-tostring.js
 test/built-ins/String/prototype/search/invoke-builtin-search-searcher-undef.js
 test/built-ins/String/prototype/slice/S15.5.4.13_A1_T2.js
 test/built-ins/String/prototype/slice/S15.5.4.13_A1_T7.js
@@ -409,7 +403,6 @@ test/built-ins/Temporal/Duration/prototype/round/round-and-balance-calendar-unit
 test/built-ins/Temporal/Duration/prototype/round/rounding-increment-relativeto.js
 test/built-ins/Temporal/Duration/prototype/round/rounding-window.js
 test/built-ins/Temporal/Duration/prototype/round/roundingincrement-days-large.js
-test/built-ins/Temporal/Duration/prototype/round/roundingincrement-non-integer.js
 test/built-ins/Temporal/Duration/prototype/round/roundingmode-ceil.js
 test/built-ins/Temporal/Duration/prototype/round/roundingmode-expand.js
 test/built-ins/Temporal/Duration/prototype/round/roundingmode-floor.js
@@ -419,7 +412,6 @@ test/built-ins/Temporal/Duration/prototype/round/roundingmode-halfExpand.js
 test/built-ins/Temporal/Duration/prototype/round/roundingmode-halfFloor.js
 test/built-ins/Temporal/Duration/prototype/round/roundingmode-halfTrunc.js
 test/built-ins/Temporal/Duration/prototype/round/roundingmode-trunc.js
-test/built-ins/Temporal/Duration/prototype/round/succeeds-with-largest-unit-auto.js
 test/built-ins/Temporal/Duration/prototype/toString/round-cross-unit-boundary.js
 test/built-ins/Temporal/Duration/prototype/total/options-read-before-algorithmic-validation.js
 test/built-ins/Temporal/Duration/prototype/total/order-of-operations.js
@@ -508,7 +500,6 @@ test/built-ins/Temporal/ZonedDateTime/prototype/until/float64-representable-inte
 test/built-ins/Temporal/ZonedDateTime/prototype/until/order-of-operations.js
 test/built-ins/Temporal/ZonedDateTime/prototype/until/round-cross-unit-boundary.js
 test/built-ins/Temporal/ZonedDateTime/prototype/with/minimum-instant-with-one-hour-offset.js
-test/built-ins/Temporal/ZonedDateTime/prototype/with/offset-property-invalid-string.js
 test/built-ins/Temporal/ZonedDateTime/prototype/with/options-read-before-algorithmic-validation.js
 test/built-ins/Temporal/ZonedDateTime/prototype/with/order-of-operations.js
 test/built-ins/ThrowTypeError/unique-per-realm-function-proto.js
@@ -975,7 +966,6 @@ test/language/literals/regexp/S7.8.5_A1.1_T2.js
 test/language/literals/regexp/S7.8.5_A1.4_T2.js
 test/language/literals/regexp/S7.8.5_A2.1_T2.js
 test/language/literals/regexp/S7.8.5_A2.4_T2.js
-test/language/literals/regexp/u-astral.js
 test/language/literals/regexp/u-case-mapping.js
 test/language/literals/string/legacy-octal-escape-sequence.js
 test/language/statements/await-using/initializer-Symbol.asyncDispose-called-at-end-of-each-iteration-of-forofstatement.js
@@ -1047,18 +1037,15 @@ test/staging/decorators/public-auto-accessor.js
 test/staging/explicit-resource-management/exception-handling.js
 test/staging/sm/Array/from_proxy.js
 test/staging/sm/Array/indexOf-packed-array.js
-test/staging/sm/Array/length-01.js
 test/staging/sm/Array/length-truncate-nonconfigurable-sparse.js
 test/staging/sm/Array/sort-delete-ascending-order.js
 test/staging/sm/Array/sort-typedarray-with-own-length.js
 test/staging/sm/Array/splice-species-changes-length.js
 test/staging/sm/Array/to-length.js
 test/staging/sm/Array/toLocaleString-01.js
-test/staging/sm/Array/toSpliced.js
 test/staging/sm/Array/unscopables.js
 test/staging/sm/Array/unshift-01.js
 test/staging/sm/Array/unshift-with-enumeration.js
-test/staging/sm/Array/with.js
 test/staging/sm/AsyncGenerators/for-await-bad-syntax.js
 test/staging/sm/AsyncGenerators/for-await-of-error.js
 test/staging/sm/BigInt/Number-conversion-rounding.js
@@ -1108,7 +1095,6 @@ test/staging/sm/RegExp/ignoreCase-non-latin1-to-latin1.js
 test/staging/sm/RegExp/match-trace.js
 test/staging/sm/RegExp/regress-613820-2.js
 test/staging/sm/RegExp/regress-613820-3.js
-test/staging/sm/RegExp/regress-yarr-regexp.js
 test/staging/sm/RegExp/replace-trace.js
 test/staging/sm/RegExp/split-trace.js
 test/staging/sm/RegExp/unicode-back-reference.js
