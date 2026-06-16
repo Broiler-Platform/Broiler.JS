@@ -242,7 +242,10 @@ public partial class JSTemporalDuration
         var totalNs = TimePlusDaysNanoseconds();
         var unitNs = TimeUnitNanoseconds(unit);
         var whole = BigInteger.DivRem(totalNs, unitNs, out var remainder);
-        var result = (double)whole + (double)remainder / unitNs;
+        // The total is the nearest double to the exact rational totalNs/unitNs. The
+        // integer part must round to nearest (ℝ→𝔽), not truncate as (double)BigInteger
+        // does; the fraction is below an ulp once |whole| is large (#818 Problem 8).
+        var result = NearestDouble(whole) + (double)remainder / (double)unitNs;
         return new JSNumber(result);
     }
 
@@ -450,7 +453,9 @@ public partial class JSTemporalDuration
         {
             var (whole, sign, progress, unitLen) = CalendarNudgeBounds(r, endNs, startNs, unit == "year");
             if (unitLen.IsZero) return whole;
-            return whole + sign * (double)progress / (double)unitLen;
+            // total = whole + sign*progress/unitLen as a single ℝ→𝔽 rounding of the exact
+            // rational, not whole plus a separately rounded fraction (#818 Problem 8).
+            return RatioToDouble((BigInteger)whole * unitLen + sign * progress, unitLen);
         }
 
         var unitNs = unit == "week" ? 7 * (BigInteger)NanosecondsPerDay : TimeUnitNanoseconds(unit);
@@ -578,6 +583,22 @@ public partial class JSTemporalDuration
                 : (BitConverter.DoubleToInt64Bits(lo) & 1) == 0 ? lo : hi; // tie → even
         }
         return neg ? -chosen : chosen;
+    }
+
+    // The nearest double to the exact rational num/den (den > 0), rounded once — unlike
+    // computing the integer and fractional parts as separate doubles, which rounds twice
+    // and can land on the adjacent double (#818 Problem 8). The numerator is shifted left
+    // so the integer quotient carries far more than 53 significant bits; the sub-unit
+    // remainder is then well below the rounding position, so NearestDouble of the shifted
+    // quotient (scaled back by the same power of two) is correctly rounded.
+    internal static double RatioToDouble(BigInteger num, BigInteger den)
+    {
+        if (num.IsZero)
+            return 0.0;
+
+        const int shift = 256;
+        var scaled = (num << shift) / den;
+        return Math.ScaleB(NearestDouble(scaled), -shift);
     }
 
     private static string NormalizeRoundingMode(string mode) => mode switch

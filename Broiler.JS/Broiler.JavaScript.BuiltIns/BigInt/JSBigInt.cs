@@ -60,6 +60,39 @@ public partial class JSBigInt : JSPrimitive
 
     public override long BigIntValue => (long)value;
 
+    // BigInt::toNumber — 𝔽(ℝ(x)): the nearest IEEE-754 double, ties to even. .NET's
+    // (double)BigInteger truncates toward zero, so it must never back the result Number
+    // (e.g. Number(8692288669465520373761n) must round up, not down).
+    public static double ToNumber(BigInteger v)
+    {
+        var negative = v.Sign < 0;
+        var magnitude = BigInteger.Abs(v);
+        var lo = (double)magnitude; // .NET truncates toward zero, so lo <= magnitude
+        if (double.IsInfinity(lo))
+            return negative ? double.NegativeInfinity : double.PositiveInfinity;
+
+        double chosen;
+        var loBig = new BigInteger(lo);
+        if (loBig == magnitude)
+        {
+            chosen = lo;
+        }
+        else
+        {
+            var hi = Math.BitIncrement(lo);
+            if (double.IsInfinity(hi))
+                return negative ? -lo : lo;
+
+            var distanceLo = magnitude - loBig;
+            var distanceHi = new BigInteger(hi) - magnitude;
+            chosen = distanceLo < distanceHi ? lo
+                : distanceHi < distanceLo ? hi
+                : (BitConverter.DoubleToInt64Bits(lo) & 1) == 0 ? lo : hi; // tie → even
+        }
+
+        return negative ? -chosen : chosen;
+    }
+
     [JSExport(IsConstructor = true, Length = 1)]
     public static JSValue Constructor(in Arguments a)
     {
