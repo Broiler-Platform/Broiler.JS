@@ -217,4 +217,31 @@ public class Issue812Tests
     public void GlobalConstructors_StillUsable()
         => Assert.Equal("function:3:5", Eval(
             "typeof Function + ':' + Object.keys({a:1,b:2,c:3}).length + ':' + (new Function('a','b','return a+b'))(2,3)"));
+
+    // Problems 93/94 — for-in (EnumerateObjectProperties) must visit each property
+    // name at most once: a key shadowed by a nearer object on the prototype chain is
+    // skipped on the ancestors. The key enumerator walked the chain without
+    // de-duplicating, so a shadowed inherited key was produced again.
+
+    [Fact]
+    public void ForIn_ShadowedKeyVisitedOnce()
+        => Assert.Equal("1", Eval(
+            "var p={a:1}; var o=Object.create(p); o.a=2; var n=0; for(var k in o){ if(k==='a') n++; } '' + n"));
+
+    [Fact]
+    public void ForIn_ShadowedKeyUsesOwnValue()
+        => Assert.Equal("2", Eval(
+            "var p={a:1}; var o=Object.create(p); o.a=2; var v; for(var k in o){ if(k==='a') v=o[k]; } '' + v"));
+
+    [Fact]
+    public void ForIn_DeepChainDeduplicates()
+        => Assert.Equal("x,y,z", Eval(
+            "var a={x:1}; var b=Object.create(a); b.y=2; var c=Object.create(b); c.z=3; c.x=9;" +
+            "var r=[]; for(var k in c) r.push(k); r.sort().join(',')"));
+
+    [Fact]
+    public void ForIn_InheritedAndOwnAllEnumerated()
+        => Assert.Equal("a,b,c,d", Eval(
+            "var p={a:1,b:2}; var o=Object.create(p); o.c=3; o.d=4;" +
+            "var r=[]; for(var k in o) r.push(k); r.sort().join(',')"));
 }
