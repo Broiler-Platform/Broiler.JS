@@ -296,4 +296,34 @@ public class Issue812Tests
     [Fact]
     public void Script_AwaitIdentifier_Bare()
         => Assert.Equal("5", Eval("var await = 5; '' + await"));
+
+    // Problem 72 — an arrow function has no `arguments` of its own; it refers to the
+    // enclosing (non-arrow) function's. The enclosing function materialised its
+    // `arguments` object only when it referenced `arguments` directly, so an arrow that
+    // was the *only* user of `arguments` resolved it as an undefined free variable
+    // ("arguments is not defined").
+
+    [Fact]
+    public void Arrow_InheritsEnclosingArguments()
+        => Assert.Equal("2", Eval("function f(){ return (() => arguments.length)(); } '' + f(1, 2)"));
+
+    [Fact]
+    public void Arrow_Stored_InheritsEnclosingArguments()
+        => Assert.Equal("9", Eval("function f(){ var g = () => arguments[0]; return g(); } '' + f(9)"));
+
+    [Fact]
+    public void Arrow_Nested_InheritsEnclosingArguments()
+        => Assert.Equal("3", Eval("function f(){ return (() => (() => arguments.length)())(); } '' + f(1, 2, 3)"));
+
+    [Fact]
+    public void Arrow_MutatesMappedArgument()
+        => Assert.Equal("9", Eval("function f(x){ (() => { arguments[0] = 9; })(); return x; } '' + f(1)"));
+
+    [Fact]
+    public void Arrow_AndDirectArgumentsCoexist()
+        => Assert.Equal("2:2", Eval("function f(){ var a = (() => arguments.length)(); return a + ':' + arguments.length; } '' + f(1, 2)"));
+
+    [Fact]
+    public void Arrow_AtProgramScope_ArgumentsUnbound()
+        => Assert.Equal("ReferenceError", ErrorName("(() => arguments)()"));
 }
