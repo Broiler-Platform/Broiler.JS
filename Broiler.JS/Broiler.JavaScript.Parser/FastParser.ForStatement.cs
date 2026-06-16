@@ -286,6 +286,22 @@ partial class FastParser
                 return false;
             }
 
+            // `async of => …` is an async arrow function whose single parameter is
+            // named `of` — i.e. the init expression of a C-style `for`, not a for-of
+            // head. Peek past `of` for the `=>`: when present, leave the whole
+            // expression to ExpressionList rather than treating `async` as a for-of
+            // target (which would wrongly reject `for (async of => {}; ; )`).
+            var ofToken = stream.Current;
+            stream.Consume();
+            var followedByArrow = stream.Current.Type == TokenTypes.Lambda;
+            stream.Reset(ofToken);
+
+            if (followedByArrow)
+            {
+                stream.Reset(asyncToken);
+                return false;
+            }
+
             if (!awaitOf)
                 throw new FastParseException(asyncToken, "'async' is not allowed as the left-hand side of a for-of loop");
 

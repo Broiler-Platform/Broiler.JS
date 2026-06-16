@@ -317,6 +317,40 @@ public class ParserTests
     }
 
     [Theory]
+    // `async of => {}` heads an async arrow function, so it is the init clause of a
+    // C-style for, not a restricted `async of <iterable>` for-of head.
+    [InlineData("for (async of => {}; false; ) { }")]
+    [InlineData("for (async of => {}, x = 1; ; ) { break; }")]
+    public void ParseProgram_For_AsyncOfArrowInit_Succeeds(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+        Assert.NotNull(program);
+    }
+
+    [Theory]
+    // A bare `async of <iterable>` is the restricted for-of head and is a SyntaxError
+    // outside `for await` (where `async` would be the loop target).
+    [InlineData("for (async of [1, 2, 3]) { }")]
+    [InlineData("for (async of source) { }")]
+    public void ParseProgram_ForOf_AsyncTarget_ThrowsFastParseException(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        Assert.Throws<FastParseException>(() => parser.ParseProgram());
+    }
+
+    [Fact]
+    public void ParseProgram_ForAwaitOf_AsyncTarget_Succeeds()
+    {
+        var stream = new FastTokenStream(new StringSpan("async function run() { for await (async of source) { } }"));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+        Assert.NotNull(program);
+    }
+
+    [Theory]
     [InlineData("var obj = {}; obj.\\u0063onst = 42;", "const")]
     [InlineData("var groups = {}; groups.\\u03C0;", "π")]
     [InlineData("var groups = {}; groups._\\u200C;", "_\u200C")]
