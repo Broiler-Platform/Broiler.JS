@@ -174,6 +174,15 @@ partial class FastParser
                 return true;
             }
 
+            // A `@` can never follow a complete expression: it is only ever a
+            // DecoratorList prefix (before a class declaration/expression or a class
+            // element), which is handled at the start of SingleExpression/Statement.
+            // A same-line `@` here (e.g. `5@`, `({a: 5@})`, `[f1@]`) is therefore a
+            // SyntaxError rather than a token to silently drop. A newline-separated
+            // `@dec class {}` is preserved by the LinesSkipped check above (ASI).
+            if (currentType == TokenTypes.At)
+                throw stream.Unexpected();
+
             if (currentType == token.Type)
                 throw stream.Unexpected();
         }
