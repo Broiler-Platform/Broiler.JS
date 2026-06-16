@@ -17,6 +17,14 @@ public partial class FastParser(FastTokenStream stream) : IParser
     private bool considerInOfAsOperators = true;
     private bool isAsync = false;
 
+    // True while parsing the immediate top-level StatementList of a Script (the program's
+    // root block). A `using` / `await using` declaration is an early SyntaxError there: it
+    // is only permitted when contained — directly or indirectly — within a Block,
+    // ForStatement, ForInOfStatement, or a function/class body. Entering any nested Block
+    // (a block statement, function body, try/catch/finally, …) clears it. A Module top-level
+    // does permit `using`, but the parser only parses the Script goal here.
+    private bool atScriptTopLevel = false;
+
     // Tracks whether the parser is inside a generator / async function body, which
     // makes `yield` / `await` keywords. Assigning these also informs the scanner so
     // it disambiguates a following `/` as a regex literal (keyword form) rather than

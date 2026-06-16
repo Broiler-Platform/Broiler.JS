@@ -2219,6 +2219,25 @@ public sealed class JSIntlDurationFormat : JSObject
     // Temporal.Duration, which exposes the same year/month/…/nanosecond properties).
     private static JSObject ToDurationFormatRecord(JSValue duration)
     {
+        if (duration is JSTemporalDuration temporalDuration)
+        {
+            // A Temporal.Duration is read from its internal slots, never its
+            // Temporal.Duration.prototype getters (which user code may have replaced) —
+            // matching ToTemporalDuration, which clones a Temporal.Duration from its slots.
+            // Snapshot the slots into a plain record so the formatter's field reads observe
+            // data, not installed accessors.
+            var slots = new[]
+            {
+                temporalDuration.years, temporalDuration.months, temporalDuration.weeks, temporalDuration.days,
+                temporalDuration.hours, temporalDuration.minutes, temporalDuration.seconds,
+                temporalDuration.milliseconds, temporalDuration.microseconds, temporalDuration.nanoseconds,
+            };
+            var record = new JSObject();
+            for (var i = 0; i < Units.Length; i++)
+                record.FastAddValue(KeyStrings.GetOrCreate(Units[i]), JSValue.CreateNumber(slots[i]), JSPropertyAttributes.EnumerableConfigurableValue);
+            return record;
+        }
+
         if (duration.IsString)
             return (JSObject)JSTemporalDuration.From(new Arguments(JSUndefined.Value, duration));
 

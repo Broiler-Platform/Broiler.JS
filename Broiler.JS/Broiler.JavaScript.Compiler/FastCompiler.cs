@@ -172,6 +172,31 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         JSContextStackBuilder.Push(sList, lScope, stackItem, YExpression.Constant(location), StringSpanBuilder.Empty, 0, 0);
         sList.Add(ScriptInfoBuilder.Build(scriptInfo, _keyStrings));
 
+        // GlobalDeclarationInstantiation step 8: every top-level FunctionDeclaration of a
+        // Script (or an eval whose VariableEnvironment is the global environment) must
+        // satisfy CanDeclareGlobalFunction BEFORE any binding is instantiated. The
+        // per-declaration DeclareGlobalFunction calls run as part of fx.InitList below, so a
+        // later non-declarable name (e.g. `function NaN(){}`, NaN being a non-configurable
+        // global) would otherwise throw only after an earlier function
+        // (`function shouldNotBeDefined(){}`) had already been defined on the global object.
+        // Emit all the checks first so the instantiation is rejected atomically and no
+        // earlier function leaks. A Function-constructor body (argsList != null), a strict
+        // eval, and a non-strict eval nested in a function bind their functions in their own
+        // variable environment, not the global object, so they are excluded.
+        if (argsList == null && !usesDirectEvalLocalVarEnvironment && !(isDirectEvalCompilation && isStrictProgram))
+        {
+            var seenGlobalFunctionNames = new HashSet<string>(StringComparer.Ordinal);
+            var topLevelStatements = jScript.Statements.GetFastEnumerator();
+            while (topLevelStatements.MoveNext(out var topLevelStatement))
+            {
+                if (topLevelStatement is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true, Id: { } globalFunctionId } }
+                    && seenGlobalFunctionNames.Add(globalFunctionId.Name.Value))
+                {
+                    sList.Add(JSContextBuilder.EnsureCanDeclareGlobalFunction(KeyOfName(globalFunctionId.Name)));
+                }
+            }
+        }
+
         vList.AddRange(fx.VariableParameters);
         sList.AddRange(fx.InitList);
 
@@ -337,8 +362,18 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             && !IsStrictMode
             && scope.Top.Function == null
             && scope.Top.Parent != scope.Top.RootScope
-            && expressionStatement.Expression is AstFunctionExpression { IsStatement: true, Id: { } } directEvalFunctionDeclaration)
+            && expressionStatement.Expression is AstFunctionExpression { IsStatement: true, Id: { } directEvalFunctionId } directEvalFunctionDeclaration)
         {
+            // A block-scoped FunctionDeclaration in direct eval gets an isolated block-local
+            // binding (so a self-reassignment in its body — `function f(){ f = 1; }` — stays
+            // block-local) plus the Annex B var copy-out to the eval's var environment, exactly
+            // like the B.3.4 if-clause implicit block. Without the isolated binding the function
+            // shares the global var binding, so mutating it from the body clobbers the outer one.
+            // Generator/async declarations are purely block-scoped (no Annex B copy) and keep the
+            // plain path.
+            if (!directEvalFunctionDeclaration.Generator && !directEvalFunctionDeclaration.Async)
+                return VisitImplicitBlockFunctionDeclaration(directEvalFunctionDeclaration, directEvalFunctionId.Name);
+
             return VisitRuntimeFunctionDeclaration(directEvalFunctionDeclaration);
         }
 

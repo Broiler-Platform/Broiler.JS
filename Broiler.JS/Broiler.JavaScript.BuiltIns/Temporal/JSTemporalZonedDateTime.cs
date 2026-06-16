@@ -1216,6 +1216,22 @@ public partial class JSTemporalZonedDateTime : JSObject
         var tz = ResolveNamedZone(timeZoneId);
         if (tz == null) return 0;
 
+        // Default ("compatible") disambiguation: when the wall-clock time is ambiguous (a fall-back
+        // fold yields two candidate offsets) choose the EARLIER instant, i.e. the offset that makes
+        // epoch = localNs - offset smallest — that is the largest (least negative) offset. .NET's
+        // GetUtcOffset returns the standard-time (later-instant) offset for an ambiguous time, which
+        // is the "later" disambiguation, so resolve folds explicitly. A gap (no candidate) and an
+        // unambiguous time keep the GetUtcOffset result below (the gap handling is already correct).
+        var candidates = CandidateOffsetsForLocal(timeZoneId, y, mo, d, h, mi, s);
+        if (candidates.Count >= 2)
+        {
+            var earliest = candidates[0];
+            for (var i = 1; i < candidates.Count; i++)
+                if (candidates[i] > earliest)
+                    earliest = candidates[i];
+            return earliest;
+        }
+
         try
         {
             var clampedYear = Math.Clamp(y, 1, 9999);
@@ -1396,10 +1412,18 @@ public partial class JSTemporalZonedDateTime : JSObject
         @"^([+-])(\d{2})(?::?(\d{2})(?::?(\d{2}))?)?$", RegexOptions.CultureInvariant);
 
     private static Dictionary<string, string> _caseFoldedZoneIds;
+    private static Dictionary<string, string> _caseFoldedAliasIds;
 
     private static TimeZoneInfo ResolveNamedZone(string id)
     {
         if (id == null) return null;
+
+        // A recognized IANA backward alias (e.g. "Asia/Ulan_Bator") keeps its own identifier
+        // on the instance but is resolved through its primary zone ("Asia/Ulaanbaatar") for the
+        // actual offset computation, since the alias itself is not a system zone here.
+        if (BackwardAliasToPrimary.TryGetValue(id, out var primaryFromAlias))
+            id = primaryFromAlias;
+
         try { return TimeZoneInfo.FindSystemTimeZoneById(id); }
         catch { /* fall through to a case-insensitive lookup */ }
 
@@ -1415,12 +1439,174 @@ public partial class JSTemporalZonedDateTime : JSObject
         return null;
     }
 
+    // A case-insensitive input that names an IANA backward alias resolves to the alias's own
+    // (proper-case) identifier — the identifier is preserved, NOT replaced by the primary zone
+    // (ToTemporalTimeZoneIdentifier only case-normalizes). Returns null when it is not an alias.
+    private static string MatchBackwardAlias(string id)
+    {
+        var folded = _caseFoldedAliasIds ??= BuildCaseFoldedAliasIds();
+        return folded.TryGetValue(id.ToUpperInvariant(), out var properCase) ? properCase : null;
+    }
+
+    private static Dictionary<string, string> BuildCaseFoldedAliasIds()
+    {
+        var map = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var alias in BackwardAliasToPrimary.Keys)
+            map[alias.ToUpperInvariant()] = alias;
+        return map;
+    }
+
+    // IANA tzdb "backward" aliases (legacy identifiers) mapped to their primary zone. These
+    // are recognized identifiers that some platforms do not enumerate or resolve, so they are
+    // carried explicitly: the alias is preserved as the instance identifier and resolved
+    // through its primary for offset computation. Generated from the tzdb backward file.
+    private static readonly Dictionary<string, string> BackwardAliasToPrimary = new(StringComparer.Ordinal)
+    {
+        ["Africa/Asmera"] = "Africa/Nairobi",
+        ["America/Argentina/ComodRivadavia"] = "America/Argentina/Catamarca",
+        ["America/Buenos_Aires"] = "America/Argentina/Buenos_Aires",
+        ["America/Catamarca"] = "America/Argentina/Catamarca",
+        ["America/Cordoba"] = "America/Argentina/Cordoba",
+        ["America/Fort_Wayne"] = "America/Indiana/Indianapolis",
+        ["America/Godthab"] = "America/Nuuk",
+        ["America/Indianapolis"] = "America/Indiana/Indianapolis",
+        ["America/Jujuy"] = "America/Argentina/Jujuy",
+        ["America/Knox_IN"] = "America/Indiana/Knox",
+        ["America/Louisville"] = "America/Kentucky/Louisville",
+        ["America/Mendoza"] = "America/Argentina/Mendoza",
+        ["America/Rosario"] = "America/Argentina/Cordoba",
+        ["Antarctica/South_Pole"] = "Pacific/Auckland",
+        ["Asia/Ashkhabad"] = "Asia/Ashgabat",
+        ["Asia/Calcutta"] = "Asia/Kolkata",
+        ["Asia/Chungking"] = "Asia/Shanghai",
+        ["Asia/Dacca"] = "Asia/Dhaka",
+        ["Asia/Katmandu"] = "Asia/Kathmandu",
+        ["Asia/Macao"] = "Asia/Macau",
+        ["Asia/Rangoon"] = "Asia/Yangon",
+        ["Asia/Saigon"] = "Asia/Ho_Chi_Minh",
+        ["Asia/Thimbu"] = "Asia/Thimphu",
+        ["Asia/Ujung_Pandang"] = "Asia/Makassar",
+        ["Asia/Ulan_Bator"] = "Asia/Ulaanbaatar",
+        ["Atlantic/Faeroe"] = "Atlantic/Faroe",
+        ["Australia/ACT"] = "Australia/Sydney",
+        ["Australia/LHI"] = "Australia/Lord_Howe",
+        ["Australia/NSW"] = "Australia/Sydney",
+        ["Australia/North"] = "Australia/Darwin",
+        ["Australia/Queensland"] = "Australia/Brisbane",
+        ["Australia/South"] = "Australia/Adelaide",
+        ["Australia/Tasmania"] = "Australia/Hobart",
+        ["Australia/Victoria"] = "Australia/Melbourne",
+        ["Australia/West"] = "Australia/Perth",
+        ["Brazil/Acre"] = "America/Rio_Branco",
+        ["Brazil/DeNoronha"] = "America/Noronha",
+        ["Brazil/East"] = "America/Sao_Paulo",
+        ["Brazil/West"] = "America/Manaus",
+        ["Canada/Atlantic"] = "America/Halifax",
+        ["Canada/Central"] = "America/Winnipeg",
+        ["Canada/Eastern"] = "America/Toronto",
+        ["Canada/Mountain"] = "America/Edmonton",
+        ["Canada/Newfoundland"] = "America/St_Johns",
+        ["Canada/Pacific"] = "America/Vancouver",
+        ["Canada/Saskatchewan"] = "America/Regina",
+        ["Canada/Yukon"] = "America/Whitehorse",
+        ["Chile/Continental"] = "America/Santiago",
+        ["Chile/EasterIsland"] = "Pacific/Easter",
+        ["Cuba"] = "America/Havana",
+        ["Egypt"] = "Africa/Cairo",
+        ["Eire"] = "Europe/Dublin",
+        ["Europe/Kiev"] = "Europe/Kyiv",
+        ["Europe/Uzhgorod"] = "Europe/Kyiv",
+        ["Europe/Zaporozhye"] = "Europe/Kyiv",
+        ["GB"] = "Europe/London",
+        ["GB-Eire"] = "Europe/London",
+        ["GMT+0"] = "Etc/GMT",
+        ["GMT-0"] = "Etc/GMT",
+        ["GMT0"] = "Etc/GMT",
+        ["Greenwich"] = "Etc/GMT",
+        ["Hongkong"] = "Asia/Hong_Kong",
+        ["Iceland"] = "Africa/Abidjan",
+        ["Iran"] = "Asia/Tehran",
+        ["Israel"] = "Asia/Jerusalem",
+        ["Jamaica"] = "America/Jamaica",
+        ["Japan"] = "Asia/Tokyo",
+        ["Kwajalein"] = "Pacific/Kwajalein",
+        ["Libya"] = "Africa/Tripoli",
+        ["Mexico/BajaNorte"] = "America/Tijuana",
+        ["Mexico/BajaSur"] = "America/Mazatlan",
+        ["Mexico/General"] = "America/Mexico_City",
+        ["NZ"] = "Pacific/Auckland",
+        ["NZ-CHAT"] = "Pacific/Chatham",
+        ["Navajo"] = "America/Denver",
+        ["PRC"] = "Asia/Shanghai",
+        ["Pacific/Enderbury"] = "Pacific/Kanton",
+        ["Pacific/Ponape"] = "Pacific/Guadalcanal",
+        ["Pacific/Truk"] = "Pacific/Port_Moresby",
+        ["Poland"] = "Europe/Warsaw",
+        ["Portugal"] = "Europe/Lisbon",
+        ["ROC"] = "Asia/Taipei",
+        ["ROK"] = "Asia/Seoul",
+        ["Singapore"] = "Asia/Singapore",
+        ["Turkey"] = "Europe/Istanbul",
+        ["UCT"] = "Etc/UTC",
+        ["US/Alaska"] = "America/Anchorage",
+        ["US/Aleutian"] = "America/Adak",
+        ["US/Arizona"] = "America/Phoenix",
+        ["US/Central"] = "America/Chicago",
+        ["US/East-Indiana"] = "America/Indiana/Indianapolis",
+        ["US/Eastern"] = "America/New_York",
+        ["US/Hawaii"] = "Pacific/Honolulu",
+        ["US/Indiana-Starke"] = "America/Indiana/Knox",
+        ["US/Michigan"] = "America/Detroit",
+        ["US/Mountain"] = "America/Denver",
+        ["US/Pacific"] = "America/Los_Angeles",
+        ["US/Samoa"] = "Pacific/Pago_Pago",
+        ["Universal"] = "Etc/UTC",
+        ["W-SU"] = "Europe/Moscow",
+        ["Zulu"] = "Etc/UTC",
+    };
+
+
     private static Dictionary<string, string> BuildCaseFoldedZoneIds()
     {
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var tz in TimeZoneInfo.GetSystemTimeZones())
             map[tz.Id.ToUpperInvariant()] = tz.Id;
+
+        // The Etc/GMT* family (and the GMT/UTC aliases) are resolvable by exact identifier
+        // via FindSystemTimeZoneById but are not enumerated by GetSystemTimeZones on every
+        // platform, so a case-folded lookup for e.g. "etc/gmt" / "eTc/gMt+1" would otherwise
+        // miss them. Probe each well-known identifier and fold in any the runtime recognizes.
+        foreach (var candidate in EtcZoneCandidates())
+        {
+            var key = candidate.ToUpperInvariant();
+            if (map.ContainsKey(key))
+                continue;
+            try { map[key] = TimeZoneInfo.FindSystemTimeZoneById(candidate).Id; }
+            catch { /* not recognized on this platform */ }
+        }
         return map;
+    }
+
+    private static IEnumerable<string> EtcZoneCandidates()
+    {
+        yield return "Etc/GMT";
+        yield return "Etc/GMT0";
+        yield return "Etc/UTC";
+        yield return "Etc/UCT";
+        yield return "Etc/Universal";
+        yield return "Etc/Zulu";
+        yield return "Etc/Greenwich";
+        yield return "GMT";
+        yield return "GMT0";
+        yield return "UCT";
+        yield return "Universal";
+        yield return "Zulu";
+        yield return "Greenwich";
+        // Etc/GMT offsets run from -14 to +12 (the sign is POSIX-inverted, as in the IANA tzdb).
+        for (var h = 1; h <= 14; h++)
+            yield return $"Etc/GMT-{h}";
+        for (var h = 1; h <= 12; h++)
+            yield return $"Etc/GMT+{h}";
     }
 
     // TimeZoneEquals (used by ZonedDateTime.prototype.equals): two identifiers denote the same zone when
@@ -1465,6 +1651,14 @@ public partial class JSTemporalZonedDateTime : JSObject
     {
         if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
         if (TryOffsetTimeZoneIdentifier(id, out var offsetNs)) { canonical = FormatOffset(offsetNs); return true; }
+
+        // An IANA backward alias is a valid identifier that keeps its OWN (case-normalized) name,
+        // e.g. "asia/ulan_bator" → "Asia/Ulan_Bator" (not the primary "Asia/Ulaanbaatar"). It is
+        // matched before the system-zone scan because ResolveNamedZone resolves an alias through its
+        // primary (for offset computation) and would otherwise yield the primary's identifier.
+        var aliasProperCase = MatchBackwardAlias(id);
+        if (aliasProperCase != null) { canonical = aliasProperCase; return true; }
+
         // IANA identifiers match case-insensitively; the canonical (case-normalized) identifier is
         // the resolved zone's Id, e.g. "Africa/CAIRO" → "Africa/Cairo".
         var named = ResolveNamedZone(id);

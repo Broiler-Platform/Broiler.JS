@@ -18,11 +18,17 @@ partial class FastParser
             type = stream.Consume().Type;
     }
 
-    bool Block(out AstBlock node)
+    bool Block(out AstBlock node, bool isProgramRoot = false)
     {
         var begin = stream.Current;
         var list = new Sequence<AstStatement>();
         var scope = variableScope.Push(begin, FastNodeType.Block);
+
+        // Only the Script's root StatementList is the script top level; any nested Block
+        // (this method called for a block statement, a function body, a try/catch clause, …)
+        // is a `using`-permitting container, so clear the flag while parsing its statements.
+        var previousScriptTopLevel = atScriptTopLevel;
+        atScriptTopLevel = isProgramRoot;
 
         try
         {
@@ -54,6 +60,7 @@ partial class FastParser
         }
         finally
         {
+            atScriptTopLevel = previousScriptTopLevel;
             scope.Dispose();
         }
 
