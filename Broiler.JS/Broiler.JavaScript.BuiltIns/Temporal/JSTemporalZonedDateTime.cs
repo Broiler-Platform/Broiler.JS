@@ -1216,6 +1216,22 @@ public partial class JSTemporalZonedDateTime : JSObject
         var tz = ResolveNamedZone(timeZoneId);
         if (tz == null) return 0;
 
+        // Default ("compatible") disambiguation: when the wall-clock time is ambiguous (a fall-back
+        // fold yields two candidate offsets) choose the EARLIER instant, i.e. the offset that makes
+        // epoch = localNs - offset smallest — that is the largest (least negative) offset. .NET's
+        // GetUtcOffset returns the standard-time (later-instant) offset for an ambiguous time, which
+        // is the "later" disambiguation, so resolve folds explicitly. A gap (no candidate) and an
+        // unambiguous time keep the GetUtcOffset result below (the gap handling is already correct).
+        var candidates = CandidateOffsetsForLocal(timeZoneId, y, mo, d, h, mi, s);
+        if (candidates.Count >= 2)
+        {
+            var earliest = candidates[0];
+            for (var i = 1; i < candidates.Count; i++)
+                if (candidates[i] > earliest)
+                    earliest = candidates[i];
+            return earliest;
+        }
+
         try
         {
             var clampedYear = Math.Clamp(y, 1, 9999);
