@@ -701,7 +701,28 @@ partial class FastParser
                     update = AstIdentifierReplacer.Replace(update, changes) as AstExpression;
 
                 if (test != null)
-                    test = AstIdentifierReplacer.Replace(test, changes) as AstExpression;
+                {
+                    if (useLoopEnv)
+                    {
+                        // Per-iteration test binding: a closure created in the loop test
+                        // (`for (let i = 0; a.push(() => i), i < 5; ++i) {}`) must capture
+                        // that iteration's `i`, not the shared carrier. Evaluate the test
+                        // against the body block's fresh per-iteration binding by injecting
+                        // `if (!test) break;` at the top of the body block (right after
+                        // `let i = <carrier>`) and dropping the outer loop test. The test
+                        // keeps referencing the original name, which now resolves to the
+                        // per-iteration binding; its side effects and the final
+                        // loop-terminating evaluation still run exactly as before.
+                        var notTest = new AstUnaryExpression(test.Start, test, UnaryOperator.Negate);
+                        var breakStatement = new AstBreakStatement(test.Start, test.End);
+                        statementList.Insert(1, new AstIfStatement(test.Start, test.End, notTest, breakStatement));
+                        test = null;
+                    }
+                    else
+                    {
+                        test = AstIdentifierReplacer.Replace(test, changes) as AstExpression;
+                    }
+                }
             }
 
             // The per-iteration scoped declaration carries the original head's
