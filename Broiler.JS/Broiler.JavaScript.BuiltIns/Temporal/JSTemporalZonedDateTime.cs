@@ -1729,31 +1729,19 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     private static JSValue FromPropertyBag(JSObject obj, JSValue options)
     {
-        var tzValue = obj[KeyStrings.GetOrCreate("timeZone")];
-        if (tzValue.IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.ZonedDateTime: missing timeZone");
-        if (tzValue is JSTemporalZonedDateTime nestedZdt)
-            tzValue = new JSString(nestedZdt.timeZoneId);
-        if (!tzValue.IsString)
-            throw JSEngine.NewTypeError("Temporal.ZonedDateTime: timeZone must be a string");
-        var timeZoneId = CanonicalizeTimeZone(tzValue.ToString());
-
-        // Resolve the wall-clock date-time by reusing Temporal.PlainDateTime's property-bag
-        // resolution: it reads the same year / era / month(Code) / day / time / calendar fields
-        // (ignoring the timeZone / offset ones), applies the overflow option, and handles the
-        // non-Gregorian calendars — so an out-of-range month/day is constrained rather than rejected
-        // with "invalid ISO date", and a non-ISO calendar resolves correctly.
-        var pdt = (JSTemporalPlainDateTime)JSTemporalPlainDateTime.From(new Arguments(JSUndefined.Value, obj, options));
-
-        var localNs = LocalNanoseconds(pdt.isoYear, pdt.isoMonth, pdt.isoDay,
-            pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond);
-
-        long offsetNs;
-        var offsetValue = obj[KeyStrings.GetOrCreate("offset")];
+        // ToTemporalZonedDateTime reads the bag's fields in one alphabetical pass — the same
+        // PrepareCalendarFields order Temporal.PlainDateTime uses, with `offset` read between
+        // nanosecond and second and `timeZone` between second and year. The two callbacks read those
+        // at exactly those points so the property-access order matches the spec (#818 Problem 7).
+        string timeZoneId = null;
         long explicitOffset = 0;
         var hasExplicitOffset = false;
-        if (!offsetValue.IsUndefined)
+
+        void ReadOffset()
         {
+            var offsetValue = obj[KeyStrings.GetOrCreate("offset")];
+            if (offsetValue.IsUndefined)
+                return;
             // ToPrimitiveAndRequireString: an object offset is coerced with ToPrimitive (string hint,
             // so its toString is observed), then the result must be a String (a non-string is a
             // TypeError) and a valid UTC offset (an unparseable value such as "00:00" / "+0" is a
@@ -1765,6 +1753,27 @@ public partial class JSTemporalZonedDateTime : JSObject
                 throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: invalid offset string \"{offsetPrimitive.StringValue}\"");
             hasExplicitOffset = true;
         }
+
+        void ReadTimeZone()
+        {
+            var tzValue = obj[KeyStrings.GetOrCreate("timeZone")];
+            if (tzValue.IsUndefined)
+                throw JSEngine.NewTypeError("Temporal.ZonedDateTime: missing timeZone");
+            if (tzValue is JSTemporalZonedDateTime nestedZdt)
+                tzValue = new JSString(nestedZdt.timeZoneId);
+            if (!tzValue.IsString)
+                throw JSEngine.NewTypeError("Temporal.ZonedDateTime: timeZone must be a string");
+            timeZoneId = CanonicalizeTimeZone(tzValue.ToString());
+        }
+
+        // Resolve the wall-clock date-time by reusing Temporal.PlainDateTime's property-bag
+        // resolution (overflow option, non-Gregorian calendars), with offset/timeZone read inline.
+        var pdt = (JSTemporalPlainDateTime)JSTemporalPlainDateTime.ToTemporalDateTime(obj, options, ReadOffset, ReadTimeZone);
+
+        var localNs = LocalNanoseconds(pdt.isoYear, pdt.isoMonth, pdt.isoDay,
+            pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond);
+
+        long offsetNs;
         long ZoneOffset() => GetOffsetForLocal(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second);
 
         if (!hasExplicitOffset)

@@ -845,7 +845,13 @@ public partial class JSTemporalPlainDateTime : JSObject
     // `options` is the raw options argument; the overflow option is read at the spec-mandated point
     // (after the item's type is validated and its slots / fields / string are read) so an invalid
     // primitive item throws a TypeError before the options bag is ever observed.
-    private static JSValue ToTemporalDateTime(JSValue item, JSValue options)
+    //
+    // ToTemporalZonedDateTime reads the SAME alphabetical field list with two extra fields — `offset`
+    // (between nanosecond and second) and `timeZone` (between second and year). The two optional
+    // callbacks let it read those at their correct positions in this single pass (#818 Problem 7),
+    // so the property-access order matches PrepareCalendarFields exactly.
+    internal static JSValue ToTemporalDateTime(JSValue item, JSValue options,
+        Action afterNanosecond = null, Action afterSecond = null)
     {
         if (item is JSTemporalPlainDateTime dt)
         {
@@ -879,8 +885,13 @@ public partial class JSTemporalPlainDateTime : JSObject
         {
             var nonIsoOverflow = ReadOverflow(options);
             var (cy, cm, cd) = TemporalNonIso.ToIsoFromBag(obj, calendarId, nonIsoOverflow, "Temporal.PlainDateTime");
-            return RegulateDateTime(cy, cm, cd,
-                Field("hour"), Field("minute"), Field("second"), Field("millisecond"), Field("microsecond"), Field("nanosecond"),
+            var nh = Field("hour"); var nmi = Field("minute"); var nsc = Field("second");
+            var nms = Field("millisecond"); var nus = Field("microsecond"); var nns = Field("nanosecond");
+            // A non-ISO ZonedDateTime bag is not exercised by the operation-order tests; read its
+            // offset/timeZone after the date-time fields so they are still observed.
+            afterNanosecond?.Invoke();
+            afterSecond?.Invoke();
+            return RegulateDateTime(cy, cm, cd, nh, nmi, nsc, nms, nus, nns,
                 nonIsoOverflow, calendarId, dateAlreadyResolved: true);
         }
 
@@ -923,7 +934,9 @@ public partial class JSTemporalPlainDateTime : JSObject
         }
 
         var nanosecond = Field("nanosecond");
+        afterNanosecond?.Invoke(); // ZonedDateTime reads `offset` here
         var second = Field("second");
+        afterSecond?.Invoke(); // ZonedDateTime reads `timeZone` here
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
         var yearInt = yearValue.IsUndefined ? 0 : ToIntegerWithTruncation(yearValue);
