@@ -40,7 +40,11 @@ public abstract class JSPrimitive: JSValue
             }
             return this.GetValue(px);
         }
-        set => ThrowOnStrictPrimitiveAssignment(symbol);
+        set
+        {
+            if (!SetValue(symbol, value, this, IsStrictModeEnabled?.Invoke() == true))
+                ThrowOnStrictPrimitiveAssignment(symbol);
+        }
     }
 
     public override JSValue this[KeyString name]
@@ -63,7 +67,34 @@ public abstract class JSPrimitive: JSValue
             }
             return this.GetValue(px);
         }
-        set => ThrowOnStrictPrimitiveAssignment(name);
+        set
+        {
+            if (!SetValue(name, value, this, IsStrictModeEnabled?.Invoke() == true))
+                ThrowOnStrictPrimitiveAssignment(name);
+        }
+    }
+
+    // OrdinarySet on a primitive: resolve the (lazy) wrapper prototype first, then
+    // let the base walk the chain for an inherited accessor's setter (invoked with
+    // this primitive as the receiver). A data property — or no property — cannot be
+    // created on a primitive, so base returns false and the indexer setters above
+    // fall back to the no-op (non-strict) / strict-throw behaviour.
+    internal protected override bool SetValue(KeyString key, JSValue value, JSValue receiver, bool throwError = true)
+    {
+        ResolvePrototype();
+        return base.SetValue(key, value, receiver, throwError);
+    }
+
+    internal protected override bool SetValue(IJSSymbol key, JSValue value, JSValue receiver, bool throwError = true)
+    {
+        ResolvePrototype();
+        return base.SetValue(key, value, receiver, throwError);
+    }
+
+    public override bool SetValue(uint key, JSValue value, JSValue receiver, bool throwError = true)
+    {
+        ResolvePrototype();
+        return base.SetValue(key, value, receiver, throwError);
     }
 
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)
