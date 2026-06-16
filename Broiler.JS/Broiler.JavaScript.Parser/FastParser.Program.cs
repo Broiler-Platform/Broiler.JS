@@ -9,7 +9,7 @@ partial class FastParser
     {
         program = default;
 
-        if (Block(out var block))
+        if (Block(out var block, isProgramRoot: true))
             program = new AstProgram(block.Start, block.End, block.Statements, isAsync) { HoistingScope = block.HoistingScope, AnnexBFunctionNames = block.AnnexBFunctionNames };
 
         return true;

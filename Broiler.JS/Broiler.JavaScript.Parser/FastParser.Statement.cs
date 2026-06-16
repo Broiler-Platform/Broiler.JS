@@ -582,6 +582,13 @@ partial class FastParser
                 return false;
             }
 
+            // A UsingDeclaration at the top level of a Script (the program's root
+            // StatementList, including an indirect/`eval` Script) is an early SyntaxError;
+            // it is only legal inside a Block, a for-head, or a function/class body.
+            if (atScriptTopLevel)
+                throw new FastParseException(start,
+                    $"'{(isAsync ? "await using" : "using")}' is not allowed at the top level of a script");
+
             if (!Parameters(out var declarators, TokenTypes.SemiColon, false, FastVariableKind.Const))
                 throw stream.Unexpected();
 

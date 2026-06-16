@@ -96,6 +96,15 @@ partial class FastParser
                 beginNode = declaration;
                 newScope = true;
             }
+            else if (TryParseForUsingLexicalDeclaration(out declaration))
+            {
+                // C-style `for (using x = …; …; …)` / `for (await using x = …; …; …)`:
+                // a LexicalDeclaration whose `using` / `await using` bindings are disposed
+                // once when the loop's lexical environment is torn down (see the cStyleUsing
+                // handling below, which keeps the declaration intact instead of desugaring it).
+                beginNode = declaration;
+                newScope = true;
+            }
             else if (current.Keyword == FastKeywords.async && TryParseAsyncForOfTarget(out var asyncTarget))
             {
                 beginNode = asyncTarget;
@@ -192,13 +201,24 @@ partial class FastParser
             else stream.Unexpected();
 
 
+            // A C-style `for (using …; …; …)` / `for (await using …; …; …)` head is NOT
+            // desugared into per-iteration carriers: per spec the LexicalDeclaration is
+            // instantiated once in the loop's lexical environment and its `using`
+            // resources are disposed once, when that environment is torn down. Keeping the
+            // `using` declaration intact as the loop init (and wrapping the whole `for` in a
+            // block scope below) lets the scope's disposal machinery dispose them at loop
+            // exit — and dispose any already-initialized resource if a later initializer in
+            // the BindingList throws. The for-of / for-in `using` heads keep their existing
+            // per-iteration desugaring.
+            var cStyleUsing = declaration is { Using: true } && !@in && !of;
+
             AstStatement statement;
             if (stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
             {
                 if (!Block(out var block))
                     throw stream.Unexpected();
 
-                if (newScope && declaration != null)
+                if (newScope && declaration != null && !cStyleUsing)
                 {
                     (beginNode, statement, update, test) = Desugar(declaration, block.Statements, update, test, block);
                 }
@@ -210,7 +230,7 @@ partial class FastParser
             }
             else if (NonDeclarativeStatement(out statement))
             {
-                if (newScope && declaration != null)
+                if (newScope && declaration != null && !cStyleUsing)
                     (beginNode, statement, update, test) = Desugar(declaration, new Sequence<AstStatement>(1) { statement }, update, test);
             }
             else throw stream.Unexpected();
@@ -241,7 +261,13 @@ partial class FastParser
                 return true;
             }
 
-            node = new AstForStatement(begin, PreviousToken, beginNode, test, update, statement);
+            var forStatement = new AstForStatement(begin, PreviousToken, beginNode, test, update, statement);
+            // Wrap a C-style `using` / `await using` for-loop in a block so its lexical
+            // environment (which owns the disposable resources) is established and torn
+            // down — disposing the resources — around the entire loop.
+            node = cStyleUsing
+                ? new AstBlock(begin, PreviousToken, new Sequence<AstStatement>(1) { forStatement })
+                : forStatement;
             scope.GetVariables();
         }
         finally
@@ -365,6 +391,64 @@ partial class FastParser
 
             var declarator = new VariableDeclarator(new AstIdentifier(bindingToken), null);
             declaration = new AstVariableDeclaration(start, PreviousToken, declarator,
+                FastVariableKind.Const, @using: true, await: isAwait);
+            return true;
+        }
+
+        // A C-style `for (using BindingList; …; …)` / `for (await using BindingList; …; …)`
+        // head. Unlike the for-of ForBinding above, this is an ordinary LexicalDeclaration:
+        // its `using` / `await using` bindings carry initializers and are disposed when the
+        // loop environment is torn down. Recognised when `using` (optionally preceded by
+        // `await`) is followed — with no intervening LineTerminator — by a BindingIdentifier.
+        // Patterns are not permitted (BindingList[~Pattern]), so only a plain identifier
+        // starts the declaration. `for (using of x)` is left as a for-of over the
+        // IdentifierReference `using`; `for (using of = …; …)` (binding named `of`) is a
+        // declaration and is admitted because an initializer follows.
+        bool TryParseForUsingLexicalDeclaration(out AstVariableDeclaration declaration)
+        {
+            declaration = null;
+            var start = stream.Current;
+            var isAwait = false;
+
+            if (start.Keyword == FastKeywords.await)
+            {
+                if (stream.Next.Keyword != FastKeywords.@using)
+                    return false;
+
+                isAwait = true;
+                stream.Consume(); // await
+            }
+            else if (start.Keyword != FastKeywords.@using)
+            {
+                return false;
+            }
+
+            stream.Consume(); // using
+
+            var bindingToken = stream.Current;
+            if (bindingToken.Type != TokenTypes.Identifier)
+            {
+                stream.Reset(start);
+                return false;
+            }
+
+            // `using of …`: only a declaration (binding named `of`) when an initializer
+            // follows; otherwise `using` is an IdentifierReference and the for-of path owns it.
+            if (IsOfKeyword(bindingToken) && stream.Next.Type != TokenTypes.Assign)
+            {
+                stream.Reset(start);
+                return false;
+            }
+
+            // `in`/`of` are not operators inside the LexicalDeclaration's initializers
+            // (the head uses the [~In] grammar), so `for (using x = a in b; …)` keeps `in`
+            // for the for-head rather than folding it into the initializer expression.
+            considerInOfAsOperators = false;
+            if (!Parameters(out var declarators, TokenTypes.SemiColon, false, FastVariableKind.Const))
+                throw stream.Unexpected();
+            considerInOfAsOperators = true;
+
+            declaration = new AstVariableDeclaration(start, PreviousToken, declarators,
                 FastVariableKind.Const, @using: true, await: isAwait);
             return true;
         }
