@@ -1,5 +1,6 @@
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.ExpressionCompiler.Core;
 
 namespace Broiler.JavaScript.Parser;
 
@@ -31,7 +32,15 @@ partial class FastParser
             if (!SinglePrefixPostfixExpression(out node, out hasAsync, out hasGenerator, prefix, token))
                 return begin.Reset();
 
-            if (previous != UnaryOperator.None && previous != UnaryOperator.@new)
+            if (previous == UnaryOperator.@new)
+                // A chained `new` (`new new X(...)`): the inner NewExpression already
+                // consumed its own arguments, so this outer `new` is a NewExpression
+                // with no arguments — `new new X(a)` is `new (new X(a))`. Materialise it
+                // here; otherwise the outer `new` was silently dropped (so the operand
+                // was wrongly treated as the whole result and no "not a constructor"
+                // TypeError was raised).
+                node = new AstNewExpression(previousToken, node, Sequence<AstExpression>.Empty);
+            else if (previous != UnaryOperator.None)
                 node = new AstUnaryExpression(previousToken, node, previous);
 
             return true;

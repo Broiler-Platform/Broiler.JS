@@ -94,4 +94,34 @@ public class Issue812Tests
     [Fact]
     public void DecodeURIComponent_AstralCodePoint_StillDecodes()
         => Assert.Equal("true", Eval("'' + (decodeURIComponent('%F0%9F%98%80') === '\\u{1F600}')"));
+
+    // Problems 88/99/100 — a chained `new` (`new new X(args)`) is `new (new X(args))`:
+    // the inner NewExpression consumes the arguments and the outer argument-less `new`
+    // is applied to its result. The parser dropped the outer `new`, so `new new X(args)`
+    // evaluated to `new X(args)` and never raised the "not a constructor" TypeError for
+    // the outer `new` on the (non-constructor) instance.
+
+    [Fact]
+    public void NewNewNumber_ThrowsTypeError()
+        => Assert.Equal("TypeError", ErrorName("new new Number(1)"));
+
+    [Fact]
+    public void NewNewBoolean_ThrowsTypeError()
+        => Assert.Equal("TypeError", ErrorName("new new Boolean(true)"));
+
+    [Fact]
+    public void NewNewString_NoParens_ThrowsTypeError()
+        => Assert.Equal("TypeError", ErrorName("new new String"));
+
+    [Fact]
+    public void NewNewUserConstructor_ThrowsTypeError()
+        => Assert.Equal("TypeError", ErrorName("function C(){}; new new C()"));
+
+    [Fact]
+    public void TripleNew_ThrowsTypeError()
+        => Assert.Equal("TypeError", ErrorName("function C(){}; new new new C()"));
+
+    [Fact]
+    public void SingleNew_StillConstructs()
+        => Assert.Equal("5", Eval("function C(v){this.v=v}; '' + new C(5).v"));
 }

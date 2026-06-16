@@ -151,7 +151,13 @@ public class Issue761Tests
 
     [Fact]
     public void NestedNewExpressionStillParses()
-        => Assert.Equal("true", Eval(
+        // `new new F().constructor` is `new (new F().constructor)`: the `.constructor`
+        // member binds to the inner `new F()` (an F instance, whose .constructor is F),
+        // and the outer argument-less `new` then constructs F — yielding another F
+        // instance, NOT a Function. (This previously asserted `true`, which reflected a
+        // bug where the outer `new` was dropped; corrected with the #812 chained-`new`
+        // fix and matching V8.)
+        => Assert.Equal("false", Eval(
             "function F(){}; (new new F().constructor) instanceof Function"));
 
     // ---- Problem 25: invalid escape sequences in tagged / untagged templates ----
