@@ -244,4 +244,35 @@ public class Issue812Tests
         => Assert.Equal("a,b,c,d", Eval(
             "var p={a:1,b:2}; var o=Object.create(p); o.c=3; o.d=4;" +
             "var r=[]; for(var k in o) r.push(k); r.sort().join(',')"));
+
+    // Problems 47/48/49 (and the await-using head variants) — a `using` / `await using`
+    // ForBinding is valid at the head of a for-of loop (a lexical binding disposed at the
+    // end of each iteration). The for-head parser did not recognise it, rejecting
+    // `for (using x of …)` with "Unexpected token Identifier". `using`/`await using` is
+    // only a declaration when followed by a BindingIdentifier and the `of` keyword; it is
+    // disallowed (a SyntaxError) in a plain for or for-in head, and `for (using of x)`
+    // keeps `using` as the loop target.
+
+    [Fact]
+    public void ForOfUsing_DisposesEachIteration()
+        => Assert.Equal("b1,d1,b2,d2", Eval(
+            "var log=[]; var mk=(n)=>({[Symbol.dispose](){log.push('d'+n)}, n});" +
+            "for (using r of [mk(1), mk(2)]) { log.push('b'+r.n); } log.join(',')"));
+
+    [Fact]
+    public void ForOfUsing_BindingIsAccessible()
+        => Assert.Equal("10,20", Eval(
+            "var out=[]; for (using r of [{[Symbol.dispose](){}, v:10},{[Symbol.dispose](){}, v:20}]) { out.push(r.v); } out.join(',')"));
+
+    [Fact]
+    public void ForOfUsing_OfAsLoopTarget()
+        => Assert.Equal("3", Eval("var using; for (using of [1, 2, 3]) {} '' + using"));
+
+    [Fact]
+    public void ForUsing_PlainForHeadIsSyntaxError()
+        => Assert.Equal("SyntaxError", ErrorName("eval('for (using x = {}; false; ) {}')"));
+
+    [Fact]
+    public void ForUsing_ForInHeadIsSyntaxError()
+        => Assert.Equal("SyntaxError", ErrorName("eval('for (using x in {}) {}')"));
 }
