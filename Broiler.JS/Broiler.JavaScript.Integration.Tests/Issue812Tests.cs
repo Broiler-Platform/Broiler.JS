@@ -275,4 +275,25 @@ public class Issue812Tests
     [Fact]
     public void ForUsing_ForInHeadIsSyntaxError()
         => Assert.Equal("SyntaxError", ErrorName("eval('for (using x in {}) {}')"));
+
+    // Problem 56 — in an ordinary script `await` is a plain IdentifierReference (top-level
+    // await applies only to modules / opt-in eval). The parser parsed a top-level `await`
+    // followed by an operand as an AwaitExpression (then rejected it), so `await + x` /
+    // `await(x)` failed instead of treating `await` as the identifier it is.
+
+    [Fact]
+    public void Script_AwaitIdentifier_BinaryPlus()
+        => Assert.Equal("5x", Eval("var await = 5; '' + await + 'x'"));
+
+    [Fact]
+    public void Script_AwaitIdentifier_InParenthesizedSum()
+        => Assert.Equal("8", Eval("var await = 5; '' + (await + 3)"));
+
+    [Fact]
+    public void Script_AwaitIdentifier_Called()
+        => Assert.Equal("3", Eval("var await = (x) => x; '' + await(3)"));
+
+    [Fact]
+    public void Script_AwaitIdentifier_Bare()
+        => Assert.Equal("5", Eval("var await = 5; '' + await"));
 }
