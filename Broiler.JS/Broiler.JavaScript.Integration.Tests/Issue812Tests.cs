@@ -64,4 +64,34 @@ public class Issue812Tests
     [Fact]
     public void RegExpStringBracedEscape_MetacharacterStaysLiteral()
         => Assert.Equal("true", Eval("'' + new RegExp('\\\\u{3f}', 'u').test('?')"));
+
+    // Problem 91 — the Decode abstract operation (§19.2.6.5) must reject a percent
+    // sequence whose octets are not a valid UTF-8 encoding of a single Unicode code
+    // point: an overlong form, a value above U+10FFFF, or a surrogate (e.g. %ED%BF%BF,
+    // the CESU-8 encoding of U+DFFF). The default UTF-8 decoder substituted U+FFFD
+    // instead of throwing, so no URIError was raised.
+
+    [Fact]
+    public void DecodeURIComponent_SurrogateEncoding_ThrowsURIError()
+        => Assert.Equal("URIError", ErrorName("decodeURIComponent('%ED%BF%BF')"));
+
+    [Fact]
+    public void DecodeURIComponent_OverlongEncoding_ThrowsURIError()
+        => Assert.Equal("URIError", ErrorName("decodeURIComponent('%C0%80')"));
+
+    [Fact]
+    public void DecodeURIComponent_AboveMaxCodePoint_ThrowsURIError()
+        => Assert.Equal("URIError", ErrorName("decodeURIComponent('%F4%90%80%80')"));
+
+    [Fact]
+    public void DecodeURI_LeadingSurrogateEncoding_ThrowsURIError()
+        => Assert.Equal("URIError", ErrorName("decodeURI('%ED%A0%80')"));
+
+    [Fact]
+    public void DecodeURIComponent_ValidMultiByte_StillDecodes()
+        => Assert.Equal("€", Eval("decodeURIComponent('%E2%82%AC')"));
+
+    [Fact]
+    public void DecodeURIComponent_AstralCodePoint_StillDecodes()
+        => Assert.Equal("true", Eval("'' + (decodeURIComponent('%F0%9F%98%80') === '\\u{1F600}')"));
 }
