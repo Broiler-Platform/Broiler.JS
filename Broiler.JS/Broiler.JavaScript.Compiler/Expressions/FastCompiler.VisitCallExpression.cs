@@ -312,7 +312,7 @@ partial class FastCompiler
     {
         var bindings = new Sequence<YExpression>();
         foreach (var variable in scope.Top.GetVisibleVariables())
-            bindings.Add(variable.Variable);
+            bindings.Add(variable.CaptureExpression);
 
         return YExpression.NewArrayInit(typeof(JSVariable), bindings);
     }
@@ -323,7 +323,7 @@ partial class FastCompiler
     {
         var bindings = new Sequence<YExpression>();
         foreach (var variable in scope.Top.GetVisibleVariables())
-            bindings.Add(variable.Variable);
+            bindings.Add(variable.CaptureExpression);
 
         return YExpression.NewArrayInit(typeof(JSVariable), bindings);
     }

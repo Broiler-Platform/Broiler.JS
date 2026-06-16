@@ -104,6 +104,12 @@ partial class FastCompiler
                 {
                     Name = functionName,
                     Expression = JSVariable.ValueExpression(fexprNameParam),
+                    // Capture this (immutable) self-name binding for a direct eval or `with`
+                    // body so `(function g(){ eval("g") })` resolves `g` instead of throwing
+                    // "g is not defined", and a strict `eval("g = 1")` reports the read-only
+                    // assignment as a TypeError. It is not a local Variable of this scope (it
+                    // is captured read-only), so it is exposed via EvalCaptureExpression only.
+                    EvalCaptureExpression = fexprNameParam,
                     Create = false
                 };
 

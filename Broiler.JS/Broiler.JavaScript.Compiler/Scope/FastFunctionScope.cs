@@ -136,6 +136,17 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         public YExpression Expression { get; internal set; }
         public string Name { get; internal set; }
         public bool Create { get; internal set; }
+
+        // The JSVariable-typed expression that exposes this binding to a direct eval or
+        // `with` body when the binding has no local <see cref="Variable"/> of its own.
+        // A named function expression's self-name is captured read-only (no local
+        // Variable, so it is otherwise omitted from the eval/with capture); it supplies
+        // its underlying JSVariable here so `(function g(){ eval("g") })` can resolve `g`.
+        public YExpression EvalCaptureExpression { get; internal set; }
+
+        // The JSVariable-typed expression used to capture this binding for a direct eval
+        // or `with` body: the binding's own Variable, or its EvalCaptureExpression.
+        internal YExpression CaptureExpression => (YExpression)Variable ?? EvalCaptureExpression;
         public bool IsLexical { get; internal set; }
         public bool IsSimpleCatchBinding { get; internal set; }
         public bool IsDeletable { get; internal set; }
@@ -455,8 +466,9 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             while (variables.MoveNext(out var entry))
             {
                 var variable = entry.Value;
-                if (variable.Variable == null
-                    || variable.Variable.Type != typeof(JSVariable)
+                var capture = variable.CaptureExpression;
+                if (capture == null
+                    || capture.Type != typeof(JSVariable)
                     || variable.IsTemp
                     || variable.IsEvalShadow
                     || variable.Name == "this"
