@@ -362,8 +362,18 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             && !IsStrictMode
             && scope.Top.Function == null
             && scope.Top.Parent != scope.Top.RootScope
-            && expressionStatement.Expression is AstFunctionExpression { IsStatement: true, Id: { } } directEvalFunctionDeclaration)
+            && expressionStatement.Expression is AstFunctionExpression { IsStatement: true, Id: { } directEvalFunctionId } directEvalFunctionDeclaration)
         {
+            // A block-scoped FunctionDeclaration in direct eval gets an isolated block-local
+            // binding (so a self-reassignment in its body — `function f(){ f = 1; }` — stays
+            // block-local) plus the Annex B var copy-out to the eval's var environment, exactly
+            // like the B.3.4 if-clause implicit block. Without the isolated binding the function
+            // shares the global var binding, so mutating it from the body clobbers the outer one.
+            // Generator/async declarations are purely block-scoped (no Annex B copy) and keep the
+            // plain path.
+            if (!directEvalFunctionDeclaration.Generator && !directEvalFunctionDeclaration.Async)
+                return VisitImplicitBlockFunctionDeclaration(directEvalFunctionDeclaration, directEvalFunctionId.Name);
+
             return VisitRuntimeFunctionDeclaration(directEvalFunctionDeclaration);
         }
 
