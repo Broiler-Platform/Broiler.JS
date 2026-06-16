@@ -161,7 +161,6 @@ test/built-ins/Date/value-to-primitive-result-non-string-prim.js
 test/built-ins/Error/prototype/toString/tostring-message-throws-symbol.js
 test/built-ins/Error/prototype/toString/tostring-message-throws-toprimitive.js
 test/built-ins/FinalizationRegistry/prototype/unregister/unregister-symbol-token.js
-test/built-ins/Function/prop-desc.js
 test/built-ins/Function/prototype/S15.3.4_A4.js
 test/built-ins/Function/prototype/arguments/prop-desc.js
 test/built-ins/Function/prototype/caller-arguments/accessor-properties.js
@@ -266,7 +265,6 @@ test/built-ins/Object/internals/DefineOwnProperty/consistent-value-function-argu
 test/built-ins/Object/internals/DefineOwnProperty/consistent-value-function-caller.js
 test/built-ins/Object/keys/15.2.3.14-5-13.js
 test/built-ins/Object/keys/property-traps-order-with-proxied-array.js
-test/built-ins/Object/prop-desc.js
 test/built-ins/Object/prototype/setPrototypeOf-with-different-values.js
 test/built-ins/Object/prototype/setPrototypeOf-with-non-circular-values-__proto__.js
 test/built-ins/Object/prototype/setPrototypeOf-with-non-circular-values.js
@@ -288,7 +286,6 @@ test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls-index.js
 test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls.js
 test/built-ins/Reflect/ownKeys/return-on-corresponding-order-large-index.js
 test/built-ins/RegExp/S15.10.2.5_A1_T4.js
-test/built-ins/RegExp/S15.10.7_A2_T2.js
 test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/lookahead-quantifier-match-groups.js
@@ -353,9 +350,7 @@ test/built-ins/ShadowRealm/WrappedFunction/name-throws-typeerror.js
 test/built-ins/ShadowRealm/prototype/Symbol.toStringTag.js
 test/built-ins/ShadowRealm/prototype/evaluate/throws-typeerror-wrap-throwing.js
 test/built-ins/ShadowRealm/prototype/importValue/specifier-tostring.js
-test/built-ins/String/S15.5.5_A2_T2.js
 test/built-ins/String/prototype/localeCompare/15.5.4.9_CE.js
-test/built-ins/String/prototype/match/S15.5.4.10_A1_T5.js
 test/built-ins/String/prototype/matchAll/regexp-is-undefined.js
 test/built-ins/String/prototype/matchAll/regexp-prototype-matchAll-v-u-flag.js
 test/built-ins/String/prototype/padEnd/fill-string-non-strings.js
@@ -366,9 +361,6 @@ test/built-ins/String/prototype/padStart/normal-operation.js
 test/built-ins/String/prototype/padStart/observable-operations.js
 test/built-ins/String/prototype/replace/S15.5.4.11_A1_T16.js
 test/built-ins/String/prototype/replace/S15.5.4.11_A1_T17.js
-test/built-ins/String/prototype/replace/S15.5.4.11_A1_T4.js
-test/built-ins/String/prototype/replace/S15.5.4.11_A1_T6.js
-test/built-ins/String/prototype/replace/S15.5.4.11_A1_T9.js
 test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024-0x0024.js
 test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024-0x0026.js
 test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024-0x0027.js
@@ -549,11 +541,8 @@ test/built-ins/WeakMap/prototype/set/returns-this-when-ignoring-duplicate.js
 test/built-ins/WeakMap/prototype/set/returns-this.js
 test/built-ins/decodeURI/S15.1.3.1_A6_T1.js
 test/built-ins/decodeURIComponent/S15.1.3.2_A6_T1.js
-test/built-ins/decodeURIComponent/throw-URIError.js
 test/built-ins/encodeURI/S15.1.3.3_A6_T1.js
 test/built-ins/encodeURIComponent/S15.1.3.4_A6_T1.js
-test/built-ins/global/S10.2.3_A2.1_T3.js
-test/built-ins/global/property-descriptor.js
 test/built-ins/parseFloat/S15.1.2.3_A1_T7.js
 test/built-ins/parseFloat/S15.1.2.3_A2_T10_U180E.js
 test/built-ins/parseInt/S15.1.2.2_A1_T2.js
@@ -898,7 +887,6 @@ test/language/expressions/does-not-equals/S11.9.2_A6.2_T2.js
 test/language/expressions/does-not-equals/bigint-and-number-extremes.js
 test/language/expressions/does-not-equals/bigint-and-object.js
 test/language/expressions/does-not-equals/bigint-and-string.js
-test/language/expressions/dynamic-import/import-attributes/2nd-param-await-ident.js
 test/language/expressions/dynamic-import/import-attributes/2nd-param-evaluation-abrupt-throw.js
 test/language/expressions/dynamic-import/import-attributes/2nd-param-evaluation-sequence.js
 test/language/expressions/dynamic-import/import-attributes/2nd-param-in.js
@@ -924,9 +912,6 @@ test/language/expressions/less-than/S11.8.1_A2.2_T1.js
 test/language/expressions/less-than/bigint-and-incomparable-string.js
 test/language/expressions/less-than/bigint-and-string.js
 test/language/expressions/modulus/bigint-modulo-zero.js
-test/language/expressions/new/S11.2.2_A4_T1.js
-test/language/expressions/new/S11.2.2_A4_T2.js
-test/language/expressions/new/S11.2.2_A4_T3.js
 test/language/expressions/object/accessor-name-computed-yield-expr.js
 test/language/expressions/object/computed-property-name-topropertykey-before-value-evaluation.js
 test/language/expressions/object/dstr/object-rest-proxy-gopd-not-called-on-excluded-keys.js
@@ -1000,10 +985,7 @@ test/language/statements/for-in/S12.6.4_A7_T2.js
 test/language/statements/for-in/order-enumerable-shadowed.js
 test/language/statements/for-in/order-property-added.js
 test/language/statements/for-of/head-await-using-bound-names-fordecl-tdz.js
-test/language/statements/for-of/head-using-bound-names-fordecl-tdz.js
-test/language/statements/for-of/head-using-fresh-binding-per-iteration.js
 test/language/statements/for-of/iterator-next-result-value-attr-error.js
-test/language/statements/for/head-init-async-of.js
 test/language/statements/for/scope-body-lex-open.js
 test/language/statements/for/scope-head-lex-open.js
 test/language/statements/function/S13_A12_T1.js
@@ -1018,7 +1000,6 @@ test/language/statements/using/initializer-disposed-if-subsequent-initializer-th
 test/language/statements/using/syntax/using-for-statement.js
 test/language/statements/using/syntax/using-invalid-arraybindingpattern-does-not-break-element-access.js
 test/language/statements/using/syntax/using-invalid-assignment-next-expression-for.js
-test/language/statements/using/syntax/using-invalid-assignment-statement-body-for-of.js
 test/language/statements/using/syntax/using-not-allowed-at-top-level-of-eval.js
 test/language/statements/using/syntax/using-outer-inner-using-bindings.js
 test/language/statements/using/throws-suppressederror-if-multiple-errors-during-disposal.js
@@ -1158,7 +1139,6 @@ test/staging/sm/generators/return-finally.js
 test/staging/sm/generators/runtime.js
 test/staging/sm/generators/yield-error.js
 test/staging/sm/global/bug-320887.js
-test/staging/sm/global/bug660612.js
 test/staging/sm/global/eval-01.js
 test/staging/sm/global/eval-02.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-arguments.js
