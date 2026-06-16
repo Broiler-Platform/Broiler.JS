@@ -37,7 +37,10 @@ public partial class JSString
         if (reg is JSRegExp jSRegExp)
             return jSRegExp.Match(@this);
 
-        var pattern = reg.IsNullOrUndefined ? "" : reg.StringValue;
+        // RegExpCreate(regexp, undefined): only an *undefined* pattern becomes the
+        // empty pattern ""; null (and any other value) is coerced with ToString, so
+        // `"…".match(null)` searches for the literal "null", not the empty pattern.
+        var pattern = reg.IsUndefined ? "" : reg.StringValue;
         var created = new JSRegExp(pattern, "");
         var builtinMatcher = created[(IJSSymbol)JSSymbol.match];
         return builtinMatcher.InvokeFunction(new Arguments(created, @this));

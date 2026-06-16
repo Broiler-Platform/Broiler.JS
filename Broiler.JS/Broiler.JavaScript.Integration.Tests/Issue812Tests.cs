@@ -148,4 +148,26 @@ public class Issue812Tests
     [Fact]
     public void Replace_StringSearch_LiteralReplacementStillWorks()
         => Assert.Equal("aXc", Eval("'abc'.replace('b', 'X')"));
+
+    // Problem 96 — String.prototype.match coerces its argument through
+    // RegExpCreate(regexp, undefined): only an *undefined* pattern becomes the empty
+    // pattern; null is coerced with ToString to "null". match treated null and
+    // undefined alike (empty pattern), so `"gnulluna".match(null)` matched "" at index
+    // 0 instead of the literal "null" at index 1.
+
+    [Fact]
+    public void Match_Null_SearchesForLiteralNull()
+        => Assert.Equal("null", Eval("'' + 'gnulluna'.match(null)[0]"));
+
+    [Fact]
+    public void Match_Null_MatchIndexIsOne()
+        => Assert.Equal("1", Eval("'' + 'gnulluna'.match(null).index"));
+
+    [Fact]
+    public void Match_Undefined_UsesEmptyPattern()
+        => Assert.Equal("true", Eval("'' + ('aundefinedb'.match(undefined)[0] === '')"));
+
+    [Fact]
+    public void Match_RegExpAndStringArguments_StillWork()
+        => Assert.Equal("bb:b", Eval("'abbc'.match(/b+/)[0] + ':' + 'abc'.match('b')[0]"));
 }
