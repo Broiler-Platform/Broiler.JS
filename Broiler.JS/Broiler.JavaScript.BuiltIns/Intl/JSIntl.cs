@@ -3979,7 +3979,9 @@ public class JSIntlDateTimeFormat : JSObject
             hasWeekday: OptionString(KeyStrings.GetOrCreate("weekday")) != null,
             weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")),
             hasTimeZoneName: OptionString(KeyStrings.GetOrCreate("timeZoneName")) != null,
-            hourCycle: ResolveHourCycle());
+            hourCycle: ResolveHourCycle(),
+            hasEra: OptionString(KeyStrings.GetOrCreate("era")) != null,
+            eraStyle: OptionString(KeyStrings.GetOrCreate("era")));
 
     // The resolved calendar: the requested -u-ca- value when it is one this engine
     // supports (era-based Gregorian-derived calendars), otherwise "gregory".
@@ -4297,7 +4299,9 @@ public class JSIntlDateTimeFormat : JSObject
             hasWeekday: f.HasFlag(TemporalFields.Weekday),
             weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")) ?? (dateStyle == "full" ? "long" : null),
             hasTimeZoneName: f.HasFlag(TemporalFields.TimeZoneName),
-            hourCycle: ResolveHourCycle());
+            hourCycle: ResolveHourCycle(),
+            hasEra: f.HasFlag(TemporalFields.Era),
+            eraStyle: OptionString(KeyStrings.GetOrCreate("era")));
 
     // The month width implied by dateStyle when no explicit month option is present.
     private string StyleMonthWidth() => dateStyle switch

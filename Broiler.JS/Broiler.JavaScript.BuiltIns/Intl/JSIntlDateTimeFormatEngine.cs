@@ -219,7 +219,7 @@ internal static class JSIntlDateTimeFormatEngine
         bool hasHour, bool hasMinute, bool hasSecond, int fractionalSecondDigits, bool hasDayPeriodField,
         string dateStyle, string timeStyle, bool hour12, string calendar = null,
         bool hasWeekday = false, string weekdayStyle = null, bool hasTimeZoneName = false,
-        string hourCycle = null)
+        string hourCycle = null, bool hasEra = false, string eraStyle = null)
     {
         string datePattern = null;
         string timePattern = null;
@@ -352,11 +352,14 @@ internal static class JSIntlDateTimeFormatEngine
         if (datePattern != null && datePattern.IndexOf('y') >= 0)
         {
             // An era-using calendar (e.g. buddhist) appends the era after a date that
-            // shows a year, e.g. "M/d/y" -> "M/d/y G". A cyclic-year calendar (chinese,
-            // dangi) shows the year as relatedYear(yearName), so the year field becomes
-            // "r(U)". Both make the pattern structurally distinct from the gregorian one.
-            if (EraCalendars.ContainsKey(calendar ?? string.Empty) || IslamicCalendars.Contains(calendar ?? string.Empty))
-                datePattern += " G";
+            // shows a year, e.g. "M/d/y" -> "M/d/y G". The explicit `era` option does the
+            // same for any calendar (including gregorian), with the requested width:
+            // narrow -> "GGGGG", long -> "GGGG", short -> "G". A cyclic-year calendar
+            // (chinese, dangi) shows the year as relatedYear(yearName), so the year field
+            // becomes "r(U)". Each makes the pattern structurally distinct.
+            var eraCalendar = EraCalendars.ContainsKey(calendar ?? string.Empty) || IslamicCalendars.Contains(calendar ?? string.Empty);
+            if (eraCalendar || hasEra)
+                datePattern += eraStyle switch { "narrow" => " GGGGG", "long" => " GGGG", _ => " G" };
             else if (CyclicYearCalendars.Contains(calendar ?? string.Empty))
                 datePattern = ReplaceYearField(datePattern, "r(U)");
         }
@@ -626,10 +629,20 @@ internal static class JSIntlDateTimeFormatEngine
         switch (token.Field)
         {
             case 'G':
-                // Era. Only era-using calendars emit a 'G' token.
+                // Era. Emitted by era-using calendars and by the explicit `era` option.
                 if (NeedsCalendarConversion(calendar))
                     return ("era", "AH");
-                return ("era", EraCalendars.TryGetValue(calendar ?? string.Empty, out var era) ? era.Era : "AD");
+                if (EraCalendars.TryGetValue(calendar ?? string.Empty, out var era))
+                    return ("era", era.Era);
+                // Proleptic Gregorian: AD for year > 0, BC otherwise, rendered at the
+                // requested width (GGGGG narrow, GGGG long, otherwise short).
+                var beforeCommon = f.Year <= 0;
+                return ("era", token.Count switch
+                {
+                    5 => beforeCommon ? "B" : "A",
+                    4 => beforeCommon ? "Before Christ" : "Anno Domini",
+                    _ => beforeCommon ? "BC" : "AD",
+                });
             case 'U':
                 // Cyclic year name (sexagenary), used by chinese/dangi.
                 return ("yearName", SexagenaryYearName(f.Year));
