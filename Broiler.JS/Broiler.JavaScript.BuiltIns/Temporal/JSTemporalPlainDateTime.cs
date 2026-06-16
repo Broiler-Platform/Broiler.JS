@@ -496,8 +496,10 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (At("second")) { sc = t / 1_000_000_000; t %= 1_000_000_000; }
         if (At("millisecond")) { msv = t / 1_000_000; t %= 1_000_000; }
         if (At("microsecond")) { usv = t / 1_000; t %= 1_000; }
-        double S(BigInteger v) => sgn * (double)v;
-        return (S(hr), S(mn), S(sc), S(msv), S(usv), sgn * (double)t);
+        // ℝ→𝔽 nearest double (ties to even), not .NET's truncating (double)BigInteger
+        // (#818 Problems 18/19).
+        double S(BigInteger v) => sgn * JSTemporalDuration.NearestDouble(v);
+        return (S(hr), S(mn), S(sc), S(msv), S(usv), sgn * JSTemporalDuration.NearestDouble(t));
     }
 
     [JSExport("round", Length = 1)]

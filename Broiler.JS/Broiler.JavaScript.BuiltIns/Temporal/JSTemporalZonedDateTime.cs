@@ -987,7 +987,9 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (At("microsecond")) { micros = ns / 1_000; ns %= 1_000; }
         var nanos = ns;
 
-        double S(BigInteger v) => sign * (double)v;
+        // ℝ→𝔽 nearest double (ties to even), not .NET's truncating (double)BigInteger
+        // (#818 Problems 18/19).
+        double S(BigInteger v) => sign * JSTemporalDuration.NearestDouble(v);
         return new JSTemporalDuration(0, 0, 0, 0, S(hours), S(minutes), S(seconds), S(millis), S(micros), S(nanos),
             JSTemporalDuration.DurationPrototype);
     }

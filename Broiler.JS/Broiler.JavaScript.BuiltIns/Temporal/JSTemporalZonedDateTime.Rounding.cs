@@ -397,9 +397,11 @@ public partial class JSTemporalZonedDateTime
         if (rank <= UnitRank("hour")) { hours = minutes / 60; minutes %= 60; }
         if (rank <= UnitRank("day")) { days = hours / 24; hours %= 24; }
 
-        double S(BigInteger v) => sign * (double)v;
+        // ℝ→𝔽 nearest double (ties to even) for the BigInteger components, not .NET's
+        // truncating (double)BigInteger (#818 Problems 18/19).
+        double S(BigInteger v) => sign * JSTemporalDuration.NearestDouble(v);
         return new JSTemporalDuration(
-            x.Years, x.Months, x.Weeks, x.Days + sign * (double)days,
+            x.Years, x.Months, x.Weeks, x.Days + sign * JSTemporalDuration.NearestDouble(days),
             S(hours), S(minutes), S(seconds), sign * milliseconds, sign * microseconds, sign * nanoseconds,
             JSTemporalDuration.DurationPrototype);
     }
