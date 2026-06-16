@@ -81,7 +81,7 @@ public static class DirectEvalSupport
         }
     }
 
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, bool tailCall = false)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, bool tailCall = false)
     {
         if (!IsDirectEval(callee))
         {
@@ -115,7 +115,7 @@ public static class DirectEvalSupport
         {
             var requiresActivation = disallowArgumentsDeclaration || useActivationBinding;
             using var _ = capturedBindings?.Length > 0
-                ? context.PushDirectEvalScope(capturedBindings)
+                ? context.PushDirectEvalScope(capturedBindings, shadowedBindings)
                 : null;
             using var lexicalBindingScope = capturedLexicalBindingNames?.Length > 0
                 ? context.PushDirectEvalLexicalBindingNames(capturedLexicalBindingNames)
