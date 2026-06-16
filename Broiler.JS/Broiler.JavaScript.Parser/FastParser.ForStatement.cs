@@ -317,21 +317,34 @@ partial class FastParser
         }
 
         // A `using` ForBinding is only a declaration at the head of a for-of loop. It is
-        // recognised when `using` is followed (no LineTerminator) by a BindingIdentifier
-        // that is not the contextual `of` keyword and the `of` keyword follows the single
-        // binding — so `for (using of x)` / `for (using in x)` / `for (using; ;)` keep
-        // `using` as an ordinary IdentifierReference, and an initializer / for-in head
-        // (`for (using x = …)` / `for (using x in …)`) is left to fail as the SyntaxError
-        // it is. (The `await using` for-of head is not yet handled here: its desugaring
-        // does not currently compile, so it is left to the expression path rather than
-        // accepted and mis-compiled.)
+        // recognised when `using` (optionally preceded by `await`) is followed (no
+        // LineTerminator) by a BindingIdentifier that is not the contextual `of` keyword and
+        // the `of` keyword follows the single binding — so `for (using of x)` /
+        // `for (using in x)` / `for (using; ;)` keep `using` as an ordinary
+        // IdentifierReference, and an initializer / for-in head (`for (using x = …)` /
+        // `for (using x in …)`) is left to fail as the SyntaxError it is. The
+        // `await using x of …` form is an async-disposed for-of binding: each iteration's
+        // resource is async-disposed at the end of its iteration block.
         bool TryParseForUsingDeclaration(out AstVariableDeclaration declaration)
         {
             declaration = null;
             var start = stream.Current;
+            var isAwait = false;
 
-            if (start.Keyword != FastKeywords.@using)
+            if (start.Keyword == FastKeywords.await)
+            {
+                // `await using x of …`: only a using ForBinding when `using` follows; else
+                // leave `await` to the expression path.
+                if (stream.Next.Keyword != FastKeywords.@using)
+                    return false;
+
+                isAwait = true;
+                stream.Consume(); // await
+            }
+            else if (start.Keyword != FastKeywords.@using)
+            {
                 return false;
+            }
 
             stream.Consume(); // using
 
@@ -352,7 +365,7 @@ partial class FastParser
 
             var declarator = new VariableDeclarator(new AstIdentifier(bindingToken), null);
             declaration = new AstVariableDeclaration(start, PreviousToken, declarator,
-                FastVariableKind.Const, @using: true);
+                FastVariableKind.Const, @using: true, await: isAwait);
             return true;
         }
 

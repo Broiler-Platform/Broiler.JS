@@ -309,6 +309,28 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         var @catch = node.Catch;
         var hasCatch = @catch != null;
 
+        // A value-producing try/catch/finally is flattened below into a goto-driven state
+        // machine whose tail is `Pop` (void). The try/catch value (a try/catch/finally
+        // evaluates to its protected block's — or catch block's — normal completion, the
+        // finally's value being discarded) would therefore be dropped, leaving the
+        // rewritten block typed `void` while the enclosing IL still expects the original
+        // type — an unbalanced stack that faults as an invalid program (e.g. `await using`
+        // followed by another statement inside a loop). Spill that value into a lifted temp
+        // so it survives the yield(s) in the finally / resume, and produce it as the
+        // rewritten block's result so the node's type is preserved.
+        Expression resultStore = null;
+        if (node.Type != typeof(void))
+        {
+            var index = lifted.Count;
+            var original = Expression.Parameter(node.Type);
+            var box = Expression.Parameter(typeof(Box<>).MakeGenericType(node.Type));
+            resultStore = Expression.Field(box, "Value");
+            lifted.Add((original, box, index, resultStore));
+        }
+
+        Expression Store(Expression value)
+            => resultStore != null ? Expression.Assign(resultStore, value) : value;
+
         LabelTarget catchLabel = null;
         int catchId = 0;
         LabelTarget finallyLabel = null;
@@ -324,7 +346,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         var (endLabel, endId) = GetNextYieldJumpTarget();
 
         tryList.AddExpression(ClrGeneratorV2Builder.Push(pe, catchId, finallyId, endId));
-        tryList.AddExpression(Visit(node.Try));
+        tryList.AddExpression(Store(Visit(node.Try)));
         tryList.AddExpression(Expression.Goto(hasFinally ? finallyLabel : endLabel));
 
         if (hasCatch)
@@ -332,7 +354,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
             tryList.AddExpression(Expression.Label(catchLabel));
             tryList.AddExpression(ClrGeneratorV2Builder.BeginCatch(pe));
             tryList.AddExpression(Expression.Assign(Visit(@catch.Parameter), exception));
-            tryList.AddExpression(Visit(@catch.Body));
+            tryList.AddExpression(Store(Visit(@catch.Body)));
             tryList.AddExpression(Expression.Empty);
             tryList.AddExpression(Expression.Goto(hasFinally ? finallyLabel : endLabel));
         }
@@ -347,6 +369,10 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
 
         tryList.AddExpression(Expression.Label(endLabel));
         tryList.AddExpression(ClrGeneratorV2Builder.Pop(pe));
+
+        // Produce the preserved try/catch value as the rewritten block's result.
+        if (resultStore != null)
+            tryList.AddExpression(resultStore);
 
         var b = tryList.Build();
         return b;
