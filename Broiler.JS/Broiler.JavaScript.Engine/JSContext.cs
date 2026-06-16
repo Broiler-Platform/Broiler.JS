@@ -1106,12 +1106,15 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         KeyString objectKey = "Object";
 
         var func = JSEngine.CreateFunctionClass(this, false);
-        this[functionKey] = func;
+        // Built-in global constructors are { writable, enumerable: false, configurable }.
+        // The indexer would install them as enumerable (so they'd wrongly show up in a
+        // global for-in / Object.keys), so add them with ConfigurableValue attributes.
+        this.FastAddValue(functionKey, func, JSPropertyAttributes.ConfigurableValue);
         FunctionPrototype = ((IJSFunction)func).Prototype as JSObject;
         if (FunctionPrototype.GetInternalProperty(KeyStrings.length, false).IsEmpty)
             FunctionPrototype.FastAddValue(KeyStrings.length, JSValue.NumberZero, JSPropertyAttributes.ConfigurableReadonlyValue);
         Object = JSEngine.CreateObjectClass(this, false);
-        this[objectKey] = Object;
+        this.FastAddValue(objectKey, Object, JSPropertyAttributes.ConfigurableValue);
         ObjectPrototype = ((IJSFunction)Object).Prototype as JSObject;
         ObjectPrototype.BasePrototypeObject = null;
 
@@ -1138,7 +1141,8 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             if (values.IsFunction)
                 IntrinsicArrayValues = values;
         }
-        this[KeyStrings.globalThis] = this;
+        // globalThis is { writable, enumerable: false, configurable } per spec.
+        this.FastAddValue(KeyStrings.globalThis, this, JSPropertyAttributes.ConfigurableValue);
         this[KeyStrings.debug] = JSValue.CreateFunction(Debug);
         InstallDynamicImport();
 

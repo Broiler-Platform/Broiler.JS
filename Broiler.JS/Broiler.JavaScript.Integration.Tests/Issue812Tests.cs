@@ -191,4 +191,30 @@ public class Issue812Tests
     [Fact]
     public void PlainTime_MaxValidOffsetIsIgnored()
         => Assert.Equal("12:00:00", Eval("Temporal.PlainTime.from('12:00-23:59').toString()"));
+
+    // Problem 92 — the built-in global constructors Function and Object (and the
+    // globalThis reference) must be { writable, enumerable: false, configurable }.
+    // They were installed via the enumerable-defaulting indexer, so they wrongly
+    // appeared in a global for-in / Object.keys enumeration (e.g. the DontEnum check
+    // on `Function` failed). Other constructors (Array, String, …) were already
+    // non-enumerable via the built-in registry.
+
+    [Fact]
+    public void GlobalFunction_IsNonEnumerable()
+        => Assert.Equal("false:true:true", Eval(
+            "var d = Object.getOwnPropertyDescriptor(globalThis, 'Function'); d.enumerable + ':' + d.writable + ':' + d.configurable"));
+
+    [Fact]
+    public void GlobalObject_IsNonEnumerable()
+        => Assert.Equal("false", Eval("'' + globalThis.propertyIsEnumerable('Object')"));
+
+    [Fact]
+    public void GlobalThis_IsNonEnumerable()
+        => Assert.Equal("false:true:true", Eval(
+            "var d = Object.getOwnPropertyDescriptor(globalThis, 'globalThis'); d.enumerable + ':' + d.writable + ':' + d.configurable"));
+
+    [Fact]
+    public void GlobalConstructors_StillUsable()
+        => Assert.Equal("function:3:5", Eval(
+            "typeof Function + ':' + Object.keys({a:1,b:2,c:3}).length + ':' + (new Function('a','b','return a+b'))(2,3)"));
 }
