@@ -38,4 +38,30 @@ public class Issue812Tests
     [Fact]
     public void BareAsyncOfForOfIsSyntaxError()
         => Assert.Equal("SyntaxError", ErrorName("eval('for (async of [1, 2, 3]) { }')"));
+
+    // Problem 59 — the braced Unicode code-point escape `\u{H..H}` (valid only in
+    // u/v mode). A `/…/u` regex *literal* has it rewritten to a fixed-width `\uHHHH`
+    // escape by the source scanner, but a `new RegExp(string, "u")` pattern reached
+    // the translator with the brace form intact, which .NET rejected with
+    // "Invalid pattern '[\u{0}]' … Insufficient or invalid hexadecimal digits."
+
+    [Fact]
+    public void RegExpStringBracedEscape_BmpInClass_Matches()
+        => Assert.Equal("true", Eval("'' + new RegExp('[\\\\u{0}]', 'u').test('\\u0000')"));
+
+    [Fact]
+    public void RegExpStringBracedEscape_BmpInClass_DoesNotMatchOther()
+        => Assert.Equal("false", Eval("'' + new RegExp('[\\\\u{0}]', 'u').test('a')"));
+
+    [Fact]
+    public void RegExpStringBracedEscape_AstralInClass_MatchesWholeCodePoint()
+        => Assert.Equal("true", Eval("'' + new RegExp('[\\\\u{1F600}]', 'u').test('\\u{1F600}')"));
+
+    [Fact]
+    public void RegExpStringBracedEscape_Atom_Matches()
+        => Assert.Equal("true", Eval("'' + new RegExp('\\\\u{41}', 'u').test('A')"));
+
+    [Fact]
+    public void RegExpStringBracedEscape_MetacharacterStaysLiteral()
+        => Assert.Equal("true", Eval("'' + new RegExp('\\\\u{3f}', 'u').test('?')"));
 }
