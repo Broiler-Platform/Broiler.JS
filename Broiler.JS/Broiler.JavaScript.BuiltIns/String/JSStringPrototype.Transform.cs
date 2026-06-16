@@ -62,11 +62,25 @@ public partial class JSString
     internal static JSValue Repeat(in Arguments a)
     {
         var @this = a.This.AsString();
-        var c = a[0]?.IntegerValue ?? int.MaxValue;
-        
-        if (c < 0 || c == int.MaxValue)
+
+        // Step 3: n = ToIntegerOrInfinity(count). ToNumber maps undefined/NaN to 0.
+        var n = a.Get1().DoubleValue;
+        n = double.IsNaN(n) ? 0 : System.Math.Truncate(n);
+
+        // Step 4: a negative or infinite count is a RangeError.
+        if (n < 0 || double.IsPositiveInfinity(n))
             throw JSEngine.NewRangeError($"Invalid count value");
-        
+
+        // An empty string repeated any finite number of times is empty, and a
+        // zero count always yields the empty string. Handling this first avoids
+        // allocating for huge (but legal) counts such as 2^31 - 1.
+        if (@this.Length == 0 || n == 0)
+            return new JSString(string.Empty);
+
+        if (n * @this.Length > int.MaxValue)
+            throw JSEngine.NewRangeError($"Invalid count value");
+
+        var c = (int)n;
         var result = new StringBuilder(c * @this.Length);
         for (var i = 0; i < c; i++)
             result.Append(@this);

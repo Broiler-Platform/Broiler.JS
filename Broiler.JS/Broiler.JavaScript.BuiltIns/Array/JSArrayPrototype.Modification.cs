@@ -157,7 +157,10 @@ public partial class JSArray
                     mustSetLengthThroughProperty = true;
             }
 
-            if (mustSetLengthThroughProperty)
+            // The fast `Length` setter takes an int, so a length above int.MaxValue
+            // (e.g. pushing nothing onto an array whose length is already 2^32 - 1)
+            // must go through the property to avoid wrapping to a negative value.
+            if (mustSetLengthThroughProperty || length > int.MaxValue)
                 array.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), new JSNumber(length));
             else
                 array.Length = (int)length;
@@ -287,13 +290,14 @@ public partial class JSArray
     public static JSValue Sort(in Arguments a)
     {
         var fx = a.Get1();
-        var @this = a.This as JSObject;
 
-        if (@this == null)
-            throw JSEngine.NewTypeError($"Sort can only be called with an Array or an Object");
-
+        // §23.1.3.30 step 1: a non-callable comparefn is rejected before anything else.
         if (!fx.IsUndefined && !fx.IsFunction)
             throw JSEngine.NewTypeError($"Argument is not a function");
+
+        // Step 2: let obj be ? ToObject(this value). Primitive receivers are boxed
+        // into their wrapper objects; null/undefined throw a TypeError.
+        var @this = ToArrayLikeObject(a.This);
 
         var length = @this.Length;
         if (length <= 1)

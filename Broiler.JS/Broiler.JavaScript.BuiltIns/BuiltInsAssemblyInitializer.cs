@@ -1534,15 +1534,6 @@ internal static class BuiltInsAssemblyInitializer
                 var position = (int)result[KeyStrings.index].DoubleValue;
                 var capturesLength = Math.Max((int)result[KeyStrings.length].DoubleValue, 0);
                 var namedCaptures = result[KeyStrings.GetOrCreate("groups")];
-                JSValue normalizedNamedCaptures = JSUndefined.Value;
-                if (!namedCaptures.IsUndefined)
-                {
-                    if (namedCaptures.IsNull)
-                        throw JSEngine.NewTypeError("RegExp replacement named captures must be an object");
-
-                    normalizedNamedCaptures = namedCaptures as JSObject
-                        ?? (JSObject)JSObject.CreatePrimitiveObject(namedCaptures);
-                }
 
                 List<JSValue> captures = [];
                 for (var i = 1; i < capturesLength; i++)
@@ -1558,13 +1549,28 @@ internal static class BuiltInsAssemblyInitializer
                     replacerArgs.AddRange(captures);
                     replacerArgs.Add(JSValue.CreateNumber(position));
                     replacerArgs.Add(JSValue.CreateString(input));
-                    if (!normalizedNamedCaptures.IsUndefined)
-                        replacerArgs.Add(normalizedNamedCaptures);
+                    // The functional replacer receives the raw "groups" value (null, a number,
+                    // an object, ...) unchanged as its final argument; only an undefined value
+                    // is omitted. No ToObject coercion happens on this path.
+                    if (!namedCaptures.IsUndefined)
+                        replacerArgs.Add(namedCaptures);
 
                     replacement = replaceValue.InvokeFunction(new Arguments(JSUndefined.Value, replacerArgs.ToArray())).ToString();
                 }
                 else
                 {
+                    // The string path coerces a present "groups" value with ToObject, so a null
+                    // (or other non-coercible) value is a TypeError before substitution.
+                    JSValue normalizedNamedCaptures = JSUndefined.Value;
+                    if (!namedCaptures.IsUndefined)
+                    {
+                        if (namedCaptures.IsNull)
+                            throw JSEngine.NewTypeError("RegExp replacement named captures must be an object");
+
+                        normalizedNamedCaptures = namedCaptures as JSObject
+                            ?? (JSObject)JSObject.CreatePrimitiveObject(namedCaptures);
+                    }
+
                     replacement = GetSubstitution(matched, input, position, captures, normalizedNamedCaptures, replacementText);
                 }
 

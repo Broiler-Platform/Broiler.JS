@@ -113,7 +113,10 @@ public partial class JSString
             }
         }
 
-        var @this = @thisValue.ToString();
+        // Step 3: ToString(O). Use the spec ToString (StringValue routes objects through
+        // ToPrimitive with a string hint, honouring Symbol.toPrimitive) rather than CLR
+        // ToString, which would call the object's own toString/valueOf directly.
+        var @this = @thisValue.StringValue;
         var searchString = searchValue.IsUndefined ? "undefined" : searchValue.StringValue;
         var functionalReplace = replaceValue.IsFunction;
         var replacementText = functionalReplace ? null : replaceValue.StringValue;
