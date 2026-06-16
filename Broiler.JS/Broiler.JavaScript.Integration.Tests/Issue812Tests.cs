@@ -124,4 +124,28 @@ public class Issue812Tests
     [Fact]
     public void SingleNew_StillConstructs()
         => Assert.Equal("5", Eval("function C(v){this.v=v}; '' + new C(5).v"));
+
+    // Problem 97 — String.prototype.replace with a string search value and a function
+    // replacement must call the function with (matched, position, string). The function
+    // was invoked with no arguments (and even when there was no match), so the position
+    // and string were undefined inside the replacer.
+
+    [Fact]
+    public void Replace_StringSearch_FunctionReceivesMatchPositionAndString()
+        => Assert.Equal("a[b|1|abc]c", Eval(
+            "'abc'.replace('b', function(m, p, s){ return '[' + m + '|' + p + '|' + s + ']'; })"));
+
+    [Fact]
+    public void Replace_NullSearch_CoercesToStringAndPassesPosition()
+        => Assert.Equal("g1una", Eval(
+            "'gnulluna'.replace(null, function(a1, a2, a3){ return a2 + ''; })"));
+
+    [Fact]
+    public void Replace_NoMatch_DoesNotCallFunction()
+        => Assert.Equal("abc:0", Eval(
+            "var n = 0; var r = 'abc'.replace('z', function(){ n++; return 'X'; }); r + ':' + n"));
+
+    [Fact]
+    public void Replace_StringSearch_LiteralReplacementStillWorks()
+        => Assert.Equal("aXc", Eval("'abc'.replace('b', 'X')"));
 }

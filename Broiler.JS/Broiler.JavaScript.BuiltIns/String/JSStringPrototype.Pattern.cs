@@ -65,14 +65,20 @@ public partial class JSString
         if (f is JSRegExp jSRegExp)
             return new JSString(jSRegExp.Replace(@this, s));
 
-        // Find the first occurrance of substr.
+        // Find the first occurrence of the (stringified) search value.
         var substr = f.StringValue;
-        var replaceText = s.IsFunction ? s.InvokeFunction(Arguments.Empty).StringValue : s.StringValue;
         int start = @this.IndexOf(substr, StringComparison.Ordinal);
         if (start == -1)
             return a.This;
 
         int end = start + substr.Length;
+
+        // A functional replacement is called with (matched, position, string) — and
+        // only when there is a match; a non-functional replacement is used verbatim.
+        var replaceText = s.IsFunction
+            ? s.InvokeFunction(new Arguments(JSUndefined.Value,
+                JSValue.CreateString(substr), JSValue.CreateNumber(start), JSValue.CreateString(@this))).StringValue
+            : s.StringValue;
 
         // Replace only the first match.
         var result = new StringBuilder(@this.Length + (replaceText.Length - substr.Length));
