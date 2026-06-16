@@ -493,6 +493,46 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     /// <summary>Whether a super reference is available to the direct eval currently being compiled.</summary>
     public bool HasDirectEvalSuper => directEvalSuperValues.Count > 0;
 
+    private readonly List<JSValue> directEvalSuperConstructorValues = [];
+    private readonly List<JSVariable> directEvalThisBindingValues = [];
+
+    private sealed class DirectEvalSuperCallScope(JSContext context) : IDisposable
+    {
+        public void Dispose()
+        {
+            context.directEvalSuperConstructorValues.RemoveAt(context.directEvalSuperConstructorValues.Count - 1);
+            context.directEvalThisBindingValues.RemoveAt(context.directEvalThisBindingValues.Count - 1);
+        }
+    }
+
+    /// <summary>
+    /// Shares the enclosing derived constructor's superclass constructor and its
+    /// <c>this</c> binding with a direct eval body, so a <c>super(...)</c> inside the
+    /// eval runs the superclass [[Construct]] and initializes the SAME <c>this</c>
+    /// binding the constructor observes after the eval returns. Sharing the binding
+    /// (not its value) also lets the eval read <c>this</c> lazily, so a derived
+    /// constructor's pre-<c>super()</c> eval no longer throws when it merely contains
+    /// the <c>super()</c> call rather than reading <c>this</c>.
+    /// </summary>
+    public IDisposable PushDirectEvalSuperCall(JSValue superConstructor, JSVariable thisBinding)
+    {
+        if (thisBinding == null)
+            return null;
+
+        directEvalSuperConstructorValues.Add(superConstructor ?? JSUndefined.Value);
+        directEvalThisBindingValues.Add(thisBinding);
+        return new DirectEvalSuperCallScope(this);
+    }
+
+    /// <summary>The superclass constructor a <c>super(...)</c> in the direct eval being compiled/executed targets.</summary>
+    public JSValue DirectEvalSuperConstructor => directEvalSuperConstructorValues.Count == 0 ? JSUndefined.Value : directEvalSuperConstructorValues[^1];
+
+    /// <summary>The derived constructor <c>this</c> binding shared with the direct eval being compiled/executed, or null.</summary>
+    public JSVariable DirectEvalThisBinding => directEvalThisBindingValues.Count == 0 ? null : directEvalThisBindingValues[^1];
+
+    /// <summary>Whether a <c>super(...)</c> call is available to the direct eval currently being compiled.</summary>
+    public bool HasDirectEvalSuperCall => directEvalThisBindingValues.Count > 0;
+
     internal bool TryResolveDirectEvalBinding(in KeyString name, out JSVariable variable, bool includeUninitializedShadows = false)
     {
         for (var current = Top; current != null; current = current.Parent)

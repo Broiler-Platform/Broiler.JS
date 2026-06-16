@@ -220,7 +220,12 @@ partial class FastParser
                     return Return(out node);
 
                 case FastKeywords.@using:
-                    return Using(out node);
+                    // `using x = …;` is a UsingDeclaration; otherwise `using` is a plain
+                    // IdentifierReference (Using rewinds on failure), so fall through to the
+                    // expression-statement path.
+                    if (Using(out node))
+                        return true;
+                    break;
 
                 case FastKeywords.await:
                     if (Using(out node, true))
@@ -567,12 +572,24 @@ partial class FastParser
             }
 
             if (stream.Current.Type != TokenTypes.Identifier)
+            {
+                // Not a UsingDeclaration: `using` (or `await using`) is an ordinary
+                // IdentifierReference here — `using;`, `using = 1`, `using.x`, `using()`,
+                // or `using` / `await` followed by a LineTerminator (the binding must be on
+                // the same line). Rewind everything consumed so the caller can re-parse it
+                // through the expression-statement path.
+                stream.Reset(start);
                 return false;
+            }
 
             if (!Parameters(out var declarators, TokenTypes.SemiColon, false, FastVariableKind.Const))
                 throw stream.Unexpected();
 
-            statement = new AstVariableDeclaration(start, PreviousToken, declarators, FastVariableKind.Const, true, await: isAsync);
+            var declaration = new AstVariableDeclaration(start, PreviousToken, declarators, FastVariableKind.Const, true, await: isAsync);
+            // Every `using` / `await using` binding requires an initializer (`using x;` is a
+            // SyntaxError). for-of ForBindings are handled on the for-head path and exempt.
+            ValidateDeclaratorInitializers(declaration);
+            statement = declaration;
             return true;
         }
     }

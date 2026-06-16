@@ -26,10 +26,11 @@ partial class FastParser
 
     /// <summary>
     /// Enforces the LexicalBinding / VariableDeclaration early errors that require an
-    /// Initializer: every <c>const</c> binding, and every binding that uses a
-    /// destructuring BindingPattern, must have one. for-in / for-of ForBindings are
-    /// exempt and are validated separately (ValidateForInOfDeclaration), so this is
-    /// only applied to plain declarations and C-style for-head declarations.
+    /// Initializer: every <c>const</c> binding, every <c>using</c> / <c>await using</c>
+    /// binding, and every binding that uses a destructuring BindingPattern, must have one.
+    /// for-in / for-of ForBindings are exempt and are validated separately
+    /// (ValidateForInOfDeclaration), so this is only applied to plain declarations and
+    /// C-style for-head declarations.
     /// </summary>
     internal void ValidateDeclaratorInitializers(AstVariableDeclaration declaration)
     {
@@ -38,6 +39,12 @@ partial class FastParser
         {
             if (declarator.Init != null)
                 continue;
+
+            // A `using` / `await using` declaration is a const-kind lexical declaration, so
+            // it is reported as a using error rather than a generic const one.
+            if (declaration.Using)
+                throw new FastParseException(declaration.Start,
+                    $"Missing initializer in {(declaration.AwaitUsing ? "await using" : "using")} declaration");
 
             if (declaration.Kind == FastVariableKind.Const)
                 throw new FastParseException(declaration.Start, "Missing initializer in const declaration");

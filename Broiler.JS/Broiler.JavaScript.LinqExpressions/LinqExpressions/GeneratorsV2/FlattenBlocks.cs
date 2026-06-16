@@ -140,6 +140,20 @@ public class FlattenBlocks : YExpressionMapVisitor
                     vars.AddRange(nestedBlock.Variables);
                     list.AddRange(nestedBlock.Expressions);
                 }
+                else if (visited.NodeType == YExpressionType.TryCatchFinally && visited.Type != typeof(void))
+                {
+                    // A value-producing try/catch/finally cannot be consumed in place by `p`
+                    // when `p` pre-loads a target onto the evaluation stack — e.g. a store to
+                    // a field, `boxField = <try>` (which arises when a completion value `#cv`
+                    // is lifted into a generator box because it lives across a yield). CLR
+                    // requires the field's target reference before the value, but the try's
+                    // finally clears the stack, faulting as an invalid program. Spill the
+                    // value into a temp first, then apply `p` to the temp.
+                    var temp = Expression.Parameter(visited.Type);
+                    vars.Add(temp);
+                    list.Add(Expression.Assign(temp, visited));
+                    list.Add(p(temp));
+                }
                 else
                 {
                     list.Add(p(visited));

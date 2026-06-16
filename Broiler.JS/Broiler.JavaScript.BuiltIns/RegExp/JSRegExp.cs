@@ -2603,6 +2603,21 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 continue;
             }
 
+            // A character class whose only member is a single property escape —
+            // `[\p{X}]`, `[\P{X}]`, `[^\p{X}]`, `[^\P{X}]` — is equivalent to the
+            // standalone (possibly doubly-negated) property, so translate it in the
+            // standalone (code-point, surrogate-aware) form. This is what makes a negated
+            // binary property (`[\P{Hex}]`) or an astral-bearing property (`[\p{Emoji}]`)
+            // usable inside a class: the in-class form cannot nest a negated fragment or
+            // a supplementary-plane range, so it would otherwise be rejected.
+            if (c == '[' && !inClass
+                && TryTranslateSinglePropertyClass(pattern, i, unicodeSets, out var classTranslated, out var afterClass))
+            {
+                sb.Append(classTranslated);
+                i = afterClass;
+                continue;
+            }
+
             // Track character-class context (classes do not nest in JS).
             if (c == '[' && !inClass)
                 inClass = true;
@@ -2614,6 +2629,53 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Recognises a character class consisting of exactly one property escape (with an
+    /// optional leading <c>^</c>) — <c>[\p{X}]</c> / <c>[\P{X}]</c> / <c>[^\p{X}]</c> /
+    /// <c>[^\P{X}]</c> — and translates it as the standalone property (the class's <c>^</c>
+    /// and the escape's <c>p</c>/<c>P</c> combine into the effective polarity). Returns
+    /// false (leaving the normal in-class path to handle it) for any other class shape, or
+    /// when the property has no standalone translation (a native form left to .NET).
+    /// </summary>
+    private static bool TryTranslateSinglePropertyClass(string pattern, int start, bool unicodeSets, out string translated, out int afterClass)
+    {
+        translated = null;
+        afterClass = start;
+
+        var p = start + 1; // past '['
+        var classNegated = false;
+        if (p < pattern.Length && pattern[p] == '^')
+        {
+            classNegated = true;
+            p++;
+        }
+
+        if (p + 2 >= pattern.Length || pattern[p] != '\\')
+            return false;
+
+        var pc = pattern[p + 1];
+        if ((pc != 'p' && pc != 'P') || pattern[p + 2] != '{')
+            return false;
+
+        var close = pattern.IndexOf('}', p + 3);
+        if (close < 0)
+            return false;
+
+        // The property escape must be the class's only member.
+        if (close + 1 >= pattern.Length || pattern[close + 1] != ']')
+            return false;
+
+        var inner = pattern.Substring(p + 3, close - (p + 3));
+        var effectiveNegated = (pc == 'P') ^ classNegated;
+        var t = TranslateUnicodeProperty(effectiveNegated, inner, inClass: false, unicodeSets);
+        if (t == null)
+            return false;
+
+        translated = t;
+        afterClass = close + 2; // past '}' and ']'
+        return true;
     }
 
     /// <summary>

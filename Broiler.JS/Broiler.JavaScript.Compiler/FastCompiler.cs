@@ -104,6 +104,23 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             fx.Super = evalSuper.Expression;
         }
 
+        // A direct eval inside a derived constructor (before super()) shares that
+        // constructor's superclass constructor and `this` binding: a `super(...)` in the
+        // eval body must run the superclass [[Construct]] and bind the SAME `this` the
+        // constructor sees afterwards. #evalThis holds the shared JSVariable directly
+        // (CreateVariable assigns the JSVariable rather than wrapping a value), so `this`
+        // reads resolve through it and the eval's super() binds it via its target.
+        if (isDirectEvalCompilation && context?.HasDirectEvalSuperCall == true)
+        {
+            var evalSuperConstructor = fx.CreateVariable("#evalSuperConstructor", JSContextBuilder.DirectEvalSuperConstructor);
+            evalSuperConstructor.SkipRegistration = true;
+            fx.SuperConstructor = evalSuperConstructor.Expression;
+
+            var evalThis = fx.CreateVariable("#evalThis", JSContextBuilder.DirectEvalThisBinding);
+            evalThis.SkipRegistration = true;
+            fx.ThisExpression = evalThis.Expression;
+        }
+
         var lScope = fx.Context;
 
         if (argsList != null && jScript.HoistingScope != null)

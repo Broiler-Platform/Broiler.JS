@@ -40,9 +40,13 @@ partial class FastCompiler
 
             var d = scope.Disposable;
             var dispose = d.CallExpression<IJSDisposableStack, JSValue>(() => (j) => j.Dispose());
-            if (scope.Function?.Async ?? false)
+            if ((scope.Function?.Async ?? false) && scope.HasAsyncDisposable)
             {
-                // we will move everything inside await dispose...
+                // An `await using` resource: await the (possibly async) disposal. Only done
+                // when the scope actually has an async-disposed resource — a sync-only
+                // `using` scope disposes synchronously (no await), which is spec-correct and
+                // avoids a Yield inside a try/finally nested in a loop (not yet lowerable by
+                // the async state-machine rewrite).
                 list.Add(YExpression.TryFinally(r, YExpression.Yield(dispose)));
             }
             else
