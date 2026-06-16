@@ -249,6 +249,14 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public bool HasDisposable => _dispoable != null;
 
+    // True when this scope declares at least one `await using` (async-disposed) resource.
+    // Only then must the scope's disposal be awaited; a scope with only synchronous
+    // `using` resources disposes synchronously (DisposableStack.Dispose returns undefined),
+    // so it must not introduce an await — which is both spec-correct and avoids a `Yield`
+    // inside a try/finally nested in a loop, which the async state-machine rewrite cannot
+    // currently lower.
+    public bool HasAsyncDisposable { get; set; }
+
     private YParameterExpression _dispoable;
     public YParameterExpression Disposable => _dispoable ??= YExpression.Parameter(typeof(IJSDisposableStack));
 

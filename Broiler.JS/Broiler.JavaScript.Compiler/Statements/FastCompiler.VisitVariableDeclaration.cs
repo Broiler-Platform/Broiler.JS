@@ -18,6 +18,10 @@ partial class FastCompiler
         var readOnlyAfterAssign = variableDeclaration.Kind == FastVariableKind.Const;
         var list = new Sequence<YExpression>();
         var top = scope.Top;
+        // Record that this scope's disposal must be awaited (an `await using` resource).
+        // A sync-only `using` scope disposes synchronously and must not be Yield-wrapped.
+        if (dispose && async)
+            top.HasAsyncDisposable = true;
         var newScope = variableDeclaration.Kind == FastVariableKind.Const || variableDeclaration.Kind == FastVariableKind.Let;
         var ed = variableDeclaration.Declarators.GetFastEnumerator();
         while (ed.MoveNext(out var d))
