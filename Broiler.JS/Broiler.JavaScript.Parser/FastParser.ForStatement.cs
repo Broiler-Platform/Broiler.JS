@@ -545,10 +545,40 @@ partial class FastParser
             var list = new Sequence<(string id, AstIdentifier temp)>();
             var hoisted = new Sequence<StringSpan>();
 
+            // For a C-style `for (let …; test; update)` head whose bindings are all simple
+            // identifiers, keep the original names bound in the loop's own lexical scope (the head's
+            // "init" declaration) alongside the synthetic per-iteration carriers. This lets a closure
+            // created inside an initializer (e.g. `for (let i = (f = () => i, 0); …)`) capture the
+            // loop variable instead of throwing "i is not defined": the closure resolves to this
+            // loop-scope binding, which the per-iteration copies never reassign (matching the spec's
+            // single loop environment). The carrier is seeded from it, so the initializer's side
+            // effects still run exactly once. `const` heads keep the original lowering — a `const`
+            // carrier cannot be mutated by an update.
+            var useLoopEnv = requiresReplacement
+                && declaration.Kind == FastVariableKind.Let
+                && AllSimpleIdentifiers(declaration);
+
             var en = declaration.Declarators.GetFastEnumerator();
             while (en.MoveNext(out var d))
             {
-                if (requiresReplacement)
+                if (useLoopEnv)
+                {
+                    var origId = (AstIdentifier)d.Identifier;
+                    var origName = origId.Name;
+                    var tempID = Interlocked.Increment(ref TempVarID).ToString();
+                    var temp = new AstIdentifier(origId.Start, tempID) { InferenceName = origName.Value };
+
+                    // loop-scope binding `let i = <init>` followed by the carrier `let <temp> = i`,
+                    // both in the head's init declaration (a single lexical scope that encloses
+                    // test/update). The body block re-declares `let i = <temp>` in a child scope,
+                    // shadowing this binding with the fresh per-iteration copy.
+                    tempDeclarations.Add(new VariableDeclarator(origId, d.Init));
+                    tempDeclarations.Add(new VariableDeclarator(temp, new AstIdentifier(origId.Start, origName.Value)));
+
+                    hoisted.Add(origName);
+                    list.Add((origName.Value!, temp));
+                }
+                else if (requiresReplacement)
                 {
                     var id = AssignTempNames(list, hoisted, d.Identifier);
                     tempDeclarations.Add(new VariableDeclarator(id, d.Init));
@@ -582,9 +612,14 @@ partial class FastParser
             // binding is disposed at the end of each iteration's block scope.
             statementList[0] = new AstVariableDeclaration(declaration.Start, declaration.End, scopedDeclarations, declaration.Kind, declaration.Using, declaration.AwaitUsing);
 
-            var tempDeclarationKind = requiresReplacement && declaration.Kind == FastVariableKind.Const
-                ? FastVariableKind.Const
-                : FastVariableKind.Var;
+            // The loop-env lowering keeps the carriers as `let` in the head's own lexical scope
+            // (visible to test/update, shadowed in the body); `const` heads keep a `const` carrier;
+            // every other head uses a function-scoped `var` carrier as before.
+            var tempDeclarationKind = useLoopEnv
+                ? FastVariableKind.Let
+                : requiresReplacement && declaration.Kind == FastVariableKind.Const
+                    ? FastVariableKind.Const
+                    : FastVariableKind.Var;
             var r = new AstVariableDeclaration(declaration.Start, declaration.End, tempDeclarations, tempDeclarationKind);
             var last = body.Count == 0 ? declaration : body.Last();
             var block = new AstBlock(r.Start, last.End, statementList);
@@ -603,6 +638,17 @@ partial class FastParser
                 block.AnnexBFunctionNames = sourceBlock.AnnexBFunctionNames;
 
             return (r, block, update, test);
+        }
+
+        static bool AllSimpleIdentifiers(AstVariableDeclaration declaration)
+        {
+            var en = declaration.Declarators.GetFastEnumerator();
+            while (en.MoveNext(out var d))
+            {
+                if (d.Identifier.Type != FastNodeType.Identifier)
+                    return false;
+            }
+            return true;
         }
 
         static IFastEnumerable<StringSpan>? CombineHoisting(
