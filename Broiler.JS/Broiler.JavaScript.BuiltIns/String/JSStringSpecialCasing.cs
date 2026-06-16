@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -162,13 +163,11 @@ internal static class JSStringSpecialCasing
 
     public static string ToLocaleLower(string s, CultureInfo culture)
     {
-        // Turkic After_I (SpecialCasing.txt): when lowercasing in tr/az, a COMBINING DOT ABOVE
-        // (U+0307) following a LATIN CAPITAL LETTER I (U+0049) is absorbed and that I lowercases to
-        // the dotted "i" (U+0069) rather than the dotless "\u0131" an I alone yields. .NET's
-        // culture-aware ToLower does not implement this context, so collapse the "I + U+0307"
-        // sequence to "i" up front; ToLower then leaves the already-lowercase "i" unchanged.
+        // Turkic (tr/az) lowercasing applies the language-sensitive SpecialCasing.txt
+        // rules with their After_I / Before_Dot context, which .NET's culture-aware
+        // ToLower does not implement. Handle the whole string here instead.
         if (IsTurkic(culture))
-            s = s.Replace("\u0049\u0307", "\u0069");
+            return TurkicToLower(s);
 
         var lowered = culture.TextInfo.ToLower(s);
         if (s.IndexOf(GreekCapitalSigma) < 0 || lowered.Length != s.Length)
@@ -182,6 +181,152 @@ internal static class JSStringSpecialCasing
         }
 
         return new string(chars);
+    }
+
+    // Canonical_Combining_Class == 230 (Above) code-point ranges (Unicode 17.0.0,
+    // UnicodeData.txt field 3). Used by the Turkic After_I / Before_Dot context below to
+    // tell a "may intervene" mark (ccc neither 0 nor 230) from a blocking Above mark.
+    private const string CombiningAboveRanges =
+        "300-314,33D-344,346,34A-34C,350-352,357,35B,363-36F,483-487,592-595,597-599,59C-5A1,5A8-5A9,5AB-5AC,5AF,5C4,610-617,653-654,657-65B,65D-65E,6D6-6DC,6DF-6E2,6E4,6E7-6E8,6EB-6EC,730,732-733,735-736,73A,73D,73F-741,743,745,747,749-74A,7EB-7F1,7F3,816-819,81B-823,825-827,829-82D,897-898,89C-89F,8CA-8CE,8D4-8E1,8E4-8E5,8E7-8E8,8EA-8EC,8F3-8F5,8F7-8F8,8FB-8FF,951,953-954,9FE,F82-F83,F86-F87,135D-135F,17DD,193A,1A17,1A75-1A7C,1AB0-1AB4,1ABB-1ABC,1AC1-1AC2,1AC5-1AC9,1ACB-1ADC,1AE0-1AE5,1AE7-1AEA,1B6B,1B6D-1B73,1CD0-1CD2,1CDA-1CDB,1CE0,1CF4,1CF8-1CF9,1DC0-1DC1,1DC3-1DC9,1DCB-1DCC,1DD1-1DF5,1DFB,1DFE,20D0-20D1,20D4-20D7,20DB-20DC,20E1,20E7,20E9,20F0,2CEF-2CF1,2DE0-2DFF,A66F,A674-A67D,A69E-A69F,A6F0-A6F1,A8E0-A8F1,AAB0,AAB2-AAB3,AAB7-AAB8,AABE-AABF,AAC1,FE20-FE26,FE2E-FE2F,10376-1037A,10A0F,10A38,10AE5,10D24-10D27,10D69-10D6D,10EAB-10EAC,10F48-10F4A,10F4C,10F82,10F84,11100-11102,11366-1136C,11370-11374,1145E,16B30-16B36,1D185-1D189,1D1AA-1D1AD,1D242-1D244,1E000-1E006,1E008-1E018,1E01B-1E021,1E023-1E024,1E026-1E02A,1E08F,1E130-1E136,1E2AE,1E2EC-1E2EF,1E4EF,1E5EE,1E6E3,1E6E6,1E6EE-1E6EF,1E6F5,1E944-1E949";
+
+    private static readonly (int Lo, int Hi)[] CombiningAbove = ParseHexRanges(CombiningAboveRanges);
+
+    private static (int Lo, int Hi)[] ParseHexRanges(string encoded)
+    {
+        var parts = encoded.Split(',');
+        var result = new (int Lo, int Hi)[parts.Length];
+        for (var i = 0; i < parts.Length; i++)
+        {
+            var span = parts[i].AsSpan();
+            var dash = span.IndexOf('-');
+            if (dash < 0)
+            {
+                var cp = ParseHex(span);
+                result[i] = (cp, cp);
+            }
+            else
+            {
+                result[i] = (ParseHex(span[..dash]), ParseHex(span[(dash + 1)..]));
+            }
+        }
+        return result;
+    }
+
+    private static int ParseHex(ReadOnlySpan<char> span)
+    {
+        var value = 0;
+        foreach (var ch in span)
+            value = (value << 4) + (ch <= '9' ? ch - '0' : (ch | 0x20) - 'a' + 10);
+        return value;
+    }
+
+    private static bool IsCombiningAbove(int cp)
+    {
+        var ranges = CombiningAbove;
+        var lo = 0;
+        var hi = ranges.Length - 1;
+        while (lo <= hi)
+        {
+            var mid = (lo + hi) >> 1;
+            if (cp < ranges[mid].Lo) hi = mid - 1;
+            else if (cp > ranges[mid].Hi) lo = mid + 1;
+            else return true;
+        }
+        return false;
+    }
+
+    private static bool IsMark(int cp)
+        => CharUnicodeInfo.GetUnicodeCategory(cp) is UnicodeCategory.NonSpacingMark
+            or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.EnclosingMark;
+
+    // A character "may intervene" in the After_I / Before_Dot context iff its combining
+    // class is neither 0 nor 230. A non-mark is a starter (ccc 0) and blocks; a mark
+    // blocks only when its class is 230 (Above).
+    private static bool IsContextTransparent(int cp) => IsMark(cp) && !IsCombiningAbove(cp);
+
+    // SpecialCasing.txt Before_Dot: starting at <paramref name="j"/> (the index just
+    // after a LATIN CAPITAL LETTER I), is the I followed by COMBINING DOT ABOVE (U+0307)
+    // with only context-transparent characters intervening?
+    private static bool IsBeforeDot(string s, int j)
+    {
+        while (j < s.Length)
+        {
+            var cp = char.ConvertToUtf32(s, j);
+            if (cp == 0x0307)
+                return true;
+            if (!IsContextTransparent(cp))
+                return false;
+            j += cp > 0xFFFF ? 2 : 1;
+        }
+        return false;
+    }
+
+    // SpecialCasing.txt After_I: scanning backwards from <paramref name="k"/> (the index
+    // of a COMBINING DOT ABOVE), is it preceded by a LATIN CAPITAL LETTER I (U+0049) with
+    // only context-transparent characters intervening?
+    private static bool IsAfterI(string s, int k)
+    {
+        var idx = k;
+        while (idx > 0)
+        {
+            var prev = idx - 1;
+            if (prev > 0 && char.IsLowSurrogate(s[prev]) && char.IsHighSurrogate(s[prev - 1]))
+                prev--;
+
+            var cp = char.ConvertToUtf32(s, prev);
+            if (cp == 0x0049)
+                return true;
+            if (!IsContextTransparent(cp))
+                return false;
+            idx = prev;
+        }
+        return false;
+    }
+
+    // Language-sensitive lowercasing for Turkish/Azerbaijani (SpecialCasing.txt):
+    //   U+0130 (İ)            -> "i"
+    //   U+0049 (I)            -> "i" when Before_Dot, else U+0131 (dotless i)
+    //   U+0307 (dot above)    -> removed when After_I, otherwise kept
+    // Every other character lowercases with the locale-independent mapping (the Turkic
+    // locales differ from the default only for the dotted/dotless I), with the
+    // locale-independent Final_Sigma conditional applied to GREEK CAPITAL LETTER SIGMA.
+    private static string TurkicToLower(string s)
+    {
+        if (string.IsNullOrEmpty(s))
+            return s;
+
+        var sb = new StringBuilder(s.Length + 1);
+        var i = 0;
+        while (i < s.Length)
+        {
+            var cp = char.ConvertToUtf32(s, i);
+            var len = cp > 0xFFFF ? 2 : 1;
+
+            switch (cp)
+            {
+                case 0x0130: // LATIN CAPITAL LETTER I WITH DOT ABOVE
+                    sb.Append('i');
+                    break;
+                case 0x0049: // LATIN CAPITAL LETTER I
+                    sb.Append(IsBeforeDot(s, i + 1) ? 'i' : 'ı');
+                    break;
+                case 0x0307: // COMBINING DOT ABOVE
+                    if (!IsAfterI(s, i))
+                        sb.Append('̇');
+                    break;
+                case GreekCapitalSigma:
+                    sb.Append(BeforeIsCased(s, i) && !AfterIsCased(s, i + len) ? GreekSmallFinalSigma : GreekSmallSigma);
+                    break;
+                default:
+                    // Locale-independent simple lowercase for every other character.
+                    sb.Append(s.Substring(i, len).ToLowerInvariant());
+                    break;
+            }
+
+            i += len;
+        }
+
+        return sb.ToString();
     }
 
     // Locale toLocaleUpperCase: the unconditional expansions (ß → SS, …) are
