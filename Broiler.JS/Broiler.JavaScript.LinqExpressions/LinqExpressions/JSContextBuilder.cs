@@ -35,6 +35,14 @@ public class JSContextBuilder
     /// <summary>Reads the home-object super reference made available to a direct eval body.</summary>
     public static Expression DirectEvalSuper => Expression.Property(Expression.Convert(Current, typeof(JSContext)), _DirectEvalSuper);
 
+    private static readonly PropertyInfo _DirectEvalSuperConstructor = typeof(JSContext).GetProperty(nameof(JSContext.DirectEvalSuperConstructor));
+    /// <summary>Reads the superclass constructor a <c>super(...)</c> in a direct eval body targets.</summary>
+    public static Expression DirectEvalSuperConstructor => Expression.Property(Expression.Convert(Current, typeof(JSContext)), _DirectEvalSuperConstructor);
+
+    private static readonly PropertyInfo _DirectEvalThisBinding = typeof(JSContext).GetProperty(nameof(JSContext.DirectEvalThisBinding));
+    /// <summary>Reads the derived constructor <c>this</c> binding shared with a direct eval body.</summary>
+    public static Expression DirectEvalThisBinding => Expression.Property(Expression.Convert(Current, typeof(JSContext)), _DirectEvalThisBinding);
+
     private static PropertyInfo _Index = typeof(JSObject).IndexProperty(typeof(KeyString));
     private static MethodInfo _AssignIdentifier = typeof(JSContext).GetMethod(nameof(JSContext.AssignIdentifier), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
     private static MethodInfo _AssignIdentifierStrict = typeof(JSContext).GetMethod(nameof(JSContext.AssignIdentifier), [typeof(KeyString).MakeByRefType(), typeof(JSValue), typeof(bool)]);

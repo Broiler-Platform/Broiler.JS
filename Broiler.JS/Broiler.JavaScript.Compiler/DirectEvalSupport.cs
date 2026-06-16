@@ -81,7 +81,7 @@ public static class DirectEvalSupport
         }
     }
 
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, bool tailCall = false)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, bool tailCall = false)
     {
         if (!IsDirectEval(callee))
         {
@@ -128,6 +128,11 @@ public static class DirectEvalSupport
                 : null;
             using var superScope = allowSuperProperty
                 ? context.PushDirectEvalSuper(directEvalSuper)
+                : null;
+            // Share the derived constructor's superclass constructor and `this` binding
+            // so a `super(...)` inside the eval initializes the constructor's own `this`.
+            using var superCallScope = directEvalThisBinding != null
+                ? context.PushDirectEvalSuperCall(directEvalSuperConstructor, directEvalThisBinding)
                 : null;
             using var __ = context.PushDirectEvalCompilation(requiresActivation, privateNamesInScope);
             // The completion value of the eval body is a real value, not a tail

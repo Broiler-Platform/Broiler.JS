@@ -12,8 +12,8 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private static readonly System.Reflection.MethodInfo DirectEvalMethod = typeof(DirectEvalSupport)
-        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(CallStackItem), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool), typeof(bool)])
-        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, CallStackItem, bool, bool, string[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool, bool) not found");
+        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(CallStackItem), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool), typeof(JSValue), typeof(JSVariable), typeof(bool)])
+        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, CallStackItem, bool, bool, string[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool, JSValue, JSVariable, bool) not found");
 
     protected override YExpression VisitCallExpression(AstCallExpression callExpression)
     {
@@ -105,7 +105,11 @@ partial class FastCompiler
             // constructor body, not inside a class field initializer (which is
             // compiled within the same constructor scope). See test262
             // class/elements/*-direct-eval-err-contains-supercall.
-            var allowSuperCall = allowSuperProperty && scope.Top.MemberInits != null && !inMemberInitializer;
+            // super() is permitted in the eval when the eval sits (transitively through
+            // arrow functions) in a derived constructor before super(): the pending
+            // member inits live on the root (constructor) scope, not an enclosing arrow's
+            // own scope, so consult RootScope — matching the non-eval super() lowering.
+            var allowSuperCall = allowSuperProperty && scope.Top.RootScope.MemberInits != null && !inMemberInitializer;
             var useActivationBinding = scope.Top.Function?.IsArrowFunction == true && parameterInitializerDepth > 0;
             var activationOwner = disallowArgumentsDeclaration || useActivationBinding
                 ? scope.Top.StackItem
@@ -120,7 +124,27 @@ partial class FastCompiler
             // the class has no explicit constructor (so scope.Top is not itself a
             // function scope), so new.target is permitted there too.
             var rejectNewTarget = !inMemberInitializer && !EnclosedByOrdinaryFunction(scope.Top);
-            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), scope.Top.ThisExpression, activationOwner, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding), superValue, YExpression.Constant(inMemberInitializer), YExpression.Constant(rejectNewTarget));
+
+            // When a `super(...)` call is permitted in the eval body (a derived
+            // constructor before super()), share the constructor's `this` binding and
+            // superclass constructor so the eval's super() runs the superclass
+            // [[Construct]] and initializes that same binding. The `this` value is then
+            // read lazily through the binding instead of eagerly here, where it would
+            // throw "Cannot access 'this' before initialization" merely for hosting the
+            // super() call. Falls back to the prior behaviour when `this` is not a
+            // JSVariable-backed binding.
+            var thisArg = scope.Top.ThisExpression;
+            YExpression directEvalSuperConstructor = YExpression.Constant(null, typeof(JSValue));
+            YExpression directEvalThisBinding = YExpression.Constant(null, typeof(JSVariable));
+            if (allowSuperCall && (scope.Top.ThisExpression as YPropertyExpression)?.Target is { } thisBindingTarget
+                && thisBindingTarget.Type == typeof(JSVariable))
+            {
+                directEvalThisBinding = thisBindingTarget;
+                directEvalSuperConstructor = scope.Top.SuperConstructor ?? scope.Top.Super ?? directEvalSuperConstructor;
+                thisArg = YExpression.Constant(null, typeof(JSValue));
+            }
+
+            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), thisArg, activationOwner, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding), superValue, YExpression.Constant(inMemberInitializer), YExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding);
         }
 
     skipDirectEval:
