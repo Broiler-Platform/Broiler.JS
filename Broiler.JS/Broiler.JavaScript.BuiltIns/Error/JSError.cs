@@ -54,7 +54,14 @@ public partial class JSError : JSObject, IJSError
     }
 
     public JSError(in Arguments a, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) :
-        this(JSEngine.NewTargetPrototype)
+        // The [[Construct]] machinery (CreateInstance) has already performed the single
+        // OrdinaryCreateFromConstructor read of NewTarget.prototype and pre-created the
+        // instance (passed as `this`) carrying that prototype — which it re-applies after the
+        // body runs. Reuse that resolved prototype instead of reading NewTarget.prototype a
+        // second time here: a second Get is observable (a Proxy/getter on the constructor) and
+        // must NOT run again after the message's ToString. Fall back to NewTarget.prototype
+        // only when there is no pre-created instance (e.g. an internal direct allocation).
+        this((a.This as JSObject)?.GetPrototypeOf() as JSObject ?? JSEngine.NewTargetPrototype)
     {
         Exception = new JSException(this, function: function, filePath: filePath, line: line);
         var hasMessage = a.TryGetAt(0, out var messageValue);
