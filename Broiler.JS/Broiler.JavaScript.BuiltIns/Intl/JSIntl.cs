@@ -1416,6 +1416,20 @@ public static class JSIntl
         return optionValue == null || optionValue.IsUndefined ? null : optionValue.StringValue;
     }
 
+    // Reads (string-coerces and validates) the calendar option from the bag once,
+    // returning null when absent. InitializeDateTimeFormat reads it right after
+    // localeMatcher and ahead of numberingSystem; a value that is not a well-formed
+    // Unicode BCP-47 extension type is a RangeError.
+    internal static string ReadCalendarOption(JSObject options)
+    {
+        var value = options == null ? null : OptionString(options, KeyStrings.GetOrCreate("calendar"));
+        if (value == null)
+            return null;
+        if (!UnicodeKeywordTypePattern.IsMatch(value.ToLowerInvariant()))
+            throw JSEngine.NewRangeError("Invalid calendar option");
+        return value;
+    }
+
     // Negotiates the resolved `nu` (numbering system) against the locale's `-u-nu-`
     // extension, given the already-read numberingSystem option value. Per spec: a supported
     // `-u-nu-` value is used and reflected in the locale; a supported option that DIFFERS
@@ -5185,6 +5199,13 @@ public class JSIntlDateTimeFormat : JSObject
     public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())
     {
         options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a, requireNew: false);
+        // ECMA-402 InitializeDateTimeFormat reads the calendar option, then the
+        // numberingSystem option, immediately after localeMatcher and ahead of the
+        // date/time component options, so both getters must fire here — before the
+        // remaining option reads and the locale negotiation below (test262
+        // DateTimeFormat constructor-calendar-numberingSystem-order).
+        _ = JSIntl.ReadCalendarOption(options);
+        var nuOption = JSIntl.ReadNumberingSystemOption(options);
         JSIntl.ValidateDateTimeFormatOptions(options);
         // GetOption (coerce to string + validate against the sanctioned set, RangeError
         // otherwise) is performed once here so resolvedOptions reports the coerced
@@ -5203,7 +5224,7 @@ public class JSIntlDateTimeFormat : JSObject
         }
 
         var resolvedLocale = JSIntl.ResolveLocale(a.Get1(), JSIntl.DateTimeFormatRelevantKeys);
-        (numberingSystem, localeTag) = JSIntl.ResolveNumberingSystem(resolvedLocale, options);
+        (numberingSystem, localeTag) = JSIntl.ResolveNumberingSystem(resolvedLocale, nuOption);
         locale = CultureInfo.CurrentCulture;
     }
 
