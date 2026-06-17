@@ -343,6 +343,15 @@ public partial class JSTemporalDuration
                 throw JSEngine.NewRangeError($"Temporal.Duration: invalid UTC offset in relativeTo \"{s}\"");
         }
 
+        // A genuine property bag (not a recognised Temporal object): read every relativeTo field once,
+        // in the spec's fixed order — calendar first, then the merged date/time/offset/timeZone names in
+        // alphabetical order — coercing each as PrepareCalendarFields does, so the observable getter and
+        // toString/valueOf order matches ToRelativeTemporalObject (test262 round/order-of-operations).
+        // The snapshot is a plain object, so the downstream slot/field logic re-reads it with no further
+        // observable side effects.
+        if (rel is JSObject relBag && !IsTemporalRelativeObject(rel))
+            rel = BuildOrderedRelativeBagSnapshot(relBag);
+
         // A relativeTo property bag carrying a timeZone is a ZonedDateTime relativeTo; its offset
         // field (when present) must be a String (else TypeError) and a valid UTC offset (else
         // RangeError), even though it is then consumed here as a 24-hour-day PlainDate.
@@ -405,6 +414,67 @@ public partial class JSTemporalDuration
             if (double.IsNaN(number) || double.IsInfinity(number))
                 throw JSEngine.NewRangeError($"Temporal.Duration: relativeTo {key} must be finite");
         }
+    }
+
+    // Whether a relativeTo value is a Temporal object resolved through its internal slots (so its
+    // property bag is NOT read). ZonedDateTime, PlainDate and PlainDateTime are the spec's three
+    // slot-based relativeTo types; the remaining Temporal types are listed so they are never mistaken
+    // for a plain property bag (they would instead error later when consumed as a date).
+    private static bool IsTemporalRelativeObject(JSValue v)
+        => v is JSTemporalPlainDate or JSTemporalPlainDateTime or JSTemporalZonedDateTime
+            or JSTemporalPlainYearMonth or JSTemporalPlainMonthDay or JSTemporalPlainTime
+            or JSTemporalInstant or JSTemporalDuration;
+
+    // PrepareCalendarFields for a relativeTo property bag: read calendar, then the date, time, offset
+    // and timeZone field names in one alphabetical pass, coercing each present value exactly as the
+    // spec does (numeric fields via ToNumber/valueOf, monthCode/offset via ToString, calendar/timeZone
+    // left raw and resolved later). Absent fields are still read (observable) but not coerced. The
+    // already-coerced values are copied into a fresh plain object so the existing relativeTo resolution
+    // can re-read them without firing the original bag's getters again.
+    private static JSObject BuildOrderedRelativeBagSnapshot(JSObject rel)
+    {
+        var snapshot = new JSObject();
+
+        void CopyNumber(string field)
+        {
+            var v = rel[KeyStrings.GetOrCreate(field)];
+            if (v == null || v.IsUndefined) return;
+            var number = v.DoubleValue; // ToNumber → triggers the field's valueOf
+            if (double.IsNaN(number) || double.IsInfinity(number))
+                throw JSEngine.NewRangeError($"Temporal.Duration: relativeTo {field} must be finite");
+            snapshot[KeyStrings.GetOrCreate(field)] = new JSNumber(number);
+        }
+
+        void CopyString(string field)
+        {
+            var v = rel[KeyStrings.GetOrCreate(field)];
+            if (v == null || v.IsUndefined) return;
+            snapshot[KeyStrings.GetOrCreate(field)] = new JSString(v.ToString()); // ToString → triggers toString
+        }
+
+        void CopyRaw(string field)
+        {
+            var v = rel[KeyStrings.GetOrCreate(field)];
+            if (v != null && !v.IsUndefined) snapshot[KeyStrings.GetOrCreate(field)] = v;
+        }
+
+        // calendar is read first (GetTemporalCalendarIdentifierWithISODefault), then the merged
+        // date / time / offset / timeZone fields in alphabetical order.
+        CopyRaw("calendar");
+        CopyNumber("day");
+        CopyNumber("hour");
+        CopyNumber("microsecond");
+        CopyNumber("millisecond");
+        CopyNumber("minute");
+        CopyNumber("month");
+        CopyString("monthCode");
+        CopyNumber("nanosecond");
+        CopyString("offset");
+        CopyNumber("second");
+        CopyRaw("timeZone");
+        CopyNumber("year");
+
+        return snapshot;
     }
 
     // The end of this duration measured from relativeTo, on the nanosecond timeline (epoch days × a
