@@ -387,9 +387,14 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 if (entry.Shadowed)
                     continue;
 
-                if (entry.HadOwnProperty)
-                    context.SetOwnPropertyValue(entry.Name, entry.PreviousValue);
-                else
+                // When the name already had a live global-object property, that property
+                // is its true store: the eval read, wrote, or deleted it directly, so leave
+                // it exactly as the eval left it (mirroring the HadPreviousVariable branch
+                // above). Restoring the pre-overlay value here would revert a legitimate
+                // global mutation and resurrect a binding the eval explicitly deleted
+                // (test262 staging/sm/eval/exhaustive-global-*). Only a property the overlay
+                // itself transiently published (no prior property) is removed.
+                if (!entry.HadOwnProperty)
                     context.Delete(entry.Name);
             }
 
