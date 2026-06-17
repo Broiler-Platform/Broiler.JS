@@ -438,7 +438,10 @@ public partial class JSMath : JSObject
         {
             double val = args.GetAt(i).DoubleValue;
 
-            if (val > result || double.IsNaN(val))
+            // +0 is considered larger than -0 (Math.max(-0, +0) is +0), so when both
+            // are zero and the running result is -0, prefer the new value.
+            if (val > result || double.IsNaN(val)
+                || (val == 0 && result == 0 && double.IsNegative(result)))
                 result = val;
         }
 
@@ -455,7 +458,9 @@ public partial class JSMath : JSObject
         {
             double val = args.GetAt(i).DoubleValue;
 
-            if (val < result || double.IsNaN(val))
+            // -0 is considered smaller than +0 (Math.min(+0, -0) is -0).
+            if (val < result || double.IsNaN(val)
+                || (val == 0 && result == 0 && double.IsNegative(val)))
                 result = val;
         }
 

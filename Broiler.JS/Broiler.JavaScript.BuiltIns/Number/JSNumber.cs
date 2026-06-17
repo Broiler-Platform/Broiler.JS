@@ -352,10 +352,6 @@ public sealed partial class JSNumber : JSPrimitive
                 when this.value == @string.DoubleValue:
                 return true;
 
-            case JSNull _
-                when this.value == 0D:
-                return true;
-
             case JSValue boolVal when boolVal.IsBoolean && this.value == (boolVal.BooleanValue ? 1D : 0D):
                 return true;
         }

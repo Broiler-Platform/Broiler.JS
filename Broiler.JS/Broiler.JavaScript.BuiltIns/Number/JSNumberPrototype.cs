@@ -321,6 +321,13 @@ partial class JSNumber
                 throw JSEngine.NewRangeError("toPrecision() digits argument must be between 1 and 100");
 
             var i = (int)n1.value;
+
+            // Step 6: when x is zero (including -0) the result is p zero digits with no
+            // sign — "0", "0.0", "0.00", … — never a signed/exponential ".NET" rendering
+            // such as "-0".
+            if (n.value == 0)
+                return new JSString(i == 1 ? "0" : "0." + new string('0', i - 1));
+
             var originalPrecision = i;
             var d = n.value;
             var prefix = 'g';

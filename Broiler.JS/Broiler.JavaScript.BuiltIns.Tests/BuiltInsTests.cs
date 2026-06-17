@@ -13836,4 +13836,64 @@ public class BuiltInsTests
     }
 
     #endregion
+
+    #region Issue 822 — signed zero (toPrecision, Math.max/min) and Number == null
+
+    [Fact]
+    public void Number_ToPrecision_NegativeZero_HasNoSign()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            (-0).toPrecision(2),
+            (0).toPrecision(2),
+            (0).toPrecision(1),
+            (-0).toPrecision(1),
+            (0).toPrecision(5)
+        ].join('|');");
+
+        Assert.Equal("0.0|0.0|0|0|0.0000", result.ToString());
+    }
+
+    [Fact]
+    public void Math_MaxMin_RespectSignedZero()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // +0 is larger than -0 for Math.max; -0 is smaller than +0 for Math.min.
+        var result = ctx.Eval(@"[
+            Object.is(Math.max(-0, 0), 0),
+            Object.is(Math.max(0, -0), 0),
+            Object.is(Math.min(0, -0), -0),
+            Object.is(Math.min(-0, 0), -0),
+            Object.is(Math.max(-0, -0), -0),
+            String(Math.max(0/0, 1)),
+            String(Math.min(0/0, 1))
+        ].join('|');");
+
+        Assert.Equal("true|true|true|true|true|NaN|NaN", result.ToString());
+    }
+
+    [Fact]
+    public void AbstractEquality_NumberAndNull_IsFalse()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // null/undefined are loosely equal only to each other, never to a Number.
+        var result = ctx.Eval(@"[
+            0 == null,
+            0 != null,
+            null == 0,
+            0 == undefined,
+            null == undefined,
+            0 == false,
+            '' == 0
+        ].join('|');");
+
+        Assert.Equal("false|true|false|false|true|true|true", result.ToString());
+    }
+
+    #endregion
 }
