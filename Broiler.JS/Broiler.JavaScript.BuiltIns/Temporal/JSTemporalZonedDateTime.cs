@@ -78,14 +78,6 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     private static bool IsValid(BigInteger ns) => ns >= MinEpochNanoseconds && ns <= MaxEpochNanoseconds;
 
-    // A parsed ZonedDateTime is representable only when both its exact instant is in range and its
-    // *wall-clock* time (the naive epoch ns of the local date-time) lies in [nsMin, nsMax + one day):
-    // a negative offset cannot pull the wall clock below the minimum instant's own wall clock, while a
-    // positive offset may push it up to (but not including) one day past the maximum. These exact
-    // bounds are validated against test262's ZonedDateTime "argument-string-limits" vectors.
-    private static bool IsLocalWithinLimits(BigInteger localNs)
-        => localNs >= MinEpochNanoseconds && localNs < MaxEpochNanoseconds + NanosecondsPerDay;
-
     // Factory used by sibling Temporal types (Instant/PlainDate*.to*ZonedDateTime) to build a
     // ZonedDateTime from an epoch instant + a time-zone string, canonicalizing the zone.
     internal static JSValue CreateChecked(BigInteger epochNs, string timeZone)
@@ -1960,7 +1952,18 @@ public partial class JSTemporalZonedDateTime : JSObject
         else offsetNs = GetOffsetForLocal(timeZoneId, year, month, day, hour, minute, second);
 
         var epochNs = hasTime ? localNs - offsetNs : StartOfDayEpochNs(timeZoneId, year, month, day);
-        if (!IsValid(epochNs) || !IsLocalWithinLimits(localNs))
+
+        // InterpretISODateTimeOffset: only the "prefer"/"reject" matching paths inspect the *raw*
+        // wall-clock date (CheckISODaysRange) before resolving the offset. A wall clock whose own
+        // epoch day lies outside ±10^8 — e.g. -271821-04-19, the minimum PlainDate yet one day before
+        // the minimum instant's date — is a RangeError there even when the resolved instant is itself
+        // representable. The "exact" (Z), "use" and "ignore" paths (and the date-only start-of-day
+        // path) only require the resolved instant to be in range.
+        if (hasTime && hasNumericOffset && offsetOption is "prefer" or "reject"
+            && Math.Abs(JSTemporalPlainDate.EpochDaysFor(year, month, day)) > 100_000_000)
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: wall-clock time is outside the representable range");
+
+        if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: parsed value is out of range");
 
         return new JSTemporalZonedDateTime(epochNs, timeZoneId, calendarId, ZonedDateTimePrototype);
