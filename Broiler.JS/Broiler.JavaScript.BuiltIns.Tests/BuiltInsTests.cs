@@ -13756,4 +13756,328 @@ public class BuiltInsTests
     }
 
     #endregion
+
+    #region Issue 822 — Number.prototype.toString(radix) sign & postfix update coercion
+
+    [Fact]
+    public void Number_ToString_Radix_KeepsNegativeSign()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            (new Number(-1)).toString(10),
+            (new Number(-1)).toString(2),
+            (new Number(-1)).toString(16),
+            (-255).toString(16),
+            (255).toString(16),
+            (2.5).toString(2),
+            (-2.5).toString(2),
+            (-0).toString(2)
+        ].join('|');");
+
+        // 2.5 is "10.1" in binary (0.5 = 0.1), not "10.101".
+        Assert.Equal("-1|-1|-1|-ff|ff|10.1|-10.1|0", result.ToString());
+    }
+
+    [Fact]
+    public void Number_ToString_Radix_FractionalAndBase10()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            (0.5).toString(2),
+            (0.25).toString(2),
+            (10.25).toString(2),
+            (255.5).toString(16),
+            (0.5).toString(10),
+            (0.3).toString(10),
+            (2.5).toString(10)
+        ].join('|');");
+
+        // radix 10 uses the shortest round-tripping decimal; other radices extract
+        // fractional digits in that base.
+        Assert.Equal("0.1|0.01|1010.01|ff.8|0.5|0.3|2.5", result.ToString());
+    }
+
+    [Fact]
+    public void PostfixUpdate_ReturnsCoercedNumericOldValue()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // The result of a postfix `++`/`--` is ToNumeric(oldValue): a Number (or
+        // BigInt), never the raw String/Boolean/Object operand.
+        var result = ctx.Eval(@"(function () {
+            var s = '1';   var sy = s++;
+            var b = false; var by = b++;
+            var t = true;  var ty = t--;
+            var o = { valueOf: function () { return 1; } }; var oy = o++;
+            var bi = 10n;  var biy = bi++;
+            return [
+                typeof sy + ':' + sy,
+                typeof by + ':' + by,
+                typeof ty + ':' + ty,
+                typeof oy + ':' + oy,
+                typeof biy + ':' + biy + ':' + bi
+            ].join('|');
+        })();");
+
+        Assert.Equal("number:1|number:0|number:1|number:1|bigint:10:11", result.ToString());
+    }
+
+    [Fact]
+    public void PostfixUpdate_CoercesOperandExactlyOnce()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // valueOf must be observed exactly once across the read/coerce of the operand.
+        var result = ctx.Eval(@"(function () {
+            var calls = 0;
+            var o = { valueOf: function () { calls++; return 5; } };
+            var y = o++;
+            return calls + '/' + y + '/' + o;
+        })();");
+
+        Assert.Equal("1/5/6", result.ToString());
+    }
+
+    [Fact]
+    public void PostfixUpdate_OnMemberAndIndex_CoercesAndWritesBack()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            var a = { p: '3' }; var py = a.p++;
+            var arr = ['7'];    var iy = arr[0]++;
+            return typeof py + ':' + py + '/' + a.p + '|' + typeof iy + ':' + iy + '/' + arr[0];
+        })();");
+
+        Assert.Equal("number:3/4|number:7/8", result.ToString());
+    }
+
+    #endregion
+
+    #region Issue 822 — signed zero (toPrecision, Math.max/min) and Number == null
+
+    [Fact]
+    public void Number_ToPrecision_NegativeZero_HasNoSign()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            (-0).toPrecision(2),
+            (0).toPrecision(2),
+            (0).toPrecision(1),
+            (-0).toPrecision(1),
+            (0).toPrecision(5)
+        ].join('|');");
+
+        Assert.Equal("0.0|0.0|0|0|0.0000", result.ToString());
+    }
+
+    [Fact]
+    public void Math_MaxMin_RespectSignedZero()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // +0 is larger than -0 for Math.max; -0 is smaller than +0 for Math.min.
+        var result = ctx.Eval(@"[
+            Object.is(Math.max(-0, 0), 0),
+            Object.is(Math.max(0, -0), 0),
+            Object.is(Math.min(0, -0), -0),
+            Object.is(Math.min(-0, 0), -0),
+            Object.is(Math.max(-0, -0), -0),
+            String(Math.max(0/0, 1)),
+            String(Math.min(0/0, 1))
+        ].join('|');");
+
+        Assert.Equal("true|true|true|true|true|NaN|NaN", result.ToString());
+    }
+
+    [Fact]
+    public void AbstractEquality_NumberAndNull_IsFalse()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // null/undefined are loosely equal only to each other, never to a Number.
+        var result = ctx.Eval(@"[
+            0 == null,
+            0 != null,
+            null == 0,
+            0 == undefined,
+            null == undefined,
+            0 == false,
+            '' == 0
+        ].join('|');");
+
+        Assert.Equal("false|true|false|false|true|true|true", result.ToString());
+    }
+
+    #endregion
+
+    #region Issue 822 — relational ToPrimitive(Number), method lengths, String.slice
+
+    [Fact]
+    public void Relational_CoercesViaToPrimitiveNumber_WithToStringFallback()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // valueOf returning a non-primitive must fall back to toString (hint Number).
+        var result = ctx.Eval(@"[
+            1 < { valueOf: function () { return {}; }, toString: function () { return 2; } },
+            1 <= { valueOf: function () { return {}; }, toString: function () { return 2; } },
+            1 > { valueOf: function () { return {}; }, toString: function () { return 0; } },
+            1 >= { valueOf: function () { return {}; }, toString: function () { return 0; } },
+            new Date(0) < new Date(1),
+            new Date(1) < new Date(0),
+            new Number(5) < 6
+        ].join('|');");
+
+        Assert.Equal("true|true|true|true|true|false|true", result.ToString());
+    }
+
+    [Fact]
+    public void String_LocaleCaseMethods_HaveLengthZero()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            String.prototype.toLocaleLowerCase.length,
+            String.prototype.toLocaleUpperCase.length
+        ].join('|');");
+
+        Assert.Equal("0|0", result.ToString());
+    }
+
+    [Fact]
+    public void String_Slice_UndefinedEnd_UsesLength()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // An explicitly-undefined `end` means "to the end of the string"; a NaN-coercing
+        // `start` (here the string "e") becomes 0.
+        var result = ctx.Eval(@"[
+            String(void 0).slice('e', undefined),
+            'undefined'.slice('e', undefined),
+            'hello'.slice(1),
+            'hello'.slice(1, 3),
+            'hello'.slice(-2)
+        ].join('|');");
+
+        Assert.Equal("undefined|undefined|ello|el|lo", result.ToString());
+    }
+
+    #endregion
+
+    #region Issue 822 — generic array-like length (pop / unshift / sort)
+
+    [Fact]
+    public void ArrayPop_GenericObject_UsesToLengthNotUint32()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // A generic array-like length is ToLength (up to 2^53-1): pop reads index
+        // len-1, which exceeds the 32-bit array-index range here.
+        var result = ctx.Eval(@"(function () {
+            var a = {}; a.pop = Array.prototype.pop; a[0] = 'x'; a[4294967295] = 'y'; a.length = 4294967296;
+            var av = a.pop();
+
+            var b = {}; b.pop = Array.prototype.pop; b[0] = 'x'; b[4294967296] = 'y'; b.length = 4294967297;
+            var bv = b.pop();
+
+            var c = {}; c.length = Number.POSITIVE_INFINITY; c.pop = Array.prototype.pop; c.pop();
+
+            return av + '|' + bv + '|' + c.length;
+        })();");
+
+        Assert.Equal("y|y|9007199254740990", result.ToString());
+    }
+
+    [Fact]
+    public void ArrayUnshift_ChecksSourceViaHasPropertyThroughPrototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // A hole shadowing an inherited indexed property is copied (HasProperty +
+        // [[Get]] traverse the prototype chain), not deleted.
+        var result = ctx.Eval(@"(function () {
+            Array.prototype[0] = 1;
+            try {
+                var x = []; x.length = 1; x.unshift(0);
+                return String(x[1]);
+            } finally {
+                delete Array.prototype[0];
+            }
+        })();");
+
+        Assert.Equal("1", result.ToString());
+    }
+
+    [Fact]
+    public void ArraySort_GenericObject_ReadsInheritedLength()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            Object.prototype.length = 2;
+            Object.prototype.sort = Array.prototype.sort;
+            try {
+                var x = { 0: 1, 1: 0 };
+                x.sort();
+                return x[0] + ',' + x[1];
+            } finally {
+                delete Object.prototype.length;
+                delete Object.prototype.sort;
+            }
+        })();");
+
+        Assert.Equal("0,1", result.ToString());
+    }
+
+    #endregion
+
+    #region Issue 822 — Array.prototype.flatMap mapper applied once; Math.cbrt rounding
+
+    [Fact]
+    public void FlatMap_AppliesMapperOnlyToSourceElements()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // The mapper runs once per source element; the flatten step must not re-map the
+        // returned arrays. The callback's index argument reflects the source position.
+        var result = ctx.Eval(@"(function () {
+            var a = [1, 2].flatMap(function (x) { return [x, x * 2]; });
+            var b = [1, 2, 3].flatMap(function (x, i) { return [i]; });
+            var c = [1, 2].flatMap(function (x) { return [[x]]; }); // only one level flattened
+            return a.length + ':' + a.join(',') + '|' + b.join(',') + '|' + JSON.stringify(c);
+        })();");
+
+        Assert.Equal("4:1,2,2,4|0,1,2|[[1],[2]]", result.ToString());
+    }
+
+    [Fact]
+    public void Math_Cbrt_IsExactForPerfectCubes()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            Math.cbrt(27),
+            Math.cbrt(-8),
+            Math.cbrt(729),
+            Math.cbrt(1e30),
+            1 / Math.cbrt(-0)
+        ].join('|');");
+
+        Assert.Equal("3|-2|9|10000000000|-Infinity", result.ToString());
+    }
+
+    #endregion
 }

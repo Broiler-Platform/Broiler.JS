@@ -10,5 +10,8 @@ public static class JSStringExtensions
 
     public static string JSTrim(this string text) => text.Trim();
 
-    public static string JSTrim(this JSValue text) => text.ToString().Trim();
+    // Coerce with the JS ToString abstract op (StringValue: ToPrimitive(string) then
+    // toString/valueOf), not CLR ToString — so parseInt/parseFloat of an object honour
+    // its valueOf/toString rather than yielding "[object Object]".
+    public static string JSTrim(this JSValue text) => text.StringValue.Trim();
 }

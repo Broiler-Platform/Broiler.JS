@@ -506,4 +506,39 @@ public class ParserTests
         Assert.Equal(expectedName, key.ToString());
         Assert.True(function.Async);
     }
+
+    // A class field initializer is its own [~Yield, ~Await] function boundary, so
+    // `await`/`yield` are plain identifiers inside it even when the class is nested
+    // in an async/generator function (test262 staging/sm/fields/await-identifier-script).
+    [Theory]
+    [InlineData("async function f() { return class { x = await; }; }")]
+    [InlineData("var await = 1; async function f() { return class { x = await; }; }")]
+    [InlineData("function* g() { return class { x = yield; }; }")]
+    public void ParseProgram_ClassFieldInitializer_AwaitYieldAreIdentifiers(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+        Assert.NotNull(program);
+    }
+
+    // The computed ClassElementName keeps the surrounding [+Await], so `[await]` is an
+    // AwaitExpression (with no operand) — a SyntaxError.
+    [Fact]
+    public void ParseProgram_ClassComputedFieldName_AwaitKeepsAsyncContext_Throws()
+    {
+        var stream = new FastTokenStream(new StringSpan("async () => class { [await] = 1 };"));
+        var parser = new FastParser(stream);
+        Assert.Throws<FastParseException>(() => parser.ParseProgram());
+    }
+
+    // A field initializer must be terminated by `;`, ASI, `}` or EOF; the bare
+    // identifier `await` cannot be followed by `1`.
+    [Fact]
+    public void ParseProgram_ClassFieldInitializer_AwaitFollowedByOperand_Throws()
+    {
+        var stream = new FastTokenStream(new StringSpan("async () => class { x = await 1 };"));
+        var parser = new FastParser(stream);
+        Assert.Throws<FastParseException>(() => parser.ParseProgram());
+    }
 }

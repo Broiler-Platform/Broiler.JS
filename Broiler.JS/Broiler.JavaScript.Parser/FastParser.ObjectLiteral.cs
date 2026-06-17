@@ -176,11 +176,48 @@ partial class FastParser
                 if (!checkContextualKeyword)
                     throw stream.Unexpected();
 
-                if (!Expression(out var value))
-                    throw stream.Unexpected();
+                // A class field initializer is its own [~Yield, ~Await] function
+                // boundary: `await`/`yield` are plain IdentifierReferences inside it
+                // even when the class is nested in an async/generator function. (The
+                // surrounding [?Yield, ?Await] only governs the computed
+                // ClassElementName and the heritage expression, which are parsed
+                // outside this scope.) So `class { x = await }` inside `async
+                // function f(){…}` reads `await` as an identifier.
+                var previousInGeneratorBody = inGeneratorBody;
+                var previousInAsyncFunctionBody = inAsyncFunctionBody;
+                if (isClass)
+                {
+                    inGeneratorBody = false;
+                    inAsyncFunctionBody = false;
+                }
+
+                AstExpression value;
+                try
+                {
+                    if (!Expression(out value))
+                        throw stream.Unexpected();
+                }
+                finally
+                {
+                    inGeneratorBody = previousInGeneratorBody;
+                    inAsyncFunctionBody = previousInAsyncFunctionBody;
+                }
 
                 property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, isPrivate, isStatic, key, computed, value, usesAssign: true);
-                stream.CheckAndConsume(TokenTypes.SemiColon);
+
+                // A FieldDefinition must be terminated by `;`, a line terminator
+                // (ASI), `}`, or EOF. Enforcing this rejects an initializer that runs
+                // straight into the next token, e.g. `class { x = await 1 }`, where
+                // `await` is the (bare) identifier and `1` cannot follow it.
+                if (isClass)
+                {
+                    if (!EndOfStatement())
+                        throw stream.Unexpected();
+                }
+                else
+                {
+                    stream.CheckAndConsume(TokenTypes.SemiColon);
+                }
 
                 return true;
             }

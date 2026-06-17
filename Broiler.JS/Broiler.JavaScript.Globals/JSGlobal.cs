@@ -88,14 +88,14 @@ public partial class JSGlobalStatic
     [JSExport("decodeURI", Length = 1)]
     public static JSValue DecodeURI(in Arguments a)
     {
-        var f = a.Get1().ToString();
+        var f = a.Get1().StringValue;
         return JSValue.CreateString(UriHelper.DecodeURI(f));
     }
 
     [JSExport("decodeURIComponent", Length = 1)]
     public static JSValue DecodeURIComponent(in Arguments a)
     {
-        var f = a.Get1().ToString();
+        var f = a.Get1().StringValue;
         return JSValue.CreateString(UriHelper.DecodeURIComponent(f));
     }
 
@@ -133,14 +133,14 @@ public partial class JSGlobalStatic
     [JSExport("encodeURI", Length = 1)]
     public static JSValue EncodeURI(in Arguments a)
     {
-        var f = a.Get1().ToString();
+        var f = a.Get1().StringValue;
         return JSValue.CreateString(UriHelper.EncodeURI(f));
     }
 
     [JSExport("encodeURIComponent", Length = 1)]
     public static JSValue EncodeURIComponent(in Arguments a)
     {
-        var f = a.Get1().ToString();
+        var f = a.Get1().StringValue;
         return JSValue.CreateString(UriHelper.EncodeURIComponent(f));
     }
 
@@ -168,7 +168,7 @@ public partial class JSGlobalStatic
     [JSExport("parseFloat", Length = 1)]
     public static JSValue ParseFloat(in Arguments a)
     {
-        var result = NumberParser.ParseFloat(a.Get1().ToString());
+        var result = NumberParser.ParseFloat(a.Get1().StringValue);
         return JSValue.CreateNumber(result);
     }
 

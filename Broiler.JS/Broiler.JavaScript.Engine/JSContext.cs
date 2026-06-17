@@ -741,20 +741,28 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
     public JSValue DeclareGlobalFunction(in KeyString name, JSValue value)
     {
+        // CreateGlobalFunctionBinding creates the property with [[Configurable]]: D,
+        // where D (deletable) is false for a top-level FunctionDeclaration of a script
+        // and true only when the declaration is introduced by direct eval. So a script
+        // `function f(){}` is non-configurable (delete f === false), like `var`.
+        var functionAttributes = (directEvalDepth > 0 || directEvalCompilationDepth > 0)
+            ? JSPropertyAttributes.EnumerableConfigurableValue
+            : JSPropertyAttributes.Value | JSPropertyAttributes.Enumerable;
+
         var property = GetInternalProperty(name, false);
         if (property.IsEmpty)
         {
             if (!IsExtensible())
                 throw JSEngine.NewTypeError($"Cannot define global function {name}");
 
-            FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            FastAddValue(name, value, functionAttributes);
             SyncGlobalVariable(name, value);
             return value;
         }
 
         if (property.IsConfigurable)
         {
-            FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            FastAddValue(name, value, functionAttributes);
             SyncGlobalVariable(name, value);
             return value;
         }

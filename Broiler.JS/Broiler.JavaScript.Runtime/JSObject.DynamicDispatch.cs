@@ -88,17 +88,19 @@ public partial class JSObject
 
     public override JSValue InvokeFunction(in Arguments a) => throw NewTypeError("Object is not a function");
 
+    // Relational operators coerce with the Number hint (not the "default" hint used by
+    // ==): for a Date `<`/`>` compares timestamps, while `==` compares strings.
     public override bool Less(JSValue value)
-        => ToPrimitiveDefault().Less(value);
+        => ToNumberPrimitive().Less(value);
 
     public override bool LessOrEqual(JSValue value)
-        => ToPrimitiveDefault().LessOrEqual(value);
+        => ToNumberPrimitive().LessOrEqual(value);
 
     public override bool Greater(JSValue value)
-        => ToPrimitiveDefault().Greater(value);
+        => ToNumberPrimitive().Greater(value);
 
     public override bool GreaterOrEqual(JSValue value)
-        => ToPrimitiveDefault().GreaterOrEqual(value);
+        => ToNumberPrimitive().GreaterOrEqual(value);
     public override bool ConvertTo(Type type, out object value)
     {
         if (TryGetClrEnumeratorFunc?.Invoke(this, type, out value) ?? false)
