@@ -75,7 +75,9 @@ public partial class JSArray : JSObject
 
     internal override void UpdateArrayLengthIfNeeded(uint key)
     {
-        if (_length <= key)
+        // Array indices run 0..2^32-2; uint.MaxValue (2^32-1) is not a valid index, so it never
+        // extends the length — and "key + 1" would overflow to 0, corrupting an existing length.
+        if (key != uint.MaxValue && _length <= key)
             _length = key + 1;
     }
 
@@ -448,7 +450,9 @@ public partial class JSArray : JSObject
 
         if (base.SetValue(name, value, receiver, throwError))
         {
-            if (_length <= name && !GetInternalProperty(name, false).IsEmpty)
+            // uint.MaxValue (2^32-1) is not a valid array index, so it never extends the length;
+            // "name + 1" would otherwise overflow to 0 and corrupt an existing length.
+            if (name != uint.MaxValue && _length <= name && !GetInternalProperty(name, false).IsEmpty)
             {
                 _length = name + 1;
             }
