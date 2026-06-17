@@ -282,7 +282,6 @@ test/built-ins/Proxy/set/call-parameters.js
 test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls-index.js
 test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls.js
 test/built-ins/Reflect/ownKeys/return-on-corresponding-order-large-index.js
-test/built-ins/RegExp/S15.10.2.5_A1_T4.js
 test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/lookahead-quantifier-match-groups.js
@@ -309,7 +308,6 @@ test/built-ins/RegExp/prototype/Symbol.replace/coerce-unicode.js
 test/built-ins/RegExp/prototype/Symbol.replace/g-pos-decrement.js
 test/built-ins/RegExp/prototype/Symbol.replace/named-groups.js
 test/built-ins/RegExp/prototype/Symbol.replace/poisoned-stdlib.js
-test/built-ins/RegExp/prototype/exec/S15.10.6.2_A1_T6.js
 test/built-ins/RegExp/regexp-modifiers/add-dotAll-does-not-affect-alternatives-outside.js
 test/built-ins/RegExp/regexp-modifiers/add-dotAll-does-not-affect-ignoreCase-flag.js
 test/built-ins/RegExp/regexp-modifiers/add-dotAll-does-not-affect-multiline-flag.js
@@ -581,12 +579,10 @@ test/intl402/DateTimeFormat/prototype/format/related-year-zh.js
 test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js
 test/intl402/DateTimeFormat/prototype/formatRange/temporal-objects-no-time-clip-weekday.js
 test/intl402/DateTimeFormat/prototype/formatRange/temporal-objects-resolved-time-zone.js
-test/intl402/DateTimeFormat/prototype/formatRange/to-datetime-formattable-with-different-arg-kinds.js
 test/intl402/DateTimeFormat/prototype/formatRangeToParts/chinese-calendar-dates.js
 test/intl402/DateTimeFormat/prototype/formatRangeToParts/dangi-calendar-dates.js
 test/intl402/DateTimeFormat/prototype/formatRangeToParts/temporal-objects-no-time-clip-weekday.js
 test/intl402/DateTimeFormat/prototype/formatRangeToParts/temporal-objects-resolved-time-zone.js
-test/intl402/DateTimeFormat/prototype/formatRangeToParts/to-datetime-formattable-with-different-arg-kinds.js
 test/intl402/DateTimeFormat/prototype/formatToParts/chinese-calendar-dates.js
 test/intl402/DateTimeFormat/prototype/formatToParts/compare-to-temporal-lunisolar.js
 test/intl402/DateTimeFormat/prototype/formatToParts/compare-to-temporal.js
@@ -849,7 +845,6 @@ test/language/expressions/does-not-equals/bigint-and-object.js
 test/language/expressions/does-not-equals/bigint-and-string.js
 test/language/expressions/dynamic-import/import-attributes/2nd-param-evaluation-abrupt-throw.js
 test/language/expressions/dynamic-import/import-attributes/2nd-param-evaluation-sequence.js
-test/language/expressions/dynamic-import/import-attributes/2nd-param-in.js
 test/language/expressions/dynamic-import/import-attributes/2nd-param-with-enumeration-enumerable.js
 test/language/expressions/dynamic-import/returns-promise.js
 test/language/expressions/equals/S11.9.1_A6.2_T2.js
@@ -894,14 +889,6 @@ test/language/expressions/unsigned-right-shift/bigint.js
 test/language/expressions/yield/star-rhs-iter-nrml-res-done-no-value.js
 test/language/function-code/S10.2.1_A4_T1.js
 test/language/global-code/decl-func.js
-test/language/identifiers/part-unicode-17.0.0-class-escaped.js
-test/language/identifiers/part-unicode-17.0.0-class.js
-test/language/identifiers/part-unicode-17.0.0-escaped.js
-test/language/identifiers/part-unicode-17.0.0.js
-test/language/identifiers/start-unicode-17.0.0-class-escaped.js
-test/language/identifiers/start-unicode-17.0.0-class.js
-test/language/identifiers/start-unicode-17.0.0-escaped.js
-test/language/identifiers/start-unicode-17.0.0.js
 test/language/literals/numeric/legacy-octal-integer.js
 test/language/literals/regexp/S7.8.5_A1.1_T2.js
 test/language/literals/regexp/S7.8.5_A1.4_T2.js
@@ -909,7 +896,6 @@ test/language/literals/regexp/S7.8.5_A2.1_T2.js
 test/language/literals/regexp/S7.8.5_A2.4_T2.js
 test/language/literals/regexp/u-case-mapping.js
 test/language/literals/string/legacy-octal-escape-sequence.js
-test/language/statements/await-using/syntax/await-using-valid-for-await-using-of-of.js
 test/language/statements/class/arguments/access.js
 test/language/statements/class/definition/basics.js
 test/language/statements/class/definition/prototype-getter.js
@@ -1008,8 +994,6 @@ test/staging/sm/RegExp/escape.js
 test/staging/sm/RegExp/exec.js
 test/staging/sm/RegExp/ignoreCase-non-latin1-to-latin1.js
 test/staging/sm/RegExp/match-trace.js
-test/staging/sm/RegExp/regress-613820-2.js
-test/staging/sm/RegExp/regress-613820-3.js
 test/staging/sm/RegExp/replace-trace.js
 test/staging/sm/RegExp/split-trace.js
 test/staging/sm/RegExp/unicode-back-reference.js
