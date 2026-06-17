@@ -40,4 +40,18 @@ public class Issue822Tests
         => Assert.Equal("^|%5E%20a|3.14|255|5", Eval(
             "decodeURI('%5E') + '|' + encodeURI('^ a') + '|' + String(parseFloat('3.14xyz'))"
             + " + '|' + String(parseInt('0xFF')) + '|' + String(parseInt('101', 2))"));
+
+    // A top-level FunctionDeclaration of a script creates a non-configurable global
+    // binding (deletable D = false), so `delete f` returns false — like `var`, and
+    // unlike an implicit global or an eval-introduced function.
+    [Fact]
+    public void GlobalFunctionDeclarationIsNonDeletable()
+        => Assert.Equal("false|false|function", Eval(
+            "function f() {} function MyFunction() {}"
+            + "String(delete f) + '|' + String(delete MyFunction) + '|' + typeof f"));
+
+    [Fact]
+    public void GlobalVarStillNonDeletable_ImplicitGlobalStillDeletable()
+        => Assert.Equal("false|true", Eval(
+            "var v = 1; ig = 2; String(delete v) + '|' + String(delete ig)"));
 }
