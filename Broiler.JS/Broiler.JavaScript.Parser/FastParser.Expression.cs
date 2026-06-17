@@ -25,6 +25,19 @@ partial class FastParser
     /// </summary>
     private FastToken lastExpressionIndex;
 
+    // A literal/value token that can only begin a fresh PrimaryExpression. Such a
+    // token directly following a complete expression (with no operator and no ASI
+    // line break) is a SyntaxError rather than a token to silently consume.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsLiteralValueStart(TokenTypes type)
+        => type is TokenTypes.Number
+            or TokenTypes.BigInt
+            or TokenTypes.Decimal
+            or TokenTypes.String
+            or TokenTypes.Null
+            or TokenTypes.True
+            or TokenTypes.False;
+
     // YieldExpression : yield | yield [no LineTerminator here] * AssignmentExpression
     //                 | yield AssignmentExpression
     bool YieldExpression(out AstExpression statement)
@@ -183,7 +196,14 @@ partial class FastParser
             if (currentType == TokenTypes.At)
                 throw stream.Unexpected();
 
-            if (currentType == token.Type)
+            // Two value-producing tokens cannot be adjacent without an operator (or,
+            // via ASI, a line break — already handled above): `foo 1`, `1 "x"`, and
+            // `x = await 1` (where `await` is a bare IdentifierReference) are all
+            // SyntaxErrors. Without this, NextExpression's `CheckAndConsume(previousType)`
+            // would consume the stray literal as if it were an operator and silently
+            // drop it. A token of the same kind as this expression's first token is
+            // likewise a stray adjacent primary.
+            if (currentType == token.Type || IsLiteralValueStart(currentType))
                 throw stream.Unexpected();
         }
 
