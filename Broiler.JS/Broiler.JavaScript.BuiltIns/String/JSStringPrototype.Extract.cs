@@ -144,8 +144,11 @@ public partial class JSString
         //0th argument, start
         var f = a.Get1();
         var start = f.IntegerValue;
-        //1st argument, end
-        int end = a[1]?.IntegerValue ?? int.MaxValue;
+        //1st argument, end — an absent OR explicitly `undefined` end means "to the
+        // end of the string" (spec: if end is undefined, intEnd = len), not ToInteger
+        // (which would coerce undefined to 0 and yield an empty slice).
+        var endArg = a[1];
+        int end = (endArg == null || endArg.IsUndefined) ? int.MaxValue : endArg.IntegerValue;
 
         if (start < 0)
             start += @this.Length;

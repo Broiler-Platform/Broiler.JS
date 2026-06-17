@@ -90,7 +90,7 @@ public partial class JSString
     }
 
     [JSPrototypeMethod]
-    [JSExport("toLocaleLowerCase")]
+    [JSExport("toLocaleLowerCase", Length = 0)]
     internal static JSValue ToLocaleLowerCase(in Arguments a)
     {
         var @this = a.This.AsString();
@@ -108,7 +108,7 @@ public partial class JSString
     }
 
     [JSPrototypeMethod]
-    [JSExport("toLocaleUpperCase")]
+    [JSExport("toLocaleUpperCase", Length = 0)]
     internal static JSValue ToLocaleUpperCase(in Arguments a)
     {
         var @this = a.This.AsString();

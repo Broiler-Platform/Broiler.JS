@@ -13896,4 +13896,60 @@ public class BuiltInsTests
     }
 
     #endregion
+
+    #region Issue 822 — relational ToPrimitive(Number), method lengths, String.slice
+
+    [Fact]
+    public void Relational_CoercesViaToPrimitiveNumber_WithToStringFallback()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // valueOf returning a non-primitive must fall back to toString (hint Number).
+        var result = ctx.Eval(@"[
+            1 < { valueOf: function () { return {}; }, toString: function () { return 2; } },
+            1 <= { valueOf: function () { return {}; }, toString: function () { return 2; } },
+            1 > { valueOf: function () { return {}; }, toString: function () { return 0; } },
+            1 >= { valueOf: function () { return {}; }, toString: function () { return 0; } },
+            new Date(0) < new Date(1),
+            new Date(1) < new Date(0),
+            new Number(5) < 6
+        ].join('|');");
+
+        Assert.Equal("true|true|true|true|true|false|true", result.ToString());
+    }
+
+    [Fact]
+    public void String_LocaleCaseMethods_HaveLengthZero()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            String.prototype.toLocaleLowerCase.length,
+            String.prototype.toLocaleUpperCase.length
+        ].join('|');");
+
+        Assert.Equal("0|0", result.ToString());
+    }
+
+    [Fact]
+    public void String_Slice_UndefinedEnd_UsesLength()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // An explicitly-undefined `end` means "to the end of the string"; a NaN-coercing
+        // `start` (here the string "e") becomes 0.
+        var result = ctx.Eval(@"[
+            String(void 0).slice('e', undefined),
+            'undefined'.slice('e', undefined),
+            'hello'.slice(1),
+            'hello'.slice(1, 3),
+            'hello'.slice(-2)
+        ].join('|');");
+
+        Assert.Equal("undefined|undefined|ello|el|lo", result.ToString());
+    }
+
+    #endregion
 }

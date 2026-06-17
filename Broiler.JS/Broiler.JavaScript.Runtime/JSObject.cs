@@ -271,6 +271,11 @@ public partial class JSObject : JSValue
     // is a primitive that the caller may still need to type-check (e.g. spec ToPrimitiveAndRequireString).
     internal JSValue ToStringPrimitive() => ToPrimitive(preferString: true);
 
+    // ToPrimitive with the "number" hint (valueOf-then-toString). Used by the
+    // relational operators, whose hint is Number — distinct from the "default" hint
+    // used by `==`, which differs for objects such as Date (default behaves as string).
+    internal JSValue ToNumberPrimitive() => ToPrimitive(preferString: false);
+
     private JSValue TryCallPrimitiveMethod(in KeyString key)
     {
         var method = this[key];

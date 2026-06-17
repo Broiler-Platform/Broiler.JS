@@ -313,17 +313,23 @@ public class JSValueBuilder
 
     private static MethodInfo _Less = type.PublicMethod(nameof(JSValue.Less), typeof(JSValue));
 
-    public static Expression Less(Expression target, Expression value) => JSBooleanBuilder.NewFromCLRBoolean(Expression.Call(ValueOf(target), _Less, ValueOf(value)));
+    // The operands are passed straight through (not pre-wrapped in ValueOf): the
+    // relational operators perform ToPrimitive(NUMBER) themselves (JSObject.Less and
+    // friends, plus DoubleValue/StringValue), which correctly falls back to toString
+    // when valueOf returns a non-primitive. Pre-calling ValueOf would surface that
+    // object (e.g. `{ valueOf: () => ({}), toString: () => 2 }`) and make `1 < o`
+    // wrongly compare against NaN.
+    public static Expression Less(Expression target, Expression value) => JSBooleanBuilder.NewFromCLRBoolean(Expression.Call(target, _Less, value));
 
     private static MethodInfo _LessOrEqual = type.PublicMethod(nameof(JSValue.LessOrEqual), typeof(JSValue));
 
-    public static Expression LessOrEqual(Expression target, Expression value) => JSBooleanBuilder.NewFromCLRBoolean(Expression.Call(ValueOf(target), _LessOrEqual, ValueOf(value)));
+    public static Expression LessOrEqual(Expression target, Expression value) => JSBooleanBuilder.NewFromCLRBoolean(Expression.Call(target, _LessOrEqual, value));
 
     private static MethodInfo _Greater = type.PublicMethod(nameof(JSValue.Greater), typeof(JSValue));
-    public static Expression Greater(Expression target, Expression value) => JSBooleanBuilder.NewFromCLRBoolean(Expression.Call(ValueOf(target), _Greater, ValueOf(value)));
+    public static Expression Greater(Expression target, Expression value) => JSBooleanBuilder.NewFromCLRBoolean(Expression.Call(target, _Greater, value));
 
     private static MethodInfo _GreaterOrEqual = type.PublicMethod(nameof(JSValue.GreaterOrEqual), typeof(JSValue));
-    public static Expression GreaterOrEqual(Expression target, Expression value) => JSBooleanBuilder.NewFromCLRBoolean(Expression.Call(ValueOf(target), _GreaterOrEqual, ValueOf(value)));
+    public static Expression GreaterOrEqual(Expression target, Expression value) => JSBooleanBuilder.NewFromCLRBoolean(Expression.Call(target, _GreaterOrEqual, value));
 
     public static Expression ValueOf(Expression target) => target.CallExpression<JSValue, JSValue>(() => (x) => x.ValueOf());
 
