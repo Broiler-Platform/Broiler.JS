@@ -37,7 +37,6 @@ test/built-ins/Array/prototype/Symbol.unscopables/change-array-by-copy.js
 test/built-ins/Array/prototype/concat/15.4.4.4-5-c-i-1.js
 test/built-ins/Array/prototype/concat/arg-length-exceeding-integer-limit.js
 test/built-ins/Array/prototype/concat/call-with-boolean.js
-test/built-ins/Array/prototype/flat/non-numeric-depth-should-not-throw.js
 test/built-ins/Array/prototype/flat/proxy-access-count.js
 test/built-ins/Array/prototype/flatMap/proxy-access-count.js
 test/built-ins/Array/prototype/join/S15.4.4.5_A3.1_T2.js
@@ -108,8 +107,6 @@ test/built-ins/Iterator/from/iterable-primitives.js
 test/built-ins/Iterator/from/result-proto.js
 test/built-ins/Iterator/prototype/Symbol.iterator/name.js
 test/built-ins/Iterator/zip/padding-iteration.js
-test/built-ins/Iterator/zipKeyed/iterables-iteration-deleted.js
-test/built-ins/Iterator/zipKeyed/iterables-iteration-symbol-key.js
 test/built-ins/JSON/parse/reviver-forward-modifies-object.js
 test/built-ins/JSON/parse/text-non-string-primitive.js
 test/built-ins/JSON/parse/text-object-abrupt.js
@@ -174,8 +171,6 @@ test/built-ins/Promise/prototype/finally/invokes-then-with-function.js
 test/built-ins/Proxy/has/call-in-prototype-index.js
 test/built-ins/Proxy/proxy-no-prototype.js
 test/built-ins/Proxy/set/call-parameters-prototype-dunder-proto.js
-test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls-index.js
-test/built-ins/Proxy/set/trap-is-missing-receiver-multiple-calls.js
 test/built-ins/Reflect/ownKeys/return-on-corresponding-order-large-index.js
 test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
@@ -229,11 +224,8 @@ test/built-ins/RegExp/unicodeSets/generated/character-union-character-class.js
 test/built-ins/RegExp/unicodeSets/generated/rgi-emoji-17.0.js
 test/built-ins/RegExp/unicode_full_case_folding.js
 test/built-ins/RegExpStringIteratorPrototype/Symbol.toStringTag.js
-test/built-ins/Set/prototype/intersection/converts-negative-zero.js
 test/built-ins/Set/prototype/keys/keys.js
-test/built-ins/Set/prototype/symmetricDifference/converts-negative-zero.js
 test/built-ins/Set/prototype/symmetricDifference/set-like-class-mutation.js
-test/built-ins/Set/prototype/union/converts-negative-zero.js
 test/built-ins/SetIteratorPrototype/Symbol.toStringTag.js
 test/built-ins/ShadowRealm/WrappedFunction/length-throws-typeerror.js
 test/built-ins/ShadowRealm/WrappedFunction/name-throws-typeerror.js
@@ -414,7 +406,6 @@ test/intl402/Date/prototype/returns-same-results-as-DateTimeFormat.js
 test/intl402/Date/prototype/throws-same-exceptions-as-DateTimeFormat.js
 test/intl402/DateTimeFormat/canonicalize-calendar.js
 test/intl402/DateTimeFormat/constructor-calendar-numberingSystem-order.js
-test/intl402/DateTimeFormat/constructor-options-calendar-invalid.js
 test/intl402/DateTimeFormat/constructor-options-calendar-islamic-fallback.js
 test/intl402/DateTimeFormat/constructor-options-dayPeriod-invalid.js
 test/intl402/DateTimeFormat/constructor-options-dayPeriod-valid.js
@@ -455,7 +446,6 @@ test/intl402/DateTimeFormat/timezone-case-insensitive.js
 test/intl402/DateTimeFormat/timezone-invalid.js
 test/intl402/DateTimeFormat/timezone-legacy-non-iana.js
 test/intl402/DateTimeFormat/timezone-utc.js
-test/intl402/DisplayNames/locales-symbol-length.js
 test/intl402/DisplayNames/prototype/of/type-language-invalid.js
 test/intl402/DurationFormat/constructor-options-numberingSystem-invalid.js
 test/intl402/DurationFormat/constructor-options-style-conflict.js
@@ -508,11 +498,7 @@ test/intl402/Locale/prototype/getWeekInfo/firstDay-by-option.js
 test/intl402/Locale/prototype/getWeekInfo/output-object-keys.js
 test/intl402/Locale/reject-duplicate-variants-in-tlang.js
 test/intl402/Number/prototype/toLocaleString/throws-same-exceptions-as-NumberFormat.js
-test/intl402/NumberFormat/constructor-locales-hasproperty.js
-test/intl402/NumberFormat/constructor-numberingSystem-order.js
-test/intl402/NumberFormat/constructor-option-read-order.js
 test/intl402/NumberFormat/constructor-options-numberingSystem-invalid.js
-test/intl402/NumberFormat/constructor-options-throwing-getters.js
 test/intl402/NumberFormat/constructor-unit.js
 test/intl402/NumberFormat/currency-code-well-formed.js
 test/intl402/NumberFormat/currency-digits-nonstandard-notation.js
@@ -558,9 +544,7 @@ test/intl402/NumberFormat/prototype/formatToParts/notation-compact-de-DE.js
 test/intl402/NumberFormat/prototype/formatToParts/notation-compact-en-US.js
 test/intl402/NumberFormat/prototype/formatToParts/percent-en-US.js
 test/intl402/NumberFormat/prototype/formatToParts/unit-zh-TW.js
-test/intl402/NumberFormat/prototype/resolvedOptions/return-keys-order-default.js
 test/intl402/NumberFormat/test-option-currency.js
-test/intl402/NumberFormat/test-option-currencyDisplay.js
 test/intl402/NumberFormat/test-option-roundingPriority-mixed-options.js
 test/intl402/NumberFormat/test-option-style.js
 test/intl402/NumberFormat/test-option-useGrouping.js
@@ -655,7 +639,6 @@ test/language/expressions/right-shift/bigint.js
 test/language/expressions/subtraction/S11.6.2_A4_T7.js
 test/language/expressions/tagged-template/cache-eval-inner-function.js
 test/language/expressions/tagged-template/template-object.js
-test/language/expressions/unsigned-right-shift/bigint-toprimitive.js
 test/language/expressions/yield/star-rhs-iter-nrml-res-done-no-value.js
 test/language/function-code/S10.2.1_A4_T1.js
 test/language/literals/numeric/legacy-octal-integer.js
@@ -693,11 +676,8 @@ test/language/statements/let/syntax/let-closure-inside-next-expression.js
 test/language/statements/try/completion-values.js
 test/language/statements/using/throws-suppressederror-if-multiple-errors-during-disposal.js
 test/language/statements/variable/S12.2_A4.js
-test/language/statements/with/get-binding-value-idref-with-proxy-env.js
 test/language/statements/with/get-mutable-binding-binding-deleted-in-get-unscopables.js
 test/language/statements/with/has-binding-call-with-proxy-env.js
-test/language/statements/with/set-mutable-binding-binding-deleted-in-get-unscopables.js
-test/language/statements/with/set-mutable-binding-idref-with-proxy-env.js
 test/language/types/reference/put-value-prop-base-primitive.js
 test/staging/Temporal/removed-methods.js
 test/staging/built-ins/RegExp/escape/surrogate-pair.js
@@ -740,7 +720,6 @@ test/staging/sm/Number/toFixed-values.js
 test/staging/sm/Number/toPrecision-values.js
 test/staging/sm/PrivateName/constructor-args.js
 test/staging/sm/PrivateName/illegal-in-class-context.js
-test/staging/sm/PrivateName/modify-non-extensible.js
 test/staging/sm/Proxy/global-receiver.js
 test/staging/sm/Reflect/getOwnPropertyDescriptor.js
 test/staging/sm/RegExp/constructor-ordering.js
