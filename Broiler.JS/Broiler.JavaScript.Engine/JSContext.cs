@@ -1030,11 +1030,12 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 continue;
             }
 
-            // @@unscopables lookup can run user code that deletes the binding.
-            // Re-check before resolving the object environment record.
-            if (!current.Object.HasProperty(propertyKey).BooleanValue)
-                continue;
-
+            // HasBinding stops here (spec: it does not re-probe the binding object after
+            // the @@unscopables check). If user code run by the @@unscopables lookup deleted
+            // the binding, the caller's own HasProperty re-check — mirroring GetBindingValue /
+            // SetMutableBinding — observes that, so this resolver must not fire an extra `has`
+            // trap (test262 with/has-binding-call-with-proxy-env and the idref-with-proxy-env
+            // get/set sequences).
             @object = current.Object;
             return true;
         }
