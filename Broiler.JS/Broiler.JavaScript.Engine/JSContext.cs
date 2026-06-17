@@ -1071,6 +1071,36 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     }
 
     /// <summary>
+    /// Read of an eval-introduced global <c>var</c>. Like <see cref="ResolveIdentifier"/> but,
+    /// after any <c>with</c> object / direct-eval overlay, it consults the live global-object
+    /// property BEFORE the <see cref="globalVars"/> mirror: an eval var assignment writes the
+    /// property, so the property is the authoritative value while the mirror may be a stale
+    /// snapshot of an enclosing same-named binding. Throws a ReferenceError once the (configurable)
+    /// binding has been deleted from both.
+    /// </summary>
+    public JSValue ResolveGlobalVarRead(in KeyString name)
+    {
+        if (TryResolveWithObject(name, out var withObject))
+        {
+            if (!withObject.HasProperty(name.ToJSValue()).BooleanValue)
+                throw JSEngine.NewReferenceError($"{name} is not defined");
+
+            return withObject[name];
+        }
+
+        if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
+            return directEvalBinding.GetValue();
+
+        if (!GetInternalProperty(name).IsEmpty)
+            return this[name];
+
+        if (globalVars.TryGetValue(name.Key, out var variable))
+            return variable.Value;
+
+        throw JSEngine.NewReferenceError($"{name} is not defined");
+    }
+
+    /// <summary>
     /// Resolves an identifier the way <see cref="ResolveIdentifier"/> does — with
     /// the same precedence (`with` object, direct-eval / `with`-fallback overlay,
     /// global var, global property) — but yields <c>undefined</c> instead of

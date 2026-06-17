@@ -125,9 +125,20 @@ partial class FastCompiler
                 if (isDirectEvalProgramScope)
                 {
                     if (!isDirectEvalLexicalBinding)
+                    {
                         vs.Expression = isFunctionDeclaration
                             ? JSVariable.ValueExpression(vs.Variable)
                             : JSContextBuilder.Index(KeyOfName(v));
+
+                        // An eval-introduced global `var` is configurable and deletable: once
+                        // `delete` removes it, a later read (e.g. from a closure created in the
+                        // eval) must throw a ReferenceError rather than observe the now-absent
+                        // global-object property as `undefined`. Reads therefore go through the
+                        // throwing global resolution, while writes keep the assignable property
+                        // index above (test262 staging/sm/eval/exhaustive-global-*).
+                        if (!isFunctionDeclaration)
+                            vs.ReadExpression = JSContextBuilder.ResolveGlobalVarRead(KeyOfName(v));
+                    }
                 }
                 else
                     vs.Expression = JSVariableBuilder.Property(vs.Variable);

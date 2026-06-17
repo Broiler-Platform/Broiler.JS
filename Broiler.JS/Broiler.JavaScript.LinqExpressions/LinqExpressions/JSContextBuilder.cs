@@ -54,6 +54,7 @@ public class JSContextBuilder
     private static MethodInfo _PushWithScope = typeof(JSContext).GetMethod(nameof(JSContext.PushWithScope), [typeof(JSValue)]);
     private static MethodInfo _CaptureWithScopes = typeof(JSContext).GetMethod(nameof(JSContext.CaptureWithScopes), Type.EmptyTypes);
     private static MethodInfo _ResolveIdentifier = typeof(JSContext).GetMethod(nameof(JSContext.ResolveIdentifier), [typeof(KeyString).MakeByRefType()]);
+    private static MethodInfo _ResolveGlobalVarRead = typeof(JSContext).GetMethod(nameof(JSContext.ResolveGlobalVarRead), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _ResolveIdentifierOrUndefined = typeof(JSContext).GetMethod(nameof(JSContext.ResolveIdentifierOrUndefined), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _ResolveWithObject = typeof(JSContext).GetMethod(nameof(JSContext.ResolveWithObject), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _EnsureCanDeclareGlobalFunction = typeof(JSContext).GetMethod(nameof(JSContext.EnsureCanDeclareGlobalFunction), [typeof(KeyString).MakeByRefType()]);
@@ -77,6 +78,7 @@ public class JSContextBuilder
     public static Expression PushWithScope(Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _PushWithScope, value);
     public static Expression CaptureWithScopes() => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _CaptureWithScopes);
     public static Expression ResolveIdentifier(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveIdentifier, key);
+    public static Expression ResolveGlobalVarRead(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveGlobalVarRead, key);
     public static Expression ResolveIdentifierOrUndefined(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveIdentifierOrUndefined, key);
     public static Expression ResolveWithObject(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveWithObject, key);
     public static Expression EnsureCanDeclareGlobalFunction(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _EnsureCanDeclareGlobalFunction, key);

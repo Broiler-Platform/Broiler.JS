@@ -279,7 +279,10 @@ partial class FastCompiler
             return shadow.Expression;
 
         if (TryGetStaticIdentifierVariable(identifier, out var variable) && variable != null)
-            return variable.Expression;
+            // A throwing read prefers the binding's dedicated read expression when it has one
+            // (an eval-introduced global var, whose read must throw once deleted); `typeof` and the
+            // write path keep the plain Expression.
+            return throwIfMissing && variable.ReadExpression != null ? variable.ReadExpression : variable.Expression;
 
         return throwIfMissing
             ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
