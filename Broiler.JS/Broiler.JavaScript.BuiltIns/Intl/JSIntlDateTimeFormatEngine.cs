@@ -355,13 +355,16 @@ internal static class JSIntlDateTimeFormatEngine
             // shows a year, e.g. "M/d/y" -> "M/d/y G". The explicit `era` option does the
             // same for any calendar (including gregorian), with the requested width:
             // narrow -> "GGGGG", long -> "GGGG", short -> "G". A cyclic-year calendar
-            // (chinese, dangi) shows the year as relatedYear(yearName), so the year field
-            // becomes "r(U)". Each makes the pattern structurally distinct.
+            // (chinese, dangi) shows the year as the related (Gregorian) year plus the cyclic
+            // year name. CLDR's Chinese-language pattern is "rU年" (e.g. "2019己亥年"); the root
+            // form used elsewhere wraps the name in parentheses, "r(U)". Each makes the pattern
+            // structurally distinct.
             var eraCalendar = EraCalendars.ContainsKey(calendar ?? string.Empty) || IslamicCalendars.Contains(calendar ?? string.Empty);
             if (eraCalendar || hasEra)
                 datePattern += eraStyle switch { "narrow" => " GGGGG", "long" => " GGGG", _ => " G" };
             else if (CyclicYearCalendars.Contains(calendar ?? string.Empty))
-                datePattern = ReplaceYearField(datePattern, "r(U)");
+                datePattern = ReplaceYearField(datePattern,
+                    CldrLocaleData.LanguageOf(localeTag) == "zh" ? "rU年" : "r(U)");
         }
 
         string combined = (datePattern, timePattern) switch
