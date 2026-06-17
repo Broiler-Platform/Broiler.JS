@@ -119,7 +119,8 @@ public partial class JSTemporalDuration
         string largestUnit = "auto";
         var increment = 1d;
         var roundingMode = "halfExpand";
-        JSValue options = roundTo;
+        JSTemporalZonedDateTime relZoned = null;
+        JSTemporalPlainDate relDate = null;
 
         if (roundTo == null || roundTo.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.Duration.prototype.round requires an options argument");
@@ -127,14 +128,18 @@ public partial class JSTemporalDuration
         if (roundTo.IsString)
         {
             smallestUnit = NormalizeUnit(roundTo.StringValue, allowAuto: false);
-            options = JSUndefined.Value;
         }
         else if (roundTo is JSObject obj)
         {
-            var su = obj[KeyStrings.GetOrCreate("smallestUnit")];
+            // The options getters run in this fixed order, regardless of which units the
+            // duration carries: largestUnit, relativeTo, roundingIncrement, roundingMode,
+            // smallestUnit (test262 round/order-of-operations). Each value is also coerced
+            // (toString / valueOf) as it is read, before the next getter.
             var lu = obj[KeyStrings.GetOrCreate("largestUnit")];
             var largestUnitProvided = !lu.IsUndefined;
             if (largestUnitProvided) largestUnit = NormalizeUnit(lu.StringValue, allowAuto: true);
+
+            TryResolveRelativeTo(obj, out relZoned, out relDate);
 
             var inc = obj[KeyStrings.GetOrCreate("roundingIncrement")];
             if (!inc.IsUndefined)
@@ -154,6 +159,7 @@ public partial class JSTemporalDuration
             var rm = obj[KeyStrings.GetOrCreate("roundingMode")];
             if (!rm.IsUndefined) roundingMode = NormalizeRoundingMode(rm.StringValue);
 
+            var su = obj[KeyStrings.GetOrCreate("smallestUnit")];
             if (!su.IsUndefined) smallestUnit = NormalizeUnit(su.StringValue, allowAuto: false);
             // Step ordering aside, the receiver is only under-specified when *neither*
             // smallestUnit nor largestUnit was supplied; an explicit largestUnit: "auto"
@@ -163,7 +169,6 @@ public partial class JSTemporalDuration
         }
         else throw JSEngine.NewTypeError("Temporal.Duration.prototype.round requires an options object or string");
 
-        TryResolveRelativeTo(options, out var relZoned, out var relDate);
         smallestUnit ??= "nanosecond";
 
         if (largestUnit == "auto")

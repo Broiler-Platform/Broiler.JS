@@ -541,12 +541,17 @@ public partial class JSTemporalZonedDateTime : JSObject
             smallestUnit = roundTo.StringValue;
         else if (roundTo is JSObject obj)
         {
+            // GetRoundingIncrementOption, then GetRoundingModeOption, then the REQUIRED
+            // smallestUnit are read (and coerced) in that order, and all of them BEFORE any
+            // algorithmic validation of the increment — so an invalid roundingIncrement for
+            // the smallestUnit still observes every option getter first (test262
+            // round/options-read-before-algorithmic-validation).
+            increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
             var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
             if (unitValue.IsUndefined)
                 throw JSEngine.NewRangeError("Temporal.ZonedDateTime.round requires a smallestUnit");
             smallestUnit = unitValue.StringValue;
-            increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
         }
         else throw JSEngine.NewTypeError("Temporal.ZonedDateTime.round requires an options object or string");
 
