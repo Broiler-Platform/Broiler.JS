@@ -218,7 +218,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with requires at least one field");
 
-        var (iy, im, id) = TemporalNonIso.RegulateToIso(calendarId, year, month, 1, overflow);
+        var (iy, im, id) = TemporalNonIso.RegulateToIso(calendarId, year, month, 1, overflow, enforceIsoDateRange: false);
         if (!ISOYearMonthWithinLimits(iy, im))
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: year-month is out of range");
         return new JSTemporalPlainYearMonth(iy, im, id, calendarId, PlainYearMonthPrototype);
@@ -330,7 +330,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
     private static JSValue YearMonthFromIsoDate(int isoY, int isoM, int isoD, string calendarId)
     {
         var c = TemporalNonIso.CalendarYmd(calendarId, isoY, isoM, isoD);
-        var (iy, im, id) = TemporalNonIso.RegulateToIso(calendarId, c.y, c.m, 1, "constrain");
+        var (iy, im, id) = TemporalNonIso.RegulateToIso(calendarId, c.y, c.m, 1, "constrain", enforceIsoDateRange: false);
         if (!ISOYearMonthWithinLimits(iy, im))
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: year-month is out of range");
         return new JSTemporalPlainYearMonth(iy, im, id, calendarId, PlainYearMonthPrototype);
@@ -569,6 +569,10 @@ public partial class JSTemporalPlainYearMonth : JSObject
         {
             var nonIsoOverflow = ReadOverflow(options);
             var (iy, im, id) = TemporalNonIso.YearMonthToIso(obj, calendarId, nonIsoOverflow, "Temporal.PlainYearMonth");
+            // A PlainYearMonth is bounded by ISOYearMonthWithinLimits (year/month), not the day-precise
+            // ISO date range, so this is validated here rather than during the reference-day conversion.
+            if (!ISOYearMonthWithinLimits(iy, im))
+                throw JSEngine.NewRangeError("Temporal.PlainYearMonth: year-month is out of range");
             return new JSTemporalPlainYearMonth(iy, im, id, calendarId, PlainYearMonthPrototype);
         }
 

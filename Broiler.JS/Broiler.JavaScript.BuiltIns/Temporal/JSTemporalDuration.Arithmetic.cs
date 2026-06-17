@@ -119,7 +119,8 @@ public partial class JSTemporalDuration
         string largestUnit = "auto";
         var increment = 1d;
         var roundingMode = "halfExpand";
-        JSValue options = roundTo;
+        JSTemporalZonedDateTime relZoned = null;
+        JSTemporalPlainDate relDate = null;
 
         if (roundTo == null || roundTo.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.Duration.prototype.round requires an options argument");
@@ -127,14 +128,18 @@ public partial class JSTemporalDuration
         if (roundTo.IsString)
         {
             smallestUnit = NormalizeUnit(roundTo.StringValue, allowAuto: false);
-            options = JSUndefined.Value;
         }
         else if (roundTo is JSObject obj)
         {
-            var su = obj[KeyStrings.GetOrCreate("smallestUnit")];
+            // The options getters run in this fixed order, regardless of which units the
+            // duration carries: largestUnit, relativeTo, roundingIncrement, roundingMode,
+            // smallestUnit (test262 round/order-of-operations). Each value is also coerced
+            // (toString / valueOf) as it is read, before the next getter.
             var lu = obj[KeyStrings.GetOrCreate("largestUnit")];
             var largestUnitProvided = !lu.IsUndefined;
             if (largestUnitProvided) largestUnit = NormalizeUnit(lu.StringValue, allowAuto: true);
+
+            TryResolveRelativeTo(obj, out relZoned, out relDate);
 
             var inc = obj[KeyStrings.GetOrCreate("roundingIncrement")];
             if (!inc.IsUndefined)
@@ -154,6 +159,7 @@ public partial class JSTemporalDuration
             var rm = obj[KeyStrings.GetOrCreate("roundingMode")];
             if (!rm.IsUndefined) roundingMode = NormalizeRoundingMode(rm.StringValue);
 
+            var su = obj[KeyStrings.GetOrCreate("smallestUnit")];
             if (!su.IsUndefined) smallestUnit = NormalizeUnit(su.StringValue, allowAuto: false);
             // Step ordering aside, the receiver is only under-specified when *neither*
             // smallestUnit nor largestUnit was supplied; an explicit largestUnit: "auto"
@@ -163,11 +169,20 @@ public partial class JSTemporalDuration
         }
         else throw JSEngine.NewTypeError("Temporal.Duration.prototype.round requires an options object or string");
 
-        TryResolveRelativeTo(options, out var relZoned, out var relDate);
         smallestUnit ??= "nanosecond";
 
         if (largestUnit == "auto")
             largestUnit = MaxUnit(DefaultLargestUnit(), smallestUnit);
+
+        // Rounding to weeks cannot retain a coarser calendar unit: a month/year is not a
+        // whole number of weeks, so a result mixing them is unrepresentable. When the
+        // smallest unit is "week" the largest unit must be "week" too — if it defaulted to
+        // (or was given as) "year"/"month" because the duration carries those units, the
+        // caller must pass largestUnit explicitly (test262 round/balances-up-to-weeks:
+        // "largestUnit must be included").
+        if (smallestUnit == "week" && UnitIndex(largestUnit) < UnitIndex("week"))
+            throw JSEngine.NewRangeError(
+                "Temporal.Duration.prototype.round to weeks requires largestUnit \"week\" when the duration has years or months");
 
         // A time-unit smallestUnit caps the rounding increment at the number of those units in the
         // next-larger unit, and the increment must divide it evenly. This validation is independent
@@ -328,6 +343,15 @@ public partial class JSTemporalDuration
                 throw JSEngine.NewRangeError($"Temporal.Duration: invalid UTC offset in relativeTo \"{s}\"");
         }
 
+        // A genuine property bag (not a recognised Temporal object): read every relativeTo field once,
+        // in the spec's fixed order — calendar first, then the merged date/time/offset/timeZone names in
+        // alphabetical order — coercing each as PrepareCalendarFields does, so the observable getter and
+        // toString/valueOf order matches ToRelativeTemporalObject (test262 round/order-of-operations).
+        // The snapshot is a plain object, so the downstream slot/field logic re-reads it with no further
+        // observable side effects.
+        if (rel is JSObject relBag && !IsTemporalRelativeObject(rel))
+            rel = BuildOrderedRelativeBagSnapshot(relBag);
+
         // A relativeTo property bag carrying a timeZone is a ZonedDateTime relativeTo; its offset
         // field (when present) must be a String (else TypeError) and a valid UTC offset (else
         // RangeError), even though it is then consumed here as a 24-hour-day PlainDate.
@@ -392,6 +416,67 @@ public partial class JSTemporalDuration
         }
     }
 
+    // Whether a relativeTo value is a Temporal object resolved through its internal slots (so its
+    // property bag is NOT read). ZonedDateTime, PlainDate and PlainDateTime are the spec's three
+    // slot-based relativeTo types; the remaining Temporal types are listed so they are never mistaken
+    // for a plain property bag (they would instead error later when consumed as a date).
+    private static bool IsTemporalRelativeObject(JSValue v)
+        => v is JSTemporalPlainDate or JSTemporalPlainDateTime or JSTemporalZonedDateTime
+            or JSTemporalPlainYearMonth or JSTemporalPlainMonthDay or JSTemporalPlainTime
+            or JSTemporalInstant or JSTemporalDuration;
+
+    // PrepareCalendarFields for a relativeTo property bag: read calendar, then the date, time, offset
+    // and timeZone field names in one alphabetical pass, coercing each present value exactly as the
+    // spec does (numeric fields via ToNumber/valueOf, monthCode/offset via ToString, calendar/timeZone
+    // left raw and resolved later). Absent fields are still read (observable) but not coerced. The
+    // already-coerced values are copied into a fresh plain object so the existing relativeTo resolution
+    // can re-read them without firing the original bag's getters again.
+    private static JSObject BuildOrderedRelativeBagSnapshot(JSObject rel)
+    {
+        var snapshot = new JSObject();
+
+        void CopyNumber(string field)
+        {
+            var v = rel[KeyStrings.GetOrCreate(field)];
+            if (v == null || v.IsUndefined) return;
+            var number = v.DoubleValue; // ToNumber → triggers the field's valueOf
+            if (double.IsNaN(number) || double.IsInfinity(number))
+                throw JSEngine.NewRangeError($"Temporal.Duration: relativeTo {field} must be finite");
+            snapshot[KeyStrings.GetOrCreate(field)] = new JSNumber(number);
+        }
+
+        void CopyString(string field)
+        {
+            var v = rel[KeyStrings.GetOrCreate(field)];
+            if (v == null || v.IsUndefined) return;
+            snapshot[KeyStrings.GetOrCreate(field)] = new JSString(v.ToString()); // ToString → triggers toString
+        }
+
+        void CopyRaw(string field)
+        {
+            var v = rel[KeyStrings.GetOrCreate(field)];
+            if (v != null && !v.IsUndefined) snapshot[KeyStrings.GetOrCreate(field)] = v;
+        }
+
+        // calendar is read first (GetTemporalCalendarIdentifierWithISODefault), then the merged
+        // date / time / offset / timeZone fields in alphabetical order.
+        CopyRaw("calendar");
+        CopyNumber("day");
+        CopyNumber("hour");
+        CopyNumber("microsecond");
+        CopyNumber("millisecond");
+        CopyNumber("minute");
+        CopyNumber("month");
+        CopyString("monthCode");
+        CopyNumber("nanosecond");
+        CopyString("offset");
+        CopyNumber("second");
+        CopyRaw("timeZone");
+        CopyNumber("year");
+
+        return snapshot;
+    }
+
     // The end of this duration measured from relativeTo, on the nanosecond timeline (epoch days × a
     // 24-hour day plus the time components), and relativeTo's own start in the same units.
     private (BigInteger endNs, BigInteger startNs, long startEpoch) RelativeEndpoints(JSTemporalPlainDate r)
@@ -439,6 +524,20 @@ public partial class JSTemporalDuration
         if (smallestUnit is "year" or "month")
         {
             var roundedUnits = (long)NudgeCalendarUnit(r, endNs, startNs, smallestUnit == "year", increment, roundingMode);
+
+            // When the largest and smallest unit coincide, the rounded duration is exactly
+            // `roundedUnits` of that unit. Re-deriving it via AddCalendarDate + DiffCalendarDate
+            // would reintroduce the calendar's add/subtract asymmetry around month-end clamping
+            // and lose the rounded value: with relativeTo 1970-07-31, 1970-07-31 + 2 months clamps
+            // to 1970-09-30, yet until(1970-07-31 → 1970-09-30) is 1 month 30 days, so rounding
+            // 1m30d to whole months (increment 2) would come back out as 1m30d instead of 2m.
+            if (largestUnit == smallestUnit)
+            {
+                return smallestUnit == "year"
+                    ? new JSTemporalDuration(roundedUnits, 0, 0, 0, 0, 0, 0, 0, 0, 0, DurationPrototype)
+                    : new JSTemporalDuration(0, roundedUnits, 0, 0, 0, 0, 0, 0, 0, 0, DurationPrototype);
+            }
+
             var (ny, nm, nd) = smallestUnit == "year"
                 ? JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, roundedUnits, 0, 0, 0)
                 : JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, 0, roundedUnits, 0, 0);

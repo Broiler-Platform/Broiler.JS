@@ -88,7 +88,9 @@ internal static class TemporalNonIso
     internal static (int y, int m, int d) YearMonthToIso(JSObject obj, string calendarId, string overflow, string typeName)
     {
         var (year, month) = ResolveYearMonth(obj, calendarId, overflow, typeName);
-        return RegulateToIso(calendarId, year, month, 1, overflow);
+        // A PlainYearMonth is bounded by ISOYearMonthWithinLimits (year/month), validated by the
+        // caller; its day-1 reference may sit a few days past the ISO date boundary.
+        return RegulateToIso(calendarId, year, month, 1, overflow, enforceIsoDateRange: false);
     }
 
     // ── Temporal.PlainMonthDay reference-date resolution (non-Gregorian calendars) ──
@@ -352,7 +354,13 @@ internal static class TemporalNonIso
     }
 
     // Constrains/validates a (year, month, day) in a non-Gregorian calendar and returns it as ISO.
-    internal static (int y, int m, int d) RegulateToIso(string calendarId, int year, int month, int day, string overflow)
+    // `enforceIsoDateRange` rejects a result outside the representable ISO *date* range
+    // (the limit for a PlainDate, whose day matters). A PlainYearMonth is bounded instead
+    // by ISOYearMonthWithinLimits — year/month only — so its reference day-1 conversion may
+    // legitimately land a few days past the boundary date (e.g. the first day of a calendar's
+    // maximum month falling in +275760-09 after the 13th); such callers pass false and let the
+    // year-month limit decide.
+    internal static (int y, int m, int d) RegulateToIso(string calendarId, int year, int month, int day, string overflow, bool enforceIsoDateRange = true)
     {
         var monthsInYear = TemporalCalendarMath.MonthsInYear(calendarId, year);
         if (overflow == "reject")
@@ -367,7 +375,7 @@ internal static class TemporalNonIso
         }
 
         var epoch = TemporalCalendarMath.EpochDaysFromYmd(calendarId, year, month, day);
-        if (epoch < MinEpochDays || epoch > MaxEpochDays)
+        if (enforceIsoDateRange && (epoch < MinEpochDays || epoch > MaxEpochDays))
             throw JSEngine.NewRangeError("Temporal: date is out of range");
 
         var (iy, im, id) = CivilFromDays(epoch);

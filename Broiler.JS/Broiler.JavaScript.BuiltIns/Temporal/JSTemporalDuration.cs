@@ -476,51 +476,97 @@ public partial class JSTemporalDuration : JSObject
         if (sign < 0) sb.Append('-');
         sb.Append('P');
 
-        void DatePart(double v, char unit)
+        void DatePart(BigInteger v, char unit)
         {
-            if (v != 0) sb.Append(Math.Abs(v).ToString("0", CultureInfo.InvariantCulture)).Append(unit);
+            if (!v.IsZero) sb.Append(v.ToString(CultureInfo.InvariantCulture)).Append(unit);
         }
 
-        DatePart(years, 'Y');
-        DatePart(months, 'M');
-        DatePart(weeks, 'W');
-        DatePart(days, 'D');
+        var absDays = new BigInteger(Math.Abs(days));
 
-        // Combine the whole-seconds and sub-second components into a single nanosecond magnitude,
-        // then round it to the requested precision (applying the sign so ceil/floor behave).
-        var totalSecondsNs = new BigInteger(Math.Abs(seconds)) * 1_000_000_000
+        // The whole-seconds and sub-second components combined into a nanosecond magnitude.
+        var secondsNs = new BigInteger(Math.Abs(seconds)) * 1_000_000_000
             + new BigInteger(Math.Abs(milliseconds)) * 1_000_000
             + new BigInteger(Math.Abs(microseconds)) * 1_000
             + new BigInteger(Math.Abs(nanoseconds));
 
+        BigInteger hoursOut = new(Math.Abs(hours));
+        BigInteger minutesOut = new(Math.Abs(minutes));
+        BigInteger wholeSeconds = secondsNs / 1_000_000_000;
+        var fraction = (long)(secondsNs % 1_000_000_000);
+        var daysOut = absDays;
+
         if (incrementNs > 1)
         {
-            var signed = sign < 0 ? -totalSecondsNs : totalSecondsNs;
+            // Round the WHOLE time portion (hours + minutes + seconds + sub-seconds) to the
+            // requested precision, then balance the result back up to (at most) the
+            // duration's largest unit, floored at "second" — TemporalDurationToString uses
+            // roundedLargestUnit = LargerOfTwoTemporalUnits(DefaultTemporalLargestUnit, "second").
+            // So rounding can cross unit boundaries: seconds into minutes/hours and, when the
+            // largest unit is day or larger, into days — but never up into weeks/months/years.
+            var timeNs = hoursOut * 3_600_000_000_000
+                + minutesOut * 60_000_000_000
+                + secondsNs;
+
+            var signed = sign < 0 ? -timeNs : timeNs;
             signed = TemporalRoundingOptions.RoundToIncrement(signed, incrementNs, roundingMode);
-            totalSecondsNs = BigInteger.Abs(signed);
+            timeNs = BigInteger.Abs(signed);
 
             // TemporalDurationFromInternal: the rounded duration must still be valid — rounding the
-            // seconds up (ceil/expand) can push the total elapsed time to/over the 2^53-second limit.
-            var roundedTimeNs = new BigInteger(Math.Abs(days)) * 86_400_000_000_000
-                + new BigInteger(Math.Abs(hours)) * 3_600_000_000_000
-                + new BigInteger(Math.Abs(minutes)) * 60_000_000_000
-                + totalSecondsNs;
+            // time up (ceil/expand) can push the total elapsed time to/over the 2^53-second limit.
+            var roundedTimeNs = absDays * 86_400_000_000_000 + timeNs;
             if (roundedTimeNs >= (BigInteger)9007199254740992d * 1_000_000_000)
                 throw JSEngine.NewRangeError("Temporal.Duration: rounded duration is out of range");
+
+            fraction = (long)(timeNs % 1_000_000_000);
+            var totalSeconds = timeNs / 1_000_000_000;
+
+            // cap = the rank of LargerOfTwoTemporalUnits(DefaultTemporalLargestUnit, "second").
+            // Ranks: day=6, hour=5, minute=4, second(+finer)=3.
+            var cap = Math.Max(DefaultLargestUnitRank(), 3);
+            if (cap >= 6) // day or larger: time balances all the way into days
+            {
+                wholeSeconds = totalSeconds % 60;
+                var totalMinutes = totalSeconds / 60;
+                minutesOut = totalMinutes % 60;
+                var totalHours = totalMinutes / 60;
+                hoursOut = totalHours % 24;
+                daysOut = absDays + totalHours / 24;
+            }
+            else if (cap == 5) // hour: balance up to (uncapped) hours
+            {
+                wholeSeconds = totalSeconds % 60;
+                var totalMinutes = totalSeconds / 60;
+                minutesOut = totalMinutes % 60;
+                hoursOut = totalMinutes / 60;
+            }
+            else if (cap == 4) // minute: balance up to (uncapped) minutes
+            {
+                wholeSeconds = totalSeconds % 60;
+                minutesOut = totalSeconds / 60;
+                hoursOut = BigInteger.Zero;
+            }
+            else // second or finer: seconds stay as a single (possibly >= 60) value
+            {
+                wholeSeconds = totalSeconds;
+                minutesOut = BigInteger.Zero;
+                hoursOut = BigInteger.Zero;
+            }
         }
 
-        var wholeSeconds = totalSecondsNs / 1_000_000_000;
-        var fraction = (long)(totalSecondsNs % 1_000_000_000);
+        DatePart(new BigInteger(Math.Abs(years)), 'Y');
+        DatePart(new BigInteger(Math.Abs(months)), 'M');
+        DatePart(new BigInteger(Math.Abs(weeks)), 'W');
+        DatePart(daysOut, 'D');
 
         // With a fixed precision the seconds field is always emitted; with auto it appears only
         // when nonzero.
-        var showSeconds = wholeSeconds != 0 || fraction != 0 || precision >= 0;
-        var hasTime = hours != 0 || minutes != 0 || showSeconds;
+        var showSeconds = !wholeSeconds.IsZero || fraction != 0 || precision >= 0;
+        var hasTime = !hoursOut.IsZero || !minutesOut.IsZero || showSeconds;
         if (hasTime)
         {
             sb.Append('T');
-            if (hours != 0) sb.Append(Math.Abs(hours).ToString("0", CultureInfo.InvariantCulture)).Append('H');
-            if (minutes != 0) sb.Append(Math.Abs(minutes).ToString("0", CultureInfo.InvariantCulture)).Append('M');
+            if (!hoursOut.IsZero) sb.Append(hoursOut.ToString(CultureInfo.InvariantCulture)).Append('H');
+            if (!minutesOut.IsZero) sb.Append(minutesOut.ToString(CultureInfo.InvariantCulture)).Append('M');
             if (showSeconds)
             {
                 sb.Append(wholeSeconds.ToString(CultureInfo.InvariantCulture));
@@ -534,5 +580,21 @@ public partial class JSTemporalDuration : JSObject
             sb.Append("T0S");
 
         return sb.ToString();
+    }
+
+    // DefaultTemporalLargestUnit rank: the largest unit with a nonzero value.
+    // year=9, month=8, week=7, day=6, hour=5, minute=4, second=3, ms=2, us=1, ns=0.
+    private int DefaultLargestUnitRank()
+    {
+        if (years != 0) return 9;
+        if (months != 0) return 8;
+        if (weeks != 0) return 7;
+        if (days != 0) return 6;
+        if (hours != 0) return 5;
+        if (minutes != 0) return 4;
+        if (seconds != 0) return 3;
+        if (milliseconds != 0) return 2;
+        if (microseconds != 0) return 1;
+        return 0;
     }
 }
