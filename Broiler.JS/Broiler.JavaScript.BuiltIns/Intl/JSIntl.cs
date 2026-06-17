@@ -4226,6 +4226,12 @@ public class JSIntlNumberFormat : JSObject
             }
             if (!@this.options[unitKey].IsUndefined)
                 result.CreateDataProperty(unitKey, @this.options[unitKey]);
+            // unitDisplay sits with unit in the resolvedOptions table — before the digit
+            // options — and is reflected only when style is "unit" (resolved.UnitDisplay
+            // is null otherwise).
+            if (@this.resolved?.UnitDisplay != null)
+                result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"),
+                    JSValue.CreateString(@this.resolved.UnitDisplay));
             // Digit options reflect the construction-time snapshot (read once),
             // not the live options bag, so resolvedOptions does not re-trigger
             // option getters.
@@ -4274,19 +4280,19 @@ public class JSIntlNumberFormat : JSObject
             result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"), JSValue.CreateString("auto"));
         }
 
-        // notation/signDisplay always have a resolved value; compactDisplay and
-        // unitDisplay are reflected only when their slot exists. These are read
-        // from the slots resolved at construction (not the live options object)
-        // so getter side effects observe construction-time order, not access.
+        // notation/signDisplay always have a resolved value; compactDisplay is
+        // reflected only when notation is "compact". Per the resolvedOptions table
+        // compactDisplay precedes signDisplay (test262 NumberFormat
+        // resolvedOptions/return-keys-order-default). These are read from the slots
+        // resolved at construction (not the live options object) so getter side
+        // effects observe construction-time order, not access.
         var r = @this.resolved;
         if (r != null)
         {
             result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), JSValue.CreateString(r.Notation));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("signDisplay"), JSValue.CreateString(r.SignDisplay));
             if (r.CompactDisplay != null)
                 result.CreateDataProperty(KeyStrings.GetOrCreate("compactDisplay"), JSValue.CreateString(r.CompactDisplay));
-            if (r.UnitDisplay != null)
-                result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"), JSValue.CreateString(r.UnitDisplay));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("signDisplay"), JSValue.CreateString(r.SignDisplay));
 
             // SetNumberFormatDigitOptions rounding slots are always present (spec order:
             // after notation/compactDisplay/signDisplay).
