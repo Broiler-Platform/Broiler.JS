@@ -1151,6 +1151,37 @@ public static class JSIntl
         var roundingPriority = GetOption(options, RoundingPriorityKey, ["auto", "morePrecision", "lessPrecision"], false, "auto");
         var trailingZeroDisplay = GetOption(options, TrailingZeroDisplayKey, ["auto", "stripIfInteger"], false, "auto");
 
+        // SetNumberFormatDigitOptions: when roundingIncrement ≠ 1 the rounding strategy must be
+        // fraction-digits — not significant-digits, nor a morePrecision/lessPrecision priority (a
+        // TypeError) — and the resolved maximum and minimum fraction digits must be equal (a RangeError).
+        if (roundingIncrement != 1)
+        {
+            int? Frac(string name)
+            {
+                var v = digitOptions?[KeyStrings.GetOrCreate(name)];
+                return v == null || v.IsUndefined ? null : (int)v.DoubleValue;
+            }
+            var hasSignificant = Frac("minimumSignificantDigits") != null || Frac("maximumSignificantDigits") != null;
+            if (roundingPriority != "auto" || hasSignificant)
+                throw JSEngine.NewTypeError(
+                    "roundingIncrement may only be used with fractionDigits rounding (roundingPriority \"auto\" and no significant-digit options)");
+
+            // ri ≠ 1 forces the default maximum fraction digits down to the default minimum, so an
+            // unspecified pair resolves equal; an explicitly mismatched pair is a RangeError.
+            var mnfdDefault = (style ?? "decimal") == "currency" ? 2 : 0;
+            var mnfd = Frac("minimumFractionDigits");
+            var mxfd = Frac("maximumFractionDigits");
+            int rmin, rmax;
+            if (mnfd == null && mxfd == null) { rmin = rmax = mnfdDefault; }
+            else
+            {
+                rmin = mnfd ?? Math.Min(mnfdDefault, mxfd.Value);
+                rmax = mxfd ?? Math.Max(mnfdDefault, mnfd.Value);
+            }
+            if (rmax != rmin)
+                throw JSEngine.NewRangeError("maximumFractionDigits is not equal to minimumFractionDigits");
+        }
+
         return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay)
         {
             DigitOptions = digitOptions,
@@ -1187,7 +1218,7 @@ public static class JSIntl
     // them as plain data properties, so subsequent reads observe construction-time
     // values without re-triggering option getters. Absent options are left out so
     // callers apply their own (style-dependent) defaults.
-    private static JSObject SnapshotDigitOptions(JSObject options)
+    internal static JSObject SnapshotDigitOptions(JSObject options)
     {
         if (options == null)
             return null;
@@ -3153,6 +3184,8 @@ public sealed class JSIntlPluralRules : JSObject
 {
     private readonly string locale;
     private readonly string type;
+    private readonly string notation;
+    private readonly JSObject digitOptions;
 
     public JSIntlPluralRules(in Arguments a) : base(CurrentPrototype())
     {
@@ -3160,6 +3193,11 @@ public sealed class JSIntlPluralRules : JSObject
         locale = JSIntl.ResolveLocale(a.Get1());
         var typeKey = KeyStrings.GetOrCreate("type");
         type = options is null || options[typeKey].IsUndefined ? "cardinal" : options[typeKey].StringValue;
+        // notation precedes the digit options (SetNumberFormatDigitOptions) and is reported by
+        // resolvedOptions; the digit options are snapshotted once at construction.
+        notation = JSIntl.GetOption(options, KeyStrings.GetOrCreate("notation"),
+            ["standard", "scientific", "engineering", "compact"], false, "standard");
+        digitOptions = JSIntl.SnapshotDigitOptions(options);
     }
 
     private static JSObject CurrentPrototype()
@@ -3178,16 +3216,37 @@ public sealed class JSIntlPluralRules : JSObject
         if (a.This is not JSIntlPluralRules @this)
             throw JSEngine.NewTypeError("Intl.PluralRules.prototype.resolvedOptions called on incompatible receiver");
 
+        var digits = @this.digitOptions;
+        JSValue Digit(string name, int fallback)
+        {
+            var v = digits?[KeyStrings.GetOrCreate(name)];
+            return v == null || v.IsUndefined ? JSValue.CreateNumber(fallback) : v;
+        }
+        bool HasDigit(string name) => digits != null && !digits[KeyStrings.GetOrCreate(name)].IsUndefined;
+
+        // Spec resolvedOptions order: locale, type, notation, minimumIntegerDigits, then the
+        // fraction-digit or significant-digit pair (significant digits override when supplied),
+        // then pluralCategories.
         var result = new JSObject();
         result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
         result.CreateDataProperty(KeyStrings.GetOrCreate("type"), JSValue.CreateString(@this.type));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), JSValue.CreateNumber(1));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), JSValue.CreateNumber(0));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), JSValue.CreateNumber(0));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), JSValue.CreateString(@this.notation));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), Digit("minimumIntegerDigits", 1));
+
+        if (HasDigit("minimumSignificantDigits") || HasDigit("maximumSignificantDigits"))
+        {
+            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumSignificantDigits"), Digit("minimumSignificantDigits", 1));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumSignificantDigits"), Digit("maximumSignificantDigits", 21));
+        }
+        else
+        {
+            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), Digit("minimumFractionDigits", 0));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), Digit("maximumFractionDigits", 3));
+        }
+
         var pluralCategories = JSValue.CreateArray();
         result.CreateDataProperty(KeyStrings.GetOrCreate("pluralCategories"), pluralCategories);
-        var categories = pluralCategories;
-        if (categories is JSObject array)
+        if (pluralCategories is JSObject array)
         {
             foreach (var category in CldrLocaleData.GetPluralCategories(@this.locale, @this.type))
                 array.AddArrayItem(JSValue.CreateString(category));

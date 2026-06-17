@@ -393,7 +393,10 @@ public partial class JSBigInt : JSPrimitive
 
     public override JSValue RightShift(JSValue value) => new JSBigInt(this.value >> (byte)value.AsBigIntegerOnly());
 
-    public override JSValue UnsignedRightShift(JSValue value) => new JSBigInt(this.value >> (int)value.AsBigIntegerOnly());
+    // BigInt::unsignedRightShift always throws — BigInts are arbitrary-precision and have no fixed
+    // width, so ">>>" is unsupported for any BigInt operand (a TypeError, not a RangeError).
+    public override JSValue UnsignedRightShift(JSValue value)
+        => throw JSEngine.NewTypeError("BigInts have no unsigned right shift, use >> instead");
 
     public override JSValue Multiply(JSValue value) => new JSBigInt(this.value * value.AsBigIntegerOnly());
 
