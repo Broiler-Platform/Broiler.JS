@@ -111,7 +111,7 @@ public static class CharExtensions
         if (codePoint is '$' or '_' or 0x1885 or 0x1886 or 0x2118 or 0x212E or 0x309B or 0x309C)
             return true;
 
-        return char.GetUnicodeCategory(codePoint.FromCodePoint(), 0) switch
+        var isLetter = char.GetUnicodeCategory(codePoint.FromCodePoint(), 0) switch
         {
             UnicodeCategory.UppercaseLetter
             or UnicodeCategory.LowercaseLetter
@@ -121,6 +121,12 @@ public static class CharExtensions
             or UnicodeCategory.LetterNumber => true,
             _ => false,
         };
+
+        // Unicode 17.0.0 (Sept 2025) assigned ID_Start code points that postdate the
+        // Unicode version baked into this runtime's char.GetUnicodeCategory data, so they
+        // come back unassigned above. Recognise them explicitly to keep
+        // §sec-names-and-keywords in step with Unicode 17.0.0.
+        return isLetter || InRanges(UnicodeV17IdStart, codePoint);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -148,7 +154,7 @@ public static class CharExtensions
         if (codePoint >= 0x1369 && codePoint <= 0x1371)
             return true;
 
-        return char.GetUnicodeCategory(codePoint.FromCodePoint(), 0) switch
+        var isPart = char.GetUnicodeCategory(codePoint.FromCodePoint(), 0) switch
         {
             UnicodeCategory.NonSpacingMark
             or UnicodeCategory.SpacingCombiningMark
@@ -156,5 +162,48 @@ public static class CharExtensions
             or UnicodeCategory.ConnectorPunctuation => true,
             _ => false,
         };
+
+        // ID_Continue-only additions in Unicode 17.0.0 — the new combining marks and
+        // digits. (Every new ID_Start char is also ID_Continue and is already covered by
+        // the IsIdentifierStart check above.)
+        return isPart || InRanges(UnicodeV17IdContinueExtra, codePoint);
+    }
+
+    // Unicode 17.0.0 ID_Start / ID_Continue code points not yet known to this runtime's
+    // Unicode category data, as inclusive, sorted ranges. Regenerate from the caniunicode
+    // test262 identifier tests (language/identifiers/{start,part}-unicode-17.0.0.js) when
+    // the runtime's Unicode data advances to 17.0.0 or later, at which point these tables
+    // become redundant and can be dropped.
+    private static readonly (int Lo, int Hi)[] UnicodeV17IdStart =
+    {
+        (0x88F, 0x88F), (0xC5C, 0xC5C), (0xCDC, 0xCDC), (0xA7CE, 0xA7CF), (0xA7D2, 0xA7D2),
+        (0xA7D4, 0xA7D4), (0xA7F1, 0xA7F1), (0x10940, 0x10959), (0x10EC5, 0x10EC7),
+        (0x11DB0, 0x11DDB), (0x16EA0, 0x16EB8), (0x16EBB, 0x16ED3), (0x16FF2, 0x16FF6),
+        (0x187F8, 0x187FF), (0x18D09, 0x18D1E), (0x18D80, 0x18DF2), (0x1E6C0, 0x1E6DE),
+        (0x1E6E0, 0x1E6E2), (0x1E6E4, 0x1E6E5), (0x1E6E7, 0x1E6ED), (0x1E6F0, 0x1E6F4),
+        (0x1E6FE, 0x1E6FF), (0x2B73A, 0x2B73F), (0x2CEA2, 0x2CEAD), (0x323B0, 0x33479),
+    };
+
+    private static readonly (int Lo, int Hi)[] UnicodeV17IdContinueExtra =
+    {
+        (0x1ACF, 0x1ADD), (0x1AE0, 0x1AEB), (0x10EFA, 0x10EFB), (0x11B60, 0x11B67),
+        (0x11DE0, 0x11DE9), (0x1E6E3, 0x1E6E3), (0x1E6E6, 0x1E6E6), (0x1E6EE, 0x1E6EF),
+        (0x1E6F5, 0x1E6F5),
+    };
+
+    private static bool InRanges((int Lo, int Hi)[] ranges, int codePoint)
+    {
+        int lo = 0, hi = ranges.Length - 1;
+        while (lo <= hi)
+        {
+            int mid = (lo + hi) >> 1;
+            if (codePoint < ranges[mid].Lo)
+                hi = mid - 1;
+            else if (codePoint > ranges[mid].Hi)
+                lo = mid + 1;
+            else
+                return true;
+        }
+        return false;
     }
 }

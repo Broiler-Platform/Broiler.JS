@@ -4,6 +4,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 
 // Regression tests for https://github.com/MaiRat/Broiler.JS/issues/820
 //
+// Problems 12-19 — Unicode 17.0.0 identifier support. The lexer classifies identifier
+// start/continue characters via the runtime's char.GetUnicodeCategory, whose Unicode data
+// predates 17.0.0, so code points assigned in 17.0.0 came back unassigned and were
+// rejected ("Unexpected token ..."). CharExtensions now recognises the 17.0.0 ID_Start /
+// ID_Continue additions explicitly. (test262: language/identifiers/{start,part}-
+// unicode-17.0.0{,-escaped,-class,-class-escaped}.js)
+//
 // Problem 1 — Intl.DateTimeFormat.prototype.formatRange / formatRangeToParts must run
 // ToDateTimeFormattable (i.e. ToNumber, observably calling valueOf) on BOTH endpoints,
 // in argument order, before deciding the arguments have different kinds. Broiler used to
@@ -106,4 +113,32 @@ public class Issue820Tests
         => Assert.Equal("0,TypeError",
             RangeOrdering("formatRange",
                 "new Temporal.PlainDate(1970, 1, 1)", "new Temporal.PlainTime()"));
+
+    // ---- Problems 12-19: Unicode 17.0.0 identifiers ----
+
+    // A few representative 17.0.0 ID_Start code points are accepted as identifier names:
+    // U+0C5C (Telugu, BMP), U+10940 (Garay), U+11DB0 (Tolong Siki), U+2B73A (CJK Ext-I).
+    [Theory]
+    [InlineData("౜")]
+    [InlineData("\U00010940")]
+    [InlineData("\U00011DB0")]
+    [InlineData("\U0002B73A")]
+    public void Unicode17IdStartIsAccepted(string ch)
+        => Assert.Equal("42", Eval($"var {ch} = 42; {ch};"));
+
+    // A 17.0.0 ID_Continue-only code point (combining mark U+1ACF) is valid after a start.
+    [Fact]
+    public void Unicode17IdContinueIsAccepted()
+        => Assert.Equal("7", Eval("var a᫏ = 7; a᫏;"));
+
+    // The same character works through a \u{...} escape in the identifier.
+    [Fact]
+    public void Unicode17IdStartViaUnicodeEscape()
+        => Assert.Equal("5", Eval("var \\u{10940} = 5; \\u{10940};"));
+
+    // ...and as a class private name (#name).
+    [Fact]
+    public void Unicode17IdStartInPrivateName()
+        => Assert.Equal("9", Eval(
+            "class C { #౜ = 9; get() { return this.#౜; } } new C().get();"));
 }
