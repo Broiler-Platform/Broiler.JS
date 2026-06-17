@@ -1423,6 +1423,14 @@ public static class JSIntl
             var timeZone = timeZoneValue.StringValue;
             if (timeZone.Contains('\u2212'))
                 throw JSEngine.NewRangeError("Invalid timeZone option");
+            // An offset time-zone identifier (leading + / -) is validated against the ECMA-402
+            // grammar and normalized to \u00b1HH:MM (CreateDateTimeFormat); the normalized form is what
+            // resolvedOptions and the formatter observe. A named IANA zone is left untouched.
+            if (timeZone.Length > 0 && (timeZone[0] == '+' || timeZone[0] == '-')
+                && TryNormalizeOffsetTimeZone(timeZone, out var normalized))
+                options[TimeZoneKey] = JSValue.CreateString(normalized);
+            else if (timeZone.Length > 0 && (timeZone[0] == '+' || timeZone[0] == '-'))
+                throw JSEngine.NewRangeError($"Invalid timeZone option: {timeZone}");
         }
 
         // timeZoneName is constrained to the sanctioned set; any other value
@@ -1440,6 +1448,30 @@ public static class JSIntl
             if (double.IsNaN(digits) || digits < 1 || digits > 3)
                 throw JSEngine.NewRangeError("fractionalSecondDigits value is out of range.");
         }
+    }
+
+    // An offset time-zone identifier: a sign, two-digit hour and an optional two-digit minute, with
+    // either a colon or no separator (±HH, ±HHMM, ±HH:MM). No seconds or fractional component is
+    // accepted (CreateDateTimeFormat's IsTimeZoneOffsetString is stricter than Temporal's).
+    private static readonly Regex OffsetTimeZonePattern =
+        new(@"^([+-])(\d{2})(?::?(\d{2}))?$", RegexOptions.CultureInvariant);
+
+    // Validates and normalizes an offset time-zone identifier to ±HH:MM. Hours are 00-23 and minutes
+    // 00-59; a zero offset always normalizes with a "+" sign (so "-00" / "-00:00" → "+00:00"). Returns
+    // false for any string that is not a well-formed offset.
+    private static bool TryNormalizeOffsetTimeZone(string timeZone, out string normalized)
+    {
+        normalized = null;
+        var m = OffsetTimeZonePattern.Match(timeZone);
+        if (!m.Success)
+            return false;
+        var hours = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+        var minutes = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
+        if (hours > 23 || minutes > 59)
+            return false;
+        var sign = (hours == 0 && minutes == 0) ? "+" : m.Groups[1].Value;
+        normalized = $"{sign}{hours:D2}:{minutes:D2}";
+        return true;
     }
 
     private static void ObserveOptions(JSObject options, params KeyString[] keys)
