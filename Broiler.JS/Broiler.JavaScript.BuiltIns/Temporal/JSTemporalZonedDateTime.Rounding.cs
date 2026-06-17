@@ -367,7 +367,15 @@ public partial class JSTemporalZonedDateTime
         long years, long months, long weeks, long days)
     {
         var (ny, nm, nd) = AddISODate(o.y, o.mo, o.d, years, months, weeks, days, "constrain");
-        return EpochNsForLocal(ny, nm, nd, o.h, o.mi, o.s, o.ms, o.us, o.ns);
+        var result = EpochNsForLocal(ny, nm, nd, o.h, o.mi, o.s, o.ms, o.us, o.ns);
+        // A nudge-window boundary (e.g. the next-day start used to measure a calendar/day
+        // unit) is the result of AddZonedDateTime and must be a representable instant. A
+        // relativeTo within one day of the maximum instant pushes the following day's
+        // boundary past nsMaxInstant, which is a RangeError (test262 total/relativeto-date-limits:
+        // +275760-09-12T00:00:01+00:00[UTC] is out of range because the next day overflows).
+        if (!IsValid(result))
+            throw JSEngine.NewRangeError("Temporal.Duration: relativeTo is out of range");
+        return result;
     }
 
     // ── rounding-mode helpers ───────────────────────────────────────────────────

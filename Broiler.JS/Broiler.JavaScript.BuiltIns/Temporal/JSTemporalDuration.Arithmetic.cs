@@ -169,6 +169,16 @@ public partial class JSTemporalDuration
         if (largestUnit == "auto")
             largestUnit = MaxUnit(DefaultLargestUnit(), smallestUnit);
 
+        // Rounding to weeks cannot retain a coarser calendar unit: a month/year is not a
+        // whole number of weeks, so a result mixing them is unrepresentable. When the
+        // smallest unit is "week" the largest unit must be "week" too — if it defaulted to
+        // (or was given as) "year"/"month" because the duration carries those units, the
+        // caller must pass largestUnit explicitly (test262 round/balances-up-to-weeks:
+        // "largestUnit must be included").
+        if (smallestUnit == "week" && UnitIndex(largestUnit) < UnitIndex("week"))
+            throw JSEngine.NewRangeError(
+                "Temporal.Duration.prototype.round to weeks requires largestUnit \"week\" when the duration has years or months");
+
         // A time-unit smallestUnit caps the rounding increment at the number of those units in the
         // next-larger unit, and the increment must divide it evenly. This validation is independent
         // of the calendar/relativeTo machinery, so run it up front — a bad increment is a RangeError
@@ -439,6 +449,20 @@ public partial class JSTemporalDuration
         if (smallestUnit is "year" or "month")
         {
             var roundedUnits = (long)NudgeCalendarUnit(r, endNs, startNs, smallestUnit == "year", increment, roundingMode);
+
+            // When the largest and smallest unit coincide, the rounded duration is exactly
+            // `roundedUnits` of that unit. Re-deriving it via AddCalendarDate + DiffCalendarDate
+            // would reintroduce the calendar's add/subtract asymmetry around month-end clamping
+            // and lose the rounded value: with relativeTo 1970-07-31, 1970-07-31 + 2 months clamps
+            // to 1970-09-30, yet until(1970-07-31 → 1970-09-30) is 1 month 30 days, so rounding
+            // 1m30d to whole months (increment 2) would come back out as 1m30d instead of 2m.
+            if (largestUnit == smallestUnit)
+            {
+                return smallestUnit == "year"
+                    ? new JSTemporalDuration(roundedUnits, 0, 0, 0, 0, 0, 0, 0, 0, 0, DurationPrototype)
+                    : new JSTemporalDuration(0, roundedUnits, 0, 0, 0, 0, 0, 0, 0, 0, DurationPrototype);
+            }
+
             var (ny, nm, nd) = smallestUnit == "year"
                 ? JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, roundedUnits, 0, 0, 0)
                 : JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, 0, roundedUnits, 0, 0);
