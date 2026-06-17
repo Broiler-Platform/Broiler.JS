@@ -148,6 +148,11 @@ public partial class JSIteratorObject : JSObject
             _started = true;
             if (!_done && _enumerator != null && _enumerator.MoveNext(out var value))
                 return IteratorResult(value, false);
+
+            // The source is exhausted: latch the completed state so a later next() returns done
+            // immediately without re-pulling the underlying iterator (an Iterator Helper that has
+            // returned done never calls the source again — test262 sm/Iterator lazy-methods-proxy-accesses).
+            _done = true;
         }
         finally
         {

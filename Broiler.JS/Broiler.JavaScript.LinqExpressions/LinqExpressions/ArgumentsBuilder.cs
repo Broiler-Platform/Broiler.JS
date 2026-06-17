@@ -42,7 +42,7 @@ public class ArgumentsBuilder
 
     public static Expression NewEmpty(Expression @this) => Expression.New(_New0, @this);
 
-    public static Expression New(Expression @this, Expression arg0, Expression arg2) => Expression.New(_New1, @this, arg0, arg2);
+    public static Expression New(Expression @this, Expression arg0, Expression arg1) => Expression.New(_New2, @this, arg0, arg1);
 
     public static Expression Spread(Expression @this, IFastEnumerable<Expression> args) => Expression.Call(null, _spread, @this, Expression.NewArrayInit(typeof(JSValue), args));
 

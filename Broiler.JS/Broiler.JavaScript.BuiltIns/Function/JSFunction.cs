@@ -78,6 +78,11 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public bool IsOrdinaryUserFunction { get; set; }
     public JSObject[] CapturedWithObjects { get; set; }
 
+    // The `with`-fallback lexical overlays captured when this function was created inside a `with`
+    // block, re-established on invocation so a name the with-object lacks (or @@unscopables blocks)
+    // still falls through to the enclosing lexical binding (test262 sm/.../unscopables-closures).
+    public (JSVariable[] Variables, JSVariable[] Shadowed)[] CapturedWithFallbackScopes { get; set; }
+
     /// <summary>
     /// True for ordinary non-strict, non-arrow functions that expose the legacy
     /// <c>caller</c>/<c>arguments</c> own data properties. Such functions get
@@ -91,7 +96,11 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public static JSValue CaptureWithScopes(JSValue functionValue)
     {
         if (functionValue is JSFunction function)
-            function.CapturedWithObjects = (JSEngine.Current as JSContext)?.CaptureWithScopes();
+        {
+            var context = JSEngine.Current as JSContext;
+            function.CapturedWithObjects = context?.CaptureWithScopes();
+            function.CapturedWithFallbackScopes = context?.CaptureWithFallbackScopes();
+        }
 
         return functionValue;
     }
@@ -492,6 +501,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             "1",
             StringComparison.Ordinal);
         using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
+        using var withFallback = context?.PushWithFallbackScopes(CapturedWithFallbackScopes);
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
 
         // Track the executing function across [[Construct]] just as [[Call]] does,
@@ -589,6 +599,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             "1",
             StringComparison.Ordinal);
         using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
+        using var withFallback = context?.PushWithFallbackScopes(CapturedWithFallbackScopes);
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
         JSValue r;
         try
@@ -632,6 +643,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                         "1",
                         StringComparison.Ordinal);
                     using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
+                    using var withFallback = context?.PushWithFallbackScopes(current.CapturedWithFallbackScopes);
                     using var withScope = context?.PushWithScopes(current.CapturedWithObjects);
                     try
                     {

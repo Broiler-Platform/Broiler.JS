@@ -134,6 +134,13 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     {
         public YParameterExpression Variable { get; internal set; }
         public YExpression Expression { get; internal set; }
+
+        // A distinct expression for a *read* of this binding when it differs from the
+        // assignable <see cref="Expression"/> used for writes. Used for an eval-introduced global
+        // `var`, whose read must throw a ReferenceError once the binding is deleted (a method call
+        // that cannot serve as an assignment lvalue). Null means reads use <see cref="Expression"/>.
+        // Only consulted for a throwing read; `typeof` keeps the non-throwing Expression.
+        public YExpression ReadExpression { get; internal set; }
         public string Name { get; internal set; }
         public bool Create { get; internal set; }
 

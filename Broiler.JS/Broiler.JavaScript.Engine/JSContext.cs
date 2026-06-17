@@ -322,6 +322,22 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             return false;
         }
 
+        // The overlaid bindings and the function-owned (shadowed) subset, so a closure created
+        // inside a `with` can re-establish this lexical fallback when it is invoked later.
+        public (JSVariable[] Variables, JSVariable[] Shadowed) SnapshotBindings()
+        {
+            var variables = new JSVariable[entries.Count];
+            var shadowed = new List<JSVariable>();
+            for (var i = 0; i < entries.Count; i++)
+            {
+                variables[i] = entries[i].OverlayVariable;
+                if (entries[i].Shadowed)
+                    shadowed.Add(entries[i].OverlayVariable);
+            }
+
+            return (variables, shadowed.Count == 0 ? System.Array.Empty<JSVariable>() : [.. shadowed]);
+        }
+
         public bool TryGetOverlayShadowing(in KeyString name, out bool isShadowing)
         {
             foreach (var entry in entries)
@@ -387,9 +403,14 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 if (entry.Shadowed)
                     continue;
 
-                if (entry.HadOwnProperty)
-                    context.SetOwnPropertyValue(entry.Name, entry.PreviousValue);
-                else
+                // When the name already had a live global-object property, that property
+                // is its true store: the eval read, wrote, or deleted it directly, so leave
+                // it exactly as the eval left it (mirroring the HadPreviousVariable branch
+                // above). Restoring the pre-overlay value here would revert a legitimate
+                // global mutation and resurrect a binding the eval explicitly deleted
+                // (test262 staging/sm/eval/exhaustive-global-*). Only a property the overlay
+                // itself transiently published (no prior property) is removed.
+                if (!entry.HadOwnProperty)
                     context.Delete(entry.Name);
             }
 
@@ -690,6 +711,23 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return new DirectEvalLexicalBindingScope(this, names);
     }
 
+    /// <summary>
+    /// Registers a top-level script <c>let</c>/<c>const</c>/class binding into the global lexical
+    /// environment: it becomes resolvable by name (including from a later indirect eval, which
+    /// evaluates in the global environment) but, unlike a <c>var</c>, never becomes a property of
+    /// the global object. The binding may still be in its temporal dead zone, in which case reads
+    /// through it throw until the declaration initializes it. Eval programs scope their own lexical
+    /// bindings to the eval, so only the top-level script publishes here.
+    /// </summary>
+    public void DeclareGlobalLexical(JSVariable variable)
+    {
+        if (variable == null || variable.Name.IsEmpty)
+            return;
+
+        KeyString name = variable.Name;
+        globalVars.Put(name.Key) = variable;
+    }
+
     public JSValue Register(JSVariable variable)
     {
         KeyString name = variable.Name;
@@ -917,6 +955,45 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return new CompositeWithScope(this, values);
     }
 
+    // Snapshots the active `with`-fallback lexical overlays (outermost first) so a closure created
+    // inside a `with` can re-establish them when invoked. They let a name that the with-object
+    // lacks — or that @@unscopables blocks — fall through to the enclosing lexical binding (e.g. a
+    // parameter), which would otherwise be unreachable once the `with` body has exited.
+    public (JSVariable[] Variables, JSVariable[] Shadowed)[] CaptureWithFallbackScopes()
+    {
+        List<(JSVariable[], JSVariable[])> captured = null;
+        foreach (var scope in activeDirectEvalScopes)
+        {
+            if (!scope.IsWithFallback)
+                continue;
+
+            (captured ??= []).Add(scope.SnapshotBindings());
+        }
+
+        return captured?.ToArray();
+    }
+
+    public IDisposable PushWithFallbackScopes((JSVariable[] Variables, JSVariable[] Shadowed)[] captured)
+    {
+        if (captured == null || captured.Length == 0)
+            return null;
+
+        var scopes = new IDisposable[captured.Length];
+        for (var i = 0; i < captured.Length; i++)
+            scopes[i] = PushWithFallbackScope(captured[i].Variables, captured[i].Shadowed);
+
+        return new CompositeDisposable(scopes);
+    }
+
+    private sealed class CompositeDisposable(IDisposable[] scopes) : IDisposable
+    {
+        public void Dispose()
+        {
+            for (var i = scopes.Length - 1; i >= 0; i--)
+                scopes[i]?.Dispose();
+        }
+    }
+
     private sealed class CompositeWithScope : IDisposable
     {
         private readonly IDisposable[] scopes;
@@ -989,6 +1066,36 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
         if (!GetInternalProperty(name).IsEmpty)
             return this[name];
+
+        throw JSEngine.NewReferenceError($"{name} is not defined");
+    }
+
+    /// <summary>
+    /// Read of an eval-introduced global <c>var</c>. Like <see cref="ResolveIdentifier"/> but,
+    /// after any <c>with</c> object / direct-eval overlay, it consults the live global-object
+    /// property BEFORE the <see cref="globalVars"/> mirror: an eval var assignment writes the
+    /// property, so the property is the authoritative value while the mirror may be a stale
+    /// snapshot of an enclosing same-named binding. Throws a ReferenceError once the (configurable)
+    /// binding has been deleted from both.
+    /// </summary>
+    public JSValue ResolveGlobalVarRead(in KeyString name)
+    {
+        if (TryResolveWithObject(name, out var withObject))
+        {
+            if (!withObject.HasProperty(name.ToJSValue()).BooleanValue)
+                throw JSEngine.NewReferenceError($"{name} is not defined");
+
+            return withObject[name];
+        }
+
+        if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
+            return directEvalBinding.GetValue();
+
+        if (!GetInternalProperty(name).IsEmpty)
+            return this[name];
+
+        if (globalVars.TryGetValue(name.Key, out var variable))
+            return variable.Value;
 
         throw JSEngine.NewReferenceError($"{name} is not defined");
     }

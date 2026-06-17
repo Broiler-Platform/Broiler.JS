@@ -174,15 +174,13 @@ public partial class JSTemporalDuration
         if (largestUnit == "auto")
             largestUnit = MaxUnit(DefaultLargestUnit(), smallestUnit);
 
-        // Rounding to weeks cannot retain a coarser calendar unit: a month/year is not a
-        // whole number of weeks, so a result mixing them is unrepresentable. When the
-        // smallest unit is "week" the largest unit must be "week" too — if it defaulted to
-        // (or was given as) "year"/"month" because the duration carries those units, the
-        // caller must pass largestUnit explicitly (test262 round/balances-up-to-weeks:
-        // "largestUnit must be included").
-        if (smallestUnit == "week" && UnitIndex(largestUnit) < UnitIndex("week"))
+        // largestUnit may not be a finer unit than smallestUnit — the result cannot carry a unit
+        // smaller than the one we round to. A defaulted largestUnit is always >= smallestUnit, so
+        // this only rejects an explicit largestUnit finer than smallestUnit (a larger UnitIndex is
+        // a finer unit).
+        if (UnitIndex(largestUnit) > UnitIndex(smallestUnit))
             throw JSEngine.NewRangeError(
-                "Temporal.Duration.prototype.round to weeks requires largestUnit \"week\" when the duration has years or months");
+                $"Temporal.Duration.prototype.round: largestUnit \"{largestUnit}\" cannot be smaller than smallestUnit \"{smallestUnit}\"");
 
         // A time-unit smallestUnit caps the rounding increment at the number of those units in the
         // next-larger unit, and the increment must divide it evenly. This validation is independent
@@ -198,6 +196,17 @@ public partial class JSTemporalDuration
             };
             TemporalRoundingOptions.ValidateRoundingIncrement((long)increment, maxIncrement, inclusive: false);
         }
+
+        // A calendar smallestUnit (year/month/week/day) may only be rounded to an increment > 1
+        // when the whole result is expressed in that unit: a coarser largestUnit would otherwise
+        // have to carry the rounding remainder in a different, non-commensurable unit (a month is
+        // not a whole number of weeks, etc.). This is why e.g. rounding to a 99-week increment with
+        // a year/month duration requires largestUnit "week" explicitly, while the default increment
+        // of 1 rounds freely (test262 round/balances-up-to-weeks, round/roundingmode-*).
+        if (increment > 1 && UnitIndex(smallestUnit) <= UnitIndex("day") && largestUnit != smallestUnit)
+            throw JSEngine.NewRangeError(
+                "Temporal.Duration.prototype.round: a roundingIncrement greater than 1 with a calendar "
+                + "smallestUnit (years, months, weeks, days) requires largestUnit to equal smallestUnit");
 
         var needsCalendar = HasCalendarUnits || UnitIndex(smallestUnit) < UnitIndex("day") || UnitIndex(largestUnit) < UnitIndex("day");
         if (needsCalendar && relZoned == null && relDate == null)
@@ -545,7 +554,28 @@ public partial class JSTemporalDuration
             return new JSTemporalDuration(fy, fmo, fw, fd, 0, 0, 0, 0, 0, 0, DurationPrototype);
         }
 
-        var smallestNs = (smallestUnit == "week" ? 7 * (BigInteger)NanosecondsPerDay : TimeUnitNanoseconds(smallestUnit)) * increment;
+        if (smallestUnit == "week")
+        {
+            // Weeks are rounded, never balanced, against an anchor date that keeps the coarser
+            // calendar units fixed: anchor = relativeTo + (whole years/months toward the end, per
+            // largestUnit). A week is a fixed 7-day span, so the signed nanoseconds from the anchor
+            // to the duration's end round directly to a whole multiple of weeks; the surviving
+            // years/months come from the calendar difference (spec NudgeToCalendarUnit, unit "week").
+            var endEpoch = (long)FloorDivBig(endNs, NanosecondsPerDay);
+            var (ey, em, ed) = JSTemporalPlainDate.DateFromEpochDays(endEpoch);
+            var (diffYears, diffMonths, _, _) =
+                JSTemporalPlainDate.DiffCalendarDate(r.isoYear, r.isoMonth, r.isoDay, ey, em, ed, largestUnit);
+            var anchorYears = (long)diffYears;
+            var anchorMonths = (long)diffMonths;
+            var (ay, amo, ad) =
+                JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, anchorYears, anchorMonths, 0, 0);
+            var anchorNs = (BigInteger)JSTemporalPlainDate.EpochDaysFor(ay, amo, ad) * NanosecondsPerDay;
+            var weekNs = 7 * (BigInteger)NanosecondsPerDay;
+            var roundedWeeks = (long)(RoundToIncrement(endNs - anchorNs, weekNs * increment, roundingMode) / weekNs);
+            return new JSTemporalDuration(anchorYears, anchorMonths, roundedWeeks, 0, 0, 0, 0, 0, 0, 0, DurationPrototype);
+        }
+
+        var smallestNs = TimeUnitNanoseconds(smallestUnit) * increment;
         var roundedNs = RoundToIncrement(endNs - startNs, smallestNs, roundingMode);
 
         if (UnitIndex(largestUnit) <= UnitIndex("week"))
