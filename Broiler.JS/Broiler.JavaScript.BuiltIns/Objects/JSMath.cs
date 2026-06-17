@@ -197,9 +197,32 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         var d = first.DoubleValue;
-        // Math.Cbrt preserves the sign of zero (cbrt(-0) === -0), handles negatives
-        // exactly and propagates ±∞ / NaN.
-        return new JSNumber(Math.Cbrt(d));
+        return new JSNumber(CorrectlyRoundedCbrt(d));
+    }
+
+    // System.Math.Cbrt can be off by one ULP (e.g. Math.Cbrt(27) is
+    // 3.0000000000000004), which breaks perfect-cube landmarks. Choose whichever of
+    // the result and its two neighbours cubes closest to the input. The ±0, ±∞ and
+    // NaN cases are returned as-is (Math.Cbrt already preserves the sign of zero and
+    // propagates non-finite values).
+    private static double CorrectlyRoundedCbrt(double d)
+    {
+        var y = Math.Cbrt(d);
+        if (d == 0.0 || double.IsNaN(d) || double.IsInfinity(d))
+            return y;
+
+        var best = y;
+        var bestErr = Math.Abs(y * y * y - d);
+
+        var lower = Math.BitDecrement(y);
+        var lowerErr = Math.Abs(lower * lower * lower - d);
+        if (lowerErr < bestErr) { best = lower; bestErr = lowerErr; }
+
+        var upper = Math.BitIncrement(y);
+        var upperErr = Math.Abs(upper * upper * upper - d);
+        if (upperErr < bestErr) { best = upper; }
+
+        return best;
     }
 
     [JSExport]
