@@ -45,7 +45,10 @@ public partial class JSProxy : JSObject
     public override bool IsArray => RequireTarget().IsArray;
     public override bool IsFunction => callable;
 
-    public override bool Equals(JSValue value) => target.Equals(value);
+    // A Proxy has its own identity: `===` (SameValueNonNumeric) and `==` compare it by
+    // reference, never by its target — `new Proxy(t, {}) === t` is false and a proxy equals
+    // only itself. Inherit JSObject's Equals/StrictEquals (reference identity, plus trap-aware
+    // primitive coercion for `==`); delegating to the target broke proxy identity comparison.
 
     internal JSObject RequireTarget()
     {
@@ -932,8 +935,6 @@ public partial class JSProxy : JSObject
 
         return keys.GetElementEnumerator();
     }
-
-    public override bool StrictEquals(JSValue value) => RequireTarget().StrictEquals(value);
 
     public override JSValue TypeOf() => callable ? JSConstants.Function : JSConstants.Object;
 

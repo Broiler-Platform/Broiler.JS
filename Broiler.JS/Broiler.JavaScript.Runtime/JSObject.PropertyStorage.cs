@@ -390,7 +390,12 @@ public partial class JSObject
     public override JSValue this[KeyString name]
     {
         get => GetValue(name, this);
-        set => SetValue(name, value, null, IsStrictModeEnabled?.Invoke() == true);
+        // The receiver of an ordinary property write is the object being indexed itself.
+        // For a plain object `receiver ?? this` makes null and `this` equivalent, but a Proxy
+        // forwards the receiver straight to its `set` trap, so a null receiver would surface as
+        // `undefined` there instead of the proxy (test262 sm/Iterator proxy-accesses). Match the
+        // uint indexer and pass `this`.
+        set => SetValue(name, value, this, IsStrictModeEnabled?.Invoke() == true);
     }
 
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
@@ -491,7 +496,9 @@ public partial class JSObject
     public override JSValue this[IJSSymbol name]
     {
         get => GetValue(name, this);
-        set => SetValue(name, value, null, IsStrictModeEnabled?.Invoke() == true);
+        // See the KeyString indexer: pass `this` so a Proxy `set` trap receives the proxy as the
+        // receiver rather than `undefined`.
+        set => SetValue(name, value, this, IsStrictModeEnabled?.Invoke() == true);
     }
 
     public void SetPropertyOrThrow(JSValue key, JSValue value)
