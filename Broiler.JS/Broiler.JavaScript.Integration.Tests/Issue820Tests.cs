@@ -4,6 +4,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 
 // Regression tests for https://github.com/MaiRat/Broiler.JS/issues/820
 //
+// Problem 20 — dynamic import() argument list is an [+In] context. Inside a for-head the
+// `in` operator is suppressed to disambiguate for-in, but the import() arguments are a
+// fresh AssignmentExpression[+In], so `for (import(spec, 'k' in obj); …; …)` must parse.
+// ParseImportCall now restores the [+In] context while reading the arguments. (test262:
+// language/expressions/dynamic-import/import-attributes/2nd-param-in.js)
+//
 // Problem 11 — `for (await using of of [])`. The contextual `of` is a valid
 // BindingIdentifier after `await using` (which unambiguously begins a declaration), so
 // the first `of` binds and the second is the for-of keyword. The parser rejected any
@@ -177,4 +183,24 @@ public class Issue820Tests
             var using, of = [[9], [8], [7]], result = [];
             for (using of of [0, 1, 2]) { result.push(using); }
             result.length + ',' + result[0];").Split(',')[1]);
+
+    // ---- Problem 20: `in` operator inside import() arguments in a for-head ----
+
+    // The `in` in the second import() argument must parse as a binary operator even though
+    // the surrounding for-head otherwise suppresses `in`. Here `'k' in {}` is false, so the
+    // options argument is undefined; the call just has to compile and produce a value.
+    [Fact]
+    public void ImportCallSecondArgAllowsInOperatorInForHead()
+        => Assert.Equal("object", Eval(@"
+            var promise;
+            for (promise = import('./x.js', 'k' in {} || undefined); false; ) ;
+            typeof promise;"));
+
+    // `in` is likewise allowed in the specifier (first) argument.
+    [Fact]
+    public void ImportCallFirstArgAllowsInOperatorInForHead()
+        => Assert.Equal("object", Eval(@"
+            var promise;
+            for (promise = import(('k' in {}) ? './a.js' : './b.js'); false; ) ;
+            typeof promise;"));
 }

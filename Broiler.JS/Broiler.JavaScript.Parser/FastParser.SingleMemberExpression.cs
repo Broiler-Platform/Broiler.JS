@@ -246,7 +246,15 @@ partial class FastParser
     {
         stream.Consume(); // `(`
 
-        if (!ArrayExpression(out var importArgs))
+        // import( AssignmentExpression[+In] , AssignmentExpression[+In] ,opt ): the argument
+        // list is an [+In] context, so `in` is a valid binary operator even inside a for-head
+        // (where it is otherwise suppressed to disambiguate for-in), e.g.
+        // `for (import(spec, 'k' in obj); …; …)`.
+        var savedIn = considerInOfAsOperators;
+        considerInOfAsOperators = true;
+        var parsedArgs = ArrayExpression(out var importArgs);
+        considerInOfAsOperators = savedIn;
+        if (!parsedArgs)
             throw stream.Unexpected();
 
         var en = importArgs.GetFastEnumerator();
