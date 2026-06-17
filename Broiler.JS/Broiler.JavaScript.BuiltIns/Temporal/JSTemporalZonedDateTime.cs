@@ -357,8 +357,12 @@ public partial class JSTemporalZonedDateTime : JSObject
     }
 
     // Finds the first UTC-offset change strictly after (forward) or before (!forward) startNs by scanning
-    // in day steps to bracket a transition, then binary-searching to nanosecond precision. The search
-    // horizon (~50 years) covers every real IANA zone's transitions; beyond it the method reports none.
+    // to bracket a transition, then binary-searching to nanosecond precision. The scan is adaptive: fine
+    // (one day) near startNs so that closely-spaced transitions — e.g. a spring/autumn DST pair — are
+    // never stepped over, then a coarser step across long constant-offset gaps. The latter is what an
+    // instant decades before a zone's first historical transition needs (test262 specific-tzdb-values:
+    // America/New_York's first transition, 1883-11-18, is 83 years after a 1800 relativeTo, well past the
+    // old ~50-year horizon). The horizon (~600 years) covers every real IANA zone's recorded transitions.
     private static BigInteger? FindTransition(TimeZoneInfo tz, BigInteger startNs, bool forward)
     {
         long OffsetAt(BigInteger ns) => (long)tz.GetUtcOffset(EpochNsToUtcDateTime(ns)).Ticks * 100;
@@ -368,10 +372,18 @@ public partial class JSTemporalZonedDateTime : JSObject
         var lastT = startNs;
         var lastOffset = OffsetAt(startNs);
 
-        const int maxDays = 366 * 50;
-        for (var i = 1; i <= maxDays; i++)
+        // Step one day at a time until well past any DST cadence, then accelerate. A coarse step can only
+        // skip a transition if two transitions fall within it and return to the same offset, which no IANA
+        // zone does once outside the densely-scanned fine window — there the next change is always isolated.
+        const long fineDays = 800;
+        const long coarseStepDays = 7;
+        const long horizonDays = 366L * 600;
+
+        long scanned = 0;
+        while (scanned < horizonDays)
         {
-            var t = startNs + dir * dayNs * i;
+            scanned += scanned < fineDays ? 1 : coarseStepDays;
+            var t = startNs + dir * dayNs * scanned;
             if (!IsValid(t)) return null;
             var off = OffsetAt(t);
             if (off != lastOffset)
