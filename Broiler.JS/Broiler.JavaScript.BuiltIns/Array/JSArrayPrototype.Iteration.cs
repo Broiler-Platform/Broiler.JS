@@ -470,9 +470,12 @@ public partial class JSArray
                 if (callback != null)
                     elementValue = callback.InvokeFunction(new Arguments(thisArg, elementValue, new JSNumber(i), @this));
 
-                // If the element is an array, flatten it.
+                // If the element is an array, flatten it. The mapper (flatMap) is
+                // applied only to the source's own elements — FlattenIntoArray recurses
+                // with the mapperFunction absent — so a mapped element that is itself an
+                // array is flattened, not re-mapped.
                 if (depth > 0 && elementValue is JSArray childArray)
-                    FlattenTo(result, childArray, callback, thisArg, depth - 1, ref resultIndex);
+                    FlattenTo(result, childArray, null, null, depth - 1, ref resultIndex);
                 else
                     CreateDataPropertyOrThrow(result, resultIndex++, elementValue);
             }

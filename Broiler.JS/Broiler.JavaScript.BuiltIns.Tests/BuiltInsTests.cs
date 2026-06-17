@@ -14042,4 +14042,42 @@ public class BuiltInsTests
     }
 
     #endregion
+
+    #region Issue 822 — Array.prototype.flatMap mapper applied once; Math.cbrt rounding
+
+    [Fact]
+    public void FlatMap_AppliesMapperOnlyToSourceElements()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // The mapper runs once per source element; the flatten step must not re-map the
+        // returned arrays. The callback's index argument reflects the source position.
+        var result = ctx.Eval(@"(function () {
+            var a = [1, 2].flatMap(function (x) { return [x, x * 2]; });
+            var b = [1, 2, 3].flatMap(function (x, i) { return [i]; });
+            var c = [1, 2].flatMap(function (x) { return [[x]]; }); // only one level flattened
+            return a.length + ':' + a.join(',') + '|' + b.join(',') + '|' + JSON.stringify(c);
+        })();");
+
+        Assert.Equal("4:1,2,2,4|0,1,2|[[1],[2]]", result.ToString());
+    }
+
+    [Fact]
+    public void Math_Cbrt_IsExactForPerfectCubes()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            Math.cbrt(27),
+            Math.cbrt(-8),
+            Math.cbrt(729),
+            Math.cbrt(1e30),
+            1 / Math.cbrt(-0)
+        ].join('|');");
+
+        Assert.Equal("3|-2|9|10000000000|-Infinity", result.ToString());
+    }
+
+    #endregion
 }
