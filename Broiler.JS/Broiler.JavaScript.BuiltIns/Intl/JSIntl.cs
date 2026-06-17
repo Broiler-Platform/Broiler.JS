@@ -952,6 +952,11 @@ public static class JSIntl
 
         var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
 
+        // GetUseGroupingOption: the default is "min2" for compact notation, "auto"
+        // otherwise; true → "always", a falsy value → boolean false, and an unrecognized
+        // string falls back to the default.
+        var useGrouping = ResolveUseGrouping(options, notation);
+
         // roundingIncrement is a numeric option restricted to a sanctioned set; the
         // string enums below are validated against their sanctioned value lists (a bad
         // value, e.g. an empty string for trailingZeroDisplay, is a RangeError per
@@ -971,7 +976,29 @@ public static class JSIntl
             RoundingMode = roundingMode,
             RoundingPriority = roundingPriority,
             TrailingZeroDisplay = trailingZeroDisplay,
+            UseGrouping = useGrouping,
         };
+    }
+
+    // GetBooleanOrStringNumberFormatOption(options, "useGrouping", « "min2", "auto",
+    // "always" », defaultUseGrouping): true maps to "always", any falsy value to the
+    // boolean false (returned as the "false" sentinel), and an unrecognized string
+    // (e.g. "true"/"false") to the default. The default is "min2" for compact notation.
+    private static string ResolveUseGrouping(JSObject options, string notation)
+    {
+        var fallback = notation == "compact" ? "min2" : "auto";
+        if (options == null)
+            return fallback;
+        var v = options[KeyStrings.GetOrCreate("useGrouping")];
+        if (v == null || v.IsUndefined)
+            return fallback;
+        if (v.IsBoolean)
+            return v.BooleanValue ? "always" : "false";
+        // ToBoolean(value) === false (null, 0, "", NaN) resolves to boolean false.
+        if (!v.BooleanValue)
+            return "false";
+        var s = v.ToString();
+        return s is "min2" or "auto" or "always" ? s : fallback;
     }
 
     // Reads the digit-related options from the bag once (in spec order) and stores
@@ -2928,6 +2955,11 @@ internal sealed class JSIntlNumberFormatResolved
     public string RoundingMode { get; set; } = "halfExpand";
     public string RoundingPriority { get; set; } = "auto";
     public string TrailingZeroDisplay { get; set; } = "auto";
+
+    // GetUseGroupingOption: the resolved useGrouping value, always one of "auto",
+    // "always", "min2", or "false" (the sentinel for boolean false). resolvedOptions
+    // maps "false" back to the boolean and the formatter drives grouping from it.
+    public string UseGrouping { get; set; } = "auto";
 }
 
 public class JSIntlNumberFormat : JSObject
@@ -3534,48 +3566,67 @@ public class JSIntlNumberFormat : JSObject
 
     private void AppendIntegerParts(List<(string, string)> result, string intDigits)
     {
-        // CLDR minimumGroupingDigits: grouping is shown only when the leading
-        // (most-significant) group has at least that many digits. For locales such
-        // as pl/es/it (value 2), four-digit values like 1000 stay ungrouped.
-        var leadingGroup = ((intDigits.Length - 1) % 3) + 1;
-        if (!UseGrouping()
-            || intDigits.Length <= 3
-            || leadingGroup < CldrLocaleData.MinimumGroupingDigits(locale))
+        var mode = resolved?.UseGrouping ?? "auto";
+
+        // The locale's grouping sizes (rightmost group first; the last entry repeats),
+        // e.g. [3] for en-US — 1,000,000 — and [3,2] for en-IN — 10,00,000.
+        var groups = SplitIntoGroups(intDigits, Culture().NumberFormat.NumberGroupSizes);
+
+        // The most-significant (leftmost) group's length drives the grouping decision:
+        //   "false"  → never group;
+        //   "min2"   → group only when that group has ≥ 2 digits (1000 → "1000",
+        //              10000 → "10,000");
+        //   "auto"   → group when it has ≥ minimumGroupingDigits digits (pl/es/it use 2);
+        //   "always" → group whenever there is more than one group.
+        var leadingGroup = groups[0].Length;
+        var shouldGroup = groups.Count > 1 && mode switch
+        {
+            "false" => false,
+            "min2" => leadingGroup >= 2,
+            "always" => true,
+            _ => leadingGroup >= CldrLocaleData.MinimumGroupingDigits(locale),
+        };
+
+        if (!shouldGroup)
         {
             result.Add(("integer", intDigits));
             return;
         }
 
         var groupSeparator = GroupSeparator();
-        var first = intDigits.Length % 3;
-        if (first == 0)
-            first = 3;
-        result.Add(("integer", intDigits[..first]));
-        for (var idx = first; idx < intDigits.Length; idx += 3)
+        for (var i = 0; i < groups.Count; i++)
         {
-            result.Add(("group", groupSeparator));
-            result.Add(("integer", intDigits.Substring(idx, 3)));
+            if (i > 0)
+                result.Add(("group", groupSeparator));
+            result.Add(("integer", groups[i]));
         }
+    }
+
+    // Splits an integer-digit string into locale groups, left to right. NumberGroupSizes
+    // lists group sizes from the right; the final entry repeats, and a trailing 0 means
+    // "no further grouping" (the remaining most-significant digits stay in one group).
+    private static List<string> SplitIntoGroups(string intDigits, int[] sizes)
+    {
+        var groups = new List<string>();
+        var pos = intDigits.Length;
+        var i = 0;
+        while (pos > 0)
+        {
+            var size = sizes.Length == 0 ? 0 : sizes[Math.Min(i, sizes.Length - 1)];
+            if (size <= 0)
+            {
+                groups.Insert(0, intDigits[..pos]);
+                break;
+            }
+            var start = Math.Max(0, pos - size);
+            groups.Insert(0, intDigits.Substring(start, pos - start));
+            pos = start;
+            i++;
+        }
+        return groups;
     }
 
     private string NanSymbol() => CldrLocaleData.NaNSymbol(locale);
-
-    private bool UseGrouping()
-    {
-        if (options == null)
-            return true;
-        var v = options[KeyStrings.GetOrCreate("useGrouping")];
-        if (v == null || v.IsUndefined)
-            return true;
-        if (v.IsBoolean)
-            return v.BooleanValue;
-        if (v.IsString)
-        {
-            var s = v.StringValue;
-            return s != "false" && s != "never";
-        }
-        return true;
-    }
 
     // Digit options come from the construction-time snapshot (read once from the
     // options bag), not the live options object, so format-time reads do not
@@ -3775,12 +3826,23 @@ public class JSIntlNumberFormat : JSObject
             var minimumSignificantDigitsKey = KeyStrings.GetOrCreate("minimumSignificantDigits");
             var maximumSignificantDigitsKey = KeyStrings.GetOrCreate("maximumSignificantDigits");
 
-            if (!@this.options[currencyKey].IsUndefined)
+            // Spec order: currency, currencyDisplay, currencySign appear together (only when
+            // style is "currency"), each with its resolved value.
+            if (style == "currency")
+            {
+                if (!@this.options[currencyKey].IsUndefined)
+                    result.CreateDataProperty(currencyKey, @this.options[currencyKey]);
+                result.CreateDataProperty(KeyStrings.GetOrCreate("currencyDisplay"),
+                    JSValue.CreateString(@this.ReadStringOption("currencyDisplay", "symbol")));
+                result.CreateDataProperty(KeyStrings.GetOrCreate("currencySign"),
+                    JSValue.CreateString(@this.CurrencySignOption()));
+            }
+            else if (!@this.options[currencyKey].IsUndefined)
+            {
                 result.CreateDataProperty(currencyKey, @this.options[currencyKey]);
+            }
             if (!@this.options[unitKey].IsUndefined)
                 result.CreateDataProperty(unitKey, @this.options[unitKey]);
-            if (!@this.options[useGroupingKey].IsUndefined)
-                result.CreateDataProperty(useGroupingKey, @this.options[useGroupingKey]);
             // Digit options reflect the construction-time snapshot (read once),
             // not the live options bag, so resolvedOptions does not re-trigger
             // option getters.
@@ -3813,13 +3875,20 @@ public class JSIntlNumberFormat : JSObject
                 result.CreateDataProperty(maximumSignificantDigitsKey,
                     hasMaxSig ? digits[maximumSignificantDigitsKey] : JSValue.CreateNumber(21));
             }
+
+            // useGrouping always has a resolved value ("auto"/"always"/"min2", or boolean
+            // false); the spec places it after the digit options and before notation. The
+            // "false" sentinel maps back to the boolean.
+            var resolvedGrouping = @this.resolved?.UseGrouping ?? "auto";
+            result.CreateDataProperty(useGroupingKey,
+                resolvedGrouping == "false" ? JSValue.BooleanFalse : JSValue.CreateString(resolvedGrouping));
         }
         else
         {
             result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), JSValue.CreateNumber(1));
             result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), JSValue.CreateNumber(0));
             result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), JSValue.CreateNumber(3));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"), JSValue.BooleanTrue);
+            result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"), JSValue.CreateString("auto"));
         }
 
         // notation/signDisplay always have a resolved value; compactDisplay and
