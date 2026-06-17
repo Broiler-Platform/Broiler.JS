@@ -77,4 +77,23 @@ public class Issue828ProxySetReceiverTests
             var a = new Proxy(t, {}), b = new Proxy(t, {});
             '' + (a === b);
         """));
+
+    // The getOwnPropertyDescriptor trap result is converted with ToPropertyDescriptor:
+    // each field is read through the result's own [[HasProperty]]/[[Get]] (observable) in the
+    // fixed enumerable/configurable/value/writable/get/set order, and the caller gets a plain
+    // record carrying those values — not the raw trap object.
+    [Fact]
+    public void GetOwnPropertyDescriptorReadsTrapResultFieldsInOrder()
+        => Assert.Equal("enumerable,configurable,value,writable|1|true", Eval("""
+            var reads = [];
+            var p = new Proxy({}, {
+              getOwnPropertyDescriptor: function(t, k){
+                return new Proxy({ value: 1, writable: true, enumerable: true, configurable: true }, {
+                  get: function(dt, dk, r){ reads.push(dk); return Reflect.get(dt, dk, r); }
+                });
+              }
+            });
+            var d = Object.getOwnPropertyDescriptor(p, 'x');
+            reads.join(',') + '|' + d.value + '|' + d.writable;
+        """));
 }

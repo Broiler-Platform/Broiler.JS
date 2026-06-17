@@ -535,14 +535,54 @@ public partial class JSProxy : JSObject
     {
         var target = RequireTarget();
         var fx = GetTrap(GetOwnPropertyDescriptorTrapKey);
-        if (!fx.IsUndefined)
+        if (fx.IsUndefined)
+            return target.GetOwnPropertyDescriptor(name);
+
+        var result = fx.InvokeFunction(new Arguments(handler, target, NormalizeTrapPropertyKey(name)));
+        var key = name.ToKey(false);
+
+        if (result.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(handler, target, NormalizeTrapPropertyKey(name)));
-            ValidateGetOwnPropertyDescriptorInvariant(target, name.ToKey(false), result);
-            return result;
+            ValidateGetOwnPropertyDescriptorInvariant(target, in key, JSUndefined.Value);
+            return JSUndefined.Value;
         }
 
-        return target.GetOwnPropertyDescriptor(name);
+        if (result is not JSObject resultObject)
+            throw JSEngine.NewTypeError("Proxy getOwnPropertyDescriptor trap must return an object or undefined");
+
+        // §10.5.5 [[GetOwnProperty]] step 9: the trap result is converted with
+        // ToPropertyDescriptor — reading enumerable/configurable/value/writable/get/set through
+        // its own [[HasProperty]]/[[Get]] (observable, in that fixed order) — and callers get that
+        // own record, never the raw trap object. An exotic descriptor (e.g. a Proxy) thus has its
+        // field accessors invoked exactly once here (test262 sm/Iterator/.../proxy-accesses).
+        var descriptor = DescriptorFromTrapResult(resultObject);
+        ValidateGetOwnPropertyDescriptorInvariant(target, in key, descriptor);
+        return descriptor;
+    }
+
+    // ToPropertyDescriptor over the getOwnPropertyDescriptor trap result: copy each present field
+    // into a fresh own record, using [[HasProperty]] for presence and [[Get]] for the value, in the
+    // spec's fixed field order (so a descriptor whose access is observable — a Proxy descriptor —
+    // sees has/get for each field in that order).
+    private static JSObject DescriptorFromTrapResult(JSObject trapResult)
+    {
+        var record = new JSObject();
+
+        void CopyField(in KeyString field)
+        {
+            if (!trapResult.HasProperty(field.ToJSValue()).BooleanValue)
+                return;
+
+            record.FastAddValue(field, trapResult[field], JSPropertyAttributes.EnumerableConfigurableValue);
+        }
+
+        CopyField(KeyStrings.enumerable);
+        CopyField(KeyStrings.configurable);
+        CopyField(KeyStrings.value);
+        CopyField(KeyStrings.writable);
+        CopyField(KeyStrings.get);
+        CopyField(KeyStrings.set);
+        return record;
     }
 
     internal protected override JSValue GetValue(IJSSymbol key, JSValue receiver, bool throwError = true)
