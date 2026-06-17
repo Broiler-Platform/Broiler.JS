@@ -502,7 +502,14 @@ public partial class JSBigInt : JSPrimitive
 
     [JSPrototypeMethod]
     [JSExport("toLocaleString")]
-    public static JSValue ToLocaleString(in Arguments a) => new JSString(ThisBigInt(a.This).value.ToString(CultureInfo.CurrentCulture));
+    public static JSValue ToLocaleString(in Arguments a)
+    {
+        var self = ThisBigInt(a.This);
+        // §BigInt.prototype.toLocaleString(locales, options) ≡
+        // Intl.NumberFormat(locales, options).format(this).
+        var nf = new Intl.JSIntlNumberFormat(new Arguments(JSUndefined.Value, a.GetAt(0), a.GetAt(1)));
+        return new JSString(nf.Format(new Arguments(JSUndefined.Value, self)).StringValue);
+    }
 
     [JSPrototypeMethod]
     [JSExport("valueOf")]

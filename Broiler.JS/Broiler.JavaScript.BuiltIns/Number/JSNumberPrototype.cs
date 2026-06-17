@@ -422,28 +422,22 @@ partial class JSNumber
     {
         var n = a.This.ToNumber();
         var (locale, format) = a.Get2();
-        var formatting = "g";
 
-        // §21.1.3.4: Number.prototype.toLocaleString(locales, options) ≡
-        // Intl.NumberFormat(locales, options).format(this). A non-string, defined
-        // `format` is the standard Intl options bag and is delegated to
-        // Intl.NumberFormat; a string `format` keeps Broiler's .NET
-        // numeric-format-string extension.
-        if (!format.IsNullOrUndefined && !format.IsString)
+        // Broiler extension: a string `format` is a .NET numeric-format string (not part
+        // of the spec), kept for compatibility. Everything else follows §21.1.3.4:
+        // Number.prototype.toLocaleString(locales, options) ≡
+        // Intl.NumberFormat(locales, options).format(this), so grouping, percent/currency
+        // styles, alternate numbering systems, etc. all match Intl.NumberFormat.
+        if (format.IsString)
         {
-            var nf = new JSIntlNumberFormat(new Arguments(JSUndefined.Value, locale, format));
-            return new JSString(nf.Format(new Arguments(JSUndefined.Value, n)).StringValue);
+            var culture = locale.IsNullOrUndefined
+                ? CultureInfo.CurrentCulture
+                : CultureInfo.GetCultureInfo(locale.ToString());
+            return new JSString(n.value.ToString(format.ToString(), culture));
         }
 
-        if (locale.IsNullOrUndefined)
-            return new JSString(n.value.ToString(formatting, CultureInfo.CurrentCulture));
-
-        var culture = CultureInfo.GetCultureInfo(locale.ToString());
-        var number = format.IsString
-            ? n.value.ToString(format.ToString(), culture)
-            : n.value.ToString(formatting, culture);
-
-        return new JSString(number);
+        var nf = new JSIntlNumberFormat(new Arguments(JSUndefined.Value, locale, format));
+        return new JSString(nf.Format(new Arguments(JSUndefined.Value, n)).StringValue);
     }
 
     public static string DecimalToBase(double number, int radix)

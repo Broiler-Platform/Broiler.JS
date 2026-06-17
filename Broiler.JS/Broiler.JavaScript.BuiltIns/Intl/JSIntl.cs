@@ -3055,7 +3055,11 @@ public class JSIntlNumberFormat : JSObject
     // and "negative".
     internal List<(string type, string value)> ComputeFormatParts(JSValue value)
     {
-        var x = value != null && value.IsBigInt ? (double)value.BigIntValue : (value ?? JSUndefined.Value).DoubleValue;
+        // A BigInt operand is converted via its exact magnitude (BigIntValue truncates to Int64 and
+        // overflows for large values); ToNumber gives the nearest double.
+        var x = value != null && value.IsBigInt
+            ? BigInt.JSBigInt.ToNumber(((BigInt.JSBigInt)value).value)
+            : (value ?? JSUndefined.Value).DoubleValue;
 
         var signDisplay = resolved?.SignDisplay ?? "auto";
         var isNaN = double.IsNaN(x);
