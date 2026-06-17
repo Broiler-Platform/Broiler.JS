@@ -2636,13 +2636,55 @@ public sealed class JSIntlLocale : JSObject
     public static JSValue MaximizePrototype(in Arguments a)
     {
         var locale = RequireLocale(in a, "maximize");
-        return new JSIntlLocale(locale.tag);
+        var (lang, script, region, rest) = locale.SplitCore();
+        var result = CldrLikelySubtags.Maximize(lang, script, region);
+        // The Add Likely Subtags algorithm "signaling an error" leaves the locale unchanged.
+        if (result == null)
+            return new JSIntlLocale(locale.Tag);
+        return new JSIntlLocale(JoinCore(result.Value.lang, result.Value.script, result.Value.region, rest));
     }
 
     public static JSValue MinimizePrototype(in Arguments a)
     {
         var locale = RequireLocale(in a, "minimize");
-        return new JSIntlLocale(locale.tag);
+        var (lang, script, region, rest) = locale.SplitCore();
+        var result = CldrLikelySubtags.Minimize(lang, script, region);
+        if (result == null)
+            return new JSIntlLocale(locale.Tag);
+        return new JSIntlLocale(JoinCore(result.Value.lang, result.Value.script, result.Value.region, rest));
+    }
+
+    // Splits the canonical tag into its language/script/region core and the remainder
+    // (variants, extensions and private-use subtags), which the likely-subtags algorithms
+    // leave untouched.
+    private (string lang, string script, string region, string rest) SplitCore()
+    {
+        var parts = tag.Split('-');
+        var i = 1;
+        string script = null, region = null;
+        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i]))
+        {
+            script = parts[i];
+            i++;
+        }
+        if (i < parts.Length
+            && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigit(parts[i]))))
+        {
+            region = parts[i];
+            i++;
+        }
+        var rest = i < parts.Length ? string.Join("-", parts[i..]) : null;
+        return (parts[0], script, region, rest);
+    }
+
+    private static string JoinCore(string lang, string script, string region, string rest)
+    {
+        var core = lang;
+        if (!string.IsNullOrEmpty(script))
+            core += "-" + script;
+        if (!string.IsNullOrEmpty(region))
+            core += "-" + region;
+        return string.IsNullOrEmpty(rest) ? core : core + "-" + rest;
     }
 
     public static JSValue GetCalendarsPrototype(in Arguments a)
