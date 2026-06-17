@@ -1114,8 +1114,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
             list.Add(index);
         });
 
-        if (!anyNamed)
-            return pattern;  // no named groups → .NET numbering already matches ECMAScript.
+        // No named groups → .NET's left-to-right numbering already matches ECMAScript,
+        // so the rename is unnecessary UNLESS the pattern needs per-repetition capture
+        // resets (a capturing group inside a quantified group). Emulating those resets
+        // requires the synthetic bjsg names that the balancing-group reset prologue
+        // (InjectQuantifierCaptureResets) references, so fall through to the rewrite.
+        if (!anyNamed && !NeedsCaptureReset(pattern))
+            return pattern;
 
         // Pass 2: emit the rewritten pattern, renaming every capturing group and
         // resolving \k<name> references against the map built above.
@@ -1225,8 +1230,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         // quantifier repetition the way ECMAScript requires. .NET retains a group's
         // capture across repetitions, so emulate the reset for duplicate-named
         // patterns; ordinary patterns keep .NET's native behaviour.
-        if (anyDuplicate)
-            rewritten = InjectQuantifierCaptureResets(rewritten);
+        rewritten = InjectQuantifierCaptureResets(rewritten);
 
         return rewritten;
     }
@@ -1242,6 +1246,58 @@ public partial class JSRegExp : JSObject, IJSRegExp
     // in "(?:(?<a>x)|(?<a>y)|z){2}") would keep the stale capture, so a trailing
     // \k<a> backreference would wrongly still match. Only invoked for patterns that
     // contain duplicate named groups.
+    // True when the pattern has a capturing group nested inside a quantified group, so
+    // ECMAScript's per-repetition capture reset must be emulated (.NET otherwise retains
+    // an inner group's capture across repetitions, e.g. /(z)((a+)?(b+)?(c))* /.exec(
+    // "zaacbbbcac") leaves group 4 as "bbb" instead of undefined). Mirrors the group walk
+    // in InjectQuantifierCaptureResets: a capture is counted by every enclosing group, and
+    // a group quantified by * + ? or { with inner captures needs the reset.
+    private static bool NeedsCaptureReset(string pattern)
+    {
+        var innerCounts = new List<int>();   // declared captures seen inside each open group
+        var inClass = false;
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+            if (c == '\\') { i++; continue; }
+            if (inClass) { if (c == ']') inClass = false; continue; }
+            if (c == '[') { inClass = true; continue; }
+
+            if (c == '(')
+            {
+                var capturing = true;
+                if (i + 1 < pattern.Length && pattern[i + 1] == '?')
+                {
+                    // (?<name>…) is capturing; (?<=…)/(?<!…) and (?:…)/(?=…)/(?!…)/… are not.
+                    capturing = i + 2 < pattern.Length && pattern[i + 2] == '<'
+                        && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!'));
+                }
+
+                if (capturing)
+                    for (var f = 0; f < innerCounts.Count; f++)
+                        innerCounts[f]++;
+
+                innerCounts.Add(0);
+                continue;
+            }
+
+            if (c == ')')
+            {
+                if (innerCounts.Count == 0)
+                    continue;
+
+                var inner = innerCounts[^1];
+                innerCounts.RemoveAt(innerCounts.Count - 1);
+
+                var next = i + 1 < pattern.Length ? pattern[i + 1] : '\0';
+                if (inner > 0 && (next == '*' || next == '+' || next == '?' || next == '{'))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
     private static string InjectQuantifierCaptureResets(string pattern)
     {
         // One frame per open group: the offset just after the group's header

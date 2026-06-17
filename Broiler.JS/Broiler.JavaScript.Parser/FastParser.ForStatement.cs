@@ -375,7 +375,12 @@ partial class FastParser
             stream.Consume(); // using
 
             var bindingToken = stream.Current;
-            if (bindingToken.Type != TokenTypes.Identifier || IsOfKeyword(bindingToken))
+            // A plain `using` followed by `of` is never a declaration — `for (using of …)`
+            // keeps `using` as an IdentifierReference and `of` as the for-of keyword (so
+            // `for (using of of x)` is `using` of `of[…]`). But `await using` unambiguously
+            // begins a declaration, so the contextual `of` is a valid BindingIdentifier
+            // there: `for (await using of of x)` binds `of` and iterates `x`.
+            if (bindingToken.Type != TokenTypes.Identifier || (!isAwait && IsOfKeyword(bindingToken)))
             {
                 stream.Reset(start);
                 return false;

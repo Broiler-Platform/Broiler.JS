@@ -4485,11 +4485,28 @@ public class JSIntlDateTimeFormat : JSObject
         if (startArg == null || startArg.IsUndefined || endArg == null || endArg.IsUndefined)
             throw JSEngine.NewTypeError("Intl.DateTimeFormat range start and end dates must not be undefined");
 
-        if (IsTemporalDateTime(startArg) || IsTemporalDateTime(endArg))
-            return FormatTemporalRangeToParts(startArg, endArg);
+        // ToDateTimeFormattable on both endpoints, in argument order: a Temporal object is
+        // kept as-is, anything else is ToNumber-coerced now (observably running its
+        // valueOf/toString). This happens for BOTH arguments before the same-kind check —
+        // PartitionDateTimeRangePattern must not report a different-kind pair before the
+        // arguments have been coerced (and TimeClip(NaN) must not throw a RangeError ahead
+        // of that TypeError).
+        var startTemporal = IsTemporalDateTime(startArg);
+        var endTemporal = IsTemporalDateTime(endArg);
+        var startNumber = startTemporal ? 0d : startArg.DoubleValue;
+        var endNumber = endTemporal ? 0d : endArg.DoubleValue;
 
-        var startValue = CoerceRangeTime(startArg);
-        var endValue = CoerceRangeTime(endArg);
+        // PartitionDateTimeRangePattern step 5: when either endpoint is a Temporal object,
+        // both must be the same Temporal type (else TypeError).
+        if (startTemporal || endTemporal)
+        {
+            if (!startTemporal || !endTemporal)
+                throw JSEngine.NewTypeError("Intl.DateTimeFormat.formatRange: both arguments must be the same Temporal type");
+            return FormatTemporalRangeToParts(startArg, endArg);
+        }
+
+        var startValue = TimeClipRange(startNumber);
+        var endValue = TimeClipRange(endNumber);
         var pattern = ResolveEnginePattern();
         var startFields = ResolveFields(startValue);
         var endFields = ResolveFields(endValue);
@@ -4762,9 +4779,9 @@ public class JSIntlDateTimeFormat : JSObject
             ? (intl[KeyStrings.GetOrCreate("DateTimeFormat")] as JSFunction)?.prototype
             : null;
 
-    private static double CoerceRangeTime(JSValue value)
+    private static double TimeClipRange(double number)
     {
-        var clipped = JSDateMath.TimeClip(value.DoubleValue);
+        var clipped = JSDateMath.TimeClip(number);
         if (double.IsNaN(clipped))
             throw JSEngine.NewRangeError("Invalid time value");
 
