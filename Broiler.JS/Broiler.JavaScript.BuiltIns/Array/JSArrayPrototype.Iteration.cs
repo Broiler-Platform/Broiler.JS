@@ -425,7 +425,12 @@ public partial class JSArray
     {
         var @this = ToArrayLikeObject(a.This);
         var result = CreateArraySpecies(@this, 0);
-        int depth = a[0]?.IntegerValue ?? 1;
+        // FlattenIntoArray: depth defaults to 1 and is coerced (ToIntegerOrInfinity) only
+        // when the argument is supplied — an explicit `undefined` keeps the default, like an
+        // omitted argument (test262 flat/non-numeric-depth-should-not-throw). A negative or
+        // other non-positive depth means "do not flatten", handled by FlattenTo's depth > 0 gate.
+        var depthArg = a[0];
+        int depth = depthArg == null || depthArg.IsUndefined ? 1 : depthArg.IntegerValue;
         uint resultIndex = 0;
         FlattenTo(result, @this, null, null, depth, ref resultIndex);
         return result;
