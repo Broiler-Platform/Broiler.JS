@@ -50,7 +50,10 @@ partial class FastCompiler
 
                 var dynamicStatements = new Sequence<YExpression>
                 {
-                    YExpression.Assign(current.Variable, JSContextBuilder.ResolveIdentifier(globalKey))
+                    YExpression.Assign(current.Variable, JSContextBuilder.ResolveIdentifier(globalKey)),
+                    // Coerce to Number/BigInt once: the postfix result is the coerced
+                    // old value and the operand's valueOf must run exactly once.
+                    YExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
                 };
 
                 if (previous != null)
@@ -67,7 +70,8 @@ partial class FastCompiler
                 var retainedWithReference = JSValueBuilder.Index(withObject.Expression, globalKey);
                 var withStatements = new Sequence<YExpression>
                 {
-                    YExpression.Assign(current.Variable, retainedWithReference)
+                    YExpression.Assign(current.Variable, retainedWithReference),
+                    YExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
                 };
 
                 if (previous != null)
@@ -98,7 +102,10 @@ partial class FastCompiler
                 var variables = new Sequence<YParameterExpression> { current.Variable };
                 var statements = new Sequence<YExpression>
                 {
-                    YExpression.Assign(current.Variable, variable.Expression)
+                    YExpression.Assign(current.Variable, variable.Expression),
+                    // Coerce to Number/BigInt once: the postfix result is the coerced
+                    // old value (`var y = "1"++` yields the Number 1).
+                    YExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
                 };
 
                 if (previous != null)
@@ -190,15 +197,16 @@ partial class FastCompiler
                 break;
         }
 
-        if (!updateExpression.Prefix)
-        {
-            @return = scope.Top.GetTempVariable(right.Type);
-            list.Add(YExpression.Assign(@return.Variable, right));
-        }
+        // ToNumeric reads the member/index once and coerces the operand to a
+        // Number/BigInt exactly once, so a getter with side effects is observed only
+        // once and the result of a postfix update is the coerced old value
+        // (`obj.x++` where obj.x is "1" yields the Number 1, not the String "1").
+        var coerced = scope.Top.GetTempVariable(typeof(JSValue));
+        list.Add(YExpression.Assign(coerced.Variable, JSValueBuilder.ToNumeric(right)));
 
         var newValue = updateExpression.Operator == UnaryOperator.Increment
-            ? JSValueBuilder.Increment(right)
-            : JSValueBuilder.Decrement(right);
+            ? JSValueBuilder.Increment(coerced.Expression)
+            : JSValueBuilder.Decrement(coerced.Expression);
 
         if (updateExpression.Prefix)
         {
@@ -211,13 +219,17 @@ partial class FastCompiler
         }
         else
         {
+            // Postfix: the coerced old value is the result; write the new value back.
             list.Add(YExpression.Assign(right, newValue));
+            @return = coerced;
         }
 
         list.Add(@return.Variable);
 
         var r = YExpression.Block(list);
         @return?.Dispose();
+        if (!ReferenceEquals(@return, coerced))
+            coerced.Dispose();
         key?.Dispose();
         superBase?.Dispose();
         target?.Dispose();

@@ -466,6 +466,16 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue Decrement() => CreateNumber(DoubleValue - 1);
 
+    // ToNumeric (ECMA-262 § 7.1.4 / § 7.1.3): coerce to a Number or BigInt primitive.
+    // Used by the update operators (`++`/`--`), whose result is the coerced numeric
+    // old value — `var y = "1"++` yields the Number 1, not the String "1" — and whose
+    // operand must be coerced exactly once.
+    public JSValue ToNumeric()
+    {
+        var primitive = ToNumericPrimitive(this);
+        return primitive.IsBigInt ? primitive : CreateNumber(primitive.DoubleValue);
+    }
+
     public virtual JSValue Subtract(JSValue value)
     {
         var self = ToNumericPrimitive(this);

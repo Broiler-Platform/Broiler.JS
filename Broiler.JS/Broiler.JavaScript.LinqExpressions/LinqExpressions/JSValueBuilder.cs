@@ -65,6 +65,7 @@ public class JSValueBuilder
     public static Expression BitwiseNot(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.BitwiseNot());
     public static Expression Increment(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.Increment());
     public static Expression Decrement(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.Decrement());
+    public static Expression ToNumeric(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.ToNumeric());
     public static Expression Subtract(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.Subtract(a), value);
     public static Expression Multiply(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.Multiply(a), value);
     public static Expression Divide(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.Divide(a), value);

@@ -13756,4 +13756,84 @@ public class BuiltInsTests
     }
 
     #endregion
+
+    #region Issue 822 — Number.prototype.toString(radix) sign & postfix update coercion
+
+    [Fact]
+    public void Number_ToString_Radix_KeepsNegativeSign()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            (new Number(-1)).toString(10),
+            (new Number(-1)).toString(2),
+            (new Number(-1)).toString(16),
+            (-255).toString(16),
+            (255).toString(16),
+            (2.5).toString(2),
+            (-2.5).toString(2),
+            (-0).toString(2)
+        ].join('|');");
+
+        Assert.Equal("-1|-1|-1|-ff|ff|10.101|-10.101|0", result.ToString());
+    }
+
+    [Fact]
+    public void PostfixUpdate_ReturnsCoercedNumericOldValue()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // The result of a postfix `++`/`--` is ToNumeric(oldValue): a Number (or
+        // BigInt), never the raw String/Boolean/Object operand.
+        var result = ctx.Eval(@"(function () {
+            var s = '1';   var sy = s++;
+            var b = false; var by = b++;
+            var t = true;  var ty = t--;
+            var o = { valueOf: function () { return 1; } }; var oy = o++;
+            var bi = 10n;  var biy = bi++;
+            return [
+                typeof sy + ':' + sy,
+                typeof by + ':' + by,
+                typeof ty + ':' + ty,
+                typeof oy + ':' + oy,
+                typeof biy + ':' + biy + ':' + bi
+            ].join('|');
+        })();");
+
+        Assert.Equal("number:1|number:0|number:1|number:1|bigint:10:11", result.ToString());
+    }
+
+    [Fact]
+    public void PostfixUpdate_CoercesOperandExactlyOnce()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // valueOf must be observed exactly once across the read/coerce of the operand.
+        var result = ctx.Eval(@"(function () {
+            var calls = 0;
+            var o = { valueOf: function () { calls++; return 5; } };
+            var y = o++;
+            return calls + '/' + y + '/' + o;
+        })();");
+
+        Assert.Equal("1/5/6", result.ToString());
+    }
+
+    [Fact]
+    public void PostfixUpdate_OnMemberAndIndex_CoercesAndWritesBack()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            var a = { p: '3' }; var py = a.p++;
+            var arr = ['7'];    var iy = arr[0]++;
+            return typeof py + ':' + py + '/' + a.p + '|' + typeof iy + ':' + iy + '/' + arr[0];
+        })();");
+
+        Assert.Equal("number:3/4|number:7/8", result.ToString());
+    }
+
+    #endregion
 }

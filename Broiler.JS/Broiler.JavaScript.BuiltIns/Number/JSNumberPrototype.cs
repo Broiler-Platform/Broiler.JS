@@ -453,11 +453,13 @@ partial class JSNumber
         var isNegative = number < 0.0;
         number = Math.Abs(number);
         
+        var sign = isNegative ? "-" : "";
+
         var digits = Math.Floor(number);
         var digitsTxt = DecimalToArbitrarySystem((long)digits, radix);
         if (digits == number)
-            return digitsTxt;
-        
+            return $"{sign}{digitsTxt}";
+
         var fraction = number % digits;
         for (int i = 0; i < 15; i++)
         {
@@ -465,9 +467,9 @@ partial class JSNumber
             if (Math.Floor(fraction) == fraction)
                 break;
         }
-        
+
         var fractionText = DecimalToArbitrarySystem((long)fraction, radix);
-        return $"{(isNegative ? "-" : " ")}{digitsTxt}.{fractionText}";
+        return $"{sign}{digitsTxt}.{fractionText}";
     }
 
     /// <summary>
