@@ -831,7 +831,20 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     public JSVariable GetOrCreateDirectEvalLocalBinding(in KeyString name, JSValue fallback)
     {
         if (TryResolveDirectEvalBinding(name, out var existing, includeUninitializedShadows: true))
+        {
+            // A direct eval's `var` declaration instantiates (CreateMutableBinding +
+            // InitializeBinding to undefined) the binding in the function's variable
+            // environment. When the storage reused here is an as-yet-unowned
+            // EvalShadowVariable (it has been forwarding reads/writes to the outer
+            // binding it shadows), declaring the var makes the shadow own its value:
+            // initialize it to undefined so subsequent reads observe the new local
+            // binding rather than continuing to forward to the outer one. An
+            // already-initialized binding keeps its value (`var x = 1; var x;`).
+            if (existing is EvalShadowVariable { IsInitialized: false })
+                existing.Value = JSUndefined.Value;
+
             return existing;
+        }
 
         var variable = new JSVariable(fallback, name.Value);
         if (directEvalLocalVarEnvironmentDepth > 0 && TryGetCurrentDirectEvalActivationOwner(out var owner))
@@ -1034,6 +1047,21 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             return value;
         }
 
+        return AssignIdentifierWithoutWith(name, value, strictMode);
+    }
+
+    /// <summary>
+    /// Assigns to a name's lexical/global/direct-eval binding without consulting any
+    /// active <c>with</c> object environment. Used when the assignment target's
+    /// Reference was already resolved (and found NOT to be a <c>with</c>-object
+    /// property) before the right-hand side ran: per PutValue, the write must reach
+    /// that initially resolved binding even if evaluating the RHS adds a same-named
+    /// property to a <c>with</c> object (S11.13.1_A6_T3:
+    /// <c>with (scope) { x = (scope.x = 2, 1); }</c> stores 1 into the outer
+    /// <c>x</c>, leaving <c>scope.x === 2</c>).
+    /// </summary>
+    public JSValue AssignIdentifierWithoutWith(in KeyString name, JSValue value, bool strictMode)
+    {
         var hasVariable = globalVars.TryGetValue(name.Key, out var variable);
         var hasProperty = !GetInternalProperty(name).IsEmpty;
 

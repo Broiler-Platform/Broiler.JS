@@ -214,10 +214,24 @@ partial class FastCompiler
 
         if (assignmentOperator == TokenTypes.Assign)
         {
+            // A simple assignment resolves its target Reference once, BEFORE the RHS
+            // runs, and the write uses that same Reference even if a direct eval in
+            // the RHS introduces a more local binding (§13.15.2 / S11.13.1_A6):
+            // `x = (eval("var x"), 1)` must write to the outer binding the reference
+            // observed, not the eval-introduced local. Capture which binding the
+            // shadow forwards to first, then evaluate the RHS, then write through the
+            // captured reference.
+            var simpleReferenceTemp = scope.Top.GetTempVariable(typeof(bool));
+            var simpleCaptureReference = YExpression.Assign(simpleReferenceTemp.Expression, EvalShadowBuilder.CaptureReference(target));
             var initExpr = Visit(right);
             if (!IsAnonymousFunctionDefinition(right) || suppressAnonymousFunctionName)
                 initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(identifier.Name.Value), YExpression.Constant(false));
-            return EvalShadowBuilder.SetValue(target, initExpr);
+            var simpleResult = YExpression.Block(
+                simpleReferenceTemp.Variable.AsSequence(),
+                simpleCaptureReference,
+                EvalShadowBuilder.SetCaptured(target, simpleReferenceTemp.Expression, initExpr));
+            simpleReferenceTemp.Dispose();
+            return simpleResult;
         }
 
         // A compound assignment resolves its target Reference once, before the RHS
@@ -324,7 +338,12 @@ partial class FastCompiler
             YExpression.Condition(
                 YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject))),
                 JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, value, IsStrictMode),
-                JSContextBuilder.AssignIdentifier(key, value, IsStrictMode),
+                // The with-object lookup above resolved the target Reference BEFORE the
+                // RHS (value) runs. When it found no with-object property, write to the
+                // lexical/global binding directly: re-running the with resolution here
+                // would observe a property the RHS added to a with object and wrongly
+                // redirect the write (S11.13.1_A6_T3).
+                JSContextBuilder.AssignIdentifierWithoutWith(key, value, IsStrictMode),
                 typeof(JSValue)));
     }
 
