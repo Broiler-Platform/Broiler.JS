@@ -146,6 +146,22 @@ public static class JSIntl
                     return list;
                 }
 
+                if (key == "currency")
+                {
+                    var list = JSValue.CreateArray();
+                    foreach (var c in IntlEnumerationData.Currencies)
+                        list.AddArrayItem(JSValue.CreateString(c));
+                    return list;
+                }
+
+                if (key == "unit")
+                {
+                    var list = JSValue.CreateArray();
+                    foreach (var u in IntlEnumerationData.Units)
+                        list.AddArrayItem(JSValue.CreateString(u));
+                    return list;
+                }
+
                 return JSValue.CreateArray();
             }, "supportedValuesOf", "function supportedValuesOf() { [native code] }", length: 1, createPrototype: false),
             JSPropertyAttributes.ConfigurableValue);
@@ -2532,7 +2548,15 @@ public sealed class JSIntlDisplayNames : JSObject
         if (a.This is not JSIntlDisplayNames @this)
             throw JSEngine.NewTypeError("Intl.DisplayNames.prototype.of called on incompatible receiver");
 
-        return JSValue.CreateString(@this.ValidateCode(a.Get1()));
+        var canonical = @this.ValidateCode(a.Get1());
+
+        // For "currency", only codes the implementation has data for (AvailableCurrencies, the same set
+        // Intl.supportedValuesOf("currency") returns) resolve to a name; an unknown but well-formed code
+        // follows the fallback option — "code" yields the code, "none" yields undefined.
+        if (@this.options.Type == "currency" && !IntlEnumerationData.CurrencySet.Contains(canonical))
+            return @this.options.Fallback == "none" ? JSUndefined.Value : JSValue.CreateString(canonical);
+
+        return JSValue.CreateString(canonical);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
