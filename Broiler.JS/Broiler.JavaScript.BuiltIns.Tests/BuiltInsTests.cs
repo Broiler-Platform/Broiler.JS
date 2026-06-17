@@ -13952,4 +13952,73 @@ public class BuiltInsTests
     }
 
     #endregion
+
+    #region Issue 822 — generic array-like length (pop / unshift / sort)
+
+    [Fact]
+    public void ArrayPop_GenericObject_UsesToLengthNotUint32()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // A generic array-like length is ToLength (up to 2^53-1): pop reads index
+        // len-1, which exceeds the 32-bit array-index range here.
+        var result = ctx.Eval(@"(function () {
+            var a = {}; a.pop = Array.prototype.pop; a[0] = 'x'; a[4294967295] = 'y'; a.length = 4294967296;
+            var av = a.pop();
+
+            var b = {}; b.pop = Array.prototype.pop; b[0] = 'x'; b[4294967296] = 'y'; b.length = 4294967297;
+            var bv = b.pop();
+
+            var c = {}; c.length = Number.POSITIVE_INFINITY; c.pop = Array.prototype.pop; c.pop();
+
+            return av + '|' + bv + '|' + c.length;
+        })();");
+
+        Assert.Equal("y|y|9007199254740990", result.ToString());
+    }
+
+    [Fact]
+    public void ArrayUnshift_ChecksSourceViaHasPropertyThroughPrototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // A hole shadowing an inherited indexed property is copied (HasProperty +
+        // [[Get]] traverse the prototype chain), not deleted.
+        var result = ctx.Eval(@"(function () {
+            Array.prototype[0] = 1;
+            try {
+                var x = []; x.length = 1; x.unshift(0);
+                return String(x[1]);
+            } finally {
+                delete Array.prototype[0];
+            }
+        })();");
+
+        Assert.Equal("1", result.ToString());
+    }
+
+    [Fact]
+    public void ArraySort_GenericObject_ReadsInheritedLength()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"(function () {
+            Object.prototype.length = 2;
+            Object.prototype.sort = Array.prototype.sort;
+            try {
+                var x = { 0: 1, 1: 0 };
+                x.sort();
+                return x[0] + ',' + x[1];
+            } finally {
+                delete Object.prototype.length;
+                delete Object.prototype.sort;
+            }
+        })();");
+
+        Assert.Equal("0,1", result.ToString());
+    }
+
+    #endregion
 }

@@ -191,7 +191,10 @@ public partial class JSArray
     public static JSValue Pop(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
-        var length = GetArrayLikeLength(@this);
+        // A generic array-like object's length is ToLength (up to 2^53-1), not a
+        // 32-bit array index, so the last element of e.g. a `{ length: 2**32 }`
+        // object is at index 2**32-1 — clamping to uint would read the wrong slot.
+        var length = GetArrayLikeLengthLong(@this);
 
         if (length == 0)
         {
@@ -200,12 +203,11 @@ public partial class JSArray
         }
 
         var index = length - 1;
-        var element = @this[index];
+        var element = GetIndexedValue(@this, index);
 
-        if (!@this.Delete(index).BooleanValue)
-            throw JSEngine.NewTypeError($"Cannot delete property {index}");
+        DeleteIndexedValueOrThrow(@this, index);
 
-        @this.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), new JSNumber(index));
+        @this.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(index));
         return element;
     }
 
@@ -299,7 +301,10 @@ public partial class JSArray
         // into their wrapper objects; null/undefined throw a TypeError.
         var @this = ToArrayLikeObject(a.This);
 
-        var length = @this.Length;
+        // Step 3: len = ToLength(? Get(obj, "length")) — read the (possibly inherited)
+        // `length` property, not the CLR element-store count, so sort works on a
+        // generic array-like object.
+        var length = GetArrayLikeLengthLong(@this);
         if (length <= 1)
             return @this;
 
@@ -375,8 +380,8 @@ public partial class JSArray
             };
         }
 
-        var values = new System.Collections.Generic.List<JSValue>(length);
-        for (uint index = 0; index < length; index++)
+        var values = new System.Collections.Generic.List<JSValue>(length > int.MaxValue ? 0 : (int)length);
+        for (long index = 0; index < length; index++)
         {
             if (HasIndexedProperty(@this, index))
                 values.Add(GetIndexedValue(@this, index));
@@ -384,7 +389,7 @@ public partial class JSArray
 
         values.Sort(cx);
 
-        uint writeIndex = 0;
+        long writeIndex = 0;
         foreach (var item in values)
             SetIndexedValue(@this, writeIndex++, item);
 
@@ -565,13 +570,16 @@ public partial class JSArray
             var fromIndex = index - 1;
             var toIndex = fromIndex + argCount;
 
-            if (@this.TryGetElement(fromIndex, out var value))
+            // Source presence is tested with HasProperty and read with [[Get]] — both
+            // traverse the prototype chain — so a hole shadowing an inherited indexed
+            // property (e.g. Array.prototype[0]) is copied, not deleted.
+            if (HasIndexedProperty(@this, fromIndex))
             {
-                @this.SetValue(toIndex, value, @this);
+                SetIndexedValue(@this, toIndex, GetIndexedValue(@this, fromIndex));
             }
-            else if (!@this.Delete(toIndex).BooleanValue)
+            else
             {
-                throw JSEngine.NewTypeError($"Cannot delete property {toIndex}");
+                DeleteIndexedValueOrThrow(@this, toIndex);
             }
         }
 
