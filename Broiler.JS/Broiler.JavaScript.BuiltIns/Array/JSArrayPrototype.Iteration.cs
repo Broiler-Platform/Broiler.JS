@@ -424,10 +424,19 @@ public partial class JSArray
     public static JSValue Flat(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
+        // Spec order: LengthOfArrayLike (read "length") first, then coerce the depth
+        // argument, then ArraySpeciesCreate (read "constructor") — test262
+        // flat/proxy-access-count.
+        var length = GetArrayLikeLength(@this);
+        // FlattenIntoArray: depth defaults to 1 and is coerced (ToIntegerOrInfinity) only
+        // when the argument is supplied — an explicit `undefined` keeps the default, like an
+        // omitted argument (test262 flat/non-numeric-depth-should-not-throw). A negative or
+        // other non-positive depth means "do not flatten", handled by FlattenTo's depth > 0 gate.
+        var depthArg = a[0];
+        int depth = depthArg == null || depthArg.IsUndefined ? 1 : depthArg.IntegerValue;
         var result = CreateArraySpecies(@this, 0);
-        int depth = a[0]?.IntegerValue ?? 1;
         uint resultIndex = 0;
-        FlattenTo(result, @this, null, null, depth, ref resultIndex);
+        FlattenTo(result, @this, null, null, depth, ref resultIndex, length);
         return result;
     }
 
@@ -463,22 +472,26 @@ public partial class JSArray
     {
         for (uint i = 0; i < length; i++)
         {
-            // TryGetElement - to check for holes in array
-            if (@this.TryGetElement(i, out var elementValue))
-            {
-                // Transform the value using the mapping function.
-                if (callback != null)
-                    elementValue = callback.InvokeFunction(new Arguments(thisArg, elementValue, new JSNumber(i), @this));
+            // FlattenIntoArray: HasProperty then Get, so holes are skipped and exotic
+            // sources (a Proxy / array-like) are observed through their has/get traps
+            // rather than only their dense own elements (test262 flat/proxy-access-count).
+            if (!@this.HasProperty(JSValue.CreateString(i.ToString())).BooleanValue)
+                continue;
 
-                // If the element is an array, flatten it. The mapper (flatMap) is
-                // applied only to the source's own elements — FlattenIntoArray recurses
-                // with the mapperFunction absent — so a mapped element that is itself an
-                // array is flattened, not re-mapped.
-                if (depth > 0 && elementValue is JSArray childArray)
-                    FlattenTo(result, childArray, null, null, depth - 1, ref resultIndex);
-                else
-                    CreateDataPropertyOrThrow(result, resultIndex++, elementValue);
-            }
+            var elementValue = @this[i];
+
+            // Transform the value using the mapping function.
+            if (callback != null)
+                elementValue = callback.InvokeFunction(new Arguments(thisArg, elementValue, new JSNumber(i), @this));
+
+            // If the element is an array, flatten it. The mapper (flatMap) is
+            // applied only to the source's own elements — FlattenIntoArray recurses
+            // with the mapperFunction absent — so a mapped element that is itself an
+            // array is flattened, not re-mapped.
+            if (depth > 0 && elementValue is JSArray childArray)
+                FlattenTo(result, childArray, null, null, depth - 1, ref resultIndex);
+            else
+                CreateDataPropertyOrThrow(result, resultIndex++, elementValue);
         }
     }
 

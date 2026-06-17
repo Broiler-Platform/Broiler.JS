@@ -395,8 +395,14 @@ public partial class JSBigInt : JSPrimitive
 
     // BigInt::unsignedRightShift always throws — BigInts are arbitrary-precision and have no fixed
     // width, so ">>>" is unsupported for any BigInt operand (a TypeError, not a RangeError).
+    // ApplyStringOrNumericBinaryOperator coerces both operands (ToNumeric) before the operation,
+    // so a right operand's Symbol.toPrimitive runs — and may throw — ahead of this TypeError
+    // (test262 unsigned-right-shift/bigint-toprimitive).
     public override JSValue UnsignedRightShift(JSValue value)
-        => throw JSEngine.NewTypeError("BigInts have no unsigned right shift, use >> instead");
+    {
+        _ = ToNumericPrimitive(value);
+        throw JSEngine.NewTypeError("BigInts have no unsigned right shift, use >> instead");
+    }
 
     public override JSValue Multiply(JSValue value) => new JSBigInt(this.value * value.AsBigIntegerOnly());
 

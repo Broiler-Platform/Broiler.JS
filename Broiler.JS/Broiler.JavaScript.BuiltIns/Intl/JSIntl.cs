@@ -40,6 +40,10 @@ public static class JSIntl
     private static readonly KeyString SupportedLocalesOfKey = KeyStrings.GetOrCreate("supportedLocalesOf");
     private static readonly KeyString StyleKey = KeyStrings.GetOrCreate("style");
     private static readonly KeyString CurrencyKey = KeyStrings.GetOrCreate("currency");
+    private static readonly KeyString CurrencyDisplayKey = KeyStrings.GetOrCreate("currencyDisplay");
+    private static readonly KeyString CurrencySignKey = KeyStrings.GetOrCreate("currencySign");
+    private static readonly string[] CurrencyDisplayValues = ["code", "symbol", "narrowSymbol", "name"];
+    private static readonly string[] CurrencySignValues = ["standard", "accounting"];
     private static readonly KeyString UnitKey = KeyStrings.GetOrCreate("unit");
     private static readonly KeyString TypeKey = KeyStrings.GetOrCreate("type");
     private static readonly KeyString LocaleMatcherKey = KeyStrings.GetOrCreate("localeMatcher");
@@ -363,8 +367,8 @@ public static class JSIntl
     {
         var constructor = new JSFunction(static (in Arguments a) =>
             {
-                var options = ValidateConstructorArguments("DurationFormat", in a, coerceOptions: false);
-                var locale = ResolveLocale(a.Get1());
+                var options = ValidateConstructorArguments("DurationFormat", in a, out var canonical, coerceOptions: false);
+                var locale = ResolveLocaleFromCanonical(canonical);
                 return new JSIntlDurationFormat(locale, options);
             },
             "DurationFormat",
@@ -388,8 +392,8 @@ public static class JSIntl
     {
         var constructor = new JSFunction(static (in Arguments a) =>
         {
-            var options = ValidateConstructorArguments("ListFormat", in a, coerceOptions: false);
-            var locale = ResolveLocale(a.Get1());
+            var options = ValidateConstructorArguments("ListFormat", in a, out var canonical, coerceOptions: false);
+            var locale = ResolveLocaleFromCanonical(canonical);
             var type = GetOption(options, TypeKey, ["conjunction", "disjunction", "unit"], false, "conjunction");
             var style = GetOption(options, StyleKey, ["long", "short", "narrow"], false, "long");
             return new JSIntlListFormat(locale, type, style);
@@ -475,8 +479,8 @@ public static class JSIntl
     {
         var constructor = new JSFunction((in Arguments a) =>
         {
-            var options = ValidateConstructorArguments("Segmenter", in a, coerceOptions: false);
-            var locale = ResolveLocale(a.Get1());
+            var options = ValidateConstructorArguments("Segmenter", in a, out var canonical, coerceOptions: false);
+            var locale = ResolveLocaleFromCanonical(canonical);
             var granularity = GetOption(options, GranularityKey, ["grapheme", "word", "sentence"], false, "grapheme");
             return new JSIntlSegmenter(locale, granularity);
         }, "Segmenter", "function Segmenter() { [native code] }", length: 0);
@@ -635,6 +639,9 @@ public static class JSIntl
     }
 
     internal static JSObject ValidateConstructorArguments(string name, in Arguments a, bool requireNew = true, bool coerceOptions = true)
+        => ValidateConstructorArguments(name, in a, out _, requireNew, coerceOptions);
+
+    internal static JSObject ValidateConstructorArguments(string name, in Arguments a, out JSValue canonicalLocales, bool requireNew = true, bool coerceOptions = true)
     {
         // Intl.NumberFormat, Intl.DateTimeFormat and Intl.Collator are legacy
         // constructors (ECMA-402): they may be called as ordinary functions
@@ -643,7 +650,12 @@ public static class JSIntl
         if (requireNew && JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
             throw JSEngine.NewTypeError($"Intl.{name} requires 'new'");
 
-        ValidateLocalesArgument(a.Get1());
+        // CanonicalizeLocaleList runs once, ahead of the options coercion, and both
+        // validates the locales argument and produces the requested-locale list the
+        // constructor resolves from. Reusing this list (rather than re-canonicalizing
+        // the user's object in ResolveLocale) keeps the locales object's length/index
+        // getters observed exactly once (test262 .../locales-symbol-length).
+        canonicalLocales = CanonicalizeLocaleList(a.Get1());
         var options = ValidateOptionsArgument(a.GetAt(1), coerceOptions);
         // Every Intl service constructor reads localeMatcher first (right after
         // coercing the options object) via GetOption(..., «lookup, best fit», ...),
@@ -857,11 +869,6 @@ public static class JSIntl
 
         return JSObject.CreatePrimitiveObject(options) as JSObject
             ?? throw JSEngine.NewTypeError("Options must be an object");
-    }
-
-    private static void ValidateLocalesArgument(JSValue locales)
-    {
-        _ = CanonicalizeLocaleList(locales);
     }
 
     private static JSValue CanonicalizeLocaleList(JSValue locales)
@@ -1106,6 +1113,15 @@ public static class JSIntl
         if (style == "currency" && currencyValue.IsUndefined)
             throw JSEngine.NewTypeError("Intl.NumberFormat currency style requires a currency option");
 
+        // SetNumberFormatUnitOptions reads currencyDisplay and currencySign right
+        // after currency, unconditionally (even when style is not "currency"), and
+        // validates them against their sanctioned value lists. The resolved values
+        // are only reflected when style is "currency"; here we read them purely so
+        // the option getters fire in spec order (test262 NumberFormat
+        // constructor-option-read-order) and an invalid value is a RangeError.
+        _ = GetOption(options, CurrencyDisplayKey, CurrencyDisplayValues, false, "symbol");
+        _ = GetOption(options, CurrencySignKey, CurrencySignValues, false, "standard");
+
         var unitValue = options[UnitKey];
         if (style == "unit" && unitValue.IsUndefined)
             throw JSEngine.NewTypeError("Intl.NumberFormat unit style requires a unit option");
@@ -1116,9 +1132,6 @@ public static class JSIntl
         if (style != "unit")
             unitDisplay = null;
 
-        // notation precedes compactDisplay (spec order; observed by the
-        // compactDisplay getter call-order tests). compactDisplay is always
-        // validated, but only reflected when notation is "compact".
         var notation = GetOption(options, NotationKey, NotationValues, false, "standard");
 
         // SetNumberFormatDigitOptions: read the digit options from the bag exactly
@@ -1128,21 +1141,11 @@ public static class JSIntl
         // instead of re-invoking option getters.
         var digitOptions = SnapshotDigitOptions(options);
 
-        var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayValues, false, "short");
-        if (notation != "compact")
-            compactDisplay = null;
-
-        var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
-
-        // GetUseGroupingOption: the default is "min2" for compact notation, "auto"
-        // otherwise; true → "always", a falsy value → boolean false, and an unrecognized
-        // string falls back to the default.
-        var useGrouping = ResolveUseGrouping(options, notation);
-
-        // roundingIncrement is a numeric option restricted to a sanctioned set; the
-        // string enums below are validated against their sanctioned value lists (a bad
-        // value, e.g. an empty string for trailingZeroDisplay, is a RangeError per
-        // SetNumberFormatDigitOptions). All four always have a resolved value (their
+        // The rounding options follow the digit options inside SetNumberFormatDigitOptions,
+        // ahead of compactDisplay/useGrouping/signDisplay. roundingIncrement is a numeric
+        // option restricted to a sanctioned set; the string enums below are validated against
+        // their sanctioned value lists (a bad value, e.g. an empty string for
+        // trailingZeroDisplay, is a RangeError). All four always have a resolved value (their
         // defaults) which resolvedOptions reflects.
         var roundingIncrement = GetNumberOption(options, RoundingIncrementKey, 1, 5000) ?? 1;
         if (System.Array.IndexOf(SanctionedRoundingIncrements, roundingIncrement) < 0)
@@ -1150,6 +1153,20 @@ public static class JSIntl
         var roundingMode = GetOption(options, RoundingModeKey, ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"], false, "halfExpand");
         var roundingPriority = GetOption(options, RoundingPriorityKey, ["auto", "morePrecision", "lessPrecision"], false, "auto");
         var trailingZeroDisplay = GetOption(options, TrailingZeroDisplayKey, ["auto", "stripIfInteger"], false, "auto");
+
+        // notation precedes compactDisplay (spec order; observed by the compactDisplay
+        // getter call-order tests). compactDisplay is always validated, but only
+        // reflected when notation is "compact".
+        var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayValues, false, "short");
+        if (notation != "compact")
+            compactDisplay = null;
+
+        // GetUseGroupingOption: the default is "min2" for compact notation, "auto"
+        // otherwise; true → "always", a falsy value → boolean false, and an unrecognized
+        // string falls back to the default. Read after compactDisplay, before signDisplay.
+        var useGrouping = ResolveUseGrouping(options, notation);
+
+        var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
 
         // SetNumberFormatDigitOptions: when roundingIncrement ≠ 1 the rounding strategy must be
         // fraction-digits — not significant-digits, nor a morePrecision/lessPrecision priority (a
@@ -1253,9 +1270,21 @@ public static class JSIntl
     }
 
     internal static string ResolveLocale(JSValue locales)
+        => ResolveLocaleFromCanonical(CanonicalizeLocaleList(locales));
+
+    // ResolveLocale, then drop any Unicode ("-u-") extension keyword whose key is not
+    // relevant to the service (ECMA-402 ResolveLocale keeps only the relevantExtensionKeys
+    // in the resolved [[Locale]]). So `ja-JP-u-cu-usd` resolves to `ja-JP` for a service
+    // that only cares about, say, `nu`.
+    internal static string ResolveLocale(JSValue locales, string[] relevantExtensionKeys)
+        => FilterUnicodeExtensionKeywords(ResolveLocale(locales), relevantExtensionKeys);
+
+    // ResolveLocale over an already-canonicalized requested-locale list (a single
+    // CanonicalizeLocaleList call's result), so the caller's locales object is not read
+    // a second time. Picks the first requested locale, falling back to the host locale.
+    internal static string ResolveLocaleFromCanonical(JSValue canonicalLocales)
     {
-        var localeList = CanonicalizeLocaleList(locales);
-        if (localeList is JSObject array)
+        if (canonicalLocales is JSObject array)
         {
             var first = array[0u];
             if (!first.IsUndefined)
@@ -1265,12 +1294,8 @@ public static class JSIntl
         return string.IsNullOrEmpty(CultureInfo.CurrentCulture.Name) ? "en-US" : CultureInfo.CurrentCulture.Name;
     }
 
-    // ResolveLocale, then drop any Unicode ("-u-") extension keyword whose key is not
-    // relevant to the service (ECMA-402 ResolveLocale keeps only the relevantExtensionKeys
-    // in the resolved [[Locale]]). So `ja-JP-u-cu-usd` resolves to `ja-JP` for a service
-    // that only cares about, say, `nu`.
-    internal static string ResolveLocale(JSValue locales, string[] relevantExtensionKeys)
-        => FilterUnicodeExtensionKeywords(ResolveLocale(locales), relevantExtensionKeys);
+    internal static string ResolveLocaleFromCanonical(JSValue canonicalLocales, string[] relevantExtensionKeys)
+        => FilterUnicodeExtensionKeywords(ResolveLocaleFromCanonical(canonicalLocales), relevantExtensionKeys);
 
     // The Unicode-extension keys each service uses to negotiate the resolved locale.
     internal static readonly string[] NumberFormatRelevantKeys = ["nu"];
@@ -1390,6 +1415,38 @@ public static class JSIntl
     // is supported and DIFFERENT overrides it and removes the `-u-nu-` from the locale; an
     // unsupported value (in either place) falls through to "latn" with `-u-nu-` removed.
     internal static (string NumberingSystem, string Locale) ResolveNumberingSystem(string localeTag, JSObject options)
+        => ResolveNumberingSystem(localeTag, ReadNumberingSystemOption(options));
+
+    // Reads (and string-coerces) the numberingSystem option from the bag once, returning
+    // null when it is absent/undefined. Split out so Intl.NumberFormat can fire the getter
+    // in spec order (right after localeMatcher) while the locale negotiation below still
+    // happens once the resolved locale tag is known.
+    internal static string ReadNumberingSystemOption(JSObject options)
+    {
+        var optionValue = options?[NumberingSystemKey];
+        return optionValue == null || optionValue.IsUndefined ? null : optionValue.StringValue;
+    }
+
+    // Reads (string-coerces and validates) the calendar option from the bag once,
+    // returning null when absent. InitializeDateTimeFormat reads it right after
+    // localeMatcher and ahead of numberingSystem; a value that is not a well-formed
+    // Unicode BCP-47 extension type is a RangeError.
+    internal static string ReadCalendarOption(JSObject options)
+    {
+        var value = options == null ? null : OptionString(options, KeyStrings.GetOrCreate("calendar"));
+        if (value == null)
+            return null;
+        if (!UnicodeKeywordTypePattern.IsMatch(value.ToLowerInvariant()))
+            throw JSEngine.NewRangeError("Invalid calendar option");
+        return value;
+    }
+
+    // Negotiates the resolved `nu` (numbering system) against the locale's `-u-nu-`
+    // extension, given the already-read numberingSystem option value. Per spec: a supported
+    // `-u-nu-` value is used and reflected in the locale; a supported option that DIFFERS
+    // overrides it and removes the `-u-nu-` from the locale; an unsupported value (in either
+    // place) falls through to "latn" with `-u-nu-` removed.
+    internal static (string NumberingSystem, string Locale) ResolveNumberingSystem(string localeTag, string optionValue)
     {
         var value = "latn";
         var reflectInLocale = false;
@@ -1401,15 +1458,11 @@ public static class JSIntl
             reflectInLocale = true;
         }
 
-        var optionValue = options?[NumberingSystemKey];
-        if (optionValue != null && !optionValue.IsUndefined)
+        if (optionValue != null && IsSupportedNumberingSystem(optionValue) &&
+            !string.Equals(optionValue, value, StringComparison.Ordinal))
         {
-            var requested = optionValue.StringValue;
-            if (IsSupportedNumberingSystem(requested) && !string.Equals(requested, value, StringComparison.Ordinal))
-            {
-                value = requested;
-                reflectInLocale = false;
-            }
+            value = optionValue;
+            reflectInLocale = false;
         }
 
         var locale = reflectInLocale ? localeTag : RemoveUnicodeExtensionKeyword(localeTag, "nu");
@@ -1854,8 +1907,8 @@ public class JSIntlRelativeTimeFormat : JSObject
 
     public JSIntlRelativeTimeFormat(in Arguments a) : this()
     {
-        var options = JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a);
-        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(JSIntl.ResolveLocale(a.Get1()), options);
+        var options = JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a, out var canonical);
+        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(JSIntl.ResolveLocaleFromCanonical(canonical), options);
         style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), ["long", "short", "narrow"], false, "long");
         numeric = JSIntl.GetOption(options, KeyStrings.GetOrCreate("numeric"), ["always", "auto"], false, "always");
     }
@@ -2744,8 +2797,8 @@ public sealed class JSIntlDisplayNames : JSObject
 
     public JSIntlDisplayNames(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
-        options = JSIntl.ValidateDisplayNamesOptions(JSIntl.ValidateConstructorArguments("DisplayNames", in a, coerceOptions: false));
-        locale = JSIntl.ResolveLocale(a.Get1());
+        options = JSIntl.ValidateDisplayNamesOptions(JSIntl.ValidateConstructorArguments("DisplayNames", in a, out var canonical, coerceOptions: false));
+        locale = JSIntl.ResolveLocaleFromCanonical(canonical);
     }
 
     public static JSValue OfPrototype(in Arguments a)
@@ -3189,8 +3242,8 @@ public sealed class JSIntlPluralRules : JSObject
 
     public JSIntlPluralRules(in Arguments a) : base(CurrentPrototype())
     {
-        var options = JSIntl.ValidateConstructorArguments("PluralRules", in a);
-        locale = JSIntl.ResolveLocale(a.Get1());
+        var options = JSIntl.ValidateConstructorArguments("PluralRules", in a, out var canonical);
+        locale = JSIntl.ResolveLocaleFromCanonical(canonical);
         var typeKey = KeyStrings.GetOrCreate("type");
         type = options is null || options[typeKey].IsUndefined ? "cardinal" : options[typeKey].StringValue;
         // notation precedes the digit options (SetNumberFormatDigitOptions) and is reported by
@@ -3302,10 +3355,16 @@ public class JSIntlNumberFormat : JSObject
 
     public JSIntlNumberFormat(in Arguments a) : this()
     {
-        options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, requireNew: false);
+        options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, out var canonical, requireNew: false);
+        // ECMA-402 InitializeNumberFormat reads the numberingSystem option immediately
+        // after localeMatcher and ahead of the style/currency/digit options, so its
+        // getter must fire here — before ValidateNumberFormatOptions — rather than at
+        // the locale-negotiation step below (test262 NumberFormat
+        // constructor-numberingSystem-order, constructor-option-read-order).
+        var nuOption = JSIntl.ReadNumberingSystemOption(options);
         resolved = JSIntl.ValidateNumberFormatOptions(options);
-        var resolvedLocale = JSIntl.ResolveLocale(a.Get1(), JSIntl.NumberFormatRelevantKeys);
-        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(resolvedLocale, options);
+        var resolvedLocale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.NumberFormatRelevantKeys);
+        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(resolvedLocale, nuOption);
     }
 
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
@@ -4178,6 +4237,12 @@ public class JSIntlNumberFormat : JSObject
             }
             if (!@this.options[unitKey].IsUndefined)
                 result.CreateDataProperty(unitKey, @this.options[unitKey]);
+            // unitDisplay sits with unit in the resolvedOptions table — before the digit
+            // options — and is reflected only when style is "unit" (resolved.UnitDisplay
+            // is null otherwise).
+            if (@this.resolved?.UnitDisplay != null)
+                result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"),
+                    JSValue.CreateString(@this.resolved.UnitDisplay));
             // Digit options reflect the construction-time snapshot (read once),
             // not the live options bag, so resolvedOptions does not re-trigger
             // option getters.
@@ -4226,19 +4291,19 @@ public class JSIntlNumberFormat : JSObject
             result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"), JSValue.CreateString("auto"));
         }
 
-        // notation/signDisplay always have a resolved value; compactDisplay and
-        // unitDisplay are reflected only when their slot exists. These are read
-        // from the slots resolved at construction (not the live options object)
-        // so getter side effects observe construction-time order, not access.
+        // notation/signDisplay always have a resolved value; compactDisplay is
+        // reflected only when notation is "compact". Per the resolvedOptions table
+        // compactDisplay precedes signDisplay (test262 NumberFormat
+        // resolvedOptions/return-keys-order-default). These are read from the slots
+        // resolved at construction (not the live options object) so getter side
+        // effects observe construction-time order, not access.
         var r = @this.resolved;
         if (r != null)
         {
             result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), JSValue.CreateString(r.Notation));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("signDisplay"), JSValue.CreateString(r.SignDisplay));
             if (r.CompactDisplay != null)
                 result.CreateDataProperty(KeyStrings.GetOrCreate("compactDisplay"), JSValue.CreateString(r.CompactDisplay));
-            if (r.UnitDisplay != null)
-                result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"), JSValue.CreateString(r.UnitDisplay));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("signDisplay"), JSValue.CreateString(r.SignDisplay));
 
             // SetNumberFormatDigitOptions rounding slots are always present (spec order:
             // after notation/compactDisplay/signDisplay).
@@ -4270,10 +4335,10 @@ public class JSIntlCollator : JSObject
 
     public JSIntlCollator(in Arguments a) : this()
     {
-        var options = JSIntl.ValidateConstructorArguments("Collator", in a, requireNew: false);
+        var options = JSIntl.ValidateConstructorArguments("Collator", in a, out var canonical, requireNew: false);
         // Keep only the collation-relevant Unicode keywords (co/kf/kn) in the resolved locale, in
         // canonical form (so e.g. "-kn-true" reduces to "-kn").
-        locale = JSIntl.ResolveLocale(a.Get1(), JSIntl.CollatorRelevantKeys);
+        locale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.CollatorRelevantKeys);
         compareInfo = CultureInfo.CurrentCulture.CompareInfo;
 
         if (TryGetUnicodeExtension(locale, "kn", out var kn))
@@ -5150,7 +5215,14 @@ public class JSIntlDateTimeFormat : JSObject
 
     public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())
     {
-        options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a, requireNew: false);
+        options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a, out var canonical, requireNew: false);
+        // ECMA-402 InitializeDateTimeFormat reads the calendar option, then the
+        // numberingSystem option, immediately after localeMatcher and ahead of the
+        // date/time component options, so both getters must fire here — before the
+        // remaining option reads and the locale negotiation below (test262
+        // DateTimeFormat constructor-calendar-numberingSystem-order).
+        _ = JSIntl.ReadCalendarOption(options);
+        var nuOption = JSIntl.ReadNumberingSystemOption(options);
         JSIntl.ValidateDateTimeFormatOptions(options);
         // GetOption (coerce to string + validate against the sanctioned set, RangeError
         // otherwise) is performed once here so resolvedOptions reports the coerced
@@ -5168,8 +5240,8 @@ public class JSIntlDateTimeFormat : JSObject
                         $"Intl.DateTimeFormat: the {name} option cannot be combined with dateStyle or timeStyle");
         }
 
-        var resolvedLocale = JSIntl.ResolveLocale(a.Get1(), JSIntl.DateTimeFormatRelevantKeys);
-        (numberingSystem, localeTag) = JSIntl.ResolveNumberingSystem(resolvedLocale, options);
+        var resolvedLocale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.DateTimeFormatRelevantKeys);
+        (numberingSystem, localeTag) = JSIntl.ResolveNumberingSystem(resolvedLocale, nuOption);
         locale = CultureInfo.CurrentCulture;
     }
 

@@ -437,7 +437,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <returns></returns>
     public virtual JSValue ValueOf() => this;
 
-    private static JSValue ToNumericPrimitive(JSValue value)
+    protected static JSValue ToNumericPrimitive(JSValue value)
     {
         var primitive = value switch
         {

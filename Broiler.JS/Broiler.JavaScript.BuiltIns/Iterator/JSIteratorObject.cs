@@ -3,6 +3,7 @@ using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Generator;
+using Broiler.JavaScript.BuiltIns.Proxy;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Extensions;
@@ -1071,10 +1072,32 @@ public partial class JSIteratorObject : JSObject
         {
             _mode = mode;
 
+            // [[OwnPropertyKeys]]: snapshot every own key (integer-index + string, then
+            // symbol) BEFORE reading any value, so a getter that mutates the object mid-read
+            // cannot drop a later key (test262 zipKeyed/iterables-iteration-deleted) and
+            // symbol-keyed iterables are included (zipKeyed/iterables-iteration-symbol-key).
+            var ownKeys = new List<JSValue>();
             var allKeys = iterables.GetAllKeys(false, false);
+            while (allKeys.MoveNext(out var key))
+                ownKeys.Add(key);
+
+            // A Proxy's GetAllKeys already returned its symbol keys via the ownKeys trap.
+            if (iterables is not JSProxy)
+            {
+                foreach (var (symbolKey, property) in iterables.GetSymbols().AllValues())
+                {
+                    if (property.IsEmpty)
+                        continue;
+
+                    var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(symbolKey);
+                    if (symbol != null)
+                        ownKeys.Add((JSValue)symbol);
+                }
+            }
+
             try
             {
-                while (allKeys.MoveNext(out var key))
+                foreach (var key in ownKeys)
                 {
                     var desc = iterables.GetOwnPropertyDescriptor(key);
                     if (desc.IsUndefined)

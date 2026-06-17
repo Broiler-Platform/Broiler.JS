@@ -1,6 +1,7 @@
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
+using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.BuiltIns.Iterator;
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
@@ -61,6 +62,12 @@ public partial class JSSet : JSObject
     [JSExport("add")]
     public JSValue Add(JSValue key)
     {
+        // Set.prototype.add canonicalizes -0 to +0 before storing (spec step "If value
+        // is -0𝔽, set value to +0𝔽."), so iteration and the set operations that copy
+        // entries observe +0 (test262 Set/prototype/.../converts-negative-zero).
+        if (key.IsNumber && JSNumber.IsNegativeZero(key.DoubleValue))
+            key = JSNumber.Zero;
+
         HashedString uk = key.ToUniqueID();
 
         if (!index.TryGetValue(in uk, out _))
