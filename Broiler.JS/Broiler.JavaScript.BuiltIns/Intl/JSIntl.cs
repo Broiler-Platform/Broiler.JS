@@ -146,6 +146,22 @@ public static class JSIntl
                     return list;
                 }
 
+                if (key == "currency")
+                {
+                    var list = JSValue.CreateArray();
+                    foreach (var c in IntlEnumerationData.Currencies)
+                        list.AddArrayItem(JSValue.CreateString(c));
+                    return list;
+                }
+
+                if (key == "unit")
+                {
+                    var list = JSValue.CreateArray();
+                    foreach (var u in IntlEnumerationData.Units)
+                        list.AddArrayItem(JSValue.CreateString(u));
+                    return list;
+                }
+
                 return JSValue.CreateArray();
             }, "supportedValuesOf", "function supportedValuesOf() { [native code] }", length: 1, createPrototype: false),
             JSPropertyAttributes.ConfigurableValue);
@@ -650,8 +666,174 @@ public static class JSIntl
         // ValidateLanguageTag also canonicalizes (e.g. grandfathered "art-lojban"
         // -> "jbo"); the canonical form is what the Locale stores and reports.
         var canonicalTag = ValidateLanguageTag(tagString);
-        ValidateLocaleOptions(canonicalTag, ValidateOptionsArgument(a.GetAt(1)));
-        return canonicalTag;
+        var optionsObject = ValidateOptionsArgument(a.GetAt(1));
+        ValidateLocaleOptions(canonicalTag, optionsObject);
+        // ApplyOptionsToTag + the Unicode-extension options (calendar/collation/hourCycle/caseFirst/
+        // numeric/numberingSystem) fold the options into the tag, canonicalizing keyword values.
+        return optionsObject == null ? canonicalTag : ApplyLocaleOptions(canonicalTag, optionsObject);
+    }
+
+    // Bcp47 keyword value aliases (UTS #35 LocaleId canonicalization). Only the deprecated values
+    // browsers canonicalize are listed; any other value is used verbatim.
+    private static readonly Dictionary<string, string> CalendarValueAliases = new(StringComparer.Ordinal)
+    {
+        ["islamicc"] = "islamic-civil",
+        ["ethiopic-amete-alem"] = "ethioaa",
+        ["gregorian"] = "gregory",
+    };
+
+    private static readonly Regex UnicodeKeywordTypePattern =
+        new(@"^[0-9a-z]{3,8}(?:-[0-9a-z]{3,8})*$", RegexOptions.CultureInvariant);
+
+    // InitializeLocale steps 12-30: apply the language/script/region options and the Unicode-extension
+    // keyword options to the canonical tag, then re-emit it with the "-u-" keywords canonicalized
+    // (values de-aliased, a boolean "true" dropped) and sorted by key. Existing variants, attributes
+    // and other singleton extensions are preserved.
+    private static string ApplyLocaleOptions(string tag, JSObject options)
+    {
+        var parts = tag.Split('-');
+        var language = parts[0];
+        var i = 1;
+        string script = null, region = null;
+        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i])) { script = parts[i]; i++; }
+        if (i < parts.Length
+            && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigitTag(parts[i]))))
+        { region = parts[i]; i++; }
+
+        var variants = new List<string>();
+        while (i < parts.Length && parts[i].Length != 1) { variants.Add(parts[i]); i++; }
+
+        // Walk the singleton extensions, splitting out the "-u-" attributes/keywords from the rest.
+        var attributes = new List<string>();
+        var keywords = new List<(string Key, List<string> Types)>();
+        var otherExtensions = new List<(char Singleton, string Body)>();
+        while (i < parts.Length)
+        {
+            var singleton = char.ToLowerInvariant(parts[i][0]);
+            i++;
+            var block = new List<string>();
+            while (i < parts.Length && parts[i].Length != 1) { block.Add(parts[i].ToLowerInvariant()); i++; }
+            if (singleton == 'u')
+            {
+                foreach (var sub in block)
+                {
+                    if (sub.Length == 2) keywords.Add((sub, new List<string>()));
+                    else if (keywords.Count > 0) keywords[^1].Types.Add(sub);
+                    else attributes.Add(sub);
+                }
+            }
+            else
+            {
+                otherExtensions.Add((singleton, string.Join("-", block)));
+            }
+        }
+
+        // Base-name options.
+        if (OptionString(options, LanguageKey) is { } langOpt)
+        {
+            if (!Regex.IsMatch(langOpt, "^(?:[A-Za-z]{2,3}|[A-Za-z]{5,8})$", RegexOptions.CultureInvariant))
+                throw JSEngine.NewRangeError("Invalid language option");
+            language = langOpt.ToLowerInvariant();
+        }
+        if (OptionString(options, ScriptKey) is { } scriptOpt)
+        {
+            if (!Regex.IsMatch(scriptOpt, "^[A-Za-z]{4}$", RegexOptions.CultureInvariant))
+                throw JSEngine.NewRangeError("Invalid script option");
+            script = char.ToUpperInvariant(scriptOpt[0]) + scriptOpt[1..].ToLowerInvariant();
+        }
+        if (OptionString(options, RegionKey) is { } regionOpt)
+        {
+            if (!Regex.IsMatch(regionOpt, "^(?:[A-Za-z]{2}|[0-9]{3})$", RegexOptions.CultureInvariant))
+                throw JSEngine.NewRangeError("Invalid region option");
+            region = regionOpt.ToUpperInvariant();
+        }
+
+        // Unicode-extension keyword options.
+        SetKeyword(keywords, "ca", ReadTypeOption(options, "calendar", "ca"));
+        SetKeyword(keywords, "co", ReadTypeOption(options, "collation", "co"));
+        SetKeyword(keywords, "hc", GetOption(options, KeyStrings.GetOrCreate("hourCycle"), ["h11", "h12", "h23", "h24"], false, null));
+        SetKeyword(keywords, "kf", GetOption(options, KeyStrings.GetOrCreate("caseFirst"), ["upper", "lower", "false"], false, null));
+        var numericOption = options[KeyStrings.GetOrCreate("numeric")];
+        SetKeyword(keywords, "kn", numericOption.IsUndefined ? null : (numericOption.BooleanValue ? "true" : "false"));
+        SetKeyword(keywords, "nu", ReadTypeOption(options, "numberingSystem", "nu"));
+
+        // Re-emit. The "-u-" keywords are sorted by key and their values canonicalized.
+        var sb = new StringBuilder(language);
+        if (script != null) sb.Append('-').Append(script);
+        if (region != null) sb.Append('-').Append(region);
+        foreach (var v in variants) sb.Append('-').Append(v);
+
+        if (attributes.Count > 0 || keywords.Count > 0)
+        {
+            sb.Append("-u");
+            foreach (var attr in attributes) sb.Append('-').Append(attr);
+            keywords.Sort((x, y) => string.CompareOrdinal(x.Key, y.Key));
+            foreach (var (key, types) in keywords)
+            {
+                sb.Append('-').Append(key);
+                var canonical = CanonicalizeKeywordValue(key, string.Join("-", types));
+                // A boolean keyword whose value is the default "true" drops the value.
+                if (canonical is "" or "true")
+                    continue;
+                sb.Append('-').Append(canonical);
+            }
+        }
+
+        // Preserve other singleton extensions, sorted by singleton with private-use ("x") last.
+        otherExtensions.Sort((a, b) =>
+            (a.Singleton == 'x' ? '￿' : a.Singleton).CompareTo(b.Singleton == 'x' ? '￿' : b.Singleton));
+        foreach (var (singleton, body) in otherExtensions)
+        {
+            sb.Append('-').Append(singleton);
+            if (body.Length > 0) sb.Append('-').Append(body);
+        }
+
+        return sb.ToString();
+    }
+
+    private static string CanonicalizeKeywordValue(string key, string value)
+    {
+        if (value.Length == 0)
+            return value;
+        if (key == "ca" && CalendarValueAliases.TryGetValue(value, out var ca))
+            return ca;
+        return value;
+    }
+
+    private static void SetKeyword(List<(string Key, List<string> Types)> keywords, string key, string value)
+    {
+        if (value == null)
+            return;
+        var types = new List<string>(value.Split('-'));
+        for (var k = 0; k < keywords.Count; k++)
+            if (keywords[k].Key == key) { keywords[k] = (key, types); return; }
+        keywords.Add((key, types));
+    }
+
+    // A calendar/collation/numberingSystem option: coerced to a lowercase string and validated against
+    // the Unicode keyword type grammar (a malformed value is a RangeError).
+    private static string ReadTypeOption(JSObject options, string optionName, string key)
+    {
+        var value = OptionString(options, KeyStrings.GetOrCreate(optionName));
+        if (value == null)
+            return null;
+        value = value.ToLowerInvariant();
+        if (!UnicodeKeywordTypePattern.IsMatch(value))
+            throw JSEngine.NewRangeError($"Invalid {optionName} option");
+        return value;
+    }
+
+    private static string OptionString(JSObject options, KeyString key)
+    {
+        var v = options[key];
+        return v == null || v.IsUndefined ? null : v.ToString();
+    }
+
+    private static bool IsAllDigitTag(string s)
+    {
+        foreach (var c in s)
+            if (c < '0' || c > '9') return false;
+        return s.Length > 0;
     }
 
     internal static JSObject ValidateOptionsArgument(JSValue options, bool coerce = true)
@@ -952,6 +1134,11 @@ public static class JSIntl
 
         var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
 
+        // GetUseGroupingOption: the default is "min2" for compact notation, "auto"
+        // otherwise; true → "always", a falsy value → boolean false, and an unrecognized
+        // string falls back to the default.
+        var useGrouping = ResolveUseGrouping(options, notation);
+
         // roundingIncrement is a numeric option restricted to a sanctioned set; the
         // string enums below are validated against their sanctioned value lists (a bad
         // value, e.g. an empty string for trailingZeroDisplay, is a RangeError per
@@ -964,6 +1151,37 @@ public static class JSIntl
         var roundingPriority = GetOption(options, RoundingPriorityKey, ["auto", "morePrecision", "lessPrecision"], false, "auto");
         var trailingZeroDisplay = GetOption(options, TrailingZeroDisplayKey, ["auto", "stripIfInteger"], false, "auto");
 
+        // SetNumberFormatDigitOptions: when roundingIncrement ≠ 1 the rounding strategy must be
+        // fraction-digits — not significant-digits, nor a morePrecision/lessPrecision priority (a
+        // TypeError) — and the resolved maximum and minimum fraction digits must be equal (a RangeError).
+        if (roundingIncrement != 1)
+        {
+            int? Frac(string name)
+            {
+                var v = digitOptions?[KeyStrings.GetOrCreate(name)];
+                return v == null || v.IsUndefined ? null : (int)v.DoubleValue;
+            }
+            var hasSignificant = Frac("minimumSignificantDigits") != null || Frac("maximumSignificantDigits") != null;
+            if (roundingPriority != "auto" || hasSignificant)
+                throw JSEngine.NewTypeError(
+                    "roundingIncrement may only be used with fractionDigits rounding (roundingPriority \"auto\" and no significant-digit options)");
+
+            // ri ≠ 1 forces the default maximum fraction digits down to the default minimum, so an
+            // unspecified pair resolves equal; an explicitly mismatched pair is a RangeError.
+            var mnfdDefault = (style ?? "decimal") == "currency" ? 2 : 0;
+            var mnfd = Frac("minimumFractionDigits");
+            var mxfd = Frac("maximumFractionDigits");
+            int rmin, rmax;
+            if (mnfd == null && mxfd == null) { rmin = rmax = mnfdDefault; }
+            else
+            {
+                rmin = mnfd ?? Math.Min(mnfdDefault, mxfd.Value);
+                rmax = mxfd ?? Math.Max(mnfdDefault, mnfd.Value);
+            }
+            if (rmax != rmin)
+                throw JSEngine.NewRangeError("maximumFractionDigits is not equal to minimumFractionDigits");
+        }
+
         return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay)
         {
             DigitOptions = digitOptions,
@@ -971,14 +1189,36 @@ public static class JSIntl
             RoundingMode = roundingMode,
             RoundingPriority = roundingPriority,
             TrailingZeroDisplay = trailingZeroDisplay,
+            UseGrouping = useGrouping,
         };
+    }
+
+    // GetBooleanOrStringNumberFormatOption(options, "useGrouping", « "min2", "auto",
+    // "always" », defaultUseGrouping): true maps to "always", any falsy value to the
+    // boolean false (returned as the "false" sentinel), and an unrecognized string
+    // (e.g. "true"/"false") to the default. The default is "min2" for compact notation.
+    private static string ResolveUseGrouping(JSObject options, string notation)
+    {
+        var fallback = notation == "compact" ? "min2" : "auto";
+        if (options == null)
+            return fallback;
+        var v = options[KeyStrings.GetOrCreate("useGrouping")];
+        if (v == null || v.IsUndefined)
+            return fallback;
+        if (v.IsBoolean)
+            return v.BooleanValue ? "always" : "false";
+        // ToBoolean(value) === false (null, 0, "", NaN) resolves to boolean false.
+        if (!v.BooleanValue)
+            return "false";
+        var s = v.ToString();
+        return s is "min2" or "auto" or "always" ? s : fallback;
     }
 
     // Reads the digit-related options from the bag once (in spec order) and stores
     // them as plain data properties, so subsequent reads observe construction-time
     // values without re-triggering option getters. Absent options are left out so
     // callers apply their own (style-dependent) defaults.
-    private static JSObject SnapshotDigitOptions(JSObject options)
+    internal static JSObject SnapshotDigitOptions(JSObject options)
     {
         if (options == null)
             return null;
@@ -1035,6 +1275,7 @@ public static class JSIntl
     // The Unicode-extension keys each service uses to negotiate the resolved locale.
     internal static readonly string[] NumberFormatRelevantKeys = ["nu"];
     internal static readonly string[] DateTimeFormatRelevantKeys = ["ca", "hc", "nu"];
+    internal static readonly string[] CollatorRelevantKeys = ["co", "kf", "kn"];
 
     // Rebuilds a BCP-47 tag keeping only the "-u-" extension keywords whose key is in
     // relevantKeys; attributes and irrelevant keys are dropped, and the whole "-u-"
@@ -1095,6 +1336,10 @@ public static class JSIntl
             }
 
             sb.Append('-').Append(key);
+            // CanonicalizeUnicodeLocaleId: a boolean-keyword value of "true" is the default and is
+            // dropped (e.g. "kn-true" → "kn"), so resolvedOptions().locale carries just the key.
+            if (types.Count == 1 && string.Equals(types[0], "true", StringComparison.OrdinalIgnoreCase))
+                continue;
             foreach (var type in types)
                 sb.Append('-').Append(type);
         }
@@ -1396,6 +1641,14 @@ public static class JSIntl
             var timeZone = timeZoneValue.StringValue;
             if (timeZone.Contains('\u2212'))
                 throw JSEngine.NewRangeError("Invalid timeZone option");
+            // An offset time-zone identifier (leading + / -) is validated against the ECMA-402
+            // grammar and normalized to \u00b1HH:MM (CreateDateTimeFormat); the normalized form is what
+            // resolvedOptions and the formatter observe. A named IANA zone is left untouched.
+            if (timeZone.Length > 0 && (timeZone[0] == '+' || timeZone[0] == '-')
+                && TryNormalizeOffsetTimeZone(timeZone, out var normalized))
+                options[TimeZoneKey] = JSValue.CreateString(normalized);
+            else if (timeZone.Length > 0 && (timeZone[0] == '+' || timeZone[0] == '-'))
+                throw JSEngine.NewRangeError($"Invalid timeZone option: {timeZone}");
         }
 
         // timeZoneName is constrained to the sanctioned set; any other value
@@ -1413,6 +1666,30 @@ public static class JSIntl
             if (double.IsNaN(digits) || digits < 1 || digits > 3)
                 throw JSEngine.NewRangeError("fractionalSecondDigits value is out of range.");
         }
+    }
+
+    // An offset time-zone identifier: a sign, two-digit hour and an optional two-digit minute, with
+    // either a colon or no separator (±HH, ±HHMM, ±HH:MM). No seconds or fractional component is
+    // accepted (CreateDateTimeFormat's IsTimeZoneOffsetString is stricter than Temporal's).
+    private static readonly Regex OffsetTimeZonePattern =
+        new(@"^([+-])(\d{2})(?::?(\d{2}))?$", RegexOptions.CultureInvariant);
+
+    // Validates and normalizes an offset time-zone identifier to ±HH:MM. Hours are 00-23 and minutes
+    // 00-59; a zero offset always normalizes with a "+" sign (so "-00" / "-00:00" → "+00:00"). Returns
+    // false for any string that is not a well-formed offset.
+    private static bool TryNormalizeOffsetTimeZone(string timeZone, out string normalized)
+    {
+        normalized = null;
+        var m = OffsetTimeZonePattern.Match(timeZone);
+        if (!m.Success)
+            return false;
+        var hours = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+        var minutes = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
+        if (hours > 23 || minutes > 59)
+            return false;
+        var sign = (hours == 0 && minutes == 0) ? "+" : m.Groups[1].Value;
+        normalized = $"{sign}{hours:D2}:{minutes:D2}";
+        return true;
     }
 
     private static void ObserveOptions(JSObject options, params KeyString[] keys)
@@ -2080,8 +2357,11 @@ public sealed class JSIntlDurationFormat : JSObject
                 if (displayNegativeSign)
                 {
                     displayNegativeSign = false;
-                    if (value == 0 && anyNegative)
-                        value = -0.0;
+                    // The negative sign is carried by the first displayed unit only when the duration
+                    // is actually negative; a lone negative-zero field (DurationSign 0) must format as
+                    // "+0", so normalize its negative zero away to avoid a spurious "-0".
+                    if (value == 0)
+                        value = anyNegative ? -0.0 : 0.0;
                 }
                 else
                 {
@@ -2473,7 +2753,15 @@ public sealed class JSIntlDisplayNames : JSObject
         if (a.This is not JSIntlDisplayNames @this)
             throw JSEngine.NewTypeError("Intl.DisplayNames.prototype.of called on incompatible receiver");
 
-        return JSValue.CreateString(@this.ValidateCode(a.Get1()));
+        var canonical = @this.ValidateCode(a.Get1());
+
+        // For "currency", only codes the implementation has data for (AvailableCurrencies, the same set
+        // Intl.supportedValuesOf("currency") returns) resolve to a name; an unknown but well-formed code
+        // follows the fallback option — "code" yields the code, "none" yields undefined.
+        if (@this.options.Type == "currency" && !IntlEnumerationData.CurrencySet.Contains(canonical))
+            return @this.options.Fallback == "none" ? JSUndefined.Value : JSValue.CreateString(canonical);
+
+        return JSValue.CreateString(canonical);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
@@ -2609,13 +2897,55 @@ public sealed class JSIntlLocale : JSObject
     public static JSValue MaximizePrototype(in Arguments a)
     {
         var locale = RequireLocale(in a, "maximize");
-        return new JSIntlLocale(locale.tag);
+        var (lang, script, region, rest) = locale.SplitCore();
+        var result = CldrLikelySubtags.Maximize(lang, script, region);
+        // The Add Likely Subtags algorithm "signaling an error" leaves the locale unchanged.
+        if (result == null)
+            return new JSIntlLocale(locale.Tag);
+        return new JSIntlLocale(JoinCore(result.Value.lang, result.Value.script, result.Value.region, rest));
     }
 
     public static JSValue MinimizePrototype(in Arguments a)
     {
         var locale = RequireLocale(in a, "minimize");
-        return new JSIntlLocale(locale.tag);
+        var (lang, script, region, rest) = locale.SplitCore();
+        var result = CldrLikelySubtags.Minimize(lang, script, region);
+        if (result == null)
+            return new JSIntlLocale(locale.Tag);
+        return new JSIntlLocale(JoinCore(result.Value.lang, result.Value.script, result.Value.region, rest));
+    }
+
+    // Splits the canonical tag into its language/script/region core and the remainder
+    // (variants, extensions and private-use subtags), which the likely-subtags algorithms
+    // leave untouched.
+    private (string lang, string script, string region, string rest) SplitCore()
+    {
+        var parts = tag.Split('-');
+        var i = 1;
+        string script = null, region = null;
+        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i]))
+        {
+            script = parts[i];
+            i++;
+        }
+        if (i < parts.Length
+            && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigit(parts[i]))))
+        {
+            region = parts[i];
+            i++;
+        }
+        var rest = i < parts.Length ? string.Join("-", parts[i..]) : null;
+        return (parts[0], script, region, rest);
+    }
+
+    private static string JoinCore(string lang, string script, string region, string rest)
+    {
+        var core = lang;
+        if (!string.IsNullOrEmpty(script))
+            core += "-" + script;
+        if (!string.IsNullOrEmpty(region))
+            core += "-" + region;
+        return string.IsNullOrEmpty(rest) ? core : core + "-" + rest;
     }
 
     public static JSValue GetCalendarsPrototype(in Arguments a)
@@ -2854,6 +3184,8 @@ public sealed class JSIntlPluralRules : JSObject
 {
     private readonly string locale;
     private readonly string type;
+    private readonly string notation;
+    private readonly JSObject digitOptions;
 
     public JSIntlPluralRules(in Arguments a) : base(CurrentPrototype())
     {
@@ -2861,6 +3193,11 @@ public sealed class JSIntlPluralRules : JSObject
         locale = JSIntl.ResolveLocale(a.Get1());
         var typeKey = KeyStrings.GetOrCreate("type");
         type = options is null || options[typeKey].IsUndefined ? "cardinal" : options[typeKey].StringValue;
+        // notation precedes the digit options (SetNumberFormatDigitOptions) and is reported by
+        // resolvedOptions; the digit options are snapshotted once at construction.
+        notation = JSIntl.GetOption(options, KeyStrings.GetOrCreate("notation"),
+            ["standard", "scientific", "engineering", "compact"], false, "standard");
+        digitOptions = JSIntl.SnapshotDigitOptions(options);
     }
 
     private static JSObject CurrentPrototype()
@@ -2879,16 +3216,37 @@ public sealed class JSIntlPluralRules : JSObject
         if (a.This is not JSIntlPluralRules @this)
             throw JSEngine.NewTypeError("Intl.PluralRules.prototype.resolvedOptions called on incompatible receiver");
 
+        var digits = @this.digitOptions;
+        JSValue Digit(string name, int fallback)
+        {
+            var v = digits?[KeyStrings.GetOrCreate(name)];
+            return v == null || v.IsUndefined ? JSValue.CreateNumber(fallback) : v;
+        }
+        bool HasDigit(string name) => digits != null && !digits[KeyStrings.GetOrCreate(name)].IsUndefined;
+
+        // Spec resolvedOptions order: locale, type, notation, minimumIntegerDigits, then the
+        // fraction-digit or significant-digit pair (significant digits override when supplied),
+        // then pluralCategories.
         var result = new JSObject();
         result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
         result.CreateDataProperty(KeyStrings.GetOrCreate("type"), JSValue.CreateString(@this.type));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), JSValue.CreateNumber(1));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), JSValue.CreateNumber(0));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), JSValue.CreateNumber(0));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), JSValue.CreateString(@this.notation));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), Digit("minimumIntegerDigits", 1));
+
+        if (HasDigit("minimumSignificantDigits") || HasDigit("maximumSignificantDigits"))
+        {
+            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumSignificantDigits"), Digit("minimumSignificantDigits", 1));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumSignificantDigits"), Digit("maximumSignificantDigits", 21));
+        }
+        else
+        {
+            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), Digit("minimumFractionDigits", 0));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), Digit("maximumFractionDigits", 3));
+        }
+
         var pluralCategories = JSValue.CreateArray();
         result.CreateDataProperty(KeyStrings.GetOrCreate("pluralCategories"), pluralCategories);
-        var categories = pluralCategories;
-        if (categories is JSObject array)
+        if (pluralCategories is JSObject array)
         {
             foreach (var category in CldrLocaleData.GetPluralCategories(@this.locale, @this.type))
                 array.AddArrayItem(JSValue.CreateString(category));
@@ -2928,6 +3286,11 @@ internal sealed class JSIntlNumberFormatResolved
     public string RoundingMode { get; set; } = "halfExpand";
     public string RoundingPriority { get; set; } = "auto";
     public string TrailingZeroDisplay { get; set; } = "auto";
+
+    // GetUseGroupingOption: the resolved useGrouping value, always one of "auto",
+    // "always", "min2", or "false" (the sentinel for boolean false). resolvedOptions
+    // maps "false" back to the boolean and the formatter drives grouping from it.
+    public string UseGrouping { get; set; } = "auto";
 }
 
 public class JSIntlNumberFormat : JSObject
@@ -2981,7 +3344,11 @@ public class JSIntlNumberFormat : JSObject
     // and "negative".
     internal List<(string type, string value)> ComputeFormatParts(JSValue value)
     {
-        var x = value != null && value.IsBigInt ? (double)value.BigIntValue : (value ?? JSUndefined.Value).DoubleValue;
+        // A BigInt operand is converted via its exact magnitude (BigIntValue truncates to Int64 and
+        // overflows for large values); ToNumber gives the nearest double.
+        var x = value != null && value.IsBigInt
+            ? BigInt.JSBigInt.ToNumber(((BigInt.JSBigInt)value).value)
+            : (value ?? JSUndefined.Value).DoubleValue;
 
         var signDisplay = resolved?.SignDisplay ?? "auto";
         var isNaN = double.IsNaN(x);
@@ -3534,48 +3901,67 @@ public class JSIntlNumberFormat : JSObject
 
     private void AppendIntegerParts(List<(string, string)> result, string intDigits)
     {
-        // CLDR minimumGroupingDigits: grouping is shown only when the leading
-        // (most-significant) group has at least that many digits. For locales such
-        // as pl/es/it (value 2), four-digit values like 1000 stay ungrouped.
-        var leadingGroup = ((intDigits.Length - 1) % 3) + 1;
-        if (!UseGrouping()
-            || intDigits.Length <= 3
-            || leadingGroup < CldrLocaleData.MinimumGroupingDigits(locale))
+        var mode = resolved?.UseGrouping ?? "auto";
+
+        // The locale's grouping sizes (rightmost group first; the last entry repeats),
+        // e.g. [3] for en-US — 1,000,000 — and [3,2] for en-IN — 10,00,000.
+        var groups = SplitIntoGroups(intDigits, Culture().NumberFormat.NumberGroupSizes);
+
+        // The most-significant (leftmost) group's length drives the grouping decision:
+        //   "false"  → never group;
+        //   "min2"   → group only when that group has ≥ 2 digits (1000 → "1000",
+        //              10000 → "10,000");
+        //   "auto"   → group when it has ≥ minimumGroupingDigits digits (pl/es/it use 2);
+        //   "always" → group whenever there is more than one group.
+        var leadingGroup = groups[0].Length;
+        var shouldGroup = groups.Count > 1 && mode switch
+        {
+            "false" => false,
+            "min2" => leadingGroup >= 2,
+            "always" => true,
+            _ => leadingGroup >= CldrLocaleData.MinimumGroupingDigits(locale),
+        };
+
+        if (!shouldGroup)
         {
             result.Add(("integer", intDigits));
             return;
         }
 
         var groupSeparator = GroupSeparator();
-        var first = intDigits.Length % 3;
-        if (first == 0)
-            first = 3;
-        result.Add(("integer", intDigits[..first]));
-        for (var idx = first; idx < intDigits.Length; idx += 3)
+        for (var i = 0; i < groups.Count; i++)
         {
-            result.Add(("group", groupSeparator));
-            result.Add(("integer", intDigits.Substring(idx, 3)));
+            if (i > 0)
+                result.Add(("group", groupSeparator));
+            result.Add(("integer", groups[i]));
         }
+    }
+
+    // Splits an integer-digit string into locale groups, left to right. NumberGroupSizes
+    // lists group sizes from the right; the final entry repeats, and a trailing 0 means
+    // "no further grouping" (the remaining most-significant digits stay in one group).
+    private static List<string> SplitIntoGroups(string intDigits, int[] sizes)
+    {
+        var groups = new List<string>();
+        var pos = intDigits.Length;
+        var i = 0;
+        while (pos > 0)
+        {
+            var size = sizes.Length == 0 ? 0 : sizes[Math.Min(i, sizes.Length - 1)];
+            if (size <= 0)
+            {
+                groups.Insert(0, intDigits[..pos]);
+                break;
+            }
+            var start = Math.Max(0, pos - size);
+            groups.Insert(0, intDigits.Substring(start, pos - start));
+            pos = start;
+            i++;
+        }
+        return groups;
     }
 
     private string NanSymbol() => CldrLocaleData.NaNSymbol(locale);
-
-    private bool UseGrouping()
-    {
-        if (options == null)
-            return true;
-        var v = options[KeyStrings.GetOrCreate("useGrouping")];
-        if (v == null || v.IsUndefined)
-            return true;
-        if (v.IsBoolean)
-            return v.BooleanValue;
-        if (v.IsString)
-        {
-            var s = v.StringValue;
-            return s != "false" && s != "never";
-        }
-        return true;
-    }
 
     // Digit options come from the construction-time snapshot (read once from the
     // options bag), not the live options object, so format-time reads do not
@@ -3775,12 +4161,23 @@ public class JSIntlNumberFormat : JSObject
             var minimumSignificantDigitsKey = KeyStrings.GetOrCreate("minimumSignificantDigits");
             var maximumSignificantDigitsKey = KeyStrings.GetOrCreate("maximumSignificantDigits");
 
-            if (!@this.options[currencyKey].IsUndefined)
+            // Spec order: currency, currencyDisplay, currencySign appear together (only when
+            // style is "currency"), each with its resolved value.
+            if (style == "currency")
+            {
+                if (!@this.options[currencyKey].IsUndefined)
+                    result.CreateDataProperty(currencyKey, @this.options[currencyKey]);
+                result.CreateDataProperty(KeyStrings.GetOrCreate("currencyDisplay"),
+                    JSValue.CreateString(@this.ReadStringOption("currencyDisplay", "symbol")));
+                result.CreateDataProperty(KeyStrings.GetOrCreate("currencySign"),
+                    JSValue.CreateString(@this.CurrencySignOption()));
+            }
+            else if (!@this.options[currencyKey].IsUndefined)
+            {
                 result.CreateDataProperty(currencyKey, @this.options[currencyKey]);
+            }
             if (!@this.options[unitKey].IsUndefined)
                 result.CreateDataProperty(unitKey, @this.options[unitKey]);
-            if (!@this.options[useGroupingKey].IsUndefined)
-                result.CreateDataProperty(useGroupingKey, @this.options[useGroupingKey]);
             // Digit options reflect the construction-time snapshot (read once),
             // not the live options bag, so resolvedOptions does not re-trigger
             // option getters.
@@ -3813,13 +4210,20 @@ public class JSIntlNumberFormat : JSObject
                 result.CreateDataProperty(maximumSignificantDigitsKey,
                     hasMaxSig ? digits[maximumSignificantDigitsKey] : JSValue.CreateNumber(21));
             }
+
+            // useGrouping always has a resolved value ("auto"/"always"/"min2", or boolean
+            // false); the spec places it after the digit options and before notation. The
+            // "false" sentinel maps back to the boolean.
+            var resolvedGrouping = @this.resolved?.UseGrouping ?? "auto";
+            result.CreateDataProperty(useGroupingKey,
+                resolvedGrouping == "false" ? JSValue.BooleanFalse : JSValue.CreateString(resolvedGrouping));
         }
         else
         {
             result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), JSValue.CreateNumber(1));
             result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), JSValue.CreateNumber(0));
             result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), JSValue.CreateNumber(3));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"), JSValue.BooleanTrue);
+            result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"), JSValue.CreateString("auto"));
         }
 
         // notation/signDisplay always have a resolved value; compactDisplay and
@@ -3867,7 +4271,9 @@ public class JSIntlCollator : JSObject
     public JSIntlCollator(in Arguments a) : this()
     {
         var options = JSIntl.ValidateConstructorArguments("Collator", in a, requireNew: false);
-        locale = JSIntl.ResolveLocale(a.Get1());
+        // Keep only the collation-relevant Unicode keywords (co/kf/kn) in the resolved locale, in
+        // canonical form (so e.g. "-kn-true" reduces to "-kn").
+        locale = JSIntl.ResolveLocale(a.Get1(), JSIntl.CollatorRelevantKeys);
         compareInfo = CultureInfo.CurrentCulture.CompareInfo;
 
         if (TryGetUnicodeExtension(locale, "kn", out var kn))

@@ -523,17 +523,29 @@ public partial class JSTemporalPlainTime : JSObject
         return RegulateTime(h, mi, s, ms, us, ns, overflow);
     }
 
+    // The time-of-day grammar with *consistent* separators: either every component is colon-separated
+    // (HH:MM:SS) or none is (HHMMSS). A mixed form such as "00:0000" or "0000:00" is rejected — the two
+    // alternation branches never allow a ':' on one boundary and a bare digit run on another. Named
+    // groups h / mi / s / f are reused across both branches (only one branch ever matches).
+    private const string StrictTimeCore =
+        @"(?<h>\d{2})(?::(?<mi>\d{2})(?::(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?|(?<mi>\d{2})(?:(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?";
+
+    // The optional trailing Z / numeric-offset designator. The offset shape is matched leniently here and
+    // its separator consistency is enforced separately via TemporalIsoString.IsStrictOffset.
+    private const string OffsetDesignator =
+        @"(?<off>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?";
+
     // A full date + required separator + time, with an optional Z / numeric-offset designator. The
     // date's fraction-bearing component is the seconds only (the date-only parsers reject minutes/hours
-    // fractions). Groups: 1=hour 2=minute 3=second 4=fraction, named "off"=Z/offset designator.
+    // fractions). Named groups: h=hour mi=minute s=second f=fraction, "off"=Z/offset designator.
     private static readonly Regex DateTimeFormPattern = new(
-        @"^(?:\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-\d{2}-\d{2}|\d{2}\d{2})[Tt ](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?<off>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?$",
+        @"^(?:\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-\d{2}-\d{2}|\d{2}\d{2})[Tt ]" + StrictTimeCore + OffsetDesignator + "$",
         RegexOptions.CultureInvariant);
 
     // A bare time-of-day (after any leading time designator has been removed), with an optional Z /
     // numeric-offset designator. Same capture groups as DateTimeFormPattern.
     private static readonly Regex BareTimeFormPattern = new(
-        @"^(\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?(?<off>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?$",
+        "^" + StrictTimeCore + OffsetDesignator + "$",
         RegexOptions.CultureInvariant);
 
     // The maximal trailing run of [..] annotations (used to peel annotations off before parsing).
@@ -602,19 +614,24 @@ public partial class JSTemporalPlainTime : JSObject
             throw JSEngine.NewRangeError($"Temporal.PlainTime: a UTC (Z) designator is not valid for a PlainTime: \"{text}\"");
 
         // A zone-less PlainTime ignores the *value* of a numeric UTC offset, but the offset must
-        // still be well-formed: its hour (00-23), minute (00-59) and second (00-59) components are
+        // still be well-formed: its separators must be consistent (so "+00:0000" / "+0000:00" are
+        // rejected) and its hour (00-23), minute (00-59) and second (00-59) components are
         // range-checked, so e.g. "00:00-24:00" is rejected rather than silently parsed as 00:00.
         if (off.Success)
+        {
+            if (!TemporalIsoString.IsStrictOffset(off.Value))
+                throw JSEngine.NewRangeError($"Temporal.PlainTime: invalid UTC offset in \"{text}\"");
             ValidateNumericUtcOffset(off.Value, text);
+        }
 
-        var h = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-        var mi = match.Groups[2].Success ? int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture) : 0;
-        var s = match.Groups[3].Success ? int.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
+        var h = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture);
+        var mi = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
+        var s = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
 
         int ms = 0, us = 0, ns = 0;
-        if (match.Groups[4].Success)
+        if (match.Groups["f"].Success)
         {
-            var digits = match.Groups[4].Value.PadRight(9, '0');
+            var digits = match.Groups["f"].Value.PadRight(9, '0');
             ms = int.Parse(digits.Substring(0, 3), CultureInfo.InvariantCulture);
             us = int.Parse(digits.Substring(3, 3), CultureInfo.InvariantCulture);
             ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);

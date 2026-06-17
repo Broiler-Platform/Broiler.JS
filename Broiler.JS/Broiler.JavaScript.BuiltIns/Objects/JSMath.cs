@@ -257,7 +257,7 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         var d = first.DoubleValue;
-        var x = ((uint)d) >> 0;
+        var x = JSValue.ToUint32(d);
 
         x |= x >> 1;       // Propagate leftmost
         x |= x >> 2;       // 1-bit to the right.
@@ -497,6 +497,11 @@ public partial class JSMath : JSObject
         var @base = first.DoubleValue;
         var exponent = second.DoubleValue;
 
+        // Number::exponentiate step 1: a NaN exponent always yields NaN, even for
+        // base 1 where IEEE pow(1, NaN) would return 1.
+        if (double.IsNaN(exponent))
+            return JSNumber.NaN;
+
         if ((@base == 1.0 || @base == -1) && double.IsInfinity(exponent))
             return JSNumber.NaN;
 
@@ -520,8 +525,10 @@ public partial class JSMath : JSObject
         if (double.IsNaN(d))
             return JSNumber.NaN;
 
-        if (d == -0.0)
-            return JSNumber.NegativeZero;
+        // Math.sign preserves the sign of zero: +0 → +0, -0 → -0. Note that
+        // d == -0.0 is also true for +0.0, so use the sign bit to distinguish.
+        if (d == 0.0)
+            return double.IsNegative(d) ? JSNumber.NegativeZero : JSNumber.Zero;
 
         var r = Math.Sign(d);
         return new JSNumber(r);

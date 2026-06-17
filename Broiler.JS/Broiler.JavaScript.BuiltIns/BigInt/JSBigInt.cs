@@ -2,6 +2,7 @@
 using System;
 using System.Globalization;
 using System.Numerics;
+using System.Text;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.Runtime;
@@ -392,15 +393,30 @@ public partial class JSBigInt : JSPrimitive
 
     public override JSValue RightShift(JSValue value) => new JSBigInt(this.value >> (byte)value.AsBigIntegerOnly());
 
-    public override JSValue UnsignedRightShift(JSValue value) => new JSBigInt(this.value >> (int)value.AsBigIntegerOnly());
+    // BigInt::unsignedRightShift always throws — BigInts are arbitrary-precision and have no fixed
+    // width, so ">>>" is unsupported for any BigInt operand (a TypeError, not a RangeError).
+    public override JSValue UnsignedRightShift(JSValue value)
+        => throw JSEngine.NewTypeError("BigInts have no unsigned right shift, use >> instead");
 
     public override JSValue Multiply(JSValue value) => new JSBigInt(this.value * value.AsBigIntegerOnly());
 
-    public override JSValue Divide(JSValue value) => new JSBigInt(this.value / value.AsBigIntegerOnly());
+    public override JSValue Divide(JSValue value)
+    {
+        var divisor = value.AsBigIntegerOnly();
+        if (divisor.IsZero)
+            throw JSEngine.NewRangeError("Division by zero");
+        return new JSBigInt(this.value / divisor);
+    }
 
     public override JSValue Subtract(JSValue value) => new JSBigInt(this.value - value.AsBigIntegerOnly());
 
-    public override JSValue Modulo(JSValue value) => new JSBigInt(this.value % value.AsBigIntegerOnly());
+    public override JSValue Modulo(JSValue value)
+    {
+        var divisor = value.AsBigIntegerOnly();
+        if (divisor.IsZero)
+            throw JSEngine.NewRangeError("Division by zero");
+        return new JSBigInt(this.value % divisor);
+    }
 
     public override JSValue AddValue(double value) => throw CannotMix();
 
@@ -440,11 +456,63 @@ public partial class JSBigInt : JSPrimitive
 
     [JSPrototypeMethod]
     [JSExport("toString")]
-    public static JSValue JSToString(in Arguments a) => new JSString(ThisBigInt(a.This).value.ToString());
+    public static JSValue JSToString(in Arguments a)
+    {
+        var bigint = ThisBigInt(a.This);
+        var radixArg = a.Get1();
+
+        // BigInt.prototype.toString(radix): undefined radix defaults to 10, any other
+        // value is coerced with ToIntegerOrInfinity and must land in [2, 36].
+        var radix = 10;
+        if (!radixArg.IsUndefined)
+        {
+            var radixMV = Math.Truncate(radixArg.DoubleValue);
+            if (double.IsNaN(radixMV))
+                radixMV = 0;
+            if (radixMV < 2 || radixMV > 36)
+                throw JSEngine.NewRangeError("toString() radix must be between 2 and 36");
+            radix = (int)radixMV;
+        }
+
+        return new JSString(BigIntegerToRadixString(bigint.value, radix));
+    }
+
+    private static string BigIntegerToRadixString(BigInteger value, int radix)
+    {
+        if (radix == 10)
+            return value.ToString();
+
+        if (value.IsZero)
+            return "0";
+
+        const string digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+        var negative = value.Sign < 0;
+        var magnitude = BigInteger.Abs(value);
+        var builder = new StringBuilder();
+        var bigRadix = new BigInteger(radix);
+
+        while (!magnitude.IsZero)
+        {
+            magnitude = BigInteger.DivRem(magnitude, bigRadix, out var remainder);
+            builder.Insert(0, digits[(int)remainder]);
+        }
+
+        if (negative)
+            builder.Insert(0, '-');
+
+        return builder.ToString();
+    }
 
     [JSPrototypeMethod]
     [JSExport("toLocaleString")]
-    public static JSValue ToLocaleString(in Arguments a) => new JSString(ThisBigInt(a.This).value.ToString(CultureInfo.CurrentCulture));
+    public static JSValue ToLocaleString(in Arguments a)
+    {
+        var self = ThisBigInt(a.This);
+        // §BigInt.prototype.toLocaleString(locales, options) ≡
+        // Intl.NumberFormat(locales, options).format(this).
+        var nf = new Intl.JSIntlNumberFormat(new Arguments(JSUndefined.Value, a.GetAt(0), a.GetAt(1)));
+        return new JSString(nf.Format(new Arguments(JSUndefined.Value, self)).StringValue);
+    }
 
     [JSPrototypeMethod]
     [JSExport("valueOf")]

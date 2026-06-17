@@ -64,20 +64,23 @@ public partial class JSArray
     {
         var (t, s) = a.Get2();
         var @this = ToArrayLikeObject(a.This);
-        var length = (int)GetArrayLikeLength(@this);
-        var target = (int)ToIntegerOrInfinity(t);
-        var start = (int)ToIntegerOrInfinity(s);
-        var end = a.TryGetAt(2, out var e) ? (int)ToIntegerOrInfinity(e) : int.MaxValue;
+        // Indices are computed in long space: ToIntegerOrInfinity maps ±∞ to ±long.MaxValue, which an
+        // int cast would truncate to -1 (so e.g. copyWithin(Infinity, 0) wrongly copied a value). An
+        // undefined `end` (whether passed explicitly or omitted) defaults to the length.
+        var length = GetArrayLikeLengthLong(@this);
+        var relTarget = ToIntegerOrInfinity(t);
+        var relStart = ToIntegerOrInfinity(s);
+        var relEnd = ToIntegerOrInfinity(a.GetAt(2), length);
 
-        target = target < 0 ? Math.Max(length + target, 0) : Math.Min(target, length);
-        start = start < 0 ? Math.Max(length + start, 0) : Math.Min(start, length);
-        end = end < 0 ? Math.Max(length + end, 0) : Math.Min(end, length);
+        long target = relTarget < 0 ? Math.Max(length + relTarget, 0) : Math.Min(relTarget, length);
+        long start = relStart < 0 ? Math.Max(length + relStart, 0) : Math.Min(relStart, length);
+        long end = relEnd < 0 ? Math.Max(length + relEnd, 0) : Math.Min(relEnd, length);
 
         // Calculate the number of values to copy.
-        int count = Math.Min(end - start, length - target);
+        long count = Math.Min(end - start, length - target);
 
         // Check if we need to copy in reverse due to an overlap.
-        int direction = 1;
+        long direction = 1;
         if (start < target && target < start + count)
         {
             direction = -1;
@@ -87,12 +90,12 @@ public partial class JSArray
 
         while (count > 0)
         {
-            var fromKey = JSValue.CreateNumber(start);
+            var fromKey = JSValue.CreateNumber((double)start);
             if (@this.HasProperty(fromKey).BooleanValue)
             {
-                @this.SetValue((uint)target, @this.GetValue(fromKey, @this), @this);
+                SetIndexedValue(@this, target, @this.GetValue(fromKey, @this));
             }
-            else if (!@this.Delete((uint)target).BooleanValue)
+            else if (!@this.Delete(JSValue.CreateNumber((double)target)).BooleanValue)
             {
                 throw JSEngine.NewTypeError($"Cannot delete property {target}");
             }
