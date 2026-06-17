@@ -173,7 +173,10 @@ partial class JSNumber
             if (double.IsInfinity(integerRadix) || (integerRadix != 0 && (integerRadix < 2 || integerRadix > 36)))
                 throw JSEngine.NewRangeError("The radix must be between 2 and 36, inclusive.");
 
-            if (integerRadix == 0)
+            // radix 10 (and the absent-radix case) use Number::toString, the shortest
+            // decimal string that round-trips — naive digit extraction would render
+            // (0.3).toString(10) as "0.299999999999999988…".
+            if (integerRadix == 0 || integerRadix == 10)
                 return new JSString(ToECMAString(value));
 
             var radix = (int)integerRadix;
@@ -462,20 +465,26 @@ partial class JSNumber
         
         var sign = isNegative ? "-" : "";
 
-        var digits = Math.Floor(number);
-        var digitsTxt = DecimalToArbitrarySystem((long)digits, radix);
-        if (digits == number)
+        var integerPart = Math.Floor(number);
+        var digitsTxt = DecimalToArbitrarySystem((long)integerPart, radix);
+        if (integerPart == number)
             return $"{sign}{digitsTxt}";
 
-        var fraction = number % digits;
-        for (int i = 0; i < 15; i++)
+        // Fractional part: repeatedly multiply the remaining fraction by the radix and
+        // emit the integer digit each step (so 0.5 base 2 is "0.1", 255.5 base 16 is
+        // "ff.8"). A terminating fraction drives `fraction` to 0 and stops; the cap
+        // bounds non-terminating expansions (e.g. 0.1 in base 2).
+        const string Digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+        var fraction = number - integerPart;
+        var fractionText = new System.Text.StringBuilder();
+        for (int i = 0; i < 1100 && fraction > 0.0; i++)
         {
-            fraction = fraction * 10;
-            if (Math.Floor(fraction) == fraction)
-                break;
+            fraction *= radix;
+            var digit = (int)Math.Floor(fraction);
+            fractionText.Append(Digits[digit]);
+            fraction -= digit;
         }
 
-        var fractionText = DecimalToArbitrarySystem((long)fraction, radix);
         return $"{sign}{digitsTxt}.{fractionText}";
     }
 

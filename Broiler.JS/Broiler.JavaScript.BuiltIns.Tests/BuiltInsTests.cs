@@ -13775,7 +13775,28 @@ public class BuiltInsTests
             (-0).toString(2)
         ].join('|');");
 
-        Assert.Equal("-1|-1|-1|-ff|ff|10.101|-10.101|0", result.ToString());
+        // 2.5 is "10.1" in binary (0.5 = 0.1), not "10.101".
+        Assert.Equal("-1|-1|-1|-ff|ff|10.1|-10.1|0", result.ToString());
+    }
+
+    [Fact]
+    public void Number_ToString_Radix_FractionalAndBase10()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"[
+            (0.5).toString(2),
+            (0.25).toString(2),
+            (10.25).toString(2),
+            (255.5).toString(16),
+            (0.5).toString(10),
+            (0.3).toString(10),
+            (2.5).toString(10)
+        ].join('|');");
+
+        // radix 10 uses the shortest round-tripping decimal; other radices extract
+        // fractional digits in that base.
+        Assert.Equal("0.1|0.01|1010.01|ff.8|0.5|0.3|2.5", result.ToString());
     }
 
     [Fact]
