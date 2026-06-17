@@ -40,6 +40,10 @@ public static class JSIntl
     private static readonly KeyString SupportedLocalesOfKey = KeyStrings.GetOrCreate("supportedLocalesOf");
     private static readonly KeyString StyleKey = KeyStrings.GetOrCreate("style");
     private static readonly KeyString CurrencyKey = KeyStrings.GetOrCreate("currency");
+    private static readonly KeyString CurrencyDisplayKey = KeyStrings.GetOrCreate("currencyDisplay");
+    private static readonly KeyString CurrencySignKey = KeyStrings.GetOrCreate("currencySign");
+    private static readonly string[] CurrencyDisplayValues = ["code", "symbol", "narrowSymbol", "name"];
+    private static readonly string[] CurrencySignValues = ["standard", "accounting"];
     private static readonly KeyString UnitKey = KeyStrings.GetOrCreate("unit");
     private static readonly KeyString TypeKey = KeyStrings.GetOrCreate("type");
     private static readonly KeyString LocaleMatcherKey = KeyStrings.GetOrCreate("localeMatcher");
@@ -1106,6 +1110,15 @@ public static class JSIntl
         if (style == "currency" && currencyValue.IsUndefined)
             throw JSEngine.NewTypeError("Intl.NumberFormat currency style requires a currency option");
 
+        // SetNumberFormatUnitOptions reads currencyDisplay and currencySign right
+        // after currency, unconditionally (even when style is not "currency"), and
+        // validates them against their sanctioned value lists. The resolved values
+        // are only reflected when style is "currency"; here we read them purely so
+        // the option getters fire in spec order (test262 NumberFormat
+        // constructor-option-read-order) and an invalid value is a RangeError.
+        _ = GetOption(options, CurrencyDisplayKey, CurrencyDisplayValues, false, "symbol");
+        _ = GetOption(options, CurrencySignKey, CurrencySignValues, false, "standard");
+
         var unitValue = options[UnitKey];
         if (style == "unit" && unitValue.IsUndefined)
             throw JSEngine.NewTypeError("Intl.NumberFormat unit style requires a unit option");
@@ -1116,9 +1129,6 @@ public static class JSIntl
         if (style != "unit")
             unitDisplay = null;
 
-        // notation precedes compactDisplay (spec order; observed by the
-        // compactDisplay getter call-order tests). compactDisplay is always
-        // validated, but only reflected when notation is "compact".
         var notation = GetOption(options, NotationKey, NotationValues, false, "standard");
 
         // SetNumberFormatDigitOptions: read the digit options from the bag exactly
@@ -1128,21 +1138,11 @@ public static class JSIntl
         // instead of re-invoking option getters.
         var digitOptions = SnapshotDigitOptions(options);
 
-        var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayValues, false, "short");
-        if (notation != "compact")
-            compactDisplay = null;
-
-        var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
-
-        // GetUseGroupingOption: the default is "min2" for compact notation, "auto"
-        // otherwise; true → "always", a falsy value → boolean false, and an unrecognized
-        // string falls back to the default.
-        var useGrouping = ResolveUseGrouping(options, notation);
-
-        // roundingIncrement is a numeric option restricted to a sanctioned set; the
-        // string enums below are validated against their sanctioned value lists (a bad
-        // value, e.g. an empty string for trailingZeroDisplay, is a RangeError per
-        // SetNumberFormatDigitOptions). All four always have a resolved value (their
+        // The rounding options follow the digit options inside SetNumberFormatDigitOptions,
+        // ahead of compactDisplay/useGrouping/signDisplay. roundingIncrement is a numeric
+        // option restricted to a sanctioned set; the string enums below are validated against
+        // their sanctioned value lists (a bad value, e.g. an empty string for
+        // trailingZeroDisplay, is a RangeError). All four always have a resolved value (their
         // defaults) which resolvedOptions reflects.
         var roundingIncrement = GetNumberOption(options, RoundingIncrementKey, 1, 5000) ?? 1;
         if (System.Array.IndexOf(SanctionedRoundingIncrements, roundingIncrement) < 0)
@@ -1150,6 +1150,20 @@ public static class JSIntl
         var roundingMode = GetOption(options, RoundingModeKey, ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"], false, "halfExpand");
         var roundingPriority = GetOption(options, RoundingPriorityKey, ["auto", "morePrecision", "lessPrecision"], false, "auto");
         var trailingZeroDisplay = GetOption(options, TrailingZeroDisplayKey, ["auto", "stripIfInteger"], false, "auto");
+
+        // notation precedes compactDisplay (spec order; observed by the compactDisplay
+        // getter call-order tests). compactDisplay is always validated, but only
+        // reflected when notation is "compact".
+        var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayValues, false, "short");
+        if (notation != "compact")
+            compactDisplay = null;
+
+        // GetUseGroupingOption: the default is "min2" for compact notation, "auto"
+        // otherwise; true → "always", a falsy value → boolean false, and an unrecognized
+        // string falls back to the default. Read after compactDisplay, before signDisplay.
+        var useGrouping = ResolveUseGrouping(options, notation);
+
+        var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
 
         // SetNumberFormatDigitOptions: when roundingIncrement ≠ 1 the rounding strategy must be
         // fraction-digits — not significant-digits, nor a morePrecision/lessPrecision priority (a
@@ -1390,6 +1404,24 @@ public static class JSIntl
     // is supported and DIFFERENT overrides it and removes the `-u-nu-` from the locale; an
     // unsupported value (in either place) falls through to "latn" with `-u-nu-` removed.
     internal static (string NumberingSystem, string Locale) ResolveNumberingSystem(string localeTag, JSObject options)
+        => ResolveNumberingSystem(localeTag, ReadNumberingSystemOption(options));
+
+    // Reads (and string-coerces) the numberingSystem option from the bag once, returning
+    // null when it is absent/undefined. Split out so Intl.NumberFormat can fire the getter
+    // in spec order (right after localeMatcher) while the locale negotiation below still
+    // happens once the resolved locale tag is known.
+    internal static string ReadNumberingSystemOption(JSObject options)
+    {
+        var optionValue = options?[NumberingSystemKey];
+        return optionValue == null || optionValue.IsUndefined ? null : optionValue.StringValue;
+    }
+
+    // Negotiates the resolved `nu` (numbering system) against the locale's `-u-nu-`
+    // extension, given the already-read numberingSystem option value. Per spec: a supported
+    // `-u-nu-` value is used and reflected in the locale; a supported option that DIFFERS
+    // overrides it and removes the `-u-nu-` from the locale; an unsupported value (in either
+    // place) falls through to "latn" with `-u-nu-` removed.
+    internal static (string NumberingSystem, string Locale) ResolveNumberingSystem(string localeTag, string optionValue)
     {
         var value = "latn";
         var reflectInLocale = false;
@@ -1401,15 +1433,11 @@ public static class JSIntl
             reflectInLocale = true;
         }
 
-        var optionValue = options?[NumberingSystemKey];
-        if (optionValue != null && !optionValue.IsUndefined)
+        if (optionValue != null && IsSupportedNumberingSystem(optionValue) &&
+            !string.Equals(optionValue, value, StringComparison.Ordinal))
         {
-            var requested = optionValue.StringValue;
-            if (IsSupportedNumberingSystem(requested) && !string.Equals(requested, value, StringComparison.Ordinal))
-            {
-                value = requested;
-                reflectInLocale = false;
-            }
+            value = optionValue;
+            reflectInLocale = false;
         }
 
         var locale = reflectInLocale ? localeTag : RemoveUnicodeExtensionKeyword(localeTag, "nu");
@@ -3303,9 +3331,15 @@ public class JSIntlNumberFormat : JSObject
     public JSIntlNumberFormat(in Arguments a) : this()
     {
         options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, requireNew: false);
+        // ECMA-402 InitializeNumberFormat reads the numberingSystem option immediately
+        // after localeMatcher and ahead of the style/currency/digit options, so its
+        // getter must fire here — before ValidateNumberFormatOptions — rather than at
+        // the locale-negotiation step below (test262 NumberFormat
+        // constructor-numberingSystem-order, constructor-option-read-order).
+        var nuOption = JSIntl.ReadNumberingSystemOption(options);
         resolved = JSIntl.ValidateNumberFormatOptions(options);
         var resolvedLocale = JSIntl.ResolveLocale(a.Get1(), JSIntl.NumberFormatRelevantKeys);
-        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(resolvedLocale, options);
+        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(resolvedLocale, nuOption);
     }
 
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
