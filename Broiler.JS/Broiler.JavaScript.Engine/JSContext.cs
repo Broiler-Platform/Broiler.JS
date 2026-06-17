@@ -695,6 +695,23 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return new DirectEvalLexicalBindingScope(this, names);
     }
 
+    /// <summary>
+    /// Registers a top-level script <c>let</c>/<c>const</c>/class binding into the global lexical
+    /// environment: it becomes resolvable by name (including from a later indirect eval, which
+    /// evaluates in the global environment) but, unlike a <c>var</c>, never becomes a property of
+    /// the global object. The binding may still be in its temporal dead zone, in which case reads
+    /// through it throw until the declaration initializes it. Eval programs scope their own lexical
+    /// bindings to the eval, so only the top-level script publishes here.
+    /// </summary>
+    public void DeclareGlobalLexical(JSVariable variable)
+    {
+        if (variable == null || variable.Name.IsEmpty)
+            return;
+
+        KeyString name = variable.Name;
+        globalVars.Put(name.Key) = variable;
+    }
+
     public JSValue Register(JSVariable variable)
     {
         KeyString name = variable.Name;

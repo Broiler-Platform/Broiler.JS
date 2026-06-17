@@ -68,8 +68,17 @@ partial class FastCompiler
         var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
         var lexicalBindings = CollectTopLevelLexicalBindings(program.Statements);
         var functionDeclarations = CollectTopLevelFunctionDeclarations(program.Statements);
+        // A top-level *script* publishes its let/const/class bindings into the global lexical
+        // environment so later code that runs in the global environment (notably an indirect eval)
+        // can resolve them; an eval program keeps its lexical bindings scoped to the eval.
+        var globalLexicalScopes = !isDirectEvalCompilation && lexicalBindings.Count > 0
+            ? new List<FastFunctionScope.VariableScope>(lexicalBindings.Count)
+            : null;
         foreach (var lexicalBinding in lexicalBindings)
-            scope.CreateVariable(new StringSpan(lexicalBinding), null, true, initialize: false);
+        {
+            var lexicalVariable = scope.CreateVariable(new StringSpan(lexicalBinding), null, true, initialize: false);
+            globalLexicalScopes?.Add(lexicalVariable);
+        }
 
         if (hoistingScope != null)
         {
@@ -170,6 +179,15 @@ partial class FastCompiler
         // trailing empty statement's undefined.
         var completionVar = YExpression.Variable(typeof(JSValue), "#programCompletion");
         blockList.Add(YExpression.Assign(completionVar, JSUndefinedBuilder.Value));
+
+        // Publish the script's top-level lexical bindings (created above, still in their TDZ) into
+        // the global lexical environment before any statement runs, so an indirect eval invoked
+        // anywhere in the script resolves them — yet they never become global-object properties.
+        if (globalLexicalScopes != null)
+        {
+            foreach (var lexicalScope in globalLexicalScopes)
+                blockList.Add(JSContextBuilder.DeclareGlobalLexical(lexicalScope.Variable));
+        }
 
         using (completionScopes.Push(completionVar))
         {
