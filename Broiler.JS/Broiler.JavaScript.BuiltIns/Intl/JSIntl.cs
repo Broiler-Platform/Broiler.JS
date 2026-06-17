@@ -666,8 +666,174 @@ public static class JSIntl
         // ValidateLanguageTag also canonicalizes (e.g. grandfathered "art-lojban"
         // -> "jbo"); the canonical form is what the Locale stores and reports.
         var canonicalTag = ValidateLanguageTag(tagString);
-        ValidateLocaleOptions(canonicalTag, ValidateOptionsArgument(a.GetAt(1)));
-        return canonicalTag;
+        var optionsObject = ValidateOptionsArgument(a.GetAt(1));
+        ValidateLocaleOptions(canonicalTag, optionsObject);
+        // ApplyOptionsToTag + the Unicode-extension options (calendar/collation/hourCycle/caseFirst/
+        // numeric/numberingSystem) fold the options into the tag, canonicalizing keyword values.
+        return optionsObject == null ? canonicalTag : ApplyLocaleOptions(canonicalTag, optionsObject);
+    }
+
+    // Bcp47 keyword value aliases (UTS #35 LocaleId canonicalization). Only the deprecated values
+    // browsers canonicalize are listed; any other value is used verbatim.
+    private static readonly Dictionary<string, string> CalendarValueAliases = new(StringComparer.Ordinal)
+    {
+        ["islamicc"] = "islamic-civil",
+        ["ethiopic-amete-alem"] = "ethioaa",
+        ["gregorian"] = "gregory",
+    };
+
+    private static readonly Regex UnicodeKeywordTypePattern =
+        new(@"^[0-9a-z]{3,8}(?:-[0-9a-z]{3,8})*$", RegexOptions.CultureInvariant);
+
+    // InitializeLocale steps 12-30: apply the language/script/region options and the Unicode-extension
+    // keyword options to the canonical tag, then re-emit it with the "-u-" keywords canonicalized
+    // (values de-aliased, a boolean "true" dropped) and sorted by key. Existing variants, attributes
+    // and other singleton extensions are preserved.
+    private static string ApplyLocaleOptions(string tag, JSObject options)
+    {
+        var parts = tag.Split('-');
+        var language = parts[0];
+        var i = 1;
+        string script = null, region = null;
+        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i])) { script = parts[i]; i++; }
+        if (i < parts.Length
+            && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigitTag(parts[i]))))
+        { region = parts[i]; i++; }
+
+        var variants = new List<string>();
+        while (i < parts.Length && parts[i].Length != 1) { variants.Add(parts[i]); i++; }
+
+        // Walk the singleton extensions, splitting out the "-u-" attributes/keywords from the rest.
+        var attributes = new List<string>();
+        var keywords = new List<(string Key, List<string> Types)>();
+        var otherExtensions = new List<(char Singleton, string Body)>();
+        while (i < parts.Length)
+        {
+            var singleton = char.ToLowerInvariant(parts[i][0]);
+            i++;
+            var block = new List<string>();
+            while (i < parts.Length && parts[i].Length != 1) { block.Add(parts[i].ToLowerInvariant()); i++; }
+            if (singleton == 'u')
+            {
+                foreach (var sub in block)
+                {
+                    if (sub.Length == 2) keywords.Add((sub, new List<string>()));
+                    else if (keywords.Count > 0) keywords[^1].Types.Add(sub);
+                    else attributes.Add(sub);
+                }
+            }
+            else
+            {
+                otherExtensions.Add((singleton, string.Join("-", block)));
+            }
+        }
+
+        // Base-name options.
+        if (OptionString(options, LanguageKey) is { } langOpt)
+        {
+            if (!Regex.IsMatch(langOpt, "^(?:[A-Za-z]{2,3}|[A-Za-z]{5,8})$", RegexOptions.CultureInvariant))
+                throw JSEngine.NewRangeError("Invalid language option");
+            language = langOpt.ToLowerInvariant();
+        }
+        if (OptionString(options, ScriptKey) is { } scriptOpt)
+        {
+            if (!Regex.IsMatch(scriptOpt, "^[A-Za-z]{4}$", RegexOptions.CultureInvariant))
+                throw JSEngine.NewRangeError("Invalid script option");
+            script = char.ToUpperInvariant(scriptOpt[0]) + scriptOpt[1..].ToLowerInvariant();
+        }
+        if (OptionString(options, RegionKey) is { } regionOpt)
+        {
+            if (!Regex.IsMatch(regionOpt, "^(?:[A-Za-z]{2}|[0-9]{3})$", RegexOptions.CultureInvariant))
+                throw JSEngine.NewRangeError("Invalid region option");
+            region = regionOpt.ToUpperInvariant();
+        }
+
+        // Unicode-extension keyword options.
+        SetKeyword(keywords, "ca", ReadTypeOption(options, "calendar", "ca"));
+        SetKeyword(keywords, "co", ReadTypeOption(options, "collation", "co"));
+        SetKeyword(keywords, "hc", GetOption(options, KeyStrings.GetOrCreate("hourCycle"), ["h11", "h12", "h23", "h24"], false, null));
+        SetKeyword(keywords, "kf", GetOption(options, KeyStrings.GetOrCreate("caseFirst"), ["upper", "lower", "false"], false, null));
+        var numericOption = options[KeyStrings.GetOrCreate("numeric")];
+        SetKeyword(keywords, "kn", numericOption.IsUndefined ? null : (numericOption.BooleanValue ? "true" : "false"));
+        SetKeyword(keywords, "nu", ReadTypeOption(options, "numberingSystem", "nu"));
+
+        // Re-emit. The "-u-" keywords are sorted by key and their values canonicalized.
+        var sb = new StringBuilder(language);
+        if (script != null) sb.Append('-').Append(script);
+        if (region != null) sb.Append('-').Append(region);
+        foreach (var v in variants) sb.Append('-').Append(v);
+
+        if (attributes.Count > 0 || keywords.Count > 0)
+        {
+            sb.Append("-u");
+            foreach (var attr in attributes) sb.Append('-').Append(attr);
+            keywords.Sort((x, y) => string.CompareOrdinal(x.Key, y.Key));
+            foreach (var (key, types) in keywords)
+            {
+                sb.Append('-').Append(key);
+                var canonical = CanonicalizeKeywordValue(key, string.Join("-", types));
+                // A boolean keyword whose value is the default "true" drops the value.
+                if (canonical is "" or "true")
+                    continue;
+                sb.Append('-').Append(canonical);
+            }
+        }
+
+        // Preserve other singleton extensions, sorted by singleton with private-use ("x") last.
+        otherExtensions.Sort((a, b) =>
+            (a.Singleton == 'x' ? '￿' : a.Singleton).CompareTo(b.Singleton == 'x' ? '￿' : b.Singleton));
+        foreach (var (singleton, body) in otherExtensions)
+        {
+            sb.Append('-').Append(singleton);
+            if (body.Length > 0) sb.Append('-').Append(body);
+        }
+
+        return sb.ToString();
+    }
+
+    private static string CanonicalizeKeywordValue(string key, string value)
+    {
+        if (value.Length == 0)
+            return value;
+        if (key == "ca" && CalendarValueAliases.TryGetValue(value, out var ca))
+            return ca;
+        return value;
+    }
+
+    private static void SetKeyword(List<(string Key, List<string> Types)> keywords, string key, string value)
+    {
+        if (value == null)
+            return;
+        var types = new List<string>(value.Split('-'));
+        for (var k = 0; k < keywords.Count; k++)
+            if (keywords[k].Key == key) { keywords[k] = (key, types); return; }
+        keywords.Add((key, types));
+    }
+
+    // A calendar/collation/numberingSystem option: coerced to a lowercase string and validated against
+    // the Unicode keyword type grammar (a malformed value is a RangeError).
+    private static string ReadTypeOption(JSObject options, string optionName, string key)
+    {
+        var value = OptionString(options, KeyStrings.GetOrCreate(optionName));
+        if (value == null)
+            return null;
+        value = value.ToLowerInvariant();
+        if (!UnicodeKeywordTypePattern.IsMatch(value))
+            throw JSEngine.NewRangeError($"Invalid {optionName} option");
+        return value;
+    }
+
+    private static string OptionString(JSObject options, KeyString key)
+    {
+        var v = options[key];
+        return v == null || v.IsUndefined ? null : v.ToString();
+    }
+
+    private static bool IsAllDigitTag(string s)
+    {
+        foreach (var c in s)
+            if (c < '0' || c > '9') return false;
+        return s.Length > 0;
     }
 
     internal static JSObject ValidateOptionsArgument(JSValue options, bool coerce = true)
@@ -1078,6 +1244,7 @@ public static class JSIntl
     // The Unicode-extension keys each service uses to negotiate the resolved locale.
     internal static readonly string[] NumberFormatRelevantKeys = ["nu"];
     internal static readonly string[] DateTimeFormatRelevantKeys = ["ca", "hc", "nu"];
+    internal static readonly string[] CollatorRelevantKeys = ["co", "kf", "kn"];
 
     // Rebuilds a BCP-47 tag keeping only the "-u-" extension keywords whose key is in
     // relevantKeys; attributes and irrelevant keys are dropped, and the whole "-u-"
@@ -1138,6 +1305,10 @@ public static class JSIntl
             }
 
             sb.Append('-').Append(key);
+            // CanonicalizeUnicodeLocaleId: a boolean-keyword value of "true" is the default and is
+            // dropped (e.g. "kn-true" → "kn"), so resolvedOptions().locale carries just the key.
+            if (types.Count == 1 && string.Equals(types[0], "true", StringComparison.OrdinalIgnoreCase))
+                continue;
             foreach (var type in types)
                 sb.Append('-').Append(type);
         }
@@ -4038,7 +4209,9 @@ public class JSIntlCollator : JSObject
     public JSIntlCollator(in Arguments a) : this()
     {
         var options = JSIntl.ValidateConstructorArguments("Collator", in a, requireNew: false);
-        locale = JSIntl.ResolveLocale(a.Get1());
+        // Keep only the collation-relevant Unicode keywords (co/kf/kn) in the resolved locale, in
+        // canonical form (so e.g. "-kn-true" reduces to "-kn").
+        locale = JSIntl.ResolveLocale(a.Get1(), JSIntl.CollatorRelevantKeys);
         compareInfo = CultureInfo.CurrentCulture.CompareInfo;
 
         if (TryGetUnicodeExtension(locale, "kn", out var kn))

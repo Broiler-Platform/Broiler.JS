@@ -159,9 +159,11 @@ public partial class JSString
         var (compareString, locale, options) = a.Get3();
         var str = compareString.StringValue;
 
-        CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.StringValue);
-
-        return JSValue.CreateNumber(string.Compare(@this.ToString(), str, culture, 0));
+        // §String.prototype.localeCompare(that, locales, options) ≡
+        // Intl.Collator(locales, options).compare(this, that), so the ordering matches
+        // Intl.Collator for every locale/option combination.
+        var collator = new Intl.JSIntlCollator(new Arguments(JSUndefined.Value, locale, options));
+        return collator.Compare(new Arguments(JSUndefined.Value, JSValue.CreateString(@this.ToString()), JSValue.CreateString(str)));
     }
 
     [JSPrototypeMethod]
