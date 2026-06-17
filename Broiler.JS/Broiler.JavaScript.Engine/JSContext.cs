@@ -322,6 +322,22 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             return false;
         }
 
+        // The overlaid bindings and the function-owned (shadowed) subset, so a closure created
+        // inside a `with` can re-establish this lexical fallback when it is invoked later.
+        public (JSVariable[] Variables, JSVariable[] Shadowed) SnapshotBindings()
+        {
+            var variables = new JSVariable[entries.Count];
+            var shadowed = new List<JSVariable>();
+            for (var i = 0; i < entries.Count; i++)
+            {
+                variables[i] = entries[i].OverlayVariable;
+                if (entries[i].Shadowed)
+                    shadowed.Add(entries[i].OverlayVariable);
+            }
+
+            return (variables, shadowed.Count == 0 ? System.Array.Empty<JSVariable>() : [.. shadowed]);
+        }
+
         public bool TryGetOverlayShadowing(in KeyString name, out bool isShadowing)
         {
             foreach (var entry in entries)
@@ -937,6 +953,45 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             return null;
 
         return new CompositeWithScope(this, values);
+    }
+
+    // Snapshots the active `with`-fallback lexical overlays (outermost first) so a closure created
+    // inside a `with` can re-establish them when invoked. They let a name that the with-object
+    // lacks — or that @@unscopables blocks — fall through to the enclosing lexical binding (e.g. a
+    // parameter), which would otherwise be unreachable once the `with` body has exited.
+    public (JSVariable[] Variables, JSVariable[] Shadowed)[] CaptureWithFallbackScopes()
+    {
+        List<(JSVariable[], JSVariable[])> captured = null;
+        foreach (var scope in activeDirectEvalScopes)
+        {
+            if (!scope.IsWithFallback)
+                continue;
+
+            (captured ??= []).Add(scope.SnapshotBindings());
+        }
+
+        return captured?.ToArray();
+    }
+
+    public IDisposable PushWithFallbackScopes((JSVariable[] Variables, JSVariable[] Shadowed)[] captured)
+    {
+        if (captured == null || captured.Length == 0)
+            return null;
+
+        var scopes = new IDisposable[captured.Length];
+        for (var i = 0; i < captured.Length; i++)
+            scopes[i] = PushWithFallbackScope(captured[i].Variables, captured[i].Shadowed);
+
+        return new CompositeDisposable(scopes);
+    }
+
+    private sealed class CompositeDisposable(IDisposable[] scopes) : IDisposable
+    {
+        public void Dispose()
+        {
+            for (var i = scopes.Length - 1; i >= 0; i--)
+                scopes[i]?.Dispose();
+        }
     }
 
     private sealed class CompositeWithScope : IDisposable
