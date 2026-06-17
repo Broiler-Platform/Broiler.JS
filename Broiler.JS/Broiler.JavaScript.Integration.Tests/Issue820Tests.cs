@@ -4,6 +4,15 @@ namespace Broiler.JavaScript.Integration.Tests;
 
 // Regression tests for https://github.com/MaiRat/Broiler.JS/issues/820
 //
+// Problem 1 — Intl.DateTimeFormat.prototype.formatRange / formatRangeToParts must run
+// ToDateTimeFormattable (i.e. ToNumber, observably calling valueOf) on BOTH endpoints,
+// in argument order, before deciding the arguments have different kinds. Broiler used to
+// short-circuit to the Temporal path whenever either argument was a Temporal object, so a
+// non-Temporal argument's valueOf was never invoked before the TypeError for the
+// mismatched pair. (test262:
+//  intl402/DateTimeFormat/prototype/formatRange/to-datetime-formattable-with-different-arg-kinds.js
+//  and the formatRangeToParts counterpart)
+//
 // Problem 10 — ECMAScript per-repetition capture reset. A capturing group nested
 // inside a quantified group must be cleared to undefined at the start of every
 // repetition, so a capture that only participated in an earlier iteration does not
@@ -58,4 +67,43 @@ public class Issue820Tests
     public void NonRepeatedCaptureIsUnaffected()
         => Assert.Equal("abc|b",
             Captures(@"/a(b)c/", "\"abc\""));
+
+    // ---- Problem 1: formatRange ToDateTimeFormattable ordering ----
+
+    // Harness: counts valueOf calls on a non-Temporal endpoint, expects a TypeError from the
+    // different-kind pair, and reports "<callCount>,<errorName>".
+    private static string RangeOrdering(string method, string start, string end)
+        => Eval(@"
+            var calls = 0;
+            var bad = { valueOf: function () { calls++; return NaN; } };
+            var dtf = new Intl.DateTimeFormat();
+            var name = 'none';
+            try { dtf." + method + "(" + start + ", " + end + @"); }
+            catch (e) { name = e.constructor.name; }
+            calls + ',' + name;");
+
+    // valueOf must run on the non-Temporal start argument before the TypeError is thrown.
+    [Fact]
+    public void FormatRangeCoercesNonTemporalStartBeforeKindCheck()
+        => Assert.Equal("1,TypeError",
+            RangeOrdering("formatRange", "bad", "new Temporal.PlainDate(1970, 1, 1)"));
+
+    // ...and on a non-Temporal end argument too.
+    [Fact]
+    public void FormatRangeCoercesNonTemporalEndBeforeKindCheck()
+        => Assert.Equal("1,TypeError",
+            RangeOrdering("formatRange", "new Temporal.PlainDate(1970, 1, 1)", "bad"));
+
+    // formatRangeToParts shares the same coercion path.
+    [Fact]
+    public void FormatRangeToPartsCoercesNonTemporalBeforeKindCheck()
+        => Assert.Equal("1,TypeError",
+            RangeOrdering("formatRangeToParts", "bad", "new Temporal.Instant(0n)"));
+
+    // Two Temporal objects of different kinds are still a TypeError (no coercion needed).
+    [Fact]
+    public void FormatRangeDifferentTemporalKindsThrowTypeError()
+        => Assert.Equal("0,TypeError",
+            RangeOrdering("formatRange",
+                "new Temporal.PlainDate(1970, 1, 1)", "new Temporal.PlainTime()"));
 }
