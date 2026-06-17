@@ -34,6 +34,12 @@ public partial class JSObject
         return !string.IsNullOrEmpty(value) && value[0] == PrivateNameMarker;
     }
 
+    // True when a property key (as surfaced by the own-key enumeration) is a private name.
+    // Private names are never own property keys per spec, so key-walking operations that must
+    // exclude them (e.g. SetIntegrityLevel) use this to skip them.
+    internal static bool IsPrivateNameKey(JSValue key)
+        => key.ToKey(false) is { Type: KeyType.String, KeyString: var keyString } && IsPrivateName(in keyString);
+
     /// <summary>
     /// Mints a fresh private-name key for one class evaluation. Each call returns a
     /// distinct key, so a private element installed by one evaluation of a class is
@@ -77,6 +83,41 @@ public partial class JSObject
             return;
 
         ThrowMissingPrivateMember(in key, reading);
+    }
+
+    // PrivateSet (the brand already verified): a private element is stored own on the
+    // receiver and is outside the ordinary property model. A private accessor routes to
+    // its setter (a getter-only accessor is a TypeError); a private method cannot be
+    // reassigned (a TypeError); a private field's [[Value]] is updated directly. None of
+    // this consults the object's extensibility or Object.freeze/seal state — a frozen
+    // object's private field is still writable (test262 PrivateName/modify-non-extensible).
+    private bool SetPrivateMember(in KeyString name, JSValue value, JSValue receiver, bool throwError)
+    {
+        var p = GetInternalProperty(name, false);
+        if (p.IsProperty)
+        {
+            if (p.set is IJSFunction setter)
+            {
+                setter.InvokeFunction(new Arguments(receiver ?? this, value));
+                return true;
+            }
+
+            if (throwError)
+                throw NewTypeError($"Cannot write to private accessor {PrivateDisplayName(in name)} which has only a getter");
+
+            return false;
+        }
+
+        if (p.IsReadOnly)
+        {
+            if (throwError)
+                throw NewTypeError($"Cannot write to private method {PrivateDisplayName(in name)}");
+
+            return false;
+        }
+
+        FastAddValue(name, value, p.Attributes);
+        return true;
     }
 
     // Raises the brand-check TypeError for a private member access whose receiver
@@ -403,9 +444,14 @@ public partial class JSObject
         // A private member assignment (`obj.#x = v`) requires the brand: writing a
         // private name to an object whose class did not declare it is a TypeError.
         // Field initialization adds the field directly via FastAddValue and never
-        // reaches SetValue, so it is unaffected.
+        // reaches SetValue, so it is unaffected. A private element lives outside the
+        // ordinary property model, so the write is handled here rather than flowing
+        // into the extensibility/integrity checks below.
         if (IsPrivateName(in name))
+        {
             ThrowIfMissingPrivateMember(in name, reading: false);
+            return SetPrivateMember(in name, value, receiver, throwError);
+        }
 
         if (name.Key == KeyStrings.__proto__.Key
             && GetInternalProperty(name, false).IsEmpty

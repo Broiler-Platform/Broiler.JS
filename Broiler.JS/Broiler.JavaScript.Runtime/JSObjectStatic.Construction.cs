@@ -439,6 +439,11 @@ public partial class JSObject
 
         foreach (var key in GetOwnPropertyKeysInListOrder(@object))
         {
+            // Private elements are not own property keys (they live in [[PrivateElements]]),
+            // so SetIntegrityLevel never touches them — a frozen object keeps writable fields.
+            if (IsPrivateNameKey(key))
+                continue;
+
             if (@object.GetOwnPropertyDescriptor(key) is not JSObject descriptor)
                 continue;
 
@@ -530,6 +535,11 @@ public partial class JSObject
 
         foreach (var key in GetOwnPropertyKeysInListOrder(@object))
         {
+            // Private elements are not own property keys (they live in [[PrivateElements]]),
+            // so SetIntegrityLevel never touches them.
+            if (IsPrivateNameKey(key))
+                continue;
+
             if (@object.GetOwnPropertyDescriptor(key).IsUndefined)
                 continue;
 
