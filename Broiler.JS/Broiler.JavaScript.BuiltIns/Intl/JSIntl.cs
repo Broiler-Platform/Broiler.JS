@@ -2326,8 +2326,11 @@ public sealed class JSIntlDurationFormat : JSObject
                 if (displayNegativeSign)
                 {
                     displayNegativeSign = false;
-                    if (value == 0 && anyNegative)
-                        value = -0.0;
+                    // The negative sign is carried by the first displayed unit only when the duration
+                    // is actually negative; a lone negative-zero field (DurationSign 0) must format as
+                    // "+0", so normalize its negative zero away to avoid a spurious "-0".
+                    if (value == 0)
+                        value = anyNegative ? -0.0 : 0.0;
                 }
                 else
                 {
