@@ -439,14 +439,9 @@ public partial class JSTemporalZonedDateTime
     }
 
     // A Temporal.Duration relativeTo string that carries a time-zone annotation is a ZonedDateTime
-    // string: parse it as one (which validates the representable range and accepts a Z designator and
-    // a numeric offset, unlike the calendar-only PlainDate parser) and return its local calendar date
-    // for use as a 24-hour-day relativeTo (correct for the [UTC] / numeric-offset zones these exercise,
-    // which have no DST). A non-ISO calendar relativeTo is rejected by the caller.
-    internal static JSTemporalPlainDate ParseRelativeZonedDate(string text)
-    {
-        var zdt = (JSTemporalZonedDateTime)ParseZonedDateTimeString(text);
-        var l = zdt.Local();
-        return JSTemporalPlainDate.FromIso(l.y, l.mo, l.d, zdt.calendarId);
-    }
+    // string: parse it as a full ZonedDateTime relativeTo (DST-aware, and validating the representable
+    // instant range), so that adding the duration to the boundary instant overflows exactly as the
+    // spec's AddZonedDateTime requires. Used by Temporal.Duration round/total/compare.
+    internal static JSTemporalZonedDateTime ParseRelativeZoned(string text)
+        => (JSTemporalZonedDateTime)ParseZonedDateTimeString(text);
 }

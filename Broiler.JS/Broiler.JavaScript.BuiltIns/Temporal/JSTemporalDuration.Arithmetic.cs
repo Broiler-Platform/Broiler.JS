@@ -310,15 +310,15 @@ public partial class JSTemporalDuration
             if (!TemporalIsoString.TryParseRelative(s, out var tz, out var hasZ, out var offset))
                 throw JSEngine.NewRangeError($"Temporal.Duration: cannot parse relativeTo \"{s}\"");
 
-            // A string with a [TimeZone] annotation is a ZonedDateTime relativeTo: parse it as one so
-            // its representable range is validated and a Z designator / numeric offset is honoured (the
-            // calendar-only PlainDate parser used below would reject those), then consume its local date
-            // as a 24-hour-day relativeTo.
+            // A string with a [TimeZone] annotation is a ZonedDateTime relativeTo: parse it as a full
+            // ZonedDateTime (DST-aware, range-validated, honouring a Z designator / numeric offset) and
+            // resolve it through the zoned timeline, so that adding the duration to a boundary instant
+            // overflows exactly as AddZonedDateTime requires (test262 relativeto-string-limits).
             if (tz != null)
             {
-                date = JSTemporalZonedDateTime.ParseRelativeZonedDate(s);
-                if (TemporalCalendarMath.IsNonIso(date.calendarId))
-                    throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{date.calendarId}\" calendar is not yet implemented");
+                zoned = JSTemporalZonedDateTime.ParseRelativeZoned(s);
+                if (TemporalCalendarMath.IsNonIso(zoned.calendarId))
+                    throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{zoned.calendarId}\" calendar is not yet implemented");
                 return true;
             }
 
@@ -403,19 +403,38 @@ public partial class JSTemporalDuration
         return (endNs, (BigInteger)startEpoch * NanosecondsPerDay, startEpoch);
     }
 
-    // The instant implied by adding the whole duration to relativeTo must land on a representable ISO
-    // date; otherwise rounding / totalling it is a RangeError (e.g. a duration carrying ~2^53 seconds of
-    // time reaches ~10^11 days, far beyond the ±10^8-day ISO range).
-    private static void ValidateRelativeEndInRange(BigInteger endNs)
+    // The PlainDateTime representable range, in epoch nanoseconds: the instant range (±10^8 days) widened
+    // by one day at each end and shrunk by 1 ns, i.e. [nsMin − day + 1, nsMax + day − 1]. The minimum
+    // PlainDate (-271821-04-19) at midnight is exactly 1 ns below this lower bound.
+    private static readonly BigInteger MinInstantNs = (BigInteger)(-100_000_000) * NanosecondsPerDay;
+    private static readonly BigInteger MaxInstantNs = (BigInteger)100_000_000 * NanosecondsPerDay;
+    private static readonly BigInteger MinDateTimeNs = MinInstantNs - NanosecondsPerDay + 1;
+    private static readonly BigInteger MaxDateTimeNs = MaxInstantNs + NanosecondsPerDay - 1;
+
+    // RejectDateTimeRange: a PlainDateTime endpoint of the relativeTo difference (its UTC epoch ns) must
+    // lie within the representable PlainDateTime range; otherwise rounding / totalling is a RangeError
+    // (e.g. a duration carrying ~2^53 seconds reaches ~10^11 days, far beyond the range; or a relativeTo
+    // of -271821-04-19 whose midnight is just below the minimum representable PlainDateTime).
+    private static void RejectRelativeDateTimeRange(BigInteger ns)
     {
-        if (!JSTemporalPlainDate.IsEpochDayInIsoRange(FloorDivBig(endNs, NanosecondsPerDay)))
-            throw JSEngine.NewRangeError("Temporal.Duration: result is out of range");
+        if (ns < MinDateTimeNs || ns > MaxDateTimeNs)
+            throw JSEngine.NewRangeError("Temporal.Duration: relative date/time is outside of supported range");
+    }
+
+    // DifferencePlainDateTimeWithRounding/-Total: when the relativeTo (origin) and the duration's end
+    // (target) are the same instant the result is zero and no range check applies (the spec's
+    // CompareISODateTime early return); otherwise both endpoints must be representable PlainDateTimes.
+    private static void ValidateRelativeEndpoints(BigInteger startNs, BigInteger endNs)
+    {
+        if (startNs == endNs) return;
+        RejectRelativeDateTimeRange(startNs);
+        RejectRelativeDateTimeRange(endNs);
     }
 
     private JSValue RoundRelative(JSTemporalPlainDate r, string smallestUnit, string largestUnit, long increment, string roundingMode)
     {
         var (endNs, startNs, startEpoch) = RelativeEndpoints(r);
-        ValidateRelativeEndInRange(endNs);
+        ValidateRelativeEndpoints(startNs, endNs);
 
         if (smallestUnit is "year" or "month")
         {
@@ -447,7 +466,7 @@ public partial class JSTemporalDuration
     private double TotalRelative(JSTemporalPlainDate r, string unit)
     {
         var (endNs, startNs, _) = RelativeEndpoints(r);
-        ValidateRelativeEndInRange(endNs);
+        ValidateRelativeEndpoints(startNs, endNs);
 
         if (unit is "year" or "month")
         {

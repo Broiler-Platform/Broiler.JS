@@ -265,7 +265,13 @@ public partial class JSTemporalDuration : JSObject
         if (calendarUnits && relativeTo.IsNullOrUndefined)
             throw JSEngine.NewRangeError("Temporal.Duration.compare with calendar units requires a relativeTo option");
 
-        if (relZoned != null)
+        // The spec only adds each duration to the zoned relativeTo when one of the durations has a
+        // date-category largest unit (a non-zero year/month/week/day); a purely time-based comparison
+        // never touches the relativeTo, so a boundary relativeTo whose instant is representable does not
+        // overflow even though adding the time would (test262 compare/relativeto-string-limits).
+        var dateUnits = calendarUnits || d1.days != 0 || d2.days != 0;
+
+        if (relZoned != null && dateUnits)
         {
             // Add each duration to the (shared) zoned relativeTo and compare the resulting instants,
             // so a day spans its real DST-adjusted length.
