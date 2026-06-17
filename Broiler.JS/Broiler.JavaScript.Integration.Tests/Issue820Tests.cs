@@ -4,6 +4,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 
 // Regression tests for https://github.com/MaiRat/Broiler.JS/issues/820
 //
+// Problem 11 — `for (await using of of [])`. The contextual `of` is a valid
+// BindingIdentifier after `await using` (which unambiguously begins a declaration), so
+// the first `of` binds and the second is the for-of keyword. The parser rejected any
+// `of` binding, so this failed to compile. Plain `for (using of of x)` is unaffected —
+// there `using` stays an IdentifierReference. (test262:
+// language/statements/await-using/syntax/await-using-valid-for-await-using-of-of.js)
+//
 // Problems 12-19 — Unicode 17.0.0 identifier support. The lexer classifies identifier
 // start/continue characters via the runtime's char.GetUnicodeCategory, whose Unicode data
 // predates 17.0.0, so code points assigned in 17.0.0 came back unassigned and were
@@ -35,6 +42,13 @@ public class Issue820Tests
     {
         using var ctx = new JSContext();
         return ctx.Eval(code).ToString();
+    }
+
+    // Evaluates code that completes with a promise and drives the job loop until it settles.
+    private static string Execute(string code)
+    {
+        using var ctx = new JSContext();
+        return ctx.Execute(code).ToString();
     }
 
     // Joins the captures of a match, mapping a non-participating (undefined) group to
@@ -141,4 +155,26 @@ public class Issue820Tests
     public void Unicode17IdStartInPrivateName()
         => Assert.Equal("9", Eval(
             "class C { #౜ = 9; get() { return this.#౜; } } new C().get();"));
+
+    // ---- Problem 11: `for (await using of of [])` ----
+
+    // `await using of` binds the contextual `of`, the second `of` is the for-of keyword;
+    // the loop body runs once over the single-element iterable.
+    [Fact]
+    public void ForAwaitUsingOfOfBindsTheContextualOf()
+        => Assert.Equal("1", Execute(@"
+            (async function () {
+                var count = 0;
+                for (await using of of [{ [Symbol.asyncDispose]() {} }]) { count++; }
+                return count;
+            })()"));
+
+    // Plain `for (using of of x)` is unchanged: `using` stays an identifier and `of[…]`
+    // is element access (here of[2] === 7), so the body runs once.
+    [Fact]
+    public void ForUsingOfOfKeepsUsingAsIdentifier()
+        => Assert.Equal("7", Eval(@"
+            var using, of = [[9], [8], [7]], result = [];
+            for (using of of [0, 1, 2]) { result.push(using); }
+            result.length + ',' + result[0];").Split(',')[1]);
 }
