@@ -113,15 +113,6 @@ public partial class JSArray : JSObject
         set => ArrayLength = value;
     }
 
-    // True once "length" has been materialized into the ordinary property store
-    // (which happens only when its writability is changed via SetLengthWritable).
-    // While synthetic it is absent from the base key stream and must be injected.
-    private bool IsLengthStored()
-    {
-        ref var ownProperties = ref GetOwnProperties(false);
-        return !ownProperties.IsEmpty && !ownProperties.GetValue(KeyStrings.length.Key).IsEmpty;
-    }
-
     // Array exotic objects expose "length" as a non-enumerable own property that
     // sits right after the integer indices in [[OwnPropertyKeys]]. Because it is
     // synthetic (not stored unless its writability changes), the base key stream
@@ -133,7 +124,12 @@ public partial class JSArray : JSObject
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)
     {
         var baseKeys = base.GetAllKeys(showEnumerableOnly, inherited);
-        if (showEnumerableOnly || IsLengthStored())
+        // "length" is non-enumerable, so an enumerable-only walk (Object.keys / for-in / spread)
+        // omits it. For a full own-key walk it must appear right after the integer indices and
+        // before any other string key, in [[OwnPropertyKeys]] order — regardless of WHEN it was
+        // materialized into the property store (Object.defineProperty(arr,"length",…) does not move
+        // it to the end). The enumerator emits it at that boundary and drops the stored copy.
+        if (showEnumerableOnly)
             return baseKeys;
 
         return new ArrayLengthKeyEnumerator(baseKeys);
@@ -154,6 +150,8 @@ public partial class JSArray : JSObject
 
         private static bool IsIndexKey(JSValue key) => key.ToKey(false).Type == KeyType.UInt;
 
+        private static bool IsLengthName(JSValue key) => !IsIndexKey(key) && key.ToString() == "length";
+
         private bool Advance(out bool hasValue, out JSValue value, out uint index)
         {
             if (hasBuffered)
@@ -165,22 +163,34 @@ public partial class JSArray : JSObject
                 return true;
             }
 
-            if (inner.MoveNext(out hasValue, out value, out index))
+            while (inner.MoveNext(out hasValue, out value, out index))
             {
-                // The first present non-index key marks the end of the index run;
-                // surface "length" before it (buffering the key we just pulled).
-                if (lengthPending && hasValue && !IsIndexKey(value))
+                var nonIndex = hasValue && !IsIndexKey(value);
+
+                // The first present non-index key marks the end of the index run; surface
+                // "length" before it. If that key is the stored "length", drop it (we emit
+                // our own); otherwise buffer it to surface right after.
+                if (lengthPending && nonIndex)
                 {
                     lengthPending = false;
-                    bufHasValue = hasValue;
-                    bufValue = value;
-                    bufIndex = index;
-                    hasBuffered = true;
+                    if (!IsLengthName(value))
+                    {
+                        bufHasValue = hasValue;
+                        bufValue = value;
+                        bufIndex = index;
+                        hasBuffered = true;
+                    }
 
                     hasValue = true;
                     value = LengthKey;
                     index = 0;
+                    return true;
                 }
+
+                // A stored "length" key (boundary already passed) is dropped — it was emitted
+                // at the index/string boundary above, never in property-store insertion order.
+                if (nonIndex && IsLengthName(value))
+                    continue;
 
                 return true;
             }
@@ -308,8 +318,22 @@ public partial class JSArray : JSObject
         return new ElementEnumerator(this);
     }
 
-    private struct ElementEnumerator(JSArray array) : IElementEnumerator
+    // Key enumeration (Object.keys / for-in / spread of own keys) must skip
+    // non-enumerable indices. Array elements are normally enumerable, but
+    // Object.defineProperty can store an indexed element with enumerable:false,
+    // so the raw index walk has to honour the enumerable filter here. (The base
+    // override assumes specialised element walks are always enumerable, which is
+    // not true for arrays.) GetElementEnumerator stays unfiltered because the
+    // iterator protocol (for-of / spread) visits every index regardless.
+    internal override IElementEnumerator GetOwnIndexedElementEnumerator(bool enumerableOnly = false)
     {
+        return new ElementEnumerator(this, enumerableOnly);
+    }
+
+    private struct ElementEnumerator(JSArray array, bool enumerableOnly = false) : IElementEnumerator
+    {
+        readonly bool enumerableOnly = enumerableOnly;
+
         // Array iterators are live (CreateArrayIterator re-reads the length each
         // step): entries pushed during for-of / spread traversal must be visited,
         // and a shrink must end iteration early. Read the length dynamically
@@ -334,7 +358,8 @@ public partial class JSArray : JSObject
             if ((this.index = (this.index == uint.MaxValue) ? 0 : (this.index + 1)) < length)
             {
                 index = this.index;
-                if (elements.TryGetValue(index, out var property))
+                if (elements.TryGetValue(index, out var property)
+                    && (!enumerableOnly || property.IsEnumerable))
                 {
                     value = property.IsEmpty
                         ? null
@@ -494,54 +519,72 @@ public partial class JSArray : JSObject
         var hasWritable = !propertyDescription.GetInternalProperty(KeyStrings.writable, false).IsEmpty;
         var hasConfigurable = !propertyDescription.GetInternalProperty(KeyStrings.configurable, false).IsEmpty;
         var hasEnumerable = !propertyDescription.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty;
+        var hasGet = !propertyDescription.GetInternalProperty(KeyStrings.get, false).IsEmpty;
+        var hasSet = !propertyDescription.GetInternalProperty(KeyStrings.set, false).IsEmpty;
 
-        // ArraySetLength validates a supplied length *value* (ToUint32 must equal ToNumber) and throws
-        // RangeError for an invalid one BEFORE the ordinary descriptor invariants are checked — so
-        // e.g. {value: -1, configurable: true} is a RangeError (invalid value), not the TypeError the
-        // configurable-redefinition invariant would otherwise produce.
+        // ArraySetLength steps 3-5: when a [[Value]] is supplied it is coerced with ToUint32
+        // and then ToNumber — BOTH observable for an object value, in that order — before any
+        // descriptor invariant is checked. A value whose two coercions disagree (-1, NaN,
+        // ≥ 2**32, …) is a RangeError, thrown even when "length" is non-writable; and a
+        // coercion that itself flips "length" to non-writable is still observed (writability
+        // is re-read afterwards).
         uint newLength = 0;
         if (hasValue)
         {
-            var newLengthNumber = propertyDescription[KeyStrings.value].DoubleValue;
-            if (double.IsNaN(newLengthNumber) || newLengthNumber < 0 || newLengthNumber > uint.MaxValue || newLengthNumber != System.Math.Truncate(newLengthNumber))
-                throw JSEngine.NewRangeError("Invalid length");
-
-            newLength = (uint)newLengthNumber;
+            var valueSlot = propertyDescription[KeyStrings.value];
+            newLength = valueSlot.UIntValue;            // ToNumber #1, then ToUint32
+            if (newLength != valueSlot.DoubleValue)     // ToNumber #2
+                throw JSEngine.NewRangeError("Invalid array length");
         }
 
-        // [[DefineOwnProperty]] is a predicate: an invariant violation returns false
-        // (the OrThrow caller, e.g. Object.defineProperty, turns that into a throw;
-        // Reflect.defineProperty surfaces it as `false`).
+        // [[DefineOwnProperty]] is a predicate: an invariant violation returns false (the
+        // OrThrow caller, e.g. Object.defineProperty, turns that into a throw; Reflect's
+        // variant surfaces it as `false`). "length" is a non-configurable, non-enumerable
+        // data property, so reject a descriptor that would make it configurable or
+        // enumerable, or convert it to an accessor — the supplied getter is never invoked.
         if ((hasConfigurable && propertyDescription[KeyStrings.configurable].BooleanValue)
-            || (hasEnumerable && propertyDescription[KeyStrings.enumerable].BooleanValue))
+            || (hasEnumerable && propertyDescription[KeyStrings.enumerable].BooleanValue)
+            || hasGet || hasSet)
         {
             return JSValue.BooleanFalse;
         }
 
+        // Read writability AFTER the value coercion (which may have changed it); an absent
+        // [[Writable]] leaves the current writability unchanged.
+        var currentWritable = !IsLengthReadOnly();
+        bool? requestedWritable = hasWritable ? propertyDescription[KeyStrings.writable].BooleanValue : null;
+
         if (!hasValue)
         {
-            if (hasWritable)
-                SetLengthWritable(propertyDescription[KeyStrings.writable].BooleanValue);
-
+            // Only a writability change remains. Re-enabling a non-writable (hence
+            // non-configurable) length is forbidden; otherwise apply the request.
+            if (requestedWritable is bool w)
+            {
+                if (!currentWritable && w)
+                    return JSValue.BooleanFalse;
+                SetLengthWritable(w);
+            }
             return JSUndefined.Value;
         }
 
         var oldLength = _length;
-        var newWritable = !hasWritable || propertyDescription[KeyStrings.writable].BooleanValue;
 
         if (newLength >= oldLength)
         {
-            if (newLength != oldLength && IsLengthReadOnly())
+            // Growing or unchanged: a non-writable length rejects a changed value or an
+            // attempt to set [[Writable]] back to true; an unchanged value is a no-op.
+            if (!currentWritable && (newLength != oldLength || requestedWritable == true))
                 return JSValue.BooleanFalse;
 
             _length = newLength;
-            SetLengthWritable(newWritable);
+            SetLengthWritable(requestedWritable ?? currentWritable);
             return JSUndefined.Value;
         }
 
-        if (IsLengthReadOnly())
+        if (!currentWritable)
             return JSValue.BooleanFalse;
 
+        var newWritable = requestedWritable ?? true;
         ref var elements = ref GetElements();
 
         // Only the indices that are actually stored need to be deleted; absent
@@ -578,19 +621,12 @@ public partial class JSArray : JSObject
 
     private bool SetLengthValue(JSValue value, bool throwError)
     {
-        var newLengthNumber = value.DoubleValue;
-        if (double.IsNaN(newLengthNumber)
-            || newLengthNumber < 0
-            || newLengthNumber > uint.MaxValue
-            || newLengthNumber != System.Math.Truncate(newLengthNumber))
-        {
-            throw JSEngine.NewRangeError("Invalid length");
-        }
-
-        // ArraySetLength only fails when "length" itself is non-writable; a merely
-        // non-extensible array (Object.preventExtensions) keeps a writable length, so
-        // assigning to it must succeed rather than throw. (A frozen array already has a
-        // read-only length, so IsLengthReadOnly covers that case.)
+        // [[Set]] of "length" checks the existing property's writability BEFORE coercing the
+        // assigned value (OrdinarySetWithOwnDescriptor): assigning to an already non-writable
+        // length fails without invoking the value's valueOf/@@toPrimitive at all. A merely
+        // non-extensible array (Object.preventExtensions) keeps a writable length, so that
+        // still succeeds. The value coercion (and its RangeError) then happens once, inside
+        // DefineLengthProperty (ArraySetLength), via ToUint32 + ToNumber.
         if (IsLengthReadOnly())
         {
             if (throwError)

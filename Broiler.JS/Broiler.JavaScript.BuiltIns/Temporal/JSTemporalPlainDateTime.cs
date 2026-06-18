@@ -212,8 +212,13 @@ public partial class JSTemporalPlainDateTime : JSObject
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); any = true; }
 
+        // Coerce monthCode to a string now (PrepareCalendarFields); defer parsing/validating
+        // it against the calendar until after the overflow option is read, so an invalid
+        // month code is rejected only once every option getter has fired (test262
+        // .../with options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        if (!monthCodeValue.IsUndefined) { monthFromCode = MonthFromCode(monthCodeValue.ToString()); any = true; }
+        string monthCodeStr = null;
+        if (!monthCodeValue.IsUndefined) { monthCodeStr = monthCodeValue.ToString(); any = true; }
 
         var ns = Read("nanosecond", nanosecond);
         var s = Read("second", second);
@@ -224,6 +229,9 @@ public partial class JSTemporalPlainDateTime : JSObject
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires at least one field");
 
         var overflow = ReadOverflow(a.GetAt(1));
+
+        if (monthCodeStr != null)
+            monthFromCode = MonthFromCode(monthCodeStr);
 
         // Resolve month from month / monthCode (consistency checked here, after the overflow option).
         if (monthFromCode != -1)
@@ -1087,7 +1095,18 @@ public partial class JSTemporalPlainDateTime : JSObject
             ? NonIsoDateDifference(a.calendarId, a.isoYear, a.isoMonth, a.isoDay, by, bm, bd, dateLargestUnit)
             : JSTemporalPlainDate.DiffCalendarDate(a.isoYear, a.isoMonth, a.isoDay, by, bm, bd, dateLargestUnit);
 
-        // Distribute days into hours when largestUnit is a time unit.
+        // When largestUnit is a time unit, the difference has no date part (BalanceTimeDuration):
+        // fold the whole-day date difference into the time total and balance from largestUnit
+        // downward, so e.g. `until(…, { largestUnit: "milliseconds" })` reports the days as
+        // milliseconds (days result 0) rather than leaving a stray days component.
+        if (dateLargestUnit == "day" && largestUnit != "day")
+        {
+            var totalNs = (BigInteger)(long)days * NanosecondsPerDay + timeDiff;
+            var (bh, bmi, bs, bms, bus, bns) = BalanceTime(totalNs, largestUnit);
+            return (0, 0, 0, 0, bh, bmi, bs, bms, bus, bns);
+        }
+
+        // Distribute the residual time into hours..nanoseconds (the date part keeps its days).
         var t = timeDiff;
         var sgn = Math.Sign(t); t = Math.Abs(t);
         var ns = t % 1000; t /= 1000;
@@ -1230,14 +1249,17 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (roundTo.IsString) smallestUnit = roundTo.ToString();
         else if (roundTo is JSObject obj)
         {
+            // GetRoundingIncrementOption, then GetRoundingModeOption, then the REQUIRED
+            // smallestUnit are read (and coerced) in that order, and all BEFORE the increment
+            // is validated against the unit, so a bad increment is reported only after every
+            // option getter has fired (test262 round/options-read-before-algorithmic-validation).
+            increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
+            TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
+
             var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
             if (unitValue.IsUndefined)
                 throw JSEngine.NewRangeError("Temporal.PlainDateTime.round requires a smallestUnit");
             smallestUnit = unitValue.StringValue;
-
-            // GetRoundingIncrementOption (finite, integer, 1 … 10^9) and GetRoundingModeOption.
-            increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
-            TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
         }
         else throw JSEngine.NewTypeError("Temporal.PlainDateTime.round requires an options object or string");
 
@@ -1252,6 +1274,11 @@ public partial class JSTemporalPlainDateTime : JSObject
             "nanosecond" or "nanoseconds" => "nanosecond",
             _ => throw JSEngine.NewRangeError($"Temporal.PlainDateTime.round: invalid smallestUnit \"{smallestUnit}\""),
         };
+
+        // ValidateTemporalRoundingIncrement: the increment must divide the unit's maximum (a "day"
+        // allows only 1); e.g. roundingIncrement 25 with smallestUnit "hour" is a RangeError.
+        var maximum = smallestUnit == "day" ? 1 : TemporalRoundingOptions.MaximumRoundingIncrement(smallestUnit);
+        TemporalRoundingOptions.ValidateRoundingIncrement(increment, maximum, inclusive: smallestUnit == "day");
 
         return (smallestUnit, increment);
     }

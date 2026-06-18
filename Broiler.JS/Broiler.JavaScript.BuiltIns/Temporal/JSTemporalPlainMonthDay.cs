@@ -124,14 +124,12 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         var anyIso = false;
         var month = isoMonth; var isoDayOut = isoDay;
-        if (!monthCodeValue.IsUndefined) { month = MonthFromCode(monthCodeValue.ToString()); anyIso = true; }
-        if (!monthValue.IsUndefined)
-        {
-            var m = ToPositiveIntegerWithTruncation(monthValue);
-            if (!monthCodeValue.IsUndefined && m != month)
-                throw JSEngine.NewRangeError("Temporal.PlainMonthDay.with: month and monthCode disagree");
-            month = m; anyIso = true;
-        }
+        // Coerce monthCode now; defer parsing/validating it against the calendar until after
+        // the overflow option is read (test262 .../with options-read-before-algorithmic-validation).
+        string monthCodeStr = null;
+        if (!monthCodeValue.IsUndefined) { monthCodeStr = monthCodeValue.ToString(); anyIso = true; }
+        var monthFromMonth = -1;
+        if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); anyIso = true; }
 
         if (!dayValue.IsUndefined) { isoDayOut = ToPositiveIntegerWithTruncation(dayValue); anyIso = true; }
 
@@ -140,6 +138,14 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         // GetTemporalOverflowOption runs only after the partial fields have been read and coerced.
         var overflow = ReadOverflow(a.GetAt(1));
+
+        if (monthCodeStr != null) month = MonthFromCode(monthCodeStr);
+        if (monthFromMonth != -1)
+        {
+            if (monthCodeStr != null && monthFromMonth != month)
+                throw JSEngine.NewRangeError("Temporal.PlainMonthDay.with: month and monthCode disagree");
+            month = monthFromMonth;
+        }
 
         return RegulateMonthDay(month, isoDayOut, overflow, calendarId, referenceISOYear);
     }
@@ -302,8 +308,10 @@ public partial class JSTemporalPlainMonthDay : JSObject
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthFromMonth = monthValue.IsUndefined ? -1 : ToIntegerWithTruncation(monthValue);
 
+        // Coerce monthCode now; defer parsing/validating it against the calendar until after
+        // the overflow option is read (test262 from/options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthFromCode = monthCodeValue.IsUndefined ? -1 : MonthFromCode(monthCodeValue.ToString());
+        var monthCodeStr = monthCodeValue.IsUndefined ? null : monthCodeValue.ToString();
 
         // A bare month/day with no year resolves against the leap-year reference (1972) so that
         // 02-29 is representable; a supplied year is used to validate/constrain the day instead.
@@ -317,6 +325,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         var overflow = ReadOverflow(options);
 
+        var monthFromCode = monthCodeStr == null ? -1 : MonthFromCode(monthCodeStr);
         var month = monthCodeValue.IsUndefined ? monthFromMonth : monthFromCode;
         if (monthFromMonth != -1 && !monthCodeValue.IsUndefined && monthFromMonth != month)
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month and monthCode disagree");

@@ -380,10 +380,13 @@ public partial class JSObject
             return;
         }
 
+        // CopyDataProperties copies only the source's own *enumerable* properties, so
+        // a slot stored non-enumerable (e.g. an array index or string/symbol property
+        // defined with enumerable:false via Object.defineProperty) is skipped here too.
         var en = target.elements.Length;
         for (uint i = 0; i < en; i++)
         {
-            if (target.elements.TryGetValue(i, out var p) && !p.IsEmpty)
+            if (target.elements.TryGetValue(i, out var p) && !p.IsEmpty && p.IsEnumerable)
                 elements.Put(i) = p.IsValue
                     ? JSProperty.Property(i, p.value)
                     : JSProperty.Property(i, (IPropertyValue)target.GetValue(p));
@@ -391,16 +394,21 @@ public partial class JSObject
 
         var pe = target.ownProperties.GetEnumerator();
         while (pe.MoveNext(out var key, out var val) && !val.IsEmpty)
+        {
+            if (!val.IsEnumerable)
+                continue;
+
             ownProperties.Put(key.Key) = val.IsValue
                 ? JSProperty.Property(key, val.value)
                 : JSProperty.Property(key, (IPropertyValue)target.GetValue(val));
+        }
 
         foreach (var symbol in target.symbols.All)
         {
             var key = symbol.Key;
             var sv = symbol.Value;
 
-            if (sv.IsEmpty)
+            if (sv.IsEmpty || !sv.IsEnumerable)
                 continue;
 
             symbols.Put(key) = sv.IsValue
@@ -1442,7 +1450,7 @@ public partial class JSObject
     // is non-callable (e.g. `o[Symbol.iterator] = 'x'`) — so bypass it with the raw
     // element walk. Otherwise delegate to GetElementEnumerator so exotic objects
     // (arrays, typed arrays) keep their specialised, hole-aware element enumeration.
-    internal IElementEnumerator GetOwnIndexedElementEnumerator(bool enumerableOnly = false)
+    internal virtual IElementEnumerator GetOwnIndexedElementEnumerator(bool enumerableOnly = false)
     {
         // Objects whose indexed data lives in the ordinary `elements` map (object
         // literals, class prototypes, …) are walked directly so a non-enumerable

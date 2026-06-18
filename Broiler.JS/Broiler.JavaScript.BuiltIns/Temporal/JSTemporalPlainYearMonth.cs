@@ -149,15 +149,11 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var monthFromMonth = -1;
         if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); any = true; }
 
+        // Coerce monthCode now; defer parsing/validating it against the calendar until after
+        // the overflow option is read (test262 .../with options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        if (!monthCodeValue.IsUndefined) { month = MonthFromCode(monthCodeValue.ToString()); any = true; }
-
-        if (monthFromMonth != -1)
-        {
-            if (!monthCodeValue.IsUndefined && monthFromMonth != month)
-                throw JSEngine.NewRangeError("Temporal.PlainYearMonth.with: month and monthCode disagree");
-            month = monthFromMonth;
-        }
+        string monthCodeStr = null;
+        if (!monthCodeValue.IsUndefined) { monthCodeStr = monthCodeValue.ToString(); any = true; }
 
         var year = ResolveWithYear(obj, ref any);
 
@@ -166,6 +162,15 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
         // GetTemporalOverflowOption runs only after the partial fields have been read and coerced.
         var overflow = ReadOverflow(a.GetAt(1));
+
+        if (monthCodeStr != null) month = MonthFromCode(monthCodeStr);
+
+        if (monthFromMonth != -1)
+        {
+            if (monthCodeStr != null && monthFromMonth != month)
+                throw JSEngine.NewRangeError("Temporal.PlainYearMonth.with: month and monthCode disagree");
+            month = monthFromMonth;
+        }
 
         return RegulateYearMonth(year, month, overflow, calendarId);
     }
@@ -603,8 +608,10 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
 
+        // Coerce monthCode now; defer parsing/validating it against the calendar until after
+        // the overflow option is read (test262 from/options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthFromCode = monthCodeValue.IsUndefined ? -1 : MonthFromCode(monthCodeValue.ToString());
+        var monthCodeStr = monthCodeValue.IsUndefined ? null : monthCodeValue.ToString();
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
         var yearInt = yearValue.IsUndefined ? 0 : ToIntegerWithTruncation(yearValue);
@@ -619,6 +626,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
         var overflow = ReadOverflow(options);
 
+        var monthFromCode = monthCodeStr == null ? -1 : MonthFromCode(monthCodeStr);
         var month = monthCodeValue.IsUndefined ? monthFromMonth : monthFromCode;
         if (monthFromMonth != -1 && !monthCodeValue.IsUndefined && monthFromMonth != month)
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: month and monthCode disagree");

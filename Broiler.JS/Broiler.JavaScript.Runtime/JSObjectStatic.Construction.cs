@@ -56,10 +56,6 @@ public partial class JSObject
 
     private static void DefineArrayLength(JSObject target, JSObject descriptor)
     {
-        var currentLength = (uint)Math.Max(target.Length, 0);
-        var currentLengthProperty = GetArrayLengthProperty(target);
-        var currentWritable = !currentLengthProperty.IsReadOnly;
-
         var hasValue = !descriptor.GetInternalProperty(KeyStrings.value, false).IsEmpty;
         var hasWritable = !descriptor.GetInternalProperty(KeyStrings.writable, false).IsEmpty;
         var hasEnumerable = !descriptor.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty;
@@ -80,6 +76,13 @@ public partial class JSObject
             if (newLength != numberLen)
                 throw NewRangeError("Invalid length");
         }
+
+        // ArraySetLength step 7: read oldLenDesc AFTER the value coercion — a custom
+        // valueOf/@@toPrimitive run during coercion may itself have changed "length"'s
+        // writability, and that must be observed by the invariant checks below.
+        var currentLength = (uint)Math.Max(target.Length, 0);
+        var currentLengthProperty = GetArrayLengthProperty(target);
+        var currentWritable = !currentLengthProperty.IsReadOnly;
 
         if (!descriptor[KeyStrings.get].IsUndefined
             || !descriptor[KeyStrings.set].IsUndefined
