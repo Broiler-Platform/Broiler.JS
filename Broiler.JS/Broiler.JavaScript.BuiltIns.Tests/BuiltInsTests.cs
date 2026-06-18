@@ -8147,6 +8147,27 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Object_GetOwnPropertyNames_String_Object_Orders_Index_Keys_First_Match_Test262()
+    {
+        // Regression: String exotic [[OwnPropertyKeys]] (ES 10.4.3.3) lists every
+        // integer-index key in ascending numeric order before the string keys. An
+        // extra array-index property added to a String wrapper (str[5]) must be
+        // grouped with the character indices, ahead of "length" — we previously
+        // emitted "length" between the characters and the extra index, yielding
+        // ["0","1","2","length","5"] (test262 Object/getOwnPropertyNames/15.2.3.4-4-44).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var str = new String('abc');
+            str[5] = 'de';
+            Object.getOwnPropertyNames(str).join(',');
+        ");
+
+        Assert.Equal("0,1,2,5,length", result.ToString());
+    }
+
+    [Fact]
     public void Array_Prototype_Flat_FlatMap_Recurse_Into_Proxy_Arrays_Match_Test262()
     {
         // Regression: FlattenIntoArray uses the IsArray abstract operation to decide
