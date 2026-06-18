@@ -8147,6 +8147,41 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RegExp_Inline_Modifier_Groups_Scope_DotAll_And_Multiline_Match_Test262()
+    {
+        // Regression: the '.', '^' and '$' rewrites that bridge .NET and ECMAScript
+        // semantics used the global s/m flags, ignoring inline modifier groups
+        // `(?s:...)`, `(?m:...)`, `(?-m:...)`. So `(?s:.)` did not match a newline,
+        // and `$` matched before a trailing newline even where multiline was off
+        // (test262 RegExp/regexp-modifiers/add-multiline,
+        // add-dotAll-does-not-affect-multiline-flag,
+        // remove-multiline-does-not-affect-dotAll-flag).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var r = [];
+            // (?s:.) matches a newline; the unmodified $ stays end-only.
+            r.push(/(?s:.es$)/.test('\nes'));          // true
+            r.push(/(?s:.es$)/.test('\nes\nz'));       // false ($ end-only)
+            // (?m:$) is multiline inside the group even with no global flag.
+            r.push(/(?m:es$)/.test('es\ns'));          // true
+            // (?-m:...) removes multiline locally; '.' (no s) and $ stay strict.
+            r.push(/(?-m:es.$)/m.test('es\n'));        // false (. not newline)
+            r.push(/(?-m:es.$)/m.test('esz\n'));       // false ($ before newline)
+            // Anchors outside the modified group keep the outer (non-multiline) rule.
+            r.push(/^a\n(?m:^b$)\nc$/.test('a\nb\nc')); // true
+            r.push(/^a\n(?m:^b$)\nc$/.test('a\nb\nc\n')); // false (outer $ end-only)
+            // A non-anchor modifier (i) still scopes correctly.
+            r.push(/(?i:a)b/.test('Ab'));              // true
+            r.push(/(?i:a)b/.test('aB'));              // false
+            r.join(',');
+        ");
+
+        Assert.Equal("true,false,true,false,false,true,false,true,false", result.ToString());
+    }
+
+    [Fact]
     public void ForIn_Continues_After_Deleting_The_Next_Property_Match_Test262()
     {
         // Regression: deleting the property that for-in is about to visit terminated
