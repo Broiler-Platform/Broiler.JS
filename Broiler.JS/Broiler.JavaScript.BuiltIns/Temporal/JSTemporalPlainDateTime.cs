@@ -1087,7 +1087,18 @@ public partial class JSTemporalPlainDateTime : JSObject
             ? NonIsoDateDifference(a.calendarId, a.isoYear, a.isoMonth, a.isoDay, by, bm, bd, dateLargestUnit)
             : JSTemporalPlainDate.DiffCalendarDate(a.isoYear, a.isoMonth, a.isoDay, by, bm, bd, dateLargestUnit);
 
-        // Distribute days into hours when largestUnit is a time unit.
+        // When largestUnit is a time unit, the difference has no date part (BalanceTimeDuration):
+        // fold the whole-day date difference into the time total and balance from largestUnit
+        // downward, so e.g. `until(…, { largestUnit: "milliseconds" })` reports the days as
+        // milliseconds (days result 0) rather than leaving a stray days component.
+        if (dateLargestUnit == "day" && largestUnit != "day")
+        {
+            var totalNs = (BigInteger)(long)days * NanosecondsPerDay + timeDiff;
+            var (bh, bmi, bs, bms, bus, bns) = BalanceTime(totalNs, largestUnit);
+            return (0, 0, 0, 0, bh, bmi, bs, bms, bus, bns);
+        }
+
+        // Distribute the residual time into hours..nanoseconds (the date part keeps its days).
         var t = timeDiff;
         var sgn = Math.Sign(t); t = Math.Abs(t);
         var ns = t % 1000; t /= 1000;
