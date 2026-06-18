@@ -695,6 +695,27 @@ public static class JSIntl
         ["gregorian"] = "gregory",
     };
 
+    // Bcp47 collation ("co") keyword value aliases (UTS #35). The deprecated long names mostly
+    // exceed the 8-char subtag limit so they can only arrive as an option value, but the table
+    // is applied uniformly to both the option and the -u-co- tag value.
+    private static readonly Dictionary<string, string> CollationValueAliases = new(StringComparer.Ordinal)
+    {
+        ["dictionary"] = "dict",
+        ["gb2312han"] = "gb2312",
+        ["phonebook"] = "phonebk",
+        ["traditional"] = "trad",
+    };
+
+    // Collation types sanctioned by CLDR for a "co" keyword. "standard" and "search" are
+    // reserved (never reflected as the resolved collation), so they are excluded; any other
+    // value is unsupported and falls back to "default".
+    private static readonly HashSet<string> KnownCollations = new(StringComparer.Ordinal)
+    {
+        "big5han", "compat", "dict", "direct", "ducet", "emoji", "eor", "gb2312",
+        "phonebk", "phonetic", "pinyin", "reformed", "searchjl", "stroke",
+        "trad", "unihan", "zhuyin",
+    };
+
     private static readonly Regex UnicodeKeywordTypePattern =
         new(@"^[0-9a-z]{3,8}(?:-[0-9a-z]{3,8})*$", RegexOptions.CultureInvariant);
 
@@ -833,7 +854,74 @@ public static class JSIntl
             return value;
         if (key == "ca" && CalendarValueAliases.TryGetValue(value, out var ca))
             return ca;
+        if (key == "co" && CollationValueAliases.TryGetValue(value, out var co))
+            return co;
         return value;
+    }
+
+    // Canonicalizes a requested collation value (option or -u-co- tag) and returns it only
+    // when it is a recognised collation; an unsupported (or reserved "standard"/"search")
+    // value returns null so the caller falls back to the "default" collation.
+    internal static string CanonicalizeCollation(string value)
+    {
+        if (value == null)
+            return null;
+        var lower = value.ToLowerInvariant();
+        if (!UnicodeKeywordTypePattern.IsMatch(lower))
+            return null;
+        var canonical = CanonicalizeKeywordValue("co", lower);
+        return KnownCollations.Contains(canonical) ? canonical : null;
+    }
+
+    // Applies the Unicode ("-u-") keyword type-value aliases (CanonicalizeUnicodeLocaleId,
+    // UTS #35) over an already case-folded tag — e.g. "en-u-ca-islamicc" → "en-u-ca-islamic-
+    // civil". Walks the -u- sequence: attributes (3–8 chars) precede the keyword pairs, each a
+    // 2-char key followed by its 3–8-char type subtags; the joined type is mapped through the
+    // alias tables. Keyword reordering is intentionally not applied here.
+    private static string CanonicalizeUnicodeKeywordValues(string tag)
+    {
+        var subtags = tag.Split('-');
+        var u = -1;
+        for (var i = 0; i < subtags.Length; i++)
+            if (subtags[i].Length == 1 && subtags[i][0] == 'u') { u = i; break; }
+        if (u < 0)
+            return tag;
+
+        var result = new List<string>(subtags.Length);
+        for (var i = 0; i <= u; i++)
+            result.Add(subtags[i]);
+
+        var j = u + 1;
+        // Attributes (3–8 chars) appear before the first 2-char key.
+        while (j < subtags.Length && subtags[j].Length >= 3 && subtags[j].Length <= 8)
+        {
+            result.Add(subtags[j]);
+            j++;
+        }
+
+        // Keyword pairs, until the extension ends (a 1-char singleton starts the next one).
+        while (j < subtags.Length && subtags[j].Length == 2)
+        {
+            var key = subtags[j];
+            j++;
+            var types = new List<string>();
+            while (j < subtags.Length && subtags[j].Length >= 3 && subtags[j].Length <= 8)
+            {
+                types.Add(subtags[j]);
+                j++;
+            }
+
+            result.Add(key);
+            var canonical = CanonicalizeKeywordValue(key, string.Join("-", types));
+            if (canonical.Length > 0)
+                result.AddRange(canonical.Split('-'));
+        }
+
+        // Any following singleton extension / private-use sequence is copied verbatim.
+        for (; j < subtags.Length; j++)
+            result.Add(subtags[j]);
+
+        return string.Join("-", result);
     }
 
     private static void SetKeyword(List<(string Key, List<string> Types)> keywords, string key, string value)
@@ -984,7 +1072,7 @@ public static class JSIntl
         if (RegularGrandfatheredMappings.TryGetValue(tag, out var preferred))
             return preferred;
 
-        return CanonicalizeLanguageTagCase(tag);
+        return CanonicalizeUnicodeKeywordValues(CanonicalizeLanguageTagCase(tag));
     }
 
     // CanonicalizeUnicodeLocaleId case folding (UTS #35 §3.2.1): the language
@@ -1475,9 +1563,11 @@ public static class JSIntl
         var value = options == null ? null : OptionString(options, KeyStrings.GetOrCreate("calendar"));
         if (value == null)
             return null;
-        if (!UnicodeKeywordTypePattern.IsMatch(value.ToLowerInvariant()))
+        value = value.ToLowerInvariant();
+        if (!UnicodeKeywordTypePattern.IsMatch(value))
             throw JSEngine.NewRangeError("Invalid calendar option");
-        return value;
+        // Canonicalize deprecated calendar aliases (e.g. "islamicc" → "islamic-civil").
+        return CanonicalizeKeywordValue("ca", value);
     }
 
     // Negotiates the resolved `nu` (numbering system) against the locale's `-u-nu-`
@@ -4420,8 +4510,8 @@ public class JSIntlCollator : JSObject
             numeric = kn == "true";
         if (TryGetUnicodeExtension(locale, "kf", out var kf) && (kf == "upper" || kf == "lower" || kf == "false"))
             caseFirst = kf;
-        if (TryGetUnicodeExtension(locale, "co", out var co) && IsValidCollation(co))
-            collation = co;
+        if (TryGetUnicodeExtension(locale, "co", out var co) && JSIntl.CanonicalizeCollation(co) is { } tagCo)
+            collation = tagCo;
 
         if (TryGetOwnOption(options, "usage", out var usageValue))
             usage = usageValue.StringValue;
@@ -4433,8 +4523,9 @@ public class JSIntlCollator : JSObject
             numeric = numericValue.BooleanValue;
         if (TryGetOwnOption(options, "caseFirst", out var caseFirstValue))
             caseFirst = caseFirstValue.StringValue;
-        if (TryGetOwnOption(options, "collation", out var collationValue) && IsValidCollation(collationValue.StringValue))
-            collation = collationValue.StringValue;
+        if (TryGetOwnOption(options, "collation", out var collationValue)
+            && JSIntl.CanonicalizeCollation(collationValue.StringValue) is { } optCo)
+            collation = optCo;
     }
 
     private JSIntlCollator() : base(CurrentPrototype()) { }
@@ -4507,8 +4598,6 @@ public class JSIntlCollator : JSObject
         return false;
     }
 
-    private static bool IsValidCollation(string value)
-        => Regex.IsMatch(value, @"^[0-9A-Za-z]{3,8}(?:-[0-9A-Za-z]{3,8})*$", RegexOptions.CultureInvariant);
 
     private static JSObject CurrentPrototype()
         => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl

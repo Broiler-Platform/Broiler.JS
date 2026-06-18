@@ -26,6 +26,16 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problems 73, 79 (Unicode keyword canonicalization for calendar / collation) — keyword
+//   type-value aliases were not applied to the "-u-" extension during tag canonicalization, so
+//   a deprecated calendar id such as "islamicc" was kept verbatim by Intl.Locale.calendar,
+//   getCanonicalLocales and DateTimeFormat ("islamicc" instead of "islamic-civil";
+//   "ethiopic-amete-alem" instead of "ethioaa"). The alias substitution now runs over the
+//   extension (and over the DateTimeFormat calendar option). For collation, an unsupported
+//   "-u-co-"/option value (e.g. "invalid") was reflected verbatim instead of resolving to the
+//   "default" collation; the resolved collation is now validated against the known CLDR
+//   collation set (deprecated aliases like "phonebook" → "phonebk" are canonicalized first).
+//
 //   Problem 92 (Intl.NumberFormat currency-code canonicalization) — a well-formed currency
 //   code was reflected verbatim, so `{ currency: "usd" }` resolved to "usd". Per spec the
 //   code is canonicalized to upper case ("USD"); resolvedOptions and the formatter now upper-
@@ -380,4 +390,54 @@ public class Issue838Tests
             "function err(f){ try { f(); return 'no-throw'; } catch (e) { return e.constructor.name; } }" +
             "err(function(){ new Intl.NumberFormat('en', { style: 'currency' }); }) + ',' +" +
             "err(function(){ new Intl.NumberFormat('en', { style: 'currency', currency: 'US' }); })"));
+
+    // ---- Problem 73: deprecated calendar keyword values are canonicalized ----
+
+    [Fact]
+    public void LocaleCanonicalizesDeprecatedCalendarKeyword()
+        => Assert.Equal("islamic-civil,ethioaa", Eval(
+            "new Intl.Locale('en-u-ca-islamicc').calendar + ',' +" +
+            "new Intl.Locale('en-u-ca-ethiopic-amete-alem').calendar"));
+
+    [Fact]
+    public void GetCanonicalLocalesCanonicalizesCalendarKeyword()
+        => Assert.Equal("en-u-ca-islamic-civil,en-u-ca-ethioaa", Eval(
+            "Intl.getCanonicalLocales('en-u-ca-islamicc')[0] + ',' +" +
+            "Intl.getCanonicalLocales('en-u-ca-ethiopic-amete-alem')[0]"));
+
+    [Fact]
+    public void DateTimeFormatCanonicalizesCalendarOptionAndTag()
+        => Assert.Equal("islamic-civil,islamic-civil", Eval(
+            "new Intl.DateTimeFormat('en', { calendar: 'islamicc' }).resolvedOptions().calendar + ',' +" +
+            "new Intl.DateTimeFormat('en-u-ca-islamicc').resolvedOptions().calendar"));
+
+    [Fact]
+    public void SupportedCalendarStillResolvesAndUnsupportedStillFallsBack()
+        => Assert.Equal("chinese,gregory", Eval(
+            "new Intl.DateTimeFormat('en-u-ca-chinese').resolvedOptions().calendar + ',' +" +
+            "new Intl.DateTimeFormat('en-u-ca-hebrew').resolvedOptions().calendar"));
+
+    // ---- Problem 79: an unsupported collation resolves to "default" ----
+
+    [Fact]
+    public void CollatorUnsupportedCollationResolvesToDefault()
+        => Assert.Equal("default,default", Eval(
+            "new Intl.Collator('en-u-co-invalid').resolvedOptions().collation + ',' +" +
+            "new Intl.Collator('en', { collation: 'invalid' }).resolvedOptions().collation"));
+
+    [Fact]
+    public void CollatorKnownCollationIsReflected()
+        => Assert.Equal("phonebk,zhuyin", Eval(
+            "new Intl.Collator('de-u-co-phonebk').resolvedOptions().collation + ',' +" +
+            "new Intl.Collator('zh', { collation: 'zhuyin' }).resolvedOptions().collation"));
+
+    [Fact]
+    public void CollatorDefaultCollationAndCompareUnaffected()
+        => Assert.Equal("default,-1", Eval(
+            "new Intl.Collator('en').resolvedOptions().collation + ',' +" +
+            "new Intl.Collator('en').compare('a', 'b')"));
+
+    [Fact]
+    public void LocaleCanonicalizesCollationAliasInTag()
+        => Assert.Equal("phonebk", Eval("new Intl.Locale('de-u-co-phonebk').collation"));
 }
