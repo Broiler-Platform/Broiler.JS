@@ -291,22 +291,25 @@ public partial class JSTemporalInstant : JSObject
             if (optionsArg is not JSObject options)
                 throw JSEngine.NewTypeError("Temporal.Instant.toString options must be an object or undefined");
 
+            // The options are read in alphabetical order — fractionalSecondDigits,
+            // roundingMode, smallestUnit, timeZone — and every option is read before any
+            // algorithmic validation (the smallestUnit ≠ "hour" check) runs (test262
+            // Instant/prototype/toString options-read-before-algorithmic-validation).
             digits = TemporalRoundingOptions.GetFractionalSecondDigits(options);
             roundingMode = TemporalRoundingOptions.GetRoundingMode(options, "trunc");
 
             var su = options[KeyStrings.GetOrCreate("smallestUnit")];
             if (!su.IsUndefined)
-            {
                 smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
-                if (smallestUnit == "hour")
-                    throw JSEngine.NewRangeError("Temporal.Instant.toString: smallestUnit cannot be \"hour\"");
-            }
 
             // A timeZone option displays the instant in that zone (with its numeric offset) instead of
             // UTC; it must be a valid time-zone identifier — a bare date-time string is a RangeError.
             var tz = options[KeyStrings.GetOrCreate("timeZone")];
             if (!tz.IsUndefined)
                 timeZoneId = JSTemporalZonedDateTime.ToTimeZoneIdentifier(tz);
+
+            if (smallestUnit == "hour")
+                throw JSEngine.NewRangeError("Temporal.Instant.toString: smallestUnit cannot be \"hour\"");
         }
 
         // ToSecondsStringPrecisionRecord: precision -2 = minutes (no seconds), -1 = auto,

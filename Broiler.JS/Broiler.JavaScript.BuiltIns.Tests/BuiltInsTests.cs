@@ -8147,6 +8147,55 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Temporal_ToString_Reads_Options_Alphabetically_Before_Validation_Match_Test262()
+    {
+        // Regression: Temporal toString reads its options in alphabetical order, coercing
+        // each as it is read, and reads every option before any algorithmic validation
+        // (the smallestUnit ≠ "hour" rejection). ZonedDateTime.toString read offset/
+        // roundingMode/smallestUnit out of order and threw on smallestUnit "hour" before
+        // reading the rest; Instant.toString threw before reading timeZone (test262
+        // ZonedDateTime|Instant/prototype/toString order-of-operations /
+        // options-read-before-algorithmic-validation).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function observe(vals) {
+                var log = [], o = {};
+                Object.keys(vals).forEach(function (k) {
+                    Object.defineProperty(o, k, { enumerable: true, get: function () {
+                        log.push(k);
+                        var v = vals[k];
+                        return { toString: function () { return v; } };
+                    }});
+                });
+                return { o: o, log: log };
+            }
+            var out = [];
+            var zdt = Temporal.ZonedDateTime.from('2000-01-01T00:00:00+00:00[UTC]');
+            var a = observe({ calendarName: 'auto', fractionalSecondDigits: 'auto', offset: 'auto', roundingMode: 'trunc', smallestUnit: 'second', timeZoneName: 'auto' });
+            zdt.toString(a.o); out.push('ZDT=' + a.log.join(','));
+
+            // smallestUnit 'hour' is invalid, but all options must still be read first.
+            var b = observe({ calendarName: 'auto', fractionalSecondDigits: 'auto', offset: 'auto', roundingMode: 'trunc', smallestUnit: 'hour', timeZoneName: 'auto' });
+            try { zdt.toString(b.o); } catch (e) { b.log.push('throw'); }
+            out.push('ZDThour=' + b.log.join(','));
+
+            var inst = Temporal.Instant.from('2000-01-01T00:00:00Z');
+            var c = observe({ fractionalSecondDigits: 'auto', roundingMode: 'trunc', smallestUnit: 'hour', timeZone: 'UTC' });
+            try { inst.toString(c.o); } catch (e) { c.log.push('throw'); }
+            out.push('Insthour=' + c.log.join(','));
+            out.join(' | ');
+        ");
+
+        Assert.Equal(
+            "ZDT=calendarName,fractionalSecondDigits,offset,roundingMode,smallestUnit,timeZoneName | " +
+            "ZDThour=calendarName,fractionalSecondDigits,offset,roundingMode,smallestUnit,timeZoneName,throw | " +
+            "Insthour=fractionalSecondDigits,roundingMode,smallestUnit,timeZone,throw",
+            result.ToString());
+    }
+
+    [Fact]
     public void Temporal_With_And_From_Read_Fields_In_Alphabetical_Order_Match_Test262()
     {
         // Regression: PrepareCalendarFields reads a property bag's recognised fields in

@@ -446,8 +446,12 @@ public partial class JSTemporalZonedDateTime : JSObject
     {
         var options = a.GetAt(0);
 
-        // TemporalZonedDateTimeToString reads the options in this order: calendarName,
-        // fractionalSecondDigits, smallestUnit, roundingMode, offset (display), timeZoneName (display).
+        // TemporalZonedDateTimeToString reads the options in alphabetical order —
+        // calendarName, fractionalSecondDigits, offset, roundingMode, smallestUnit,
+        // timeZoneName — coercing each as it is read. All options are read before any
+        // algorithmic validation (the smallestUnit ≠ "hour" check) runs (test262
+        // ZonedDateTime/prototype/toString order-of-operations and
+        // options-read-before-algorithmic-validation).
         var showCalendar = ReadCalendarName(options);
         var digits = -1; // "auto"
         var roundingMode = "trunc";
@@ -459,16 +463,6 @@ public partial class JSTemporalZonedDateTime : JSObject
         {
             digits = TemporalRoundingOptions.GetFractionalSecondDigits(o);
 
-            var su = o[KeyStrings.GetOrCreate("smallestUnit")];
-            if (!su.IsUndefined)
-            {
-                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
-                if (smallestUnit is "hour")
-                    throw JSEngine.NewRangeError("Temporal.ZonedDateTime.toString: smallestUnit cannot be \"hour\"");
-            }
-
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
-
             var offset = o[KeyStrings.GetOrCreate("offset")];
             if (!offset.IsUndefined)
                 showOffset = offset.StringValue switch
@@ -478,6 +472,12 @@ public partial class JSTemporalZonedDateTime : JSObject
                     _ => throw JSEngine.NewRangeError($"Temporal: invalid offset display option \"{offset.StringValue}\""),
                 };
 
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+
+            var su = o[KeyStrings.GetOrCreate("smallestUnit")];
+            if (!su.IsUndefined)
+                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
+
             var timeZoneName = o[KeyStrings.GetOrCreate("timeZoneName")];
             if (!timeZoneName.IsUndefined)
             {
@@ -485,6 +485,10 @@ public partial class JSTemporalZonedDateTime : JSObject
                 if (timeZoneNameMode is not ("auto" or "never" or "critical"))
                     throw JSEngine.NewRangeError($"Temporal: invalid timeZoneName display option \"{timeZoneNameMode}\"");
             }
+
+            // Algorithmic validation runs only after every option has been read.
+            if (smallestUnit is "hour")
+                throw JSEngine.NewRangeError("Temporal.ZonedDateTime.toString: smallestUnit cannot be \"hour\"");
         }
 
         // ToSecondsStringPrecisionRecord: precision -2 = minutes (no seconds), -1 = auto,
