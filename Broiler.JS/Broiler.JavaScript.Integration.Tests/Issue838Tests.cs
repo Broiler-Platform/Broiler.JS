@@ -26,6 +26,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problem 88 (%Iterator.prototype%[@@iterator] toString conforms to NativeFunction syntax)
+//   — the function was created with the name "Symbol.iterator", so Function.prototype.toString
+//   produced "function Symbol.iterator() { [native code] }". A bare dotted name is not valid
+//   NativeFunction syntax; a symbol-keyed built-in's name is the bracketed well-known symbol
+//   description "[Symbol.iterator]" (as RegExp.prototype[@@replace] already used "[Symbol.
+//   replace]"). The name is now "[Symbol.iterator]", so both .name and toString conform.
+//
 //   Problems 52, 53 (Intl.Locale.prototype.getTextInfo / getWeekInfo returned empty objects)
 //   — both methods were stubs returning {}, so Object.keys(...) was empty. getTextInfo now
 //   returns { direction } ("ltr"/"rtl", chosen from the locale's script, else its language);
@@ -293,4 +300,26 @@ public class Issue838Tests
         => Assert.Equal("7,1", Eval(
             "new Intl.Locale('en-US').getWeekInfo().firstDay + ',' +" +
             "new Intl.Locale('de-DE').getWeekInfo().firstDay"));
+
+    // ---- Problem 88: %Iterator.prototype%[@@iterator] uses the bracketed symbol name ----
+
+    private const string IteratorPrototypeIterator =
+        "Object.getPrototypeOf(Object.getPrototypeOf([].values()))[Symbol.iterator]";
+
+    [Fact]
+    public void IteratorPrototypeSymbolIteratorNameIsBracketed()
+        => Assert.Equal("[Symbol.iterator]", Eval(IteratorPrototypeIterator + ".name"));
+
+    [Fact]
+    public void IteratorPrototypeSymbolIteratorToStringConformsToNativeFunctionSyntax()
+        => Assert.Equal("function [Symbol.iterator]() { [native code] }",
+            Eval(IteratorPrototypeIterator + ".toString()"));
+
+    [Fact]
+    public void IteratorPrototypeSymbolIteratorStillReturnsThis()
+        => Assert.Equal("true", Eval("var it = [].values(); String(it[Symbol.iterator]() === it)"));
+
+    [Fact]
+    public void IterationStillWorksAfterRename()
+        => Assert.Equal("1,2,3", Eval("[...[1, 2, 3]].join(',')"));
 }
