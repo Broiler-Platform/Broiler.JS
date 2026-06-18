@@ -8147,6 +8147,32 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Var_With_Unicode_Escaped_Identifier_Is_Hoisted_Under_Decoded_Name_Match_Test262()
+    {
+        // Regression: a `var` whose name uses unicode escapes must be hoisted and
+        // bound under the decoded name. The declaration below is written as
+        // `var xy = 1` (the identifier "xy"); the parser registered the
+        // binding under the raw escape text, so the decoded name "xy" was never
+        // declared — a read before the declaration threw a ReferenceError instead of
+        // seeing the hoisted `undefined` (test262 language/statements/variable/S12.2_A4).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // Non-verbatim string so "\\u0078\\u0079" reaches the engine as the literal
+        // escape sequence for "xy"; the reads use the plain decoded name.
+        var result = ctx.Eval(
+            "(function () {\n" +
+            "    var before = typeof xy;\n" +
+            "    var threw = false;\n" +
+            "    try { xy = xy; } catch (e) { threw = true; }\n" +
+            "    var \\u0078\\u0079 = 1;\n" +
+            "    return [before, threw, xy].join('|');\n" +
+            "})();");
+
+        Assert.Equal("undefined|false|1", result.ToString());
+    }
+
+    [Fact]
     public void ForLoop_Var_Head_Inside_Eval_Persists_Binding_Match_Test262()
     {
         // Regression: a `var`-declared for-in/for-of loop variable is, inside a
