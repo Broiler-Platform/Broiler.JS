@@ -697,6 +697,11 @@ public static class JSIntl
     private static readonly Regex UnicodeKeywordTypePattern =
         new(@"^[0-9a-z]{3,8}(?:-[0-9a-z]{3,8})*$", RegexOptions.CultureInvariant);
 
+    // True when a (case-insensitive) string is a well-formed Unicode BCP-47 extension
+    // type — the grammar the calendar / numberingSystem options must satisfy.
+    internal static bool IsWellFormedUnicodeKeywordType(string value)
+        => !string.IsNullOrEmpty(value) && UnicodeKeywordTypePattern.IsMatch(value.ToLowerInvariant());
+
     // InitializeLocale steps 12-30: apply the language/script/region options and the Unicode-extension
     // keyword options to the canonical tag, then re-emit it with the "-u-" keywords canonicalized
     // (values de-aliased, a boolean "true" dropped) and sorted by key. Existing variants, attributes
@@ -1683,44 +1688,6 @@ public static class JSIntl
         return (int)Math.Floor(number);
     }
 
-    internal static void ValidateDateTimeFormatOptions(JSObject options)
-    {
-        if (options == null)
-            return;
-
-        var timeZoneValue = options[TimeZoneKey];
-        if (!timeZoneValue.IsUndefined)
-        {
-            var timeZone = timeZoneValue.StringValue;
-            if (timeZone.Contains('\u2212'))
-                throw JSEngine.NewRangeError("Invalid timeZone option");
-            // An offset time-zone identifier (leading + / -) is validated against the ECMA-402
-            // grammar and normalized to \u00b1HH:MM (CreateDateTimeFormat); the normalized form is what
-            // resolvedOptions and the formatter observe. A named IANA zone is left untouched.
-            if (timeZone.Length > 0 && (timeZone[0] == '+' || timeZone[0] == '-')
-                && TryNormalizeOffsetTimeZone(timeZone, out var normalized))
-                options[TimeZoneKey] = JSValue.CreateString(normalized);
-            else if (timeZone.Length > 0 && (timeZone[0] == '+' || timeZone[0] == '-'))
-                throw JSEngine.NewRangeError($"Invalid timeZone option: {timeZone}");
-        }
-
-        // timeZoneName is constrained to the sanctioned set; any other value
-        // (empty string, surrounding whitespace, "offset", "generic", \u2026) is a
-        // RangeError per CreateDateTimeFormat.
-        _ = GetOption(options, KeyStrings.GetOrCreate("timeZoneName"),
-            ["short", "long", "shortOffset", "longOffset", "shortGeneric", "longGeneric"], false, null);
-
-        // fractionalSecondDigits \u2208 {1, 2, 3} (GetNumberOption with min 1, max 3);
-        // an out-of-range value (e.g. 0 or 4) is a RangeError.
-        var fractionalSecondDigits = options[KeyStrings.GetOrCreate("fractionalSecondDigits")];
-        if (!fractionalSecondDigits.IsUndefined)
-        {
-            var digits = fractionalSecondDigits.DoubleValue;
-            if (double.IsNaN(digits) || digits < 1 || digits > 3)
-                throw JSEngine.NewRangeError("fractionalSecondDigits value is out of range.");
-        }
-    }
-
     // An offset time-zone identifier: a sign, two-digit hour and an optional two-digit minute, with
     // either a colon or no separator (±HH, ±HHMM, ±HH:MM). No seconds or fractional component is
     // accepted (CreateDateTimeFormat's IsTimeZoneOffsetString is stricter than Temporal's).
@@ -1730,7 +1697,7 @@ public static class JSIntl
     // Validates and normalizes an offset time-zone identifier to ±HH:MM. Hours are 00-23 and minutes
     // 00-59; a zero offset always normalizes with a "+" sign (so "-00" / "-00:00" → "+00:00"). Returns
     // false for any string that is not a well-formed offset.
-    private static bool TryNormalizeOffsetTimeZone(string timeZone, out string normalized)
+    internal static bool TryNormalizeOffsetTimeZone(string timeZone, out string normalized)
     {
         normalized = null;
         var m = OffsetTimeZonePattern.Match(timeZone);
@@ -4457,6 +4424,21 @@ public class JSIntlDateTimeFormat : JSObject
     private static readonly KeyString TimeZoneKey = KeyStrings.GetOrCreate("timeZone");
     private static readonly KeyString Hour12Key = KeyStrings.GetOrCreate("hour12");
     private static readonly KeyString HourCycleKey = KeyStrings.GetOrCreate("hourCycle");
+    private static readonly KeyString CalendarKey = KeyStrings.GetOrCreate("calendar");
+    private static readonly KeyString NumberingSystemKey = KeyStrings.GetOrCreate("numberingSystem");
+    private static readonly KeyString WeekdayKey = KeyStrings.GetOrCreate("weekday");
+    private static readonly KeyString EraKey = KeyStrings.GetOrCreate("era");
+    private static readonly KeyString TimeZoneNameKey = KeyStrings.GetOrCreate("timeZoneName");
+    private static readonly KeyString FormatMatcherKey = KeyStrings.GetOrCreate("formatMatcher");
+
+    // The sanctioned value sets for the date/time option getters (CreateDateTimeFormat).
+    private static readonly string[] NarrowShortLong = { "narrow", "short", "long" };
+    private static readonly string[] NumericTwoDigit = { "2-digit", "numeric" };
+    private static readonly string[] MonthValues = { "2-digit", "numeric", "narrow", "short", "long" };
+    private static readonly string[] HourCycleValues = { "h11", "h12", "h23", "h24" };
+    private static readonly string[] TimeZoneNameValues =
+        { "short", "long", "shortOffset", "longOffset", "shortGeneric", "longGeneric" };
+    private static readonly string[] FormatMatcherValues = { "basic", "best fit" };
     private readonly CultureInfo locale;
     private readonly string localeTag;
     private readonly string numberingSystem;
@@ -5215,34 +5197,104 @@ public class JSIntlDateTimeFormat : JSObject
 
     public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())
     {
-        options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a, out var canonical, requireNew: false);
-        // ECMA-402 InitializeDateTimeFormat reads the calendar option, then the
-        // numberingSystem option, immediately after localeMatcher and ahead of the
-        // date/time component options, so both getters must fire here — before the
-        // remaining option reads and the locale negotiation below (test262
-        // DateTimeFormat constructor-calendar-numberingSystem-order).
-        _ = JSIntl.ReadCalendarOption(options);
-        var nuOption = JSIntl.ReadNumberingSystemOption(options);
-        JSIntl.ValidateDateTimeFormatOptions(options);
-        // GetOption (coerce to string + validate against the sanctioned set, RangeError
-        // otherwise) is performed once here so resolvedOptions reports the coerced
-        // string rather than the raw option value.
-        dateStyle = JSIntl.GetOption(options, DateStyleKey, DateTimeStyleValues, false, null);
-        timeStyle = JSIntl.GetOption(options, TimeStyleKey, DateTimeStyleValues, false, null);
+        var userOptions = JSIntl.ValidateConstructorArguments(
+            "DateTimeFormat", in a, out var canonical, requireNew: false);
 
-        // CreateDateTimeFormat: dateStyle / timeStyle may not be combined with an explicit date/time
-        // component option. (An explicitly-undefined style is treated as absent by GetOption.)
+        // CreateDateTimeFormat reads every option exactly once, in a fixed order, before
+        // any formatting takes place. Read them all here — firing each user getter once,
+        // in order — and capture the coerced/validated values in a private snapshot the
+        // formatter and resolvedOptions then read from. This keeps the observable getter
+        // order spec-compliant (test262 DateTimeFormat constructor-options-order*),
+        // surfaces a throwing getter at construction (constructor-options-throwing-getters),
+        // validates each option once (RangeError for an out-of-set value), and never
+        // re-invokes a getter at format time.
+        var snapshot = new JSObject();
+        void Capture(KeyString key, string value)
+        {
+            if (value != null)
+                snapshot[key] = JSValue.CreateString(value);
+        }
+
+        // localeMatcher (step 4) was already read by ValidateConstructorArguments.
+        // calendar then numberingSystem.
+        var calendarOption = JSIntl.ReadCalendarOption(userOptions);
+        Capture(CalendarKey, calendarOption);
+        var nuOption = JSIntl.ReadNumberingSystemOption(userOptions);
+        if (nuOption != null && !JSIntl.IsWellFormedUnicodeKeywordType(nuOption))
+            throw JSEngine.NewRangeError("Invalid numberingSystem option");
+        Capture(NumberingSystemKey, nuOption);
+
+        // hour12 (Boolean) then hourCycle.
+        var hour12 = userOptions == null ? JSUndefined.Value : userOptions[Hour12Key];
+        if (!hour12.IsUndefined)
+            snapshot[Hour12Key] = hour12.BooleanValue ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        Capture(HourCycleKey, JSIntl.GetOption(userOptions, HourCycleKey, HourCycleValues, false, null));
+
+        // timeZone (Get + ToString + offset-identifier normalization).
+        Capture(TimeZoneKey, ReadTimeZoneOption(userOptions));
+
+        // Date/time components, in table order: weekday, era, year, month, day,
+        // dayPeriod, hour, minute, second, fractionalSecondDigits.
+        Capture(WeekdayKey, JSIntl.GetOption(userOptions, WeekdayKey, NarrowShortLong, false, null));
+        Capture(EraKey, JSIntl.GetOption(userOptions, EraKey, NarrowShortLong, false, null));
+        Capture(YearKey, JSIntl.GetOption(userOptions, YearKey, NumericTwoDigit, false, null));
+        Capture(MonthKey, JSIntl.GetOption(userOptions, MonthKey, MonthValues, false, null));
+        Capture(DayKey, JSIntl.GetOption(userOptions, DayKey, NumericTwoDigit, false, null));
+        Capture(DayPeriodKey, JSIntl.GetOption(userOptions, DayPeriodKey, NarrowShortLong, false, null));
+        Capture(HourKey, JSIntl.GetOption(userOptions, HourKey, NumericTwoDigit, false, null));
+        Capture(MinuteKey, JSIntl.GetOption(userOptions, MinuteKey, NumericTwoDigit, false, null));
+        Capture(SecondKey, JSIntl.GetOption(userOptions, SecondKey, NumericTwoDigit, false, null));
+        var fractionalSecondDigits = JSIntl.GetNumberOption(userOptions, FractionalSecondDigitsKey, 1, 3);
+        if (fractionalSecondDigits.HasValue)
+            snapshot[FractionalSecondDigitsKey] = JSValue.CreateNumber(fractionalSecondDigits.Value);
+
+        // timeZoneName then formatMatcher.
+        Capture(TimeZoneNameKey, JSIntl.GetOption(userOptions, TimeZoneNameKey, TimeZoneNameValues, false, null));
+        _ = JSIntl.GetOption(userOptions, FormatMatcherKey, FormatMatcherValues, false, "best fit");
+
+        // dateStyle then timeStyle: GetOption-coerced once here so resolvedOptions reports
+        // the coerced string rather than the raw option value.
+        dateStyle = JSIntl.GetOption(userOptions, DateStyleKey, DateTimeStyleValues, false, null);
+        timeStyle = JSIntl.GetOption(userOptions, TimeStyleKey, DateTimeStyleValues, false, null);
+
+        // CreateDateTimeFormat: dateStyle / timeStyle may not be combined with an explicit
+        // date/time component option. (An explicitly-undefined style is absent by GetOption.)
         if (dateStyle != null || timeStyle != null)
         {
             foreach (var name in DateTimeComponentKeys)
-                if (options[KeyStrings.GetOrCreate(name)] is { IsUndefined: false })
+                if (snapshot[KeyStrings.GetOrCreate(name)] is { IsUndefined: false })
                     throw JSEngine.NewTypeError(
                         $"Intl.DateTimeFormat: the {name} option cannot be combined with dateStyle or timeStyle");
         }
 
+        options = snapshot;
+
         var resolvedLocale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.DateTimeFormatRelevantKeys);
         (numberingSystem, localeTag) = JSIntl.ResolveNumberingSystem(resolvedLocale, nuOption);
         locale = CultureInfo.CurrentCulture;
+    }
+
+    // Reads and validates the timeZone option (CreateDateTimeFormat): an offset
+    // identifier (leading + / -) is validated against the ECMA-402 grammar and
+    // normalized to ±HH:MM; a U+2212 minus or a malformed offset is a RangeError; a
+    // named IANA zone is returned untouched. Returns null when the option is absent.
+    private static string ReadTimeZoneOption(JSObject userOptions)
+    {
+        var value = userOptions == null ? JSUndefined.Value : userOptions[TimeZoneKey];
+        if (value.IsUndefined)
+            return null;
+
+        var timeZone = value.StringValue;
+        if (timeZone.Contains('−'))
+            throw JSEngine.NewRangeError("Invalid timeZone option");
+        if (timeZone.Length > 0 && (timeZone[0] == '+' || timeZone[0] == '-'))
+        {
+            if (JSIntl.TryNormalizeOffsetTimeZone(timeZone, out var normalized))
+                return normalized;
+            throw JSEngine.NewRangeError($"Invalid timeZone option: {timeZone}");
+        }
+
+        return timeZone;
     }
 
     internal JSIntlDateTimeFormat(CultureInfo locale) : base()
