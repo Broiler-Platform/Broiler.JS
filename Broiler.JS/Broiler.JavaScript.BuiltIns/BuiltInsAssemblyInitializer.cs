@@ -1189,7 +1189,12 @@ internal static class BuiltInsAssemblyInitializer
             };
             var functionMetadata = new JSFunction(JSFunction.empty, "Function", "function Function() { [native code] }", length: 1, createPrototype: false);
 
-            replacement.FastAddValue(KeyStrings.prototype, originalCtor.prototype, JSPropertyAttributes.ConfigurableValue);
+            // §22.2.5.1: RegExp.prototype is { [[Writable]]: false, [[Enumerable]]: false,
+            // [[Configurable]]: false }. The replacement constructor must carry the same
+            // non-writable/non-configurable "prototype" data property as the original (a
+            // ConfigurableValue here left it writable and configurable, so
+            // Object.getOwnPropertyDescriptor(RegExp, "prototype").writable was true).
+            replacement.FastAddValue(KeyStrings.prototype, originalCtor.prototype, JSPropertyAttributes.ReadonlyValue);
             replacement.FastAddValue(KeyStrings.constructor, functionMetadata, JSPropertyAttributes.ConfigurableValue);
             EnsureAccessorProperty(replacement, JSSymbol.species, "[Symbol.species]", static (in Arguments a) => a.This);
             originalCtor.prototype[KeyStrings.constructor] = replacement;
