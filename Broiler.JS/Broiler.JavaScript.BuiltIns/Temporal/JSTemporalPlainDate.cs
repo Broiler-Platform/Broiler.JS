@@ -182,22 +182,27 @@ public partial class JSTemporalPlainDate : JSObject
         var month = isoMonth;
         var day = isoDay;
 
-        var newIsoYear = ResolveWithYear(obj, ref any);
-
-        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthValue = obj[KeyStrings.GetOrCreate("month")];
-        if (!monthCodeValue.IsUndefined) { month = MonthFromCode(monthCodeValue.ToString()); any = true; }
-        if (!monthValue.IsUndefined)
-        {
-            var m = ToPositiveIntegerWithTruncation(monthValue);
-            if (!monthCodeValue.IsUndefined && m != month)
-                throw JSEngine.NewRangeError("Temporal.PlainDate.with: month and monthCode disagree");
-            month = m;
-            any = true;
-        }
-
+        // PrepareCalendarFields reads the recognised fields in alphabetical order —
+        // day, [era, eraYear,] month, monthCode, year — coercing each as it is read.
+        // (ResolveWithYear reads year, and era/eraYear for calendars with eras, last.)
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
         if (!dayValue.IsUndefined) { day = ToPositiveIntegerWithTruncation(dayValue); any = true; }
+
+        var monthValue = obj[KeyStrings.GetOrCreate("month")];
+        var monthFromMonth = -1;
+        if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); any = true; }
+
+        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        if (!monthCodeValue.IsUndefined) { month = MonthFromCode(monthCodeValue.ToString()); any = true; }
+
+        if (monthFromMonth != -1)
+        {
+            if (!monthCodeValue.IsUndefined && monthFromMonth != month)
+                throw JSEngine.NewRangeError("Temporal.PlainDate.with: month and monthCode disagree");
+            month = monthFromMonth;
+        }
+
+        var newIsoYear = ResolveWithYear(obj, ref any);
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.with requires at least one date property");

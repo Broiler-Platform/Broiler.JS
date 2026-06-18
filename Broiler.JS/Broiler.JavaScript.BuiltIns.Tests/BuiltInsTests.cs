@@ -8147,6 +8147,54 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Temporal_With_And_From_Read_Fields_In_Alphabetical_Order_Match_Test262()
+    {
+        // Regression: PrepareCalendarFields reads a property bag's recognised fields in
+        // alphabetical order, coercing each as it is read. Several Temporal entry points
+        // read them in declaration order with the coercions deferred (and PlainYearMonth
+        // .from even read era/eraYear for the iso8601 calendar), so the observable
+        // get/valueOf/toString sequence was wrong (test262 Temporal .../with and .../from
+        // order-of-operations).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function observe(fields) {
+                var log = [], obj = {};
+                Object.keys(fields).forEach(function (k) {
+                    Object.defineProperty(obj, k, { enumerable: true, get: function () {
+                        log.push(k);
+                        var v = fields[k];
+                        if (typeof v === 'number') return { valueOf: function () { return v; } };
+                        if (typeof v === 'string') return { toString: function () { return v; } };
+                        return v;
+                    }});
+                });
+                return { obj: obj, log: log };
+            }
+            var dateFields = { year: 2001, month: 5, monthCode: 'M05', day: 20 };
+            var dateTimeFields = { year: 2001, month: 5, monthCode: 'M05', day: 20,
+                hour: 1, minute: 2, second: 3, millisecond: 4, microsecond: 5, nanosecond: 6 };
+
+            var out = [];
+            var a = observe(dateFields); Temporal.PlainDate.from('2000-03-15').with(a.obj); out.push('PD.with=' + a.log.join(','));
+            var b = observe(dateTimeFields); Temporal.PlainDateTime.from('2000-03-15T08:00').with(b.obj); out.push('PDT.with=' + b.log.join(','));
+            var c = observe({ year: 2001, month: 5, monthCode: 'M05' }); Temporal.PlainYearMonth.from('2000-03').with(c.obj); out.push('PYM.with=' + c.log.join(','));
+            var e = observe({ year: 2001, month: 5, monthCode: 'M05' }); Temporal.PlainYearMonth.from(e.obj); out.push('PYM.from=' + e.log.join(','));
+            var f = observe(dateFields); Temporal.PlainMonthDay.from(f.obj); out.push('PMD.from=' + f.log.join(','));
+            out.join(' | ');
+        ");
+
+        Assert.Equal(
+            "PD.with=day,month,monthCode,year | " +
+            "PDT.with=day,hour,microsecond,millisecond,minute,month,monthCode,nanosecond,second,year | " +
+            "PYM.with=month,monthCode,year | " +
+            "PYM.from=month,monthCode,year | " +
+            "PMD.from=day,month,monthCode,year",
+            result.ToString());
+    }
+
+    [Fact]
     public void TypedArray_With_Coerces_Value_Before_Copying_Elements_Match_Test262()
     {
         // Regression: %TypedArray%.prototype.with assigned the raw value during the

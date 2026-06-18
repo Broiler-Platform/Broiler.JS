@@ -192,26 +192,33 @@ public partial class JSTemporalPlainDateTime : JSObject
         // present. The month/monthCode consistency check and the overflow option come afterwards.
         var any = false;
         var month = isoMonth; var day = isoDay;
-
-        var year = ResolveWithYear(obj, ref any);
-
-        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthFromCode = -1;
         var monthFromMonth = -1;
-        if (!monthCodeValue.IsUndefined) { monthFromCode = MonthFromCode(monthCodeValue.ToString()); any = true; }
-        if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); any = true; }
 
+        int Read(string name, int current) { var v = obj[KeyStrings.GetOrCreate(name)]; if (v.IsUndefined) return current; any = true; return ToIntegerWithTruncation(v); }
+
+        // PrepareCalendarFields merges the date and time field names and reads them in
+        // one alphabetical pass — day, hour, microsecond, millisecond, minute, month,
+        // monthCode, nanosecond, second, year — coercing each as it is read.
+        // (ResolveWithYear reads year, and era/eraYear for calendars with eras, last.)
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
         if (!dayValue.IsUndefined) { day = ToPositiveIntegerWithTruncation(dayValue); any = true; }
 
-        int Read(string name, int current) { var v = obj[KeyStrings.GetOrCreate(name)]; if (v.IsUndefined) return current; any = true; return ToIntegerWithTruncation(v); }
         var h = Read("hour", hour);
-        var mi = Read("minute", minute);
-        var s = Read("second", second);
-        var ms = Read("millisecond", millisecond);
         var us = Read("microsecond", microsecond);
+        var ms = Read("millisecond", millisecond);
+        var mi = Read("minute", minute);
+
+        var monthValue = obj[KeyStrings.GetOrCreate("month")];
+        if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); any = true; }
+
+        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        if (!monthCodeValue.IsUndefined) { monthFromCode = MonthFromCode(monthCodeValue.ToString()); any = true; }
+
         var ns = Read("nanosecond", nanosecond);
+        var s = Read("second", second);
+
+        var year = ResolveWithYear(obj, ref any);
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires at least one field");

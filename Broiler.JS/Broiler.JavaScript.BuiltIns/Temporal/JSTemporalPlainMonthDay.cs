@@ -293,10 +293,22 @@ public partial class JSTemporalPlainMonthDay : JSObject
             return new JSTemporalPlainMonthDay(nm, nd, ny, calendarId, PlainMonthDayPrototype);
         }
 
-        var monthValue = obj[KeyStrings.GetOrCreate("month")];
-        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        // PrepareCalendarFields: read each recognised field in alphabetical order —
+        // day, month, monthCode, year — coercing it as it is read (the iso8601 calendar
+        // has no eras) (test262 PlainMonthDay/from/order-of-operations).
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
+        var dayInt = dayValue.IsUndefined ? 0 : ToIntegerWithTruncation(dayValue);
+
+        var monthValue = obj[KeyStrings.GetOrCreate("month")];
+        var monthFromMonth = monthValue.IsUndefined ? -1 : ToIntegerWithTruncation(monthValue);
+
+        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        var monthFromCode = monthCodeValue.IsUndefined ? -1 : MonthFromCode(monthCodeValue.ToString());
+
+        // A bare month/day with no year resolves against the leap-year reference (1972) so that
+        // 02-29 is representable; a supplied year is used to validate/constrain the day instead.
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
+        var validationYear = yearValue.IsUndefined ? DefaultReferenceYear : ToIntegerWithTruncation(yearValue);
 
         if (dayValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay: missing day");
@@ -305,15 +317,11 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         var overflow = ReadOverflow(options);
 
-        var month = monthCodeValue.IsUndefined ? ToIntegerWithTruncation(monthValue) : MonthFromCode(monthCodeValue.ToString());
-        if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToIntegerWithTruncation(monthValue) != month)
+        var month = monthCodeValue.IsUndefined ? monthFromMonth : monthFromCode;
+        if (monthFromMonth != -1 && !monthCodeValue.IsUndefined && monthFromMonth != month)
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month and monthCode disagree");
 
-        // A bare month/day with no year resolves against the leap-year reference (1972) so that
-        // 02-29 is representable; a supplied year is used to validate/constrain the day instead.
-        var validationYear = yearValue.IsUndefined ? DefaultReferenceYear : ToIntegerWithTruncation(yearValue);
-
-        return RegulateMonthDay(month, ToIntegerWithTruncation(dayValue), overflow, calendarId, validationYear);
+        return RegulateMonthDay(month, dayInt, overflow, calendarId, validationYear);
     }
 
     private static readonly Regex MonthDayPattern = new(

@@ -142,18 +142,24 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var any = false;
         var month = isoMonth;
 
-        var year = ResolveWithYear(obj, ref any);
+        // PrepareCalendarFields reads the recognised fields alphabetically — month,
+        // monthCode, year — coercing each as it is read. (ResolveWithYear reads year,
+        // and era/eraYear for calendars with eras, last.)
+        var monthValue = obj[KeyStrings.GetOrCreate("month")];
+        var monthFromMonth = -1;
+        if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); any = true; }
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthValue = obj[KeyStrings.GetOrCreate("month")];
         if (!monthCodeValue.IsUndefined) { month = MonthFromCode(monthCodeValue.ToString()); any = true; }
-        if (!monthValue.IsUndefined)
+
+        if (monthFromMonth != -1)
         {
-            var m = ToPositiveIntegerWithTruncation(monthValue);
-            if (!monthCodeValue.IsUndefined && m != month)
+            if (!monthCodeValue.IsUndefined && monthFromMonth != month)
                 throw JSEngine.NewRangeError("Temporal.PlainYearMonth.with: month and monthCode disagree");
-            month = m; any = true;
+            month = monthFromMonth;
         }
+
+        var year = ResolveWithYear(obj, ref any);
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with requires at least one field");
@@ -576,11 +582,32 @@ public partial class JSTemporalPlainYearMonth : JSObject
             return new JSTemporalPlainYearMonth(iy, im, id, calendarId, PlainYearMonthPrototype);
         }
 
-        var yearValue = obj[KeyStrings.GetOrCreate("year")];
-        var eraValue = obj[KeyStrings.GetOrCreate("era")];
-        var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
+        // PrepareCalendarFields: read each recognised field in alphabetical order —
+        // [era, eraYear,] month, monthCode, year — coercing it as it is read. The
+        // iso8601 calendar has no eras, so era / eraYear are not fields and are not
+        // read for it (test262 PlainYearMonth/from/order-of-operations).
+        var hasEras = calendarId != "iso8601";
+
+        JSValue eraValue = JSUndefined.Value;
+        JSValue eraYearValue = JSUndefined.Value;
+        string eraStr = null;
+        var eraYearInt = 0;
+        if (hasEras)
+        {
+            eraValue = obj[KeyStrings.GetOrCreate("era")];
+            eraStr = eraValue.IsUndefined ? null : eraValue.StringValue;
+            eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
+            eraYearInt = eraYearValue.IsUndefined ? 0 : ToIntegerWithTruncation(eraYearValue);
+        }
+
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
+        var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
+
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        var monthFromCode = monthCodeValue.IsUndefined ? -1 : MonthFromCode(monthCodeValue.ToString());
+
+        var yearValue = obj[KeyStrings.GetOrCreate("year")];
+        var yearInt = yearValue.IsUndefined ? 0 : ToIntegerWithTruncation(yearValue);
 
         var hasYear = !yearValue.IsUndefined;
         var hasEra = !eraValue.IsUndefined;
@@ -592,14 +619,12 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
         var overflow = ReadOverflow(options);
 
-        var month = monthCodeValue.IsUndefined ? ToPositiveIntegerWithTruncation(monthValue) : MonthFromCode(monthCodeValue.ToString());
-        if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToIntegerWithTruncation(monthValue) != month)
+        var month = monthCodeValue.IsUndefined ? monthFromMonth : monthFromCode;
+        if (monthFromMonth != -1 && !monthCodeValue.IsUndefined && monthFromMonth != month)
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: month and monthCode disagree");
 
         var isoYear = TemporalCalendar.ResolveIsoYear(calendarId,
-            hasYear, hasYear ? ToIntegerWithTruncation(yearValue) : 0,
-            hasEra, hasEra ? eraValue.StringValue : null,
-            hasEraYear, hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0);
+            hasYear, yearInt, hasEra, eraStr, hasEraYear, eraYearInt);
 
         return RegulateYearMonth(isoYear, month, overflow, calendarId);
     }
