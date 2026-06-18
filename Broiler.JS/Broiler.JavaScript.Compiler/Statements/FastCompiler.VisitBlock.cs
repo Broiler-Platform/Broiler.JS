@@ -45,6 +45,22 @@ partial class FastCompiler
             while (en.MoveNext(out var v))
             {
                 var isLexical = lexicalBindings.Contains(v.Value);
+
+                // A `var arguments` in an ordinary (non-arrow) function shares the
+                // function's own `arguments` binding rather than a fresh block-scope
+                // var — the binding is initialized to the arguments object, and a
+                // later `var arguments = x` (which resolves up to this same binding)
+                // overrides it. Without this the declaration created a separate slot
+                // while reads kept resolving to the materialized arguments object
+                // (test262 language/statements/function/S13_A15_T2).
+                if (!isLexical
+                    && v.Equals("arguments")
+                    && scope.RootScope.Function is { IsArrowFunction: false })
+                {
+                    MaterializeArgumentsBinding();
+                    continue;
+                }
+
                 var hoistToDirectEvalRoot = isDirectEvalCompilation
                     && scope.Function == null
                     && !IsStrictMode

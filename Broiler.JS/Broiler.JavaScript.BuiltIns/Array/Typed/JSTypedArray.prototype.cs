@@ -190,13 +190,19 @@ partial class JSTypedArray
         var relativeIndex = (long)indexArg.DoubleValue;
         long actualIndex = relativeIndex >= 0 ? relativeIndex : len + relativeIndex;
 
+        // Coerce the value (ToBigInt for bigint element types, otherwise ToNumber)
+        // BEFORE the validity check and the element copy, so an object's valueOf/
+        // toString — which may observe or mutate the source array — runs first
+        // (spec steps 7-8; test262 TypedArray/prototype/with/early-type-coercion).
+        var numericValue = IsBigIntArray(this) ? (JSValue)JSBigInt.Coerce(value) : new JSNumber(value.DoubleValue);
+
         if (actualIndex < 0 || actualIndex >= len)
             throw JSEngine.NewRangeError("Invalid index");
 
         // with creates a same-type array (TypedArrayCreateSameType), not @@species.
         var result = CreateSameTypeTypedArray(len);
         for (int i = 0; i < len; i++)
-            result[(uint)i] = i == (int)actualIndex ? value : this[(uint)i];
+            result[(uint)i] = i == (int)actualIndex ? numericValue : this[(uint)i];
         return result;
     }
 

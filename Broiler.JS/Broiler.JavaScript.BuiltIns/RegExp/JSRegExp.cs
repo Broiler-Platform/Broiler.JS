@@ -715,7 +715,8 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
             // §2.6 — Detect inline pattern modifiers (?i:...) / (?-i:...) / (?ims:...) etc.
             // .NET ECMAScript mode does not support them, so switch to default mode.
-            if ((options & RegexOptions.ECMAScript) != 0 && HasInlineModifiers(pattern))
+            var hasInlineModifiers = HasInlineModifiers(pattern);
+            if ((options & RegexOptions.ECMAScript) != 0 && hasInlineModifiers)
                 options &= ~RegexOptions.ECMAScript;
 
             // ES2015 §21.2.2.8: In Unicode mode, '.' matches any single
@@ -766,6 +767,18 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // remaining '.' with a class that excludes all four.
             // Skip when unicode/unicodeSets already handled the dots above,
             // or when dotAll (Singleline) is active and '.' should match all.
+            // Inline modifier groups `(?s:...)` / `(?m:...)` / `(?-m:...)` change the
+            // effective s/m flags for a region of the pattern, so the '.', '^' and '$'
+            // rewrites must follow the flags in effect at each position rather than the
+            // global ones. Handle the (non-unicode) modifier case with a single
+            // scope-aware pass and skip the global rewrites below
+            // (test262 RegExp/regexp-modifiers/*).
+            if (hasInlineModifiers && !unicode && !unicodeSets)
+            {
+                pattern = TransformAnchorsAndDotsWithModifiers(pattern, dotAll, multiline);
+                goto afterAnchorTransforms;
+            }
+
             if (!dotAll && !unicode && !unicodeSets)
                 pattern = TransformDotLineTerminators(pattern);
 
@@ -822,6 +835,8 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     pattern = builder.ToString();
                 }
             }
+
+        afterAnchorTransforms:
 
             // ECMAScript permits a quantifier count up to 2^53-1, but .NET rejects
             // any `{n}`/`{n,}`/`{n,m}` bound above Int32.MaxValue. Clamp such bounds
@@ -2146,6 +2161,155 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         sb.Append(pattern, start, pattern.Length - start);
         return sb.ToString();
+    }
+
+    // ECMAScript-correct rewrite of '.', '^' and '$' for a pattern that contains
+    // inline modifier groups `(?add-remove:...)`. The effective dotAll/multiline flags
+    // are tracked through a stack so each anchor/dot uses the flags in scope at its
+    // position, not the global ones:
+    //   '.'  (dotAll off) -> a class excluding the four LineTerminators
+    //        (dotAll on)  -> left as '.', matched by .NET Singleline (global) or the
+    //                        enclosing (?s:...) group
+    //   '^'  (multiline)  -> matches input start or just after a LineTerminator
+    //        (no m)       -> input start only (\A), never after a newline
+    //   '$'  (multiline)  -> matches input end or just before a LineTerminator
+    //        (no m)       -> input end only (\z); unlike .NET '$' it must not match
+    //                        before a trailing newline
+    private static string TransformAnchorsAndDotsWithModifiers(string pattern, bool globalDotAll, bool globalMultiline)
+    {
+        // The four ECMAScript LineTerminators as regex escapes: \n \r \u2028 \u2029.
+        const string lineTerminators = "\\n\\r\\u2028\\u2029";
+        const string dotNoNewline = "[^" + lineTerminators + "]";
+        const string caretMultiline = "(?<=\\A|[" + lineTerminators + "])";
+        const string dollarMultiline = "(?=[" + lineTerminators + "]|\\z)";
+
+        var sb = new StringBuilder(pattern.Length + 32);
+        var dotAllStack = new System.Collections.Generic.Stack<bool>();
+        var multilineStack = new System.Collections.Generic.Stack<bool>();
+        dotAllStack.Push(globalDotAll);
+        multilineStack.Push(globalMultiline);
+
+        bool inClass = false;
+
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+
+            if (c == '\\')
+            {
+                sb.Append(c);
+                if (i + 1 < pattern.Length)
+                    sb.Append(pattern[++i]);
+                continue;
+            }
+
+            if (inClass)
+            {
+                sb.Append(c);
+                if (c == ']')
+                    inClass = false;
+                continue;
+            }
+
+            switch (c)
+            {
+                case '[':
+                    inClass = true;
+                    sb.Append(c);
+                    continue;
+
+                case '(':
+                    if (TryParseInlineModifierGroup(pattern, i, out var groupLength, out var addFlags, out var removeFlags))
+                    {
+                        var dot = dotAllStack.Peek();
+                        var multi = multilineStack.Peek();
+                        if (addFlags.Contains('s')) dot = true;
+                        if (removeFlags.Contains('s')) dot = false;
+                        if (addFlags.Contains('m')) multi = true;
+                        if (removeFlags.Contains('m')) multi = false;
+                        dotAllStack.Push(dot);
+                        multilineStack.Push(multi);
+                        sb.Append(pattern, i, groupLength);
+                        i += groupLength - 1;
+                    }
+                    else
+                    {
+                        // Any other group ( (?:…), (?=…), (?<name>…), capture, … ) does
+                        // not change the flags; mirror the current scope so the matching
+                        // ')' pops a balanced entry.
+                        dotAllStack.Push(dotAllStack.Peek());
+                        multilineStack.Push(multilineStack.Peek());
+                        sb.Append(c);
+                    }
+                    continue;
+
+                case ')':
+                    if (dotAllStack.Count > 1)
+                    {
+                        dotAllStack.Pop();
+                        multilineStack.Pop();
+                    }
+                    sb.Append(c);
+                    continue;
+
+                case '.':
+                    sb.Append(dotAllStack.Peek() ? "." : dotNoNewline);
+                    continue;
+
+                case '^':
+                    sb.Append(multilineStack.Peek() ? caretMultiline : @"\A");
+                    continue;
+
+                case '$':
+                    sb.Append(multilineStack.Peek() ? dollarMultiline : @"\z");
+                    continue;
+
+                default:
+                    sb.Append(c);
+                    continue;
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    // Recognizes an inline modifier group prefix `(?add-remove:` at <index> (e.g.
+    // `(?s:`, `(?-m:`, `(?ims-:`). Returns the length up to and including the ':' and
+    // the added/removed flag sets. `(?:` (no flags) is not a modifier group.
+    private static bool TryParseInlineModifierGroup(string pattern, int index, out int length, out string addFlags, out string removeFlags)
+    {
+        length = 0;
+        addFlags = string.Empty;
+        removeFlags = string.Empty;
+
+        if (index + 1 >= pattern.Length || pattern[index] != '(' || pattern[index + 1] != '?')
+            return false;
+
+        int i = index + 2;
+        int addStart = i;
+        while (i < pattern.Length && (pattern[i] == 'i' || pattern[i] == 'm' || pattern[i] == 's'))
+            i++;
+        var add = pattern.Substring(addStart, i - addStart);
+
+        var remove = string.Empty;
+        if (i < pattern.Length && pattern[i] == '-')
+        {
+            i++;
+            int removeStart = i;
+            while (i < pattern.Length && (pattern[i] == 'i' || pattern[i] == 'm' || pattern[i] == 's'))
+                i++;
+            remove = pattern.Substring(removeStart, i - removeStart);
+        }
+
+        // Must end with ':' and add or remove at least one flag (otherwise this is a
+        // plain `(?:` non-capturing group or some other `(?…)` construct).
+        if (i >= pattern.Length || pattern[i] != ':' || (add.Length == 0 && remove.Length == 0))
+            return false;
+
+        length = i - index + 1; // include the ':'
+        addFlags = add;
+        removeFlags = remove;
+        return true;
     }
 
     /// <summary>

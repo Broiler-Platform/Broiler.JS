@@ -192,26 +192,33 @@ public partial class JSTemporalPlainDateTime : JSObject
         // present. The month/monthCode consistency check and the overflow option come afterwards.
         var any = false;
         var month = isoMonth; var day = isoDay;
-
-        var year = ResolveWithYear(obj, ref any);
-
-        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthFromCode = -1;
         var monthFromMonth = -1;
-        if (!monthCodeValue.IsUndefined) { monthFromCode = MonthFromCode(monthCodeValue.ToString()); any = true; }
-        if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); any = true; }
 
+        int Read(string name, int current) { var v = obj[KeyStrings.GetOrCreate(name)]; if (v.IsUndefined) return current; any = true; return ToIntegerWithTruncation(v); }
+
+        // PrepareCalendarFields merges the date and time field names and reads them in
+        // one alphabetical pass — day, hour, microsecond, millisecond, minute, month,
+        // monthCode, nanosecond, second, year — coercing each as it is read.
+        // (ResolveWithYear reads year, and era/eraYear for calendars with eras, last.)
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
         if (!dayValue.IsUndefined) { day = ToPositiveIntegerWithTruncation(dayValue); any = true; }
 
-        int Read(string name, int current) { var v = obj[KeyStrings.GetOrCreate(name)]; if (v.IsUndefined) return current; any = true; return ToIntegerWithTruncation(v); }
         var h = Read("hour", hour);
-        var mi = Read("minute", minute);
-        var s = Read("second", second);
-        var ms = Read("millisecond", millisecond);
         var us = Read("microsecond", microsecond);
+        var ms = Read("millisecond", millisecond);
+        var mi = Read("minute", minute);
+
+        var monthValue = obj[KeyStrings.GetOrCreate("month")];
+        if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); any = true; }
+
+        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        if (!monthCodeValue.IsUndefined) { monthFromCode = MonthFromCode(monthCodeValue.ToString()); any = true; }
+
         var ns = Read("nanosecond", nanosecond);
+        var s = Read("second", second);
+
+        var year = ResolveWithYear(obj, ref any);
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires at least one field");
@@ -850,8 +857,12 @@ public partial class JSTemporalPlainDateTime : JSObject
     // (between nanosecond and second) and `timeZone` (between second and year). The two optional
     // callbacks let it read those at their correct positions in this single pass (#818 Problem 7),
     // so the property-access order matches PrepareCalendarFields exactly.
+    // overflowReader (ZonedDateTime.from) replaces the GetTemporalOverflowOption read at
+    // the end of the property-bag pass, so the caller can read the disambiguation / offset
+    // / overflow options together at that point (after all the bag's fields). When null,
+    // overflow is read directly.
     internal static JSValue ToTemporalDateTime(JSValue item, JSValue options,
-        Action afterNanosecond = null, Action afterSecond = null)
+        Action afterNanosecond = null, Action afterSecond = null, Func<string> overflowReader = null)
     {
         if (item is JSTemporalPlainDateTime dt)
         {
@@ -883,7 +894,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         // before the wall-clock time is attached.
         if (TemporalCalendarMath.IsNonIso(calendarId))
         {
-            var nonIsoOverflow = ReadOverflow(options);
+            var nonIsoOverflow = overflowReader != null ? overflowReader() : ReadOverflow(options);
             var (cy, cm, cd) = TemporalNonIso.ToIsoFromBag(obj, calendarId, nonIsoOverflow, "Temporal.PlainDateTime");
             var nh = Field("hour"); var nmi = Field("minute"); var nsc = Field("second");
             var nms = Field("millisecond"); var nus = Field("microsecond"); var nns = Field("nanosecond");
@@ -951,7 +962,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime: missing month / monthCode");
 
-        var overflow = ReadOverflow(options);
+        var overflow = overflowReader != null ? overflowReader() : ReadOverflow(options);
 
         var isoYear = TemporalCalendar.ResolveIsoYear(calendarId,
             hasYear, yearInt, hasEra, eraStr, hasEraYear, eraYearInt);

@@ -101,6 +101,14 @@ public class KeyEnumerator : IElementEnumerator
     // de-duplication is needed.
     private readonly HashSet<string> seen;
 
+    // The own string-property names present when this object's enumeration began. Only
+    // captured for a prototype-chain walk (for-in): EnumerateObjectProperties must not
+    // visit properties added to the object *during* enumeration, but the property store
+    // is walked live (so a deleted property is correctly skipped). A name produced by
+    // the live walk that is absent here was added mid-enumeration and is dropped. Null
+    // for a non-chain walk (Object.keys etc.), which never observes interleaved mutation.
+    private readonly HashSet<string> ownPropertyNamesAtStart;
+
     public KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inherited)
         : this(jSObject, showEnumerableOnly, inherited,
                inherited ? new HashSet<string>(StringComparer.Ordinal) : null)
@@ -114,8 +122,25 @@ public class KeyEnumerator : IElementEnumerator
         this.inherited = inherited;
         this.seen = seen;
         elements = jSObject.GetOwnIndexedElementEnumerator(showEnumerableOnly);
-        properties = new PropertyValueEnumerator(jSObject, showEnumerableOnly);
+        // Always walk every own property (including non-enumerable ones) so a
+        // non-enumerable own property still registers in `seen` and shadows a
+        // same-named enumerable property further up the prototype chain. The
+        // enumerable-only filter is applied below, after recording the name.
+        properties = new PropertyValueEnumerator(jSObject, false);
+
+        if (inherited)
+        {
+            ownPropertyNamesAtStart = new HashSet<string>(StringComparer.Ordinal);
+            var snapshot = new PropertyValueEnumerator(jSObject, false);
+            while (snapshot.MoveNext(out var name))
+                ownPropertyNamesAtStart.Add(name.ToString());
+        }
     }
+
+    // True when `name` is a string property that was added to the object after the
+    // for-in enumeration of this object began (and so must not be visited).
+    private bool AddedDuringEnumeration(string name)
+        => ownPropertyNamesAtStart != null && !ownPropertyNamesAtStart.Contains(name);
 
     // Records a name as produced; returns false if it (or a nearer same-named property)
     // was already produced, so the caller skips it.
@@ -151,9 +176,18 @@ public class KeyEnumerator : IElementEnumerator
 
         if (properties.target != null)
         {
-            while (properties.MoveNext(out var key))
+            while (properties.MoveNextProperty(out var prop, out var key))
             {
-                if (!Accept(key.ToString()))
+                var name = key.ToString();
+                // A property added during enumeration is not visited (for-in only).
+                if (AddedDuringEnumeration(name))
+                    continue;
+                // Record the name first (shadowing the chain), then drop it if a
+                // nearer property already claimed it or it is non-enumerable while
+                // only enumerable keys were requested (for-in / Object.keys).
+                if (!Accept(name))
+                    continue;
+                if (showEnumerableOnly && !prop.IsEnumerable)
                     continue;
                 value = JSObjectCoreExtensions.KeyStringToJSValue(key);
                 hasValue = true;
@@ -201,9 +235,14 @@ public class KeyEnumerator : IElementEnumerator
 
         if (properties.target != null)
         {
-            while (properties.MoveNext(out var key))
+            while (properties.MoveNextProperty(out var prop, out var key))
             {
-                if (!Accept(key.ToString()))
+                var name = key.ToString();
+                if (AddedDuringEnumeration(name))
+                    continue;
+                if (!Accept(name))
+                    continue;
+                if (showEnumerableOnly && !prop.IsEnumerable)
                     continue;
 
                 value = JSObjectCoreExtensions.KeyStringToJSValue(key);

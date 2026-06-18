@@ -38,7 +38,11 @@ partial class FastParser
 
                 stream.Consume();
                 node = new AstIdentifier(token);
-                variableScope.Top.AddVariable(token, token.Span, kind);
+                // Hoist under the cooked (unicode-unescaped) name so `var x = 1`
+                // declares `x`, matching AstIdentifier.Name (CookedText ?? Span). Using
+                // the raw span left the binding hoisted under the literal escape text,
+                // so the decoded name was never declared (test262 12.2_A4).
+                variableScope.Top.AddVariable(token, token.CookedText ?? token.Span, kind);
                 return true;
 
             case TokenTypes.SquareBracketStart:
@@ -107,7 +111,7 @@ partial class FastParser
                         if (rid.Start.IsEscapedReservedWord)
                             throw new FastParseException(rid.Start, "Keyword must not contain escaped characters");
                         right = rid;
-                        variableScope.Top.AddVariable(right.Start, right.Start.Span, kind);
+                        variableScope.Top.AddVariable(right.Start, right.Start.CookedText ?? right.Start.Span, kind);
                     }
                     else if (AssignmentLeftPattern(out right, kind, modulePattern))
                     {
@@ -130,7 +134,7 @@ partial class FastParser
                         || (shorthand.IsKeyword && shorthand.Keyword == FastKeywords.let && (kind == FastVariableKind.Let || kind == FastVariableKind.Const))
                         || (shorthand.IsKeyword && shorthand.Keyword != FastKeywords.await && shorthand.Keyword != FastKeywords.yield && IsDisallowedBindingKeyword(shorthand.Keyword)))
                         throw stream.Unexpected();
-                    variableScope.Top.AddVariable(shorthand, shorthand.Span, kind);
+                    variableScope.Top.AddVariable(shorthand, shorthand.CookedText ?? shorthand.Span, kind);
                     right = left;
                 }
 

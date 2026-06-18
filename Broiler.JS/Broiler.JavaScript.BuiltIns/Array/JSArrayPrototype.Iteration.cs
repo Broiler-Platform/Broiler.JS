@@ -484,11 +484,14 @@ public partial class JSArray
             if (callback != null)
                 elementValue = callback.InvokeFunction(new Arguments(thisArg, elementValue, new JSNumber(i), @this));
 
-            // If the element is an array, flatten it. The mapper (flatMap) is
+            // If the element is an array, flatten it. FlattenIntoArray uses the
+            // IsArray abstract operation, so a Proxy whose target is an array is
+            // flattened too and is observed through its length/index get traps
+            // (test262 flat/flatMap proxy-access-count). The mapper (flatMap) is
             // applied only to the source's own elements — FlattenIntoArray recurses
             // with the mapperFunction absent — so a mapped element that is itself an
             // array is flattened, not re-mapped.
-            if (depth > 0 && elementValue is JSArray childArray)
+            if (depth > 0 && elementValue is JSObject childArray && IsArrayValue(childArray))
                 FlattenTo(result, childArray, null, null, depth - 1, ref resultIndex);
             else
                 CreateDataPropertyOrThrow(result, resultIndex++, elementValue);

@@ -231,15 +231,7 @@ public partial class JSTemporalDuration : JSObject
         var d1 = (JSTemporalDuration)one;
         var d2 = (JSTemporalDuration)two;
 
-        // GetTemporalRelativeToOption: only the presence is observed here.
         var options = a.GetAt(2);
-        var relativeTo = JSUndefined.Value;
-        if (!options.IsUndefined)
-        {
-            if (options is not JSObject optionsObject)
-                throw JSEngine.NewTypeError("Temporal.Duration.compare options must be an object");
-            relativeTo = optionsObject[KeyStrings.GetOrCreate("relativeTo")];
-        }
 
         var calendarUnits = d1.years != 0 || d1.months != 0 || d1.weeks != 0
             || d2.years != 0 || d2.months != 0 || d2.weeks != 0;
@@ -247,11 +239,11 @@ public partial class JSTemporalDuration : JSObject
         // ToRelativeTemporalObject resolves (and validates) relativeTo whenever it is present, even when
         // the comparison itself does not need it — an unparsable or otherwise invalid relativeTo string
         // is a RangeError regardless of the durations' units. The spec resolves relativeTo before the
-        // identical-durations short-circuit below, so an invalid relativeTo still throws here.
+        // identical-durations short-circuit below, so an invalid relativeTo still throws here. The
+        // `relativeTo` property is read exactly once (test262 Duration/compare order-of-operations).
         JSTemporalZonedDateTime relZoned = null;
         JSTemporalPlainDate relDate = null;
-        if (!relativeTo.IsNullOrUndefined)
-            TryResolveRelativeTo(options, out relZoned, out relDate);
+        var hasRelativeTo = TryResolveRelativeTo(options, out relZoned, out relDate);
 
         // If the two durations are identical in every field, the result is +0 regardless of relativeTo.
         // The spec applies this short-circuit before the calendar-units requirement, so comparing a
@@ -262,7 +254,7 @@ public partial class JSTemporalDuration : JSObject
             && d1.microseconds == d2.microseconds && d1.nanoseconds == d2.nanoseconds)
             return new JSNumber(0);
 
-        if (calendarUnits && relativeTo.IsNullOrUndefined)
+        if (calendarUnits && !hasRelativeTo)
             throw JSEngine.NewRangeError("Temporal.Duration.compare with calendar units requires a relativeTo option");
 
         // The spec only adds each duration to the zoned relativeTo when one of the durations has a

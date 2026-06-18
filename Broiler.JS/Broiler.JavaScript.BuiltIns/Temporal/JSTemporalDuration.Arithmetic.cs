@@ -229,7 +229,8 @@ public partial class JSTemporalDuration
     internal JSValue TotalImpl(JSValue totalOf)
     {
         string unit;
-        JSValue options = totalOf;
+        JSTemporalZonedDateTime relZoned;
+        JSTemporalPlainDate relDate;
 
         if (totalOf == null || totalOf.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.Duration.prototype.total requires an options argument");
@@ -237,18 +238,21 @@ public partial class JSTemporalDuration
         if (totalOf.IsString)
         {
             unit = NormalizeUnit(totalOf.StringValue, allowAuto: false);
-            options = JSUndefined.Value;
+            relZoned = null;
+            relDate = null;
         }
         else if (totalOf is JSObject obj)
         {
+            // GetTemporalRelativeToOption (relativeTo) is read before the unit
+            // (test262 Duration/prototype/total order-of-operations).
+            TryResolveRelativeTo(totalOf, out relZoned, out relDate);
+
             var u = obj[KeyStrings.GetOrCreate("unit")];
             if (u.IsUndefined)
                 throw JSEngine.NewRangeError("Temporal.Duration.prototype.total requires a unit");
             unit = NormalizeUnit(u.StringValue, allowAuto: false);
         }
         else throw JSEngine.NewTypeError("Temporal.Duration.prototype.total requires an options object or string");
-
-        TryResolveRelativeTo(options, out var relZoned, out var relDate);
 
         if (HasCalendarUnits || UnitIndex(unit) < UnitIndex("day"))
         {

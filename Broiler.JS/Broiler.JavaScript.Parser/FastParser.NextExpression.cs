@@ -102,7 +102,7 @@ partial class FastParser
     /// <param name="node"></param>
     /// <param name="type"></param>
     /// <returns></returns>
-    bool NextExpression(ref AstExpression previous, ref TokenTypes previousType, out AstExpression node, out TokenTypes type, int depth = 0)
+    bool NextExpression(ref AstExpression previous, ref TokenTypes previousType, out AstExpression node, out TokenTypes type, int depth = 0, int floor = int.MaxValue)
     {
         switch (previousType)
         {
@@ -348,12 +348,20 @@ partial class FastParser
                     }
                 }
 
+                // Precedence floor: this operator binds looser than (or equal to,
+                // for a left-associative floor) the operator whose right operand we
+                // are building, so it belongs to an outer level. Leave it unconsumed
+                // and hand `node`/`type` back so the caller combines at the right
+                // precedence (test262 S11.6.1_A4_T7: `a/b + c/d === e`).
+                if (OperatorPrecedence(type) >= floor)
+                    return true;
+
                 stream.Consume();
                 do
                 {
                     if (Precedes(type, previousType))
                     {
-                        if (!NextExpression(ref node, ref type, out right, out TokenTypes rightType, depth + 1))
+                        if (!NextExpression(ref node, ref type, out right, out TokenTypes rightType, depth + 1, RightOperandFloor(previousType)))
                             break;
 
                         if (type == TokenTypes.SemiColon)
@@ -365,16 +373,27 @@ partial class FastParser
                         if (type == TokenTypes.SemiColon)
                             break;
 
+                        // A looser operator returned from the right-operand recursion
+                        // belongs to the caller's level: stop and hand it back.
+                        if (OperatorPrecedence(type) >= floor)
+                            return true;
+
                         continue;
                     }
-                    
+
                     previous = Combine(previous, previousType, node);
                     previousType = type;
-                    
-                    if (!NextExpression(ref previous, ref previousType, out node, out type, depth + 1))
+
+                    if (!NextExpression(ref previous, ref previousType, out node, out type, depth + 1, RightOperandFloor(previousType)))
                         break;
-                    
+
                     if (type == TokenTypes.SemiColon)
+                        return true;
+
+                    // The next operator after this folded operand may belong to an
+                    // outer level (looser than our floor): hand it back rather than
+                    // chaining it here.
+                    if (OperatorPrecedence(type) >= floor)
                         return true;
                 } while (true);
 
@@ -387,31 +406,6 @@ partial class FastParser
 
     static bool Precedes(TokenTypes left, TokenTypes right)
     {
-        // Lower number == binds tighter. Exponentiation (`**`) is the tightest
-        // binary operator — tighter than multiplicative — so it must rank below 1.
-        static int CalculatePrecedence(TokenTypes token)
-        {
-            return token switch
-            {
-                TokenTypes.Power => 0,
-                TokenTypes.Mod or TokenTypes.Divide or TokenTypes.Multiply => 1,
-                TokenTypes.Plus or TokenTypes.Minus => 2,
-                TokenTypes.LeftShift or TokenTypes.RightShift or TokenTypes.UnsignedRightShift => 3,
-                TokenTypes.Less or TokenTypes.LessOrEqual or TokenTypes.Greater or TokenTypes.GreaterOrEqual or TokenTypes.In or TokenTypes.InstanceOf => 4,
-                TokenTypes.Equal or TokenTypes.NotEqual or TokenTypes.StrictlyEqual or TokenTypes.StrictlyNotEqual => 5,
-                TokenTypes.BitwiseAnd => 7,
-                TokenTypes.Xor => 8,
-                TokenTypes.BitwiseOr => 9,
-                TokenTypes.BooleanAnd => 10,
-                TokenTypes.BooleanOr => 11,
-                // `??` is a ShortCircuitExpression sibling of `||`/`&&`; its operand
-                // is a BitwiseORExpression, so it must bind looser than every other
-                // binary operator (a ?? b | c parses as a ?? (b | c)).
-                TokenTypes.Coalesce => 12,
-                _ => int.MaxValue,
-            };
-        }
-
         if (left != TokenTypes.SemiColon && left != TokenTypes.EOF)
         {
             // `**` is right-associative: a ** b ** c == a ** (b ** c). When both
@@ -421,9 +415,52 @@ partial class FastParser
             if (left == TokenTypes.Power && right == TokenTypes.Power)
                 return true;
 
-            return CalculatePrecedence(left) < CalculatePrecedence(right);
+            return OperatorPrecedence(left) < OperatorPrecedence(right);
         }
 
         return false;
     }
+
+    // Binary operator precedence. Lower number == binds tighter. Exponentiation
+    // (`**`) is the tightest binary operator — tighter than multiplicative — so it
+    // ranks below 1. A non-operator token yields int.MaxValue (binds loosest), which
+    // also serves as the "no floor" sentinel in NextExpression's precedence climb.
+    static int OperatorPrecedence(TokenTypes token)
+    {
+        return token switch
+        {
+            TokenTypes.Power => 0,
+            TokenTypes.Mod or TokenTypes.Divide or TokenTypes.Multiply => 1,
+            TokenTypes.Plus or TokenTypes.Minus => 2,
+            TokenTypes.LeftShift or TokenTypes.RightShift or TokenTypes.UnsignedRightShift => 3,
+            TokenTypes.Less or TokenTypes.LessOrEqual or TokenTypes.Greater or TokenTypes.GreaterOrEqual or TokenTypes.In or TokenTypes.InstanceOf => 4,
+            TokenTypes.Equal or TokenTypes.NotEqual or TokenTypes.StrictlyEqual or TokenTypes.StrictlyNotEqual => 5,
+            TokenTypes.BitwiseAnd => 7,
+            TokenTypes.Xor => 8,
+            TokenTypes.BitwiseOr => 9,
+            TokenTypes.BooleanAnd => 10,
+            TokenTypes.BooleanOr => 11,
+            // `??` is a ShortCircuitExpression sibling of `||`/`&&`; its operand
+            // is a BitwiseORExpression, so it must bind looser than every other
+            // binary operator (a ?? b | c parses as a ?? (b | c)).
+            TokenTypes.Coalesce => 12,
+            // The conditional operator `?:` binds looser than every binary operator.
+            // It is not handled by the binary loop (the QuestionMark entry case builds
+            // the ConditionalExpression), but it must still bubble up out of a floored
+            // right-operand recursion to the level that owns it — so rank it just looser
+            // than `??` rather than leaving it at the int.MaxValue "no floor" sentinel,
+            // which would make a floor of int.MaxValue (the top level) swallow it.
+            TokenTypes.QuestionMark => 13,
+            _ => int.MaxValue,
+        };
+    }
+
+    // The minimum-precedence floor passed to a recursive NextExpression that builds
+    // the right operand of `op`: the recursion may consume operators that bind
+    // strictly tighter than `op` (and, for the right-associative `**`, also `op`
+    // itself), and must hand any looser operator back to the caller's level. Without
+    // this bound the right-operand recursion greedily swallowed looser operators —
+    // `a/b + c/d === e` parsed as `a/b + (c/d === e)` (test262 S11.6.1_A4_T7).
+    static int RightOperandFloor(TokenTypes op)
+        => OperatorPrecedence(op) + (op == TokenTypes.Power ? 1 : 0);
 }

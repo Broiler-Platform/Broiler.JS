@@ -8147,6 +8147,551 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Temporal_ZonedDateTime_From_Reads_Options_After_Input_Match_Test262()
+    {
+        // Regression: Temporal.ZonedDateTime.from read the disambiguation/offset/overflow
+        // options up front (before the property bag's fields or the string parse) and read
+        // overflow twice. The spec reads the input first, then the options in alphabetical
+        // order (disambiguation, offset, overflow) once each — and for a string the parse
+        // runs first, so an invalid string throws before any option getter (test262
+        // ZonedDateTime/from order-of-operations and observable-get-overflow-argument-*).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function observeOptions(vals) {
+                var log = [], o = {};
+                Object.keys(vals).forEach(function (k) {
+                    Object.defineProperty(o, k, { enumerable: true, get: function () {
+                        log.push(k);
+                        return { toString: function () { return vals[k]; } };
+                    }});
+                });
+                return { o: o, log: log };
+            }
+            var bag = { year: 2020, month: 6, day: 15, hour: 9, timeZone: 'UTC' };
+
+            var objOpts = observeOptions({ disambiguation: 'compatible', offset: 'use', overflow: 'constrain' });
+            Temporal.ZonedDateTime.from(bag, objOpts.o);
+
+            var strOpts = observeOptions({ disambiguation: 'compatible', offset: 'use', overflow: 'constrain' });
+            Temporal.ZonedDateTime.from('2020-06-15T09:00:00+00:00[UTC]', strOpts.o);
+
+            var badOpts = observeOptions({ disambiguation: 'compatible', offset: 'use', overflow: 'constrain' });
+            try { Temporal.ZonedDateTime.from('not-a-date', badOpts.o); } catch (e) { }
+
+            'obj=' + objOpts.log.join(',') + ' | str=' + strOpts.log.join(',') + ' | bad=[' + badOpts.log.join(',') + ']';
+        ");
+
+        Assert.Equal(
+            "obj=disambiguation,offset,overflow | str=disambiguation,offset,overflow | bad=[]",
+            result.ToString());
+    }
+
+    [Fact]
+    public void Temporal_Duration_Total_And_Compare_Read_RelativeTo_Correctly_Match_Test262()
+    {
+        // Regression: Temporal.Duration.prototype.total read the unit option before
+        // relativeTo (spec reads relativeTo first), and Temporal.Duration.compare read
+        // the relativeTo property twice (once for a presence check, once to resolve it).
+        // Each option must be read once, in spec order (test262 Duration/prototype/total
+        // order-of-operations and Duration/compare order-of-operations).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function observe(vals) {
+                var log = [], o = {};
+                Object.keys(vals).forEach(function (k) {
+                    Object.defineProperty(o, k, { enumerable: true, get: function () {
+                        log.push(k);
+                        var v = vals[k];
+                        if (typeof v === 'string') return { toString: function () { return v; } };
+                        return v;
+                    }});
+                });
+                return { o: o, log: log };
+            }
+            var d = Temporal.Duration.from({ hours: 1 });
+            var t = observe({ unit: 'hours', relativeTo: undefined });
+            d.total(t.o);
+
+            var c = observe({ relativeTo: Temporal.PlainDate.from('2000-01-01') });
+            Temporal.Duration.compare(Temporal.Duration.from({ hours: 1 }), Temporal.Duration.from({ hours: 2 }), c.o);
+
+            'total=' + t.log.join(',') + ' | compare=' + c.log.join(',');
+        ");
+
+        Assert.Equal("total=relativeTo,unit | compare=relativeTo", result.ToString());
+    }
+
+    [Fact]
+    public void Temporal_PlainTime_From_And_With_Read_Fields_Before_Overflow_Match_Test262()
+    {
+        // Regression: Temporal.PlainTime.from / .prototype.with read the time fields in
+        // alphabetical order (hour, microsecond, millisecond, minute, nanosecond, second),
+        // coercing each as read, and read the overflow option last. Both read overflow
+        // first; .with also skipped the calendar/timeZone rejection that must run before
+        // the fields (test262 PlainTime/from and PlainTime/prototype/with
+        // order-of-operations).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function observe(vals) {
+                var log = [], o = {};
+                Object.keys(vals).forEach(function (k) {
+                    Object.defineProperty(o, k, { enumerable: true, get: function () {
+                        log.push('get ' + k);
+                        var v = vals[k];
+                        if (typeof v === 'number') return { valueOf: function () { log.push('call ' + k); return v; } };
+                        if (typeof v === 'string') return { toString: function () { log.push('call ' + k); return v; } };
+                        return v;
+                    }});
+                });
+                return { o: o, log: log };
+            }
+            var timeFields = { hour: 1, minute: 2, second: 3, millisecond: 4, microsecond: 5, nanosecond: 6 };
+
+            var ff = observe(timeFields); var fo = observe({ overflow: 'constrain' });
+            Temporal.PlainTime.from(ff.o, fo.o);
+
+            var t = Temporal.PlainTime.from('01:00:00');
+            var wf = observe(Object.assign({ calendar: undefined, timeZone: undefined }, timeFields));
+            var wo = observe({ overflow: 'constrain' });
+            t.with(wf.o, wo.o);
+
+            [
+                'from=' + ff.log.join(',') + '/' + fo.log.join(','),
+                'with=' + wf.log.join(',') + '/' + wo.log.join(',')
+            ].join(' | ');
+        ");
+
+        Assert.Equal(
+            "from=get hour,call hour,get microsecond,call microsecond,get millisecond,call millisecond,get minute,call minute,get nanosecond,call nanosecond,get second,call second/get overflow,call overflow | " +
+            "with=get calendar,get timeZone,get hour,call hour,get microsecond,call microsecond,get millisecond,call millisecond,get minute,call minute,get nanosecond,call nanosecond,get second,call second/get overflow,call overflow",
+            result.ToString());
+    }
+
+    [Fact]
+    public void Temporal_ToString_Reads_Options_Alphabetically_Before_Validation_Match_Test262()
+    {
+        // Regression: Temporal toString reads its options in alphabetical order, coercing
+        // each as it is read, and reads every option before any algorithmic validation
+        // (the smallestUnit ≠ "hour" rejection). ZonedDateTime.toString read offset/
+        // roundingMode/smallestUnit out of order and threw on smallestUnit "hour" before
+        // reading the rest; Instant.toString threw before reading timeZone (test262
+        // ZonedDateTime|Instant/prototype/toString order-of-operations /
+        // options-read-before-algorithmic-validation).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function observe(vals) {
+                var log = [], o = {};
+                Object.keys(vals).forEach(function (k) {
+                    Object.defineProperty(o, k, { enumerable: true, get: function () {
+                        log.push(k);
+                        var v = vals[k];
+                        return { toString: function () { return v; } };
+                    }});
+                });
+                return { o: o, log: log };
+            }
+            var out = [];
+            var zdt = Temporal.ZonedDateTime.from('2000-01-01T00:00:00+00:00[UTC]');
+            var a = observe({ calendarName: 'auto', fractionalSecondDigits: 'auto', offset: 'auto', roundingMode: 'trunc', smallestUnit: 'second', timeZoneName: 'auto' });
+            zdt.toString(a.o); out.push('ZDT=' + a.log.join(','));
+
+            // smallestUnit 'hour' is invalid, but all options must still be read first.
+            var b = observe({ calendarName: 'auto', fractionalSecondDigits: 'auto', offset: 'auto', roundingMode: 'trunc', smallestUnit: 'hour', timeZoneName: 'auto' });
+            try { zdt.toString(b.o); } catch (e) { b.log.push('throw'); }
+            out.push('ZDThour=' + b.log.join(','));
+
+            var inst = Temporal.Instant.from('2000-01-01T00:00:00Z');
+            var c = observe({ fractionalSecondDigits: 'auto', roundingMode: 'trunc', smallestUnit: 'hour', timeZone: 'UTC' });
+            try { inst.toString(c.o); } catch (e) { c.log.push('throw'); }
+            out.push('Insthour=' + c.log.join(','));
+            out.join(' | ');
+        ");
+
+        Assert.Equal(
+            "ZDT=calendarName,fractionalSecondDigits,offset,roundingMode,smallestUnit,timeZoneName | " +
+            "ZDThour=calendarName,fractionalSecondDigits,offset,roundingMode,smallestUnit,timeZoneName,throw | " +
+            "Insthour=fractionalSecondDigits,roundingMode,smallestUnit,timeZone,throw",
+            result.ToString());
+    }
+
+    [Fact]
+    public void Temporal_With_And_From_Read_Fields_In_Alphabetical_Order_Match_Test262()
+    {
+        // Regression: PrepareCalendarFields reads a property bag's recognised fields in
+        // alphabetical order, coercing each as it is read. Several Temporal entry points
+        // read them in declaration order with the coercions deferred (and PlainYearMonth
+        // .from even read era/eraYear for the iso8601 calendar), so the observable
+        // get/valueOf/toString sequence was wrong (test262 Temporal .../with and .../from
+        // order-of-operations).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function observe(fields) {
+                var log = [], obj = {};
+                Object.keys(fields).forEach(function (k) {
+                    Object.defineProperty(obj, k, { enumerable: true, get: function () {
+                        log.push(k);
+                        var v = fields[k];
+                        if (typeof v === 'number') return { valueOf: function () { return v; } };
+                        if (typeof v === 'string') return { toString: function () { return v; } };
+                        return v;
+                    }});
+                });
+                return { obj: obj, log: log };
+            }
+            var dateFields = { year: 2001, month: 5, monthCode: 'M05', day: 20 };
+            var dateTimeFields = { year: 2001, month: 5, monthCode: 'M05', day: 20,
+                hour: 1, minute: 2, second: 3, millisecond: 4, microsecond: 5, nanosecond: 6 };
+
+            var out = [];
+            var a = observe(dateFields); Temporal.PlainDate.from('2000-03-15').with(a.obj); out.push('PD.with=' + a.log.join(','));
+            var b = observe(dateTimeFields); Temporal.PlainDateTime.from('2000-03-15T08:00').with(b.obj); out.push('PDT.with=' + b.log.join(','));
+            var c = observe({ year: 2001, month: 5, monthCode: 'M05' }); Temporal.PlainYearMonth.from('2000-03').with(c.obj); out.push('PYM.with=' + c.log.join(','));
+            var e = observe({ year: 2001, month: 5, monthCode: 'M05' }); Temporal.PlainYearMonth.from(e.obj); out.push('PYM.from=' + e.log.join(','));
+            var f = observe(dateFields); Temporal.PlainMonthDay.from(f.obj); out.push('PMD.from=' + f.log.join(','));
+            out.join(' | ');
+        ");
+
+        Assert.Equal(
+            "PD.with=day,month,monthCode,year | " +
+            "PDT.with=day,hour,microsecond,millisecond,minute,month,monthCode,nanosecond,second,year | " +
+            "PYM.with=month,monthCode,year | " +
+            "PYM.from=month,monthCode,year | " +
+            "PMD.from=day,month,monthCode,year",
+            result.ToString());
+    }
+
+    [Fact]
+    public void TypedArray_With_Coerces_Value_Before_Copying_Elements_Match_Test262()
+    {
+        // Regression: %TypedArray%.prototype.with assigned the raw value during the
+        // copy loop, so an object value's valueOf/ToBigInt ran in the middle of the
+        // copy instead of before it. The spec coerces the value (ToNumber/ToBigInt)
+        // up front, so a valueOf that mutates the source array is observed by the
+        // copy: arr.with(1, value) returned [0,4,2] instead of [3,4,2]
+        // (test262 TypedArray/prototype/with/early-type-coercion[-bigint]).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function run(TA, three, four) {
+                var arr = new TA([0, 1, 2].map(three.k));
+                var value = { valueOf: function () { arr[0] = three.v; return four; } };
+                var withResult = Array.from(arr.with(1, value)).join(',');
+                var sourceAfter = Array.from(arr).join(',');
+                return withResult + '|' + sourceAfter;
+            }
+            var num = run(Int32Array, { k: function (x) { return x; }, v: 3 }, 4);
+            var big = run(BigInt64Array, { k: function (x) { return BigInt(x); }, v: 3n }, 4n);
+            num + ' / ' + big;
+        ");
+
+        Assert.Equal("3,4,2|3,1,2 / 3,4,2|3,1,2", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Inline_Modifier_Groups_Scope_DotAll_And_Multiline_Match_Test262()
+    {
+        // Regression: the '.', '^' and '$' rewrites that bridge .NET and ECMAScript
+        // semantics used the global s/m flags, ignoring inline modifier groups
+        // `(?s:...)`, `(?m:...)`, `(?-m:...)`. So `(?s:.)` did not match a newline,
+        // and `$` matched before a trailing newline even where multiline was off
+        // (test262 RegExp/regexp-modifiers/add-multiline,
+        // add-dotAll-does-not-affect-multiline-flag,
+        // remove-multiline-does-not-affect-dotAll-flag).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var r = [];
+            // (?s:.) matches a newline; the unmodified $ stays end-only.
+            r.push(/(?s:.es$)/.test('\nes'));          // true
+            r.push(/(?s:.es$)/.test('\nes\nz'));       // false ($ end-only)
+            // (?m:$) is multiline inside the group even with no global flag.
+            r.push(/(?m:es$)/.test('es\ns'));          // true
+            // (?-m:...) removes multiline locally; '.' (no s) and $ stay strict.
+            r.push(/(?-m:es.$)/m.test('es\n'));        // false (. not newline)
+            r.push(/(?-m:es.$)/m.test('esz\n'));       // false ($ before newline)
+            // Anchors outside the modified group keep the outer (non-multiline) rule.
+            r.push(/^a\n(?m:^b$)\nc$/.test('a\nb\nc')); // true
+            r.push(/^a\n(?m:^b$)\nc$/.test('a\nb\nc\n')); // false (outer $ end-only)
+            // A non-anchor modifier (i) still scopes correctly.
+            r.push(/(?i:a)b/.test('Ab'));              // true
+            r.push(/(?i:a)b/.test('aB'));              // false
+            r.join(',');
+        ");
+
+        Assert.Equal("true,false,true,false,false,true,false,true,false", result.ToString());
+    }
+
+    [Fact]
+    public void ForIn_Does_Not_Visit_Properties_Added_During_Enumeration_Match_Test262()
+    {
+        // Regression: a property added to the object during for-in must not be visited
+        // (EnumerateObjectProperties snapshots the own keys). The key enumerator walked
+        // the property store live, so a property appended by the loop body was picked up.
+        // It now skips any string property that was not present when the object's
+        // enumeration began, while still skipping deleted ones (test262
+        // language/statements/for-in/order-property-added; order-enumerable-shadowed
+        // already passed via the non-enumerable shadowing fix).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var added = [];
+            var o = { p1: 'p1', p2: 'p2', p3: 'p3' };
+            for (var k in o) { if (k === 'p1') o.p4 = 'p4'; added.push(k); }
+
+            // A non-enumerable own property still shadows an inherited enumerable one.
+            var proto = { p2: 'p2' };
+            var c = Object.create(proto, {
+                p1: { value: 'p1', enumerable: true },
+                p2: { value: 'x', enumerable: false }
+            });
+            var shadowed = [];
+            for (var k2 in c) shadowed.push(k2);
+
+            added.join(',') + '|' + shadowed.join(',');
+        ");
+
+        Assert.Equal("p1,p2,p3|p1", result.ToString());
+    }
+
+    [Fact]
+    public void ForIn_Continues_After_Deleting_The_Next_Property_Match_Test262()
+    {
+        // Regression: deleting the property that for-in is about to visit terminated
+        // the enumeration early. The property store unlinked a deleted node and reset
+        // its Next pointer to 0, stranding the enumerator parked on that node (its
+        // Next no longer led to the following property). The node now keeps its
+        // forward link so the enumerator skips the deleted property and continues
+        // (test262 language/statements/for-in/S12.6.4_A7_T1).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var obj = { aa: 1, ba: 2, ca: 3, da: 4 };
+            var visited = [];
+            for (var key in obj) {
+                visited.push(key);
+                // On the first iteration this deletes 'ba', the next property to visit.
+                for (var k in obj) { if (k.charAt(0) === 'b') delete obj[k]; }
+            }
+            // A deleted-then-recreated property still moves to the end of the order.
+            var order = { x: 1, y: 2, z: 3 };
+            delete order.y;
+            order.y = 9;
+            [visited.join(','), Object.keys(order).join(',')].join('|');
+        ");
+
+        Assert.Equal("aa,ca,da|x,z,y", result.ToString());
+    }
+
+    [Fact]
+    public void Var_Arguments_Declaration_Shares_The_Functions_Arguments_Binding_Match_Test262()
+    {
+        // Regression: a `var arguments` in a sloppy function must share the function's
+        // own `arguments` binding (initialized to the arguments object), so the
+        // declaration's initializer — and any later assignment — overrides it. The
+        // declaration created a separate block-scope slot while reads kept resolving
+        // to the materialized arguments object, so `var arguments = x; return arguments`
+        // returned the arguments object instead of x (test262
+        // language/statements/function/S13_A15_T2).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function varInit() { var arguments = 'answer'; return arguments; }
+            function varThenAssign() { var arguments; arguments = 7; return arguments; }
+            function noInitKeepsObject() { var arguments; return arguments.length; }
+            function mappedStillWorks(x) { arguments[0] = 42; return x; }
+            [
+                varInit(1, 2, 3),
+                varThenAssign(1, 2, 3),
+                noInitKeepsObject(1, 2, 3),
+                mappedStillWorks(1)
+            ].join('|');
+        ");
+
+        Assert.Equal("answer|7|3|42", result.ToString());
+    }
+
+    [Fact]
+    public void Operator_Precedence_Right_Operand_Does_Not_Swallow_Looser_Operators_Match_Test262()
+    {
+        // Regression: the recursion that built the right operand of a binary operator
+        // had no precedence floor, so when the right operand was a tighter
+        // (multiplicative) expression followed by a looser operator, that looser
+        // operator was folded into the right operand. `a/b + c/d === e` parsed as
+        // `a/b + (c/d === e)` — the sum of two opposite-sign magnitudes never
+        // compared equal to +0 (test262 expressions/addition/S11.6.1_A4_T7 and
+        // subtraction/S11.6.2_A4_T7).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            (function () {
+                var m = Number.MAX_VALUE, x = 8, y = 8, r = [];
+                r.push(-1 / m + 1 / m === +0);                 // true (was false)
+                r.push(1 / m - 1 / m === +0);                  // true
+                r.push(x / 1 + y / 1 === 16);                  // true (was 8)
+                r.push(x * 1 + y * 1 === 16);                  // true
+                r.push(2 + 3 * 4 === 14);                      // true
+                r.push(2 ** 3 ** 2 === 512);                   // right-assoc
+                r.push(1 + 1 === 2 ? 'ok' : 'no');             // ternary after ===
+                r.push(1 & 2 | 3 === 3);                       // (1&2)|(3===3) === 1
+                return r.join('|');
+            })();
+        ");
+
+        Assert.Equal("true|true|true|true|true|true|ok|1", result.ToString());
+    }
+
+    [Fact]
+    public void Var_With_Unicode_Escaped_Identifier_Is_Hoisted_Under_Decoded_Name_Match_Test262()
+    {
+        // Regression: a `var` whose name uses unicode escapes must be hoisted and
+        // bound under the decoded name. The declaration below is written as
+        // `var xy = 1` (the identifier "xy"); the parser registered the
+        // binding under the raw escape text, so the decoded name "xy" was never
+        // declared — a read before the declaration threw a ReferenceError instead of
+        // seeing the hoisted `undefined` (test262 language/statements/variable/S12.2_A4).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // Non-verbatim string so "\\u0078\\u0079" reaches the engine as the literal
+        // escape sequence for "xy"; the reads use the plain decoded name.
+        var result = ctx.Eval(
+            "(function () {\n" +
+            "    var before = typeof xy;\n" +
+            "    var threw = false;\n" +
+            "    try { xy = xy; } catch (e) { threw = true; }\n" +
+            "    var \\u0078\\u0079 = 1;\n" +
+            "    return [before, threw, xy].join('|');\n" +
+            "})();");
+
+        Assert.Equal("undefined|false|1", result.ToString());
+    }
+
+    [Fact]
+    public void ForLoop_Var_Head_Inside_Eval_Persists_Binding_Match_Test262()
+    {
+        // Regression: a `var`-declared for-in/for-of loop variable is, inside a
+        // (direct or indirect) eval, a dynamic binding on the surrounding variable
+        // environment. The compiler used the binding's lvalue directly as the
+        // enumerator MoveNext out-argument, which did not persist the write, so the
+        // loop variable read back as undefined every iteration. The completion value
+        // of `eval("for(var i in obj) ...")` then accumulated "undefined"s
+        // (test262 language/statements/for-in/S12.6.4_A3.1 and _A4.1).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var str = '';
+            var completion = eval(""for (var ind in (arr = [2,1,4,3])) str += arr[ind]"");
+            var ofParts = [];
+            eval(""for (var v of [7,8,9]) ofParts.push(v)"");
+            var indirectParts = [];
+            (0, eval)(""for (var w in {a:1,b:2}) indirectParts.push(w)"");
+            [str, completion, ofParts.join(','), indirectParts.join(',')].join('|');
+        ");
+
+        Assert.Equal("2143|2143|7,8,9|a,b", result.ToString());
+    }
+
+    [Fact]
+    public void ForIn_NonEnumerable_Own_Property_Shadows_Inherited_Enumerable_Match_Test262()
+    {
+        // Regression: a non-enumerable own property must shadow a same-named
+        // enumerable property on the prototype chain (the [[Enumerable]] attribute
+        // is not considered when deciding whether a name is already visited). The
+        // key-enumerator only recorded names it actually yielded, so the skipped
+        // non-enumerable own "prop" failed to hide the inherited enumerable one
+        // and for-in wrongly visited it (test262 language/statements/for-in/12.6.4-2).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var proto = { prop: 'enumerableValue' };
+            var ConstructFun = function () { };
+            ConstructFun.prototype = proto;
+            var child = new ConstructFun();
+            Object.defineProperty(child, 'prop', { value: 'nonEnumerableValue', enumerable: false });
+            var accessedProp = false;
+            for (var p in child) { if (p === 'prop') accessedProp = true; }
+            accessedProp;
+        ");
+
+        Assert.False(result.BooleanValue);
+    }
+
+    [Fact]
+    public void Object_GetOwnPropertyNames_String_Object_Orders_Index_Keys_First_Match_Test262()
+    {
+        // Regression: String exotic [[OwnPropertyKeys]] (ES 10.4.3.3) lists every
+        // integer-index key in ascending numeric order before the string keys. An
+        // extra array-index property added to a String wrapper (str[5]) must be
+        // grouped with the character indices, ahead of "length" — we previously
+        // emitted "length" between the characters and the extra index, yielding
+        // ["0","1","2","length","5"] (test262 Object/getOwnPropertyNames/15.2.3.4-4-44).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var str = new String('abc');
+            str[5] = 'de';
+            Object.getOwnPropertyNames(str).join(',');
+        ");
+
+        Assert.Equal("0,1,2,5,length", result.ToString());
+    }
+
+    [Fact]
+    public void Array_Prototype_Flat_FlatMap_Recurse_Into_Proxy_Arrays_Match_Test262()
+    {
+        // Regression: FlattenIntoArray uses the IsArray abstract operation to decide
+        // whether to recurse, so a Proxy whose target is an array must be flattened
+        // and observed through its length/index get traps. We previously checked the
+        // element with `is JSArray`, which is false for a Proxy, so a nested proxy
+        // array was copied as-is instead of being flattened — its "length"/"0"/"1"
+        // gets never happened (test262 Array/prototype/flat|flatMap/proxy-access-count).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            var getCalls = [];
+            function makeProxy(arr) {
+                return new Proxy(arr, {
+                    get: function (t, p, r) {
+                        if (typeof p === 'string') getCalls.push(p);
+                        return Reflect.get(t, p, r);
+                    }
+                });
+            }
+
+            // Outer array of length 5 whose element at index 3 is itself a proxy array.
+            var inner = makeProxy([0, 1]);
+            var outer = makeProxy([0, 1, 2, inner, 4]);
+
+            var flattened = Array.prototype.flat.call(outer);
+            return [getCalls.join(','), flattened.join(',')].join('|');
+        })();");
+
+        Assert.Equal(
+            "length,constructor,0,1,2,3,length,0,1,4|0,1,2,0,1,4",
+            result.ToString());
+    }
+
+    [Fact]
     public void Array_Prototype_Length_Coercion_And_Modification_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();

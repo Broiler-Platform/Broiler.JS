@@ -219,6 +219,12 @@ public class JSPrimitiveObject : JSObject
         if (!value.IsString)
             return base.GetAllKeys(showEnumerableOnly, inherited);
 
+        // String exotic [[OwnPropertyKeys]] (ES 10.4.3.3): every integer-index key
+        // in ascending numeric order first, then the remaining String keys in
+        // creation order, then Symbols. So the string's own character indices and
+        // any extra array-index own properties (e.g. `str[5] = "de"`) are gathered
+        // and sorted together ahead of "length" and the other string/symbol keys —
+        // emitting "length" between them is wrong (test262 15.2.3.4-4-44).
         var keys = new List<JSValue>();
         var stringKeys = new IntKeyEnumerator(value.Length);
         while (stringKeys.MoveNext(out var hasValue, out _, out var index))
@@ -231,20 +237,47 @@ public class JSPrimitiveObject : JSObject
                 keys.Add(JSValue.CreateString(index.ToString()));
         }
 
+        // Partition the remaining own keys: array-index keys (which belong with the
+        // ascending index run, after the character indices) versus the rest (string
+        // non-index keys then symbols), preserving the base creation order of the rest.
+        List<uint> extraIndexKeys = null;
+        var otherKeys = new List<JSValue>();
+        var ownKeys = base.GetAllKeys(showEnumerableOnly, inherited);
+        while (ownKeys.MoveNext(out var hasValue, out var key, out _))
+        {
+            if (!hasValue)
+                continue;
+
+            var keyAsKey = key.ToKey(false);
+            if (keyAsKey.Type == KeyType.UInt && keyAsKey.Index >= value.Length)
+            {
+                extraIndexKeys ??= [];
+                extraIndexKeys.Add(keyAsKey.Index);
+            }
+            else
+            {
+                otherKeys.Add(key);
+            }
+        }
+
+        if (extraIndexKeys != null)
+        {
+            extraIndexKeys.Sort();
+            foreach (var index in extraIndexKeys)
+                keys.Add(JSValue.CreateString(index.ToString()));
+        }
+
         // String exotic objects also have a non-writable, non-enumerable,
         // non-configurable own "length" property. It is synthesized by the
         // GetValue/GetOwnPropertyDescriptor overrides rather than stored, so it
         // must be surfaced here for Object.getOwnPropertyNames/Descriptors. It
-        // is omitted when only enumerable keys are requested (Object.keys etc.).
+        // is a String non-index key created before any user-added property, so it
+        // precedes the other string keys. It is omitted when only enumerable keys
+        // are requested (Object.keys etc.).
         if (!showEnumerableOnly)
             keys.Add(KeyStrings.length.ToJSValue());
 
-        var ownKeys = base.GetAllKeys(showEnumerableOnly, inherited);
-        while (ownKeys.MoveNext(out var hasValue, out var key, out _))
-        {
-            if (hasValue)
-                keys.Add(key);
-        }
+        keys.AddRange(otherKeys);
 
         return new ListElementEnumerator(keys.GetEnumerator());
     }
