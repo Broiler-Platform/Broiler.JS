@@ -26,6 +26,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problem 92 (Intl.NumberFormat currency-code canonicalization) — a well-formed currency
+//   code was reflected verbatim, so `{ currency: "usd" }` resolved to "usd". Per spec the
+//   code is canonicalized to upper case ("USD"); resolvedOptions and the formatter now upper-
+//   case it. Problem 70 (invalid NumberFormat "style" option) — style was read without
+//   validation, so `{ style: "invalid" }` was silently accepted; it is now read through
+//   GetOption against the sanctioned set ("decimal"/"percent"/"currency"/"unit"), so an
+//   invalid value is a RangeError (covering Number/BigInt.prototype.toLocaleString too).
+//
 //   Problem 88 (%Iterator.prototype%[@@iterator] toString conforms to NativeFunction syntax)
 //   — the function was created with the name "Symbol.iterator", so Function.prototype.toString
 //   produced "function Symbol.iterator() { [native code] }". A bare dotted name is not valid
@@ -322,4 +330,54 @@ public class Issue838Tests
     [Fact]
     public void IterationStillWorksAfterRename()
         => Assert.Equal("1,2,3", Eval("[...[1, 2, 3]].join(',')"));
+
+    // ---- Problem 92: Intl.NumberFormat canonicalizes the currency code to upper case ----
+
+    [Fact]
+    public void NumberFormatCanonicalizesLowercaseCurrencyToUpper()
+        => Assert.Equal("USD,EUR,USD", Eval(
+            "new Intl.NumberFormat('en', { style: 'currency', currency: 'usd' }).resolvedOptions().currency + ',' +" +
+            "new Intl.NumberFormat('en', { style: 'currency', currency: 'Eur' }).resolvedOptions().currency + ',' +" +
+            "new Intl.NumberFormat('en', { style: 'currency', currency: 'uSd' }).resolvedOptions().currency"));
+
+    [Fact]
+    public void NumberFormatCanonicalizesCurrencyEvenWhenStyleNotCurrency()
+        => Assert.Equal("JPY", Eval(
+            "new Intl.NumberFormat('en', { currency: 'jpy' }).resolvedOptions().currency"));
+
+    [Fact]
+    public void NumberFormatStillFormatsCurrencyGivenLowercaseCode()
+        => Assert.Equal("$5.00", Eval(
+            "new Intl.NumberFormat('en-US', { style: 'currency', currency: 'usd' }).format(5)"));
+
+    // ---- Problem 70: an invalid NumberFormat "style" option is a RangeError ----
+
+    [Fact]
+    public void NumberFormatInvalidStyleThrowsRangeError()
+        => Assert.Equal("RangeError", Eval(
+            "try { new Intl.NumberFormat('en', { style: 'invalid' }); 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void NumberToLocaleStringInvalidStyleThrowsRangeError()
+        => Assert.Equal("RangeError", Eval(
+            "try { (1).toLocaleString('en', { style: 'invalid' }); 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void BigIntToLocaleStringInvalidStyleThrowsRangeError()
+        => Assert.Equal("RangeError", Eval(
+            "try { (1n).toLocaleString('en', { style: 'invalid' }); 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void NumberFormatValidStylesStillResolve()
+        => Assert.Equal("decimal,percent,unit", Eval(
+            "new Intl.NumberFormat('en').resolvedOptions().style + ',' +" +
+            "new Intl.NumberFormat('en', { style: 'percent' }).resolvedOptions().style + ',' +" +
+            "new Intl.NumberFormat('en', { style: 'unit', unit: 'meter' }).resolvedOptions().style"));
+
+    [Fact]
+    public void NumberFormatCurrencyStyleStillRequiresCurrencyAndRejectsMalformedCode()
+        => Assert.Equal("TypeError,RangeError", Eval(
+            "function err(f){ try { f(); return 'no-throw'; } catch (e) { return e.constructor.name; } }" +
+            "err(function(){ new Intl.NumberFormat('en', { style: 'currency' }); }) + ',' +" +
+            "err(function(){ new Intl.NumberFormat('en', { style: 'currency', currency: 'US' }); })"));
 }

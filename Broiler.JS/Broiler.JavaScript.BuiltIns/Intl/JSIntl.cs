@@ -44,6 +44,7 @@ public static class JSIntl
     private static readonly KeyString CurrencySignKey = KeyStrings.GetOrCreate("currencySign");
     private static readonly string[] CurrencyDisplayValues = ["code", "symbol", "narrowSymbol", "name"];
     private static readonly string[] CurrencySignValues = ["standard", "accounting"];
+    private static readonly string[] NumberFormatStyleValues = ["decimal", "percent", "currency", "unit"];
     private static readonly KeyString UnitKey = KeyStrings.GetOrCreate("unit");
     private static readonly KeyString TypeKey = KeyStrings.GetOrCreate("type");
     private static readonly KeyString LocaleMatcherKey = KeyStrings.GetOrCreate("localeMatcher");
@@ -1117,8 +1118,10 @@ public static class JSIntl
         if (options == null)
             return new JSIntlNumberFormatResolved("standard", "auto", null, null);
 
-        var styleValue = options[StyleKey];
-        var style = styleValue.IsUndefined ? null : styleValue.StringValue;
+        // GetOption validates "style" against the sanctioned set ("decimal", "percent",
+        // "currency", "unit") — a value such as "invalid" is a RangeError — and applies the
+        // "decimal" default. It is read first, matching SetNumberFormatUnitOptions order.
+        var style = GetOption(options, StyleKey, NumberFormatStyleValues, false, "decimal");
 
         var currencyValue = options[CurrencyKey];
         if (!currencyValue.IsUndefined)
@@ -4150,8 +4153,13 @@ public class JSIntlNumberFormat : JSObject
     private CldrCurrencyFormat ResolveCurrency()
         => CldrLocaleData.ResolveCurrency(
             locale,
-            ReadStringOption("currency", string.Empty),
+            ReadStringOption("currency", string.Empty).ToUpperInvariant(),
             ReadStringOption("currencyDisplay", "symbol"));
+
+    // The currency option is canonicalized to upper case (CanonicalizeUCurrencyCode); the
+    // value has already been validated as a well-formed 3-letter code at construction time.
+    private static JSValue CanonicalCurrencyValue(JSValue currency)
+        => JSValue.CreateString(currency.StringValue.ToUpperInvariant());
 
     private string ReadStringOption(string name, string fallback)
     {
@@ -4287,10 +4295,12 @@ public class JSIntlNumberFormat : JSObject
 
             // Spec order: currency, currencyDisplay, currencySign appear together (only when
             // style is "currency"), each with its resolved value.
+            // A well-formed currency code is canonicalized to upper case (e.g. "usd" → "USD")
+            // before it is reflected by resolvedOptions.
             if (style == "currency")
             {
                 if (!@this.options[currencyKey].IsUndefined)
-                    result.CreateDataProperty(currencyKey, @this.options[currencyKey]);
+                    result.CreateDataProperty(currencyKey, CanonicalCurrencyValue(@this.options[currencyKey]));
                 result.CreateDataProperty(KeyStrings.GetOrCreate("currencyDisplay"),
                     JSValue.CreateString(@this.ReadStringOption("currencyDisplay", "symbol")));
                 result.CreateDataProperty(KeyStrings.GetOrCreate("currencySign"),
@@ -4298,7 +4308,7 @@ public class JSIntlNumberFormat : JSObject
             }
             else if (!@this.options[currencyKey].IsUndefined)
             {
-                result.CreateDataProperty(currencyKey, @this.options[currencyKey]);
+                result.CreateDataProperty(currencyKey, CanonicalCurrencyValue(@this.options[currencyKey]));
             }
             if (!@this.options[unitKey].IsUndefined)
                 result.CreateDataProperty(unitKey, @this.options[unitKey]);
