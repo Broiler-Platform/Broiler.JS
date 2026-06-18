@@ -26,6 +26,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problem 84 (Intl.NumberFormat compact notation, en) — compact units were only defined for
+//   the CJK locales, so an English compact format fell back to the full number ("1500000",
+//   formatToParts length 5). The English short scale (10^3 K, 10^6 M, 10^9 B, 10^12 T) is now
+//   wired in, so format(1500000) is "1.5M" and formatToParts(987654321) is [integer "988",
+//   compact "M"] (length 2). de-DE compact (Problem 85, needs "Mio."-style data) and
+//   PluralRules compact (Problem 83) remain out of scope.
+//
 //   Problem 91 (Intl.NumberFormat currency fraction digits in resolvedOptions) — the formatter
 //   already used a currency's CLDR minor-unit count, but resolvedOptions reflected the decimal
 //   default (0/3), so JPY reported maximumFractionDigits 3 while it formatted with 0. The
@@ -520,4 +527,36 @@ public class Issue838Tests
             "var b = new Intl.NumberFormat('en', { minimumFractionDigits: 2 }).resolvedOptions();" +
             "a.minimumFractionDigits + '/' + a.maximumFractionDigits + ',' +" +
             "b.minimumFractionDigits + '/' + b.maximumFractionDigits"));
+
+    // ---- Problem 84: English compact notation ----
+
+    [Fact]
+    public void EnglishCompactFormatsWithShortScaleSuffixes()
+        => Assert.Equal("1.5M,12K,1K,1B,1.5T", Eval(
+            "var nf = new Intl.NumberFormat('en', { notation: 'compact' });" +
+            "[nf.format(1500000), nf.format(12345), nf.format(1000)," +
+            " nf.format(1000000000), nf.format(1500000000000)].join(',')"));
+
+    [Fact]
+    public void EnglishCompactFormatToPartsHasIntegerAndCompactParts()
+        => Assert.Equal("integer:988|compact:M", Eval(
+            "new Intl.NumberFormat('en', { notation: 'compact' }).formatToParts(987654321)" +
+            ".map(function (p) { return p.type + ':' + p.value; }).join('|')"));
+
+    [Fact]
+    public void EnglishCompactFormatToPartsLengthIsTwo()
+        => Assert.Equal("2", Eval(
+            "String(new Intl.NumberFormat('en-US', { notation: 'compact' }).formatToParts(987654321).length)"));
+
+    [Fact]
+    public void CompactBelowThousandAndZeroAndNegativeAreHandled()
+        => Assert.Equal("999,0,-2.5M", Eval(
+            "var nf = new Intl.NumberFormat('en', { notation: 'compact' });" +
+            "nf.format(999) + ',' + nf.format(0) + ',' + nf.format(-2500000)"));
+
+    [Fact]
+    public void CompactResolvedOptionsAndStandardNotationUnaffected()
+        => Assert.Equal("compact,short,1,500,000", Eval(
+            "var r = new Intl.NumberFormat('en', { notation: 'compact' }).resolvedOptions();" +
+            "r.notation + ',' + r.compactDisplay + ',' + new Intl.NumberFormat('en').format(1500000)"));
 }

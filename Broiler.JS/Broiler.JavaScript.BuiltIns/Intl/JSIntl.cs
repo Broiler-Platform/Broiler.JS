@@ -3832,6 +3832,9 @@ public class JSIntlNumberFormat : JSObject
     // by short and long compactDisplay in these locales. Intermediate powers (e.g.
     // 10^5..10^7 for ja) reuse the lower unit, so the divisor is the largest unit
     // whose exponent does not exceed the value's magnitude.
+    // English (short) compact scale: 10^3 K, 10^6 M, 10^9 B, 10^12 T. Ordered largest-first
+    // so the FormatCompact loop picks the largest unit not exceeding the value's magnitude.
+    private static readonly (int Exp, string Suffix)[] CompactUnitsEn = [(12, "T"), (9, "B"), (6, "M"), (3, "K")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsJa = [(12, "兆"), (8, "億"), (4, "万")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsKo = [(12, "조"), (8, "억"), (4, "만"), (3, "천")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHant = [(12, "兆"), (8, "億"), (4, "萬")];
@@ -3844,6 +3847,8 @@ public class JSIntlNumberFormat : JSObject
         var language = (dash < 0 ? tag : tag[..dash]).ToLowerInvariant();
         switch (language)
         {
+            case "en":
+                return CompactUnitsEn;
             case "ja":
                 return CompactUnitsJa;
             case "ko":
