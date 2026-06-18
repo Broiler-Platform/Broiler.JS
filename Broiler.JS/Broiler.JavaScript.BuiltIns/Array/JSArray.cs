@@ -308,8 +308,22 @@ public partial class JSArray : JSObject
         return new ElementEnumerator(this);
     }
 
-    private struct ElementEnumerator(JSArray array) : IElementEnumerator
+    // Key enumeration (Object.keys / for-in / spread of own keys) must skip
+    // non-enumerable indices. Array elements are normally enumerable, but
+    // Object.defineProperty can store an indexed element with enumerable:false,
+    // so the raw index walk has to honour the enumerable filter here. (The base
+    // override assumes specialised element walks are always enumerable, which is
+    // not true for arrays.) GetElementEnumerator stays unfiltered because the
+    // iterator protocol (for-of / spread) visits every index regardless.
+    internal override IElementEnumerator GetOwnIndexedElementEnumerator(bool enumerableOnly = false)
     {
+        return new ElementEnumerator(this, enumerableOnly);
+    }
+
+    private struct ElementEnumerator(JSArray array, bool enumerableOnly = false) : IElementEnumerator
+    {
+        readonly bool enumerableOnly = enumerableOnly;
+
         // Array iterators are live (CreateArrayIterator re-reads the length each
         // step): entries pushed during for-of / spread traversal must be visited,
         // and a shrink must end iteration early. Read the length dynamically
@@ -334,7 +348,8 @@ public partial class JSArray : JSObject
             if ((this.index = (this.index == uint.MaxValue) ? 0 : (this.index + 1)) < length)
             {
                 index = this.index;
-                if (elements.TryGetValue(index, out var property))
+                if (elements.TryGetValue(index, out var property)
+                    && (!enumerableOnly || property.IsEnumerable))
                 {
                     value = property.IsEmpty
                         ? null
