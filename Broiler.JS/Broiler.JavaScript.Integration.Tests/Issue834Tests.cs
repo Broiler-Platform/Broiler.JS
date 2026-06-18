@@ -32,8 +32,16 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   non-extensible with frozen, non-configurable name/length. PatchFunction-
 //   Prototype now installs the shared GetOrCreateThrowTypeError() function.
 //
-// Out of scope: the remaining ~96 problems in the issue are unrelated engine
-// areas (Temporal/Intl/CLDR ordering, RegExp/Unicode, Proxy trap ordering, etc.).
+//   Problems 50, 51 (Iterator.from getPrototypeOf step) — Iterator.from decided
+//   whether to wrap its resolved iterator with a CLR type check (`is
+//   JSIteratorObject`) instead of OrdinaryHasInstance(%Iterator%, iterator). It
+//   therefore skipped the observable [[GetPrototypeOf]] walk, so a Proxy iterator's
+//   getPrototypeOf trap never fired. From now reads "next" (GetIteratorDirect) and
+//   then walks the iterator's prototype chain via GetPrototypeOf looking for
+//   %Iterator.prototype%, returning the iterator unwrapped when it is found.
+//
+// Out of scope: the remaining ~94 problems in the issue are unrelated engine
+// areas (Temporal/Intl/CLDR ordering, RegExp/Unicode, with/Proxy env, etc.).
 public class Issue834Tests
 {
     private static string Eval(string code)
@@ -131,4 +139,41 @@ public class Issue834Tests
         => Assert.Equal("false,true", Eval(
             "var d = Object.getOwnPropertyDescriptor(Function.prototype, 'caller');" +
             "d.enumerable + ',' + d.configurable"));
+
+    // ---- Problems 50/51: Iterator.from performs the OrdinaryHasInstance walk ----
+
+    [Fact]
+    public void IteratorFromWalksPrototypeChainOfProxyIterator()
+        => Assert.Equal("get:Symbol(Symbol.iterator),get:next,getProto", Eval(
+            "var log = [];" +
+            "var inner = { next: function () { return { done: true }; } };" +
+            "var p = new Proxy(inner, {" +
+            "  get: function (t, k) { log.push('get:' + String(k)); return Reflect.get(t, k); }," +
+            "  getPrototypeOf: function () { log.push('getProto'); return null; } });" +
+            "Iterator.from(p); log.join(',')"));
+
+    [Fact]
+    public void IteratorFromReadsNextBeforeGetPrototypeOf()
+        => Assert.Equal(
+            "get:Symbol(Symbol.iterator),get:next,getProto,get:return,ret", Eval(
+            "var log = [];" +
+            "var inner = { next: function () { return { done: true }; }," +
+            "  return: function () { log.push('ret'); return { done: true }; } };" +
+            "var p = new Proxy(inner, {" +
+            "  get: function (t, k) { log.push('get:' + String(k)); return Reflect.get(t, k); }," +
+            "  getPrototypeOf: function () { log.push('getProto'); return null; } });" +
+            "Iterator.from(p).return(); log.join(',')"));
+
+    [Fact]
+    public void IteratorFromReturnsUnwrappedWhenPrototypeChainHasIteratorPrototype()
+        => Assert.Equal("true", Eval(
+            "var proto = Object.getPrototypeOf([].values());" +
+            "var inner = Object.create(proto); inner.next = function () { return { done: true }; };" +
+            "var p = new Proxy(inner, { get: function (t, k) { return Reflect.get(t, k); }," +
+            "  getPrototypeOf: function (t) { return Reflect.getPrototypeOf(t); } });" +
+            "String(Iterator.from(p) === p)"));
+
+    [Fact]
+    public void IteratorFromStillWrapsAndIteratesPlainArray()
+        => Assert.Equal("2,4,6", Eval("Iterator.from([1, 2, 3]).map(function (x) { return x * 2; }).toArray().join(',')"));
 }
