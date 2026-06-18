@@ -710,7 +710,9 @@ partial class JSTypedArray
 
         return (l, r) =>
         {
-            var v = fx.InvokeFunction(new Arguments(this, l, r)).DoubleValue;
+            // SortCompare (§23.2.3.29) calls comparefn with undefined as the this value — a
+            // sloppy-mode comparefn therefore observes the global object, not the typed array.
+            var v = fx.InvokeFunction(new Arguments(JSUndefined.Value, l, r)).DoubleValue;
             return double.IsNaN(v) ? 0 : Math.Sign(v);
         };
     }

@@ -280,4 +280,53 @@ public class Issue840Tests
     [InlineData("new Float64Array(2).fill(7).join(',')", "7,7")]
     public void TypedArrayFillStillFillsTheRequestedRange(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problems 77/78: %TypedArray%.prototype.sort comparefn this value ----
+    //
+    // SortCompare (§23.2.3.29) calls the comparefn with undefined as the this value, so a
+    // sloppy-mode comparefn observes the global object and a strict one sees undefined. The
+    // engine passed the typed array itself as the comparefn's this.
+
+    [Fact]
+    public void TypedArraySortComparefnSloppyThisIsGlobal()
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            "  var seen;" +
+            "  new Float64Array([3, 1, 2]).sort(function (a, b) { seen = this; return a - b; });" +
+            "  return seen === (function () { return this; })();" +
+            "})()"));
+
+    [Fact]
+    public void TypedArraySortComparefnStrictThisIsUndefined()
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            "  'use strict';" +
+            "  var seen = 'unset';" +
+            "  new Float64Array([3, 1, 2]).sort(function (a, b) { seen = this; return a - b; });" +
+            "  return seen === undefined;" +
+            "})()"));
+
+    [Fact]
+    public void BigIntTypedArraySortComparefnSloppyThisIsGlobal()
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            "  var seen;" +
+            "  new BigInt64Array([3n, 1n, 2n]).sort(function (a, b) { seen = this; return a > b ? 1 : -1; });" +
+            "  return seen === (function () { return this; })();" +
+            "})()"));
+
+    [Fact]
+    public void TypedArrayToSortedComparefnThisIsUndefinedBased()
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            "  var seen;" +
+            "  new Float64Array([3, 1, 2]).toSorted(function (a, b) { seen = this; return a - b; });" +
+            "  return seen === (function () { return this; })();" +
+            "})()"));
+
+    [Theory]
+    [InlineData("new Float64Array([3,1,2,5,4]).sort(function(a,b){return a-b;}).join(',')", "1,2,3,4,5")]
+    [InlineData("new Int8Array([3,1,2]).sort().join(',')", "1,2,3")]
+    public void TypedArraySortStillOrdersElements(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }
