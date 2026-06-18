@@ -454,18 +454,18 @@ partial class JSTypedArray
         ValidateTypedArray("map");
         var (callback, thisArg) = a.Get2();
         if (callback is not JSFunction fn)
-            throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.find");
-        var values = new List<JSValue>();
+            throw JSEngine.NewTypeError($"{callback} is not a function in TypedArray.prototype.map");
+
+        // §23.2.3.20: TypedArraySpeciesCreate(O, «len») happens BEFORE the callback
+        // loop, so a throwing constructor / @@species getter aborts map without ever
+        // invoking the callback (test262 TypedArray/prototype/map/speciesctor-get-ctor-abrupt).
         var len = Length;
+        var result = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), len);
         for (int k = 0; k < len; k++)
         {
             var itemArgs = new Arguments(thisArg, ReadElement(k), new JSNumber(k), this);
-            values.Add(fn.InvokeCallback(itemArgs));
+            result[(uint)k] = fn.InvokeCallback(itemArgs);
         }
-
-        var result = CreateTypedArrayFromConstructor(GetSpeciesConstructor(this), values.Count);
-        for (uint i = 0; i < values.Count; i++)
-            result[i] = values[(int)i];
 
         return result;
     }

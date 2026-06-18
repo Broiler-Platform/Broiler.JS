@@ -53,7 +53,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   (-1, 0)) as -0.0, so Atomics.store(ta, 0, -0) returned -0. ToIntegerOrInfinity
 //   normalizes those to +0; the result is now run through that normalization.
 //
-// Out of scope: the remaining ~92 problems in the issue are unrelated engine
+//   Problems 95, 96 (%TypedArray%.prototype.map species-create order) — map ran
+//   the callback loop first and only then created the result via
+//   TypedArraySpeciesCreate, so a throwing constructor / @@species getter still
+//   invoked the callback for every element. §23.2.3.20 creates the result array
+//   (step 4) before the callback loop (step 5); map now does the same, so an
+//   abrupt species create aborts before any callback runs.
+//
+// Out of scope: the remaining ~90 problems in the issue are unrelated engine
 // areas (Temporal/Intl/CLDR ordering, RegExp/Unicode, with/Proxy env, etc.).
 public class Issue834Tests
 {
@@ -234,4 +241,30 @@ public class Issue834Tests
             "var t = new Int32Array(2);" +
             "String(Atomics.store(t, 0, 5)) + ',' + String(Atomics.store(t, 0, -5)) + ',' +" +
             "String(Atomics.store(t, 0, Infinity)) + ',' + String(Atomics.store(t, 0, NaN))"));
+
+    // ---- Problems 95/96: TypedArray map creates the species result before looping ----
+
+    [Fact]
+    public void TypedArrayMapDoesNotCallCallbackWhenSpeciesGetterThrows()
+        => Assert.Equal("0", Eval(
+            "var calls = 0; var ta = new Float64Array([1, 2, 3, 4]);" +
+            "function Ctor() {} Object.defineProperty(Ctor, Symbol.species, { get: function () { throw new Error('sp'); } });" +
+            "ta.constructor = Ctor;" +
+            "try { ta.map(function () { calls++; return 0; }); } catch (e) {}" +
+            "String(calls)"));
+
+    [Fact]
+    public void BigIntTypedArrayMapDoesNotCallCallbackWhenSpeciesGetterThrows()
+        => Assert.Equal("0", Eval(
+            "var calls = 0; var ta = new BigInt64Array([1n, 2n, 3n, 4n]);" +
+            "function Ctor() {} Object.defineProperty(Ctor, Symbol.species, { get: function () { throw new Error('sp'); } });" +
+            "ta.constructor = Ctor;" +
+            "try { ta.map(function () { calls++; return 0n; }); } catch (e) {}" +
+            "String(calls)"));
+
+    [Fact]
+    public void TypedArrayMapStillMapsValuesAndPreservesType()
+        => Assert.Equal("11,12,13,Int32Array", Eval(
+            "var r = new Int32Array([1, 2, 3]).map(function (x) { return x + 10; });" +
+            "r.join(',') + ',' + (r.constructor === Int32Array ? 'Int32Array' : r.constructor.name)"));
 }
