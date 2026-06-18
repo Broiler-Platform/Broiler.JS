@@ -3977,37 +3977,7 @@ public class JSIntlNumberFormat : JSObject
             && (resolved?.RoundingPriority ?? "auto") == "auto")
             return FormatSignificantDigits(magnitude, out roundedIsZero);
 
-        // SetNumberFormatDigitOptions: when only one of the fraction-digit bounds is
-        // given, the other defaults are pulled toward it — a lone maximum lowers the
-        // default minimum (min(defaultMin, max)), a lone minimum raises the default
-        // maximum (max(defaultMax, min)). The previous code only ever raised the
-        // maximum, so e.g. currency (default 2/2) with maximumFractionDigits:0 wrongly
-        // kept two fraction digits.
-        var hasMinFrac = HasOption("minimumFractionDigits");
-        var hasMaxFrac = HasOption("maximumFractionDigits");
-        int minFrac, maxFrac;
-        if (hasMinFrac && hasMaxFrac)
-        {
-            minFrac = ReadIntOption("minimumFractionDigits", defaultMinFrac);
-            maxFrac = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
-            if (maxFrac < minFrac)
-                maxFrac = minFrac;
-        }
-        else if (hasMaxFrac)
-        {
-            maxFrac = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
-            minFrac = Math.Min(defaultMinFrac, maxFrac);
-        }
-        else if (hasMinFrac)
-        {
-            minFrac = ReadIntOption("minimumFractionDigits", defaultMinFrac);
-            maxFrac = Math.Max(defaultMaxFrac, minFrac);
-        }
-        else
-        {
-            minFrac = defaultMinFrac;
-            maxFrac = defaultMaxFrac;
-        }
+        var (minFrac, maxFrac) = ResolveFractionDigits(defaultMinFrac, defaultMaxFrac);
         var minInt = ReadIntOption("minimumIntegerDigits", 1);
 
         var rounded = Math.Round(magnitude, Math.Clamp(maxFrac, 0, 15), MidpointRounding.AwayFromZero);
@@ -4205,6 +4175,47 @@ public class JSIntlNumberFormat : JSObject
     // Digit options come from the construction-time snapshot (read once from the
     // options bag), not the live options object, so format-time reads do not
     // re-invoke option getters.
+    // SetNumberFormatDigitOptions fraction-digit resolution: when only one of the
+    // fraction-digit bounds is given, the other default is pulled toward it — a lone maximum
+    // lowers the default minimum (min(defaultMin, max)), a lone minimum raises the default
+    // maximum (max(defaultMax, min)). Used by both the formatter and resolvedOptions so they
+    // agree; the defaults are style-dependent (currency → its minor-unit digit count).
+    internal (int Min, int Max) ResolveFractionDigits(int defaultMinFrac, int defaultMaxFrac)
+    {
+        var hasMinFrac = HasOption("minimumFractionDigits");
+        var hasMaxFrac = HasOption("maximumFractionDigits");
+        if (hasMinFrac && hasMaxFrac)
+        {
+            var min = ReadIntOption("minimumFractionDigits", defaultMinFrac);
+            var max = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
+            return (min, Math.Max(max, min));
+        }
+        if (hasMaxFrac)
+        {
+            var max = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
+            return (Math.Min(defaultMinFrac, max), max);
+        }
+        if (hasMinFrac)
+        {
+            var min = ReadIntOption("minimumFractionDigits", defaultMinFrac);
+            return (min, Math.Max(defaultMaxFrac, min));
+        }
+        return (defaultMinFrac, defaultMaxFrac);
+    }
+
+    // The default fraction-digit bounds for the resolved style: currency uses the currency's
+    // CLDR minor-unit count (CurrencyDigits, default 2) for both bounds; every other style
+    // uses 0 … 3, matching the magnitude formatter.
+    private (int Min, int Max) DefaultFractionDigits()
+    {
+        if (StyleOption() == "currency")
+        {
+            var cDigits = ResolveCurrency().FractionDigits;
+            return (cDigits, cDigits);
+        }
+        return (0, 3);
+    }
+
     private int ReadIntOption(string name, int fallback)
     {
         var snapshot = resolved?.DigitOptions;
@@ -4440,15 +4451,13 @@ public class JSIntlNumberFormat : JSObject
             else
                 result.CreateDataProperty(minimumIntegerDigitsKey, JSValue.CreateNumber(1));
 
-            if (digits != null && !digits[minimumFractionDigitsKey].IsUndefined)
-                result.CreateDataProperty(minimumFractionDigitsKey, digits[minimumFractionDigitsKey]);
-            else
-                result.CreateDataProperty(minimumFractionDigitsKey, JSValue.CreateNumber(0));
-
-            if (digits != null && !digits[maximumFractionDigitsKey].IsUndefined)
-                result.CreateDataProperty(maximumFractionDigitsKey, digits[maximumFractionDigitsKey]);
-            else
-                result.CreateDataProperty(maximumFractionDigitsKey, JSValue.CreateNumber(3));
+            // Fraction-digit reflection mirrors the formatter: the style-dependent defaults
+            // (currency → its minor-unit digit count) feed the SetNumberFormatDigitOptions
+            // resolution, so e.g. JPY reports 0/0 and USD 2/2 rather than the decimal 0/3.
+            var (defMinFrac, defMaxFrac) = @this.DefaultFractionDigits();
+            var (minFrac, maxFrac) = @this.ResolveFractionDigits(defMinFrac, defMaxFrac);
+            result.CreateDataProperty(minimumFractionDigitsKey, JSValue.CreateNumber(minFrac));
+            result.CreateDataProperty(maximumFractionDigitsKey, JSValue.CreateNumber(maxFrac));
 
             // When either significant-digit option is supplied the other gets its
             // SetNumberFormatDigitOptions default (minimum → 1, maximum → 21), so

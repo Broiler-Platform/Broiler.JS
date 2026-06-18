@@ -26,6 +26,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problem 91 (Intl.NumberFormat currency fraction digits in resolvedOptions) — the formatter
+//   already used a currency's CLDR minor-unit count, but resolvedOptions reflected the decimal
+//   default (0/3), so JPY reported maximumFractionDigits 3 while it formatted with 0. The
+//   fraction-digit resolution is now shared between the formatter and resolvedOptions and seeded
+//   with style-dependent defaults (currency → its minor-unit digit count), so e.g. JPY reports
+//   0/0, USD 2/2, BHD 3/3, and explicit overrides resolve against those defaults.
+//
 //   Problem 69 (Intl.supportedValuesOf("collation")) — the collation enumeration returned an
 //   empty list even though the Collator accepts the standard CLDR collations, so a collation
 //   accepted by Collator (e.g. "big5han") was missing from supportedValuesOf. It now returns
@@ -471,4 +478,46 @@ public class Issue838Tests
     [Fact]
     public void SupportedValuesOfCollationOmitsUnsupportedValue()
         => Assert.Equal("false", Eval("String(Intl.supportedValuesOf('collation').includes('invalid'))"));
+
+    // ---- Problem 91: currency fraction digits reflected in resolvedOptions ----
+
+    [Fact]
+    public void CurrencyResolvedFractionDigitsUseMinorUnitCount()
+        => Assert.Equal("0/0,2/2,3/3,4/4", Eval(
+            "function f(c){ var r = new Intl.NumberFormat('en', { style: 'currency', currency: c })" +
+            ".resolvedOptions(); return r.minimumFractionDigits + '/' + r.maximumFractionDigits; }" +
+            "[f('JPY'), f('USD'), f('BHD'), f('CLF')].join(',')"));
+
+    [Fact]
+    public void CurrencyFractionDigitsHonourLowercaseCode()
+        => Assert.Equal("0/0", Eval(
+            "var r = new Intl.NumberFormat('en', { style: 'currency', currency: 'jpy' })" +
+            ".resolvedOptions(); r.minimumFractionDigits + '/' + r.maximumFractionDigits"));
+
+    [Fact]
+    public void CurrencyExplicitMinimumRaisesAgainstMinorUnitDefault()
+        => Assert.Equal("2/2", Eval(
+            "var r = new Intl.NumberFormat('en', { style: 'currency', currency: 'JPY', minimumFractionDigits: 2 })" +
+            ".resolvedOptions(); r.minimumFractionDigits + '/' + r.maximumFractionDigits"));
+
+    [Fact]
+    public void CurrencyExplicitMaximumLowersAgainstMinorUnitDefault()
+        => Assert.Equal("0/0", Eval(
+            "var r = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })" +
+            ".resolvedOptions(); r.minimumFractionDigits + '/' + r.maximumFractionDigits"));
+
+    [Fact]
+    public void CurrencyResolvedFractionDigitsAgreeWithFormatting()
+        => Assert.Equal("¥1,235,$3.00,$3", Eval(
+            "new Intl.NumberFormat('en-US', { style: 'currency', currency: 'JPY' }).format(1234.5) + ',' +" +
+            "new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(3) + ',' +" +
+            "new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(3)"));
+
+    [Fact]
+    public void DecimalFractionDigitsUnchanged()
+        => Assert.Equal("0/3,2/3", Eval(
+            "var a = new Intl.NumberFormat('en').resolvedOptions();" +
+            "var b = new Intl.NumberFormat('en', { minimumFractionDigits: 2 }).resolvedOptions();" +
+            "a.minimumFractionDigits + '/' + a.maximumFractionDigits + ',' +" +
+            "b.minimumFractionDigits + '/' + b.maximumFractionDigits"));
 }
