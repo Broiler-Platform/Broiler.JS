@@ -99,11 +99,6 @@ internal static class BuiltInsAssemblyInitializer
         // Compiler can build array expression trees without a direct reference.
         JSArrayBuilder.Initialize(typeof(JSArray));
 
-        // Wire factory delegate for Intl date formatting so JSDatePrototype
-        // does not directly reference JSIntlDateTimeFormat.
-        JSDate.IntlDateFormatter = static (culture, value, options) =>
-            JSIntlDateTimeFormat.Get(culture).Format(value, options);
-
         // Wire factory delegates for JSDecimal so Core/Compiler can create
         // and inspect decimal values without referencing the concrete type.
         JSValue.CreateDecimalFactory = static v => new JSDecimal(v);

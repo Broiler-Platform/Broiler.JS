@@ -4973,6 +4973,60 @@ public class JSIntlDateTimeFormat : JSObject
         return merged;
     }
 
+    private static readonly string[] DateComponentKeys = { "weekday", "year", "month", "day" };
+    private static readonly string[] TimeComponentKeys =
+        { "dayPeriod", "hour", "minute", "second", "fractionalSecondDigits" };
+
+    // ToDateTimeOptions (ECMA-402 §11.5.1.1), parameterised by the <paramref name="required"/> and
+    // <paramref name="defaults"/> fields ("date" / "time" / "all" / "any"). Date.prototype's legacy
+    // toLocaleString / toLocaleDateString / toLocaleTimeString construct an Intl.DateTimeFormat with
+    // ToDateTimeOptions(options, "any"|"date"|"time", "all"|"date"|"time") respectively, which is why
+    // their default output (and their option validation) must match Intl.DateTimeFormat exactly.
+    // Returns a fresh options object carrying the supplied options' properties plus the defaulted
+    // numeric components; throws a TypeError for the date+timeStyle / time+dateStyle conflicts.
+    public static JSValue ToDateTimeOptions(JSValue options, string required, string defaults)
+    {
+        var source = options.IsUndefined ? null : options as JSObject;
+
+        var needDefaults = true;
+        if (source != null)
+        {
+            if (required is "date" or "any")
+                foreach (var name in DateComponentKeys)
+                    if (!source[KeyStrings.GetOrCreate(name)].IsUndefined) needDefaults = false;
+            if (required is "time" or "any")
+                foreach (var name in TimeComponentKeys)
+                    if (!source[KeyStrings.GetOrCreate(name)].IsUndefined) needDefaults = false;
+
+            var hasDateStyle = !source[DateStyleKey].IsUndefined;
+            var hasTimeStyle = !source[TimeStyleKey].IsUndefined;
+            if (required == "date" && hasTimeStyle)
+                throw JSEngine.NewTypeError("Intl.DateTimeFormat: timeStyle may not be used with a date-only operation");
+            if (required == "time" && hasDateStyle)
+                throw JSEngine.NewTypeError("Intl.DateTimeFormat: dateStyle may not be used with a time-only operation");
+            if (hasDateStyle || hasTimeStyle)
+                needDefaults = false;
+        }
+
+        var merged = new JSObject();
+        if (source != null)
+            foreach (var name in DateTimeFormatOptionKeys)
+            {
+                var key = KeyStrings.GetOrCreate(name);
+                var v = source[key];
+                if (!v.IsUndefined) merged[key] = v;
+            }
+
+        if (needDefaults && defaults is "date" or "all")
+            foreach (var name in new[] { "year", "month", "day" })
+                merged[KeyStrings.GetOrCreate(name)] = JSValue.CreateString("numeric");
+        if (needDefaults && defaults is "time" or "all")
+            foreach (var name in new[] { "hour", "minute", "second" })
+                merged[KeyStrings.GetOrCreate(name)] = JSValue.CreateString("numeric");
+
+        return merged;
+    }
+
     // The per-type formatting metadata: supported fields, default fields, an identity for same-type
     // range checks, the calendar, and the wall-clock (or zone-projected) Fields.
     private readonly struct TemporalMeta

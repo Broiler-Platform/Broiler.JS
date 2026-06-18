@@ -172,4 +172,66 @@ public class Issue840Tests
     [Fact]
     public void DateOnlyExpandedFormParsesAsUtc()
         => Assert.Equal("-62183116800000", Eval("Date.parse('-000001-07-01')"));
+
+    // ---- Problems 49/85: Date.prototype.toLocale* match Intl.DateTimeFormat ----
+    //
+    // §21.4.4.39/41/42 specify that these methods construct an Intl.DateTimeFormat with
+    // ToDateTimeOptions(options, required, defaults) — "any"/"all", "date"/"date", "time"/"time"
+    // respectively — and format through it. They must therefore produce the same output (Problem
+    // 49) and throw the same exceptions (Problem 85) as Intl.DateTimeFormat. The engine's .NET
+    // fast path returned the .NET "F"/"D"/"T" rendering for the no-options case and routed
+    // toLocaleDateString/toLocaleTimeString options through a path that skipped the constructor's
+    // option validation. All three now route through Intl.DateTimeFormat.
+
+    [Theory]
+    // toLocaleString → ToDateTimeOptions(_, "any", "all"): full date + time.
+    [InlineData("d.toLocaleString('en-US')",
+        "new Intl.DateTimeFormat('en-US',{year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric'}).format(d)")]
+    [InlineData("d.toLocaleString()",
+        "new Intl.DateTimeFormat(undefined,{year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric'}).format(d)")]
+    [InlineData("d.toLocaleString('en-US',{hour12:false})",
+        "new Intl.DateTimeFormat('en-US',{year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric',hour12:false}).format(d)")]
+    // toLocaleDateString → ToDateTimeOptions(_, "date", "date").
+    [InlineData("d.toLocaleDateString('en-US')",
+        "new Intl.DateTimeFormat('en-US',{year:'numeric',month:'numeric',day:'numeric'}).format(d)")]
+    [InlineData("d.toLocaleDateString('en-US',{month:'long',day:'numeric'})",
+        "new Intl.DateTimeFormat('en-US',{month:'long',day:'numeric'}).format(d)")]
+    // toLocaleTimeString → ToDateTimeOptions(_, "time", "time").
+    [InlineData("d.toLocaleTimeString('en-US')",
+        "new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'numeric',second:'numeric'}).format(d)")]
+    public void ToLocaleMethodsMatchDateTimeFormat(string method, string reference)
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            "  var d = new Date(Date.UTC(1989, 10, 9, 17, 57, 3));" +
+            $"  return ({method}) === ({reference});" +
+            "})()"));
+
+    [Theory]
+    [InlineData("toLocaleString")]
+    [InlineData("toLocaleDateString")]
+    [InlineData("toLocaleTimeString")]
+    public void ToLocaleMethodsThrowRangeErrorForInvalidOption(string method)
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            $"  try {{ new Date(0).{method}('en', {{ localeMatcher: null }}); return false; }}" +
+            "  catch (e) { return e instanceof RangeError; }" +
+            "})()"));
+
+    [Theory]
+    [InlineData("toLocaleString")]
+    [InlineData("toLocaleDateString")]
+    [InlineData("toLocaleTimeString")]
+    public void ToLocaleMethodsThrowTypeErrorForNullLocale(string method)
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            $"  try {{ new Date(0).{method}(null); return false; }}" +
+            "  catch (e) { return e instanceof TypeError; }" +
+            "})()"));
+
+    [Theory]
+    [InlineData("toLocaleString")]
+    [InlineData("toLocaleDateString")]
+    [InlineData("toLocaleTimeString")]
+    public void ToLocaleMethodsReturnInvalidDateForNaN(string method)
+        => Assert.Equal("Invalid Date", Eval($"new Date(NaN).{method}()"));
 }

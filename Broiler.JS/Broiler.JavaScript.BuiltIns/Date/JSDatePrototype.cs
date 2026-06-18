@@ -14,13 +14,6 @@ public partial class JSDate
     static long MinTime = DateTimeOffset.MinValue.ToUnixTimeMilliseconds();
     static long MaxTime = DateTimeOffset.MaxValue.ToUnixTimeMilliseconds();
 
-    /// <summary>
-    /// Factory delegate for formatting a date using Intl.DateTimeFormat.
-    /// Wired by the BuiltIns assembly via <c>[ModuleInitializer]</c>.
-    /// Signature: (CultureInfo culture, DateTimeOffset value, JSObject options) → JSValue
-    /// </summary>
-    internal static Func<CultureInfo, DateTimeOffset, JSObject, JSValue> IntlDateFormatter { get; set; }
-
     [JSExport(IsConstructor = true, Length = 7)]
     public new static JSValue Constructor(in Arguments a)
         => (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null
