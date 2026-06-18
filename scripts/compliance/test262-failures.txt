@@ -64,7 +64,6 @@ test/built-ins/AsyncFunction/AsyncFunction-is-subclass.js
 test/built-ins/AsyncIteratorPrototype/Symbol.asyncDispose/prop-desc.js
 test/built-ins/AsyncIteratorPrototype/Symbol.asyncIterator/prop-desc.js
 test/built-ins/Atomics/Symbol.toStringTag.js
-test/built-ins/Atomics/store/expected-return-value-negative-zero.js
 test/built-ins/BigInt/asUintN/arithmetic.js
 test/built-ins/BigInt/wrapper-object-ordinary-toprimitive.js
 test/built-ins/DataView/prototype/setBigInt64/index-check-before-value-conversion.js
@@ -86,19 +85,13 @@ test/built-ins/Date/prototype/setFullYear/arg-year-to-number.js
 test/built-ins/Date/prototype/toDateString/negative-year.js
 test/built-ins/Date/prototype/toString/negative-year.js
 test/built-ins/Date/prototype/toUTCString/negative-year.js
-test/built-ins/Date/prototype/valueOf/S9.4_A3_T1.js
-test/built-ins/Date/value-to-primitive-result-non-string-prim.js
 test/built-ins/Error/prototype/toString/tostring-message-throws-symbol.js
 test/built-ins/Error/prototype/toString/tostring-message-throws-toprimitive.js
 test/built-ins/FinalizationRegistry/prototype/unregister/unregister-symbol-token.js
 test/built-ins/Function/prototype/S15.3.4_A4.js
-test/built-ins/Function/prototype/arguments/prop-desc.js
-test/built-ins/Function/prototype/caller-arguments/accessor-properties.js
-test/built-ins/Function/prototype/caller/prop-desc.js
 test/built-ins/Function/prototype/toString/built-in-function-object.js
 test/built-ins/Iterator/concat/throws-typeerror-when-iterator-method-not-callable.js
 test/built-ins/Iterator/from/iterable-primitives.js
-test/built-ins/Iterator/from/result-proto.js
 test/built-ins/Iterator/prototype/Symbol.iterator/name.js
 test/built-ins/Iterator/zip/padding-iteration.js
 test/built-ins/JSON/parse/reviver-forward-modifies-object.js
@@ -135,10 +128,8 @@ test/built-ins/Number/prototype/toPrecision/exponential.js
 test/built-ins/Number/prototype/toPrecision/return-values.js
 test/built-ins/Object/S15.2.3_A3.js
 test/built-ins/Object/defineProperties/15.2.3.7-6-a-179.js
-test/built-ins/Object/defineProperties/15.2.3.7-6-a-180.js
 test/built-ins/Object/defineProperties/15.2.3.7-6-a-198.js
 test/built-ins/Object/defineProperties/15.2.3.7-6-a-203.js
-test/built-ins/Object/defineProperty/15.2.3.6-4-184.js
 test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-key-accessor.js
 test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-key-tostring.js
 test/built-ins/Object/fromEntries/iterator-closed-for-throwing-entry-value-accessor.js
@@ -300,7 +291,6 @@ test/built-ins/Temporal/ZonedDateTime/prototype/until/round-cross-unit-boundary.
 test/built-ins/Temporal/ZonedDateTime/prototype/with/minimum-instant-with-one-hour-offset.js
 test/built-ins/Temporal/ZonedDateTime/prototype/with/options-read-before-algorithmic-validation.js
 test/built-ins/Temporal/ZonedDateTime/prototype/with/order-of-operations.js
-test/built-ins/ThrowTypeError/unique-per-realm-function-proto.js
 test/built-ins/TypedArray/prototype/copyWithin/BigInt/non-negative-out-of-bounds-end.js
 test/built-ins/TypedArray/prototype/copyWithin/BigInt/undefined-end.js
 test/built-ins/TypedArray/prototype/copyWithin/coerced-target-start-end-shrink.js
@@ -319,9 +309,6 @@ test/built-ins/TypedArray/prototype/join/separator-tostring-once-after-resized.j
 test/built-ins/TypedArray/prototype/lastIndexOf/BigInt/fromIndex-infinity.js
 test/built-ins/TypedArray/prototype/lastIndexOf/coerced-position-shrink.js
 test/built-ins/TypedArray/prototype/lastIndexOf/fromIndex-infinity.js
-test/built-ins/TypedArray/prototype/map/BigInt/speciesctor-get-ctor-abrupt.js
-test/built-ins/TypedArray/prototype/map/speciesctor-get-ctor-abrupt.js
-test/built-ins/TypedArray/prototype/map/speciesctor-resizable-buffer-shrink.js
 test/built-ins/TypedArray/prototype/sort/BigInt/comparefn-calls.js
 test/built-ins/TypedArray/prototype/sort/comparefn-calls.js
 test/built-ins/TypedArray/prototype/sort/stability.js
@@ -633,7 +620,6 @@ test/staging/built-ins/RegExp/escape/surrogate-pair.js
 test/staging/decorators/public-auto-accessor.js
 test/staging/explicit-resource-management/exception-handling.js
 test/staging/sm/Array/from_proxy.js
-test/staging/sm/Array/length-truncate-nonconfigurable-sparse.js
 test/staging/sm/Array/splice-species-changes-length.js
 test/staging/sm/Array/to-length.js
 test/staging/sm/Array/toLocaleString-01.js
@@ -654,10 +640,6 @@ test/staging/sm/Function/function-name-property.js
 test/staging/sm/Function/function-toString-builtin-name.js
 test/staging/sm/Function/return-finally.js
 test/staging/sm/Function/strict-arguments.js
-test/staging/sm/Iterator/from/proxy-not-wrapped.js
-test/staging/sm/Iterator/from/proxy-wrap-next.js
-test/staging/sm/Iterator/from/proxy-wrap-return.js
-test/staging/sm/Iterator/from/return-iterator-if-iterable.js
 test/staging/sm/JSON/stringify-boxed-primitives.js
 test/staging/sm/JSON/stringify-gap.js
 test/staging/sm/JSON/stringify-replacer-array-boxed-elements.js
