@@ -26,6 +26,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problem 69 (Intl.supportedValuesOf("collation")) — the collation enumeration returned an
+//   empty list even though the Collator accepts the standard CLDR collations, so a collation
+//   accepted by Collator (e.g. "big5han") was missing from supportedValuesOf. It now returns
+//   the recognised collation set (the same KnownCollations the Collator resolves against),
+//   sorted ascending and excluding the reserved "standard"/"search".
+//
 //   Problems 73, 79 (Unicode keyword canonicalization for calendar / collation) — keyword
 //   type-value aliases were not applied to the "-u-" extension during tag canonicalization, so
 //   a deprecated calendar id such as "islamicc" was kept verbatim by Intl.Locale.calendar,
@@ -440,4 +446,29 @@ public class Issue838Tests
     [Fact]
     public void LocaleCanonicalizesCollationAliasInTag()
         => Assert.Equal("phonebk", Eval("new Intl.Locale('de-u-co-phonebk').collation"));
+
+    // ---- Problem 69: Intl.supportedValuesOf("collation") ----
+
+    [Fact]
+    public void SupportedValuesOfCollationIncludesBig5han()
+        => Assert.Equal("true", Eval("String(Intl.supportedValuesOf('collation').includes('big5han'))"));
+
+    [Fact]
+    public void SupportedValuesOfCollationIsSortedAndExcludesReserved()
+        => Assert.Equal("true,false", Eval(
+            "var a = Intl.supportedValuesOf('collation');" +
+            "String(JSON.stringify(a) === JSON.stringify([...a].sort())) + ',' +" +
+            "String(a.includes('standard') || a.includes('search'))"));
+
+    [Fact]
+    public void EverySupportedCollationIsAcceptedByCollator()
+        => Assert.Equal("true", Eval(
+            "var sv = Intl.supportedValuesOf('collation'); var ok = true;" +
+            "sv.forEach(function (c) {" +
+            "  if (new Intl.Collator('en', { collation: c }).resolvedOptions().collation !== c) ok = false; });" +
+            "String(ok)"));
+
+    [Fact]
+    public void SupportedValuesOfCollationOmitsUnsupportedValue()
+        => Assert.Equal("false", Eval("String(Intl.supportedValuesOf('collation').includes('invalid'))"));
 }

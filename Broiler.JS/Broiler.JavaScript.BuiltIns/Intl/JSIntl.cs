@@ -159,6 +159,16 @@ public static class JSIntl
                     return list;
                 }
 
+                if (key == "collation")
+                {
+                    // The collations this engine recognises (the set the Collator resolves
+                    // against), excluding the reserved "standard"/"search", in ascending order.
+                    var list = JSValue.CreateArray();
+                    foreach (var co in SupportedCollationsSorted)
+                        list.AddArrayItem(JSValue.CreateString(co));
+                    return list;
+                }
+
                 if (key == "unit")
                 {
                     var list = JSValue.CreateArray();
@@ -715,6 +725,18 @@ public static class JSIntl
         "phonebk", "phonetic", "pinyin", "reformed", "searchjl", "stroke",
         "trad", "unihan", "zhuyin",
     };
+
+    // The recognised collations in ascending code-unit order, for Intl.supportedValuesOf
+    // ("collation"). Kept in sync with KnownCollations (both exclude "standard"/"search").
+    private static readonly string[] SupportedCollationsSorted = BuildSortedCollations();
+
+    private static string[] BuildSortedCollations()
+    {
+        var array = new string[KnownCollations.Count];
+        KnownCollations.CopyTo(array);
+        System.Array.Sort(array, StringComparer.Ordinal);
+        return array;
+    }
 
     private static readonly Regex UnicodeKeywordTypePattern =
         new(@"^[0-9a-z]{3,8}(?:-[0-9a-z]{3,8})*$", RegexOptions.CultureInvariant);
