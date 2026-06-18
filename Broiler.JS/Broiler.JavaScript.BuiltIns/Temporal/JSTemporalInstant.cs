@@ -292,21 +292,26 @@ public partial class JSTemporalInstant : JSObject
                 throw JSEngine.NewTypeError("Temporal.Instant.toString options must be an object or undefined");
 
             // The options are read in alphabetical order — fractionalSecondDigits,
-            // roundingMode, smallestUnit, timeZone — and every option is read before any
-            // algorithmic validation (the smallestUnit ≠ "hour" check) runs (test262
-            // Instant/prototype/toString options-read-before-algorithmic-validation).
+            // roundingMode, smallestUnit, timeZone — and EVERY option is read (its getter
+            // fired and value coerced) before any algorithmic validation runs, so a date
+            // smallestUnit such as "month" is rejected only after timeZone has been read
+            // (test262 Instant/prototype/toString options-read-before-algorithmic-validation).
             digits = TemporalRoundingOptions.GetFractionalSecondDigits(options);
             roundingMode = TemporalRoundingOptions.GetRoundingMode(options, "trunc");
 
+            // Coerce smallestUnit to a string now (firing its toString); defer the
+            // time-unit validation until after timeZone is read.
             var su = options[KeyStrings.GetOrCreate("smallestUnit")];
-            if (!su.IsUndefined)
-                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
+            var smallestUnitRaw = su.IsUndefined ? null : su.StringValue;
 
             // A timeZone option displays the instant in that zone (with its numeric offset) instead of
             // UTC; it must be a valid time-zone identifier — a bare date-time string is a RangeError.
             var tz = options[KeyStrings.GetOrCreate("timeZone")];
             if (!tz.IsUndefined)
                 timeZoneId = JSTemporalZonedDateTime.ToTimeZoneIdentifier(tz);
+
+            if (smallestUnitRaw != null)
+                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(smallestUnitRaw, allowAuto: false);
 
             if (smallestUnit == "hour")
                 throw JSEngine.NewRangeError("Temporal.Instant.toString: smallestUnit cannot be \"hour\"");

@@ -212,8 +212,13 @@ public partial class JSTemporalPlainDateTime : JSObject
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); any = true; }
 
+        // Coerce monthCode to a string now (PrepareCalendarFields); defer parsing/validating
+        // it against the calendar until after the overflow option is read, so an invalid
+        // month code is rejected only once every option getter has fired (test262
+        // .../with options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        if (!monthCodeValue.IsUndefined) { monthFromCode = MonthFromCode(monthCodeValue.ToString()); any = true; }
+        string monthCodeStr = null;
+        if (!monthCodeValue.IsUndefined) { monthCodeStr = monthCodeValue.ToString(); any = true; }
 
         var ns = Read("nanosecond", nanosecond);
         var s = Read("second", second);
@@ -224,6 +229,9 @@ public partial class JSTemporalPlainDateTime : JSObject
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires at least one field");
 
         var overflow = ReadOverflow(a.GetAt(1));
+
+        if (monthCodeStr != null)
+            monthFromCode = MonthFromCode(monthCodeStr);
 
         // Resolve month from month / monthCode (consistency checked here, after the overflow option).
         if (monthFromCode != -1)

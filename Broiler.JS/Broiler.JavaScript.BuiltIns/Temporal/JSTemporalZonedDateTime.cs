@@ -480,9 +480,11 @@ public partial class JSTemporalZonedDateTime : JSObject
 
             roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
 
+            // Coerce smallestUnit to a string now (firing its toString); defer the
+            // time-unit validation until after timeZoneName is read, so a date smallestUnit
+            // is rejected only once every option getter has fired.
             var su = o[KeyStrings.GetOrCreate("smallestUnit")];
-            if (!su.IsUndefined)
-                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
+            var smallestUnitRaw = su.IsUndefined ? null : su.StringValue;
 
             var timeZoneName = o[KeyStrings.GetOrCreate("timeZoneName")];
             if (!timeZoneName.IsUndefined)
@@ -493,6 +495,9 @@ public partial class JSTemporalZonedDateTime : JSObject
             }
 
             // Algorithmic validation runs only after every option has been read.
+            if (smallestUnitRaw != null)
+                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(smallestUnitRaw, allowAuto: false);
+
             if (smallestUnit is "hour")
                 throw JSEngine.NewRangeError("Temporal.ZonedDateTime.toString: smallestUnit cannot be \"hour\"");
         }
@@ -686,6 +691,23 @@ public partial class JSTemporalZonedDateTime : JSObject
                 throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.with: invalid offset");
         }
 
+        // Read the with() options — disambiguation, then offset — before interpreting the
+        // fields, so every option getter has fired before any field validation can throw
+        // (overflow is read third, inside PlainDateTime.With below). test262
+        // ZonedDateTime/prototype/with options-read-before-algorithmic-validation requires
+        // that e.g. an invalid monthCode is rejected only after all options are read.
+        //
+        // A non-object (and non-undefined) options bag is a TypeError, but the partial
+        // date-time fields are processed first (PlainDateTime.With raises it via ReadOverflow
+        // below), so skip the getter reads here and let that path throw — keeping
+        // `with({ day: -1 }, primitive)` a RangeError (options-wrong-type).
+        var offsetOption = "prefer";
+        if (options is JSObject || options == null || options.IsUndefined)
+        {
+            ReadDisambiguation(options); // validated; only "compatible" behaviour is applied below
+            offsetOption = ReadOffsetOption(options);
+        }
+
         // Merge the date/time fields onto the current local wall-clock datetime, reusing the
         // calendar-aware PlainDateTime.with (which rejects calendar/timeZone fields, applies the
         // overflow option and validates era / monthCode / partial era pairs).
@@ -693,9 +715,6 @@ public partial class JSTemporalZonedDateTime : JSObject
         var current = new JSTemporalPlainDateTime(l.y, l.mo, l.d, l.h, l.mi, l.s, l.ms, l.us, l.ns, calendarId,
             JSTemporalPlainDateTime.PlainDateTimePrototype);
         var updated = (JSTemporalPlainDateTime)current.With(new Arguments(JSUndefined.Value, fields, options));
-
-        var offsetOption = ReadOffsetOption(options);
-        ReadDisambiguation(options); // validated; only "compatible" behaviour is applied below
 
         var localNs = LocalNanoseconds(updated.isoYear, updated.isoMonth, updated.isoDay,
             updated.hour, updated.minute, updated.second, updated.millisecond, updated.microsecond, updated.nanosecond);
