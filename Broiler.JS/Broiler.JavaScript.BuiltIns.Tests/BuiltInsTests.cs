@@ -8147,6 +8147,34 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void TypedArray_With_Coerces_Value_Before_Copying_Elements_Match_Test262()
+    {
+        // Regression: %TypedArray%.prototype.with assigned the raw value during the
+        // copy loop, so an object value's valueOf/ToBigInt ran in the middle of the
+        // copy instead of before it. The spec coerces the value (ToNumber/ToBigInt)
+        // up front, so a valueOf that mutates the source array is observed by the
+        // copy: arr.with(1, value) returned [0,4,2] instead of [3,4,2]
+        // (test262 TypedArray/prototype/with/early-type-coercion[-bigint]).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function run(TA, three, four) {
+                var arr = new TA([0, 1, 2].map(three.k));
+                var value = { valueOf: function () { arr[0] = three.v; return four; } };
+                var withResult = Array.from(arr.with(1, value)).join(',');
+                var sourceAfter = Array.from(arr).join(',');
+                return withResult + '|' + sourceAfter;
+            }
+            var num = run(Int32Array, { k: function (x) { return x; }, v: 3 }, 4);
+            var big = run(BigInt64Array, { k: function (x) { return BigInt(x); }, v: 3n }, 4n);
+            num + ' / ' + big;
+        ");
+
+        Assert.Equal("3,4,2|3,1,2 / 3,4,2|3,1,2", result.ToString());
+    }
+
+    [Fact]
     public void RegExp_Inline_Modifier_Groups_Scope_DotAll_And_Multiline_Match_Test262()
     {
         // Regression: the '.', '^' and '$' rewrites that bridge .NET and ECMAScript
