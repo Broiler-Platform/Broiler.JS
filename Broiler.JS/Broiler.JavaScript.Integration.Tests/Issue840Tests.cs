@@ -114,4 +114,62 @@ public class Issue840Tests
     [Fact]
     public void OrdinaryDurationStillFormats()
         => Assert.Equal("true", FormatsWithoutThrowing("{ hours: 1, minutes: 30 }"));
+
+    // ---- Problems 84/86/87: parsing ISO expanded / out-of-range years ----
+    //
+    // toDateString/toString/toUTCString negative-year tests start from
+    // new Date('-000001-07-01T00:00Z'). The .NET-backed DateParser cannot represent ISO
+    // expanded (signed six-digit) years, the astronomical year 0, or years outside 1–9999, so
+    // the engine fell back to Broiler.DateTime's strict parser — which required a full
+    // "T HH:mm:ss" time component and therefore rejected the date-only and "HH:mm"-without-
+    // seconds forms (and year 0). new Date('-000001-07-01T00:00Z') was an Invalid Date, so
+    // toDateString().split(' ')[3] was undefined. The fallback now parses the full ECMAScript
+    // Date Time String Format directly.
+
+    [Fact]
+    public void ParsesExpandedNegativeYearWithMinutePrecisionZone()
+        => Assert.Equal("-0001", Eval(
+            "new Date('-000001-07-01T00:00Z').toDateString().split(' ')[3]"));
+
+    [Theory]
+    [InlineData("'-000001-07-01T00:00Z'", "-0001")]
+    [InlineData("'-000012-07-01T00:00Z'", "-0012")]
+    [InlineData("'-000123-07-01T00:00Z'", "-0123")]
+    [InlineData("'-001234-07-01T00:00Z'", "-1234")]
+    [InlineData("'-012345-07-01T00:00Z'", "-12345")]
+    public void ToDateStringSerializesParsedNegativeYears(string input, string expected)
+        => Assert.Equal(expected, Eval($"new Date({input}).toDateString().split(' ')[3]"));
+
+    [Fact]
+    public void ToStringIncludesParsedNegativeYear()
+        => Assert.Equal("-0001", Eval(
+            "new Date('-000001-07-01T00:00Z').toString().split(' ')[3]"));
+
+    [Fact]
+    public void ToUTCStringIncludesParsedNegativeYear()
+        // "Day, DD Mon -0001 …" → the year is the third space-separated token.
+        => Assert.Equal("-0001", Eval(
+            "new Date('-000001-07-01T00:00Z').toUTCString().split(' ')[3]"));
+
+    [Theory]
+    [InlineData("'+275760-09-13T00:00:00Z'", "8640000000000000")]  // maximum time value
+    [InlineData("'-271821-04-20T00:00:00Z'", "-8640000000000000")] // minimum time value
+    [InlineData("'0000-01-01'", "-62167219200000")]                // astronomical year 0
+    [InlineData("'+000000-01-01T00:00:00Z'", "-62167219200000")]
+    public void ParsesExpandedAndYearZeroBoundaries(string input, string expected)
+        => Assert.Equal(expected, Eval($"Date.parse({input})"));
+
+    [Theory]
+    [InlineData("'+275760-09-14T00:00:00Z'")] // one day past the maximum time value
+    [InlineData("'-000000-01-01'")]            // negative-zero year is invalid
+    [InlineData("'2021-13-01'")]               // month out of range
+    [InlineData("'2021-02-30'")]               // day out of range for February
+    [InlineData("'2021-02-29'")]               // not a leap year
+    [InlineData("'2021-01-01T24:00:01Z'")]     // hour 24 only valid when the rest is zero
+    public void RejectsOutOfRangeExtendedDates(string input)
+        => Assert.Equal("NaN", Eval($"String(Date.parse({input}))"));
+
+    [Fact]
+    public void DateOnlyExpandedFormParsesAsUtc()
+        => Assert.Equal("-62183116800000", Eval("Date.parse('-000001-07-01')"));
 }
