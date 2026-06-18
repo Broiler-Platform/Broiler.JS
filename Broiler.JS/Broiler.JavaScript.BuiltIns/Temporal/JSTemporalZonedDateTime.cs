@@ -227,23 +227,29 @@ public partial class JSTemporalZonedDateTime : JSObject
     internal static JSValue From(in Arguments a)
     {
         var item = a.GetAt(0);
-        // Validate the options bag (overflow / disambiguation / offset) for every input form; an
-        // invalid value is a RangeError and a Symbol a TypeError, even when the offset / disambiguation
-        // is not subsequently applied (only "compatible" / the offset field are honoured below).
-        ReadOverflow(a.GetAt(1));
-        ReadDisambiguation(a.GetAt(1));
-        var offsetOption = ReadOffsetOption(a.GetAt(1), "reject");
+        var options = a.GetAt(1);
 
+        // The options (disambiguation, offset, overflow) are read in alphabetical order
+        // and only after the input has been read/parsed: an invalid string is a RangeError
+        // *before* any option is read (test262 ZonedDateTime/from
+        // observable-get-overflow-argument-string-invalid), and a property bag's fields are
+        // read first (order-of-operations). The object/string branches read the options at
+        // the right point; for a ZonedDateTime input they are read (and validated) here.
         if (item is JSTemporalZonedDateTime zdt)
+        {
+            ReadDisambiguation(options);
+            ReadOffsetOption(options, "reject");
+            ReadOverflow(options);
             return new JSTemporalZonedDateTime(zdt.epochNanoseconds, zdt.timeZoneId, zdt.calendarId, ZonedDateTimePrototype);
+        }
 
         if (item.IsString)
-            return ParseZonedDateTimeString(item.ToString(), offsetOption);
+            return ParseZonedDateTimeString(item.ToString(), options);
 
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime.from: invalid value");
 
-        return FromPropertyBag(obj, a.GetAt(1));
+        return FromPropertyBag(obj, options);
     }
 
     [JSExport("compare", Length = 2)]
@@ -1779,9 +1785,23 @@ public partial class JSTemporalZonedDateTime : JSObject
             timeZoneId = CanonicalizeTimeZone(tzValue.ToString());
         }
 
+        // After all the bag's fields are read, the options are read in alphabetical order —
+        // disambiguation, offset, overflow — and only then is the wall-clock date-time
+        // interpreted with the overflow option (test262 ZonedDateTime/from
+        // order-of-operations / options-read-before-algorithmic-validation). The
+        // overflowReader runs at ToTemporalDateTime's overflow point (after the fields).
+        var offsetOption = "reject";
+        string ReadOptionsReturningOverflow()
+        {
+            ReadDisambiguation(options);                  // disambiguation (validated)
+            offsetOption = ReadOffsetOption(options, "reject");
+            return ReadOverflow(options);                 // overflow
+        }
+
         // Resolve the wall-clock date-time by reusing Temporal.PlainDateTime's property-bag
-        // resolution (overflow option, non-Gregorian calendars), with offset/timeZone read inline.
-        var pdt = (JSTemporalPlainDateTime)JSTemporalPlainDateTime.ToTemporalDateTime(obj, options, ReadOffset, ReadTimeZone);
+        // resolution (non-Gregorian calendars), with offset/timeZone read inline.
+        var pdt = (JSTemporalPlainDateTime)JSTemporalPlainDateTime.ToTemporalDateTime(
+            obj, options, ReadOffset, ReadTimeZone, ReadOptionsReturningOverflow);
 
         var localNs = LocalNanoseconds(pdt.isoYear, pdt.isoMonth, pdt.isoDay,
             pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond);
@@ -1796,7 +1816,7 @@ public partial class JSTemporalZonedDateTime : JSObject
             // InterpretISODateTimeOffset: the explicit offset is honoured verbatim only for "use";
             // "ignore" drops it; "prefer"/"reject" (the latter is the default for from) require it to be
             // one of the zone's offsets for the local time — a mismatch is a RangeError under "reject".
-            var offsetOption = ReadOffsetOption(options, "reject");
+            // offsetOption was already read (in alphabetical order with the other options) above.
             if (offsetOption == "use")
                 offsetNs = explicitOffset;
             else if (offsetOption == "ignore")
@@ -1860,7 +1880,11 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     private static readonly Regex ZonedTrailingAnnotation = new(@"\[(!?)([^\]]*)\]$", RegexOptions.CultureInvariant);
 
-    private static JSValue ParseZonedDateTimeString(string text, string offsetOption = "reject")
+    // `options` (ZonedDateTime.from) is read *after* the string has been fully parsed and
+    // validated — an invalid string is a RangeError before any option getter runs (test262
+    // ZonedDateTime/from observable-get-overflow-argument-string-invalid). When null (internal
+    // callers) no options are read and the offset behaviour defaults to "reject".
+    private static JSValue ParseZonedDateTimeString(string text, JSValue options = null)
     {
         // Validate the trailing annotations (multiple/critical calendar, malformed key=value, critical
         // unknown key, sub-minute offset annotation) before decomposing them.
@@ -1928,11 +1952,14 @@ public partial class JSTemporalZonedDateTime : JSObject
         // instant, not midnight-with-disambiguation.
         var hasTime = match.Groups["h"].Success;
 
-        long offsetNs;
         var hasZ = match.Groups["z"].Success;
         var hasNumericOffset = match.Groups["off"].Success;
-        if (hasZ) offsetNs = 0;
-        else if (hasNumericOffset)
+
+        // Parse and validate the explicit numeric offset (if any) — an invalid offset string
+        // is a RangeError here, before any option getter runs.
+        long explicitOffset = 0;
+        var matchMinutes = false;
+        if (hasNumericOffset)
         {
             // The offset must use consistent separators (e.g. "+00:0000" mixes ':' with bare digits).
             if (!TemporalIsoString.IsStrictOffset(match.Groups["off"].Value))
@@ -1946,11 +1973,26 @@ public partial class JSTemporalZonedDateTime : JSObject
                 throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
             var offsetFractionNs = match.Groups["of"].Success
                 ? long.Parse(match.Groups["of"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture) : 0L;
-            var explicitOffset = (long)sign * ((long)(oh * 3600 + om * 60 + os) * 1_000_000_000 + offsetFractionNs);
+            explicitOffset = (long)sign * ((long)(oh * 3600 + om * 60 + os) * 1_000_000_000 + offsetFractionNs);
             // An offset string carrying a seconds (or fractional-seconds) component must match a
             // candidate exactly; one with only hours/minutes precision uses match-minutes rounding.
-            var matchMinutes = !match.Groups["os"].Success && !match.Groups["of"].Success;
+            matchMinutes = !match.Groups["os"].Success && !match.Groups["of"].Success;
+        }
 
+        // The string is now fully parsed and validated; read the options (disambiguation,
+        // offset, overflow) in alphabetical order before resolving the offset.
+        var offsetOption = "reject";
+        if (options != null)
+        {
+            ReadDisambiguation(options);
+            offsetOption = ReadOffsetOption(options, "reject");
+            ReadOverflow(options);
+        }
+
+        long offsetNs;
+        if (hasZ) offsetNs = 0;
+        else if (hasNumericOffset)
+        {
             // InterpretISODateTimeOffset (offsetBehaviour "option"): the explicit offset is honoured
             // verbatim only for "use"; "ignore" drops it for the zone's own offset; "prefer"/"reject"
             // require it to be one of the zone's offsets for the local time — a mismatch is a

@@ -857,8 +857,12 @@ public partial class JSTemporalPlainDateTime : JSObject
     // (between nanosecond and second) and `timeZone` (between second and year). The two optional
     // callbacks let it read those at their correct positions in this single pass (#818 Problem 7),
     // so the property-access order matches PrepareCalendarFields exactly.
+    // overflowReader (ZonedDateTime.from) replaces the GetTemporalOverflowOption read at
+    // the end of the property-bag pass, so the caller can read the disambiguation / offset
+    // / overflow options together at that point (after all the bag's fields). When null,
+    // overflow is read directly.
     internal static JSValue ToTemporalDateTime(JSValue item, JSValue options,
-        Action afterNanosecond = null, Action afterSecond = null)
+        Action afterNanosecond = null, Action afterSecond = null, Func<string> overflowReader = null)
     {
         if (item is JSTemporalPlainDateTime dt)
         {
@@ -890,7 +894,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         // before the wall-clock time is attached.
         if (TemporalCalendarMath.IsNonIso(calendarId))
         {
-            var nonIsoOverflow = ReadOverflow(options);
+            var nonIsoOverflow = overflowReader != null ? overflowReader() : ReadOverflow(options);
             var (cy, cm, cd) = TemporalNonIso.ToIsoFromBag(obj, calendarId, nonIsoOverflow, "Temporal.PlainDateTime");
             var nh = Field("hour"); var nmi = Field("minute"); var nsc = Field("second");
             var nms = Field("millisecond"); var nus = Field("microsecond"); var nns = Field("nanosecond");
@@ -958,7 +962,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime: missing month / monthCode");
 
-        var overflow = ReadOverflow(options);
+        var overflow = overflowReader != null ? overflowReader() : ReadOverflow(options);
 
         var isoYear = TemporalCalendar.ResolveIsoYear(calendarId,
             hasYear, yearInt, hasEra, eraStr, hasEraYear, eraYearInt);

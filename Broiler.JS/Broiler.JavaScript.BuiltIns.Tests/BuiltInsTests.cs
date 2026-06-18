@@ -8147,6 +8147,48 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Temporal_ZonedDateTime_From_Reads_Options_After_Input_Match_Test262()
+    {
+        // Regression: Temporal.ZonedDateTime.from read the disambiguation/offset/overflow
+        // options up front (before the property bag's fields or the string parse) and read
+        // overflow twice. The spec reads the input first, then the options in alphabetical
+        // order (disambiguation, offset, overflow) once each — and for a string the parse
+        // runs first, so an invalid string throws before any option getter (test262
+        // ZonedDateTime/from order-of-operations and observable-get-overflow-argument-*).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function observeOptions(vals) {
+                var log = [], o = {};
+                Object.keys(vals).forEach(function (k) {
+                    Object.defineProperty(o, k, { enumerable: true, get: function () {
+                        log.push(k);
+                        return { toString: function () { return vals[k]; } };
+                    }});
+                });
+                return { o: o, log: log };
+            }
+            var bag = { year: 2020, month: 6, day: 15, hour: 9, timeZone: 'UTC' };
+
+            var objOpts = observeOptions({ disambiguation: 'compatible', offset: 'use', overflow: 'constrain' });
+            Temporal.ZonedDateTime.from(bag, objOpts.o);
+
+            var strOpts = observeOptions({ disambiguation: 'compatible', offset: 'use', overflow: 'constrain' });
+            Temporal.ZonedDateTime.from('2020-06-15T09:00:00+00:00[UTC]', strOpts.o);
+
+            var badOpts = observeOptions({ disambiguation: 'compatible', offset: 'use', overflow: 'constrain' });
+            try { Temporal.ZonedDateTime.from('not-a-date', badOpts.o); } catch (e) { }
+
+            'obj=' + objOpts.log.join(',') + ' | str=' + strOpts.log.join(',') + ' | bad=[' + badOpts.log.join(',') + ']';
+        ");
+
+        Assert.Equal(
+            "obj=disambiguation,offset,overflow | str=disambiguation,offset,overflow | bad=[]",
+            result.ToString());
+    }
+
+    [Fact]
     public void Temporal_Duration_Total_And_Compare_Read_RelativeTo_Correctly_Match_Test262()
     {
         // Regression: Temporal.Duration.prototype.total read the unit option before
