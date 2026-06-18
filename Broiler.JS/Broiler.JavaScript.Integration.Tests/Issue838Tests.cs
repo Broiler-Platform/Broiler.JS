@@ -26,6 +26,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   String.prototype.replace / replaceAll $-substitution for a string searchValue — the
+//   non-functional replacement of a string (non-RegExp) searchValue was inserted verbatim,
+//   skipping GetSubstitution (§22.1.3.18.1), so "$$", "$&", "$`" and "$'" were emitted
+//   literally (e.g. 'abc'.replace('b', '[$&]') returned "a[$&]c" instead of "a[b]c"). Both
+//   methods now run the template through GetSubstitution; with no captures, $n and $<name>
+//   correctly remain literal. (Related to the issue's replace failures; not one of the
+//   numbered problems but the same String/replace compliance area.)
+//
 //   Problem 35 (Array.prototype[@@unscopables] should not include "with") — the change-
 //   array-by-copy proposal added toReversed/toSorted/toSpliced to the @@unscopables list but
 //   deliberately NOT "with" ("with" is a reserved word that can never name a binding shadowed
@@ -196,4 +204,41 @@ public class Issue838Tests
     public void ArrayWithMethodItselfStillExistsAndWorks()
         => Assert.Equal("function,1,9,3", Eval(
             "(typeof Array.prototype.with) + ',' + [1, 2, 3].with(1, 9).join(',')"));
+
+    // ---- String.prototype.replace / replaceAll $-substitution for a string searchValue ----
+
+    [Fact]
+    public void ReplaceStringSearchExpandsMatchedSubstitution()
+        => Assert.Equal("a[b]c", Eval("'abc'.replace('b', '[$&]')"));
+
+    [Fact]
+    public void ReplaceStringSearchExpandsDollarDollar()
+        => Assert.Equal("a$c", Eval("'abc'.replace('b', '$$')"));
+
+    [Fact]
+    public void ReplaceStringSearchExpandsPrecedingAndFollowing()
+        => Assert.Equal("ab[ab]d,a[cd]cd", Eval(
+            "'abcd'.replace('c', '[$`]') + ',' + \"abcd\".replace('b', \"[$']\")"));
+
+    [Fact]
+    public void ReplaceStringSearchLeavesCaptureAndNamedPatternsLiteral()
+        => Assert.Equal("a$1c,a$<x>c,a$zc,ax$c", Eval(
+            "'abc'.replace('b','$1') + ',' + 'abc'.replace('b','$<x>') + ',' +" +
+            "'abc'.replace('b','$z') + ',' + 'abc'.replace('b','x$')"));
+
+    [Fact]
+    public void ReplaceStringSearchFunctionalReplacementStillWorks()
+        => Assert.Equal("a[b]c", Eval("'abc'.replace('b', function (m) { return '[' + m + ']'; })"));
+
+    [Fact]
+    public void ReplaceAllStringSearchExpandsSubstitution()
+        => Assert.Equal("a[-]b[-]c", Eval("'a-b-c'.replaceAll('-', '[$&]')"));
+
+    [Fact]
+    public void ReplaceAllStringSearchExpandsPrecedingPerMatch()
+        => Assert.Equal("a[a]a[aba]", Eval("'abab'.replaceAll('b', '[$`]')"));
+
+    [Fact]
+    public void ReplaceAllEmptySearchExpandsSubstitutionAtEachPosition()
+        => Assert.Equal("--a--b--", Eval("'ab'.replaceAll('', '-$&-')"));
 }

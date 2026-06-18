@@ -46,6 +46,53 @@ public partial class JSString
         return builtinMatcher.InvokeFunction(new Arguments(created, @this));
     }
 
+    // GetSubstitution (ECMA-262 §22.1.3.18.1) for a string searchValue: there are no captures
+    // and no named captures, so only $$, $&, $` and $' are expanded; $n and $<name> have no
+    // corresponding capture and are therefore emitted verbatim (the leading '$' is literal).
+    private static string GetSubstitution(string matched, string str, int position, string replacement)
+    {
+        if (replacement.IndexOf('$') < 0)
+            return replacement;
+
+        var result = new StringBuilder(replacement.Length);
+        for (int i = 0; i < replacement.Length; i++)
+        {
+            var c = replacement[i];
+            if (c != '$' || i + 1 >= replacement.Length)
+            {
+                result.Append(c);
+                continue;
+            }
+
+            switch (replacement[i + 1])
+            {
+                case '$': // $$ -> $
+                    result.Append('$');
+                    i++;
+                    break;
+                case '&': // $& -> the matched substring
+                    result.Append(matched);
+                    i++;
+                    break;
+                case '`': // $` -> the portion of the string before the match
+                    result.Append(str, 0, position);
+                    i++;
+                    break;
+                case '\'': // $' -> the portion of the string after the match
+                    var tail = position + matched.Length;
+                    result.Append(str, tail, str.Length - tail);
+                    i++;
+                    break;
+                default:
+                    // $n / $<name> with no captures: not a substitution, keep '$' literal.
+                    result.Append('$');
+                    break;
+            }
+        }
+
+        return result.ToString();
+    }
+
     [JSPrototypeMethod]
     [JSExport("replace", Length = 2)]
     internal static JSValue Replace(in Arguments a)
@@ -76,12 +123,14 @@ public partial class JSString
 
         int end = start + substr.Length;
 
-        // A functional replacement is called with (matched, position, string) — and
-        // only when there is a match; a non-functional replacement is used verbatim.
+        // A functional replacement is called with (matched, position, string) — and only when
+        // there is a match; a non-functional replacement is a template processed through
+        // GetSubstitution (so $$, $&, $` and $' are expanded). Per §22.1.3.19, ToString of a
+        // non-functional replaceValue happens before the substitution.
         var replaceText = s.IsFunction
             ? s.InvokeFunction(new Arguments(JSUndefined.Value,
                 JSValue.CreateString(substr), JSValue.CreateNumber(start), JSValue.CreateString(@this))).StringValue
-            : s.StringValue;
+            : GetSubstitution(substr, @this, start, s.StringValue);
 
         // Replace only the first match.
         var result = new StringBuilder(@this.Length + (replaceText.Length - substr.Length));
@@ -134,7 +183,7 @@ public partial class JSString
         string GetReplacement(int position)
             => functionalReplace
                 ? replaceValue.InvokeFunction(new Arguments(JSUndefined.Value, JSValue.CreateString(searchString), JSValue.CreateNumber(position), source)).StringValue
-                : replacementText!;
+                : GetSubstitution(searchString, @this, position, replacementText!);
 
         if (searchString.Length == 0)
         {
