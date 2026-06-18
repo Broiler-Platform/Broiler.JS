@@ -26,6 +26,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problems 52, 53 (Intl.Locale.prototype.getTextInfo / getWeekInfo returned empty objects)
+//   — both methods were stubs returning {}, so Object.keys(...) was empty. getTextInfo now
+//   returns { direction } ("ltr"/"rtl", chosen from the locale's script, else its language);
+//   getWeekInfo now returns { firstDay, weekend, minimalDays } in spec key order (§1.4.x of
+//   the Intl Locale Info additions). CLDR's full per-region tables are not bundled, so the
+//   values are reasonable defaults (ISO Monday=1..Sunday=7, Saturday+Sunday weekend, one
+//   minimal day) with a Sunday-first region table; the property shapes match the spec.
+//
 //   String.prototype.replace / replaceAll $-substitution for a string searchValue — the
 //   non-functional replacement of a string (non-RegExp) searchValue was inserted verbatim,
 //   skipping GetSubstitution (§22.1.3.18.1), so "$$", "$&", "$`" and "$'" were emitted
@@ -241,4 +249,48 @@ public class Issue838Tests
     [Fact]
     public void ReplaceAllEmptySearchExpandsSubstitutionAtEachPosition()
         => Assert.Equal("--a--b--", Eval("'ab'.replaceAll('', '-$&-')"));
+
+    // ---- Problem 52: Intl.Locale.prototype.getTextInfo ----
+
+    [Fact]
+    public void GetTextInfoReturnsObjectWithDirectionKey()
+        => Assert.Equal("direction", Eval("Object.keys(new Intl.Locale('en').getTextInfo()).join(',')"));
+
+    [Fact]
+    public void GetTextInfoDirectionIsLtrForLatinAndRtlForArabicHebrew()
+        => Assert.Equal("ltr,rtl,rtl", Eval(
+            "new Intl.Locale('en').getTextInfo().direction + ',' +" +
+            "new Intl.Locale('ar').getTextInfo().direction + ',' +" +
+            "new Intl.Locale('he').getTextInfo().direction"));
+
+    [Fact]
+    public void GetTextInfoExplicitScriptOverridesLanguageDirection()
+        => Assert.Equal("rtl,ltr", Eval(
+            "new Intl.Locale('az-Arab').getTextInfo().direction + ',' +" +
+            "new Intl.Locale('ar-Latn').getTextInfo().direction"));
+
+    [Fact]
+    public void GetTextInfoDirectionIsAnOrdinaryDataProperty()
+        => Assert.Equal(
+            "{\"value\":\"ltr\",\"writable\":true,\"enumerable\":true,\"configurable\":true}",
+            Eval("JSON.stringify(Object.getOwnPropertyDescriptor(new Intl.Locale('en').getTextInfo(), 'direction'))"));
+
+    // ---- Problem 53: Intl.Locale.prototype.getWeekInfo ----
+
+    [Fact]
+    public void GetWeekInfoReturnsSpecKeysInOrder()
+        => Assert.Equal("firstDay,weekend,minimalDays", Eval(
+            "Object.keys(new Intl.Locale('en-US').getWeekInfo()).join(',')"));
+
+    [Fact]
+    public void GetWeekInfoFirstDayIsNumberAndWeekendIsArray()
+        => Assert.Equal("number,true,number", Eval(
+            "var w = new Intl.Locale('en-US').getWeekInfo();" +
+            "(typeof w.firstDay) + ',' + Array.isArray(w.weekend) + ',' + (typeof w.minimalDays)"));
+
+    [Fact]
+    public void GetWeekInfoFirstDayIsSundayForUsAndMondayForGermany()
+        => Assert.Equal("7,1", Eval(
+            "new Intl.Locale('en-US').getWeekInfo().firstDay + ',' +" +
+            "new Intl.Locale('de-DE').getWeekInfo().firstDay"));
 }

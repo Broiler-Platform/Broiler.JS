@@ -2900,6 +2900,30 @@ public sealed class JSIntlLocale : JSObject
         ["BR"] = "America/Sao_Paulo", ["MX"] = "America/Mexico_City",
     };
 
+    // Scripts written right-to-left (ISO 15924 codes), used by getTextInfo to report the
+    // locale's character direction. Not exhaustive, but covers the scripts CLDR marks RTL.
+    private static readonly HashSet<string> RightToLeftScripts = new(StringComparer.Ordinal)
+    {
+        "Adlm", "Arab", "Aran", "Hebr", "Mand", "Mani", "Mend", "Merc", "Mero", "Narb",
+        "Nbat", "Nkoo", "Orkh", "Palm", "Phli", "Phlp", "Phnx", "Prti", "Rohg", "Samr",
+        "Sarb", "Sogd", "Sogo", "Syrc", "Thaa", "Yezi",
+    };
+
+    // Languages whose default script is right-to-left, consulted when the tag carries no
+    // explicit script subtag (e.g. "ar", "he", "fa").
+    private static readonly HashSet<string> RightToLeftLanguages = new(StringComparer.Ordinal)
+    {
+        "ar", "arc", "ckb", "dv", "fa", "glk", "he", "ku", "mzn", "nqo", "prs",
+        "ps", "sd", "syr", "ug", "ur", "yi",
+    };
+
+    // Regions where the week conventionally starts on Sunday (firstDay 7); everywhere else
+    // defaults to Monday (firstDay 1). An approximation sufficient for sensible defaults.
+    private static readonly HashSet<string> SundayFirstRegions = new(StringComparer.Ordinal)
+    {
+        "US", "CA", "AU", "BR", "CN", "JP", "KR", "IL", "IN", "MX", "PH", "ZA", "HK", "TW",
+    };
+
     public JSIntlLocale(string tag = "und") : base(CurrentPrototype()) => this.tag = tag;
 
     // The [[Locale]] internal slot: the canonical language tag. Used by
@@ -3029,8 +3053,15 @@ public sealed class JSIntlLocale : JSObject
 
     public static JSValue GetTextInfoPrototype(in Arguments a)
     {
-        RequireLocale(in a, "getTextInfo");
-        return new JSObject();
+        var locale = RequireLocale(in a, "getTextInfo");
+
+        // §1.4.x getTextInfo: an object with a single "direction" property ("ltr" / "rtl").
+        var info = new JSObject();
+        info.FastAddValue(
+            KeyStrings.GetOrCreate("direction"),
+            JSValue.CreateString(locale.IsRightToLeft() ? "rtl" : "ltr"),
+            JSPropertyAttributes.EnumerableConfigurableValue);
+        return info;
     }
 
     public static JSValue GetTimeZonesPrototype(in Arguments a)
@@ -3052,8 +3083,27 @@ public sealed class JSIntlLocale : JSObject
 
     public static JSValue GetWeekInfoPrototype(in Arguments a)
     {
-        RequireLocale(in a, "getWeekInfo");
-        return new JSObject();
+        var locale = RequireLocale(in a, "getWeekInfo");
+
+        // §1.4.x getWeekInfo: { firstDay, weekend, minimalDays } in that key order. Day numbers
+        // follow ISO-8601 (Monday = 1 … Sunday = 7). CLDR's full per-region data is not bundled,
+        // so this uses reasonable defaults (Saturday+Sunday weekend, one minimal day) with a
+        // Sunday-first region table.
+        var region = locale.GetRegion();
+        var firstDay = region != null && SundayFirstRegions.Contains(region) ? 7 : 1;
+
+        var weekend = JSValue.CreateArray();
+        weekend.AddArrayItem(JSValue.CreateNumber(6)); // Saturday
+        weekend.AddArrayItem(JSValue.CreateNumber(7)); // Sunday
+
+        var info = new JSObject();
+        info.FastAddValue(KeyStrings.GetOrCreate("firstDay"),
+            JSValue.CreateNumber(firstDay), JSPropertyAttributes.EnumerableConfigurableValue);
+        info.FastAddValue(KeyStrings.GetOrCreate("weekend"),
+            weekend, JSPropertyAttributes.EnumerableConfigurableValue);
+        info.FastAddValue(KeyStrings.GetOrCreate("minimalDays"),
+            JSValue.CreateNumber(1), JSPropertyAttributes.EnumerableConfigurableValue);
+        return info;
     }
 
     public static JSValue ToStringPrototype(in Arguments a)
@@ -3135,6 +3185,16 @@ public sealed class JSIntlLocale : JSObject
         if (parts.Length > 1 && parts[1].Length == 4 && IsAllAlpha(parts[1]))
             return Titlecase(parts[1]);
         return null;
+    }
+
+    // Character direction for getTextInfo: an explicit script subtag wins, otherwise fall
+    // back to the language's default direction.
+    private bool IsRightToLeft()
+    {
+        var script = GetScript();
+        return script != null
+            ? RightToLeftScripts.Contains(script)
+            : RightToLeftLanguages.Contains(GetLanguage());
     }
 
     private string GetRegion()
