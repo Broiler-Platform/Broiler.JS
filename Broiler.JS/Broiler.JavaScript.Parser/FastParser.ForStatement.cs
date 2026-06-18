@@ -200,6 +200,12 @@ partial class FastParser
             }
             else stream.Unexpected();
 
+            // `for await` is only valid with a for-of head. A for-in head with `await` is
+            // rejected above; a C-style `for await (;;)` / `for await (init; test; update)`
+            // head reaches here with of == false and is a SyntaxError.
+            if (awaitOf && !of)
+                throw stream.Unexpected();
+
 
             // A C-style `for (using …; …; …)` / `for (await using …; …; …)` head is NOT
             // desugared into per-iteration carriers: per spec the LexicalDeclaration is

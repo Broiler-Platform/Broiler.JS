@@ -26,6 +26,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problem 68 (`for await` requires a for-of head) — the for-statement parser rejected a
+//   for-in head with `await` but accepted a C-style head (`for await (;;)`,
+//   `for await (init; test; update)`), which is a SyntaxError. The parser now rejects any
+//   `for await` head whose form is not for-of; valid `for await (... of ...)` (including a
+//   `using` binding) and an ordinary C-style `await using` declaration are unaffected.
+//
 //   Problem 49 (object rest destructuring does not read excluded keys) — `let { a, ...rest } =
 //   obj` was lowered as "copy every own enumerable property, then delete the destructured
 //   keys", so the excluded key's descriptor and value were observably read first (a Proxy
@@ -608,4 +614,43 @@ public class Issue838Tests
             "var spread = { ...{ a: 1, b: 2 } };" +
             "var { ...rest } = { a: 1, b: 2 };" +
             "JSON.stringify(spread) + ',' + JSON.stringify(rest)"));
+
+    // ---- Problem 68: `for await` is only valid with a for-of head ----
+
+    private static string SyntaxCheck(string source)
+        => "try { eval(" + Quote(source) + "); 'no-throw'; } catch (e) { e.constructor.name; }";
+
+    private static string Quote(string s) => "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+
+    [Fact]
+    public void ForAwaitWithCStyleHeadIsSyntaxError()
+        => Assert.Equal("SyntaxError", Eval(SyntaxCheck("async function* g(){ for await (;;) ; }")));
+
+    [Fact]
+    public void ForAwaitWithCStyleInitHeadIsSyntaxError()
+        => Assert.Equal("SyntaxError", Eval(SyntaxCheck("async function f(){ for await (var i=0;i<1;i++) ; }")));
+
+    [Fact]
+    public void ForAwaitWithForInHeadIsSyntaxError()
+        => Assert.Equal("SyntaxError", Eval(SyntaxCheck("async function f(){ for await (var x in {}) ; }")));
+
+    [Fact]
+    public void ForAwaitOfHeadIsStillValid()
+        => Assert.Equal("ok", Eval(
+            "try { eval('async function f(){ for await (var x of []) ; }'); 'ok'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void ForAwaitUsingOfHeadAndCStyleAwaitUsingStillValid()
+        => Assert.Equal("ok,ok", Eval(
+            "function chk(s){ try { eval(s); return 'ok'; } catch (e) { return e.constructor.name; } }" +
+            "chk('async function f(){ for await (using x of []) ; }') + ',' +" +
+            "chk('async function f(){ for (await using x = null; false;) ; }')"));
+
+    [Fact]
+    public void PlainForLoopsWithoutAwaitAreUnaffected()
+        => Assert.Equal("3,ab,6", Eval(
+            "var s=0; for (var i=0;i<3;i++) s+=i;" +
+            "var k=''; for (var x in {a:1,b:2}) k+=x;" +
+            "var t=0; for (var y of [1,2,3]) t+=y;" +
+            "s + ',' + k + ',' + t"));
 }
