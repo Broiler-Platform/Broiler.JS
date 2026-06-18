@@ -8147,6 +8147,43 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Temporal_Duration_Total_And_Compare_Read_RelativeTo_Correctly_Match_Test262()
+    {
+        // Regression: Temporal.Duration.prototype.total read the unit option before
+        // relativeTo (spec reads relativeTo first), and Temporal.Duration.compare read
+        // the relativeTo property twice (once for a presence check, once to resolve it).
+        // Each option must be read once, in spec order (test262 Duration/prototype/total
+        // order-of-operations and Duration/compare order-of-operations).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function observe(vals) {
+                var log = [], o = {};
+                Object.keys(vals).forEach(function (k) {
+                    Object.defineProperty(o, k, { enumerable: true, get: function () {
+                        log.push(k);
+                        var v = vals[k];
+                        if (typeof v === 'string') return { toString: function () { return v; } };
+                        return v;
+                    }});
+                });
+                return { o: o, log: log };
+            }
+            var d = Temporal.Duration.from({ hours: 1 });
+            var t = observe({ unit: 'hours', relativeTo: undefined });
+            d.total(t.o);
+
+            var c = observe({ relativeTo: Temporal.PlainDate.from('2000-01-01') });
+            Temporal.Duration.compare(Temporal.Duration.from({ hours: 1 }), Temporal.Duration.from({ hours: 2 }), c.o);
+
+            'total=' + t.log.join(',') + ' | compare=' + c.log.join(',');
+        ");
+
+        Assert.Equal("total=relativeTo,unit | compare=relativeTo", result.ToString());
+    }
+
+    [Fact]
     public void Temporal_PlainTime_From_And_With_Read_Fields_Before_Overflow_Match_Test262()
     {
         // Regression: Temporal.PlainTime.from / .prototype.with read the time fields in
