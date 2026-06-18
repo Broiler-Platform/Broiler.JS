@@ -28,7 +28,6 @@ test/annexB/built-ins/unescape/four-ignore-bad-u.js
 test/annexB/language/function-code/block-decl-func-skip-arguments.js
 test/annexB/language/statements/for-in/nonstrict-initializer.js
 test/built-ins/Array/of/return-abrupt-from-data-property.js
-test/built-ins/Array/prototype/Symbol.unscopables/change-array-by-copy.js
 test/built-ins/Array/prototype/concat/15.4.4.4-5-c-i-1.js
 test/built-ins/Array/prototype/concat/arg-length-exceeding-integer-limit.js
 test/built-ins/Array/prototype/concat/call-with-boolean.js
@@ -76,7 +75,6 @@ test/built-ins/DataView/prototype/setUint8/range-check-after-value-conversion.js
 test/built-ins/Date/UTC/fp-evaluation-order.js
 test/built-ins/Date/UTC/length.js
 test/built-ins/Date/UTC/no-arg.js
-test/built-ins/Date/parse/zero.js
 test/built-ins/Date/prototype/getDate/this-value-valid-date.js
 test/built-ins/Date/prototype/setFullYear/arg-year-to-number.js
 test/built-ins/Date/prototype/toDateString/negative-year.js
@@ -89,7 +87,6 @@ test/built-ins/Function/prototype/S15.3.4_A4.js
 test/built-ins/Function/prototype/toString/built-in-function-object.js
 test/built-ins/Iterator/concat/throws-typeerror-when-iterator-method-not-callable.js
 test/built-ins/Iterator/from/iterable-primitives.js
-test/built-ins/Iterator/prototype/Symbol.iterator/name.js
 test/built-ins/Iterator/zip/padding-iteration.js
 test/built-ins/JSON/parse/reviver-forward-modifies-object.js
 test/built-ins/JSON/parse/text-non-string-primitive.js
@@ -211,11 +208,6 @@ test/built-ins/String/prototype/padStart/normal-operation.js
 test/built-ins/String/prototype/padStart/observable-operations.js
 test/built-ins/String/prototype/replace/S15.5.4.11_A1_T16.js
 test/built-ins/String/prototype/replace/S15.5.4.11_A1_T17.js
-test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024-0x0024.js
-test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024-0x0026.js
-test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024-0x0027.js
-test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024-0x0060.js
-test/built-ins/String/prototype/replaceAll/getSubstitution-0x0024.js
 test/built-ins/String/prototype/search/invoke-builtin-search-searcher-undef.js
 test/built-ins/String/prototype/split/separator-tostring-error.js
 test/built-ins/String/prototype/split/this-value-tostring-error.js
@@ -316,7 +308,6 @@ test/built-ins/parseInt/S15.1.2.2_A1_T2.js
 test/built-ins/parseInt/S15.1.2.2_A2_T10_U180E.js
 test/intl402/BigInt/prototype/toLocaleString/de-DE.js
 test/intl402/BigInt/prototype/toLocaleString/en-US.js
-test/intl402/BigInt/prototype/toLocaleString/throws-same-exceptions-as-NumberFormat.js
 test/intl402/Collator/constructor-options-throwing-getters.js
 test/intl402/Collator/ignore-invalid-unicode-ext-values.js
 test/intl402/Collator/prototype/compare/canonically-equivalent-strings.js
@@ -329,11 +320,9 @@ test/intl402/Collator/test-option-numeric-and-caseFirst.js
 test/intl402/Collator/test-option-sensitivity.js
 test/intl402/Collator/test-option-usage.js
 test/intl402/Collator/unicode-ext-seq-in-private-tag.js
-test/intl402/Collator/unicode-ext-value-collation.js
 test/intl402/Collator/usage-de.js
 test/intl402/Date/prototype/returns-same-results-as-DateTimeFormat.js
 test/intl402/Date/prototype/throws-same-exceptions-as-DateTimeFormat.js
-test/intl402/DateTimeFormat/canonicalize-calendar.js
 test/intl402/DateTimeFormat/constructor-options-calendar-islamic-fallback.js
 test/intl402/DateTimeFormat/date-time-options.js
 test/intl402/DateTimeFormat/default-options-object-prototype.js
@@ -352,7 +341,6 @@ test/intl402/DateTimeFormat/prototype/formatToParts/compare-to-temporal.js
 test/intl402/DateTimeFormat/prototype/formatToParts/dangi-calendar-dates.js
 test/intl402/DateTimeFormat/prototype/formatToParts/era.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/basic.js
-test/intl402/DateTimeFormat/prototype/resolvedOptions/calendar.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-timeStyle.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/resolved-calendar-unicode-extensions-and-options.js
@@ -373,7 +361,6 @@ test/intl402/Intl/getCanonicalLocales/non-iana-canon.js
 test/intl402/Intl/getCanonicalLocales/preferred-variant.js
 test/intl402/Intl/getCanonicalLocales/transformed-ext-canonical.js
 test/intl402/Intl/getCanonicalLocales/transformed-ext-invalid.js
-test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-calendar.js
 test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-col-strength.js
 test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-measurement-system.js
 test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-region.js
@@ -381,14 +368,12 @@ test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-subdivision.js
 test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-timezone.js
 test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-yes-to-true.js
 test/intl402/Intl/supportedValuesOf/calendars-required-by-intl-era-monthcode.js
-test/intl402/Intl/supportedValuesOf/collations-accepted-by-Collator.js
 test/intl402/Intl/supportedValuesOf/invalid-key.js
 test/intl402/Intl/supportedValuesOf/numberingSystems-with-simple-digit-mappings.js
 test/intl402/Intl/supportedValuesOf/timeZones-include-non-continental.js
 test/intl402/ListFormat/prototype/formatToParts/en-us-disjunction.js
 test/intl402/Locale/constructor-apply-options-canonicalizes-twice.js
 test/intl402/Locale/constructor-non-iana-canon.js
-test/intl402/Locale/constructor-options-canonicalized.js
 test/intl402/Locale/constructor-options-firstDayOfWeek-invalid.js
 test/intl402/Locale/constructor-options-firstDayOfWeek-valid.js
 test/intl402/Locale/constructor-options-region-valid.js
@@ -400,17 +385,13 @@ test/intl402/Locale/getters.js
 test/intl402/Locale/invalid-tag-throws.js
 test/intl402/Locale/likely-subtags-grandfathered.js
 test/intl402/Locale/prototype/firstDayOfWeek/valid-options.js
-test/intl402/Locale/prototype/getTextInfo/output-object-keys.js
 test/intl402/Locale/prototype/getWeekInfo/firstDay-by-id.js
 test/intl402/Locale/prototype/getWeekInfo/firstDay-by-option.js
 test/intl402/Locale/prototype/getWeekInfo/output-object-keys.js
 test/intl402/Locale/reject-duplicate-variants-in-tlang.js
-test/intl402/Number/prototype/toLocaleString/throws-same-exceptions-as-NumberFormat.js
 test/intl402/NumberFormat/constructor-options-numberingSystem-invalid.js
 test/intl402/NumberFormat/constructor-unit.js
-test/intl402/NumberFormat/currency-code-well-formed.js
 test/intl402/NumberFormat/currency-digits-nonstandard-notation.js
-test/intl402/NumberFormat/currency-digits.js
 test/intl402/NumberFormat/prototype/format/format-fraction-digits-precision.js
 test/intl402/NumberFormat/prototype/format/format-rounding-increment-1.js
 test/intl402/NumberFormat/prototype/format/format-rounding-increment-10.js
@@ -444,7 +425,6 @@ test/intl402/NumberFormat/prototype/format/percent-formatter.js
 test/intl402/NumberFormat/prototype/format/unit-zh-TW.js
 test/intl402/NumberFormat/prototype/format/units-invalid.js
 test/intl402/NumberFormat/prototype/format/useGrouping-extended-en-IN.js
-test/intl402/NumberFormat/prototype/format/useGrouping-extended-en-US.js
 test/intl402/NumberFormat/prototype/format/value-decimal-string.js
 test/intl402/NumberFormat/prototype/formatRange/en-US.js
 test/intl402/NumberFormat/prototype/formatRange/pt-PT.js
@@ -454,7 +434,6 @@ test/intl402/NumberFormat/prototype/formatToParts/percent-en-US.js
 test/intl402/NumberFormat/prototype/formatToParts/unit-zh-TW.js
 test/intl402/NumberFormat/test-option-currency.js
 test/intl402/NumberFormat/test-option-roundingPriority-mixed-options.js
-test/intl402/NumberFormat/test-option-style.js
 test/intl402/NumberFormat/test-option-useGrouping.js
 test/intl402/PluralRules/prototype/select/notation.js
 test/intl402/PluralRules/prototype/selectRange/nan-arguments-throws.js
@@ -540,7 +519,6 @@ test/language/expressions/less-than/bigint-and-incomparable-string.js
 test/language/expressions/less-than/bigint-and-string.js
 test/language/expressions/object/accessor-name-computed-yield-expr.js
 test/language/expressions/object/computed-property-name-topropertykey-before-value-evaluation.js
-test/language/expressions/object/dstr/object-rest-proxy-gopd-not-called-on-excluded-keys.js
 test/language/expressions/right-shift/bigint.js
 test/language/expressions/tagged-template/cache-eval-inner-function.js
 test/language/expressions/tagged-template/template-object.js
@@ -583,10 +561,8 @@ test/staging/sm/Array/from_proxy.js
 test/staging/sm/Array/splice-species-changes-length.js
 test/staging/sm/Array/to-length.js
 test/staging/sm/Array/toLocaleString-01.js
-test/staging/sm/Array/unscopables.js
 test/staging/sm/Array/unshift-01.js
 test/staging/sm/Array/unshift-with-enumeration.js
-test/staging/sm/AsyncGenerators/for-await-bad-syntax.js
 test/staging/sm/AsyncGenerators/for-await-of-error.js
 test/staging/sm/BigInt/Number-conversion-rounding.js
 test/staging/sm/Date/constructor-convert-all-arguments.js
@@ -629,7 +605,6 @@ test/staging/sm/RegExp/unicode-class-negated.js
 test/staging/sm/RegExp/unicode-class-raw.js
 test/staging/sm/RegExp/unicode-ignoreCase.js
 test/staging/sm/RegExp/unicode-raw.js
-test/staging/sm/String/15.5.4.11-01.js
 test/staging/sm/String/AdvanceStringIndex.js
 test/staging/sm/String/split-order.js
 test/staging/sm/String/string-code-point-upper-lower-mapping.js
