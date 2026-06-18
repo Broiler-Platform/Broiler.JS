@@ -8392,6 +8392,39 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void ForIn_Does_Not_Visit_Properties_Added_During_Enumeration_Match_Test262()
+    {
+        // Regression: a property added to the object during for-in must not be visited
+        // (EnumerateObjectProperties snapshots the own keys). The key enumerator walked
+        // the property store live, so a property appended by the loop body was picked up.
+        // It now skips any string property that was not present when the object's
+        // enumeration began, while still skipping deleted ones (test262
+        // language/statements/for-in/order-property-added; order-enumerable-shadowed
+        // already passed via the non-enumerable shadowing fix).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var added = [];
+            var o = { p1: 'p1', p2: 'p2', p3: 'p3' };
+            for (var k in o) { if (k === 'p1') o.p4 = 'p4'; added.push(k); }
+
+            // A non-enumerable own property still shadows an inherited enumerable one.
+            var proto = { p2: 'p2' };
+            var c = Object.create(proto, {
+                p1: { value: 'p1', enumerable: true },
+                p2: { value: 'x', enumerable: false }
+            });
+            var shadowed = [];
+            for (var k2 in c) shadowed.push(k2);
+
+            added.join(',') + '|' + shadowed.join(',');
+        ");
+
+        Assert.Equal("p1,p2,p3|p1", result.ToString());
+    }
+
+    [Fact]
     public void ForIn_Continues_After_Deleting_The_Next_Property_Match_Test262()
     {
         // Regression: deleting the property that for-in is about to visit terminated
