@@ -183,8 +183,11 @@ public struct PropertySequence
         // Unlink the node from the insertion-order chain. A property that is deleted
         // and later recreated must be treated as a NEW property — placed at the END of
         // the enumeration order (OrdinaryOwnPropertyKeys), not revived in its original
-        // position. The node stays in the map but with Next reset to 0, so a later
-        // Put(key) sees Next == 0 and re-appends it at the tail.
+        // position; Put detects that via the now-empty Property and re-appends it at the
+        // tail. The node's own Next is deliberately left pointing at its old successor so
+        // an enumerator currently parked on this node (a for-in body that deletes the
+        // property it is about to visit) can still advance past it instead of stranding
+        // at a Next of 0 (test262 for-in/S12.6.4_A7_T1).
         var next = objectProperty.Next;
         if (head == key)
         {
@@ -210,7 +213,6 @@ public struct PropertySequence
             }
         }
 
-        objectProperty.Next = 0;
         property = JSProperty.Empty;
 
         return true;
@@ -259,10 +261,15 @@ public struct PropertySequence
 
         ref var @new = ref map.Put(key);
 
-        // when tail is same as key, it means last key was added twice..
-        // it should not create a loop
-        if (@new.Next == 0 && tail != key)
+        // Append at the tail when this is a brand-new binding or a deleted one being
+        // recreated — both have an empty Property here (the caller assigns it on the
+        // returned ref). A live property being updated keeps its position. `tail != key`
+        // guards against re-adding the current tail (which would create a self-loop).
+        // RemoveAt leaves a deleted node's stale Next pointing at its old successor, so
+        // reset it to 0 here now that it becomes the new tail.
+        if (@new.Property.IsEmpty && tail != key)
         {
+            @new.Next = 0;
             ref var last = ref map.GetRefOrDefault(tail, ref JSObjectProperty.Empty);
             last.Next = key;
             tail = key;

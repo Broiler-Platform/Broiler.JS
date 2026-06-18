@@ -8147,6 +8147,36 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void ForIn_Continues_After_Deleting_The_Next_Property_Match_Test262()
+    {
+        // Regression: deleting the property that for-in is about to visit terminated
+        // the enumeration early. The property store unlinked a deleted node and reset
+        // its Next pointer to 0, stranding the enumerator parked on that node (its
+        // Next no longer led to the following property). The node now keeps its
+        // forward link so the enumerator skips the deleted property and continues
+        // (test262 language/statements/for-in/S12.6.4_A7_T1).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var obj = { aa: 1, ba: 2, ca: 3, da: 4 };
+            var visited = [];
+            for (var key in obj) {
+                visited.push(key);
+                // On the first iteration this deletes 'ba', the next property to visit.
+                for (var k in obj) { if (k.charAt(0) === 'b') delete obj[k]; }
+            }
+            // A deleted-then-recreated property still moves to the end of the order.
+            var order = { x: 1, y: 2, z: 3 };
+            delete order.y;
+            order.y = 9;
+            [visited.join(','), Object.keys(order).join(',')].join('|');
+        ");
+
+        Assert.Equal("aa,ca,da|x,z,y", result.ToString());
+    }
+
+    [Fact]
     public void Var_Arguments_Declaration_Shares_The_Functions_Arguments_Binding_Match_Test262()
     {
         // Regression: a `var arguments` in a sloppy function must share the function's
