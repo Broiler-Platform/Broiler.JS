@@ -116,8 +116,25 @@ public class JSFunctionBuilder
             Expression.Condition(JSValueBuilder.IsObject(temp), temp, nonObject));
     }
 
-    public static Expression InvokeFunction(Expression target, Expression args, bool coalesce = false)
+    public static Expression InvokeFunction(Expression target, Expression args, bool coalesce = false, bool inChain = false)
     {
+        // Inside an optional chain a short-circuit yields the skip sentinel (the chain
+        // root unwraps it), and an already-short-circuited callee (skip) propagates
+        // without being called. `fn?.(x)` short-circuits on a nullish callee; a trailing
+        // `()` after a short-circuited chain (e.g. `a?.b()()`) propagates the sentinel.
+        if (inChain)
+        {
+            var pes = Expression.Parameters(typeof(JSValue));
+            var pe = pes[0];
+
+            Expression guard = JSValueBuilder.IsOptionalChainSkip(pe);
+            if (coalesce)
+                guard = Expression.OrElse(guard, JSValueBuilder.IsNullOrUndefined(pe));
+
+            return Expression.Block(pes.AsSequence(), Expression.Assign(pe, target),
+                Expression.Condition(guard, JSValueBuilder.OptionalChainSkip(), Expression.Call(pe, invokeFunction, args)));
+        }
+
         if (coalesce)
         {
             var pes = Expression.Parameters(typeof(JSValue));

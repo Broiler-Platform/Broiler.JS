@@ -227,6 +227,14 @@ public abstract class AstReduce : AstMapVisitor<AstNode>
         return node;
     }
 
+    protected override AstNode VisitOptionalChain(AstOptionalChain node)
+    {
+        if (Modified(node.Expression, out var expression) && expression is AstExpression inner)
+            return new AstOptionalChain(inner);
+
+        return node;
+    }
+
     protected override AstNode VisitSuper(AstSuper super) => super;
 
     protected override AstNode VisitArrayExpression(AstArrayExpression arrayExpression)

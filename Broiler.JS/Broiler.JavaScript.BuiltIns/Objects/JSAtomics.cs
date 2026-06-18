@@ -277,7 +277,12 @@ public partial class JSAtomics : JSObject
             // store returns 𝔽(ToIntegerOrInfinity(value)) — the integral Number, even
             // though the element only keeps its low bits.
             var number = operand.DoubleValue;
-            var integer = double.IsNaN(number) ? 0d : Math.Truncate(number);
+
+            // ToIntegerOrInfinity normalizes -0 (and any value in (-1, 0) that
+            // truncates to zero) to +0, so the returned Number must never be -0.
+            // Adding +0 turns -0.0 into +0.0 per IEEE-754 and leaves all other
+            // values unchanged (test262 Atomics/store/expected-return-value-negative-zero).
+            var integer = double.IsNaN(number) ? 0d : Math.Truncate(number) + 0d;
             RevalidateAtomicAccess(typedArray, index);
             var stored = new JSNumber(integer);
             typedArray.SetValue((uint)index, stored, typedArray);

@@ -272,11 +272,29 @@ public partial class JSIteratorObject : JSObject
             iterator = iteratorObject;
         }
 
-        // If the resolved iterator is already an Iterator instance, return it directly (no wrapper).
-        if (iterator is JSIteratorObject directIterator)
-            return directIterator;
-
+        // GetIteratorDirect reads "next" before the %Iterator% brand check, so the
+        // "get next" observation always precedes the getPrototypeOf walk below.
         var nextMethod = iterator[KeyStrings.next];
+
+        // hasInstance = ? OrdinaryHasInstance(%Iterator%, iterator): walk the
+        // iterator's prototype chain (each step is an observable [[GetPrototypeOf]],
+        // so a Proxy iterator fires its getPrototypeOf trap) looking for
+        // %Iterator.prototype%. If present, the iterator is already a valid Iterator
+        // and is returned unwrapped; otherwise wrap it (test262 sm Iterator/from/
+        // proxy-wrap-next, proxy-wrap-return, proxy-not-wrapped, return-iterator-if-iterable).
+        var iteratorPrototype = BaseIteratorPrototype();
+        if (iteratorPrototype != null)
+        {
+            var current = iterator.GetPrototypeOf();
+            while (current is JSObject currentObject)
+            {
+                if (ReferenceEquals(currentObject, iteratorPrototype))
+                    return iterator;
+
+                current = currentObject.GetPrototypeOf();
+            }
+        }
+
         return new JSIteratorObject(WrapPrototype(), iterator, nextMethod);
     }
 

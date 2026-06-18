@@ -49,6 +49,11 @@ partial class FastCompiler
 
             case UnaryOperator.delete:
                 // delete expression...
+                // `delete a?.b` is a DeleteExpression over an optional chain: unwrap the
+                // chain marker and let the member path apply the delete with short-circuit.
+                if (target is AstOptionalChain deleteChain)
+                    target = deleteChain.Expression;
+
                 switch (target.Type)
                 {
                     case FastNodeType.Literal:
@@ -115,30 +120,54 @@ partial class FastCompiler
                         refError);
                 }
 
-                var targetObj = VisitExpression(me.Object);
+                // Build `delete base.<key>` for an already-evaluated base expression.
+                YExpression DeleteFrom(YExpression baseObj)
+                {
+                    if (me.Computed)
+                        return JSValueBuilder.Delete(baseObj, VisitExpression(me.Property));
 
-                if (me.Computed)
-                {
-                    YExpression pe = VisitExpression(me.Property);
-                    return JSValueBuilder.Delete(targetObj, pe);
-                }
-                else
-                {
                     var mep = me.Property;
                     switch (mep.Type)
                     {
                         case FastNodeType.Literal:
                             AstLiteral l = mep as AstLiteral;
                             if (l.TokenType == TokenTypes.Number)
-                                return JSValueBuilder.Delete(targetObj, YExpression.Constant((uint)l.NumericValue));
+                                return JSValueBuilder.Delete(baseObj, YExpression.Constant((uint)l.NumericValue));
                             if (l.TokenType == TokenTypes.String)
-                                return JSValueBuilder.Delete(targetObj, KeyOfName(l.StringValue));
-                            break;
+                                return JSValueBuilder.Delete(baseObj, KeyOfName(l.StringValue));
+                            return null;
 
                         case FastNodeType.Identifier:
                             AstIdentifier id = mep as AstIdentifier;
-                            return JSValueBuilder.Delete(targetObj, KeyOfName(id.Name));
+                            return JSValueBuilder.Delete(baseObj, KeyOfName(id.Name));
+
+                        default:
+                            return null;
                     }
+                }
+
+                // `delete a?.b`: when the chain short-circuits (the base is nullish for a
+                // `?.` link, or already-skipped for a trailing link) the delete is a no-op
+                // that yields true; otherwise the property is deleted normally.
+                if (me.InOptionalChain)
+                {
+                    using var baseTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                    var deleteExpr = DeleteFrom(baseTemp.Expression);
+                    if (deleteExpr != null)
+                    {
+                        return YExpression.Block(
+                            YExpression.Assign(baseTemp.Expression, VisitExpression(me.Object)),
+                            YExpression.Condition(
+                                JSValueBuilder.OptionalChainGuard(baseTemp.Expression, me.Coalesce),
+                                JSBooleanBuilder.True,
+                                deleteExpr));
+                    }
+                }
+                else
+                {
+                    var nonChainDelete = DeleteFrom(VisitExpression(me.Object));
+                    if (nonChainDelete != null)
+                        return nonChainDelete;
                 }
                 break;
 

@@ -39,6 +39,14 @@ partial class FastCompiler
                 JSValueBuilder.Index(thisTemp.Expression, super, keyTemp.Expression, memberExpression.Coalesce));
         }
 
+        // Inside an optional chain, member access routes through the skip-aware links
+        // (a `?.` link short-circuits on a nullish base; a trailing link only propagates
+        // an in-flight short-circuit). Outside a chain it is an ordinary index.
+        YExpression Access(YExpression keyExpr) =>
+            memberExpression.InOptionalChain
+                ? JSValueBuilder.ChainAccess(target, super, keyExpr, memberExpression.Coalesce)
+                : JSValueBuilder.Index(target, super, keyExpr, memberExpression.Coalesce);
+
         switch (mp.Type)
         {
             case FastNodeType.Identifier:
@@ -53,65 +61,65 @@ partial class FastCompiler
                         ? KeyOfPrivateName(id.Name)
                         : KeyOfName(id.Name);
 
-                    // `obj?.#x`: short-circuit on a nullish receiver, otherwise read
-                    // through the brand-checking private indexer. The generic coalesce
-                    // path (PropertyOrUndefined) is unusable here: it takes the key by
-                    // `in` reference — illegal for a captured per-evaluation private-key
-                    // variable — and would swallow the brand-check TypeError that a
+                    // `obj?.#x` (and a private access trailing an optional link): short-circuit
+                    // on a nullish/short-circuited receiver, otherwise read through the
+                    // brand-checking private indexer. The generic link path is unusable here:
+                    // it takes the key by `in` reference — illegal for a captured per-evaluation
+                    // private-key variable — and would swallow the brand-check TypeError that a
                     // present-but-foreign receiver must raise.
-                    if (isPrivate && memberExpression.Coalesce)
+                    if (isPrivate && memberExpression.InOptionalChain)
                     {
                         using var recv = scope.Top.GetTempVariable(typeof(JSValue));
                         return YExpression.Block(
                             YExpression.Assign(recv.Expression, target),
                             YExpression.Condition(
-                                JSValueBuilder.IsNullOrUndefined(recv.Expression),
-                                JSUndefinedBuilder.Value,
+                                JSValueBuilder.OptionalChainGuard(recv.Expression, memberExpression.Coalesce),
+                                JSValueBuilder.OptionalChainSkip(),
                                 JSValueBuilder.Index(recv.Expression, super, key, false)));
                     }
 
-                    return JSValueBuilder.Index(target, super, key, memberExpression.Coalesce);
+                    return Access(key);
                 }
 
-                return JSValueBuilder.Index(target, super, VisitIdentifier(id), memberExpression.Coalesce);
+                return Access(VisitIdentifier(id));
 
             case FastNodeType.Literal:
                 var l = mp as AstLiteral;
                 switch (l.TokenType)
                 {
                     case TokenTypes.True:
-                        return JSValueBuilder.Index(target, super, KeyOfName(l.StringValue), memberExpression.Coalesce);
+                        return Access(KeyOfName(l.StringValue));
 
                     case TokenTypes.False:
-                        return JSValueBuilder.Index(target, super, KeyOfName(l.StringValue), memberExpression.Coalesce);
+                        return Access(KeyOfName(l.StringValue));
 
                     case TokenTypes.String:
                         var text = l.StringValue;
                         if (NumberParser.TryGetArrayIndex(text, out var d))
-                            return JSValueBuilder.Index(target, super, d, memberExpression.Coalesce);
+                            return Access(YExpression.Constant(d));
 
-                        return JSValueBuilder.Index(target, super, KeyOfName(text), memberExpression.Coalesce);
+                        return Access(KeyOfName(text));
 
                     case TokenTypes.Number:
                         var number = l.NumericValue;
                         if (number >= 0 && number < uint.MaxValue && (number % 1) == 0)
-                            return JSValueBuilder.Index(target, super, (uint)l.NumericValue, memberExpression.Coalesce);
+                            return Access(YExpression.Constant((uint)l.NumericValue));
 
-                        return JSValueBuilder.Index(target, super, VisitLiteral(l), memberExpression.Coalesce);
+                        return Access(VisitLiteral(l));
 
                     default:
                         // null / bigint / regexp / template literal key: evaluate
                         // the literal and coerce it to a property key at runtime.
-                        return JSValueBuilder.Index(target, super, VisitLiteral(l), memberExpression.Coalesce);
+                        return Access(VisitLiteral(l));
                 }
 
             case FastNodeType.MemberExpression:
                 var se = mp as AstMemberExpression;
-                return JSValueBuilder.Index(target, super, VisitExpression(se), memberExpression.Coalesce);
+                return Access(VisitExpression(se));
         }
 
         if (memberExpression.Computed)
-            return JSValueBuilder.Index(target, super, VisitExpression(memberExpression.Property), memberExpression.Coalesce);
+            return Access(VisitExpression(memberExpression.Property));
 
         throw new NotImplementedException();
     }

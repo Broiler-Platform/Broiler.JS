@@ -121,11 +121,12 @@ partial class FastParser
 
                 case TokenTypes.OptionalIndex:
                 case TokenTypes.SquareBracketStart:
-                    inOptional |= token.Type == TokenTypes.OptionalIndex;
+                    var indexOptional = token.Type == TokenTypes.OptionalIndex;
+                    inOptional |= indexOptional;
                     stream.Consume();
                     if (!ExpressionSequence(out var index, TokenTypes.SquareBracketEnd))
                         throw stream.Unexpected();
-                    node = node.Member(index, true, inOptional);
+                    node = node.Member(index, true, indexOptional, inOptional);
                     continue;
 
                 case TokenTypes.BracketStart:
@@ -146,13 +147,15 @@ partial class FastParser
                         // short-circuit on the method being nullish — the receiver
                         // short-circuit is already carried by the callee member's
                         // coalesce flag, and `a?.b()` with a non-nullish `a` and a
-                        // non-callable `b` must throw a TypeError.
-                        node = new AstCallExpression(node, arguments, isOptionalCall);
+                        // non-callable `b` must throw a TypeError. It does, however,
+                        // still propagate an earlier short-circuit (inOptional).
+                        node = new AstCallExpression(node, arguments, isOptionalCall, inOptional);
                     continue;
 
                 case TokenTypes.QuestionDot:
                 case TokenTypes.Dot:
-                    inOptional |= token.Type == TokenTypes.QuestionDot;
+                    var dotOptional = token.Type == TokenTypes.QuestionDot;
+                    inOptional |= dotOptional;
                     stream.Consume();
                     stream.SkipNewLines();
 
@@ -165,6 +168,7 @@ partial class FastParser
                         node = node.Member(
                             new AstIdentifier(hashToken, $"#{privateIdentifier.Name.Value}"),
                             false,
+                            dotOptional,
                             inOptional);
                         continue;
                     }
@@ -183,7 +187,7 @@ partial class FastParser
                             if (!ArrayExpression(out var optionalArguments))
                                 throw stream.Unexpected();
                             // `a ?. (b)` — an explicit optional call.
-                            node = new AstCallExpression(node, optionalArguments, true);
+                            node = new AstCallExpression(node, optionalArguments, true, inOptional);
                             continue;
                         }
 
@@ -192,7 +196,7 @@ partial class FastParser
                             stream.Consume();
                             if (!ExpressionSequence(out var optionalIndex, TokenTypes.SquareBracketEnd))
                                 throw stream.Unexpected();
-                            node = node.Member(optionalIndex, true, inOptional);
+                            node = node.Member(optionalIndex, true, dotOptional, inOptional);
                             continue;
                         }
                     }
@@ -209,6 +213,7 @@ partial class FastParser
                             node = node.Member(
                                 new AstIdentifier(next.AsString()),
                                 false,
+                                dotOptional,
                                 inOptional);
                             break;
                         default:
@@ -234,6 +239,14 @@ partial class FastParser
 
         if (asNew)
             node = new AstNewExpression(token, node, Sequence<AstExpression>.Empty);
+
+        // An optional chain short-circuits via an internal sentinel that each link
+        // propagates; wrap the chain root so the sentinel is converted back to
+        // `undefined` exactly once, at the boundary of the chain. A parenthesized
+        // sub-expression parses in its own SingleMemberExpression invocation, so
+        // `(a?.b).c` wraps `a?.b` and resets the chain — matching the spec.
+        else if (inOptional)
+            node = new AstOptionalChain(node);
 
         return true;
 
