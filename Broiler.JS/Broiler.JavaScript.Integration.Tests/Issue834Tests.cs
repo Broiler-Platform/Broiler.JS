@@ -48,7 +48,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   constructor now branches on IsString (DoubleValue implements ToNumber:
 //   true → 1, false → 0, null → 0, undefined → NaN).
 //
-// Out of scope: the remaining ~93 problems in the issue are unrelated engine
+//   Problem 88 (Atomics.store -0 return value) — Atomics.store returned
+//   𝔽(ToIntegerOrInfinity(value)) but Math.Truncate leaves -0.0 (and values in
+//   (-1, 0)) as -0.0, so Atomics.store(ta, 0, -0) returned -0. ToIntegerOrInfinity
+//   normalizes those to +0; the result is now run through that normalization.
+//
+// Out of scope: the remaining ~92 problems in the issue are unrelated engine
 // areas (Temporal/Intl/CLDR ordering, RegExp/Unicode, with/Proxy env, etc.).
 public class Issue834Tests
 {
@@ -212,4 +217,21 @@ public class Issue834Tests
     public void DateFromNumericPrimitiveAndIsoStringStillWork()
         => Assert.Equal("5,5", Eval(
             "String(new Date(5).getTime()) + ',' + String(new Date('1970-01-01T00:00:00.005Z').getTime())"));
+
+    // ---- Problem 88: Atomics.store normalizes -0 to +0 in its return value ----
+
+    [Fact]
+    public void AtomicsStoreNormalizesNegativeZeroReturnToPositiveZero()
+        => Assert.Equal("Infinity", Eval("var t = new Int32Array(2); String(1 / Atomics.store(t, 0, -0))"));
+
+    [Fact]
+    public void AtomicsStoreNormalizesTruncatedToZeroReturnToPositiveZero()
+        => Assert.Equal("Infinity", Eval("var t = new Int32Array(2); String(1 / Atomics.store(t, 0, -0.5))"));
+
+    [Fact]
+    public void AtomicsStoreStillReturnsIntegralValues()
+        => Assert.Equal("5,-5,Infinity,0", Eval(
+            "var t = new Int32Array(2);" +
+            "String(Atomics.store(t, 0, 5)) + ',' + String(Atomics.store(t, 0, -5)) + ',' +" +
+            "String(Atomics.store(t, 0, Infinity)) + ',' + String(Atomics.store(t, 0, NaN))"));
 }
