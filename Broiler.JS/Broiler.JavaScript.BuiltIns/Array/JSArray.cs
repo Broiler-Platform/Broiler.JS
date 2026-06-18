@@ -113,15 +113,6 @@ public partial class JSArray : JSObject
         set => ArrayLength = value;
     }
 
-    // True once "length" has been materialized into the ordinary property store
-    // (which happens only when its writability is changed via SetLengthWritable).
-    // While synthetic it is absent from the base key stream and must be injected.
-    private bool IsLengthStored()
-    {
-        ref var ownProperties = ref GetOwnProperties(false);
-        return !ownProperties.IsEmpty && !ownProperties.GetValue(KeyStrings.length.Key).IsEmpty;
-    }
-
     // Array exotic objects expose "length" as a non-enumerable own property that
     // sits right after the integer indices in [[OwnPropertyKeys]]. Because it is
     // synthetic (not stored unless its writability changes), the base key stream
@@ -133,7 +124,12 @@ public partial class JSArray : JSObject
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)
     {
         var baseKeys = base.GetAllKeys(showEnumerableOnly, inherited);
-        if (showEnumerableOnly || IsLengthStored())
+        // "length" is non-enumerable, so an enumerable-only walk (Object.keys / for-in / spread)
+        // omits it. For a full own-key walk it must appear right after the integer indices and
+        // before any other string key, in [[OwnPropertyKeys]] order — regardless of WHEN it was
+        // materialized into the property store (Object.defineProperty(arr,"length",…) does not move
+        // it to the end). The enumerator emits it at that boundary and drops the stored copy.
+        if (showEnumerableOnly)
             return baseKeys;
 
         return new ArrayLengthKeyEnumerator(baseKeys);
@@ -154,6 +150,8 @@ public partial class JSArray : JSObject
 
         private static bool IsIndexKey(JSValue key) => key.ToKey(false).Type == KeyType.UInt;
 
+        private static bool IsLengthName(JSValue key) => !IsIndexKey(key) && key.ToString() == "length";
+
         private bool Advance(out bool hasValue, out JSValue value, out uint index)
         {
             if (hasBuffered)
@@ -165,22 +163,34 @@ public partial class JSArray : JSObject
                 return true;
             }
 
-            if (inner.MoveNext(out hasValue, out value, out index))
+            while (inner.MoveNext(out hasValue, out value, out index))
             {
-                // The first present non-index key marks the end of the index run;
-                // surface "length" before it (buffering the key we just pulled).
-                if (lengthPending && hasValue && !IsIndexKey(value))
+                var nonIndex = hasValue && !IsIndexKey(value);
+
+                // The first present non-index key marks the end of the index run; surface
+                // "length" before it. If that key is the stored "length", drop it (we emit
+                // our own); otherwise buffer it to surface right after.
+                if (lengthPending && nonIndex)
                 {
                     lengthPending = false;
-                    bufHasValue = hasValue;
-                    bufValue = value;
-                    bufIndex = index;
-                    hasBuffered = true;
+                    if (!IsLengthName(value))
+                    {
+                        bufHasValue = hasValue;
+                        bufValue = value;
+                        bufIndex = index;
+                        hasBuffered = true;
+                    }
 
                     hasValue = true;
                     value = LengthKey;
                     index = 0;
+                    return true;
                 }
+
+                // A stored "length" key (boundary already passed) is dropped — it was emitted
+                // at the index/string boundary above, never in property-store insertion order.
+                if (nonIndex && IsLengthName(value))
+                    continue;
 
                 return true;
             }
