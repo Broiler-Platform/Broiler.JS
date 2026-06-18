@@ -114,7 +114,11 @@ public class KeyEnumerator : IElementEnumerator
         this.inherited = inherited;
         this.seen = seen;
         elements = jSObject.GetOwnIndexedElementEnumerator(showEnumerableOnly);
-        properties = new PropertyValueEnumerator(jSObject, showEnumerableOnly);
+        // Always walk every own property (including non-enumerable ones) so a
+        // non-enumerable own property still registers in `seen` and shadows a
+        // same-named enumerable property further up the prototype chain. The
+        // enumerable-only filter is applied below, after recording the name.
+        properties = new PropertyValueEnumerator(jSObject, false);
     }
 
     // Records a name as produced; returns false if it (or a nearer same-named property)
@@ -151,9 +155,14 @@ public class KeyEnumerator : IElementEnumerator
 
         if (properties.target != null)
         {
-            while (properties.MoveNext(out var key))
+            while (properties.MoveNextProperty(out var prop, out var key))
             {
+                // Record the name first (shadowing the chain), then drop it if a
+                // nearer property already claimed it or it is non-enumerable while
+                // only enumerable keys were requested (for-in / Object.keys).
                 if (!Accept(key.ToString()))
+                    continue;
+                if (showEnumerableOnly && !prop.IsEnumerable)
                     continue;
                 value = JSObjectCoreExtensions.KeyStringToJSValue(key);
                 hasValue = true;
@@ -201,9 +210,11 @@ public class KeyEnumerator : IElementEnumerator
 
         if (properties.target != null)
         {
-            while (properties.MoveNext(out var key))
+            while (properties.MoveNextProperty(out var prop, out var key))
             {
                 if (!Accept(key.ToString()))
+                    continue;
+                if (showEnumerableOnly && !prop.IsEnumerable)
                     continue;
 
                 value = JSObjectCoreExtensions.KeyStringToJSValue(key);

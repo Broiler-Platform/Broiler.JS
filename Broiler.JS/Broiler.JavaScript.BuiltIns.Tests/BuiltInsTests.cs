@@ -8147,6 +8147,32 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void ForIn_NonEnumerable_Own_Property_Shadows_Inherited_Enumerable_Match_Test262()
+    {
+        // Regression: a non-enumerable own property must shadow a same-named
+        // enumerable property on the prototype chain (the [[Enumerable]] attribute
+        // is not considered when deciding whether a name is already visited). The
+        // key-enumerator only recorded names it actually yielded, so the skipped
+        // non-enumerable own "prop" failed to hide the inherited enumerable one
+        // and for-in wrongly visited it (test262 language/statements/for-in/12.6.4-2).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var proto = { prop: 'enumerableValue' };
+            var ConstructFun = function () { };
+            ConstructFun.prototype = proto;
+            var child = new ConstructFun();
+            Object.defineProperty(child, 'prop', { value: 'nonEnumerableValue', enumerable: false });
+            var accessedProp = false;
+            for (var p in child) { if (p === 'prop') accessedProp = true; }
+            accessedProp;
+        ");
+
+        Assert.False(result.BooleanValue);
+    }
+
+    [Fact]
     public void Object_GetOwnPropertyNames_String_Object_Orders_Index_Keys_First_Match_Test262()
     {
         // Regression: String exotic [[OwnPropertyKeys]] (ES 10.4.3.3) lists every
