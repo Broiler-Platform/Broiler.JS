@@ -866,6 +866,77 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         return PropertyOrUndefined(k.KeyString);
     }
 
+    // ── Optional-chaining links (see JSOptionalChainSkip) ─────────────────────────
+    //
+    // OptionalLink implements a `?.` link: a nullish base (or an already-short-circuited
+    // chain) yields the skip sentinel; otherwise the property is read normally.
+    // ChainLink implements a trailing NON-optional link inside an optional chain: it
+    // propagates an in-flight short-circuit but, for a genuinely-nullish base, performs an
+    // ordinary access (which throws), so `a?.b.c` throws when `a.b` is undefined yet
+    // short-circuits when `a` is nullish.
+
+    private bool IsOptionalChainSkip => ReferenceEquals(this, JSOptionalChainSkip.Value);
+
+    // Public surface for the expression builder (separate assembly): the chain
+    // short-circuit sentinel and a test for it, used by the call lowering.
+    public static JSValue OptionalChainSkipValue() => JSOptionalChainSkip.Value;
+
+    public bool IsOptionalChainSkipSentinel => IsOptionalChainSkip;
+
+    public JSValue OptionalLink(in KeyString name)
+        => IsOptionalChainSkip || this == NullValue || this == UndefinedValue
+            ? JSOptionalChainSkip.Value
+            : GetValue(name, this);
+
+    public JSValue OptionalLink(uint name)
+        => IsOptionalChainSkip || this == NullValue || this == UndefinedValue
+            ? JSOptionalChainSkip.Value
+            : GetValue(name, this);
+
+    public JSValue OptionalLink(IJSSymbol name)
+        => IsOptionalChainSkip || this == NullValue || this == UndefinedValue
+            ? JSOptionalChainSkip.Value
+            : GetValue(name, this);
+
+    public JSValue OptionalLink(JSValue name)
+    {
+        if (IsOptionalChainSkip || this == NullValue || this == UndefinedValue)
+            return JSOptionalChainSkip.Value;
+
+        if (name is IJSSymbol s)
+            return GetValue(s, this);
+
+        var k = name.ToKey(false);
+        return k.IsUInt ? GetValue(k.Index, this) : GetValue(k.KeyString, this);
+    }
+
+    // The indexer (this[name]) throws on a genuinely-nullish receiver, which is exactly
+    // the required behaviour for a trailing link whose base is a real undefined/null.
+    public JSValue ChainLink(in KeyString name)
+        => IsOptionalChainSkip ? JSOptionalChainSkip.Value : this[name];
+
+    public JSValue ChainLink(uint name)
+        => IsOptionalChainSkip ? JSOptionalChainSkip.Value : this[name];
+
+    public JSValue ChainLink(IJSSymbol name)
+        => IsOptionalChainSkip ? JSOptionalChainSkip.Value : this[name];
+
+    public JSValue ChainLink(JSValue name)
+    {
+        if (IsOptionalChainSkip)
+            return JSOptionalChainSkip.Value;
+
+        if (name is IJSSymbol s)
+            return this[s];
+
+        var k = name.ToKey(false);
+        return k.IsUInt ? this[k.Index] : this[k.KeyString];
+    }
+
+    // Chain root: convert the short-circuit sentinel back to the observable `undefined`.
+    public JSValue UnwrapOptionalChain()
+        => IsOptionalChainSkip ? UndefinedValue : this;
+
     public virtual JSValue this[KeyString name]
     {
         get => GetValue(name, this);

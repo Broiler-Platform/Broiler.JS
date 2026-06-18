@@ -60,7 +60,18 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   (step 4) before the callback loop (step 5); map now does the same, so an
 //   abrupt species create aborts before any callback runs.
 //
-// Out of scope: the remaining ~90 problems in the issue are unrelated engine
+//   Problem 22 (optional-chaining short-circuit propagation) — once a `?.` link
+//   appeared, the parser marked EVERY following link in the chain as coalescing, so
+//   a trailing non-optional access short-circuited on its own undefined value:
+//   `a?.b.c` returned undefined when `a.b` was undefined instead of throwing. The
+//   short-circuit must instead propagate only from the `?.` link's nullish base. The
+//   chain now lowers through a skip sentinel: a `?.` link yields it on a nullish base,
+//   every later link propagates it (but a genuine undefined still throws), and the
+//   chain root converts it back to undefined — so `a?.b.c` short-circuits when `a` is
+//   nullish yet throws when `a.b` is undefined, while `a?.b()`, `a?.[k]`, parenthesised
+//   resets and method `this` binding all keep working.
+//
+// Out of scope: the remaining ~89 problems in the issue are unrelated engine
 // areas (Temporal/Intl/CLDR ordering, RegExp/Unicode, with/Proxy env, etc.).
 public class Issue834Tests
 {
@@ -267,4 +278,55 @@ public class Issue834Tests
         => Assert.Equal("11,12,13,Int32Array", Eval(
             "var r = new Int32Array([1, 2, 3]).map(function (x) { return x + 10; });" +
             "r.join(',') + ',' + (r.constructor === Int32Array ? 'Int32Array' : r.constructor.name)"));
+
+    // ---- Problem 22: optional-chaining short-circuit only propagates from the `?.` base ----
+
+    [Fact]
+    public void TrailingMemberAfterOptionalThrowsOnGenuineUndefined()
+        => Assert.Equal("TypeError", Eval(
+            "var o = { a: undefined }; try { o?.a.b; 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void TrailingMemberAfterOptionalThrowsWhenPropertyAbsent()
+        => Assert.Equal("TypeError", Eval(
+            "var o = {}; try { o?.a.b.c; 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void OptionalChainShortCircuitsWholeChainOnNullishBase()
+        => Assert.Equal("undefined", Eval("var o = null; String(o?.a.b.c);"));
+
+    [Fact]
+    public void MultipleOptionalLinksShortCircuitIndependently()
+        => Assert.Equal("undefined,undefined,7", Eval(
+            "function g(o) { return String(o?.a?.b); }" +
+            "g(null) + ',' + g({ a: null }) + ',' + g({ a: { b: 7 } })"));
+
+    [Fact]
+    public void TrailingComputedAfterOptionalThrowsOnGenuineUndefined()
+        => Assert.Equal("TypeError", Eval(
+            "var o = { x: undefined }, k = 'x'; try { o?.[k].y; 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void ParenthesisedOptionalResetsTheChain()
+        => Assert.Equal("TypeError", Eval(
+            "var o = null; try { (o?.a).b; 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void OptionalMethodCallChainShortCircuitsAndKeepsThisBinding()
+        => Assert.Equal("undefined,4", Eval(
+            "var n = null;" +
+            "var o = { b: { c: function () { return this === o.b ? 4 : 5; } } };" +
+            "String(n?.b.c()) + ',' + String(o?.b.c())"));
+
+    [Fact]
+    public void TrailingCallAfterOptionalThrowsWhenIntermediateUndefined()
+        => Assert.Equal("TypeError", Eval(
+            "var o = { b: undefined }; try { o?.b.c(); 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void DeleteOptionalChainShortCircuitsButDeletesWhenPresent()
+        => Assert.Equal("true,true,false", Eval(
+            "var n = null; var r1 = delete n?.b;" +
+            "var o = { b: 1 }; var r2 = delete o?.b;" +
+            "String(r1) + ',' + String(r2) + ',' + String('b' in o)"));
 }

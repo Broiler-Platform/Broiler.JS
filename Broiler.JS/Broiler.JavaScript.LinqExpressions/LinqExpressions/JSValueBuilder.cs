@@ -46,6 +46,21 @@ public class JSValueBuilder
         return target.PropertyExpression<JSValue, bool>(() => (x) => x.IsNullOrUndefined);
     }
 
+    // The optional-chaining short-circuit sentinel and a test for it (see JSOptionalChainSkip).
+    private static readonly MethodInfo _OptionalChainSkipValue = type.PublicMethod(nameof(JSValue.OptionalChainSkipValue));
+
+    public static Expression OptionalChainSkip() => Expression.Call(null, _OptionalChainSkipValue);
+
+    public static Expression IsOptionalChainSkip(Expression target)
+        => target.PropertyExpression<JSValue, bool>(() => (x) => x.IsOptionalChainSkipSentinel);
+
+    // A chain link short-circuits when its base is an in-flight skip sentinel, and an
+    // optional (`?.`) link additionally short-circuits on a genuinely nullish base.
+    public static Expression OptionalChainGuard(Expression target, bool includeNullish)
+        => includeNullish
+            ? Expression.OrElse(IsOptionalChainSkip(target), IsNullOrUndefined(target))
+            : IsOptionalChainSkip(target);
+
     private static PropertyInfo _lengthProperty = type.Property(nameof(JSValue.Length));
 
     public static Expression Length(Expression target) => Expression.Property(target, _lengthProperty);
@@ -125,9 +140,42 @@ public class JSValueBuilder
     private static MethodInfo _PropertyOrUndefinedUInt = type.PublicMethod(nameof(JSValue.PropertyOrUndefined), typeof(uint));
     private static MethodInfo _PropertyOrUndefined = type.PublicMethod(nameof(JSValue.PropertyOrUndefined), typeof(JSValue));
 
-    public static Expression InvokeMethod(Expression targetTemp, Expression methodTemp, Expression target, Expression name, IFastEnumerable<Expression> args, bool spread, bool memberCoalesce, bool callCoalesce = false)
+    private static MethodInfo _OptionalLinkKeyString = type.PublicMethod(nameof(JSValue.OptionalLink), KeyStringsBuilder.RefType);
+    private static MethodInfo _OptionalLinkUInt = type.PublicMethod(nameof(JSValue.OptionalLink), typeof(uint));
+    private static MethodInfo _OptionalLinkJSValue = type.PublicMethod(nameof(JSValue.OptionalLink), typeof(JSValue));
+    private static MethodInfo _ChainLinkKeyString = type.PublicMethod(nameof(JSValue.ChainLink), KeyStringsBuilder.RefType);
+    private static MethodInfo _ChainLinkUInt = type.PublicMethod(nameof(JSValue.ChainLink), typeof(uint));
+    private static MethodInfo _ChainLinkJSValue = type.PublicMethod(nameof(JSValue.ChainLink), typeof(JSValue));
+    private static MethodInfo _UnwrapOptionalChain = type.PublicMethod(nameof(JSValue.UnwrapOptionalChain));
+
+    // Optional-chaining member access. isOptional marks a `?.` link (short-circuits on a
+    // nullish base, yielding the skip sentinel); otherwise it is a trailing non-optional
+    // link that only propagates an in-flight short-circuit (and throws on a genuine nullish
+    // base). super members are never part of the short-circuiting (super is never nullish
+    // and only ever the chain head), so they fall through to the ordinary super index.
+    public static Expression ChainAccess(Expression target, Expression super, Expression property, bool isOptional)
     {
-        if (!memberCoalesce && !callCoalesce)
+        if (super != null)
+            return Index(target, super, property, false);
+
+        if (property.Type == typeof(KeyString))
+            return Expression.Call(target, isOptional ? _OptionalLinkKeyString : _ChainLinkKeyString, property);
+
+        if (property.Type == typeof(uint))
+            return Expression.Call(target, isOptional ? _OptionalLinkUInt : _ChainLinkUInt, property);
+
+        if (property.Type == typeof(int))
+            return Expression.Call(target, isOptional ? _OptionalLinkUInt : _ChainLinkUInt, Expression.Convert(property, typeof(uint)));
+
+        return Expression.Call(target, isOptional ? _OptionalLinkJSValue : _ChainLinkJSValue, property);
+    }
+
+    public static Expression UnwrapOptionalChain(Expression chainResult)
+        => Expression.Call(chainResult, _UnwrapOptionalChain);
+
+    public static Expression InvokeMethod(Expression targetTemp, Expression methodTemp, Expression target, Expression name, IFastEnumerable<Expression> args, bool spread, bool memberCoalesce, bool callCoalesce = false, bool inChain = false)
+    {
+        if (!memberCoalesce && !callCoalesce && !inChain)
             return JSValueExtensionsBuilder.InvokeMethod(target, name, args, spread);
 
         var method = _Index;
@@ -146,11 +194,15 @@ public class JSValueBuilder
             name = Expression.Convert(name, typeof(uint));
         }
 
+        // Inside an optional chain a short-circuit produces the skip sentinel (the chain
+        // root unwraps it to undefined); everything from here propagates that sentinel.
+        var shortCircuit = OptionalChainSkip();
+
         // `a.b?.()` (callCoalesce): the receiver is evaluated normally and the call
         // short-circuits only when the resolved method is nullish.
         Expression call = JSFunctionBuilder.InvokeFunction(methodTemp, ArgumentsBuilder.New(targetTemp, args, spread));
         if (callCoalesce)
-            call = Expression.Condition(IsNullOrUndefined(methodTemp), JSUndefinedBuilder.Value, call);
+            call = Expression.Condition(IsNullOrUndefined(methodTemp), shortCircuit, call);
 
         var accessAndCall = Expression.Block(
             Expression.Assign(methodTemp, Expression.MakeIndex(targetTemp, method, name)),
@@ -158,10 +210,14 @@ public class JSValueBuilder
 
         // `a?.b()` (memberCoalesce): if the RECEIVER is nullish the whole chain is
         // undefined — the property must NOT be accessed (it would throw) and the
-        // method must NOT be called.
-        Expression body = memberCoalesce
-            ? Expression.Condition(IsNullOrUndefined(targetTemp), JSUndefinedBuilder.Value, accessAndCall)
-            : accessAndCall;
+        // method must NOT be called. A trailing call in a chain (inChain) likewise
+        // propagates an already-short-circuited receiver. Either way an incoming skip
+        // sentinel (from an earlier link) must propagate without touching the method.
+        Expression guard = IsOptionalChainSkip(targetTemp);
+        if (memberCoalesce)
+            guard = Expression.OrElse(guard, IsNullOrUndefined(targetTemp));
+
+        Expression body = Expression.Condition(guard, shortCircuit, accessAndCall);
 
         return Expression.Block(Expression.Assign(targetTemp, target), body);
     }

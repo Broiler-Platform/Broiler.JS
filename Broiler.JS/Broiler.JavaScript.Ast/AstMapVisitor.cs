@@ -65,6 +65,7 @@ public abstract class AstMapVisitor<T>
             FastNodeType.TaggedTemplateExpression => VisitTaggedTemplateExpression(node as AstTaggedTemplateExpression),
             FastNodeType.AwaitExpression => VisitAwaitExpression(node as AstAwaitExpression),
             FastNodeType.ImportCall => VisitImportCall(node as AstImportCall),
+            FastNodeType.OptionalChain => VisitOptionalChain(node as AstOptionalChain),
             FastNodeType.Super => VisitSuper(node as AstSuper),
             _ => throw new NotImplementedException($"No implementation for {node.Type}"),
         };
@@ -72,6 +73,7 @@ public abstract class AstMapVisitor<T>
 
     protected abstract T VisitAwaitExpression(AstAwaitExpression node);
     protected abstract T VisitImportCall(AstImportCall node);
+    protected abstract T VisitOptionalChain(AstOptionalChain node);
     protected abstract T VisitSuper(AstSuper super);
     protected abstract T VisitTaggedTemplateExpression(AstTaggedTemplateExpression astTaggedTemplateExpression);
     protected abstract T VisitMeta(AstMeta astMeta);

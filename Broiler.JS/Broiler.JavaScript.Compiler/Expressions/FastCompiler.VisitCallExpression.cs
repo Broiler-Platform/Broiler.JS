@@ -17,7 +17,7 @@ partial class FastCompiler
 
     protected override YExpression VisitCallExpression(AstCallExpression callExpression)
     {
-        var ce = VisitCallExpression(callExpression.Callee, callExpression.Arguments, callExpression.Coalesce);
+        var ce = VisitCallExpression(callExpression.Callee, callExpression.Arguments, callExpression.Coalesce, callExpression.InOptionalChain);
         return ce;
     }
 
@@ -84,7 +84,7 @@ partial class FastCompiler
         return result;
     }
 
-    protected YExpression VisitCallExpression(AstExpression callee, IFastEnumerable<AstExpression> arguments, bool coalesce = false)
+    protected YExpression VisitCallExpression(AstExpression callee, IFastEnumerable<AstExpression> arguments, bool coalesce = false, bool inChain = false)
     {
         if (!coalesce
             && callee is AstIdentifier identifier
@@ -223,11 +223,11 @@ partial class FastCompiler
                 return YExpression.Block(new YExpression[]
                 {
                     YExpression.Assign(keyTemp.Variable, name),
-                    JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, keyTemp.Variable, args, spread, me.Coalesce, coalesce),
+                    JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, keyTemp.Variable, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain),
                 });
             }
 
-            return JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, name, args, spread, me.Coalesce, coalesce);
+            return JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, name, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain);
         }
         else
         {
@@ -313,7 +313,7 @@ partial class FastCompiler
 
             var paramArray = VisitArguments(null, arguments);
             var target = VisitExpression(callee);
-            return JSFunctionBuilder.InvokeFunction(target, paramArray, coalesce);
+            return JSFunctionBuilder.InvokeFunction(target, paramArray, coalesce, inChain);
         }
     }
 
