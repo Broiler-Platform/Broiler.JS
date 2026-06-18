@@ -85,7 +85,12 @@ public sealed partial class JSNumber : JSPrimitive
         if (n == 0)
             return 0;
 
-        if (n > 0 && ((uint)n) == n)
+        // Only 0 .. 2^32-2 are array indices; 2^32-1 (uint.MaxValue) is a valid
+        // uint but NOT an array index per spec, so it must be the string key
+        // "4294967295" (matching JSString.ToKey / NumberParser.TryGetArrayIndex).
+        // Routing it through the uint element path would diverge from the string
+        // path (Object.keys, hasOwnProperty, get/set would all disagree).
+        if (n > 0 && n < uint.MaxValue && ((uint)n) == n)
             return (uint)n;
 
         var text = JSValue.NumberToECMAString(n);
