@@ -26,6 +26,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problem 49 (object rest destructuring does not read excluded keys) — `let { a, ...rest } =
+//   obj` was lowered as "copy every own enumerable property, then delete the destructured
+//   keys", so the excluded key's descriptor and value were observably read first (a Proxy
+//   source's getOwnPropertyDescriptor/get traps fired for it, and an ordinary accessor's
+//   getter ran a second time). It now performs CopyDataProperties with the destructured keys
+//   excluded up front (§7.3.25): the rest copy skips them before any descriptor/value read.
+//
 //   Problem 84 (Intl.NumberFormat compact notation, en) — compact units were only defined for
 //   the CJK locales, so an English compact format fell back to the full number ("1500000",
 //   formatToParts length 5). The English short scale (10^3 K, 10^6 M, 10^9 B, 10^12 T) is now
@@ -559,4 +566,46 @@ public class Issue838Tests
         => Assert.Equal("compact,short,1,500,000", Eval(
             "var r = new Intl.NumberFormat('en', { notation: 'compact' }).resolvedOptions();" +
             "r.notation + ',' + r.compactDisplay + ',' + new Intl.NumberFormat('en').format(1500000)"));
+
+    // ---- Problem 49: object rest does not read excluded keys ----
+
+    [Fact]
+    public void ObjectRestDoesNotCallProxyGetOwnPropertyDescriptorForExcludedKeys()
+        => Assert.Equal("b,c", Eval(
+            "var log = [];" +
+            "var p = new Proxy({ a: 1, b: 2, c: 3 }, {" +
+            "  ownKeys: function (t) { return Reflect.ownKeys(t); }," +
+            "  getOwnPropertyDescriptor: function (t, k) { log.push(k); return Reflect.getOwnPropertyDescriptor(t, k); } });" +
+            "var { a, ...r } = p; log.join(',')"));
+
+    [Fact]
+    public void ObjectRestDoesNotReReadExcludedAccessor()
+        => Assert.Equal("a,b | {\"b\":2}", Eval(
+            "var calls = [];" +
+            "var o = { get a() { calls.push('a'); return 1; }, get b() { calls.push('b'); return 2; } };" +
+            "var { a, ...rest } = o;" +
+            "calls.join(',') + ' | ' + JSON.stringify(rest)"));
+
+    [Fact]
+    public void ObjectRestExcludesStringIndexAndSymbolKeys()
+        => Assert.Equal("{\"1\":\"b\",\"2\":\"c\"},false", Eval(
+            "var s = Symbol('s');" +
+            "var o = { 0: 'a', 1: 'b', 2: 'c' }; o[s] = 1;" +
+            "var { 0: z, [s]: w, ...rest } = o;" +
+            "JSON.stringify(rest) + ',' + (s in rest)"));
+
+    [Fact]
+    public void ObjectRestComputedKeyEvaluatedOnceAndExcluded()
+        => Assert.Equal("1|{\"b\":2}", Eval(
+            "var log = [];" +
+            "var k = function () { log.push('k'); return 'a'; };" +
+            "var { [k()]: x, ...rest } = { a: 1, b: 2 };" +
+            "log.length + '|' + JSON.stringify(rest)"));
+
+    [Fact]
+    public void PlainObjectSpreadAndRestOnlyStillCopyEverything()
+        => Assert.Equal("{\"a\":1,\"b\":2},{\"a\":1,\"b\":2}", Eval(
+            "var spread = { ...{ a: 1, b: 2 } };" +
+            "var { ...rest } = { a: 1, b: 2 };" +
+            "JSON.stringify(spread) + ',' + JSON.stringify(rest)"));
 }

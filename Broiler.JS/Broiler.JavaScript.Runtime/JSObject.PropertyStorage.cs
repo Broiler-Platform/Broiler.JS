@@ -417,6 +417,95 @@ public partial class JSObject
         }
     }
 
+    // CopyDataProperties with an exclusion set — object rest destructuring
+    // (`let { a, ...rest } = source`). Per §7.3.25 an excluded key is skipped BEFORE its
+    // descriptor or value is read, so a Proxy source's getOwnPropertyDescriptor/get traps
+    // (and an ordinary accessor's getter) never fire for the excluded keys. The previous
+    // lowering copied every property and then deleted the excluded keys, which observably
+    // read them first. The excluded keys are supplied as the own keys of `excludedKeys`
+    // (populated by the caller through the ordinary indexer, so all key forms are normalised
+    // the same way the source's keys are).
+    public void FastAddRange(JSValue value, JSObject excludedKeys)
+    {
+        if (value is not JSObject target)
+        {
+            if (value.IsNullOrUndefined)
+                return;
+
+            if (CreatePrimitiveObject(value) is not JSObject boxed)
+                return;
+
+            target = boxed;
+        }
+
+        if (target.UseObservableSpreadCopy)
+        {
+            var keys = target.GetAllKeys(showEnumerableOnly: false, inherited: false);
+            while (keys.MoveNext(out var hasKey, out var key, out _))
+            {
+                if (!hasKey)
+                    continue;
+
+                // Skip excluded keys before the descriptor read (no gopd/get trap fires).
+                if (excludedKeys.IsExcludedOwnKey(key.ToKey()))
+                    continue;
+
+                if (target.GetOwnPropertyDescriptor(key) is not JSObject descriptor
+                    || !descriptor[KeyStrings.enumerable].BooleanValue)
+                    continue;
+
+                CreateDataProperty(key, target[key]);
+            }
+
+            return;
+        }
+
+        var en = target.elements.Length;
+        for (uint i = 0; i < en; i++)
+        {
+            if (target.elements.TryGetValue(i, out var p) && !p.IsEmpty && p.IsEnumerable
+                && !excludedKeys.elements.HasKey(i))
+                elements.Put(i) = p.IsValue
+                    ? JSProperty.Property(i, p.value)
+                    : JSProperty.Property(i, (IPropertyValue)target.GetValue(p));
+        }
+
+        var pe = target.ownProperties.GetEnumerator();
+        while (pe.MoveNext(out var key, out var val) && !val.IsEmpty)
+        {
+            if (!val.IsEnumerable || excludedKeys.ownProperties.HasKey(key.Key))
+                continue;
+
+            ownProperties.Put(key.Key) = val.IsValue
+                ? JSProperty.Property(key, val.value)
+                : JSProperty.Property(key, (IPropertyValue)target.GetValue(val));
+        }
+
+        foreach (var symbol in target.symbols.All)
+        {
+            var key = symbol.Key;
+            var sv = symbol.Value;
+
+            if (sv.IsEmpty || !sv.IsEnumerable || excludedKeys.symbols.HasKey(key))
+                continue;
+
+            symbols.Put(key) = sv.IsValue
+                ? JSProperty.Property(key, sv.value)
+                : JSProperty.Property(key, (IPropertyValue)target.GetValue(sv));
+        }
+    }
+
+    // True when `key` names one of this object's own properties — used as the exclusion test
+    // for object-rest CopyDataProperties (the excluded keys live as own keys of a scratch
+    // object, normalised through the ordinary indexer just like the source's keys).
+    private bool IsExcludedOwnKey(in PropertyKey key) => key.Type switch
+    {
+        KeyType.UInt => elements.HasKey(key.Index),
+        KeyType.String => ownProperties.HasKey(key.KeyString.Key),
+        KeyType.Symbol => symbols.HasKey(key.Symbol.Key),
+        _ => false,
+    };
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     public JSObject Merge(JSValue value)
     {
