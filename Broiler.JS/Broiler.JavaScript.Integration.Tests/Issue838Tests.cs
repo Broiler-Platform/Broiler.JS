@@ -26,6 +26,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problem 35 (Array.prototype[@@unscopables] should not include "with") — the change-
+//   array-by-copy proposal added toReversed/toSorted/toSpliced to the @@unscopables list but
+//   deliberately NOT "with" ("with" is a reserved word that can never name a binding shadowed
+//   inside a `with` statement). The engine's list carried an extra "with" entry, so the
+//   property set did not match the spec (§23.1.3.40). Removed it; the Array.prototype.with
+//   method itself is unaffected.
+//
 //   Problem 97 (Date.prototype.toLocale{String,DateString,TimeString} throw the same
 //   exceptions as Intl.DateTimeFormat) — these methods are specified to construct an
 //   Intl.DateTimeFormat, so an invalid locales argument must surface the constructor's
@@ -166,4 +173,27 @@ public class Issue838Tests
     public void ToLocaleStringStillFormatsThroughIntlOptions()
         => Assert.Equal("1970", Eval(
             "new Date(0).toLocaleString('en-US', { year: 'numeric', timeZone: 'UTC' })"));
+
+    // ---- Problem 35: Array.prototype[@@unscopables] matches the spec list (no "with") ----
+
+    [Fact]
+    public void ArrayUnscopablesMatchesSpecListWithoutWith()
+        => Assert.Equal(
+            "at,copyWithin,entries,fill,find,findIndex,findLast,findLastIndex," +
+            "flat,flatMap,includes,keys,toReversed,toSorted,toSpliced,values",
+            Eval("Object.keys(Array.prototype[Symbol.unscopables]).join(',')"));
+
+    [Fact]
+    public void ArrayUnscopablesDoesNotIncludeWith()
+        => Assert.Equal("false", Eval("String('with' in Array.prototype[Symbol.unscopables])"));
+
+    [Fact]
+    public void ArrayUnscopablesHasNullPrototype()
+        => Assert.Equal("true", Eval(
+            "String(Object.getPrototypeOf(Array.prototype[Symbol.unscopables]) === null)"));
+
+    [Fact]
+    public void ArrayWithMethodItselfStillExistsAndWorks()
+        => Assert.Equal("function,1,9,3", Eval(
+            "(typeof Array.prototype.with) + ',' + [1, 2, 3].with(1, 9).join(',')"));
 }

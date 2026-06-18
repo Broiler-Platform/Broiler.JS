@@ -1793,11 +1793,14 @@ internal static class BuiltInsAssemblyInitializer
     }
 
     // The @@unscopables list for Array.prototype, in spec order (§23.1.3.40).
+    // Note: the change-array-by-copy proposal added toReversed/toSorted/toSpliced to this
+    // list but deliberately NOT "with" — "with" is a reserved word and can never name a
+    // binding shadowed inside a `with` statement, so it is absent from the spec list.
     private static readonly string[] ArrayUnscopableNames =
     {
         "at", "copyWithin", "entries", "fill", "find", "findIndex",
         "findLast", "findLastIndex", "flat", "flatMap", "includes",
-        "keys", "toReversed", "toSorted", "toSpliced", "values", "with"
+        "keys", "toReversed", "toSorted", "toSpliced", "values"
     };
 
     private static readonly string[] TypedArrayConstructorNames =
