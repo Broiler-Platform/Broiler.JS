@@ -40,7 +40,15 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   then walks the iterator's prototype chain via GetPrototypeOf looking for
 //   %Iterator.prototype%, returning the iterator unwrapped when it is found.
 //
-// Out of scope: the remaining ~94 problems in the issue are unrelated engine
+//   Problem 92 (Date constructor non-string primitive coercion) — new Date(v)
+//   only treated a Number primitive as a time value and forced every other
+//   ToPrimitive result through string date-parsing, so new Date(true)/false/null
+//   and a @@toPrimitive returning a boolean all became NaN. Per §21.4.2.1 only a
+//   String is parsed; every other primitive goes through ToNumber, so the
+//   constructor now branches on IsString (DoubleValue implements ToNumber:
+//   true → 1, false → 0, null → 0, undefined → NaN).
+//
+// Out of scope: the remaining ~93 problems in the issue are unrelated engine
 // areas (Temporal/Intl/CLDR ordering, RegExp/Unicode, with/Proxy env, etc.).
 public class Issue834Tests
 {
@@ -176,4 +184,32 @@ public class Issue834Tests
     [Fact]
     public void IteratorFromStillWrapsAndIteratesPlainArray()
         => Assert.Equal("2,4,6", Eval("Iterator.from([1, 2, 3]).map(function (x) { return x * 2; }).toArray().join(',')"));
+
+    // ---- Problem 92: Date constructor coerces non-string primitives via ToNumber ----
+
+    [Fact]
+    public void DateFromBooleanTrueIsOne()
+        => Assert.Equal("1", Eval("String(new Date(true).getTime())"));
+
+    [Fact]
+    public void DateFromBooleanFalseIsZero()
+        => Assert.Equal("0", Eval("String(new Date(false).getTime())"));
+
+    [Fact]
+    public void DateFromNullIsZero()
+        => Assert.Equal("0", Eval("String(new Date(null).getTime())"));
+
+    [Fact]
+    public void DateFromUndefinedIsNaN()
+        => Assert.Equal("NaN", Eval("String(new Date(undefined).getTime())"));
+
+    [Fact]
+    public void DateFromToPrimitiveReturningBooleanIsCoercedViaToNumber()
+        => Assert.Equal("1", Eval(
+            "String(new Date({ [Symbol.toPrimitive]: function () { return true; } }).getTime())"));
+
+    [Fact]
+    public void DateFromNumericPrimitiveAndIsoStringStillWork()
+        => Assert.Equal("5,5", Eval(
+            "String(new Date(5).getTime()) + ',' + String(new Date('1970-01-01T00:00:00.005Z').getTime())"));
 }

@@ -88,7 +88,12 @@ public partial class JSDate
             }
 
             var primitive = ToPrimitive(dateString);
-            if (primitive.IsNumber)
+
+            // §21.4.2.1: only a String is date-parsed; every other primitive is run
+            // through ToNumber. DoubleValue implements ToNumber, so boolean true → 1,
+            // false → 0, null → 0 and undefined → NaN, rather than being stringified
+            // and mis-parsed (test262 Date/value-to-primitive-result-non-string-prim).
+            if (!primitive.IsString)
             {
                 SetTimeValue(JSDateMath.TimeClip(primitive.DoubleValue));
                 return;
