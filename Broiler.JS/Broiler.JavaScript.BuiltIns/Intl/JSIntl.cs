@@ -5332,7 +5332,10 @@ public class JSIntlDateTimeFormat : JSObject
             throw JSEngine.NewRangeError($"Invalid timeZone option: {timeZone}");
         }
 
-        return timeZone;
+        // A named time zone is validated against the IANA database and case-normalized — "utc" → "UTC",
+        // "africa/abidjan" → "Africa/Abidjan" — but NOT canonicalized through backward links
+        // ("Asia/Calcutta" stays "Asia/Calcutta"); an unknown or legacy non-IANA name is a RangeError.
+        return Temporal.JSTemporalZonedDateTime.CanonicalizeTimeZoneId(timeZone);
     }
 
     internal JSIntlDateTimeFormat(CultureInfo locale) : base()

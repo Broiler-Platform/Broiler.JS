@@ -1673,6 +1673,12 @@ public partial class JSTemporalZonedDateTime : JSObject
     // otherwise consumed as a (24-hour-day) PlainDate.
     internal static void ValidateTimeZoneIdentifier(string id) => CanonicalizeTimeZone(id);
 
+    // Validates a bare time-zone identifier (UTC / numeric offset / named IANA zone) and returns it
+    // case-normalized, preserving an IANA backward alias's own name (e.g. "asia/calcutta" stays
+    // "Asia/Calcutta" rather than resolving to "Asia/Kolkata"); an unknown name is a RangeError.
+    // Shared with Intl.DateTimeFormat's timeZone option handling.
+    internal static string CanonicalizeTimeZoneId(string id) => CanonicalizeTimeZone(id);
+
     private static string CanonicalizeTimeZone(string id)
     {
         if (TryCanonicalizeTimeZoneIdentifier(id, out var canonical))
