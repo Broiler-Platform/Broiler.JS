@@ -8147,6 +8147,42 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_Prototype_Flat_FlatMap_Recurse_Into_Proxy_Arrays_Match_Test262()
+    {
+        // Regression: FlattenIntoArray uses the IsArray abstract operation to decide
+        // whether to recurse, so a Proxy whose target is an array must be flattened
+        // and observed through its length/index get traps. We previously checked the
+        // element with `is JSArray`, which is false for a Proxy, so a nested proxy
+        // array was copied as-is instead of being flattened — its "length"/"0"/"1"
+        // gets never happened (test262 Array/prototype/flat|flatMap/proxy-access-count).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"(function () {
+            var getCalls = [];
+            function makeProxy(arr) {
+                return new Proxy(arr, {
+                    get: function (t, p, r) {
+                        if (typeof p === 'string') getCalls.push(p);
+                        return Reflect.get(t, p, r);
+                    }
+                });
+            }
+
+            // Outer array of length 5 whose element at index 3 is itself a proxy array.
+            var inner = makeProxy([0, 1]);
+            var outer = makeProxy([0, 1, 2, inner, 4]);
+
+            var flattened = Array.prototype.flat.call(outer);
+            return [getCalls.join(','), flattened.join(',')].join('|');
+        })();");
+
+        Assert.Equal(
+            "length,constructor,0,1,2,3,length,0,1,4|0,1,2,0,1,4",
+            result.ToString());
+    }
+
+    [Fact]
     public void Array_Prototype_Length_Coercion_And_Modification_Regressions_Match_Test262()
     {
         EnsureBuiltInsLoaded();
