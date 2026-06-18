@@ -125,6 +125,14 @@ public partial class JSDate
         var (locale, format) = a.Get2();
         string date = null;
 
+        // Per §21.4.4 these methods construct an Intl.DateTimeFormat, so they must throw the
+        // same exceptions as its constructor for the locales argument (null → TypeError, a
+        // malformed language tag → RangeError). The Broiler .NET fast path below bypassed that
+        // validation, treating a null locale like undefined. Validate it the same way Intl does
+        // (undefined is the only nullish value that is allowed, yielding the default locale).
+        if (!locale.IsUndefined)
+            Intl.JSIntl.CanonicalizeLocaleList(locale);
+
         if (locale.IsNullOrUndefined)
         {
             date = value.ToString("D", DateTimeFormatInfo.CurrentInfo);
@@ -175,6 +183,13 @@ public partial class JSDate
             return dtf.Format(new Arguments(JSUndefined.Value, JSValue.CreateNumber(GetTimeMs())));
         }
 
+        // The object-options branch above validates the locales argument inside the
+        // Intl.DateTimeFormat constructor; the .NET fast path must validate it the same way so
+        // a null locale throws a TypeError (and a malformed tag a RangeError) rather than being
+        // silently treated as the default locale.
+        if (!locale.IsUndefined)
+            Intl.JSIntl.CanonicalizeLocaleList(locale);
+
         string date;
         if (locale.IsNullOrUndefined)
         {
@@ -197,6 +212,11 @@ public partial class JSDate
 
         var (locale, format) = a.Get2();
         string date = null;
+
+        // Validate the locales argument exactly as the Intl.DateTimeFormat constructor would
+        // (null → TypeError, malformed tag → RangeError); undefined alone selects the default.
+        if (!locale.IsUndefined)
+            Intl.JSIntl.CanonicalizeLocaleList(locale);
 
         if (locale.IsNullOrUndefined)
         {

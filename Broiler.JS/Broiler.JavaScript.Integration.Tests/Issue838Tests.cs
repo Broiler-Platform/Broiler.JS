@@ -26,6 +26,16 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problem 97 (Date.prototype.toLocale{String,DateString,TimeString} throw the same
+//   exceptions as Intl.DateTimeFormat) — these methods are specified to construct an
+//   Intl.DateTimeFormat, so an invalid locales argument must surface the constructor's
+//   error: null → TypeError (ToObject(null)), a malformed language tag → RangeError. The
+//   Broiler .NET fast path (taken when no options object is supplied) skipped that step and
+//   treated a null locale like undefined, so `new Date(0).toLocaleString(null)` returned a
+//   string instead of throwing. The fast path now validates the locales argument through the
+//   same CanonicalizeLocaleList the Intl constructor uses, while preserving the spec's step
+//   order (a NaN date still returns "Invalid Date" before any locale validation).
+//
 // Out of scope: the remaining problems in the issue are unrelated engine areas
 // (Temporal/Intl/CLDR ordering and data, RegExp/Unicode property classes, with/Proxy
 // environment records, SpiderMonkey-shell harness globals, etc.).
@@ -113,4 +123,47 @@ public class Issue838Tests
     [Fact]
     public void NegativeZeroExtendedYearStillRejected()
         => Assert.Equal("true", Eval("String(isNaN(Date.parse('-000000-03-31T00:45Z')))"));
+
+    // ---- Problem 97: Date.prototype.toLocale* throws the same exceptions as DateTimeFormat ----
+
+    [Fact]
+    public void ToLocaleStringNullLocaleThrowsTypeError()
+        => Assert.Equal("TypeError", Eval(
+            "try { new Date(0).toLocaleString(null); 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void ToLocaleDateStringNullLocaleThrowsTypeError()
+        => Assert.Equal("TypeError", Eval(
+            "try { new Date(0).toLocaleDateString(null); 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void ToLocaleTimeStringNullLocaleThrowsTypeError()
+        => Assert.Equal("TypeError", Eval(
+            "try { new Date(0).toLocaleTimeString(null); 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void ToLocaleStringNullLocaleMatchesDateTimeFormatConstructor()
+        => Assert.Equal("true", Eval(
+            "function err(fn){ try { fn(); return 'no-throw'; } catch (e) { return e.constructor.name; } }" +
+            "String(err(function(){ new Date(0).toLocaleString(null); }) ===" +
+            "       err(function(){ new Intl.DateTimeFormat(null); }))"));
+
+    [Fact]
+    public void ToLocaleStringMalformedTagThrowsRangeError()
+        => Assert.Equal("RangeError", Eval(
+            "try { new Date(0).toLocaleString('i'); 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    [Fact]
+    public void InvalidDateReturnsInvalidDateBeforeLocaleValidation()
+        => Assert.Equal("Invalid Date", Eval("new Date(NaN).toLocaleString(null)"));
+
+    [Fact]
+    public void ToLocaleStringStillWorksWithNoArgsAndValidLocale()
+        => Assert.Equal("string,string", Eval(
+            "(typeof new Date(0).toLocaleString()) + ',' + (typeof new Date(0).toLocaleString('en-US'))"));
+
+    [Fact]
+    public void ToLocaleStringStillFormatsThroughIntlOptions()
+        => Assert.Equal("1970", Eval(
+            "new Date(0).toLocaleString('en-US', { year: 'numeric', timeZone: 'UTC' })"));
 }

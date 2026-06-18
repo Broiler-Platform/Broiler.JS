@@ -894,7 +894,7 @@ public static class JSIntl
             ?? throw JSEngine.NewTypeError("Options must be an object");
     }
 
-    private static JSValue CanonicalizeLocaleList(JSValue locales)
+    internal static JSValue CanonicalizeLocaleList(JSValue locales)
     {
         var result = JSValue.CreateArray();
 
