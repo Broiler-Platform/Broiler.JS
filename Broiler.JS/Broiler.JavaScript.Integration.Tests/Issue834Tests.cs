@@ -22,7 +22,17 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   defined under the string key was invisible to numeric access `o[4294967295]`.
 //   ToKey now excludes uint.MaxValue, matching the string path.
 //
-// Out of scope: the remaining ~99 problems in the issue are unrelated engine
+//   Problems 4, 80, 98 (%ThrowTypeError% poison pills) — Function.prototype's
+//   "caller" and "arguments" accessor properties were each built from four
+//   separate native getter/setter functions named "caller"/"arguments" and left
+//   extensible. Per §10.2.4 / §20.2.3 the [[Get]] and [[Set]] of both properties
+//   must be the single per-realm %ThrowTypeError% intrinsic — the same object
+//   across all four slots (and the same one an unmapped arguments object's
+//   "callee" poison uses). That intrinsic is anonymous (name ""), length 0, and
+//   non-extensible with frozen, non-configurable name/length. PatchFunction-
+//   Prototype now installs the shared GetOrCreateThrowTypeError() function.
+//
+// Out of scope: the remaining ~96 problems in the issue are unrelated engine
 // areas (Temporal/Intl/CLDR ordering, RegExp/Unicode, Proxy trap ordering, etc.).
 public class Issue834Tests
 {
@@ -72,4 +82,53 @@ public class Issue834Tests
     [Fact]
     public void LargestValidArrayIndexStillExtendsLength()
         => Assert.Equal("4294967295", Eval("var a = []; a[4294967294] = 3; String(a.length)"));
+
+    // ---- Problems 4/80/98: shared per-realm %ThrowTypeError% poison pill ----
+
+    [Fact]
+    public void CallerGetAndSetAreTheSameFunction()
+        => Assert.Equal("true", Eval(
+            "var d = Object.getOwnPropertyDescriptor(Function.prototype, 'caller'); String(d.get === d.set)"));
+
+    [Fact]
+    public void ArgumentsGetAndSetAreTheSameFunction()
+        => Assert.Equal("true", Eval(
+            "var d = Object.getOwnPropertyDescriptor(Function.prototype, 'arguments'); String(d.get === d.set)"));
+
+    [Fact]
+    public void CallerAndArgumentsShareTheSameThrowTypeError()
+        => Assert.Equal("true", Eval(
+            "var c = Object.getOwnPropertyDescriptor(Function.prototype, 'caller');" +
+            "var a = Object.getOwnPropertyDescriptor(Function.prototype, 'arguments');" +
+            "String(c.get === a.get && a.get === c.set && c.set === a.set)"));
+
+    [Fact]
+    public void UnmappedArgumentsCalleePoisonIsTheSameThrowTypeError()
+        => Assert.Equal("true", Eval(
+            "var args = (function () { 'use strict'; return arguments; })();" +
+            "var callee = Object.getOwnPropertyDescriptor(args, 'callee');" +
+            "var caller = Object.getOwnPropertyDescriptor(Function.prototype, 'caller');" +
+            "String(callee.get === caller.get && callee.get === callee.set)"));
+
+    [Fact]
+    public void ThrowTypeErrorIsAnonymousZeroLengthAndNonExtensible()
+        => Assert.Equal("\"\",0,false", Eval(
+            "var t = Object.getOwnPropertyDescriptor(Function.prototype, 'caller').get;" +
+            "JSON.stringify(t.name) + ',' + t.length + ',' + Object.isExtensible(t)"));
+
+    [Fact]
+    public void ThrowTypeErrorNameAndLengthAreFrozen()
+        => Assert.Equal(
+            "{\"value\":0,\"writable\":false,\"enumerable\":false,\"configurable\":false}|" +
+            "{\"value\":\"\",\"writable\":false,\"enumerable\":false,\"configurable\":false}",
+            Eval(
+                "var t = Object.getOwnPropertyDescriptor(Function.prototype, 'caller').get;" +
+                "JSON.stringify(Object.getOwnPropertyDescriptor(t, 'length')) + '|' +" +
+                "JSON.stringify(Object.getOwnPropertyDescriptor(t, 'name'))"));
+
+    [Fact]
+    public void FunctionPrototypeCallerIsNonEnumerableConfigurableAccessor()
+        => Assert.Equal("false,true", Eval(
+            "var d = Object.getOwnPropertyDescriptor(Function.prototype, 'caller');" +
+            "d.enumerable + ',' + d.configurable"));
 }

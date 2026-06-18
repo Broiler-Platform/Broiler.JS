@@ -1028,13 +1028,21 @@ internal static class BuiltInsAssemblyInitializer
         if (context[KeyStrings.Function] is not JSFunction functionCtor)
             return;
 
+        // Per §10.2.4 / §20.2.3, Function.prototype's "caller" and "arguments" are
+        // accessor properties whose [[Get]] AND [[Set]] are the single per-realm
+        // %ThrowTypeError% intrinsic — the very same function object across both
+        // accessors and both properties (test262 ThrowTypeError/unique-per-realm-*,
+        // Function/prototype/{caller,arguments}/prop-desc). %ThrowTypeError% is
+        // anonymous (name ""), length 0, and non-extensible/frozen.
+        var throwTypeError = Broiler.JavaScript.BuiltIns.Function.JSFunction.GetOrCreateThrowTypeError();
+
         var callerKey = KeyStrings.GetOrCreate("caller");
         if (functionCtor.prototype.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(callerKey.ToString(), callerKey)).IsUndefined)
         {
             functionCtor.prototype.FastAddProperty(
                 callerKey,
-                CreateNativeGetter(static (in Arguments a) => throw JSEngine.NewTypeError("Cannot access caller in strict mode"), "caller"),
-                CreateNativeSetter(static (in Arguments a) => throw JSEngine.NewTypeError("Cannot access caller in strict mode"), "caller"),
+                throwTypeError,
+                throwTypeError,
                 JSPropertyAttributes.ConfigurableProperty);
         }
 
@@ -1042,8 +1050,8 @@ internal static class BuiltInsAssemblyInitializer
         {
             functionCtor.prototype.FastAddProperty(
                 KeyStrings.arguments,
-                CreateNativeGetter(static (in Arguments a) => throw JSEngine.NewTypeError("Cannot access arguments in strict mode"), "arguments"),
-                CreateNativeSetter(static (in Arguments a) => throw JSEngine.NewTypeError("Cannot access arguments in strict mode"), "arguments"),
+                throwTypeError,
+                throwTypeError,
                 JSPropertyAttributes.ConfigurableProperty);
         }
 
