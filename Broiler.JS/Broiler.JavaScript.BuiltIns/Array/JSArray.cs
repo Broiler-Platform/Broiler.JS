@@ -519,54 +519,72 @@ public partial class JSArray : JSObject
         var hasWritable = !propertyDescription.GetInternalProperty(KeyStrings.writable, false).IsEmpty;
         var hasConfigurable = !propertyDescription.GetInternalProperty(KeyStrings.configurable, false).IsEmpty;
         var hasEnumerable = !propertyDescription.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty;
+        var hasGet = !propertyDescription.GetInternalProperty(KeyStrings.get, false).IsEmpty;
+        var hasSet = !propertyDescription.GetInternalProperty(KeyStrings.set, false).IsEmpty;
 
-        // ArraySetLength validates a supplied length *value* (ToUint32 must equal ToNumber) and throws
-        // RangeError for an invalid one BEFORE the ordinary descriptor invariants are checked — so
-        // e.g. {value: -1, configurable: true} is a RangeError (invalid value), not the TypeError the
-        // configurable-redefinition invariant would otherwise produce.
+        // ArraySetLength steps 3-5: when a [[Value]] is supplied it is coerced with ToUint32
+        // and then ToNumber — BOTH observable for an object value, in that order — before any
+        // descriptor invariant is checked. A value whose two coercions disagree (-1, NaN,
+        // ≥ 2**32, …) is a RangeError, thrown even when "length" is non-writable; and a
+        // coercion that itself flips "length" to non-writable is still observed (writability
+        // is re-read afterwards).
         uint newLength = 0;
         if (hasValue)
         {
-            var newLengthNumber = propertyDescription[KeyStrings.value].DoubleValue;
-            if (double.IsNaN(newLengthNumber) || newLengthNumber < 0 || newLengthNumber > uint.MaxValue || newLengthNumber != System.Math.Truncate(newLengthNumber))
-                throw JSEngine.NewRangeError("Invalid length");
-
-            newLength = (uint)newLengthNumber;
+            var valueSlot = propertyDescription[KeyStrings.value];
+            newLength = valueSlot.UIntValue;            // ToNumber #1, then ToUint32
+            if (newLength != valueSlot.DoubleValue)     // ToNumber #2
+                throw JSEngine.NewRangeError("Invalid array length");
         }
 
-        // [[DefineOwnProperty]] is a predicate: an invariant violation returns false
-        // (the OrThrow caller, e.g. Object.defineProperty, turns that into a throw;
-        // Reflect.defineProperty surfaces it as `false`).
+        // [[DefineOwnProperty]] is a predicate: an invariant violation returns false (the
+        // OrThrow caller, e.g. Object.defineProperty, turns that into a throw; Reflect's
+        // variant surfaces it as `false`). "length" is a non-configurable, non-enumerable
+        // data property, so reject a descriptor that would make it configurable or
+        // enumerable, or convert it to an accessor — the supplied getter is never invoked.
         if ((hasConfigurable && propertyDescription[KeyStrings.configurable].BooleanValue)
-            || (hasEnumerable && propertyDescription[KeyStrings.enumerable].BooleanValue))
+            || (hasEnumerable && propertyDescription[KeyStrings.enumerable].BooleanValue)
+            || hasGet || hasSet)
         {
             return JSValue.BooleanFalse;
         }
 
+        // Read writability AFTER the value coercion (which may have changed it); an absent
+        // [[Writable]] leaves the current writability unchanged.
+        var currentWritable = !IsLengthReadOnly();
+        bool? requestedWritable = hasWritable ? propertyDescription[KeyStrings.writable].BooleanValue : null;
+
         if (!hasValue)
         {
-            if (hasWritable)
-                SetLengthWritable(propertyDescription[KeyStrings.writable].BooleanValue);
-
+            // Only a writability change remains. Re-enabling a non-writable (hence
+            // non-configurable) length is forbidden; otherwise apply the request.
+            if (requestedWritable is bool w)
+            {
+                if (!currentWritable && w)
+                    return JSValue.BooleanFalse;
+                SetLengthWritable(w);
+            }
             return JSUndefined.Value;
         }
 
         var oldLength = _length;
-        var newWritable = !hasWritable || propertyDescription[KeyStrings.writable].BooleanValue;
 
         if (newLength >= oldLength)
         {
-            if (newLength != oldLength && IsLengthReadOnly())
+            // Growing or unchanged: a non-writable length rejects a changed value or an
+            // attempt to set [[Writable]] back to true; an unchanged value is a no-op.
+            if (!currentWritable && (newLength != oldLength || requestedWritable == true))
                 return JSValue.BooleanFalse;
 
             _length = newLength;
-            SetLengthWritable(newWritable);
+            SetLengthWritable(requestedWritable ?? currentWritable);
             return JSUndefined.Value;
         }
 
-        if (IsLengthReadOnly())
+        if (!currentWritable)
             return JSValue.BooleanFalse;
 
+        var newWritable = requestedWritable ?? true;
         ref var elements = ref GetElements();
 
         // Only the indices that are actually stored need to be deleted; absent
@@ -603,19 +621,12 @@ public partial class JSArray : JSObject
 
     private bool SetLengthValue(JSValue value, bool throwError)
     {
-        var newLengthNumber = value.DoubleValue;
-        if (double.IsNaN(newLengthNumber)
-            || newLengthNumber < 0
-            || newLengthNumber > uint.MaxValue
-            || newLengthNumber != System.Math.Truncate(newLengthNumber))
-        {
-            throw JSEngine.NewRangeError("Invalid length");
-        }
-
-        // ArraySetLength only fails when "length" itself is non-writable; a merely
-        // non-extensible array (Object.preventExtensions) keeps a writable length, so
-        // assigning to it must succeed rather than throw. (A frozen array already has a
-        // read-only length, so IsLengthReadOnly covers that case.)
+        // [[Set]] of "length" checks the existing property's writability BEFORE coercing the
+        // assigned value (OrdinarySetWithOwnDescriptor): assigning to an already non-writable
+        // length fails without invoking the value's valueOf/@@toPrimitive at all. A merely
+        // non-extensible array (Object.preventExtensions) keeps a writable length, so that
+        // still succeeds. The value coercion (and its RangeError) then happens once, inside
+        // DefineLengthProperty (ArraySetLength), via ToUint32 + ToNumber.
         if (IsLengthReadOnly())
         {
             if (throwError)
