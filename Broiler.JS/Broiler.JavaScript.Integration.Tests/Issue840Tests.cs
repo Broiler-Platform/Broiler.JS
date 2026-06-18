@@ -234,4 +234,50 @@ public class Issue840Tests
     [InlineData("toLocaleTimeString")]
     public void ToLocaleMethodsReturnInvalidDateForNaN(string method)
         => Assert.Equal("Invalid Date", Eval($"new Date(NaN).{method}()"));
+
+    // ---- Problems 57/58: %TypedArray%.prototype.fill coerces the value once ----
+    //
+    // §23.2.3.10 step 4 converts the fill value (ToNumber, or ToBigInt for bigint element
+    // types) exactly once, before reading start/end, and then writes that single result to
+    // every position. The engine assigned the raw argument inside the loop, so the element
+    // setter re-ran ToNumber/ToBigInt once per filled index.
+
+    [Fact]
+    public void TypedArrayFillCoercesNumberValueExactlyOnce()
+        => Assert.Equal("2|1,1,1", Eval(
+            "(function () {" +
+            "  var n = 1;" +
+            "  var sample = new Float64Array(3);" +
+            "  sample.fill({ valueOf() { return n++; } });" +
+            "  return n + '|' + sample.join(',');" +
+            "})()"));
+
+    [Fact]
+    public void TypedArrayFillCoercesBigIntValueExactlyOnce()
+        => Assert.Equal("2|1,1,1", Eval(
+            "(function () {" +
+            "  var n = 1n;" +
+            "  var sample = new BigInt64Array(3);" +
+            "  sample.fill({ valueOf() { return n++; } });" +
+            "  return n + '|' + sample.join(',');" +
+            "})()"));
+
+    [Fact]
+    public void TypedArrayFillCoercesValueBeforeStartAndEnd()
+        => Assert.Equal("v,s,e", Eval(
+            "(function () {" +
+            "  var log = [];" +
+            "  new Int8Array(3).fill(" +
+            "    { valueOf() { log.push('v'); return 0; } }," +
+            "    { valueOf() { log.push('s'); return 0; } }," +
+            "    { valueOf() { log.push('e'); return 3; } });" +
+            "  return log.join(',');" +
+            "})()"));
+
+    [Theory]
+    [InlineData("new Int8Array([1,2,3,4]).fill(9,1,3).join(',')", "1,9,9,4")]
+    [InlineData("new Int8Array([1,2,3,4]).fill(9,-3,-1).join(',')", "1,9,9,4")]
+    [InlineData("new Float64Array(2).fill(7).join(',')", "7,7")]
+    public void TypedArrayFillStillFillsTheRequestedRange(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }
