@@ -8147,6 +8147,54 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Temporal_PlainTime_From_And_With_Read_Fields_Before_Overflow_Match_Test262()
+    {
+        // Regression: Temporal.PlainTime.from / .prototype.with read the time fields in
+        // alphabetical order (hour, microsecond, millisecond, minute, nanosecond, second),
+        // coercing each as read, and read the overflow option last. Both read overflow
+        // first; .with also skipped the calendar/timeZone rejection that must run before
+        // the fields (test262 PlainTime/from and PlainTime/prototype/with
+        // order-of-operations).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function observe(vals) {
+                var log = [], o = {};
+                Object.keys(vals).forEach(function (k) {
+                    Object.defineProperty(o, k, { enumerable: true, get: function () {
+                        log.push('get ' + k);
+                        var v = vals[k];
+                        if (typeof v === 'number') return { valueOf: function () { log.push('call ' + k); return v; } };
+                        if (typeof v === 'string') return { toString: function () { log.push('call ' + k); return v; } };
+                        return v;
+                    }});
+                });
+                return { o: o, log: log };
+            }
+            var timeFields = { hour: 1, minute: 2, second: 3, millisecond: 4, microsecond: 5, nanosecond: 6 };
+
+            var ff = observe(timeFields); var fo = observe({ overflow: 'constrain' });
+            Temporal.PlainTime.from(ff.o, fo.o);
+
+            var t = Temporal.PlainTime.from('01:00:00');
+            var wf = observe(Object.assign({ calendar: undefined, timeZone: undefined }, timeFields));
+            var wo = observe({ overflow: 'constrain' });
+            t.with(wf.o, wo.o);
+
+            [
+                'from=' + ff.log.join(',') + '/' + fo.log.join(','),
+                'with=' + wf.log.join(',') + '/' + wo.log.join(',')
+            ].join(' | ');
+        ");
+
+        Assert.Equal(
+            "from=get hour,call hour,get microsecond,call microsecond,get millisecond,call millisecond,get minute,call minute,get nanosecond,call nanosecond,get second,call second/get overflow,call overflow | " +
+            "with=get calendar,get timeZone,get hour,call hour,get microsecond,call microsecond,get millisecond,call millisecond,get minute,call minute,get nanosecond,call nanosecond,get second,call second/get overflow,call overflow",
+            result.ToString());
+    }
+
+    [Fact]
     public void Temporal_ToString_Reads_Options_Alphabetically_Before_Validation_Match_Test262()
     {
         // Regression: Temporal toString reads its options in alphabetical order, coercing

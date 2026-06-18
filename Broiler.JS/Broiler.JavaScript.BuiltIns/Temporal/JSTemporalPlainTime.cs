@@ -106,7 +106,10 @@ public partial class JSTemporalPlainTime : JSObject
             return parsed;
         }
 
-        return ToTemporalTime(item, ReadOverflow(options));
+        // The recognized time fields are read (alphabetically) before the overflow
+        // option, so the option getter runs last (test262 PlainTime/from
+        // order-of-operations).
+        return ToTemporalTime(item, () => ReadOverflow(options));
     }
 
     [JSExport("compare", Length = 2)]
@@ -127,7 +130,11 @@ public partial class JSTemporalPlainTime : JSObject
         if (a.GetAt(0) is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainTime.prototype.with requires an object");
 
-        var overflow = ReadOverflow(a.GetAt(1));
+        // IsPartialTemporalObject reads (and rejects) calendar / timeZone before the time
+        // fields, which ToTemporalTimeRecord then reads in alphabetical order — hour,
+        // microsecond, millisecond, minute, nanosecond, second — coercing each as read;
+        // the overflow option is read last (test262 PlainTime/prototype/with order-of-operations).
+        TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
 
         var any = false;
         int Read(string name, int current)
@@ -139,14 +146,16 @@ public partial class JSTemporalPlainTime : JSObject
         }
 
         var h = Read("hour", hour);
-        var mi = Read("minute", minute);
-        var s = Read("second", second);
-        var ms = Read("millisecond", millisecond);
         var us = Read("microsecond", microsecond);
+        var ms = Read("millisecond", millisecond);
+        var mi = Read("minute", minute);
         var ns = Read("nanosecond", nanosecond);
+        var s = Read("second", second);
 
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainTime.prototype.with requires at least one time property");
+
+        var overflow = ReadOverflow(a.GetAt(1));
 
         return RegulateTime(h, mi, s, ms, us, ns, overflow);
     }
@@ -489,6 +498,12 @@ public partial class JSTemporalPlainTime : JSObject
     }
 
     private static JSValue ToTemporalTime(JSValue item, string overflow)
+        => ToTemporalTime(item, () => overflow);
+
+    // The overflow option is supplied as a callback so a caller (PlainTime.from) can
+    // defer reading it until *after* the time fields have been read, matching the spec
+    // order; callers with a fixed overflow ("constrain") pass a constant.
+    private static JSValue ToTemporalTime(JSValue item, Func<string> readOverflow)
     {
         if (item is JSTemporalPlainTime t)
             return new JSTemporalPlainTime(t.TotalNanoseconds(), PlainTimePrototype);
@@ -520,7 +535,7 @@ public partial class JSTemporalPlainTime : JSObject
         if (!any)
             throw JSEngine.NewTypeError("Temporal.PlainTime: object has no time properties");
 
-        return RegulateTime(h, mi, s, ms, us, ns, overflow);
+        return RegulateTime(h, mi, s, ms, us, ns, readOverflow());
     }
 
     // The time-of-day grammar with *consistent* separators: either every component is colon-separated
