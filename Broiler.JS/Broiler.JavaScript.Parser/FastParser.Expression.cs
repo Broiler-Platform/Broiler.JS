@@ -116,6 +116,16 @@ partial class FastParser
         // Use CheckAndConsumeNoLineTerminator to reject `(a) \n => {}`
         if (stream.CheckAndConsumeNoLineTerminator(TokenTypes.Lambda))
         {
+            // ArrowParameters must not Contain an AwaitExpression / YieldExpression
+            // (early Syntax error). The parameter list was parsed under the cover grammar
+            // as an ordinary expression, so — unlike a normal FormalParameters list — the
+            // await/yield parse sites did not reject it; check the refined parameters here.
+            // await/yield expressions only exist inside an async/generator context, so the
+            // scan is limited to those (the enclosing context, still in effect before the
+            // arrow's own context is established below).
+            if ((inAsyncFunctionBody || inGeneratorBody) && AwaitYieldParameterDetector.Contains(node))
+                throw stream.Unexpected();
+
             var scope = variableScope.Push(token, FastNodeType.FunctionExpression);
             try
             {

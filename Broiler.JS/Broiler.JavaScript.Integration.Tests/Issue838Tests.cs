@@ -26,6 +26,15 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   parenthetical) before matching, so toString/toTimeString output round-trips while the ISO
 //   forms, the UTC string, and the negative-zero extended-year rejection are unaffected.
 //
+//   Problem 67 (await/yield in arrow-function parameters) — under the cover grammar the arrow
+//   parameter list is parsed as an ordinary parenthesised expression, so an AwaitExpression /
+//   YieldExpression inside it (e.g. `(a = await 1) => {}` in an async function) was accepted by
+//   the parser and only blew up at code generation with a NotImplementedException. The refined
+//   ArrowParameters are now checked for a contained await/yield (not crossing nested function /
+//   class boundaries), which is the spec early error, so it is a SyntaxError. Valid uses — await
+//   in a nested async arrow's default, in the arrow body, or `await`/`yield` as identifiers
+//   outside async/generator code — are unaffected.
+//
 //   Problem 68 (`for await` requires a for-of head) — the for-statement parser rejected a
 //   for-in head with `await` but accepted a C-style head (`for await (;;)`,
 //   `for await (init; test; update)`), which is a SyntaxError. The parser now rejects any
@@ -653,4 +662,32 @@ public class Issue838Tests
             "var k=''; for (var x in {a:1,b:2}) k+=x;" +
             "var t=0; for (var y of [1,2,3]) t+=y;" +
             "s + ',' + k + ',' + t"));
+
+    // ---- Problem 67: await/yield in arrow parameters is a SyntaxError ----
+
+    [Fact]
+    public void AwaitInAsyncArrowParameterDefaultIsSyntaxError()
+        => Assert.Equal("SyntaxError", Eval(SyntaxCheck("async function f(){ return (a = await 1) => {}; }")));
+
+    [Fact]
+    public void AwaitRegexInAsyncArrowParameterDefaultIsSyntaxError()
+        => Assert.Equal("SyntaxError", Eval(SyntaxCheck("async function f(){ return (a = await /r/g) => {}; }")));
+
+    [Fact]
+    public void YieldInGeneratorArrowParameterDefaultIsSyntaxError()
+        => Assert.Equal("SyntaxError", Eval(SyntaxCheck("function* g(){ return (a = yield 1) => {}; }")));
+
+    [Fact]
+    public void AwaitInNestedAsyncArrowDefaultIsAllowed()
+        => Assert.Equal("ok", Eval(
+            "function chk(s){ try { eval(s); return 'ok'; } catch (e) { return e.constructor.name; } }" +
+            "chk('async function f(){ var g = (a = (async () => await 1)) => a; }')"));
+
+    [Fact]
+    public void AwaitInArrowBodyAndPlainArrowsAreAllowed()
+        => Assert.Equal("ok,ok,ok", Eval(
+            "function chk(s){ try { eval(s); return 'ok'; } catch (e) { return e.constructor.name; } }" +
+            "chk('async function f(){ var g = async () => await 1; }') + ',' +" +
+            "chk('var g = (a = 5) => a;') + ',' +" +
+            "chk('async function f(){ return (await 1); }')"));
 }
