@@ -54,4 +54,64 @@ public class Issue840Tests
     [Fact]
     public void RegExpStillConstructsAndMatches()
         => Assert.Equal("true", Eval("/a(b)c/.test('abc')"));
+
+    // ---- Problems 95/96/97: Intl.DurationFormat out-of-range fields ----
+    //
+    // ToDurationRecord runs IsValidDuration: years/months/weeks must each be below 2^32 in
+    // magnitude, and the combined time portion (days..nanoseconds) must total under 2^53
+    // seconds. The validator previously only checked integrality and sign consistency, so a
+    // RangeError was never thrown for these out-of-range fields.
+
+    private static string ThrowsRange(string durationLiteral)
+        => Eval(
+            "(function () {" +
+            "  var df = new Intl.DurationFormat();" +
+            "  try { df.format(" + durationLiteral + "); return false; }" +
+            "  catch (e) { return e instanceof RangeError; }" +
+            "})()");
+
+    private static string FormatsWithoutThrowing(string durationLiteral)
+        => Eval(
+            "(function () {" +
+            "  var df = new Intl.DurationFormat();" +
+            "  return typeof df.format(" + durationLiteral + ") === 'string';" +
+            "})()");
+
+    [Theory]
+    [InlineData("{ years: 4294967296 }")]      // 2^32
+    [InlineData("{ years: -4294967296 }")]
+    [InlineData("{ months: 4294967297 }")]     // 2^32 + 1
+    [InlineData("{ weeks: Number.MAX_SAFE_INTEGER }")]
+    [InlineData("{ years: Number.MAX_VALUE }")]
+    public void YearsMonthsWeeksAboveTwoPow32Throw(string durationLiteral)
+        => Assert.Equal("true", ThrowsRange(durationLiteral));
+
+    [Theory]
+    [InlineData("{ years: 4294967295 }")]      // 2^32 - 1
+    [InlineData("{ months: -4294967295 }")]
+    [InlineData("{ weeks: 4294967295 }")]
+    public void YearsMonthsWeeksAtTwoPow32MinusOneAreValid(string durationLiteral)
+        => Assert.Equal("true", FormatsWithoutThrowing(durationLiteral));
+
+    [Theory]
+    [InlineData("{ days: 104249991375 }")]     // ceil((2^53)/86400)
+    [InlineData("{ seconds: Number.MAX_SAFE_INTEGER + 1 }")]
+    public void TimeTotalAtOrAboveTwoPow53SecondsThrows(string durationLiteral)
+        => Assert.Equal("true", ThrowsRange(durationLiteral));
+
+    [Theory]
+    [InlineData("{ days: 104249991374 }")]     // floor(MAX_SAFE/86400)
+    [InlineData("{ seconds: Number.MAX_SAFE_INTEGER }")]
+    public void TimeTotalBelowTwoPow53SecondsIsValid(string durationLiteral)
+        => Assert.Equal("true", FormatsWithoutThrowing(durationLiteral));
+
+    [Fact]
+    public void CombinedTimeFieldsExceedingTheLimitThrow()
+        => Assert.Equal("true", ThrowsRange(
+            "{ days: 104249991374, hours: 7, minutes: 36, seconds: 31, " +
+            "milliseconds: 999, microseconds: 999, nanoseconds: 1000 }"));
+
+    [Fact]
+    public void OrdinaryDurationStillFormats()
+        => Assert.Equal("true", FormatsWithoutThrowing("{ hours: 1, minutes: 30 }"));
 }

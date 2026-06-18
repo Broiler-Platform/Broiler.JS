@@ -2699,8 +2699,12 @@ public sealed class JSIntlDurationFormat : JSObject
         var any = false;
         var hasPositive = false;
         var hasNegative = false;
-        foreach (var unit in Units)
+        // Field values in Units order (years, months, weeks, days, hours, minutes,
+        // seconds, milliseconds, microseconds, nanoseconds); absent fields stay 0.
+        var values = new double[Units.Length];
+        for (var i = 0; i < Units.Length; i++)
         {
+            var unit = Units[i];
             var value = durationObject[KeyStrings.GetOrCreate(unit)];
             // A field left undefined is absent; reading by key also runs any getter.
             if (value == null || value.IsUndefined)
@@ -2715,6 +2719,7 @@ public sealed class JSIntlDurationFormat : JSObject
             if (double.IsNaN(numericValue) || double.IsInfinity(numericValue) || Math.Truncate(numericValue) != numericValue)
                 throw JSEngine.NewRangeError($"Invalid duration value for {unit}");
 
+            values[i] = numericValue;
             hasPositive |= numericValue > 0;
             hasNegative |= numericValue < 0;
         }
@@ -2725,6 +2730,31 @@ public sealed class JSIntlDurationFormat : JSObject
 
         if (hasPositive && hasNegative)
             throw JSEngine.NewRangeError("Invalid duration: inconsistent sign");
+
+        // IsValidDuration (Temporal §7.5.x), invoked by ToDurationRecord: the years,
+        // months and weeks fields must each be below 2^32 in magnitude, and the combined
+        // time portion (days through nanoseconds) must total under 2^53 seconds. The total
+        // is computed with exact integer arithmetic — every field is integral here, so the
+        // real value of each double is exact — to avoid the rounding that floating-point
+        // multiplication by 10^-3/10^-6/10^-9 would introduce near the 2^53 boundary.
+        const double twoPow32 = 4294967296d; // 2^32
+        for (var i = 0; i < 3; i++)
+        {
+            if (Math.Abs(values[i]) >= twoPow32)
+                throw JSEngine.NewRangeError($"Duration value for {Units[i]} is out of range");
+        }
+
+        // Nanoseconds per: day, hour, minute, second, millisecond, microsecond, nanosecond.
+        ReadOnlySpan<long> nanosPerUnit =
+            [86_400_000_000_000L, 3_600_000_000_000L, 60_000_000_000L, 1_000_000_000L, 1_000_000L, 1_000L, 1L];
+        var totalNanoseconds = BigInteger.Zero;
+        for (var i = 0; i < nanosPerUnit.Length; i++)
+            totalNanoseconds += new BigInteger(values[i + 3]) * nanosPerUnit[i];
+
+        // 2^53 seconds expressed in nanoseconds (9007199254740992 × 10^9).
+        var maxNanoseconds = new BigInteger(9007199254740992L) * 1_000_000_000L;
+        if (BigInteger.Abs(totalNanoseconds) >= maxNanoseconds)
+            throw JSEngine.NewRangeError("Duration time total is out of range");
     }
 }
 
