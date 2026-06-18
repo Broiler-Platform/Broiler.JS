@@ -8147,6 +8147,32 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void ForLoop_Var_Head_Inside_Eval_Persists_Binding_Match_Test262()
+    {
+        // Regression: a `var`-declared for-in/for-of loop variable is, inside a
+        // (direct or indirect) eval, a dynamic binding on the surrounding variable
+        // environment. The compiler used the binding's lvalue directly as the
+        // enumerator MoveNext out-argument, which did not persist the write, so the
+        // loop variable read back as undefined every iteration. The completion value
+        // of `eval("for(var i in obj) ...")` then accumulated "undefined"s
+        // (test262 language/statements/for-in/S12.6.4_A3.1 and _A4.1).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            var str = '';
+            var completion = eval(""for (var ind in (arr = [2,1,4,3])) str += arr[ind]"");
+            var ofParts = [];
+            eval(""for (var v of [7,8,9]) ofParts.push(v)"");
+            var indirectParts = [];
+            (0, eval)(""for (var w in {a:1,b:2}) indirectParts.push(w)"");
+            [str, completion, ofParts.join(','), indirectParts.join(',')].join('|');
+        ");
+
+        Assert.Equal("2143|2143|7,8,9|a,b", result.ToString());
+    }
+
+    [Fact]
     public void ForIn_NonEnumerable_Own_Property_Shadows_Inherited_Enumerable_Match_Test262()
     {
         // Regression: a non-enumerable own property must shadow a same-named

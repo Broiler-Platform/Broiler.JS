@@ -275,7 +275,20 @@ partial class FastCompiler
             return false;
 
         var declarator = declaration.Declarators[0];
-        if (declarator.Identifier.Type is not (FastNodeType.ArrayPattern or FastNodeType.ObjectPattern))
+        var isPattern = declarator.Identifier.Type is FastNodeType.ArrayPattern or FastNodeType.ObjectPattern;
+
+        // A simple `var` identifier head is also routed through the per-iteration
+        // assignment path. Inside a (direct or indirect) eval a `var` loop variable
+        // is a dynamic binding on the surrounding variable environment; using its
+        // lvalue directly as the MoveNext out-argument did not persist the write, so
+        // the loop variable read back as undefined on every iteration. Going through
+        // CreateAssignment writes the dynamic/global binding correctly (the same path
+        // a free bare-identifier head already uses). `let`/`const` simple identifiers
+        // are block-scoped statics and keep their existing direct-binding path.
+        var isVarIdentifier = declarator.Identifier.Type == FastNodeType.Identifier
+            && declaration.Kind == FastVariableKind.Var;
+
+        if (!isPattern && !isVarIdentifier)
             return false;
 
         iterationValueVariable = YExpression.Variable(typeof(JSValue), "#forOfValue");
