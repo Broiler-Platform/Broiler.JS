@@ -1,10 +1,31 @@
 ﻿using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Broiler.JavaScript.Runtime;
 
 public static class DateParser
 {
+    // Date.prototype.toString() / toTimeString() emit the implementation-defined shape
+    // "… GMT+0000 (Coordinated Universal Time)". .NET's offset specifier (K / zzz) needs a
+    // colon ("+00:00") and does not understand the trailing parenthesised zone name, so the
+    // engine's own toString output did not round-trip through Date.parse. Normalise that
+    // shape — insert the colon and drop the zone-name parenthetical — before parsing.
+    private static readonly Regex GmtOffsetWithoutColon =
+        new(@"GMT([+-]\d{2})(\d{2})", RegexOptions.Compiled);
+    private static readonly Regex TrailingZoneName =
+        new(@"\s*\([^)]*\)\s*$", RegexOptions.Compiled);
+
+    private static string NormalizeToStringZone(string text)
+    {
+        if (text.IndexOf("GMT", StringComparison.Ordinal) < 0)
+            return text;
+
+        text = TrailingZoneName.Replace(text, string.Empty);
+        text = GmtOffsetWithoutColon.Replace(text, "GMT$1:$2");
+        return text;
+    }
+
     internal static readonly string[] DefaultFormats = [
         "yyyy-MM-ddTHH:mm:ss.FFF",
         "yyyy-MM-ddTHH:mm:ss",
@@ -55,6 +76,8 @@ public static class DateParser
 
     internal static DateTimeOffset Parse(string text)
     {
+        text = NormalizeToStringZone(text);
+
         if (DateTimeOffset.TryParseExact(text, DefaultFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var result))
             return result;
 

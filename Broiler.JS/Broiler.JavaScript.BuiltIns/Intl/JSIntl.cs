@@ -44,6 +44,7 @@ public static class JSIntl
     private static readonly KeyString CurrencySignKey = KeyStrings.GetOrCreate("currencySign");
     private static readonly string[] CurrencyDisplayValues = ["code", "symbol", "narrowSymbol", "name"];
     private static readonly string[] CurrencySignValues = ["standard", "accounting"];
+    private static readonly string[] NumberFormatStyleValues = ["decimal", "percent", "currency", "unit"];
     private static readonly KeyString UnitKey = KeyStrings.GetOrCreate("unit");
     private static readonly KeyString TypeKey = KeyStrings.GetOrCreate("type");
     private static readonly KeyString LocaleMatcherKey = KeyStrings.GetOrCreate("localeMatcher");
@@ -155,6 +156,16 @@ public static class JSIntl
                     var list = JSValue.CreateArray();
                     foreach (var c in IntlEnumerationData.Currencies)
                         list.AddArrayItem(JSValue.CreateString(c));
+                    return list;
+                }
+
+                if (key == "collation")
+                {
+                    // The collations this engine recognises (the set the Collator resolves
+                    // against), excluding the reserved "standard"/"search", in ascending order.
+                    var list = JSValue.CreateArray();
+                    foreach (var co in SupportedCollationsSorted)
+                        list.AddArrayItem(JSValue.CreateString(co));
                     return list;
                 }
 
@@ -694,6 +705,39 @@ public static class JSIntl
         ["gregorian"] = "gregory",
     };
 
+    // Bcp47 collation ("co") keyword value aliases (UTS #35). The deprecated long names mostly
+    // exceed the 8-char subtag limit so they can only arrive as an option value, but the table
+    // is applied uniformly to both the option and the -u-co- tag value.
+    private static readonly Dictionary<string, string> CollationValueAliases = new(StringComparer.Ordinal)
+    {
+        ["dictionary"] = "dict",
+        ["gb2312han"] = "gb2312",
+        ["phonebook"] = "phonebk",
+        ["traditional"] = "trad",
+    };
+
+    // Collation types sanctioned by CLDR for a "co" keyword. "standard" and "search" are
+    // reserved (never reflected as the resolved collation), so they are excluded; any other
+    // value is unsupported and falls back to "default".
+    private static readonly HashSet<string> KnownCollations = new(StringComparer.Ordinal)
+    {
+        "big5han", "compat", "dict", "direct", "ducet", "emoji", "eor", "gb2312",
+        "phonebk", "phonetic", "pinyin", "reformed", "searchjl", "stroke",
+        "trad", "unihan", "zhuyin",
+    };
+
+    // The recognised collations in ascending code-unit order, for Intl.supportedValuesOf
+    // ("collation"). Kept in sync with KnownCollations (both exclude "standard"/"search").
+    private static readonly string[] SupportedCollationsSorted = BuildSortedCollations();
+
+    private static string[] BuildSortedCollations()
+    {
+        var array = new string[KnownCollations.Count];
+        KnownCollations.CopyTo(array);
+        System.Array.Sort(array, StringComparer.Ordinal);
+        return array;
+    }
+
     private static readonly Regex UnicodeKeywordTypePattern =
         new(@"^[0-9a-z]{3,8}(?:-[0-9a-z]{3,8})*$", RegexOptions.CultureInvariant);
 
@@ -832,7 +876,74 @@ public static class JSIntl
             return value;
         if (key == "ca" && CalendarValueAliases.TryGetValue(value, out var ca))
             return ca;
+        if (key == "co" && CollationValueAliases.TryGetValue(value, out var co))
+            return co;
         return value;
+    }
+
+    // Canonicalizes a requested collation value (option or -u-co- tag) and returns it only
+    // when it is a recognised collation; an unsupported (or reserved "standard"/"search")
+    // value returns null so the caller falls back to the "default" collation.
+    internal static string CanonicalizeCollation(string value)
+    {
+        if (value == null)
+            return null;
+        var lower = value.ToLowerInvariant();
+        if (!UnicodeKeywordTypePattern.IsMatch(lower))
+            return null;
+        var canonical = CanonicalizeKeywordValue("co", lower);
+        return KnownCollations.Contains(canonical) ? canonical : null;
+    }
+
+    // Applies the Unicode ("-u-") keyword type-value aliases (CanonicalizeUnicodeLocaleId,
+    // UTS #35) over an already case-folded tag — e.g. "en-u-ca-islamicc" → "en-u-ca-islamic-
+    // civil". Walks the -u- sequence: attributes (3–8 chars) precede the keyword pairs, each a
+    // 2-char key followed by its 3–8-char type subtags; the joined type is mapped through the
+    // alias tables. Keyword reordering is intentionally not applied here.
+    private static string CanonicalizeUnicodeKeywordValues(string tag)
+    {
+        var subtags = tag.Split('-');
+        var u = -1;
+        for (var i = 0; i < subtags.Length; i++)
+            if (subtags[i].Length == 1 && subtags[i][0] == 'u') { u = i; break; }
+        if (u < 0)
+            return tag;
+
+        var result = new List<string>(subtags.Length);
+        for (var i = 0; i <= u; i++)
+            result.Add(subtags[i]);
+
+        var j = u + 1;
+        // Attributes (3–8 chars) appear before the first 2-char key.
+        while (j < subtags.Length && subtags[j].Length >= 3 && subtags[j].Length <= 8)
+        {
+            result.Add(subtags[j]);
+            j++;
+        }
+
+        // Keyword pairs, until the extension ends (a 1-char singleton starts the next one).
+        while (j < subtags.Length && subtags[j].Length == 2)
+        {
+            var key = subtags[j];
+            j++;
+            var types = new List<string>();
+            while (j < subtags.Length && subtags[j].Length >= 3 && subtags[j].Length <= 8)
+            {
+                types.Add(subtags[j]);
+                j++;
+            }
+
+            result.Add(key);
+            var canonical = CanonicalizeKeywordValue(key, string.Join("-", types));
+            if (canonical.Length > 0)
+                result.AddRange(canonical.Split('-'));
+        }
+
+        // Any following singleton extension / private-use sequence is copied verbatim.
+        for (; j < subtags.Length; j++)
+            result.Add(subtags[j]);
+
+        return string.Join("-", result);
     }
 
     private static void SetKeyword(List<(string Key, List<string> Types)> keywords, string key, string value)
@@ -894,7 +1005,7 @@ public static class JSIntl
             ?? throw JSEngine.NewTypeError("Options must be an object");
     }
 
-    private static JSValue CanonicalizeLocaleList(JSValue locales)
+    internal static JSValue CanonicalizeLocaleList(JSValue locales)
     {
         var result = JSValue.CreateArray();
 
@@ -983,7 +1094,7 @@ public static class JSIntl
         if (RegularGrandfatheredMappings.TryGetValue(tag, out var preferred))
             return preferred;
 
-        return CanonicalizeLanguageTagCase(tag);
+        return CanonicalizeUnicodeKeywordValues(CanonicalizeLanguageTagCase(tag));
     }
 
     // CanonicalizeUnicodeLocaleId case folding (UTS #35 §3.2.1): the language
@@ -1117,8 +1228,10 @@ public static class JSIntl
         if (options == null)
             return new JSIntlNumberFormatResolved("standard", "auto", null, null);
 
-        var styleValue = options[StyleKey];
-        var style = styleValue.IsUndefined ? null : styleValue.StringValue;
+        // GetOption validates "style" against the sanctioned set ("decimal", "percent",
+        // "currency", "unit") — a value such as "invalid" is a RangeError — and applies the
+        // "decimal" default. It is read first, matching SetNumberFormatUnitOptions order.
+        var style = GetOption(options, StyleKey, NumberFormatStyleValues, false, "decimal");
 
         var currencyValue = options[CurrencyKey];
         if (!currencyValue.IsUndefined)
@@ -1472,9 +1585,11 @@ public static class JSIntl
         var value = options == null ? null : OptionString(options, KeyStrings.GetOrCreate("calendar"));
         if (value == null)
             return null;
-        if (!UnicodeKeywordTypePattern.IsMatch(value.ToLowerInvariant()))
+        value = value.ToLowerInvariant();
+        if (!UnicodeKeywordTypePattern.IsMatch(value))
             throw JSEngine.NewRangeError("Invalid calendar option");
-        return value;
+        // Canonicalize deprecated calendar aliases (e.g. "islamicc" → "islamic-civil").
+        return CanonicalizeKeywordValue("ca", value);
     }
 
     // Negotiates the resolved `nu` (numbering system) against the locale's `-u-nu-`
@@ -2900,6 +3015,30 @@ public sealed class JSIntlLocale : JSObject
         ["BR"] = "America/Sao_Paulo", ["MX"] = "America/Mexico_City",
     };
 
+    // Scripts written right-to-left (ISO 15924 codes), used by getTextInfo to report the
+    // locale's character direction. Not exhaustive, but covers the scripts CLDR marks RTL.
+    private static readonly HashSet<string> RightToLeftScripts = new(StringComparer.Ordinal)
+    {
+        "Adlm", "Arab", "Aran", "Hebr", "Mand", "Mani", "Mend", "Merc", "Mero", "Narb",
+        "Nbat", "Nkoo", "Orkh", "Palm", "Phli", "Phlp", "Phnx", "Prti", "Rohg", "Samr",
+        "Sarb", "Sogd", "Sogo", "Syrc", "Thaa", "Yezi",
+    };
+
+    // Languages whose default script is right-to-left, consulted when the tag carries no
+    // explicit script subtag (e.g. "ar", "he", "fa").
+    private static readonly HashSet<string> RightToLeftLanguages = new(StringComparer.Ordinal)
+    {
+        "ar", "arc", "ckb", "dv", "fa", "glk", "he", "ku", "mzn", "nqo", "prs",
+        "ps", "sd", "syr", "ug", "ur", "yi",
+    };
+
+    // Regions where the week conventionally starts on Sunday (firstDay 7); everywhere else
+    // defaults to Monday (firstDay 1). An approximation sufficient for sensible defaults.
+    private static readonly HashSet<string> SundayFirstRegions = new(StringComparer.Ordinal)
+    {
+        "US", "CA", "AU", "BR", "CN", "JP", "KR", "IL", "IN", "MX", "PH", "ZA", "HK", "TW",
+    };
+
     public JSIntlLocale(string tag = "und") : base(CurrentPrototype()) => this.tag = tag;
 
     // The [[Locale]] internal slot: the canonical language tag. Used by
@@ -3029,8 +3168,15 @@ public sealed class JSIntlLocale : JSObject
 
     public static JSValue GetTextInfoPrototype(in Arguments a)
     {
-        RequireLocale(in a, "getTextInfo");
-        return new JSObject();
+        var locale = RequireLocale(in a, "getTextInfo");
+
+        // §1.4.x getTextInfo: an object with a single "direction" property ("ltr" / "rtl").
+        var info = new JSObject();
+        info.FastAddValue(
+            KeyStrings.GetOrCreate("direction"),
+            JSValue.CreateString(locale.IsRightToLeft() ? "rtl" : "ltr"),
+            JSPropertyAttributes.EnumerableConfigurableValue);
+        return info;
     }
 
     public static JSValue GetTimeZonesPrototype(in Arguments a)
@@ -3052,8 +3198,27 @@ public sealed class JSIntlLocale : JSObject
 
     public static JSValue GetWeekInfoPrototype(in Arguments a)
     {
-        RequireLocale(in a, "getWeekInfo");
-        return new JSObject();
+        var locale = RequireLocale(in a, "getWeekInfo");
+
+        // §1.4.x getWeekInfo: { firstDay, weekend, minimalDays } in that key order. Day numbers
+        // follow ISO-8601 (Monday = 1 … Sunday = 7). CLDR's full per-region data is not bundled,
+        // so this uses reasonable defaults (Saturday+Sunday weekend, one minimal day) with a
+        // Sunday-first region table.
+        var region = locale.GetRegion();
+        var firstDay = region != null && SundayFirstRegions.Contains(region) ? 7 : 1;
+
+        var weekend = JSValue.CreateArray();
+        weekend.AddArrayItem(JSValue.CreateNumber(6)); // Saturday
+        weekend.AddArrayItem(JSValue.CreateNumber(7)); // Sunday
+
+        var info = new JSObject();
+        info.FastAddValue(KeyStrings.GetOrCreate("firstDay"),
+            JSValue.CreateNumber(firstDay), JSPropertyAttributes.EnumerableConfigurableValue);
+        info.FastAddValue(KeyStrings.GetOrCreate("weekend"),
+            weekend, JSPropertyAttributes.EnumerableConfigurableValue);
+        info.FastAddValue(KeyStrings.GetOrCreate("minimalDays"),
+            JSValue.CreateNumber(1), JSPropertyAttributes.EnumerableConfigurableValue);
+        return info;
     }
 
     public static JSValue ToStringPrototype(in Arguments a)
@@ -3135,6 +3300,16 @@ public sealed class JSIntlLocale : JSObject
         if (parts.Length > 1 && parts[1].Length == 4 && IsAllAlpha(parts[1]))
             return Titlecase(parts[1]);
         return null;
+    }
+
+    // Character direction for getTextInfo: an explicit script subtag wins, otherwise fall
+    // back to the language's default direction.
+    private bool IsRightToLeft()
+    {
+        var script = GetScript();
+        return script != null
+            ? RightToLeftScripts.Contains(script)
+            : RightToLeftLanguages.Contains(GetLanguage());
     }
 
     private string GetRegion()
@@ -3657,6 +3832,9 @@ public class JSIntlNumberFormat : JSObject
     // by short and long compactDisplay in these locales. Intermediate powers (e.g.
     // 10^5..10^7 for ja) reuse the lower unit, so the divisor is the largest unit
     // whose exponent does not exceed the value's magnitude.
+    // English (short) compact scale: 10^3 K, 10^6 M, 10^9 B, 10^12 T. Ordered largest-first
+    // so the FormatCompact loop picks the largest unit not exceeding the value's magnitude.
+    private static readonly (int Exp, string Suffix)[] CompactUnitsEn = [(12, "T"), (9, "B"), (6, "M"), (3, "K")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsJa = [(12, "兆"), (8, "億"), (4, "万")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsKo = [(12, "조"), (8, "억"), (4, "만"), (3, "천")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHant = [(12, "兆"), (8, "億"), (4, "萬")];
@@ -3669,6 +3847,8 @@ public class JSIntlNumberFormat : JSObject
         var language = (dash < 0 ? tag : tag[..dash]).ToLowerInvariant();
         switch (language)
         {
+            case "en":
+                return CompactUnitsEn;
             case "ja":
                 return CompactUnitsJa;
             case "ko":
@@ -3802,37 +3982,7 @@ public class JSIntlNumberFormat : JSObject
             && (resolved?.RoundingPriority ?? "auto") == "auto")
             return FormatSignificantDigits(magnitude, out roundedIsZero);
 
-        // SetNumberFormatDigitOptions: when only one of the fraction-digit bounds is
-        // given, the other defaults are pulled toward it — a lone maximum lowers the
-        // default minimum (min(defaultMin, max)), a lone minimum raises the default
-        // maximum (max(defaultMax, min)). The previous code only ever raised the
-        // maximum, so e.g. currency (default 2/2) with maximumFractionDigits:0 wrongly
-        // kept two fraction digits.
-        var hasMinFrac = HasOption("minimumFractionDigits");
-        var hasMaxFrac = HasOption("maximumFractionDigits");
-        int minFrac, maxFrac;
-        if (hasMinFrac && hasMaxFrac)
-        {
-            minFrac = ReadIntOption("minimumFractionDigits", defaultMinFrac);
-            maxFrac = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
-            if (maxFrac < minFrac)
-                maxFrac = minFrac;
-        }
-        else if (hasMaxFrac)
-        {
-            maxFrac = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
-            minFrac = Math.Min(defaultMinFrac, maxFrac);
-        }
-        else if (hasMinFrac)
-        {
-            minFrac = ReadIntOption("minimumFractionDigits", defaultMinFrac);
-            maxFrac = Math.Max(defaultMaxFrac, minFrac);
-        }
-        else
-        {
-            minFrac = defaultMinFrac;
-            maxFrac = defaultMaxFrac;
-        }
+        var (minFrac, maxFrac) = ResolveFractionDigits(defaultMinFrac, defaultMaxFrac);
         var minInt = ReadIntOption("minimumIntegerDigits", 1);
 
         var rounded = Math.Round(magnitude, Math.Clamp(maxFrac, 0, 15), MidpointRounding.AwayFromZero);
@@ -4030,6 +4180,47 @@ public class JSIntlNumberFormat : JSObject
     // Digit options come from the construction-time snapshot (read once from the
     // options bag), not the live options object, so format-time reads do not
     // re-invoke option getters.
+    // SetNumberFormatDigitOptions fraction-digit resolution: when only one of the
+    // fraction-digit bounds is given, the other default is pulled toward it — a lone maximum
+    // lowers the default minimum (min(defaultMin, max)), a lone minimum raises the default
+    // maximum (max(defaultMax, min)). Used by both the formatter and resolvedOptions so they
+    // agree; the defaults are style-dependent (currency → its minor-unit digit count).
+    internal (int Min, int Max) ResolveFractionDigits(int defaultMinFrac, int defaultMaxFrac)
+    {
+        var hasMinFrac = HasOption("minimumFractionDigits");
+        var hasMaxFrac = HasOption("maximumFractionDigits");
+        if (hasMinFrac && hasMaxFrac)
+        {
+            var min = ReadIntOption("minimumFractionDigits", defaultMinFrac);
+            var max = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
+            return (min, Math.Max(max, min));
+        }
+        if (hasMaxFrac)
+        {
+            var max = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
+            return (Math.Min(defaultMinFrac, max), max);
+        }
+        if (hasMinFrac)
+        {
+            var min = ReadIntOption("minimumFractionDigits", defaultMinFrac);
+            return (min, Math.Max(defaultMaxFrac, min));
+        }
+        return (defaultMinFrac, defaultMaxFrac);
+    }
+
+    // The default fraction-digit bounds for the resolved style: currency uses the currency's
+    // CLDR minor-unit count (CurrencyDigits, default 2) for both bounds; every other style
+    // uses 0 … 3, matching the magnitude formatter.
+    private (int Min, int Max) DefaultFractionDigits()
+    {
+        if (StyleOption() == "currency")
+        {
+            var cDigits = ResolveCurrency().FractionDigits;
+            return (cDigits, cDigits);
+        }
+        return (0, 3);
+    }
+
     private int ReadIntOption(string name, int fallback)
     {
         var snapshot = resolved?.DigitOptions;
@@ -4090,8 +4281,13 @@ public class JSIntlNumberFormat : JSObject
     private CldrCurrencyFormat ResolveCurrency()
         => CldrLocaleData.ResolveCurrency(
             locale,
-            ReadStringOption("currency", string.Empty),
+            ReadStringOption("currency", string.Empty).ToUpperInvariant(),
             ReadStringOption("currencyDisplay", "symbol"));
+
+    // The currency option is canonicalized to upper case (CanonicalizeUCurrencyCode); the
+    // value has already been validated as a well-formed 3-letter code at construction time.
+    private static JSValue CanonicalCurrencyValue(JSValue currency)
+        => JSValue.CreateString(currency.StringValue.ToUpperInvariant());
 
     private string ReadStringOption(string name, string fallback)
     {
@@ -4227,10 +4423,12 @@ public class JSIntlNumberFormat : JSObject
 
             // Spec order: currency, currencyDisplay, currencySign appear together (only when
             // style is "currency"), each with its resolved value.
+            // A well-formed currency code is canonicalized to upper case (e.g. "usd" → "USD")
+            // before it is reflected by resolvedOptions.
             if (style == "currency")
             {
                 if (!@this.options[currencyKey].IsUndefined)
-                    result.CreateDataProperty(currencyKey, @this.options[currencyKey]);
+                    result.CreateDataProperty(currencyKey, CanonicalCurrencyValue(@this.options[currencyKey]));
                 result.CreateDataProperty(KeyStrings.GetOrCreate("currencyDisplay"),
                     JSValue.CreateString(@this.ReadStringOption("currencyDisplay", "symbol")));
                 result.CreateDataProperty(KeyStrings.GetOrCreate("currencySign"),
@@ -4238,7 +4436,7 @@ public class JSIntlNumberFormat : JSObject
             }
             else if (!@this.options[currencyKey].IsUndefined)
             {
-                result.CreateDataProperty(currencyKey, @this.options[currencyKey]);
+                result.CreateDataProperty(currencyKey, CanonicalCurrencyValue(@this.options[currencyKey]));
             }
             if (!@this.options[unitKey].IsUndefined)
                 result.CreateDataProperty(unitKey, @this.options[unitKey]);
@@ -4258,15 +4456,13 @@ public class JSIntlNumberFormat : JSObject
             else
                 result.CreateDataProperty(minimumIntegerDigitsKey, JSValue.CreateNumber(1));
 
-            if (digits != null && !digits[minimumFractionDigitsKey].IsUndefined)
-                result.CreateDataProperty(minimumFractionDigitsKey, digits[minimumFractionDigitsKey]);
-            else
-                result.CreateDataProperty(minimumFractionDigitsKey, JSValue.CreateNumber(0));
-
-            if (digits != null && !digits[maximumFractionDigitsKey].IsUndefined)
-                result.CreateDataProperty(maximumFractionDigitsKey, digits[maximumFractionDigitsKey]);
-            else
-                result.CreateDataProperty(maximumFractionDigitsKey, JSValue.CreateNumber(3));
+            // Fraction-digit reflection mirrors the formatter: the style-dependent defaults
+            // (currency → its minor-unit digit count) feed the SetNumberFormatDigitOptions
+            // resolution, so e.g. JPY reports 0/0 and USD 2/2 rather than the decimal 0/3.
+            var (defMinFrac, defMaxFrac) = @this.DefaultFractionDigits();
+            var (minFrac, maxFrac) = @this.ResolveFractionDigits(defMinFrac, defMaxFrac);
+            result.CreateDataProperty(minimumFractionDigitsKey, JSValue.CreateNumber(minFrac));
+            result.CreateDataProperty(maximumFractionDigitsKey, JSValue.CreateNumber(maxFrac));
 
             // When either significant-digit option is supplied the other gets its
             // SetNumberFormatDigitOptions default (minimum → 1, maximum → 21), so
@@ -4350,8 +4546,8 @@ public class JSIntlCollator : JSObject
             numeric = kn == "true";
         if (TryGetUnicodeExtension(locale, "kf", out var kf) && (kf == "upper" || kf == "lower" || kf == "false"))
             caseFirst = kf;
-        if (TryGetUnicodeExtension(locale, "co", out var co) && IsValidCollation(co))
-            collation = co;
+        if (TryGetUnicodeExtension(locale, "co", out var co) && JSIntl.CanonicalizeCollation(co) is { } tagCo)
+            collation = tagCo;
 
         if (TryGetOwnOption(options, "usage", out var usageValue))
             usage = usageValue.StringValue;
@@ -4363,8 +4559,9 @@ public class JSIntlCollator : JSObject
             numeric = numericValue.BooleanValue;
         if (TryGetOwnOption(options, "caseFirst", out var caseFirstValue))
             caseFirst = caseFirstValue.StringValue;
-        if (TryGetOwnOption(options, "collation", out var collationValue) && IsValidCollation(collationValue.StringValue))
-            collation = collationValue.StringValue;
+        if (TryGetOwnOption(options, "collation", out var collationValue)
+            && JSIntl.CanonicalizeCollation(collationValue.StringValue) is { } optCo)
+            collation = optCo;
     }
 
     private JSIntlCollator() : base(CurrentPrototype()) { }
@@ -4437,8 +4634,6 @@ public class JSIntlCollator : JSObject
         return false;
     }
 
-    private static bool IsValidCollation(string value)
-        => Regex.IsMatch(value, @"^[0-9A-Za-z]{3,8}(?:-[0-9A-Za-z]{3,8})*$", RegexOptions.CultureInvariant);
 
     private static JSObject CurrentPrototype()
         => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl

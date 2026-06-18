@@ -82,17 +82,20 @@ public class Issue663Tests
 
     // value.js / array-find-from-last.js: the spec list is present as enumerable,
     // writable, configurable data properties valued `true`.
+    // §23.1.3.40: the change-array-by-copy proposal added toReversed/toSorted/toSpliced to
+    // the @@unscopables list but NOT "with" (a reserved word that can never name a binding
+    // shadowed inside a `with` statement), so "with" must be absent (see issue #838 Problem 35).
     [Fact]
     public void UnscopablesListsTheFullSpecSetAsEnumerableTrue()
         => Assert.Equal("true", Eval(
             "var u=Array.prototype[Symbol.unscopables];"
             + "var names=['copyWithin','entries','fill','find','findIndex','findLast',"
-            + "'findLastIndex','flat','flatMap','includes','keys','values','with',"
+            + "'findLastIndex','flat','flatMap','includes','keys','values',"
             + "'toReversed','toSorted','toSpliced','at'];"
             + "var ok=names.every(function(n){"
             + " var d=Object.getOwnPropertyDescriptor(u,n);"
             + " return d && d.value===true && d.writable && d.enumerable && d.configurable; });"
-            + "String(ok)"));
+            + "String(ok && !('with' in u))"));
 
     // ---- Problem 10: invalid localeMatcher is a RangeError ----
 

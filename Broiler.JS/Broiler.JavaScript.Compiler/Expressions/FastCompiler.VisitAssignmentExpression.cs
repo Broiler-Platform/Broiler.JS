@@ -754,13 +754,33 @@ partial class FastCompiler
         var restInits = new Sequence<YExpression>
         {
             YExpression.Assign(restTemp.Variable, JSObjectBuilder.New()),
-            JSObjectBuilder.AddRange(restTemp.Expression, source)
         };
-        var deleteKeys = excludedKeys.GetFastEnumerator();
-        while (deleteKeys.MoveNext(out var excludedKey))
-            restInits.Add(JSValueBuilder.Delete(restTemp.Expression, excludedKey));
+
+        if (excludedKeys.Count == 0)
+        {
+            restInits.Add(JSObjectBuilder.AddRange(restTemp.Expression, source));
+            restInits.Add(restTemp.Expression);
+            return YExpression.Block(restTemp.Variable.AsSequence(), restInits);
+        }
+
+        // CopyDataProperties with the already-destructured keys excluded. Passing the keys into
+        // the copy (rather than copying everything and deleting them afterwards) means an
+        // excluded key's descriptor/value is never read — so a Proxy source's traps and an
+        // ordinary accessor's getter do not fire for excluded keys (§7.3.25). The excluded keys
+        // are stored as the own keys of a scratch object via the ordinary indexer, which
+        // normalises every key form (string/index/symbol) exactly as the source's keys are.
+        var excludedTemp = scope.Top.GetTempVariable(typeof(JSObject));
+        restInits.Add(YExpression.Assign(excludedTemp.Variable, JSObjectBuilder.New()));
+        var keyEnumerator = excludedKeys.GetFastEnumerator();
+        while (keyEnumerator.MoveNext(out var excludedKey))
+            restInits.Add(YExpression.Assign(
+                JSValueBuilder.Index(excludedTemp.Expression, excludedKey),
+                JSBooleanBuilder.True));
+        restInits.Add(JSObjectBuilder.AddRange(restTemp.Expression, source, excludedTemp.Expression));
         restInits.Add(restTemp.Expression);
-        return YExpression.Block(restTemp.Variable.AsSequence(), restInits);
+        return YExpression.Block(
+            new Sequence<YParameterExpression> { restTemp.Variable, excludedTemp.Variable },
+            restInits);
     }
 
     private static bool IsAnonymousFunctionDefinition(AstExpression expression) =>

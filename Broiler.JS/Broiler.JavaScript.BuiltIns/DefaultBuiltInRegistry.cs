@@ -204,9 +204,11 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
                 length: 1),
             JSPropertyAttributes.ConfigurableProperty);
 
-        // Iterator.prototype[Symbol.iterator] returns `this`.
+        // Iterator.prototype[Symbol.iterator] returns `this`. The function's name (and hence its
+        // Function.prototype.toString form) is the bracketed well-known symbol description
+        // "[Symbol.iterator]" — a bare "Symbol.iterator" is not valid NativeFunction syntax.
         ref var symbols = ref proto.GetSymbols();
-        symbols.Put(JSValue.SymbolIterator.Key) = JSProperty.Property(new JSFunction((in Arguments a) => a.This, "Symbol.iterator"), JSPropertyAttributes.ConfigurableValue);
+        symbols.Put(JSValue.SymbolIterator.Key) = JSProperty.Property(new JSFunction((in Arguments a) => a.This, "[Symbol.iterator]"), JSPropertyAttributes.ConfigurableValue);
 
         // Register prototype helper methods via delegate (wired by BuiltIns assembly)
         // so they work on any iterator (generators, user iterators, etc.).

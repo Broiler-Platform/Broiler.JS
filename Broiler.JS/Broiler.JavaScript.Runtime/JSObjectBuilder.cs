@@ -203,6 +203,14 @@ public class JSObjectBuilder
     public static Expression AddRange(Expression target, Expression value)
         => Expression.Call(target, _FastAddRange, value);
 
+    public readonly static MethodInfo _FastAddRangeExcept =
+        type.PublicMethod(nameof(JSObject.FastAddRange), typeof(JSValue), typeof(JSObject));
+
+    // CopyDataProperties with excluded keys (object rest: `let { a, ...rest } = value`); the
+    // excluded keys are the own keys of `excludedKeys`.
+    public static Expression AddRange(Expression target, Expression value, Expression excludedKeys)
+        => Expression.Call(target, _FastAddRangeExcept, value, excludedKeys);
+
     // PrivateFieldAdd against an explicit target (a static private field on the
     // constructor): same extensibility/duplicate guards as the instance form.
     public static Expression PrivateFieldAdd(Expression target, Expression key, Expression value)

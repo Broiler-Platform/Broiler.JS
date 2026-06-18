@@ -12822,6 +12822,11 @@ public class BuiltInsTests
     {
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
+        // next/return are defined on the specific built-in iterator prototypes
+        // (%ArrayIteratorPrototype%, %GeneratorPrototype%, …), NOT on %Iterator.prototype%.
+        // Per the Iterator Helpers spec, %Iterator.prototype% owns only its helper methods,
+        // constructor, and @@iterator/@@toStringTag — it has no next or return — so the
+        // built-in iterators reach next/return through their own prototype chain.
         var result = ctx.Eval("""
             (function () {
                 function* g() {
@@ -12831,19 +12836,21 @@ public class BuiltInsTests
 
                 var arrayIterator = [1, 2][Symbol.iterator]();
                 var generator = g();
-                var nextResult = Iterator.prototype.next.call(arrayIterator);
-                var returnResult = Iterator.prototype.return.call(generator, 99);
+                var nextResult = arrayIterator.next();
+                var returnResult = generator.return(99);
 
                 return [
                     nextResult.value,
                     nextResult.done,
                     returnResult.value,
-                    returnResult.done
+                    returnResult.done,
+                    typeof Iterator.prototype.next,
+                    typeof Iterator.prototype.return
                 ].join('|');
             })();
             """);
 
-        Assert.Equal("1|false|99|true", result.ToString());
+        Assert.Equal("1|false|99|true|undefined|undefined", result.ToString());
     }
 
     [Fact]

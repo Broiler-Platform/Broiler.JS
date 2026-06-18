@@ -45,11 +45,11 @@ public partial class JSDate
     [JSExport("toDateString", Length = 0)]
     internal JSValue ToDateString(in Arguments a)
     {
-        if (value == InvalidDate)
+        var time = GetTimeMs();
+        if (double.IsNaN(time))
             return new JSString("Invalid Date");
 
-        var date = value.ToLocalTime().ToString("ddd MMM dd yyyy", DateTimeFormatInfo.InvariantInfo);
-        return new JSString(date);
+        return new JSString(DateString(JSDateMath.LocalTime(time)));
     }
 
     [JSExport("toISOString", Length = 0)]
@@ -125,6 +125,14 @@ public partial class JSDate
         var (locale, format) = a.Get2();
         string date = null;
 
+        // Per §21.4.4 these methods construct an Intl.DateTimeFormat, so they must throw the
+        // same exceptions as its constructor for the locales argument (null → TypeError, a
+        // malformed language tag → RangeError). The Broiler .NET fast path below bypassed that
+        // validation, treating a null locale like undefined. Validate it the same way Intl does
+        // (undefined is the only nullish value that is allowed, yielding the default locale).
+        if (!locale.IsUndefined)
+            Intl.JSIntl.CanonicalizeLocaleList(locale);
+
         if (locale.IsNullOrUndefined)
         {
             date = value.ToString("D", DateTimeFormatInfo.CurrentInfo);
@@ -175,6 +183,13 @@ public partial class JSDate
             return dtf.Format(new Arguments(JSUndefined.Value, JSValue.CreateNumber(GetTimeMs())));
         }
 
+        // The object-options branch above validates the locales argument inside the
+        // Intl.DateTimeFormat constructor; the .NET fast path must validate it the same way so
+        // a null locale throws a TypeError (and a malformed tag a RangeError) rather than being
+        // silently treated as the default locale.
+        if (!locale.IsUndefined)
+            Intl.JSIntl.CanonicalizeLocaleList(locale);
+
         string date;
         if (locale.IsNullOrUndefined)
         {
@@ -197,6 +212,11 @@ public partial class JSDate
 
         var (locale, format) = a.Get2();
         string date = null;
+
+        // Validate the locales argument exactly as the Intl.DateTimeFormat constructor would
+        // (null → TypeError, malformed tag → RangeError); undefined alone selects the default.
+        if (!locale.IsUndefined)
+            Intl.JSIntl.CanonicalizeLocaleList(locale);
 
         if (locale.IsNullOrUndefined)
         {
@@ -228,32 +248,43 @@ public partial class JSDate
     [JSExport("toString", Length = 0)]
     internal new JSValue ToString(in Arguments a)
     {
-        if (value == InvalidDate)
+        var time = GetTimeMs();
+        if (double.IsNaN(time))
             return new JSString("Invalid Date");
 
-        var date = value.ToString("ddd MMM dd yyyy HH:mm:ss ", DateTimeFormatInfo.InvariantInfo) + ToTimeZoneString();
+        // ToDateString (ECMA-262 §21.4.4.41.4): DateString(LocalTime(t)) + " " +
+        // TimeString(LocalTime(t)) + TimeZoneString(t). Computed from the ECMAScript
+        // time value (not the .NET DateTimeOffset) so the full Date range — including
+        // year 0 and negative years that fall outside .NET's 1–9999 window — renders.
+        var local = JSDateMath.LocalTime(time);
+        var date = $"{DateString(local)} {ClockString(local)} {ToTimeZoneString(local - time)}";
         return new JSString(date);
     }
 
     [JSExport("toTimeString", Length = 0)]
     internal JSValue ToTimeString(in Arguments a)
     {
-        if (value == InvalidDate)
+        var time = GetTimeMs();
+        if (double.IsNaN(time))
             return new JSString("Invalid Date");
 
-        // DateTimeFormatInfo.CurrentInfo.LongTimePattern
-        var date = value.ToString("HH:mm:ss ", DateTimeFormatInfo.InvariantInfo) + ToTimeZoneString();
+        var local = JSDateMath.LocalTime(time);
+        var date = $"{ClockString(local)} {ToTimeZoneString(local - time)}";
         return new JSString(date);
     }
 
     [JSExport("toUTCString", Length = 0)]
     internal JSValue ToUTCString(in Arguments a)
     {
-        if (value == InvalidDate)
+        var time = GetTimeMs();
+        if (double.IsNaN(time))
             return new JSString("Invalid Date");
 
-        var date = value.ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", DateTimeFormatInfo.InvariantInfo);
-        return new JSString(date);
+        var weekday = WeekDayNames[JSDateMath.WeekDay(time)];
+        var day = JSDateMath.DateFromTime(time).ToString("D2", DateTimeFormatInfo.InvariantInfo);
+        var month = MonthNames[JSDateMath.MonthFromTime(time)];
+        var year = HumanYearString(JSDateMath.YearFromTime(time));
+        return new JSString($"{weekday}, {day} {month} {year} {ClockString(time)} GMT");
     }
 
     [JSExport("valueOf", Length = 0)]
@@ -263,20 +294,53 @@ public partial class JSDate
         return double.IsNaN(result) ? JSNumber.NaN : new JSNumber(result);
     }
 
-    internal string ToTimeZoneString()
+    // Abbreviated weekday/month names used by the ECMAScript date/time string
+    // representations (Date.prototype.toString / toUTCString / toDateString). These are
+    // locale-independent: the spec mandates these exact English abbreviations.
+    private static readonly string[] WeekDayNames = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+    private static readonly string[] MonthNames =
+        { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+    // DateString (ECMA-262 §21.4.4.41.2): "Thu Jan 01 1970".
+    private static string DateString(double t)
+    {
+        var weekday = WeekDayNames[JSDateMath.WeekDay(t)];
+        var month = MonthNames[JSDateMath.MonthFromTime(t)];
+        var day = JSDateMath.DateFromTime(t).ToString("D2", DateTimeFormatInfo.InvariantInfo);
+        var year = HumanYearString(JSDateMath.YearFromTime(t));
+        return $"{weekday} {month} {day} {year}";
+    }
+
+    // The "hh:mm:ss" portion of TimeString (ECMA-262 §21.4.4.41.1), without the trailing
+    // time-zone text (which differs between the local and UTC string forms).
+    private static string ClockString(double t) => string.Format(
+        DateTimeFormatInfo.InvariantInfo,
+        "{0:D2}:{1:D2}:{2:D2}",
+        JSDateMath.HourFromTime(t),
+        JSDateMath.MinFromTime(t),
+        JSDateMath.SecFromTime(t));
+
+    // Year as it appears in the human-readable date strings: a minimum of four digits,
+    // with a leading "-" for negative (proleptic) years — e.g. 1970, 0001, -0001, 12345.
+    private static string HumanYearString(long year) => year >= 0
+        ? year.ToString("D4", DateTimeFormatInfo.InvariantInfo)
+        : "-" + Math.Abs(year).ToString("D4", DateTimeFormatInfo.InvariantInfo);
+
+    internal string ToTimeZoneString(double offsetMs)
     {
         var timeZone = TimeZoneInfo.Local;
-        // Compute the time zone offset in hours-minutes.
-        int offsetInMinutes = (int)timeZone.GetUtcOffset(value).TotalMinutes;
+        // Compute the time zone offset in hours-minutes from the supplied offset (already
+        // resolved for this instant by JSDateMath, including the out-of-.NET-range fallback).
+        int offsetInMinutes = (int)(offsetMs / 60000);
         int hhmm = offsetInMinutes / 60 * 100 + offsetInMinutes % 60;
 
-        // Get the time zone name.
-        string zoneName;
-
-        if (timeZone.IsDaylightSavingTime(value))
-            zoneName = timeZone.DaylightName;
-        else
-            zoneName = timeZone.StandardName;
+        // Get the time zone name. For dates outside .NET's range (rawTimeMs set) the
+        // DateTimeOffset value is the MinValue sentinel, so fall back to the current
+        // instant for the implementation-defined zone name — matching the offset fallback.
+        var instant = double.IsNaN(rawTimeMs) ? value : DateTimeOffset.UtcNow;
+        string zoneName = timeZone.IsDaylightSavingTime(instant)
+            ? timeZone.DaylightName
+            : timeZone.StandardName;
 
         if (hhmm < 0)
             return $"GMT{hhmm:d4} ({zoneName})";
