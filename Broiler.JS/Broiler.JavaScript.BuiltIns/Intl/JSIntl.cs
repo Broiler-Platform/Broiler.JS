@@ -765,6 +765,24 @@ public static class JSIntl
             region = regionOpt.ToUpperInvariant();
         }
 
+        // The variants option (read after region, before the keyword options) replaces the
+        // tag's variant subtags. It must be a "-"-separated sequence of unicode_variant_subtag
+        // (alphanum{5,8} | digit alphanum{3}) with no duplicate subtags (case-insensitive),
+        // else a RangeError; the canonical form lowercases and ordinally sorts the subtags.
+        if (OptionString(options, KeyStrings.GetOrCreate("variants")) is { } variantsOpt)
+        {
+            var subtags = variantsOpt.ToLowerInvariant().Split('-');
+            var seen = new HashSet<string>(System.StringComparer.Ordinal);
+            foreach (var sub in subtags)
+            {
+                if (!Regex.IsMatch(sub, "^(?:[0-9a-z]{5,8}|[0-9][0-9a-z]{3})$", RegexOptions.CultureInvariant)
+                    || !seen.Add(sub))
+                    throw JSEngine.NewRangeError("Invalid variants option");
+            }
+            variants = new List<string>(subtags);
+            variants.Sort(System.StringComparer.Ordinal);
+        }
+
         // Unicode-extension keyword options.
         SetKeyword(keywords, "ca", ReadTypeOption(options, "calendar", "ca"));
         SetKeyword(keywords, "co", ReadTypeOption(options, "collation", "co"));
@@ -1083,14 +1101,9 @@ public static class JSIntl
         if (options == null)
             return;
 
-        var collation = options[CollationKey];
-        if (!collation.IsUndefined)
-        {
-            var collationValue = collation.StringValue;
-            if (!Regex.IsMatch(collationValue, @"^[0-9A-Za-z]{3,8}(?:-[0-9A-Za-z]{3,8})*$", RegexOptions.CultureInvariant))
-                throw JSEngine.NewRangeError("Invalid collation option");
-        }
-
+        // The collation option is read and validated once, in order, by ApplyLocaleOptions
+        // (ReadTypeOption "collation"); reading it here too would surface the getter out of
+        // order (InitializeLocale reads each option exactly once — constructor-getter-order).
         if (tag.StartsWith("x-", StringComparison.OrdinalIgnoreCase) &&
             (!options[LanguageKey].IsUndefined ||
              !options[ScriptKey].IsUndefined ||
@@ -1152,12 +1165,7 @@ public static class JSIntl
         // their sanctioned value lists (a bad value, e.g. an empty string for
         // trailingZeroDisplay, is a RangeError). All four always have a resolved value (their
         // defaults) which resolvedOptions reflects.
-        var roundingIncrement = GetNumberOption(options, RoundingIncrementKey, 1, 5000) ?? 1;
-        if (System.Array.IndexOf(SanctionedRoundingIncrements, roundingIncrement) < 0)
-            throw JSEngine.NewRangeError("roundingIncrement value is out of range.");
-        var roundingMode = GetOption(options, RoundingModeKey, ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"], false, "halfExpand");
-        var roundingPriority = GetOption(options, RoundingPriorityKey, ["auto", "morePrecision", "lessPrecision"], false, "auto");
-        var trailingZeroDisplay = GetOption(options, TrailingZeroDisplayKey, ["auto", "stripIfInteger"], false, "auto");
+        var (roundingIncrement, roundingMode, roundingPriority, trailingZeroDisplay) = ReadRoundingOptions(options);
 
         // notation precedes compactDisplay (spec order; observed by the compactDisplay
         // getter call-order tests). compactDisplay is always validated, but only
@@ -1240,6 +1248,29 @@ public static class JSIntl
     // them as plain data properties, so subsequent reads observe construction-time
     // values without re-triggering option getters. Absent options are left out so
     // callers apply their own (style-dependent) defaults.
+    // SetNumberFormatDigitOptions reads the rounding options immediately after the
+    // digit options, in order: roundingIncrement (a sanctioned numeric), roundingMode,
+    // roundingPriority, trailingZeroDisplay. Intl.PluralRules shares this step but does
+    // not otherwise consume the values, so it just needs the reads to happen (the order
+    // and per-value validation are observable — Intl.PluralRules options read order).
+    // NumberFormat reads them inline because it also applies the increment/significant
+    // cross-checks. Returns the four resolved values.
+    internal static (int RoundingIncrement, string RoundingMode, string RoundingPriority, string TrailingZeroDisplay)
+        ReadRoundingOptions(JSObject options)
+    {
+        var roundingIncrement = GetNumberOption(options, RoundingIncrementKey, 1, 5000) ?? 1;
+        if (System.Array.IndexOf(SanctionedRoundingIncrements, roundingIncrement) < 0)
+            throw JSEngine.NewRangeError("roundingIncrement value is out of range.");
+        var roundingMode = GetOption(options, RoundingModeKey,
+            ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"],
+            false, "halfExpand");
+        var roundingPriority = GetOption(options, RoundingPriorityKey,
+            ["auto", "morePrecision", "lessPrecision"], false, "auto");
+        var trailingZeroDisplay = GetOption(options, TrailingZeroDisplayKey,
+            ["auto", "stripIfInteger"], false, "auto");
+        return (roundingIncrement, roundingMode, roundingPriority, trailingZeroDisplay);
+    }
+
     internal static JSObject SnapshotDigitOptions(JSObject options)
     {
         if (options == null)
@@ -3212,12 +3243,19 @@ public sealed class JSIntlPluralRules : JSObject
         var options = JSIntl.ValidateConstructorArguments("PluralRules", in a, out var canonical);
         locale = JSIntl.ResolveLocaleFromCanonical(canonical);
         var typeKey = KeyStrings.GetOrCreate("type");
-        type = options is null || options[typeKey].IsUndefined ? "cardinal" : options[typeKey].StringValue;
+        // Read the type option's getter exactly once (a second [[Get]] would fire it twice).
+        var typeValue = options is null ? JSUndefined.Value : options[typeKey];
+        type = typeValue.IsUndefined ? "cardinal" : typeValue.StringValue;
         // notation precedes the digit options (SetNumberFormatDigitOptions) and is reported by
         // resolvedOptions; the digit options are snapshotted once at construction.
         notation = JSIntl.GetOption(options, KeyStrings.GetOrCreate("notation"),
             ["standard", "scientific", "engineering", "compact"], false, "standard");
         digitOptions = JSIntl.SnapshotDigitOptions(options);
+        // SetNumberFormatDigitOptions also reads roundingIncrement, roundingMode,
+        // roundingPriority and trailingZeroDisplay (after the digit options); reading them
+        // keeps the observable option order spec-compliant and validates each value.
+        if (options != null)
+            JSIntl.ReadRoundingOptions(options);
     }
 
     private static JSObject CurrentPrototype()
