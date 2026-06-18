@@ -8147,6 +8147,35 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Var_Arguments_Declaration_Shares_The_Functions_Arguments_Binding_Match_Test262()
+    {
+        // Regression: a `var arguments` in a sloppy function must share the function's
+        // own `arguments` binding (initialized to the arguments object), so the
+        // declaration's initializer — and any later assignment — overrides it. The
+        // declaration created a separate block-scope slot while reads kept resolving
+        // to the materialized arguments object, so `var arguments = x; return arguments`
+        // returned the arguments object instead of x (test262
+        // language/statements/function/S13_A15_T2).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            function varInit() { var arguments = 'answer'; return arguments; }
+            function varThenAssign() { var arguments; arguments = 7; return arguments; }
+            function noInitKeepsObject() { var arguments; return arguments.length; }
+            function mappedStillWorks(x) { arguments[0] = 42; return x; }
+            [
+                varInit(1, 2, 3),
+                varThenAssign(1, 2, 3),
+                noInitKeepsObject(1, 2, 3),
+                mappedStillWorks(1)
+            ].join('|');
+        ");
+
+        Assert.Equal("answer|7|3|42", result.ToString());
+    }
+
+    [Fact]
     public void Operator_Precedence_Right_Operand_Does_Not_Swallow_Looser_Operators_Match_Test262()
     {
         // Regression: the recursion that built the right operand of a binary operator
