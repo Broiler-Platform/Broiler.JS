@@ -8147,6 +8147,37 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Operator_Precedence_Right_Operand_Does_Not_Swallow_Looser_Operators_Match_Test262()
+    {
+        // Regression: the recursion that built the right operand of a binary operator
+        // had no precedence floor, so when the right operand was a tighter
+        // (multiplicative) expression followed by a looser operator, that looser
+        // operator was folded into the right operand. `a/b + c/d === e` parsed as
+        // `a/b + (c/d === e)` — the sum of two opposite-sign magnitudes never
+        // compared equal to +0 (test262 expressions/addition/S11.6.1_A4_T7 and
+        // subtraction/S11.6.2_A4_T7).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval(@"
+            (function () {
+                var m = Number.MAX_VALUE, x = 8, y = 8, r = [];
+                r.push(-1 / m + 1 / m === +0);                 // true (was false)
+                r.push(1 / m - 1 / m === +0);                  // true
+                r.push(x / 1 + y / 1 === 16);                  // true (was 8)
+                r.push(x * 1 + y * 1 === 16);                  // true
+                r.push(2 + 3 * 4 === 14);                      // true
+                r.push(2 ** 3 ** 2 === 512);                   // right-assoc
+                r.push(1 + 1 === 2 ? 'ok' : 'no');             // ternary after ===
+                r.push(1 & 2 | 3 === 3);                       // (1&2)|(3===3) === 1
+                return r.join('|');
+            })();
+        ");
+
+        Assert.Equal("true|true|true|true|true|true|ok|1", result.ToString());
+    }
+
+    [Fact]
     public void Var_With_Unicode_Escaped_Identifier_Is_Hoisted_Under_Decoded_Name_Match_Test262()
     {
         // Regression: a `var` whose name uses unicode escapes must be hoisted and
