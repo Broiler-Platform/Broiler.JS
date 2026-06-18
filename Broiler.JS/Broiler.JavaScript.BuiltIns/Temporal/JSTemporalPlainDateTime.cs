@@ -1249,14 +1249,17 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (roundTo.IsString) smallestUnit = roundTo.ToString();
         else if (roundTo is JSObject obj)
         {
+            // GetRoundingIncrementOption, then GetRoundingModeOption, then the REQUIRED
+            // smallestUnit are read (and coerced) in that order, and all BEFORE the increment
+            // is validated against the unit, so a bad increment is reported only after every
+            // option getter has fired (test262 round/options-read-before-algorithmic-validation).
+            increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
+            TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
+
             var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
             if (unitValue.IsUndefined)
                 throw JSEngine.NewRangeError("Temporal.PlainDateTime.round requires a smallestUnit");
             smallestUnit = unitValue.StringValue;
-
-            // GetRoundingIncrementOption (finite, integer, 1 … 10^9) and GetRoundingModeOption.
-            increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
-            TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
         }
         else throw JSEngine.NewTypeError("Temporal.PlainDateTime.round requires an options object or string");
 
@@ -1271,6 +1274,11 @@ public partial class JSTemporalPlainDateTime : JSObject
             "nanosecond" or "nanoseconds" => "nanosecond",
             _ => throw JSEngine.NewRangeError($"Temporal.PlainDateTime.round: invalid smallestUnit \"{smallestUnit}\""),
         };
+
+        // ValidateTemporalRoundingIncrement: the increment must divide the unit's maximum (a "day"
+        // allows only 1); e.g. roundingIncrement 25 with smallestUnit "hour" is a RangeError.
+        var maximum = smallestUnit == "day" ? 1 : TemporalRoundingOptions.MaximumRoundingIncrement(smallestUnit);
+        TemporalRoundingOptions.ValidateRoundingIncrement(increment, maximum, inclusive: smallestUnit == "day");
 
         return (smallestUnit, increment);
     }
