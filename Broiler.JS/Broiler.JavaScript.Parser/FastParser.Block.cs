@@ -30,11 +30,18 @@ partial class FastParser
         var previousScriptTopLevel = atScriptTopLevel;
         atScriptTopLevel = isProgramRoot;
 
+        // A Script/eval program's StatementList ends at EOF; every other Block is
+        // brace-delimited (the caller has consumed the opening `{`) and ends at its
+        // matching `}`. Accepting the wrong terminator is a syntax error: a stray `}`
+        // at the top level (`eval("}")`) or an unterminated block reaching EOF
+        // (`eval("{")`) must both throw, rather than parse as an empty/closed program.
+        var terminator = isProgramRoot ? TokenTypes.EOF : TokenTypes.CurlyBracketEnd;
+
         try
         {
             do
             {
-                if (stream.CheckAndConsumeAny(TokenTypes.CurlyBracketEnd, TokenTypes.EOF))
+                if (stream.CheckAndConsume(terminator))
                     break;
 
                 if (Statement(out var stmt))
@@ -46,7 +53,7 @@ partial class FastParser
                 if (stream.CheckAndConsumeWithLineTerminator(TokenTypes.SemiColon))
                     continue;
 
-                if (stream.CheckAndConsumeAny(TokenTypes.CurlyBracketEnd, TokenTypes.EOF))
+                if (stream.CheckAndConsume(terminator))
                     break;
 
                 throw stream.Unexpected();
