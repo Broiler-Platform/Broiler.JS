@@ -1648,11 +1648,14 @@ public static class JSIntl
         new(SupportedNumberingSystemsSorted, StringComparer.Ordinal);
 
     // AvailableCanonicalCalendars: the canonical calendar identifiers reported by
-    // Intl.supportedValuesOf("calendar"), in code-unit (ascending) order.
+    // Intl.supportedValuesOf("calendar"), in code-unit (ascending) order. This is the set
+    // required by the Intl era/monthCode additions; "islamic" and "islamic-rgsa" are
+    // deliberately excluded (they are not part of the required/available set, matching V8 and
+    // test262 supportedValuesOf/calendars-required-by-intl-era-monthcode).
     internal static readonly string[] AvailableCanonicalCalendars =
     {
         "buddhist", "chinese", "coptic", "dangi", "ethioaa", "ethiopic", "gregory", "hebrew",
-        "indian", "islamic", "islamic-civil", "islamic-rgsa", "islamic-tbla", "islamic-umalqura",
+        "indian", "islamic-civil", "islamic-tbla", "islamic-umalqura",
         "iso8601", "japanese", "persian", "roc",
     };
 

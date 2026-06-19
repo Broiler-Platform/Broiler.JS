@@ -850,4 +850,39 @@ public class Issue840Tests
     [InlineData("(function(){ var a=[10,20,30]; var k=[]; for (var i in a) { k.push(i); if (i==='0') delete a[2]; } return k.join(','); })()", "0,1")]
     public void ForInEnumerationOrderAndMutationStillWork(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problem 39: Intl.supportedValuesOf("calendar") is exactly the required set ----
+    //
+    // The list must equal the calendars required by the Intl era/monthCode additions, sorted.
+    // The engine additionally reported "islamic" and "islamic-rgsa", which are not part of that
+    // set (matching V8). Those calendar identifiers still resolve elsewhere; only the
+    // supportedValuesOf listing changes.
+
+    [Fact]
+    public void SupportedCalendarsAreExactlyTheRequiredSet()
+        => Assert.Equal(
+            "buddhist,chinese,coptic,dangi,ethioaa,ethiopic,gregory,hebrew,indian," +
+            "islamic-civil,islamic-tbla,islamic-umalqura,iso8601,japanese,persian,roc",
+            Eval("Intl.supportedValuesOf('calendar').join(',')"));
+
+    [Fact]
+    public void SupportedCalendarsAreSorted()
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            "  var s = Intl.supportedValuesOf('calendar');" +
+            "  return JSON.stringify(s) === JSON.stringify(s.slice().sort());" +
+            "})()"));
+
+    [Fact]
+    public void SupportedCalendarsExcludeIslamicAndIslamicRgsa()
+        => Assert.Equal("false,false", Eval(
+            "(function () {" +
+            "  var s = Intl.supportedValuesOf('calendar');" +
+            "  return s.includes('islamic') + ',' + s.includes('islamic-rgsa');" +
+            "})()"));
+
+    [Fact]
+    public void IslamicCivilCalendarStillResolves()
+        => Assert.Equal("islamic-civil", Eval(
+            "new Intl.DateTimeFormat('en-u-ca-islamic-civil').resolvedOptions().calendar"));
 }
