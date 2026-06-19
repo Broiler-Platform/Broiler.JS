@@ -4253,19 +4253,22 @@ public class JSIntlNumberFormat : JSObject
         // e.g. [3] for en-US — 1,000,000 — and [3,2] for en-IN — 10,00,000.
         var groups = SplitIntoGroups(intDigits, Culture().NumberFormat.NumberGroupSizes);
 
-        // The most-significant (leftmost) group's length drives the grouping decision:
+        // The grouping decision is driven by how many integer digits lie to the LEFT of the
+        // rightmost (primary) grouping separator — not by the most-significant group's size,
+        // which differs under a multi-level grouping pattern such as en-IN's 3;2 (100000 →
+        // "1,00,000": leftmost group "1", but 3 digits precede the primary separator):
         //   "false"  → never group;
-        //   "min2"   → group only when that group has ≥ 2 digits (1000 → "1000",
-        //              10000 → "10,000");
-        //   "auto"   → group when it has ≥ minimumGroupingDigits digits (pl/es/it use 2);
+        //   "min2"   → group only when ≥ 2 digits precede the primary separator (1000 → "1000",
+        //              10000 → "10,000", en-IN 100000 → "1,00,000");
+        //   "auto"   → group when ≥ minimumGroupingDigits precede it (pl/es/it use 2);
         //   "always" → group whenever there is more than one group.
-        var leadingGroup = groups[0].Length;
+        var digitsBeforePrimary = intDigits.Length - groups[^1].Length;
         var shouldGroup = groups.Count > 1 && mode switch
         {
             "false" => false,
-            "min2" => leadingGroup >= 2,
+            "min2" => digitsBeforePrimary >= 2,
             "always" => true,
-            _ => leadingGroup >= CldrLocaleData.MinimumGroupingDigits(locale),
+            _ => digitsBeforePrimary >= CldrLocaleData.MinimumGroupingDigits(locale),
         };
 
         if (!shouldGroup)

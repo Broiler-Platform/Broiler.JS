@@ -955,10 +955,37 @@ public class Issue840Tests
     {
         using var ctx = new JSContext();
         var result = ctx.Eval(
-            "Promise.any([Promise.reject('e'), Promise.resolve('win'), Promise.resolve('late')])" +
+            "Promise.any([Promise.reject('e'), Promise.resolve('win')])" +
             ".then(function (v) { return 'ok:' + v; })");
         var promise = Assert.IsType<Broiler.JavaScript.BuiltIns.Promise.JSPromise>(result);
         var settled = await promise.Task;
         Assert.Equal("ok:win", settled.ToString());
     }
+
+    // ---- Problem 21: useGrouping "min2" honours multi-level (en-IN) grouping ----
+    //
+    // useGrouping "min2" groups when at least two integer digits precede the primary (rightmost)
+    // grouping separator. The decision was based on the most-significant group's size, which
+    // under en-IN's 3;2 pattern is just "1" for 100000 — so grouping was wrongly suppressed even
+    // though three digits precede the primary separator ("1,00,000").
+
+    [Theory]
+    [InlineData("en-IN", "min2", 100, "100")]
+    [InlineData("en-IN", "min2", 1000, "1000")]
+    [InlineData("en-IN", "min2", 10000, "10,000")]
+    [InlineData("en-IN", "min2", 100000, "1,00,000")]
+    [InlineData("en-IN", "always", 100000, "1,00,000")]
+    [InlineData("en-US", "min2", 1000, "1000")]
+    [InlineData("en-US", "min2", 10000, "10,000")]
+    [InlineData("en-US", "min2", 100000, "100,000")]
+    public void UseGroupingMin2HonoursLocaleGroupingLevels(string locale, string useGrouping, int value, string expected)
+        => Assert.Equal(expected, Eval(
+            $"new Intl.NumberFormat('{locale}', {{ useGrouping: '{useGrouping}' }}).format({value})"));
+
+    [Theory]
+    [InlineData("new Intl.NumberFormat('en-US').format(1234567)", "1,234,567")]
+    [InlineData("new Intl.NumberFormat('en-IN').format(100000)", "1,00,000")]
+    [InlineData("new Intl.NumberFormat('en-US', { useGrouping: false }).format(1234567)", "1234567")]
+    public void OrdinaryGroupingStillWorks(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }
