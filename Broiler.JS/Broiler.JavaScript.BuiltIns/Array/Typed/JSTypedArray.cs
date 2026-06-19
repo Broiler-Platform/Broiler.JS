@@ -569,10 +569,13 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             case KeyType.String:
                 if (key.KeyString.Key == KeyStrings.length.Key)
                 {
+                    // FromPropertyDescriptor fields are themselves enumerable, writable,
+                    // configurable own data properties; otherwise the returned descriptor
+                    // reads as empty to Object.keys/JSON.stringify/structural compares.
                     var l = new JSObject();
-                    l.FastAddValue(KeyStrings.value, new JSNumber(length), JSPropertyAttributes.ConfigurableValue);
-                    l.FastAddValue(KeyStrings.writable, JSBoolean.False, JSPropertyAttributes.ConfigurableValue);
-                    l.FastAddValue(KeyStrings.enumerable, JSBoolean.True, JSPropertyAttributes.ConfigurableValue);
+                    l.FastAddValue(KeyStrings.value, new JSNumber(length), JSPropertyAttributes.EnumerableConfigurableValue);
+                    l.FastAddValue(KeyStrings.writable, JSBoolean.False, JSPropertyAttributes.EnumerableConfigurableValue);
+                    l.FastAddValue(KeyStrings.enumerable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
                     return l;
                 }
                 break;
@@ -581,12 +584,12 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
                 {
                     var l = new JSObject();
                     var v = GetValue(key.Index, this, false);
-                    l.FastAddValue(KeyStrings.value, v, JSPropertyAttributes.ConfigurableValue);
-                    l.FastAddValue(KeyStrings.writable, JSBoolean.True, JSPropertyAttributes.ConfigurableValue);
-                    l.FastAddValue(KeyStrings.enumerable, JSBoolean.True, JSPropertyAttributes.ConfigurableValue);
+                    l.FastAddValue(KeyStrings.value, v, JSPropertyAttributes.EnumerableConfigurableValue);
+                    l.FastAddValue(KeyStrings.writable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
+                    l.FastAddValue(KeyStrings.enumerable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
                     // Integer-indexed elements are configurable since ES2021
                     // ("normative: make TypedArray elements configurable").
-                    l.FastAddValue(KeyStrings.configurable, JSBoolean.True, JSPropertyAttributes.ConfigurableValue);
+                    l.FastAddValue(KeyStrings.configurable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);
                     return l;
 
                 }
