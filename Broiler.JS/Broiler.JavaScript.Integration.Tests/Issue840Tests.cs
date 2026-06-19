@@ -436,4 +436,48 @@ public class Issue840Tests
     [InlineData("(function(){ function C(n){ this.lenArg = n; } var r = Array.of.call(C, 'a', 'b'); return r[0]+r[1]+r.length+r.lenArg; })()", "ab22")]
     public void ArrayOfStillBuildsResults(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problem 63: Array.prototype.reverse with a length beyond the 32-bit range ----
+    //
+    // LengthOfArrayLike (ToLength) clamps the array-like length to 2^53-1, so reverse's high
+    // index can exceed the 32-bit array-index range. reverse tracked the upper index in a uint
+    // taken from a uint-clamped length, so a length of 2^53+2 truncated to ~2^32 and reverse
+    // walked the wrong indices (never reaching the real high index). It now walks long indices
+    // via the long-keyed accessors. The per-pair access order is also aligned with the spec
+    // (HasProperty/Get the lower index fully before the upper one).
+
+    private const string ReverseProxySetup =
+        "var arrayLike = { 0: 'a', get 4() { throw new RangeError('StopReverse'); }," +
+        "  9007199254740990: 'hi', length: 2 ** 53 + 2 };" +
+        "var traps = [];" +
+        "var proxy = new Proxy(arrayLike, {" +
+        "  has(t, pk) { traps.push('Has:' + String(pk)); return Reflect.has(t, pk); }," +
+        "  get(t, pk, r) { traps.push('Get:' + String(pk)); return Reflect.get(t, pk, r); }," +
+        "  set(t, pk, v, r) { traps.push('Set:' + String(pk)); return Reflect.set(t, pk, v, r); }," +
+        "  getOwnPropertyDescriptor(t, pk) { return Reflect.getOwnPropertyDescriptor(t, pk); }," +
+        "  defineProperty(t, pk, d) { return Reflect.defineProperty(t, pk, d); }," +
+        "  deleteProperty(t, pk) { return Reflect.deleteProperty(t, pk); }" +
+        "});";
+
+    [Fact]
+    public void ReverseReachesHighIndexBeyondUint32()
+        => Assert.Equal("StopReverse", Eval(
+            "(function () {" + ReverseProxySetup +
+            "  try { Array.prototype.reverse.call(proxy); return 'no throw'; }" +
+            "  catch (e) { return e.message; }" +
+            "})()"));
+
+    [Fact]
+    public void ReverseAccessesLowerThenUpperPerPair()
+        => Assert.Equal("Get:length|Has:0|Get:0|Has:9007199254740990|Get:9007199254740990", Eval(
+            "(function () {" + ReverseProxySetup +
+            "  try { Array.prototype.reverse.call(proxy); } catch (e) {}" +
+            "  return traps.slice(0, 5).join('|');" +
+            "})()"));
+
+    [Theory]
+    [InlineData("[1,2,3,4,5].reverse().join(',')", "5,4,3,2,1")]
+    [InlineData("(function(){ var a=[1,,3]; a.reverse(); return a[0]+','+(1 in a)+','+a[2]; })()", "3,false,1")]
+    public void ReverseOrdinaryArraysStillWork(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }
