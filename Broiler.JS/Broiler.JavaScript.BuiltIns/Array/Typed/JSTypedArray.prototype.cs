@@ -80,10 +80,14 @@ partial class JSTypedArray
 
             while (count > 0)
             {
-                if (start < 0 || target < 0 || start >= liveLength || target >= liveLength)
-                    break;
-
-                this[(uint)target] = this[(uint)start];
+                // §23.2.3.5 step 14: copy an element only while BOTH indices are within
+                // the (possibly shrunk) live length; an index past it is skipped, but the
+                // walk still advances so a later in-bounds element of an
+                // overlap-reversed copy is not lost. Using `break` here dropped that
+                // trailing copy (e.g. a backward copy whose first, highest, index is now
+                // out of bounds).
+                if (start >= 0 && target >= 0 && start < liveLength && target < liveLength)
+                    this[(uint)target] = this[(uint)start];
 
                 start += direction;
                 target += direction;

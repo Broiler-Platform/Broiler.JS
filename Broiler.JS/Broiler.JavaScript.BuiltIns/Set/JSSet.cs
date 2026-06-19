@@ -421,7 +421,15 @@ public partial class JSSet : JSObject
 
         while (keys.MoveNext(out var item))
         {
-            if (!result.Remove(item))
+            // §24.2.4.20: toggle each `other` key against THIS set's live [[SetData]]
+            // (which a set-like keys() iterator may mutate mid-iteration), not against
+            // the result copy. A key present in O is removed from the result; a key
+            // absent from O is added. Testing the result copy instead mishandled a
+            // duplicate key in `other` (re-adding it at the end) and concurrent
+            // mutation of O.
+            if (Contains(item))
+                result.Remove(item);
+            else
                 result.Add(item);
         }
 

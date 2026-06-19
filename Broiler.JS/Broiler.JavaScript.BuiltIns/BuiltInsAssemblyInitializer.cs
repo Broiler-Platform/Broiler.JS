@@ -743,13 +743,43 @@ internal static class BuiltInsAssemblyInitializer
     }
 
     private static JSFunction CreateNativeFunction(JSFunctionDelegate fx, string name, int length = 0)
-        => new(fx, name, $"function {name}() {{ [native code] }}", length: length, createPrototype: false);
+        => new(fx, name, $"function {NativeFunctionToStringName(name)}() {{ [native code] }}", length: length, createPrototype: false);
 
     private static JSFunction CreateNativeGetter(JSFunctionDelegate fx, string name)
-        => new(fx, $"get {name}", $"function get {name}() {{ [native code] }}", createPrototype: false, length: 0);
+        => new(fx, $"get {name}", $"function get {NativeFunctionToStringName(name)}() {{ [native code] }}", createPrototype: false, length: 0);
 
     private static JSFunction CreateNativeSetter(JSFunctionDelegate fx, string name)
-        => new(fx, $"set {name}", $"function set {name}() {{ [native code] }}", createPrototype: false, length: 1);
+        => new(fx, $"set {name}", $"function set {NativeFunctionToStringName(name)}() {{ [native code] }}", createPrototype: false, length: 1);
+
+    // The optional IdentifierName in a NativeFunction toString must be a valid
+    // IdentifierName or a computed `[ … ]` name (e.g. "[Symbol.replace]"). A property
+    // name that is neither — notably the legacy RegExp statics "$&", "$+", "$`", "$'" —
+    // must be omitted, since the IdentifierName is optional and emitting it verbatim
+    // (`function get $&() { [native code] }`) is not valid NativeFunction syntax.
+    private static string NativeFunctionToStringName(string name)
+        => IsValidNativeFunctionToStringName(name) ? name : string.Empty;
+
+    private static bool IsValidNativeFunctionToStringName(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return false;
+
+        // A computed `[ … ]` name is accepted by the NativeFunction grammar.
+        if (name[0] == '[')
+            return true;
+
+        if (name[0] != '$' && name[0] != '_' && !char.IsLetter(name[0]))
+            return false;
+
+        for (var i = 1; i < name.Length; i++)
+        {
+            var c = name[i];
+            if (c != '$' && c != '_' && !char.IsLetterOrDigit(c))
+                return false;
+        }
+
+        return true;
+    }
 
     private static void EnsureAccessorProperty(JSObject target, JSValue key, string name, JSFunctionDelegate getter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
     {
