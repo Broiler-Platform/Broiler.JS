@@ -228,6 +228,11 @@ public partial class JSGenerator : JSObject, IJSGenerator
     {
         var c = JSEngine.Current as IJSExecutionContext;
         var top = c?.Top;
+        // new.target is always undefined inside a generator body. Clear any ambient
+        // new target (e.g. the constructor being run while this generator is iterated
+        // as a `new TypedArray(gen)` source) so a `new` inside the body resolves its
+        // instance prototype from its own constructor, not the outer new.target.
+        var savedNewTarget = c?.CurrentNewTarget;
         ThrowIfExecuting();
 
         if (done)
@@ -241,6 +246,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
         {
             executing = true;
             // c.Top = cg.StackItem;
+            if (c != null) c.CurrentNewTarget = null;
             cg.Next(replaceOld, out item, out done);
             value = item;
 
@@ -261,7 +267,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
         finally
         {
             executing = false;
-            if (c != null) c.Top = top;
+            if (c != null) { c.Top = top; c.CurrentNewTarget = savedNewTarget; }
         }
     }
 
@@ -291,10 +297,15 @@ public partial class JSGenerator : JSObject, IJSGenerator
 
         var c = JSEngine.Current as IJSExecutionContext;
         var top = c?.Top;
-        
+        // new.target is always undefined inside a generator body; clear any ambient
+        // new target so a `new` inside the body is unaffected by an outer construction
+        // that happens to be iterating this generator.
+        var savedNewTarget = c?.CurrentNewTarget;
+
         try
         {
             executing = true;
+            if (c != null) c.CurrentNewTarget = null;
             cg.Next(replaceOld, out value, out done);
 
             // `yield*` re-yields the delegated iterator's result object unchanged
@@ -313,7 +324,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
         finally
         {
             executing = false;
-            if (c != null) c.Top = top;
+            if (c != null) { c.Top = top; c.CurrentNewTarget = savedNewTarget; }
         }
     }
 
