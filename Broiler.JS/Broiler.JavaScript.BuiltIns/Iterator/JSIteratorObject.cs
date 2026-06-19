@@ -852,14 +852,21 @@ public partial class JSIteratorObject : JSObject
                     throw;
                 }
 
+                // §27.1.4.2 step 14.b.iv: fetch one padding value per iterable, but stop
+                // calling the padding iterator's next() once it reports done — every
+                // remaining slot is filled with undefined without another next() call.
+                bool usingIterator = true;
                 try
                 {
                     for (int i = 0; i < _iterators.Count; i++)
                     {
-                        if (paddingIter.MoveNext(out var paddingValue))
+                        if (usingIterator && paddingIter.MoveNext(out var paddingValue))
                             _paddingValues.Add(paddingValue);
                         else
+                        {
+                            usingIterator = false;
                             _paddingValues.Add(JSUndefined.Value);
+                        }
                     }
                 }
                 catch
@@ -869,7 +876,10 @@ public partial class JSIteratorObject : JSObject
                 }
 
                 Exception? firstException = null;
-                CloseIteratorForReturn(paddingIter, ref firstException);
+                // Step 14.b.v: only close the padding iterator when it has NOT already
+                // run to completion (a done iterator is not re-closed).
+                if (usingIterator)
+                    CloseIteratorForReturn(paddingIter, ref firstException);
                 for (int i = _iterators.Count - 1; i >= 0; i--)
                     CloseIteratorIfPossible(_iterators[i]);
 

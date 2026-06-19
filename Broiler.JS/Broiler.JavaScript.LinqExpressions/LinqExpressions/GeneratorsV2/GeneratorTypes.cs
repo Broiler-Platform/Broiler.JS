@@ -131,7 +131,14 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
                         {
                             delegatedEnumerator = iterator;
                             DelegatedRawResult = rawResult;
-                            value = rawResult[KeyStrings.value];
+                            // §27.5.3.7 step 7.b.iii: while the delegated iterator is NOT
+                            // done, a SYNC `yield*` performs GeneratorYield on the raw
+                            // result object and must NOT read its `value` property — the
+                            // consumer surfaces DelegatedRawResult unchanged and ignores
+                            // `value`, so reading it would fire an observable `value` getter
+                            // on every incomplete step. An async `yield*` (AsyncGeneratorYield)
+                            // does observe and await the value, so it is still read there.
+                            value = asyncGenerator ? rawResult[KeyStrings.value] : JSUndefined.Value;
                             done = false;
                             return;
                         }

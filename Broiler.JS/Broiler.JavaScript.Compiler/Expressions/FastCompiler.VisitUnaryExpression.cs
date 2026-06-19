@@ -67,6 +67,15 @@ partial class FastCompiler
                         if (id.Name == "arguments"
                             && scope.Top.RootScope.Function is { IsArrowFunction: false })
                         {
+                            // Inside a `with`, an unqualified `arguments` first resolves
+                            // against the with-object — whose own `arguments` property
+                            // shadows the function's (non-deletable) arguments binding — so
+                            // `delete arguments` deletes that property (and may succeed).
+                            // Outside any `with` the arguments binding is the only target and
+                            // it is non-deletable, so the result is always false.
+                            if (withBoundaries.Count > 0)
+                                return JSContextBuilder.DeleteIdentifier(KeyOfName(id.Name));
+
                             return JSBooleanBuilder.False;
                         }
 
