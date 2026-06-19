@@ -410,6 +410,58 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void TypedArray_Construct_Coerces_NonObject_Length_Before_NewTarget_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        // §23.2.5.1 step 6.c: for a non-object first argument, ToIndex(firstArgument)
+        // runs before AllocateTypedArray reads NewTarget.prototype. A Symbol length
+        // must therefore throw the ToIndex TypeError without evaluating the custom
+        // prototype getter.
+        var result = ctx.Eval("""
+            (function () {
+                var getProtoCalled = false;
+                var newTarget = function () {}.bind(null);
+                Object.defineProperty(newTarget, 'prototype', {
+                    get: function () { getProtoCalled = true; throw new Error('proto'); }
+                });
+
+                try {
+                    Reflect.construct(Int8Array, [Symbol()], newTarget);
+                    return 'no throw';
+                } catch (e) {
+                    return e.constructor.name + '|' + getProtoCalled;
+                }
+            })();
+            """);
+
+        Assert.Equal("TypeError|false", result.ToString());
+    }
+
+    [Fact]
+    public void TypedArray_Subarray_Validates_Species_Constructor_Result()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        // %TypedArray%.prototype.subarray uses TypedArraySpeciesCreate, whose
+        // TypedArrayCreate step runs ValidateTypedArray on the constructed value. A
+        // custom @@species constructor that returns a non-typed-array must surface as
+        // a TypeError rather than being returned as-is.
+        var result = ctx.Eval("""
+            (function () {
+                var sample = new Int8Array(2);
+                sample.constructor = {};
+                sample.constructor[Symbol.species] = function () {};
+
+                try { sample.subarray(0); return 'no throw'; }
+                catch (e) { return e.constructor.name; }
+            })();
+            """);
+
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
     public void GeneratorFunction_Construct_Parses_Before_NewTarget_Prototype()
     {
         EnsureBuiltInsLoaded();
