@@ -92,8 +92,16 @@ internal sealed class JSRegExpStringIterator : JSObject
         var matchString = matchValue.ToString();
         if (matchString.Length == 0)
         {
+            // §22.2.9.2.1 step 9.e: empty match → lastIndex = AdvanceStringIndex(S, …,
+            // fullUnicode). With a `u`/`v` flag a surrogate pair is a single position, so
+            // the iterator does not yield a spurious empty match inside an astral char.
+            var s = input.ToString();
             var nextIndex = GetObservableLastIndex();
-            regexp[KeyStrings.lastIndex] = JSValue.CreateNumber(nextIndex + 1);
+            var advanced = nextIndex + 1;
+            if (unicode && advanced < s.Length
+                && char.IsHighSurrogate(s[nextIndex]) && char.IsLowSurrogate(s[advanced]))
+                advanced++;
+            regexp[KeyStrings.lastIndex] = JSValue.CreateNumber(advanced);
         }
 
         return CreateIterResult(match, false);

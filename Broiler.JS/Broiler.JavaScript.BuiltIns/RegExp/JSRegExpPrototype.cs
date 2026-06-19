@@ -171,6 +171,23 @@ public partial class JSRegExp
         // numbers them 1..n in ECMAScript order and integer indexing is correct.
         // The captureMap supplies that count and the original-name mapping.
         var c = captureMap != null ? captureMap.Count + 1 : groups.Count;
+
+        // §B.2.4 UpdateLegacyRegExpStaticProperties: a successful built-in exec records
+        // the match on the realm's legacy RegExp statics (RegExp.lastMatch, RegExp.$1, …).
+        // groups[1..c-1] are the captures in ECMAScript order (RewriteCaptureGroups
+        // renumbers named captures), matching the numbered $1..$9 slots.
+        if (JSEngine.Current is { } legacyContext)
+        {
+            var capturedValues = new string[c - 1];
+            for (var i = 1; i < c; i++)
+            {
+                var group = groups[i];
+                capturedValues[i - 1] = group.Success ? group.Value : null;
+            }
+
+            legacyContext.LegacyRegExp.Update(input, match.Index, match.Index + match.Length, capturedValues);
+        }
+
         var result = JSValue.CreateArray((uint)c);
         var resultObject = (JSObject)result;
 
