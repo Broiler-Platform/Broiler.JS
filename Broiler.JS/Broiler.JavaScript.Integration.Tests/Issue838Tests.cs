@@ -346,14 +346,16 @@ public class Issue838Tests
 
     [Fact]
     public void GetWeekInfoReturnsSpecKeysInOrder()
-        => Assert.Equal("firstDay,weekend,minimalDays", Eval(
+        // minimalDays was removed from getWeekInfo by a normative ECMA-402 change (issue #840
+        // Problem 42); the output is now exactly { firstDay, weekend }.
+        => Assert.Equal("firstDay,weekend", Eval(
             "Object.keys(new Intl.Locale('en-US').getWeekInfo()).join(',')"));
 
     [Fact]
     public void GetWeekInfoFirstDayIsNumberAndWeekendIsArray()
-        => Assert.Equal("number,true,number", Eval(
+        => Assert.Equal("number,true", Eval(
             "var w = new Intl.Locale('en-US').getWeekInfo();" +
-            "(typeof w.firstDay) + ',' + Array.isArray(w.weekend) + ',' + (typeof w.minimalDays)"));
+            "(typeof w.firstDay) + ',' + Array.isArray(w.weekend)"));
 
     [Fact]
     public void GetWeekInfoFirstDayIsSundayForUsAndMondayForGermany()

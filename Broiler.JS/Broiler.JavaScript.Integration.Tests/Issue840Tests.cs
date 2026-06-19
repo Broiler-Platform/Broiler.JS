@@ -744,4 +744,33 @@ public class Issue840Tests
     [Fact]
     public void IteratorToStringTagGetterStillReportsIterator()
         => Assert.Equal("Iterator", Eval($"{IteratorToStringTagGetter}.call({{}})"));
+
+    // ---- Problem 42: Intl.Locale.prototype.getWeekInfo output keys ----
+    //
+    // A normative ECMA-402 change removed minimalDays from WeekInfoOfLocale: getWeekInfo()
+    // returns exactly { firstDay, weekend } (in that order). The engine still emitted a third
+    // minimalDays key.
+
+    [Fact]
+    public void GetWeekInfoReturnsOnlyFirstDayAndWeekend()
+        => Assert.Equal("firstDay,weekend", Eval(
+            "Reflect.ownKeys(new Intl.Locale('en').getWeekInfo()).join(',')"));
+
+    [Fact]
+    public void GetWeekInfoFirstDayIsAWritableEnumerableConfigurableIntegerOneToSeven()
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            "  var d = Object.getOwnPropertyDescriptor(new Intl.Locale('en').getWeekInfo(), 'firstDay');" +
+            "  return d.writable && d.enumerable && d.configurable && d.value >= 1 && d.value <= 7;" +
+            "})()"));
+
+    [Fact]
+    public void GetWeekInfoWeekendIsAscendingIntegersOneToSeven()
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            "  var w = new Intl.Locale('en').getWeekInfo().weekend;" +
+            "  var sorted = w.slice().sort();" +
+            "  return Array.isArray(w) && w.every(function (n) { return n >= 1 && n <= 7; })" +
+            "    && JSON.stringify(w) === JSON.stringify(sorted);" +
+            "})()"));
 }

@@ -3331,10 +3331,10 @@ public sealed class JSIntlLocale : JSObject
     {
         var locale = RequireLocale(in a, "getWeekInfo");
 
-        // §1.4.x getWeekInfo: { firstDay, weekend, minimalDays } in that key order. Day numbers
-        // follow ISO-8601 (Monday = 1 … Sunday = 7). CLDR's full per-region data is not bundled,
-        // so this uses reasonable defaults (Saturday+Sunday weekend, one minimal day) with a
-        // Sunday-first region table.
+        // getWeekInfo returns { firstDay, weekend } in that key order — minimalDays was removed
+        // from WeekInfoOfLocale by a normative ECMA-402 change. Day numbers follow ISO-8601
+        // (Monday = 1 … Sunday = 7). CLDR's full per-region data is not bundled, so this uses
+        // reasonable defaults (Saturday+Sunday weekend) with a Sunday-first region table.
         var region = locale.GetRegion();
         var firstDay = region != null && SundayFirstRegions.Contains(region) ? 7 : 1;
 
@@ -3347,8 +3347,6 @@ public sealed class JSIntlLocale : JSObject
             JSValue.CreateNumber(firstDay), JSPropertyAttributes.EnumerableConfigurableValue);
         info.FastAddValue(KeyStrings.GetOrCreate("weekend"),
             weekend, JSPropertyAttributes.EnumerableConfigurableValue);
-        info.FastAddValue(KeyStrings.GetOrCreate("minimalDays"),
-            JSValue.CreateNumber(1), JSPropertyAttributes.EnumerableConfigurableValue);
         return info;
     }
 
