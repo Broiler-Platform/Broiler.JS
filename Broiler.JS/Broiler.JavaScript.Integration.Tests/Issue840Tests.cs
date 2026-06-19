@@ -716,4 +716,32 @@ public class Issue840Tests
     [InlineData("(function(){ var a=[1,2,3]; a.constructor={[Symbol.species]:function(n){return new Array(n);}}; return a.splice(0,2).length; })()", "2")]
     public void SpliceOrdinaryArraysStillWork(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problem 79: %Iterator.prototype%[@@toStringTag] getter name ----
+    //
+    // The getter was created with the name "get [Symbol.toStringTag]" but the factory already
+    // prepends the "get " accessor prefix, so the name and Function.prototype.toString doubled
+    // it ("function get get [Symbol.toStringTag]() …"), which is not valid NativeFunction syntax.
+
+    private static string IteratorToStringTagGetter =>
+        "Object.getOwnPropertyDescriptor(Iterator.prototype, Symbol.toStringTag).get";
+
+    [Fact]
+    public void IteratorToStringTagGetterHasSingleGetPrefixInName()
+        => Assert.Equal("get [Symbol.toStringTag]", Eval($"{IteratorToStringTagGetter}.name"));
+
+    [Fact]
+    public void IteratorToStringTagGetterConformsToNativeFunctionSyntax()
+        => Assert.Equal("true", Eval(
+            "/^function get \\[Symbol\\.toStringTag\\]\\(\\) \\{ \\[native code\\] \\}$/.test(" +
+            $"{IteratorToStringTagGetter}.toString())"));
+
+    [Fact]
+    public void IteratorToStringTagSetterHasSingleSetPrefixInName()
+        => Assert.Equal("set [Symbol.toStringTag]", Eval(
+            "Object.getOwnPropertyDescriptor(Iterator.prototype, Symbol.toStringTag).set.name"));
+
+    [Fact]
+    public void IteratorToStringTagGetterStillReportsIterator()
+        => Assert.Equal("Iterator", Eval($"{IteratorToStringTagGetter}.call({{}})"));
 }

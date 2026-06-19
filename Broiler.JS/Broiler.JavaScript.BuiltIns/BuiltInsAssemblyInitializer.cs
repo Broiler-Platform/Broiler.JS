@@ -348,7 +348,10 @@ internal static class BuiltInsAssemblyInitializer
             // any other receiver gets an own data property instead, bypassing this inherited accessor).
             proto.FastAddProperty(
                 (IJSSymbol)JSSymbol.toStringTag,
-                CreateNativeGetter(static (in Arguments a) => JSValue.CreateString("Iterator"), "get [Symbol.toStringTag]"),
+                // CreateNativeGetter prepends the "get " accessor prefix itself, so pass the
+                // bare property name; passing "get [Symbol.toStringTag]" doubled it, yielding a
+                // name / toString of "get get [Symbol.toStringTag]" (not valid NativeFunction syntax).
+                CreateNativeGetter(static (in Arguments a) => JSValue.CreateString("Iterator"), "[Symbol.toStringTag]"),
                 CreateNativeFunction((in Arguments a) =>
                 {
                     if (a.This is not JSObject receiver)
