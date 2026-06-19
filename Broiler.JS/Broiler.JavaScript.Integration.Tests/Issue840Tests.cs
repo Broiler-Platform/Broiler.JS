@@ -526,4 +526,50 @@ public class Issue840Tests
     [InlineData("'en-Latn-US'")]
     public void ValidTExtensionAndOrdinaryTagsStillCanonicalize(string tag)
         => Assert.Equal("string", Eval($"typeof Intl.getCanonicalLocales({tag})[0]"));
+
+    // ---- Problem 51: ToPropertyDescriptor reads descriptor fields via Has/Get ----
+    //
+    // ToPropertyDescriptor (§6.2.5.5) probes the descriptor object with [[HasProperty]] then
+    // [[Get]] for enumerable, configurable, value, writable, get, set (in that order). The
+    // engine's NormalizeDescriptor read the fields straight out of internal storage, so a
+    // scripted Proxy descriptor's has/get traps never fired (the test observed no operations).
+
+    private const string LoggingProxyDescriptor =
+        "function mk(){ var log = []; var p = new Proxy(" +
+        "  { enumerable: true, configurable: true, value: 3, writable: true }," +
+        "  { has(t, id){ log.push('has ' + id); return id in t; }," +
+        "    get(t, id){ log.push('get ' + id); return t[id]; } });" +
+        "  return { p: p, log: log }; }";
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("[]")]
+    [InlineData("new Proxy({}, {})")]
+    public void DefinePropertyReadsProxyDescriptorFieldsInSpecOrder(string target)
+        => Assert.Equal(
+            "has enumerable,get enumerable,has configurable,get configurable," +
+            "has value,get value,has writable,get writable,has get,has set",
+            Eval(
+                "(function () {" + LoggingProxyDescriptor +
+                $"  var m = mk(); Object.defineProperty({target}, 'x', m.p);" +
+                "  return m.log.join(',');" +
+                "})()"));
+
+    [Fact]
+    public void ReflectDefinePropertyReadsProxyDescriptorFieldsInSpecOrder()
+        => Assert.Equal(
+            "has enumerable,get enumerable,has configurable,get configurable," +
+            "has value,get value,has writable,get writable,has get,has set",
+            Eval(
+                "(function () {" + LoggingProxyDescriptor +
+                "  var m = mk(); Reflect.defineProperty({}, 'x', m.p);" +
+                "  return m.log.join(',');" +
+                "})()"));
+
+    [Theory]
+    [InlineData("(function(){ var o={}; Object.defineProperty(o,'x',{value:42,enumerable:true}); return o.x; })()", "42")]
+    [InlineData("(function(){ var o={}; Object.defineProperty(o,'y',{get(){return 7;},configurable:true}); return o.y; })()", "7")]
+    [InlineData("(function(){ var d=Object.create({enumerable:true,value:9}); var o={}; Object.defineProperty(o,'z',d); return o.z+','+Object.getOwnPropertyDescriptor(o,'z').enumerable; })()", "9,true")]
+    public void DefinePropertyOrdinaryDescriptorsStillWork(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }

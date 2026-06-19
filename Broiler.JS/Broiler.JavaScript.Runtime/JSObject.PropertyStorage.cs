@@ -1330,8 +1330,11 @@ public partial class JSObject
 
     private static void CopyDescriptorField(JSObject source, JSObject record, in KeyString field)
     {
-        // [[HasProperty]] (prototype chain) decides presence; [[Get]] reads the value.
-        if (source.GetInternalProperty(field).IsEmpty)
+        // ToPropertyDescriptor (§6.2.5.5): presence is decided by [[HasProperty]] and the value is
+        // read with [[Get]]. Both are observable on a scripted Proxy descriptor (its has/get traps),
+        // so they must go through the object's own operations rather than the internal storage —
+        // GetInternalProperty bypasses the traps, so a Proxy descriptor's accessors never fired.
+        if (!source.HasProperty(field.ToJSValue()).BooleanValue)
             return;
 
         record.FastAddValue(field, source[field], JSPropertyAttributes.EnumerableConfigurableValue);
