@@ -599,15 +599,14 @@ public partial class JSPromise
                     errors[currentIndex] = JSUndefined.Value;
                     remaining++;
 
+                    // PerformPromiseAny has no "resolve element": the fulfillment handler is the
+                    // result capability's [[Resolve]] itself. Only the rejection is wrapped in a
+                    // per-element function guarded by alreadyCalled (so one element settles the
+                    // remaining count at most once). A native promise's capability resolve carries
+                    // [[AlreadyResolved]] so only the first fulfillment wins; a user-supplied
+                    // constructor's resolve has no such guard and is therefore invoked raw each
+                    // time it is called (test262 Promise/any/resolve-from-same-thenable).
                     var alreadyCalled = false;
-                    var resolveElement = new JSFunction((in Arguments args) =>
-                    {
-                        if (alreadyCalled)
-                            return JSUndefined.Value;
-                        alreadyCalled = true;
-                        resolve.InvokeFunction(new Arguments(JSUndefined.Value, args.Get1()));
-                        return JSUndefined.Value;
-                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
                     var rejectElement = new JSFunction((in Arguments args) =>
                     {
                         if (alreadyCalled)
@@ -626,7 +625,7 @@ public partial class JSPromise
                     if (!then.IsFunction)
                         throw JSEngine.NewTypeError("Promise resolve did not return a thenable");
 
-                    then.InvokeFunction(new Arguments(nextPromise, resolveElement, rejectElement));
+                    then.InvokeFunction(new Arguments(nextPromise, resolve, rejectElement));
                 }
 
                 RejectIfDone();

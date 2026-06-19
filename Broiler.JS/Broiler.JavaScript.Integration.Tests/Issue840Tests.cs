@@ -925,4 +925,40 @@ public class Issue840Tests
     [InlineData("({ class() { return 9; } }).class()", "9")]
     public void ContextualShorthandsAndReservedKeysStillWork(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problem 66: Promise.any fulfillment uses the capability resolve directly ----
+    //
+    // PerformPromiseAny has no "resolve element": the fulfillment handler passed to each
+    // element's then is the result capability's [[Resolve]] itself (only the rejection is a
+    // guarded per-element function). The engine wrapped fulfillment in an alreadyCalled guard,
+    // so a user constructor's resolve — re-invoked by a thenable that calls back repeatedly —
+    // fired only once instead of each time.
+
+    [Fact]
+    public void PromiseAnyFulfillmentCallsCapabilityResolveEachTime()
+        => Assert.Equal("3|1,2,3", Eval(
+            "(function () {" +
+            "  var callCount = 0; var sequence = [];" +
+            "  function C(executor) {" +
+            "    executor(function (v) { callCount++; sequence.push(v); }, function (e) { throw e; });" +
+            "  }" +
+            "  C.resolve = function (v) { return v; };" +
+            "  var pResolve;" +
+            "  var a = { then: function (res, rej) { pResolve = res; } };" +
+            "  Promise.any.call(C, [a]);" +
+            "  pResolve(1); pResolve(2); pResolve(3);" +
+            "  return callCount + '|' + sequence.join(',');" +
+            "})()"));
+
+    [Fact]
+    public async System.Threading.Tasks.Task PromiseAnyStillResolvesWithFirstFulfillment()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval(
+            "Promise.any([Promise.reject('e'), Promise.resolve('win'), Promise.resolve('late')])" +
+            ".then(function (v) { return 'ok:' + v; })");
+        var promise = Assert.IsType<Broiler.JavaScript.BuiltIns.Promise.JSPromise>(result);
+        var settled = await promise.Task;
+        Assert.Equal("ok:win", settled.ToString());
+    }
 }
