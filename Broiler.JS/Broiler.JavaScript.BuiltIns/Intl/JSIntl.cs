@@ -3967,12 +3967,16 @@ public class JSIntlNumberFormat : JSObject
     // English (short) compact scale: 10^3 K, 10^6 M, 10^9 B, 10^12 T. Ordered largest-first
     // so the FormatCompact loop picks the largest unit not exceeding the value's magnitude.
     private static readonly (int Exp, string Suffix)[] CompactUnitsEn = [(12, "T"), (9, "B"), (6, "M"), (3, "K")];
+    // English long compact words (compactDisplay: "long"); the number and word are separated
+    // by a literal space (CLDR "0 thousand" / "0 million" / …).
+    private static readonly (int Exp, string Suffix)[] CompactUnitsEnLong =
+        [(12, "trillion"), (9, "billion"), (6, "million"), (3, "thousand")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsJa = [(12, "兆"), (8, "億"), (4, "万")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsKo = [(12, "조"), (8, "억"), (4, "만"), (3, "천")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHant = [(12, "兆"), (8, "億"), (4, "萬")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHans = [(12, "兆"), (8, "亿"), (4, "万")];
 
-    private static (int Exp, string Suffix)[] GetCompactUnits(string localeTag)
+    private static (int Exp, string Suffix)[] GetCompactUnits(string localeTag, bool longForm)
     {
         var tag = localeTag ?? string.Empty;
         var dash = tag.IndexOf('-');
@@ -3980,7 +3984,7 @@ public class JSIntlNumberFormat : JSObject
         switch (language)
         {
             case "en":
-                return CompactUnitsEn;
+                return longForm ? CompactUnitsEnLong : CompactUnitsEn;
             case "ja":
                 return CompactUnitsJa;
             case "ko":
@@ -4006,7 +4010,8 @@ public class JSIntlNumberFormat : JSObject
     // formatting (unchanged behaviour).
     private List<(string, string)> FormatCompact(double absX, out bool roundedIsZero)
     {
-        var units = GetCompactUnits(locale);
+        var isLong = resolved?.CompactDisplay == "long";
+        var units = GetCompactUnits(locale, isLong);
         if (units == null)
             return FormatFiniteMagnitude(absX, 0, 3, out roundedIsZero);
 
@@ -4041,7 +4046,13 @@ public class JSIntlNumberFormat : JSObject
 
         var parts = FormatCompactMantissa(reduced, maxFrac, out roundedIsZero);
         if (suffix != null)
+        {
+            // The English long compact pattern places a literal space between the number and
+            // the word ("988 million"); the short forms ("988M") and CJK units have none.
+            if (ReferenceEquals(units, CompactUnitsEnLong))
+                parts.Add(("literal", " "));
             parts.Add(("compact", suffix));
+        }
         return parts;
     }
 

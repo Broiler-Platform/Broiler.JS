@@ -988,4 +988,39 @@ public class Issue840Tests
     [InlineData("new Intl.NumberFormat('en-US', { useGrouping: false }).format(1234567)", "1234567")]
     public void OrdinaryGroupingStillWorks(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problem 74: Intl.NumberFormat compactDisplay "long" (English) ----
+    //
+    // compactDisplay "long" was ignored — the short suffixes (K/M/B/T) were always used.
+    // English long compact spells the unit ("988 million") with a literal space, so
+    // formatToParts is [integer, literal " ", compact "million"] (length 3), not length 2.
+
+    private static string CompactLong(string value)
+        => "new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'long' }).format(" + value + ")";
+
+    [Theory]
+    [InlineData("100", "100")]
+    [InlineData("1500", "1.5 thousand")]
+    [InlineData("98765", "99 thousand")]
+    [InlineData("987654321", "988 million")]
+    [InlineData("1000000000", "1 billion")]
+    [InlineData("1000000000000", "1 trillion")]
+    public void CompactLongSpellsOutTheUnit(string value, string expected)
+        => Assert.Equal(expected, Eval(CompactLong(value)));
+
+    [Fact]
+    public void CompactLongFormatToPartsIncludesLiteralSpace()
+        => Assert.Equal(
+            "[\"integer:988\",\"literal: \",\"compact:million\"]",
+            Eval("JSON.stringify(new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'long' })" +
+                 ".formatToParts(987654321).map(function (p) { return p.type + ':' + p.value; }))"));
+
+    [Theory]
+    // Short compact is unchanged (no literal space), and a CJK long compact gets no space.
+    [InlineData("new Intl.NumberFormat('en-US', { notation: 'compact' }).format(987654321)", "988M")]
+    [InlineData("JSON.stringify(new Intl.NumberFormat('en-US', { notation: 'compact' }).formatToParts(987654321).map(function (p) { return p.type + ':' + p.value; }))",
+        "[\"integer:988\",\"compact:M\"]")]
+    [InlineData("new Intl.NumberFormat('ja-JP', { notation: 'compact', compactDisplay: 'long' }).format(20000)", "2万")]
+    public void ShortAndCjkCompactUnaffected(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }
