@@ -127,8 +127,26 @@ public partial class JSRegExp
     public JSValue Exec(in Arguments a)
     {
         var input = a.Get1().StringValue;
+
+        // RegExpBuiltinExec reads `lastIndex` exactly once (via ToLength), even when
+        // the regex is neither global nor sticky; the value is only consulted in the
+        // global/sticky case (steps 8 and 12).
+        var observableLastIndex = GetObservableLastIndex();
+        var useLastIndex = globalSearch || sticky;
+
+        // RegExpBuiltinExec step 12.a: for a global or sticky regex whose lastIndex
+        // has advanced past the end of the subject, there is no remaining position to
+        // search. Reset lastIndex to 0 and report no match instead of clamping the
+        // start position back to the end (which would spuriously match an empty
+        // pattern at the final index).
+        if (useLastIndex && observableLastIndex > input.Length)
+        {
+            SetObservableLastIndex(0);
+            return JSValue.NullValue;
+        }
+
         // Perform the regular expression matching.
-        var startPosition = CalculateStartPosition(input);
+        var startPosition = useLastIndex ? observableLastIndex : 0;
         var match = value.Match(input, startPosition);
 
         if (sticky && (!match.Success || match.Index != startPosition))
@@ -267,22 +285,5 @@ public partial class JSRegExp
         var pattern = receiver[KeyStrings.GetOrCreate("source")].StringValue;
         var flags = receiver[KeyStrings.GetOrCreate("flags")].StringValue;
         return JSValue.CreateString($"/{pattern}/{flags}");
-    }
-
-    /// <summary>
-    /// Calculates the position to start searching.
-    /// </summary>
-    /// <param name="input"> The string on which to perform the search. </param>
-    /// <returns> The character position to start searching. </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int CalculateStartPosition(string input)
-    {
-        var observableLastIndex = GetObservableLastIndex();
-        if (!globalSearch && !sticky)
-            return 0;
-
-        var minIndex = observableLastIndex < input.Length ? observableLastIndex : input.Length;
-
-        return minIndex;
     }
 }

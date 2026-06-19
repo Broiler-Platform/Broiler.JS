@@ -7562,6 +7562,46 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RegExp_Exec_LastIndex_Past_End_Returns_Null_And_Resets()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        // RegExpBuiltinExec step 12.a: when lastIndex is past the end of the subject,
+        // a global or sticky regex must report no match (and reset lastIndex to 0)
+        // rather than clamping the search start back onto the final position, which
+        // would spuriously match an empty pattern there.
+        var result = ctx.Eval("""
+            (function () {
+                var out = [];
+
+                var g = /(?:)/g;
+                g.lastIndex = 2;
+                out.push(g.exec('a') === null);
+                out.push(g.lastIndex);
+
+                var y = /a/y;
+                y.lastIndex = 5;
+                out.push(y.exec('abc') === null);
+                out.push(y.lastIndex);
+
+                // A non-global, non-sticky regex ignores lastIndex entirely and still
+                // matches the empty pattern at the start.
+                var plain = /(?:)/;
+                plain.lastIndex = 99;
+                out.push(plain.exec('a') !== null);
+
+                // matchAll(undefined) builds /(?:)/g, so it must yield exactly one
+                // empty match per index up to and including the end of the string.
+                out.push([...'a'.matchAll(undefined)].length);
+
+                return out.join('|');
+            })();
+            """);
+
+        Assert.Equal("true|0|true|0|true|2", result.ToString());
+    }
+
+    [Fact]
     public void MatchAll_RegExp_LastIndex_And_SetLike_Iterator_Return_Regressions()
     {
         EnsureBuiltInsLoaded();
