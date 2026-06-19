@@ -8707,6 +8707,35 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RegExp_Exec_Builds_Result_Array_With_CreateDataProperty_Not_Set()
+    {
+        // RegExpBuiltinExec installs the matched substring and each capture with
+        // CreateDataPropertyOrThrow (an own data property), never [[Set]]. A poisoned
+        // Array.prototype index accessor ("0", "1", ...) must therefore not be consulted
+        // when exec — or any operation built on it (@@replace, @@match, @@split, the
+        // direct exec result) — populates its result array (test262
+        // RegExp/prototype/Symbol.replace/poisoned-stdlib and friends).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                for (var i = 0; i <= 4; i++) {
+                    Object.defineProperty(Array.prototype, i, {
+                        set: function () { throw new Error('setter unreachable'); },
+                        get: function () { throw new Error('getter unreachable'); },
+                        configurable: true
+                    });
+                }
+                var direct = /b(c)/.exec('abcd');
+                var replaced = /b(c)/[Symbol.replace]('abcd', '[$1]');
+                var matched = 'abcd'.match(/b(c)/);
+                return direct[0] + ',' + direct[1] + '|' + replaced + '|' + matched[0] + ',' + matched[1];
+            })();
+        ");
+        Assert.Equal("bc,c|a[c]d|bc,c", result.ToString());
+    }
+
+    [Fact]
     public void Temporal_PlainMonthDay_With_Reads_Fields_Alphabetically_And_Coerces_Each_Match_Test262()
     {
         // PlainMonthDay.prototype.with reads the recognised fields « day, month, monthCode,

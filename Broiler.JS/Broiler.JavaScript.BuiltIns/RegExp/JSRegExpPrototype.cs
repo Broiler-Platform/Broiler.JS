@@ -172,11 +172,17 @@ public partial class JSRegExp
         // The captureMap supplies that count and the original-name mapping.
         var c = captureMap != null ? captureMap.Count + 1 : groups.Count;
         var result = JSValue.CreateArray((uint)c);
+        var resultObject = (JSObject)result;
 
+        // RegExpBuiltinExec installs each capture (step 28: CreateDataPropertyOrThrow),
+        // never [[Set]], so a poisoned Array.prototype index accessor (a getter/setter
+        // installed for "0", "1", ...) must not be consulted. The plain `[uint]` indexer
+        // walks the prototype chain and would invoke such a setter, so define the own data
+        // property directly.
         for (int i = 0; i < c; i++)
         {
             var group = groups[i];
-            result[(uint)i] = group.Success ? JSValue.CreateString(group.Value) : JSUndefined.Value;
+            resultObject.CreateDataProperty((uint)i, group.Success ? JSValue.CreateString(group.Value) : JSUndefined.Value);
         }
 
         result[KeyStrings.index] = JSValue.CreateNumber(match.Index);
@@ -197,14 +203,15 @@ public partial class JSRegExp
                 var group = groups[i];
                 if (!group.Success)
                 {
-                    indices[(uint)i] = JSUndefined.Value;
+                    indicesObject.CreateDataProperty((uint)i, JSUndefined.Value);
                 }
                 else
                 {
                     var range = JSValue.CreateArray(2);
-                    range[0] = JSValue.CreateNumber(group.Index);
-                    range[1] = JSValue.CreateNumber(group.Index + group.Length);
-                    indices[(uint)i] = range;
+                    var rangeObject = (JSObject)range;
+                    rangeObject.CreateDataProperty(0u, JSValue.CreateNumber(group.Index));
+                    rangeObject.CreateDataProperty(1u, JSValue.CreateNumber(group.Index + group.Length));
+                    indicesObject.CreateDataProperty((uint)i, range);
                 }
             }
 
