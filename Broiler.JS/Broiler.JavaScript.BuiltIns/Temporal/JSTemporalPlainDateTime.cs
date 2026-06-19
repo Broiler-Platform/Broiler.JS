@@ -67,6 +67,21 @@ public partial class JSTemporalPlainDateTime : JSObject
         this.calendarId = calendarId;
     }
 
+    // CreateTemporalDateTime (Temporal §5.5.x): build a PlainDateTime, throwing a RangeError when
+    // the ISO date-time falls outside the representable limits. Internal constructors do not run
+    // this check, so call sites that combine fields into a new value (e.g. PlainDate.toPlainDateTime
+    // at the boundary date) must go through here.
+    internal static JSTemporalPlainDateTime Create(
+        int isoYear, int isoMonth, int isoDay,
+        int hour, int minute, int second, int millisecond, int microsecond, int nanosecond,
+        string calendarId, JSObject prototype)
+    {
+        if (!IsValidISODateTime(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond))
+            throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
+        return new JSTemporalPlainDateTime(
+            isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, calendarId, prototype);
+    }
+
     private static JSObject ResolvePrototype()
     {
         if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)

@@ -406,11 +406,11 @@ public partial class JSTemporalPlainDate : JSObject
         // PlainDate's [[Calendar]]), so e.g. a buddhist PlainDate yields a buddhist PlainDateTime.
         var arg = a.GetAt(0);
         if (arg == null || arg.IsUndefined)
-            return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, 0, 0, 0, 0, 0, 0, calendarId, JSTemporalPlainDateTime.PlainDateTimePrototype);
+            return JSTemporalPlainDateTime.Create(isoYear, isoMonth, isoDay, 0, 0, 0, 0, 0, 0, calendarId, JSTemporalPlainDateTime.PlainDateTimePrototype);
 
         var t = JSTemporalPlainTime.From(new Arguments(JSUndefined.Value, arg)) as JSTemporalPlainTime
             ?? throw JSEngine.NewTypeError("expected a Temporal.PlainTime");
-        return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay,
+        return JSTemporalPlainDateTime.Create(isoYear, isoMonth, isoDay,
             t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond, calendarId, JSTemporalPlainDateTime.PlainDateTimePrototype);
     }
 

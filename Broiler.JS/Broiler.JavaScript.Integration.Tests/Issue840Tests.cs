@@ -329,4 +329,43 @@ public class Issue840Tests
     [InlineData("new Int8Array([3,1,2]).sort().join(',')", "1,2,3")]
     public void TypedArraySortStillOrdersElements(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problems 59/67: Temporal creation rejects out-of-range ISO results ----
+    //
+    // CreateTemporalDateTime / CreateTemporalMonthDay run ISODateTimeWithinLimits /
+    // ISODateWithinLimits. PlainDate.prototype.toPlainDateTime built the PlainDateTime through an
+    // internal constructor that skipped the check (so combining the minimum date with midnight,
+    // which is below the representable PlainDateTime range, did not throw), and the PlainMonthDay
+    // constructor validated only month/day for the year, not the representable range of the
+    // referenceISOYear-month-day date.
+
+    private static string ThrowsRangeError(string code)
+        => Eval("(function () { try { " + code + "; return false; } catch (e) { return e instanceof RangeError; } })()");
+
+    [Fact]
+    public void ToPlainDateTimeAtMinimumDateMidnightThrows()
+        => Assert.Equal("true", ThrowsRangeError("Temporal.PlainDate.from('-271821-04-19').toPlainDateTime()"));
+
+    [Fact]
+    public void ToPlainDateTimeAtMinimumDateWithInRangeTimeSucceeds()
+        => Assert.Equal("-271821-04-19T12:00:00",
+            Eval("Temporal.PlainDate.from('-271821-04-19').toPlainDateTime('12:00').toString()"));
+
+    [Fact]
+    public void ToPlainDateTimeInRangeStillWorks()
+        => Assert.Equal("2000-01-01T00:00:00",
+            Eval("Temporal.PlainDate.from('2000-01-01').toPlainDateTime().toString()"));
+
+    [Theory]
+    [InlineData("new Temporal.PlainMonthDay(9, 14, 'iso8601', 275760)")]   // after the maximum ISO date
+    [InlineData("new Temporal.PlainMonthDay(4, 18, 'iso8601', -271821)")]  // before the minimum ISO date
+    public void PlainMonthDayReferenceYearOutOfRangeThrows(string code)
+        => Assert.Equal("true", ThrowsRangeError(code));
+
+    [Theory]
+    [InlineData("new Temporal.PlainMonthDay(9, 13, 'iso8601', 275760).monthCode", "M09")]
+    [InlineData("new Temporal.PlainMonthDay(2, 29).toString()", "02-29")]
+    [InlineData("Temporal.PlainMonthDay.from('06-15').toString()", "06-15")]
+    public void PlainMonthDayInRangeStillWorks(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }
