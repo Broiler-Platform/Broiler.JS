@@ -261,9 +261,14 @@ partial class FastCompiler
                 // parameter directly when available, else fall back to a plain
                 // assignment for non-JSVariable `this` representations.
                 var thisBinding = (@this as YPropertyExpression)?.Target;
+                // Thread the lexically-captured new.target (inherited correctly across
+                // arrow functions) so a super() nested in an arrow allocates the instance
+                // with the most-derived prototype. The arrow's own call-stack item carries
+                // no new target, so the runtime fallback would otherwise be undefined.
+                var superNewTarget = scope.Top.NewTargetExpression ?? JSContextBuilder.NewTarget();
                 YExpression BindSuperResult() => thisBinding != null
-                    ? JSVariableBuilder.BindThis(thisBinding, JSFunctionBuilder.ConstructSuper(super, paramArray1))
-                    : JSFunctionBuilder.InvokeSuperConstructor(super, @this, paramArray1);
+                    ? JSVariableBuilder.BindThis(thisBinding, JSFunctionBuilder.ConstructSuper(super, superNewTarget, paramArray1))
+                    : JSFunctionBuilder.InvokeSuperConstructor(super, superNewTarget, @this, paramArray1);
 
                 // we need to set this to null
                 // to inform function creator that we have

@@ -205,4 +205,100 @@ public class Issue847Tests
     {
         Assert.Equal(expected, Eval(code).ToString());
     }
+
+    // Problem 4: super() invoked from inside an arrow function in a derived constructor
+    // produced an instance with the immediate superclass's prototype (the arrow's own
+    // call-stack frame carries no new.target, so the runtime fallback was undefined).
+    // The lexically-captured new.target (inherited across arrows) is now threaded in.
+    [Theory]
+    [InlineData("class A{}; class B extends A{ constructor(){ var f=()=>super(); f(); return this; } }; new B() instanceof B", "true")]
+    [InlineData("class A{constructor(){this.nt=new.target;}}; class B extends A{ constructor(){ var f=()=>super(); f(); return this; } }; (new B().nt)===B", "true")]
+    [InlineData("class A{}; class B extends A{ constructor(){ (()=>(()=>super())())(); return this; } }; new B() instanceof B", "true")]
+    [InlineData("class A{}; class B extends A{}; class C extends B{ constructor(){ var f=()=>super(); f(); return this; } }; var c=new C(); (c instanceof C)+','+(c instanceof B)", "true,true")]
+    public void ArrowSuperCallUsesEnclosingNewTarget(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Direct super() and the default derived constructor must keep working.
+    [Theory]
+    [InlineData("class A{}; class B extends A{ constructor(){ super(); } }; new B() instanceof B", "true")]
+    [InlineData("class A{constructor(x){this.x=x;}}; class B extends A{}; new B(7).x", "7")]
+    [InlineData("class A{constructor(){this.nt=new.target.name;}}; class B extends A{}; new B().nt", "B")]
+    public void DirectSuperAndDefaultConstructorUnaffected(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Invalid assignment targets are early SyntaxErrors. Previously these lowered to an
+    // Expression.Assign onto a non-assignable node and leaked a CLR
+    // NotImplementedException / InvalidProgramException (and `this = x` silently wrote
+    // to the captured this-binding).
+    [Theory]
+    [InlineData("(1+2)=5")]
+    [InlineData("1=2")]
+    [InlineData("(x>0?x:0)=5")]
+    [InlineData("(a+b)+=5")]
+    [InlineData("null=5")]
+    [InlineData("(a,b)=5")]
+    [InlineData("(function(){})=5")]
+    [InlineData("this=5")]
+    [InlineData("this+=5")]
+    public void InvalidAssignmentTargetIsSyntaxError(string source)
+    {
+        var code = "try { eval(" + Quote(source) + "); 'no-error'; } catch (e) { e.constructor.name; }";
+        Assert.Equal("SyntaxError", Eval(code).ToString());
+    }
+
+    // Valid assignment targets must keep working.
+    [Theory]
+    [InlineData("var o={}; o.a=5; o.a", "5")]
+    [InlineData("var a=[0]; a[0]=9; a[0]", "9")]
+    [InlineData("var o={a:1}; o.a+=10; o.a", "11")]
+    [InlineData("var x; x=3; x", "3")]
+    [InlineData("class A{}; class B extends A{ m(){return 1;} }; class C extends B{ m(){ super.m(); return 2; } }; new C().m()", "2")]
+    [InlineData("var o={f(){return this.v;},v:7}; o.f()", "7")]
+    public void ValidAssignmentTargetsStillWork(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // A BindingRestElement must be the last formal parameter and may not have a default
+    // initializer; these forms are early SyntaxErrors (previously silently accepted).
+    [Theory]
+    [InlineData("function f(...a,...b){}")]
+    [InlineData("function f(...a, b){}")]
+    [InlineData("function f(...a=1){}")]
+    [InlineData("(...a, b)=>{}")]
+    [InlineData("var o={ m(...a, b){} }")]
+    [InlineData("class C{ m(...a, b){} }")]
+    [InlineData("function* g(...a, b){}")]
+    [InlineData("async function h(...a, b){}")]
+    public void InvalidRestParameterIsSyntaxError(string source)
+    {
+        var code = "try { eval(" + Quote(source) + "); 'no-error'; } catch (e) { e.constructor.name; }";
+        Assert.Equal("SyntaxError", Eval(code).ToString());
+    }
+
+    [Fact]
+    public void DynamicFunctionWithInvalidRestParameterIsSyntaxError()
+    {
+        var code = "try { new Function('...a,...b',''); 'no-error'; } catch (e) { e.constructor.name; }";
+        Assert.Equal("SyntaxError", Eval(code).ToString());
+    }
+
+    // Valid rest parameters (last position, destructuring rest, methods, arrows) work.
+    [Theory]
+    [InlineData("function f(a, ...b){ return b.length; }; f(1,2,3)", "2")]
+    [InlineData("(function(...a){return a.length;})(1,2,3)", "3")]
+    [InlineData("function f(...[a,b]){ return a+b; }; f(1,2)", "3")]
+    [InlineData("var o={ m(a, ...rest){ return rest.join(''); } }; o.m(1,2,3)", "23")]
+    [InlineData("((...xs)=>xs.length)(1,2,3,4)", "4")]
+    [InlineData("function f(...rest){return rest;}; f.length", "0")]
+    public void ValidRestParametersStillWork(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    private static string Quote(string code) => "\"" + code.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
 }

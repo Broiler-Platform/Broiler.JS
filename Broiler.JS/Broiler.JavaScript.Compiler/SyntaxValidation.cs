@@ -488,6 +488,8 @@ public static void ValidateProgram(
             if ((functionStrict || alwaysRejectDuplicates) && ContainsDuplicateParameterNames(functionExpression.Params))
                 throw new FastParseException(functionExpression.Start, "Duplicate parameter name not allowed in this context");
 
+            ValidateRestParameter(functionExpression.Params, functionExpression);
+
             var previous = IsStrictMode;
             var prevMethod = _inMethodProperty;
             var prevBody = _functionBodyBlock;
@@ -512,6 +514,32 @@ public static void ValidateProgram(
         }
 
         private AstBlock _functionBodyBlock;
+
+        // A BindingRestElement (`...a`) must be the LAST formal parameter and may not
+        // carry a default initializer: `function f(...a, b)`, `function f(...a, ...b)`
+        // and `function f(...a = 1)` are early SyntaxErrors (FormalParameters /
+        // FunctionRestParameter). Setters are validated separately (they reject any
+        // rest parameter outright).
+        private static void ValidateRestParameter(IFastEnumerable<VariableDeclarator> parameters, AstNode node)
+        {
+            if (parameters == null)
+                return;
+
+            var en = parameters.GetFastEnumerator();
+            var seenRest = false;
+            while (en.MoveNext(out var param))
+            {
+                if (seenRest)
+                    throw new FastParseException(node.Start, "Rest parameter must be last formal parameter");
+
+                if (param.Identifier is AstSpreadElement)
+                {
+                    seenRest = true;
+                    if (param.Init != null)
+                        throw new FastParseException(node.Start, "Rest parameter may not have a default initializer");
+                }
+            }
+        }
 
         protected override AstNode VisitVariableDeclaration(AstVariableDeclaration variableDeclaration)
         {

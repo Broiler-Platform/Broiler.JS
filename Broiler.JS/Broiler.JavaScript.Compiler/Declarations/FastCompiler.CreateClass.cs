@@ -596,7 +596,9 @@ partial class FastCompiler
 
                 inits.AddRange(s.InitList);
                 if (hasSuperClass)
-                    inits.Add(JSFunctionBuilder.InvokeSuperConstructor(StaticSuper(), @this, args));
+                    // The synthetic default constructor calls super() directly (never from
+                    // an arrow), so the runtime new.target fallback is correct here.
+                    inits.Add(JSFunctionBuilder.InvokeSuperConstructor(StaticSuper(), JSUndefinedBuilder.Value, @this, args));
 
                 InitMembers(inits, s);
                 inits.Add(@this);
