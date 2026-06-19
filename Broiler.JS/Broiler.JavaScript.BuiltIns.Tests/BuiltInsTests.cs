@@ -462,6 +462,66 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Class_Method_Bodies_Are_Strict_Mode_Code()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // A class method/getter/setter/constructor is always strict mode code, so the full
+        // strict early-error set applies to its body (no `with`, no `delete` of an
+        // unqualified reference, no reserved-word/restricted binding names) — not just the
+        // duplicate-parameter rule. Object-literal concise methods, by contrast, stay sloppy.
+        var result = ctx.Eval("""
+            (function () {
+                function name(src) {
+                    try { eval(src); return 'ok'; }
+                    catch (e) { return e.constructor.name; }
+                }
+                return [
+                    name('class C { m() { with ({}) {} } }'),
+                    name('class C { m() { var x; delete x; } }'),
+                    name('class C { m(arg) { var public = 1; } }'),
+                    name('class eval {}'),
+                    name('({ m() { with ({}) {} } })'),   // object method: sloppy, allowed
+                    name('class C { m(a, b) { return a + b; } }') // valid strict method
+                ].join('|');
+            })();
+            """);
+        Assert.Equal("SyntaxError|SyntaxError|SyntaxError|SyntaxError|ok|ok", result.ToString());
+    }
+
+    [Fact]
+    public void Class_Computed_Property_Name_Is_Evaluated_In_Strict_Mode()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // A ComputedPropertyName is class body code, evaluated in strict mode: an assignment
+        // inside it that targets a non-extensible object's new property throws a TypeError.
+        // Normal computed keys still evaluate in source order, and a sloppy function invoked
+        // by the key runs sloppy (its own lenient set semantics).
+        var result = ctx.Eval("""
+            (function () {
+                function name(thunk) {
+                    try { thunk(); return 'ok'; }
+                    catch (e) { return e.constructor.name; }
+                }
+
+                var strictKey = name(function () {
+                    class C { [Object.preventExtensions({}).p = 4]() {} constructor() {} }
+                });
+
+                var log = [];
+                class Ordered { [(log.push('a'), 'x')]() {} [(log.push('b'), 'y')]() {} }
+
+                var k = 'foo';
+                class Basic { [k]() { return 7; } }
+
+                return strictKey + '|' + log.join(',') + '|' + new Basic().foo();
+            })();
+            """);
+        Assert.Equal("TypeError|a,b|7", result.ToString());
+    }
+
+    [Fact]
     public void Base_Class_Initializes_Instance_Fields_Before_Constructor_Parameter_Defaults()
     {
         EnsureBuiltInsLoaded();
