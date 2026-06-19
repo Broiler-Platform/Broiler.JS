@@ -51,7 +51,18 @@ partial class FastCompiler
             }
             else
             {
-                list.Add(YExpression.TryFinally(r, dispose));
+                // DisposeResources runs with the block's completion: if the body throws,
+                // seed that error as the pending completion before disposing, so a disposer
+                // error wraps it as a SuppressedError (and a clean disposal re-throws it
+                // unchanged). The body error is caught and recorded — the finally then
+                // disposes and throws the resulting (possibly wrapping) error.
+                var pe = scope.CreateException("#usingBodyError");
+                var seed = d.CallExpression<IJSDisposableStack, Exception, JSValue>(
+                    () => (j, e) => j.SeedPendingError(e), pe.Expression);
+                var guardedBody = YExpression.TryCatch(r, YExpression.Catch(pe.Variable, seed));
+                list.Add(YExpression.TryFinally(guardedBody, dispose));
+
+                return YExpression.Block(new Sequence<YParameterExpression> { scope.Disposable, pe.Variable }, list);
             }
 
             return YExpression.Block(new Sequence<YParameterExpression> { scope.Disposable }, list);
