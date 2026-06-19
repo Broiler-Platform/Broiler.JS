@@ -2348,6 +2348,72 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void PropertyIsEnumerable_Coerces_Key_Before_Rejecting_Receiver()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // §20.1.3.4: ToPropertyKey(V) (step 1) runs before ToObject(this) (step 2),
+        // so a throwing key coercion surfaces before a null/undefined receiver is
+        // rejected — propertyIsEnumerable.call(null, throwingKey) throws the key's
+        // error (here a ReferenceError), not a TypeError.
+        var result = ctx.Eval("""
+            (function () {
+                function name(thunk) {
+                    try { thunk(); return 'no throw'; }
+                    catch (e) { return e.constructor.name; }
+                }
+                var pie = Object.prototype.propertyIsEnumerable;
+                var thrower = { toString: function () { return undefinedReference; } };
+                return [
+                    name(function () { return pie.call(null, thrower); }),
+                    name(function () { return pie.call(undefined, thrower); })
+                ].join('|');
+            })();
+            """);
+        Assert.Equal("ReferenceError|ReferenceError", result.ToString());
+    }
+
+    [Fact]
+    public void GetOwnPropertyDescriptor_Of_Array_Length_Has_Enumerable_Fields()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // FromPropertyDescriptor builds each field as an enumerable own data property,
+        // so the array exotic "length" descriptor must round-trip through JSON / a
+        // structural compare rather than appearing empty.
+        var result = ctx.Eval("""
+            (function () {
+                var d = Reflect.getOwnPropertyDescriptor([1, 2, 3], "length");
+                return JSON.stringify(d) + "|" + Object.keys(d).sort().join(",");
+            })();
+            """);
+        Assert.Equal(
+            "{\"value\":3,\"writable\":true,\"enumerable\":false,\"configurable\":false}|configurable,enumerable,value,writable",
+            result.ToString());
+    }
+
+    [Fact]
+    public void GetOwnPropertyDescriptor_Of_TypedArray_Element_Has_Enumerable_Fields()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // A typed array's integer-indexed element is an enumerable, writable,
+        // configurable own data property, and the returned descriptor's own fields
+        // must themselves be enumerable (so the descriptor is not reported empty).
+        var result = ctx.Eval("""
+            (function () {
+                var ta = new Int8Array(2);
+                ta[0] = 7;
+                var d = Object.getOwnPropertyDescriptor(ta, 0);
+                return JSON.stringify(d) + "|" + Object.keys(d).sort().join(",");
+            })();
+            """);
+        Assert.Equal(
+            "{\"value\":7,\"writable\":true,\"enumerable\":true,\"configurable\":true}|configurable,enumerable,value,writable",
+            result.ToString());
+    }
+
+    [Fact]
     public void Object_DefineProperties_And_GetOwnPropertySymbols_Support_Symbol_Keys()
     {
         EnsureBuiltInsLoaded();
