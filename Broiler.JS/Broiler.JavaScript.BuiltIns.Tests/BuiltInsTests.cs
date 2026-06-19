@@ -2372,6 +2372,41 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void JSON_Parse_Coerces_Argument_With_Spec_ToString_First()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        // JSON.parse step 1 is `Let JText be ? ToString(text)`. Primitives coerce and
+        // parse, a Symbol throws TypeError (not SyntaxError), and a throwing
+        // toString/valueOf during ToPrimitive propagates verbatim rather than being
+        // reported as malformed JSON.
+        var result = ctx.Eval("""
+            (function () {
+                function name(thunk) {
+                    try { return 'ok:' + thunk(); }
+                    catch (e) { return e.constructor.name; }
+                }
+
+                return [
+                    name(function () { return JSON.parse(null); }),
+                    name(function () { return JSON.parse(true); }),
+                    name(function () { return JSON.parse(3.14); }),
+                    name(function () { return JSON.parse(undefined); }),
+                    name(function () { return JSON.parse(Symbol('d')); }),
+                    name(function () {
+                        return JSON.parse({ toString: null, get valueOf() { throw new RangeError(); } });
+                    }),
+                    name(function () {
+                        return JSON.parse({ toString: function () { throw new RangeError(); } });
+                    })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("ok:null|ok:true|ok:3.14|SyntaxError|TypeError|RangeError|RangeError", result.ToString());
+    }
+
+    [Fact]
     public void JSON_Stringify_ReturnsString()
     {
         EnsureBuiltInsLoaded();
