@@ -8638,6 +8638,74 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Constructing_A_TypedArray_From_A_Throwing_Generator_Propagates_The_Error()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // new.target is always undefined inside a generator body. The generator is
+        // resumed while `new Int8Array(gen)` is constructing (new.target === Int8Array),
+        // so a `new` inside the generator — including the error thrown here — must not
+        // inherit Int8Array as its new target. Previously the thrown RangeError was
+        // reprototyped to Int8Array.prototype, so it stopped being a RangeError and
+        // assert.throws(Test262Error, ...) (test262 TypedArrayConstructors ctors
+        // object-arg/iterating-throws) failed.
+        var result = ctx.Eval("""
+            (function () {
+                var gen = (function* () { yield 0; throw new RangeError("boom"); })();
+                try { new Int8Array(gen); return "no throw"; }
+                catch (e) {
+                    return [e.constructor.name, e instanceof RangeError, e.message].join("|");
+                }
+            })();
+            """);
+        Assert.Equal("RangeError|true|boom", result.ToString());
+    }
+
+    [Fact]
+    public void TypedArray_With_Revalidates_Index_Against_Live_Length_After_Coercion()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // %TypedArray%.prototype.with step 8 runs IsValidIntegerIndex AFTER coercing the
+        // value, against the live view. A valueOf that shrinks the backing buffer makes a
+        // previously in-range (negative) index out of bounds, which must be a RangeError
+        // (test262 TypedArray/prototype/with/negative-index-resize-to-out-of-bounds).
+        var result = ctx.Eval("""
+            (function () {
+                var bpe = Int8Array.BYTES_PER_ELEMENT;
+                var rab = new ArrayBuffer(4 * bpe, { maxByteLength: 4 * bpe });
+                var ta = new Int8Array(rab);
+                var value = { valueOf: function () { rab.resize(bpe); return 123; } };
+                try { ta.with(-1, value); return "no throw"; }
+                catch (e) { return e.constructor.name; }
+            })();
+            """);
+        Assert.Equal("RangeError", result.ToString());
+    }
+
+    [Fact]
+    public void TypedArray_CopyWithin_Uses_PreCoercion_Length_When_Argument_Grows_Buffer()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // copyWithin captures the length before coercing its arguments (spec step 3) and
+        // uses it for the copy count; a valueOf that grows the buffer must not enlarge the
+        // count (test262 TypedArray/prototype/copyWithin/coerced-target-start-grow).
+        var result = ctx.Eval("""
+            (function () {
+                var bpe = Int8Array.BYTES_PER_ELEMENT;
+                var rab = new ArrayBuffer(4 * bpe, { maxByteLength: 8 * bpe });
+                var lt = new Int8Array(rab);
+                for (var i = 0; i < 4; i++) lt[i] = i;
+                var evil = { valueOf: function () { rab.resize(6 * bpe); lt[4] = 4; lt[5] = 5; return 0; } };
+                lt.copyWithin(evil, 2);
+                return Array.from(lt).join(",");
+            })();
+            """);
+        Assert.Equal("2,3,2,3,4,5", result.ToString());
+    }
+
+    [Fact]
     public void RegExp_Inline_Modifier_Groups_Scope_DotAll_And_Multiline_Match_Test262()
     {
         // Regression: the '.', '^' and '$' rewrites that bridge .NET and ECMAScript
