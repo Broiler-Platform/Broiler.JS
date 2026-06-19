@@ -19,6 +19,13 @@ using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Storage;
 using System.Text.Json;
 
+// Maps a holder object to the parse-time source text and originally-parsed value of
+// each of its primitive members, so the reviver's `context.source` can be supplied only
+// while a slot still holds the value JSON.parse produced for it (see InternalizeJsonProperty).
+using SourceMap = System.Collections.Generic.Dictionary<
+    Broiler.JavaScript.Runtime.JSObject,
+    System.Collections.Generic.Dictionary<string, (string source, Broiler.JavaScript.Runtime.JSValue value)>>;
+
 namespace Broiler.JavaScript.BuiltIns.Json;
 
 public delegate JSValue JsonParserReceiver((JSObject holder, string key, JSValue value) property);
@@ -215,10 +222,11 @@ public partial class JSJSON : JSObject
     }
 
     private static void RecordSource(
-        Dictionary<JSObject, Dictionary<string, string>> sourceMap,
+        SourceMap sourceMap,
         JSObject holder,
         string key,
-        string source)
+        string source,
+        JSValue value)
     {
         if (source == null)
             return;
@@ -229,18 +237,25 @@ public partial class JSJSON : JSObject
             sourceMap[holder] = holderSources;
         }
 
-        holderSources[key] = source;
+        holderSources[key] = (source, value);
     }
 
+    // The source text is exposed to the reviver only when the slot still holds the exact
+    // value JSON.parse produced for it. A reviver can forward-modify a not-yet-visited
+    // sibling (e.g. `this.q = 5` while visiting "p"); that replaces the parsed value, so the
+    // recorded source no longer describes it and `context.source` must be undefined.
     private static bool TryGetSource(
-        Dictionary<JSObject, Dictionary<string, string>> sourceMap,
+        SourceMap sourceMap,
         JSObject holder,
         string key,
+        JSValue currentValue,
         out string source)
     {
         if (sourceMap.TryGetValue(holder, out var holderSources)
-            && holderSources.TryGetValue(key, out source))
+            && holderSources.TryGetValue(key, out var recorded)
+            && ReferenceEquals(currentValue, recorded.value))
         {
+            source = recorded.source;
             return true;
         }
 
@@ -255,7 +270,7 @@ public partial class JSJSON : JSObject
         JSObject holder,
         string key,
         JSFunction reviver,
-        Dictionary<JSObject, Dictionary<string, string>> sourceMap,
+        SourceMap sourceMap,
         string rootSource)
     {
         if (key.Length > 0)
@@ -303,7 +318,7 @@ public partial class JSJSON : JSObject
                 if (rootSource != null && IsPrimitiveJsonValue(value))
                     context["source"] = new JSString(rootSource);
             }
-            else if (IsPrimitiveJsonValue(value) && TryGetSource(sourceMap, holder, key, out var source))
+            else if (IsPrimitiveJsonValue(value) && TryGetSource(sourceMap, holder, key, value, out var source))
             {
                 context["source"] = new JSString(source);
             }
@@ -318,7 +333,7 @@ public partial class JSJSON : JSObject
         JSObject holder,
         uint index,
         JSFunction reviver,
-        Dictionary<JSObject, Dictionary<string, string>> sourceMap)
+        SourceMap sourceMap)
     {
         var value = holder[index];
         if (value is JSObject valueObject)
@@ -354,7 +369,7 @@ public partial class JSJSON : JSObject
         if (sourceMap != null)
         {
             var context = new JSObject();
-            if (IsPrimitiveJsonValue(value) && TryGetSource(sourceMap, holder, key, out var source))
+            if (IsPrimitiveJsonValue(value) && TryGetSource(sourceMap, holder, key, value, out var source))
                 context["source"] = new JSString(source);
 
             return reviver.InvokeCallback(new Arguments(holder, new JSString(key), value, context));
@@ -375,7 +390,7 @@ public partial class JSJSON : JSObject
         // performed exactly once, before parsing, and the result reused throughout.
         var jText = text.StringValue;
 
-        Dictionary<JSObject, Dictionary<string, string>> sourceMap = null;
+        SourceMap sourceMap = null;
         var sourceTextAccessEnabled = JSEngine.Current is JSContext context
             && context.HasExperimentalFeature(JavaScriptFeatureFlags.JsonParseSourceTextAccess);
 
@@ -387,7 +402,7 @@ public partial class JSJSON : JSObject
                     jText,
                     p =>
                     {
-                        RecordSource(sourceMap ??= new Dictionary<JSObject, Dictionary<string, string>>(JSObjectReferenceComparer.Instance), p.holder, p.key, p.source);
+                        RecordSource(sourceMap ??= new SourceMap(JSObjectReferenceComparer.Instance), p.holder, p.key, p.source, p.value);
                         return p.value;
                     })
                 : JSJsonParser.Parse(jText, null);
@@ -399,7 +414,7 @@ public partial class JSJSON : JSObject
 
         parsed ??= JSNull.Value;
         if (sourceTextAccessEnabled)
-            sourceMap ??= new Dictionary<JSObject, Dictionary<string, string>>(JSObjectReferenceComparer.Instance);
+            sourceMap ??= new SourceMap(JSObjectReferenceComparer.Instance);
 
         if (receiver is not JSFunction function)
             return parsed;

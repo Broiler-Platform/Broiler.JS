@@ -1353,6 +1353,17 @@ internal static class BuiltInsAssemblyInitializer
                         break;
                     case '<':
                     {
+                        // §22.1.3.18.1: $< introduces a named-capture reference ONLY when the
+                        // pattern contains named groups (namedCaptures is defined). When it is
+                        // undefined, the literal characters "$<" are emitted and parsing resumes
+                        // immediately after them, so `"abcd".replace(/(.)(.)/, "$<x>")` yields
+                        // "$<x>cd" rather than swallowing the "<x>".
+                        if (namedCaptures.IsUndefined)
+                        {
+                            replacementBuilder.Append("$<");
+                            break;
+                        }
+
                         var end = replacement.IndexOf('>', i + 1);
                         if (end < 0)
                         {
@@ -1360,16 +1371,13 @@ internal static class BuiltInsAssemblyInitializer
                             break;
                         }
 
-                        if (!namedCaptures.IsUndefined)
-                        {
-                            if (namedCaptures is not JSObject namedCapturesObject)
-                                throw JSEngine.NewTypeError("RegExp replacement named captures must be an object");
+                        if (namedCaptures is not JSObject namedCapturesObject)
+                            throw JSEngine.NewTypeError("RegExp replacement named captures must be an object");
 
-                            var groupName = replacement.Substring(i + 1, end - i - 1);
-                            var capture = namedCapturesObject[KeyStrings.GetOrCreate(groupName)];
-                            if (!capture.IsUndefined)
-                                replacementBuilder.Append(capture.ToString());
-                        }
+                        var groupName = replacement.Substring(i + 1, end - i - 1);
+                        var capture = namedCapturesObject[KeyStrings.GetOrCreate(groupName)];
+                        if (!capture.IsUndefined)
+                            replacementBuilder.Append(capture.ToString());
 
                         i = end;
                         break;
