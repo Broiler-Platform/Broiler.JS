@@ -79,6 +79,34 @@ public class Issue783Tests
     public void UsingAllowsNullAndUndefinedInitializer()
         => Assert.Equal("ok", Eval("{ using a = null; using b = undefined; } 'ok'"));
 
+    // DisposeResources runs with the block's completion: when the body throws and a disposer
+    // also throws, the result is a SuppressedError whose `error` is the disposer's throw and
+    // whose `suppressed` is the body's throw (issue #842 Problem 46 —
+    // staging/explicit-resource-management/exception-handling).
+    [Fact]
+    public void UsingBodyErrorIsSuppressedByDisposeError()
+        => Assert.Equal("SuppressedError|dispose|user", Eval("""
+            (function () {
+                var userError = new Error("user");
+                var disposeError = new Error("dispose");
+                try {
+                    { using x = { [Symbol.dispose]() { throw disposeError; } }; throw userError; }
+                } catch (e) {
+                    return [e.constructor.name, e.error.message, e.suppressed.message].join("|");
+                }
+            })();
+        """));
+
+    // When only a disposer throws (clean body), that error propagates directly — no wrapping.
+    [Fact]
+    public void UsingDisposeErrorWithCleanBodyPropagatesDirectly()
+        => Assert.Equal("plain", Eval("""
+            (function () {
+                try { { using x = { [Symbol.dispose]() { throw new Error("plain"); } }; } }
+                catch (e) { return e.message; }
+            })();
+        """));
+
     // ───────────── Problems 6/8: invalid time-zone designators in an ISO string ─────────────
 
     // A leap second inside a time-zone offset designator (annotation or bare) is not a valid zone.
