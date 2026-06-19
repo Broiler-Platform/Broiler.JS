@@ -480,4 +480,50 @@ public class Issue840Tests
     [InlineData("(function(){ var a=[1,,3]; a.reverse(); return a[0]+','+(1 in a)+','+a[2]; })()", "3,false,1")]
     public void ReverseOrdinaryArraysStillWork(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problem 100: Intl.getCanonicalLocales validates the t-extension grammar ----
+    //
+    // The structural language-tag regex permits any 2–8 alphanum subtag inside a singleton
+    // extension, so a malformed transform ("-t-") payload — e.g. "en-t-root" (tlang must be
+    // alpha{2,3} or alpha{5,8}, not 4), or "en-t-d0" (tkey with no tvalue) — slipped through
+    // structural validation. ValidateLanguageTag now also runs HasInvalidTransformedExtension,
+    // which parses each "-t-" payload against UTS #35 §3.6 transformed_extensions: an optional
+    // tlang (language, optional script, optional region, zero+ variants) followed by zero+
+    // tfields (tkey = 2 chars alpha+digit; one or more tvalue chunks of 3–8 alphanum each).
+
+    [Theory]
+    [InlineData("'en-t-root'")]                        // tlang language must be alpha{2,3} or alpha{5,8}
+    [InlineData("'en-t-abcdefghi'")]                   // and not 9 chars
+    [InlineData("'en-t-ar-aao'")]                      // extlang is not allowed in a tlang
+    [InlineData("'en-t-en-lat0'")]                     // unicode_script_subtag must be 4 alpha (not alphanum)
+    [InlineData("'en-t-en-latn-latn'")]                // script can't repeat (and "latn" isn't a region/variant)
+    [InlineData("'en-t-en-00'")]                       // region must be 2 alpha or 3 digit
+    [InlineData("'en-t-en-x0'")]
+    [InlineData("'en-t-en-latn-00'")]
+    [InlineData("'en-t-en-latn-xyz'")]
+    [InlineData("'en-t-en-latn-gb-ab'")]               // variant must be 5–8 alphanum or 4 char starting with digit
+    [InlineData("'en-t-en-latn-gb-abc'")]
+    [InlineData("'en-t-en-latn-gb-abcd'")]
+    [InlineData("'en-t-d0'")]                          // tkey must be followed by at least one tvalue chunk
+    [InlineData("'en-t-d0-m0'")]
+    [InlineData("'en-t-d0-x-private'")]
+    public void InvalidTExtensionThrowsRangeError(string tag)
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            $"  try {{ Intl.getCanonicalLocales({tag}); return false; }}" +
+            "  catch (e) { return e instanceof RangeError; }" +
+            "})()"));
+
+    [Theory]
+    [InlineData("'en-t-en'")]
+    [InlineData("'en-t-en-latn'")]
+    [InlineData("'en-t-en-latn-us'")]
+    [InlineData("'en-t-en-latn-us-fonipa'")]           // variant: 6 alphanum
+    [InlineData("'en-t-en-latn-gb-1abc'")]              // variant: 4 char starting with digit
+    [InlineData("'en-t-en-latn-gb-abcde'")]             // variant: 5 alphanum
+    [InlineData("'en-t-d0-fwidth'")]                    // tkey "d0" + tvalue "fwidth"
+    [InlineData("'en-US'")]                             // ordinary tags still pass
+    [InlineData("'en-Latn-US'")]
+    public void ValidTExtensionAndOrdinaryTagsStillCanonicalize(string tag)
+        => Assert.Equal("string", Eval($"typeof Intl.getCanonicalLocales({tag})[0]"));
 }

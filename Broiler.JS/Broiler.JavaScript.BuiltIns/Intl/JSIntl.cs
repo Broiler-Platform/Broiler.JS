@@ -1086,7 +1086,8 @@ public static class JSIntl
         if (!StructurallyValidLanguageTagPattern.IsMatch(tag) ||
             InvalidGrandfatheredLanguageTags.Contains(tag) ||
             HasDuplicateVariantSubtag(tag) ||
-            HasInvalidUnicodeExtensionKey(tag))
+            HasInvalidUnicodeExtensionKey(tag) ||
+            HasInvalidTransformedExtension(tag))
             throw JSEngine.NewRangeError("Invalid language tag");
 
         // CanonicalizeUnicodeLocaleId: a regular grandfathered tag is replaced
@@ -1184,6 +1185,106 @@ public static class JSIntl
 
         return false;
     }
+
+    // Validates the inner grammar of every transform ("-t-") extension in a language tag
+    // (UTS #35 §3.6 transformed_extensions): an optional tlang (language subtag, optional
+    // script, optional region, zero+ variants) followed by zero+ tfields (each tkey = 2
+    // chars alpha+digit, with one or more tvalue chunks of 3-8 alphanum). The structural
+    // language-tag regex only enforces "2-8 alphanum subtags inside any singleton extension",
+    // so e.g. "en-t-root" or "en-t-d0" (tkey without tvalue) slip through it.
+    // Returns true if any "-t-" extension in <paramref name="tag"/> is malformed.
+    private static bool HasInvalidTransformedExtension(string tag)
+    {
+        var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        for (var i = 0; i < subtags.Length; i++)
+        {
+            if (!subtags[i].Equals("t", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            // Collect the t-extension's payload: every subtag after "-t-" until the next
+            // singleton (which starts a different extension, e.g. "-u-" or "-x-") or end.
+            var start = i + 1;
+            var end = start;
+            while (end < subtags.Length && subtags[end].Length != 1)
+                end++;
+
+            var payload = subtags.AsSpan(start, end - start);
+            if (payload.Length == 0)
+                return true; // "...-t-" with no content (or "...-t-x-..." with no t-payload)
+
+            var p = 0;
+            // Optional tlang: starts with a unicode_language_subtag (alpha{2,3} or alpha{5,8}).
+            if (IsLanguageSubtag(payload[0]))
+            {
+                p = 1;
+                if (p < payload.Length && IsScriptSubtag(payload[p])) p++;
+                if (p < payload.Length && IsRegionSubtag(payload[p])) p++;
+                while (p < payload.Length && IsVariantSubtag(payload[p])) p++;
+            }
+
+            // Any leading non-tlang subtags, and everything after the tlang, must form tfields:
+            // each is a tkey (alpha+digit) followed by 1+ tvalue chunks (3-8 alphanum).
+            while (p < payload.Length)
+            {
+                if (!IsTKey(payload[p]))
+                    return true;
+                p++;
+
+                var valueCount = 0;
+                while (p < payload.Length && IsTValue(payload[p]))
+                {
+                    p++;
+                    valueCount++;
+                }
+                if (valueCount == 0)
+                    return true;
+            }
+
+            i = end - 1; // continue scanning after this t-extension
+        }
+
+        return false;
+    }
+
+    private static bool IsAllAlphaNumeric(string s)
+    {
+        foreach (var c in s)
+            if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) return false;
+        return true;
+    }
+
+    private static bool IsLanguageSubtag(string s)
+        => (s.Length is 2 or 3 || s.Length is >= 5 and <= 8) && IsAllAlpha(s);
+
+    private static bool IsScriptSubtag(string s) => s.Length == 4 && IsAllAlpha(s);
+
+    private static bool IsRegionSubtag(string s)
+    {
+        if (s.Length == 2) return IsAllAlpha(s);
+        if (s.Length != 3) return false;
+        foreach (var c in s)
+            if (c is < '0' or > '9') return false;
+        return true;
+    }
+
+    private static bool IsVariantSubtag(string s)
+    {
+        if (s.Length is >= 5 and <= 8) return IsAllAlphaNumeric(s);
+        // 4-char variant: digit followed by 3 alphanum.
+        if (s.Length != 4) return false;
+        if (s[0] is < '0' or > '9') return false;
+        return IsAllAlphaNumeric(s);
+    }
+
+    private static bool IsTKey(string s)
+    {
+        if (s.Length != 2) return false;
+        var c0 = s[0];
+        var c1 = s[1];
+        return ((c0 >= 'A' && c0 <= 'Z') || (c0 >= 'a' && c0 <= 'z')) && c1 is >= '0' and <= '9';
+    }
+
+    private static bool IsTValue(string s) => s.Length is >= 3 and <= 8 && IsAllAlphaNumeric(s);
 
     private static bool HasInvalidUnicodeExtensionKey(string tag)
     {
