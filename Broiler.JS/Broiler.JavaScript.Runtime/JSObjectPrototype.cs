@@ -41,8 +41,10 @@ public partial class JSObject
         // key's error, not a TypeError for the null receiver.
         var key = a.Get1().ToKey(false);
 
-        if(!a.This.TryAsObjectThrowIfNullOrUndefined(out var @object))
-            return JSValue.BooleanFalse;
+        // §20.1.3.4 step 2: O = ToObject(this value). A primitive receiver is boxed
+        // (so `"s".propertyIsEnumerable(0)` sees the String exotic's index property);
+        // null/undefined throw a TypeError — after the key coercion above.
+        var @object = ToObjectOrThrow(a.This);
 
         if (key.IsUInt)
         {

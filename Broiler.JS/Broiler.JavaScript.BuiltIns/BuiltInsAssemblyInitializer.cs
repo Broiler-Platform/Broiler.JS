@@ -743,13 +743,43 @@ internal static class BuiltInsAssemblyInitializer
     }
 
     private static JSFunction CreateNativeFunction(JSFunctionDelegate fx, string name, int length = 0)
-        => new(fx, name, $"function {name}() {{ [native code] }}", length: length, createPrototype: false);
+        => new(fx, name, $"function {NativeFunctionToStringName(name)}() {{ [native code] }}", length: length, createPrototype: false);
 
     private static JSFunction CreateNativeGetter(JSFunctionDelegate fx, string name)
-        => new(fx, $"get {name}", $"function get {name}() {{ [native code] }}", createPrototype: false, length: 0);
+        => new(fx, $"get {name}", $"function get {NativeFunctionToStringName(name)}() {{ [native code] }}", createPrototype: false, length: 0);
 
     private static JSFunction CreateNativeSetter(JSFunctionDelegate fx, string name)
-        => new(fx, $"set {name}", $"function set {name}() {{ [native code] }}", createPrototype: false, length: 1);
+        => new(fx, $"set {name}", $"function set {NativeFunctionToStringName(name)}() {{ [native code] }}", createPrototype: false, length: 1);
+
+    // The optional IdentifierName in a NativeFunction toString must be a valid
+    // IdentifierName or a computed `[ … ]` name (e.g. "[Symbol.replace]"). A property
+    // name that is neither — notably the legacy RegExp statics "$&", "$+", "$`", "$'" —
+    // must be omitted, since the IdentifierName is optional and emitting it verbatim
+    // (`function get $&() { [native code] }`) is not valid NativeFunction syntax.
+    private static string NativeFunctionToStringName(string name)
+        => IsValidNativeFunctionToStringName(name) ? name : string.Empty;
+
+    private static bool IsValidNativeFunctionToStringName(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return false;
+
+        // A computed `[ … ]` name is accepted by the NativeFunction grammar.
+        if (name[0] == '[')
+            return true;
+
+        if (name[0] != '$' && name[0] != '_' && !char.IsLetter(name[0]))
+            return false;
+
+        for (var i = 1; i < name.Length; i++)
+        {
+            var c = name[i];
+            if (c != '$' && c != '_' && !char.IsLetterOrDigit(c))
+                return false;
+        }
+
+        return true;
+    }
 
     private static void EnsureAccessorProperty(JSObject target, JSValue key, string name, JSFunctionDelegate getter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
     {
@@ -1353,6 +1383,17 @@ internal static class BuiltInsAssemblyInitializer
                         break;
                     case '<':
                     {
+                        // §22.1.3.18.1: $< introduces a named-capture reference ONLY when the
+                        // pattern contains named groups (namedCaptures is defined). When it is
+                        // undefined, the literal characters "$<" are emitted and parsing resumes
+                        // immediately after them, so `"abcd".replace(/(.)(.)/, "$<x>")` yields
+                        // "$<x>cd" rather than swallowing the "<x>".
+                        if (namedCaptures.IsUndefined)
+                        {
+                            replacementBuilder.Append("$<");
+                            break;
+                        }
+
                         var end = replacement.IndexOf('>', i + 1);
                         if (end < 0)
                         {
@@ -1360,16 +1401,13 @@ internal static class BuiltInsAssemblyInitializer
                             break;
                         }
 
-                        if (!namedCaptures.IsUndefined)
-                        {
-                            if (namedCaptures is not JSObject namedCapturesObject)
-                                throw JSEngine.NewTypeError("RegExp replacement named captures must be an object");
+                        if (namedCaptures is not JSObject namedCapturesObject)
+                            throw JSEngine.NewTypeError("RegExp replacement named captures must be an object");
 
-                            var groupName = replacement.Substring(i + 1, end - i - 1);
-                            var capture = namedCapturesObject[KeyStrings.GetOrCreate(groupName)];
-                            if (!capture.IsUndefined)
-                                replacementBuilder.Append(capture.ToString());
-                        }
+                        var groupName = replacement.Substring(i + 1, end - i - 1);
+                        var capture = namedCapturesObject[KeyStrings.GetOrCreate(groupName)];
+                        if (!capture.IsUndefined)
+                            replacementBuilder.Append(capture.ToString());
 
                         i = end;
                         break;
@@ -1426,6 +1464,10 @@ internal static class BuiltInsAssemblyInitializer
                 return RegExpExec(rx, input);
             }
 
+            // §22.2.6.9 step 7: fullUnicode is derived from the flags STRING (a `u` or
+            // `v` flag), so an empty match advances by a whole code point.
+            var matchFullUnicode = flags.Contains('u') || flags.Contains('v');
+            var s = input.ToString();
             rxObj.SetPropertyOrThrow(KeyStrings.lastIndex.ToJSValue(), JSValue.NumberZero);
             var matches = JSValue.CreateArray() as JSObject
                 ?? throw new InvalidOperationException("Expected JS array object");
@@ -1448,8 +1490,15 @@ internal static class BuiltInsAssemblyInitializer
                 if (matchString.Length != 0)
                     continue;
 
+                // §22.2.6.9 step 8.g: empty match → lastIndex = AdvanceStringIndex(S,
+                // thisIndex, fullUnicode); a surrogate pair counts as one position so the
+                // loop does not emit a spurious empty match between the two code units.
                 var nextIndex = (int)rx[KeyStrings.lastIndex].DoubleValue;
-                rxObj.SetPropertyOrThrow(KeyStrings.lastIndex.ToJSValue(), JSValue.CreateNumber(nextIndex + 1));
+                var advanced = nextIndex + 1;
+                if (matchFullUnicode && advanced < s.Length
+                    && char.IsHighSurrogate(s[nextIndex]) && char.IsLowSurrogate(s[advanced]))
+                    advanced++;
+                rxObj.SetPropertyOrThrow(KeyStrings.lastIndex.ToJSValue(), JSValue.CreateNumber(advanced));
             }
         }, "[Symbol.match]", 1), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.matchAll.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
@@ -1514,6 +1563,9 @@ internal static class BuiltInsAssemblyInitializer
             // its errors propagate.
             var flags = rx[KeyStrings.GetOrCreate("flags")].StringValue;
             var global = flags.Contains('g');
+            // §22.2.6.11 step 8.c: fullUnicode comes from a `u`/`v` flag, so an empty
+            // match advances by a whole code point rather than splitting a surrogate pair.
+            var fullUnicode = flags.Contains('u') || flags.Contains('v');
 
             if (global)
                 rx[KeyStrings.lastIndex] = JSValue.NumberZero;
@@ -1533,8 +1585,13 @@ internal static class BuiltInsAssemblyInitializer
                 if (matchString.Length != 0)
                     continue;
 
+                // §22.2.6.11 step 14.d.iii: lastIndex = AdvanceStringIndex(S, …, fullUnicode).
                 var nextIndex = (int)rx[KeyStrings.lastIndex].DoubleValue;
-                rx[KeyStrings.lastIndex] = JSValue.CreateNumber(nextIndex + 1);
+                var advanced = nextIndex + 1;
+                if (fullUnicode && advanced < input.Length
+                    && char.IsHighSurrogate(input[nextIndex]) && char.IsLowSurrogate(input[advanced]))
+                    advanced++;
+                rx[KeyStrings.lastIndex] = JSValue.CreateNumber(advanced);
             }
 
             if (results.Count == 0)
@@ -1726,14 +1783,26 @@ internal static class BuiltInsAssemblyInitializer
             null,
             JSPropertyAttributes.ConfigurableProperty);
 
-        PatchLegacyRegExpAccessor(regExpCtor, "lastMatch", "$&");
-        PatchLegacyRegExpAccessor(regExpCtor, "lastParen", "$+");
-        PatchLegacyRegExpAccessor(regExpCtor, "leftContext", "$`");
-        PatchLegacyRegExpAccessor(regExpCtor, "rightContext", "$'");
-        PatchLegacyRegExpAccessor(regExpCtor, "input", "$_");
+        PatchLegacyRegExpAccessor(regExpCtor, "lastMatch", "$&", static (in Arguments _) => LegacyRegExpValue(static s => s.LastMatch));
+        PatchLegacyRegExpAccessor(regExpCtor, "lastParen", "$+", static (in Arguments _) => LegacyRegExpValue(static s => s.LastParen));
+        PatchLegacyRegExpAccessor(regExpCtor, "leftContext", "$`", static (in Arguments _) => LegacyRegExpValue(static s => s.LeftContext));
+        PatchLegacyRegExpAccessor(regExpCtor, "rightContext", "$'", static (in Arguments _) => LegacyRegExpValue(static s => s.RightContext));
+        PatchLegacyRegExpAccessor(regExpCtor, "input", "$_", static (in Arguments _) => LegacyRegExpValue(static s => s.Input));
 
         for (var i = 1; i <= 9; i++)
-            PatchLegacyRegExpAccessor(regExpCtor, $"${i}");
+        {
+            var n = i;
+            PatchLegacyRegExpAccessor(regExpCtor, $"${i}", (in Arguments _) => LegacyRegExpValue(s => s.Paren(n)));
+        }
+    }
+
+    // Reads a legacy RegExp static (RegExp.lastMatch, RegExp.$1, …) from the current
+    // realm's match record. Before any successful match the record is empty, so each
+    // accessor reports the empty string.
+    private static JSValue LegacyRegExpValue(Func<LegacyRegExpState, string> selector)
+    {
+        var state = JSEngine.Current?.LegacyRegExp;
+        return state == null ? JSValue.EmptyString : JSValue.CreateString(selector(state));
     }
 
     // Registers a spec-compliant single-flag accessor on %RegExp.prototype%.
@@ -1765,15 +1834,15 @@ internal static class BuiltInsAssemblyInitializer
         regExpCtor.FastAddValue(escapeKey, CreateNativeFunction(JSRegExp.Escape, "escape", 1), JSPropertyAttributes.ConfigurableValue);
     }
 
-    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, string alias)
+    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, string alias, JSFunctionDelegate getter)
     {
-        PatchLegacyRegExpAccessor(regExpCtor, propertyName);
-        PatchLegacyRegExpAccessor(regExpCtor, alias);
+        PatchLegacyRegExpAccessor(regExpCtor, propertyName, getter);
+        PatchLegacyRegExpAccessor(regExpCtor, alias, getter);
     }
 
-    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName)
+    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, JSFunctionDelegate getter)
     {
-        EnsureAccessorProperty(regExpCtor, KeyStrings.GetOrCreate(propertyName), propertyName, static (in Arguments _) => JSValue.EmptyString);
+        EnsureAccessorProperty(regExpCtor, KeyStrings.GetOrCreate(propertyName), propertyName, getter);
     }
 
     private static void PatchArrayPrototype(JSContext context)

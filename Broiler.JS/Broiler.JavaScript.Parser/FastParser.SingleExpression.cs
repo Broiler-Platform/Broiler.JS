@@ -95,6 +95,15 @@ partial class FastParser
 
             case FastKeywords.super:
                 stream.Consume();
+                // `super` is only valid as a SuperProperty (`super.x` / `super[x]`) or a
+                // SuperCall (`super(...)`); a bare `super` (e.g. `super = 1`), an optional
+                // `super?.x`, or a tagged `` super`...` `` is a SyntaxError. Require a
+                // `.`/`[`/`(` to follow (newlines may separate it, e.g. `super\n.x`).
+                var afterSuperMarker = stream.SkipNewLines();
+                var afterSuper = stream.Current.Type;
+                afterSuperMarker.Undo();
+                if (afterSuper is not (TokenTypes.Dot or TokenTypes.SquareBracketStart or TokenTypes.BracketStart))
+                    throw new FastParseException(token, "'super' is only valid as part of a property access or call");
                 node = new AstSuper(token);
                 return true;
         }
@@ -111,6 +120,14 @@ partial class FastParser
             // SyntaxError.
             if (inGeneratorBody && id.Start.Keyword == FastKeywords.yield)
                 throw stream.Unexpected();
+
+            // `enum` and `extends` are always-reserved words that nonetheless lex as
+            // identifier-typed keyword tokens and reach this IdentifierReference path
+            // (class/const/export/import are intercepted as statement/expression starters;
+            // `super`, `this`, `null`, `true`, `false` are valid primaries handled above).
+            // A bare `enum` / `extends` IdentifierReference (`enum = 1`) is a SyntaxError.
+            if (id.Start.Keyword is FastKeywords.@enum or FastKeywords.@extends)
+                throw new FastParseException(id.Start, $"'{id.Name}' is a reserved word and cannot be used here");
 
             // `await` is reserved throughout an async function/arrow, so it cannot be
             // an IdentifierReference there. A unicode-escaped form such as

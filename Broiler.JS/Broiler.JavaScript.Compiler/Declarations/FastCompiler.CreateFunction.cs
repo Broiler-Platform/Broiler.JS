@@ -221,6 +221,15 @@ partial class FastCompiler
                         cs.InParameterInitializer = previousInParameterInitializer;
                         cs.CurrentDirectEvalParameterBindings = previousDirectEvalParameterBindings;
                     }
+
+                    // SingleNameBinding NamedEvaluation (§8.6.3 / IteratorBindingInitialization):
+                    // when a simple parameter's default is an anonymous function definition and
+                    // that default is actually used, the function adopts the parameter name, e.g.
+                    // `(function(p = function(){}) { return p; })().name === "p"`. The default is
+                    // evaluated lazily by FromArgumentOptional, so a supplied argument is never
+                    // renamed; destructuring targets are named within their own pattern handling.
+                    if (v.Identifier is AstIdentifier)
+                        parameterInitializer = PrepareDestructuringInitializer(v.Identifier, v.Init, parameterInitializer);
                 }
 
                 CreateAssignment(bodyInits, v.Identifier, JSVariableBuilder.FromArgumentOptional(argumentElements, i, parameterInitializer), false, true,
@@ -243,7 +252,12 @@ partial class FastCompiler
 
             evalShadowBoundary = previousEvalShadowBoundary;
 
-            sList.AddRange(s.InitList);
+            // Emit only the binding-construction half here. The hoisted FunctionDeclaration
+            // value assignments (PostInit) are deferred until after the formal parameters are
+            // bound (bodyInits), so a body `function x(){}` whose name matches a parameter
+            // overrides that parameter rather than being clobbered by it
+            // (FunctionDeclarationInstantiation; test262 language/function-code/S10.2.1_A4_T1).
+            sList.AddRange(s.InitOnlyList);
 
             // Register the parameter-environment shadow bindings into this function's
             // CallStackItem AFTER they are constructed (InitList) but BEFORE the
@@ -263,6 +277,10 @@ partial class FastCompiler
                 InitMembers(sList, s);
 
             sList.AddRange(bodyInits);
+
+            // Hoisted FunctionDeclaration assignments run after parameter binding (see
+            // InitOnlyList above), so they take precedence over a same-named parameter.
+            sList.AddRange(s.PostInitList);
 
             if (functionDeclaration.Generator)
                 sList.Add(YExpression.Yield(JSUndefinedBuilder.Value));

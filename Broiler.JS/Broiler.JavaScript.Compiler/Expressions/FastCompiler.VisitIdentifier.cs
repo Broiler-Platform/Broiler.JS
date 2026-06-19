@@ -3,6 +3,7 @@ using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Statements;
+using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Runtime;
@@ -233,6 +234,27 @@ partial class FastCompiler
                     return throwIfMissing
                         ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
                         : JSContextBuilder.Index(KeyOfName(identifier.Name));
+            }
+
+            // Inside a `with`, an unqualified `arguments` first resolves against the
+            // with-object — whose own `arguments` property shadows the function's
+            // arguments binding (`with ({ arguments: 42 }) { arguments }` is 42) — and
+            // only falls back to that binding when the with-object does not provide it.
+            // This mirrors the `delete arguments` with-aware path.
+            if (withBoundaries.Count > 0)
+            {
+                var argumentsKey = KeyOfName(identifier.Name);
+                var argumentsBinding = MaterializeArgumentsBinding().Expression;
+                using var withObjectTemp = scope.Top.GetTempVariable(typeof(JSObject));
+                var hasWithObject = YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject)));
+                return YExpression.Block(
+                    new Sequence<YParameterExpression> { withObjectTemp.Variable },
+                    YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(argumentsKey)),
+                    YExpression.Condition(
+                        hasWithObject,
+                        JSValueBuilder.Index(withObjectTemp.Expression, argumentsKey),
+                        argumentsBinding,
+                        typeof(JSValue)));
             }
 
             return MaterializeArgumentsBinding().Expression;

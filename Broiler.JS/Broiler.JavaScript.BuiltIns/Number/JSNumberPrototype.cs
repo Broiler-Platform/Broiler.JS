@@ -7,6 +7,7 @@ using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using System;
 using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.BuiltIns.Number;
@@ -214,27 +215,57 @@ partial class JSNumber
         if (double.IsNegativeInfinity(nv))
             return JSConstants.NegativeInfinity;
 
-        // BROILER-PATCH: ECMAScript specifies that negative zero formats as
-        // positive zero in toExponential (e.g., (-0).toExponential(4) === "0.0000e+0")
-
-        if (IsNegativeZero(nv))
-            nv = 0.0;
-
         if (hasFractionDigits)
         {
             // Step 4: the range check (0..100) only applies when fractionDigits is
             // supplied, and is performed on the truncated integer value.
             if (f < 0 || f > 100)
                 throw JSEngine.NewRangeError("toExponential() digits argument is out of range");
-
-            var m = (int)f;
-            var fx = m == 0 ? "0e+0" : "0." + new string('0', m) + "e+0";
-            return new JSString(nv.ToString(fx, CultureInfo.InvariantCulture));
         }
 
-        // fractionDigits undefined: use as many significant digits as necessary.
-        var text = nv.ToString("0.################e+0", CultureInfo.InvariantCulture);
-        return new JSString(text);
+        // ECMAScript formats negative zero as positive zero in toExponential
+        // (e.g., (-0).toExponential(4) === "0.0000e+0").
+        var sign = nv < 0 ? "-" : "";
+        var x = Math.Abs(nv);
+        var fractionCount = (int)f;
+
+        string digits;
+        int exponent;
+
+        if (x == 0.0)
+        {
+            // Leading "0" digit plus the requested fraction zeros, exponent 0.
+            digits = new string('0', hasFractionDigits ? fractionCount + 1 : 1);
+            exponent = 0;
+        }
+        else if (hasFractionDigits)
+        {
+            // fractionDigits supplied: round the exact value of x to f+1 significant
+            // decimal digits (ties away from zero), matching the spec's choice of the
+            // integer n with n × 10^(e-f) closest to x.
+            (digits, exponent) = ExactSignificantDigits(x, fractionCount + 1);
+        }
+        else
+        {
+            // fractionDigits undefined: use as many significant digits as necessary
+            // (the shortest string that round-trips through IEEE-754).
+            (digits, exponent) = ShortestSignificantDigits(x);
+        }
+
+        return new JSString(sign + FormatExponential(digits, exponent));
+    }
+
+    /// <summary>
+    /// Formats a significand digit string and base-10 exponent of its leading digit
+    /// as ECMAScript exponential notation, e.g. ("12300", 4) → "1.2300e+4".
+    /// </summary>
+    private static string FormatExponential(string digits, int exponent)
+    {
+        var mantissa = digits.Length > 1
+            ? digits[0] + "." + digits.Substring(1)
+            : digits;
+        var sign = exponent >= 0 ? "+" : "-";
+        return mantissa + "e" + sign + Math.Abs(exponent).ToString(CultureInfo.InvariantCulture);
     }
 
     [JSPrototypeMethod]
@@ -263,9 +294,8 @@ partial class JSNumber
             digits = (int)integerDigits;
         }
 
-        // Per ECMAScript spec, -0 should produce "0" (not "-0")
-        if (nv == 0.0 && double.IsNegative(nv))
-            nv = 0.0;
+        if (double.IsNaN(nv))
+            return new JSString("NaN");
 
         if (double.IsPositiveInfinity(nv))
             return JSConstants.Infinity;
@@ -273,18 +303,51 @@ partial class JSNumber
         if (double.IsNegativeInfinity(nv))
             return JSConstants.NegativeInfinity;
 
-        if (hasDigits)
-        {
-            if (nv > 999999999999999.0 && digits <= 15)
-                return new JSString(nv.ToString("g21", CultureInfo.InvariantCulture));
+        // Step 9: if |x| ≥ 10^21 the fixed-notation algorithm is abandoned and the
+        // result is Number::toString(x).
+        if (Math.Abs(nv) >= 1e21)
+            return new JSString(ToECMAString(nv));
 
-            return new JSString(nv.ToString($"F{digits}", CultureInfo.InvariantCulture));
-        }
+        // Negative zero (and any negative value) keeps its sign per the spec, which
+        // sets the sign from x < 0 before taking the magnitude; -0 < 0 is false, so
+        // -0 renders without a sign.
+        var sign = nv < 0 ? "-" : "";
+        var x = Math.Abs(nv);
 
-        if (nv > 999999999999999.0)
-            return new JSString(nv.ToString("g21", CultureInfo.InvariantCulture));
+        // Step 6: choose the integer n with n / 10^f − x closest to zero, ties away
+        // from zero, computed from the exact binary value of x.
+        var scaled = RoundScaled(x, digits);
+        var m = scaled.ToString(CultureInfo.InvariantCulture);
 
-        return new JSString(nv.ToString("F0", CultureInfo.InvariantCulture));
+        if (digits == 0)
+            return new JSString(sign + m);
+
+        // Insert the decimal point f digits from the right, padding the integer part
+        // with a leading "0" when the magnitude is below 1.
+        if (m.Length <= digits)
+            m = new string('0', digits - m.Length + 1) + m;
+
+        var pointIndex = m.Length - digits;
+        return new JSString(sign + m.Substring(0, pointIndex) + "." + m.Substring(pointIndex));
+    }
+
+    /// <summary>
+    /// Returns round(x × 10^f) for a non-negative finite double, using exact rational
+    /// arithmetic with ties resolved away from zero (matching the ECMAScript spec).
+    /// </summary>
+    private static BigInteger RoundScaled(double x, int f)
+    {
+        var (num, den) = ToExactFraction(x);
+        if (f >= 0)
+            num *= BigInteger.Pow(10, f);
+        else
+            den *= BigInteger.Pow(10, -f);
+
+        var quotient = BigInteger.DivRem(num, den, out var remainder);
+        if (remainder * 2 >= den)
+            quotient += 1;
+
+        return quotient;
     }
 
     [JSPrototypeMethod]
@@ -331,89 +394,158 @@ partial class JSNumber
             if (n.value == 0)
                 return new JSString(i == 1 ? "0" : "0." + new string('0', i - 1));
 
-            var originalPrecision = i;
-            var d = n.value;
-            var prefix = 'g';
-            var iteration = 0;
+            // Steps 10-11: round the exact value of x to p significant digits (ties
+            // away from zero), then place the decimal point / choose exponential form
+            // from the base-10 exponent e of the leading digit. Working from the
+            // magnitude keeps the sign out of the digit count.
+            var sign = n.value < 0 ? "-" : "";
+            var x = Math.Abs(n.value);
+            var (digits, e) = ExactSignificantDigits(x, i);
 
-            if (d < 1)
+            string formatted;
+            if (e < -6 || e >= i)
             {
-                prefix = 'f';
-
-                // switch to f when number is less than 1
-                // because precision is measured from the first non zero
-                // digit position
-                // Assert.AreEqual("0.0000012", Evaluate("0.00000123.toPrecision(2)"));
-                while (d < 1)
-                {
-                    d = d * 10;
-                    i++;
-                    iteration++;
-
-                    if (iteration > 6)
-                    {
-                        // do this only 6 times
-                        // or switch back to g
-                        // Assert.AreEqual("1.2e-7", Evaluate("0.000000123.toPrecision(2)"));
-                        prefix = 'g';
-                        i = originalPrecision + 1;
-                        break;
-                    }
-                }
-
-                i--;
+                // Exponential notation when the exponent falls outside [-6, p).
+                formatted = FormatExponential(digits, e);
             }
-
-            string txt;
-            txt = n.value.ToString($"{prefix}{i}");
-
-            // add trailing zeros after .
-
-            var eIndex = txt.IndexOf('e');
-            if (eIndex != -1)
+            else if (e == i - 1)
             {
-                if (txt[eIndex + 2] == '0')
-                    txt = txt.Substring(0, eIndex + 2) + txt.Substring(eIndex + 3);
-
-                var totalDigits = eIndex;
-                var hasDot = txt.IndexOf('.');
-
-                if (hasDot != -1)
-                    totalDigits--;
-
-                var diff = originalPrecision - totalDigits;
-                if (diff > 0)
-                {
-                    if (hasDot == -1)
-                    {
-                        txt = txt.Insert(eIndex, ".");
-                        eIndex++;
-                    }
-
-                    txt = txt.Insert(eIndex, new string('0', diff));
-                }
+                // The p digits exactly fill the integer part.
+                formatted = digits;
+            }
+            else if (e >= 0)
+            {
+                // Decimal point sits e+1 digits in from the left.
+                formatted = digits.Substring(0, e + 1) + "." + digits.Substring(e + 1);
             }
             else
             {
-                var totalDigits = txt.Length;
-                var dotIndex = txt.IndexOf('.');
-                if (dotIndex != -1)
-                    totalDigits--;
-
-                if (totalDigits < originalPrecision)
-                {
-                    if (dotIndex == -1)
-                        txt += ".";
-
-                    var diff = originalPrecision - totalDigits;
-                    txt += new string('0', diff);
-                }
+                // 0 < x < 1: leading "0." then -(e+1) zeros before the digits.
+                formatted = "0." + new string('0', -(e + 1)) + digits;
             }
 
-            return new JSString(txt);
+            return new JSString(sign + formatted);
         }
 
-        return new JSString(n.value.ToString());
+        return new JSString(ToECMAString(n.value));
+    }
+
+    /// <summary>
+    /// Decomposes a positive finite double into an exact rational num / den
+    /// (den &gt; 0), so that callers can round its value with arbitrary precision.
+    /// </summary>
+    private static (BigInteger num, BigInteger den) ToExactFraction(double x)
+    {
+        var bits = BitConverter.DoubleToInt64Bits(x);
+        var biasedExponent = (int)((bits >> 52) & 0x7FF);
+        var mantissaBits = bits & 0xFFFFFFFFFFFFFL;
+
+        BigInteger mantissa;
+        int exponent;
+        if (biasedExponent == 0)
+        {
+            // Subnormal: no implicit leading 1 bit.
+            mantissa = mantissaBits;
+            exponent = -1074;
+        }
+        else
+        {
+            mantissa = mantissaBits | 0x10000000000000L;
+            exponent = biasedExponent - 1075;
+        }
+
+        return exponent >= 0
+            ? (mantissa * BigInteger.Pow(2, exponent), BigInteger.One)
+            : (mantissa, BigInteger.Pow(2, -exponent));
+    }
+
+    /// <summary>
+    /// Returns the <paramref name="precision"/> most-significant decimal digits of a
+    /// positive finite double (correctly rounded, ties away from zero) together with
+    /// the base-10 exponent <c>e</c> of the leading digit (value ≈ d.dddd × 10^e).
+    /// </summary>
+    private static (string digits, int e) ExactSignificantDigits(double x, int precision)
+    {
+        var (num, den) = ToExactFraction(x);
+
+        // Seed e = floor(log10(x)) from a float estimate, then correct it exactly so
+        // that 10^e ≤ x < 10^(e+1).
+        var e = (int)Math.Floor(Math.Log10(x));
+        while (Compare10Pow(num, den, e) > 0)
+            e--;
+        while (Compare10Pow(num, den, e + 1) <= 0)
+            e++;
+
+        // n = round(x × 10^(precision-1-e)); n then has exactly `precision` digits.
+        var k = precision - 1 - e;
+        var scaledNum = num;
+        var scaledDen = den;
+        if (k >= 0)
+            scaledNum *= BigInteger.Pow(10, k);
+        else
+            scaledDen *= BigInteger.Pow(10, -k);
+
+        var n = BigInteger.DivRem(scaledNum, scaledDen, out var remainder);
+        if (remainder * 2 >= scaledDen)
+            n += 1;
+
+        // A rounding carry can push n to 10^precision (one digit too many); drop the
+        // trailing zero and bump the exponent.
+        if (n >= BigInteger.Pow(10, precision))
+        {
+            n /= 10;
+            e += 1;
+        }
+
+        return (n.ToString(CultureInfo.InvariantCulture), e);
+    }
+
+    /// <summary>
+    /// Compares 10^m against x = num / den, returning the sign of (10^m − x).
+    /// </summary>
+    private static int Compare10Pow(BigInteger num, BigInteger den, int m)
+        => m >= 0
+            ? (BigInteger.Pow(10, m) * den).CompareTo(num)
+            : den.CompareTo(num * BigInteger.Pow(10, -m));
+
+    /// <summary>
+    /// Returns the shortest significand digit string that round-trips through
+    /// IEEE-754 for a positive finite double, along with the base-10 exponent of its
+    /// leading digit (the digits used by Number::toString).
+    /// </summary>
+    private static (string digits, int e) ShortestSignificantDigits(double x)
+    {
+        var repr = x.ToString("R", CultureInfo.InvariantCulture);
+
+        var eIdx = repr.IndexOf('E');
+        string mantissa;
+        var exp = 0;
+        if (eIdx >= 0)
+        {
+            mantissa = repr.Substring(0, eIdx);
+            exp = int.Parse(repr.AsSpan(eIdx + 1), CultureInfo.InvariantCulture);
+        }
+        else
+        {
+            mantissa = repr;
+        }
+
+        var dotIdx = mantissa.IndexOf('.');
+        if (dotIdx >= 0)
+        {
+            var fracLen = mantissa.Length - dotIdx - 1;
+            mantissa = string.Concat(mantissa.AsSpan(0, dotIdx), mantissa.AsSpan(dotIdx + 1));
+            exp -= fracLen;
+        }
+
+        mantissa = mantissa.TrimStart('0');
+        var origLen = mantissa.Length;
+        mantissa = mantissa.TrimEnd('0');
+        exp += origLen - mantissa.Length;
+
+        // value = int(mantissa) × 10^exp; the leading digit's place value is 10^(exp+k-1).
+        var k = mantissa.Length;
+        return (mantissa, exp + k - 1);
     }
 
     [JSPrototypeMethod]

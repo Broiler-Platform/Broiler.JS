@@ -26,4 +26,10 @@ public interface IJSContext : IDisposable
     /// operations are pending.
     /// </summary>
     Task WaitTask { get; }
+
+    /// <summary>
+    /// Per-realm storage for the legacy (Annex B.2.4) static RegExp properties
+    /// (<c>RegExp.lastMatch</c>, <c>RegExp.$1</c>, …). Lazily created.
+    /// </summary>
+    LegacyRegExpState LegacyRegExp { get; }
 }

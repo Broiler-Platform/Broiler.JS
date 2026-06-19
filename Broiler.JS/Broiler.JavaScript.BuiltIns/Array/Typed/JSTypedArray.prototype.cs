@@ -80,10 +80,14 @@ partial class JSTypedArray
 
             while (count > 0)
             {
-                if (start < 0 || target < 0 || start >= liveLength || target >= liveLength)
-                    break;
-
-                this[(uint)target] = this[(uint)start];
+                // §23.2.3.5 step 14: copy an element only while BOTH indices are within
+                // the (possibly shrunk) live length; an index past it is skipped, but the
+                // walk still advances so a later in-bounds element of an
+                // overlap-reversed copy is not lost. Using `break` here dropped that
+                // trailing copy (e.g. a backward copy whose first, highest, index is now
+                // out of bounds).
+                if (start >= 0 && target >= 0 && start < liveLength && target < liveLength)
+                    this[(uint)target] = this[(uint)start];
 
                 start += direction;
                 target += direction;
@@ -407,24 +411,21 @@ partial class JSTypedArray
     public JSValue Join(in Arguments a)
     {
         ValidateTypedArray("join");
+
+        // §23.2.3.18: len is captured BEFORE the separator is coerced. ToString on the
+        // separator can run user code that resizes the backing buffer, but join still
+        // iterates the original element count; any index now out of bounds reads as
+        // undefined (the empty String), so a shrink yields trailing empty fields.
+        var len = length;
         var first = a.Get1();
         var sep = first.IsUndefined ? "," : first.StringValue;
         var sb = new StringBuilder();
-        bool isFirst = true;
-        var en = GetElementEnumerator();
-        while (en.MoveNext(out var item))
+        for (var k = 0u; k < (uint)len; k++)
         {
-            if (!isFirst)
-            {
+            if (k > 0)
                 sb.Append(sep);
-            }
-            else
-            {
-                isFirst = false;
-            }
-            if (item.IsUndefined)
-                continue;
-            sb.Append(item.ToString());
+            if (TryGetElement(k, out var item) && !item.IsNullOrUndefined)
+                sb.Append(item.ToString());
         }
         return new JSString(sb.ToString());
     }
@@ -809,17 +810,17 @@ partial class JSTypedArray
         // (so the typed array must not reject an options object up front).
         var separator = ",";
 
-        bool first = true;
-        var en = GetElementEnumerator();
-        while (en.MoveNext(out var n))
+        // §23.2.3.31: len is captured once, before the per-element toLocaleString calls.
+        // A user-provided toLocaleString can resize the backing buffer mid-iteration, but
+        // the loop still runs over the original count, reading any now-out-of-bounds index
+        // as undefined (contributing only its separator, no value).
+        var len = length;
+        for (var k = 0u; k < (uint)len; k++)
         {
-            if (!first)
-            {
-                //sb.Append(',');
+            if (k > 0)
                 sb.Append(separator);
-            }
-            first = false;
-            sb.Append(n.InvokeMethod(KeyStrings.GetOrCreate("toLocaleString"), locale, format).StringValue);
+            if (TryGetElement(k, out var n) && !n.IsNullOrUndefined)
+                sb.Append(n.InvokeMethod(KeyStrings.GetOrCreate("toLocaleString"), locale, format).StringValue);
         }
 
         return new JSString(sb.ToString());

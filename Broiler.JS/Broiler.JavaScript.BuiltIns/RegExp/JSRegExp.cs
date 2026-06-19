@@ -313,12 +313,24 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if (match.Length != 0)
                 continue;
 
-            _ = this[KeyStrings.GetOrCreate("unicode")].BooleanValue;
+            // §22.2.6.9 [Symbol.match] step 8.g.iv: after an empty match, advance
+            // lastIndex with AdvanceStringIndex. In a Unicode (`u`/`v`) regex a leading
+            // surrogate paired with a trailing one is one code point, so the index moves
+            // by two — otherwise the loop would yield a spurious extra empty match between
+            // the two halves of an astral character.
+            var fullUnicode = this[KeyStrings.GetOrCreate("unicode")].BooleanValue
+                || this[KeyStrings.GetOrCreate("unicodeSets")].BooleanValue;
             var nextLastIndex = GetObservableLastIndex();
             if (nextLastIndex >= inputString.Length)
                 return matchValues;
 
-            SetObservableLastIndex(nextLastIndex + 1);
+            var advanced = nextLastIndex + 1;
+            if (fullUnicode && advanced < inputString.Length
+                && char.IsHighSurrogate(inputString[nextLastIndex])
+                && char.IsLowSurrogate(inputString[advanced]))
+                advanced++;
+
+            SetObservableLastIndex(advanced);
         }
     }
 

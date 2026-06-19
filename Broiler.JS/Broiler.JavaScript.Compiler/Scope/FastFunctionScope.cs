@@ -328,14 +328,38 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     {
         get
         {
+            foreach (var init in InitOnlyList)
+                yield return init;
+
+            foreach (var postInit in PostInitList)
+                yield return postInit;
+        }
+    }
+
+    // The binding-construction half of InitList (variable allocation, direct-eval local
+    // binding setup). These run before parameter binding.
+    public IEnumerable<YExpression> InitOnlyList
+    {
+        get
+        {
             var en = variableScopeList.AllValues;
             while (en.MoveNext(out var s))
             {
                 if (s.Value.Init != null)
                     yield return s.Value.Init;
             }
+        }
+    }
 
-            en = variableScopeList.AllValues;
+    // The post-construction half of InitList: hoisted FunctionDeclaration value
+    // assignments. Per FunctionDeclarationInstantiation these run AFTER the formal
+    // parameters are bound, so a body `function x(){}` overrides a same-named parameter
+    // rather than being clobbered by it.
+    public IEnumerable<YExpression> PostInitList
+    {
+        get
+        {
+            var en = variableScopeList.AllValues;
             while (en.MoveNext(out var s))
             {
                 if (s.Value.PostInit != null)

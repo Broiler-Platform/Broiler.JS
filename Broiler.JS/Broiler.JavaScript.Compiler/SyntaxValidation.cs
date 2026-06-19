@@ -660,11 +660,24 @@ public static void ValidateProgram(
 
             if (IsStrictMode
                 && binaryExpression.Operator > TokenTypes.BeginAssignTokens
-                && binaryExpression.Operator < TokenTypes.EndAssignTokens
-                && binaryExpression.Left is AstIdentifier assignTarget
-                && IsRestrictedName(assignTarget.Name))
+                && binaryExpression.Operator < TokenTypes.EndAssignTokens)
             {
-                throw new FastParseException(assignTarget.Start, "Assignment to eval or arguments is not allowed in strict mode");
+                if (binaryExpression.Left is AstIdentifier assignTarget
+                    && IsRestrictedName(assignTarget.Name))
+                {
+                    throw new FastParseException(assignTarget.Start, "Assignment to eval or arguments is not allowed in strict mode");
+                }
+
+                // A destructuring assignment target — e.g. the shorthand
+                // `({ implements } = 'foo')` or `[yield] = x` — also has AssignmentTarget
+                // identifiers, which in strict mode may not be eval/arguments or a
+                // strict-reserved word. The simple-target check above misses these because
+                // the left-hand side is an Object/Array pattern, not a bare identifier.
+                if (binaryExpression.Left is AstObjectPattern or AstArrayPattern
+                    && ContainsRestrictedBinding(binaryExpression.Left))
+                {
+                    throw new FastParseException(binaryExpression.Left.Start, "Assignment to eval, arguments, or a reserved word is not allowed in strict mode");
+                }
             }
 
             return base.VisitBinaryExpression(binaryExpression);
