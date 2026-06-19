@@ -410,7 +410,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
     public string Replace(string input, JSValue replaceFunction)
     {
         if (!replaceFunction.IsFunction)
-            return Replace(input, replaceFunction.ToString());
+            // A non-callable replacement is coerced with the spec ToString (StringValue), which
+            // throws for an object yielding no primitive — not the lenient CLR ToString.
+            return Replace(input, replaceFunction.StringValue);
 
         return value.Replace(input, match =>
         {

@@ -119,130 +119,81 @@ public partial class JSDate
     [JSExport("toLocaleDateString", Length = 0)]
     internal JSValue ToLocaleDateString(in Arguments a)
     {
-        if (value == InvalidDate)
+        if (double.IsNaN(GetTimeMs()))
             return new JSString("Invalid Date");
 
         var (locale, format) = a.Get2();
-        string date = null;
 
-        // Per §21.4.4 these methods construct an Intl.DateTimeFormat, so they must throw the
-        // same exceptions as its constructor for the locales argument (null → TypeError, a
-        // malformed language tag → RangeError). The Broiler .NET fast path below bypassed that
-        // validation, treating a null locale like undefined. Validate it the same way Intl does
-        // (undefined is the only nullish value that is allowed, yielding the default locale).
-        if (!locale.IsUndefined)
-            Intl.JSIntl.CanonicalizeLocaleList(locale);
+        // Broiler extension: a .NET format *string* keeps the legacy CultureInfo fast path.
+        if (format.IsString)
+            return new JSString(FormatWithNetCulture(locale, format.ToString(), "D"));
 
-        if (locale.IsNullOrUndefined)
-        {
-            date = value.ToString("D", DateTimeFormatInfo.CurrentInfo);
-        }
-        else
-        {
-            var culture = CultureInfo.GetCultureInfo(locale.ToString());
-
-            if (format.IsNullOrUndefined)
-            {
-                date = value.ToString("D", culture);
-            }
-            else
-            {
-                if (format.IsString)
-                {
-                    date = value.ToString(format.ToString(), culture);
-                }
-                else
-                {
-                    if (format is JSObject obj)
-                    {
-                        if (IntlDateFormatter != null)
-                            return IntlDateFormatter(culture, value, obj);
-                    }
-                }
-            }
-        }
-
-        return new JSString(date);
+        // Spec (§21.4.4.39): construct an Intl.DateTimeFormat with ToDateTimeOptions(options,
+        // "date", "date") and format through it, so the result — and any exception — matches
+        // Intl.DateTimeFormat exactly.
+        return FormatThroughIntl(locale, format, required: "date", defaults: "date");
     }
 
     [JSExport("toLocaleString", Length = 0)]
     internal JSValue ToLocaleString(in Arguments a)
     {
-        if (value == InvalidDate)
+        if (double.IsNaN(GetTimeMs()))
             return new JSString("Invalid Date");
 
         var (locale, format) = a.Get2();
 
-        // An Intl options object routes through Intl.DateTimeFormat (the spec behaviour). A bare
-        // .NET format string remains a Broiler extension; no options keeps the .NET "F" full format.
-        // toLocaleString uses ToDateTimeOptions(..., "all"): with no component/style it shows date+time.
-        if (format is JSObject)
-        {
-            var opts = Intl.JSIntlDateTimeFormat.ApplyAllDefaults(format);
-            var dtf = new Intl.JSIntlDateTimeFormat(new Arguments(JSUndefined.Value, locale, opts));
-            return dtf.Format(new Arguments(JSUndefined.Value, JSValue.CreateNumber(GetTimeMs())));
-        }
+        // Broiler extension: a bare .NET format *string* keeps the legacy "F"/CultureInfo path.
+        if (format.IsString)
+            return new JSString(FormatWithNetCulture(locale, format.ToString(), "F"));
 
-        // The object-options branch above validates the locales argument inside the
-        // Intl.DateTimeFormat constructor; the .NET fast path must validate it the same way so
-        // a null locale throws a TypeError (and a malformed tag a RangeError) rather than being
-        // silently treated as the default locale.
-        if (!locale.IsUndefined)
-            Intl.JSIntl.CanonicalizeLocaleList(locale);
-
-        string date;
-        if (locale.IsNullOrUndefined)
-        {
-            date = value.ToString("F", DateTimeFormatInfo.CurrentInfo);
-        }
-        else
-        {
-            var culture = CultureInfo.GetCultureInfo(locale.ToString());
-            date = format.IsString ? value.ToString(format.ToString(), culture) : value.ToString("F", culture);
-        }
-
-        return new JSString(date);
+        // Spec (§21.4.4.39): construct an Intl.DateTimeFormat with ToDateTimeOptions(options,
+        // "any", "all") — so with no component/style it shows the full date+time — and format
+        // through it. This makes the output and exceptions match Intl.DateTimeFormat exactly.
+        return FormatThroughIntl(locale, format, required: "any", defaults: "all");
     }
 
     [JSExport("toLocaleTimeString", Length = 0)]
     internal JSValue ToLocaleTimeString(in Arguments a)
     {
-        if (value == InvalidDate)
+        if (double.IsNaN(GetTimeMs()))
             return new JSString("Invalid Date");
 
         var (locale, format) = a.Get2();
-        string date = null;
 
-        // Validate the locales argument exactly as the Intl.DateTimeFormat constructor would
-        // (null → TypeError, malformed tag → RangeError); undefined alone selects the default.
+        // Broiler extension: a .NET format *string* keeps the legacy CultureInfo fast path.
+        if (format.IsString)
+            return new JSString(FormatWithNetCulture(locale, format.ToString(), "T"));
+
+        // Spec (§21.4.4.42): construct an Intl.DateTimeFormat with ToDateTimeOptions(options,
+        // "time", "time") and format through it, so the result and any exception match
+        // Intl.DateTimeFormat exactly.
+        return FormatThroughIntl(locale, format, required: "time", defaults: "time");
+    }
+
+    // Routes Date.prototype.toLocale{,Date,Time}String through Intl.DateTimeFormat, applying the
+    // method's ToDateTimeOptions(options, required, defaults). Both the formatted output and any
+    // thrown exception (null locale → TypeError, malformed tag / invalid option → RangeError) are
+    // therefore identical to constructing the Intl.DateTimeFormat directly.
+    private JSValue FormatThroughIntl(JSValue locale, JSValue format, string required, string defaults)
+    {
+        var opts = Intl.JSIntlDateTimeFormat.ToDateTimeOptions(format, required, defaults);
+        var dtf = new Intl.JSIntlDateTimeFormat(new Arguments(JSUndefined.Value, locale, opts));
+        return dtf.Format(new Arguments(JSUndefined.Value, JSValue.CreateNumber(GetTimeMs())));
+    }
+
+    // The Broiler .NET extension path: a non-spec convenience where the second argument is a .NET
+    // custom/standard date format string. A nullish locale uses the current culture; otherwise the
+    // locale must validate as a language tag (matching the spec's locale handling) and selects the
+    // CultureInfo. <paramref name="standardFormat"/> is the .NET format used when none is supplied.
+    private string FormatWithNetCulture(JSValue locale, string format, string standardFormat)
+    {
         if (!locale.IsUndefined)
             Intl.JSIntl.CanonicalizeLocaleList(locale);
 
-        if (locale.IsNullOrUndefined)
-        {
-            date = value.ToString("T", DateTimeFormatInfo.CurrentInfo);
-        }
-        else
-        {
-            var culture = CultureInfo.GetCultureInfo(locale.ToString());
-            if (format.IsNullOrUndefined)
-            {
-                date = value.ToString("T", culture);
-            }
-            else
-            {
-                if (format.IsString)
-                {
-                    date = value.ToString(format.ToString(), culture);
-                }
-                else
-                {
-                    throw JSEngine.NewTypeError("Options not supported, use .Net String Formats");
-                }
-            }
-        }
-
-        return new JSString(date);
+        var culture = locale.IsNullOrUndefined
+            ? DateTimeFormatInfo.CurrentInfo
+            : (IFormatProvider)CultureInfo.GetCultureInfo(locale.ToString());
+        return value.ToString(string.IsNullOrEmpty(format) ? standardFormat : format, culture);
     }
 
     [JSExport("toString", Length = 0)]

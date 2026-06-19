@@ -99,11 +99,6 @@ internal static class BuiltInsAssemblyInitializer
         // Compiler can build array expression trees without a direct reference.
         JSArrayBuilder.Initialize(typeof(JSArray));
 
-        // Wire factory delegate for Intl date formatting so JSDatePrototype
-        // does not directly reference JSIntlDateTimeFormat.
-        JSDate.IntlDateFormatter = static (culture, value, options) =>
-            JSIntlDateTimeFormat.Get(culture).Format(value, options);
-
         // Wire factory delegates for JSDecimal so Core/Compiler can create
         // and inspect decimal values without referencing the concrete type.
         JSValue.CreateDecimalFactory = static v => new JSDecimal(v);
@@ -353,7 +348,10 @@ internal static class BuiltInsAssemblyInitializer
             // any other receiver gets an own data property instead, bypassing this inherited accessor).
             proto.FastAddProperty(
                 (IJSSymbol)JSSymbol.toStringTag,
-                CreateNativeGetter(static (in Arguments a) => JSValue.CreateString("Iterator"), "get [Symbol.toStringTag]"),
+                // CreateNativeGetter prepends the "get " accessor prefix itself, so pass the
+                // bare property name; passing "get [Symbol.toStringTag]" doubled it, yielding a
+                // name / toString of "get get [Symbol.toStringTag]" (not valid NativeFunction syntax).
+                CreateNativeGetter(static (in Arguments a) => JSValue.CreateString("Iterator"), "[Symbol.toStringTag]"),
                 CreateNativeFunction((in Arguments a) =>
                 {
                     if (a.This is not JSObject receiver)
@@ -1189,7 +1187,12 @@ internal static class BuiltInsAssemblyInitializer
             };
             var functionMetadata = new JSFunction(JSFunction.empty, "Function", "function Function() { [native code] }", length: 1, createPrototype: false);
 
-            replacement.FastAddValue(KeyStrings.prototype, originalCtor.prototype, JSPropertyAttributes.ConfigurableValue);
+            // §22.2.5.1: RegExp.prototype is { [[Writable]]: false, [[Enumerable]]: false,
+            // [[Configurable]]: false }. The replacement constructor must carry the same
+            // non-writable/non-configurable "prototype" data property as the original (a
+            // ConfigurableValue here left it writable and configurable, so
+            // Object.getOwnPropertyDescriptor(RegExp, "prototype").writable was true).
+            replacement.FastAddValue(KeyStrings.prototype, originalCtor.prototype, JSPropertyAttributes.ReadonlyValue);
             replacement.FastAddValue(KeyStrings.constructor, functionMetadata, JSPropertyAttributes.ConfigurableValue);
             EnsureAccessorProperty(replacement, JSSymbol.species, "[Symbol.species]", static (in Arguments a) => a.This);
             originalCtor.prototype[KeyStrings.constructor] = replacement;
@@ -1499,10 +1502,13 @@ internal static class BuiltInsAssemblyInitializer
             if (rx is not JSObject)
                 throw JSEngine.NewTypeError("RegExp.prototype[Symbol.replace] called on incompatible receiver");
 
-            var input = a.Get1().ToString();
+            var input = a.Get1().StringValue;
             var replaceValue = a.TryGetAt(1, out var second) ? second : JSUndefined.Value;
             var functionalReplace = replaceValue.IsFunction;
-            var replacementText = functionalReplace ? null : replaceValue.ToString();
+            // §22.2.6.11 step 5: when the replacement is not callable it is coerced with the
+            // spec ToString (StringValue) — which throws for an object whose toString/valueOf
+            // yield no primitive — not the lenient CLR ToString.
+            var replacementText = functionalReplace ? null : replaceValue.StringValue;
             // §22.2.6.11 step 7: flags = ToString(Get(rx, "flags")). Read the
             // observable "flags" property so a user getter / toString runs and
             // its errors propagate.

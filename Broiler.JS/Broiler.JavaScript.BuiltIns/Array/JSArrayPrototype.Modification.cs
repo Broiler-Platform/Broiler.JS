@@ -219,17 +219,22 @@ public partial class JSArray
     public static JSValue Reverse(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
-        var lower = 0u;
-        var upper = GetArrayLikeLength(@this);
+        var lower = 0L;
+        // LengthOfArrayLike (ToLength) clamps to 2^53-1, so the high index can exceed the
+        // 32-bit array-index range. Walk with long indices and the long-keyed accessors,
+        // which address indices >= 2^32 by their canonical numeric property key.
+        var upper = GetArrayLikeLengthLong(@this);
         if (upper == 0)
             return @this;
 
         upper--;
         while (lower < upper)
         {
+            // Spec §23.1.3.26 order: test then read the lower index fully before the upper one
+            // (HasProperty(lower), Get(lower), HasProperty(upper), Get(upper)).
             var lowerExists = HasIndexedProperty(@this, lower);
-            var upperExists = HasIndexedProperty(@this, upper);
             var lowerValue = lowerExists ? GetIndexedValue(@this, lower) : JSUndefined.Value;
+            var upperExists = HasIndexedProperty(@this, upper);
             var upperValue = upperExists ? GetIndexedValue(@this, upper) : JSUndefined.Value;
 
             if (lowerExists && upperExists)
@@ -490,11 +495,14 @@ public partial class JSArray
             }
         }
 
-        @this.Length = newLength;
-
-        // Insert the new elements.
+        // Insert the new elements, THEN set the new length — Array.prototype.splice inserts
+        // the items (step 16) before the final Set(O, "length", …) (step 17). When a species
+        // constructor has made "length" non-writable, the items are still written before that
+        // assignment throws (test262 sm/Array/splice-species-changes-length).
         for (int i = 0; i < itemsLength; i++)
             SetIndexedValue(@this, (uint)(start + i), a[i + 2]);
+
+        @this.Length = newLength;
 
         // Return the deleted items.
         return deletedItems;

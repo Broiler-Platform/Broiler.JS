@@ -1,6 +1,7 @@
-﻿extern alias ExtendedDateTime;
-using System;
+﻿using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
@@ -94,38 +95,120 @@ partial class JSDate
         return new JSNumber(val);
     }
 
+    // ECMAScript Date Time String Format (ES §21.4.1.18), used as the fallback for the
+    // strings the .NET-backed DateParser cannot represent: ISO expanded (signed six-digit)
+    // years such as "+275760-..." / "-000001-...", the astronomical year "0000"/"+000000",
+    // and any year outside .NET's 1–9999 window. The grammar is:
+    //   Date:      YYYY | YYYY-MM | YYYY-MM-DD       (year also expanded ±YYYYYY)
+    //   DateTime:  Date 'T' HH:mm[:ss[.sss]] [TimeZone]
+    //   TimeZone:  'Z' | ±HH:mm
+    private static readonly Regex EcmaIsoDateTime = new(
+        @"^([+-]\d{6}|\d{4})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?(Z|[+-]\d{2}:\d{2})?)?$",
+        RegexOptions.CultureInvariant);
+
     /// <summary>
-    /// Parses an ISO-8601 / RFC-3339 string whose year may use the expanded form
-    /// (e.g. "+275760-..." / "-000001-...") or fall outside .NET's 1–9999 range,
-    /// returning the ECMAScript time value (ms since epoch). Returns false when the
-    /// text is not a valid extended ISO date-time.
+    /// Parses an ISO-8601 string in the ECMAScript Date Time String Format whose year may use
+    /// the expanded form (e.g. "+275760-..." / "-000001-...") or fall outside .NET's 1–9999
+    /// range, returning the ECMAScript time value (ms since epoch). Returns false when the text
+    /// is not a valid extended ISO date-time.
     /// </summary>
     internal static bool TryParseExtendedIso(string text, out double ms)
     {
         ms = double.NaN;
-
-        if (!ExtendedDateTime::Broiler.DateTime.ExtendedIsoDateTime.TryParse(text, out var v) || v is null)
+        if (string.IsNullOrEmpty(text))
             return false;
 
-        // An ISO-8601 expanded year carries a mandatory sign; the year 0 must be
-        // written "+000000". "-000000" (negative zero) is explicitly invalid, so a
-        // parsed year of 0 with a leading '-' sign is rejected (Date.parse → NaN).
-        if (v.Year == 0 && text.AsSpan().TrimStart().StartsWith("-"))
+        var match = EcmaIsoDateTime.Match(text);
+        if (!match.Success)
             return false;
 
-        int milli = v.Nanosecond / 1_000_000;
+        var yearText = match.Groups[1].Value;
+        if (!long.TryParse(yearText, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out long year))
+            return false;
+
+        // An ISO-8601 expanded year carries a mandatory sign; the year 0 is written "+000000".
+        // "-000000" (negative zero) is explicitly invalid (Date.parse → NaN).
+        if (year == 0 && yearText[0] == '-')
+            return false;
+
+        int month = match.Groups[2].Success ? int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture) : 1;
+        int day = match.Groups[3].Success ? int.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture) : 1;
+
+        var hasTime = match.Groups[4].Success;
+        int hour = hasTime ? int.Parse(match.Groups[4].Value, CultureInfo.InvariantCulture) : 0;
+        int minute = match.Groups[5].Success ? int.Parse(match.Groups[5].Value, CultureInfo.InvariantCulture) : 0;
+        int second = match.Groups[6].Success ? int.Parse(match.Groups[6].Value, CultureInfo.InvariantCulture) : 0;
+
+        int millisecond = 0;
+        if (match.Groups[7].Success)
+        {
+            // Fractional seconds: interpret the digits as a fraction of a second and keep
+            // millisecond precision (".5" → 500 ms, ".1234" → 123 ms).
+            var frac = match.Groups[7].Value;
+            var msText = frac.Length >= 3 ? frac.Substring(0, 3) : frac.PadRight(3, '0');
+            millisecond = int.Parse(msText, CultureInfo.InvariantCulture);
+        }
+
+        // ECMAScript rejects out-of-range components. Hour 24 is permitted only when the
+        // remainder of the time-of-day is zero.
+        if (month is < 1 or > 12)
+            return false;
+        if (day < 1 || day > DaysInMonth(year, month))
+            return false;
+        if (minute is < 0 or > 59 || second is < 0 or > 59)
+            return false;
+        if (hour > 24 || (hour == 24 && (minute != 0 || second != 0 || millisecond != 0)))
+            return false;
+
+        bool hasOffset = match.Groups[8].Success;
+        double offsetMs = 0;
+        if (hasOffset && match.Groups[8].Value != "Z")
+        {
+            var tz = match.Groups[8].Value;
+            int offSign = tz[0] == '-' ? -1 : 1;
+            int offHours = int.Parse(tz.Substring(1, 2), CultureInfo.InvariantCulture);
+            int offMinutes = int.Parse(tz.Substring(4, 2), CultureInfo.InvariantCulture);
+            if (offHours > 23 || offMinutes > 59)
+                return false;
+            offsetMs = offSign * (offHours * 60 + offMinutes) * 60000.0;
+        }
+
         double wallClock = JSDateMath.MakeDate(
-            JSDateMath.MakeDay(v.Year, v.Month - 1, v.Day),
-            JSDateMath.MakeTime(v.Hour, v.Minute, v.Second, milli));
+            JSDateMath.MakeDay(year, month - 1, day),
+            JSDateMath.MakeTime(hour, minute, second, millisecond));
 
-        // A string with an explicit offset (including "Z") denotes a fixed instant;
-        // without one, ECMAScript interprets the wall-clock time as local time.
-        double utcMs = v.HasOffset
-            ? wallClock - v.Offset.Value.TotalMilliseconds
-            : JSDateMath.UTC(wallClock);
+        // Per spec: a date-only form is interpreted as UTC; a date-time form with an explicit
+        // offset (including "Z") denotes a fixed instant; a date-time without an offset is
+        // interpreted as local wall-clock time.
+        double utcMs;
+        if (hasOffset)
+            utcMs = wallClock - offsetMs;
+        else if (hasTime)
+            utcMs = JSDateMath.UTC(wallClock);
+        else
+            utcMs = wallClock;
 
         ms = JSDateMath.TimeClip(utcMs);
         return !double.IsNaN(ms);
+    }
+
+    // Days in a month under the proleptic Gregorian calendar (valid for year 0 and
+    // negative/astronomical years), used to reject impossible dates such as 2021-02-30.
+    private static int DaysInMonth(long year, int month)
+    {
+        switch (month)
+        {
+            case 2:
+                var leap = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
+                return leap ? 29 : 28;
+            case 4:
+            case 6:
+            case 9:
+            case 11:
+                return 30;
+            default:
+                return 31;
+        }
     }
 
     /// <summary>

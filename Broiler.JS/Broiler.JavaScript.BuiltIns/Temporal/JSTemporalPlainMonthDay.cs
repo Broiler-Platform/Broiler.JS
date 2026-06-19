@@ -36,6 +36,13 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         if (!IsValidISODate(referenceISOYear, isoMonth, isoDay))
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: invalid ISO month-day");
+
+        // CreateTemporalMonthDay also runs ISODateWithinLimits on the reference date: a
+        // referenceISOYear that pushes referenceISOYear-isoMonth-isoDay past the representable
+        // ISO date range (after +275760-09-13 or before -271821-04-19) is a RangeError.
+        var epochDays = TemporalNonIso.DaysFromCivil(referenceISOYear, isoMonth, isoDay);
+        if (epochDays < TemporalNonIso.MinEpochDays || epochDays > TemporalNonIso.MaxEpochDays)
+            throw JSEngine.NewRangeError("Temporal.PlainMonthDay: reference date is out of range");
     }
 
     internal JSTemporalPlainMonthDay(int isoMonth, int isoDay, int referenceISOYear, JSObject prototype)

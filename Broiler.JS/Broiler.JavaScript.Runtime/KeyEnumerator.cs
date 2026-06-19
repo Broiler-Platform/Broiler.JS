@@ -109,6 +109,12 @@ public class KeyEnumerator : IElementEnumerator
     // for a non-chain walk (Object.keys etc.), which never observes interleaved mutation.
     private readonly HashSet<string> ownPropertyNamesAtStart;
 
+    // As ownPropertyNamesAtStart, but for the own indexed elements. The indexed-element
+    // enumerator is walked live, so without this an index added mid-enumeration (e.g. by an
+    // unshift/splice inside the loop body) would be visited; for-in must not visit it
+    // (test262 sm/Array/unshift-with-enumeration). Null for a non-chain walk.
+    private readonly HashSet<string> ownIndexNamesAtStart;
+
     public KeyEnumerator(JSObject jSObject, bool showEnumerableOnly, bool inherited)
         : this(jSObject, showEnumerableOnly, inherited,
                inherited ? new HashSet<string>(StringComparer.Ordinal) : null)
@@ -134,6 +140,12 @@ public class KeyEnumerator : IElementEnumerator
             var snapshot = new PropertyValueEnumerator(jSObject, false);
             while (snapshot.MoveNext(out var name))
                 ownPropertyNamesAtStart.Add(name.ToString());
+
+            ownIndexNamesAtStart = new HashSet<string>(StringComparer.Ordinal);
+            var indexSnapshot = jSObject.GetOwnIndexedElementEnumerator(showEnumerableOnly);
+            while (indexSnapshot.MoveNext(out var hasValueAtStart, out var _, out var ui))
+                if (hasValueAtStart)
+                    ownIndexNamesAtStart.Add(ui.ToString());
         }
     }
 
@@ -141,6 +153,10 @@ public class KeyEnumerator : IElementEnumerator
     // for-in enumeration of this object began (and so must not be visited).
     private bool AddedDuringEnumeration(string name)
         => ownPropertyNamesAtStart != null && !ownPropertyNamesAtStart.Contains(name);
+
+    // As AddedDuringEnumeration, for an indexed element produced by the live element walk.
+    private bool IndexAddedDuringEnumeration(string name)
+        => ownIndexNamesAtStart != null && !ownIndexNamesAtStart.Contains(name);
 
     // Records a name as produced; returns false if it (or a nearer same-named property)
     // was already produced, so the caller skips it.
@@ -163,6 +179,8 @@ public class KeyEnumerator : IElementEnumerator
             while (elements.MoveNext(out var hasValueout, out var _, out var ui))
             {
                 var name = ui.ToString();
+                if (IndexAddedDuringEnumeration(name))
+                    continue;
                 if (!Accept(name))
                     continue;
                 value = JSValue.CreateString(name);
@@ -223,6 +241,8 @@ public class KeyEnumerator : IElementEnumerator
                     continue;
 
                 var name = ui.ToString();
+                if (IndexAddedDuringEnumeration(name))
+                    continue;
                 if (!Accept(name))
                     continue;
 

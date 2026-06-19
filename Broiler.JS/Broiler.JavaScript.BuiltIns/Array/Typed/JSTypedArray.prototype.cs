@@ -105,8 +105,14 @@ partial class JSTypedArray
     {
         ValidateTypedArray("fill");
         var (value, start, end) = a.Get3();
-        // JSArray r = new JSArray();
         var len = Length;
+
+        // §23.2.3.10 step 4: coerce the fill value exactly once (ToBigInt for bigint element
+        // types, otherwise ToNumber) BEFORE reading start/end, so an object's valueOf runs a
+        // single time rather than once per filled element. Assigning the already-coerced
+        // primitive below performs no further conversion.
+        var numericValue = IsBigIntArray(this) ? (JSValue)JSBigInt.Coerce(value) : new JSNumber(value.DoubleValue);
+
         var relativeStart = start.AsInt32OrDefault();
         var relativeEnd = end.AsInt32OrDefault(len);
         // Negative values represent offsets from the end of the array.
@@ -114,7 +120,7 @@ partial class JSTypedArray
         relativeEnd = relativeEnd < 0 ? Math.Max(len + relativeEnd, 0) : Math.Min(relativeEnd, len);
         for (; relativeStart < relativeEnd; relativeStart++)
         {
-            this[(uint)relativeStart] = value;
+            this[(uint)relativeStart] = numericValue;
         }
         return this;
     }
@@ -704,7 +710,9 @@ partial class JSTypedArray
 
         return (l, r) =>
         {
-            var v = fx.InvokeFunction(new Arguments(this, l, r)).DoubleValue;
+            // SortCompare (§23.2.3.29) calls comparefn with undefined as the this value — a
+            // sloppy-mode comparefn therefore observes the global object, not the typed array.
+            var v = fx.InvokeFunction(new Arguments(JSUndefined.Value, l, r)).DoubleValue;
             return double.IsNaN(v) ? 0 : Math.Sign(v);
         };
     }

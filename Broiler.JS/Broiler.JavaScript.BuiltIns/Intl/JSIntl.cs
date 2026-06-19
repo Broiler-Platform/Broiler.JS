@@ -1086,7 +1086,8 @@ public static class JSIntl
         if (!StructurallyValidLanguageTagPattern.IsMatch(tag) ||
             InvalidGrandfatheredLanguageTags.Contains(tag) ||
             HasDuplicateVariantSubtag(tag) ||
-            HasInvalidUnicodeExtensionKey(tag))
+            HasInvalidUnicodeExtensionKey(tag) ||
+            HasInvalidTransformedExtension(tag))
             throw JSEngine.NewRangeError("Invalid language tag");
 
         // CanonicalizeUnicodeLocaleId: a regular grandfathered tag is replaced
@@ -1184,6 +1185,106 @@ public static class JSIntl
 
         return false;
     }
+
+    // Validates the inner grammar of every transform ("-t-") extension in a language tag
+    // (UTS #35 §3.6 transformed_extensions): an optional tlang (language subtag, optional
+    // script, optional region, zero+ variants) followed by zero+ tfields (each tkey = 2
+    // chars alpha+digit, with one or more tvalue chunks of 3-8 alphanum). The structural
+    // language-tag regex only enforces "2-8 alphanum subtags inside any singleton extension",
+    // so e.g. "en-t-root" or "en-t-d0" (tkey without tvalue) slip through it.
+    // Returns true if any "-t-" extension in <paramref name="tag"/> is malformed.
+    private static bool HasInvalidTransformedExtension(string tag)
+    {
+        var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        for (var i = 0; i < subtags.Length; i++)
+        {
+            if (!subtags[i].Equals("t", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            // Collect the t-extension's payload: every subtag after "-t-" until the next
+            // singleton (which starts a different extension, e.g. "-u-" or "-x-") or end.
+            var start = i + 1;
+            var end = start;
+            while (end < subtags.Length && subtags[end].Length != 1)
+                end++;
+
+            var payload = subtags.AsSpan(start, end - start);
+            if (payload.Length == 0)
+                return true; // "...-t-" with no content (or "...-t-x-..." with no t-payload)
+
+            var p = 0;
+            // Optional tlang: starts with a unicode_language_subtag (alpha{2,3} or alpha{5,8}).
+            if (IsLanguageSubtag(payload[0]))
+            {
+                p = 1;
+                if (p < payload.Length && IsScriptSubtag(payload[p])) p++;
+                if (p < payload.Length && IsRegionSubtag(payload[p])) p++;
+                while (p < payload.Length && IsVariantSubtag(payload[p])) p++;
+            }
+
+            // Any leading non-tlang subtags, and everything after the tlang, must form tfields:
+            // each is a tkey (alpha+digit) followed by 1+ tvalue chunks (3-8 alphanum).
+            while (p < payload.Length)
+            {
+                if (!IsTKey(payload[p]))
+                    return true;
+                p++;
+
+                var valueCount = 0;
+                while (p < payload.Length && IsTValue(payload[p]))
+                {
+                    p++;
+                    valueCount++;
+                }
+                if (valueCount == 0)
+                    return true;
+            }
+
+            i = end - 1; // continue scanning after this t-extension
+        }
+
+        return false;
+    }
+
+    private static bool IsAllAlphaNumeric(string s)
+    {
+        foreach (var c in s)
+            if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) return false;
+        return true;
+    }
+
+    private static bool IsLanguageSubtag(string s)
+        => (s.Length is 2 or 3 || s.Length is >= 5 and <= 8) && IsAllAlpha(s);
+
+    private static bool IsScriptSubtag(string s) => s.Length == 4 && IsAllAlpha(s);
+
+    private static bool IsRegionSubtag(string s)
+    {
+        if (s.Length == 2) return IsAllAlpha(s);
+        if (s.Length != 3) return false;
+        foreach (var c in s)
+            if (c is < '0' or > '9') return false;
+        return true;
+    }
+
+    private static bool IsVariantSubtag(string s)
+    {
+        if (s.Length is >= 5 and <= 8) return IsAllAlphaNumeric(s);
+        // 4-char variant: digit followed by 3 alphanum.
+        if (s.Length != 4) return false;
+        if (s[0] is < '0' or > '9') return false;
+        return IsAllAlphaNumeric(s);
+    }
+
+    private static bool IsTKey(string s)
+    {
+        if (s.Length != 2) return false;
+        var c0 = s[0];
+        var c1 = s[1];
+        return ((c0 >= 'A' && c0 <= 'Z') || (c0 >= 'a' && c0 <= 'z')) && c1 is >= '0' and <= '9';
+    }
+
+    private static bool IsTValue(string s) => s.Length is >= 3 and <= 8 && IsAllAlphaNumeric(s);
 
     private static bool HasInvalidUnicodeExtensionKey(string tag)
     {
@@ -1547,11 +1648,14 @@ public static class JSIntl
         new(SupportedNumberingSystemsSorted, StringComparer.Ordinal);
 
     // AvailableCanonicalCalendars: the canonical calendar identifiers reported by
-    // Intl.supportedValuesOf("calendar"), in code-unit (ascending) order.
+    // Intl.supportedValuesOf("calendar"), in code-unit (ascending) order. This is the set
+    // required by the Intl era/monthCode additions; "islamic" and "islamic-rgsa" are
+    // deliberately excluded (they are not part of the required/available set, matching V8 and
+    // test262 supportedValuesOf/calendars-required-by-intl-era-monthcode).
     internal static readonly string[] AvailableCanonicalCalendars =
     {
         "buddhist", "chinese", "coptic", "dangi", "ethioaa", "ethiopic", "gregory", "hebrew",
-        "indian", "islamic", "islamic-civil", "islamic-rgsa", "islamic-tbla", "islamic-umalqura",
+        "indian", "islamic-civil", "islamic-tbla", "islamic-umalqura",
         "iso8601", "japanese", "persian", "roc",
     };
 
@@ -2699,8 +2803,12 @@ public sealed class JSIntlDurationFormat : JSObject
         var any = false;
         var hasPositive = false;
         var hasNegative = false;
-        foreach (var unit in Units)
+        // Field values in Units order (years, months, weeks, days, hours, minutes,
+        // seconds, milliseconds, microseconds, nanoseconds); absent fields stay 0.
+        var values = new double[Units.Length];
+        for (var i = 0; i < Units.Length; i++)
         {
+            var unit = Units[i];
             var value = durationObject[KeyStrings.GetOrCreate(unit)];
             // A field left undefined is absent; reading by key also runs any getter.
             if (value == null || value.IsUndefined)
@@ -2715,6 +2823,7 @@ public sealed class JSIntlDurationFormat : JSObject
             if (double.IsNaN(numericValue) || double.IsInfinity(numericValue) || Math.Truncate(numericValue) != numericValue)
                 throw JSEngine.NewRangeError($"Invalid duration value for {unit}");
 
+            values[i] = numericValue;
             hasPositive |= numericValue > 0;
             hasNegative |= numericValue < 0;
         }
@@ -2725,6 +2834,31 @@ public sealed class JSIntlDurationFormat : JSObject
 
         if (hasPositive && hasNegative)
             throw JSEngine.NewRangeError("Invalid duration: inconsistent sign");
+
+        // IsValidDuration (Temporal §7.5.x), invoked by ToDurationRecord: the years,
+        // months and weeks fields must each be below 2^32 in magnitude, and the combined
+        // time portion (days through nanoseconds) must total under 2^53 seconds. The total
+        // is computed with exact integer arithmetic — every field is integral here, so the
+        // real value of each double is exact — to avoid the rounding that floating-point
+        // multiplication by 10^-3/10^-6/10^-9 would introduce near the 2^53 boundary.
+        const double twoPow32 = 4294967296d; // 2^32
+        for (var i = 0; i < 3; i++)
+        {
+            if (Math.Abs(values[i]) >= twoPow32)
+                throw JSEngine.NewRangeError($"Duration value for {Units[i]} is out of range");
+        }
+
+        // Nanoseconds per: day, hour, minute, second, millisecond, microsecond, nanosecond.
+        ReadOnlySpan<long> nanosPerUnit =
+            [86_400_000_000_000L, 3_600_000_000_000L, 60_000_000_000L, 1_000_000_000L, 1_000_000L, 1_000L, 1L];
+        var totalNanoseconds = BigInteger.Zero;
+        for (var i = 0; i < nanosPerUnit.Length; i++)
+            totalNanoseconds += new BigInteger(values[i + 3]) * nanosPerUnit[i];
+
+        // 2^53 seconds expressed in nanoseconds (9007199254740992 × 10^9).
+        var maxNanoseconds = new BigInteger(9007199254740992L) * 1_000_000_000L;
+        if (BigInteger.Abs(totalNanoseconds) >= maxNanoseconds)
+            throw JSEngine.NewRangeError("Duration time total is out of range");
     }
 }
 
@@ -3200,10 +3334,10 @@ public sealed class JSIntlLocale : JSObject
     {
         var locale = RequireLocale(in a, "getWeekInfo");
 
-        // §1.4.x getWeekInfo: { firstDay, weekend, minimalDays } in that key order. Day numbers
-        // follow ISO-8601 (Monday = 1 … Sunday = 7). CLDR's full per-region data is not bundled,
-        // so this uses reasonable defaults (Saturday+Sunday weekend, one minimal day) with a
-        // Sunday-first region table.
+        // getWeekInfo returns { firstDay, weekend } in that key order — minimalDays was removed
+        // from WeekInfoOfLocale by a normative ECMA-402 change. Day numbers follow ISO-8601
+        // (Monday = 1 … Sunday = 7). CLDR's full per-region data is not bundled, so this uses
+        // reasonable defaults (Saturday+Sunday weekend) with a Sunday-first region table.
         var region = locale.GetRegion();
         var firstDay = region != null && SundayFirstRegions.Contains(region) ? 7 : 1;
 
@@ -3216,8 +3350,6 @@ public sealed class JSIntlLocale : JSObject
             JSValue.CreateNumber(firstDay), JSPropertyAttributes.EnumerableConfigurableValue);
         info.FastAddValue(KeyStrings.GetOrCreate("weekend"),
             weekend, JSPropertyAttributes.EnumerableConfigurableValue);
-        info.FastAddValue(KeyStrings.GetOrCreate("minimalDays"),
-            JSValue.CreateNumber(1), JSPropertyAttributes.EnumerableConfigurableValue);
         return info;
     }
 
@@ -3835,12 +3967,16 @@ public class JSIntlNumberFormat : JSObject
     // English (short) compact scale: 10^3 K, 10^6 M, 10^9 B, 10^12 T. Ordered largest-first
     // so the FormatCompact loop picks the largest unit not exceeding the value's magnitude.
     private static readonly (int Exp, string Suffix)[] CompactUnitsEn = [(12, "T"), (9, "B"), (6, "M"), (3, "K")];
+    // English long compact words (compactDisplay: "long"); the number and word are separated
+    // by a literal space (CLDR "0 thousand" / "0 million" / …).
+    private static readonly (int Exp, string Suffix)[] CompactUnitsEnLong =
+        [(12, "trillion"), (9, "billion"), (6, "million"), (3, "thousand")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsJa = [(12, "兆"), (8, "億"), (4, "万")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsKo = [(12, "조"), (8, "억"), (4, "만"), (3, "천")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHant = [(12, "兆"), (8, "億"), (4, "萬")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHans = [(12, "兆"), (8, "亿"), (4, "万")];
 
-    private static (int Exp, string Suffix)[] GetCompactUnits(string localeTag)
+    private static (int Exp, string Suffix)[] GetCompactUnits(string localeTag, bool longForm)
     {
         var tag = localeTag ?? string.Empty;
         var dash = tag.IndexOf('-');
@@ -3848,7 +3984,7 @@ public class JSIntlNumberFormat : JSObject
         switch (language)
         {
             case "en":
-                return CompactUnitsEn;
+                return longForm ? CompactUnitsEnLong : CompactUnitsEn;
             case "ja":
                 return CompactUnitsJa;
             case "ko":
@@ -3874,7 +4010,8 @@ public class JSIntlNumberFormat : JSObject
     // formatting (unchanged behaviour).
     private List<(string, string)> FormatCompact(double absX, out bool roundedIsZero)
     {
-        var units = GetCompactUnits(locale);
+        var isLong = resolved?.CompactDisplay == "long";
+        var units = GetCompactUnits(locale, isLong);
         if (units == null)
             return FormatFiniteMagnitude(absX, 0, 3, out roundedIsZero);
 
@@ -3909,7 +4046,13 @@ public class JSIntlNumberFormat : JSObject
 
         var parts = FormatCompactMantissa(reduced, maxFrac, out roundedIsZero);
         if (suffix != null)
+        {
+            // The English long compact pattern places a literal space between the number and
+            // the word ("988 million"); the short forms ("988M") and CJK units have none.
+            if (ReferenceEquals(units, CompactUnitsEnLong))
+                parts.Add(("literal", " "));
             parts.Add(("compact", suffix));
+        }
         return parts;
     }
 
@@ -4121,19 +4264,22 @@ public class JSIntlNumberFormat : JSObject
         // e.g. [3] for en-US — 1,000,000 — and [3,2] for en-IN — 10,00,000.
         var groups = SplitIntoGroups(intDigits, Culture().NumberFormat.NumberGroupSizes);
 
-        // The most-significant (leftmost) group's length drives the grouping decision:
+        // The grouping decision is driven by how many integer digits lie to the LEFT of the
+        // rightmost (primary) grouping separator — not by the most-significant group's size,
+        // which differs under a multi-level grouping pattern such as en-IN's 3;2 (100000 →
+        // "1,00,000": leftmost group "1", but 3 digits precede the primary separator):
         //   "false"  → never group;
-        //   "min2"   → group only when that group has ≥ 2 digits (1000 → "1000",
-        //              10000 → "10,000");
-        //   "auto"   → group when it has ≥ minimumGroupingDigits digits (pl/es/it use 2);
+        //   "min2"   → group only when ≥ 2 digits precede the primary separator (1000 → "1000",
+        //              10000 → "10,000", en-IN 100000 → "1,00,000");
+        //   "auto"   → group when ≥ minimumGroupingDigits precede it (pl/es/it use 2);
         //   "always" → group whenever there is more than one group.
-        var leadingGroup = groups[0].Length;
+        var digitsBeforePrimary = intDigits.Length - groups[^1].Length;
         var shouldGroup = groups.Count > 1 && mode switch
         {
             "false" => false,
-            "min2" => leadingGroup >= 2,
+            "min2" => digitsBeforePrimary >= 2,
             "always" => true,
-            _ => leadingGroup >= CldrLocaleData.MinimumGroupingDigits(locale),
+            _ => digitsBeforePrimary >= CldrLocaleData.MinimumGroupingDigits(locale),
         };
 
         if (!shouldGroup)
@@ -4940,6 +5086,60 @@ public class JSIntlDateTimeFormat : JSObject
         }
         foreach (var name in new[] { "year", "month", "day", "hour", "minute", "second" })
             merged[KeyStrings.GetOrCreate(name)] = JSValue.CreateString("numeric");
+        return merged;
+    }
+
+    private static readonly string[] DateComponentKeys = { "weekday", "year", "month", "day" };
+    private static readonly string[] TimeComponentKeys =
+        { "dayPeriod", "hour", "minute", "second", "fractionalSecondDigits" };
+
+    // ToDateTimeOptions (ECMA-402 §11.5.1.1), parameterised by the <paramref name="required"/> and
+    // <paramref name="defaults"/> fields ("date" / "time" / "all" / "any"). Date.prototype's legacy
+    // toLocaleString / toLocaleDateString / toLocaleTimeString construct an Intl.DateTimeFormat with
+    // ToDateTimeOptions(options, "any"|"date"|"time", "all"|"date"|"time") respectively, which is why
+    // their default output (and their option validation) must match Intl.DateTimeFormat exactly.
+    // Returns a fresh options object carrying the supplied options' properties plus the defaulted
+    // numeric components; throws a TypeError for the date+timeStyle / time+dateStyle conflicts.
+    public static JSValue ToDateTimeOptions(JSValue options, string required, string defaults)
+    {
+        var source = options.IsUndefined ? null : options as JSObject;
+
+        var needDefaults = true;
+        if (source != null)
+        {
+            if (required is "date" or "any")
+                foreach (var name in DateComponentKeys)
+                    if (!source[KeyStrings.GetOrCreate(name)].IsUndefined) needDefaults = false;
+            if (required is "time" or "any")
+                foreach (var name in TimeComponentKeys)
+                    if (!source[KeyStrings.GetOrCreate(name)].IsUndefined) needDefaults = false;
+
+            var hasDateStyle = !source[DateStyleKey].IsUndefined;
+            var hasTimeStyle = !source[TimeStyleKey].IsUndefined;
+            if (required == "date" && hasTimeStyle)
+                throw JSEngine.NewTypeError("Intl.DateTimeFormat: timeStyle may not be used with a date-only operation");
+            if (required == "time" && hasDateStyle)
+                throw JSEngine.NewTypeError("Intl.DateTimeFormat: dateStyle may not be used with a time-only operation");
+            if (hasDateStyle || hasTimeStyle)
+                needDefaults = false;
+        }
+
+        var merged = new JSObject();
+        if (source != null)
+            foreach (var name in DateTimeFormatOptionKeys)
+            {
+                var key = KeyStrings.GetOrCreate(name);
+                var v = source[key];
+                if (!v.IsUndefined) merged[key] = v;
+            }
+
+        if (needDefaults && defaults is "date" or "all")
+            foreach (var name in new[] { "year", "month", "day" })
+                merged[KeyStrings.GetOrCreate(name)] = JSValue.CreateString("numeric");
+        if (needDefaults && defaults is "time" or "all")
+            foreach (var name in new[] { "hour", "minute", "second" })
+                merged[KeyStrings.GetOrCreate(name)] = JSValue.CreateString("numeric");
+
         return merged;
     }
 

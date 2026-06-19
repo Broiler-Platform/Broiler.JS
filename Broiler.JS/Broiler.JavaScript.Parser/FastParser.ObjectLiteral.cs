@@ -119,6 +119,10 @@ partial class FastParser
         var isSet = sc.ContextualKeyword == FastKeywords.set;
 
         bool isGenerator = stream.CheckAndConsume(TokenTypes.Multiply);
+        // The raw name token, before PropertyName folds a keyword name into a string-like
+        // property-name token: a shorthand reuses this as an IdentifierReference, so its
+        // reserved-word status must be checked against the original token.
+        var nameToken = stream.Current;
         if (PropertyName(out var key, out var computed, out var isPrivate, acceptKeywords: true))
         {
             // A getter/setter is never a generator, so `get`/`set` followed by a
@@ -293,6 +297,19 @@ partial class FastParser
             {
                 if (computed || key is AstLiteral)
                     throw stream.Unexpected();
+
+                // A shorthand property's name is also an IdentifierReference (and, when the
+                // object literal covers a destructuring pattern, a BindingIdentifier), so a
+                // reserved word is not a valid shorthand — `({ class })` / `({ super })` are
+                // SyntaxErrors. Contextual keywords (get/set/async/let/static/…) stay valid;
+                // yield/await are only reserved inside a generator / async body.
+                var shorthand = nameToken;
+                if (shorthand.IsEscapedReservedWord
+                    || (shorthand.IsKeyword && shorthand.Keyword == FastKeywords.yield && inGeneratorBody)
+                    || (shorthand.IsKeyword && shorthand.Keyword == FastKeywords.await && inAsyncFunctionBody)
+                    || (shorthand.IsKeyword && shorthand.Keyword != FastKeywords.await && shorthand.Keyword != FastKeywords.yield && IsDisallowedBindingKeyword(shorthand.Keyword)))
+                    throw stream.Unexpected();
+
                 property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, isPrivate, isStatic, key, computed, key);
                 return true;
             }
