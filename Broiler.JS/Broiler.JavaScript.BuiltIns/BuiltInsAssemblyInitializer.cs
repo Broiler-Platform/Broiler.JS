@@ -1502,10 +1502,13 @@ internal static class BuiltInsAssemblyInitializer
             if (rx is not JSObject)
                 throw JSEngine.NewTypeError("RegExp.prototype[Symbol.replace] called on incompatible receiver");
 
-            var input = a.Get1().ToString();
+            var input = a.Get1().StringValue;
             var replaceValue = a.TryGetAt(1, out var second) ? second : JSUndefined.Value;
             var functionalReplace = replaceValue.IsFunction;
-            var replacementText = functionalReplace ? null : replaceValue.ToString();
+            // §22.2.6.11 step 5: when the replacement is not callable it is coerced with the
+            // spec ToString (StringValue) — which throws for an object whose toString/valueOf
+            // yield no primitive — not the lenient CLR ToString.
+            var replacementText = functionalReplace ? null : replaceValue.StringValue;
             // §22.2.6.11 step 7: flags = ToString(Get(rx, "flags")). Read the
             // observable "flags" property so a user getter / toString runs and
             // its errors propagate.

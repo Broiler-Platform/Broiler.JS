@@ -773,4 +773,42 @@ public class Issue840Tests
             "  return Array.isArray(w) && w.every(function (n) { return n >= 1 && n <= 7; })" +
             "    && JSON.stringify(w) === JSON.stringify(sorted);" +
             "})()"));
+
+    // ---- Problem 22: RegExp[@@replace] coerces a non-callable replacement with ToString ----
+    //
+    // RegExp.prototype[@@replace] step 5 coerces a non-callable replaceValue with ToString. The
+    // engine used the lenient CLR ToString, so a replacement object whose toString() returns a
+    // function (no primitive) was stringified to "function …" instead of throwing the TypeError
+    // that the spec ToString raises.
+
+    [Fact]
+    public void RegExpReplaceNonCallableReplacementUsesSpecToString()
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            "  var obj = { toString: function () { return function (a, b) { return b + 'z'; }; } };" +
+            "  try { 'abc77'.replace(/77/, obj); return false; }" +
+            "  catch (e) { return e instanceof TypeError; }" +
+            "})()"));
+
+    [Fact]
+    public void RegExpReplaceNonCallableReplacementThroughGenericReceiver()
+        // The S15.5.4.11_A1_T16 shape: Number.prototype.replace = String.prototype.replace.
+        => Assert.Equal("true", Eval(
+            "(function () {" +
+            "  var re = /77/;" +
+            "  var inst = new Number(1100.00777001);" +
+            "  Number.prototype.replace = String.prototype.replace;" +
+            "  var obj = { toString: function () { return function (a1, a2, a3) { return a2 + 'z'; }; } };" +
+            "  try { inst.replace(re, obj); return false; }" +
+            "  catch (e) { return e instanceof TypeError; }" +
+            "})()"));
+
+    [Theory]
+    [InlineData("'abc77'.replace(/77/, 'X')", "abcX")]
+    [InlineData("'a77b77'.replace(/77/g, function (m) { return '[' + m + ']'; })", "a[77]b[77]")]
+    [InlineData("'a12b'.replace(/(1)(2)/, '$2$1')", "a21b")]
+    [InlineData("'a1b'.replace(/1/, 9)", "a9b")]
+    [InlineData("(function(){ var o={toString:function(){return 'Z';}}; return 'a1b'.replace(/1/, o); })()", "aZb")]
+    public void RegExpReplaceOrdinaryReplacementsStillWork(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }
