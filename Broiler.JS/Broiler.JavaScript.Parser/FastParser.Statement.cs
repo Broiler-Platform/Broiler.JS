@@ -429,8 +429,20 @@ partial class FastParser
 
                 if (stream.CheckAndConsume(TokenTypes.BracketStart))
                 {
+                    var catchIdToken = stream.Current;
                     if (Identitifer(out var id))
                     {
+                        // CatchParameter is a BindingIdentifier, so an always-reserved word
+                        // (class, const, enum, export, extends, import, super) is never a
+                        // legal name — even though it lexes as an identifier-typed keyword
+                        // token here, unlike the `var`/destructuring paths that already
+                        // reject it. (await/yield stay contextual and are excluded.)
+                        if (catchIdToken.IsKeyword
+                            && catchIdToken.Keyword != FastKeywords.await
+                            && catchIdToken.Keyword != FastKeywords.yield
+                            && IsDisallowedBindingKeyword(catchIdToken.Keyword))
+                            throw stream.Unexpected();
+
                         catchParam = id;
                     }
                     else if (stream.Current.Type == TokenTypes.SquareBracketStart || stream.Current.Type == TokenTypes.CurlyBracketStart)

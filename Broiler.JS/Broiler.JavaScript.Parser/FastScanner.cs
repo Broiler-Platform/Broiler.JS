@@ -839,7 +839,7 @@ public class FastScanner
     // leaving all other text — including a `\\u{…}` where the `\u` is itself escaped —
     // untouched. The body has already been validated by the source scanner, so any
     // `\u{` here is a well-formed escape with at least one hex digit and a closing `}`.
-    private static string DecodeBracedUnicodeEscapes(string pattern)
+    private string DecodeBracedUnicodeEscapes(string pattern)
     {
         if (pattern.IndexOf("\\u{", StringComparison.Ordinal) < 0)
             return pattern;
@@ -853,13 +853,38 @@ public class FastScanner
             {
                 if (pattern[i + 1] == 'u' && i + 2 < pattern.Length && pattern[i + 2] == '{')
                 {
+                    // In u/v mode `\u{ … }` must be a non-empty run of hexadecimal digits
+                    // naming a code point ≤ U+10FFFF, closed by `}`. Anything else — a
+                    // non-hex char (`\u{G}`, `\u{0.0}`, `\u{-1}`), an empty `\u{}`, an
+                    // unterminated `\u{`, or a value above U+10FFFF — is a SyntaxError
+                    // (there is no IdentityEscape fallback in Unicode mode).
+                    static int HexDigitValue(char ch) =>
+                        ch is >= '0' and <= '9' ? ch - '0'
+                        : ch is >= 'a' and <= 'f' ? ch - 'a' + 10
+                        : ch is >= 'A' and <= 'F' ? ch - 'A' + 10
+                        : -1;
+
                     int j = i + 3;
                     int codePoint = 0;
+                    int digitCount = 0;
                     while (j < pattern.Length && pattern[j] != '}')
                     {
-                        codePoint = codePoint * 16 + pattern[j].HexValue();
+                        int hexValue = HexDigitValue(pattern[j]);
+                        if (hexValue < 0)
+                            throw Unexpected();
+
+                        codePoint = codePoint * 16 + hexValue;
+                        if (codePoint > 0x10FFFF)
+                            throw Unexpected();
+
+                        digitCount++;
                         j++;
                     }
+
+                    // Reject an empty `\u{}` and an unterminated `\u{…` (ran off the end
+                    // without a closing `}`).
+                    if (digitCount == 0 || j >= pattern.Length)
+                        throw Unexpected();
 
                     foreach (var cu in codePoint.FromCodePoint())
                     {
