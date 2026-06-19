@@ -95,13 +95,28 @@ public partial class JSTemporalPlainMonthDay : JSObject
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires an object");
         TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
 
-        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthValue = obj[KeyStrings.GetOrCreate("month")];
+        // PrepareCalendarFields: read the recognised fields « day, month, monthCode, year »
+        // in alphabetical order, coercing each immediately as it is read (day/month positive
+        // integers, monthCode a string, year a truncated integer). "year" only feeds overflow
+        // resolution for ISO, but it is still read and coerced (test262 .../with/order-of-operations).
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
-        // PrepareCalendarFields recognises « year, month, monthCode, day » for PlainMonthDay; "year" is
-        // a recognised field (used only for overflow resolution), so supplying it alone satisfies the
-        // "at least one field" requirement even though it does not change the month/day for ISO.
-        var hasYear = !obj[KeyStrings.GetOrCreate("year")].IsUndefined;
+        var hasDay = !dayValue.IsUndefined;
+        var dayCoerced = hasDay ? ToPositiveIntegerWithTruncation(dayValue) : -1;
+
+        var monthValue = obj[KeyStrings.GetOrCreate("month")];
+        var hasMonth = !monthValue.IsUndefined;
+        var monthCoerced = hasMonth ? ToPositiveIntegerWithTruncation(monthValue) : -1;
+
+        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        var monthCodeStr = monthCodeValue.IsUndefined ? null : monthCodeValue.ToString();
+
+        var yearValue = obj[KeyStrings.GetOrCreate("year")];
+        // "year" is a recognised field (used only for overflow resolution); supplying it alone
+        // satisfies the "at least one field" requirement even though it does not change the
+        // month/day for ISO. It is still read and coerced like the others.
+        var hasYear = !yearValue.IsUndefined;
+        if (hasYear)
+            ToIntegerWithTruncation(yearValue);
 
         if (NonIso)
         {
@@ -110,16 +125,16 @@ public partial class JSTemporalPlainMonthDay : JSObject
             var day = curDay;
             var any = false;
 
-            if (!monthCodeValue.IsUndefined) { code = monthCodeValue.ToString(); any = true; }
-            else if (!monthValue.IsUndefined)
+            if (monthCodeStr != null) { code = monthCodeStr; any = true; }
+            else if (hasMonth)
             {
                 // A numeric month has no year-independent meaning in a non-ISO calendar; resolve it
                 // against the stored reference year's calendar.
                 var refCalYear = TemporalNonIso.CalendarYmd(calendarId, referenceISOYear, isoMonth, isoDay).y;
-                code = TemporalCalendarMath.MonthCode(calendarId, refCalYear, ToPositiveIntegerWithTruncation(monthValue));
+                code = TemporalCalendarMath.MonthCode(calendarId, refCalYear, monthCoerced);
                 any = true;
             }
-            if (!dayValue.IsUndefined) { day = ToPositiveIntegerWithTruncation(dayValue); any = true; }
+            if (hasDay) { day = dayCoerced; any = true; }
 
             if (!any && !hasYear)
                 throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires at least one field");
@@ -129,29 +144,23 @@ public partial class JSTemporalPlainMonthDay : JSObject
             return new JSTemporalPlainMonthDay(nm, nd, ny, calendarId, PlainMonthDayPrototype);
         }
 
-        var anyIso = false;
-        var month = isoMonth; var isoDayOut = isoDay;
-        // Coerce monthCode now; defer parsing/validating it against the calendar until after
-        // the overflow option is read (test262 .../with options-read-before-algorithmic-validation).
-        string monthCodeStr = null;
-        if (!monthCodeValue.IsUndefined) { monthCodeStr = monthCodeValue.ToString(); anyIso = true; }
-        var monthFromMonth = -1;
-        if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); anyIso = true; }
-
-        if (!dayValue.IsUndefined) { isoDayOut = ToPositiveIntegerWithTruncation(dayValue); anyIso = true; }
+        var anyIso = monthCodeStr != null || hasMonth || hasDay;
 
         if (!anyIso && !hasYear)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires at least one field");
+
+        var month = isoMonth;
+        var isoDayOut = hasDay ? dayCoerced : isoDay;
 
         // GetTemporalOverflowOption runs only after the partial fields have been read and coerced.
         var overflow = ReadOverflow(a.GetAt(1));
 
         if (monthCodeStr != null) month = MonthFromCode(monthCodeStr);
-        if (monthFromMonth != -1)
+        if (hasMonth)
         {
-            if (monthCodeStr != null && monthFromMonth != month)
+            if (monthCodeStr != null && monthCoerced != month)
                 throw JSEngine.NewRangeError("Temporal.PlainMonthDay.with: month and monthCode disagree");
-            month = monthFromMonth;
+            month = monthCoerced;
         }
 
         return RegulateMonthDay(month, isoDayOut, overflow, calendarId, referenceISOYear);

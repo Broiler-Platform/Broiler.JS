@@ -8707,6 +8707,42 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Temporal_PlainMonthDay_With_Reads_Fields_Alphabetically_And_Coerces_Each_Match_Test262()
+    {
+        // PlainMonthDay.prototype.with reads the recognised fields « day, month, monthCode,
+        // year » in alphabetical order, coercing each immediately (not all gets first then all
+        // coercions), after RejectObjectWithCalendarOrTimeZone reads calendar/timeZone, and
+        // before the overflow option (test262 PlainMonthDay/prototype/with/order-of-operations).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var actual = [];
+            function makeObs(value, nm) {
+                if (typeof value === 'number') return { get valueOf() { actual.push('get ' + nm + '.valueOf'); return function () { actual.push('call ' + nm + '.valueOf'); return value; }; } };
+                if (typeof value === 'string') return { get toString() { actual.push('get ' + nm + '.toString'); return function () { actual.push('call ' + nm + '.toString'); return value; }; } };
+                return value;
+            }
+            function bag(o, name) {
+                var r = {};
+                Object.keys(o).forEach(function (k) { Object.defineProperty(r, k, { enumerable: true, get: function () { actual.push('get ' + name + '.' + k); return makeObs(o[k], name + '.' + k); } }); });
+                return r;
+            }
+            var fields = bag({ calendar: undefined, timeZone: undefined, year: 1.7, month: 1.7, monthCode: 'M01', day: 1.7 }, 'fields');
+            var options = bag({ overflow: 'constrain', extra: 'x' }, 'options');
+            new Temporal.PlainMonthDay(5, 2, 'iso8601').with(fields, options);
+            actual.join('|');
+        ");
+        Assert.Equal(
+            "get fields.calendar|get fields.timeZone|" +
+            "get fields.day|get fields.day.valueOf|call fields.day.valueOf|" +
+            "get fields.month|get fields.month.valueOf|call fields.month.valueOf|" +
+            "get fields.monthCode|get fields.monthCode.toString|call fields.monthCode.toString|" +
+            "get fields.year|get fields.year.valueOf|call fields.year.valueOf|" +
+            "get options.overflow|get options.overflow.toString|call options.overflow.toString",
+            result.ToString());
+    }
+
+    [Fact]
     public void Temporal_ToString_Reads_Options_Alphabetically_Before_Validation_Match_Test262()
     {
         // Regression: Temporal toString reads its options in alphabetical order, coercing
