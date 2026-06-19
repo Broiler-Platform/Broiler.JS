@@ -300,5 +300,97 @@ public class Issue847Tests
         Assert.Equal(expected, Eval(code).ToString());
     }
 
+    // A LabelledStatement may not reuse a label already in its enclosing label set
+    // (the set propagates through blocks/loops/switch but resets at function
+    // boundaries). These duplicate labels were silently accepted.
+    [Theory]
+    [InlineData("x: x: 1")]
+    [InlineData("x: y: x: 1")]
+    [InlineData("a: { a: 1 }")]
+    [InlineData("a: { b: { a: 1 } }")]
+    [InlineData("a: for(;;){ a: for(;;){} }")]
+    public void DuplicateLabelIsSyntaxError(string source)
+    {
+        var code = "try { eval(" + Quote(source) + "); 'no-error'; } catch (e) { e.constructor.name; }";
+        Assert.Equal("SyntaxError", Eval(code).ToString());
+    }
+
+    // Distinct / sibling / cross-function labels remain valid.
+    [Theory]
+    [InlineData("a: b: c: 1", "no-error")]
+    [InlineData("a: 1; a: 2;", "no-error")]
+    [InlineData("function f(){ a: 1; } a: 2;", "no-error")]
+    [InlineData("a: { b: 1 } b: { a: 1 }", "no-error")]
+    public void ValidLabelsStillWork(string source, string expected)
+    {
+        var code = "try { eval(" + Quote(source) + "); 'no-error'; } catch (e) { e.constructor.name; }";
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    [Fact]
+    public void LabelledLoopBreakStillWorks()
+        => Assert.Equal("7", Eval("foo: for(var i=0;i<10;i++){ if(i===7){ break foo; } } i").ToString());
+
+    // Class member-name early errors: a static element named "prototype", a
+    // generator/async method named "constructor", and a field named "constructor"
+    // (static or not) are early SyntaxErrors. Several were silently accepted (or
+    // surfaced as a runtime TypeError).
+    [Theory]
+    [InlineData("class C{ static prototype(){} }")]
+    [InlineData("class C{ static get prototype(){} }")]
+    [InlineData("class C{ static prototype = 1 }")]
+    [InlineData("class C{ *constructor(){} }")]
+    [InlineData("class C{ async constructor(){} }")]
+    [InlineData("class C{ async *constructor(){} }")]
+    [InlineData("class C{ constructor = 1 }")]
+    [InlineData("class C{ static constructor = 1 }")]
+    public void InvalidClassMemberNameIsSyntaxError(string source)
+    {
+        var code = "try { eval(" + Quote(source) + "); 'no-error'; } catch (e) { e.constructor.name; }";
+        Assert.Equal("SyntaxError", Eval(code).ToString());
+    }
+
+    // Valid class members (instance prototype, static method named constructor,
+    // computed keys, fields) must still work.
+    [Theory]
+    [InlineData("class C{ prototype(){} }; 1", "1")]
+    [InlineData("class C{ prototype = 1 }; 1", "1")]
+    [InlineData("class C{ static constructor(){} }; 1", "1")]
+    [InlineData("class C{ static async constructor(){} }; 1", "1")]
+    [InlineData("class C{ static x = 42; }; C.x", "42")]
+    [InlineData("class A{constructor(){this.v=3;}}; class B extends A{ constructor(){super();} }; new B().v", "3")]
+    public void ValidClassMembersStillWork(string code, string expected)
+        => Assert.Equal(expected, Eval(code).ToString());
+
+    // A BindingRestElement/BindingRestProperty must be the last element, with no
+    // default; an object rest must be a bare identifier (no nested pattern). These
+    // were silently accepted (or surfaced as a runtime TypeError).
+    [Theory]
+    [InlineData("let {...a, b} = {};")]
+    [InlineData("let [...a, b] = [];")]
+    [InlineData("let {...a = 1} = {};")]
+    [InlineData("let {...{a}} = {};")]
+    [InlineData("let {...[a]} = {};")]
+    [InlineData("let [...a,] = [];")]
+    [InlineData("const [...x, y] = [];")]
+    [InlineData("var {...a, b} = {};")]
+    [InlineData("function f([...a, b]){}")]
+    [InlineData("function f({...a, b}){}")]
+    public void InvalidPatternRestIsSyntaxError(string source)
+    {
+        var code = "try { eval(" + Quote(source) + "); 'no-error'; } catch (e) { e.constructor.name; }";
+        Assert.Equal("SyntaxError", Eval(code).ToString());
+    }
+
+    // Valid rest patterns (rest last, nested array-rest pattern, object rest) work.
+    [Theory]
+    [InlineData("var [a, ...b] = [1,2,3]; a+','+b.join(',')", "1,2,3")]
+    [InlineData("var {a, ...r} = {a:1,b:2,c:3}; Object.values(r).join(',')", "2,3")]
+    [InlineData("var [...[x, y]] = [3,4]; x+','+y", "3,4")]
+    [InlineData("var [a, [b, ...c]] = [1,[2,3,4]]; c.join(',')", "3,4")]
+    [InlineData("function f(a, ...rest){ return a + rest.length; }; f(7,1,2)", "9")]
+    public void ValidPatternRestStillWorks(string code, string expected)
+        => Assert.Equal(expected, Eval(code).ToString());
+
     private static string Quote(string code) => "\"" + code.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
 }

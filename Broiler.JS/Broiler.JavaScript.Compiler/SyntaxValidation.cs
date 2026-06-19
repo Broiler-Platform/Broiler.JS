@@ -251,6 +251,13 @@ public static void ValidateProgram(
         protected override AstNode VisitLabeledStatement(AstLabeledStatement labeledStatement)
         {
             var label = labeledStatement.Label.Span.Value;
+            // It is an early SyntaxError for a LabelledStatement to use a label that is
+            // already in the enclosing label set (`x: x: ;`, `a: { a: ; }`). The label
+            // set propagates through blocks/loops/switch but resets at function
+            // boundaries, exactly as breakLabels is maintained here.
+            if (HasLabel(breakLabels, label))
+                throw new FastParseException(labeledStatement.Start, $"Label '{label}' has already been declared");
+
             var canContinue = labeledStatement.Body.Type is FastNodeType.WhileStatement
                 or FastNodeType.DoWhileStatement
                 or FastNodeType.ForStatement
@@ -966,6 +973,34 @@ public static void ValidateProgram(
                         throw new FastParseException(member.Start, "A class may only have one constructor");
 
                     seenConstructor = true;
+                }
+
+                if (!member.Computed)
+                {
+                    var elementName = member.Key switch
+                    {
+                        AstIdentifier nameIdentifier => nameIdentifier.Name.Value,
+                        AstLiteral { TokenType: TokenTypes.String } literal => literal.StringValue,
+                        _ => null,
+                    };
+
+                    // A static class element named "prototype" (method/accessor/field) is an
+                    // early error. Computed keys are exempt (checked at runtime).
+                    if (member.IsStatic && elementName == "prototype")
+                        throw new FastParseException(member.Start, "Classes may not have a static property named 'prototype'");
+
+                    if (elementName == "constructor")
+                    {
+                        // A class field named "constructor" (static or not) is an early error.
+                        if (member.Kind == AstPropertyKind.Data)
+                            throw new FastParseException(member.Start, "Classes may not have a field named 'constructor'");
+
+                        // The prototype constructor must be a plain method: a non-static
+                        // generator/async method named "constructor" is an early error.
+                        if (!member.IsStatic
+                            && member.Init is AstFunctionExpression { Generator: true } or AstFunctionExpression { Async: true })
+                            throw new FastParseException(member.Start, "Class constructor may not be a generator or async method");
+                    }
                 }
 
                 if (!member.IsPrivate || member.Key is not AstIdentifier identifier)
