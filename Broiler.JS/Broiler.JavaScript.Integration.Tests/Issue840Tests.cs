@@ -607,4 +607,41 @@ public class Issue840Tests
     [InlineData("(function(){ var o={}; Object.defineProperty(o,'x',{value:1,enumerable:false}); o.y=2; return Object.keys(o).join(','); })()", "y")]
     public void KeysOrdinaryObjectsStillWork(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problems 1/2: AnnexB for-in var declaration with an initializer ----
+    //
+    // AnnexB B.3.7 permits a `var` binding with an initializer at the head of a for-in loop
+    // (sloppy mode): the initializer is evaluated and assigned to the binding exactly once,
+    // before the RHS is evaluated. The compiler dropped the initializer entirely, so the
+    // binding was undefined (and any side effect in the initializer never ran).
+
+    [Fact]
+    public void ForInVarInitializerIsEvaluatedExactlyOnce()
+        => Assert.Equal("1", Eval(
+            "(function(){ var effects = 0; for (var a = ++effects in {}); return effects; })()"));
+
+    [Fact]
+    public void ForInVarInitializerIsAssignedBeforeRhs()
+        => Assert.Equal("0", Eval(
+            "(function(){ var stored; for (var a = 0 in stored = a, {}); return stored; })()"));
+
+    [Fact]
+    public void ForInVarInitializedValueSurvivesEmptyIteration()
+        => Assert.Equal("0", Eval("(function(){ for (var a = 0 in {}); return a; })()"));
+
+    [Fact]
+    public void ForInVarInitializerFullSemantics()
+        // stored sees the initialized -1; the initializer runs once; the body runs per key.
+        => Assert.Equal("-1|1|3", Eval(
+            "(function(){" +
+            "  var effects = 0, iterations = 0, stored;" +
+            "  for (var a = (++effects, -1) in stored = a, { a: 0, b: 1, c: 2 }) { ++iterations; }" +
+            "  return stored + '|' + effects + '|' + iterations;" +
+            "})()"));
+
+    [Theory]
+    [InlineData("(function(){ var keys=[]; for (var k = 99 in {x:1,y:2}) { keys.push(k); } return keys.join(','); })()", "x,y")]
+    [InlineData("(function(){ var s=''; for (var k in {a:1,b:2}) { s += k; } return s; })()", "ab")]
+    public void ForInIterationStillWorks(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }

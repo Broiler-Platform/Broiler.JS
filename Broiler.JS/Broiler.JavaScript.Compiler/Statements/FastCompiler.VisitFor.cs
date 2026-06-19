@@ -72,6 +72,26 @@ partial class FastCompiler
             _ => throw new FastParseException(forInStatement.Start, $"Unexpcted"),
         };
 
+        // AnnexB B.3.7: `for (var a = <init> in obj)` — a `var` binding carrying an
+        // initializer, valid only in sloppy mode — evaluates the initializer and assigns it
+        // to the binding ONCE, before the RHS Expression is evaluated. (let/const initializers
+        // and for-of initializers are rejected by the parser; the per-iteration path above
+        // only assigns each enumerated key.)
+        YExpression? headInitAssignment = null;
+        if (forInStatement.Init is AstVariableDeclaration { Kind: FastVariableKind.Var } headDeclaration)
+        {
+            var declEnumerator = headDeclaration.Declarators.GetFastEnumerator();
+            if (declEnumerator.MoveNext(out var headDeclarator)
+                && headDeclarator.Identifier.Type == FastNodeType.Identifier
+                && headDeclarator.Init != null)
+            {
+                headInitAssignment = CreateAssignment(
+                    headDeclarator.Identifier,
+                    VisitExpression(headDeclarator.Init),
+                    createVariable: true);
+            }
+        }
+
         using var completion = completionScopes.Push(completionVar);
         using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, continueTarget, false, label) { CompletionVariable = completionVar });
         var en = YExpression.Variable(typeof(IElementEnumerator));
@@ -89,7 +109,13 @@ partial class FastCompiler
         var right = VisitExpression(forInStatement.Target);
         var loop = YExpression.Loop(bodyList, s.Break, s.Continue);
 
-        var result = YExpression.Block(pList, YExpression.Assign(completionVar, JSUndefinedBuilder.Value), YExpression.Assign(en, JSValueBuilder.GetAllKeys(right)), YExpression.TailCallTransparentTryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)), completionVar);
+        var resultItems = new Sequence<YExpression> { YExpression.Assign(completionVar, JSUndefinedBuilder.Value) };
+        if (headInitAssignment != null)
+            resultItems.Add(headInitAssignment);
+        resultItems.Add(YExpression.Assign(en, JSValueBuilder.GetAllKeys(right)));
+        resultItems.Add(YExpression.TailCallTransparentTryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)));
+        resultItems.Add(completionVar);
+        var result = YExpression.Block(pList, resultItems);
         if (tdzScope == null)
             return result;
 
