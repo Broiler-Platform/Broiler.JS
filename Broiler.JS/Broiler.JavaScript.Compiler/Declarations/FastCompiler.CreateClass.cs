@@ -408,7 +408,19 @@ partial class FastCompiler
             {
                 var computedNameVar = YExpression.Parameter(typeof(JSValue), $"#className{computedMemberNames.Count}");
                 classScopeVariables.Add(computedNameVar);
-                stmts.Add(YExpression.Assign(computedNameVar, ValidateStaticPropertyName(property, GetClassElementName(property))));
+                // A ComputedPropertyName is class body code and so is evaluated in strict
+                // mode: an assignment inside it (e.g. `[obj.p = 4]()`) gets strict semantics
+                // — assigning to a non-extensible object's new property throws a TypeError.
+                // Enter the runtime strict scope as statements (not as an expression value):
+                // a try/finally in expression position around the assignment produces invalid
+                // IL here, and an abrupt completion in the key must still propagate to
+                // short-circuit later keys (the finally only disposes the scope).
+                var strictKeyScope = YExpression.Parameter(typeof(IDisposable), $"#strictKeyScope{computedMemberNames.Count}");
+                classScopeVariables.Add(strictKeyScope);
+                stmts.Add(YExpression.Assign(strictKeyScope, YExpression.Call(null, EnterStrictModeDisposableMethod, YExpression.Constant(true))));
+                stmts.Add(YExpression.TryFinally(
+                    YExpression.Assign(computedNameVar, ValidateStaticPropertyName(property, GetClassElementName(property))),
+                    YExpression.Call(strictKeyScope, DisposeMethod)));
                 computedMemberNames[property] = computedNameVar;
             }
 
