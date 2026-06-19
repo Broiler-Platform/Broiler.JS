@@ -572,4 +572,39 @@ public class Issue840Tests
     [InlineData("(function(){ var d=Object.create({enumerable:true,value:9}); var o={}; Object.defineProperty(o,'z',d); return o.z+','+Object.getOwnPropertyDescriptor(o,'z').enumerable; })()", "9,true")]
     public void DefinePropertyOrdinaryDescriptorsStillWork(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problem 47: Object.keys runs [[GetOwnProperty]] per key (proxy traps) ----
+    //
+    // EnumerableOwnProperties(O, key) (§7.3.23) calls [[OwnPropertyKeys]] then, for each key,
+    // [[GetOwnProperty]] to test enumerability. Object.keys used a generic enumerable-key walk
+    // that, for a Proxy, fired only the ownKeys trap and never the per-key
+    // getOwnPropertyDescriptor trap. It now mirrors Object.values/entries.
+
+    [Fact]
+    public void KeysOnProxiedArrayFiresOwnKeysThenGetOwnPropertyDescriptor()
+        => Assert.Equal("ownKeys,getOwnPropertyDescriptor", Eval(
+            "(function () {" +
+            "  var log = [];" +
+            "  Object.keys(new Proxy([], new Proxy({}, { get(t, pk, r) { log.push(pk); } })));" +
+            "  return log.join(',');" +
+            "})()"));
+
+    [Fact]
+    public void KeysFiltersNonEnumerableProxyKeys()
+        => Assert.Equal("v", Eval(
+            "(function () {" +
+            "  var t = {};" +
+            "  Object.defineProperty(t, 'hidden', { value: 1, enumerable: false });" +
+            "  t.v = 2;" +
+            "  return Object.keys(new Proxy(t, {})).join(',');" +
+            "})()"));
+
+    [Theory]
+    [InlineData("Object.keys({a:1,b:2,c:3}).join(',')", "a,b,c")]
+    [InlineData("Object.keys([10,20,30]).join(',')", "0,1,2")]
+    [InlineData("typeof Object.keys([10,20])[0]", "string")]
+    [InlineData("(function(){ var o={}; o[2]='a'; o.x='b'; o[1]='c'; return Object.keys(o).join(','); })()", "1,2,x")]
+    [InlineData("(function(){ var o={}; Object.defineProperty(o,'x',{value:1,enumerable:false}); o.y=2; return Object.keys(o).join(','); })()", "y")]
+    public void KeysOrdinaryObjectsStillWork(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }

@@ -187,15 +187,23 @@ public partial class JSObject
     [JSExport("keys")]
     internal static JSValue Keys(in Arguments a)
     {
-        var jobj = ToObjectOrThrow(a.Get1());
+        var target = ToObjectOrThrow(a.Get1());
 
-        var en = jobj.GetAllKeys(true, false);
         var r = JSValue.CreateArray();
 
-        while (en.MoveNext(out var hasValue, out var value, out var index))
+        // EnumerableOwnProperties(O, key) (§7.3.23): snapshot the own String-keyed names
+        // ([[OwnPropertyKeys]]) first, then for EACH key call [[GetOwnProperty]] and keep it
+        // only when the descriptor is enumerable. The per-key descriptor lookup is observable
+        // on a Proxy (its getOwnPropertyDescriptor trap), which the generic key walk skipped —
+        // so Object.keys(proxy) only triggered the ownKeys trap. Mirrors Object.values/entries.
+        foreach (var key in SnapshotOwnStringKeys(target))
         {
-            if (hasValue)
-                r.AddArrayItem(value);
+            if (target.GetOwnPropertyDescriptor(key) is not JSObject descriptor)
+                continue;
+            if (!descriptor[KeyStrings.enumerable].BooleanValue)
+                continue;
+
+            r.AddArrayItem(key);
         }
 
         return r;
