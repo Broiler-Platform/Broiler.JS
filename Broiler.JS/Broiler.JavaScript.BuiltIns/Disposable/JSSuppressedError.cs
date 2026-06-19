@@ -19,15 +19,34 @@ public partial class JSSuppressedError : JSError
     public JSSuppressedError(in Arguments a, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) :
         base(new Arguments(JSUndefined.Value, a[2] ?? new JSString("Suppressed Error")), function: function, filePath: filePath, line: line)
     {
-        FastAddValue(ErrorKey, a.GetAt(0), JSPropertyAttributes.ConfigurableValue);
-        FastAddValue(SuppressedKey, a.GetAt(1), JSPropertyAttributes.ConfigurableValue);
+        DefineErrorAndSuppressed(a.GetAt(0), a.GetAt(1));
     }
 
     public JSSuppressedError(JSValue error, JSValue suppressed, string message = "An error was suppressed during disposal.", [CallerMemberName] string function = null,
         [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) : base(new JSException(new JSString(message), function, filePath, line))
     {
         Exception.With(this);
-        FastAddValue(ErrorKey, error ?? JSUndefined.Value, JSPropertyAttributes.ConfigurableValue);
-        FastAddValue(SuppressedKey, suppressed ?? JSUndefined.Value, JSPropertyAttributes.ConfigurableValue);
+        DefineErrorAndSuppressed(error ?? JSUndefined.Value, suppressed ?? JSUndefined.Value);
+    }
+
+    // SuppressedError steps 4-5 create `error` then `suppressed` as the own properties
+    // immediately following `message`. The Error base constructor has already appended
+    // the implementation-defined `stack` property right after `message`, so relocate it
+    // to the end — keeping message/error/suppressed consecutive, as test262
+    // SuppressedError/order-of-args-evaluation requires (impl-defined properties are only
+    // permitted before `message` or after `suppressed`).
+    private void DefineErrorAndSuppressed(JSValue error, JSValue suppressed)
+    {
+        var stackKeyValue = KeyStrings.stack.ToJSValue();
+        var hadStack = !GetOwnPropertyDescriptor(stackKeyValue).IsUndefined;
+        var stackValue = hadStack ? this[KeyStrings.stack] : JSUndefined.Value;
+        if (hadStack)
+            Delete(stackKeyValue);
+
+        FastAddValue(ErrorKey, error, JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(SuppressedKey, suppressed, JSPropertyAttributes.ConfigurableValue);
+
+        if (hadStack)
+            FastAddValue(KeyStrings.stack, stackValue, JSPropertyAttributes.ConfigurableValue);
     }
 }
