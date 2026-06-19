@@ -573,27 +573,40 @@ public static void ValidateProgram(
 
         protected override AstNode VisitClassStatement(AstClassExpression classStatement)
         {
-            if (IsStrictMode && IsRestrictedName(classStatement.Identifier?.Name))
-                throw new FastParseException(classStatement.Start, "Invalid class name in strict mode");
-
-            Visit(classStatement.Identifier);
-            Visit(classStatement.Base);
-
-            ValidateClassEarlyErrors(classStatement);
-
-            privateNameScopes.Push(CollectPrivateNames(classStatement.Members));
+            // A class definition is always strict mode code — its name binding, heritage
+            // expression, and every element (method/getter/setter/constructor body, field
+            // initializer, computed key) are validated under strict mode regardless of the
+            // surrounding context. (Object-literal concise methods, by contrast, are not.)
+            var previousStrict = IsStrictMode;
+            IsStrictMode = true;
             try
             {
-                var members = classStatement.Members.GetFastEnumerator();
-                while (members.MoveNext(out var member))
-                    VisitClassProperty(member);
+                if (IsRestrictedName(classStatement.Identifier?.Name))
+                    throw new FastParseException(classStatement.Start, "Invalid class name in strict mode");
+
+                Visit(classStatement.Identifier);
+                Visit(classStatement.Base);
+
+                ValidateClassEarlyErrors(classStatement);
+
+                privateNameScopes.Push(CollectPrivateNames(classStatement.Members));
+                try
+                {
+                    var members = classStatement.Members.GetFastEnumerator();
+                    while (members.MoveNext(out var member))
+                        VisitClassProperty(member);
+                }
+                finally
+                {
+                    privateNameScopes.Pop();
+                }
+
+                return classStatement;
             }
             finally
             {
-                privateNameScopes.Pop();
+                IsStrictMode = previousStrict;
             }
-
-            return classStatement;
         }
 
         protected override AstNode VisitTryStatement(AstTryStatement tryStatement)
