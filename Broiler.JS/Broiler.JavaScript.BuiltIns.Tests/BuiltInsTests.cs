@@ -462,6 +462,41 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Base_Class_Initializes_Instance_Fields_Before_Constructor_Parameter_Defaults()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // §10.2.2 [[Construct]]: for a base class, InitializeInstanceElements runs before
+        // OrdinaryCallEvaluateBody, so instance fields are initialized before the parameter
+        // initializers evaluate. A parameter default can therefore read an already-set
+        // field — including a private one — and the field initializer's side effects are
+        // observed before the parameter default's.
+        var result = ctx.Eval("""
+            (function () {
+                class WithPrivate {
+                    #x = "hello";
+                    constructor(o = this.#x) { this.value = o; }
+                }
+
+                var log = [];
+                class Ordered {
+                    f = (log.push("field"), 1);
+                    constructor(p = (log.push("param"), 2)) {}
+                }
+                new Ordered();
+
+                class Derived extends WithPrivate {
+                    z = 5;
+                    constructor() { super(); this.value = this.z; }
+                }
+
+                return new WithPrivate().value + "|" + log.join(",") + "|" + new Derived().value;
+            })();
+            """);
+        Assert.Equal("hello|field,param|5", result.ToString());
+    }
+
+    [Fact]
     public void GeneratorFunction_Construct_Parses_Before_NewTarget_Prototype()
     {
         EnsureBuiltInsLoaded();
@@ -3049,6 +3084,30 @@ public class BuiltInsTests
         ].join('|');");
 
         Assert.Equal("true|true|[object Function]|true|[object Function]|true|RelativeTimeFormat|0", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_Collator_Reads_Options_Through_Getters()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // GetOption reads each option with [[Get]], so an accessor option must have its
+        // getter invoked — a throwing getter must propagate, not be silently skipped
+        // (test262 Intl/Collator/constructor-options-throwing-getters).
+        var result = ctx.Eval("""
+            (function () {
+                function CustomError() {}
+                function name(opts) {
+                    try { new Intl.Collator('en', opts); return 'no throw'; }
+                    catch (e) { return e.constructor.name; }
+                }
+                var usageThrows = name({ get usage() { throw new CustomError(); } });
+                var numericThrows = name({ get numeric() { throw new CustomError(); } });
+                var readValue = new Intl.Collator('en', { get usage() { return 'search'; } }).resolvedOptions().usage;
+                return usageThrows + '|' + numericThrows + '|' + readValue;
+            })();
+            """);
+        Assert.Equal("CustomError|CustomError|search", result.ToString());
     }
 
     [Fact]
