@@ -1821,6 +1821,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // must also match a whole surrogate pair (not just the leading unit).
                 bool hasSupplementary = false;
                 bool classMatchesSupplementary = false;
+                // For a negated class, whether the *excluded* set already covers the
+                // whole supplementary range. \D/\S/\W and \p/\P escapes can each span
+                // astral code points, so a class such as [^\D] (= digits) must not be
+                // extended to consume surrogate pairs. A class with only BMP members
+                // (e.g. [^a], [^\d]) excludes nothing astral, so its negation must
+                // match an astral code point as a single unit.
+                bool excludesAstral = false;
 
                 int scanPos = i;
                 while (scanPos < pattern.Length && pattern[scanPos] != ']')
@@ -1830,6 +1837,8 @@ public partial class JSRegExp : JSObject, IJSRegExp
                         var esc = pattern[scanPos + 1];
                         if (!negated && (esc == 'D' || esc == 'S' || esc == 'W'))
                             classMatchesSupplementary = true;
+                        if (esc == 'D' || esc == 'S' || esc == 'W' || esc == 'p' || esc == 'P')
+                            excludesAstral = true;
                         // The scanner emits an astral \u{...} escape as a \uHHHH high
                         // surrogate escape followed by a \uHHHH low surrogate escape;
                         // that pair is a supplementary member.
@@ -1851,7 +1860,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     scanPos++;
                 }
 
-                if (!hasSupplementary && !classMatchesSupplementary)
+                // A negated class with no astral exclusions (e.g. [^a], [^\d]) still has
+                // to consume a full code point so that an astral code point is matched as
+                // a single unit rather than just its leading surrogate — rebuild it even
+                // when it holds no supplementary members.
+                bool negatedNeedsSurrogatePair = negated && !excludesAstral;
+
+                if (!hasSupplementary && !classMatchesSupplementary && !negatedNeedsSurrogatePair)
                 {
                     // Find end of class and skip
                     while (i < pattern.Length && pattern[i] != ']')

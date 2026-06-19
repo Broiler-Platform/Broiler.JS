@@ -1059,6 +1059,19 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             return withObject[name];
         }
 
+        return ResolveIdentifierWithoutWithScopes(name);
+    }
+
+    /// <summary>
+    /// Resolves an identifier from the direct-eval / global / internal scopes only,
+    /// without consulting the <c>with</c> object scopes. Used by the call path after a
+    /// preceding <see cref="ResolveWithObject"/> has already walked the with scopes (and
+    /// found no binding): re-running <see cref="ResolveIdentifier"/> there would fire a
+    /// second, spec-violating <c>has</c> trap on the binding object
+    /// (test262 with/has-binding-call-with-proxy-env).
+    /// </summary>
+    public JSValue ResolveIdentifierWithoutWithScopes(in KeyString name)
+    {
         if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
             return directEvalBinding.GetValue();
 

@@ -244,6 +244,13 @@ partial class FastCompiler
                 // super(...) targets the superclass constructor, not the home-object prototype.
                 var super = top.SuperConstructor ?? top.Super;
 
+                // A super call is only legal inside a derived class constructor. When no super
+                // binding is in scope it is an early SyntaxError — e.g. `new Function("super()")`
+                // or a plain function body. (Direct eval resolves its super binding separately
+                // and validates illegal super in DirectEvalSupport, so it is exempt here.)
+                if (super == null && !isDirectEvalCompilation)
+                    throw new FastParseException(callee.Start, "'super' keyword is only valid inside a derived class constructor");
+
                 // super(...) performs BindThisValue: the derived constructor's
                 // `this` binding may be initialized only once, so a second
                 // super() call (or a super() after `this` is already bound) is a
@@ -306,7 +313,11 @@ partial class FastCompiler
                         YExpression.Condition(
                             hasWithObject,
                             JSValueBuilder.Index(withObjTemp.Expression, key),
-                            JSContextBuilder.ResolveIdentifier(key),
+                            // The with scopes were already walked by ResolveWithObject above
+                            // (hasWithObject is false here), so resolve the remaining scopes
+                            // without re-probing the binding object — a second `has` trap on
+                            // the with object would violate HasBinding's single-probe contract.
+                            JSContextBuilder.ResolveIdentifierWithoutWithScopes(key),
                             typeof(JSValue))),
                     JSFunctionBuilder.InvokeFunction(withTargetTemp.Expression, withArgs, coalesce));
             }

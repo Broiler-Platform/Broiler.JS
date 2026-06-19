@@ -254,11 +254,15 @@ public partial class JSArray : JSObject
         var key = name.ToKey(false);
         if (key.Type == KeyType.String && key.KeyString.Key == KeyStrings.length.Key)
         {
+            // FromPropertyDescriptor builds the result with CreateDataPropertyOrThrow,
+            // so each field (value/writable/enumerable/configurable) is itself an
+            // enumerable, writable, configurable own property — otherwise the returned
+            // descriptor appears empty to Object.keys/JSON.stringify/structural compares.
             var descriptor = new JSObject();
-            descriptor.FastAddValue(KeyStrings.value, JSValue.CreateNumber(_length), JSPropertyAttributes.ConfigurableValue);
-            descriptor.FastAddValue(KeyStrings.writable, IsLengthReadOnly() ? JSValue.BooleanFalse : JSValue.BooleanTrue, JSPropertyAttributes.ConfigurableValue);
-            descriptor.FastAddValue(KeyStrings.enumerable, JSValue.BooleanFalse, JSPropertyAttributes.ConfigurableValue);
-            descriptor.FastAddValue(KeyStrings.configurable, JSValue.BooleanFalse, JSPropertyAttributes.ConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.value, JSValue.CreateNumber(_length), JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.writable, IsLengthReadOnly() ? JSValue.BooleanFalse : JSValue.BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.enumerable, JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.configurable, JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
             return descriptor;
         }
 

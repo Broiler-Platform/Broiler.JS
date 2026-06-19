@@ -34,10 +34,16 @@ public partial class JSObject
     [JSPrototypeMethod][JSExport("propertyIsEnumerable")]
     public static JSValue PropertyIsEnumerable(in Arguments a)
     {
+        // §20.1.3.4 step 1 is `Let P be ? ToPropertyKey(V)`, performed BEFORE
+        // `Let O be ? ToObject(this value)` (step 2). A throwing key coercion must
+        // therefore surface before the receiver is rejected — e.g.
+        // propertyIsEnumerable.call(null, { toString() { throw } }) throws the
+        // key's error, not a TypeError for the null receiver.
+        var key = a.Get1().ToKey(false);
+
         if(!a.This.TryAsObjectThrowIfNullOrUndefined(out var @object))
             return JSValue.BooleanFalse;
 
-        var key = a.Get1().ToKey(false);
         if (key.IsUInt)
         {
             ref var elements = ref @object.GetElements();

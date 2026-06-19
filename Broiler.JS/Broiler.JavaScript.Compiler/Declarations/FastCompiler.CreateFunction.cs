@@ -253,10 +253,16 @@ partial class FastCompiler
             foreach (var evalShadow in cs.EvalShadows)
                 sList.Add(EvalShadowBuilder.Register(stackItem, evalShadow.Variable));
 
-            sList.AddRange(bodyInits);
-
+            // Base class (§10.2.2 [[Construct]]): InitializeInstanceElements runs after
+            // OrdinaryCallBindThis but BEFORE OrdinaryCallEvaluateBody, so instance fields
+            // are initialized before the parameter initializers (bodyInits) evaluate. A
+            // parameter default such as `constructor(o = this.#x)` can therefore observe an
+            // already-initialized field. (A derived class initializes its fields only after
+            // super() — handled by the thisIsUninitialized path below.)
             if (s.MemberInits != null && !thisIsUninitialized)
                 InitMembers(sList, s);
+
+            sList.AddRange(bodyInits);
 
             if (functionDeclaration.Generator)
                 sList.Add(YExpression.Yield(JSUndefinedBuilder.Value));

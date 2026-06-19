@@ -127,8 +127,26 @@ public partial class JSRegExp
     public JSValue Exec(in Arguments a)
     {
         var input = a.Get1().StringValue;
+
+        // RegExpBuiltinExec reads `lastIndex` exactly once (via ToLength), even when
+        // the regex is neither global nor sticky; the value is only consulted in the
+        // global/sticky case (steps 8 and 12).
+        var observableLastIndex = GetObservableLastIndex();
+        var useLastIndex = globalSearch || sticky;
+
+        // RegExpBuiltinExec step 12.a: for a global or sticky regex whose lastIndex
+        // has advanced past the end of the subject, there is no remaining position to
+        // search. Reset lastIndex to 0 and report no match instead of clamping the
+        // start position back to the end (which would spuriously match an empty
+        // pattern at the final index).
+        if (useLastIndex && observableLastIndex > input.Length)
+        {
+            SetObservableLastIndex(0);
+            return JSValue.NullValue;
+        }
+
         // Perform the regular expression matching.
-        var startPosition = CalculateStartPosition(input);
+        var startPosition = useLastIndex ? observableLastIndex : 0;
         var match = value.Match(input, startPosition);
 
         if (sticky && (!match.Success || match.Index != startPosition))
@@ -154,11 +172,17 @@ public partial class JSRegExp
         // The captureMap supplies that count and the original-name mapping.
         var c = captureMap != null ? captureMap.Count + 1 : groups.Count;
         var result = JSValue.CreateArray((uint)c);
+        var resultObject = (JSObject)result;
 
+        // RegExpBuiltinExec installs each capture (step 28: CreateDataPropertyOrThrow),
+        // never [[Set]], so a poisoned Array.prototype index accessor (a getter/setter
+        // installed for "0", "1", ...) must not be consulted. The plain `[uint]` indexer
+        // walks the prototype chain and would invoke such a setter, so define the own data
+        // property directly.
         for (int i = 0; i < c; i++)
         {
             var group = groups[i];
-            result[(uint)i] = group.Success ? JSValue.CreateString(group.Value) : JSUndefined.Value;
+            resultObject.CreateDataProperty((uint)i, group.Success ? JSValue.CreateString(group.Value) : JSUndefined.Value);
         }
 
         result[KeyStrings.index] = JSValue.CreateNumber(match.Index);
@@ -179,14 +203,15 @@ public partial class JSRegExp
                 var group = groups[i];
                 if (!group.Success)
                 {
-                    indices[(uint)i] = JSUndefined.Value;
+                    indicesObject.CreateDataProperty((uint)i, JSUndefined.Value);
                 }
                 else
                 {
                     var range = JSValue.CreateArray(2);
-                    range[0] = JSValue.CreateNumber(group.Index);
-                    range[1] = JSValue.CreateNumber(group.Index + group.Length);
-                    indices[(uint)i] = range;
+                    var rangeObject = (JSObject)range;
+                    rangeObject.CreateDataProperty(0u, JSValue.CreateNumber(group.Index));
+                    rangeObject.CreateDataProperty(1u, JSValue.CreateNumber(group.Index + group.Length));
+                    indicesObject.CreateDataProperty((uint)i, range);
                 }
             }
 
@@ -267,22 +292,5 @@ public partial class JSRegExp
         var pattern = receiver[KeyStrings.GetOrCreate("source")].StringValue;
         var flags = receiver[KeyStrings.GetOrCreate("flags")].StringValue;
         return JSValue.CreateString($"/{pattern}/{flags}");
-    }
-
-    /// <summary>
-    /// Calculates the position to start searching.
-    /// </summary>
-    /// <param name="input"> The string on which to perform the search. </param>
-    /// <returns> The character position to start searching. </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int CalculateStartPosition(string input)
-    {
-        var observableLastIndex = GetObservableLastIndex();
-        if (!globalSearch && !sticky)
-            return 0;
-
-        var minIndex = observableLastIndex < input.Length ? observableLastIndex : input.Length;
-
-        return minIndex;
     }
 }

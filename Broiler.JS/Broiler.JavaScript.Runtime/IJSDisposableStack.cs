@@ -22,6 +22,15 @@ public interface IJSDisposableStack
     JSValue Dispose();
 
     /// <summary>
+    /// Seeds the pending completion with an exception thrown by the guarded block,
+    /// so a subsequent disposer error wraps it as the <c>suppressed</c> value of a
+    /// SuppressedError (DisposeResources runs with the block's [[Completion]]). Called
+    /// before <see cref="Dispose"/> when a lexical <c>using</c> block's body threw.
+    /// Returns undefined (typed so the compiler can use it as a catch-clause value).
+    /// </summary>
+    JSValue SeedPendingError(System.Exception bodyException);
+
+    /// <summary>
     /// Factory delegate used by the Compiler to create new instances
     /// without referencing the concrete type.
     /// Wired by the BuiltIns assembly via <c>[ModuleInitializer]</c>.

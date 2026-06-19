@@ -121,7 +121,10 @@ public partial class JSShadowRealm : JSObject
     private static JSValue WrappedFunctionCreate(JSContext destRealm, JSContext srcRealm, JSValue target)
     {
         // CopyNameAndLength: read length/name from the target (its getters run in
-        // the realm that owns the target).
+        // the realm that owns the target). WrappedFunctionCreate step 8: if this
+        // copy completes abruptly (e.g. a throwing `length`/`name` getter), the
+        // failure is swallowed and a fresh TypeError is thrown in the caller realm
+        // rather than letting the target realm's exception escape.
         JSValue lengthValue;
         JSValue nameValue;
         var outer = JSEngine.Current as JSContext;
@@ -131,6 +134,11 @@ public partial class JSShadowRealm : JSObject
                 JSEngine.CurrentContext = srcRealm;
             lengthValue = target[KeyStrings.length];
             nameValue = target[KeyStrings.name];
+        }
+        catch (Exception)
+        {
+            JSEngine.CurrentContext = outer;
+            throw JSEngine.NewTypeError("ShadowRealm could not copy the wrapped function's name and length");
         }
         finally
         {

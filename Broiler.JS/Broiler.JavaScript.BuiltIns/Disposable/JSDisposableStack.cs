@@ -51,6 +51,15 @@ public class JSDisposableStack : IJSDisposableStack, IDisposable, IAsyncDisposab
         stack.Push((value, method, async));
     }
 
+    public JSValue SeedPendingError(Exception bodyException)
+    {
+        // The block body completed abruptly; record its thrown value as the initial
+        // pending error so the disposal loop wraps it (SuppressedError.suppressed) when a
+        // disposer also throws, and re-throws it unchanged when none do.
+        Error = bodyException is JSException jx ? (jx.Error ?? JSError.From(bodyException)) : JSError.From(bodyException);
+        return JSUndefined.Value;
+    }
+
     public JSValue Dispose()
     {
         if (!isAsync)

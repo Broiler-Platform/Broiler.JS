@@ -261,6 +261,52 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void ShadowRealm_Evaluate_Wrapping_A_Function_With_Throwing_Length_Or_Name_Throws_Caller_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        // WrappedFunctionCreate step 8 (CopyNameAndLength): when the wrapped target's
+        // own `length` or `name` getter completes abruptly, the inner-realm exception
+        // must be replaced with a fresh TypeError thrown in the caller realm, rather
+        // than leaking the original error across the realm boundary.
+        var result = ctx.Eval("""
+            (function () {
+                var realm = new ShadowRealm();
+
+                function nameOf(thunk) {
+                    try { thunk(); return 'no-throw'; }
+                    catch (e) { return e.constructor.name; }
+                }
+
+                var lengthResult = nameOf(function () {
+                    return realm.evaluate(
+                        "function fn() {}" +
+                        "Object.defineProperty(fn, 'length', {" +
+                        "  get: function () { throw new Error('boom'); }," +
+                        "  enumerable: false, configurable: true });" +
+                        "fn;");
+                });
+
+                var nameResult = nameOf(function () {
+                    return realm.evaluate(
+                        "function fn() {}" +
+                        "Object.defineProperty(fn, 'name', {" +
+                        "  get: function () { throw new Error('boom'); }," +
+                        "  enumerable: false, configurable: true });" +
+                        "fn;");
+                });
+
+                // A plain callable still wraps successfully.
+                var ok = typeof realm.evaluate("(function double(x) { return x * 2; })");
+
+                return lengthResult + '|' + nameResult + '|' + ok;
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|function", result.ToString());
+    }
+
+    [Fact]
     public void Function_Prototype_Apply_With_Primitive_Receiver_Throws_TypeError()
     {
         EnsureBuiltInsLoaded();
@@ -361,6 +407,206 @@ public class BuiltInsTests
             """);
 
         Assert.Equal("SyntaxError|false", result.ToString());
+    }
+
+    [Fact]
+    public void TypedArray_Construct_Coerces_NonObject_Length_Before_NewTarget_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        // §23.2.5.1 step 6.c: for a non-object first argument, ToIndex(firstArgument)
+        // runs before AllocateTypedArray reads NewTarget.prototype. A Symbol length
+        // must therefore throw the ToIndex TypeError without evaluating the custom
+        // prototype getter.
+        var result = ctx.Eval("""
+            (function () {
+                var getProtoCalled = false;
+                var newTarget = function () {}.bind(null);
+                Object.defineProperty(newTarget, 'prototype', {
+                    get: function () { getProtoCalled = true; throw new Error('proto'); }
+                });
+
+                try {
+                    Reflect.construct(Int8Array, [Symbol()], newTarget);
+                    return 'no throw';
+                } catch (e) {
+                    return e.constructor.name + '|' + getProtoCalled;
+                }
+            })();
+            """);
+
+        Assert.Equal("TypeError|false", result.ToString());
+    }
+
+    [Fact]
+    public void TypedArray_Subarray_Validates_Species_Constructor_Result()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        // %TypedArray%.prototype.subarray uses TypedArraySpeciesCreate, whose
+        // TypedArrayCreate step runs ValidateTypedArray on the constructed value. A
+        // custom @@species constructor that returns a non-typed-array must surface as
+        // a TypeError rather than being returned as-is.
+        var result = ctx.Eval("""
+            (function () {
+                var sample = new Int8Array(2);
+                sample.constructor = {};
+                sample.constructor[Symbol.species] = function () {};
+
+                try { sample.subarray(0); return 'no throw'; }
+                catch (e) { return e.constructor.name; }
+            })();
+            """);
+
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void Class_Method_Bodies_Are_Strict_Mode_Code()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // A class method/getter/setter/constructor is always strict mode code, so the full
+        // strict early-error set applies to its body (no `with`, no `delete` of an
+        // unqualified reference, no reserved-word/restricted binding names) — not just the
+        // duplicate-parameter rule. Object-literal concise methods, by contrast, stay sloppy.
+        var result = ctx.Eval("""
+            (function () {
+                function name(src) {
+                    try { eval(src); return 'ok'; }
+                    catch (e) { return e.constructor.name; }
+                }
+                return [
+                    name('class C { m() { with ({}) {} } }'),
+                    name('class C { m() { var x; delete x; } }'),
+                    name('class C { m(arg) { var public = 1; } }'),
+                    name('class eval {}'),
+                    name('({ m() { with ({}) {} } })'),   // object method: sloppy, allowed
+                    name('class C { m(a, b) { return a + b; } }') // valid strict method
+                ].join('|');
+            })();
+            """);
+        Assert.Equal("SyntaxError|SyntaxError|SyntaxError|SyntaxError|ok|ok", result.ToString());
+    }
+
+    [Fact]
+    public void Super_Call_Outside_Derived_Constructor_Is_A_SyntaxError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // A super call is only legal in a derived class constructor; it is an early
+        // SyntaxError elsewhere, including in a Function-constructor body and in eval
+        // (test262 sm/class/superCallIllegal). Valid super uses are unaffected.
+        var result = ctx.Eval("""
+            (function () {
+                function name(thunk) { try { thunk(); return 'ok'; } catch (e) { return e.constructor.name; } }
+
+                var fromFunction = name(function () { return new Function("super();"); });
+                var fromEval = name(function () { return eval("super()"); });
+
+                class Base { constructor() { this.x = 1; } get tag() { return 'b'; } }
+                class Derived extends Base {
+                    constructor() { super(); }
+                    get tag() { return super.tag + 'd'; }
+                }
+                var d = new Derived();
+                var validSuper = d.x + ',' + d.tag;
+
+                return fromFunction + '|' + fromEval + '|' + validSuper;
+            })();
+            """);
+        Assert.Equal("SyntaxError|SyntaxError|1,bd", result.ToString());
+    }
+
+    [Fact]
+    public void Super_Property_Outside_Method_Is_A_SyntaxError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // SuperProperty (super.x / super[x]) is only legal where a [[HomeObject]] is in
+        // scope (a method, accessor, or constructor); elsewhere it is an early SyntaxError.
+        // Valid super-property access in methods/getters/object methods is unaffected.
+        var result = ctx.Eval("""
+            (function () {
+                function name(thunk) { try { thunk(); return 'ok'; } catch (e) { return e.constructor.name; } }
+
+                var fnProp = name(function () { return new Function("super.x;"); });
+                var fnBracket = name(function () { return new Function("super['x'];"); });
+                var evalProp = name(function () { return eval("super.x"); });
+
+                class Base { m() { return 5; } get g() { return 9; } }
+                class Derived extends Base { m() { return super.m(); } get g() { return super.g; } }
+                var d = new Derived();
+
+                var proto = { v() { return 1; } };
+                var obj = { __proto__: proto, v() { return super.v() + 1; } };
+
+                return [fnProp, fnBracket, evalProp, d.m(), d.g, obj.v()].join('|');
+            })();
+            """);
+        Assert.Equal("SyntaxError|SyntaxError|SyntaxError|5|9|2", result.ToString());
+    }
+
+    [Fact]
+    public void Class_Computed_Property_Names_Evaluate_In_Source_Order()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // Each ComputedPropertyName is evaluated once, in source order, and the resulting
+        // key is used for the member. (Evaluating the key under runtime strict mode is a
+        // known gap — see issue #842 Problem 94 — deferred because the only available
+        // lowering produced invalid IL for a class expression with arrow-function keys.)
+        var result = ctx.Eval("""
+            (function () {
+                var log = [];
+                class Ordered { [(log.push('a'), 'x')]() {} [(log.push('b'), 'y')]() {} }
+
+                var k = 'foo';
+                class Basic { [k]() { return 7; } }
+
+                // A class expression with both instance and static arrow-function computed
+                // field names must compile and run (regression guard).
+                let Expr = class { [() => {}] = 1; static [() => {}] = 1; };
+
+                return log.join(',') + '|' + new Basic().foo() + '|' + (new Expr() instanceof Expr);
+            })();
+            """);
+        Assert.Equal("a,b|7|true", result.ToString());
+    }
+
+    [Fact]
+    public void Base_Class_Initializes_Instance_Fields_Before_Constructor_Parameter_Defaults()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // §10.2.2 [[Construct]]: for a base class, InitializeInstanceElements runs before
+        // OrdinaryCallEvaluateBody, so instance fields are initialized before the parameter
+        // initializers evaluate. A parameter default can therefore read an already-set
+        // field — including a private one — and the field initializer's side effects are
+        // observed before the parameter default's.
+        var result = ctx.Eval("""
+            (function () {
+                class WithPrivate {
+                    #x = "hello";
+                    constructor(o = this.#x) { this.value = o; }
+                }
+
+                var log = [];
+                class Ordered {
+                    f = (log.push("field"), 1);
+                    constructor(p = (log.push("param"), 2)) {}
+                }
+                new Ordered();
+
+                class Derived extends WithPrivate {
+                    z = 5;
+                    constructor() { super(); this.value = this.z; }
+                }
+
+                return new WithPrivate().value + "|" + log.join(",") + "|" + new Derived().value;
+            })();
+            """);
+        Assert.Equal("hello|field,param|5", result.ToString());
     }
 
     [Fact]
@@ -2250,6 +2496,72 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void PropertyIsEnumerable_Coerces_Key_Before_Rejecting_Receiver()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // §20.1.3.4: ToPropertyKey(V) (step 1) runs before ToObject(this) (step 2),
+        // so a throwing key coercion surfaces before a null/undefined receiver is
+        // rejected — propertyIsEnumerable.call(null, throwingKey) throws the key's
+        // error (here a ReferenceError), not a TypeError.
+        var result = ctx.Eval("""
+            (function () {
+                function name(thunk) {
+                    try { thunk(); return 'no throw'; }
+                    catch (e) { return e.constructor.name; }
+                }
+                var pie = Object.prototype.propertyIsEnumerable;
+                var thrower = { toString: function () { return undefinedReference; } };
+                return [
+                    name(function () { return pie.call(null, thrower); }),
+                    name(function () { return pie.call(undefined, thrower); })
+                ].join('|');
+            })();
+            """);
+        Assert.Equal("ReferenceError|ReferenceError", result.ToString());
+    }
+
+    [Fact]
+    public void GetOwnPropertyDescriptor_Of_Array_Length_Has_Enumerable_Fields()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // FromPropertyDescriptor builds each field as an enumerable own data property,
+        // so the array exotic "length" descriptor must round-trip through JSON / a
+        // structural compare rather than appearing empty.
+        var result = ctx.Eval("""
+            (function () {
+                var d = Reflect.getOwnPropertyDescriptor([1, 2, 3], "length");
+                return JSON.stringify(d) + "|" + Object.keys(d).sort().join(",");
+            })();
+            """);
+        Assert.Equal(
+            "{\"value\":3,\"writable\":true,\"enumerable\":false,\"configurable\":false}|configurable,enumerable,value,writable",
+            result.ToString());
+    }
+
+    [Fact]
+    public void GetOwnPropertyDescriptor_Of_TypedArray_Element_Has_Enumerable_Fields()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // A typed array's integer-indexed element is an enumerable, writable,
+        // configurable own data property, and the returned descriptor's own fields
+        // must themselves be enumerable (so the descriptor is not reported empty).
+        var result = ctx.Eval("""
+            (function () {
+                var ta = new Int8Array(2);
+                ta[0] = 7;
+                var d = Object.getOwnPropertyDescriptor(ta, 0);
+                return JSON.stringify(d) + "|" + Object.keys(d).sort().join(",");
+            })();
+            """);
+        Assert.Equal(
+            "{\"value\":7,\"writable\":true,\"enumerable\":true,\"configurable\":true}|configurable,enumerable,value,writable",
+            result.ToString());
+    }
+
+    [Fact]
     public void Object_DefineProperties_And_GetOwnPropertySymbols_Support_Symbol_Keys()
     {
         EnsureBuiltInsLoaded();
@@ -2323,6 +2635,41 @@ public class BuiltInsTests
         using var ctx = new JSContext();
         var result = ctx.Eval("JSON.parse('{\"a\":1}').a");
         Assert.Equal(1.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void JSON_Parse_Coerces_Argument_With_Spec_ToString_First()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        // JSON.parse step 1 is `Let JText be ? ToString(text)`. Primitives coerce and
+        // parse, a Symbol throws TypeError (not SyntaxError), and a throwing
+        // toString/valueOf during ToPrimitive propagates verbatim rather than being
+        // reported as malformed JSON.
+        var result = ctx.Eval("""
+            (function () {
+                function name(thunk) {
+                    try { return 'ok:' + thunk(); }
+                    catch (e) { return e.constructor.name; }
+                }
+
+                return [
+                    name(function () { return JSON.parse(null); }),
+                    name(function () { return JSON.parse(true); }),
+                    name(function () { return JSON.parse(3.14); }),
+                    name(function () { return JSON.parse(undefined); }),
+                    name(function () { return JSON.parse(Symbol('d')); }),
+                    name(function () {
+                        return JSON.parse({ toString: null, get valueOf() { throw new RangeError(); } });
+                    }),
+                    name(function () {
+                        return JSON.parse({ toString: function () { throw new RangeError(); } });
+                    })
+                ].join('|');
+            })();
+            """);
+
+        Assert.Equal("ok:null|ok:true|ok:3.14|SyntaxError|TypeError|RangeError|RangeError", result.ToString());
     }
 
     [Fact]
@@ -2850,6 +3197,30 @@ public class BuiltInsTests
         ].join('|');");
 
         Assert.Equal("true|true|[object Function]|true|[object Function]|true|RelativeTimeFormat|0", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_Collator_Reads_Options_Through_Getters()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // GetOption reads each option with [[Get]], so an accessor option must have its
+        // getter invoked — a throwing getter must propagate, not be silently skipped
+        // (test262 Intl/Collator/constructor-options-throwing-getters).
+        var result = ctx.Eval("""
+            (function () {
+                function CustomError() {}
+                function name(opts) {
+                    try { new Intl.Collator('en', opts); return 'no throw'; }
+                    catch (e) { return e.constructor.name; }
+                }
+                var usageThrows = name({ get usage() { throw new CustomError(); } });
+                var numericThrows = name({ get numeric() { throw new CustomError(); } });
+                var readValue = new Intl.Collator('en', { get usage() { return 'search'; } }).resolvedOptions().usage;
+                return usageThrows + '|' + numericThrows + '|' + readValue;
+            })();
+            """);
+        Assert.Equal("CustomError|CustomError|search", result.ToString());
     }
 
     [Fact]
@@ -7562,6 +7933,46 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RegExp_Exec_LastIndex_Past_End_Returns_Null_And_Resets()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        // RegExpBuiltinExec step 12.a: when lastIndex is past the end of the subject,
+        // a global or sticky regex must report no match (and reset lastIndex to 0)
+        // rather than clamping the search start back onto the final position, which
+        // would spuriously match an empty pattern there.
+        var result = ctx.Eval("""
+            (function () {
+                var out = [];
+
+                var g = /(?:)/g;
+                g.lastIndex = 2;
+                out.push(g.exec('a') === null);
+                out.push(g.lastIndex);
+
+                var y = /a/y;
+                y.lastIndex = 5;
+                out.push(y.exec('abc') === null);
+                out.push(y.lastIndex);
+
+                // A non-global, non-sticky regex ignores lastIndex entirely and still
+                // matches the empty pattern at the start.
+                var plain = /(?:)/;
+                plain.lastIndex = 99;
+                out.push(plain.exec('a') !== null);
+
+                // matchAll(undefined) builds /(?:)/g, so it must yield exactly one
+                // empty match per index up to and including the end of the string.
+                out.push([...'a'.matchAll(undefined)].length);
+
+                return out.join('|');
+            })();
+            """);
+
+        Assert.Equal("true|0|true|0|true|2", result.ToString());
+    }
+
+    [Fact]
     public void MatchAll_RegExp_LastIndex_And_SetLike_Iterator_Return_Regressions()
     {
         EnsureBuiltInsLoaded();
@@ -8274,6 +8685,145 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Temporal_PlainTime_From_PlainDateTime_Uses_Internal_Slots_Not_Getters()
+    {
+        // ToTemporalTime fast path: a PlainDateTime argument supplies its time from internal
+        // slots, so PlainTime.from(plainDateTime) must not invoke the (observable) hour/
+        // minute/second getters (test262 PlainTime/from/argument-plaindatetime).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var pdt = new Temporal.PlainDateTime(2020, 1, 1, 12, 30, 45);
+            var calls = [];
+            ['hour','minute','second','millisecond','microsecond','nanosecond'].forEach(function (p) {
+                var d = Object.getOwnPropertyDescriptor(Temporal.PlainDateTime.prototype, p);
+                var orig = d.get;
+                Object.defineProperty(pdt, p, { configurable: true, get: function () { calls.push(p); return orig.call(this); } });
+            });
+            var t = Temporal.PlainTime.from(pdt);
+            '[' + calls.join(',') + ']|' + t.toString();
+        ");
+        Assert.Equal("[]|12:30:45", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Unicode_NegatedClass_Matches_AstralCodePoint_As_One_Unit()
+    {
+        // Under the `u` flag a negated character class matches by code point, so [^a]
+        // must consume an astral code point (a surrogate pair) as a single unit rather
+        // than just its leading surrogate. A class whose excluded set already covers the
+        // supplementary range (\D, \S, \W) keeps its single-unit behaviour: [^\D] is
+        // digits-only and must not match an astral code point (test262
+        // staging/sm/RegExp/unicode-class-negated and friends).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                var out = [];
+                function cps(s) { return s === null ? 'null' : Array.prototype.map.call(s, function (c) { return c.charCodeAt(0).toString(16); }).join(' '); }
+                var frog = String.fromCodePoint(0x1f438); // d83d dc38
+                var m1 = /[^a]/u.exec(frog);          out.push(cps(m1 && m1[0]));   // whole pair
+                var m2 = /[^\d]/u.exec(frog);         out.push(cps(m2 && m2[0]));   // non-digit incl. astral
+                var m3 = /[^\D]/u.exec('a5');         out.push(m3 && m3[0]);        // digit only -> '5'
+                var m4 = /[^\D]/u.exec(frog);         out.push(m4 === null ? 'null' : cps(m4[0])); // no astral
+                var m5 = /[^a]/u.exec('b');           out.push(m5 && m5[0]);        // BMP unchanged
+                var m6 = /[^a]/.exec(frog);           out.push(cps(m6 && m6[0]));   // no u flag -> lead surrogate
+                return out.join('|');
+            })();
+        ");
+        Assert.Equal("d83d dc38|d83d dc38|5|null|b|d83d", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Literal_BracedUnicodeEscape_Is_Legacy_Quantifier_Without_UnicodeFlag()
+    {
+        // A `\u{n}` braced escape in a regex *literal* is a code-point escape only with a
+        // u/v flag. Without one it is the Annex B `u` IdentityEscape followed by a `{n}`
+        // quantifier, so /\u{3}/ matches "uuu". The scanner must not eagerly decode it to
+        // a code point before the flags are known (test262 staging/sm/RegExp/unicode-braced).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                var out = [];
+                function cps(s) { return s === null ? 'null' : Array.prototype.map.call(s, function (c) { return c.charCodeAt(0).toString(16); }).join(' '); }
+                out.push((/\u{3}/.exec('uuuu') || [null])[0]);              // legacy: 'uuu'
+                out.push((/z\u{2}z/.exec('zuuz zz') || [null])[0]);        // 'z' then u{2}? -> no; matches 'zuuz'? -> 'zuuz'
+                out.push((/\u{41}/u.exec('xAx') || [null])[0]);            // code point 'A'
+                out.push(cps((/\u{1f438}/u.exec(String.fromCodePoint(0x1f438)) || [null])[0])); // astral
+                out.push((/a\u{3f}/u.exec('a?b') || [null])[0]);           // \u{3f}='?' literal -> 'a?'
+                return out.join('|');
+            })();
+        ");
+        Assert.Equal("uuu|zuuz|A|d83d dc38|a?", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Exec_Builds_Result_Array_With_CreateDataProperty_Not_Set()
+    {
+        // RegExpBuiltinExec installs the matched substring and each capture with
+        // CreateDataPropertyOrThrow (an own data property), never [[Set]]. A poisoned
+        // Array.prototype index accessor ("0", "1", ...) must therefore not be consulted
+        // when exec — or any operation built on it (@@replace, @@match, @@split, the
+        // direct exec result) — populates its result array (test262
+        // RegExp/prototype/Symbol.replace/poisoned-stdlib and friends).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                for (var i = 0; i <= 4; i++) {
+                    Object.defineProperty(Array.prototype, i, {
+                        set: function () { throw new Error('setter unreachable'); },
+                        get: function () { throw new Error('getter unreachable'); },
+                        configurable: true
+                    });
+                }
+                var direct = /b(c)/.exec('abcd');
+                var replaced = /b(c)/[Symbol.replace]('abcd', '[$1]');
+                var matched = 'abcd'.match(/b(c)/);
+                return direct[0] + ',' + direct[1] + '|' + replaced + '|' + matched[0] + ',' + matched[1];
+            })();
+        ");
+        Assert.Equal("bc,c|a[c]d|bc,c", result.ToString());
+    }
+
+    [Fact]
+    public void Temporal_PlainMonthDay_With_Reads_Fields_Alphabetically_And_Coerces_Each_Match_Test262()
+    {
+        // PlainMonthDay.prototype.with reads the recognised fields « day, month, monthCode,
+        // year » in alphabetical order, coercing each immediately (not all gets first then all
+        // coercions), after RejectObjectWithCalendarOrTimeZone reads calendar/timeZone, and
+        // before the overflow option (test262 PlainMonthDay/prototype/with/order-of-operations).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var actual = [];
+            function makeObs(value, nm) {
+                if (typeof value === 'number') return { get valueOf() { actual.push('get ' + nm + '.valueOf'); return function () { actual.push('call ' + nm + '.valueOf'); return value; }; } };
+                if (typeof value === 'string') return { get toString() { actual.push('get ' + nm + '.toString'); return function () { actual.push('call ' + nm + '.toString'); return value; }; } };
+                return value;
+            }
+            function bag(o, name) {
+                var r = {};
+                Object.keys(o).forEach(function (k) { Object.defineProperty(r, k, { enumerable: true, get: function () { actual.push('get ' + name + '.' + k); return makeObs(o[k], name + '.' + k); } }); });
+                return r;
+            }
+            var fields = bag({ calendar: undefined, timeZone: undefined, year: 1.7, month: 1.7, monthCode: 'M01', day: 1.7 }, 'fields');
+            var options = bag({ overflow: 'constrain', extra: 'x' }, 'options');
+            new Temporal.PlainMonthDay(5, 2, 'iso8601').with(fields, options);
+            actual.join('|');
+        ");
+        Assert.Equal(
+            "get fields.calendar|get fields.timeZone|" +
+            "get fields.day|get fields.day.valueOf|call fields.day.valueOf|" +
+            "get fields.month|get fields.month.valueOf|call fields.month.valueOf|" +
+            "get fields.monthCode|get fields.monthCode.toString|call fields.monthCode.toString|" +
+            "get fields.year|get fields.year.valueOf|call fields.year.valueOf|" +
+            "get options.overflow|get options.overflow.toString|call options.overflow.toString",
+            result.ToString());
+    }
+
+    [Fact]
     public void Temporal_ToString_Reads_Options_Alphabetically_Before_Validation_Match_Test262()
     {
         // Regression: Temporal toString reads its options in alphabetical order, coercing
@@ -8396,6 +8946,74 @@ public class BuiltInsTests
         ");
 
         Assert.Equal("3,4,2|3,1,2 / 3,4,2|3,1,2", result.ToString());
+    }
+
+    [Fact]
+    public void Constructing_A_TypedArray_From_A_Throwing_Generator_Propagates_The_Error()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // new.target is always undefined inside a generator body. The generator is
+        // resumed while `new Int8Array(gen)` is constructing (new.target === Int8Array),
+        // so a `new` inside the generator — including the error thrown here — must not
+        // inherit Int8Array as its new target. Previously the thrown RangeError was
+        // reprototyped to Int8Array.prototype, so it stopped being a RangeError and
+        // assert.throws(Test262Error, ...) (test262 TypedArrayConstructors ctors
+        // object-arg/iterating-throws) failed.
+        var result = ctx.Eval("""
+            (function () {
+                var gen = (function* () { yield 0; throw new RangeError("boom"); })();
+                try { new Int8Array(gen); return "no throw"; }
+                catch (e) {
+                    return [e.constructor.name, e instanceof RangeError, e.message].join("|");
+                }
+            })();
+            """);
+        Assert.Equal("RangeError|true|boom", result.ToString());
+    }
+
+    [Fact]
+    public void TypedArray_With_Revalidates_Index_Against_Live_Length_After_Coercion()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // %TypedArray%.prototype.with step 8 runs IsValidIntegerIndex AFTER coercing the
+        // value, against the live view. A valueOf that shrinks the backing buffer makes a
+        // previously in-range (negative) index out of bounds, which must be a RangeError
+        // (test262 TypedArray/prototype/with/negative-index-resize-to-out-of-bounds).
+        var result = ctx.Eval("""
+            (function () {
+                var bpe = Int8Array.BYTES_PER_ELEMENT;
+                var rab = new ArrayBuffer(4 * bpe, { maxByteLength: 4 * bpe });
+                var ta = new Int8Array(rab);
+                var value = { valueOf: function () { rab.resize(bpe); return 123; } };
+                try { ta.with(-1, value); return "no throw"; }
+                catch (e) { return e.constructor.name; }
+            })();
+            """);
+        Assert.Equal("RangeError", result.ToString());
+    }
+
+    [Fact]
+    public void TypedArray_CopyWithin_Uses_PreCoercion_Length_When_Argument_Grows_Buffer()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // copyWithin captures the length before coercing its arguments (spec step 3) and
+        // uses it for the copy count; a valueOf that grows the buffer must not enlarge the
+        // count (test262 TypedArray/prototype/copyWithin/coerced-target-start-grow).
+        var result = ctx.Eval("""
+            (function () {
+                var bpe = Int8Array.BYTES_PER_ELEMENT;
+                var rab = new ArrayBuffer(4 * bpe, { maxByteLength: 8 * bpe });
+                var lt = new Int8Array(rab);
+                for (var i = 0; i < 4; i++) lt[i] = i;
+                var evil = { valueOf: function () { rab.resize(6 * bpe); lt[4] = 4; lt[5] = 5; return 0; } };
+                lt.copyWithin(evil, 2);
+                return Array.from(lt).join(",");
+            })();
+            """);
+        Assert.Equal("2,3,2,3,4,5", result.ToString());
     }
 
     [Fact]
@@ -13482,6 +14100,46 @@ public class BuiltInsTests
             }).join('|');
             """);
         Assert.Equal("SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError|SyntaxError", result.ToString());
+    }
+
+    [Fact]
+    public void Array_Splice_Throws_When_Length_Is_Read_Only()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // splice step 17 is Set(O, "length", len, true); on an array-like whose
+        // "length" is a getter-only accessor that Set must fail and throw a TypeError,
+        // rather than silently overwriting the accessor with a data property.
+        var result = ctx.Eval("""
+            (function () {
+                var a = { get length() { return 0; }, splice: Array.prototype.splice };
+                try { a.splice(1, 2, 4); return 'no throw'; }
+                catch (e) { return e.constructor.name; }
+            })();
+            """);
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void SuppressedError_Defines_Message_Error_Suppressed_Consecutively()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // SuppressedError steps 3-5 create message, error, then suppressed. The
+        // implementation-defined "stack" property must not interleave between them
+        // (test262 SuppressedError/order-of-args-evaluation).
+        var result = ctx.Eval("""
+            (function () {
+                var e = new SuppressedError({}, {}, 'm');
+                var keys = Object.getOwnPropertyNames(e);
+                var m = keys.indexOf('message');
+                return [
+                    keys.indexOf('error') === m + 1,
+                    keys.indexOf('suppressed') === m + 2
+                ].join('|');
+            })();
+            """);
+        Assert.Equal("true|true", result.ToString());
     }
 
     [Fact]

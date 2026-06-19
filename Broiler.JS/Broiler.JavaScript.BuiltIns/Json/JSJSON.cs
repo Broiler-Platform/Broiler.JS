@@ -368,6 +368,13 @@ public partial class JSJSON : JSObject
     {
         var (text, receiver) = a.Get2();
 
+        // JSON.parse step 1: Let JText be ? ToString(text). This runs the spec
+        // ToString abstract operation (StringValue), not the lenient CLR ToString, so
+        // a Symbol argument throws TypeError and a throwing toString/valueOf
+        // propagates — neither must be mistaken for malformed JSON. It is also
+        // performed exactly once, before parsing, and the result reused throughout.
+        var jText = text.StringValue;
+
         Dictionary<JSObject, Dictionary<string, string>> sourceMap = null;
         var sourceTextAccessEnabled = JSEngine.Current is JSContext context
             && context.HasExperimentalFeature(JavaScriptFeatureFlags.JsonParseSourceTextAccess);
@@ -377,13 +384,13 @@ public partial class JSJSON : JSObject
         {
             parsed = sourceTextAccessEnabled
                 ? JSJsonParser.ParseWithSource(
-                    text.ToString(),
+                    jText,
                     p =>
                     {
                         RecordSource(sourceMap ??= new Dictionary<JSObject, Dictionary<string, string>>(JSObjectReferenceComparer.Instance), p.holder, p.key, p.source);
                         return p.value;
                     })
-                : JSJsonParser.Parse(text.ToString(), null);
+                : JSJsonParser.Parse(jText, null);
         }
         catch (Exception ex) when (ex is JsonException or InvalidOperationException or NotSupportedException)
         {
@@ -406,7 +413,7 @@ public partial class JSJSON : JSObject
                 "",
                 function,
                 sourceMap,
-                text.ToString()) ?? JSNull.Value;
+                jText) ?? JSNull.Value;
 
     }
 

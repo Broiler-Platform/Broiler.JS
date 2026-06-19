@@ -80,9 +80,10 @@ public readonly struct TypedArrayParameters
         copyFrom = null;
         map = null;
         thisArg = null;
-        prototype = JSEngine.NewTargetPrototype;
         if (a.Length == 0)
         {
+            // AllocateTypedArray(NewTarget, proto, 0): the new.target prototype is read.
+            prototype = JSEngine.NewTargetPrototype;
             buffer = null;
             byteOffset = 0;
             length = 0;
@@ -91,6 +92,10 @@ public readonly struct TypedArrayParameters
         var (a1, a2, a3) = a.Get3();
         if (a1 is JSArrayBuffer arrayBuffer)
         {
+            // Object first argument (§23.2.5.1 step 6.b): AllocateTypedArray reads the
+            // new.target prototype BEFORE InitializeTypedArrayFromArrayBuffer coerces
+            // the byteOffset/length arguments.
+            prototype = JSEngine.NewTargetPrototype;
             buffer = arrayBuffer;
             byteOffset = JSTypedArray.ToIntegerOrInfinity(a2);
             length = a3.IsUndefined ? -1 : ToTypedArrayLength(a3);
@@ -99,11 +104,20 @@ public readonly struct TypedArrayParameters
 
         if (!a1.IsObject)
         {
+            // Non-object first argument (§23.2.5.1 step 6.c): ToIndex(firstArgument)
+            // runs BEFORE AllocateTypedArray reads the new.target prototype, so a
+            // Symbol/BigInt length throws TypeError without ever evaluating a custom
+            // prototype getter.
             buffer = null;
             byteOffset = 0;
             length = ToTypedArrayLength(a1);
+            prototype = JSEngine.NewTargetPrototype;
             return;
         }
+
+        // Object first argument that is not an ArrayBuffer (typed array / iterable /
+        // array-like): AllocateTypedArray reads the prototype before the copy.
+        prototype = JSEngine.NewTargetPrototype;
         copyFrom = a1;
     }
 

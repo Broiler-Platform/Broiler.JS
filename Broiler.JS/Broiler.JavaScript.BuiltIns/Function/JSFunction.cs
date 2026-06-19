@@ -478,7 +478,23 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             // whose getter is observable — must not be read until after a successful construction.
             or "ArrayBuffer"
             or "SharedArrayBuffer"
-            or "DataView";
+            or "DataView"
+            // The TypedArray constructors likewise coerce a non-object first argument with
+            // ToIndex (§23.2.5.1 step 6.c.ii) before AllocateTypedArray reads NewTarget.prototype,
+            // so e.g. `Reflect.construct(Int8Array, [Symbol()], nt)` must throw the ToIndex
+            // TypeError without ever evaluating nt's prototype getter.
+            or "Int8Array"
+            or "Uint8Array"
+            or "Uint8ClampedArray"
+            or "Int16Array"
+            or "Uint16Array"
+            or "Int32Array"
+            or "Uint32Array"
+            or "Float16Array"
+            or "Float32Array"
+            or "Float64Array"
+            or "BigInt64Array"
+            or "BigUint64Array";
         var instancePrototype = !deferInstancePrototypeResolution && previousNewTarget != null
             ? ResolveInstancePrototype(previousNewTarget)
             : prototype;
