@@ -8707,6 +8707,58 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void RegExp_Unicode_NegatedClass_Matches_AstralCodePoint_As_One_Unit()
+    {
+        // Under the `u` flag a negated character class matches by code point, so [^a]
+        // must consume an astral code point (a surrogate pair) as a single unit rather
+        // than just its leading surrogate. A class whose excluded set already covers the
+        // supplementary range (\D, \S, \W) keeps its single-unit behaviour: [^\D] is
+        // digits-only and must not match an astral code point (test262
+        // staging/sm/RegExp/unicode-class-negated and friends).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                var out = [];
+                function cps(s) { return s === null ? 'null' : Array.prototype.map.call(s, function (c) { return c.charCodeAt(0).toString(16); }).join(' '); }
+                var frog = String.fromCodePoint(0x1f438); // d83d dc38
+                var m1 = /[^a]/u.exec(frog);          out.push(cps(m1 && m1[0]));   // whole pair
+                var m2 = /[^\d]/u.exec(frog);         out.push(cps(m2 && m2[0]));   // non-digit incl. astral
+                var m3 = /[^\D]/u.exec('a5');         out.push(m3 && m3[0]);        // digit only -> '5'
+                var m4 = /[^\D]/u.exec(frog);         out.push(m4 === null ? 'null' : cps(m4[0])); // no astral
+                var m5 = /[^a]/u.exec('b');           out.push(m5 && m5[0]);        // BMP unchanged
+                var m6 = /[^a]/.exec(frog);           out.push(cps(m6 && m6[0]));   // no u flag -> lead surrogate
+                return out.join('|');
+            })();
+        ");
+        Assert.Equal("d83d dc38|d83d dc38|5|null|b|d83d", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Literal_BracedUnicodeEscape_Is_Legacy_Quantifier_Without_UnicodeFlag()
+    {
+        // A `\u{n}` braced escape in a regex *literal* is a code-point escape only with a
+        // u/v flag. Without one it is the Annex B `u` IdentityEscape followed by a `{n}`
+        // quantifier, so /\u{3}/ matches "uuu". The scanner must not eagerly decode it to
+        // a code point before the flags are known (test262 staging/sm/RegExp/unicode-braced).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            (function () {
+                var out = [];
+                function cps(s) { return s === null ? 'null' : Array.prototype.map.call(s, function (c) { return c.charCodeAt(0).toString(16); }).join(' '); }
+                out.push((/\u{3}/.exec('uuuu') || [null])[0]);              // legacy: 'uuu'
+                out.push((/z\u{2}z/.exec('zuuz zz') || [null])[0]);        // 'z' then u{2}? -> no; matches 'zuuz'? -> 'zuuz'
+                out.push((/\u{41}/u.exec('xAx') || [null])[0]);            // code point 'A'
+                out.push(cps((/\u{1f438}/u.exec(String.fromCodePoint(0x1f438)) || [null])[0])); // astral
+                out.push((/a\u{3f}/u.exec('a?b') || [null])[0]);           // \u{3f}='?' literal -> 'a?'
+                return out.join('|');
+            })();
+        ");
+        Assert.Equal("uuu|zuuz|A|d83d dc38|a?", result.ToString());
+    }
+
+    [Fact]
     public void RegExp_Exec_Builds_Result_Array_With_CreateDataProperty_Not_Set()
     {
         // RegExpBuiltinExec installs the matched substring and each capture with

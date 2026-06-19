@@ -834,43 +834,60 @@ public class FastScanner
     private static char HexDigit(int nibble)
         => (char)(nibble < 10 ? '0' + nibble : 'a' + (nibble - 10));
 
-    private string ScanUnicodeCodePointEscapeContents()
+    // Rewrites every `\u{H..H}` braced code-point escape in a u/v-mode regex body into
+    // the fixed-width `\uHHHH` form (a surrogate-pair escape for an astral code point),
+    // leaving all other text — including a `\\u{…}` where the `\u` is itself escaped —
+    // untouched. The body has already been validated by the source scanner, so any
+    // `\u{` here is a well-formed escape with at least one hex digit and a closing `}`.
+    private static string DecodeBracedUnicodeEscapes(string pattern)
     {
-        var ch = Peek();
+        if (pattern.IndexOf("\\u{", StringComparison.Ordinal) < 0)
+            return pattern;
 
-        // At least one hex digit is required.
-        if (ch == '}')
-            throw Unexpected();
-
-        var codePoint = 0;
-        while (ch != char.MaxValue)
+        var t = new StringBuilder(pattern.Length);
+        int i = 0;
+        while (i < pattern.Length)
         {
-            if (!ch.IsDigitPart(true, false))
-                break;
+            char c = pattern[i];
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                if (pattern[i + 1] == 'u' && i + 2 < pattern.Length && pattern[i + 2] == '{')
+                {
+                    int j = i + 3;
+                    int codePoint = 0;
+                    while (j < pattern.Length && pattern[j] != '}')
+                    {
+                        codePoint = codePoint * 16 + pattern[j].HexValue();
+                        j++;
+                    }
 
-            // A code point above U+10FFFF is a SyntaxError. Bound-check during
-            // accumulation (rather than relying on `checked` overflow, which would
-            // surface as a non-SyntaxError for very long digit runs like
-            // `\u{100000000000000000000000000000}`); leading zeros stay in range.
-            codePoint = codePoint * 16 + ch.HexValue();
-            if (codePoint > 0x10FFFF)
-                throw Unexpected();
+                    foreach (var cu in codePoint.FromCodePoint())
+                    {
+                        t.Append('\\');
+                        t.Append('u');
+                        t.Append(HexDigit(cu >> 12));
+                        t.Append(HexDigit((cu >> 8) & 0xF));
+                        t.Append(HexDigit((cu >> 4) & 0xF));
+                        t.Append(HexDigit(cu & 0xF));
+                    }
 
-            Consume();
-            ch = Peek();
+                    i = j + 1; // skip past the closing '}'
+                    continue;
+                }
+
+                // Any other escape (including a literal `\\`) is copied with the char it
+                // escapes so that char cannot be misread as starting a `\u{`.
+                t.Append(c);
+                t.Append(pattern[i + 1]);
+                i += 2;
+                continue;
+            }
+
+            t.Append(c);
+            i++;
         }
 
-        if (ch != '}')
-            throw Unexpected();
-
-        try
-        {
-            return codePoint.FromCodePoint();
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            throw Unexpected();
-        }
+        return t.ToString();
     }
 
     private FastToken ReadTemplateString(State state, TokenTypes part = TokenTypes.TemplateBegin)
@@ -1041,6 +1058,7 @@ public class FastScanner
             var t = sb.Builder;
             var classMarker = false;
             var terminated = false;
+            var sawBracedUnicodeEscape = false;
 
             token = null;
 
@@ -1092,31 +1110,17 @@ public class FastScanner
                                 break;
                             }
 
-                            // `\u{...}` is a code-point escape. Decode it, then re-emit as
-                            // fixed-width `\uHHHH` unit(s) (a surrogate pair for astral
-                            // code points). Emitting the raw decoded character corrupted
-                            // the pattern when the code point was a regex metacharacter \u2014
-                            // e.g. `/\u{3f}/u` became `/?/`, a stray quantifier \u2014 whereas a
-                            // `\uHHHH` escape is always a literal the RegExp runtime already
-                            // handles. Every other `\u` (a `\uHHHH` escape, or an Annex B
-                            // IdentityEscape such as `/\u/`) is appended literally and the
-                            // following characters scanned normally \u2014 the old code eagerly
-                            // consumed the char after `u`, which swallowed a closing `/`.
+                            // A `\u{...}` braced escape is appended verbatim and scanned as
+                            // ordinary characters (the brace/hex run holds no `/`, so it
+                            // cannot swallow the terminator). It is a code-point escape only
+                            // in u/v mode; without those flags it is the legacy `u`
+                            // IdentityEscape followed by a `{n}` quantifier (so `/\u{3}/` \u2261
+                            // `u{3}`). The flags are only known after the body, so decoding
+                            // to fixed-width `\uHHHH` (the form the Unicode validator and the
+                            // RegExp runtime expect) is deferred to DecodeBracedUnicodeEscapes
+                            // below, applied only when a u/v flag is present.
                             if (first == 'u' && Next() == '{')
-                            {
-                                Consume(); // 'u' -> '{'
-                                Consume(); // '{' -> first hex digit
-                                foreach (var cu in ScanUnicodeCodePointEscapeContents())
-                                {
-                                    t.Append('\\');
-                                    t.Append('u');
-                                    t.Append(HexDigit(cu >> 12));
-                                    t.Append(HexDigit((cu >> 8) & 0xF));
-                                    t.Append(HexDigit((cu >> 4) & 0xF));
-                                    t.Append(HexDigit(cu & 0xF));
-                                }
-                                break;
-                            }
+                                sawBracedUnicodeEscape = true;
 
                             // A LineTerminator (LF, CR, U+2028, U+2029) immediately
                             // after a backslash is never valid in a regex literal.
@@ -1177,6 +1181,14 @@ public class FastScanner
             }
 
             var flags = ScanFlags();
+
+            // In u/v mode a `\u{...}` braced escape is a code point: decode it to the
+            // fixed-width `\uHHHH` form (a surrogate pair for astral code points) the
+            // Unicode validator and the RegExp runtime expect, mirroring what was
+            // previously done inline. Without a u/v flag the escape is left verbatim so
+            // the legacy `u`-plus-`{n}`-quantifier reading survives (`/\u{3}/` ≡ `u{3}`).
+            if (sawBracedUnicodeEscape && (flags.IndexOf('u') >= 0 || flags.IndexOf('v') >= 0))
+                regExp = DecodeBracedUnicodeEscapes(regExp);
 
             // we should test if it is a valid JSRegEx
             if (!RegExpValidator.IsValid(regExp, flags))
