@@ -508,6 +508,12 @@ public partial class JSTemporalPlainTime : JSObject
         if (item is JSTemporalPlainTime t)
             return new JSTemporalPlainTime(t.TotalNanoseconds(), PlainTimePrototype);
 
+        // ToTemporalTime fast path: a PlainDateTime carries its time in internal slots, so
+        // the time components are read directly rather than through observable property
+        // getters (test262 PlainTime/from/argument-plaindatetime checks no getters run).
+        if (item is JSTemporalPlainDateTime pdt)
+            return Create(pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond);
+
         if (item.IsString)
             return ParseTemporalTimeString(item.ToString());
 
