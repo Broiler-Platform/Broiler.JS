@@ -519,6 +519,35 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Super_Property_Outside_Method_Is_A_SyntaxError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // SuperProperty (super.x / super[x]) is only legal where a [[HomeObject]] is in
+        // scope (a method, accessor, or constructor); elsewhere it is an early SyntaxError.
+        // Valid super-property access in methods/getters/object methods is unaffected.
+        var result = ctx.Eval("""
+            (function () {
+                function name(thunk) { try { thunk(); return 'ok'; } catch (e) { return e.constructor.name; } }
+
+                var fnProp = name(function () { return new Function("super.x;"); });
+                var fnBracket = name(function () { return new Function("super['x'];"); });
+                var evalProp = name(function () { return eval("super.x"); });
+
+                class Base { m() { return 5; } get g() { return 9; } }
+                class Derived extends Base { m() { return super.m(); } get g() { return super.g; } }
+                var d = new Derived();
+
+                var proto = { v() { return 1; } };
+                var obj = { __proto__: proto, v() { return super.v() + 1; } };
+
+                return [fnProp, fnBracket, evalProp, d.m(), d.g, obj.v()].join('|');
+            })();
+            """);
+        Assert.Equal("SyntaxError|SyntaxError|SyntaxError|5|9|2", result.ToString());
+    }
+
+    [Fact]
     public void Class_Computed_Property_Names_Evaluate_In_Source_Order()
     {
         EnsureBuiltInsLoaded();
