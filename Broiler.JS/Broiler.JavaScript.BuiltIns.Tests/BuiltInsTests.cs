@@ -13658,6 +13658,46 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Array_Splice_Throws_When_Length_Is_Read_Only()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // splice step 17 is Set(O, "length", len, true); on an array-like whose
+        // "length" is a getter-only accessor that Set must fail and throw a TypeError,
+        // rather than silently overwriting the accessor with a data property.
+        var result = ctx.Eval("""
+            (function () {
+                var a = { get length() { return 0; }, splice: Array.prototype.splice };
+                try { a.splice(1, 2, 4); return 'no throw'; }
+                catch (e) { return e.constructor.name; }
+            })();
+            """);
+        Assert.Equal("TypeError", result.ToString());
+    }
+
+    [Fact]
+    public void SuppressedError_Defines_Message_Error_Suppressed_Consecutively()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // SuppressedError steps 3-5 create message, error, then suppressed. The
+        // implementation-defined "stack" property must not interleave between them
+        // (test262 SuppressedError/order-of-args-evaluation).
+        var result = ctx.Eval("""
+            (function () {
+                var e = new SuppressedError({}, {}, 'm');
+                var keys = Object.getOwnPropertyNames(e);
+                var m = keys.indexOf('message');
+                return [
+                    keys.indexOf('error') === m + 1,
+                    keys.indexOf('suppressed') === m + 2
+                ].join('|');
+            })();
+            """);
+        Assert.Equal("true|true", result.ToString());
+    }
+
+    [Fact]
     public void Array_ToSpliced_Returns_New_Array()
     {
         EnsureBuiltInsLoaded();
