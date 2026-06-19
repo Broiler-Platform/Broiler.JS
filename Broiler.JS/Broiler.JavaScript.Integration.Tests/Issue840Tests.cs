@@ -407,4 +407,33 @@ public class Issue840Tests
         => Assert.Equal("true", ThrowsRangeError(
             "try { Array.prototype.toSpliced.call({ length: 2 ** 53 - 1 }, 0, 0, 'x'); throw new Error('no throw'); }" +
             " catch (e) { if (e instanceof TypeError) throw new RangeError(); else throw e; }"));
+
+    // ---- Problem 62: Array.of propagates an abrupt CreateDataProperty ----
+    //
+    // Array.of is generic: when called with a constructor (Array.of.call(C, ...)) it builds the
+    // result with CreateDataPropertyOrThrow, which must throw a TypeError if defining the index
+    // fails — e.g. the constructor made itself non-extensible, or pre-defined the index as
+    // non-configurable. The engine populated via the non-throwing CreateDataProperty (a plain
+    // FastAddValue that ignores extensibility/configurability), so no exception surfaced.
+
+    private static string ThrowsTypeError(string code)
+        => Eval("(function () { try { " + code + "; return false; } catch (e) { return e instanceof TypeError; } })()");
+
+    [Fact]
+    public void ArrayOfThrowsWhenResultIsNonExtensible()
+        => Assert.Equal("true", ThrowsTypeError(
+            "function T1() { Object.preventExtensions(this); } Array.of.call(T1, 'Bob')"));
+
+    [Fact]
+    public void ArrayOfThrowsWhenIndexIsNonConfigurable()
+        => Assert.Equal("true", ThrowsTypeError(
+            "function T2() { Object.defineProperty(this, 0, { configurable: false, writable: true, enumerable: true }); }" +
+            " Array.of.call(T2, 'Bob')"));
+
+    [Theory]
+    [InlineData("Array.of(1,2,3).join(',')", "1,2,3")]
+    [InlineData("Array.of().length", "0")]
+    [InlineData("(function(){ function C(n){ this.lenArg = n; } var r = Array.of.call(C, 'a', 'b'); return r[0]+r[1]+r.length+r.lenArg; })()", "ab22")]
+    public void ArrayOfStillBuildsResults(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }

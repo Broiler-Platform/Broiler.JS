@@ -153,7 +153,7 @@ public partial class JSArray
                 throw JSEngine.NewTypeError("Array.of constructor must return an object");
 
             for (var k = 0; k < len; k++)
-                result.CreateDataProperty(JSValue.CreateNumber(k), a.GetAt(k));
+                CreateDataPropertyOrThrow(result, (uint)k, a.GetAt(k));
 
             result.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(len));
             return result;
