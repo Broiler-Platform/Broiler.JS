@@ -761,7 +761,15 @@ partial class JSTypedArray
         end = end < 0 ? Math.Max(srcLength + end, 0) : Math.Min(end, srcLength);
         var newLength = Math.Max(end - begin, 0);
 
-        return GetSpeciesConstructor(this).CreateInstance(buffer, new JSNumber(byteOffset + begin * bytesPerElement), new JSNumber(newLength));
+        // subarray step 17 is TypedArraySpeciesCreate(O, «buffer, beginByteOffset,
+        // newLength»), whose TypedArrayCreate step performs ValidateTypedArray on the
+        // constructed value. A custom @@species constructor that returns a non-typed
+        // array (or nothing) must therefore surface as a TypeError, not be returned.
+        var created = GetSpeciesConstructor(this).CreateInstance(buffer, new JSNumber(byteOffset + begin * bytesPerElement), new JSNumber(newLength));
+        if (created is not JSTypedArray)
+            throw JSEngine.NewTypeError("TypedArray species constructor did not return a TypedArray");
+
+        return created;
     }
 
     [JSExport("values", Length = 0)]
