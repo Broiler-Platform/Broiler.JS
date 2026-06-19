@@ -16,6 +16,14 @@ partial class FastCompiler
         var super = isSuper ? scope.Top.Super : null;
         var mp = memberExpression.Property;
 
+        // A SuperProperty (super.x / super[x]) is only legal where a [[HomeObject]] is in
+        // scope — a method, accessor, or constructor. Outside one (e.g. a Function-constructor
+        // body or a plain function) no super reference is resolved, so it is an early
+        // SyntaxError rather than a runtime failure. Direct eval validates its own super
+        // placement separately (DirectEvalSupport), so it is exempt here.
+        if (isSuper && super == null && !isDirectEvalCompilation)
+            throw new FastParseException(memberExpression.Start, "'super' keyword is only valid inside a method or constructor");
+
         // `super[Expression]`: the property-key Expression is evaluated BEFORE the super
         // base is read (MakeSuperPropertyReference evaluates the key, then calls
         // GetSuperBase = [[HomeObject]].[[Prototype]]). Because super is resolved
