@@ -285,13 +285,17 @@ public partial class JSArray
 
         var result = new JSArray((uint)newLen);
 
+        // The source array-like may have a length up to 2^53-1, so indices beyond uint.MaxValue
+        // must be addressed by their canonical numeric property key — GetIndexedValue(long) does
+        // that, while a plain (uint) cast would truncate (e.g. 9007199254740989 → 4294967293) and
+        // read the wrong slot (test262 toSpliced/length-clamped-to-2pow53minus1).
         uint i = 0;
         for (long s = 0; s < actualStart; s++)
-            CreateDataPropertyOrThrow(result, i++, source[(uint)s]);
+            CreateDataPropertyOrThrow(result, i++, GetIndexedValue(source, s));
         for (int j = 0; j < insertCount; j++)
             CreateDataPropertyOrThrow(result, i++, a[j + 2]);
         for (long k = actualStart + actualSkipCount; k < len; k++)
-            CreateDataPropertyOrThrow(result, i++, source[(uint)k]);
+            CreateDataPropertyOrThrow(result, i++, GetIndexedValue(source, k));
 
         return result;
     }

@@ -368,4 +368,43 @@ public class Issue840Tests
     [InlineData("Temporal.PlainMonthDay.from('06-15').toString()", "06-15")]
     public void PlainMonthDayInRangeStillWorks(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problem 50: Array.prototype.toSpliced reads indices beyond 2^32 ----
+    //
+    // The array-like's length is ToLength-clamped to 2^53-1, so the source-copy loops walk
+    // long indices that the spec addresses by their canonical numeric property key. The
+    // engine cast each long index to uint when reading the source, truncating values such as
+    // 9007199254740989 (2^53-3) to 4294967293 — so the result was filled with the wrong
+    // slots (effectively undefined). GetIndexedValue's long overload now routes indices ≥
+    // 2^32 through the numeric-string key, matching how the source was populated.
+
+    [Fact]
+    public void ToSplicedReadsLargeIndicesPastUint32()
+        => Assert.Equal("2|9007199254740989,9007199254740990", Eval(
+            "(function () {" +
+            "  var arrayLike = {" +
+            "    '9007199254740989': 2 ** 53 - 3," +
+            "    '9007199254740990': 2 ** 53 - 2," +
+            "    '9007199254740991': 2 ** 53 - 1," +
+            "    '9007199254740992': 2 ** 53," +
+            "    '9007199254740994': 2 ** 53 + 2," +
+            "    length: 2 ** 53 + 20" +
+            "  };" +
+            "  var r = Array.prototype.toSpliced.call(arrayLike, 0, 2 ** 53 - 3);" +
+            "  return r.length + '|' + r[0] + ',' + r[1];" +
+            "})()"));
+
+    [Theory]
+    [InlineData("[1,2,3,4,5].toSpliced(1,2).join(',')", "1,4,5")]
+    [InlineData("[1,2,3,4].toSpliced(1,1,'a','b').join(',')", "1,a,b,3,4")]
+    [InlineData("[1,2,3,4].toSpliced(-2,1).join(',')", "1,2,4")]
+    [InlineData("[1,2,3].toSpliced().join(',')", "1,2,3")]
+    public void ToSplicedOrdinaryArraysStillWork(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
+
+    [Fact]
+    public void ToSplicedNewLengthBeyond2Pow53Throws()
+        => Assert.Equal("true", ThrowsRangeError(
+            "try { Array.prototype.toSpliced.call({ length: 2 ** 53 - 1 }, 0, 0, 'x'); throw new Error('no throw'); }" +
+            " catch (e) { if (e instanceof TypeError) throw new RangeError(); else throw e; }"));
 }
