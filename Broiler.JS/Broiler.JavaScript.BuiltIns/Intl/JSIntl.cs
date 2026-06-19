@@ -4751,11 +4751,13 @@ public class JSIntlCollator : JSObject
         if (options == null)
             return false;
 
+        // GetOption (ECMA-402) reads the property with [[Get]]: an accessor option must
+        // have its getter invoked (and a throwing getter must propagate), not be skipped
+        // because the descriptor carries no [[Value]]. Reading the descriptor's value
+        // ignored getters entirely, so e.g. `new Intl.Collator(l, { get usage() { throw } })`
+        // silently swallowed the exception.
         var key = KeyStrings.GetOrCreate(name);
-        if (options.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(name, key)) is not JSObject descriptor)
-            return false;
-
-        value = descriptor[KeyStrings.value];
+        value = options[key];
         return !value.IsUndefined;
     }
 
