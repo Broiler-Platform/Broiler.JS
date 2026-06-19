@@ -811,4 +811,43 @@ public class Issue840Tests
     [InlineData("(function(){ var o={toString:function(){return 'Z';}}; return 'a1b'.replace(/1/, o); })()", "aZb")]
     public void RegExpReplaceOrdinaryReplacementsStillWork(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problem 29: for-in does not visit array indices added during enumeration ----
+    //
+    // EnumerateObjectProperties must not visit properties added to the object after enumeration
+    // began. The named-property store was snapshotted, but the indexed-element walk was live, so
+    // an unshift/splice run inside the loop body exposed freshly-shifted indices to the loop.
+
+    private const string ForInDuringMutation =
+        "function f(array, method, args) {" +
+        "  var called = false; var keys = [];" +
+        "  for (var key in array) {" +
+        "    keys.push(key);" +
+        "    if (!called) { called = true; Reflect.apply(method, array, args); }" +
+        "  }" +
+        "  return keys.join(',');" +
+        "}";
+
+    [Fact]
+    public void ForInDoesNotVisitIndicesAddedByUnshift()
+        => Assert.Equal("0", Eval(
+            "(function () {" + ForInDuringMutation +
+            "  return f([1, , 3], Array.prototype.unshift, [0]);" +
+            "})()"));
+
+    [Fact]
+    public void ForInDoesNotVisitIndicesAddedBySplice()
+        => Assert.Equal("0", Eval(
+            "(function () {" + ForInDuringMutation +
+            "  return f([1, , 3], Array.prototype.splice, [0, 0, 0]);" +
+            "})()"));
+
+    [Theory]
+    [InlineData("(function(){ var k=[]; for (var i in [10,20,30]) k.push(i); return k.join(','); })()", "0,1,2")]
+    [InlineData("(function(){ var k=[]; for (var i in [1,,3]) k.push(i); return k.join(','); })()", "0,2")]
+    [InlineData("(function(){ var k=[]; for (var i in {a:1,b:2,c:3}) k.push(i); return k.join(','); })()", "a,b,c")]
+    [InlineData("(function(){ var o={a:1}; var k=[]; for (var i in o) { k.push(i); o.b=2; } return k.join(','); })()", "a")]
+    [InlineData("(function(){ var a=[10,20,30]; var k=[]; for (var i in a) { k.push(i); if (i==='0') delete a[2]; } return k.join(','); })()", "0,1")]
+    public void ForInEnumerationOrderAndMutationStillWork(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }
