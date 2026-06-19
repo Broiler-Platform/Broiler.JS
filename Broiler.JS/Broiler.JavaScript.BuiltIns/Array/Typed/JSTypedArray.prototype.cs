@@ -40,43 +40,58 @@ partial class JSTypedArray
     public JSValue CopyWithin(in Arguments a)
     {
         ValidateTypedArray("copyWithin");
+        // §23.2.3.5 step 3: capture the length BEFORE coercing the arguments. The
+        // target/start/end coercions below may run a valueOf that resizes the backing
+        // buffer, but the index clamping and the copy count are defined against this
+        // original length (steps 5-10), not the post-coercion one.
+        var len = Length;
         var (t, s) = a.Get2();
         var target = t.IntValue;
         var start = s.IntValue;
-        var end = a.TryGetAt(2, out var e) ? e.IntValue : int.MaxValue;
+        var end = a.TryGetAt(2, out var e) ? e.IntValue : len;
         // Negative values represent offsets from the end of the array.
-        target = target < 0 ? Math.Max(Length + target, 0) : Math.Min(target, Length);
-        start = start < 0 ? Math.Max(Length + start, 0) : Math.Min(start, Length);
-        end = end < 0 ? Math.Max(Length + end, 0) : Math.Min(end, Length);
+        target = target < 0 ? Math.Max(len + target, 0) : Math.Min(target, len);
+        start = start < 0 ? Math.Max(len + start, 0) : Math.Min(start, len);
+        end = end < 0 ? Math.Max(len + end, 0) : Math.Min(end, len);
 
         // Calculate the number of values to copy.
-        int count = Math.Min(end - start, Length - target);
+        int count = Math.Min(end - start, len - target);
 
-        // Check if we need to copy in reverse due to an overlap.
-        int direction = 1;
-        if (start < target && target < start + count)
+        if (count > 0)
         {
-            direction = -1;
-            start += count - 1;
-            target += count - 1;
-        }
+            // Step 11: the coercion above may have detached or resized the buffer. A
+            // detached/out-of-bounds view is now a TypeError, and the copy is bounded by
+            // the *live* length — indices that fall outside it terminate the copy (the
+            // spec's byte loop sets the remaining count to zero) rather than reading or
+            // writing past the resized buffer.
+            if (buffer == null || buffer.isDetached || IsOutOfBounds)
+                throw JSEngine.NewTypeError("TypedArray.prototype.copyWithin called on an out-of-bounds TypedArray");
 
-        while (count > 0)
-        {
-            // Get the value of the array element.
-            var elementValue = this[(uint)start];
+            var liveLength = Length;
 
-            // Copy the value to the new position.
-            this[(uint)target] = elementValue;
+            // Check if we need to copy in reverse due to an overlap.
+            int direction = 1;
+            if (start < target && target < start + count)
+            {
+                direction = -1;
+                start += count - 1;
+                target += count - 1;
+            }
 
-            // Progress to the next element.
-            start += direction;
-            target += direction;
-            count--;
+            while (count > 0)
+            {
+                if (start < 0 || target < 0 || start >= liveLength || target >= liveLength)
+                    break;
+
+                this[(uint)target] = this[(uint)start];
+
+                start += direction;
+                target += direction;
+                count--;
+            }
         }
 
         return this;
-        //throw new NotImplementedException();
     }
 
 
@@ -202,7 +217,11 @@ partial class JSTypedArray
         // (spec steps 7-8; test262 TypedArray/prototype/with/early-type-coercion).
         var numericValue = IsBigIntArray(this) ? (JSValue)JSBigInt.Coerce(value) : new JSNumber(value.DoubleValue);
 
-        if (actualIndex < 0 || actualIndex >= len)
+        // Spec step 8: IsValidIntegerIndex(O, actualIndex) is evaluated AFTER the value
+        // coercion, against the live view. A valueOf/toString that detached or shrank the
+        // backing buffer makes a previously in-range index invalid — so the bound is the
+        // current length, not the length captured before coercion.
+        if (buffer == null || buffer.isDetached || IsOutOfBounds || actualIndex < 0 || actualIndex >= Length)
             throw JSEngine.NewRangeError("Invalid index");
 
         // with creates a same-type array (TypedArrayCreateSameType), not @@species.
