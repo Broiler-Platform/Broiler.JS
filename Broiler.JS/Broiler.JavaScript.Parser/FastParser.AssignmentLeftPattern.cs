@@ -211,40 +211,45 @@ partial class FastParser
             arrayPattern = new AstArrayPattern(begin, PreviousToken, nodes);
             return true;
         }
-
-        static bool IsDisallowedBindingKeyword(FastKeywords keyword)
-            => keyword is FastKeywords.@break
-                or FastKeywords.@do
-                or FastKeywords.instanceof
-                or FastKeywords.@typeof
-                or FastKeywords.@case
-                or FastKeywords.@else
-                or FastKeywords.@new
-                or FastKeywords.@var
-                or FastKeywords.@catch
-                or FastKeywords.@finally
-                or FastKeywords.@return
-                or FastKeywords.@void
-                or FastKeywords.@continue
-                or FastKeywords.@for
-                or FastKeywords.@switch
-                or FastKeywords.@while
-                or FastKeywords.@debugger
-                or FastKeywords.@function
-                or FastKeywords.@this
-                or FastKeywords.@with
-                or FastKeywords.@default
-                or FastKeywords.@if
-                or FastKeywords.@throw
-                or FastKeywords.@delete
-                or FastKeywords.@in
-                or FastKeywords.@try
-                or FastKeywords.@class
-                or FastKeywords.@extends
-                or FastKeywords.@super
-                or FastKeywords.@const
-                or FastKeywords.@export
-                or FastKeywords.@import
-                or FastKeywords.@enum;
     }
+
+    // A reserved word that can never be a BindingIdentifier / IdentifierReference (always
+    // reserved in both strict and sloppy code). The contextual / strict-reserved keywords
+    // (let, static, yield, await, async, get, set, of, …) are intentionally absent — they are
+    // valid identifiers outside their reserved contexts. Shared by the binding-pattern and
+    // object-literal shorthand parsers.
+    private static bool IsDisallowedBindingKeyword(FastKeywords keyword)
+        => keyword is FastKeywords.@break
+            or FastKeywords.@do
+            or FastKeywords.instanceof
+            or FastKeywords.@typeof
+            or FastKeywords.@case
+            or FastKeywords.@else
+            or FastKeywords.@new
+            or FastKeywords.@var
+            or FastKeywords.@catch
+            or FastKeywords.@finally
+            or FastKeywords.@return
+            or FastKeywords.@void
+            or FastKeywords.@continue
+            or FastKeywords.@for
+            or FastKeywords.@switch
+            or FastKeywords.@while
+            or FastKeywords.@debugger
+            or FastKeywords.@function
+            or FastKeywords.@this
+            or FastKeywords.@with
+            or FastKeywords.@default
+            or FastKeywords.@if
+            or FastKeywords.@throw
+            or FastKeywords.@delete
+            or FastKeywords.@in
+            or FastKeywords.@try
+            or FastKeywords.@class
+            or FastKeywords.@extends
+            or FastKeywords.@super
+            or FastKeywords.@const
+            or FastKeywords.@export
+            or FastKeywords.@import
+            or FastKeywords.@enum;
 }

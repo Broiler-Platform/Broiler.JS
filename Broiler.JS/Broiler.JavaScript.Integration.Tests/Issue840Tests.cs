@@ -885,4 +885,44 @@ public class Issue840Tests
     public void IslamicCivilCalendarStillResolves()
         => Assert.Equal("islamic-civil", Eval(
             "new Intl.DateTimeFormat('en-u-ca-islamic-civil').resolvedOptions().calendar"));
+
+    // ---- Problem 70: a reserved word is not a valid object shorthand ----
+    //
+    // An object shorthand reuses the property name as an IdentifierReference (and, when the
+    // literal covers a destructuring pattern, a BindingIdentifier), so a reserved word such as
+    // class/enum/super is a SyntaxError ({ class }). The parser accepted it; only the binding-
+    // pattern path validated shorthands. Contextual keywords (get/set/async/let/static/…) stay
+    // valid, and a reserved word remains usable as a property name, method name, or getter key.
+
+    private static string ThrowsSyntaxError(string code)
+        => Eval(
+            "(function () {" +
+            $"  try {{ eval({JsonString(code)}); return false; }}" +
+            "  catch (e) { return e instanceof SyntaxError; }" +
+            "})()");
+
+    private static string JsonString(string s) => "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+
+    [Theory]
+    [InlineData("({ class } = 'foo');")]
+    [InlineData("({ enum } = 'foo');")]
+    [InlineData("({ super } = 'foo');")]
+    [InlineData("({ export } = 'foo');")]
+    [InlineData("({ const } = 'foo');")]
+    [InlineData("({ import } = 'foo');")]
+    [InlineData("({ extends } = 'foo');")]
+    [InlineData("var z = { class };")]
+    [InlineData("var z = { if };")]
+    public void ReservedWordObjectShorthandIsSyntaxError(string code)
+        => Assert.Equal("true", ThrowsSyntaxError(code));
+
+    [Theory]
+    [InlineData("(function(){ var get = 1; return ({ get }).get; })()", "1")]
+    [InlineData("(function(){ var yield = 3; return ({ yield }).yield; })()", "3")]
+    [InlineData("(function(){ var async = 7; return ({ async }).async; })()", "7")]
+    [InlineData("(function(){ var x = 5; return ({ x }).x; })()", "5")]
+    [InlineData("({ class: 1 }).class", "1")]
+    [InlineData("({ class() { return 9; } }).class()", "9")]
+    public void ContextualShorthandsAndReservedKeysStillWork(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }
