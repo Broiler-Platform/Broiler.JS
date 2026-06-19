@@ -261,6 +261,52 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void ShadowRealm_Evaluate_Wrapping_A_Function_With_Throwing_Length_Or_Name_Throws_Caller_TypeError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext();
+        // WrappedFunctionCreate step 8 (CopyNameAndLength): when the wrapped target's
+        // own `length` or `name` getter completes abruptly, the inner-realm exception
+        // must be replaced with a fresh TypeError thrown in the caller realm, rather
+        // than leaking the original error across the realm boundary.
+        var result = ctx.Eval("""
+            (function () {
+                var realm = new ShadowRealm();
+
+                function nameOf(thunk) {
+                    try { thunk(); return 'no-throw'; }
+                    catch (e) { return e.constructor.name; }
+                }
+
+                var lengthResult = nameOf(function () {
+                    return realm.evaluate(
+                        "function fn() {}" +
+                        "Object.defineProperty(fn, 'length', {" +
+                        "  get: function () { throw new Error('boom'); }," +
+                        "  enumerable: false, configurable: true });" +
+                        "fn;");
+                });
+
+                var nameResult = nameOf(function () {
+                    return realm.evaluate(
+                        "function fn() {}" +
+                        "Object.defineProperty(fn, 'name', {" +
+                        "  get: function () { throw new Error('boom'); }," +
+                        "  enumerable: false, configurable: true });" +
+                        "fn;");
+                });
+
+                // A plain callable still wraps successfully.
+                var ok = typeof realm.evaluate("(function double(x) { return x * 2; })");
+
+                return lengthResult + '|' + nameResult + '|' + ok;
+            })();
+            """);
+
+        Assert.Equal("TypeError|TypeError|function", result.ToString());
+    }
+
+    [Fact]
     public void Function_Prototype_Apply_With_Primitive_Receiver_Throws_TypeError()
     {
         EnsureBuiltInsLoaded();
