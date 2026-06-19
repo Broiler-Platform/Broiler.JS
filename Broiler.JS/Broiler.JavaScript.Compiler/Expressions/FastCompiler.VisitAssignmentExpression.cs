@@ -310,11 +310,15 @@ partial class FastCompiler
             YExpression.Assign(valueTemp.Expression, retainedWithReference),
             BinaryOperation.Assign(valueTemp.Expression, Visit(right), assignmentOperator),
             JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, valueTemp.Expression, IsStrictMode));
+        // ResolveWithObject above already walked the with scopes; when it found no
+        // binding, the read and the write resolve the remaining scopes directly. Re-running
+        // the with-aware resolvers here would fire extra `has` traps on the binding object,
+        // so a compound assignment observes a single HasBinding probe like the spec.
         var dynamicAssignment = YExpression.Block(
             valueTemp.Variable.AsSequence(),
-            YExpression.Assign(valueTemp.Expression, JSContextBuilder.ResolveIdentifier(key)),
+            YExpression.Assign(valueTemp.Expression, JSContextBuilder.ResolveIdentifierWithoutWithScopes(key)),
             BinaryOperation.Assign(valueTemp.Expression, Visit(right), assignmentOperator),
-            JSContextBuilder.AssignIdentifier(key, valueTemp.Expression, IsStrictMode));
+            JSContextBuilder.AssignIdentifierWithoutWith(key, valueTemp.Expression, IsStrictMode));
 
         return YExpression.Block(
             withObjectTemp.Variable.AsSequence(),

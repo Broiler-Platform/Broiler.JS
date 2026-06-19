@@ -306,7 +306,11 @@ partial class FastCompiler
                         YExpression.Condition(
                             hasWithObject,
                             JSValueBuilder.Index(withObjTemp.Expression, key),
-                            JSContextBuilder.ResolveIdentifier(key),
+                            // The with scopes were already walked by ResolveWithObject above
+                            // (hasWithObject is false here), so resolve the remaining scopes
+                            // without re-probing the binding object — a second `has` trap on
+                            // the with object would violate HasBinding's single-probe contract.
+                            JSContextBuilder.ResolveIdentifierWithoutWithScopes(key),
                             typeof(JSValue))),
                     JSFunctionBuilder.InvokeFunction(withTargetTemp.Expression, withArgs, coalesce));
             }
