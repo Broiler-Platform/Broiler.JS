@@ -644,4 +644,76 @@ public class Issue840Tests
     [InlineData("(function(){ var s=''; for (var k in {a:1,b:2}) { s += k; } return s; })()", "ab")]
     public void ForInIterationStillWorks(string expr, string expected)
         => Assert.Equal(expected, Eval(expr));
+
+    // ---- Problem 23: splice passes a >2^32 deleteCount to the species constructor ----
+    //
+    // ArraySpeciesCreate(O, length) only clamps to the 2^32 array-index limit on the default
+    // ArrayCreate path; a custom @@species constructor receives the full length (up to 2^53-1)
+    // as its argument. CreateArraySpecies threw a RangeError up front for any length > 2^32-1,
+    // so a splice whose (clamped) deleteCount exceeds that limit aborted before ever calling
+    // the species, instead of constructing through it.
+
+    [Fact]
+    public void SpliceClampedDeleteCountReachesSpeciesAndPropagatesAbrupt()
+        => Assert.Equal("StopSplice|9007199254740991", Eval(
+            "(function () {" +
+            "  function StopSplice() {}" +
+            "  var targetLength;" +
+            "  var array = ['no-hole', , 'stop'];" +
+            "  var target = new Proxy([], { defineProperty(t, pk, d) {" +
+            "    if (pk === '0' || pk === '1') return Reflect.defineProperty(t, pk, d);" +
+            "    throw new StopSplice(); } });" +
+            "  array.constructor = { [Symbol.species]: function (n) { targetLength = n; return target; } };" +
+            "  var source = new Proxy(array, { get(t, pk, r) {" +
+            "    if (pk === 'length') return 2 ** 53 + 2; return Reflect.get(t, pk, r); } });" +
+            "  var thrown = 'none';" +
+            "  try { Array.prototype.splice.call(source, 0, 2 ** 53 + 4); }" +
+            "  catch (e) { thrown = e instanceof StopSplice ? 'StopSplice' : e.constructor.name; }" +
+            "  return thrown + '|' + targetLength;" +
+            "})()"));
+
+    // ---- Problem 20: splice inserts items before the final length assignment ----
+    //
+    // Array.prototype.splice inserts the new items (step 16) before Set(O, "length", …) (step
+    // 17). The engine set the new length first, so when a species constructor made "length"
+    // non-writable mid-operation, the TypeError fired before the inserted item was written —
+    // leaving the array in the wrong partial state.
+
+    [Fact]
+    public void SpliceWritesInsertedItemBeforeNonWritableLengthThrows()
+        => Assert.Equal("TypeError|6|123,0,1,2,4,5", Eval(
+            "(function () {" +
+            "  var array = []; array.push(0, 1, 2);" +
+            "  array.constructor = { [Symbol.species]: function (n) {" +
+            "    array.push(3, 4, 5);" +
+            "    Object.defineProperty(array, 'length', { writable: false });" +
+            "    return new Array(n); } };" +
+            "  var thrown = 'none';" +
+            "  try { Array.prototype.splice.call(array, 0, 0, 123); }" +
+            "  catch (e) { thrown = e instanceof TypeError ? 'TypeError' : e.constructor.name; }" +
+            "  return thrown + '|' + array.length + '|' + array.join(',');" +
+            "})()"));
+
+    [Fact]
+    public void SpliceRemovalWithNonWritableLengthLeavesExpectedState()
+        => Assert.Equal("TypeError|6|1,2,,3,4,5", Eval(
+            "(function () {" +
+            "  var array = []; array.push(0, 1, 2);" +
+            "  array.constructor = { [Symbol.species]: function (n) {" +
+            "    array.push(3, 4, 5);" +
+            "    Object.defineProperty(array, 'length', { writable: false });" +
+            "    return new Array(n); } };" +
+            "  var thrown = 'none';" +
+            "  try { Array.prototype.splice.call(array, 0, 1); }" +
+            "  catch (e) { thrown = e instanceof TypeError ? 'TypeError' : e.constructor.name; }" +
+            "  return thrown + '|' + array.length + '|' + array.join(',');" +
+            "})()"));
+
+    [Theory]
+    [InlineData("[1,2,3,4,5].splice(1,2).join(',')", "2,3")]
+    [InlineData("(function(){ var a=[1,2,3,4,5]; a.splice(1,2,'x'); return a.join(','); })()", "1,x,4,5")]
+    [InlineData("(function(){ var a=[1,2,3]; a.splice(1,0,'a','b'); return a.join(','); })()", "1,a,b,2,3")]
+    [InlineData("(function(){ var a=[1,2,3]; a.constructor={[Symbol.species]:function(n){return new Array(n);}}; return a.splice(0,2).length; })()", "2")]
+    public void SpliceOrdinaryArraysStillWork(string expr, string expected)
+        => Assert.Equal(expected, Eval(expr));
 }

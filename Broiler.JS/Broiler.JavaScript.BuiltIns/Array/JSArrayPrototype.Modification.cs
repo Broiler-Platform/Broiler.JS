@@ -495,11 +495,14 @@ public partial class JSArray
             }
         }
 
-        @this.Length = newLength;
-
-        // Insert the new elements.
+        // Insert the new elements, THEN set the new length — Array.prototype.splice inserts
+        // the items (step 16) before the final Set(O, "length", …) (step 17). When a species
+        // constructor has made "length" non-writable, the items are still written before that
+        // assignment throws (test262 sm/Array/splice-species-changes-length).
         for (int i = 0; i < itemsLength; i++)
             SetIndexedValue(@this, (uint)(start + i), a[i + 2]);
+
+        @this.Length = newLength;
 
         // Return the deleted items.
         return deletedItems;

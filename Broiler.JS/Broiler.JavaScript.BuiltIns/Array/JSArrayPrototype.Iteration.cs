@@ -145,33 +145,41 @@ public partial class JSArray
 
     private static JSObject CreateArraySpecies(JSObject source, long length)
     {
-        if (length < 0 || length > uint.MaxValue)
-            throw JSEngine.NewRangeError("Invalid array length");
-
-        var arrayLength = (uint)length;
-
         if (!IsArrayValue(source))
-            return new JSArray(arrayLength);
+            return ArrayCreateChecked(length);
 
         var constructor = source[KeyStrings.constructor];
         if (constructor.IsUndefined)
-            return new JSArray(arrayLength);
+            return ArrayCreateChecked(length);
 
         if (!constructor.IsObject)
             throw JSEngine.NewTypeError("Array constructor is not an object");
 
         var species = constructor[(IJSSymbol)JSSymbol.species];
         if (species.IsNull || species.IsUndefined)
-            return new JSArray(arrayLength);
+            return ArrayCreateChecked(length);
 
         if (!species.IsFunction)
             throw JSEngine.NewTypeError("Array species constructor is not a constructor");
 
-        var created = species.CreateInstance(new Arguments(JSUndefined.Value, new JSNumber(arrayLength)));
+        // ArraySpeciesCreate step 8: Construct(C, « 𝔽(length) »). The length is passed to the
+        // custom constructor as a Number (up to 2^53-1) — it is NOT clamped to the 2^32 array-
+        // index limit here; only the default ArrayCreate path (above) enforces that limit.
+        var created = species.CreateInstance(new Arguments(JSUndefined.Value, JSValue.CreateNumber((double)length)));
         if (created is not JSObject createdObject)
             throw JSEngine.NewTypeError("Array species constructor did not return an object");
 
         return createdObject;
+    }
+
+    // ArrayCreate(length): the default array constructor, which rejects a length above the
+    // 2^32-1 array-index limit with a RangeError.
+    private static JSArray ArrayCreateChecked(long length)
+    {
+        if (length < 0 || length > uint.MaxValue)
+            throw JSEngine.NewRangeError("Invalid array length");
+
+        return new JSArray((uint)length);
     }
 
     private static void CreateDataPropertyOrThrow(JSObject target, uint index, JSValue value)
