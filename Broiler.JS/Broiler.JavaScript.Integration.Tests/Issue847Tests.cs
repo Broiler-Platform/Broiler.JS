@@ -132,4 +132,77 @@ public class Issue847Tests
     {
         Assert.Equal(expected, Eval(code).ToString());
     }
+
+    // Problem 100: an async (non-generator) function's Function.prototype.toString
+    // reported the "[native code]" placeholder (and the internal "native" name)
+    // because the async wrapper dropped the underlying generator's source text.
+    [Theory]
+    [InlineData("async function f1(a, b, c) { await a; } f1.toString()", "async function f1(a, b, c) { await a; }")]
+    [InlineData("(async () => 1).toString()", "async () => 1")]
+    [InlineData("(async function named(y){ await y; }).toString()", "async function named(y){ await y; }")]
+    [InlineData("var o={ async m(){ await 1; } }; o.m.toString()", "async m(){ await 1; }")]
+    public void AsyncFunctionToStringReportsSource(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // The async-generator and ordinary function source text must remain unaffected.
+    [Theory]
+    [InlineData("async function* g(){ yield 1; } g.toString()", "async function* g(){ yield 1; }")]
+    [InlineData("function plain(x){ return x; } plain.toString()", "function plain(x){ return x; }")]
+    public void OtherFunctionToStringUnaffected(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Problem 98: ToNumeric (arithmetic/bitwise operators, unary +/-, Number()) is
+    // ToPrimitive(value, NUMBER), so a user @@toPrimitive must receive the "number"
+    // hint — not "default". Addition (`+`) and template/string coercion keep their
+    // own hints. The toPrimitive returns the received hint string for inspection.
+    [Theory]
+    [InlineData("var h; var o={[Symbol.toPrimitive](x){h=x;return 1;}}; Number(o); h", "number")]
+    [InlineData("var h; var o={[Symbol.toPrimitive](x){h=x;return 1;}}; o*2; h", "number")]
+    [InlineData("var h; var o={[Symbol.toPrimitive](x){h=x;return 1;}}; o-1; h", "number")]
+    [InlineData("var h; var o={[Symbol.toPrimitive](x){h=x;return 1;}}; -o; h", "number")]
+    [InlineData("var h; var o={[Symbol.toPrimitive](x){h=x;return 1;}}; o&1; h", "number")]
+    [InlineData("var h; var o={[Symbol.toPrimitive](x){h=x;return 1;}}; o+''; h", "default")]
+    [InlineData("var h; var o={[Symbol.toPrimitive](x){h=x;return 1;}}; String(o); h", "string")]
+    public void ToNumericUsesNumberHint(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // The coerced numeric result must still be correct (valueOf-style @@toPrimitive).
+    [Theory]
+    [InlineData("var o={[Symbol.toPrimitive](){return 21;}}; Number(o)*2", "42")]
+    [InlineData("var o={[Symbol.toPrimitive](){return 5;}}; o*3", "15")]
+    public void ToNumericCoercionResultIsCorrect(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Problem 63: a lexical (let/const) declaration whose initializer is an array
+    // destructuring ASSIGNMENT lowered to a value-producing try/finally (iterator
+    // close) assigned straight into the binding's value setter, which emitted invalid
+    // IL (InvalidProgramException). The value is now spilled into a local first.
+    [Theory]
+    [InlineData("(()=>{ var a; let z = [a] = [5]; return z+','+a; })()", "5,5")]
+    [InlineData("(()=>{ var a; const z = [a] = [5]; return z+','+a; })()", "5,5")]
+    [InlineData("(()=>{ var a,b; let z = [a,[b]] = [1,[2]]; return a+','+b; })()", "1,2")]
+    [InlineData("(()=>{ var a; let z = [a,...r] = [1,2,3]; return a; })()", "1")]
+    public void LexicalArrayDestructuringInitializerCompiles(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // A TDZ access in such an initializer (`let y = [y] = []`, where `y` is read as the
+    // destructuring target before the let binding is initialized) now throws a proper
+    // ReferenceError instead of crashing with InvalidProgramException.
+    [Theory]
+    [InlineData("(()=>{ try{ let y = [y] = []; }catch(e){ return e.constructor.name; } })()", "ReferenceError")]
+    [InlineData("(()=>{ try{ let y = [y] = [,]; }catch(e){ return e.constructor.name; } })()", "ReferenceError")]
+    public void LexicalArrayDestructuringInitializerTdzThrowsReferenceError(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
 }

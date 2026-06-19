@@ -338,6 +338,11 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     // still toString as `function anonymous(...) { ... }` per CreateDynamicFunction.
     internal void OverrideSource(in StringSpan source) => this.source = source;
 
+    // The raw source span backing Function.prototype.toString. Exposed so a wrapper
+    // function (e.g. an async function built around a generator) can adopt the
+    // underlying function's source text instead of reporting "[native code]".
+    internal StringSpan SourceSpan => source;
+
     public override JSValue this[KeyString name]
     {
         get => base[name];

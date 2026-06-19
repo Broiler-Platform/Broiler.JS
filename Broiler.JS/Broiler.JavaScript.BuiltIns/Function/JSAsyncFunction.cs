@@ -71,6 +71,16 @@ public class JSAsyncFunction
         if (asyncFunction is JSObject asyncObject)
             asyncObject.BasePrototypeObject = GetOrCreateAsyncFunctionPrototype();
 
+        // The visible function is this async wrapper, not the underlying generator, so
+        // adopt the generator's source text — otherwise Function.prototype.toString
+        // reports the "[native code]" placeholder instead of the async function's body.
+        if (fn != null && asyncFunction is JSFunction asyncFn)
+        {
+            var span = fn.SourceSpan;
+            if (!span.IsEmpty)
+                asyncFn.OverrideSource(span);
+        }
+
         return asyncFunction;
     }
 

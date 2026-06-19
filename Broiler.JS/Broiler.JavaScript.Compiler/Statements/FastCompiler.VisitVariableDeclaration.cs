@@ -49,7 +49,18 @@ partial class FastCompiler
                             initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
                         if (newScope)
                         {
-                            list.Add(YExpression.Assign(v.Expression, initExpr));
+                            // The initializer may lower to a value-producing try/finally —
+                            // e.g. an array-destructuring assignment `let z = [a] = [5]`,
+                            // whose iterator-close runs in a finally. Assigning such a value
+                            // directly into the lexical binding's value setter (a method call)
+                            // emits invalid IL, since no value can cross the finally to the
+                            // call. Spill into a plain local first (which the backend assigns
+                            // inside the try), then store that into the binding.
+                            using var lexicalInitTemp = top.GetTempVariable(typeof(JSValue));
+                            list.Add(YExpression.Block(
+                                new Sequence<YParameterExpression> { lexicalInitTemp.Variable },
+                                YExpression.Assign(lexicalInitTemp.Expression, initExpr),
+                                YExpression.Assign(v.Expression, lexicalInitTemp.Expression)));
                         }
                         else if (withBoundaries.Count > 0
                             && TryGetStaticIdentifierVariable(id, out var staticVar) && staticVar != null)

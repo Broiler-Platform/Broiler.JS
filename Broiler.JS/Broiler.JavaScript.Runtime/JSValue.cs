@@ -442,7 +442,10 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         var primitive = value switch
         {
             JSPrimitiveObject primitiveObject => primitiveObject.ValueOf(),
-            JSObject @object => @object.ToDefaultPrimitive(),
+            // ToNumeric (§7.1.4) is ToPrimitive(value, NUMBER) then ToNumber/ToBigInt, so a
+            // user @@toPrimitive receives the "number" hint — not "default" — for an
+            // arithmetic/bitwise operand (e.g. `obj * 2`, `-obj`).
+            JSObject @object => @object.ToNumberPrimitive(),
             _ => value.ValueOf()
         };
 
