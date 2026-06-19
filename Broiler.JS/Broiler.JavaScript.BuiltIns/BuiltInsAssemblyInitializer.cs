@@ -255,7 +255,7 @@ internal static class BuiltInsAssemblyInitializer
             {
                 var clone = new JSMap(Arguments.Empty);
                 seen[value] = clone;
-                foreach (var entry in map.GetEntries())
+                foreach (var entry in map.EnumerateEntries())
                 {
                     var clonedKey = recurse(entry[0], seen);
                     var clonedVal = recurse(entry[1], seen);
@@ -268,7 +268,7 @@ internal static class BuiltInsAssemblyInitializer
             {
                 var clone = new JSSet(Arguments.Empty);
                 seen[value] = clone;
-                foreach (var item in set.Keys())
+                foreach (var item in set.EnumerateValues())
                     clone.Add(recurse(item, seen));
                 return clone;
             }

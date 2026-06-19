@@ -3,6 +3,7 @@ using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.BuiltIns.Iterator;
+using Broiler.JavaScript.BuiltIns.Generator;
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using System.Collections.Generic;
@@ -226,7 +227,10 @@ public partial class JSSet : JSObject
     }
 
     [JSExport("entries")]
-    public IEnumerable<JSValue> GetEntries()
+    public JSValue GetEntries()
+        => new JSGenerator(new ClrEnumerableElementEnumerator(EnumerateEntries()), "Set Iterator");
+
+    private IEnumerable<JSValue> EnumerateEntries()
     {
         for (var i = 0; i < store.Count; i++)
         {
@@ -273,21 +277,15 @@ public partial class JSSet : JSObject
     }
 
     [JSExport("keys")]
-    public IEnumerable<JSValue> Keys()
-    {
-        for (var i = 0; i < store.Count; i++)
-        {
-            var entry = store[i];
-            if (entry is null)
-                continue;
-
-            yield return entry;
-        }
-    }
+    public JSValue Keys()
+        => new JSGenerator(new ClrEnumerableElementEnumerator(EnumerateValues()), "Set Iterator");
 
 
     [JSExport("values")]
-    public IEnumerable<JSValue> Values()
+    public JSValue Values()
+        => new JSGenerator(new ClrEnumerableElementEnumerator(EnumerateValues()), "Set Iterator");
+
+    internal IEnumerable<JSValue> EnumerateValues()
     {
         for (var i = 0; i < store.Count; i++)
         {

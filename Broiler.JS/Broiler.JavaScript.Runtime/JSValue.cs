@@ -629,6 +629,16 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         };
     }
 
+    /// <summary>
+    /// ToPropertyKey (ECMA-262 §7.1.19) returning the key as a JSValue, performing any
+    /// observable ToPrimitive/ToString of a computed PropertyName. The object-literal
+    /// compiler calls this while evaluating a computed key so its side effects happen
+    /// before the property value expression is evaluated (PropertyDefinitionEvaluation
+    /// evaluates PropertyName — including ToPropertyKey — before the AssignmentExpression).
+    /// The result re-keys idempotently (no further user code) when handed to FastAddValue.
+    /// </summary>
+    public static JSValue ToPropertyKeyValue(JSValue key) => NormalizePropertyKey(key);
+
     public virtual JSValue GetPrototypeOf() => prototypeChain?.Object ?? NullValue;
 
     public virtual void SetPrototypeOf(JSValue target)

@@ -37,6 +37,17 @@ partial class FastCompiler
     private static readonly MethodInfo PrepareAnonymousFunctionNameForFieldMethod = typeof(JSVariable)
         .GetMethod(nameof(JSVariable.PrepareAnonymousFunctionNameForField), [typeof(JSValue), typeof(string)])
         ?? throw new InvalidOperationException("JSVariable.PrepareAnonymousFunctionNameForField(JSValue, string) not found");
+    private static readonly MethodInfo ToPropertyKeyValueMethod = typeof(JSValue)
+        .GetMethod(nameof(JSValue.ToPropertyKeyValue), [typeof(JSValue)])
+        ?? throw new InvalidOperationException("JSValue.ToPropertyKeyValue(JSValue) not found");
+
+    // A computed PropertyName must be evaluated — including its ToPropertyKey
+    // ToPrimitive/ToString side effects — before the property value expression
+    // (PropertyDefinitionEvaluation evaluates PropertyName before the
+    // AssignmentExpression). The runtime Add* call would otherwise defer the
+    // ToPropertyKey until after the value was read, so perform it eagerly here.
+    private static YExpression ToPropertyKeyValueExpr(YExpression keyExp)
+        => YExpression.Call(null, ToPropertyKeyValueMethod, keyExp);
 
     // ClassFieldDefinitionEvaluation: if a field initializer is an anonymous
     // function definition, NamedEvaluation names it after the field. Computed keys
@@ -192,6 +203,11 @@ partial class FastCompiler
                     var keyIsLiteral = pKey.IsUIntLiteral(out var num);
                     var keyExp = keyIsLiteral ? YExpression.Constant(num) : Visit(pKey);
 
+                    // Evaluate ToPropertyKey eagerly so a computed key's ToString/valueOf
+                    // runs before the value expression (PropertyDefinitionEvaluation order).
+                    if (!keyIsLiteral)
+                        keyExp = ToPropertyKeyValueExpr(keyExp);
+
                     // When the value is an anonymous function/accessor, the computed
                     // PropertyName is consumed twice: as the property key and for
                     // NamedEvaluation of the value. Emitting the same key expression
@@ -335,6 +351,11 @@ partial class FastCompiler
             {
                 var keyIsLiteral = pKey.IsUIntLiteral(out var num);
                 var keyExp = keyIsLiteral ? YExpression.Constant(num) : Visit(pKey);
+
+                // Evaluate ToPropertyKey eagerly so a computed key's ToString/valueOf
+                // runs before the value expression (PropertyDefinitionEvaluation order).
+                if (!keyIsLiteral)
+                    keyExp = ToPropertyKeyValueExpr(keyExp);
 
                 // See the fast path above: spill the computed PropertyName so it is
                 // evaluated exactly once when it is also used for NamedEvaluation.

@@ -186,6 +186,20 @@ partial class FastCompiler
                 return YExpression.Assign(variable.Expression, initExpr);
             }
 
+            // A parenthesized assignment target is not an IdentifierReference, so a
+            // short-circuit assignment (`||=` / `&&=` / `??=`) of an anonymous function
+            // must NOT name it (LogicalAssignment NamedEvaluation requires IsIdentifierRef
+            // of the LHS). The JSVariable setter would otherwise infer the variable's name,
+            // so clear the placeholder to "" as part of evaluating the RHS (which only runs
+            // when the assignment is actually performed). Plain `=` is handled above.
+            if (shouldSuppressAnonymousFunctionName
+                && assignmentOperator is TokenTypes.AssignBooleanOr or TokenTypes.AssignBooleanAnd or TokenTypes.AssignCoalesce)
+            {
+                var suppressedRight = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod,
+                    Visit(right), YExpression.Constant(""), YExpression.Constant(false));
+                return BinaryOperation.Assign(variable.Expression, suppressedRight, assignmentOperator);
+            }
+
             return Assign(variable.Expression, right, assignmentOperator);
         }
 
