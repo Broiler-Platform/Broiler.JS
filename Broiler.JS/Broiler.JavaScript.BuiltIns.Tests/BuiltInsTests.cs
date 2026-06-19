@@ -490,6 +490,35 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Super_Call_Outside_Derived_Constructor_Is_A_SyntaxError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // A super call is only legal in a derived class constructor; it is an early
+        // SyntaxError elsewhere, including in a Function-constructor body and in eval
+        // (test262 sm/class/superCallIllegal). Valid super uses are unaffected.
+        var result = ctx.Eval("""
+            (function () {
+                function name(thunk) { try { thunk(); return 'ok'; } catch (e) { return e.constructor.name; } }
+
+                var fromFunction = name(function () { return new Function("super();"); });
+                var fromEval = name(function () { return eval("super()"); });
+
+                class Base { constructor() { this.x = 1; } get tag() { return 'b'; } }
+                class Derived extends Base {
+                    constructor() { super(); }
+                    get tag() { return super.tag + 'd'; }
+                }
+                var d = new Derived();
+                var validSuper = d.x + ',' + d.tag;
+
+                return fromFunction + '|' + fromEval + '|' + validSuper;
+            })();
+            """);
+        Assert.Equal("SyntaxError|SyntaxError|1,bd", result.ToString());
+    }
+
+    [Fact]
     public void Class_Computed_Property_Names_Evaluate_In_Source_Order()
     {
         EnsureBuiltInsLoaded();
@@ -8624,6 +8653,28 @@ public class BuiltInsTests
             "from=get hour,call hour,get microsecond,call microsecond,get millisecond,call millisecond,get minute,call minute,get nanosecond,call nanosecond,get second,call second/get overflow,call overflow | " +
             "with=get calendar,get timeZone,get hour,call hour,get microsecond,call microsecond,get millisecond,call millisecond,get minute,call minute,get nanosecond,call nanosecond,get second,call second/get overflow,call overflow",
             result.ToString());
+    }
+
+    [Fact]
+    public void Temporal_PlainTime_From_PlainDateTime_Uses_Internal_Slots_Not_Getters()
+    {
+        // ToTemporalTime fast path: a PlainDateTime argument supplies its time from internal
+        // slots, so PlainTime.from(plainDateTime) must not invoke the (observable) hour/
+        // minute/second getters (test262 PlainTime/from/argument-plaindatetime).
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        var result = ctx.Eval(@"
+            var pdt = new Temporal.PlainDateTime(2020, 1, 1, 12, 30, 45);
+            var calls = [];
+            ['hour','minute','second','millisecond','microsecond','nanosecond'].forEach(function (p) {
+                var d = Object.getOwnPropertyDescriptor(Temporal.PlainDateTime.prototype, p);
+                var orig = d.get;
+                Object.defineProperty(pdt, p, { configurable: true, get: function () { calls.push(p); return orig.call(this); } });
+            });
+            var t = Temporal.PlainTime.from(pdt);
+            '[' + calls.join(',') + ']|' + t.toString();
+        ");
+        Assert.Equal("[]|12:30:45", result.ToString());
     }
 
     [Fact]
