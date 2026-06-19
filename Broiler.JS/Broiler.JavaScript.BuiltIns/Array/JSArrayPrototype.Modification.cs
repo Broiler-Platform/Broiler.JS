@@ -502,7 +502,11 @@ public partial class JSArray
         for (int i = 0; i < itemsLength; i++)
             SetIndexedValue(@this, (uint)(start + i), a[i + 2]);
 
-        @this.Length = newLength;
+        // Step 17: Set(O, "length", len, true) — a real [[Set]] that throws when
+        // "length" is non-writable (e.g. an array-like whose "length" is an
+        // accessor with no setter), rather than the fast JSObject.Length setter,
+        // which would silently overwrite the accessor with a data property.
+        SetArrayLikeLength(@this, newLength);
 
         // Return the deleted items.
         return deletedItems;
