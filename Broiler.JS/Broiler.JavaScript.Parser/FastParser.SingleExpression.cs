@@ -95,6 +95,15 @@ partial class FastParser
 
             case FastKeywords.super:
                 stream.Consume();
+                // `super` is only valid as a SuperProperty (`super.x` / `super[x]`) or a
+                // SuperCall (`super(...)`); a bare `super` (e.g. `super = 1`), an optional
+                // `super?.x`, or a tagged `` super`...` `` is a SyntaxError. Require a
+                // `.`/`[`/`(` to follow (newlines may separate it, e.g. `super\n.x`).
+                var afterSuperMarker = stream.SkipNewLines();
+                var afterSuper = stream.Current.Type;
+                afterSuperMarker.Undo();
+                if (afterSuper is not (TokenTypes.Dot or TokenTypes.SquareBracketStart or TokenTypes.BracketStart))
+                    throw new FastParseException(token, "'super' is only valid as part of a property access or call");
                 node = new AstSuper(token);
                 return true;
         }
