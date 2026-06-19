@@ -215,6 +215,14 @@ partial class FastCompiler
 
         if (identifier.Name.Equals("arguments"))
         {
+            // `arguments` may not appear in a class field initializer (it is forbidden
+            // by ClassFieldDefinition's ContainsArguments early error). inMemberInitializer
+            // is inherited by arrow functions in the initializer but reset by a nested
+            // ordinary function (which has its own arguments object), so it marks exactly
+            // the positions that are an error. Direct eval validates its own body.
+            if (inMemberInitializer && !isDirectEvalCompilation)
+                throw new FastParseException(identifier.Start, "'arguments' is not allowed in a class field initializer");
+
             if (scope.Top.Function?.IsArrowFunction == true
             )
             {

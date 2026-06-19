@@ -458,6 +458,10 @@ partial class FastCompiler
                             // enclosing scope has no super and an arrow that reads super
                             // produces invalid IL.
                             top.Super = StaticSuper();
+                            // A static field initializer is a member initializer too, so
+                            // `arguments` (and a direct super() call) are forbidden in it.
+                            var savedInMemberInitializer = inMemberInitializer;
+                            inMemberInitializer = true;
                             try
                             {
                                 value = ApplyFieldFunctionName(property, name, Visit(property.Init));
@@ -466,6 +470,7 @@ partial class FastCompiler
                             {
                                 top.ThisExpression = savedThis;
                                 top.Super = savedSuper;
+                                inMemberInitializer = savedInMemberInitializer;
                             }
                         }
                         // Deferred to after the class binding (see staticFieldInits).
@@ -576,9 +581,12 @@ partial class FastCompiler
         {
             // super.x in the constructor body / field initializers resolves against
             // the superclass prototype, while super(...) targets the superclass
-            // constructor. Pass both so each resolves correctly.
+            // constructor. Pass both so each resolves correctly. Only a DERIVED class
+            // constructor gets a super-constructor binding: a base class constructor must
+            // reject super() (it is the signal that distinguishes the two — see the super
+            // call check in VisitCallExpression).
             var fx = CreateFunction(constructor, InstanceSuper(), true, className, memberInits, true, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames,
-                thisIsUninitialized: hasSuperClass, superConstructor: StaticSuper(), privateInstanceElements: privateInstanceElements);
+                thisIsUninitialized: hasSuperClass, superConstructor: hasSuperClass ? StaticSuper() : null, privateInstanceElements: privateInstanceElements);
             staticElements.Add(JSClassBuilder.AddConstructor(fx));
         }
         else

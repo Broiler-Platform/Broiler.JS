@@ -392,5 +392,87 @@ public class Issue847Tests
     public void ValidPatternRestStillWorks(string code, string expected)
         => Assert.Equal(expected, Eval(code).ToString());
 
+    // Compiles a source text as a script (not a nested eval) and reports the JS error
+    // class, or "ok". These early errors are detected during the script's own
+    // compilation — and are correctly NOT re-checked inside a direct eval (which
+    // validates its own super/arguments/new.target placement separately).
+    private static string CompileResult(string source)
+    {
+        try
+        {
+            using var ctx = new JSContext();
+            ctx.Eval(source);
+            return "ok";
+        }
+        catch (JSException e)
+        {
+            var text = e.Error?.ToString() ?? e.Message;
+            return text.Contains("SyntaxError") ? "SyntaxError"
+                : text.Contains("TypeError") ? "TypeError"
+                : text.Contains("ReferenceError") ? "ReferenceError"
+                : "JSException";
+        }
+    }
+
+    // super() is only legal inside a DERIVED class constructor (or an arrow nested in
+    // one). A base-class constructor, a method/accessor, an object method, and an
+    // arrow nested in a base constructor were all silently accepted (the home-object
+    // Super made the check pass); they are now early SyntaxErrors.
+    [Theory]
+    [InlineData("class C{ constructor(){ super(); } }")]
+    [InlineData("class C{ m(){ super(); } }")]
+    [InlineData("class C extends Object{ m(){ super(); } }")]
+    [InlineData("({ m(){ super(); } })")]
+    [InlineData("class C{ constructor(){ var f = () => super(); } }")]
+    public void SuperCallOutsideDerivedConstructorIsSyntaxError(string source)
+        => Assert.Equal("SyntaxError", CompileResult(source));
+
+    [Theory]
+    [InlineData("class C extends Object{ constructor(){ super(); } }; new C(); 1", "1")]
+    [InlineData("class A{constructor(){this.v=3;}}; class B extends A{ constructor(){super();} }; new B().v", "3")]
+    [InlineData("class A{constructor(x){this.x=x;}}; class B extends A{ constructor(){super(5);} }; new B().x", "5")]
+    [InlineData("class A{}; class B extends A{ constructor(){ var f=()=>super(); f(); return this; } }; new B() instanceof B", "true")]
+    [InlineData("class A{ static m(){return 'Am';} }; class B extends A{ static m(){return super.m()+'B';} }; B.m()", "AmB")]
+    public void ValidSuperStillWorks(string code, string expected)
+        => Assert.Equal(expected, Eval(code).ToString());
+
+    // `arguments` may not appear in a class field initializer (instance or static),
+    // including via an arrow (which inherits the context); a nested ordinary function
+    // has its own arguments object and is exempt.
+    [Theory]
+    [InlineData("class C{ x = arguments; }")]
+    [InlineData("class C{ x = arguments[0]; }")]
+    [InlineData("class C{ static x = arguments; }")]
+    [InlineData("class C{ x = (() => arguments)(); }")]
+    public void ArgumentsInClassFieldInitializerIsSyntaxError(string source)
+        => Assert.Equal("SyntaxError", CompileResult(source));
+
+    [Theory]
+    [InlineData("class C{ x = (function(){ return arguments.length; })(1,2); }; new C().x", "2")]
+    [InlineData("class C{ m(){ return arguments.length; } }; new C().m(1,2,3)", "3")]
+    public void ArgumentsInNestedFunctionOrMethodStillWorks(string code, string expected)
+        => Assert.Equal(expected, Eval(code).ToString());
+
+    // new.target is only legal inside an ordinary function or a class element
+    // initializer; at the script top level (including a top-level arrow) it is an
+    // early SyntaxError.
+    [Theory]
+    [InlineData("new.target")]
+    [InlineData("new.target;")]
+    [InlineData("var x = new.target + 1;")]
+    [InlineData("if (true) { new.target; }")]
+    [InlineData("var f = () => new.target; f();")]
+    [InlineData("[].forEach(() => new.target);")]
+    public void NewTargetAtTopLevelIsSyntaxError(string source)
+        => Assert.Equal("SyntaxError", CompileResult(source));
+
+    [Theory]
+    [InlineData("function f(){ return typeof new.target; } f()", "undefined")]
+    [InlineData("class C{ m(){ return typeof new.target; } }; new C().m()", "undefined")]
+    [InlineData("var r; function f(){ r = new.target; } new f(); r === f", "true")]
+    [InlineData("var r; function f(){ (() => { r = new.target; })(); } new f(); r === f", "true")]
+    public void ValidNewTargetStillWorks(string code, string expected)
+        => Assert.Equal(expected, Eval(code).ToString());
+
     private static string Quote(string code) => "\"" + code.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
 }
