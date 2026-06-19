@@ -317,6 +317,16 @@ partial class FastParser
                 if (inGeneratorBody && id.Keyword == FastKeywords.yield)
                     throw stream.Unexpected();
 
+                // A LabelIdentifier is a BindingIdentifier-shaped name, so an
+                // always-reserved word (enum, extends, super — class/const/export/import
+                // are already rejected as statement starters) is never a legal label,
+                // even though it lexes as an identifier-typed keyword token.
+                if (id.IsKeyword
+                    && id.Keyword != FastKeywords.await
+                    && id.Keyword != FastKeywords.yield
+                    && IsDisallowedBindingKeyword(id.Keyword))
+                    throw stream.Unexpected();
+
                 SkipNewLines();
 
                 // has to be do/while/for...

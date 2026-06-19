@@ -112,6 +112,14 @@ partial class FastParser
             if (inGeneratorBody && id.Start.Keyword == FastKeywords.yield)
                 throw stream.Unexpected();
 
+            // `enum` and `extends` are always-reserved words that nonetheless lex as
+            // identifier-typed keyword tokens and reach this IdentifierReference path
+            // (class/const/export/import are intercepted as statement/expression starters;
+            // `super`, `this`, `null`, `true`, `false` are valid primaries handled above).
+            // A bare `enum` / `extends` IdentifierReference (`enum = 1`) is a SyntaxError.
+            if (id.Start.Keyword is FastKeywords.@enum or FastKeywords.@extends)
+                throw new FastParseException(id.Start, $"'{id.Name}' is a reserved word and cannot be used here");
+
             // `await` is reserved throughout an async function/arrow, so it cannot be
             // an IdentifierReference there. A unicode-escaped form such as
             // `await` is classified by the scanner as a plain identifier (the

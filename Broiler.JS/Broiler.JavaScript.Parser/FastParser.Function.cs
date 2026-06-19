@@ -45,6 +45,16 @@ partial class FastParser
             if (id.Start.Keyword == FastKeywords.yield && (isStatement ? inGeneratorBody : generator))
                 throw new FastParseException(id.Start, "yield cannot be used as a function name in this context");
 
+            // The function name is a BindingIdentifier, so an always-reserved word
+            // (class, const, enum, export, extends, import, super) is never a legal name
+            // — even though it lexes as an identifier-typed keyword token here.
+            // (await/yield remain contextual and are handled above / under strict mode.)
+            if (id.Start.IsKeyword
+                && id.Start.Keyword != FastKeywords.await
+                && id.Start.Keyword != FastKeywords.yield
+                && IsDisallowedBindingKeyword(id.Start.Keyword))
+                throw new FastParseException(id.Start, $"'{id.Name}' is a reserved word and cannot be used as a function name");
+
             // BROILER-PATCH: For function declarations, add name to parent scope (hoisted).
             // For function expressions, do NOT add to parent scope (ES3 §13).
             if (isStatement)
