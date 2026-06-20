@@ -151,6 +151,21 @@ partial class FastCompiler
 
     skipDirectEval:
 
+        // A parenthesized optional chain closes the chain at the parens (per spec ECMAScript
+        // §13.3.5 Optional Chains), but the inner MemberExpression still carries a Reference
+        // whose base is the `this` value for the surrounding call: `(a?.b)()` must invoke
+        // `a.b` with `this = a`, just as `(a.b)()` does. Unwrap the AstOptionalChain wrapper
+        // here so the member-call path threads the correct receiver, and re-apply the chain
+        // boundary's sentinel→undefined conversion to the call result. Without this, the
+        // outer call falls into the no-this branch below and the function runs with the
+        // surrounding `this` (test262 optional-chaining/optional-call-preserves-this).
+        var chainBoundary = false;
+        if (callee is AstOptionalChain wrapped && wrapped.Expression is AstMemberExpression)
+        {
+            callee = wrapped.Expression;
+            chainBoundary = true;
+        }
+
         if (callee.Type == FastNodeType.MemberExpression && callee is AstMemberExpression me)
         {
             YExpression name;
@@ -218,17 +233,25 @@ partial class FastCompiler
             // scope. InvokeMethod takes the key as an `in KeyString` (by-address)
             // argument, and a captured closure variable cannot be loaded by address;
             // copy it into a method-local temp (which can) first.
+            YExpression invocation;
             if (isPrivateMethodKey)
             {
                 using var keyTemp = scope.Top.GetTempVariable(typeof(KeyString));
-                return YExpression.Block(new YExpression[]
+                invocation = YExpression.Block(new YExpression[]
                 {
                     YExpression.Assign(keyTemp.Variable, name),
                     JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, keyTemp.Variable, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain),
                 });
             }
+            else
+            {
+                invocation = JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, name, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain);
+            }
 
-            return JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, name, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain);
+            // A parenthesized optional chain closes its chain at the parens, so the
+            // outer call's result must collapse any in-flight skip sentinel back to
+            // `undefined`.
+            return chainBoundary ? JSValueBuilder.UnwrapOptionalChain(invocation) : invocation;
         }
         else
         {

@@ -350,6 +350,15 @@ internal static class TemporalNonIso
             // have leap months; for a solar calendar (e.g. persian) a leap code is always invalid.
             if (leapMonth && overflow != "reject" && TemporalCalendarMath.HasLeapMonths(calendarId))
             {
+                // The fixed-leap-month hebrew calendar carries only one leap month (Adar I, "M05L"),
+                // so a leap code naming a different month — "M01L".."M04L", "M06L".."M12L" — is
+                // invalid regardless of overflow and must NOT silently fall back to the regular
+                // month (test262 intl402/Temporal/PlainDate/from/invalid-month-codes-hebrew). The
+                // lunisolar chinese / dangi calendars place their leap month at a year-dependent
+                // position, so any "MnnL" remains a valid candidate code there.
+                if (calendarId == "hebrew" && codeNumber != 5)
+                    throw JSEngine.NewRangeError($"{typeName}: invalid monthCode for the hebrew calendar");
+
                 try { month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, true); }
                 catch (JSException)
                 {

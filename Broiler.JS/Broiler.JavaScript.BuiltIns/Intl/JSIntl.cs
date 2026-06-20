@@ -1581,6 +1581,11 @@ public static class JSIntl
         var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
         for (var i = 0; i < subtags.Length; i++)
         {
+            // The "x" singleton terminates the tag's extension area: every subtag from here on
+            // is a privateuse subtag, so a "t" inside it (e.g. "cmn-hans-cn-x-t-u") is not a
+            // transformed extension and must not be validated as one.
+            if (subtags[i].Length == 1 && (subtags[i][0] == 'x' || subtags[i][0] == 'X'))
+                break;
             if (!subtags[i].Equals("t", StringComparison.OrdinalIgnoreCase))
                 continue;
 

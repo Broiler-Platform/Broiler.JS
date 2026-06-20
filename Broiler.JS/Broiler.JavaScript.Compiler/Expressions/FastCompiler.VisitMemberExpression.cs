@@ -55,6 +55,26 @@ partial class FastCompiler
                 ? JSValueBuilder.ChainAccess(target, super, keyExpr, memberExpression.Coalesce)
                 : JSValueBuilder.Index(target, super, keyExpr, memberExpression.Coalesce);
 
+        // A COMPUTED key inside an optional chain whose link is `?.` (or trails an in-flight
+        // short-circuit) must NOT be evaluated when the chain has already short-circuited —
+        // its side effects (e.g. `obj?.a?.[touched++]`) are observable per spec only on the
+        // non-short-circuit path. Spill the target into a temp, gate it, and lift the key
+        // evaluation inside the gated branch. Non-computed accesses (Identifier / Literal
+        // keys above) are pure, so they fall through to the simpler Access path.
+        YExpression GatedComputedAccess(System.Func<YExpression> compileKey)
+        {
+            if (!memberExpression.InOptionalChain || super != null)
+                return Access(compileKey());
+
+            using var recv = scope.Top.GetTempVariable(typeof(JSValue));
+            return YExpression.Block(
+                YExpression.Assign(recv.Expression, target),
+                YExpression.Condition(
+                    JSValueBuilder.OptionalChainGuard(recv.Expression, memberExpression.Coalesce),
+                    JSValueBuilder.OptionalChainSkip(),
+                    JSValueBuilder.Index(recv.Expression, super, compileKey(), false)));
+        }
+
         switch (mp.Type)
         {
             case FastNodeType.Identifier:
@@ -89,7 +109,10 @@ partial class FastCompiler
                     return Access(key);
                 }
 
-                return Access(VisitIdentifier(id));
+                // Computed identifier key (`a?.[b]` where b parsed as an Identifier reference).
+                // Reading `b` can have side effects (a TDZ ReferenceError, a get-trap on the
+                // global, …) and per spec must not fire when the optional chain short-circuits.
+                return GatedComputedAccess(() => VisitIdentifier(id));
 
             case FastNodeType.Literal:
                 var l = mp as AstLiteral;
@@ -123,11 +146,11 @@ partial class FastCompiler
 
             case FastNodeType.MemberExpression:
                 var se = mp as AstMemberExpression;
-                return Access(VisitExpression(se));
+                return GatedComputedAccess(() => VisitExpression(se));
         }
 
         if (memberExpression.Computed)
-            return Access(VisitExpression(memberExpression.Property));
+            return GatedComputedAccess(() => VisitExpression(memberExpression.Property));
 
         throw new NotImplementedException();
     }
