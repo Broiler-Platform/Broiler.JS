@@ -714,6 +714,27 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return new DirectEvalLexicalBindingScope(this, names);
     }
 
+    // The calling function's var-environment binding names for the running direct eval, so its var
+    // declarations can reuse an existing function-local binding (EvalDeclarationInstantiation) rather
+    // than create a shadowing overlay. A scope is pushed for every direct eval (empty when there are
+    // none) so the innermost scope always corresponds to the currently executing eval.
+    private readonly List<string[]> directEvalVarEnvNameScopes = [];
+
+    private sealed class DirectEvalVarEnvNameScope(JSContext context) : IDisposable
+    {
+        public void Dispose()
+        {
+            if (context.directEvalVarEnvNameScopes.Count > 0)
+                context.directEvalVarEnvNameScopes.RemoveAt(context.directEvalVarEnvNameScopes.Count - 1);
+        }
+    }
+
+    public IDisposable PushDirectEvalVarEnvNames(string[] names)
+    {
+        directEvalVarEnvNameScopes.Add(names ?? []);
+        return new DirectEvalVarEnvNameScope(this);
+    }
+
     /// <summary>
     /// Registers a top-level script <c>let</c>/<c>const</c>/class binding into the global lexical
     /// environment: it becomes resolvable by name (including from a later indirect eval, which
@@ -887,12 +908,29 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             return existing;
         }
 
+        // EvalDeclarationInstantiation does not create a new binding when one already exists in the
+        // calling function's variable environment. Such a function-local was captured for the eval
+        // and published into globalVars; reuse it (so `eval('var v; v')` / `eval('var v = 5')` read
+        // and write the function's own `v`) — but only when the name is genuinely the IMMEDIATE
+        // function's var-env binding, not a captured enclosing-function / global of the same name
+        // (the eval's `var` must shadow those with a fresh local).
+        if (IsImmediateEvalVarEnvName(name) && globalVars.TryGetValue(name.Key, out var captured))
+            return captured;
+
         var variable = new JSVariable(fallback, name.Value);
         if (directEvalLocalVarEnvironmentDepth > 0 && TryGetCurrentDirectEvalActivationOwner(out var owner))
             owner.RegisterDirectEvalBinding(variable);
 
         return variable;
     }
+
+    // Only the innermost (current) direct eval's var-env names apply: a var the running eval declares
+    // belongs to its own calling function's var environment, not an enclosing eval's. A scope is
+    // pushed for every direct eval (possibly empty), so the top always corresponds to this eval.
+    private bool IsImmediateEvalVarEnvName(in KeyString name)
+        => directEvalVarEnvNameScopes.Count > 0
+           && directEvalVarEnvNameScopes[^1] is { } names
+           && Array.IndexOf(names, name.ToString()) >= 0;
 
     public override JSValue this[KeyString name]
     {
