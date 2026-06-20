@@ -5409,12 +5409,14 @@ public class JSIntlDateTimeFormat : JSObject
         var hour12 = options?[Hour12Key];
         if (hour12 != null && !hour12.IsUndefined)
         {
-            // hour12 true picks the locale's preferred 12-hour cycle. Per CLDR's <hours>
-            // preference data, only a small set of locales (ja, …) prefer the 0-based
-            // h11; almost every other locale — even those with an h23 default — prefers
-            // h12 for the 12-hour alternative, so default-to-h12. hour12 false picks h23.
+            // hour12 resolves via ECMA-402's symmetric transformation of the locale's
+            // default hour cycle (not CLDR's <hours> "allowed" list): hour12 true picks
+            // the 12-hour cycle keeping the 0-based/1-based parity — h11 when the default
+            // is a 0-based cycle (h11/h23), else h12; hour12 false picks h23 (the common
+            // 24-hour cycle observed by other engines). So fr-FR (h23 default) → h11,
+            // en-US (h12 default) → h12, matching V8.
             if (hour12.BooleanValue)
-                return hcDefault == "h11" ? "h11" : "h12";
+                return hcDefault == "h11" || hcDefault == "h23" ? "h11" : "h12";
             return "h23";
         }
 
@@ -5789,8 +5791,12 @@ public class JSIntlDateTimeFormat : JSObject
     private List<JSIntlDateTimeFormatEngine.Part> FormatTemporalToParts(JSValue value, bool zonedAllowed = false, bool enforceStyle = false)
     {
         var meta = ClassifyTemporal(value, zonedAllowed);
-        CheckTemporalCalendar(meta.CalendarId, RequiresExactCalendar(meta.Kind));
+        // Resolve the effective fields first: an incompatible whole style (e.g. timeStyle on a
+        // date-only type) is a TypeError and must be reported ahead of a calendar mismatch
+        // RangeError, so `PlainMonthDay.from('01-01').toLocaleString('en', {timeStyle:'short'})`
+        // throws the TypeError rather than the iso8601-vs-locale-default calendar RangeError.
         var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in meta, enforceStyle));
+        CheckTemporalCalendar(meta.CalendarId, RequiresExactCalendar(meta.Kind));
         var fields = meta.Fields;
         return JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), null);
     }

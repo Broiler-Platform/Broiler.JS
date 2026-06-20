@@ -7611,7 +7611,7 @@ public class BuiltInsTests
     }
 
     [Fact]
-    public void DateTimeFormat_Hour12_True_Picks_H12_For_NonJa_Locales()
+    public void DateTimeFormat_Hour12_True_PicksParityOfLocaleDefault()
     {
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
@@ -7625,10 +7625,11 @@ public class BuiltInsTests
             ].join('|');
             """);
 
-        // Per CLDR, the 12-hour cycle is h12 almost everywhere — even for locales whose
-        // default is h23 (fr, de), where the 24-hour cycle is preferred but the 12-hour
-        // alternative is still "h" (h12), not "K" (h11).
-        Assert.Equal("h12|h12|h12|h23", result.ToString());
+        // ECMA-402 resolves hour12 by the parity of the locale's default hour cycle, not
+        // CLDR's "allowed" list: a 0-based default (h23, e.g. fr-FR / de-DE) yields the
+        // 0-based 12-hour cycle h11, while a 1-based default (h12, e.g. en-US) yields h12.
+        // hour12 false yields h23. This matches V8.
+        Assert.Equal("h11|h11|h12|h23", result.ToString());
     }
 
     [Fact]
@@ -7639,18 +7640,18 @@ public class BuiltInsTests
 
         var result = ctx.Eval("""
             var named = function bar() {};
-            var anonymous = function () {};
             [
               named.name,
-              anonymous.name,
+              (function () {}).name,
               typeof Math.floor.name === 'string' ? Math.floor.name : 'unexpected'
             ].join('|');
             """);
 
-        // A bare `function () {}` is anonymous and its `name` defaults to "" per
-        // SetFunctionName; the explicit `bar` survives; native built-ins keep their own
-        // name (Math.floor → "floor"). The contextual NamedEvaluation rebinding for
-        // `var x = function () {}` is a separate concern not covered here.
+        // A bare `function () {}` evaluated outside a NamedEvaluation position is anonymous
+        // and its `name` defaults to "" per SetFunctionName; the explicit `bar` survives;
+        // native built-ins keep their own name (Math.floor → "floor"). The contextual
+        // NamedEvaluation rebinding for `var x = function () {}` (which names it "x") is a
+        // separate concern, covered elsewhere.
         Assert.Equal("bar||floor", result.ToString());
     }
 

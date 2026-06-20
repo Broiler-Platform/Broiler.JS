@@ -81,7 +81,7 @@ public static class DirectEvalSupport
         }
     }
 
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, bool tailCall = false)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, string[] evalVarEnvNames = null, bool tailCall = false)
     {
         if (!IsDirectEval(callee))
         {
@@ -117,6 +117,9 @@ public static class DirectEvalSupport
             using var _ = capturedBindings?.Length > 0
                 ? context.PushDirectEvalScope(capturedBindings, shadowedBindings)
                 : null;
+            // Pushed for every direct eval (even with no names) so the innermost var-env-name scope
+            // always corresponds to the currently running eval (see IsImmediateEvalVarEnvName).
+            using var varEnvNameScope = context.PushDirectEvalVarEnvNames(evalVarEnvNames);
             using var lexicalBindingScope = capturedLexicalBindingNames?.Length > 0
                 ? context.PushDirectEvalLexicalBindingNames(capturedLexicalBindingNames)
                 : null;

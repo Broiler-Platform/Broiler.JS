@@ -334,8 +334,9 @@ internal static class TemporalNonIso
             // the same number ("Mnn") — except hebrew, whose leap month Adar I ("M05L") sits before the
             // regular Adar ("M06"), so it collapses onto M06. Under "reject" (and for a non-leap code)
             // OrdinalFromMonthCode throws when the month code is absent. (Mirrors the year-shift path
-            // in ResolveMonthAfterYearShift.)
-            if (leapMonth && overflow != "reject")
+            // in ResolveMonthAfterYearShift.) This constrain only applies to calendars that actually
+            // have leap months; for a solar calendar (e.g. persian) a leap code is always invalid.
+            if (leapMonth && overflow != "reject" && TemporalCalendarMath.HasLeapMonths(calendarId))
             {
                 try { month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, true); }
                 catch (JSException)

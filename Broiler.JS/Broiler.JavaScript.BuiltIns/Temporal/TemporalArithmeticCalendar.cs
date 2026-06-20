@@ -28,7 +28,7 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 internal static class TemporalArithmeticCalendar
 {
     internal static bool IsArithmetic(string id) =>
-        id is "coptic" or "ethiopic" or "ethioaa" or "islamic-civil" or "islamic-tbla"
+        id is "coptic" or "ethiopic" or "ethioaa" or "islamic" or "islamic-civil" or "islamic-tbla"
             or "islamic-umalqura" or "hebrew" or "indian";
 
     private static bool IsSolar13(string id) => id is "coptic" or "ethiopic" or "ethioaa";
@@ -50,7 +50,9 @@ internal static class TemporalArithmeticCalendar
         "coptic" => 103605 - 719163,
         "ethiopic" => 2796 - 719163,
         "ethioaa" => -2006079 - 719163,
-        "islamic-civil" => 227015 - 719163,
+        // The bare "islamic" calendar (CLDR's astronomical Hijri) is approximated by the tabular
+        // civil arithmetic — the two differ by at most a day; ICU's civil (Friday) epoch is used.
+        "islamic" or "islamic-civil" => 227015 - 719163,
         "islamic-tbla" => 227014 - 719163,
         "islamic-umalqura" => 227015 - 719163, // civil (Friday) epoch; used for the out-of-table fallback
         _ => throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{id}\""),

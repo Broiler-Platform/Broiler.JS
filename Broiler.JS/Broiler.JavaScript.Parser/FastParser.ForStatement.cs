@@ -207,15 +207,15 @@ partial class FastParser
                 throw stream.Unexpected();
 
 
-            // A C-style `for (using …; …; …)` / `for (await using …; …; …)` head is NOT
-            // desugared into per-iteration carriers: per spec the LexicalDeclaration is
-            // instantiated once in the loop's lexical environment and its `using`
-            // resources are disposed once, when that environment is torn down. Keeping the
-            // `using` declaration intact as the loop init (and wrapping the whole `for` in a
-            // block scope below) lets the scope's disposal machinery dispose them at loop
-            // exit — and dispose any already-initialized resource if a later initializer in
-            // the BindingList throws. The for-of / for-in `using` heads keep their existing
-            // per-iteration desugaring.
+            // A C-style `for (await using …; …; …)` head is NOT desugared into per-iteration
+            // carriers: per spec the LexicalDeclaration is instantiated once in the loop's
+            // lexical environment and its resources are disposed once, when that environment
+            // is torn down. Keeping the declaration intact as the loop init (and wrapping the
+            // whole `for` in a block scope below) lets the scope's disposal machinery dispose
+            // them at loop exit — and dispose any already-initialized resource if a later
+            // initializer in the BindingList throws. (A plain `using` C-style head is a
+            // SyntaxError, rejected during parsing; the for-of / for-in `using` heads keep
+            // their per-iteration desugaring.)
             var cStyleUsing = declaration is { Using: true } && !@in && !of;
 
             AstStatement statement;
@@ -268,9 +268,9 @@ partial class FastParser
             }
 
             var forStatement = new AstForStatement(begin, PreviousToken, beginNode, test, update, statement);
-            // Wrap a C-style `using` / `await using` for-loop in a block so its lexical
-            // environment (which owns the disposable resources) is established and torn
-            // down — disposing the resources — around the entire loop.
+            // Wrap a C-style `await using` for-loop in a block so its lexical environment
+            // (which owns the disposable resources) is established and torn down — disposing
+            // the resources — around the entire loop.
             node = cStyleUsing
                 ? new AstBlock(begin, PreviousToken, new Sequence<AstStatement>(1) { forStatement })
                 : forStatement;
@@ -418,15 +418,18 @@ partial class FastParser
             return true;
         }
 
-        // A C-style `for (using BindingList; …; …)` / `for (await using BindingList; …; …)`
-        // head. Unlike the for-of ForBinding above, this is an ordinary LexicalDeclaration:
-        // its `using` / `await using` bindings carry initializers and are disposed when the
-        // loop environment is torn down. Recognised when `using` (optionally preceded by
-        // `await`) is followed — with no intervening LineTerminator — by a BindingIdentifier.
-        // Patterns are not permitted (BindingList[~Pattern]), so only a plain identifier
-        // starts the declaration. `for (using of x)` is left as a for-of over the
-        // IdentifierReference `using`; `for (using of = …; …)` (binding named `of`) is a
-        // declaration and is admitted because an initializer follows.
+        // The C-style / for-in head for a `using` family declaration. A plain (sync) `using`
+        // ForBinding is only valid at the head of a for-of loop (handled by
+        // TryParseForUsingDeclaration above): it is NOT a LexicalDeclaration, so a C-style
+        // `for (using x = …; …; …)` head and a for-in `for (using x in …)` head are
+        // SyntaxErrors per the Explicit Resource Management grammar. An `await using`
+        // declaration, however, IS permitted as an ordinary lexical declaration in a C-style
+        // for head (`for (await using x = …; …; …)`), where its resources are async-disposed
+        // when the loop's lexical environment is torn down. Recognised when `using`
+        // (optionally preceded by `await`) is followed — with no intervening LineTerminator —
+        // by a BindingIdentifier the for-of path did not claim. `for (using of x)` /
+        // `for (using; ;)` / `for (using in x)` keep `using` as an ordinary
+        // IdentifierReference and flow through the expression path instead.
         bool TryParseForUsingLexicalDeclaration(out AstVariableDeclaration declaration)
         {
             declaration = null;
@@ -455,17 +458,22 @@ partial class FastParser
                 return false;
             }
 
-            // `using of …`: only a declaration (binding named `of`) when an initializer
-            // follows; otherwise `using` is an IdentifierReference and the for-of path owns it.
+            // `using of …` (no initializer): `using` is an IdentifierReference and the for-of
+            // path owns it (`for (using of x)`).
             if (IsOfKeyword(bindingToken) && stream.Next.Type != TokenTypes.Assign)
             {
                 stream.Reset(start);
                 return false;
             }
 
+            // A plain (sync) `using BindingIdentifier` here is followed by an initializer or a
+            // for-in head — neither is a permitted position for a sync `using` declaration.
+            if (!isAwait)
+                throw new FastParseException(start, "'using' declarations are only allowed in a for-of loop head");
+
             // `in`/`of` are not operators inside the LexicalDeclaration's initializers
-            // (the head uses the [~In] grammar), so `for (using x = a in b; …)` keeps `in`
-            // for the for-head rather than folding it into the initializer expression.
+            // (the head uses the [~In] grammar), so `for (await using x = a in b; …)` keeps
+            // `in` for the for-head rather than folding it into the initializer expression.
             considerInOfAsOperators = false;
             if (!Parameters(out var declarators, TokenTypes.SemiColon, false, FastVariableKind.Const))
                 throw stream.Unexpected();

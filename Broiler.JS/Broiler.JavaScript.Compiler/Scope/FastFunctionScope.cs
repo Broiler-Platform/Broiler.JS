@@ -607,6 +607,40 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         }
     }
 
+    // The var-environment binding names of the *immediate* function enclosing this scope (its own
+    // var / parameter / function-declaration bindings, walking only its own scopes — not enclosing
+    // functions or the global scope). A sloppy direct eval declaring `var X` reuses the binding of
+    // such a name in the calling function's var environment instead of creating a new one, so this
+    // distinguishes the immediate function's locals (reuse) from a captured enclosing-function or
+    // global binding of the same name (which the eval's `var` must shadow with a fresh local).
+    public IEnumerable<string> GetImmediateVarEnvNames()
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var current = this;
+        while (current != null && current.Function == Function)
+        {
+            var variables = current.variableScopeList.AllValues;
+            while (variables.MoveNext(out var entry))
+            {
+                var variable = entry.Value;
+                if (variable.IsLexical
+                    || variable.IsTemp
+                    || variable.IsEvalShadow
+                    || string.IsNullOrEmpty(variable.Name)
+                    || variable.Name == "this"
+                    || variable.Name == NewTargetBindingName
+                    || !seen.Add(NormalizeVisibleName(variable.Name)))
+                {
+                    continue;
+                }
+
+                yield return variable.Name;
+            }
+
+            current = current.Parent;
+        }
+    }
+
     public VariableScope CreateException(string name)
     {
         var v = new VariableScope { Variable = YExpression.Parameter(typeof(Exception), name + "Exp") };

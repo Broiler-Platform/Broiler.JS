@@ -287,9 +287,11 @@ public class Issue779Tests
     public void NullOptionValueThrowsRangeError(string code)
         => Assert.Equal("RangeError", ErrorName(code));
 
-    [Theory] // the disambiguation / calendarName options are honoured for valid values
-    [InlineData("Temporal.PlainMonthDay.from('01-15').toString({calendarName:'always'})", "01-15[u-ca=iso8601]")]
-    [InlineData("Temporal.PlainMonthDay.from('01-15').toString({calendarName:'critical'})", "01-15[!u-ca=iso8601]")]
+    [Theory] // the disambiguation / calendarName options are honoured for valid values.
+    // Per TemporalMonthDayToString the reference year is emitted whenever a calendar
+    // annotation is shown (calendarName 'always'/'critical') or the calendar is non-ISO.
+    [InlineData("Temporal.PlainMonthDay.from('01-15').toString({calendarName:'always'})", "1972-01-15[u-ca=iso8601]")]
+    [InlineData("Temporal.PlainMonthDay.from('01-15').toString({calendarName:'critical'})", "1972-01-15[!u-ca=iso8601]")]
     [InlineData("Temporal.PlainMonthDay.from('01-15').toString({calendarName:'never'})", "01-15")]
     public void PlainMonthDayToStringCalendarName(string call, string expected)
         => Assert.Equal(expected, Eval(call));

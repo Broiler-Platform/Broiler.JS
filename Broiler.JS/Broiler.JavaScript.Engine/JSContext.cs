@@ -714,6 +714,27 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return new DirectEvalLexicalBindingScope(this, names);
     }
 
+    // The calling function's var-environment binding names for the running direct eval, so its var
+    // declarations can reuse an existing function-local binding (EvalDeclarationInstantiation) rather
+    // than create a shadowing overlay. A scope is pushed for every direct eval (empty when there are
+    // none) so the innermost scope always corresponds to the currently executing eval.
+    private readonly List<string[]> directEvalVarEnvNameScopes = [];
+
+    private sealed class DirectEvalVarEnvNameScope(JSContext context) : IDisposable
+    {
+        public void Dispose()
+        {
+            if (context.directEvalVarEnvNameScopes.Count > 0)
+                context.directEvalVarEnvNameScopes.RemoveAt(context.directEvalVarEnvNameScopes.Count - 1);
+        }
+    }
+
+    public IDisposable PushDirectEvalVarEnvNames(string[] names)
+    {
+        directEvalVarEnvNameScopes.Add(names ?? []);
+        return new DirectEvalVarEnvNameScope(this);
+    }
+
     /// <summary>
     /// Registers a top-level script <c>let</c>/<c>const</c>/class binding into the global lexical
     /// environment: it becomes resolvable by name (including from a later indirect eval, which
@@ -887,12 +908,29 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             return existing;
         }
 
+        // EvalDeclarationInstantiation does not create a new binding when one already exists in the
+        // calling function's variable environment. Such a function-local was captured for the eval
+        // and published into globalVars; reuse it (so `eval('var v; v')` / `eval('var v = 5')` read
+        // and write the function's own `v`) — but only when the name is genuinely the IMMEDIATE
+        // function's var-env binding, not a captured enclosing-function / global of the same name
+        // (the eval's `var` must shadow those with a fresh local).
+        if (IsImmediateEvalVarEnvName(name) && globalVars.TryGetValue(name.Key, out var captured))
+            return captured;
+
         var variable = new JSVariable(fallback, name.Value);
         if (directEvalLocalVarEnvironmentDepth > 0 && TryGetCurrentDirectEvalActivationOwner(out var owner))
             owner.RegisterDirectEvalBinding(variable);
 
         return variable;
     }
+
+    // Only the innermost (current) direct eval's var-env names apply: a var the running eval declares
+    // belongs to its own calling function's var environment, not an enclosing eval's. A scope is
+    // pushed for every direct eval (possibly empty), so the top always corresponds to this eval.
+    private bool IsImmediateEvalVarEnvName(in KeyString name)
+        => directEvalVarEnvNameScopes.Count > 0
+           && directEvalVarEnvNameScopes[^1] is { } names
+           && Array.IndexOf(names, name.ToString()) >= 0;
 
     public override JSValue this[KeyString name]
     {
@@ -1052,19 +1090,25 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return TryResolveWithObject(name, out var withObject) ? withObject : null;
     }
 
-    public JSValue ResolveIdentifier(in KeyString name)
+    public JSValue ResolveIdentifier(in KeyString name) => ResolveIdentifier(name, strict: false);
+
+    // Strict-reference variant. A `with` statement is sloppy-only, but a *strict* function
+    // nested inside one (and invoked while the `with` scope is active) closes over the with-object
+    // environment, so its reads resolve through it with strictness flag S = true.
+    public JSValue ResolveIdentifierStrict(in KeyString name) => ResolveIdentifier(name, strict: true);
+
+    private JSValue ResolveIdentifier(in KeyString name, bool strict)
     {
         if (TryResolveWithObject(name, out var withObject))
         {
             // §9.1.1.2.6 GetBindingValue for an object Environment Record: HasBinding
             // (TryResolveWithObject) already claimed this `with` object owns the name,
             // but its @@unscopables getter / `has` trap may have deleted the property in
-            // the meantime. When the re-probe finds it gone, return undefined rather than
-            // throw — `with` is sloppy-only (a strict-mode SyntaxError) so the reference's
-            // strictness flag S is always false, and the lookup does not fall through to
-            // an enclosing scope.
+            // the meantime. GetBindingValue re-probes: when the property is gone a strict
+            // reference (S = true) throws a ReferenceError, a sloppy one yields undefined.
+            // Either way the lookup does not fall through to an enclosing scope.
             if (!withObject.HasProperty(name.ToJSValue()).BooleanValue)
-                return JSUndefined.Value;
+                return strict ? throw JSEngine.NewReferenceError($"{name} is not defined") : JSUndefined.Value;
 
             return withObject[name];
         }

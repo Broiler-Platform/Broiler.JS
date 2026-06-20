@@ -57,17 +57,13 @@ internal static class TemporalIsoString
     private static readonly Regex CalendarAnnotationPattern =
         new(@"\[!?u-ca=[^\]]+\]", RegexOptions.CultureInvariant);
 
-    // When a Temporal string carries more than one calendar (u-ca) annotation the first one wins and
-    // the rest are ignored — *unless* any of them is flagged critical ("!"), in which case the
-    // duplication is a RangeError (a critical annotation must not be silently dropped).
+    // A Temporal / RFC 9557 string may carry at most one calendar (u-ca) annotation; two or
+    // more — regardless of whether any is flagged critical ("!"), and even when identical
+    // (e.g. "[u-ca=iso8601][u-ca=iso8601]") — is a RangeError (ParseISODateTime).
     internal static void RejectMultipleCalendarAnnotations(string text)
     {
-        var matches = CalendarAnnotationPattern.Matches(text);
-        if (matches.Count <= 1) return;
-
-        foreach (Match m in matches)
-            if (m.Value.StartsWith("[!", StringComparison.Ordinal))
-                throw JSEngine.NewRangeError($"Temporal: more than one calendar annotation in \"{text}\"");
+        if (CalendarAnnotationPattern.Matches(text).Count > 1)
+            throw JSEngine.NewRangeError($"Temporal: more than one calendar annotation in \"{text}\"");
     }
 
     // Each trailing [..] annotation is either a TimeZoneIdentifier (no '=') or a key=value
