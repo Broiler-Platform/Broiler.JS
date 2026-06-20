@@ -1052,19 +1052,25 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return TryResolveWithObject(name, out var withObject) ? withObject : null;
     }
 
-    public JSValue ResolveIdentifier(in KeyString name)
+    public JSValue ResolveIdentifier(in KeyString name) => ResolveIdentifier(name, strict: false);
+
+    // Strict-reference variant. A `with` statement is sloppy-only, but a *strict* function
+    // nested inside one (and invoked while the `with` scope is active) closes over the with-object
+    // environment, so its reads resolve through it with strictness flag S = true.
+    public JSValue ResolveIdentifierStrict(in KeyString name) => ResolveIdentifier(name, strict: true);
+
+    private JSValue ResolveIdentifier(in KeyString name, bool strict)
     {
         if (TryResolveWithObject(name, out var withObject))
         {
             // §9.1.1.2.6 GetBindingValue for an object Environment Record: HasBinding
             // (TryResolveWithObject) already claimed this `with` object owns the name,
             // but its @@unscopables getter / `has` trap may have deleted the property in
-            // the meantime. When the re-probe finds it gone, return undefined rather than
-            // throw — `with` is sloppy-only (a strict-mode SyntaxError) so the reference's
-            // strictness flag S is always false, and the lookup does not fall through to
-            // an enclosing scope.
+            // the meantime. GetBindingValue re-probes: when the property is gone a strict
+            // reference (S = true) throws a ReferenceError, a sloppy one yields undefined.
+            // Either way the lookup does not fall through to an enclosing scope.
             if (!withObject.HasProperty(name.ToJSValue()).BooleanValue)
-                return JSUndefined.Value;
+                return strict ? throw JSEngine.NewReferenceError($"{name} is not defined") : JSUndefined.Value;
 
             return withObject[name];
         }

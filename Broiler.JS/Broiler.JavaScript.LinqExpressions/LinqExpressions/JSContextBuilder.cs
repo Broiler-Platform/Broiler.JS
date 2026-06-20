@@ -54,6 +54,7 @@ public class JSContextBuilder
     private static MethodInfo _PushWithScope = typeof(JSContext).GetMethod(nameof(JSContext.PushWithScope), [typeof(JSValue)]);
     private static MethodInfo _CaptureWithScopes = typeof(JSContext).GetMethod(nameof(JSContext.CaptureWithScopes), Type.EmptyTypes);
     private static MethodInfo _ResolveIdentifier = typeof(JSContext).GetMethod(nameof(JSContext.ResolveIdentifier), [typeof(KeyString).MakeByRefType()]);
+    private static MethodInfo _ResolveIdentifierStrict = typeof(JSContext).GetMethod(nameof(JSContext.ResolveIdentifierStrict), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _ResolveIdentifierWithoutWithScopes = typeof(JSContext).GetMethod(nameof(JSContext.ResolveIdentifierWithoutWithScopes), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _ResolveGlobalVarRead = typeof(JSContext).GetMethod(nameof(JSContext.ResolveGlobalVarRead), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _ResolveIdentifierOrUndefined = typeof(JSContext).GetMethod(nameof(JSContext.ResolveIdentifierOrUndefined), [typeof(KeyString).MakeByRefType()]);
@@ -79,6 +80,8 @@ public class JSContextBuilder
     public static Expression PushWithScope(Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _PushWithScope, value);
     public static Expression CaptureWithScopes() => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _CaptureWithScopes);
     public static Expression ResolveIdentifier(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveIdentifier, key);
+
+    public static Expression ResolveIdentifierStrict(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveIdentifierStrict, key);
     public static Expression ResolveIdentifierWithoutWithScopes(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveIdentifierWithoutWithScopes, key);
     public static Expression ResolveGlobalVarRead(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveGlobalVarRead, key);
     public static Expression ResolveIdentifierOrUndefined(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveIdentifierOrUndefined, key);

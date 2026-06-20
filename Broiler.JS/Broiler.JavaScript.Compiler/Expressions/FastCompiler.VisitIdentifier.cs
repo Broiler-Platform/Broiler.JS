@@ -278,7 +278,12 @@ partial class FastCompiler
             return throwIfMissing && variable.ReadExpression != null ? variable.ReadExpression : variable.Expression;
 
         return throwIfMissing
-            ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
+            // A strict reference resolving through an active `with` scope (a strict function nested
+            // in a sloppy `with`) throws if the binding was deleted by @@unscopables; a sloppy one
+            // yields undefined. Either form throws for a genuinely undeclared name.
+            ? (IsStrictMode
+                ? JSContextBuilder.ResolveIdentifierStrict(KeyOfName(identifier.Name))
+                : JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)))
             : JSContextBuilder.ResolveIdentifierOrUndefined(KeyOfName(identifier.Name));
     }
 
