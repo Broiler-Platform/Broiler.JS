@@ -5393,11 +5393,13 @@ public class JSIntlDateTimeFormat : JSObject
             hasEra: OptionString(KeyStrings.GetOrCreate("era")) != null,
             eraStyle: OptionString(KeyStrings.GetOrCreate("era")));
 
-    // The resolved calendar: the requested -u-ca- value when it is one this engine
-    // supports (era-based Gregorian-derived calendars), otherwise "gregory".
+    // The resolved calendar: per ECMA-402 InitializeDateTimeFormat the `calendar` OPTION
+    // takes precedence over the locale tag's -u-ca- value, then -u-ca-, then the locale's
+    // default ("gregory"). An unsupported value (one this engine cannot project the year /
+    // era through) falls back to "gregory" so formatting still produces a usable result.
     internal string ResolvedCalendar()
     {
-        var ca = UnicodeKeyword(localeTag, "ca");
+        var ca = OptionString(CalendarKey) ?? UnicodeKeyword(localeTag, "ca");
         return JSIntlDateTimeFormatEngine.IsSupportedCalendar(ca) ? ca : "gregory";
     }
 

@@ -7200,6 +7200,90 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void DateTimeFormat_Renders_FractionalSecondDigits_When_Requested()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var d = new Date(Date.UTC(2020, 0, 1, 12, 34, 56, 789));
+            var fmt = new Intl.DateTimeFormat('en-US', {
+              hour: 'numeric', minute: 'numeric', second: 'numeric',
+              fractionalSecondDigits: 3, timeZone: 'UTC', hour12: false
+            });
+            var formatted = fmt.format(d);
+            [
+              /\.789/.test(formatted),
+              fmt.resolvedOptions().fractionalSecondDigits
+            ].join('|');
+            """);
+
+        Assert.Equal("true|3", result.ToString());
+    }
+
+    [Fact]
+    public void Promise_Instance_Constructor_Is_Promise()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var p = new Promise(function (resolve) { resolve(1); });
+            [
+              p.constructor === Promise,
+              Object.getPrototypeOf(p) === Promise.prototype,
+              p instanceof Promise
+            ].join('|');
+            """);
+
+        Assert.Equal("true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void DateTimeFormat_Honors_Buddhist_Calendar_Option_For_Year_Formatting()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var optDtf = new Intl.DateTimeFormat('en-US', { calendar: 'buddhist', year: 'numeric' });
+            var tagDtf = new Intl.DateTimeFormat('en-US-u-ca-buddhist', { year: 'numeric' });
+            var pd = Temporal.PlainDate.from('2050-01-31[u-ca=buddhist]');
+            [
+              optDtf.resolvedOptions().calendar,
+              optDtf.formatToParts(pd).find(p => p.type === 'year').value,
+              tagDtf.resolvedOptions().calendar,
+              tagDtf.formatToParts(pd).find(p => p.type === 'year').value
+            ].join('|');
+            """);
+
+        // The calendar OPTION must reach ResolvedCalendar (previously only the -u-ca- tag
+        // value was consulted), so a Buddhist year formats as 2050 + 543 = 2593.
+        Assert.Equal("buddhist|2593|buddhist|2593", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Supports_Hex_Property_Escape()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              /\p{Hex}/u.test('a'),
+              /\p{Hex}/u.test('5'),
+              /\p{Hex}/u.test('g'),
+              /[\p{Hex}]/u.test('F'),
+              /\p{Hex_Digit}/u.test('B'),
+              /\p{ASCII_Hex_Digit}/u.test('a'),
+              /\p{ASCII_Hex_Digit}/u.test('ａ')
+            ].join('|');
+            """);
+
+        Assert.Equal("true|true|false|true|true|true|false", result.ToString());
+    }
+
+    [Fact]
     public void NumberFormat_Compact_Notation_Supports_German_Suffixes()
     {
         EnsureBuiltInsLoaded();
