@@ -362,57 +362,13 @@ public partial class JSTemporalZonedDateTime : JSObject
         return new JSTemporalZonedDateTime(transition.Value, timeZoneId, calendarId, ZonedDateTimePrototype);
     }
 
-    // Finds the first UTC-offset change strictly after (forward) or before (!forward) startNs by scanning
-    // to bracket a transition, then binary-searching to nanosecond precision. The scan is adaptive: fine
-    // (one day) near startNs so that closely-spaced transitions — e.g. a spring/autumn DST pair — are
-    // never stepped over, then a coarser step across long constant-offset gaps. The latter is what an
-    // instant decades before a zone's first historical transition needs (test262 specific-tzdb-values:
-    // America/New_York's first transition, 1883-11-18, is 83 years after a 1800 relativeTo, well past the
-    // old ~50-year horizon). The horizon (~600 years) covers every real IANA zone's recorded transitions.
-    private static BigInteger? FindTransition(TimeZoneInfo tz, BigInteger startNs, bool forward)
+    // The first offset transition strictly after (forward) or before (!forward) startNs, read directly
+    // from the zone's bundled transition table at full (whole-second) precision, or null when the zone
+    // has no such transition (e.g. an instant before its first recorded transition).
+    private static BigInteger? FindTransition(Tz.IanaTimeZone tz, BigInteger startNs, bool forward)
     {
-        long OffsetAt(BigInteger ns) => (long)tz.GetUtcOffset(EpochNsToUtcDateTime(ns)).Ticks * 100;
-
-        var dayNs = (BigInteger)86_400_000_000_000L;
-        var dir = forward ? BigInteger.One : BigInteger.MinusOne;
-        var lastT = startNs;
-        var lastOffset = OffsetAt(startNs);
-
-        // Step one day at a time until well past any DST cadence, then accelerate. A coarse step can only
-        // skip a transition if two transitions fall within it and return to the same offset, which no IANA
-        // zone does once outside the densely-scanned fine window — there the next change is always isolated.
-        const long fineDays = 800;
-        const long coarseStepDays = 7;
-        const long horizonDays = 366L * 600;
-
-        long scanned = 0;
-        while (scanned < horizonDays)
-        {
-            scanned += scanned < fineDays ? 1 : coarseStepDays;
-            var t = startNs + dir * dayNs * scanned;
-            if (!IsValid(t)) return null;
-            var off = OffsetAt(t);
-            if (off != lastOffset)
-            {
-                // The transition lies between the lower and upper of {lastT, t}; binary-search the first
-                // nanosecond carrying the upper bound's offset.
-                var lo = BigInteger.Min(lastT, t);
-                var hi = BigInteger.Max(lastT, t);
-                var loOffset = OffsetAt(lo);
-                while (hi - lo > 1)
-                {
-                    var mid = (lo + hi) / 2;
-                    if (OffsetAt(mid) == loOffset) lo = mid; else hi = mid;
-                }
-                // OffsetAt resolves only to .NET ticks (100 ns), so for a pre-1970 (negative) instant the
-                // found boundary can sit up to 99 ns inside the transition tick. Real IANA transitions are
-                // whole-second (tick-aligned), so snap to the tick boundary (truncation toward zero).
-                return hi / 100 * 100;
-            }
-            lastT = t;
-            lastOffset = off;
-        }
-        return null;
+        var transition = tz.FindTransition(startNs, forward);
+        return transition.HasValue && IsValid(transition.Value) ? transition : null;
     }
 
     [JSExport("toInstant", Length = 0)]
@@ -1226,11 +1182,9 @@ public partial class JSTemporalZonedDateTime : JSObject
         var tz = ResolveNamedZone(timeZoneId);
         if (tz == null) return 0;
 
-        // Convert epoch ns → UTC DateTime (clamped to the representable DateTime range so the
-        // offset lookup never throws for extreme years).
-        var utc = EpochNsToUtcDateTime(epochNs);
-        try { return ApplySubMinuteOffsetCorrection(tz.Id, (long)tz.GetUtcOffset(utc).Ticks * 100); }
-        catch { return 0; }
+        // The bundled table records offsets at full IANA precision (seconds), so historical sub-minute
+        // offsets such as Africa/Monrovia's -00:44:30 are exact without any post-correction.
+        return tz.GetOffsetNanoseconds(epochNs);
     }
 
     // ToTemporalTimeZoneIdentifier for a slot value supplied as a JSValue: a ZonedDateTime contributes
@@ -1253,15 +1207,13 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (TryFixedOffset(timeZoneId, out var fixedNs))
             return fixedNs;
 
-        var tz = ResolveNamedZone(timeZoneId);
-        if (tz == null) return 0;
+        if (ResolveNamedZone(timeZoneId) == null) return 0;
 
-        // Default ("compatible") disambiguation: when the wall-clock time is ambiguous (a fall-back
-        // fold yields two candidate offsets) choose the EARLIER instant, i.e. the offset that makes
-        // epoch = localNs - offset smallest — that is the largest (least negative) offset. .NET's
-        // GetUtcOffset returns the standard-time (later-instant) offset for an ambiguous time, which
-        // is the "later" disambiguation, so resolve folds explicitly. A gap (no candidate) and an
-        // unambiguous time keep the GetUtcOffset result below (the gap handling is already correct).
+        // Default ("compatible") disambiguation. A fall-back fold yields two candidate offsets: choose
+        // the EARLIER instant, i.e. the largest (least negative) offset (epoch = localNs - offset). An
+        // unambiguous wall time has a single candidate. A spring-forward gap yields no candidate; per
+        // "compatible" the later instant is taken — interpret the wall clock with the pre-transition
+        // offset (a day earlier), which lands just past the gap.
         var candidates = CandidateOffsetsForLocal(timeZoneId, y, mo, d, h, mi, s);
         if (candidates.Count >= 2)
         {
@@ -1271,14 +1223,12 @@ public partial class JSTemporalZonedDateTime : JSObject
                     earliest = candidates[i];
             return earliest;
         }
+        if (candidates.Count == 1)
+            return candidates[0];
 
-        try
-        {
-            var clampedYear = Math.Clamp(y, 1, 9999);
-            var local = new DateTime(clampedYear, mo, d, h, mi, s, DateTimeKind.Unspecified);
-            return ApplySubMinuteOffsetCorrection(tz.Id, (long)tz.GetUtcOffset(local).Ticks * 100);
-        }
-        catch { return 0; }
+        const long dayNs = 86_400_000_000_000L;
+        var localNs = LocalNanoseconds(y, mo, d, h, mi, s, 0, 0, 0);
+        return OffsetNanosecondsForInstant(timeZoneId, localNs - dayNs);
     }
 
     // GetPossibleEpochNanoseconds, expressed as the distinct UTC offsets (ns) the zone yields for a
@@ -1329,25 +1279,6 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (!CandidateOffsetsForLocal(timeZoneId, y, mo, d, h, mi, s).Contains(offsetNs))
             throw JSEngine.NewRangeError($"Temporal: offset \"{offsetString}\" does not match the time zone \"{timeZoneId}\"");
     }
-
-    // .NET's TimeZoneInfo stores UTC offsets at whole-minute resolution, truncating the sub-minute
-    // offsets some IANA zones used historically. Restore the precise IANA value for the zones Temporal
-    // exercises so offset round-tripping and the match-minutes offset matching below behave per spec
-    // (e.g. so a "-00:45" or "-00:44:30" string offset is recognized as Africa/Monrovia's offset).
-    // Keyed by the zone's canonical id and the (whole-minute) value .NET reports after truncation:
-    //   Africa/Monrovia  -00:44:00 → -00:44:30  (Monrovia Mean Time, used until 1972-01-07)
-    //   Pacific/Niue     -11:19:00 → -11:19:40  (local mean time, used until 1952-10-16)
-    private static readonly Dictionary<string, (long Truncated, long Precise)> SubMinuteOffsetCorrections =
-        new(StringComparer.Ordinal)
-        {
-            ["Africa/Monrovia"] = (-2640_000_000_000L, -2670_000_000_000L),
-            ["Pacific/Niue"] = (-40740_000_000_000L, -40780_000_000_000L),
-        };
-
-    private static long ApplySubMinuteOffsetCorrection(string zoneId, long offsetNs)
-        => SubMinuteOffsetCorrections.TryGetValue(zoneId, out var c) && offsetNs == c.Truncated
-            ? c.Precise
-            : offsetNs;
 
     // InterpretISODateTimeOffset offset-matching for the "prefer"/"reject" options: does the explicit
     // offset parsed from the string match one of the zone's candidate offsets for the local time?
@@ -1422,15 +1353,6 @@ public partial class JSTemporalZonedDateTime : JSObject
         return transition ?? localMidnightNs;
     }
 
-    private static DateTime EpochNsToUtcDateTime(BigInteger epochNs)
-    {
-        // Unix epoch is 621355968000000000 ticks; 1 tick = 100 ns.
-        var ticks = (BigInteger)621355968000000000L + epochNs / 100;
-        if (ticks < DateTime.MinValue.Ticks) ticks = DateTime.MinValue.Ticks;
-        if (ticks > DateTime.MaxValue.Ticks) ticks = DateTime.MaxValue.Ticks;
-        return new DateTime((long)ticks, DateTimeKind.Utc);
-    }
-
     private static bool TryFixedOffset(string id, out long offsetNs)
     {
         offsetNs = 0;
@@ -1451,217 +1373,21 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static readonly Regex OffsetIdPattern = new(
         @"^([+-])(\d{2})(?::?(\d{2})(?::?(\d{2}))?)?$", RegexOptions.CultureInvariant);
 
-    private static Dictionary<string, string> _caseFoldedZoneIds;
-    private static Dictionary<string, string> _caseFoldedAliasIds;
-
-    private static TimeZoneInfo ResolveNamedZone(string id)
-    {
-        if (id == null) return null;
-
-        // A recognized IANA backward alias (e.g. "Asia/Ulan_Bator") keeps its own identifier
-        // on the instance but is resolved through its primary zone ("Asia/Ulaanbaatar") for the
-        // actual offset computation, since the alias itself is not a system zone here.
-        if (BackwardAliasToPrimary.TryGetValue(id, out var primaryFromAlias))
-            id = primaryFromAlias;
-
-        try { return TimeZoneInfo.FindSystemTimeZoneById(id); }
-        catch { /* fall through to a case-insensitive lookup */ }
-
-        // IANA identifiers are matched case-insensitively, but some platforms' FindSystemTimeZoneById
-        // is case-sensitive, so fall back to a case-folded scan of the available zones (e.g. so
-        // "Africa/CAIRO" resolves to the "Africa/Cairo" zone).
-        var folded = _caseFoldedZoneIds ??= BuildCaseFoldedZoneIds();
-        if (folded.TryGetValue(id.ToUpperInvariant(), out var canonicalId))
-        {
-            try { return TimeZoneInfo.FindSystemTimeZoneById(canonicalId); }
-            catch { return null; }
-        }
-        return null;
-    }
-
-    // A case-insensitive input that names an IANA backward alias resolves to the alias's own
-    // (proper-case) identifier — the identifier is preserved, NOT replaced by the primary zone
-    // (ToTemporalTimeZoneIdentifier only case-normalizes). Returns null when it is not an alias.
-    private static string MatchBackwardAlias(string id)
-    {
-        var folded = _caseFoldedAliasIds ??= BuildCaseFoldedAliasIds();
-        return folded.TryGetValue(id.ToUpperInvariant(), out var properCase) ? properCase : null;
-    }
-
-    private static Dictionary<string, string> BuildCaseFoldedAliasIds()
-    {
-        var map = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var alias in BackwardAliasToPrimary.Keys)
-            map[alias.ToUpperInvariant()] = alias;
-        return map;
-    }
-
-    // IANA tzdb "backward" aliases (legacy identifiers) mapped to their primary zone. These
-    // are recognized identifiers that some platforms do not enumerate or resolve, so they are
-    // carried explicitly: the alias is preserved as the instance identifier and resolved
-    // through its primary for offset computation. Generated from the tzdb backward file.
-    private static readonly Dictionary<string, string> BackwardAliasToPrimary = new(StringComparer.Ordinal)
-    {
-        ["Africa/Asmera"] = "Africa/Nairobi",
-        ["America/Argentina/ComodRivadavia"] = "America/Argentina/Catamarca",
-        ["America/Buenos_Aires"] = "America/Argentina/Buenos_Aires",
-        ["America/Catamarca"] = "America/Argentina/Catamarca",
-        ["America/Cordoba"] = "America/Argentina/Cordoba",
-        ["America/Fort_Wayne"] = "America/Indiana/Indianapolis",
-        ["America/Godthab"] = "America/Nuuk",
-        ["America/Indianapolis"] = "America/Indiana/Indianapolis",
-        ["America/Jujuy"] = "America/Argentina/Jujuy",
-        ["America/Knox_IN"] = "America/Indiana/Knox",
-        ["America/Louisville"] = "America/Kentucky/Louisville",
-        ["America/Mendoza"] = "America/Argentina/Mendoza",
-        ["America/Rosario"] = "America/Argentina/Cordoba",
-        ["Antarctica/South_Pole"] = "Pacific/Auckland",
-        ["Asia/Ashkhabad"] = "Asia/Ashgabat",
-        ["Asia/Calcutta"] = "Asia/Kolkata",
-        ["Asia/Chungking"] = "Asia/Shanghai",
-        ["Asia/Dacca"] = "Asia/Dhaka",
-        ["Asia/Katmandu"] = "Asia/Kathmandu",
-        ["Asia/Macao"] = "Asia/Macau",
-        ["Asia/Rangoon"] = "Asia/Yangon",
-        ["Asia/Saigon"] = "Asia/Ho_Chi_Minh",
-        ["Asia/Thimbu"] = "Asia/Thimphu",
-        ["Asia/Ujung_Pandang"] = "Asia/Makassar",
-        ["Asia/Ulan_Bator"] = "Asia/Ulaanbaatar",
-        ["Atlantic/Faeroe"] = "Atlantic/Faroe",
-        ["Australia/ACT"] = "Australia/Sydney",
-        ["Australia/LHI"] = "Australia/Lord_Howe",
-        ["Australia/NSW"] = "Australia/Sydney",
-        ["Australia/North"] = "Australia/Darwin",
-        ["Australia/Queensland"] = "Australia/Brisbane",
-        ["Australia/South"] = "Australia/Adelaide",
-        ["Australia/Tasmania"] = "Australia/Hobart",
-        ["Australia/Victoria"] = "Australia/Melbourne",
-        ["Australia/West"] = "Australia/Perth",
-        ["Brazil/Acre"] = "America/Rio_Branco",
-        ["Brazil/DeNoronha"] = "America/Noronha",
-        ["Brazil/East"] = "America/Sao_Paulo",
-        ["Brazil/West"] = "America/Manaus",
-        ["Canada/Atlantic"] = "America/Halifax",
-        ["Canada/Central"] = "America/Winnipeg",
-        ["Canada/Eastern"] = "America/Toronto",
-        ["Canada/Mountain"] = "America/Edmonton",
-        ["Canada/Newfoundland"] = "America/St_Johns",
-        ["Canada/Pacific"] = "America/Vancouver",
-        ["Canada/Saskatchewan"] = "America/Regina",
-        ["Canada/Yukon"] = "America/Whitehorse",
-        ["Chile/Continental"] = "America/Santiago",
-        ["Chile/EasterIsland"] = "Pacific/Easter",
-        ["Cuba"] = "America/Havana",
-        ["Egypt"] = "Africa/Cairo",
-        ["Eire"] = "Europe/Dublin",
-        ["Europe/Kiev"] = "Europe/Kyiv",
-        ["Europe/Uzhgorod"] = "Europe/Kyiv",
-        ["Europe/Zaporozhye"] = "Europe/Kyiv",
-        ["GB"] = "Europe/London",
-        ["GB-Eire"] = "Europe/London",
-        ["GMT+0"] = "Etc/GMT",
-        ["GMT-0"] = "Etc/GMT",
-        ["GMT0"] = "Etc/GMT",
-        ["Greenwich"] = "Etc/GMT",
-        ["Hongkong"] = "Asia/Hong_Kong",
-        ["Iceland"] = "Africa/Abidjan",
-        ["Iran"] = "Asia/Tehran",
-        ["Israel"] = "Asia/Jerusalem",
-        ["Jamaica"] = "America/Jamaica",
-        ["Japan"] = "Asia/Tokyo",
-        ["Kwajalein"] = "Pacific/Kwajalein",
-        ["Libya"] = "Africa/Tripoli",
-        ["Mexico/BajaNorte"] = "America/Tijuana",
-        ["Mexico/BajaSur"] = "America/Mazatlan",
-        ["Mexico/General"] = "America/Mexico_City",
-        ["NZ"] = "Pacific/Auckland",
-        ["NZ-CHAT"] = "Pacific/Chatham",
-        ["Navajo"] = "America/Denver",
-        ["PRC"] = "Asia/Shanghai",
-        ["Pacific/Enderbury"] = "Pacific/Kanton",
-        ["Pacific/Ponape"] = "Pacific/Guadalcanal",
-        ["Pacific/Truk"] = "Pacific/Port_Moresby",
-        ["Poland"] = "Europe/Warsaw",
-        ["Portugal"] = "Europe/Lisbon",
-        ["ROC"] = "Asia/Taipei",
-        ["ROK"] = "Asia/Seoul",
-        ["Singapore"] = "Asia/Singapore",
-        ["Turkey"] = "Europe/Istanbul",
-        ["UCT"] = "Etc/UTC",
-        ["US/Alaska"] = "America/Anchorage",
-        ["US/Aleutian"] = "America/Adak",
-        ["US/Arizona"] = "America/Phoenix",
-        ["US/Central"] = "America/Chicago",
-        ["US/East-Indiana"] = "America/Indiana/Indianapolis",
-        ["US/Eastern"] = "America/New_York",
-        ["US/Hawaii"] = "Pacific/Honolulu",
-        ["US/Indiana-Starke"] = "America/Indiana/Knox",
-        ["US/Michigan"] = "America/Detroit",
-        ["US/Mountain"] = "America/Denver",
-        ["US/Pacific"] = "America/Los_Angeles",
-        ["US/Samoa"] = "Pacific/Pago_Pago",
-        ["Universal"] = "Etc/UTC",
-        ["W-SU"] = "Europe/Moscow",
-        ["Zulu"] = "Etc/UTC",
-    };
-
-
-    private static Dictionary<string, string> BuildCaseFoldedZoneIds()
-    {
-        var map = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var tz in TimeZoneInfo.GetSystemTimeZones())
-            map[tz.Id.ToUpperInvariant()] = tz.Id;
-
-        // The Etc/GMT* family (and the GMT/UTC aliases) are resolvable by exact identifier
-        // via FindSystemTimeZoneById but are not enumerated by GetSystemTimeZones on every
-        // platform, so a case-folded lookup for e.g. "etc/gmt" / "eTc/gMt+1" would otherwise
-        // miss them. Probe each well-known identifier and fold in any the runtime recognizes.
-        foreach (var candidate in EtcZoneCandidates())
-        {
-            var key = candidate.ToUpperInvariant();
-            if (map.ContainsKey(key))
-                continue;
-            try { map[key] = TimeZoneInfo.FindSystemTimeZoneById(candidate).Id; }
-            catch { /* not recognized on this platform */ }
-        }
-        return map;
-    }
-
-    private static IEnumerable<string> EtcZoneCandidates()
-    {
-        yield return "Etc/GMT";
-        yield return "Etc/GMT0";
-        yield return "Etc/UTC";
-        yield return "Etc/UCT";
-        yield return "Etc/Universal";
-        yield return "Etc/Zulu";
-        yield return "Etc/Greenwich";
-        yield return "GMT";
-        yield return "GMT0";
-        yield return "UCT";
-        yield return "Universal";
-        yield return "Zulu";
-        yield return "Greenwich";
-        // Etc/GMT offsets run from -14 to +12 (the sign is POSIX-inverted, as in the IANA tzdb).
-        for (var h = 1; h <= 14; h++)
-            yield return $"Etc/GMT-{h}";
-        for (var h = 1; h <= 12; h++)
-            yield return $"Etc/GMT+{h}";
-    }
+    // Named IANA zones resolve through the bundled tz database (Temporal/Tz), so offset and
+    // transition computation does not depend on the host OS tz data. A link/alias resolves to its
+    // target's transition data while keeping its own identifier; an unknown id yields null.
+    private static Tz.IanaTimeZone ResolveNamedZone(string id) => Tz.IanaTimeZoneDatabase.Get(id);
 
     // TimeZoneEquals (used by ZonedDateTime.prototype.equals): two identifiers denote the same zone when
     // they are the same string or resolve to the same primary IANA identifier. IANA keeps backward
     // aliases (e.g. "Asia/Calcutta" for "Asia/Kolkata"); the identifier is preserved on the instance, but
-    // equality compares the primary. Canonicalizing each through the IANA→Windows→IANA mapping collapses
-    // an alias and its primary to one string (a numeric offset / UTC has no Windows mapping, so it falls
-    // back to its already-canonical identifier — these only ever match an identical string).
+    // equality compares the primary. The bundled tz database resolves an alias/link to its target zone
+    // (a numeric offset / UTC is not a link, so it falls back to its already-canonical identifier —
+    // these only ever match an identical string).
     private static bool TimeZoneEquals(string a, string b)
         => a == b || PrimaryTimeZoneIdentifier(a) == PrimaryTimeZoneIdentifier(b);
 
-    private static string PrimaryTimeZoneIdentifier(string id)
-        => TimeZoneInfo.TryConvertIanaIdToWindowsId(id, out var windows) &&
-           TimeZoneInfo.TryConvertWindowsIdToIanaId(windows, out var primary)
-            ? primary : id;
+    private static string PrimaryTimeZoneIdentifier(string id) => Tz.IanaTimeZoneDatabase.GetPrimary(id);
 
     // ToTemporalTimeZoneIdentifier: a time-zone slot value supplied as a String is a bare time-zone
     // identifier (UTC, a numeric offset, or an IANA name) or a full Temporal ISO string, in which
@@ -1698,17 +1424,12 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
         if (TryOffsetTimeZoneIdentifier(id, out var offsetNs)) { canonical = FormatOffset(offsetNs); return true; }
 
-        // An IANA backward alias is a valid identifier that keeps its OWN (case-normalized) name,
-        // e.g. "asia/ulan_bator" → "Asia/Ulan_Bator" (not the primary "Asia/Ulaanbaatar"). It is
-        // matched before the system-zone scan because ResolveNamedZone resolves an alias through its
-        // primary (for offset computation) and would otherwise yield the primary's identifier.
-        var aliasProperCase = MatchBackwardAlias(id);
-        if (aliasProperCase != null) { canonical = aliasProperCase; return true; }
-
-        // IANA identifiers match case-insensitively; the canonical (case-normalized) identifier is
-        // the resolved zone's Id, e.g. "Africa/CAIRO" → "Africa/Cairo".
-        var named = ResolveNamedZone(id);
-        if (named != null) { canonical = named.Id; return true; }
+        // IANA identifiers (zones and backward-alias links alike) match case-insensitively and are
+        // returned case-normalized, keeping their OWN name — a link is NOT replaced by its primary
+        // zone (e.g. "africa/cairo" → "Africa/Cairo", "asia/ulan_bator" → "Asia/Ulan_Bator"). The
+        // bundled tz database is the single source of valid identifiers, so this is host-independent.
+        if (Tz.IanaTimeZoneDatabase.TryCanonicalize(id, out canonical))
+            return true;
 
         canonical = null;
         return false;

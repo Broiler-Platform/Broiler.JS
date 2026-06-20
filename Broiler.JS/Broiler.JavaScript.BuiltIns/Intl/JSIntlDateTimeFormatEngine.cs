@@ -81,14 +81,12 @@ internal static class JSIntlDateTimeFormatEngine
     {
         if (string.IsNullOrEmpty(timeZone))
             return false;
-        try
-        {
-            var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
-            var clamped = Math.Clamp(epochMs,
-                DateTimeOffset.MinValue.ToUnixTimeMilliseconds(), DateTimeOffset.MaxValue.ToUnixTimeMilliseconds());
-            return tz.IsDaylightSavingTime(DateTimeOffset.FromUnixTimeMilliseconds((long)clamped));
-        }
-        catch { return false; }
+        // Resolve through the bundled IANA database (host-independent); fixed-offset / UTC zones,
+        // and any unknown id, observe no daylight saving.
+        var tz = Temporal.Tz.IanaTimeZoneDatabase.Get(timeZone);
+        if (tz == null) return false;
+        var clamped = Math.Clamp(epochMs, -8.64e15, 8.64e15);
+        return tz.IsDaylightSavingTime((long)Math.Floor(clamped / 1000.0));
     }
 
     // "GMT", "GMT-8", "GMT+5:30" (short) / "GMT-08:00", "GMT+05:30" (long); zero offset is "GMT".
@@ -585,21 +583,14 @@ internal static class JSIntlDateTimeFormatEngine
         if (TryParseOffset(timeZone, out var offset))
             return clippedMs + offset.TotalMilliseconds;
 
-        try
-        {
-            var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
-            // Only valid within DateTime range; clamp lookups outside it to the offset at
-            // the nearest representable instant.
-            var clamped = Math.Clamp(clippedMs,
-                DateTimeOffset.MinValue.ToUnixTimeMilliseconds(),
-                DateTimeOffset.MaxValue.ToUnixTimeMilliseconds());
-            var tzOffset = tz.GetUtcOffset(DateTimeOffset.FromUnixTimeMilliseconds((long)clamped));
-            return clippedMs + tzOffset.TotalMilliseconds;
-        }
-        catch
-        {
+        // Resolve through the bundled IANA database (host-independent), at full offset precision.
+        var tz = Temporal.Tz.IanaTimeZoneDatabase.Get(timeZone);
+        if (tz == null)
             return JSDateMath.LocalTime(clippedMs);
-        }
+
+        var clamped = Math.Clamp(clippedMs, -8.64e15, 8.64e15);
+        var offsetSeconds = tz.GetOffsetSeconds((long)Math.Floor(clamped / 1000.0));
+        return clippedMs + offsetSeconds * 1000.0;
     }
 
     // Parses an ECMAScript UTC-offset time-zone identifier such as "+0301", "+02",
