@@ -27,7 +27,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
     {
         isoYear = ToIntegerWithTruncationArgument(a.GetAt(0));
         isoMonth = ToIntegerWithTruncationArgument(a.GetAt(1));
-        calendarId = CanonicalizeCalendar(a.GetAt(2));
+        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(2), "Temporal.PlainYearMonth");
         var refDay = a.GetAt(3);
         referenceISODay = refDay == null || refDay.IsUndefined ? 1 : ToIntegerWithTruncation(refDay);
 

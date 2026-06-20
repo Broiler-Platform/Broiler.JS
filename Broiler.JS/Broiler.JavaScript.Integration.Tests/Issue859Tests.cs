@@ -4,8 +4,15 @@ using Broiler.JavaScript.Runtime;
 namespace Broiler.JavaScript.Integration.Tests;
 
 // Regression tests for https://github.com/MaiRat/Broiler.JS/issues/859 — test262 script-host
-// failures fixed across two passes:
+// failures fixed across three passes:
 //
+//  • Problem 1: a Temporal type's positional `calendar` argument (the constructor) must be a
+//    bare calendar identifier String, NOT a full Temporal ISO string. Only the `calendar`
+//    field of a from / with property bag accepts an ISO string (per ToTemporalCalendarSlotValue);
+//    the constructor uses the stricter CanonicalizeUValue grammar.
+//  • Problem 2: TypedArray.prototype.fill re-validates the receiver's in-bounds state AFTER
+//    coercing value / start / end — a `valueOf` that resizes the underlying resizable buffer
+//    underneath a fixed-length view is now a TypeError per spec steps 10–12.
 //  • Problem 3: the bare "islamic" calendar identifier is an Intl.DateTimeFormat-only locale
 //    fallback. Temporal requires an unambiguous variant ("islamic-civil", "islamic-tbla",
 //    "islamic-umalqura"), so "islamic" alone in Temporal must be a RangeError.
@@ -18,6 +25,10 @@ namespace Broiler.JavaScript.Integration.Tests;
 //  • Problem 6: String.prototype.replace's non-functional replaceValue is ToString-coerced
 //    BEFORE the search, even when the search does not match — so a `{ toString() { calls++ } }`
 //    sees its toString invoked exactly once whether or not the substring is found.
+//  • Problem 8: class-field ASI in `field = lhs \n in \n rhs`. The `in` operator binds across
+//    the newlines so the field initializer is `lhs in rhs`; the binary-expression lowering
+//    used to over-consume the trailing line terminator and then trip the field parser's
+//    end-of-statement check on the next field's leading identifier.
 //  • Problem 9: a parenthesized optional chain `(a?.b)()` closes the chain at the parens but
 //    preserves the inner member's Reference, so the call must invoke `a.b` with `this = a`
 //    (matching the non-optional `(a.b)()`). The previous lowering compiled the parenthesized
@@ -26,6 +37,10 @@ namespace Broiler.JavaScript.Integration.Tests;
 //    constructor (writable: false, enumerable: false, configurable: false). Every other
 //    built-in constructor was already installing its prototype as ReadonlyValue; Object alone
 //    inherited JSFunction's writable default and had to be re-installed.
+//  • Problem 11: in a relativeTo property bag, `offset` (like monthCode) is required to BE
+//    a String — a Number / null / Boolean / BigInt is now a TypeError, ahead of the
+//    RangeError that a malformed offset STRING produces. Both pass through ToPrimitive on
+//    Objects so a custom toString is still honoured.
 //  • Problem 14: a relativeTo property bag passed to Duration.round / Duration.total used to
 //    drop the era / eraYear fields when normalising the bag, so a non-finite eraYear (e.g.
 //    Infinity) never triggered its RangeError and the downstream date-fields resolution
@@ -51,6 +66,10 @@ namespace Broiler.JavaScript.Integration.Tests;
 //  • Problem 22: a "t" subtag INSIDE a privateuse area (e.g. "cmn-hans-cn-x-t-u") is a
 //    private subtag, not a malformed transformed extension — the language-tag validator now
 //    stops scanning at the "x" singleton that terminates the extension area.
+//  • Problem 30: a `\P{X}` inside a character class (e.g. `[\p{Hex}\P{Hex}]`) used to be
+//    rejected because .NET regex disallows nested negated classes. The translator now emits
+//    the BMP COMPLEMENT of X's ranges as a plain class fragment, recovering the negation
+//    without needing nesting.
 public class Issue859Tests
 {
     private static JSValue Eval(string code)
@@ -229,4 +248,86 @@ public class Issue859Tests
     public void PrivateUseSubtagsAreNotValidatedAsTransformedExtensions(string tag)
         => Assert.Equal("ok", Eval(
             "(function(){try{new Intl.Collator(['" + tag + "']);return 'ok';}catch(e){return 'fail:'+e.message;}})()").ToString());
+
+    // ───────────── Problem 1: positional `calendar` argument rejects ISO strings ─────────────
+
+    [Theory]
+    [InlineData("new Temporal.PlainDate(2000, 5, 2, '')")]
+    [InlineData("new Temporal.PlainDate(2000, 5, 2, '1997-12-04[u-ca=iso8601]')")]
+    [InlineData("new Temporal.PlainDate(2000, 5, 2, 'notacal')")]
+    [InlineData("new Temporal.PlainDate(2000, 5, 2, '11111111')")]
+    [InlineData("new Temporal.PlainDate(2000, 5, 2, '1111-11-11')")]
+    [InlineData("new Temporal.PlainDateTime(2000, 5, 2, 0, 0, 0, 0, 0, 0, '1997-12-04[u-ca=iso8601]')")]
+    [InlineData("new Temporal.PlainMonthDay(5, 2, '1997-12-04[u-ca=iso8601]')")]
+    [InlineData("new Temporal.PlainYearMonth(2000, 5, '1997-12-04[u-ca=iso8601]')")]
+    [InlineData("new Temporal.ZonedDateTime(0n, 'UTC', '1997-12-04[u-ca=iso8601]')")]
+    public void TemporalPositionalCalendarRejectsIsoStrings(string call)
+        => Assert.Equal("RangeError", ErrorName(call));
+
+    [Fact]
+    public void TemporalPositionalCalendarNonStringIsTypeError()
+        => Assert.Equal("TypeError", ErrorName("new Temporal.PlainDate(2000, 5, 2, 42)"));
+
+    // ───────────── Problem 2: TypedArray.fill re-validates after argument coercion ─────────────
+
+    [Fact]
+    public void TypedArrayFillRejectsOutOfBoundsAfterValueOfResize()
+        => Assert.Equal("TypeError", ErrorName(
+            "var rab=new ArrayBuffer(16,{maxByteLength:32});"
+            + "var fl=new Int32Array(rab,0,4);"
+            + "var evil={valueOf(){rab.resize(8);return 3;}};"
+            + "fl.fill(evil, 1, 2)"));
+
+    [Fact]
+    public void TypedArrayFillRejectsOutOfBoundsAfterStartValueOfResize()
+        => Assert.Equal("TypeError", ErrorName(
+            "var rab=new ArrayBuffer(16,{maxByteLength:32});"
+            + "var fl=new Int32Array(rab,0,4);"
+            + "var evil={valueOf(){rab.resize(8);return 1;}};"
+            + "fl.fill(3, evil, 2)"));
+
+    // ───────────── Problem 8: class-field ASI when the initializer continues with `in` ─────
+
+    [Fact]
+    public void ClassFieldsAsiWithInOperatorAcrossNewlines()
+        => Assert.Equal("true,false,false,false", Eval(
+            "(function(){var x=0,y=1,z=[42];"
+            + "class C{ a = x\nin\nz\nb = y\nin\nz }"
+            + "var c=new C();"
+            + "return [c.a, c.b, Object.prototype.hasOwnProperty.call(c,'in'), Object.prototype.hasOwnProperty.call(c,'z')].join(',');"
+            + "})()").ToString());
+
+    // ───────────── Problem 11: Duration relativeTo offset must BE a String ─────────────
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("null")]
+    [InlineData("true")]
+    [InlineData("1000n")]
+    public void DurationRelativeToNonStringOffsetIsTypeError(string offsetExpr)
+        => Assert.Equal("TypeError", ErrorName(
+            "Temporal.Duration.from({hours:24}).round({largestUnit:'years',relativeTo:"
+            + "{year:2021,month:10,day:28,offset:" + offsetExpr + ",timeZone:'UTC'}})"));
+
+    [Theory]
+    [InlineData("'00:00'")]    // missing sign
+    [InlineData("'+0'")]        // too short
+    [InlineData("'-000:00'")]   // too long
+    [InlineData("'+00:0000'")]  // inconsistent separator
+    public void DurationRelativeToMalformedOffsetStringIsRangeError(string offsetExpr)
+        => Assert.Equal("RangeError", ErrorName(
+            "Temporal.Duration.from({hours:24}).round({largestUnit:'years',relativeTo:"
+            + "{year:2021,month:10,day:28,offset:" + offsetExpr + ",timeZone:'UTC'}})"));
+
+    // ───────────── Problem 30: `\P{X}` inside a character class expands to the BMP complement
+
+    [Fact]
+    public void RegExpNegatedPropertyInsideCharacterClass()
+        => Assert.Equal("true,true,true,true", Eval(
+            "(function(){return ["
+            + "/[\\p{Hex}\\P{Hex}]/u.test('\\u{1D306}'),"  // every code point matches the union
+            + "/[\\P{Hex}]/u.test('z'),"                     // 'z' is not Hex
+            + "/[\\P{Hex}]/u.test('A') === false,"           // 'A' IS Hex
+            + "/[\\p{ASCII}\\P{ASCII}]/u.test('A')"
+            + "].join(',');})()").ToString());
 }

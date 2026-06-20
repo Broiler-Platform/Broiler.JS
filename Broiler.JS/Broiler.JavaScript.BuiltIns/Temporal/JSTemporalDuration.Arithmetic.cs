@@ -465,6 +465,16 @@ public partial class JSTemporalDuration
             snapshot[KeyStrings.GetOrCreate(field)] = new JSString(v.ToString()); // ToString → triggers toString
         }
 
+        // monthCode and offset are spec-required to BE Strings (after ToPrimitive on an Object) —
+        // a Number / null / boolean / BigInt is a TypeError, not a RangeError on the coerced text
+        // (test262 Duration/.../relativeto-propertybag-invalid-offset-string).
+        void CopyRequiredString(string field)
+        {
+            var v = rel[KeyStrings.GetOrCreate(field)];
+            var s = TemporalIsoString.RequireOffsetString(v, "Temporal.Duration");
+            if (s != null) snapshot[KeyStrings.GetOrCreate(field)] = new JSString(s);
+        }
+
         void CopyRaw(string field)
         {
             var v = rel[KeyStrings.GetOrCreate(field)];
@@ -486,9 +496,9 @@ public partial class JSTemporalDuration
         CopyNumber("millisecond");
         CopyNumber("minute");
         CopyNumber("month");
-        CopyString("monthCode");
+        CopyRequiredString("monthCode");
         CopyNumber("nanosecond");
-        CopyString("offset");
+        CopyRequiredString("offset");
         CopyNumber("second");
         CopyRaw("timeZone");
         CopyNumber("year");

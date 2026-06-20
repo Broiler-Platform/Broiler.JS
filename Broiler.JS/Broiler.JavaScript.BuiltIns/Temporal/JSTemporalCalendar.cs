@@ -68,6 +68,21 @@ internal static class TemporalCalendar
         throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{id}\"");
     }
 
+    // The positional `calendar` argument of a Temporal type constructor is more restrictive than
+    // a from / with property bag's `calendar` field: it must be a bare calendar identifier String,
+    // NOT a full Temporal ISO string. Per ECMA-262 (Temporal.PlainDate(..., calendar) and
+    // friends): undefined → iso8601, a non-String → TypeError, an unknown identifier (including
+    // an ISO date / date-time string that happens to parse) → RangeError. test262
+    // built-ins/Temporal/<Type>/calendar-invalid-iso-string covers every Temporal type.
+    internal static string ResolveCalendarIdentifierArgument(JSValue calendar, string typeName, bool includeArithmetic = true)
+    {
+        if (calendar == null || calendar.IsUndefined)
+            return "iso8601";
+        if (!calendar.IsString)
+            throw JSEngine.NewTypeError($"{typeName}: calendar must be a calendar identifier string");
+        return Canonicalize(calendar.StringValue, includeArithmetic);
+    }
+
     // Folds a bare calendar identifier to its canonical form, returning false (rather than throwing)
     // for anything unrecognized — used both by Canonicalize and by the slot-value path, which falls
     // back to parsing the value as a Temporal ISO string.

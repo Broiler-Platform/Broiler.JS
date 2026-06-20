@@ -42,7 +42,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         millisecond = ToIntegerWithTruncation(a.GetAt(6));
         microsecond = ToIntegerWithTruncation(a.GetAt(7));
         nanosecond = ToIntegerWithTruncation(a.GetAt(8));
-        calendarId = CanonicalizeCalendar(a.GetAt(9));
+        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(9), "Temporal.PlainDateTime");
 
         if (!IsValidTime(hour, minute, second, millisecond, microsecond, nanosecond))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: time component out of range");

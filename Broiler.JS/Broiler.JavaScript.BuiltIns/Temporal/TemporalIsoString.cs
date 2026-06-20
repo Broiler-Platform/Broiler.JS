@@ -62,17 +62,27 @@ internal static class TemporalIsoString
     // be a String. Returns null for an undefined / missing field so the caller can keep its
     // "field is absent" shortcut.
     internal static string RequireMonthCodeString(JSValue value, string typeName)
+        => RequireStringField(value, typeName, "monthCode");
+
+    // The offset field has the same "to-string-or-TypeError" coercion as monthCode (test262
+    // built-ins/Temporal/Duration/.../relativeto-propertybag-invalid-offset-string and friends).
+    // A Number, BigInt, null, boolean, … is a TypeError; an Object goes through ToPrimitive and
+    // the resulting primitive must itself be a String.
+    internal static string RequireOffsetString(JSValue value, string typeName)
+        => RequireStringField(value, typeName, "offset");
+
+    private static string RequireStringField(JSValue value, string typeName, string field)
     {
         if (value == null || value.IsUndefined) return null;
         if (value is Runtime.JSObject obj)
         {
             var primitive = obj.ToStringPrimitive();
             if (!primitive.IsString)
-                throw JSEngine.NewTypeError($"{typeName}: monthCode must be a string");
+                throw JSEngine.NewTypeError($"{typeName}: {field} must be a string");
             return primitive.StringValue;
         }
         if (!value.IsString)
-            throw JSEngine.NewTypeError($"{typeName}: monthCode must be a string");
+            throw JSEngine.NewTypeError($"{typeName}: {field} must be a string");
         return value.StringValue;
     }
 

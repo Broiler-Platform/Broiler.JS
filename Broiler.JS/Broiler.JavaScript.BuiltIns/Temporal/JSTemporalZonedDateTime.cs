@@ -46,7 +46,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         epochNanoseconds = ns;
         timeZoneId = CanonicalizeTimeZone(tzArg.ToString());
-        calendarId = CanonicalizeCalendar(a.GetAt(2));
+        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(2), "Temporal.ZonedDateTime");
     }
 
     internal JSTemporalZonedDateTime(BigInteger epochNanoseconds, string timeZoneId, JSObject prototype)

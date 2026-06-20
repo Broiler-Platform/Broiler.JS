@@ -30,7 +30,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
     {
         isoMonth = ToIntegerWithTruncation(a.GetAt(0));
         isoDay = ToIntegerWithTruncation(a.GetAt(1));
-        calendarId = ResolveCalendar(a.GetAt(2));
+        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(2), "Temporal.PlainMonthDay");
         var refYear = a.GetAt(3);
         referenceISOYear = refYear == null || refYear.IsUndefined ? DefaultReferenceYear : ToIntegerWithTruncation(refYear);
 

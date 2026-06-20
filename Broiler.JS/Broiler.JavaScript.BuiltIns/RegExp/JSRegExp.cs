@@ -3169,7 +3169,27 @@ public partial class JSRegExp : JSObject, IJSRegExp
         if (inClass)
         {
             if (negated)
-                return null; // a negated class fragment cannot be nested inside [...]
+            {
+                // A nested `[^…]` is not allowed in .NET regex, but `\P{X}` inside a class
+                // is still expressible by emitting the BMP COMPLEMENT of X's ranges as a
+                // plain class fragment (test262
+                // built-ins/RegExp/property-escapes/character-class). Supplementary
+                // (≥ U+10000) ranges cannot appear inside [...], so a property carrying
+                // any astral code points still can't be expressed this way.
+                var complement = new StringBuilder();
+                int cursor = 0;
+                foreach (var (lo, hi) in ranges)
+                {
+                    if (hi > 0xFFFF)
+                        return null;
+                    if (lo > cursor)
+                        AppendClassRange(complement, cursor, lo - 1);
+                    cursor = System.Math.Max(cursor, hi + 1);
+                }
+                if (cursor <= 0xFFFF)
+                    AppendClassRange(complement, cursor, 0xFFFF);
+                return complement.ToString();
+            }
 
             var fragment = new StringBuilder();
             foreach (var (lo, hi) in ranges)
