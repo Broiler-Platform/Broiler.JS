@@ -358,14 +358,24 @@ public partial class JSTemporalPlainMonthDay : JSObject
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
         var dayInt = dayValue.IsUndefined ? 0 : ToIntegerWithTruncation(dayValue);
 
+        string eraStr = null;
+        var hasEra = false;
+        int eraYearInt = 0;
+        var hasEraYear = false;
         if (calendarId != "iso8601")
         {
             var eraValue = obj[KeyStrings.GetOrCreate("era")];
             if (!eraValue.IsUndefined)
-                _ = eraValue.ToString();
+            {
+                eraStr = eraValue.ToString();
+                hasEra = true;
+            }
             var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
             if (!eraYearValue.IsUndefined)
-                _ = ToIntegerWithTruncation(eraYearValue);
+            {
+                eraYearInt = ToIntegerWithTruncation(eraYearValue);
+                hasEraYear = true;
+            }
         }
 
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
@@ -379,7 +389,18 @@ public partial class JSTemporalPlainMonthDay : JSObject
         // A bare month/day with no year resolves against the leap-year reference (1972) so that
         // 02-29 is representable; a supplied year is used to validate/constrain the day instead.
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
-        var validationYear = yearValue.IsUndefined ? DefaultReferenceYear : ToIntegerWithTruncation(yearValue);
+        var hasYear = !yearValue.IsUndefined;
+        var yearInt = hasYear ? ToIntegerWithTruncation(yearValue) : 0;
+        var validationYear = hasYear ? yearInt : DefaultReferenceYear;
+
+        // A Gregorian-family calendar resolves the year from `year` and/or an { era, eraYear } pair;
+        // when more than one is supplied they must agree (otherwise the fields are overspecified) and
+        // era/eraYear must be provided together. PlainMonthDay does not require a year, so this only
+        // runs when one of those fields is present; the resolved proleptic-Gregorian (ISO) year then
+        // runs when one of those fields is present; ResolveIsoYear surfaces the overspecification as a
+        // RangeError / TypeError (test262 intl402/.../PlainMonthDay/from/fields-overspecified).
+        if (calendarId != "iso8601" && (hasYear || hasEra || hasEraYear))
+            _ = TemporalCalendar.ResolveIsoYear(calendarId, hasYear, yearInt, hasEra, eraStr, hasEraYear, eraYearInt);
 
         if (dayValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay: missing day");

@@ -258,6 +258,16 @@ internal static class TemporalNonIso
         if (regMax == 0)
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
 
+        // A leap month code naming a leap month a *fixed-leap-month* calendar never has is invalid
+        // regardless of overflow — it must NOT silently fall back to the regular month. Hebrew has
+        // only the leap month "M05L" (Adar I), so "M01L".."M12L" (≠ M05L) never exist and are a
+        // RangeError (test262 intl402/.../PlainMonthDay/from/invalid-month-codes-hebrew). The
+        // lunisolar chinese/dangi calendars place their leap month on a year-dependent position — any
+        // "MnnL" is structurally possible (some rare ones merely fall outside our search range) — so
+        // they keep the constrain fallback below rather than being wrongly rejected.
+        if (lmax == 0 && calendarId is not ("chinese" or "dangi"))
+            throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
+
         var clamped = Math.Min(day, Math.Max(lmax, regMax));
         if (lmax > 0 && clamped <= lmax)
         {
