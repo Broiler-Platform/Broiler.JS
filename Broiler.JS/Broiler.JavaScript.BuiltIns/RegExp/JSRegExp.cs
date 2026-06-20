@@ -238,10 +238,17 @@ public partial class JSRegExp : JSObject, IJSRegExp
         // `: base(JSEngine.NewTargetPrototype)` here evaluated NewTarget.prototype first —
         // visible to an ill-behaving subclass whose prototype getter recompiles the source
         // (test262 sm/RegExp/constructor-ordering). Defer the prototype assignment until
-        // after the source has been captured.
+        // after the source has been captured. Likewise, ToString of the flags argument is
+        // performed by RegExpInitialize (step 8) AFTER RegExpAlloc, so a flags object whose
+        // toString observes the NewTarget.prototype getter sees it as already fired
+        // (test262 sm/RegExp/constructor-ordering-2).
         var pattern = "";
-        var flags = "";
         var patternValue = a.GetAt(0);
+        var flagsArg = a.Length > 1 ? a.GetAt(1) : JSUndefined.Value;
+        var flagsArgGiven = a.Length > 1 && !flagsArg.IsUndefined;
+        // The flags value carried over from a RegExp-like pattern when no explicit flags arg
+        // is supplied. ToString-ing it is deferred along with the flags arg.
+        JSValue flagsCarried = null;
 
         if (a.Length > 0)
         {
@@ -256,22 +263,20 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // — more dramatically — let a getter run BETWEEN our @@match probe and the
                 // source capture.
                 pattern = existingRe.pattern;
-                flags = a.Length > 1 && !a.GetAt(1).IsUndefined
-                    ? a.GetAt(1).StringValue
-                    : existingRe.flags;
+                if (!flagsArgGiven)
+                    flagsCarried = new JSString(existingRe.flags);
             }
             else if (isRegExpLike)
             {
                 var regExpLike = (JSObject)patternValue;
-                if (a.Length < 2 || a.GetAt(1).IsUndefined)
+                if (!flagsArgGiven)
                     _ = regExpLike[KeyStrings.constructor];
 
                 var sourceKey = KeyStrings.GetOrCreate("source");
                 var flagsKey = KeyStrings.GetOrCreate("flags");
                 pattern = regExpLike[sourceKey].IsUndefined ? string.Empty : regExpLike[sourceKey].StringValue;
-                flags = a.Length > 1 && !a.GetAt(1).IsUndefined
-                    ? a.GetAt(1).StringValue
-                    : (regExpLike[flagsKey].IsUndefined ? string.Empty : regExpLike[flagsKey].StringValue);
+                if (!flagsArgGiven)
+                    flagsCarried = regExpLike[flagsKey];
             }
             else
             {
@@ -279,18 +284,23 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // if flags is undefined, F = "". Otherwise ToString the value.
                 if (!patternValue.IsUndefined)
                     pattern = patternValue.StringValue;
-
-                if (a.Length > 1 && !a.GetAt(1).IsUndefined)
-                    flags = a.GetAt(1).StringValue;
             }
         }
 
-        // Source/flags have been captured. NOW read NewTarget.prototype — any user getter
-        // running here can no longer back-affect them. `this()` already set the default
+        // Source has been captured. NOW read NewTarget.prototype — any user getter
+        // running here can no longer back-affect it. `this()` already set the default
         // RegExp.prototype, so a subclass's distinct prototype is the only override.
         var newTargetPrototype = JSEngine.NewTargetPrototype;
         if (newTargetPrototype != null)
             BasePrototypeObject = newTargetPrototype;
+
+        // Per §22.2.3.1 RegExpInitialize: ToString(F) runs in step 4 of RegExpInitialize, which
+        // is invoked AFTER RegExpAlloc (and therefore after NewTarget.prototype has been read).
+        var flags = "";
+        if (flagsArgGiven)
+            flags = flagsArg.StringValue;
+        else if (flagsCarried != null && !flagsCarried.IsUndefined)
+            flags = flagsCarried.StringValue;
 
         this.pattern = pattern;
 
@@ -3159,7 +3169,27 @@ public partial class JSRegExp : JSObject, IJSRegExp
         if (inClass)
         {
             if (negated)
-                return null; // a negated class fragment cannot be nested inside [...]
+            {
+                // A nested `[^…]` is not allowed in .NET regex, but `\P{X}` inside a class
+                // is still expressible by emitting the BMP COMPLEMENT of X's ranges as a
+                // plain class fragment (test262
+                // built-ins/RegExp/property-escapes/character-class). Supplementary
+                // (≥ U+10000) ranges cannot appear inside [...], so a property carrying
+                // any astral code points still can't be expressed this way.
+                var complement = new StringBuilder();
+                int cursor = 0;
+                foreach (var (lo, hi) in ranges)
+                {
+                    if (hi > 0xFFFF)
+                        return null;
+                    if (lo > cursor)
+                        AppendClassRange(complement, cursor, lo - 1);
+                    cursor = System.Math.Max(cursor, hi + 1);
+                }
+                if (cursor <= 0xFFFF)
+                    AppendClassRange(complement, cursor, 0xFFFF);
+                return complement.ToString();
+            }
 
             var fragment = new StringBuilder();
             foreach (var (lo, hi) in ranges)

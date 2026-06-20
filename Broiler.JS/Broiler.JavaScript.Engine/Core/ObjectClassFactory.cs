@@ -53,6 +53,15 @@ internal static class ObjectClassFactory
 
         var prototype = ((IJSFunction)classValue).Prototype as JSObject;
 
+        // Per ES2024 §20.1.2.1, Object.prototype is a NON-writable data property of the
+        // Object constructor (writable: false, enumerable: false, configurable: false).
+        // The CreateFunction factory installs a writable prototype that matches the
+        // behaviour for user functions, but every built-in constructor's prototype is
+        // non-writable; the generated factories for Array / String / Number / … all
+        // explicitly install ReadonlyValue. Re-install it here for Object too (test262
+        // built-ins/Object/prototype/15.2.3.1).
+        @class.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
+
         // ── Prototype methods ───────────────────────────────────────
 
         // propertyIsEnumerable

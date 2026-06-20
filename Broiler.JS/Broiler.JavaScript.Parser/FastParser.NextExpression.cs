@@ -235,6 +235,12 @@ partial class FastParser
 
         if (m.LinesSkipped && !type.IsOperator())
         {
+            // ASI applies: the line break terminates this expression. Undo the new-line skip so
+            // the line terminator stays in the token stream for the caller's EndOfStatement to
+            // consume (class fields, for example, REQUIRE a trailing `;` / LineTerminator / `}`
+            // and will otherwise see the next field's leading identifier and reject it — test262
+            // language/{expressions,statements}/class/elements/fields-asi-5).
+            m.Undo();
             type = TokenTypes.SemiColon;
             return true;
         }

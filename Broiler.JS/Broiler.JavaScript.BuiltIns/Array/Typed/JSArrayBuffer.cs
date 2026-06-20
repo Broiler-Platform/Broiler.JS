@@ -80,16 +80,28 @@ public partial class JSArrayBuffer : JSObject
 
     internal static int ToBufferLength(JSValue value, int defaultValue)
     {
-        // ToIndex: a value below 0 or above 2^53-1 is a RangeError (the upper
-        // bound must be checked on the full double before the int cast, or a
-        // value like 2^53 silently wraps and a later allocation throws a plain
-        // Error instead of the spec-mandated RangeError).
+        var n = ToBufferLengthLong(value, defaultValue);
+        // ToBufferLength is used for callers that allocate immediately (resize, slice, …) where
+        // exceeding the host's byte-array bound is a RangeError at the point of use; for the
+        // ArrayBuffer / SharedArrayBuffer constructors this check must instead happen AFTER
+        // OrdinaryCreateFromConstructor has fired NewTarget's prototype getter, so they call
+        // ToBufferLengthLong directly and gate the int.MaxValue check themselves.
+        if (n > int.MaxValue)
+            throw JSEngine.NewRangeError("ArrayBuffer allocation failed");
+        return (int)n;
+    }
+
+    // ToIndex (ECMA-262 §7.1.22) — accepts up to 2^53-1 per spec, returning a long so the caller
+    // can defer the host-side byte-array bound (Array.MaxLength ≈ int.MaxValue) to the actual
+    // CreateByteDataBlock step (test262 ArrayBuffer/data-allocation-after-object-creation).
+    internal static long ToBufferLengthLong(JSValue value, long defaultValue)
+    {
         if (value == null || value.IsUndefined)
             return defaultValue;
 
-        // ToIndex: ToIntegerOrInfinity truncates toward zero FIRST, so a fractional value in (-1, 0)
-        // (e.g. -0.5) becomes -0 → 0 rather than a RangeError; only then is the sign / upper bound
-        // (2^53-1) checked on the resulting integer.
+        // ToIntegerOrInfinity truncates toward zero FIRST, so a fractional value in (-1, 0)
+        // (e.g. -0.5) becomes -0 → 0 rather than a RangeError; only then is the sign / upper
+        // bound (2^53-1) checked on the resulting integer.
         var number = Math.Truncate(ToNumberPrimitive(value).DoubleValue);
         if (double.IsNaN(number) || number == 0)
             return 0;
@@ -97,10 +109,7 @@ public partial class JSArrayBuffer : JSObject
         if (number < 0 || number > 9007199254740991d)
             throw JSEngine.NewRangeError("Invalid ArrayBuffer length");
 
-        if (number > int.MaxValue)
-            throw JSEngine.NewRangeError("ArrayBuffer allocation failed");
-
-        return (int)number;
+        return (long)number;
     }
 
     private static JSValue GetSpeciesConstructor(JSArrayBuffer source)
@@ -152,17 +161,42 @@ public partial class JSArrayBuffer : JSObject
         RequireConstructor("ArrayBuffer");
 
         // ToIndex(length) runs before the options bag is observed, matching the spec
-        // AllocateArrayBuffer evaluation order. The byteLength-vs-maxByteLength RangeError is thrown
-        // here, BEFORE the instance prototype is resolved (deferred to JSFunction.CreateInstance's
-        // post-construction step), so a throwing new.target `get prototype` is never observed.
-        int length = ToBufferLength(a.Get1(), 0);
-        int requestedMaxByteLength = ToMaxByteLengthOption(a.GetAt(1));
+        // AllocateArrayBuffer evaluation order. The byteLength-vs-maxByteLength RangeError is
+        // thrown here, BEFORE OrdinaryCreateFromConstructor reads NewTarget.prototype — but the
+        // host-side data-block allocation check (length must fit a host byte array) is deferred
+        // until after that read, since OrdinaryCreateFromConstructor precedes CreateByteDataBlock
+        // in the spec (test262 ArrayBuffer/data-allocation-after-object-creation).
+        long length = ToBufferLengthLong(a.Get1(), 0);
+        long requestedMaxByteLength = ToMaxByteLengthOptionLong(a.GetAt(1));
 
         if (requestedMaxByteLength >= 0 && length > requestedMaxByteLength)
             throw JSEngine.NewRangeError("ArrayBuffer byteLength exceeds maxByteLength");
 
+        // OrdinaryCreateFromConstructor — surface the NewTarget.prototype getter side effect now,
+        // before the deferred data-block allocation check below. JSFunction.CreateInstance still
+        // resolves and applies the prototype post-construction; this read is purely so a throwing
+        // subclass `get prototype` fires ahead of "ArrayBuffer allocation failed".
+        ForceNewTargetPrototypeAccess();
+
+        if (length > int.MaxValue)
+            throw JSEngine.NewRangeError("ArrayBuffer allocation failed");
+        if (requestedMaxByteLength > int.MaxValue)
+            throw JSEngine.NewRangeError("ArrayBuffer allocation failed");
+
         buffer = new byte[length];
-        maxByteLength = requestedMaxByteLength;
+        maxByteLength = requestedMaxByteLength < 0 ? -1 : (int)requestedMaxByteLength;
+    }
+
+    // Triggers the NewTarget.prototype getter (when constructing as a subclass via
+    // Reflect.construct or `new (class extends X) {}`), without retaining the result —
+    // JSFunction.CreateInstance still resolves and applies it post-construction. Used by
+    // constructors whose ToIndex / option validation precedes OrdinaryCreateFromConstructor
+    // but whose data-block allocation follows it, to keep the spec-mandated observable order.
+    internal static void ForceNewTargetPrototypeAccess()
+    {
+        var newTarget = (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget;
+        if (newTarget != null && newTarget is JSObject)
+            _ = newTarget[KeyStrings.prototype];
     }
 
     // GetArrayBufferMaxByteLengthOption: a non-object options bag (or a missing
@@ -177,6 +211,20 @@ public partial class JSArrayBuffer : JSObject
             return -1;
 
         return ToBufferLength(maxByteLengthValue, 0);
+    }
+
+    // The long-returning variant used by the constructors so the int.MaxValue gate (host
+    // allocation bound) can be deferred past OrdinaryCreateFromConstructor.
+    internal static long ToMaxByteLengthOptionLong(JSValue options)
+    {
+        if (options is not JSObject optionsObject)
+            return -1;
+
+        var maxByteLengthValue = optionsObject[KeyStrings.GetOrCreate("maxByteLength")];
+        if (maxByteLengthValue.IsUndefined)
+            return -1;
+
+        return ToBufferLengthLong(maxByteLengthValue, 0);
     }
 
     /// <summary>

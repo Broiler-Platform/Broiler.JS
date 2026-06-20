@@ -246,6 +246,18 @@ partial class FastCompiler
                 ? null
                 : (functionDeclaration.Body as AstBlock)?.AnnexBFunctionNames;
 
+            // A function whose body (or parameter list) contains a direct eval must
+            // materialize its `arguments` binding eagerly — the eval body resolves an
+            // unqualified `arguments` through the runtime scope chain to this function's
+            // activation, and if the function never directly referenced `arguments` itself
+            // there would be no binding for the eval to find. (Arrow functions inherit
+            // `arguments` from the enclosing function and have none of their own, so they
+            // are excluded.)
+            var containsEval = !functionDeclaration.IsArrowFunction
+                && (ParametersContainDirectEval(functionDeclaration) || BodyContainsDirectEval(functionDeclaration));
+            if (containsEval)
+                MaterializeArgumentsBinding();
+
             YExpression lambdaBody;
             using (completionScopes.Push(null))
                 lambdaBody = VisitStatement(functionDeclaration.Body);

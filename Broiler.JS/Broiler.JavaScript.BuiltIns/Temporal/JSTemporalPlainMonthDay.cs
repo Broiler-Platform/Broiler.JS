@@ -30,7 +30,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
     {
         isoMonth = ToIntegerWithTruncation(a.GetAt(0));
         isoDay = ToIntegerWithTruncation(a.GetAt(1));
-        calendarId = ResolveCalendar(a.GetAt(2));
+        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(2), "Temporal.PlainMonthDay");
         var refYear = a.GetAt(3);
         referenceISOYear = refYear == null || refYear.IsUndefined ? DefaultReferenceYear : ToIntegerWithTruncation(refYear);
 
@@ -108,7 +108,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         var monthCoerced = hasMonth ? ToPositiveIntegerWithTruncation(monthValue) : -1;
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = monthCodeValue.IsUndefined ? null : monthCodeValue.ToString();
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainMonthDay");
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
         // "year" is a recognised field (used only for overflow resolution); supplying it alone
@@ -384,7 +384,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         // Coerce monthCode now; defer parsing/validating it against the calendar until after
         // the overflow option is read (test262 from/options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = monthCodeValue.IsUndefined ? null : monthCodeValue.ToString();
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainMonthDay");
 
         // A bare month/day with no year resolves against the leap-year reference (1972) so that
         // 02-29 is representable; a supplied year is used to validate/constrain the day instead.

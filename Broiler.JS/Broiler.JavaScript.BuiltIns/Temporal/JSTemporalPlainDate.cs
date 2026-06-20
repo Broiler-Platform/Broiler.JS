@@ -34,7 +34,7 @@ public partial class JSTemporalPlainDate : JSObject
         isoYear = ToIntegerWithTruncationArgument(a.GetAt(0));
         isoMonth = ToIntegerWithTruncationArgument(a.GetAt(1));
         isoDay = ToIntegerWithTruncationArgument(a.GetAt(2));
-        calendarId = CanonicalizeCalendar(a.GetAt(3));
+        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(3), "Temporal.PlainDate");
 
         if (!IsValidISODate(isoYear, isoMonth, isoDay))
             throw JSEngine.NewRangeError("Temporal.PlainDate: invalid ISO date");
@@ -197,8 +197,8 @@ public partial class JSTemporalPlainDate : JSObject
         // code is rejected only once every option getter has fired (test262
         // .../with options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        string monthCodeStr = null;
-        if (!monthCodeValue.IsUndefined) { monthCodeStr = monthCodeValue.ToString(); any = true; }
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDate");
+        if (monthCodeStr != null) any = true;
 
         var newIsoYear = ResolveWithYear(obj, ref any);
 
@@ -489,8 +489,11 @@ public partial class JSTemporalPlainDate : JSObject
         return (int)Math.Truncate(number);
     }
 
-    // Resolves a calendar argument to a canonical id (the proleptic-Gregorian family: iso8601,
-    // gregory, buddhist, roc). A missing calendar defaults to iso8601; anything else is a RangeError.
+    // Resolves a calendar argument to a canonical id. A missing calendar defaults to iso8601;
+    // anything else is a calendar-identifier String (a non-String is a TypeError, an unknown
+    // identifier — including an ISO date string that happens to parse — is a RangeError).
+    // Used by the `calendar` PROPERTY of a from/with property bag, which per ToTemporalCalendarSlotValue
+    // accepts a Temporal object's calendar slot too.
     private static string CanonicalizeCalendar(JSValue calendar)
     {
         if (calendar == null || calendar.IsUndefined)
@@ -498,6 +501,7 @@ public partial class JSTemporalPlainDate : JSObject
 
         return TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
     }
+
 
     private static int MonthFromCode(string code)
     {
@@ -679,12 +683,9 @@ public partial class JSTemporalPlainDate : JSObject
         var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        string monthCodeStr = null;
-        if (!monthCodeValue.IsUndefined)
-        {
-            monthCodeStr = monthCodeValue.StringValue; // ToString once
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDate");
+        if (monthCodeStr != null)
             ValidateMonthCodeSyntax(monthCodeStr);
-        }
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
         var yearInt = yearValue.IsUndefined ? 0 : ToIntegerWithTruncation(yearValue);

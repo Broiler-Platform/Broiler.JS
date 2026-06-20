@@ -62,24 +62,43 @@ public partial class DataView : JSObject
     [JSExport(Length = 1)]
     public DataView(in Arguments a) : this()
     {
-        // The byteOffset / byteLength RangeErrors below are thrown BEFORE the instance prototype is
-        // resolved (deferred to JSFunction.CreateInstance's post-construction step), so a throwing
-        // new.target `get prototype` accessor is not observed when the offset is out of range.
+        // Per §25.3.2 DataView ( buffer [, byteOffset [, byteLength ]] ), the buffer-bounds
+        // checks (steps 6 and 9b) precede OrdinaryCreateFromConstructor (step 10) AND are
+        // re-performed (steps 13 and 14a) on the (possibly resized) buffer afterwards. A
+        // throwing new.target `get prototype` accessor must therefore not be observed for an
+        // already-out-of-range offset / length (Issue #794), but must fire ahead of a
+        // bounds-only-after-resize RangeError (test262 DataView/custom-proto-access-resizes-
+        // buffer-invalid-by-length / -by-offset).
         var buffer = a[0] as JSArrayBuffer ?? throw JSEngine.NewTypeError("First argument to DataView constructor must be an ArrayBuffer.");
         // ToIndex(byteOffset): a fractional value truncates toward zero, NaN / undefined become 0, and
         // a negative or non-integral-index value (e.g. -Infinity, +Infinity) is a RangeError — observed
         // before the offset is range-checked against the buffer.
         var byteOffset = ToIndex(a[1]); //optional, if not available assign 0
 
-        var bufferByteLength = buffer.buffer.Length;
+        var byteLengthArg = a[2];
+        long byteLength = 0;
+        var hasExplicitLength = byteLengthArg != null && !byteLengthArg.IsUndefined;
+        if (hasExplicitLength)
+            byteLength = ToIndex(byteLengthArg);
 
-        // An offset at the very end of the buffer is a valid zero-length view, so only offsets strictly
-        // past the end are errors.
+        // First bounds check (spec steps 5/6/9b) — against the buffer's CURRENT byte length, before
+        // the prototype getter has had a chance to resize.
+        var bufferByteLength = buffer.buffer.Length;
+        if (byteOffset > bufferByteLength)
+            throw JSEngine.NewRangeError("Start offset is outside the bounds of the buffer.");
+        if (hasExplicitLength && byteOffset + byteLength > bufferByteLength)
+            throw JSEngine.NewRangeError("Invalid DataView length.");
+
+        // OrdinaryCreateFromConstructor (spec step 10) — surface NewTarget.prototype side effects
+        // (e.g. a getter that resizes the underlying buffer) before the spec's re-check below.
+        JSArrayBuffer.ForceNewTargetPrototypeAccess();
+
+        // Spec steps 13 / 14a — re-validate against the (possibly resized) buffer.
+        bufferByteLength = buffer.buffer.Length;
         if (byteOffset > bufferByteLength)
             throw JSEngine.NewRangeError("Start offset is outside the bounds of the buffer.");
 
-        var byteLengthArg = a[2];
-        if (byteLengthArg == null || byteLengthArg.IsUndefined)
+        if (!hasExplicitLength)
         {
             // No explicit length: a resizable buffer yields a length-tracking view; a
             // fixed buffer yields a fixed view spanning (buffer length - byte offset).
@@ -90,7 +109,6 @@ public partial class DataView : JSObject
         }
         else
         {
-            var byteLength = ToIndex(byteLengthArg);
             if (byteOffset + byteLength > bufferByteLength)
                 throw JSEngine.NewRangeError("Invalid DataView length.");
 

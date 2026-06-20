@@ -68,6 +68,21 @@ internal static class TemporalCalendar
         throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{id}\"");
     }
 
+    // The positional `calendar` argument of a Temporal type constructor is more restrictive than
+    // a from / with property bag's `calendar` field: it must be a bare calendar identifier String,
+    // NOT a full Temporal ISO string. Per ECMA-262 (Temporal.PlainDate(..., calendar) and
+    // friends): undefined → iso8601, a non-String → TypeError, an unknown identifier (including
+    // an ISO date / date-time string that happens to parse) → RangeError. test262
+    // built-ins/Temporal/<Type>/calendar-invalid-iso-string covers every Temporal type.
+    internal static string ResolveCalendarIdentifierArgument(JSValue calendar, string typeName, bool includeArithmetic = true)
+    {
+        if (calendar == null || calendar.IsUndefined)
+            return "iso8601";
+        if (!calendar.IsString)
+            throw JSEngine.NewTypeError($"{typeName}: calendar must be a calendar identifier string");
+        return Canonicalize(calendar.StringValue, includeArithmetic);
+    }
+
     // Folds a bare calendar identifier to its canonical form, returning false (rather than throwing)
     // for anything unrecognized — used both by Canonicalize and by the slot-value path, which falls
     // back to parsing the value as a Temporal ISO string.
@@ -93,7 +108,10 @@ internal static class TemporalCalendar
                 case "ethiopic": canonical = "ethiopic"; return true;
                 case "ethioaa":
                 case "ethiopic-amete-alem": canonical = "ethioaa"; return true;
-                case "islamic": canonical = "islamic"; return true;
+                // The bare "islamic" identifier resolves to a locale-preferred variant in
+                // Intl.DateTimeFormat, but Temporal requires an unambiguous calendar id; the
+                // suffixed forms ("islamic-civil", "islamic-tbla", "islamic-umalqura") must be
+                // used instead (test262 intl402/Temporal/*/from/islamic).
                 case "islamic-civil":
                 case "islamicc": canonical = "islamic-civil"; return true;
                 case "islamic-tbla": canonical = "islamic-tbla"; return true;
@@ -152,7 +170,7 @@ internal static class TemporalCalendar
     {
         var lower = id.ToLowerInvariant();
         return lower is "iso8601" or "gregory" or "gregorian" or "buddhist" or "roc" or "minguo" or "japanese"
-            or "coptic" or "ethiopic" or "ethioaa" or "ethiopic-amete-alem" or "islamic" or "islamic-civil" or "islamicc"
+            or "coptic" or "ethiopic" or "ethioaa" or "ethiopic-amete-alem" or "islamic-civil" or "islamicc"
             or "islamic-tbla" or "islamic-umalqura" or "hebrew" or "persian" or "indian" or "chinese" or "dangi";
     }
 

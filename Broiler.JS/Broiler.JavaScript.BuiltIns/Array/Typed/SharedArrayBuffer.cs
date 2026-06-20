@@ -28,14 +28,25 @@ public partial class SharedArrayBuffer : JSArrayBuffer
         // throwing new.target `get prototype` is never observed.
         RequireConstructor("SharedArrayBuffer");
 
-        int length = ToBufferLength(a.Get1(), 0);
-        int requestedMaxByteLength = ToMaxByteLengthOption(a.GetAt(1));
+        long length = ToBufferLengthLong(a.Get1(), 0);
+        long requestedMaxByteLength = ToMaxByteLengthOptionLong(a.GetAt(1));
 
         if (requestedMaxByteLength >= 0 && length > requestedMaxByteLength)
             throw JSEngine.NewRangeError("SharedArrayBuffer byteLength exceeds maxByteLength");
 
+        // OrdinaryCreateFromConstructor precedes CreateSharedByteDataBlock in the spec —
+        // surface the NewTarget.prototype getter here so a throwing subclass `get prototype`
+        // fires ahead of the host-side allocation RangeError (test262
+        // SharedArrayBuffer/data-allocation-after-object-creation).
+        ForceNewTargetPrototypeAccess();
+
+        if (length > int.MaxValue)
+            throw JSEngine.NewRangeError("SharedArrayBuffer allocation failed");
+        if (requestedMaxByteLength > int.MaxValue)
+            throw JSEngine.NewRangeError("SharedArrayBuffer allocation failed");
+
         buffer = new byte[length];
-        maxByteLength = requestedMaxByteLength;
+        maxByteLength = requestedMaxByteLength < 0 ? -1 : (int)requestedMaxByteLength;
         isShared = true;
     }
 

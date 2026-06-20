@@ -117,6 +117,10 @@ public partial class JSString
 
         // Find the first occurrence of the (stringified) search value.
         var substr = f.StringValue;
+        // Per §22.1.3.19 step 6, if replaceValue is not callable it is coerced via ToString
+        // BEFORE the match is searched for — even when there is no match (test262
+        // String/prototype/replace/replaceValue-evaluation-order[-regexp-object]).
+        var replacementTemplate = s.IsFunction ? null : s.StringValue;
         int start = @this.IndexOf(substr, StringComparison.Ordinal);
         if (start == -1)
             return a.This;
@@ -130,7 +134,7 @@ public partial class JSString
         var replaceText = s.IsFunction
             ? s.InvokeFunction(new Arguments(JSUndefined.Value,
                 JSValue.CreateString(substr), JSValue.CreateNumber(start), JSValue.CreateString(@this))).StringValue
-            : GetSubstitution(substr, @this, start, s.StringValue);
+            : GetSubstitution(substr, @this, start, replacementTemplate);
 
         // Replace only the first match.
         var result = new StringBuilder(@this.Length + (replaceText.Length - substr.Length));

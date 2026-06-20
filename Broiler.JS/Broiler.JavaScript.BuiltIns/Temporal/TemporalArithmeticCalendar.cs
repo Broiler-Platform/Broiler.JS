@@ -189,6 +189,10 @@ internal static class TemporalArithmeticCalendar
                 throw JSEngine.NewRangeError("Temporal: invalid monthCode for the hebrew calendar");
             return 6; // Adar I
         }
+        // Hebrew has 12 regular months (M01..M12); a 13th month exists only as the leap month
+        // M05L (Adar I), never as M13. Reject any non-leap code outside 1..12.
+        if (codeNumber < 1 || codeNumber > 12)
+            throw JSEngine.NewRangeError("Temporal: invalid monthCode for the hebrew calendar");
         if (codeNumber <= 5) return codeNumber;
         return leapYear ? codeNumber + 1 : codeNumber; // M06→Adar II(7) in a leap year, else Adar(6)
     }

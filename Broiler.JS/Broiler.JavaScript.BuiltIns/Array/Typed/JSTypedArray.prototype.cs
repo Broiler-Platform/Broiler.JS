@@ -134,6 +134,16 @@ partial class JSTypedArray
 
         var relativeStart = start.AsInt32OrDefault();
         var relativeEnd = end.AsInt32OrDefault(len);
+
+        // §23.2.3.10 step 10-12: after every argument has been coerced (value / start / end),
+        // re-validate that the typed array is still in bounds — a `valueOf` on a resizable
+        // ArrayBuffer-backed view may have shrunk the buffer underneath the view, leaving it
+        // out of range. Re-read the length too so the loop below honours the new bound
+        // (test262 TypedArray/prototype/fill/coerced-value-start-end-resize).
+        if (buffer == null || buffer.isDetached || IsOutOfBounds)
+            throw JSEngine.NewTypeError("TypedArray.prototype.fill called on out-of-bounds typed array");
+        len = Length;
+
         // Negative values represent offsets from the end of the array.
         relativeStart = relativeStart < 0 ? Math.Max(len + relativeStart, 0) : Math.Min(relativeStart, len);
         relativeEnd = relativeEnd < 0 ? Math.Max(len + relativeEnd, 0) : Math.Min(relativeEnd, len);

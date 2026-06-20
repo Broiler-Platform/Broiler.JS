@@ -465,6 +465,16 @@ public partial class JSTemporalDuration
             snapshot[KeyStrings.GetOrCreate(field)] = new JSString(v.ToString()); // ToString → triggers toString
         }
 
+        // monthCode and offset are spec-required to BE Strings (after ToPrimitive on an Object) —
+        // a Number / null / boolean / BigInt is a TypeError, not a RangeError on the coerced text
+        // (test262 Duration/.../relativeto-propertybag-invalid-offset-string).
+        void CopyRequiredString(string field)
+        {
+            var v = rel[KeyStrings.GetOrCreate(field)];
+            var s = TemporalIsoString.RequireOffsetString(v, "Temporal.Duration");
+            if (s != null) snapshot[KeyStrings.GetOrCreate(field)] = new JSString(s);
+        }
+
         void CopyRaw(string field)
         {
             var v = rel[KeyStrings.GetOrCreate(field)];
@@ -472,17 +482,23 @@ public partial class JSTemporalDuration
         }
 
         // calendar is read first (GetTemporalCalendarIdentifierWithISODefault), then the merged
-        // date / time / offset / timeZone fields in alphabetical order.
+        // date / time / offset / timeZone fields in alphabetical order. era / eraYear are part of
+        // the calendar's date fields (used by gregory / japanese / buddhist / roc and the
+        // arithmetic non-iso calendars) and must be read here too — otherwise a non-finite
+        // eraYear (e.g. Infinity) would never trigger its RangeError and the downstream date
+        // resolution would instead raise a "missing year" TypeError.
         CopyRaw("calendar");
         CopyNumber("day");
+        CopyString("era");
+        CopyNumber("eraYear");
         CopyNumber("hour");
         CopyNumber("microsecond");
         CopyNumber("millisecond");
         CopyNumber("minute");
         CopyNumber("month");
-        CopyString("monthCode");
+        CopyRequiredString("monthCode");
         CopyNumber("nanosecond");
-        CopyString("offset");
+        CopyRequiredString("offset");
         CopyNumber("second");
         CopyRaw("timeZone");
         CopyNumber("year");

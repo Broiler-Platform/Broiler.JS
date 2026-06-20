@@ -27,7 +27,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
     {
         isoYear = ToIntegerWithTruncationArgument(a.GetAt(0));
         isoMonth = ToIntegerWithTruncationArgument(a.GetAt(1));
-        calendarId = CanonicalizeCalendar(a.GetAt(2));
+        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(2), "Temporal.PlainYearMonth");
         var refDay = a.GetAt(3);
         referenceISODay = refDay == null || refDay.IsUndefined ? 1 : ToIntegerWithTruncation(refDay);
 
@@ -152,8 +152,8 @@ public partial class JSTemporalPlainYearMonth : JSObject
         // Coerce monthCode now; defer parsing/validating it against the calendar until after
         // the overflow option is read (test262 .../with options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        string monthCodeStr = null;
-        if (!monthCodeValue.IsUndefined) { monthCodeStr = monthCodeValue.ToString(); any = true; }
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainYearMonth");
+        if (monthCodeStr != null) any = true;
 
         var year = ResolveWithYear(obj, ref any);
 
@@ -210,11 +210,12 @@ public partial class JSTemporalPlainYearMonth : JSObject
         }
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        var monthCodeStrW = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainYearMonth");
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         int month = c.m;
-        if (!monthCodeValue.IsUndefined)
+        if (monthCodeStrW != null)
         {
-            var (codeNumber, leapMonth) = ParseMonthCodeLeap(monthCodeValue.ToString());
+            var (codeNumber, leapMonth) = ParseMonthCodeLeap(monthCodeStrW);
             month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, leapMonth);
             any = true;
         }
@@ -627,7 +628,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         // Coerce monthCode now; defer parsing/validating it against the calendar until after
         // the overflow option is read (test262 from/options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = monthCodeValue.IsUndefined ? null : monthCodeValue.ToString();
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainYearMonth");
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
         var yearInt = yearValue.IsUndefined ? 0 : ToIntegerWithTruncation(yearValue);
