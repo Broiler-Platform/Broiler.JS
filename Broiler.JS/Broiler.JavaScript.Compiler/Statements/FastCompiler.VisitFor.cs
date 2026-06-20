@@ -337,6 +337,18 @@ partial class FastCompiler
         var continueTarget = YExpression.Label();
         var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
         var outerCompletionVars = GetCompletionVariables();
+        // C-style `for (let x = …; …; …)` introduces a fresh per-loop lexical
+        // environment for the head bindings (PerIterationEnvironment). The parser's
+        // desugar keeps the original name `x` as the head decl alongside a synthetic
+        // carrier so closures inside test/update can capture it, but without a
+        // compile-time scope push the head's `let x` shares the enclosing scope's
+        // bindings — silently replacing an outer `let x` and leaving its value
+        // visible after the loop (test262 language/statements/for/scope-head-lex-open).
+        var forScope = forStatement.Init is AstVariableDeclaration { Kind: FastVariableKind.Let or FastVariableKind.Const }
+            ? this.scope.Push(new FastFunctionScope(this.scope.Top))
+            : null;
+        try
+        {
         // this will create a variable if needed...
         // desugar takes care of let so do not worry
         YExpression init = Visit(forStatement.Init);
@@ -369,7 +381,7 @@ partial class FastCompiler
                 YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
                 YExpression.TailCallTransparentTryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)),
                 completionVar);
-            return r1;
+            return forScope != null ? Scoped(forScope, new Sequence<YExpression> { r1 }) : r1;
         }
 
         var bodyLoop = YExpression.Loop(YExpression.Block(innerBody), breakTarget);
@@ -379,6 +391,11 @@ partial class FastCompiler
             init,
             YExpression.TailCallTransparentTryFinally(bodyLoop, PropagateCompletion(completionVar, outerCompletionVars)),
             completionVar);
-        return r;
+        return forScope != null ? Scoped(forScope, new Sequence<YExpression> { r }) : r;
+        }
+        finally
+        {
+            forScope?.Dispose();
+        }
     }
 }

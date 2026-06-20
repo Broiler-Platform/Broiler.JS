@@ -403,4 +403,90 @@ public class Issue849Tests
         Assert.Equal("function",
             Eval("function f() { eval('{ function g() {} }'); return typeof g; } f()").ToString());
     }
+
+    // Problems 76 / 77 / 78 / 79 (annexB/built-ins/String/prototype/{link,anchor,
+    // fontcolor,fontsize}/*): the legacy String.prototype HTML wrappers must escape
+    // U+0022 (`"`) inside the attribute value to the six-code-unit sequence
+    // "&quot;" per Annex B.2.2.1 CreateHTML step 4.b. The previous CreateHtmlWrapper
+    // appended the raw value, so e.g. `'_'.anchor('\x22')` produced
+    // `<a name="""_</a>` instead of `<a name="&quot;">_</a>`.
+    [Theory]
+    [InlineData("'_'.anchor('\\x22')", "<a name=\"&quot;\">_</a>")]
+    [InlineData("'_'.link('\\x22')", "<a href=\"&quot;\">_</a>")]
+    [InlineData("'_'.fontcolor('\\x22')", "<font color=\"&quot;\">_</font>")]
+    [InlineData("'_'.fontsize('\\x22')", "<font size=\"&quot;\">_</font>")]
+    [InlineData("'_'.anchor('a\"b\"c')", "<a name=\"a&quot;b&quot;c\">_</a>")]
+    public void HtmlWrapperEscapesQuoteInAttribute(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Non-`"` attribute characters (`<`, `>`, `&`) are NOT escaped per the same
+    // spec step; only the value-delimiting quote needs escaping.
+    [Theory]
+    [InlineData("'_'.anchor('<')", "<a name=\"<\">_</a>")]
+    [InlineData("'_'.link('<a&b>')", "<a href=\"<a&b>\">_</a>")]
+    public void HtmlWrapperLeavesOtherCharactersAlone(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Tag-only wrappers (no attribute) are unaffected.
+    [Theory]
+    [InlineData("'<'.bold()", "<b><</b>")]
+    [InlineData("'_'.italics()", "<i>_</i>")]
+    public void HtmlWrappersWithoutAttributeUnaffected(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Problem 94 (language/statements/for/scope-head-lex-open): a C-style
+    // `for (let x = …; test; update)` introduces a fresh lexical environment for the
+    // head bindings. Without a compile-time scope push around VisitForStatement the
+    // head's `let x` shared the enclosing scope's binding table, silently replacing
+    // an outer `let x` of the same name and leaving the loop's value visible after
+    // termination. A captured `probeBefore` closure that resolves x in the outer
+    // scope therefore wrongly saw the inner value. Only let / const heads (with the
+    // parser's useLoopEnv lowering) need the synthetic scope; a plain for / var head
+    // keeps the original single-scope path.
+    [Fact]
+    public void ForLetHeadDoesNotLeakIntoEnclosingLet()
+    {
+        Assert.Equal("outside",
+            Eval("let x='outside'; var probe = function(){ return x; }; for (let x='inside'; false;){} probe()").ToString());
+    }
+
+    [Fact]
+    public void ForConstHeadDoesNotLeakIntoEnclosingConst()
+    {
+        Assert.Equal("outside",
+            Eval("const x='outside'; var probe = function(){ return x; }; for (const x='inside'; false;){} probe()").ToString());
+    }
+
+    // A var head is hoisted to the function scope as before, so a same-named outer
+    // var IS overwritten — this regression-test pins that behaviour.
+    [Fact]
+    public void ForVarHeadStillFunctionScoped()
+    {
+        Assert.Equal("inside",
+            Eval("(function(){ var x='outside'; for (var x='inside'; false;){} return x; })()").ToString());
+    }
+
+    // The probes captured inside the head and body still see the per-iteration let
+    // binding — the scope push isolates the head from the OUTER scope but doesn't
+    // collapse the parser's useLoopEnv lowering.
+    [Fact]
+    public void ForLetClosuresInHeadAndBodyResolveToLoopBinding()
+    {
+        var code = "var probeDecl, probeTest, probeIncr, probeBody;"
+            + "var run = true;"
+            + "for ("
+            + "    let x = 'inside', _ = probeDecl = function() { return x; };"
+            + "    run && (probeTest = function() { return x; });"
+            + "    probeIncr = function() { return x; }"
+            + "  )"
+            + "  probeBody = function() { return x; }, run = false;"
+            + "probeDecl() + '|' + probeTest() + '|' + probeBody() + '|' + probeIncr()";
+        Assert.Equal("inside|inside|inside|inside", Eval(code).ToString());
+    }
 }
