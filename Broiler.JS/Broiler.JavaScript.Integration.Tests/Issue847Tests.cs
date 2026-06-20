@@ -474,5 +474,80 @@ public class Issue847Tests
     public void ValidNewTargetStillWorks(string code, string expected)
         => Assert.Equal(expected, Eval(code).ToString());
 
+    // A LegacyOctalIntegerLiteral — a numeric literal with a leading `0` followed only
+    // by octal digits (0-7) — denotes an octal value in non-strict code. The lexer was
+    // parsing it (and all leading-zero literals) as decimal, so `010` yielded 10 instead
+    // of 8. A non-octal digit (8/9), a fraction, exponent, or radix prefix keeps the
+    // literal decimal (NonOctalDecimalIntegerLiteral).
+    [Theory]
+    [InlineData("010", "8")]
+    [InlineData("017", "15")]
+    [InlineData("0123", "83")]
+    [InlineData("00", "0")]
+    [InlineData("0777", "511")]
+    [InlineData("08", "8")]      // non-octal digit -> decimal
+    [InlineData("09", "9")]
+    [InlineData("019", "19")]
+    [InlineData("0118", "118")]  // 8 makes the whole literal decimal
+    public void LegacyOctalIntegerLiteralIsOctalInNonStrictCode(string code, string expected)
+        => Assert.Equal(expected, Eval(code).ToString());
+
+    [Theory]
+    [InlineData("0", "0")]
+    [InlineData("0o17", "15")]   // modern octal unaffected
+    [InlineData("0x1f", "31")]
+    [InlineData("0b101", "5")]
+    [InlineData("0.5", "0.5")]
+    [InlineData("1e3", "1000")]
+    [InlineData("10", "10")]
+    public void NonLegacyOctalLiteralsStillParseCorrectly(string code, string expected)
+        => Assert.Equal(expected, Eval(code).ToString());
+
+    [Fact]
+    public void LegacyOctalLiteralIsSyntaxErrorInStrictMode()
+        => Assert.Equal("SyntaxError", CompileResult("'use strict'; 010"));
+
+    // An optional chain (`a?.b`, `a?.[b]`, `a?.()`) can never be the tag of a tagged
+    // template: the tag would short-circuit to undefined and then be called, so it is
+    // an early SyntaxError. Parenthesising the chain resets it (the parenthesised part
+    // is its own MemberExpression), so `(a?.b)`...`` is permitted.
+    [Theory]
+    [InlineData("a?.b`x`;")]
+    [InlineData("let o = {b(){}}; o?.b`x`;")]
+    [InlineData("let o = {b(){}}; o?.b`x${1}y`;")]
+    [InlineData("let o = {b: {c(){}}}; o?.b.c`x`;")]
+    [InlineData("let o = {b(){}}; o?.['b']`x`;")]
+    [InlineData("a?.b()`x`;")]
+    public void OptionalChainTaggedTemplateIsSyntaxError(string source)
+        => Assert.Equal("SyntaxError", CompileResult(source));
+
+    [Theory]
+    [InlineData("let o = {b(){ return 1; }}; o.b`x`;", "1")]                 // no optional chain
+    [InlineData("let o = {b(){ return 2; }}; (o?.b)`x`;", "2")]              // parenthesised resets
+    [InlineData("let o = {b(){ return 3; }}; let f = o?.b; f`x`;", "3")]     // chain ends before tag
+    public void NonOptionalTaggedTemplatesStillWork(string code, string expected)
+        => Assert.Equal(expected, Eval(code).ToString());
+
+    // A for-in `var` head may carry an initializer (`for (var x = init in obj)`) only
+    // in non-strict code and only for a simple BindingIdentifier (Annex B 3.5). In
+    // strict mode, or with a BindingPattern, or for a let/const binding, the
+    // initializer is an early SyntaxError.
+    [Theory]
+    [InlineData("'use strict'; for (var i = 0 in {}) {}")]   // strict mode
+    [InlineData("for (var [a] = 0 in {}) {}")]               // array pattern + init
+    [InlineData("for (var {a} = {} in {}) {}")]              // object pattern + init
+    [InlineData("for (let i = 0 in {}) {}")]                 // let + init
+    [InlineData("for (const i = 0 in {}) {}")]               // const + init
+    public void ForInVarInitializerEarlyErrors(string source)
+        => Assert.Equal("SyntaxError", CompileResult(source));
+
+    [Theory]
+    [InlineData("var last; for (var i = 5 in {a:1, b:2}) last = i; last", "b")]   // sloppy var+init ident
+    [InlineData("var n = 0; for (var k in {a:1, b:2}) n++; n", "2")]              // no init
+    [InlineData("for (var [a, b] in {ab:1}) {} 'ok'", "ok")]                       // pattern, no init
+    [InlineData("var o = {p:0}; for (o.p in {a:1, b:2}) {} o.p", "b")]            // member LHS
+    public void ValidForInHeadsStillWork(string code, string expected)
+        => Assert.Equal(expected, Eval(code).ToString());
+
     private static string Quote(string code) => "\"" + code.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
 }

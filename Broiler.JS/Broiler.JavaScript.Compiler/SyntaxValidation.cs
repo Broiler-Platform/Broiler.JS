@@ -835,7 +835,24 @@ public static void ValidateProgram(
         protected override AstNode VisitForInStatement(AstForInStatement forInStatement, string label = null)
         {
             if (IsStrictMode)
+            {
                 ThrowIfFunctionDeclarationBody(forInStatement.Body);
+
+                // Annex B 3.5 tolerates a for-in `var` head with an initializer
+                // (`for (var x = init in obj)`) only in non-strict code. In strict
+                // mode it is an early SyntaxError. (let/const initializers and
+                // destructuring-pattern initializers are rejected by the parser in
+                // every mode.)
+                if (forInStatement.Init is AstVariableDeclaration { Kind: FastVariableKind.Var } declaration)
+                {
+                    var en = declaration.Declarators.GetFastEnumerator();
+                    while (en.MoveNext(out var d))
+                    {
+                        if (d.Init != null)
+                            throw new FastParseException(declaration.Start, "for-in loop variable declaration may not have an initializer in strict mode");
+                    }
+                }
+            }
             else
                 ThrowIfLabeledFunctionInBody(forInStatement.Body);
 

@@ -287,10 +287,12 @@ partial class FastParser
         {
             int count = 0;
             bool hasInit = false;
+            AstExpression binding = null;
             var en = declaration.Declarators.GetFastEnumerator();
             while (en.MoveNext(out var d))
             {
                 count++;
+                binding = d.Identifier;
                 if (d.Init != null)
                     hasInit = true;
             }
@@ -304,6 +306,16 @@ partial class FastParser
                 throw new FastParseException(declaration.Start, "for-of loop variable declaration may not have an initializer");
 
             if (!isOf && hasInit && declaration.Kind != FastVariableKind.Var)
+                throw new FastParseException(declaration.Start, "for-in loop variable declaration may not have an initializer");
+
+            // Annex B 3.5 only tolerates a for-in `var` initializer for a *simple*
+            // BindingIdentifier (`for (var x = init in obj)`). A BindingPattern with an
+            // initializer (`for (var [a] = 0 in obj)`) is never permitted — it is an
+            // early SyntaxError in both strict and non-strict code. (The strict-mode
+            // rejection of the identifier form is enforced by SyntaxValidation, which
+            // knows the strictness.)
+            if (!isOf && hasInit && declaration.Kind == FastVariableKind.Var
+                && binding != null && binding.Type != FastNodeType.Identifier)
                 throw new FastParseException(declaration.Start, "for-in loop variable declaration may not have an initializer");
         }
 
