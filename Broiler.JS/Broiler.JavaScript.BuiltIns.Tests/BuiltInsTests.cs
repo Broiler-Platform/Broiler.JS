@@ -7200,6 +7200,79 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Derived_Constructor_Arrow_Super_Call_Initializes_This()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            class A { constructor() { this.tag = 'A'; } }
+            class B extends A {
+              constructor() {
+                (() => { super(); })();
+                this.touched = true;
+              }
+            }
+            var b = new B();
+            b.tag + '/' + b.touched + '/' + (b instanceof B);
+            """);
+
+        // An arrow function in a derived-class constructor captures `this`; calling
+        // super() inside that arrow must initialize the constructor's `this` binding
+        // so the subsequent `this.touched = true` doesn't throw "this is uninitialized".
+        Assert.Equal("A/true/true", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Exec_Reports_Undefined_For_Unmatched_Optional_Capture()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            // Optional capture group that was never entered: result[N] must be undefined
+            // (not empty string). The () matches the empty string when the ? takes its
+            // branch, so /abc()?/ DOES capture "" — make the group unreachable to test
+            // the unmatched path.
+            var r1 = /^(a)?(b)$/.exec('b');
+            var r3 = /(?:(a)|(b))/.exec('b');
+            [
+              r1[1] === undefined,
+              r1[2] === 'b',
+              r3[1] === undefined,
+              r3[2] === 'b'
+            ].join('|');
+            """);
+
+        // Unmatched (skipped) capture groups produce undefined entries in the result array;
+        // matched groups produce the captured strings.
+        Assert.Equal("true|true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void Dynamic_Import_Returns_A_Promise_Whose_Constructor_Is_Promise()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var p = import('./nonexistent-module-for-test.js');
+            // The import host function rejects asynchronously, but synchronously it must
+            // return a Promise whose constructor and prototype reach the global %Promise%
+            // (test262 language/expressions/dynamic-import/returns-promise.js).
+            [
+              p instanceof Promise,
+              p.constructor === Promise,
+              Object.getPrototypeOf(p) === Promise.prototype,
+              typeof p.then === 'function',
+              typeof p.catch === 'function'
+            ].join('|');
+            """);
+
+        Assert.Equal("true|true|true|true|true", result.ToString());
+    }
+
+    [Fact]
     public void Collator_Sensitivity_Honors_Resolved_Locale()
     {
         EnsureBuiltInsLoaded();
