@@ -232,7 +232,16 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 // stale value. The eval resolves the name through the existing property
                 // regardless. Transient function-local bindings (no prior property) are
                 // still published so the eval can see them.
-                if (variable.IsInitialized && !entry.Shadowed && !entry.HadOwnProperty)
+                //
+                // Likewise do NOT publish a binding that already has a globalVars entry: a
+                // program-level global lexical (`let`/`const`) is resolvable through that
+                // entry (set just below), so it never needs — and per spec must never have —
+                // a global-object property. Publishing one made `with (globalThis)` find the
+                // name on globalThis and route the body's reads/writes through that leaked
+                // property instead of the live binding, desyncing it from the binding the
+                // surrounding code reads (and leaving the property behind on teardown).
+                if (variable.IsInitialized && !entry.Shadowed && !entry.HadOwnProperty
+                    && !entry.HadPreviousVariable)
                     context.Register(variable);
                 context.globalVars.Put(key.Key) = variable;
             }
@@ -302,8 +311,11 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 entry.PreviousVariable = pv;
 
                 // A shadowing overlay only re-establishes the globalVars binding;
-                // it never republishes to the global-object property.
-                if (entry.OverlayVariable.IsInitialized && !entry.Shadowed)
+                // it never republishes to the global-object property. A binding that
+                // already has a globalVars entry (a program-level global lexical) is
+                // likewise resolvable through it and must not be exposed as a property.
+                if (entry.OverlayVariable.IsInitialized && !entry.Shadowed
+                    && !entry.HadPreviousVariable)
                     context.Register(entry.OverlayVariable);
                 context.globalVars.Put(entry.Name.Key) = entry.OverlayVariable;
             }

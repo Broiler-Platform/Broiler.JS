@@ -31,6 +31,14 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
     private readonly LabelTarget generatorReturn = Expression.Label(typeof(GeneratorState), "RETURN");
     private readonly Sequence<(ParameterExpression original, ParameterExpression box, int index, Expression boxField)> lifted = [];
 
+    // Tracks which originals have already been lifted into a box. A temp variable produced by the
+    // compiler can be reused across sibling scopes (e.g. the two `[yield …]` computed property
+    // names of a class declared inside a generator share one temp), so the same ParameterExpression
+    // can appear in more than one yield-containing block's variable list. Lifting it twice would
+    // add a duplicate entry to `lifted` and make the original→box ToDictionary throw on the
+    // colliding key — so each original is boxed exactly once and later references reuse that box.
+    private readonly HashSet<ParameterExpression> liftedOriginals = new(CoreReferenceEqualityComparer.Instance);
+
     // private readonly ParameterExpression replaceScriptInfo;
     private Sequence<(LabelTarget label, int id)> jumps = [];
 
@@ -71,6 +79,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
             return;
 
         lifted.Add((_replaceScriptInfo, _scriptInfoBox, lifted.Count, Expression.Field(_scriptInfoBox, "Value")));
+        liftedOriginals.Add(_replaceScriptInfo);
     }
 
     private (Sequence<ParameterExpression> boxes, Expression init) LoadBoxes()
@@ -142,6 +151,11 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
                 retainedVariables.Add(v);
                 continue;
             }
+
+            // A compiler temp may be declared by more than one yield-containing sibling block; box
+            // it once and let later references resolve through the existing box (see liftedOriginals).
+            if (!liftedOriginals.Add(v))
+                continue;
 
             int index = lifted.Count;
             var box = Expression.Parameter(typeof(Box<>).MakeGenericType(v.Type));
@@ -326,6 +340,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
             var box = Expression.Parameter(typeof(Box<>).MakeGenericType(node.Type));
             resultStore = Expression.Field(box, "Value");
             lifted.Add((original, box, index, resultStore));
+            liftedOriginals.Add(original);
         }
 
         Expression Store(Expression value)

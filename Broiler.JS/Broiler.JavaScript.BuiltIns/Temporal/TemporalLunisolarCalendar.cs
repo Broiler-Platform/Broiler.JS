@@ -181,6 +181,13 @@ internal static class TemporalLunisolarCalendar
                 throw JSEngine.NewRangeError($"Temporal: the {id} {year} year has no leap month \"M{codeNumber:00}L\"");
             return leap;
         }
+        // A lunisolar year has exactly 12 regular months (M01..M12); a leap year adds one leap month
+        // (the 13th ordinal). A regular month code outside 1..12 — e.g. "M13" — does not exist and must
+        // be a RangeError rather than be mapped to a 13th/14th ordinal that RegulateToIso then clamps
+        // back into range (test262 intl402/.../with/{chinese,dangi}-calendar-leap-dates: a non-leap
+        // M13L constrains through the regular "M13" fallback, which is invalid).
+        if (codeNumber < 1 || codeNumber > 12)
+            throw JSEngine.NewRangeError($"Temporal: the {id} calendar has no month \"M{codeNumber:00}\"");
         if (leap == 0 || codeNumber < leap) return codeNumber;
         return codeNumber + 1;
     }

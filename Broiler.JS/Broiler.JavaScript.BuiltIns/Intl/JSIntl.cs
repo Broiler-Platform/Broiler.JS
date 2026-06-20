@@ -5466,6 +5466,14 @@ public class JSIntlDateTimeFormat : JSObject
         return JSIntlDateTimeFormatEngine.IsSupportedCalendar(ca) ? ca : "gregory";
     }
 
+    // The resolved calendar IDENTIFIER (dateTimeFormat.[[Calendar]]): the `calendar` option, then the
+    // locale tag's -u-ca- value, then the locale default ("gregory"). Unlike ResolvedCalendar() it does
+    // NOT collapse an identifier the formatting engine cannot project (e.g. "iso8601", which it renders
+    // as proleptic Gregorian) down to "gregory": the unchanged identifier is what a Temporal value's
+    // calendar must be checked against (CheckTemporalCalendar) and what resolvedOptions reports.
+    internal string ResolvedCalendarId()
+        => OptionString(CalendarKey) ?? UnicodeKeyword(localeTag, "ca") ?? "gregory";
+
     // Reads a Unicode (-u-) keyword value from a BCP-47 tag, e.g. "ca" from
     // "en-u-ca-buddhist". Returns null when absent.
     private static string UnicodeKeyword(string tag, string key)
@@ -5747,7 +5755,7 @@ public class JSIntlDateTimeFormat : JSObject
     // (exact = true) the calendars must be identical — even an iso8601 instance is a mismatch.
     private void CheckTemporalCalendar(string calendarId, bool exact)
     {
-        var formatterCalendar = ResolvedCalendar();
+        var formatterCalendar = ResolvedCalendarId();
         var compatible = exact
             ? calendarId == formatterCalendar
             : calendarId == "iso8601" || calendarId == formatterCalendar;

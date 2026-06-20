@@ -275,9 +275,13 @@ public partial class JSTemporalDuration : JSObject
         if (calendarUnits)
         {
             // Add each duration's date part to the (shared) relativeTo date and compare the resulting
-            // instants on the 24-hour-day timeline.
-            var (end1, _, _) = d1.RelativeEndpoints(relDate);
-            var (end2, _, _) = d2.RelativeEndpoints(relDate);
+            // instants on the 24-hour-day timeline. Each endpoint must be a representable PlainDateTime
+            // (spec: adding the 24-hour days + normalized time runs through RejectDateTimeRange) — e.g. a
+            // duration carrying ~2^53 seconds reaches far beyond the range and is a RangeError.
+            var (end1, start1, _) = d1.RelativeEndpoints(relDate);
+            var (end2, start2, _) = d2.RelativeEndpoints(relDate);
+            ValidateRelativeEndpoints(start1, end1);
+            ValidateRelativeEndpoints(start2, end2);
             return new JSNumber(end1 < end2 ? -1 : end1 > end2 ? 1 : 0);
         }
 

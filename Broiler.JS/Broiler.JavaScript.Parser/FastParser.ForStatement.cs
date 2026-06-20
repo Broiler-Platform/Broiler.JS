@@ -297,6 +297,12 @@ partial class FastParser
                     hasInit = true;
             }
 
+            // A `using` / `await using` declaration is a valid for-of ForDeclaration but never a
+            // for-in one (the for-in grammar admits only var/let/const) — `for (using x in obj)` is
+            // a SyntaxError. (A C-style `for (using x = …; …; …)` head never reaches here.)
+            if (!isOf && declaration.Using)
+                throw new FastParseException(declaration.Start, "'using' declarations are not allowed in a for-in loop head");
+
             // for-in/for-of must have exactly one binding
             if (count != 1)
                 throw new FastParseException(declaration.Start, "Invalid left-hand side in for-in/for-of loop");
@@ -418,18 +424,17 @@ partial class FastParser
             return true;
         }
 
-        // The C-style / for-in head for a `using` family declaration. A plain (sync) `using`
-        // ForBinding is only valid at the head of a for-of loop (handled by
-        // TryParseForUsingDeclaration above): it is NOT a LexicalDeclaration, so a C-style
-        // `for (using x = …; …; …)` head and a for-in `for (using x in …)` head are
-        // SyntaxErrors per the Explicit Resource Management grammar. An `await using`
-        // declaration, however, IS permitted as an ordinary lexical declaration in a C-style
-        // for head (`for (await using x = …; …; …)`), where its resources are async-disposed
-        // when the loop's lexical environment is torn down. Recognised when `using`
-        // (optionally preceded by `await`) is followed — with no intervening LineTerminator —
-        // by a BindingIdentifier the for-of path did not claim. `for (using of x)` /
-        // `for (using; ;)` / `for (using in x)` keep `using` as an ordinary
-        // IdentifierReference and flow through the expression path instead.
+        // The C-style / for-in head for a `using` family declaration. A `using` / `await using`
+        // LexicalDeclaration is permitted in a C-style for head (`for (using x = …; …; …)` /
+        // `for (await using x = …; …; …)`), where its resources are disposed when the loop's
+        // lexical environment is torn down. A bare `using` ForBinding at the head of a for-of loop
+        // is handled by TryParseForUsingDeclaration above; a for-in `for (using x in …)` head is a
+        // SyntaxError (using is not a valid for-in ForDeclaration) — it is rejected below when the
+        // declarator parse, run with the [~In] grammar, fails to reach the head's `;`. Recognised
+        // when `using` (optionally preceded by `await`) is followed — with no intervening
+        // LineTerminator — by a BindingIdentifier the for-of path did not claim. `for (using of x)` /
+        // `for (using; ;)` / `for (using in x)` keep `using` as an ordinary IdentifierReference and
+        // flow through the expression path instead.
         bool TryParseForUsingLexicalDeclaration(out AstVariableDeclaration declaration)
         {
             declaration = null;
@@ -466,14 +471,12 @@ partial class FastParser
                 return false;
             }
 
-            // A plain (sync) `using BindingIdentifier` here is followed by an initializer or a
-            // for-in head — neither is a permitted position for a sync `using` declaration.
-            if (!isAwait)
-                throw new FastParseException(start, "'using' declarations are only allowed in a for-of loop head");
-
             // `in`/`of` are not operators inside the LexicalDeclaration's initializers
-            // (the head uses the [~In] grammar), so `for (await using x = a in b; …)` keeps
+            // (the head uses the [~In] grammar), so `for (using x = a in b; …)` keeps
             // `in` for the for-head rather than folding it into the initializer expression.
+            // A for-in head `for (using x in …)` reaches here too; with `in` non-operator and
+            // each `using` binding requiring an initializer, the declarator parse fails to land on
+            // the head's `;` and surfaces a SyntaxError below — using is not a for-in ForDeclaration.
             considerInOfAsOperators = false;
             if (!Parameters(out var declarators, TokenTypes.SemiColon, false, FastVariableKind.Const))
                 throw stream.Unexpected();

@@ -124,6 +124,42 @@ partial class FastCompiler
 
                 return YExpression.Block(variables, statements);
             }
+
+            // An eval-introduced global `var` is deletable: its read goes through the throwing
+            // global resolution (ReadExpression, which raises a ReferenceError once the binding has
+            // been deleted) while its write targets the assignable global-object property
+            // (Expression). The generic member-update path below visits the identifier once and uses
+            // that single expression as both the read source and the assignment target — for these
+            // bindings the read is a (non-assignable) method Call, so the write must be split out
+            // here to target the property index instead.
+            if (variable.ReadExpression != null)
+            {
+                using var current = scope.Top.GetTempVariable(typeof(JSValue));
+                using var previous = updateExpression.Prefix ? null : scope.Top.GetTempVariable(typeof(JSValue));
+                var variables = new Sequence<YParameterExpression> { current.Variable };
+                var statements = new Sequence<YExpression>
+                {
+                    YExpression.Assign(current.Variable, variable.ReadExpression),
+                    // Coerce to Number/BigInt once: the postfix result is the coerced old value.
+                    YExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
+                };
+
+                if (previous != null)
+                {
+                    variables.Add(previous.Variable);
+                    statements.Add(YExpression.Assign(previous.Variable, current.Expression));
+                }
+
+                statements.Add(YExpression.Assign(
+                    current.Variable,
+                    updateExpression.Operator == UnaryOperator.Increment
+                        ? JSValueBuilder.Increment(current.Expression)
+                        : JSValueBuilder.Decrement(current.Expression)));
+                statements.Add(YExpression.Assign(variable.Expression, current.Expression));
+                statements.Add(previous?.Expression ?? current.Expression);
+
+                return YExpression.Block(variables, statements);
+            }
         }
 
         var list = new Sequence<YExpression>();

@@ -1001,16 +1001,18 @@ public partial class JSTemporalPlainDate : JSObject
         // ratio reduces to the day axis.
         var startNs = (System.Numerics.BigInteger)startDays * NsPerDay + startTimeNs;
 
-        // An exact difference (the destination sits on the start boundary) needs no rounding, and the
-        // end boundary must not be built: for a coarse smallestUnit at the ISO limit (e.g.
-        // PlainYearMonth.since at +275760-09) the next-unit boundary is out of range.
-        if (startNs == fullDestNs)
-            return startDur;
-
+        // Build the end (next-increment) boundary. Per spec (ComputeNudgeWindow → CalendarDateAdd with
+        // ?), this is computed unconditionally, so a rounding increment large enough to push the boundary
+        // past the valid ISO range surfaces the RangeError that AddDateGetDays throws here — even when the
+        // difference itself is exact (test262 …/since|until/throws-if-rounded-date-outside-valid-iso-range).
         var endDays = smallestUnit == "day"
             ? anchorDays + r1 + (long)increment * sign
             : AddDateGetDays(sy, sm, sd, endDur.y, endDur.mo, endDur.w, endDur.d);
         var endNs = (System.Numerics.BigInteger)endDays * NsPerDay + startTimeNs;
+
+        // An exact difference (the destination sits on the start boundary) rounds to the start boundary.
+        if (startNs == fullDestNs)
+            return startDur;
 
         var didExpand = false;
         if (smallestUnit is "year" or "month")

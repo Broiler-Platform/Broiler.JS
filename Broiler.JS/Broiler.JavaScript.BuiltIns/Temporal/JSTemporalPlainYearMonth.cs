@@ -380,8 +380,24 @@ public partial class JSTemporalPlainYearMonth : JSObject
         // The difference is measured from the receiver (day 1) and negated for "since"; the rounding mode
         // is correspondingly negated before rounding (GetDifferenceSettings).
         var mode = sign == -1 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
-        var (years, months, _, _) = JSTemporalPlainDate.DifferenceISODateRounded(
-            isoYear, isoMonth, 1, target.isoYear, target.isoMonth, 1, largestUnit, smallestUnit, increment, mode);
+
+        double years, months;
+        if (smallestUnit == "month" && increment == 1)
+        {
+            // DifferenceTemporalPlainYearMonth step 16 only invokes RoundRelativeDuration when
+            // smallestUnit ≠ month OR roundingIncrement ≠ 1. Both year-months sit on day 1, so the
+            // difference is already exact in whole months: skip rounding entirely. This also avoids
+            // building the next-increment rounding boundary, which for a year-month at the ISO limit
+            // (e.g. since('+275760-09')) would be out of range (issue #794) — whereas a coarser unit or
+            // a larger increment DOES round and a boundary past the limit then throws (issue #857).
+            (years, months, _, _) = JSTemporalPlainDate.DiffCalendarDate(
+                isoYear, isoMonth, 1, target.isoYear, target.isoMonth, 1, largestUnit);
+        }
+        else
+        {
+            (years, months, _, _) = JSTemporalPlainDate.DifferenceISODateRounded(
+                isoYear, isoMonth, 1, target.isoYear, target.isoMonth, 1, largestUnit, smallestUnit, increment, mode);
+        }
 
         if (sign == -1) { years = -years; months = -months; }
 

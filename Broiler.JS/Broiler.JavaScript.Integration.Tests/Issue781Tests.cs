@@ -161,17 +161,27 @@ public class Issue781Tests
     public void FractionalSecondsAreAccepted(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    // ───────────── Problem 15: more than one calendar annotation → RangeError ─────────────
+    // ───────────── Problem 15: multiple calendar annotations + critical flag → RangeError ─────────────
 
+    // More than one calendar annotation is a RangeError only when at least one carries the critical
+    // ("!") flag (ParseISODateTime); the relative order of the critical annotation is irrelevant.
     [Theory]
-    [InlineData("Temporal.PlainDate.from('1970-01-01[u-ca=iso8601][u-ca=iso8601]')")]
     [InlineData("Temporal.PlainDate.from('1970-01-01[u-ca=iso8601][!u-ca=iso8601]')")]
-    [InlineData("Temporal.PlainDate.from('1970-01-01[u-ca=iso8601][u-ca=gregory]')")]
-    [InlineData("Temporal.PlainDateTime.from('1970-01-01T00:00[u-ca=iso8601][u-ca=iso8601]')")]
-    [InlineData("Temporal.PlainYearMonth.from('1970-01[u-ca=iso8601][u-ca=iso8601]')")]
-    [InlineData("Temporal.PlainMonthDay.from('01-01[u-ca=iso8601][u-ca=iso8601]')")]
-    public void MultipleCalendarAnnotationsThrowsRangeError(string code)
+    [InlineData("Temporal.PlainDate.from('1970-01-01[!u-ca=iso8601][u-ca=iso8601]')")]
+    [InlineData("Temporal.PlainDateTime.from('1970-01-01T00:00[u-ca=iso8601][!u-ca=gregory]')")]
+    [InlineData("Temporal.PlainYearMonth.from('1970-01[u-ca=iso8601][!u-ca=iso8601]')")]
+    [InlineData("Temporal.PlainMonthDay.from('01-01[u-ca=iso8601][!u-ca=iso8601]')")]
+    public void MultipleCriticalCalendarAnnotationsThrowsRangeError(string code)
         => Assert.Equal("RangeError", ErrorName(code));
+
+    // Multiple non-critical calendar annotations are allowed: the first wins, the rest are ignored
+    // (even an unknown one such as "discord").
+    [Theory]
+    [InlineData("Temporal.PlainDate.from('1970-01-01[u-ca=iso8601][u-ca=iso8601]').calendarId", "iso8601")]
+    [InlineData("Temporal.PlainDate.from('1970-01-01[u-ca=iso8601][u-ca=discord]').calendarId", "iso8601")]
+    [InlineData("Temporal.PlainDate.from('1970-01-01[u-ca=gregory][u-ca=iso8601]').calendarId", "gregory")]
+    public void MultipleNonCriticalCalendarAnnotationsUseFirst(string code, string expected)
+        => Assert.Equal(expected, Eval(code));
 
     // A single (even critical) calendar annotation remains valid.
     [Theory]
