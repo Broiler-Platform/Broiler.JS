@@ -7121,6 +7121,58 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void PlainMonthDay_Throws_RangeError_For_Infinite_EraYear()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var pmd = Temporal.PlainMonthDay.from({ monthCode: 'M01', day: 1, calendar: 'gregory' });
+            [
+              (() => { try { pmd.toPlainDate({ era: 'ce', eraYear: Infinity }); return 'no throw'; } catch (e) { return e.name; } })(),
+              (() => { try { pmd.equals({ era: 'ce', eraYear: Infinity, monthCode: 'M01', day: 1, calendar: 'gregory' }); return 'no throw'; } catch (e) { return e.name; } })()
+            ].join('|');
+            """);
+
+        Assert.Equal("RangeError|RangeError", result.ToString());
+    }
+
+    [Fact]
+    public void Collator_Ignores_Unicode_Keywords_Inside_Private_Use_Sequence()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              new Intl.Collator('de-x-private-u-co-phonebk').resolvedOptions().collation,
+              new Intl.Collator('en-x-u-co-phonebk').resolvedOptions().collation
+            ].join('|');
+            """);
+
+        Assert.Equal("default|default", result.ToString());
+    }
+
+    [Fact]
+    public void Arguments_Object_Symbol_ToStringTag_Override_Is_Honored()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              var args = (function () { return arguments; }());
+              var defaultTag = Object.prototype.toString.call(args);
+              Object.defineProperty(args, Symbol.toStringTag, { value: 'test262' });
+              var overriddenTag = Object.prototype.toString.call(args);
+              return defaultTag + '|' + overriddenTag;
+            })()
+            """);
+
+        Assert.Equal("[object Arguments]|[object test262]", result.ToString());
+    }
+
+    [Fact]
     public void GetCanonicalLocales_Canonicalizes_Unicode_Keyword_Value_Aliases()
     {
         EnsureBuiltInsLoaded();

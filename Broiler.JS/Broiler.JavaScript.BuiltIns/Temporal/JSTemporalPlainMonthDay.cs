@@ -180,11 +180,45 @@ public partial class JSTemporalPlainMonthDay : JSObject
     {
         if (a.GetAt(0) is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.toPlainDate requires an object");
+
+        // PrepareCalendarFields reads each recognised year-resolving field on this PlainMonthDay's
+        // calendar — for the iso8601 calendar only "year"; for calendars with eras also "era" and
+        // "eraYear" — and coerces each as it is read, so e.g. eraYear: Infinity surfaces as
+        // RangeError before the (year ?? era+eraYear) presence check throws TypeError.
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
-        if (yearValue.IsUndefined)
+        var yearInt = 0;
+        var hasYear = !yearValue.IsUndefined;
+        if (hasYear) yearInt = ToIntegerWithTruncation(yearValue);
+
+        var eraSupport = calendarId != "iso8601" && TemporalCalendarMath.HasEra(calendarId);
+        var hasEra = false;
+        var hasEraYear = false;
+        string eraStr = null;
+        var eraYearInt = 0;
+        if (eraSupport)
+        {
+            var eraValue = obj[KeyStrings.GetOrCreate("era")];
+            hasEra = !eraValue.IsUndefined;
+            if (hasEra) eraStr = eraValue.ToString();
+            var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
+            hasEraYear = !eraYearValue.IsUndefined;
+            if (hasEraYear) eraYearInt = ToIntegerWithTruncation(eraYearValue);
+        }
+
+        if (!hasYear && !(eraSupport && hasEra && hasEraYear))
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.toPlainDate requires a year");
 
-        var year = ToIntegerWithTruncation(yearValue);
+        int year;
+        if (hasYear)
+        {
+            year = yearInt;
+            // era / eraYear (when both present alongside `year`) must agree with the supplied year.
+            if (eraSupport && hasEra && hasEraYear &&
+                TemporalCalendarMath.YearFromEra(calendarId, eraStr, eraYearInt) != year)
+                throw JSEngine.NewRangeError("Temporal: year and era/eraYear do not agree");
+        }
+        else
+            year = TemporalCalendarMath.YearFromEra(calendarId, eraStr, eraYearInt);
 
         if (NonIso)
         {
@@ -316,10 +350,23 @@ public partial class JSTemporalPlainMonthDay : JSObject
         }
 
         // PrepareCalendarFields: read each recognised field in alphabetical order —
-        // day, month, monthCode, year — coercing it as it is read (the iso8601 calendar
-        // has no eras) (test262 PlainMonthDay/from/order-of-operations).
+        // day, [era, eraYear,] month, monthCode, year — coercing it as it is read.
+        // The iso8601 calendar has no eras (era / eraYear are not fields and are not read);
+        // the Gregorian-family calendars (gregory / buddhist / roc / japanese) do, so their
+        // era / eraYear are read AND coerced even though PlainMonthDay does not use them
+        // (an Infinity eraYear must surface as RangeError, not be silently ignored).
         var dayValue = obj[KeyStrings.GetOrCreate("day")];
         var dayInt = dayValue.IsUndefined ? 0 : ToIntegerWithTruncation(dayValue);
+
+        if (calendarId != "iso8601")
+        {
+            var eraValue = obj[KeyStrings.GetOrCreate("era")];
+            if (!eraValue.IsUndefined)
+                _ = eraValue.ToString();
+            var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
+            if (!eraYearValue.IsUndefined)
+                _ = ToIntegerWithTruncation(eraYearValue);
+        }
 
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthFromMonth = monthValue.IsUndefined ? -1 : ToIntegerWithTruncation(monthValue);

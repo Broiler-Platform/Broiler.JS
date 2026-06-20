@@ -943,7 +943,14 @@ public static class JSIntl
         var subtags = tag.Split('-');
         var u = -1;
         for (var i = 0; i < subtags.Length; i++)
-            if (subtags[i].Length == 1 && subtags[i][0] == 'u') { u = i; break; }
+        {
+            if (subtags[i].Length != 1)
+                continue;
+            // Stop at the private-use singleton ("x"): a "u" inside private-use is a
+            // private subtag, not a Unicode extension.
+            if (subtags[i][0] == 'u') { u = i; break; }
+            if (subtags[i][0] == 'x') break;
+        }
         if (u < 0)
             return tag;
 
@@ -1333,6 +1340,10 @@ public static class JSIntl
         var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
         for (var i = 0; i < subtags.Length; i++)
         {
+            // A private-use ("x") singleton is terminal — any "u" inside its payload is a
+            // private subtag, not a Unicode extension, and its keys are not constrained.
+            if (subtags[i].Length == 1 && (subtags[i][0] == 'x' || subtags[i][0] == 'X'))
+                break;
             if (!subtags[i].Equals("u", StringComparison.OrdinalIgnoreCase))
                 continue;
 
@@ -1607,11 +1618,12 @@ public static class JSIntl
         var u = -1;
         for (var i = 0; i < parts.Length; i++)
         {
-            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
-            {
-                u = i;
-                break;
-            }
+            if (parts[i].Length != 1)
+                continue;
+            // Stop scanning at the private-use singleton ("x"): everything beyond is
+            // private-use, so a "u" inside that payload is not a Unicode extension.
+            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
+            if (parts[i][0] == 'x' || parts[i][0] == 'X') break;
         }
 
         if (u < 0)
@@ -1778,11 +1790,12 @@ public static class JSIntl
         var u = -1;
         for (var i = 0; i < parts.Length; i++)
         {
-            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
-            {
-                u = i;
-                break;
-            }
+            if (parts[i].Length != 1)
+                continue;
+            // Stop at the private-use ("x") singleton; "-u-" inside private-use is a private
+            // subtag, not a Unicode extension to remove.
+            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
+            if (parts[i][0] == 'x' || parts[i][0] == 'X') break;
         }
 
         if (u < 0)
@@ -1842,11 +1855,13 @@ public static class JSIntl
         var u = -1;
         for (var i = 0; i < parts.Length; i++)
         {
-            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
-            {
-                u = i;
-                break;
-            }
+            if (parts[i].Length != 1)
+                continue;
+            // A "u" singleton starts the Unicode extension; an "x" singleton starts the
+            // private-use sequence (terminal in canonical form), so any "-u-" inside its
+            // payload is a private subtag and must not be treated as a Unicode extension.
+            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
+            if (parts[i][0] == 'x' || parts[i][0] == 'X') break;
         }
 
         if (u < 0)
@@ -3545,8 +3560,16 @@ public sealed class JSIntlLocale : JSObject
     {
         var parts = tag.Split('-');
         var i = 0;
-        while (i < parts.Length && !(parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U')))
+        while (i < parts.Length)
+        {
+            // Stop at the private-use ("x") singleton; "u" inside private-use is a private
+            // subtag, not a Unicode extension.
+            if (parts[i].Length == 1 && (parts[i][0] == 'x' || parts[i][0] == 'X'))
+                return null;
+            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
+                break;
             i++;
+        }
         if (i >= parts.Length)
             return null;
 
@@ -4818,14 +4841,29 @@ public class JSIntlCollator : JSObject
     private static bool TryGetUnicodeExtension(string locale, string key, out string value)
     {
         value = null;
-        var marker = "-u-";
-        var start = locale.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
-        if (start < 0)
+        if (string.IsNullOrEmpty(locale))
             return false;
 
-        var parts = locale[(start + marker.Length)..].Split('-', StringSplitOptions.RemoveEmptyEntries);
+        var parts = locale.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        var u = -1;
         for (var i = 0; i < parts.Length; i++)
         {
+            if (parts[i].Length != 1)
+                continue;
+            // Stop at the private-use ("x") singleton; a "u" inside private-use is a
+            // private subtag, not a Unicode extension.
+            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
+            if (parts[i][0] == 'x' || parts[i][0] == 'X') return false;
+        }
+
+        if (u < 0)
+            return false;
+
+        for (var i = u + 1; i < parts.Length; i++)
+        {
+            // The Unicode extension ends at the next singleton (start of another extension).
+            if (parts[i].Length == 1)
+                return false;
             if (!string.Equals(parts[i], key, StringComparison.OrdinalIgnoreCase))
                 continue;
 
