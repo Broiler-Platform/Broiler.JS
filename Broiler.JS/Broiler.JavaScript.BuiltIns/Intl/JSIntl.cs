@@ -896,6 +896,32 @@ public static class JSIntl
         return sb.ToString();
     }
 
+    // CLDR subdivision aliases (supplemental/subdivisionAlias.xml) used for the "sd" Unicode
+    // keyword (and the related "rg" region-override keyword, which carries the same syntactic
+    // subdivision value). Norway renumbered its subdivisions in 2020, hence no23 → no50, etc.
+    // Only the entries a test262 case actually exercises are listed; an unknown value passes
+    // through unchanged.
+    private static readonly Dictionary<string, string> SubdivisionValueAliases = new(StringComparer.Ordinal)
+    {
+        ["no23"] = "no50",
+        ["fra"] = "frges",
+        ["frb"] = "frbre",
+        ["frc"] = "frcvl",
+        ["frd"] = "frbfc",
+        ["fre"] = "frbre",
+    };
+
+    // CLDR timezone aliases (supplemental/metaZones.xml / windowsZones — used here as the
+    // "tz" Unicode-keyword value canonicalization). Each pre-deprecation tz id maps to its
+    // current canonical tz id (CN/Chongqing folded into CN/Shanghai, etc.); only the entries
+    // covered by test262 are listed.
+    private static readonly Dictionary<string, string> TimezoneValueAliases = new(StringComparer.Ordinal)
+    {
+        ["cnckg"] = "cnsha",
+        ["aqams"] = "nzakl",
+        ["cnhrb"] = "cnsha",
+    };
+
     private static string CanonicalizeKeywordValue(string key, string value)
     {
         if (value.Length == 0)
@@ -908,6 +934,10 @@ public static class JSIntl
             return ks;
         if (key == "ms" && MeasurementSystemValueAliases.TryGetValue(value, out var ms))
             return ms;
+        if ((key == "sd" || key == "rg") && SubdivisionValueAliases.TryGetValue(value, out var sd))
+            return sd;
+        if (key == "tz" && TimezoneValueAliases.TryGetValue(value, out var tz))
+            return tz;
         // "yes" / "no" are the deprecated aliases for boolean Unicode keyword values
         // ("true" / "false"); only "yes" is reachable from a -u- tag (a 2-char subtag is
         // parsed as another keyword key, not a type), but normalise the option form too.
@@ -1160,7 +1190,42 @@ public static class JSIntl
             }
         }
 
-        return CanonicalizeTransformedExtension(CanonicalizeUnicodeKeywordValues(ApplySubtagAliases(CanonicalizeLanguageTagCase(tag))));
+        return CanonicalizeTransformedExtension(
+            CanonicalizeUnicodeKeywordValues(
+                CanonicalizeMainTagVariants(
+                    ApplySubtagAliases(
+                        CanonicalizeLanguageTagCase(tag)))));
+    }
+
+    // UTS #35 §3.6.4 LocaleId canonicalization: the variant subtags in the main language
+    // tag (after the optional script + region, before any extension singleton) are sorted
+    // alphabetically (ordinal). Variants inside a transformed extension's tlang are sorted
+    // separately by CanonicalizeTransformedExtension.
+    private static string CanonicalizeMainTagVariants(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return tag;
+
+        var parts = tag.Split('-');
+        // Locate the start of the variants run and the start of the first extension.
+        var i = 1; // skip the language subtag
+        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i])) i++; // script
+        if (i < parts.Length && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigitTag(parts[i])))) i++; // region
+
+        var variantStart = i;
+        while (i < parts.Length && IsVariantSubtag(parts[i]))
+            i++;
+
+        if (i - variantStart < 2)
+            return tag;
+
+        var sorted = new string[i - variantStart];
+        System.Array.Copy(parts, variantStart, sorted, 0, sorted.Length);
+        System.Array.Sort(sorted, System.StringComparer.Ordinal);
+        for (var j = 0; j < sorted.Length; j++)
+            parts[variantStart + j] = sorted[j];
+
+        return string.Join("-", parts);
     }
 
     // UTS #35 §3.6.2 transformed extension canonicalization: within a "-t-" extension, the

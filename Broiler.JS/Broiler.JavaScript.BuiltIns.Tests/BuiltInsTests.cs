@@ -7181,6 +7181,41 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void GetCanonicalLocales_Sorts_Main_Tag_Variants_Alphabetically()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('de-Latn-DE-fonipa-1996')[0],
+              Intl.getCanonicalLocales('en-rozaj-biske')[0],
+              Intl.getCanonicalLocales('sl-rozaj-1994-biske')[0]
+            ].join('|');
+            """);
+
+        // Variants sort by ordinal (digits before letters): 1994 < biske < fonipa < rozaj.
+        Assert.Equal("de-Latn-DE-1996-fonipa|en-biske-rozaj|sl-1994-biske-rozaj", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Applies_Subdivision_And_Timezone_Value_Aliases()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('und-NO-u-sd-no23')[0],
+              Intl.getCanonicalLocales('und-u-rg-no23')[0],
+              Intl.getCanonicalLocales('und-u-tz-cnckg')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("und-NO-u-sd-no50|und-u-rg-no50|und-u-tz-cnsha", result.ToString());
+    }
+
+    [Fact]
     public void GetCanonicalLocales_Sorts_Variants_And_Fields_In_Transformed_Extension()
     {
         EnsureBuiltInsLoaded();
