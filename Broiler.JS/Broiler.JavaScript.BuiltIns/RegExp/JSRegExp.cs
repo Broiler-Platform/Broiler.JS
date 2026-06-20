@@ -230,15 +230,37 @@ public partial class JSRegExp : JSObject, IJSRegExp
     // accessor — see the LastIndex note in JSRegExpPrototype.cs.
     public int lastIndex = 0;
 
-    public JSRegExp(in Arguments a) : base(JSEngine.NewTargetPrototype)
+    public JSRegExp(in Arguments a) : this()
     {
+        // Per §22.2.4 RegExp(pattern, flags), [[OriginalSource]] / [[OriginalFlags]] for a
+        // pattern with a [[RegExpMatcher]] are read from the INTERNAL SLOTS (step 5), which
+        // happens BEFORE RegExpAlloc reads NewTarget.prototype (step 8). Going through
+        // `: base(JSEngine.NewTargetPrototype)` here evaluated NewTarget.prototype first —
+        // visible to an ill-behaving subclass whose prototype getter recompiles the source
+        // (test262 sm/RegExp/constructor-ordering). Defer the prototype assignment until
+        // after the source has been captured.
         var pattern = "";
         var flags = "";
         var patternValue = a.GetAt(0);
 
         if (a.Length > 0)
         {
-            if (IsRegExpLike(patternValue))
+            // Step 1: IsRegExp(pattern) — this triggers Get(pattern, @@match) on EVERY object
+            // pattern, including real RegExps (test262 IsRegExpLike_Accesses_Symbol_Match).
+            var isRegExpLike = IsRegExpLike(patternValue);
+            if (patternValue is JSRegExp existingRe)
+            {
+                // Step 4: a pattern with a [[RegExpMatcher]] reads its internal slots directly,
+                // skipping the "source"/"flags" property accesses. Going through the property
+                // path was observable via a redefined RegExp.prototype.source/flags getter and
+                // — more dramatically — let a getter run BETWEEN our @@match probe and the
+                // source capture.
+                pattern = existingRe.pattern;
+                flags = a.Length > 1 && !a.GetAt(1).IsUndefined
+                    ? a.GetAt(1).StringValue
+                    : existingRe.flags;
+            }
+            else if (isRegExpLike)
             {
                 var regExpLike = (JSObject)patternValue;
                 if (a.Length < 2 || a.GetAt(1).IsUndefined)
@@ -262,6 +284,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     flags = a.GetAt(1).StringValue;
             }
         }
+
+        // Source/flags have been captured. NOW read NewTarget.prototype — any user getter
+        // running here can no longer back-affect them. `this()` already set the default
+        // RegExp.prototype, so a subclass's distinct prototype is the only override.
+        var newTargetPrototype = JSEngine.NewTargetPrototype;
+        if (newTargetPrototype != null)
+            BasePrototypeObject = newTargetPrototype;
 
         this.pattern = pattern;
 

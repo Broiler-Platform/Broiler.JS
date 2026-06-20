@@ -170,4 +170,136 @@ public class Issue849Tests
         // a=1, then rest collects 2 and 3, then next returns done.
         Assert.Equal("next,next,next,next,|1|2,3", Eval(code).ToString());
     }
+
+    // Problem 71 (sm/JSON/stringify-boxed-primitives): SerializeJSONProperty step 6 runs
+    // ToNumber / ToString on Number and String wrapper objects, so a user-redefined
+    // valueOf / toString on the prototype chain must be observed instead of the internal
+    // slot being read directly.
+    [Fact]
+    public void JsonStringifyNumberWrapperRespectsPrototypeValueOf()
+    {
+        var code = "var saved = Number.prototype.valueOf;"
+            + "Object.defineProperty(Number.prototype, 'valueOf', { value: function(){ return 17; }, writable: true, configurable: true });"
+            + "var r = JSON.stringify(new Number(5));"
+            + "Object.defineProperty(Number.prototype, 'valueOf', { value: saved, writable: true, configurable: true });"
+            + "r";
+        Assert.Equal("17", Eval(code).ToString());
+    }
+
+    [Fact]
+    public void JsonStringifyStringWrapperRespectsPrototypeToString()
+    {
+        var code = "var saved = String.prototype.toString;"
+            + "Object.defineProperty(String.prototype, 'toString', { value: function(){ return 'forced'; }, writable: true, configurable: true });"
+            + "var r = JSON.stringify(new String('foopy'));"
+            + "Object.defineProperty(String.prototype, 'toString', { value: saved, writable: true, configurable: true });"
+            + "r";
+        Assert.Equal("\"forced\"", Eval(code).ToString());
+    }
+
+    // The default Number/String/Boolean wrapper behaviour is unchanged.
+    [Theory]
+    [InlineData("JSON.stringify(new Boolean(false))", "false")]
+    [InlineData("JSON.stringify(new Boolean(true))", "true")]
+    [InlineData("JSON.stringify(new Number(5))", "5")]
+    [InlineData("JSON.stringify(new Number(-0))", "0")]
+    [InlineData("JSON.stringify(new String('foopy'))", "\"foopy\"")]
+    public void JsonStringifyWrapperDefaults(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // A Number wrapper whose valueOf returns NaN (e.g. when both methods are
+    // unavailable / non-callable) still serializes as null per §25.5.2 step 9.
+    [Fact]
+    public void JsonStringifyNumberWrapperWithNoUsefulCoercion()
+    {
+        var code = "var n = new Number(5);"
+            + "n.valueOf = function(){ return NaN; };"
+            + "JSON.stringify(n)";
+        Assert.Equal("null", Eval(code).ToString());
+    }
+
+    // Problem 84 (sm/RegExp/constructor-ordering): when Reflect.construct's
+    // newTarget.prototype getter recompiles the source RegExp as a side effect, the spec
+    // requires the new RegExp to capture [[OriginalSource]] BEFORE consulting
+    // newTarget.prototype (RegExp(pattern, flags) steps 5 and 8). The previous order
+    // produced "b" because `: base(JSEngine.NewTargetPrototype)` evaluated the getter
+    // first and then read source from the (now-recompiled) original.
+    [Fact]
+    public void RegExpConstructorReadsSourceBeforeNewTargetPrototype()
+    {
+        var code = "var re = /a/;"
+            + "var newRe = Reflect.construct(RegExp, [re],"
+            + "  Object.defineProperty(function(){}.bind(null), 'prototype', {"
+            + "    get() { re.compile('b'); return RegExp.prototype; }"
+            + "  }));"
+            + "newRe.source";
+        Assert.Equal("a", Eval(code).ToString());
+    }
+
+    // Subclassing still routes through newTarget.prototype, so an ordinary subclass
+    // instance correctly inherits its custom prototype.
+    [Fact]
+    public void RegExpSubclassStillInheritsCustomPrototype()
+    {
+        var code = "class MyRe extends RegExp {}"
+            + "var r = new MyRe('x');"
+            + "(r instanceof MyRe && r instanceof RegExp && r.source === 'x').toString()";
+        Assert.Equal("true", Eval(code).ToString());
+    }
+
+    // Plain new RegExp from a string pattern is unaffected.
+    [Theory]
+    [InlineData("new RegExp('foo').source", "foo")]
+    [InlineData("new RegExp(/abc/i).flags", "i")]
+    [InlineData("new RegExp(/abc/i, 'g').flags", "g")]
+    public void RegExpConstructorPlainCases(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Problem 92 (sm/RegExp/replace-trace): RegExp.prototype[Symbol.replace] now reads
+    // the result properties in spec order INSIDE the accumulation loop — length, then
+    // "0", then "index", then "groups" (§22.2.6.11 steps 16.c–o). The previous order
+    // leaked "0" before "length", which is observable through a Proxy result. A
+    // non-global match has no preceding empty-match probe (step 14.f.i), so the trace
+    // contains exactly one access of each property in the spec-mandated order.
+    [Fact]
+    public void SymbolReplaceReadsResultPropertiesInSpecOrder()
+    {
+        var code = "var log = [];"
+            + "var rx = /./;"
+            + "rx.exec = function() {"
+            + "  if (this.done) return null;"
+            + "  this.done = true;"
+            + "  return new Proxy(['m'], {"
+            + "    get(t, k) { log.push('get:' + String(k)); return t[k]; }"
+            + "  });"
+            + "};"
+            + "rx[Symbol.replace]('mxxx', '*');"
+            + "log.join(',')";
+        Assert.Equal("get:length,get:0,get:index,get:groups", Eval(code).ToString());
+    }
+
+    // The global-match path still probes "0" as part of the empty-match advance check
+    // (step 14.f.i) BEFORE the accumulation loop's length-first reads — exactly what
+    // the upstream replace-trace test262 case observes.
+    [Fact]
+    public void SymbolReplaceGlobalReadsProbeZeroBeforeAccumulationLengthFirst()
+    {
+        var code = "var log = [];"
+            + "var rx = /./g;"
+            + "rx.exec = function() {"
+            + "  if (this.done) return null;"
+            + "  this.done = true;"
+            + "  return new Proxy(['m'], {"
+            + "    get(t, k) { log.push('get:' + String(k)); return t[k]; }"
+            + "  });"
+            + "};"
+            + "rx[Symbol.replace]('mxxx', '*');"
+            + "log.join(',')";
+        // get:0 from gather-loop probe (step 14.f.i), then accumulation reads in spec order.
+        Assert.Equal("get:0,get:length,get:0,get:index,get:groups", Eval(code).ToString());
+    }
 }
