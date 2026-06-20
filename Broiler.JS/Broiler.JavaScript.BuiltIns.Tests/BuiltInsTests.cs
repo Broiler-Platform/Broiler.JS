@@ -7200,6 +7200,61 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void NumberFormat_ResolvedOptions_Do_Not_Leak_Digit_Options_From_Object_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            Object.prototype.minimumSignificantDigits = 5;
+            Object.prototype.maximumSignificantDigits = 6;
+            try {
+              var nf = new Intl.NumberFormat('en-US');
+              var resolved = nf.resolvedOptions();
+              // Neither significant-digits option was supplied, so the implementation must
+              // not capture the leaked Object.prototype values as own properties on the
+              // resolved-options result.
+              [
+                Object.getOwnPropertyDescriptor(resolved, 'minimumSignificantDigits') === undefined,
+                Object.getOwnPropertyDescriptor(resolved, 'maximumSignificantDigits') === undefined
+              ].join('|');
+            } finally {
+              delete Object.prototype.minimumSignificantDigits;
+              delete Object.prototype.maximumSignificantDigits;
+            }
+            """);
+
+        Assert.Equal("true|true", result.ToString());
+    }
+
+    [Fact]
+    public void DateTimeFormat_Default_Options_Do_Not_Leak_From_Object_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            Object.prototype.day = '2-digit';
+            try {
+              var dtf = new Intl.DateTimeFormat('en-US');
+              var resolved = dtf.resolvedOptions();
+              // resolvedOptions returns OrdinaryObjectCreate(%Object.prototype%), so a
+              // prototype-walking read on .day still sees the planted value — but the
+              // implementation must not capture the leaked value as an OWN day property
+              // (i.e. Object.getOwnPropertyDescriptor / Object.keys must not see it).
+              [
+                Object.getOwnPropertyDescriptor(resolved, 'day') === undefined,
+                Object.keys(resolved).includes('day')
+              ].join('|');
+            } finally {
+              delete Object.prototype.day;
+            }
+            """);
+
+        Assert.Equal("true|false", result.ToString());
+    }
+
+    [Fact]
     public void Splice_With_Species_Throwing_Propagates_The_Species_Error()
     {
         EnsureBuiltInsLoaded();

@@ -1880,8 +1880,11 @@ public static class JSIntl
         // Each digit option has a sanctioned [min, max] range (SetNumberFormatDigitOptions
         // / GetNumberOption); a NaN or out-of-range value (e.g. maximumSignificantDigits: 0)
         // is a RangeError. The original value is still snapshotted so downstream
-        // format/resolvedOptions reads observe the construction-time value.
+        // format/resolvedOptions reads observe the construction-time value. The snapshot
+        // has a null prototype: only the digits we explicitly capture are visible, so
+        // a property planted on Object.prototype can't bleed into the formatter.
         var snapshot = new JSObject();
+        snapshot.SetPrototypeOf(Null.JSNull.Value);
         foreach (var (name, min, max) in new (string, int, int)[]
         {
             ("minimumIntegerDigits", 1, 21),
@@ -5566,7 +5569,11 @@ public class JSIntlDateTimeFormat : JSObject
         if (!o[DateStyleKey].IsUndefined || !o[TimeStyleKey].IsUndefined)
             return options;
 
+        // Null prototype: ToDateTimeOptions exposes the merged bag to downstream
+        // option reads, which would otherwise pick up Object.prototype taint planted by
+        // client code (e.g. Object.prototype.year = '2-digit').
         var merged = new JSObject();
+        merged.SetPrototypeOf(Null.JSNull.Value);
         foreach (var name in DateTimeFormatOptionKeys)
         {
             var key = KeyStrings.GetOrCreate(name);
@@ -6130,7 +6137,13 @@ public class JSIntlDateTimeFormat : JSObject
         // surfaces a throwing getter at construction (constructor-options-throwing-getters),
         // validates each option once (RangeError for an out-of-set value), and never
         // re-invokes a getter at format time.
+        //
+        // The snapshot has a NULL prototype: only the options we explicitly Capture below
+        // are present, so a later property read on the snapshot can't accidentally pick up
+        // a value the user planted on Object.prototype (test262
+        // default-options-object-prototype.js).
         var snapshot = new JSObject();
+        snapshot.SetPrototypeOf(Null.JSNull.Value);
         void Capture(KeyString key, string value)
         {
             if (value != null)
