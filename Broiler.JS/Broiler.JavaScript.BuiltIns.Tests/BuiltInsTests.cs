@@ -7181,6 +7181,50 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void DateTimeFormat_Hour12_True_Picks_H12_For_NonJa_Locales()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              new Intl.DateTimeFormat('fr-FR', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
+              new Intl.DateTimeFormat('de-DE', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
+              new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
+              new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false }).resolvedOptions().hourCycle
+            ].join('|');
+            """);
+
+        // Per CLDR, the 12-hour cycle is h12 almost everywhere — even for locales whose
+        // default is h23 (fr, de), where the 24-hour cycle is preferred but the 12-hour
+        // alternative is still "h" (h12), not "K" (h11).
+        Assert.Equal("h12|h12|h12|h23", result.ToString());
+    }
+
+    [Fact]
+    public void Anonymous_User_Function_Name_Defaults_To_Empty_String()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var named = function bar() {};
+            var anonymous = function () {};
+            [
+              named.name,
+              anonymous.name,
+              typeof Math.floor.name === 'string' ? Math.floor.name : 'unexpected'
+            ].join('|');
+            """);
+
+        // A bare `function () {}` is anonymous and its `name` defaults to "" per
+        // SetFunctionName; the explicit `bar` survives; native built-ins keep their own
+        // name (Math.floor → "floor"). The contextual NamedEvaluation rebinding for
+        // `var x = function () {}` is a separate concern not covered here.
+        Assert.Equal("bar||floor", result.ToString());
+    }
+
+    [Fact]
     public void Intl_Locale_Resolves_Grandfathered_Tag_To_Preferred_Form()
     {
         EnsureBuiltInsLoaded();

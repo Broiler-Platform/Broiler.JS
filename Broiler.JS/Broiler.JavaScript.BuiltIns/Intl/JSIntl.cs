@@ -5302,11 +5302,12 @@ public class JSIntlDateTimeFormat : JSObject
         var hour12 = options?[Hour12Key];
         if (hour12 != null && !hour12.IsUndefined)
         {
-            // hour12 true picks the 12-hour cycle (h11 when the locale default is a
-            // 0-based/24-hour cycle, else h12); hour12 false picks h23 (the common
-            // 24-hour cycle observed by other engines).
+            // hour12 true picks the locale's preferred 12-hour cycle. Per CLDR's <hours>
+            // preference data, only a small set of locales (ja, …) prefer the 0-based
+            // h11; almost every other locale — even those with an h23 default — prefers
+            // h12 for the 12-hour alternative, so default-to-h12. hour12 false picks h23.
             if (hour12.BooleanValue)
-                return hcDefault == "h11" || hcDefault == "h23" ? "h11" : "h12";
+                return hcDefault == "h11" ? "h11" : "h12";
             return "h23";
         }
 

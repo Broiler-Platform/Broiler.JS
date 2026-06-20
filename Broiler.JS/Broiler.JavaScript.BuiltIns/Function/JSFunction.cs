@@ -252,14 +252,22 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     {
         ref var ownProperties = ref GetOwnProperties();
         this.f = f;
-        this.name = name.IsEmpty ? "native" : name;
-        this.source = source.IsEmpty ? $"function {this.name}() {{ [native code] }}" : source;
+        // A user-compiled function carries its source span; per ES2026 §10.2.9 SetFunctionName
+        // an anonymous user function's `name` defaults to "" (and the contextual NamedEvaluation
+        // rebinds it for `const x = function() {}` etc.). Native functions (no source — a
+        // builtin or wrapped CLR delegate) keep the legacy "native" placeholder for the
+        // diagnostic "function native() { [native code] }" rendering.
+        var publicName = name.IsEmpty
+            ? (source.IsEmpty ? "native" : "")
+            : name.Value;
+        this.name = name.IsEmpty && source.IsEmpty ? "native" : (name.IsEmpty ? StringSpan.Empty : name);
+        this.source = source.IsEmpty ? $"function {(this.name.IsEmpty ? "anonymous" : this.name)}() {{ [native code] }}" : source;
 
         // Own-key order per spec: a function's "length" and "name" are installed
         // before its "prototype" (SetFunctionName/SetFunctionLength then
         // MakeConstructor), so getOwnPropertyNames yields [length, name, prototype].
         ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.name, name.IsEmpty ? JSValue.CreateString("native") : JSValue.CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.name, JSValue.CreateString(publicName), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         if (createPrototype)
         {
@@ -275,12 +283,18 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     {
         ref var ownProperties = ref GetOwnProperties();
         this.f = f;
-        this.name = name.IsEmpty ? "native" : name;
-        this.source = source.IsEmpty ? $"function {this.name}() {{ [native code] }}" : source;
+        // See the other constructor above: anonymous user functions report name "" per
+        // SetFunctionName, while native functions keep the "native" placeholder so
+        // Function.prototype.toString renders as "function native() { [native code] }".
+        var publicName = name.IsEmpty
+            ? (source.IsEmpty ? "native" : "")
+            : name.Value;
+        this.name = name.IsEmpty && source.IsEmpty ? "native" : (name.IsEmpty ? StringSpan.Empty : name);
+        this.source = source.IsEmpty ? $"function {(this.name.IsEmpty ? "anonymous" : this.name)}() {{ [native code] }}" : source;
 
         // Own-key order per spec: [length, name, prototype] (see above).
         ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.name, name.IsEmpty ? JSValue.CreateString("native") : JSValue.CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.name, JSValue.CreateString(publicName), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         if (createPrototype)
         {
@@ -304,12 +318,14 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             if (context.ThrowTypeError is JSFunction cached)
                 return cached;
 
-            var created = CreateFrozenThrowTypeErrorFunction("ThrowTypeError", "Cannot access callee in strict mode");
+            var created = CreateFrozenThrowTypeErrorFunction("ThrowTypeError",
+                "'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them");
             context.ThrowTypeError = created;
             return created;
         }
 
-        return CreateFrozenThrowTypeErrorFunction("ThrowTypeError", "Cannot access callee in strict mode");
+        return CreateFrozenThrowTypeErrorFunction("ThrowTypeError",
+                "'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them");
     }
 
     public static JSFunction CreateFrozenThrowTypeErrorFunction(string name, string message)
