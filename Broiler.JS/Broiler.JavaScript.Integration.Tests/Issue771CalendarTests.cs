@@ -182,13 +182,15 @@ public class Issue771CalendarTests
     public void YearMonthToStringShowsReferenceDayAndCalendar()
         => Assert.Equal("2000-03-01[u-ca=gregory]", Eval("new Temporal.PlainYearMonth(2000, 3, 'gregory').toString()"));
 
+    // calendarName:'never' hides the [u-ca=…] annotation, but per TemporalYearMonthToString
+    // the reference day is still emitted for a non-ISO calendar (it is part of the value).
     [Fact]
     public void YearMonthToStringNeverHidesCalendar()
-        => Assert.Equal("2000-03", Eval("new Temporal.PlainYearMonth(2000, 3, 'gregory').toString({ calendarName:'never' })"));
+        => Assert.Equal("2000-03-01", Eval("new Temporal.PlainYearMonth(2000, 3, 'gregory').toString({ calendarName:'never' })"));
 
     [Fact]
     public void YearMonthBuddhistFromYear()
-        => Assert.Equal("2000-01:be", Eval(
+        => Assert.Equal("2000-01-01:be", Eval(
             "const d = Temporal.PlainYearMonth.from({ year: 2543, month: 1, calendar: 'buddhist' });" +
             "d.toString({ calendarName: 'never' }) + ':' + d.era"));
 

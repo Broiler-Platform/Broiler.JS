@@ -17,6 +17,12 @@ internal static class TemporalCalendarMath
     private static bool Luni(string id) => TemporalLunisolarCalendar.IsLunisolar(id);
     private static bool Persian(string id) => TemporalSolarHijriCalendar.IsSolarHijri(id);
 
+    // Whether the calendar can ever contain a leap month (a "MnnL" month code). Only the lunisolar
+    // calendars (chinese / dangi) and hebrew (Adar I) do; every solar calendar — persian, indian, the
+    // coptic/ethiopic 13-month family and the tabular Islamic calendars — has none, so a leap month
+    // code is invalid for them in any year (it must not be silently constrained to the regular month).
+    internal static bool HasLeapMonths(string id) => id == "hebrew" || Luni(id);
+
     internal static int MonthsInYear(string id, int year)
         => Persian(id) ? TemporalSolarHijriCalendar.MonthsInYear(year)
          : Luni(id) ? TemporalLunisolarCalendar.MonthsInYear(id, year) : TemporalArithmeticCalendar.MonthsInYear(id, year);

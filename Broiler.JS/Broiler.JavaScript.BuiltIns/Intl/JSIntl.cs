@@ -5791,8 +5791,12 @@ public class JSIntlDateTimeFormat : JSObject
     private List<JSIntlDateTimeFormatEngine.Part> FormatTemporalToParts(JSValue value, bool zonedAllowed = false, bool enforceStyle = false)
     {
         var meta = ClassifyTemporal(value, zonedAllowed);
-        CheckTemporalCalendar(meta.CalendarId, RequiresExactCalendar(meta.Kind));
+        // Resolve the effective fields first: an incompatible whole style (e.g. timeStyle on a
+        // date-only type) is a TypeError and must be reported ahead of a calendar mismatch
+        // RangeError, so `PlainMonthDay.from('01-01').toLocaleString('en', {timeStyle:'short'})`
+        // throws the TypeError rather than the iso8601-vs-locale-default calendar RangeError.
         var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in meta, enforceStyle));
+        CheckTemporalCalendar(meta.CalendarId, RequiresExactCalendar(meta.Kind));
         var fields = meta.Fields;
         return JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), null);
     }
