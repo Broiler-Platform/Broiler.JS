@@ -66,6 +66,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //  • Problem 22: a "t" subtag INSIDE a privateuse area (e.g. "cmn-hans-cn-x-t-u") is a
 //    private subtag, not a malformed transformed extension — the language-tag validator now
 //    stops scanning at the "x" singleton that terminates the extension area.
+//  • Problem 26: a derived constructor's `eval("eval('super()')")` (nested direct eval
+//    calling super()) used to throw "Cannot access 'this' before initialization" because
+//    the OUTER eval's compilation did not forward its inherited super-call capability to
+//    the nested inner eval — `allowSuperCall` for the inner eval requires either pending
+//    member inits on the root scope (visible at the constructor compile site, but not at
+//    the outer eval's compile site) or, now, a runtime signal that the surrounding direct
+//    eval was itself granted super-call capability.
 //  • Problem 30: a `\P{X}` inside a character class (e.g. `[\p{Hex}\P{Hex}]`) used to be
 //    rejected because .NET regex disallows nested negated classes. The translator now emits
 //    the BMP COMPLEMENT of X's ranges as a plain class fragment, recovering the negation
@@ -330,4 +337,34 @@ public class Issue859Tests
             + "/[\\P{Hex}]/u.test('A') === false,"           // 'A' IS Hex
             + "/[\\p{ASCII}\\P{ASCII}]/u.test('A')"
             + "].join(',');})()").ToString());
+
+    // ───────────── Problem 26: nested `eval("eval('super()')")` binds the constructor's `this`
+
+    [Fact]
+    public void NestedEvalSuperCallInitializesDerivedConstructorThis()
+        => Assert.Equal("true,true", Eval(
+            "(function(){"
+            + "var captured;"
+            + "new class extends class {} {"
+            + "  constructor() {"
+            + "    eval(\"eval('super()')\");"
+            + "    captured = [this === eval('this'), this === (()=>this)()];"
+            + "  }"
+            + "}();"
+            + "return captured.join(',');"
+            + "})()").ToString());
+
+    [Theory] // every nesting pattern (arrow / eval / nested eval) of an eval super-call must bind `this`
+    [InlineData("(()=>eval('super()'))()")]
+    [InlineData("(()=>(()=>super())())()")]
+    [InlineData("eval('(()=>super())()')")]
+    [InlineData("eval(\"eval('super()')\")")]
+    public void NestedEvalSuperCallVariantsDoNotLeaveThisInTdz(string superCall)
+        => Assert.Equal("ok", Eval(
+            "(function(){"
+            + "new class extends class {} {"
+            + "  constructor() { " + superCall + "; if (this !== eval('this')) throw 'fail'; }"
+            + "}();"
+            + "return 'ok';"
+            + "})()").ToString());
 }

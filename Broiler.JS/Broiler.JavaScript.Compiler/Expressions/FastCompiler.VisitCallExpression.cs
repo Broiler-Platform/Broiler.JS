@@ -3,6 +3,7 @@ using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Runtime;
 using System;
@@ -110,7 +111,17 @@ partial class FastCompiler
             // arrow functions) in a derived constructor before super(): the pending
             // member inits live on the root (constructor) scope, not an enclosing arrow's
             // own scope, so consult RootScope — matching the non-eval super() lowering.
-            var allowSuperCall = allowSuperProperty && scope.Top.RootScope.MemberInits != null && !inMemberInitializer;
+            // When we are ourselves compiling a direct-eval body that was already granted
+            // super-call capability by its outer context (the constructor or another
+            // eval that wrapped it), forward that capability to a NESTED eval so that
+            // `eval("eval('super()')")` resolves super() at the innermost site
+            // (test262 sm/class/derivedConstructorArrowEvalNestedSuperCall).
+            var nestedEvalInheritsSuperCall = isDirectEvalCompilation
+                && JSEngine.Current is JSContext nestedCtx
+                && nestedCtx.HasDirectEvalSuperCall;
+            var allowSuperCall = allowSuperProperty
+                && !inMemberInitializer
+                && (scope.Top.RootScope.MemberInits != null || nestedEvalInheritsSuperCall);
             var useActivationBinding = scope.Top.Function?.IsArrowFunction == true && parameterInitializerDepth > 0;
             var activationOwner = disallowArgumentsDeclaration || useActivationBinding
                 ? scope.Top.StackItem
