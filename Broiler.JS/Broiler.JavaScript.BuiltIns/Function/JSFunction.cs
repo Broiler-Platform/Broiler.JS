@@ -182,6 +182,9 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     public override bool IsFunction => true;
 
+    /// <inheritdoc />
+    public bool IsAnonymousNamePending { get; set; }
+
     public override JSValue TypeOf() => JSConstants.Function;
 
 
@@ -263,6 +266,11 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         this.name = name.IsEmpty && source.IsEmpty ? "native" : (name.IsEmpty ? StringSpan.Empty : name);
         this.source = source.IsEmpty ? $"function {(this.name.IsEmpty ? "anonymous" : this.name)}() {{ [native code] }}" : source;
 
+        // A user-compiled anonymous function (has a source span, no name) reports
+        // name "" yet remains eligible for NamedEvaluation; mark it so the binding /
+        // property machinery may still infer its name (HasPlaceholderName).
+        IsAnonymousNamePending = name.IsEmpty && !source.IsEmpty;
+
         // Own-key order per spec: a function's "length" and "name" are installed
         // before its "prototype" (SetFunctionName/SetFunctionLength then
         // MakeConstructor), so getOwnPropertyNames yields [length, name, prototype].
@@ -291,6 +299,10 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             : name.Value;
         this.name = name.IsEmpty && source.IsEmpty ? "native" : (name.IsEmpty ? StringSpan.Empty : name);
         this.source = source.IsEmpty ? $"function {(this.name.IsEmpty ? "anonymous" : this.name)}() {{ [native code] }}" : source;
+
+        // See the other constructor: a user-compiled anonymous function stays eligible
+        // for NamedEvaluation even though it reports name "".
+        IsAnonymousNamePending = name.IsEmpty && !source.IsEmpty;
 
         // Own-key order per spec: [length, name, prototype] (see above).
         ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);

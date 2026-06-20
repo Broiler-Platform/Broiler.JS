@@ -10,44 +10,65 @@ namespace Broiler.JavaScript.Runtime;
 
 public class JSVariable
 {
-    // Anonymous functions are created carrying the internal placeholder name "native";
-    // NamedEvaluation later overwrites it (with the binding/property name) or clears it
-    // to "". We must only ever act on a function still bearing that placeholder, and we
-    // must detect it WITHOUT triggering a user-defined `name` getter: reading the public
-    // [[Get]] would invoke an accessor the script installed via Object.defineProperty
-    // (e.g. `var t = Object.defineProperty(function(){}, 'name', { get(){throw} })`),
-    // which is observable and per spec must not happen here. Inspect the own data
-    // property directly instead.
+    // A user-compiled anonymous function reports name "" yet stays eligible for
+    // NamedEvaluation, tracked by IJSFunction.IsAnonymousNamePending; name-less native
+    // functions instead carry the legacy "native" placeholder. NamedEvaluation later
+    // overwrites the name (with the binding/property name) or clears it to "" and drops
+    // the pending flag. We must only ever act on a still-eligible function, and detect
+    // it WITHOUT triggering a user-defined `name` getter: reading the public [[Get]]
+    // would invoke an accessor the script installed via Object.defineProperty (e.g.
+    // `var t = Object.defineProperty(function(){}, 'name', { get(){throw} })`), which is
+    // observable and per spec must not happen here. Check the flag / own data property
+    // directly instead.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool HasPlaceholderName(JSObject functionObject)
     {
+        // Inspect the own `name` data property directly (never the public [[Get]]) so a
+        // user-installed `name` getter is not observably invoked. A redefined accessor
+        // (or absent property) is not a value — never rename in that case.
         var nameProperty = functionObject.GetInternalProperty(KeyStrings.name, false);
-        return nameProperty.IsValue && (nameProperty.value as JSValue)?.ToString() == "native";
+        if (!nameProperty.IsValue)
+            return false;
+
+        var nameString = (nameProperty.value as JSValue)?.ToString();
+
+        // Name-less native functions keep the legacy "native" placeholder.
+        if (nameString == "native")
+            return true;
+
+        // A user-compiled anonymous function reports "" and stays eligible for
+        // NamedEvaluation until a name is inferred, tracked by an explicit flag. Confirm
+        // the property still holds that default empty name — if the script (or the
+        // dynamic Function constructor's "anonymous") gave it another value, leave it.
+        return string.IsNullOrEmpty(nameString)
+            && functionObject is IJSFunction { IsAnonymousNamePending: true };
     }
 
     // BROILER-PATCH: Support read-only variables for function expression names (ES3 §13)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static JSValue PrepareAnonymousFunctionNameForDestructuring(JSValue value, string name, bool assignName)
     {
-        if (value is not JSObject functionObject || value is not IJSFunction)
+        if (value is not JSObject functionObject || value is not IJSFunction fn)
             return value;
 
         if (!HasPlaceholderName(functionObject))
             return value;
 
         functionObject.FastAddValue(KeyStrings.name, JSValue.CreateString(assignName ? name : string.Empty), JSPropertyAttributes.ConfigurableReadonlyValue);
+        fn.IsAnonymousNamePending = false;
         return value;
     }
 
     private static JSValue PrepareAnonymousFunctionName(JSValue value, string name)
     {
-        if (value is not JSObject functionObject || value is not IJSFunction)
+        if (value is not JSObject functionObject || value is not IJSFunction fn)
             return value;
 
         if (!HasPlaceholderName(functionObject))
             return value;
 
         functionObject.FastAddValue(KeyStrings.name, JSValue.CreateString(name), JSPropertyAttributes.ConfigurableReadonlyValue);
+        fn.IsAnonymousNamePending = false;
         return value;
     }
 
@@ -106,13 +127,14 @@ public class JSVariable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private JSValue InferAnonymousFunctionName(JSValue value)
     {
-        if (Name.IsEmpty || value is not JSObject functionObject || value is not IJSFunction)
+        if (Name.IsEmpty || value is not JSObject functionObject || value is not IJSFunction fn)
             return value;
 
         if (!HasPlaceholderName(functionObject))
             return value;
 
         functionObject.FastAddValue(KeyStrings.name, JSValue.CreateString(Name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
+        fn.IsAnonymousNamePending = false;
         return value;
     }
 
