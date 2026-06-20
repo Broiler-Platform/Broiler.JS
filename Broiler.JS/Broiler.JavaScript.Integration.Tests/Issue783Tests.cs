@@ -66,14 +66,14 @@ public class Issue783Tests
     public void UsingDeclarationDisposes(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    // A top-level `using` disposes at the end of script evaluation (observed in a later evaluation).
+    // A `using` declaration at the top level of a Script (a script scope is persistent, so it has no
+    // defined disposal point) is a SyntaxError — including eval evaluated in a script context. It is
+    // only valid inside a block / function body / for-of head, or at the top level of a Module.
+    // (Verified against the Explicit Resource Management proposal, MDN and V8.)
     [Fact]
-    public void TopLevelUsingDisposesAtScriptEnd()
-    {
-        using var ctx = new JSContext();
-        ctx.Eval("globalThis.r=[]; using x = { [Symbol.dispose](){ r.push('g'); } }; r.push('a');");
-        Assert.Equal("a,g", ctx.Eval("r.join(',')").ToString());
-    }
+    public void TopLevelUsingInScriptIsSyntaxError()
+        => Assert.Equal("SyntaxError",
+            ErrorName("eval('using x = { [Symbol.dispose]() {} };')"));
 
     [Fact]
     public void UsingAllowsNullAndUndefinedInitializer()
