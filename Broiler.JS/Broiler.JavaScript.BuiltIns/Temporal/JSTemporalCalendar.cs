@@ -93,6 +93,7 @@ internal static class TemporalCalendar
                 case "ethiopic": canonical = "ethiopic"; return true;
                 case "ethioaa":
                 case "ethiopic-amete-alem": canonical = "ethioaa"; return true;
+                case "islamic": canonical = "islamic"; return true;
                 case "islamic-civil":
                 case "islamicc": canonical = "islamic-civil"; return true;
                 case "islamic-tbla": canonical = "islamic-tbla"; return true;
@@ -151,7 +152,7 @@ internal static class TemporalCalendar
     {
         var lower = id.ToLowerInvariant();
         return lower is "iso8601" or "gregory" or "gregorian" or "buddhist" or "roc" or "minguo" or "japanese"
-            or "coptic" or "ethiopic" or "ethioaa" or "ethiopic-amete-alem" or "islamic-civil" or "islamicc"
+            or "coptic" or "ethiopic" or "ethioaa" or "ethiopic-amete-alem" or "islamic" or "islamic-civil" or "islamicc"
             or "islamic-tbla" or "islamic-umalqura" or "hebrew" or "persian" or "indian" or "chinese" or "dangi";
     }
 
