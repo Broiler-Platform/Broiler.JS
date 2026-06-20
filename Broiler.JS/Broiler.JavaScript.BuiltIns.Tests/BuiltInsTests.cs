@@ -7181,6 +7181,69 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Intl_Locale_Resolves_Grandfathered_Tag_To_Preferred_Form()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var L = Intl.Locale;
+            [
+              new L('cel-gaulish').baseName,
+              new L('cel-gaulish').language,
+              new L('art-lojban').baseName,
+              new L('zh-guoyu').baseName,
+              new L('zh-hakka').baseName
+            ].join('|');
+            """);
+
+        Assert.Equal("xtg|xtg|jbo|zh|hak", result.ToString());
+    }
+
+    [Fact]
+    public void NumberFormat_Percent_Style_Multiplies_By_100_And_Appends_Locale_Symbol()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var enUS = new Intl.NumberFormat('en-US', { style: 'percent' });
+            [
+              enUS.format(0.5),
+              enUS.format(1),
+              enUS.format(BigInt(88780000)),
+              new Intl.NumberFormat('en-US', { style: 'percent' }).format(-0.05)
+            ].join('|');
+            """);
+
+        Assert.Equal("50%|100%|8,878,000,000%|-5%", result.ToString());
+    }
+
+    [Fact]
+    public void PlainYearMonth_ToString_Keeps_Reference_Day_For_NonIso_Calendar_With_CalendarName_Never()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var ym = Temporal.PlainYearMonth.from({ year: 2000, month: 5, calendar: 'gregory' });
+            var iso = Temporal.PlainYearMonth.from({ year: 2000, month: 5 });
+            [
+              ym.toString({ calendarName: 'never' }),
+              ym.toString({ calendarName: 'auto' }),
+              ym.toString({ calendarName: 'always' }),
+              iso.toString({ calendarName: 'never' }),
+              iso.toString({ calendarName: 'auto' })
+            ].join('|');
+            """);
+
+        // Non-ISO calendar: the reference day is included even with calendarName "never"
+        // (so the YYYY-MM-DD form round-trips through the calendar's month-day projection).
+        // ISO calendar: the bare YYYY-MM form is unambiguous, so no day is appended.
+        Assert.Equal("2000-05-01|2000-05-01[u-ca=gregory]|2000-05-01[u-ca=gregory]|2000-05|2000-05", result.ToString());
+    }
+
+    [Fact]
     public void GetCanonicalLocales_Sorts_Main_Tag_Variants_Alphabetically()
     {
         EnsureBuiltInsLoaded();

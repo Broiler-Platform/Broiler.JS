@@ -4085,14 +4085,22 @@ public class JSIntlNumberFormat : JSObject
             ? BigInt.JSBigInt.ToNumber(((BigInt.JSBigInt)value).value)
             : (value ?? JSUndefined.Value).DoubleValue;
 
+        var style = StyleOption();
+        var isCurrency = style == "currency";
+        var isUnit = style == "unit";
+        var isPercent = style == "percent";
+        var currency = isCurrency ? ResolveCurrency() : default;
+
+        // ECMA-402 §15.5.13 PartitionNumberPattern step 13.b: when style is "percent", the
+        // mathematical value is multiplied by 100 before being formatted. The percent literal
+        // is appended by AssemblePercentParts below in the locale's pattern position.
+        if (isPercent && !double.IsNaN(x) && !double.IsInfinity(x))
+            x *= 100;
+
         var signDisplay = resolved?.SignDisplay ?? "auto";
         var isNaN = double.IsNaN(x);
         var isInfinity = double.IsInfinity(x);
         var signBit = !isNaN && double.IsNegative(x);
-        var style = StyleOption();
-        var isCurrency = style == "currency";
-        var isUnit = style == "unit";
-        var currency = isCurrency ? ResolveCurrency() : default;
 
         List<(string, string)> magnitude;
         bool roundedIsZero;
@@ -4139,10 +4147,42 @@ public class JSIntlNumberFormat : JSObject
         else
         {
             var plain = AssemblePlainParts(magnitude, sign);
-            assembled = isUnit ? AssembleUnitParts(plain, x) : plain;
+            if (isUnit)
+                assembled = AssembleUnitParts(plain, x);
+            else if (isPercent)
+                assembled = AssemblePercentParts(plain);
+            else
+                assembled = plain;
         }
 
         return MapNumberingSystemDigits(assembled);
+    }
+
+    // Wraps the assembled number in the locale's percent pattern (e.g. "n%" / "n %" / "%n").
+    // The literal between the number and the percent sign — when the pattern has one (e.g.
+    // de-DE's "n %") — is emitted as a "literal" part so formatToParts surfaces it.
+    private List<(string, string)> AssemblePercentParts(List<(string, string)> plain)
+    {
+        var symbol = Culture().NumberFormat.PercentSymbol;
+        // .NET's PercentPositivePattern values:
+        //   0 = "n %", 1 = "n%", 2 = "%n", 3 = "% n"
+        var pattern = Culture().NumberFormat.PercentPositivePattern;
+        var parts = new List<(string, string)>(plain.Count + 2);
+        if (pattern == 2 || pattern == 3)
+        {
+            parts.Add(("percentSign", symbol));
+            if (pattern == 3)
+                parts.Add(("literal", " "));
+            parts.AddRange(plain);
+        }
+        else
+        {
+            parts.AddRange(plain);
+            if (pattern == 0)
+                parts.Add(("literal", " "));
+            parts.Add(("percentSign", symbol));
+        }
+        return parts;
     }
 
     // Translates the ASCII digits produced by the formatter into the resolved
