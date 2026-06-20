@@ -77,6 +77,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //    rejected because .NET regex disallows nested negated classes. The translator now emits
 //    the BMP COMPLEMENT of X's ranges as a plain class fragment, recovering the negation
 //    without needing nesting.
+//  • Problem 23: an unqualified `arguments` reference inside a direct eval used to resolve
+//    against the eval program's own (empty, unmapped) arguments object, so probes such as
+//    `arguments.callee` reached the strict-mode throw-type-error poison instead of the
+//    ENCLOSING function's mapped arguments. The compiler now routes the eval-side
+//    `arguments` lookup through the runtime scope-chain resolver and materializes the
+//    enclosing function's `arguments` binding eagerly whenever its body (or parameter
+//    list, or any inner arrow function — arrows inherit `arguments`) contains a direct
+//    eval, so the binding actually exists for the scope walker to find.
 public class Issue859Tests
 {
     private static JSValue Eval(string code)
@@ -367,4 +375,36 @@ public class Issue859Tests
             + "}();"
             + "return 'ok';"
             + "})()").ToString());
+
+    // ───────────── Problem 23: `arguments` inside a direct eval reaches the outer function ─────────────
+
+    [Fact] // baseline: an eval that reads `arguments[0]` must see the calling function's arg
+    public void DirectEvalSeesEnclosingFunctionArguments()
+        => Assert.Equal("hello", Eval(
+            "(function(){ return eval('arguments[0]'); })('hello')").ToString());
+
+    [Fact] // a non-strict function never references `arguments` itself, but the eval still must
+    public void DirectEvalMaterialisesArgumentsEvenWhenOuterDoesNotName()
+        => Assert.Equal("3", Eval(
+            "(function(){ return eval('arguments.length'); })('a','b','c').toString()").ToString());
+
+    [Fact] // arguments.callee inside an eval inside a sloppy function returns that function
+    public void DirectEvalArgumentsCalleeIsEnclosingFunction()
+        => Assert.Equal("true", Eval(
+            "(function outer(){ return eval('arguments.callee') === outer; })().toString()").ToString());
+
+    [Fact] // the eval-side `arguments` is the same object as the outer's, not a fresh empty one
+    public void DirectEvalArgumentsIsSameObjectAsOuterArguments()
+        => Assert.Equal("true", Eval(
+            "(function(){ return eval('arguments') === arguments; })(1,2).toString()").ToString());
+
+    [Fact] // a parameter-initializer direct eval also reaches the call-site `arguments`
+    public void ParameterInitializerDirectEvalSeesArguments()
+        => Assert.Equal("seed", Eval(
+            "(function(x = eval('arguments[0]')){ return x; })('seed')").ToString());
+
+    [Fact] // strict mode: the eval-side `arguments` is the outer's (unmapped) arguments object
+    public void StrictDirectEvalSeesEnclosingArguments()
+        => Assert.Equal("first", Eval(
+            "(function(){ 'use strict'; return eval('arguments[0]'); })('first')").ToString());
 }

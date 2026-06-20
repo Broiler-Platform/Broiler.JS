@@ -130,7 +130,26 @@ partial class FastCompiler
         }
 
         protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
-            => functionExpression;
+        {
+            // Arrow functions inherit the enclosing function's `arguments` binding (they
+            // have none of their own), so a direct eval inside an arrow needs the outer
+            // function's arguments materialised. Ordinary nested functions have their own
+            // arguments and so do not bubble the "contains eval" signal up.
+            if (!functionExpression.IsArrowFunction)
+                return functionExpression;
+
+            // Visit the arrow's body and parameter initializers to keep searching for a
+            // direct eval. (Visiting the arrow's own AstFunctionExpression node via base
+            // would recreate it; we just need the side-effect on `Found`.)
+            if (functionExpression.Body != null)
+                Visit(functionExpression.Body);
+            var pe = functionExpression.Params.GetFastEnumerator();
+            while (pe.MoveNext(out var p) && !Found)
+            {
+                if (p.Init != null) Visit(p.Init);
+            }
+            return functionExpression;
+        }
 
         protected override AstNode VisitClassStatement(AstClassExpression classStatement)
             => classStatement;
@@ -222,6 +241,19 @@ partial class FastCompiler
             // the positions that are an error. Direct eval validates its own body.
             if (inMemberInitializer && !isDirectEvalCompilation)
                 throw new FastParseException(identifier.Start, "'arguments' is not allowed in a class field initializer");
+
+            // A direct eval body has no `arguments` of its own — references resolve to the
+            // ENCLOSING function's `arguments` binding via the scope chain at runtime
+            // (test262 sm/extensions/function-caller-skips-eval-frames probes
+            // `arguments.callee` inside an eval, which only works when it sees the outer
+            // function's mapped arguments object — not a freshly materialised empty one).
+            // The non-eval scope here would otherwise materialise an arguments binding in
+            // the eval's program scope (which has no function / parameters), giving an
+            // empty unmapped arguments object whose `callee` is the strict-mode poison.
+            if (isDirectEvalCompilation)
+                return throwIfMissing
+                    ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
+                    : JSContextBuilder.ResolveIdentifierOrUndefined(KeyOfName(identifier.Name));
 
             if (scope.Top.Function?.IsArrowFunction == true
             )
