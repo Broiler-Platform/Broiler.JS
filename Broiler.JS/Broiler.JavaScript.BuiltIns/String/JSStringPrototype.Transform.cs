@@ -229,8 +229,10 @@ public partial class JSString
         // Whitespace
         '\x09', '\x0B', '\x0C', '\x20', '\xA0', '\xFEFF',
 
-        // Unicode space separator
-        '\u1680', '\u180E', '\u2000', '\u2001',
+        // Unicode space separator (Zs). U+180E (MONGOLIAN VOWEL SEPARATOR) is
+        // deliberately excluded: it was reclassified from Zs to Cf (Format) in
+        // Unicode 6.3, so it is no longer WhiteSpace and must not be trimmed.
+        '\u1680', '\u2000', '\u2001',
         '\u2002', '\u2003', '\u2004', '\u2005',
         '\u2006', '\u2007', '\u2008', '\u2009',
         '\u200A', '\u202F', '\u205F', '\u3000', 

@@ -6105,6 +6105,22 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Unescape_Only_Recognizes_Lowercase_Unicode_Escape()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        // Per Annex B.2.1.2, only the lowercase "%uXXXX" form is a unicode escape.
+        // "%U0000" (uppercase U) must be left untouched, decoding only the "%00".
+        var result = ctx.Eval(@"[
+            unescape('%u0041'),
+            unescape('%U0041'),
+            unescape('%U0000')
+        ].join('|');");
+
+        Assert.Equal("A|%U0041|%U0000", result.ToString());
+    }
+
+    [Fact]
     public void DecodeURIComponent_Decodes_Reserved_Characters_And_Rejects_Malformed_Four_Byte_Sequences()
     {
         EnsureBuiltInsLoaded();
