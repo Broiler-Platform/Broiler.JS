@@ -7142,6 +7142,62 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void NumberFormat_Currency_Compact_Notation_Defaults_Fraction_Digits_To_Zero()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var standardOpts = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'KWD' }).resolvedOptions();
+            var compactOpts = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'KWD', notation: 'compact' }).resolvedOptions();
+            [
+              standardOpts.minimumFractionDigits,
+              standardOpts.maximumFractionDigits,
+              compactOpts.minimumFractionDigits,
+              compactOpts.maximumFractionDigits
+            ].join('|');
+            """);
+
+        // Standard notation keeps KWD's 3/3 default; compact notation switches to 0/0
+        // (the compactRounding regime, ECMA-402 §15.5.4 step 17).
+        Assert.Equal("3|3|0|0", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Uses_Script_Conditional_Region_Alias()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('ru-SU')[0],
+              Intl.getCanonicalLocales('ru-Armn-SU')[0],
+              Intl.getCanonicalLocales('ru-Cyrl-SU')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("ru-RU|ru-Armn-AM|ru-Cyrl-RU", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Sorts_Variants_And_Fields_In_Transformed_Extension()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('sl-t-sl-rozaj-biske-1994')[0],
+              Intl.getCanonicalLocales('en-t-en-Latn-US-rozaj-biske')[0],
+              Intl.getCanonicalLocales('en-t-en-x0-test-h0-hybrid')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("sl-t-sl-1994-biske-rozaj|en-t-en-latn-us-biske-rozaj|en-t-en-h0-hybrid-x0-test", result.ToString());
+    }
+
+    [Fact]
     public void Class_Static_Field_And_Block_Initializers_Run_In_Source_Order()
     {
         EnsureBuiltInsLoaded();

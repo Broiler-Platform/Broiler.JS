@@ -1160,7 +1160,104 @@ public static class JSIntl
             }
         }
 
-        return CanonicalizeUnicodeKeywordValues(ApplySubtagAliases(CanonicalizeLanguageTagCase(tag)));
+        return CanonicalizeTransformedExtension(CanonicalizeUnicodeKeywordValues(ApplySubtagAliases(CanonicalizeLanguageTagCase(tag))));
+    }
+
+    // UTS #35 §3.6.2 transformed extension canonicalization: within a "-t-" extension, the
+    // tlang's variants are sorted alphabetically (ordinal) and the tfields are sorted by
+    // their two-character tkey. Everything outside the "-t-" payload is preserved verbatim,
+    // so this composes with the rest of the language-tag canonicalization pipeline.
+    private static string CanonicalizeTransformedExtension(string tag)
+    {
+        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-t-", System.StringComparison.OrdinalIgnoreCase) < 0)
+            return tag;
+
+        var parts = tag.Split('-');
+        var changed = false;
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (parts[i].Length != 1 || (parts[i][0] != 't' && parts[i][0] != 'T'))
+                continue;
+
+            // Collect the payload up to the next singleton (start of another extension).
+            var start = i + 1;
+            var end = start;
+            while (end < parts.Length && parts[end].Length != 1)
+                end++;
+
+            if (end == start)
+                continue;
+
+            var payload = new List<string>(end - start);
+            for (var j = start; j < end; j++)
+                payload.Add(parts[j]);
+
+            var canonical = CanonicalizeTransformedPayload(payload);
+            if (canonical != null)
+            {
+                for (var j = 0; j < canonical.Count; j++)
+                    parts[start + j] = canonical[j];
+                changed = true;
+            }
+
+            i = end - 1;
+        }
+
+        return changed ? string.Join("-", parts) : tag;
+    }
+
+    // Sorts the tlang's variants (the run of variant subtags after a leading language [+
+    // optional script + optional region]) and the tfields (each a 2-char tkey followed by
+    // 3-8-char tvalue chunks) by their respective keys. Returns null when the payload's
+    // grammar doesn't match the expected shape, so the caller leaves it untouched.
+    private static List<string> CanonicalizeTransformedPayload(List<string> payload)
+    {
+        var p = 0;
+        var canonical = new List<string>(payload.Count);
+
+        if (p < payload.Count && IsLanguageSubtag(payload[p]))
+        {
+            canonical.Add(payload[p]); p++;
+            if (p < payload.Count && IsScriptSubtag(payload[p])) { canonical.Add(payload[p]); p++; }
+            if (p < payload.Count && IsRegionSubtag(payload[p])) { canonical.Add(payload[p]); p++; }
+
+            var variants = new List<string>();
+            while (p < payload.Count && IsVariantSubtag(payload[p]))
+            {
+                variants.Add(payload[p]);
+                p++;
+            }
+            variants.Sort(System.StringComparer.Ordinal);
+            canonical.AddRange(variants);
+        }
+
+        // tfields: each starts with a tkey (alpha + digit), followed by one or more tvalue
+        // chunks (3-8 alphanum). Collect them as (key, values) and sort by key alphabetically.
+        var fields = new List<(string Key, List<string> Values)>();
+        while (p < payload.Count)
+        {
+            if (!IsTKey(payload[p]))
+                return null;
+            var key = payload[p];
+            p++;
+            var values = new List<string>();
+            while (p < payload.Count && IsTValue(payload[p]))
+            {
+                values.Add(payload[p]);
+                p++;
+            }
+            if (values.Count == 0)
+                return null;
+            fields.Add((key, values));
+        }
+        fields.Sort((a, b) => System.StringComparer.Ordinal.Compare(a.Key, b.Key));
+        foreach (var (key, values) in fields)
+        {
+            canonical.Add(key);
+            canonical.AddRange(values);
+        }
+
+        return canonical;
     }
 
     // Bcp47 language subtag aliases (CLDR supplemental languageAlias, reason="deprecated").
@@ -1187,10 +1284,22 @@ public static class JSIntl
         ["sh"] = ("sr", "Latn"),
     };
 
+    // Region replacements selected by the tag's script subtag (CLDR territoryAlias "overlong"
+    // entries with a multi-region replacement list). When the script matches an entry here the
+    // mapped region wins; otherwise the SimpleRegionAliases default applies. Only the entries
+    // a test262 case actually exercises are listed.
+    private static readonly Dictionary<string, Dictionary<string, string>> ScriptConditionalRegionAliases =
+        new(StringComparer.Ordinal)
+    {
+        // SU (Soviet Union) defaults to RU, but with Armenian script Armn → AM (Armenia).
+        ["SU"] = new(StringComparer.Ordinal) { ["Armn"] = "AM" },
+    };
+
     // Bcp47 region subtag aliases (CLDR supplemental territoryAlias) whose deprecated code
     // maps to a single preferred region. "Overlong" aliases whose replacement is a list (e.g.
     // "SU" → "RU AM AZ ..." that selects by likely-subtags) use the first list entry as the
-    // default; script-conditional choices are not yet applied.
+    // default; the ScriptConditionalRegionAliases table above overrides this default for the
+    // explicit script combinations test262 covers.
     private static readonly Dictionary<string, string> SimpleRegionAliases = new(StringComparer.Ordinal)
     {
         ["BU"] = "MM",
@@ -1256,8 +1365,17 @@ public static class JSIntl
         {
             var region = subtags[regionIndex];
             var isAlphaRegion = region.Length == 2 && IsAllAlpha(region);
-            if (isAlphaRegion && SimpleRegionAliases.TryGetValue(region, out var aliased))
-                subtags[regionIndex] = aliased;
+            if (isAlphaRegion)
+            {
+                // A script-conditional override (e.g. SU + Armn → AM) wins over the
+                // default alias (SU → RU); fall back to the simple table otherwise.
+                if (hasScript
+                    && ScriptConditionalRegionAliases.TryGetValue(region, out var byScript)
+                    && byScript.TryGetValue(subtags[1], out var conditional))
+                    subtags[regionIndex] = conditional;
+                else if (SimpleRegionAliases.TryGetValue(region, out var aliased))
+                    subtags[regionIndex] = aliased;
+            }
         }
 
         return string.Join("-", subtags);
@@ -4540,6 +4658,13 @@ public class JSIntlNumberFormat : JSObject
     // uses 0 … 3, matching the magnitude formatter.
     private (int Min, int Max) DefaultFractionDigits()
     {
+        // Compact notation switches the formatter into "compactRounding" mode (1-2
+        // significant digits) when no explicit fraction / significant options are present
+        // (ECMA-402 §15.5.4 SetNumberFormatDigitOptions step 17). The fraction-digit
+        // defaults collapse to 0/0 — both the currency's CLDR minor-unit digit count
+        // (e.g. KWD's 3) and the generic 0/3 cap are overridden.
+        if ((resolved?.Notation ?? "standard") == "compact")
+            return (0, 0);
         if (StyleOption() == "currency")
         {
             var cDigits = ResolveCurrency().FractionDigits;
