@@ -34,8 +34,6 @@ test/built-ins/Array/prototype/slice/S15.4.4.10_A3_T1.js
 test/built-ins/Array/prototype/slice/S15.4.4.10_A3_T2.js
 test/built-ins/Array/prototype/slice/create-non-array-invalid-len.js
 test/built-ins/Array/prototype/slice/create-proxied-array-invalid-len.js
-test/built-ins/Array/prototype/sort/stability-2048-elements.js
-test/built-ins/Array/prototype/sort/stability-513-elements.js
 test/built-ins/Array/prototype/splice/create-species-length-exceeding-integer-limit.js
 test/built-ins/Array/prototype/splice/property-traps-order-with-species.js
 test/built-ins/Array/prototype/toReversed/length-exceeding-array-length-limit.js
@@ -218,7 +216,6 @@ test/built-ins/TypedArray/prototype/subarray/resizable-buffer.js
 test/built-ins/TypedArray/prototype/subarray/result-byteOffset-from-out-of-bounds.js
 test/built-ins/TypedArrayConstructors/ctors/object-arg/iterated-array-changed-by-tonumber.js
 test/built-ins/TypedArrayConstructors/ctors/object-arg/iterated-array-with-modified-array-iterator.js
-test/built-ins/Uint8Array/prototype/toBase64/omit-padding.js
 test/built-ins/WeakMap/prototype/set/returns-this-when-ignoring-duplicate.js
 test/built-ins/WeakMap/prototype/set/returns-this.js
 test/built-ins/parseFloat/S15.1.2.3_A2_T10_U180E.js
@@ -227,7 +224,6 @@ test/built-ins/parseInt/S15.1.2.2_A2_T10_U180E.js
 test/intl402/BigInt/prototype/toLocaleString/de-DE.js
 test/intl402/BigInt/prototype/toLocaleString/en-US.js
 test/intl402/Collator/ignore-invalid-unicode-ext-values.js
-test/intl402/Collator/prototype/compare/non-normative-phonebook.js
 test/intl402/Collator/prototype/resolvedOptions/ignorePunctuation-default.js
 test/intl402/Collator/prototype/resolvedOptions/resolved-case-first-unicode-extensions-and-options.js
 test/intl402/Collator/prototype/resolvedOptions/resolved-collation-unicode-extensions-and-options.js
@@ -235,7 +231,6 @@ test/intl402/Collator/prototype/resolvedOptions/resolved-numeric-unicode-extensi
 test/intl402/Collator/test-option-numeric-and-caseFirst.js
 test/intl402/Collator/test-option-sensitivity.js
 test/intl402/Collator/test-option-usage.js
-test/intl402/Collator/unicode-ext-seq-in-private-tag.js
 test/intl402/Collator/usage-de.js
 test/intl402/DateTimeFormat/constructor-options-calendar-islamic-fallback.js
 test/intl402/DateTimeFormat/date-time-options.js
@@ -269,10 +264,7 @@ test/intl402/Intl/getCanonicalLocales/complex-language-subtag-replacement.js
 test/intl402/Intl/getCanonicalLocales/complex-region-subtag-replacement.js
 test/intl402/Intl/getCanonicalLocales/invalid-tags.js
 test/intl402/Intl/getCanonicalLocales/non-iana-canon.js
-test/intl402/Intl/getCanonicalLocales/preferred-variant.js
 test/intl402/Intl/getCanonicalLocales/transformed-ext-canonical.js
-test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-col-strength.js
-test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-measurement-system.js
 test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-region.js
 test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-subdivision.js
 test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-timezone.js
@@ -281,7 +273,6 @@ test/intl402/Intl/supportedValuesOf/invalid-key.js
 test/intl402/Intl/supportedValuesOf/numberingSystems-with-simple-digit-mappings.js
 test/intl402/Intl/supportedValuesOf/timeZones-include-non-continental.js
 test/intl402/ListFormat/prototype/formatToParts/en-us-disjunction.js
-test/intl402/Locale/constructor-apply-options-canonicalizes-twice.js
 test/intl402/Locale/constructor-non-iana-canon.js
 test/intl402/Locale/constructor-options-firstDayOfWeek-invalid.js
 test/intl402/Locale/constructor-options-firstDayOfWeek-valid.js
@@ -292,7 +283,6 @@ test/intl402/Locale/constructor-unicode-ext-valid.js
 test/intl402/Locale/getters-grandfathered.js
 test/intl402/Locale/getters.js
 test/intl402/Locale/invalid-tag-throws.js
-test/intl402/Locale/likely-subtags-grandfathered.js
 test/intl402/Locale/prototype/firstDayOfWeek/valid-options.js
 test/intl402/Locale/prototype/getWeekInfo/firstDay-by-id.js
 test/intl402/Locale/prototype/getWeekInfo/firstDay-by-option.js
@@ -328,7 +318,6 @@ test/intl402/NumberFormat/prototype/format/format-rounding-priority-less-precisi
 test/intl402/NumberFormat/prototype/format/format-rounding-priority-more-precision.js
 test/intl402/NumberFormat/prototype/format/notation-compact-de-DE.js
 test/intl402/NumberFormat/prototype/format/numbering-systems.js
-test/intl402/NumberFormat/prototype/format/percent-formatter.js
 test/intl402/NumberFormat/prototype/format/unit-zh-TW.js
 test/intl402/NumberFormat/prototype/format/units-invalid.js
 test/intl402/NumberFormat/prototype/format/useGrouping-extended-en-IN.js
@@ -336,7 +325,6 @@ test/intl402/NumberFormat/prototype/format/value-decimal-string.js
 test/intl402/NumberFormat/prototype/formatRange/en-US.js
 test/intl402/NumberFormat/prototype/formatRange/pt-PT.js
 test/intl402/NumberFormat/prototype/formatToParts/notation-compact-de-DE.js
-test/intl402/NumberFormat/prototype/formatToParts/percent-en-US.js
 test/intl402/NumberFormat/prototype/formatToParts/unit-zh-TW.js
 test/intl402/NumberFormat/test-option-currency.js
 test/intl402/NumberFormat/test-option-roundingPriority-mixed-options.js
@@ -361,10 +349,7 @@ test/intl402/Temporal/PlainDateTime/prototype/toZonedDateTime/multiple-instants.
 test/intl402/Temporal/PlainDateTime/prototype/toZonedDateTime/order-of-operations.js
 test/intl402/Temporal/PlainMonthDay/from/chinese-dangi-leap-month-with-year-from-options-bag.js
 test/intl402/Temporal/PlainMonthDay/from/fields-object.js
-test/intl402/Temporal/PlainMonthDay/prototype/equals/infinity-throws-rangeerror.js
-test/intl402/Temporal/PlainMonthDay/prototype/toPlainDate/infinity-throws-rangeerror.js
 test/intl402/Temporal/PlainMonthDay/prototype/with/fields-missing-properties.js
-test/intl402/Temporal/PlainYearMonth/prototype/toString/calendarname-never.js
 test/intl402/Temporal/PlainYearMonth/prototype/with/leap-months-chinese.js
 test/intl402/Temporal/PlainYearMonth/prototype/with/leap-months-dangi.js
 test/intl402/Temporal/PlainYearMonth/prototype/with/leap-months-hebrew.js
@@ -437,8 +422,6 @@ test/language/statements/class/definition/basics.js
 test/language/statements/class/definition/prototype-getter.js
 test/language/statements/class/elements/class-field-on-frozen-objects.js
 test/language/statements/class/elements/privatefieldset-evaluation-order-1.js
-test/language/statements/class/static-init-abrupt.js
-test/language/statements/class/static-init-sequence.js
 test/language/statements/continue/labeled-continue.js
 test/language/statements/continue/nested-let-bound-for-loops-inner-continue.js
 test/language/statements/continue/nested-let-bound-for-loops-labeled-continue.js
