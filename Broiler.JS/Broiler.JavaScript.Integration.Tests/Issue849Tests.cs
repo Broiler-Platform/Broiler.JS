@@ -489,4 +489,37 @@ public class Issue849Tests
             + "probeDecl() + '|' + probeTest() + '|' + probeBody() + '|' + probeIncr()";
         Assert.Equal("inside|inside|inside|inside", Eval(code).ToString());
     }
+
+    // Problem 40 (intl402/Collator/prototype/compare/canonically-equivalent-strings):
+    // ECMA-402 CompareStrings folds canonically-equivalent strings together. .NET's
+    // CompareInfo.Compare reads the raw UTF-16 code units and distinguishes different
+    // composition orders of the same character — e.g. (ä, combining-dot-below) vs
+    // (a, combining-dot-below, combining-diaeresis) — so the compare returned -1
+    // instead of 0. The Collator now NFD-normalizes both sides before delegating to
+    // the locale's collation, which folds the orderings together.
+    [Fact]
+    public void CollatorComparesCanonicallyEquivalentStringsAsEqual()
+    {
+        Assert.Equal("0",
+            Eval("new Intl.Collator('en').compare('\\u00e4\\u0323', '\\u0061\\u0323\\u0308')").ToString());
+    }
+
+    // Compare ordering for non-equivalent strings is preserved.
+    [Theory]
+    [InlineData("new Intl.Collator('en').compare('a', 'b') < 0", "true")]
+    [InlineData("new Intl.Collator('en').compare('b', 'a') > 0", "true")]
+    [InlineData("new Intl.Collator('en').compare('a', 'a')", "0")]
+    public void CollatorOrderingUnaffectedForNonEquivalentStrings(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Canonical equivalence applies regardless of sensitivity.
+    [Theory]
+    [InlineData("new Intl.Collator('en', {sensitivity:'variant'}).compare('\\u00e4\\u0323', '\\u0061\\u0323\\u0308')", "0")]
+    [InlineData("new Intl.Collator('en', {sensitivity:'accent'}).compare('\\u00e4\\u0323', '\\u0061\\u0323\\u0308')", "0")]
+    public void CollatorCanonicalEquivalenceAcrossSensitivities(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
 }

@@ -4716,6 +4716,18 @@ public class JSIntlCollator : JSObject
     {
         var left = a.Get1().StringValue;
         var right = a.GetAt(1).StringValue;
+        // ECMA-402 §10.3.5 (CompareStrings) treats canonically-equivalent strings as equal,
+        // but .NET's CompareInfo.Compare reads the raw UTF-16 code units and so distinguishes
+        // (ä,combining-dot-below) from (a,combining-dot-below,combining-diaeresis) — different
+        // composition orders of the same canonical character. Pre-normalizing both sides to
+        // NFD (canonical decomposition) folds the orderings together before the locale-aware
+        // collation runs, matching the spec's "canonically equivalent strings compare equal"
+        // requirement (test262 intl402/Collator/prototype/compare/canonically-equivalent-strings).
+        if (!left.IsNormalized(System.Text.NormalizationForm.FormD))
+            left = left.Normalize(System.Text.NormalizationForm.FormD);
+        if (!right.IsNormalized(System.Text.NormalizationForm.FormD))
+            right = right.Normalize(System.Text.NormalizationForm.FormD);
+
         var options = CompareOptions.None;
         if (sensitivity == "base")
             options |= CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace;
