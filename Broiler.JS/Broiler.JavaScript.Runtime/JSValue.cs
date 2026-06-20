@@ -442,7 +442,10 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         var primitive = value switch
         {
             JSPrimitiveObject primitiveObject => primitiveObject.ValueOf(),
-            JSObject @object => @object.ToDefaultPrimitive(),
+            // ToNumeric (§7.1.4) is ToPrimitive(value, NUMBER) then ToNumber/ToBigInt, so a
+            // user @@toPrimitive receives the "number" hint — not "default" — for an
+            // arithmetic/bitwise operand (e.g. `obj * 2`, `-obj`).
+            JSObject @object => @object.ToNumberPrimitive(),
             _ => value.ValueOf()
         };
 
@@ -628,6 +631,16 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
             _ => key,
         };
     }
+
+    /// <summary>
+    /// ToPropertyKey (ECMA-262 §7.1.19) returning the key as a JSValue, performing any
+    /// observable ToPrimitive/ToString of a computed PropertyName. The object-literal
+    /// compiler calls this while evaluating a computed key so its side effects happen
+    /// before the property value expression is evaluated (PropertyDefinitionEvaluation
+    /// evaluates PropertyName — including ToPropertyKey — before the AssignmentExpression).
+    /// The result re-keys idempotently (no further user code) when handed to FastAddValue.
+    /// </summary>
+    public static JSValue ToPropertyKeyValue(JSValue key) => NormalizePropertyKey(key);
 
     public virtual JSValue GetPrototypeOf() => prototypeChain?.Object ?? NullValue;
 

@@ -140,7 +140,8 @@ partial class FastCompiler
             if (isSuper)
             {
                 var paramArray1 = ArgumentsBuilder.New(JSUndefinedBuilder.Value, args);
-                return JSFunctionBuilder.InvokeSuperConstructor(scope.Top.Super, scope.Top.ThisExpression, paramArray1);
+                var superNewTarget = scope.Top.NewTargetExpression ?? JSUndefinedBuilder.Value;
+                return JSFunctionBuilder.InvokeSuperConstructor(scope.Top.Super, superNewTarget, scope.Top.ThisExpression, paramArray1);
             }
 
             var target = VisitExpression(callee);

@@ -2,6 +2,7 @@ using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Iterator;
+using Broiler.JavaScript.BuiltIns.Generator;
 using Broiler.JavaScript.ExpressionCompiler;
 using System.Collections.Generic;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -168,10 +169,13 @@ public partial class JSMap : JSObject
 
     [JSExport("entries")]
     [Symbol("@@iterator")]
-    public IEnumerable<JSValue> GetEntries()
+    public JSValue GetEntries()
+        => new JSGenerator(new ClrEnumerableElementEnumerator(EnumerateEntries()), "Map Iterator");
+
+    // Walk by index so entries added during iteration are observed and tombstoned
+    // entries are skipped.
+    internal IEnumerable<JSValue> EnumerateEntries()
     {
-        // Walk by index so entries added during iteration are observed and tombstoned
-        // entries are skipped.
         for (var i = 0; i < store.Count; i++)
         {
             var e = store[i];
@@ -228,7 +232,10 @@ public partial class JSMap : JSObject
     }
 
     [JSExport("keys")]
-    public IEnumerable<JSValue> Keys()
+    public JSValue Keys()
+        => new JSGenerator(new ClrEnumerableElementEnumerator(EnumerateKeys()), "Map Iterator");
+
+    private IEnumerable<JSValue> EnumerateKeys()
     {
         for (var i = 0; i < store.Count; i++)
         {
@@ -242,7 +249,10 @@ public partial class JSMap : JSObject
 
 
     [JSExport("values")]
-    public IEnumerable<JSValue> Values()
+    public JSValue Values()
+        => new JSGenerator(new ClrEnumerableElementEnumerator(EnumerateValues()), "Map Iterator");
+
+    private IEnumerable<JSValue> EnumerateValues()
     {
         for (var i = 0; i < store.Count; i++)
         {

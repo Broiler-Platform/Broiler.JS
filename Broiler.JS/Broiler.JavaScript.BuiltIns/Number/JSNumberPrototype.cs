@@ -102,7 +102,9 @@ partial class JSNumber
         static JSNumber ToNumberValue(JSValue value)
         {
             value = value is JSPrimitiveObject primitiveObject ? primitiveObject.ValueOf() : value;
-            value = value is JSObject @object ? @object.ToDefaultPrimitive() : value;
+            // Number(v) is ToNumber(v) = ToPrimitive(v, NUMBER) then ToNumber, so a user
+            // @@toPrimitive receives the "number" hint rather than "default".
+            value = value is JSObject @object ? @object.ToNumberPrimitive() : value;
             return value is JSBigInt bigint
                 ? new JSNumber(JSBigInt.ToNumber(bigint.value))
                 : new JSNumber(value.DoubleValue);

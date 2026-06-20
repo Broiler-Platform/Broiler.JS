@@ -34,13 +34,7 @@ public partial class JSString
     {
         var @this = a.This.AsString();
         var (s, c) = a.Get2();
-        var size = s.IntValue;
-        var fillString = c.IsUndefined ? " " : c.StringValue;
-        if (fillString.Length == 0 || size <= @this.Length)
-            return new JSString(@this);
-        var ch = fillString[0];
-
-        return new JSString(@this.PadRight(s.IntValue, ch));
+        return StringPad(@this, s, c, padStart: false);
     }
 
     [JSPrototypeMethod]
@@ -49,12 +43,34 @@ public partial class JSString
     {
         var @this = a.This.AsString();
         var (s, c) = a.Get2();
-        var fillString = c.IsUndefined ? " " : c.StringValue;
-        if (fillString.Length == 0 || s.IntValue <= @this.Length)
-            return new JSString(@this);
-        var ch = fillString[0];
+        return StringPad(@this, s, c, padStart: true);
+    }
 
-        return new JSString(@this.PadLeft(s.IntValue, ch));
+    // Implements the abstract operation StringPad (ECMA-262). The filler is the
+    // full fill string repeated and truncated to the required width, not just a
+    // single character. Argument coercion order matters: maxLength is converted
+    // before fillString, and fillString is only coerced when padding is needed.
+    private static JSString StringPad(string str, JSValue maxLengthArg, JSValue fillArg, bool padStart)
+    {
+        var maxLengthValue = maxLengthArg.DoubleValue;
+        var maxLength = double.IsNaN(maxLengthValue) ? 0 : System.Math.Truncate(maxLengthValue);
+
+        if (maxLength <= str.Length)
+            return new JSString(str);
+
+        var fillString = fillArg.IsUndefined ? " " : fillArg.StringValue;
+        if (fillString.Length == 0)
+            return new JSString(str);
+
+        var fillLength = (int)maxLength - str.Length;
+        var filler = new StringBuilder(fillLength);
+        while (filler.Length < fillLength)
+            filler.Append(fillString);
+        filler.Length = fillLength;
+
+        return padStart
+            ? new JSString(filler.Append(str).ToString())
+            : new JSString(str + filler);
     }
 
     [JSPrototypeMethod]

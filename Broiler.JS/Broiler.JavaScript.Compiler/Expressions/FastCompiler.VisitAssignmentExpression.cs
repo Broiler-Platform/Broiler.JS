@@ -76,6 +76,12 @@ partial class FastCompiler
 
             case FastNodeType.Identifier:
                 var id = left as AstIdentifier;
+                // `this` is a ThisExpression, not a binding: assigning to it (`this = x`,
+                // `this += x`) is always an early SyntaxError, in sloppy mode too. The
+                // parser surfaces it as an identifier named "this", so reject it here
+                // rather than silently writing to the captured this-binding.
+                if (id.Name.Equals("this"))
+                    throw new FastParseException(id.Start, "Invalid left-hand side in assignment");
                 id.VerifyIdentifierForUpdate(IsStrictMode);
                 break;
         }
@@ -186,6 +192,20 @@ partial class FastCompiler
                 return YExpression.Assign(variable.Expression, initExpr);
             }
 
+            // A parenthesized assignment target is not an IdentifierReference, so a
+            // short-circuit assignment (`||=` / `&&=` / `??=`) of an anonymous function
+            // must NOT name it (LogicalAssignment NamedEvaluation requires IsIdentifierRef
+            // of the LHS). The JSVariable setter would otherwise infer the variable's name,
+            // so clear the placeholder to "" as part of evaluating the RHS (which only runs
+            // when the assignment is actually performed). Plain `=` is handled above.
+            if (shouldSuppressAnonymousFunctionName
+                && assignmentOperator is TokenTypes.AssignBooleanOr or TokenTypes.AssignBooleanAnd or TokenTypes.AssignCoalesce)
+            {
+                var suppressedRight = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod,
+                    Visit(right), YExpression.Constant(""), YExpression.Constant(false));
+                return BinaryOperation.Assign(variable.Expression, suppressedRight, assignmentOperator);
+            }
+
             return Assign(variable.Expression, right, assignmentOperator);
         }
 
@@ -201,6 +221,15 @@ partial class FastCompiler
                 scope.Top.ThisExpression, scope.Top.Super, VisitExpression(superMember.Property), superMember.Coalesce);
             return Assign(superTarget, right, assignmentOperator);
         }
+
+        // Identifiers, member expressions, array/object patterns and call expressions
+        // are handled above. Any other left-hand side (a literal, `this`, a
+        // binary/conditional/sequence expression, a function/arrow, ...) has an invalid
+        // AssignmentTargetType, which is an early SyntaxError. Without this guard the
+        // target lowers to an Expression.Assign onto a non-assignable node, which the IL
+        // backend rejects with a leaked CLR NotImplementedException / InvalidProgramException.
+        if (left.Type != FastNodeType.MemberExpression)
+            throw new FastParseException(left.Start, "Invalid left-hand side in assignment");
 
         return Assign(Visit(left), right, assignmentOperator);
     }

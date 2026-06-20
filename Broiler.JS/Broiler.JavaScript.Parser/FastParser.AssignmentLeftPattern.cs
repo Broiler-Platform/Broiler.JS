@@ -102,6 +102,23 @@ partial class FastParser
                 else if (!AssignmentLeftPattern(out left, kind, modulePattern))
                     throw stream.Unexpected();
 
+                // A BindingRestProperty (`{ ... rest }`) must be a bare BindingIdentifier
+                // — no default, no nested array/object pattern — and must be the last
+                // property of the object pattern. `{...{a}}`, `{...a = 1}` and `{...a, b}`
+                // are all early SyntaxErrors.
+                if (left is AstSpreadElement objectRest)
+                {
+                    if (objectRest.Argument is not AstIdentifier)
+                        throw stream.Unexpected();
+
+                    nodes.Add(new ObjectProperty(left, left, null, computed: false));
+
+                    if (!stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
+                        throw stream.Unexpected();
+
+                    break;
+                }
+
                 bool renamed = modulePattern ? stream.CheckAndConsumeContextualKeyword(FastKeywords.@as) : stream.CheckAndConsume(TokenTypes.Colon);
 
                 if (renamed)
@@ -201,7 +218,13 @@ partial class FastParser
                 nodes.Add(left);
 
                 if (stream.CheckAndConsume(TokenTypes.Comma))
+                {
+                    // A BindingRestElement must be the last element of an array pattern,
+                    // so an element (or a trailing comma) after `...x` is a SyntaxError.
+                    if (spread)
+                        throw stream.Unexpected();
                     continue;
+                }
 
                 if (stream.CheckAndConsume(TokenTypes.SquareBracketEnd))
                     break;

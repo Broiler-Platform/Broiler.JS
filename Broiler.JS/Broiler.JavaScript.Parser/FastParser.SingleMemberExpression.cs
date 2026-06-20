@@ -101,6 +101,12 @@ partial class FastParser
             switch (token.Type)
             {
                 case TokenTypes.TemplateBegin:
+                    // An optional chain can never be the tag of a tagged template:
+                    // `a?.b`x`` is an early SyntaxError (the tag would short-circuit
+                    // to undefined and be called as a template tag). Parenthesising
+                    // the chain (`(a?.b)`x``) resets it in its own invocation.
+                    if (inOptional)
+                        throw new FastParseException(token, "Tagged template expressions are not permitted in an optional chain");
                     var template = Template();
                     node = new AstTaggedTemplateExpression(node, template.Parts);
                     continue;
@@ -111,6 +117,9 @@ partial class FastParser
                         m.Undo();
                         break;
                     }
+
+                    if (inOptional)
+                        throw new FastParseException(token, "Tagged template expressions are not permitted in an optional chain");
 
                     stream.Consume();
                     node = new AstTaggedTemplateExpression(node, new Sequence<AstExpression>(1)

@@ -69,10 +69,10 @@ public class JSFunctionBuilder
 
     public static Expression Prototype(Expression target) => Expression.Field(target, _prototype);
 
-    public static Expression InvokeSuperConstructor(Expression super, Expression returnValue, Expression args)
+    public static Expression InvokeSuperConstructor(Expression super, Expression newTarget, Expression returnValue, Expression args)
     {
         return Expression.Assign(returnValue,
-            Expression.Call(null, _invokeSuperConstructor, JSUndefinedBuilder.Value, super, args));
+            Expression.Call(null, _invokeSuperConstructor, newTarget, super, args));
     }
 
     /// <summary>
@@ -81,8 +81,8 @@ public class JSFunctionBuilder
     /// must enforce BindThisValue (single <c>super</c> call) bind the result
     /// separately via <see cref="JSVariableBuilder.BindThis"/>.
     /// </summary>
-    public static Expression ConstructSuper(Expression super, Expression args)
-        => Expression.Call(null, _invokeSuperConstructor, JSUndefinedBuilder.Value, super, args);
+    public static Expression ConstructSuper(Expression super, Expression newTarget, Expression args)
+        => Expression.Call(null, _invokeSuperConstructor, newTarget, super, args);
 
     /// <summary>
     /// Wraps a class constructor body value with the [[Construct]] return-value

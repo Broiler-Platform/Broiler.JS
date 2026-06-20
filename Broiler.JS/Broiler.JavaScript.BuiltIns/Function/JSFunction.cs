@@ -338,6 +338,11 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     // still toString as `function anonymous(...) { ... }` per CreateDynamicFunction.
     internal void OverrideSource(in StringSpan source) => this.source = source;
 
+    // The raw source span backing Function.prototype.toString. Exposed so a wrapper
+    // function (e.g. an async function built around a generator) can adopt the
+    // underlying function's source text instead of reporting "[native code]".
+    internal StringSpan SourceSpan => source;
+
     public override JSValue this[KeyString name]
     {
         get => base[name];
@@ -831,8 +836,15 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         // superclass [[Construct]] so the instance super() allocates carries the
         // most-derived prototype and `new.target` observed inside the superclass
         // is the original new target — not the immediate superclass.
+        //
+        // When the caller threads in the lexically-captured new.target (non-null), use
+        // it: a super() invoked from inside an arrow function runs on the arrow's own
+        // call-stack item, which carries no new target, so JSEngine.NewTarget would be
+        // undefined there and the superclass [[Construct]] would allocate with the
+        // immediate superclass's prototype (so the instance is not `instanceof` the
+        // derived class). The lexical new.target is inherited correctly across arrows.
         var ec = JSEngine.Current as IJSExecutionContext;
-        var activeNewTarget = JSEngine.NewTarget;
+        var activeNewTarget = newTarget is { } nt && !nt.IsNullOrUndefined ? newTarget : JSEngine.NewTarget;
         var previousNewTarget = ec?.CurrentNewTarget;
         if (ec != null && activeNewTarget != null)
             ec.CurrentNewTarget = activeNewTarget;

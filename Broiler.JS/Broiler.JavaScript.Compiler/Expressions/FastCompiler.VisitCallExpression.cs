@@ -244,11 +244,13 @@ partial class FastCompiler
                 // super(...) targets the superclass constructor, not the home-object prototype.
                 var super = top.SuperConstructor ?? top.Super;
 
-                // A super call is only legal inside a derived class constructor. When no super
-                // binding is in scope it is an early SyntaxError — e.g. `new Function("super()")`
-                // or a plain function body. (Direct eval resolves its super binding separately
-                // and validates illegal super in DirectEvalSupport, so it is exempt here.)
-                if (super == null && !isDirectEvalCompilation)
+                // A super call is only legal inside a DERIVED class constructor (or an arrow
+                // nested in one), which is exactly where SuperConstructor is bound. A base
+                // class constructor (no super-constructor binding) or any method/accessor/
+                // object method/plain function — which still has a home-object Super for
+                // super.x but no super-constructor — is an early SyntaxError. (Direct eval
+                // resolves and validates its own super placement, so it is exempt here.)
+                if (top.SuperConstructor == null && !isDirectEvalCompilation)
                     throw new FastParseException(callee.Start, "'super' keyword is only valid inside a derived class constructor");
 
                 // super(...) performs BindThisValue: the derived constructor's
@@ -261,9 +263,14 @@ partial class FastCompiler
                 // parameter directly when available, else fall back to a plain
                 // assignment for non-JSVariable `this` representations.
                 var thisBinding = (@this as YPropertyExpression)?.Target;
+                // Thread the lexically-captured new.target (inherited correctly across
+                // arrow functions) so a super() nested in an arrow allocates the instance
+                // with the most-derived prototype. The arrow's own call-stack item carries
+                // no new target, so the runtime fallback would otherwise be undefined.
+                var superNewTarget = scope.Top.NewTargetExpression ?? JSContextBuilder.NewTarget();
                 YExpression BindSuperResult() => thisBinding != null
-                    ? JSVariableBuilder.BindThis(thisBinding, JSFunctionBuilder.ConstructSuper(super, paramArray1))
-                    : JSFunctionBuilder.InvokeSuperConstructor(super, @this, paramArray1);
+                    ? JSVariableBuilder.BindThis(thisBinding, JSFunctionBuilder.ConstructSuper(super, superNewTarget, paramArray1))
+                    : JSFunctionBuilder.InvokeSuperConstructor(super, superNewTarget, @this, paramArray1);
 
                 // we need to set this to null
                 // to inform function creator that we have

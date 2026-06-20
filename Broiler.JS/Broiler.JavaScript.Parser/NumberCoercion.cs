@@ -16,6 +16,33 @@ internal static class NumberCoercion
     /// </summary>
     internal static double CoerceToNumber(in StringSpan input)
     {
+        // Legacy octal integer literal: a leading '0' followed only by octal
+        // digits (0-7) denotes an octal value in non-strict code (e.g. 010 === 8,
+        // 0123 === 83). A non-octal digit (8 or 9), a '.', an exponent, or a radix
+        // prefix instead makes it an ordinary decimal literal, handled by the
+        // general path below. Numeric separators are not permitted in a legacy
+        // octal literal, so the presence of '_' also falls through to decimal.
+        // Strict-mode rejection of these literals happens earlier in the scanner,
+        // so this value is only ever consumed in non-strict code.
+        var text = input.Value;
+        if (text.Length >= 2 && text[0] == '0')
+        {
+            bool allOctal = true;
+            for (int i = 1; i < text.Length; i++)
+            {
+                char ch = text[i];
+                if (ch < '0' || ch > '7') { allOctal = false; break; }
+            }
+
+            if (allOctal)
+            {
+                double octalResult = 0;
+                for (int i = 1; i < text.Length; i++)
+                    octalResult = octalResult * 8 + (text[i] - '0');
+                return octalResult;
+            }
+        }
+
         // supporting ES2021 _ number separator
         var reader = new StringReader(input.Value.Replace("_", ""));
 
