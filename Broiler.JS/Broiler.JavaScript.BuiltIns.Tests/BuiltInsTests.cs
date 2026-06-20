@@ -7121,6 +7121,71 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void GetCanonicalLocales_Canonicalizes_Unicode_Keyword_Value_Aliases()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('und-u-kb-yes')[0],
+              Intl.getCanonicalLocales('und-u-kn-yes')[0],
+              Intl.getCanonicalLocales('und-u-ks-primary')[0],
+              Intl.getCanonicalLocales('und-u-ks-tertiary')[0],
+              Intl.getCanonicalLocales('und-u-ms-imperial')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("und-u-kb|und-u-kn|und-u-ks-level1|und-u-ks-level3|und-u-ms-uksystem", result.ToString());
+    }
+
+    [Fact]
+    public void Array_Prototype_Sort_Is_Stable_For_Equal_Comparator_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var input = [];
+            for (var i = 0; i < 200; i++)
+              input.push({ key: i % 4, ord: i });
+            input.sort(function (a, b) { return a.key - b.key; });
+            var ok = true;
+            var lastByKey = { 0: -1, 1: -1, 2: -1, 3: -1 };
+            for (var i = 0; i < input.length; i++) {
+              if (input[i].ord <= lastByKey[input[i].key]) { ok = false; break; }
+              lastByKey[input[i].key] = input[i].ord;
+            }
+            ok;
+            """);
+
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
+    public void Array_Prototype_ToSorted_Is_Stable_For_Equal_Comparator_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var input = [];
+            for (var i = 0; i < 200; i++)
+              input.push({ key: i % 4, ord: i });
+            var sorted = input.toSorted(function (a, b) { return a.key - b.key; });
+            var ok = true;
+            var lastByKey = { 0: -1, 1: -1, 2: -1, 3: -1 };
+            for (var i = 0; i < sorted.length; i++) {
+              if (sorted[i].ord <= lastByKey[sorted[i].key]) { ok = false; break; }
+              lastByKey[sorted[i].key] = sorted[i].ord;
+            }
+            ok;
+            """);
+
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
     public void GlobalThis_Resolves_To_The_Current_Global_Object()
     {
         EnsureBuiltInsLoaded();

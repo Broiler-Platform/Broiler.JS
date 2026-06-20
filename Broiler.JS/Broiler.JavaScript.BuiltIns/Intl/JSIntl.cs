@@ -716,6 +716,32 @@ public static class JSIntl
         ["traditional"] = "trad",
     };
 
+    // Collation-strength ("ks") keyword value aliases (UTS #35 bcp47/collation.xml). The
+    // long names are deprecated aliases for the level<n>/identic short forms.
+    private static readonly Dictionary<string, string> CollationStrengthValueAliases = new(StringComparer.Ordinal)
+    {
+        ["primary"] = "level1",
+        ["secondary"] = "level2",
+        ["tertiary"] = "level3",
+        ["quaternary"] = "level4",
+        ["identical"] = "identic",
+    };
+
+    // Measurement-system ("ms") keyword value aliases (UTS #35 bcp47/measure.xml).
+    // "imperial" is the deprecated alias for "uksystem"; "metric" and "ussystem" stay.
+    private static readonly Dictionary<string, string> MeasurementSystemValueAliases = new(StringComparer.Ordinal)
+    {
+        ["imperial"] = "uksystem",
+    };
+
+    // The Unicode boolean keys (UTS #35 bcp47/collation.xml + bcp47/transform.xml): their
+    // "yes"/"no" type-values canonicalize to "true"/"false", and a canonical "true" is
+    // dropped from the tag (the bare key implies true).
+    private static readonly HashSet<string> BooleanUnicodeKeywordKeys = new(StringComparer.Ordinal)
+    {
+        "kb", "kc", "kh", "kk", "kn", "kv",
+    };
+
     // Collation types sanctioned by CLDR for a "co" keyword. "standard" and "search" are
     // reserved (never reflected as the resolved collation), so they are excluded; any other
     // value is unsupported and falls back to "default".
@@ -878,6 +904,18 @@ public static class JSIntl
             return ca;
         if (key == "co" && CollationValueAliases.TryGetValue(value, out var co))
             return co;
+        if (key == "ks" && CollationStrengthValueAliases.TryGetValue(value, out var ks))
+            return ks;
+        if (key == "ms" && MeasurementSystemValueAliases.TryGetValue(value, out var ms))
+            return ms;
+        // "yes" / "no" are the deprecated aliases for boolean Unicode keyword values
+        // ("true" / "false"); only "yes" is reachable from a -u- tag (a 2-char subtag is
+        // parsed as another keyword key, not a type), but normalise the option form too.
+        if (BooleanUnicodeKeywordKeys.Contains(key))
+        {
+            if (value == "yes") return "true";
+            if (value == "no") return "false";
+        }
         return value;
     }
 
@@ -935,6 +973,10 @@ public static class JSIntl
 
             result.Add(key);
             var canonical = CanonicalizeKeywordValue(key, string.Join("-", types));
+            // UTS #35 §3.6.4: a boolean Unicode keyword's "true" value is the default
+            // and is omitted from the canonical form ("und-u-kb-yes" → "und-u-kb").
+            if (canonical == "true" && BooleanUnicodeKeywordKeys.Contains(key))
+                continue;
             if (canonical.Length > 0)
                 result.AddRange(canonical.Split('-'));
         }

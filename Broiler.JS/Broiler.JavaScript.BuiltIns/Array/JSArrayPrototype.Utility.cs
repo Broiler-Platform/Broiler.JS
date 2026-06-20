@@ -197,15 +197,21 @@ public partial class JSArray
             comparison = (left, right) => CompareArraySortValues(left, right, compareFn);
 
         var len = (uint)length;
-        var values = new System.Collections.Generic.List<JSValue>();
+        var indexed = new (JSValue Value, int Index)[len];
         for (uint index = 0; index < len; index++)
-            values.Add(source[index]);
+            indexed[index] = (source[index], (int)index);
 
-        values.Sort(comparison);
+        // toSorted is required to be stable like sort; List<T>.Sort / Array.Sort use
+        // an unstable introsort, so break comparator ties on the original index.
+        System.Array.Sort(indexed, (a, b) =>
+        {
+            var r = comparison(a.Value, b.Value);
+            return r != 0 ? r : a.Index.CompareTo(b.Index);
+        });
 
         var result = new JSArray(len);
         for (uint index = 0; index < len; index++)
-            CreateDataPropertyOrThrow(result, index, values[(int)index]);
+            CreateDataPropertyOrThrow(result, index, indexed[index].Value);
 
         return result;
     }
