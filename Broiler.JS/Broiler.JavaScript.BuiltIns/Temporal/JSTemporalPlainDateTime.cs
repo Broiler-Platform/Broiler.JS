@@ -232,8 +232,8 @@ public partial class JSTemporalPlainDateTime : JSObject
         // month code is rejected only once every option getter has fired (test262
         // .../with options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        string monthCodeStr = null;
-        if (!monthCodeValue.IsUndefined) { monthCodeStr = monthCodeValue.ToString(); any = true; }
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDateTime");
+        if (monthCodeStr != null) any = true;
 
         var ns = Read("nanosecond", nanosecond);
         var s = Read("second", second);
@@ -962,12 +962,9 @@ public partial class JSTemporalPlainDateTime : JSObject
         var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        string monthCodeStr = null;
-        if (!monthCodeValue.IsUndefined)
-        {
-            monthCodeStr = monthCodeValue.StringValue; // ToString once
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDateTime");
+        if (monthCodeStr != null)
             ValidateMonthCodeSyntax(monthCodeStr);
-        }
 
         var nanosecond = Field("nanosecond");
         afterNanosecond?.Invoke(); // ZonedDateTime reads `offset` here

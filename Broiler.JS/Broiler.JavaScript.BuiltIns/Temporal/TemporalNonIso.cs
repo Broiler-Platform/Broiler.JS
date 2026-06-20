@@ -210,11 +210,12 @@ internal static class TemporalNonIso
         var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, typeName);
 
         var hasYear = !yearValue.IsUndefined
             || (TemporalCalendarMath.HasEra(calendarId) && !eraValue.IsUndefined && !eraYearValue.IsUndefined);
 
-        if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
+        if (monthValue.IsUndefined && monthCodeStr == null)
             throw JSEngine.NewTypeError($"{typeName}: missing month / monthCode");
         // A numeric `month` is calendar/year-dependent in these calendars, so it is only meaningful
         // with a `year`; supplying `month` without a year (even alongside a `monthCode`) is a
@@ -229,7 +230,7 @@ internal static class TemporalNonIso
             return MonthDayFromYearMonth(calendarId, year, month, day, overflow);
         }
 
-        return MonthDayFromCode(calendarId, monthCodeValue.ToString(), day, overflow);
+        return MonthDayFromCode(calendarId, monthCodeStr, day, overflow);
     }
 
     private static (int y, int m, int d) MonthDayCore(string calendarId, int codeNumber, bool isLeap, int day, string overflow)
@@ -304,6 +305,7 @@ internal static class TemporalNonIso
         var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, typeName);
 
         var hasYear = !yearValue.IsUndefined;
         var hasEra = !eraValue.IsUndefined;
@@ -312,7 +314,7 @@ internal static class TemporalNonIso
 
         if (!hasYear && !(hasEraSupport && hasEra && hasEraYear))
             throw JSEngine.NewTypeError($"{typeName}: missing year (or era and eraYear)");
-        if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
+        if (monthValue.IsUndefined && monthCodeStr == null)
             throw JSEngine.NewTypeError($"{typeName}: missing month / monthCode");
 
         int year;
@@ -334,11 +336,11 @@ internal static class TemporalNonIso
         }
 
         int month;
-        if (monthCodeValue.IsUndefined)
+        if (monthCodeStr == null)
             month = ToPositiveIntegerWithTruncation(monthValue, typeName);
         else
         {
-            var (codeNumber, leapMonth) = ParseMonthCode(monthCodeValue.ToString());
+            var (codeNumber, leapMonth) = ParseMonthCode(monthCodeStr);
             // A leap month code ("MnnL") exists only in a leap year that carries that particular leap
             // month. Under overflow "constrain" a year without it falls back to the regular month with
             // the same number ("Mnn") — except hebrew, whose leap month Adar I ("M05L") sits before the
@@ -358,7 +360,7 @@ internal static class TemporalNonIso
             else
                 month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, leapMonth);
         }
-        if (!monthValue.IsUndefined && !monthCodeValue.IsUndefined && ToPositiveIntegerWithTruncation(monthValue, typeName) != month)
+        if (!monthValue.IsUndefined && monthCodeStr != null && ToPositiveIntegerWithTruncation(monthValue, typeName) != month)
             throw JSEngine.NewRangeError($"{typeName}: month and monthCode disagree");
 
         return (year, month);

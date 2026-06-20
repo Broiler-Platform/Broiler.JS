@@ -197,8 +197,8 @@ public partial class JSTemporalPlainDate : JSObject
         // code is rejected only once every option getter has fired (test262
         // .../with options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        string monthCodeStr = null;
-        if (!monthCodeValue.IsUndefined) { monthCodeStr = monthCodeValue.ToString(); any = true; }
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDate");
+        if (monthCodeStr != null) any = true;
 
         var newIsoYear = ResolveWithYear(obj, ref any);
 
@@ -679,12 +679,9 @@ public partial class JSTemporalPlainDate : JSObject
         var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        string monthCodeStr = null;
-        if (!monthCodeValue.IsUndefined)
-        {
-            monthCodeStr = monthCodeValue.StringValue; // ToString once
+        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDate");
+        if (monthCodeStr != null)
             ValidateMonthCodeSyntax(monthCodeStr);
-        }
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
         var yearInt = yearValue.IsUndefined ? 0 : ToIntegerWithTruncation(yearValue);

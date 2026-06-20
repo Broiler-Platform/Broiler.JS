@@ -93,7 +93,10 @@ internal static class TemporalCalendar
                 case "ethiopic": canonical = "ethiopic"; return true;
                 case "ethioaa":
                 case "ethiopic-amete-alem": canonical = "ethioaa"; return true;
-                case "islamic": canonical = "islamic"; return true;
+                // The bare "islamic" identifier resolves to a locale-preferred variant in
+                // Intl.DateTimeFormat, but Temporal requires an unambiguous calendar id; the
+                // suffixed forms ("islamic-civil", "islamic-tbla", "islamic-umalqura") must be
+                // used instead (test262 intl402/Temporal/*/from/islamic).
                 case "islamic-civil":
                 case "islamicc": canonical = "islamic-civil"; return true;
                 case "islamic-tbla": canonical = "islamic-tbla"; return true;
@@ -152,7 +155,7 @@ internal static class TemporalCalendar
     {
         var lower = id.ToLowerInvariant();
         return lower is "iso8601" or "gregory" or "gregorian" or "buddhist" or "roc" or "minguo" or "japanese"
-            or "coptic" or "ethiopic" or "ethioaa" or "ethiopic-amete-alem" or "islamic" or "islamic-civil" or "islamicc"
+            or "coptic" or "ethiopic" or "ethioaa" or "ethiopic-amete-alem" or "islamic-civil" or "islamicc"
             or "islamic-tbla" or "islamic-umalqura" or "hebrew" or "persian" or "indian" or "chinese" or "dangi";
     }
 

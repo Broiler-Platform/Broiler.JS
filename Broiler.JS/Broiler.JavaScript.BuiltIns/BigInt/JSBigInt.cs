@@ -461,7 +461,7 @@ public partial class JSBigInt : JSPrimitive
     }
 
     [JSPrototypeMethod]
-    [JSExport("toString")]
+    [JSExport("toString", Length = 0)]
     public static JSValue JSToString(in Arguments a)
     {
         var bigint = ThisBigInt(a.This);
@@ -510,7 +510,7 @@ public partial class JSBigInt : JSPrimitive
     }
 
     [JSPrototypeMethod]
-    [JSExport("toLocaleString")]
+    [JSExport("toLocaleString", Length = 0)]
     public static JSValue ToLocaleString(in Arguments a)
     {
         var self = ThisBigInt(a.This);
