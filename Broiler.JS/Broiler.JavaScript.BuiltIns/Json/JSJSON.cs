@@ -838,13 +838,17 @@ public partial class JSJSON : JSObject
         result.Write('\"');
 
         // Check if there are characters that need to be escaped.
-        // These characters include '"', '\' and any character with an ASCII value less than 32.
+        // These characters include '"', '\', any character with an ASCII value
+        // less than 32, and any UTF-16 surrogate code unit. Surrogates route to
+        // the slow path so a lone (unpaired) surrogate can be escaped as \uXXXX
+        // per the well-formed JSON.stringify rules (ES2019); a well-formed pair is
+        // still emitted verbatim there.
         bool containsUnsafeCharacters = false;
         for (int i = 0; i < input.Length; i++)
         {
             char c = input[i];
 
-            if (c == '\\' || c == '\"' || c < 0x20)
+            if (c == '\\' || c == '\"' || c < 0x20 || char.IsSurrogate(c))
             {
                 containsUnsafeCharacters = true;
                 break;
@@ -859,9 +863,9 @@ public partial class JSJSON : JSObject
         else
         {
             // The string contains escape characters - fall back to the slower code path.
-            var en = input.GetEnumerator();
-            while (en.MoveNext(out var c))
+            for (int i = 0; i < input.Length; i++)
             {
+                char c = input[i];
                 switch (c)
                 {
                     case '\"':
@@ -887,6 +891,22 @@ public partial class JSJSON : JSObject
                     default:
                         if (c < 0x20)
                         {
+                            result.Write('\\');
+                            result.Write('u');
+                            result.Write(((int)c).ToString("x4"));
+                        }
+                        else if (char.IsHighSurrogate(c) && i + 1 < input.Length && char.IsLowSurrogate(input[i + 1]))
+                        {
+                            // A well-formed surrogate pair encodes a single code point;
+                            // emit both code units verbatim.
+                            result.Write(c);
+                            result.Write(input[i + 1]);
+                            i++;
+                        }
+                        else if (char.IsSurrogate(c))
+                        {
+                            // Lone (unpaired) surrogate: escape as \uXXXX so the output is
+                            // well-formed and round-trips through JSON.parse.
                             result.Write('\\');
                             result.Write('u');
                             result.Write(((int)c).ToString("x4"));

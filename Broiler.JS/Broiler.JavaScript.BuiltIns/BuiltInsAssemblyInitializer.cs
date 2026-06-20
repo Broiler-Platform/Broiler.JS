@@ -418,8 +418,10 @@ internal static class BuiltInsAssemblyInitializer
             if (primitive.IsString) return "String";
             if (primitive.IsNumber) return "Number";
             if (primitive.IsBoolean) return "Boolean";
-            if (primitive.IsBigInt) return "BigInt";
-            if (primitive.IsSymbol) return "Symbol";
+            // BigInt and Symbol are intentionally absent: §20.1.3.6 has no builtin
+            // tag for them, so their wrappers tag as "Object". The "[object BigInt]"/
+            // "[object Symbol]" display comes from the string-valued @@toStringTag on
+            // BigInt.prototype / Symbol.prototype instead (see comment below).
         }
 
         // Object.prototype.toString performs ToObject(this) before computing the
