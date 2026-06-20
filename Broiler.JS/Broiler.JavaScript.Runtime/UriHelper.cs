@@ -338,7 +338,7 @@ internal static class UriHelper
                 continue;
             }
 
-            if ((input[i + 1] == 'u' || input[i + 1] == 'U') && i + 5 < input.Length)
+            if (input[i + 1] == 'u' && i + 5 < input.Length)
             {
                 int unicode = ParseHexNumber(input, i + 2, 4);
                 if (unicode >= 0)
