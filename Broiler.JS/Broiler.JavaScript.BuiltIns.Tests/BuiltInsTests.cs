@@ -7200,6 +7200,75 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Splice_With_Species_Throwing_Propagates_The_Species_Error()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            class StopSplice extends Error {}
+            class HostileArray extends Array {
+              static get [Symbol.species]() {
+                return function (n) { throw new StopSplice('species(' + n + ')'); };
+              }
+            }
+            var arr = new HostileArray(1, 2, 3, 4, 5);
+            var caught = null;
+            try { Array.prototype.splice.call(arr, 0, 2 ** 53 + 4); }
+            catch (e) { caught = e; }
+            [caught instanceof StopSplice, caught && caught.message].join('|');
+            """);
+
+        // ArraySpeciesCreate runs after deleteCount clamping; the (clamped) length flows
+        // through unchanged to the species constructor, whose thrown StopSplice must
+        // propagate without being masked by an engine-level RangeError / TypeError.
+        Assert.Equal("true|species(5)", result.ToString());
+    }
+
+    [Fact]
+    public void Eval_Try_Finally_Completion_Discards_Empty_Finally_Block()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              eval("try { 'try-value' } finally { }"),
+              eval("try { 'try-value' } finally { 'finally-value' }"),
+              eval("try { let x = 1; } finally { }"),
+              eval("try { let x = 1; } finally { 'finally-value' }")
+            ].map(v => v === undefined ? 'undef' : String(v)).join('|');
+            """);
+
+        // Per \u00a714.15 TryStatement: a non-empty Block result survives an empty / let-only
+        // Finally block; an empty Block result is replaced with undefined (UpdateEmpty).
+        Assert.Equal("try-value|try-value|undef|undef", result.ToString());
+    }
+
+    [Fact]
+    public void Parser_LineSeparator_Triggers_ASI_And_Terminates_Line_Comment()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // U+2028 / U+2029 terminate a // line comment AND act as line terminators for ASI.
+        var result = ctx.Eval("var x = 5\u2028typeof x");
+
+        Assert.Equal("number", result.ToString());
+    }
+
+    [Fact]
+    public void Parser_ParagraphSeparator_Triggers_ASI_And_Terminates_Line_Comment()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("// commented out\u2029typeof globalThis");
+
+        Assert.Equal("object", result.ToString());
+    }
+
+    [Fact]
     public void DateTimeFormat_Renders_FractionalSecondDigits_When_Requested()
     {
         EnsureBuiltInsLoaded();
