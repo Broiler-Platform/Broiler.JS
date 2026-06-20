@@ -8,6 +8,13 @@ namespace LogParser;
 /// </summary>
 public static class LogReportFormatter
 {
+    /// <summary>
+    /// Default cap on the number of grouped problems returned by the
+    /// "most common problems" report. Matches <see cref="Program.DefaultMostCommonProblemsLimit"/>
+    /// so the CLI default and the formatter default stay in sync.
+    /// </summary>
+    public const int DefaultMostCommonProblemsLimit = 10;
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -60,9 +67,9 @@ public static class LogReportFormatter
         return JsonSerializer.Serialize(CreateMostCommonProblemReport(fileSummaries, outputFormat: "json"), JsonOptions);
     }
 
-    public static string FormatMostCommonProblems(IEnumerable<LogFileSummary> fileSummaries)
+    public static string FormatMostCommonProblems(IEnumerable<LogFileSummary> fileSummaries, int limit = DefaultMostCommonProblemsLimit)
     {
-        var report = CreateMostCommonProblemsReport(fileSummaries, outputFormat: "text");
+        var report = CreateMostCommonProblemsReport(fileSummaries, outputFormat: "text", limit);
         var builder = new StringBuilder();
 
         if (report.Problems.Count == 0)
@@ -71,7 +78,7 @@ public static class LogReportFormatter
         }
 
         builder.AppendLine("### Description");
-        builder.AppendLine("Three most common exceptions detected in recent logs.");
+        builder.AppendLine($"Top {report.Problems.Count} most common exception(s) detected in recent logs.");
 
         for (var i = 0; i < report.Problems.Count; i++)
         {
@@ -83,9 +90,9 @@ public static class LogReportFormatter
         return builder.ToString().TrimEnd();
     }
 
-    public static string FormatMostCommonProblemsJson(IEnumerable<LogFileSummary> fileSummaries)
+    public static string FormatMostCommonProblemsJson(IEnumerable<LogFileSummary> fileSummaries, int limit = DefaultMostCommonProblemsLimit)
     {
-        return JsonSerializer.Serialize(CreateMostCommonProblemsReport(fileSummaries, outputFormat: "json"), JsonOptions);
+        return JsonSerializer.Serialize(CreateMostCommonProblemsReport(fileSummaries, outputFormat: "json", limit), JsonOptions);
     }
 
     public static string FormatHighestImpactProblem(IEnumerable<LogFileSummary> fileSummaries)
@@ -286,13 +293,14 @@ public static class LogReportFormatter
 
     internal static MostCommonProblemsReport CreateMostCommonProblemsReport(
         IEnumerable<LogFileSummary> fileSummaries,
-        string outputFormat)
+        string outputFormat,
+        int limit = DefaultMostCommonProblemsLimit)
     {
         var summaries = fileSummaries.ToArray();
         return new MostCommonProblemsReport
         {
             OutputFormat = outputFormat,
-            Problems = LogSummaryBuilder.FindMostCommonProblems(summaries.SelectMany(summary => summary.LogRun.Results))
+            Problems = LogSummaryBuilder.FindMostCommonProblems(summaries.SelectMany(summary => summary.LogRun.Results), limit)
         };
     }
 
