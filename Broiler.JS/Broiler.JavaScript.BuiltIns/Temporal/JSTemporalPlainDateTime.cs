@@ -679,22 +679,24 @@ public partial class JSTemporalPlainDateTime : JSObject
         var tz = a.GetAt(0);
         if (tz == null || !tz.IsString)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.toZonedDateTime: time zone must be a string");
-        ReadDisambiguation(a.GetAt(1));
-        return JSTemporalZonedDateTime.FromLocal(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, tz.ToString(), calendarId);
+        var disambiguation = ReadDisambiguation(a.GetAt(1));
+        return JSTemporalZonedDateTime.FromLocal(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, tz.ToString(), calendarId, disambiguation);
     }
 
-    // GetTemporalDisambiguationOption. The "compatible" behaviour is what FromLocal already applies;
-    // this validates the option (an invalid value is a RangeError, a Symbol a TypeError).
-    private static void ReadDisambiguation(JSValue options)
+    // GetTemporalDisambiguationOption: compatible (default) / earlier / later / reject. An invalid
+    // value is a RangeError, a Symbol a TypeError. The chosen mode is applied by FromLocal when the
+    // wall-clock time is ambiguous (a fold) or skipped (a spring-forward gap).
+    private static string ReadDisambiguation(JSValue options)
     {
-        if (options == null || options.IsUndefined) return;
+        if (options == null || options.IsUndefined) return "compatible";
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
         var v = o[KeyStrings.GetOrCreate("disambiguation")];
-        if (v.IsUndefined) return;
+        if (v.IsUndefined) return "compatible";
         var d = v.StringValue;
         if (d is not ("compatible" or "earlier" or "later" or "reject"))
             throw JSEngine.NewRangeError($"Temporal: invalid disambiguation \"{d}\"");
+        return d;
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────

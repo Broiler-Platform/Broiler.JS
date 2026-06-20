@@ -88,16 +88,53 @@ public partial class JSTemporalZonedDateTime : JSObject
     }
 
     // Builds a ZonedDateTime from a local wall-clock datetime in the given zone (used by the
-    // PlainDate/PlainDateTime/PlainTime → ZonedDateTime conversions; "compatible" disambiguation).
-    internal static JSValue FromLocal(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns, string timeZone, string calendarId = "iso8601")
+    // PlainDate/PlainDateTime/PlainTime → ZonedDateTime conversions; "compatible" disambiguation by
+    // default, or the caller-supplied disambiguation (earlier / later / reject) for an ambiguous or
+    // gap wall-clock time.
+    internal static JSValue FromLocal(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns, string timeZone, string calendarId = "iso8601", string disambiguation = "compatible")
     {
         var tz = CanonicalizeTimeZone(timeZone);
-        var localNs = LocalNanoseconds(y, mo, d, h, mi, s, ms, us, ns);
-        var offset = GetOffsetForLocal(tz, y, mo, d, h, mi, s);
-        var epochNs = localNs - offset;
+        var epochNs = DisambiguateEpochNs(tz, y, mo, d, h, mi, s, ms, us, ns, disambiguation);
         if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
         return new JSTemporalZonedDateTime(epochNs, tz, calendarId, ZonedDateTimePrototype);
+    }
+
+    // DisambiguatePossibleEpochNanoseconds: resolve a local wall-clock time to a single epoch instant.
+    // A normal time has one candidate; a fall-back fold has two (earlier = larger offset, later =
+    // smaller offset); a spring-forward gap has none. "compatible" matches "later" for a gap and
+    // "earlier" for a fold; "reject" throws a RangeError whenever the time is ambiguous or skipped.
+    private static BigInteger DisambiguateEpochNs(string tz, int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns, string disambiguation)
+    {
+        var localNs = LocalNanoseconds(y, mo, d, h, mi, s, ms, us, ns);
+        var candidates = CandidateOffsetsForLocal(tz, y, mo, d, h, mi, s);
+
+        if (candidates.Count == 1)
+            return localNs - candidates[0];
+
+        if (candidates.Count >= 2)
+        {
+            if (disambiguation == "reject")
+                throw JSEngine.NewRangeError("Temporal: wall-clock time is ambiguous in this time zone");
+            // earlier instant = the larger (least-negative) offset; later = the smaller; compatible = earlier.
+            var earlier = Math.Max(candidates[0], candidates[1]);
+            var later = Math.Min(candidates[0], candidates[1]);
+            return localNs - (disambiguation == "later" ? later : earlier);
+        }
+
+        // A spring-forward gap: no candidate offset.
+        if (disambiguation == "reject")
+            throw JSEngine.NewRangeError("Temporal: wall-clock time does not exist in this time zone");
+
+        const long dayNs = 86_400_000_000_000L;
+        var offsetBefore = OffsetNanosecondsForInstant(tz, localNs - dayNs);
+        var offsetAfter = OffsetNanosecondsForInstant(tz, localNs + dayNs);
+        var gap = offsetAfter - offsetBefore;
+        // "earlier": shift the wall clock back across the gap (offset before the transition); "later" /
+        // "compatible": shift it forward (offset after) — both reduce to localNs minus the chosen offset.
+        return disambiguation == "earlier"
+            ? localNs - gap - offsetBefore
+            : localNs + gap - offsetAfter;
     }
 
     // GetStartOfDay for a date in a zone (Temporal.PlainDate.prototype.toZonedDateTime with no

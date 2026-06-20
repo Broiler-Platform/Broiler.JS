@@ -11,8 +11,9 @@ namespace Broiler.JavaScript.Integration.Tests;
 //  • Problem 2: PlainMonthDay/PlainYearMonth toLocaleString collapsed an iso8601 calendar to
 //    gregory for the value-vs-formatter calendar check, wrongly throwing a RangeError.
 //  • Problem 3: out-of-range rounding boundaries (since/until huge increment), out-of-range
-//    Duration.compare endpoints, overspecified PlainMonthDay year fields, and invalid hebrew
-//    leap month codes must all be RangeErrors.
+//    Duration.compare endpoints, overspecified PlainMonthDay year fields, invalid hebrew leap
+//    month codes, out-of-range chinese/dangi lunisolar month codes via with(), and an unapplied
+//    toZonedDateTime disambiguation option must all be RangeErrors / honoured.
 //  • Problem 4: a class declared inside a generator with two `[yield …]` computed property
 //    names made the generator rewriter lift the same reused compiler temp twice, so the
 //    original→box ToDictionary threw "An item with the same key has already been added".
@@ -188,4 +189,49 @@ public class Issue857Tests
     public void EvalGlobalVarIncrementInLoop()
         => Assert.Equal("undefined", Eval(
             "typeof eval(\"for (var count = 0;;) { if (count === 5) break; else count++; }\")").ToString());
+
+    // ───────────── Problem 3 (lunisolar): chinese/dangi leap month codes via with() ─────────────
+
+    // A lunisolar year has 12 regular months (M01..M12) plus an optional leap month. A regular month
+    // code outside that range — "M13", or the "M13L" leap code constraining through it — does not exist
+    // and is a RangeError, not a silent clamp to the 12th month (test262 .../with/{chinese,dangi}-…).
+    [Fact]
+    public void ChineseWithMonth13LeapCodeThrows()
+        => Assert.Equal("RangeError", ErrorName(
+            "Temporal.PlainDate.from({ year: 2001, month: 13, day: 1, calendar: 'chinese' }).with({ monthCode: 'M13L' })"));
+
+    [Fact]
+    public void ChineseWithNonExistentLeapCodeRejectThrows()
+        => Assert.Equal("RangeError", ErrorName(
+            "Temporal.PlainDate.from({ year: 2001, month: 1, day: 1, calendar: 'chinese' }).with({ monthCode: 'M07L' }, { overflow: 'reject' })"));
+
+    // The year's actual leap month (chinese 2001 has M04L) is still accepted, and a non-leap code that
+    // constrains onto it works.
+    [Fact]
+    public void ChineseWithExistingLeapCodeIsAccepted()
+        => Assert.Equal("M04L", Eval(
+            "Temporal.PlainDate.from({ year: 2001, month: 1, day: 1, calendar: 'chinese' }).with({ monthCode: 'M04L' }).monthCode").ToString());
+
+    // ───────────── Problem 3 (toZonedDateTime disambiguation) ─────────────
+
+    // PlainDateTime.toZonedDateTime must apply the disambiguation option, not just validate it. A
+    // spring-forward gap (2000-04-02T02:30 in America/Vancouver) is a RangeError under "reject" and
+    // resolves to the later/earlier instant under "later"/"earlier"; the default is "compatible".
+    [Fact]
+    public void ToZonedDateTimeGapRejectThrows()
+        => Assert.Equal("RangeError", ErrorName(
+            "new Temporal.PlainDateTime(2000, 4, 2, 2, 30).toZonedDateTime('America/Vancouver', { disambiguation: 'reject' })"));
+
+    [Fact]
+    public void ToZonedDateTimeFoldRejectThrows()
+        => Assert.Equal("RangeError", ErrorName(
+            "new Temporal.PlainDateTime(2000, 10, 29, 1, 30).toZonedDateTime('America/Vancouver', { disambiguation: 'reject' })"));
+
+    [Theory]
+    [InlineData("earlier", "2000-04-02T01:30:00-08:00[America/Vancouver]")]
+    [InlineData("later", "2000-04-02T03:30:00-07:00[America/Vancouver]")]
+    [InlineData("compatible", "2000-04-02T03:30:00-07:00[America/Vancouver]")]
+    public void ToZonedDateTimeGapDisambiguation(string mode, string expected)
+        => Assert.Equal(expected, Eval(
+            $"new Temporal.PlainDateTime(2000, 4, 2, 2, 30).toZonedDateTime('America/Vancouver', {{ disambiguation: '{mode}' }}).toString()").ToString());
 }
