@@ -734,7 +734,7 @@ public class LogSummaryBuilderTests
         ]);
 
         Assert.Contains("### Description", formatted, StringComparison.Ordinal);
-        Assert.Contains("Three most common exceptions detected in recent logs.", formatted, StringComparison.Ordinal);
+        Assert.Contains("Top 3 most common exception(s) detected in recent logs.", formatted, StringComparison.Ordinal);
         Assert.Contains("#### Problem 1", formatted, StringComparison.Ordinal);
         Assert.Contains("#### Problem 2", formatted, StringComparison.Ordinal);
         Assert.Contains("#### Problem 3", formatted, StringComparison.Ordinal);
@@ -746,6 +746,52 @@ public class LogSummaryBuilderTests
         Assert.Contains("  - test/annexB/alpha.js", formatted, StringComparison.Ordinal);
         Assert.Contains("  - test/built-ins/Array/from.js", formatted, StringComparison.Ordinal);
         Assert.Contains("  - test/language/expressions/assignment.js", formatted, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FormatMostCommonProblems_HonorsExplicitLimit()
+    {
+        using var fixture = TempLogFile.Create("""
+        {
+          "suiteRef": "fixture-most-common-problems-limit",
+          "broilerDll": "fixture/BroilerJS.dll",
+          "executed": 4,
+          "passed": 0,
+          "failed": 4,
+          "skipped": 0,
+          "results": [
+            {
+              "path": "test/a.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Alpha\nat Throw in /repo/JSException.cs:line 1\n"
+            },
+            {
+              "path": "test/b.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Beta\nat Throw in /repo/JSException.cs:line 2\n"
+            },
+            {
+              "path": "test/c.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Gamma\nat Throw in /repo/JSException.cs:line 3\n"
+            },
+            {
+              "path": "test/d.js",
+              "status": "failed",
+              "stderr": "Unhandled exception. Broiler.JavaScript.Runtime.JSException: Delta\nat Throw in /repo/JSException.cs:line 4\n"
+            }
+          ]
+        }
+        """);
+
+        var formatted = LogReportFormatter.FormatMostCommonProblems(
+            [LogSummaryBuilder.ParseAndSummarize(fixture.Path)],
+            limit: 2);
+
+        Assert.Contains("Top 2 most common exception(s) detected in recent logs.", formatted, StringComparison.Ordinal);
+        Assert.Contains("#### Problem 1", formatted, StringComparison.Ordinal);
+        Assert.Contains("#### Problem 2", formatted, StringComparison.Ordinal);
+        Assert.DoesNotContain("#### Problem 3", formatted, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1071,6 +1117,44 @@ public class LogSummaryBuilderTests
 
         Assert.Contains("--most-common-problem", exception.Message, StringComparison.Ordinal);
         Assert.Contains("--most-common-problems", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ParseOptions_DefaultsMostCommonProblemsLimitToTen()
+    {
+        var options = Program.ParseOptions(["--most-common-problems", "sample.json"]);
+
+        Assert.Equal(10, options.MostCommonProblemsLimit);
+    }
+
+    [Theory]
+    [InlineData(new[] { "--most-common-problems", "--most-common-problems-limit", "5", "sample.json" }, 5)]
+    [InlineData(new[] { "--most-common-problems", "--most-common-problems-limit=7", "sample.json" }, 7)]
+    public void ParseOptions_ReadsMostCommonProblemsLimit(string[] args, int expectedLimit)
+    {
+        var options = Program.ParseOptions(args);
+
+        Assert.True(options.MostCommonProblems);
+        Assert.Equal(expectedLimit, options.MostCommonProblemsLimit);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-3")]
+    [InlineData("abc")]
+    public void ParseOptions_RejectsInvalidMostCommonProblemsLimit(string value)
+    {
+        Assert.Throws<ArgumentException>(() =>
+            Program.ParseOptions(["--most-common-problems", "--most-common-problems-limit", value, "sample.json"]));
+    }
+
+    [Fact]
+    public void ParseOptions_RejectsMostCommonProblemsLimitWithoutMostCommonProblems()
+    {
+        var exception = Assert.Throws<ArgumentException>(() =>
+            Program.ParseOptions(["--most-common-problems-limit", "5", "sample.json"]));
+
+        Assert.Contains("--most-common-problems-limit", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]

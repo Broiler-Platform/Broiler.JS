@@ -28,6 +28,8 @@ internal static class Program
         }
     }
 
+    internal const int DefaultMostCommonProblemsLimit = 10;
+
     internal static ProgramOptions ParseOptions(IEnumerable<string> args)
     {
         var inputs = new List<string>();
@@ -37,6 +39,8 @@ internal static class Program
         var messageFilter = default(string);
         var mostCommonProblem = false;
         var mostCommonProblems = false;
+        var mostCommonProblemsLimit = DefaultMostCommonProblemsLimit;
+        var mostCommonProblemsLimitSpecified = false;
         var highestImpactProblem = false;
         var pendingOption = string.Empty;
 
@@ -70,6 +74,14 @@ internal static class Program
                 continue;
             }
 
+            if (string.Equals(pendingOption, "--most-common-problems-limit", StringComparison.Ordinal))
+            {
+                mostCommonProblemsLimit = NormalizeMostCommonProblemsLimit(arg);
+                mostCommonProblemsLimitSpecified = true;
+                pendingOption = string.Empty;
+                continue;
+            }
+
             if (arg.StartsWith("--output=", StringComparison.Ordinal))
             {
                 outputFormat = NormalizeOutputFormat(arg["--output=".Length..]);
@@ -91,6 +103,13 @@ internal static class Program
             if (arg.StartsWith("--message=", StringComparison.Ordinal))
             {
                 messageFilter = NormalizeFilterValue(arg["--message=".Length..], "--message");
+                continue;
+            }
+
+            if (arg.StartsWith("--most-common-problems-limit=", StringComparison.Ordinal))
+            {
+                mostCommonProblemsLimit = NormalizeMostCommonProblemsLimit(arg["--most-common-problems-limit=".Length..]);
+                mostCommonProblemsLimitSpecified = true;
                 continue;
             }
 
@@ -116,6 +135,12 @@ internal static class Program
             if (string.Equals(arg, "--message", StringComparison.Ordinal))
             {
                 pendingOption = "--message";
+                continue;
+            }
+
+            if (string.Equals(arg, "--most-common-problems-limit", StringComparison.Ordinal))
+            {
+                pendingOption = "--most-common-problems-limit";
                 continue;
             }
 
@@ -187,6 +212,11 @@ internal static class Program
             throw new ArgumentException("--most-common-problem and --most-common-problems cannot be combined.");
         }
 
+        if (mostCommonProblemsLimitSpecified && !mostCommonProblems)
+        {
+            throw new ArgumentException("--most-common-problems-limit requires --most-common-problems.");
+        }
+
         return new ProgramOptions(
             inputs,
             outputFormat,
@@ -195,6 +225,7 @@ internal static class Program
             messageFilter,
             mostCommonProblem,
             mostCommonProblems,
+            mostCommonProblemsLimit,
             highestImpactProblem);
     }
 
@@ -224,8 +255,8 @@ internal static class Program
         {
             "json" when options.HighestImpactProblem => LogReportFormatter.FormatHighestImpactProblemJson(summaries),
             "text" when options.HighestImpactProblem => LogReportFormatter.FormatHighestImpactProblem(summaries),
-            "json" when options.MostCommonProblems => LogReportFormatter.FormatMostCommonProblemsJson(summaries),
-            "text" when options.MostCommonProblems => LogReportFormatter.FormatMostCommonProblems(summaries),
+            "json" when options.MostCommonProblems => LogReportFormatter.FormatMostCommonProblemsJson(summaries, options.MostCommonProblemsLimit),
+            "text" when options.MostCommonProblems => LogReportFormatter.FormatMostCommonProblems(summaries, options.MostCommonProblemsLimit),
             "json" when options.MostCommonProblem => LogReportFormatter.FormatMostCommonProblemJson(summaries),
             "text" when options.MostCommonProblem => LogReportFormatter.FormatMostCommonProblem(summaries),
             "json" when HasActiveFilters(options) => LogReportFormatter.FormatFilteredExceptionsJson(summaries, options.TypeFilter, options.ContextFilter, options.MessageFilter),
@@ -294,6 +325,23 @@ internal static class Program
             : throw new ArgumentException($"Missing value for {optionName}.");
     }
 
+    private static int NormalizeMostCommonProblemsLimit(string value)
+    {
+        var normalized = value.Trim();
+        if (string.IsNullOrEmpty(normalized))
+        {
+            throw new ArgumentException("Missing value for --most-common-problems-limit.");
+        }
+
+        if (!int.TryParse(normalized, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var limit)
+            || limit <= 0)
+        {
+            throw new ArgumentException($"--most-common-problems-limit must be a positive integer, got '{value}'.");
+        }
+
+        return limit;
+    }
+
     private static bool HasActiveFilters(ProgramOptions options)
     {
         return !string.IsNullOrEmpty(options.TypeFilter)
@@ -309,6 +357,7 @@ internal static class Program
         string? MessageFilter,
         bool MostCommonProblem,
         bool MostCommonProblems,
+        int MostCommonProblemsLimit,
         bool HighestImpactProblem);
     internal readonly record struct SummaryInput(string Path, bool IsDirectory);
 }

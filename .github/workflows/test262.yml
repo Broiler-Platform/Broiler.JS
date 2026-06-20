@@ -14,8 +14,9 @@ name: test262
 #     files and runs test262 only for those scopes first.  The full suite
 #     executes only when the incremental job succeeds.
 #   * On completion merges shard logs and uses the LogParser
-#     `--most-common-problems` mode to file a focused GitHub issue for the
-#     three most common failure categories when `ISSUE_TOKEN` is configured.
+#     `--most-common-problems` mode to file a focused GitHub issue listing
+#     up to `most_common_problems_limit` failure categories when
+#     `ISSUE_TOKEN` is configured.
 
 on:
   workflow_dispatch:
@@ -81,6 +82,11 @@ on:
         type: boolean
         required: false
         default: false
+      most_common_problems_limit:
+        description: Maximum number of most-common failure categories to include in the LogParser-generated GitHub issue
+        type: number
+        required: false
+        default: 10
 
 permissions:
   contents: write
@@ -98,6 +104,7 @@ env:
   SHUFFLE_SEED: ${{ inputs.shuffle_seed || '' }}
   INCLUDE_NEGATIVE: ${{ inputs.include_negative || false }}
   PRIORITIZE_FRAGILE: ${{ inputs.prioritize_fragile || false }}
+  MOST_COMMON_PROBLEMS_LIMIT: ${{ inputs.most_common_problems_limit || 10 }}
   ASSEMBLY: ${{ inputs.assembly || 'all' }}
   FAILED_TESTS_FILE: ${{ github.workspace }}/scripts/compliance/test262-failures.txt
 
@@ -895,19 +902,22 @@ jobs:
           issue_body_path="$LOGPARSER_OUTPUT_DIR/issue.md"
           issue_json_path="$LOGPARSER_OUTPUT_DIR/issue.json"
 
-          # --most-common-problems narrows the report to the three most common
-          # type/context/message combinations so the emitted markdown can be
-          # posted directly as a focused GitHub issue body.
+          # --most-common-problems narrows the report to the top
+          # --most-common-problems-limit type/context/message combinations so
+          # the emitted markdown can be posted directly as a focused GitHub
+          # issue body.
           # --no-launch-profile keeps `dotnet run` from emitting the
           # "Using launch settings from ..." banner to stdout, which would
           # otherwise corrupt the redirected markdown/JSON output.
           dotnet run --project logs/LogParser --no-launch-profile -- \
             "$LOGPARSER_LOGS_DIR" \
-            --most-common-problems > "$issue_body_path"
+            --most-common-problems \
+            --most-common-problems-limit "$MOST_COMMON_PROBLEMS_LIMIT" > "$issue_body_path"
 
           dotnet run --project logs/LogParser --no-launch-profile -- \
             "$LOGPARSER_LOGS_DIR" \
             --most-common-problems \
+            --most-common-problems-limit "$MOST_COMMON_PROBLEMS_LIMIT" \
             --output json > "$issue_json_path"
 
           ISSUE_JSON_PATH="$issue_json_path" python <<'PY'
