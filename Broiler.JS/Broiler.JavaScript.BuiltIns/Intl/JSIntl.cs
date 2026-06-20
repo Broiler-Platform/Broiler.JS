@@ -5146,7 +5146,6 @@ public class JSIntlCollator : JSObject
         // Keep only the collation-relevant Unicode keywords (co/kf/kn) in the resolved locale, in
         // canonical form (so e.g. "-kn-true" reduces to "-kn").
         locale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.CollatorRelevantKeys);
-        compareInfo = CultureInfo.CurrentCulture.CompareInfo;
 
         if (TryGetUnicodeExtension(locale, "kn", out var kn))
             numeric = kn == "true";
@@ -5168,6 +5167,65 @@ public class JSIntlCollator : JSObject
         if (TryGetOwnOption(options, "collation", out var collationValue)
             && JSIntl.CanonicalizeCollation(collationValue.StringValue) is { } optCo)
             collation = optCo;
+
+        compareInfo = ResolveCompareInfo(locale, collation);
+    }
+
+    // CompareInfo for the resolved locale, honouring the Unicode-extension collation tailoring
+    // (-u-co-). .NET ships a small set of named collation variants accessible via the BCP-47
+    // CultureInfo path: GetCultureInfo("de-DE-u-co-phonebk").CompareInfo tailors Ä to Ae
+    // (CompareInfo.GetCompareInfo("de-DE_phoneboo") returns a CompareInfo with the same Name
+    // but does NOT actually apply the tailoring — only the full BCP-47 culture-construction
+    // path is wired through to the ICU tailored collator). Falls back to the locale's default
+    // CompareInfo (or the invariant one) when the tailoring isn't recognised.
+    private static CompareInfo ResolveCompareInfo(string localeTag, string collation)
+    {
+        var bareLocale = StripUnicodeExtension(localeTag);
+        if (collation != null && collation != "default" && collation != "standard"
+            && NetCollationSuffix(bareLocale, collation) != null)
+        {
+            try
+            {
+                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-" + collation).CompareInfo;
+            }
+            catch (CultureNotFoundException) { /* fall through */ }
+        }
+        try { return CultureInfo.GetCultureInfo(bareLocale).CompareInfo; }
+        catch (CultureNotFoundException) { return CultureInfo.InvariantCulture.CompareInfo; }
+    }
+
+    // .NET's CompareInfo names map the BCP-47 collation key to a string suffix in a small
+    // (locale-specific) table. Only the variants .NET actually exposes are mapped here.
+    private static string NetCollationSuffix(string bareLocale, string collation)
+    {
+        if (string.IsNullOrEmpty(collation) || collation == "default" || collation == "standard")
+            return null;
+        var lang = bareLocale;
+        var dash = lang.IndexOf('-');
+        if (dash > 0) lang = lang.Substring(0, dash);
+        return (lang.ToLowerInvariant(), collation) switch
+        {
+            ("de", "phonebk") => "phoneboo",
+            ("zh", "pinyin") => "pinyin",
+            ("zh", "stroke") => "stroke",
+            ("zh", "phonetic") or ("zh", "zhuyin") => "pronun",
+            ("zh", "trad") or ("zh", "unihan") => "radstr",
+            ("ja", "unihan") => "radstr",
+            ("ko", "unihan") => "korean",
+            ("hu", "trad") => "techni",
+            _ => null,
+        };
+    }
+
+    private static string StripUnicodeExtension(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return "";
+        var parts = tag.Split('-');
+        for (var i = 0; i < parts.Length; i++)
+            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
+                return string.Join("-", parts, 0, i);
+        return tag;
     }
 
     private JSIntlCollator() : base(CurrentPrototype()) { }

@@ -7200,6 +7200,82 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Collator_Sensitivity_Honors_Resolved_Locale()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var deBase = new Intl.Collator('de-DE', { sensitivity: 'base' });
+            var deCase = new Intl.Collator('de-DE', { sensitivity: 'case' });
+            var deVariant = new Intl.Collator('de-DE', { sensitivity: 'variant' });
+            [
+              // base: ignore case AND accents, so a == A == ä.
+              deBase.compare('a', 'A') === 0,
+              deBase.compare('a', 'ä') === 0,
+              // case: ignore accents but keep case, so a != A, a == ä is FALSE
+              //       (a == A only when both casing AND accents are ignored).
+              deCase.compare('a', 'A') !== 0,
+              deCase.compare('a', 'ä') === 0,
+              // variant: everything distinguishes.
+              deVariant.compare('a', 'A') !== 0,
+              deVariant.compare('a', 'ä') !== 0
+            ].join('|');
+            """);
+
+        Assert.Equal("true|true|true|true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void ToLocaleUpperCase_Lithuanian_Returns_Plain_I_For_Lowercase_I()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              'i'.toLocaleUpperCase('lt'),
+              'i'.toLocaleUpperCase('lt-LT'),
+              'i'.toLocaleUpperCase(['lt']),
+              // Per Unicode SpecialCasing.txt Lithuanian uppercase: plain "i" → "I"
+              // (no implicit dot above), unlike Turkish which adds U+0307.
+              'i'.toLocaleUpperCase('tr')
+            ].map(s => s.length + ':' + s).join('|');
+            """);
+
+        // Lithuanian (lt / lt-LT) uppercases "i" to plain "I" (length 1); Turkish (tr)
+        // uppercases to "İ" (U+0130, length 1) — the legacy precomposed dotted I.
+        Assert.Equal("1:I|1:I|1:I|1:İ", result.ToString());
+    }
+
+    [Fact]
+    public void Collator_Uses_Resolved_Locale_And_Honors_German_Phonebook_Collation()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var standard = new Intl.Collator('de-DE');
+            var phonebk = new Intl.Collator('de-DE-u-co-phonebk');
+            [
+              // Standard German collation treats Ä as A + diacritic, so Ä < Ad < Ae < Af.
+              Math.sign(standard.compare('Ä', 'Ad')),
+              Math.sign(standard.compare('Ä', 'Ae')),
+              // Phonebook collation treats Ä as Ae, so Ad < Ä = Ae < Af.
+              Math.sign(phonebk.compare('Ä', 'Ad')),
+              Math.sign(phonebk.compare('Ä', 'Ae')),
+              Math.sign(phonebk.compare('Ä', 'Af'))
+            ].join('|');
+            """);
+
+        // .NET's de-DE phonebook (ICU `de-DE_phoneboo` tailoring) sorts Ä between Ae
+        // and Af: Ä > Ad (+1), Ä > Ae (+1, tertiary distinction), Ä < Af (-1) —
+        // distinct from the standard order (Ä < Ad < Ae < Af) that ignored the
+        // tailoring before the constructor honoured the resolved locale.
+        Assert.Equal("-1|-1|1|1|-1", result.ToString());
+    }
+
+    [Fact]
     public void NumberFormat_ResolvedOptions_Do_Not_Leak_Digit_Options_From_Object_Prototype()
     {
         EnsureBuiltInsLoaded();
