@@ -721,7 +721,20 @@ partial class FastCompiler
 
                             case FastNodeType.SpreadElement:
                                 var spe = element as AstSpreadElement;
-                                CreateAssignment(arrayInits, spe.Argument, JSArrayBuilder.NewFromElementEnumerator(destExp), createVariable, newScope,
+                                // Per IteratorBindingInitialization for BindingRestElement
+                                // (and the analogous AssignmentRestElement runtime semantics),
+                                // the rest array is only filled while iteratorRecord.[[Done]]
+                                // is false. If a preceding element already exhausted the
+                                // iterator, the rest is the empty array and next() must NOT
+                                // be called again (test262 destructuring-array-done covers
+                                // exactly that observable).
+                                CreateAssignment(arrayInits, spe.Argument,
+                                    YExpression.Condition(
+                                        iterDoneVar,
+                                        JSArrayBuilder.New(),
+                                        JSArrayBuilder.NewFromElementEnumerator(destExp),
+                                        typeof(JSValue)),
+                                    createVariable, newScope,
                                     suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
                                 arrayInits.Add(YExpression.Assign(iterDoneVar, YExpression.Constant(true)));
                                 break;

@@ -1645,11 +1645,19 @@ internal static class BuiltInsAssemblyInitializer
                     replacement = GetSubstitution(matched, input, position, captures, normalizedNamedCaptures, replacementText);
                 }
 
-                if (position > nextSourcePosition)
-                    accumulatedResult.Append(input.AsSpan(nextSourcePosition, position - nextSourcePosition));
+                // §22.2.6.11 step 16.p: only accumulate the replacement when position has
+                // not moved backwards. An ill-behaving subclass whose exec returns a result
+                // with index < nextSourcePosition (e.g. the test262 g-pos-decrement case)
+                // must skip both the gap and the substitution — and must NOT rewind
+                // nextSourcePosition — so the previously emitted suffix stays intact.
+                if (position >= nextSourcePosition)
+                {
+                    if (position > nextSourcePosition)
+                        accumulatedResult.Append(input.AsSpan(nextSourcePosition, position - nextSourcePosition));
 
-                accumulatedResult.Append(replacement);
-                nextSourcePosition = Math.Min(position + matched.Length, input.Length);
+                    accumulatedResult.Append(replacement);
+                    nextSourcePosition = Math.Min(position + matched.Length, input.Length);
+                }
             }
 
             if (nextSourcePosition < input.Length)
