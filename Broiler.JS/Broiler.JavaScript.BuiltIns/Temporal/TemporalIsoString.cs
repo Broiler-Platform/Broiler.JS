@@ -54,16 +54,25 @@ internal static class TemporalIsoString
     // Trailing [..] annotations (a time-zone annotation and/or one or more key=value annotations).
     internal const string AnnotationsTail = @"(?:\[[^\]]*\])*";
 
+    // Group 1 captures the critical flag ("!") when present, so a calendar annotation can be
+    // classified as critical or not.
     private static readonly Regex CalendarAnnotationPattern =
-        new(@"\[!?u-ca=[^\]]+\]", RegexOptions.CultureInvariant);
+        new(@"\[(!?)u-ca=[^\]]+\]", RegexOptions.CultureInvariant);
 
-    // A Temporal / RFC 9557 string may carry at most one calendar (u-ca) annotation; two or
-    // more — regardless of whether any is flagged critical ("!"), and even when identical
-    // (e.g. "[u-ca=iso8601][u-ca=iso8601]") — is a RangeError (ParseISODateTime).
+    // A Temporal / RFC 9557 string may carry more than one calendar (u-ca) annotation only when
+    // none of them is flagged critical ("!"); the first wins and the rest are ignored
+    // (e.g. "[u-ca=iso8601][u-ca=discord]" parses as iso8601). Two or more calendar annotations
+    // where any is critical — "[u-ca=iso8601][!u-ca=iso8601]" — is a RangeError (ParseISODateTime).
     internal static void RejectMultipleCalendarAnnotations(string text)
     {
-        if (CalendarAnnotationPattern.Matches(text).Count > 1)
-            throw JSEngine.NewRangeError($"Temporal: more than one calendar annotation in \"{text}\"");
+        var matches = CalendarAnnotationPattern.Matches(text);
+        if (matches.Count <= 1) return;
+
+        foreach (Match m in matches)
+        {
+            if (m.Groups[1].Value.Length > 0) // a critical ("!") calendar annotation among several
+                throw JSEngine.NewRangeError($"Temporal: more than one calendar annotation in \"{text}\"");
+        }
     }
 
     // Each trailing [..] annotation is either a TimeZoneIdentifier (no '=') or a key=value

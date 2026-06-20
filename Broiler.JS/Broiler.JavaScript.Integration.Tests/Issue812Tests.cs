@@ -249,8 +249,9 @@ public class Issue812Tests
     // ForBinding is valid at the head of a for-of loop (a lexical binding disposed at the
     // end of each iteration). The for-head parser did not recognise it, rejecting
     // `for (using x of …)` with "Unexpected token Identifier". `using`/`await using` is
-    // only a declaration when followed by a BindingIdentifier and the `of` keyword; it is
-    // disallowed (a SyntaxError) in a plain for or for-in head, and `for (using of x)`
+    // a declaration when followed by a BindingIdentifier — a for-of ForBinding (`for (using x of
+    // …)`) or a C-style LexicalDeclaration (`for (using x = …; …; …)`, disposed when the loop scope
+    // is torn down). It remains disallowed (a SyntaxError) in a for-in head, and `for (using of x)`
     // keeps `using` as the loop target.
 
     [Fact]
@@ -268,9 +269,12 @@ public class Issue812Tests
     public void ForOfUsing_OfAsLoopTarget()
         => Assert.Equal("3", Eval("var using; for (using of [1, 2, 3]) {} '' + using"));
 
+    // A `using` LexicalDeclaration is valid in a C-style for head; its resource is disposed when
+    // the loop's lexical environment is torn down.
     [Fact]
-    public void ForUsing_PlainForHeadIsSyntaxError()
-        => Assert.Equal("SyntaxError", ErrorName("eval('for (using x = {}; false; ) {}')"));
+    public void ForUsing_PlainForHeadDisposesResource()
+        => Assert.Equal("d", Eval(
+            "var log=[]; for (using x = {[Symbol.dispose](){log.push('d')}}; false; ) {} log.join(',')"));
 
     [Fact]
     public void ForUsing_ForInHeadIsSyntaxError()

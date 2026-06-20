@@ -86,8 +86,22 @@ public class Issue814UsingSyntaxEdgeCaseTests
     // ---- still-correct rejections ----
 
     [Theory]
-    [InlineData("for (using x in {}) {}")]          // using not allowed in for-in
-    [InlineData("for (using x = null; false;) {}")] // using not allowed in C-style for head
-    public void UsingInDisallowedForHeadIsSyntaxError(string code)
+    [InlineData("for (using x in {}) {}")]       // using is not a valid for-in ForDeclaration
+    [InlineData("for (await using x in {}) {}")] // await using is likewise not a for-in head
+    public void UsingInForInHeadIsSyntaxError(string code)
         => Assert.Equal("SyntaxError", ParseResult(code));
+
+    // A `using` / `await using` LexicalDeclaration IS valid in a C-style for head: its resources
+    // are disposed when the loop's lexical environment is torn down.
+    [Fact]
+    public void UsingInCStyleForHeadDisposesResource()
+        => Assert.Equal("d", Eval(
+            "(function () { var log = []; "
+            + "for (using x = { [Symbol.dispose]() { log.push('d'); } }; false;) {} "
+            + "return log.join(','); })()"));
+
+    [Fact]
+    public void UsingInCStyleForHeadWithOfBindingName()
+        => Assert.Equal("ok", Eval(
+            "(function () { for (using of = null; false;) {} return 'ok'; })()"));
 }
