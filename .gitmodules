@@ -1,6 +1,8 @@
 [submodule "Broiler.Unicode"]
 	path = Broiler.Unicode
 	url = https://github.com/MaiRat/Broiler.Unicode.git
+	branch = main
 [submodule "Broiler.DateTime"]
 	path = Broiler.DateTime
 	url = https://github.com/MaiRat/Broiler.DateTime.git
+	branch = main
