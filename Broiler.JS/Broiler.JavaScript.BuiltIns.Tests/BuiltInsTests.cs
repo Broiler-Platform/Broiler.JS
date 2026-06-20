@@ -7098,6 +7098,29 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Uint8Array_ToBase64_Honors_OmitPadding_Option()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext(JavaScriptFeatureFlags.Uint8ArrayBase64);
+
+        var result = ctx.Eval("""
+            [
+              new Uint8Array([0xc7, 0xef, 0x3c]).toBase64(),
+              new Uint8Array([0xc7, 0xef, 0x3c]).toBase64({ omitPadding: false }),
+              new Uint8Array([0xc7, 0xef, 0x3c]).toBase64({ omitPadding: true }),
+              new Uint8Array([0xc7, 0xef]).toBase64({ omitPadding: true }),
+              new Uint8Array([0xc7, 0xef]).toBase64({ omitPadding: false }),
+              new Uint8Array([0xc7, 0xef, 0x3c]).toBase64({ alphabet: 'base64url' }),
+              new Uint8Array([0xc7, 0xef, 0x3c]).toBase64({ alphabet: 'base64url', omitPadding: true }),
+              new Uint8Array([0xc7, 0xef]).toBase64({ alphabet: 'base64url' }),
+              new Uint8Array([0xc7, 0xef]).toBase64({ alphabet: 'base64url', omitPadding: true })
+            ].join('|');
+            """);
+
+        Assert.Equal("x+88|x+88|x+88|x+8|x+8=|x-88|x-88|x-8=|x-8", result.ToString());
+    }
+
+    [Fact]
     public void GlobalThis_Resolves_To_The_Current_Global_Object()
     {
         EnsureBuiltInsLoaded();
