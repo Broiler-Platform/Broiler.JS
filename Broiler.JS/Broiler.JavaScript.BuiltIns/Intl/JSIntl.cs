@@ -1140,11 +1140,127 @@ public static class JSIntl
             throw JSEngine.NewRangeError("Invalid language tag");
 
         // CanonicalizeUnicodeLocaleId: a regular grandfathered tag is replaced
-        // wholesale by its preferred form (e.g. "art-lojban" -> "jbo").
+        // wholesale by its preferred form (e.g. "art-lojban" -> "jbo"). Each entry's
+        // key is a two-subtag tag (language + extlang/variant), and the substitution
+        // applies even when more subtags follow ("art-lojban-fonipa" -> "jbo-fonipa")
+        // since the grandfathered prefix is what carries the deprecation.
         if (RegularGrandfatheredMappings.TryGetValue(tag, out var preferred))
             return preferred;
 
-        return CanonicalizeUnicodeKeywordValues(CanonicalizeLanguageTagCase(tag));
+        var secondDash = tag.IndexOf('-');
+        if (secondDash > 0)
+        {
+            var thirdDash = tag.IndexOf('-', secondDash + 1);
+            if (thirdDash > 0)
+            {
+                var prefix = tag.Substring(0, thirdDash);
+                if (RegularGrandfatheredMappings.TryGetValue(prefix, out var prefixPreferred))
+                    return CanonicalizeUnicodeKeywordValues(ApplySubtagAliases(
+                        CanonicalizeLanguageTagCase(prefixPreferred + tag.Substring(thirdDash))));
+            }
+        }
+
+        return CanonicalizeUnicodeKeywordValues(ApplySubtagAliases(CanonicalizeLanguageTagCase(tag)));
+    }
+
+    // Bcp47 language subtag aliases (CLDR supplemental languageAlias, reason="deprecated").
+    // The lowercase deprecated tag maps to its single preferred language subtag — these are
+    // strict in/out replacements (no script/region adjustments).
+    private static readonly Dictionary<string, string> SimpleLanguageAliases = new(StringComparer.Ordinal)
+    {
+        ["cmn"] = "zh",
+        ["drw"] = "fa-AF",
+        ["in"] = "id",
+        ["iw"] = "he",
+        ["ji"] = "yi",
+        ["jw"] = "jv",
+        ["mo"] = "ro",
+        ["tw"] = "ak",
+    };
+
+    // CLDR supplemental languageAlias entries that, after replacing the language subtag,
+    // also fill in a default script subtag — but only when no script is already present
+    // (e.g. "sh" -> "sr-Latn", but "sh-Cyrl" -> "sr-Cyrl").
+    private static readonly Dictionary<string, (string Language, string DefaultScript)> ComplexLanguageAliases =
+        new(StringComparer.Ordinal)
+    {
+        ["sh"] = ("sr", "Latn"),
+    };
+
+    // Bcp47 region subtag aliases (CLDR supplemental territoryAlias) whose deprecated code
+    // maps to a single preferred region. "Overlong" aliases whose replacement is a list (e.g.
+    // "SU" → "RU AM AZ ..." that selects by likely-subtags) use the first list entry as the
+    // default; script-conditional choices are not yet applied.
+    private static readonly Dictionary<string, string> SimpleRegionAliases = new(StringComparer.Ordinal)
+    {
+        ["BU"] = "MM",
+        ["CS"] = "RS",
+        ["DD"] = "DE",
+        ["DY"] = "BJ",
+        ["FX"] = "FR",
+        ["HV"] = "BF",
+        ["NH"] = "VU",
+        ["RH"] = "ZW",
+        ["SU"] = "RU",
+        ["TP"] = "TL",
+        ["UK"] = "GB",
+        ["VD"] = "VN",
+        ["YD"] = "YE",
+        ["YU"] = "RS",
+        ["ZR"] = "CD",
+    };
+
+    // CanonicalizeUnicodeLocaleId §3.6.4 LanguageAlias and TerritoryAlias substitutions over an
+    // already case-folded tag. Walks the prefix (language, optional script, optional region)
+    // and replaces deprecated subtags with their CLDR-preferred form; everything beyond the
+    // region (variants, extensions, private-use) is preserved verbatim.
+    private static string ApplySubtagAliases(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return tag;
+
+        var subtags = tag.Split('-');
+        if (subtags.Length == 0)
+            return tag;
+
+        // Language subtag: a complex alias replaces the language AND inserts a default script
+        // (only when no script is already present); a simple alias just substitutes.
+        var language = subtags[0];
+        var hasScript = subtags.Length >= 2 && subtags[1].Length == 4 && IsAllAlpha(subtags[1]);
+
+        if (ComplexLanguageAliases.TryGetValue(language, out var complex))
+        {
+            subtags[0] = complex.Language;
+            if (!hasScript)
+            {
+                // Splice the default script in between the (new) language and the rest.
+                var widened = new string[subtags.Length + 1];
+                widened[0] = subtags[0];
+                widened[1] = complex.DefaultScript;
+                for (var i = 1; i < subtags.Length; i++)
+                    widened[i + 1] = subtags[i];
+                subtags = widened;
+                hasScript = true;
+            }
+        }
+        else if (SimpleLanguageAliases.TryGetValue(language, out var simple))
+        {
+            subtags[0] = simple;
+        }
+
+        // Region subtag: lives at index 1 (no script) or 2 (after a script). Both 2-letter
+        // alphabetic and 3-digit numeric regions can be aliases, though our current table
+        // only covers the alphabetic ones.
+        var regionIndex = hasScript ? 2 : 1;
+        if (regionIndex < subtags.Length)
+        {
+            var region = subtags[regionIndex];
+            var isAlphaRegion = region.Length == 2 && IsAllAlpha(region);
+            if (isAlphaRegion && SimpleRegionAliases.TryGetValue(region, out var aliased))
+                subtags[regionIndex] = aliased;
+        }
+
+        return string.Join("-", subtags);
     }
 
     // CanonicalizeUnicodeLocaleId case folding (UTS #35 §3.2.1): the language

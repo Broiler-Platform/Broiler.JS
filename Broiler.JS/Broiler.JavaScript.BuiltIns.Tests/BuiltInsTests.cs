@@ -7121,6 +7121,67 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void GetCanonicalLocales_Applies_CLDR_Subtag_Aliases()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('cmn')[0],
+              Intl.getCanonicalLocales('iw')[0],
+              Intl.getCanonicalLocales('ru-SU')[0],
+              Intl.getCanonicalLocales('en-UK')[0],
+              Intl.getCanonicalLocales('sh')[0],
+              Intl.getCanonicalLocales('sh-Cyrl')[0],
+              Intl.getCanonicalLocales('sh-Cyrl-RS')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("zh|he|ru-RU|en-GB|sr-Latn|sr-Cyrl|sr-Cyrl-RS", result.ToString());
+    }
+
+    [Fact]
+    public void Class_Static_Field_And_Block_Initializers_Run_In_Source_Order()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var trace = [];
+            function record(name) { trace.push(name); return name; }
+            class C {
+              static a = record('first field');
+              static { record('first block'); }
+              static b = record('second field');
+              static { record('second block'); }
+              static c = record('third field');
+            }
+            trace.join('|');
+            """);
+
+        Assert.Equal("first field|first block|second field|second block|third field", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Applies_Grandfathered_Tags_With_Variant_Suffix()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('art-lojban')[0],
+              Intl.getCanonicalLocales('art-lojban-fonipa')[0],
+              Intl.getCanonicalLocales('cel-gaulish-fonipa')[0],
+              Intl.getCanonicalLocales('zh-guoyu-fonipa')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("jbo|jbo-fonipa|xtg-fonipa|zh-fonipa", result.ToString());
+    }
+
+    [Fact]
     public void PlainMonthDay_Throws_RangeError_For_Infinite_EraYear()
     {
         EnsureBuiltInsLoaded();
