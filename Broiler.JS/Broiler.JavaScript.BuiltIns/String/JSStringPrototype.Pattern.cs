@@ -249,19 +249,30 @@ public partial class JSString
             }
         }
 
-        // Limit defaults to unlimited.  Note the ToUint32() conversion.
+        // Limit defaults to unlimited. Note the ToUint32() conversion.
+        // Spec order (§22.1.3.21): ToUint32(limit) is step 6, ToString(separator)
+        // is step 7, and the lim==0 short-circuit is step 8 — so a side-effecting
+        // separator.toString() must still run when the result is the empty array.
         var limitMax = uint.MaxValue;
 
         if (!limit.IsUndefined)
             limitMax = limit.UIntValue;
 
         if (_separator is JSRegExp jSRegExp)
+        {
+            if (limitMax == 0)
+                return JSValue.CreateArray();
             return jSRegExp.Split(@this, limitMax);
+        }
 
-        // Per spec (22.1.3.23): a zero limit yields an empty array, and an
-        // undefined separator yields a single-element array containing the
-        // whole string (it must NOT be coerced to "undefined" and used as a
-        // delimiter).
+        // Coerce the string-separator BEFORE the lim==0 / undefined shortcuts. A
+        // truly undefined separator skips this step (spec step 9 takes over and
+        // never inspects R), so we keep its single-element-array fastpath; any
+        // other separator must be ToString'd here.
+        string separator = null;
+        if (!_separator.IsUndefined)
+            separator = _separator.StringValue;
+
         if (limitMax == 0)
             return JSValue.CreateArray();
 
@@ -272,7 +283,6 @@ public partial class JSString
             return single;
         }
 
-        var separator = _separator.StringValue;
         var result = JSValue.CreateArray();
         if (string.IsNullOrEmpty(separator))
         {

@@ -45,6 +45,10 @@ internal sealed class JSRegExpStringIterator : JSObject
         var prototype = new JSObject { BasePrototypeObject = iteratorPrototype };
         prototype.FastAddValue(KeyStrings.next, JSValue.CreateFunction(Next, "next", null, 0, false), JSPropertyAttributes.ConfigurableValue);
         prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, JSValue.CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false), JSPropertyAttributes.ConfigurableValue);
+        // §22.2.9.3 %RegExpStringIteratorPrototype% [ @@toStringTag ] = "RegExp String Iterator",
+        // { [[Writable]]: false, [[Enumerable]]: false, [[Configurable]]: true }. Without it the
+        // tag inherits "Iterator" from %IteratorPrototype% (the new ES2025 accessor).
+        prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("RegExp String Iterator"), JSPropertyAttributes.ConfigurableReadonlyValue);
         return prototype;
     }
 

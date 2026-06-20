@@ -499,7 +499,15 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             or "Float32Array"
             or "Float64Array"
             or "BigInt64Array"
-            or "BigUint64Array";
+            or "BigUint64Array"
+            // RegExp captures pattern.[[OriginalSource]] / [[OriginalFlags]] (§22.2.4
+            // step 5) BEFORE RegExpAlloc reads NewTarget.prototype (step 8). Resolving
+            // the prototype here fires the user prototype getter first, letting an
+            // ill-behaving subclass observe — or, via re.compile, mutate — the source
+            // before it is captured (test262 sm/RegExp/constructor-ordering). Deferring
+            // makes the JSRegExp ctor responsible for reading NewTarget.prototype after
+            // its source capture, which is the spec-compliant order.
+            or "RegExp";
         var instancePrototype = !deferInstancePrototypeResolution && previousNewTarget != null
             ? ResolveInstancePrototype(previousNewTarget)
             : prototype;

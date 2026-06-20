@@ -633,8 +633,14 @@ public class FastScanner
             case '\n':
                 return true;
 
+            // §11.8.4 LineContinuation eats `\` followed by a LineTerminatorSequence
+            // (LF, CR, LS, PS, or CRLF). Consume() here is "advance past current, return
+            // new current", and CanConsumeNext already advanced past `\r` when the next
+            // char was `\n`. The previous code then did an extra Consume(), which also
+            // advanced past `\n` AND popped the next visible character ("b" in `"a\\\r\nb"`),
+            // so the loop returned the closing quote and produced "a" instead of "ab".
             case '\r':
-                if (CanConsumeNext('\n'))
+                if (Next() == '\n')
                     Consume();
                 return true;
 

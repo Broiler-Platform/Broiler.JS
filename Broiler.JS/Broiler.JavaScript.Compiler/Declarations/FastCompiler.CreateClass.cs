@@ -618,7 +618,14 @@ partial class FastCompiler
             }
         }
 
-        var _new = JSClassBuilder.New(null, superVar, className);
+        // Function.prototype.toString must report the class's original source text
+        // (NativeFunction is reserved for builtins). Without this the JSFunction base
+        // falls back to "function native() { [native code] }" — failing tests such as
+        // `(class {}).toString() === "class {}"`. AstNode.Code spans the `class`
+        // keyword through the closing `}`, so parentheses around the expression are
+        // already excluded.
+        var classSource = body.Code.Value ?? string.Empty;
+        var _new = JSClassBuilder.New(null, superVar, className, classSource);
 
         if (prototypeElements.Any())
             staticElements.Add(new YMemberElementInit(JSFunctionBuilder._prototype, prototypeElements));

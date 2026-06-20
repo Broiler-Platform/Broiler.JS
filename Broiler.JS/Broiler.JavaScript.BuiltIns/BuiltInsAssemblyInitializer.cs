@@ -1601,10 +1601,15 @@ internal static class BuiltInsAssemblyInitializer
             var nextSourcePosition = 0;
             foreach (var result in results)
             {
+                // §22.2.6.11 step 16 evaluates the result properties in this exact order:
+                // LengthOfArrayLike ("length") → Get "0" → Get "index" → captures loop
+                // ("1" through "nCaptures") → Get "groups". The original implementation
+                // read "0" before "length" AND read "groups" before the captures loop —
+                // both observable through a Proxy result and breaking test262
+                // sm/RegExp/replace-trace.
+                var capturesLength = Math.Max((int)result[KeyStrings.length].DoubleValue, 0);
                 var matched = result[0].ToString();
                 var position = (int)result[KeyStrings.index].DoubleValue;
-                var capturesLength = Math.Max((int)result[KeyStrings.length].DoubleValue, 0);
-                var namedCaptures = result[KeyStrings.GetOrCreate("groups")];
 
                 List<JSValue> captures = [];
                 for (var i = 1; i < capturesLength; i++)
@@ -1612,6 +1617,8 @@ internal static class BuiltInsAssemblyInitializer
                     var capture = result[(uint)i];
                     captures.Add(capture.IsUndefined ? JSUndefined.Value : JSValue.CreateString(capture.ToString()));
                 }
+
+                var namedCaptures = result[KeyStrings.GetOrCreate("groups")];
 
                 string replacement;
                 if (functionalReplace)
@@ -1645,11 +1652,19 @@ internal static class BuiltInsAssemblyInitializer
                     replacement = GetSubstitution(matched, input, position, captures, normalizedNamedCaptures, replacementText);
                 }
 
-                if (position > nextSourcePosition)
-                    accumulatedResult.Append(input.AsSpan(nextSourcePosition, position - nextSourcePosition));
+                // §22.2.6.11 step 16.p: only accumulate the replacement when position has
+                // not moved backwards. An ill-behaving subclass whose exec returns a result
+                // with index < nextSourcePosition (e.g. the test262 g-pos-decrement case)
+                // must skip both the gap and the substitution — and must NOT rewind
+                // nextSourcePosition — so the previously emitted suffix stays intact.
+                if (position >= nextSourcePosition)
+                {
+                    if (position > nextSourcePosition)
+                        accumulatedResult.Append(input.AsSpan(nextSourcePosition, position - nextSourcePosition));
 
-                accumulatedResult.Append(replacement);
-                nextSourcePosition = Math.Min(position + matched.Length, input.Length);
+                    accumulatedResult.Append(replacement);
+                    nextSourcePosition = Math.Min(position + matched.Length, input.Length);
+                }
             }
 
             if (nextSourcePosition < input.Length)

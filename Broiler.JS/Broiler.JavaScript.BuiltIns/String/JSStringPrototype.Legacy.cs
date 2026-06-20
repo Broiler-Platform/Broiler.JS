@@ -18,7 +18,15 @@ public partial class JSString
         var sb = new StringBuilder();
         sb.Append('<').Append(tagName);
         if (attributeName != null)
-            sb.Append(' ').Append(attributeName).Append("=\"").Append(a.Get1().StringValue).Append('"');
+        {
+            // Annex B.2.2.1 CreateHTML step 4.b: replace every U+0022 (`"`) in the
+            // attribute value with the six-code-unit sequence "&quot;". Without this
+            // escape `'_'.anchor('\x22')` produced `<a name="""_</a>` (test262
+            // annexB/built-ins/String/prototype/{anchor,link,fontcolor,fontsize}/*).
+            sb.Append(' ').Append(attributeName).Append("=\"")
+              .Append(a.Get1().StringValue.Replace("\"", "&quot;"))
+              .Append('"');
+        }
         sb.Append('>').Append(value).Append("</").Append(tagName).Append('>');
         return JSValue.CreateString(sb.ToString());
     }

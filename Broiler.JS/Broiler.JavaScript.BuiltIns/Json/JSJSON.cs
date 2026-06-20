@@ -568,12 +568,23 @@ public partial class JSJSON : JSObject
         IndentedTextWriter indent,
         HashSet<JSObject> stack)
     {
-        // SerializeJSONProperty step 4 (a–d): a Number/String/Boolean/BigInt wrapper
-        // object is unwrapped to its primitive before serialization. In particular a
-        // BigInt wrapper (Object(1n)) unwraps to a BigInt, which step 10 then rejects
-        // with a TypeError rather than serializing as an empty object.
+        // SerializeJSONProperty step 6: a Number/String/Boolean/BigInt wrapper object is
+        // unwrapped to its primitive before serialization. Boolean and BigInt wrappers use
+        // the internal slot directly (steps 6.c/6.d), but Number and String wrappers run
+        // ToNumber / ToString — both of which start at ToPrimitive and so MUST observe any
+        // user-redefined valueOf / toString on the prototype chain (test262
+        // sm/JSON/stringify-boxed-primitives). A BigInt wrapper still surfaces as a
+        // bare BigInt, which step 10 then rejects with a TypeError.
         if (target is JSPrimitiveObject wrapper)
-            target = wrapper.value;
+        {
+            var wrapped = wrapper.value;
+            if (wrapped is JSNumber)
+                target = CoerceJsonWrapperToPrimitive(wrapper, preferString: false);
+            else if (wrapped.IsString)
+                target = CoerceJsonWrapperToPrimitive(wrapper, preferString: true);
+            else
+                target = wrapped;
+        }
 
         if (target == null || target.IsNullOrUndefined)
         {
@@ -771,6 +782,50 @@ public partial class JSJSON : JSObject
         return value;
     }
 
+
+    // Spec ToPrimitive on a Number / String wrapper, used by SerializeJSONProperty step 6.
+    // @@toPrimitive (none on the built-in wrappers, but a subclass or proxy may add one) is
+    // tried first; then valueOf / toString are looked up through the prototype chain so a
+    // user-redefined Number.prototype.valueOf is observed. JSPrimitiveObject's own
+    // ValueOf / ToString shortcut to the internal slot for performance, so the wrapper-to-
+    // primitive coercion here cannot delegate to them.
+    private static JSValue CoerceJsonWrapperToPrimitive(JSPrimitiveObject wrapper, bool preferString)
+    {
+        var toPrimitive = wrapper[(IJSSymbol)JSSymbol.toPrimitive];
+        if (!toPrimitive.IsNullOrUndefined)
+        {
+            if (!toPrimitive.IsFunction)
+                throw JSEngine.NewTypeError("@@toPrimitive is not callable");
+
+            var hint = JSValue.CreateString(preferString ? "string" : "number");
+            var primitive = toPrimitive.InvokeFunction(new Arguments(wrapper, hint));
+            if (primitive.IsObject)
+                throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+
+            return primitive;
+        }
+
+        var firstKey = preferString ? KeyStrings.toString : KeyStrings.valueOf;
+        var secondKey = preferString ? KeyStrings.valueOf : KeyStrings.toString;
+
+        var first = wrapper[firstKey];
+        if (first.IsFunction)
+        {
+            var primitive = first.InvokeFunction(new Arguments(wrapper));
+            if (!primitive.IsObject)
+                return primitive;
+        }
+
+        var second = wrapper[secondKey];
+        if (second.IsFunction)
+        {
+            var primitive = second.InvokeFunction(new Arguments(wrapper));
+            if (!primitive.IsObject)
+                return primitive;
+        }
+
+        throw JSEngine.NewTypeError("Cannot convert object to primitive value");
+    }
 
     /// <summary>
     /// Adds double quote characters to the start and end of the given string and converts any
