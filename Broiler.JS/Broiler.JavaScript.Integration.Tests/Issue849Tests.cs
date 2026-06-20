@@ -302,4 +302,105 @@ public class Issue849Tests
         // get:0 from gather-loop probe (step 14.f.i), then accumulation reads in spec order.
         Assert.Equal("get:0,get:length,get:0,get:index,get:groups", Eval(code).ToString());
     }
+
+    // Problem 80 (sm/expressions/string-literal-escape-sequences): a backslash
+    // followed by a CRLF line-terminator sequence is a single LineContinuation
+    // (§11.8.4), but the old `case '\r'` consumed `\r`, called CanConsumeNext('\n')
+    // (which already advanced past the `\r`), and then ALSO did an explicit
+    // Consume() — gobbling the `\n` AND the next visible character. The string
+    // literal `"a\<CR><LF>b"` therefore produced "a" because the loop returned the
+    // closing quote next. Each line-terminator variant must yield "ab".
+    [Theory]
+    [InlineData("\"a\\\rb\"", "ab")]
+    [InlineData("\"a\\\nb\"", "ab")]
+    [InlineData("\"a\\\r\nb\"", "ab")]
+    public void LineContinuationEatsExactlyTheLineTerminator(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Same behaviour for U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR.
+    [Fact]
+    public void LineContinuationEatsLineAndParagraphSeparators()
+    {
+        var ls = "\"a\\\u2028b\"";
+        var ps = "\"a\\\u2029b\"";
+        Assert.Equal("ab", Eval(ls).ToString());
+        Assert.Equal("ab", Eval(ps).ToString());
+    }
+
+    // Regular escape sequences are unaffected.
+    [Theory]
+    [InlineData("\"a\\nb\"", "a\nb")]
+    [InlineData("\"a\\tb\"", "a\tb")]
+    [InlineData("\"a\\\\b\"", "a\\b")]
+    public void OtherStringEscapesUnaffected(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Problem 81 (built-ins/RegExp/named-groups/non-unicode-property-names): a regex
+    // named-group GroupSpecifier may contain \uXXXX / \u{…} escapes whose decoded
+    // code points form the runtime group name. The captureMap stored the raw source
+    // (`_‌`), so `groups[name]` — whose key is the JS-decoded identifier (the
+    // single character "_" + U+200C) — found nothing. RewriteCaptureGroups now runs
+    // DecodeGroupName on every GroupSpecifier AND on every \k<name> backreference.
+    [Theory]
+    [InlineData("/(?<\\u03C0>a)/.exec('bab').groups['\\u03C0']", "a")]
+    [InlineData("/(?<_\\u200C>a)/.exec('bab').groups['_\\u200C']", "a")]
+    [InlineData("/(?<\\u0041>.)/.test('a').toString()", "true")]
+    [InlineData("RegExp('(?<\\\\u{0041}>.)','u').test('a').toString()", "true")]
+    public void RegExpNamedGroupNameDecodesUnicodeEscapes(string code, string expected)
+    {
+        Assert.Equal(expected, Eval(code).ToString());
+    }
+
+    // Backreferences resolve through the same decoded-name path.
+    [Fact]
+    public void RegExpNamedGroupBackrefDecodesUnicodeEscape()
+    {
+        // A = "A": GroupSpecifier uses an escape, \k<A> uses the literal.
+        var code = "var r = new RegExp('(?<\\\\u0041>.).\\\\k<A>');"
+            + "var m = 'aXa'.match(r);"
+            + "m ? m.slice(0,2).join(',') : 'null'";
+        Assert.Equal("aXa,a", Eval(code).ToString());
+    }
+
+    // Problem 89 (sm/lexical-environment/block-scoped-functions-annex-b-generators):
+    // a block-nested generator/async FunctionDeclaration inside a direct eval used to
+    // route through VisitRuntimeFunctionDeclaration, which transparently created a
+    // var-environment binding via GetOrCreateDirectEvalRootVariable. Generators and
+    // async functions are purely block-scoped per Annex B 3.3, so `typeof g` outside
+    // the eval'd block must be "undefined" — they now follow the same implicit-block
+    // path as plain function declarations in eval, with the Annex B var copy-out
+    // suppressed by the existing generator/async guard.
+    [Fact]
+    public void DirectEvalBlockScopedGeneratorIsNotHoisted()
+    {
+        Assert.Equal("undefined",
+            Eval("function f() { eval('{ function* g() {} }'); return typeof g; } f()").ToString());
+    }
+
+    [Fact]
+    public void DirectEvalAtTopLevelBlockScopedGeneratorIsNotHoisted()
+    {
+        Assert.Equal("undefined",
+            Eval("eval('{ function* g() {} }'); typeof g").ToString());
+    }
+
+    [Fact]
+    public void DirectEvalBlockScopedAsyncFunctionIsNotHoisted()
+    {
+        Assert.Equal("undefined",
+            Eval("function f() { eval('{ async function g() {} }'); return typeof g; } f()").ToString());
+    }
+
+    // Plain function declarations in direct eval blocks are still hoisted via Annex
+    // B's web-legacy var binding.
+    [Fact]
+    public void DirectEvalBlockScopedFunctionIsHoistedByAnnexB()
+    {
+        Assert.Equal("function",
+            Eval("function f() { eval('{ function g() {} }'); return typeof g; } f()").ToString());
+    }
 }

@@ -891,7 +891,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // names so .NET's group numbering and duplicate-name handling match
             // ECMAScript. Runs last so the capture layout reflects the user's groups
             // (the earlier transforms only add non-capturing groups / lookarounds).
-            pattern = RewriteCaptureGroups(pattern, out captureMap);
+            pattern = RewriteCaptureGroups(pattern, unicode || unicodeSets, out captureMap);
 
             return (new Regex(pattern, options), globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, normalizedFlags);
         }
@@ -1145,13 +1145,15 @@ public partial class JSRegExp : JSObject, IJSRegExp
     // A \k<name> reference is rewritten to the synthetic name, or — for a
     // duplicated name — to a nested conditional that backreferences whichever of
     // the same-named groups participated in the match.
-    private static string RewriteCaptureGroups(string pattern, out CaptureGroupMap map)
+    private static string RewriteCaptureGroups(string pattern, bool unicode, out CaptureGroupMap map)
     {
         map = null;
         if (string.IsNullOrEmpty(pattern))
             return pattern;
 
-        // Pass 1: enumerate capturing groups in source order.
+        // Pass 1: enumerate capturing groups in source order. Decode \uXXXX / \u{…}
+        // escapes in named-group names BEFORE storing them so groups[name] lookups
+        // (whose keys are JS strings — already-decoded code points) hit the captureMap.
         var originalNames = new List<string> { null };           // [0] = whole match
         var nameToIndices = new Dictionary<string, List<int>>(StringComparer.Ordinal);
         var orderedNames = new List<string>();
@@ -1159,15 +1161,16 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         ScanCaptureGroups(pattern, (index, name) =>
         {
-            originalNames.Add(name);
-            if (name == null)
+            var decodedName = DecodeGroupName(name, unicode);
+            originalNames.Add(decodedName);
+            if (decodedName == null)
                 return;
 
             anyNamed = true;
-            if (!nameToIndices.TryGetValue(name, out var list))
+            if (!nameToIndices.TryGetValue(decodedName, out var list))
             {
-                nameToIndices[name] = list = new List<int>();
-                orderedNames.Add(name);
+                nameToIndices[decodedName] = list = new List<int>();
+                orderedNames.Add(decodedName);
             }
             list.Add(index);
         });
@@ -1191,16 +1194,21 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
             if (c == '\\' && i + 1 < pattern.Length)
             {
-                // Named backreference \k<name> (only meaningful outside a class).
+                // Named backreference \k<name> (only meaningful outside a class). The
+                // referenced name uses the same source encoding as the GroupSpecifier,
+                // so decode \uXXXX / \u{…} before looking it up in the map.
                 if (!inClass && pattern[i + 1] == 'k' && i + 2 < pattern.Length && pattern[i + 2] == '<')
                 {
                     var nameEnd = pattern.IndexOf('>', i + 3);
-                    if (nameEnd > i + 3 &&
-                        nameToIndices.TryGetValue(pattern.Substring(i + 3, nameEnd - (i + 3)), out var refIndices))
+                    if (nameEnd > i + 3)
                     {
-                        sb.Append(BuildNamedBackref(refIndices));
-                        i = nameEnd;
-                        continue;
+                        var refName = DecodeGroupName(pattern.Substring(i + 3, nameEnd - (i + 3)), unicode);
+                        if (refName != null && nameToIndices.TryGetValue(refName, out var refIndices))
+                        {
+                            sb.Append(BuildNamedBackref(refIndices));
+                            i = nameEnd;
+                            continue;
+                        }
                     }
                 }
 
@@ -1653,6 +1661,27 @@ public partial class JSRegExp : JSObject, IJSRegExp
             else codePoints.Add(c);
         }
         return true;
+    }
+
+    // Resolves \uXXXX (and, in u/v mode, \u{…}) escapes inside a regex named-group source
+    // to the runtime string the test code reaches via groups[name]. Without this the
+    // captureMap keys (and \k<name> lookups) used the raw source — so /(?<_‌>a)/'s
+    // group was stored as "_\\u200C" and groups["_‌"] (an identifier resolving to
+    // "_" + U+200C) found nothing (test262 RegExp/named-groups/non-unicode-property-names).
+    // Returns null when decoding fails — the caller falls back to the raw name (which
+    // would have already been rejected by ValidateNamedGroupNames if it were malformed).
+    private static string DecodeGroupName(string rawName, bool unicode)
+    {
+        if (string.IsNullOrEmpty(rawName) || rawName.IndexOf('\\') < 0)
+            return rawName;
+
+        if (!TryDecodeGroupName(rawName, unicode, out var codePoints))
+            return rawName;
+
+        var sb = new StringBuilder(rawName.Length);
+        foreach (var cp in codePoints)
+            sb.Append(char.ConvertFromUtf32(cp));
+        return sb.ToString();
     }
 
     private static bool IsRegExpIdentifierStart(int cp)

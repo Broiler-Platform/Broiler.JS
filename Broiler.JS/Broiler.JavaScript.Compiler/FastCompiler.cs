@@ -369,12 +369,15 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             // block-local) plus the Annex B var copy-out to the eval's var environment, exactly
             // like the B.3.4 if-clause implicit block. Without the isolated binding the function
             // shares the global var binding, so mutating it from the body clobbers the outer one.
-            // Generator/async declarations are purely block-scoped (no Annex B copy) and keep the
-            // plain path.
-            if (!directEvalFunctionDeclaration.Generator && !directEvalFunctionDeclaration.Async)
-                return VisitImplicitBlockFunctionDeclaration(directEvalFunctionDeclaration, directEvalFunctionId.Name);
-
-            return VisitRuntimeFunctionDeclaration(directEvalFunctionDeclaration);
+            // Generator/async declarations are purely block-scoped (no Annex B copy) and route
+            // through the same implicit-block path — VisitImplicitBlockFunctionDeclaration's
+            // AppendAnnexB call is itself gated on the generator/async check, so the var-env
+            // copy-out is omitted while the block binding stays in place. The previous fall
+            // through to VisitRuntimeFunctionDeclaration silently created a root binding in the
+            // eval's var environment (via GetOrCreateDirectEvalRootVariable), letting
+            // `eval("{ function* g(){} }"); typeof g` see "function" instead of "undefined"
+            // (test262 sm/lexical-environment/block-scoped-functions-annex-b-generators).
+            return VisitImplicitBlockFunctionDeclaration(directEvalFunctionDeclaration, directEvalFunctionId.Name);
         }
 
         var visited = Visit(expressionStatement.Expression);
