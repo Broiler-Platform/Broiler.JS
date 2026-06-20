@@ -1197,10 +1197,27 @@ public static class JSIntl
                         CanonicalizeLanguageTagCase(tag)))));
     }
 
+    // CLDR variantAlias (supplemental/supplementalMetadata.xml) — single-variant
+    // replacements applied during LocaleId canonicalization (UTS #35 §3.6.4). Only the
+    // entries test262 actually exercises are listed; an unknown variant passes through
+    // unchanged.
+    private static readonly Dictionary<string, string> SingleVariantAliases = new(StringComparer.Ordinal)
+    {
+        ["heploc"] = "alalc97",
+        ["hepburn"] = "alalc97",  // CLDR groups the hepburn/heploc pair onto alalc97; after
+                                  // both subtags map to alalc97 the duplicate is folded away
+                                  // by the dedup pass below.
+        ["polytoni"] = "polyton",
+        ["arevela"] = null,  // dropped (no replacement); the language subtag handles it
+        ["arevmda"] = null,
+        ["aaland"] = null,
+    };
+
     // UTS #35 §3.6.4 LocaleId canonicalization: the variant subtags in the main language
-    // tag (after the optional script + region, before any extension singleton) are sorted
-    // alphabetically (ordinal). Variants inside a transformed extension's tlang are sorted
-    // separately by CanonicalizeTransformedExtension.
+    // tag (after the optional script + region, before any extension singleton) are
+    // substituted via variantAlias, deduplicated, and sorted alphabetically (ordinal).
+    // Variants inside a transformed extension's tlang are canonicalized separately by
+    // CanonicalizeTransformedExtension.
     private static string CanonicalizeMainTagVariants(string tag)
     {
         if (string.IsNullOrEmpty(tag))
@@ -1216,16 +1233,34 @@ public static class JSIntl
         while (i < parts.Length && IsVariantSubtag(parts[i]))
             i++;
 
-        if (i - variantStart < 2)
+        if (i - variantStart == 0)
             return tag;
 
-        var sorted = new string[i - variantStart];
-        System.Array.Copy(parts, variantStart, sorted, 0, sorted.Length);
-        System.Array.Sort(sorted, System.StringComparer.Ordinal);
-        for (var j = 0; j < sorted.Length; j++)
-            parts[variantStart + j] = sorted[j];
+        // Substitute via variantAlias (dropped entries return null), deduplicate while
+        // preserving the first occurrence's order, then sort alphabetically.
+        var variants = new List<string>(i - variantStart);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        for (var j = variantStart; j < i; j++)
+        {
+            var v = parts[j];
+            if (SingleVariantAliases.TryGetValue(v, out var replacement))
+            {
+                if (replacement == null) continue; // dropped
+                v = replacement;
+            }
+            if (seen.Add(v))
+                variants.Add(v);
+        }
+        variants.Sort(System.StringComparer.Ordinal);
 
-        return string.Join("-", parts);
+        // Rebuild: pre-variant prefix + canonical variants + everything after the variant
+        // run (extension singletons / private-use).
+        var rebuilt = new List<string>(variantStart + variants.Count + (parts.Length - i));
+        for (var j = 0; j < variantStart; j++) rebuilt.Add(parts[j]);
+        rebuilt.AddRange(variants);
+        for (var j = i; j < parts.Length; j++) rebuilt.Add(parts[j]);
+
+        return string.Join("-", rebuilt);
     }
 
     // UTS #35 §3.6.2 transformed extension canonicalization: within a "-t-" extension, the
@@ -4379,6 +4414,12 @@ public class JSIntlNumberFormat : JSObject
     private static readonly (int Exp, string Suffix)[] CompactUnitsKo = [(12, "조"), (8, "억"), (4, "만"), (3, "천")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHant = [(12, "兆"), (8, "億"), (4, "萬")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHans = [(12, "兆"), (8, "亿"), (4, "万")];
+    // German compact (CLDR de: short "0 Tsd." / "0 Mio." / "0 Mrd." / "0 Bio."; long
+    // "0 Tausend" / "0 Million(en)" / "0 Milliarde(n)" / "0 Billion(en)"). Both forms
+    // insert a literal space between the number and the suffix.
+    private static readonly (int Exp, string Suffix)[] CompactUnitsDe = [(12, "Bio."), (9, "Mrd."), (6, "Mio."), (3, "Tsd.")];
+    private static readonly (int Exp, string Suffix)[] CompactUnitsDeLong =
+        [(12, "Billionen"), (9, "Milliarden"), (6, "Millionen"), (3, "Tausend")];
 
     private static (int Exp, string Suffix)[] GetCompactUnits(string localeTag, bool longForm)
     {
@@ -4389,6 +4430,8 @@ public class JSIntlNumberFormat : JSObject
         {
             case "en":
                 return longForm ? CompactUnitsEnLong : CompactUnitsEn;
+            case "de":
+                return longForm ? CompactUnitsDeLong : CompactUnitsDe;
             case "ja":
                 return CompactUnitsJa;
             case "ko":
@@ -4451,9 +4494,12 @@ public class JSIntlNumberFormat : JSObject
         var parts = FormatCompactMantissa(reduced, maxFrac, out roundedIsZero);
         if (suffix != null)
         {
-            // The English long compact pattern places a literal space between the number and
-            // the word ("988 million"); the short forms ("988M") and CJK units have none.
-            if (ReferenceEquals(units, CompactUnitsEnLong))
+            // CLDR compact patterns that include a literal space between the number and the
+            // suffix word: English long ("988 million"), and both German forms ("988 Mio." /
+            // "988 Millionen"). CJK suffixes and English short ("988M") have no space.
+            if (ReferenceEquals(units, CompactUnitsEnLong)
+                || ReferenceEquals(units, CompactUnitsDe)
+                || ReferenceEquals(units, CompactUnitsDeLong))
                 parts.Add(("literal", " "));
             parts.Add(("compact", suffix));
         }

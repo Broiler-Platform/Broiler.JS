@@ -7181,6 +7181,63 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void GetCanonicalLocales_Substitutes_And_Deduplicates_Variant_Aliases()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('ja-Latn-hepburn-heploc')[0],
+              Intl.getCanonicalLocales('el-polytoni')[0],
+              Intl.getCanonicalLocales('ja-Latn-heploc')[0]
+            ].join('|');
+            """);
+
+        // hepburn + heploc both alias to alalc97; the duplicate folds away, leaving a
+        // single canonical variant. polytoni → polyton is a plain rename.
+        Assert.Equal("ja-Latn-alalc97|el-polyton|ja-Latn-alalc97", result.ToString());
+    }
+
+    [Fact]
+    public void NumberFormat_Compact_Notation_Supports_German_Suffixes()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var shortFmt = new Intl.NumberFormat('de-DE', { notation: 'compact', compactDisplay: 'short' });
+            var longFmt = new Intl.NumberFormat('de-DE', { notation: 'compact', compactDisplay: 'long' });
+            [
+              shortFmt.format(987654321),
+              shortFmt.format(2_500_000),
+              shortFmt.format(1_200),
+              longFmt.format(987654321),
+              longFmt.format(2_500_000)
+            ].join('|');
+            """);
+
+        // CLDR de compact: short suffixes "Tsd.|Mio.|Mrd.|Bio."; long "Tausend|Million(en)|…".
+        Assert.Equal("988 Mio.|2,5 Mio.|1,2 Tsd.|988 Millionen|2,5 Millionen", result.ToString());
+    }
+
+    [Fact]
+    public void NumberFormat_FormatToParts_Compact_German_Reports_Compact_Suffix_Part()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var parts = new Intl.NumberFormat('de-DE', { notation: 'compact' }).formatToParts(987654321);
+            parts.map(p => p.type + ':' + p.value).join('|');
+            """);
+
+        // Per spec: compact-formatted "988 Mio." has three parts — integer "988", literal " ",
+        // compact "Mio." — not the five parts a full decimal "987.654.321" would produce.
+        Assert.Equal("integer:988|literal: |compact:Mio.", result.ToString());
+    }
+
+    [Fact]
     public void DateTimeFormat_Hour12_True_Picks_H12_For_NonJa_Locales()
     {
         EnsureBuiltInsLoaded();
