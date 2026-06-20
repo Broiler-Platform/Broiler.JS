@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
-using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
@@ -9,7 +8,7 @@ using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Modules;
 
-public class JSArguments: JSObject
+public class JSArguments: JSObject, IJSArguments
 {
     private readonly Dictionary<uint, JSVariable> mappedParameters;
 
@@ -100,7 +99,10 @@ public class JSArguments: JSObject
         var throwTypeError = JSFunction.GetOrCreateThrowTypeError();
         properties.Put(KeyStrings.length, JSValue.CreateNumber(args.Length), JSPropertyAttributes.ConfigurableValue);
         properties.Put(KeyStrings.callee, throwTypeError, throwTypeError, JSPropertyAttributes.Property);
-        FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("Arguments"), JSPropertyAttributes.ConfigurableReadonlyValue);
+        // §20.1.3.6 step 14: an Arguments object's "[object Arguments]" tag comes from the
+        // [[ParameterMap]] internal slot (modelled here via the IJSArguments marker and recognised
+        // by Object.prototype.toString), NOT an own @@toStringTag — so a user-defined
+        // @@toStringTag on the arguments object properly overrides it.
 
         ref var symbols = ref GetSymbols();
         var iterator = ArrayValuesIntrinsic;

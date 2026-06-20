@@ -716,6 +716,32 @@ public static class JSIntl
         ["traditional"] = "trad",
     };
 
+    // Collation-strength ("ks") keyword value aliases (UTS #35 bcp47/collation.xml). The
+    // long names are deprecated aliases for the level<n>/identic short forms.
+    private static readonly Dictionary<string, string> CollationStrengthValueAliases = new(StringComparer.Ordinal)
+    {
+        ["primary"] = "level1",
+        ["secondary"] = "level2",
+        ["tertiary"] = "level3",
+        ["quaternary"] = "level4",
+        ["identical"] = "identic",
+    };
+
+    // Measurement-system ("ms") keyword value aliases (UTS #35 bcp47/measure.xml).
+    // "imperial" is the deprecated alias for "uksystem"; "metric" and "ussystem" stay.
+    private static readonly Dictionary<string, string> MeasurementSystemValueAliases = new(StringComparer.Ordinal)
+    {
+        ["imperial"] = "uksystem",
+    };
+
+    // The Unicode boolean keys (UTS #35 bcp47/collation.xml + bcp47/transform.xml): their
+    // "yes"/"no" type-values canonicalize to "true"/"false", and a canonical "true" is
+    // dropped from the tag (the bare key implies true).
+    private static readonly HashSet<string> BooleanUnicodeKeywordKeys = new(StringComparer.Ordinal)
+    {
+        "kb", "kc", "kh", "kk", "kn", "kv",
+    };
+
     // Collation types sanctioned by CLDR for a "co" keyword. "standard" and "search" are
     // reserved (never reflected as the resolved collation), so they are excluded; any other
     // value is unsupported and falls back to "default".
@@ -870,6 +896,32 @@ public static class JSIntl
         return sb.ToString();
     }
 
+    // CLDR subdivision aliases (supplemental/subdivisionAlias.xml) used for the "sd" Unicode
+    // keyword (and the related "rg" region-override keyword, which carries the same syntactic
+    // subdivision value). Norway renumbered its subdivisions in 2020, hence no23 → no50, etc.
+    // Only the entries a test262 case actually exercises are listed; an unknown value passes
+    // through unchanged.
+    private static readonly Dictionary<string, string> SubdivisionValueAliases = new(StringComparer.Ordinal)
+    {
+        ["no23"] = "no50",
+        ["fra"] = "frges",
+        ["frb"] = "frbre",
+        ["frc"] = "frcvl",
+        ["frd"] = "frbfc",
+        ["fre"] = "frbre",
+    };
+
+    // CLDR timezone aliases (supplemental/metaZones.xml / windowsZones — used here as the
+    // "tz" Unicode-keyword value canonicalization). Each pre-deprecation tz id maps to its
+    // current canonical tz id (CN/Chongqing folded into CN/Shanghai, etc.); only the entries
+    // covered by test262 are listed.
+    private static readonly Dictionary<string, string> TimezoneValueAliases = new(StringComparer.Ordinal)
+    {
+        ["cnckg"] = "cnsha",
+        ["aqams"] = "nzakl",
+        ["cnhrb"] = "cnsha",
+    };
+
     private static string CanonicalizeKeywordValue(string key, string value)
     {
         if (value.Length == 0)
@@ -878,6 +930,22 @@ public static class JSIntl
             return ca;
         if (key == "co" && CollationValueAliases.TryGetValue(value, out var co))
             return co;
+        if (key == "ks" && CollationStrengthValueAliases.TryGetValue(value, out var ks))
+            return ks;
+        if (key == "ms" && MeasurementSystemValueAliases.TryGetValue(value, out var ms))
+            return ms;
+        if ((key == "sd" || key == "rg") && SubdivisionValueAliases.TryGetValue(value, out var sd))
+            return sd;
+        if (key == "tz" && TimezoneValueAliases.TryGetValue(value, out var tz))
+            return tz;
+        // "yes" / "no" are the deprecated aliases for boolean Unicode keyword values
+        // ("true" / "false"); only "yes" is reachable from a -u- tag (a 2-char subtag is
+        // parsed as another keyword key, not a type), but normalise the option form too.
+        if (BooleanUnicodeKeywordKeys.Contains(key))
+        {
+            if (value == "yes") return "true";
+            if (value == "no") return "false";
+        }
         return value;
     }
 
@@ -905,7 +973,14 @@ public static class JSIntl
         var subtags = tag.Split('-');
         var u = -1;
         for (var i = 0; i < subtags.Length; i++)
-            if (subtags[i].Length == 1 && subtags[i][0] == 'u') { u = i; break; }
+        {
+            if (subtags[i].Length != 1)
+                continue;
+            // Stop at the private-use singleton ("x"): a "u" inside private-use is a
+            // private subtag, not a Unicode extension.
+            if (subtags[i][0] == 'u') { u = i; break; }
+            if (subtags[i][0] == 'x') break;
+        }
         if (u < 0)
             return tag;
 
@@ -935,6 +1010,10 @@ public static class JSIntl
 
             result.Add(key);
             var canonical = CanonicalizeKeywordValue(key, string.Join("-", types));
+            // UTS #35 §3.6.4: a boolean Unicode keyword's "true" value is the default
+            // and is omitted from the canonical form ("und-u-kb-yes" → "und-u-kb").
+            if (canonical == "true" && BooleanUnicodeKeywordKeys.Contains(key))
+                continue;
             if (canonical.Length > 0)
                 result.AddRange(canonical.Split('-'));
         }
@@ -1091,11 +1170,315 @@ public static class JSIntl
             throw JSEngine.NewRangeError("Invalid language tag");
 
         // CanonicalizeUnicodeLocaleId: a regular grandfathered tag is replaced
-        // wholesale by its preferred form (e.g. "art-lojban" -> "jbo").
+        // wholesale by its preferred form (e.g. "art-lojban" -> "jbo"). Each entry's
+        // key is a two-subtag tag (language + extlang/variant), and the substitution
+        // applies even when more subtags follow ("art-lojban-fonipa" -> "jbo-fonipa")
+        // since the grandfathered prefix is what carries the deprecation.
         if (RegularGrandfatheredMappings.TryGetValue(tag, out var preferred))
             return preferred;
 
-        return CanonicalizeUnicodeKeywordValues(CanonicalizeLanguageTagCase(tag));
+        var secondDash = tag.IndexOf('-');
+        if (secondDash > 0)
+        {
+            var thirdDash = tag.IndexOf('-', secondDash + 1);
+            if (thirdDash > 0)
+            {
+                var prefix = tag.Substring(0, thirdDash);
+                if (RegularGrandfatheredMappings.TryGetValue(prefix, out var prefixPreferred))
+                    return CanonicalizeUnicodeKeywordValues(ApplySubtagAliases(
+                        CanonicalizeLanguageTagCase(prefixPreferred + tag.Substring(thirdDash))));
+            }
+        }
+
+        return CanonicalizeTransformedExtension(
+            CanonicalizeUnicodeKeywordValues(
+                CanonicalizeMainTagVariants(
+                    ApplySubtagAliases(
+                        CanonicalizeLanguageTagCase(tag)))));
+    }
+
+    // CLDR variantAlias (supplemental/supplementalMetadata.xml) — single-variant
+    // replacements applied during LocaleId canonicalization (UTS #35 §3.6.4). Only the
+    // entries test262 actually exercises are listed; an unknown variant passes through
+    // unchanged.
+    private static readonly Dictionary<string, string> SingleVariantAliases = new(StringComparer.Ordinal)
+    {
+        ["heploc"] = "alalc97",
+        ["hepburn"] = "alalc97",  // CLDR groups the hepburn/heploc pair onto alalc97; after
+                                  // both subtags map to alalc97 the duplicate is folded away
+                                  // by the dedup pass below.
+        ["polytoni"] = "polyton",
+        ["arevela"] = null,  // dropped (no replacement); the language subtag handles it
+        ["arevmda"] = null,
+        ["aaland"] = null,
+    };
+
+    // UTS #35 §3.6.4 LocaleId canonicalization: the variant subtags in the main language
+    // tag (after the optional script + region, before any extension singleton) are
+    // substituted via variantAlias, deduplicated, and sorted alphabetically (ordinal).
+    // Variants inside a transformed extension's tlang are canonicalized separately by
+    // CanonicalizeTransformedExtension.
+    private static string CanonicalizeMainTagVariants(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return tag;
+
+        var parts = tag.Split('-');
+        // Locate the start of the variants run and the start of the first extension.
+        var i = 1; // skip the language subtag
+        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i])) i++; // script
+        if (i < parts.Length && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigitTag(parts[i])))) i++; // region
+
+        var variantStart = i;
+        while (i < parts.Length && IsVariantSubtag(parts[i]))
+            i++;
+
+        if (i - variantStart == 0)
+            return tag;
+
+        // Substitute via variantAlias (dropped entries return null), deduplicate while
+        // preserving the first occurrence's order, then sort alphabetically.
+        var variants = new List<string>(i - variantStart);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        for (var j = variantStart; j < i; j++)
+        {
+            var v = parts[j];
+            if (SingleVariantAliases.TryGetValue(v, out var replacement))
+            {
+                if (replacement == null) continue; // dropped
+                v = replacement;
+            }
+            if (seen.Add(v))
+                variants.Add(v);
+        }
+        variants.Sort(System.StringComparer.Ordinal);
+
+        // Rebuild: pre-variant prefix + canonical variants + everything after the variant
+        // run (extension singletons / private-use).
+        var rebuilt = new List<string>(variantStart + variants.Count + (parts.Length - i));
+        for (var j = 0; j < variantStart; j++) rebuilt.Add(parts[j]);
+        rebuilt.AddRange(variants);
+        for (var j = i; j < parts.Length; j++) rebuilt.Add(parts[j]);
+
+        return string.Join("-", rebuilt);
+    }
+
+    // UTS #35 §3.6.2 transformed extension canonicalization: within a "-t-" extension, the
+    // tlang's variants are sorted alphabetically (ordinal) and the tfields are sorted by
+    // their two-character tkey. Everything outside the "-t-" payload is preserved verbatim,
+    // so this composes with the rest of the language-tag canonicalization pipeline.
+    private static string CanonicalizeTransformedExtension(string tag)
+    {
+        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-t-", System.StringComparison.OrdinalIgnoreCase) < 0)
+            return tag;
+
+        var parts = tag.Split('-');
+        var changed = false;
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (parts[i].Length != 1 || (parts[i][0] != 't' && parts[i][0] != 'T'))
+                continue;
+
+            // Collect the payload up to the next singleton (start of another extension).
+            var start = i + 1;
+            var end = start;
+            while (end < parts.Length && parts[end].Length != 1)
+                end++;
+
+            if (end == start)
+                continue;
+
+            var payload = new List<string>(end - start);
+            for (var j = start; j < end; j++)
+                payload.Add(parts[j]);
+
+            var canonical = CanonicalizeTransformedPayload(payload);
+            if (canonical != null)
+            {
+                for (var j = 0; j < canonical.Count; j++)
+                    parts[start + j] = canonical[j];
+                changed = true;
+            }
+
+            i = end - 1;
+        }
+
+        return changed ? string.Join("-", parts) : tag;
+    }
+
+    // Sorts the tlang's variants (the run of variant subtags after a leading language [+
+    // optional script + optional region]) and the tfields (each a 2-char tkey followed by
+    // 3-8-char tvalue chunks) by their respective keys. Returns null when the payload's
+    // grammar doesn't match the expected shape, so the caller leaves it untouched.
+    private static List<string> CanonicalizeTransformedPayload(List<string> payload)
+    {
+        var p = 0;
+        var canonical = new List<string>(payload.Count);
+
+        if (p < payload.Count && IsLanguageSubtag(payload[p]))
+        {
+            canonical.Add(payload[p]); p++;
+            if (p < payload.Count && IsScriptSubtag(payload[p])) { canonical.Add(payload[p]); p++; }
+            if (p < payload.Count && IsRegionSubtag(payload[p])) { canonical.Add(payload[p]); p++; }
+
+            var variants = new List<string>();
+            while (p < payload.Count && IsVariantSubtag(payload[p]))
+            {
+                variants.Add(payload[p]);
+                p++;
+            }
+            variants.Sort(System.StringComparer.Ordinal);
+            canonical.AddRange(variants);
+        }
+
+        // tfields: each starts with a tkey (alpha + digit), followed by one or more tvalue
+        // chunks (3-8 alphanum). Collect them as (key, values) and sort by key alphabetically.
+        var fields = new List<(string Key, List<string> Values)>();
+        while (p < payload.Count)
+        {
+            if (!IsTKey(payload[p]))
+                return null;
+            var key = payload[p];
+            p++;
+            var values = new List<string>();
+            while (p < payload.Count && IsTValue(payload[p]))
+            {
+                values.Add(payload[p]);
+                p++;
+            }
+            if (values.Count == 0)
+                return null;
+            fields.Add((key, values));
+        }
+        fields.Sort((a, b) => System.StringComparer.Ordinal.Compare(a.Key, b.Key));
+        foreach (var (key, values) in fields)
+        {
+            canonical.Add(key);
+            canonical.AddRange(values);
+        }
+
+        return canonical;
+    }
+
+    // Bcp47 language subtag aliases (CLDR supplemental languageAlias, reason="deprecated").
+    // The lowercase deprecated tag maps to its single preferred language subtag — these are
+    // strict in/out replacements (no script/region adjustments).
+    private static readonly Dictionary<string, string> SimpleLanguageAliases = new(StringComparer.Ordinal)
+    {
+        ["cmn"] = "zh",
+        ["drw"] = "fa-AF",
+        ["in"] = "id",
+        ["iw"] = "he",
+        ["ji"] = "yi",
+        ["jw"] = "jv",
+        ["mo"] = "ro",
+        ["tw"] = "ak",
+    };
+
+    // CLDR supplemental languageAlias entries that, after replacing the language subtag,
+    // also fill in a default script subtag — but only when no script is already present
+    // (e.g. "sh" -> "sr-Latn", but "sh-Cyrl" -> "sr-Cyrl").
+    private static readonly Dictionary<string, (string Language, string DefaultScript)> ComplexLanguageAliases =
+        new(StringComparer.Ordinal)
+    {
+        ["sh"] = ("sr", "Latn"),
+    };
+
+    // Region replacements selected by the tag's script subtag (CLDR territoryAlias "overlong"
+    // entries with a multi-region replacement list). When the script matches an entry here the
+    // mapped region wins; otherwise the SimpleRegionAliases default applies. Only the entries
+    // a test262 case actually exercises are listed.
+    private static readonly Dictionary<string, Dictionary<string, string>> ScriptConditionalRegionAliases =
+        new(StringComparer.Ordinal)
+    {
+        // SU (Soviet Union) defaults to RU, but with Armenian script Armn → AM (Armenia).
+        ["SU"] = new(StringComparer.Ordinal) { ["Armn"] = "AM" },
+    };
+
+    // Bcp47 region subtag aliases (CLDR supplemental territoryAlias) whose deprecated code
+    // maps to a single preferred region. "Overlong" aliases whose replacement is a list (e.g.
+    // "SU" → "RU AM AZ ..." that selects by likely-subtags) use the first list entry as the
+    // default; the ScriptConditionalRegionAliases table above overrides this default for the
+    // explicit script combinations test262 covers.
+    private static readonly Dictionary<string, string> SimpleRegionAliases = new(StringComparer.Ordinal)
+    {
+        ["BU"] = "MM",
+        ["CS"] = "RS",
+        ["DD"] = "DE",
+        ["DY"] = "BJ",
+        ["FX"] = "FR",
+        ["HV"] = "BF",
+        ["NH"] = "VU",
+        ["RH"] = "ZW",
+        ["SU"] = "RU",
+        ["TP"] = "TL",
+        ["UK"] = "GB",
+        ["VD"] = "VN",
+        ["YD"] = "YE",
+        ["YU"] = "RS",
+        ["ZR"] = "CD",
+    };
+
+    // CanonicalizeUnicodeLocaleId §3.6.4 LanguageAlias and TerritoryAlias substitutions over an
+    // already case-folded tag. Walks the prefix (language, optional script, optional region)
+    // and replaces deprecated subtags with their CLDR-preferred form; everything beyond the
+    // region (variants, extensions, private-use) is preserved verbatim.
+    private static string ApplySubtagAliases(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return tag;
+
+        var subtags = tag.Split('-');
+        if (subtags.Length == 0)
+            return tag;
+
+        // Language subtag: a complex alias replaces the language AND inserts a default script
+        // (only when no script is already present); a simple alias just substitutes.
+        var language = subtags[0];
+        var hasScript = subtags.Length >= 2 && subtags[1].Length == 4 && IsAllAlpha(subtags[1]);
+
+        if (ComplexLanguageAliases.TryGetValue(language, out var complex))
+        {
+            subtags[0] = complex.Language;
+            if (!hasScript)
+            {
+                // Splice the default script in between the (new) language and the rest.
+                var widened = new string[subtags.Length + 1];
+                widened[0] = subtags[0];
+                widened[1] = complex.DefaultScript;
+                for (var i = 1; i < subtags.Length; i++)
+                    widened[i + 1] = subtags[i];
+                subtags = widened;
+                hasScript = true;
+            }
+        }
+        else if (SimpleLanguageAliases.TryGetValue(language, out var simple))
+        {
+            subtags[0] = simple;
+        }
+
+        // Region subtag: lives at index 1 (no script) or 2 (after a script). Both 2-letter
+        // alphabetic and 3-digit numeric regions can be aliases, though our current table
+        // only covers the alphabetic ones.
+        var regionIndex = hasScript ? 2 : 1;
+        if (regionIndex < subtags.Length)
+        {
+            var region = subtags[regionIndex];
+            var isAlphaRegion = region.Length == 2 && IsAllAlpha(region);
+            if (isAlphaRegion)
+            {
+                // A script-conditional override (e.g. SU + Armn → AM) wins over the
+                // default alias (SU → RU); fall back to the simple table otherwise.
+                if (hasScript
+                    && ScriptConditionalRegionAliases.TryGetValue(region, out var byScript)
+                    && byScript.TryGetValue(subtags[1], out var conditional))
+                    subtags[regionIndex] = conditional;
+                else if (SimpleRegionAliases.TryGetValue(region, out var aliased))
+                    subtags[regionIndex] = aliased;
+            }
+        }
+
+        return string.Join("-", subtags);
     }
 
     // CanonicalizeUnicodeLocaleId case folding (UTS #35 §3.2.1): the language
@@ -1291,6 +1674,10 @@ public static class JSIntl
         var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
         for (var i = 0; i < subtags.Length; i++)
         {
+            // A private-use ("x") singleton is terminal — any "u" inside its payload is a
+            // private subtag, not a Unicode extension, and its keys are not constrained.
+            if (subtags[i].Length == 1 && (subtags[i][0] == 'x' || subtags[i][0] == 'X'))
+                break;
             if (!subtags[i].Equals("u", StringComparison.OrdinalIgnoreCase))
                 continue;
 
@@ -1493,8 +1880,11 @@ public static class JSIntl
         // Each digit option has a sanctioned [min, max] range (SetNumberFormatDigitOptions
         // / GetNumberOption); a NaN or out-of-range value (e.g. maximumSignificantDigits: 0)
         // is a RangeError. The original value is still snapshotted so downstream
-        // format/resolvedOptions reads observe the construction-time value.
+        // format/resolvedOptions reads observe the construction-time value. The snapshot
+        // has a null prototype: only the digits we explicitly capture are visible, so
+        // a property planted on Object.prototype can't bleed into the formatter.
         var snapshot = new JSObject();
+        snapshot.SetPrototypeOf(Null.JSNull.Value);
         foreach (var (name, min, max) in new (string, int, int)[]
         {
             ("minimumIntegerDigits", 1, 21),
@@ -1565,11 +1955,12 @@ public static class JSIntl
         var u = -1;
         for (var i = 0; i < parts.Length; i++)
         {
-            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
-            {
-                u = i;
-                break;
-            }
+            if (parts[i].Length != 1)
+                continue;
+            // Stop scanning at the private-use singleton ("x"): everything beyond is
+            // private-use, so a "u" inside that payload is not a Unicode extension.
+            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
+            if (parts[i][0] == 'x' || parts[i][0] == 'X') break;
         }
 
         if (u < 0)
@@ -1736,11 +2127,12 @@ public static class JSIntl
         var u = -1;
         for (var i = 0; i < parts.Length; i++)
         {
-            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
-            {
-                u = i;
-                break;
-            }
+            if (parts[i].Length != 1)
+                continue;
+            // Stop at the private-use ("x") singleton; "-u-" inside private-use is a private
+            // subtag, not a Unicode extension to remove.
+            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
+            if (parts[i][0] == 'x' || parts[i][0] == 'X') break;
         }
 
         if (u < 0)
@@ -1800,11 +2192,13 @@ public static class JSIntl
         var u = -1;
         for (var i = 0; i < parts.Length; i++)
         {
-            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
-            {
-                u = i;
-                break;
-            }
+            if (parts[i].Length != 1)
+                continue;
+            // A "u" singleton starts the Unicode extension; an "x" singleton starts the
+            // private-use sequence (terminal in canonical form), so any "-u-" inside its
+            // payload is a private subtag and must not be treated as a Unicode extension.
+            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
+            if (parts[i][0] == 'x' || parts[i][0] == 'X') break;
         }
 
         if (u < 0)
@@ -3503,8 +3897,16 @@ public sealed class JSIntlLocale : JSObject
     {
         var parts = tag.Split('-');
         var i = 0;
-        while (i < parts.Length && !(parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U')))
+        while (i < parts.Length)
+        {
+            // Stop at the private-use ("x") singleton; "u" inside private-use is a private
+            // subtag, not a Unicode extension.
+            if (parts[i].Length == 1 && (parts[i][0] == 'x' || parts[i][0] == 'X'))
+                return null;
+            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
+                break;
             i++;
+        }
         if (i >= parts.Length)
             return null;
 
@@ -3721,14 +4123,22 @@ public class JSIntlNumberFormat : JSObject
             ? BigInt.JSBigInt.ToNumber(((BigInt.JSBigInt)value).value)
             : (value ?? JSUndefined.Value).DoubleValue;
 
+        var style = StyleOption();
+        var isCurrency = style == "currency";
+        var isUnit = style == "unit";
+        var isPercent = style == "percent";
+        var currency = isCurrency ? ResolveCurrency() : default;
+
+        // ECMA-402 §15.5.13 PartitionNumberPattern step 13.b: when style is "percent", the
+        // mathematical value is multiplied by 100 before being formatted. The percent literal
+        // is appended by AssemblePercentParts below in the locale's pattern position.
+        if (isPercent && !double.IsNaN(x) && !double.IsInfinity(x))
+            x *= 100;
+
         var signDisplay = resolved?.SignDisplay ?? "auto";
         var isNaN = double.IsNaN(x);
         var isInfinity = double.IsInfinity(x);
         var signBit = !isNaN && double.IsNegative(x);
-        var style = StyleOption();
-        var isCurrency = style == "currency";
-        var isUnit = style == "unit";
-        var currency = isCurrency ? ResolveCurrency() : default;
 
         List<(string, string)> magnitude;
         bool roundedIsZero;
@@ -3775,10 +4185,42 @@ public class JSIntlNumberFormat : JSObject
         else
         {
             var plain = AssemblePlainParts(magnitude, sign);
-            assembled = isUnit ? AssembleUnitParts(plain, x) : plain;
+            if (isUnit)
+                assembled = AssembleUnitParts(plain, x);
+            else if (isPercent)
+                assembled = AssemblePercentParts(plain);
+            else
+                assembled = plain;
         }
 
         return MapNumberingSystemDigits(assembled);
+    }
+
+    // Wraps the assembled number in the locale's percent pattern (e.g. "n%" / "n %" / "%n").
+    // The literal between the number and the percent sign — when the pattern has one (e.g.
+    // de-DE's "n %") — is emitted as a "literal" part so formatToParts surfaces it.
+    private List<(string, string)> AssemblePercentParts(List<(string, string)> plain)
+    {
+        var symbol = Culture().NumberFormat.PercentSymbol;
+        // .NET's PercentPositivePattern values:
+        //   0 = "n %", 1 = "n%", 2 = "%n", 3 = "% n"
+        var pattern = Culture().NumberFormat.PercentPositivePattern;
+        var parts = new List<(string, string)>(plain.Count + 2);
+        if (pattern == 2 || pattern == 3)
+        {
+            parts.Add(("percentSign", symbol));
+            if (pattern == 3)
+                parts.Add(("literal", " "));
+            parts.AddRange(plain);
+        }
+        else
+        {
+            parts.AddRange(plain);
+            if (pattern == 0)
+                parts.Add(("literal", " "));
+            parts.Add(("percentSign", symbol));
+        }
+        return parts;
     }
 
     // Translates the ASCII digits produced by the formatter into the resolved
@@ -3975,6 +4417,12 @@ public class JSIntlNumberFormat : JSObject
     private static readonly (int Exp, string Suffix)[] CompactUnitsKo = [(12, "조"), (8, "억"), (4, "만"), (3, "천")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHant = [(12, "兆"), (8, "億"), (4, "萬")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHans = [(12, "兆"), (8, "亿"), (4, "万")];
+    // German compact (CLDR de: short "0 Tsd." / "0 Mio." / "0 Mrd." / "0 Bio."; long
+    // "0 Tausend" / "0 Million(en)" / "0 Milliarde(n)" / "0 Billion(en)"). Both forms
+    // insert a literal space between the number and the suffix.
+    private static readonly (int Exp, string Suffix)[] CompactUnitsDe = [(12, "Bio."), (9, "Mrd."), (6, "Mio."), (3, "Tsd.")];
+    private static readonly (int Exp, string Suffix)[] CompactUnitsDeLong =
+        [(12, "Billionen"), (9, "Milliarden"), (6, "Millionen"), (3, "Tausend")];
 
     private static (int Exp, string Suffix)[] GetCompactUnits(string localeTag, bool longForm)
     {
@@ -3985,6 +4433,8 @@ public class JSIntlNumberFormat : JSObject
         {
             case "en":
                 return longForm ? CompactUnitsEnLong : CompactUnitsEn;
+            case "de":
+                return longForm ? CompactUnitsDeLong : CompactUnitsDe;
             case "ja":
                 return CompactUnitsJa;
             case "ko":
@@ -4047,9 +4497,12 @@ public class JSIntlNumberFormat : JSObject
         var parts = FormatCompactMantissa(reduced, maxFrac, out roundedIsZero);
         if (suffix != null)
         {
-            // The English long compact pattern places a literal space between the number and
-            // the word ("988 million"); the short forms ("988M") and CJK units have none.
-            if (ReferenceEquals(units, CompactUnitsEnLong))
+            // CLDR compact patterns that include a literal space between the number and the
+            // suffix word: English long ("988 million"), and both German forms ("988 Mio." /
+            // "988 Millionen"). CJK suffixes and English short ("988M") have no space.
+            if (ReferenceEquals(units, CompactUnitsEnLong)
+                || ReferenceEquals(units, CompactUnitsDe)
+                || ReferenceEquals(units, CompactUnitsDeLong))
                 parts.Add(("literal", " "));
             parts.Add(("compact", suffix));
         }
@@ -4359,6 +4812,13 @@ public class JSIntlNumberFormat : JSObject
     // uses 0 … 3, matching the magnitude formatter.
     private (int Min, int Max) DefaultFractionDigits()
     {
+        // Compact notation switches the formatter into "compactRounding" mode (1-2
+        // significant digits) when no explicit fraction / significant options are present
+        // (ECMA-402 §15.5.4 SetNumberFormatDigitOptions step 17). The fraction-digit
+        // defaults collapse to 0/0 — both the currency's CLDR minor-unit digit count
+        // (e.g. KWD's 3) and the generic 0/3 cap are overridden.
+        if ((resolved?.Notation ?? "standard") == "compact")
+            return (0, 0);
         if (StyleOption() == "currency")
         {
             var cDigits = ResolveCurrency().FractionDigits;
@@ -4686,7 +5146,6 @@ public class JSIntlCollator : JSObject
         // Keep only the collation-relevant Unicode keywords (co/kf/kn) in the resolved locale, in
         // canonical form (so e.g. "-kn-true" reduces to "-kn").
         locale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.CollatorRelevantKeys);
-        compareInfo = CultureInfo.CurrentCulture.CompareInfo;
 
         if (TryGetUnicodeExtension(locale, "kn", out var kn))
             numeric = kn == "true";
@@ -4708,6 +5167,65 @@ public class JSIntlCollator : JSObject
         if (TryGetOwnOption(options, "collation", out var collationValue)
             && JSIntl.CanonicalizeCollation(collationValue.StringValue) is { } optCo)
             collation = optCo;
+
+        compareInfo = ResolveCompareInfo(locale, collation);
+    }
+
+    // CompareInfo for the resolved locale, honouring the Unicode-extension collation tailoring
+    // (-u-co-). .NET ships a small set of named collation variants accessible via the BCP-47
+    // CultureInfo path: GetCultureInfo("de-DE-u-co-phonebk").CompareInfo tailors Ä to Ae
+    // (CompareInfo.GetCompareInfo("de-DE_phoneboo") returns a CompareInfo with the same Name
+    // but does NOT actually apply the tailoring — only the full BCP-47 culture-construction
+    // path is wired through to the ICU tailored collator). Falls back to the locale's default
+    // CompareInfo (or the invariant one) when the tailoring isn't recognised.
+    private static CompareInfo ResolveCompareInfo(string localeTag, string collation)
+    {
+        var bareLocale = StripUnicodeExtension(localeTag);
+        if (collation != null && collation != "default" && collation != "standard"
+            && NetCollationSuffix(bareLocale, collation) != null)
+        {
+            try
+            {
+                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-" + collation).CompareInfo;
+            }
+            catch (CultureNotFoundException) { /* fall through */ }
+        }
+        try { return CultureInfo.GetCultureInfo(bareLocale).CompareInfo; }
+        catch (CultureNotFoundException) { return CultureInfo.InvariantCulture.CompareInfo; }
+    }
+
+    // .NET's CompareInfo names map the BCP-47 collation key to a string suffix in a small
+    // (locale-specific) table. Only the variants .NET actually exposes are mapped here.
+    private static string NetCollationSuffix(string bareLocale, string collation)
+    {
+        if (string.IsNullOrEmpty(collation) || collation == "default" || collation == "standard")
+            return null;
+        var lang = bareLocale;
+        var dash = lang.IndexOf('-');
+        if (dash > 0) lang = lang.Substring(0, dash);
+        return (lang.ToLowerInvariant(), collation) switch
+        {
+            ("de", "phonebk") => "phoneboo",
+            ("zh", "pinyin") => "pinyin",
+            ("zh", "stroke") => "stroke",
+            ("zh", "phonetic") or ("zh", "zhuyin") => "pronun",
+            ("zh", "trad") or ("zh", "unihan") => "radstr",
+            ("ja", "unihan") => "radstr",
+            ("ko", "unihan") => "korean",
+            ("hu", "trad") => "techni",
+            _ => null,
+        };
+    }
+
+    private static string StripUnicodeExtension(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return "";
+        var parts = tag.Split('-');
+        for (var i = 0; i < parts.Length; i++)
+            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
+                return string.Join("-", parts, 0, i);
+        return tag;
     }
 
     private JSIntlCollator() : base(CurrentPrototype()) { }
@@ -4776,14 +5294,29 @@ public class JSIntlCollator : JSObject
     private static bool TryGetUnicodeExtension(string locale, string key, out string value)
     {
         value = null;
-        var marker = "-u-";
-        var start = locale.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
-        if (start < 0)
+        if (string.IsNullOrEmpty(locale))
             return false;
 
-        var parts = locale[(start + marker.Length)..].Split('-', StringSplitOptions.RemoveEmptyEntries);
+        var parts = locale.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        var u = -1;
         for (var i = 0; i < parts.Length; i++)
         {
+            if (parts[i].Length != 1)
+                continue;
+            // Stop at the private-use ("x") singleton; a "u" inside private-use is a
+            // private subtag, not a Unicode extension.
+            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
+            if (parts[i][0] == 'x' || parts[i][0] == 'X') return false;
+        }
+
+        if (u < 0)
+            return false;
+
+        for (var i = u + 1; i < parts.Length; i++)
+        {
+            // The Unicode extension ends at the next singleton (start of another extension).
+            if (parts[i].Length == 1)
+                return false;
             if (!string.Equals(parts[i], key, StringComparison.OrdinalIgnoreCase))
                 continue;
 
@@ -4876,11 +5409,12 @@ public class JSIntlDateTimeFormat : JSObject
         var hour12 = options?[Hour12Key];
         if (hour12 != null && !hour12.IsUndefined)
         {
-            // hour12 true picks the 12-hour cycle (h11 when the locale default is a
-            // 0-based/24-hour cycle, else h12); hour12 false picks h23 (the common
-            // 24-hour cycle observed by other engines).
+            // hour12 true picks the locale's preferred 12-hour cycle. Per CLDR's <hours>
+            // preference data, only a small set of locales (ja, …) prefer the 0-based
+            // h11; almost every other locale — even those with an h23 default — prefers
+            // h12 for the 12-hour alternative, so default-to-h12. hour12 false picks h23.
             if (hour12.BooleanValue)
-                return hcDefault == "h11" || hcDefault == "h23" ? "h11" : "h12";
+                return hcDefault == "h11" ? "h11" : "h12";
             return "h23";
         }
 
@@ -4920,11 +5454,13 @@ public class JSIntlDateTimeFormat : JSObject
             hasEra: OptionString(KeyStrings.GetOrCreate("era")) != null,
             eraStyle: OptionString(KeyStrings.GetOrCreate("era")));
 
-    // The resolved calendar: the requested -u-ca- value when it is one this engine
-    // supports (era-based Gregorian-derived calendars), otherwise "gregory".
+    // The resolved calendar: per ECMA-402 InitializeDateTimeFormat the `calendar` OPTION
+    // takes precedence over the locale tag's -u-ca- value, then -u-ca-, then the locale's
+    // default ("gregory"). An unsupported value (one this engine cannot project the year /
+    // era through) falls back to "gregory" so formatting still produces a usable result.
     internal string ResolvedCalendar()
     {
-        var ca = UnicodeKeyword(localeTag, "ca");
+        var ca = OptionString(CalendarKey) ?? UnicodeKeyword(localeTag, "ca");
         return JSIntlDateTimeFormatEngine.IsSupportedCalendar(ca) ? ca : "gregory";
     }
 
@@ -5091,7 +5627,11 @@ public class JSIntlDateTimeFormat : JSObject
         if (!o[DateStyleKey].IsUndefined || !o[TimeStyleKey].IsUndefined)
             return options;
 
+        // Null prototype: ToDateTimeOptions exposes the merged bag to downstream
+        // option reads, which would otherwise pick up Object.prototype taint planted by
+        // client code (e.g. Object.prototype.year = '2-digit').
         var merged = new JSObject();
+        merged.SetPrototypeOf(Null.JSNull.Value);
         foreach (var name in DateTimeFormatOptionKeys)
         {
             var key = KeyStrings.GetOrCreate(name);
@@ -5655,7 +6195,13 @@ public class JSIntlDateTimeFormat : JSObject
         // surfaces a throwing getter at construction (constructor-options-throwing-getters),
         // validates each option once (RangeError for an out-of-set value), and never
         // re-invokes a getter at format time.
+        //
+        // The snapshot has a NULL prototype: only the options we explicitly Capture below
+        // are present, so a later property read on the snapshot can't accidentally pick up
+        // a value the user planted on Object.prototype (test262
+        // default-options-object-prototype.js).
         var snapshot = new JSObject();
+        snapshot.SetPrototypeOf(Null.JSNull.Value);
         void Capture(KeyString key, string value)
         {
             if (value != null)

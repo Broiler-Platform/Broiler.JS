@@ -88,12 +88,16 @@ public partial class JSUInt8Array : JSTypedArray
     [JSExport("toBase64", Length = 0)]
     public JSValue ToBase64(in Arguments a)
     {
-        var alphabet = GetBase64Alphabet(a.Length > 0 ? a[0] : JSUndefined.Value);
+        var options = a.Length > 0 ? a[0] : JSUndefined.Value;
+        var alphabet = GetBase64Alphabet(options);
+        var omitPadding = GetBase64OmitPadding(options);
         var src = new byte[length];
         System.Array.Copy(buffer.buffer, byteOffset, src, 0, length);
         var text = System.Convert.ToBase64String(src);
         if (alphabet == Base64UrlAlphabet)
-            text = text.Replace('+', '-').Replace('/', '_').TrimEnd('=');
+            text = text.Replace('+', '-').Replace('/', '_');
+        if (omitPadding)
+            text = text.TrimEnd('=');
         return new JSString(text);
     }
 
@@ -360,6 +364,18 @@ public partial class JSUInt8Array : JSTypedArray
         }
 
         return Base64Alphabet;
+    }
+
+    private static bool GetBase64OmitPadding(JSValue options)
+    {
+        if (options is JSObject @object)
+        {
+            var omitPadding = @object["omitPadding"];
+            if (!omitPadding.IsNullOrUndefined)
+                return omitPadding.BooleanValue;
+        }
+
+        return false;
     }
 
     private static string GetBase64LastChunkHandling(JSValue options)

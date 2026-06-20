@@ -108,6 +108,8 @@ public partial class JSObject
         string builtinTag;
         if (a.This.IsArray)
             builtinTag = "Array";
+        else if (a.This is IJSArguments)
+            builtinTag = "Arguments";
         else if (a.This is IJSError)
             builtinTag = "Error";
         else if (a.This?.TypeOf() == JSConstants.Function)

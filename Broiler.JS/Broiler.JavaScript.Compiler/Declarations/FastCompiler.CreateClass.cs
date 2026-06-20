@@ -211,7 +211,6 @@ partial class FastCompiler
 
         var prototypeElements = new Sequence<YElementInit>();
         var staticElements = new Sequence<YBinding>();
-        var staticBlocks = new Sequence<AstClassProperty>();
 
         // The class name is an immutable (const-like) binding scoped to the class
         // body, created BEFORE the ClassHeritage is evaluated so the heritage
@@ -309,7 +308,13 @@ partial class FastCompiler
         // class name sees the constructor, and adding a static private field to a
         // (self-)sealed constructor throws. Static methods/accessors stay in the
         // constructor's object initializer and so are installed first.
-        var staticFieldInits = new List<(YExpression Name, YExpression Value, bool IsPrivate)>();
+        //
+        // Per ES2022 §16.3 (ClassStaticBlock) the static elements run in textual class-body
+        // order: a static field, a static block, and another static field interleave (the
+        // block sees the first field's value and the second field sees the block's effect).
+        // The deferred initializers therefore share ONE source-ordered list, with each entry
+        // tagged as either a field (StaticBlock == null) or a block (Name/Value unused).
+        var staticInits = new List<(YExpression Name, YExpression Value, bool IsPrivate, AstClassProperty StaticBlock)>();
 
         PrivateInstanceElement PrivateElementFor(AstClassProperty property, YExpression keyName)
         {
@@ -417,7 +422,7 @@ partial class FastCompiler
             switch (property.Kind)
             {
                 case AstPropertyKind.Init:
-                    staticBlocks.Add(property);
+                    staticInits.Add((null, null, false, property));
                     break;
 
                 case AstPropertyKind.Data:
@@ -473,8 +478,8 @@ partial class FastCompiler
                                 inMemberInitializer = savedInMemberInitializer;
                             }
                         }
-                        // Deferred to after the class binding (see staticFieldInits).
-                        staticFieldInits.Add((name, value, isPrivateName));
+                        // Deferred to after the class binding (see staticInits).
+                        staticInits.Add((name, value, isPrivateName, null));
                         break;
                     }
                     // The computed key (if any) was already evaluated, in source
@@ -649,20 +654,13 @@ partial class FastCompiler
             stmts.Add(JSVariableBuilder.SetReadOnly(innerNameVar.Variable, true));
         }
 
-        // Static field initializers run on the constructor now that its name binding
-        // is set. A private static field uses PrivateFieldAdd so a self-sealed
-        // constructor (preventExtensions in an earlier initializer) throws.
-        foreach (var (fieldName, fieldValue, fieldIsPrivate) in staticFieldInits)
+        // Static field initializers and static blocks run on the constructor now that its
+        // name binding is set, in textual class-body order (a private static field uses
+        // PrivateFieldAdd so a self-sealed constructor — preventExtensions in an earlier
+        // initializer — throws).
+        foreach (var (fieldName, fieldValue, fieldIsPrivate, staticBlock) in staticInits)
         {
-            stmts.Add(fieldIsPrivate
-                ? JSObjectBuilder.PrivateFieldAdd(retValue, fieldName, fieldValue)
-                : JSObjectBuilder.AddValue(retValue, fieldName, fieldValue, JSPropertyAttributes.EnumerableConfigurableValue));
-        }
-
-        if (staticBlocks.Any())
-        {
-            var staticBlockEnumerator = staticBlocks.GetFastEnumerator();
-            while (staticBlockEnumerator.MoveNext(out var staticBlock))
+            if (staticBlock != null)
             {
                 var function = staticBlock.Init as AstFunctionExpression;
                 // A class static initialization block always runs with `this`
@@ -676,7 +674,12 @@ partial class FastCompiler
                 var fx = CreateFunction(function, StaticSuper(), forceStrictMode: true, createPrototype: false, directEvalPrivateNames: directEvalPrivateNames,
                     thisIsUninitialized: false);
                 stmts.Add(JSFunctionBuilder.InvokeFunction(fx, ArgumentsBuilder.NewEmpty(retValue)));
+                continue;
             }
+
+            stmts.Add(fieldIsPrivate
+                ? JSObjectBuilder.PrivateFieldAdd(retValue, fieldName, fieldValue)
+                : JSObjectBuilder.AddValue(retValue, fieldName, fieldValue, JSPropertyAttributes.EnumerableConfigurableValue));
         }
 
         // All member, constructor and static-block bodies (the only places that can

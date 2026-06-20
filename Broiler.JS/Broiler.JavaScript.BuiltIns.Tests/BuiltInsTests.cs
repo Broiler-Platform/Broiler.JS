@@ -7098,6 +7098,819 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Uint8Array_ToBase64_Honors_OmitPadding_Option()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = CreateContext(JavaScriptFeatureFlags.Uint8ArrayBase64);
+
+        var result = ctx.Eval("""
+            [
+              new Uint8Array([0xc7, 0xef, 0x3c]).toBase64(),
+              new Uint8Array([0xc7, 0xef, 0x3c]).toBase64({ omitPadding: false }),
+              new Uint8Array([0xc7, 0xef, 0x3c]).toBase64({ omitPadding: true }),
+              new Uint8Array([0xc7, 0xef]).toBase64({ omitPadding: true }),
+              new Uint8Array([0xc7, 0xef]).toBase64({ omitPadding: false }),
+              new Uint8Array([0xc7, 0xef, 0x3c]).toBase64({ alphabet: 'base64url' }),
+              new Uint8Array([0xc7, 0xef, 0x3c]).toBase64({ alphabet: 'base64url', omitPadding: true }),
+              new Uint8Array([0xc7, 0xef]).toBase64({ alphabet: 'base64url' }),
+              new Uint8Array([0xc7, 0xef]).toBase64({ alphabet: 'base64url', omitPadding: true })
+            ].join('|');
+            """);
+
+        Assert.Equal("x+88|x+88|x+88|x+8|x+8=|x-88|x-88|x-8=|x-8", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Applies_CLDR_Subtag_Aliases()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('cmn')[0],
+              Intl.getCanonicalLocales('iw')[0],
+              Intl.getCanonicalLocales('ru-SU')[0],
+              Intl.getCanonicalLocales('en-UK')[0],
+              Intl.getCanonicalLocales('sh')[0],
+              Intl.getCanonicalLocales('sh-Cyrl')[0],
+              Intl.getCanonicalLocales('sh-Cyrl-RS')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("zh|he|ru-RU|en-GB|sr-Latn|sr-Cyrl|sr-Cyrl-RS", result.ToString());
+    }
+
+    [Fact]
+    public void NumberFormat_Currency_Compact_Notation_Defaults_Fraction_Digits_To_Zero()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var standardOpts = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'KWD' }).resolvedOptions();
+            var compactOpts = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'KWD', notation: 'compact' }).resolvedOptions();
+            [
+              standardOpts.minimumFractionDigits,
+              standardOpts.maximumFractionDigits,
+              compactOpts.minimumFractionDigits,
+              compactOpts.maximumFractionDigits
+            ].join('|');
+            """);
+
+        // Standard notation keeps KWD's 3/3 default; compact notation switches to 0/0
+        // (the compactRounding regime, ECMA-402 §15.5.4 step 17).
+        Assert.Equal("3|3|0|0", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Uses_Script_Conditional_Region_Alias()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('ru-SU')[0],
+              Intl.getCanonicalLocales('ru-Armn-SU')[0],
+              Intl.getCanonicalLocales('ru-Cyrl-SU')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("ru-RU|ru-Armn-AM|ru-Cyrl-RU", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Substitutes_And_Deduplicates_Variant_Aliases()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('ja-Latn-hepburn-heploc')[0],
+              Intl.getCanonicalLocales('el-polytoni')[0],
+              Intl.getCanonicalLocales('ja-Latn-heploc')[0]
+            ].join('|');
+            """);
+
+        // hepburn + heploc both alias to alalc97; the duplicate folds away, leaving a
+        // single canonical variant. polytoni → polyton is a plain rename.
+        Assert.Equal("ja-Latn-alalc97|el-polyton|ja-Latn-alalc97", result.ToString());
+    }
+
+    [Fact]
+    public void Derived_Constructor_Arrow_Super_Call_Initializes_This()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            class A { constructor() { this.tag = 'A'; } }
+            class B extends A {
+              constructor() {
+                (() => { super(); })();
+                this.touched = true;
+              }
+            }
+            var b = new B();
+            b.tag + '/' + b.touched + '/' + (b instanceof B);
+            """);
+
+        // An arrow function in a derived-class constructor captures `this`; calling
+        // super() inside that arrow must initialize the constructor's `this` binding
+        // so the subsequent `this.touched = true` doesn't throw "this is uninitialized".
+        Assert.Equal("A/true/true", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Exec_Reports_Undefined_For_Unmatched_Optional_Capture()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            // Optional capture group that was never entered: result[N] must be undefined
+            // (not empty string). The () matches the empty string when the ? takes its
+            // branch, so /abc()?/ DOES capture "" — make the group unreachable to test
+            // the unmatched path.
+            var r1 = /^(a)?(b)$/.exec('b');
+            var r3 = /(?:(a)|(b))/.exec('b');
+            [
+              r1[1] === undefined,
+              r1[2] === 'b',
+              r3[1] === undefined,
+              r3[2] === 'b'
+            ].join('|');
+            """);
+
+        // Unmatched (skipped) capture groups produce undefined entries in the result array;
+        // matched groups produce the captured strings.
+        Assert.Equal("true|true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void Dynamic_Import_Returns_A_Promise_Whose_Constructor_Is_Promise()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var p = import('./nonexistent-module-for-test.js');
+            // The import host function rejects asynchronously, but synchronously it must
+            // return a Promise whose constructor and prototype reach the global %Promise%
+            // (test262 language/expressions/dynamic-import/returns-promise.js).
+            [
+              p instanceof Promise,
+              p.constructor === Promise,
+              Object.getPrototypeOf(p) === Promise.prototype,
+              typeof p.then === 'function',
+              typeof p.catch === 'function'
+            ].join('|');
+            """);
+
+        Assert.Equal("true|true|true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void Collator_Sensitivity_Honors_Resolved_Locale()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var deBase = new Intl.Collator('de-DE', { sensitivity: 'base' });
+            var deCase = new Intl.Collator('de-DE', { sensitivity: 'case' });
+            var deVariant = new Intl.Collator('de-DE', { sensitivity: 'variant' });
+            [
+              // base: ignore case AND accents, so a == A == ä.
+              deBase.compare('a', 'A') === 0,
+              deBase.compare('a', 'ä') === 0,
+              // case: ignore accents but keep case, so a != A, a == ä is FALSE
+              //       (a == A only when both casing AND accents are ignored).
+              deCase.compare('a', 'A') !== 0,
+              deCase.compare('a', 'ä') === 0,
+              // variant: everything distinguishes.
+              deVariant.compare('a', 'A') !== 0,
+              deVariant.compare('a', 'ä') !== 0
+            ].join('|');
+            """);
+
+        Assert.Equal("true|true|true|true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void ToLocaleUpperCase_Lithuanian_Returns_Plain_I_For_Lowercase_I()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              'i'.toLocaleUpperCase('lt'),
+              'i'.toLocaleUpperCase('lt-LT'),
+              'i'.toLocaleUpperCase(['lt']),
+              // Per Unicode SpecialCasing.txt Lithuanian uppercase: plain "i" → "I"
+              // (no implicit dot above), unlike Turkish which adds U+0307.
+              'i'.toLocaleUpperCase('tr')
+            ].map(s => s.length + ':' + s).join('|');
+            """);
+
+        // Lithuanian (lt / lt-LT) uppercases "i" to plain "I" (length 1); Turkish (tr)
+        // uppercases to "İ" (U+0130, length 1) — the legacy precomposed dotted I.
+        Assert.Equal("1:I|1:I|1:I|1:İ", result.ToString());
+    }
+
+    [Fact]
+    public void Collator_Uses_Resolved_Locale_And_Honors_German_Phonebook_Collation()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var standard = new Intl.Collator('de-DE');
+            var phonebk = new Intl.Collator('de-DE-u-co-phonebk');
+            [
+              // Standard German collation treats Ä as A + diacritic, so Ä < Ad < Ae < Af.
+              Math.sign(standard.compare('Ä', 'Ad')),
+              Math.sign(standard.compare('Ä', 'Ae')),
+              // Phonebook collation treats Ä as Ae, so Ad < Ä = Ae < Af.
+              Math.sign(phonebk.compare('Ä', 'Ad')),
+              Math.sign(phonebk.compare('Ä', 'Ae')),
+              Math.sign(phonebk.compare('Ä', 'Af'))
+            ].join('|');
+            """);
+
+        // .NET's de-DE phonebook (ICU `de-DE_phoneboo` tailoring) sorts Ä between Ae
+        // and Af: Ä > Ad (+1), Ä > Ae (+1, tertiary distinction), Ä < Af (-1) —
+        // distinct from the standard order (Ä < Ad < Ae < Af) that ignored the
+        // tailoring before the constructor honoured the resolved locale.
+        Assert.Equal("-1|-1|1|1|-1", result.ToString());
+    }
+
+    [Fact]
+    public void NumberFormat_ResolvedOptions_Do_Not_Leak_Digit_Options_From_Object_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            Object.prototype.minimumSignificantDigits = 5;
+            Object.prototype.maximumSignificantDigits = 6;
+            try {
+              var nf = new Intl.NumberFormat('en-US');
+              var resolved = nf.resolvedOptions();
+              // Neither significant-digits option was supplied, so the implementation must
+              // not capture the leaked Object.prototype values as own properties on the
+              // resolved-options result.
+              [
+                Object.getOwnPropertyDescriptor(resolved, 'minimumSignificantDigits') === undefined,
+                Object.getOwnPropertyDescriptor(resolved, 'maximumSignificantDigits') === undefined
+              ].join('|');
+            } finally {
+              delete Object.prototype.minimumSignificantDigits;
+              delete Object.prototype.maximumSignificantDigits;
+            }
+            """);
+
+        Assert.Equal("true|true", result.ToString());
+    }
+
+    [Fact]
+    public void DateTimeFormat_Default_Options_Do_Not_Leak_From_Object_Prototype()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            Object.prototype.day = '2-digit';
+            try {
+              var dtf = new Intl.DateTimeFormat('en-US');
+              var resolved = dtf.resolvedOptions();
+              // resolvedOptions returns OrdinaryObjectCreate(%Object.prototype%), so a
+              // prototype-walking read on .day still sees the planted value — but the
+              // implementation must not capture the leaked value as an OWN day property
+              // (i.e. Object.getOwnPropertyDescriptor / Object.keys must not see it).
+              [
+                Object.getOwnPropertyDescriptor(resolved, 'day') === undefined,
+                Object.keys(resolved).includes('day')
+              ].join('|');
+            } finally {
+              delete Object.prototype.day;
+            }
+            """);
+
+        Assert.Equal("true|false", result.ToString());
+    }
+
+    [Fact]
+    public void Splice_With_Species_Throwing_Propagates_The_Species_Error()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            class StopSplice extends Error {}
+            class HostileArray extends Array {
+              static get [Symbol.species]() {
+                return function (n) { throw new StopSplice('species(' + n + ')'); };
+              }
+            }
+            var arr = new HostileArray(1, 2, 3, 4, 5);
+            var caught = null;
+            try { Array.prototype.splice.call(arr, 0, 2 ** 53 + 4); }
+            catch (e) { caught = e; }
+            [caught instanceof StopSplice, caught && caught.message].join('|');
+            """);
+
+        // ArraySpeciesCreate runs after deleteCount clamping; the (clamped) length flows
+        // through unchanged to the species constructor, whose thrown StopSplice must
+        // propagate without being masked by an engine-level RangeError / TypeError.
+        Assert.Equal("true|species(5)", result.ToString());
+    }
+
+    [Fact]
+    public void Eval_Try_Finally_Completion_Discards_Empty_Finally_Block()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              eval("try { 'try-value' } finally { }"),
+              eval("try { 'try-value' } finally { 'finally-value' }"),
+              eval("try { let x = 1; } finally { }"),
+              eval("try { let x = 1; } finally { 'finally-value' }")
+            ].map(v => v === undefined ? 'undef' : String(v)).join('|');
+            """);
+
+        // Per \u00a714.15 TryStatement: a non-empty Block result survives an empty / let-only
+        // Finally block; an empty Block result is replaced with undefined (UpdateEmpty).
+        Assert.Equal("try-value|try-value|undef|undef", result.ToString());
+    }
+
+    [Fact]
+    public void Parser_LineSeparator_Triggers_ASI_And_Terminates_Line_Comment()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        // U+2028 / U+2029 terminate a // line comment AND act as line terminators for ASI.
+        var result = ctx.Eval("var x = 5\u2028typeof x");
+
+        Assert.Equal("number", result.ToString());
+    }
+
+    [Fact]
+    public void Parser_ParagraphSeparator_Triggers_ASI_And_Terminates_Line_Comment()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("// commented out\u2029typeof globalThis");
+
+        Assert.Equal("object", result.ToString());
+    }
+
+    [Fact]
+    public void DateTimeFormat_Renders_FractionalSecondDigits_When_Requested()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var d = new Date(Date.UTC(2020, 0, 1, 12, 34, 56, 789));
+            var fmt = new Intl.DateTimeFormat('en-US', {
+              hour: 'numeric', minute: 'numeric', second: 'numeric',
+              fractionalSecondDigits: 3, timeZone: 'UTC', hour12: false
+            });
+            var formatted = fmt.format(d);
+            [
+              /\.789/.test(formatted),
+              fmt.resolvedOptions().fractionalSecondDigits
+            ].join('|');
+            """);
+
+        Assert.Equal("true|3", result.ToString());
+    }
+
+    [Fact]
+    public void Promise_Instance_Constructor_Is_Promise()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var p = new Promise(function (resolve) { resolve(1); });
+            [
+              p.constructor === Promise,
+              Object.getPrototypeOf(p) === Promise.prototype,
+              p instanceof Promise
+            ].join('|');
+            """);
+
+        Assert.Equal("true|true|true", result.ToString());
+    }
+
+    [Fact]
+    public void DateTimeFormat_Honors_Buddhist_Calendar_Option_For_Year_Formatting()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var optDtf = new Intl.DateTimeFormat('en-US', { calendar: 'buddhist', year: 'numeric' });
+            var tagDtf = new Intl.DateTimeFormat('en-US-u-ca-buddhist', { year: 'numeric' });
+            var pd = Temporal.PlainDate.from('2050-01-31[u-ca=buddhist]');
+            [
+              optDtf.resolvedOptions().calendar,
+              optDtf.formatToParts(pd).find(p => p.type === 'year').value,
+              tagDtf.resolvedOptions().calendar,
+              tagDtf.formatToParts(pd).find(p => p.type === 'year').value
+            ].join('|');
+            """);
+
+        // The calendar OPTION must reach ResolvedCalendar (previously only the -u-ca- tag
+        // value was consulted), so a Buddhist year formats as 2050 + 543 = 2593.
+        Assert.Equal("buddhist|2593|buddhist|2593", result.ToString());
+    }
+
+    [Fact]
+    public void RegExp_Supports_Hex_Property_Escape()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              /\p{Hex}/u.test('a'),
+              /\p{Hex}/u.test('5'),
+              /\p{Hex}/u.test('g'),
+              /[\p{Hex}]/u.test('F'),
+              /\p{Hex_Digit}/u.test('B'),
+              /\p{ASCII_Hex_Digit}/u.test('a'),
+              /\p{ASCII_Hex_Digit}/u.test('ａ')
+            ].join('|');
+            """);
+
+        Assert.Equal("true|true|false|true|true|true|false", result.ToString());
+    }
+
+    [Fact]
+    public void NumberFormat_Compact_Notation_Supports_German_Suffixes()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var shortFmt = new Intl.NumberFormat('de-DE', { notation: 'compact', compactDisplay: 'short' });
+            var longFmt = new Intl.NumberFormat('de-DE', { notation: 'compact', compactDisplay: 'long' });
+            [
+              shortFmt.format(987654321),
+              shortFmt.format(2_500_000),
+              shortFmt.format(1_200),
+              longFmt.format(987654321),
+              longFmt.format(2_500_000)
+            ].join('|');
+            """);
+
+        // CLDR de compact: short suffixes "Tsd.|Mio.|Mrd.|Bio."; long "Tausend|Million(en)|…".
+        Assert.Equal("988 Mio.|2,5 Mio.|1,2 Tsd.|988 Millionen|2,5 Millionen", result.ToString());
+    }
+
+    [Fact]
+    public void NumberFormat_FormatToParts_Compact_German_Reports_Compact_Suffix_Part()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var parts = new Intl.NumberFormat('de-DE', { notation: 'compact' }).formatToParts(987654321);
+            parts.map(p => p.type + ':' + p.value).join('|');
+            """);
+
+        // Per spec: compact-formatted "988 Mio." has three parts — integer "988", literal " ",
+        // compact "Mio." — not the five parts a full decimal "987.654.321" would produce.
+        Assert.Equal("integer:988|literal: |compact:Mio.", result.ToString());
+    }
+
+    [Fact]
+    public void DateTimeFormat_Hour12_True_Picks_H12_For_NonJa_Locales()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              new Intl.DateTimeFormat('fr-FR', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
+              new Intl.DateTimeFormat('de-DE', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
+              new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
+              new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false }).resolvedOptions().hourCycle
+            ].join('|');
+            """);
+
+        // Per CLDR, the 12-hour cycle is h12 almost everywhere — even for locales whose
+        // default is h23 (fr, de), where the 24-hour cycle is preferred but the 12-hour
+        // alternative is still "h" (h12), not "K" (h11).
+        Assert.Equal("h12|h12|h12|h23", result.ToString());
+    }
+
+    [Fact]
+    public void Anonymous_User_Function_Name_Defaults_To_Empty_String()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var named = function bar() {};
+            var anonymous = function () {};
+            [
+              named.name,
+              anonymous.name,
+              typeof Math.floor.name === 'string' ? Math.floor.name : 'unexpected'
+            ].join('|');
+            """);
+
+        // A bare `function () {}` is anonymous and its `name` defaults to "" per
+        // SetFunctionName; the explicit `bar` survives; native built-ins keep their own
+        // name (Math.floor → "floor"). The contextual NamedEvaluation rebinding for
+        // `var x = function () {}` is a separate concern not covered here.
+        Assert.Equal("bar||floor", result.ToString());
+    }
+
+    [Fact]
+    public void Intl_Locale_Resolves_Grandfathered_Tag_To_Preferred_Form()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var L = Intl.Locale;
+            [
+              new L('cel-gaulish').baseName,
+              new L('cel-gaulish').language,
+              new L('art-lojban').baseName,
+              new L('zh-guoyu').baseName,
+              new L('zh-hakka').baseName
+            ].join('|');
+            """);
+
+        Assert.Equal("xtg|xtg|jbo|zh|hak", result.ToString());
+    }
+
+    [Fact]
+    public void NumberFormat_Percent_Style_Multiplies_By_100_And_Appends_Locale_Symbol()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var enUS = new Intl.NumberFormat('en-US', { style: 'percent' });
+            [
+              enUS.format(0.5),
+              enUS.format(1),
+              enUS.format(BigInt(88780000)),
+              new Intl.NumberFormat('en-US', { style: 'percent' }).format(-0.05)
+            ].join('|');
+            """);
+
+        Assert.Equal("50%|100%|8,878,000,000%|-5%", result.ToString());
+    }
+
+    [Fact]
+    public void PlainYearMonth_ToString_Keeps_Reference_Day_For_NonIso_Calendar_With_CalendarName_Never()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var ym = Temporal.PlainYearMonth.from({ year: 2000, month: 5, calendar: 'gregory' });
+            var iso = Temporal.PlainYearMonth.from({ year: 2000, month: 5 });
+            [
+              ym.toString({ calendarName: 'never' }),
+              ym.toString({ calendarName: 'auto' }),
+              ym.toString({ calendarName: 'always' }),
+              iso.toString({ calendarName: 'never' }),
+              iso.toString({ calendarName: 'auto' })
+            ].join('|');
+            """);
+
+        // Non-ISO calendar: the reference day is included even with calendarName "never"
+        // (so the YYYY-MM-DD form round-trips through the calendar's month-day projection).
+        // ISO calendar: the bare YYYY-MM form is unambiguous, so no day is appended.
+        Assert.Equal("2000-05-01|2000-05-01[u-ca=gregory]|2000-05-01[u-ca=gregory]|2000-05|2000-05", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Sorts_Main_Tag_Variants_Alphabetically()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('de-Latn-DE-fonipa-1996')[0],
+              Intl.getCanonicalLocales('en-rozaj-biske')[0],
+              Intl.getCanonicalLocales('sl-rozaj-1994-biske')[0]
+            ].join('|');
+            """);
+
+        // Variants sort by ordinal (digits before letters): 1994 < biske < fonipa < rozaj.
+        Assert.Equal("de-Latn-DE-1996-fonipa|en-biske-rozaj|sl-1994-biske-rozaj", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Applies_Subdivision_And_Timezone_Value_Aliases()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('und-NO-u-sd-no23')[0],
+              Intl.getCanonicalLocales('und-u-rg-no23')[0],
+              Intl.getCanonicalLocales('und-u-tz-cnckg')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("und-NO-u-sd-no50|und-u-rg-no50|und-u-tz-cnsha", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Sorts_Variants_And_Fields_In_Transformed_Extension()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('sl-t-sl-rozaj-biske-1994')[0],
+              Intl.getCanonicalLocales('en-t-en-Latn-US-rozaj-biske')[0],
+              Intl.getCanonicalLocales('en-t-en-x0-test-h0-hybrid')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("sl-t-sl-1994-biske-rozaj|en-t-en-latn-us-biske-rozaj|en-t-en-h0-hybrid-x0-test", result.ToString());
+    }
+
+    [Fact]
+    public void Class_Static_Field_And_Block_Initializers_Run_In_Source_Order()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var trace = [];
+            function record(name) { trace.push(name); return name; }
+            class C {
+              static a = record('first field');
+              static { record('first block'); }
+              static b = record('second field');
+              static { record('second block'); }
+              static c = record('third field');
+            }
+            trace.join('|');
+            """);
+
+        Assert.Equal("first field|first block|second field|second block|third field", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Applies_Grandfathered_Tags_With_Variant_Suffix()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('art-lojban')[0],
+              Intl.getCanonicalLocales('art-lojban-fonipa')[0],
+              Intl.getCanonicalLocales('cel-gaulish-fonipa')[0],
+              Intl.getCanonicalLocales('zh-guoyu-fonipa')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("jbo|jbo-fonipa|xtg-fonipa|zh-fonipa", result.ToString());
+    }
+
+    [Fact]
+    public void PlainMonthDay_Throws_RangeError_For_Infinite_EraYear()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var pmd = Temporal.PlainMonthDay.from({ monthCode: 'M01', day: 1, calendar: 'gregory' });
+            [
+              (() => { try { pmd.toPlainDate({ era: 'ce', eraYear: Infinity }); return 'no throw'; } catch (e) { return e.name; } })(),
+              (() => { try { pmd.equals({ era: 'ce', eraYear: Infinity, monthCode: 'M01', day: 1, calendar: 'gregory' }); return 'no throw'; } catch (e) { return e.name; } })()
+            ].join('|');
+            """);
+
+        Assert.Equal("RangeError|RangeError", result.ToString());
+    }
+
+    [Fact]
+    public void Collator_Ignores_Unicode_Keywords_Inside_Private_Use_Sequence()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              new Intl.Collator('de-x-private-u-co-phonebk').resolvedOptions().collation,
+              new Intl.Collator('en-x-u-co-phonebk').resolvedOptions().collation
+            ].join('|');
+            """);
+
+        Assert.Equal("default|default", result.ToString());
+    }
+
+    [Fact]
+    public void Arguments_Object_Symbol_ToStringTag_Override_Is_Honored()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            (function () {
+              var args = (function () { return arguments; }());
+              var defaultTag = Object.prototype.toString.call(args);
+              Object.defineProperty(args, Symbol.toStringTag, { value: 'test262' });
+              var overriddenTag = Object.prototype.toString.call(args);
+              return defaultTag + '|' + overriddenTag;
+            })()
+            """);
+
+        Assert.Equal("[object Arguments]|[object test262]", result.ToString());
+    }
+
+    [Fact]
+    public void GetCanonicalLocales_Canonicalizes_Unicode_Keyword_Value_Aliases()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            [
+              Intl.getCanonicalLocales('und-u-kb-yes')[0],
+              Intl.getCanonicalLocales('und-u-kn-yes')[0],
+              Intl.getCanonicalLocales('und-u-ks-primary')[0],
+              Intl.getCanonicalLocales('und-u-ks-tertiary')[0],
+              Intl.getCanonicalLocales('und-u-ms-imperial')[0]
+            ].join('|');
+            """);
+
+        Assert.Equal("und-u-kb|und-u-kn|und-u-ks-level1|und-u-ks-level3|und-u-ms-uksystem", result.ToString());
+    }
+
+    [Fact]
+    public void Array_Prototype_Sort_Is_Stable_For_Equal_Comparator_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var input = [];
+            for (var i = 0; i < 200; i++)
+              input.push({ key: i % 4, ord: i });
+            input.sort(function (a, b) { return a.key - b.key; });
+            var ok = true;
+            var lastByKey = { 0: -1, 1: -1, 2: -1, 3: -1 };
+            for (var i = 0; i < input.length; i++) {
+              if (input[i].ord <= lastByKey[input[i].key]) { ok = false; break; }
+              lastByKey[input[i].key] = input[i].ord;
+            }
+            ok;
+            """);
+
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
+    public void Array_Prototype_ToSorted_Is_Stable_For_Equal_Comparator_Keys()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            var input = [];
+            for (var i = 0; i < 200; i++)
+              input.push({ key: i % 4, ord: i });
+            var sorted = input.toSorted(function (a, b) { return a.key - b.key; });
+            var ok = true;
+            var lastByKey = { 0: -1, 1: -1, 2: -1, 3: -1 };
+            for (var i = 0; i < sorted.length; i++) {
+              if (sorted[i].ord <= lastByKey[sorted[i].key]) { ok = false; break; }
+              lastByKey[sorted[i].key] = sorted[i].ord;
+            }
+            ok;
+            """);
+
+        Assert.Equal("true", result.ToString());
+    }
+
+    [Fact]
     public void GlobalThis_Resolves_To_The_Current_Global_Object()
     {
         EnsureBuiltInsLoaded();

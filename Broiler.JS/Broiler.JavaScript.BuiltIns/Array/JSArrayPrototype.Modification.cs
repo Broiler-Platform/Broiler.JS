@@ -395,10 +395,20 @@ public partial class JSArray
                 values.Add(GetIndexedValue(@this, index));
         }
 
-        values.Sort(cx);
+        // §23.1.3.30 step 6: Array.prototype.sort must be stable. List<T>.Sort uses
+        // an unstable introsort; carry the original index and break comparator ties
+        // on it so equal-keyed elements retain their input order.
+        var indexed = new (JSValue Value, int Index)[values.Count];
+        for (var i = 0; i < values.Count; i++)
+            indexed[i] = (values[i], i);
+        System.Array.Sort(indexed, (a, b) =>
+        {
+            var r = cx(a.Value, b.Value);
+            return r != 0 ? r : a.Index.CompareTo(b.Index);
+        });
 
         long writeIndex = 0;
-        foreach (var item in values)
+        foreach (var (item, _) in indexed)
             SetIndexedValue(@this, writeIndex++, item);
 
         while (writeIndex < length)

@@ -782,9 +782,11 @@ public partial class JSTemporalPlainYearMonth : JSObject
         return (m <= 2 ? y + 1 : y, m, d);
     }
 
-    // TemporalYearMonthToString: "YYYY-MM" (expanding to ±YYYYYY outside 0000–9999). When the
-    // calendar is shown ("always"/"critical") the reference ISO day and a [u-ca=…] annotation are
-    // appended — the round-trippable form needed because YYYY-MM alone omits the day.
+    // TemporalYearMonthToString: "YYYY-MM" (expanding to ±YYYYYY outside 0000–9999). For a
+    // non-ISO calendar the reference ISO day is ALWAYS appended (the day is required to
+    // round-trip a YYYY-MM date through the calendar's month-day projection) regardless of
+    // the calendarName option; only the optional [u-ca=…] annotation responds to
+    // showCalendar (always / critical / auto / never).
     private string ToISOString(string showCalendar = "auto")
     {
         var sb = new StringBuilder();
@@ -795,15 +797,15 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
         sb.Append('-').Append(isoMonth.ToString("00", CultureInfo.InvariantCulture));
 
-        // The calendar is displayed for always / critical, or whenever it is non-ISO (auto). When
-        // shown, the reference ISO day is appended too (YYYY-MM alone cannot round-trip the day).
-        var showCal = showCalendar is "always" or "critical" || (showCalendar != "never" && calendarId != "iso8601");
-        if (showCal)
-        {
+        var isNonIso = calendarId != "iso8601";
+        var showAnnotation = showCalendar is "always" or "critical" || (showCalendar == "auto" && isNonIso);
+        // The reference day is appended whenever the calendar is shown OR when the calendar
+        // is non-ISO (so the day round-trips even with calendarName: "never").
+        if (showAnnotation || isNonIso)
             sb.Append('-').Append(referenceISODay.ToString("00", CultureInfo.InvariantCulture));
+        if (showAnnotation)
             sb.Append(JSTemporalPlainDate.FormatCalendarAnnotation(calendarId,
                 showCalendar == "critical" ? "critical" : "always"));
-        }
 
         return sb.ToString();
     }
