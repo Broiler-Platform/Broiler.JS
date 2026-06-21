@@ -1281,16 +1281,6 @@ internal static class BuiltInsAssemblyInitializer
             return JSValue.CreateString(sb.ToString());
         }
 
-        static JSValue InvokeSpeciesConstructor(JSRegExp regExp, JSValue flags)
-        {
-            var constructor = regExp[KeyStrings.constructor];
-            var species = GetSpeciesConstructor(constructor);
-            if (species.IsNullOrUndefined)
-                return JSUndefined.Value;
-
-            return species.CreateInstance(new Arguments(species, regExp, flags));
-        }
-
         static JSValue RegExpExec(JSValue rx, JSValue input)
         {
             // §22.2.7.1 RegExpExec: a callable "exec" property is used; otherwise (it is absent or any
@@ -1531,47 +1521,45 @@ internal static class BuiltInsAssemblyInitializer
         }, "[Symbol.match]", 1), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.matchAll.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
-            if (a.This is JSRegExp regExp)
-            {
-                // Per 22.2.6.9, flags is ToString(Get(R, "flags")) and lastIndex
-                // is ToLength(Get(R, "lastIndex")) — both reads are observable, so
-                // a throwing `flags` getter / `flags` toString / `lastIndex`
-                // valueOf must propagate.
-                var flagsString = regExp[KeyStrings.GetOrCreate("flags")].ToString();
-                var flags = JSValue.CreateString(flagsString);
-                var matcher = InvokeSpeciesConstructor(regExp, flags);
-                if (matcher.IsUndefined)
-                    matcher = new JSRegExp(new Arguments(JSUndefined.Value, regExp, flags));
-                matcher[KeyStrings.lastIndex] = JSValue.CreateNumber(ToLength(regExp[KeyStrings.lastIndex]));
-                // Steps 9-12: global / fullUnicode are derived from the flags STRING,
-                // not by reading "global"/"unicode" off the constructed matcher (those
-                // reads are not observable per spec — a throwing getter must not fire).
-                return new JSRegExpStringIterator(
-                    matcher,
-                    JSValue.CreateString(a.Get1().ToString()),
-                    flagsString.Contains('g'),
-                    flagsString.Contains('u') || flagsString.Contains('v'));
-            }
+            // §22.2.6.10 RegExp.prototype [ @@matchAll ] ( string ). The algorithm does not
+            // branch on whether the receiver is a "real" RegExp: it always reads the receiver's
+            // own "flags" and constructs a fresh matcher through SpeciesConstructor, so every
+            // observable read happens for an arbitrary object receiver too.
+            //
+            // Steps 1-2: the this value must be an Object.
+            if (a.This is not JSObject r)
+                throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] called on a non-object this value");
 
-            if (JSRegExp.IsRegExpLike(a.This))
-            {
-                var flags = a.This[KeyStrings.GetOrCreate("flags")];
-                if (flags.IsNullOrUndefined)
-                    throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] requires a non-null flags value");
+            // Step 3: S = ToString(string) — observable and sequenced before "flags".
+            var s = JSValue.CreateString(a.Get1().StringValue);
 
-                if (!flags.ToString().Contains('g'))
-                    throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] requires a global regular expression");
+            // Step 4: C = SpeciesConstructor(R, %RegExp%). The "constructor" read and the
+            // @@species read both precede the "flags" read below.
+            var constructor = r[KeyStrings.constructor];
+            var species = GetSpeciesConstructor(constructor);
 
-                var matcher = new JSRegExp(new Arguments(JSUndefined.Value, a.This, flags));
-                return new JSRegExpStringIterator(
-                    matcher,
-                    JSValue.CreateString(a.Get1().ToString()),
-                    matcher.globalSearch,
-                    matcher.unicode);
-            }
+            // Step 5: flags = ToString(Get(R, "flags")). Both the read and its ToString are
+            // observable, so a throwing getter / toString must propagate.
+            var flagsString = r[KeyStrings.GetOrCreate("flags")].StringValue;
+            var flags = JSValue.CreateString(flagsString);
 
-            var defaultMatcher = new JSRegExp(new Arguments(JSUndefined.Value, a.This, JSValue.CreateString("g")));
-            return new JSRegExpStringIterator(defaultMatcher, JSValue.CreateString(a.Get1().ToString()), defaultMatcher.globalSearch, defaultMatcher.unicode);
+            // Step 6: matcher = Construct(C, « R, flags »). With no @@species the default
+            // %RegExp% is used; constructing it runs IsRegExp(R), an observable @@match probe.
+            var matcher = species.IsNullOrUndefined
+                ? new JSRegExp(new Arguments(JSUndefined.Value, r, flags))
+                : species.CreateInstance(new Arguments(species, r, flags));
+
+            // Steps 7-8: matcher.lastIndex = ToLength(Get(R, "lastIndex")).
+            matcher[KeyStrings.lastIndex] = JSValue.CreateNumber(ToLength(r[KeyStrings.lastIndex]));
+
+            // Steps 9-11: global / fullUnicode are derived from the flags STRING, not by
+            // reading "global"/"unicode" off the constructed matcher (those reads are not
+            // observable per spec — a throwing getter must not fire).
+            return new JSRegExpStringIterator(
+                matcher,
+                s,
+                flagsString.Contains('g'),
+                flagsString.Contains('u') || flagsString.Contains('v'));
         }, "[Symbol.matchAll]", 1), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.replace.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
