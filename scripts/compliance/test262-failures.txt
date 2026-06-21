@@ -41,7 +41,6 @@ test/built-ins/Array/prototype/splice/create-species-length-exceeding-integer-li
 test/built-ins/Array/prototype/splice/property-traps-order-with-species.js
 test/built-ins/Array/prototype/toReversed/length-exceeding-array-length-limit.js
 test/built-ins/Array/prototype/toSorted/comparefn-not-a-function.js
-test/built-ins/Array/prototype/toString/non-callable-join-string-tag.js
 test/built-ins/Array/prototype/unshift/clamps-to-integer-limit.js
 test/built-ins/Array/prototype/unshift/length-near-integer-limit.js
 test/built-ins/Array/prototype/unshift/throws-if-integer-limit-exceeded.js
@@ -73,21 +72,6 @@ test/built-ins/FinalizationRegistry/prototype/unregister/unregister-symbol-token
 test/built-ins/Function/prototype/S15.3.4_A4.js
 test/built-ins/Iterator/concat/throws-typeerror-when-iterator-method-not-callable.js
 test/built-ins/Iterator/from/iterable-primitives.js
-test/built-ins/JSON/rawJSON/basic.js
-test/built-ins/JSON/rawJSON/bigint-raw-json-can-be-stringified.js
-test/built-ins/JSON/rawJSON/returns-expected-object.js
-test/built-ins/JSON/stringify/property-order.js
-test/built-ins/JSON/stringify/replacer-function-object-deleted-property.js
-test/built-ins/JSON/stringify/space-number-float.js
-test/built-ins/JSON/stringify/space-number-object.js
-test/built-ins/JSON/stringify/space-number-range.js
-test/built-ins/JSON/stringify/space-string-object.js
-test/built-ins/JSON/stringify/space-string-range.js
-test/built-ins/JSON/stringify/space-string.js
-test/built-ins/JSON/stringify/value-array-proxy.js
-test/built-ins/JSON/stringify/value-object-proxy.js
-test/built-ins/JSON/stringify/value-symbol.js
-test/built-ins/JSON/stringify/value-tojson-arguments.js
 test/built-ins/Map/prototype/set/append-new-values-return-map.js
 test/built-ins/Map/prototype/set/replaces-a-value-returns-map.js
 test/built-ins/Math/hypot/Math.hypot_InfinityNaN.js
@@ -106,7 +90,6 @@ test/built-ins/Object/internals/DefineOwnProperty/consistent-value-function-call
 test/built-ins/Object/prototype/setPrototypeOf-with-different-values.js
 test/built-ins/Object/prototype/setPrototypeOf-with-non-circular-values-__proto__.js
 test/built-ins/Object/prototype/setPrototypeOf-with-non-circular-values.js
-test/built-ins/Object/prototype/toString/symbol-tag-override-instances.js
 test/built-ins/Object/setPrototypeOf/set-failure-cycle.js
 test/built-ins/Promise/all/same-reject-function.js
 test/built-ins/Promise/executor-call-context-sloppy.js
@@ -198,14 +181,11 @@ test/built-ins/Temporal/PlainYearMonth/prototype/since/throws-if-year-outside-va
 test/built-ins/Temporal/PlainYearMonth/prototype/toPlainDate/limits.js
 test/built-ins/Temporal/PlainYearMonth/prototype/until/throws-if-year-outside-valid-iso-range.js
 test/built-ins/Temporal/ZonedDateTime/from/argument-string-invalid.js
-test/built-ins/Temporal/ZonedDateTime/from/offset-string-invalid.js
 test/built-ins/Temporal/ZonedDateTime/prototype/since/round-cross-unit-boundary.js
 test/built-ins/Temporal/ZonedDateTime/prototype/toString/negative-zoneddatetime-rounding.js
 test/built-ins/Temporal/ZonedDateTime/prototype/toString/rounding-direction.js
 test/built-ins/Temporal/ZonedDateTime/prototype/until/round-cross-unit-boundary.js
-test/built-ins/Temporal/ZonedDateTime/prototype/with/minimum-instant-with-one-hour-offset.js
 test/built-ins/Temporal/ZonedDateTime/prototype/with/order-of-operations.js
-test/built-ins/Temporal/ZonedDateTime/timezone-iso-string.js
 test/built-ins/TypedArray/prototype/copyWithin/BigInt/non-negative-out-of-bounds-end.js
 test/built-ins/TypedArray/prototype/copyWithin/BigInt/undefined-end.js
 test/built-ins/TypedArray/prototype/copyWithin/non-negative-out-of-bounds-end.js
@@ -386,7 +366,6 @@ test/intl402/Temporal/ZonedDateTime/prototype/since/same-date-reverse-wallclock.
 test/intl402/Temporal/ZonedDateTime/prototype/until/dst-rounding-result.js
 test/intl402/Temporal/ZonedDateTime/prototype/until/same-date-reverse-wallclock.js
 test/intl402/Temporal/ZonedDateTime/prototype/with/dst-option-offset-disambiguation-combinations.js
-test/intl402/Temporal/ZonedDateTime/prototype/with/dst-option-offset.js
 test/intl402/language-tags-canonicalized.js
 test/intl402/language-tags-invalid.js
 test/intl402/language-tags-with-underscore.js
@@ -445,8 +424,6 @@ test/language/statements/for-of/iterator-next-result-value-attr-error.js
 test/language/statements/for/scope-body-lex-open.js
 test/language/statements/let/syntax/let-closure-inside-next-expression.js
 test/language/statements/try/completion-values.js
-test/language/statements/with/get-binding-value-call-with-proxy-env.js
-test/language/statements/with/set-mutable-binding-idref-compound-assign-with-proxy-env.js
 test/language/types/reference/put-value-prop-base-primitive.js
 test/staging/Temporal/removed-methods.js
 test/staging/built-ins/RegExp/escape/surrogate-pair.js
@@ -467,11 +444,6 @@ test/staging/sm/Function/arguments-parameter-shadowing.js
 test/staging/sm/Function/function-name-assignment.js
 test/staging/sm/Function/function-toString-builtin-name.js
 test/staging/sm/Function/return-finally.js
-test/staging/sm/JSON/stringify-boxed-primitives.js
-test/staging/sm/JSON/stringify-gap.js
-test/staging/sm/JSON/stringify-replacer-array-boxed-elements.js
-test/staging/sm/JSON/stringify-replacer.js
-test/staging/sm/JSON/stringify.js
 test/staging/sm/PrivateName/illegal-in-class-context.js
 test/staging/sm/Proxy/global-receiver.js
 test/staging/sm/RegExp/escape.js
@@ -489,7 +461,6 @@ test/staging/sm/RegExp/unicode-ignoreCase.js
 test/staging/sm/RegExp/unicode-raw.js
 test/staging/sm/String/string-code-point-upper-lower-mapping.js
 test/staging/sm/String/string-upper-lower-mapping.js
-test/staging/sm/Symbol/json-stringify-values.js
 test/staging/sm/TypedArray/constructor-not-callable.js
 test/staging/sm/TypedArray/indexOf-and-lastIndexOf.js
 test/staging/sm/TypedArray/sort_large_countingsort.js
@@ -506,7 +477,6 @@ test/staging/sm/expressions/destructuring-array-default-class.js
 test/staging/sm/expressions/destructuring-array-default-function-nested.js
 test/staging/sm/expressions/destructuring-array-default-function.js
 test/staging/sm/expressions/destructuring-array-default-simple.js
-test/staging/sm/expressions/optional-chain.js
 test/staging/sm/extensions/mutable-proto-special-form.js
 test/staging/sm/extensions/quote-string-for-nul-character.js
 test/staging/sm/generators/objects.js
