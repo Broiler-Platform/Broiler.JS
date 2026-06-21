@@ -125,12 +125,11 @@ public partial class JSJSON : JSObject
                 item = v.ToString();
             else if (v is JSPrimitiveObject wrapper && (wrapper.value.IsString || wrapper.value is JSNumber))
             {
-                // The spec sets item to ToString(v) — ToString of the *object*, which
-                // runs ToPrimitive(v, String) and so invokes the object's own toString
-                // (not valueOf). wrapper.ToString() does exactly this; reading the
-                // [[NumberData]]/[[StringData]] slot directly would skip a user
-                // toString override (and a user valueOf must not be called at all).
-                item = wrapper.ToString();
+                // The spec sets item to ToString(v): ToString(ToPrimitive(v, String)), which
+                // runs the wrapper's own toString (then valueOf) through the prototype chain
+                // — so a user-redefined Number/String.prototype.toString is observed. Reading
+                // the [[NumberData]]/[[StringData]] slot directly would skip that override.
+                item = CoerceJsonWrapperToPrimitive(wrapper, preferString: true).StringValue;
             }
 
             if (item != null && seen.Add(item))
@@ -564,7 +563,10 @@ public partial class JSJSON : JSObject
         if (parsed is JSObject)
             throw JSEngine.NewSyntaxError("JSON.rawJSON cannot be called with a JSON object or array");
 
+        // §JSON.rawJSON: obj is OrdinaryObjectCreate(null) — a null-prototype object —
+        // carrying the [[IsRawJSON]] marker (the own "rawJSON" data property) and frozen.
         var result = new JSObject();
+        result.BasePrototypeObject = null;
         result.FastAddValue(rawJSONKey, JSValue.CreateString(str), JSPropertyAttributes.ConfigurableValue);
         JSObject.FreezeObject(result);
         return result;
@@ -575,19 +577,28 @@ public partial class JSJSON : JSObject
 
     [JSExport("isRawJSON", Length = 1)]
     public static JSValue IsRawJSON(in Arguments a)
-    {
-        var value = a.Get1();
-        if (value is not JSObject obj)
-            return JSBoolean.False;
+        => TryGetRawJsonText(a.Get1(), out _) ? JSBoolean.True : JSBoolean.False;
 
-        if (!obj.IsFrozen())
-            return JSBoolean.False;
+    // A value produced by JSON.rawJSON: a frozen object carrying the [[IsRawJSON]] marker
+    // (an own "rawJSON" data property whose value is a String). SerializeJSONProperty emits
+    // that text verbatim instead of serializing the object.
+    private static bool TryGetRawJsonText(JSValue value, out string text)
+    {
+        text = null;
+        if (value is not JSObject obj || !obj.IsFrozen())
+            return false;
 
         ref var ownProps = ref obj.GetOwnProperties();
         if (!ownProps.TryGetValue(rawJSONKey.Key, out var prop) || prop.IsEmpty)
-            return JSBoolean.False;
+            return false;
 
-        return prop.value is JSValue v && v.IsString ? JSBoolean.True : JSBoolean.False;
+        if (prop.value is JSValue v && v.IsString)
+        {
+            text = v.ToString();
+            return true;
+        }
+
+        return false;
     }
 
     private static void Stringify(
@@ -657,6 +668,14 @@ public partial class JSJSON : JSObject
             case JSFunction _:
                 return;
 
+        }
+
+        // SerializeJSONProperty (json-parse-with-source): a JSON.rawJSON object is emitted
+        // as its stored text verbatim, never serialized as an ordinary object.
+        if (TryGetRawJsonText(target, out var rawJsonText))
+        {
+            sb.Write(rawJsonText);
+            return;
         }
 
         if (target is JSObject arrayObject && arrayObject.IsArray)
@@ -738,20 +757,31 @@ public partial class JSJSON : JSObject
             // reads as undefined and the replacer still runs), while a property added
             // mid-serialization is not. Integer-indexed keys (stored apart from named ones)
             // come first in ascending order, then named keys in insertion order.
-            var snapshot = new List<string>();
-            foreach (var (index, element) in obj.GetElements(create: false).AllValues())
+            List<string> snapshot;
+            if (obj is JSProxy)
             {
-                if (element.IsEmpty || !element.IsEnumerable)
-                    continue;
-                snapshot.Add(index.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                // A Proxy exposes its own keys only through the [[OwnPropertyKeys]] and
+                // [[GetOwnProperty]] traps; its internal slot stores nothing. Route it
+                // through EnumerableOwnPropertyNames so the traps drive the key list.
+                snapshot = EnumerableOwnPropertyNames(obj);
             }
-
-            var pen = obj.GetOwnProperties().GetEnumerator();
-            while (pen.MoveNext(out var key, out var value))
+            else
             {
-                if (value.IsEmpty || !value.IsEnumerable)
-                    continue;
-                snapshot.Add(key.Value.ToString());
+                snapshot = new List<string>();
+                foreach (var (index, element) in obj.GetElements(create: false).AllValues())
+                {
+                    if (element.IsEmpty || !element.IsEnumerable)
+                        continue;
+                    snapshot.Add(index.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                }
+
+                var pen = obj.GetOwnProperties().GetEnumerator();
+                while (pen.MoveNext(out var key, out var value))
+                {
+                    if (value.IsEmpty || !value.IsEnumerable)
+                        continue;
+                    snapshot.Add(key.Value.ToString());
+                }
             }
 
             foreach (var keyText in snapshot)
