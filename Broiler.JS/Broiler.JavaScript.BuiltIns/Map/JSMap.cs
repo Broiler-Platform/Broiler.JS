@@ -123,7 +123,8 @@ public partial class JSMap : JSObject
             liveCount++;
         }
 
-        return value;
+        // Map.prototype.set returns the Map object (step 9: Return M), enabling chaining.
+        return this;
     }
 
     [JSExport("clear")]

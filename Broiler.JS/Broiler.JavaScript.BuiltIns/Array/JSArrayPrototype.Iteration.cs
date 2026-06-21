@@ -184,17 +184,12 @@ public partial class JSArray
 
     private static void CreateDataPropertyOrThrow(JSObject target, uint index, JSValue value)
     {
-        var current = target.GetOwnPropertyDescriptor(JSValue.CreateNumber(index));
-        if (current.IsUndefined)
-        {
-            if (!target.IsExtensible())
-                throw JSEngine.NewTypeError($"Cannot add property {index} to {target}");
-        }
-        else if (!current[KeyStrings.configurable].BooleanValue)
-        {
-            throw JSEngine.NewTypeError("Cannot redefine property");
-        }
-
+        // CreateDataProperty(O, P, V) is O.[[DefineOwnProperty]](P, {value, writable,
+        // enumerable, configurable: all true}); the extensibility / non-configurable
+        // checks are performed inside [[DefineOwnProperty]] (OrdinaryDefineOwnProperty for
+        // an ordinary target, the defineProperty trap for a Proxy). Probing
+        // GetOwnPropertyDescriptor and IsExtensible up front would fire extra Proxy traps
+        // the spec never invokes (test262 Array splice/reverse length-exceeding-with-proxy).
         var descriptor = new JSObject();
         descriptor.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);
         descriptor.FastAddValue(KeyStrings.writable, JSBoolean.True, JSPropertyAttributes.EnumerableConfigurableValue);

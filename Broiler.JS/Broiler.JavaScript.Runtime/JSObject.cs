@@ -229,18 +229,7 @@ public partial class JSObject : JSValue
             }
         }
 
-        var firstMethod = preferString ? KeyStrings.toString : KeyStrings.valueOf;
-        var secondMethod = preferString ? KeyStrings.valueOf : KeyStrings.toString;
-
-        var first = TryCallPrimitiveMethod(firstMethod);
-        if (first != null)
-            return first;
-
-        var second = TryCallPrimitiveMethod(secondMethod);
-        if (second != null)
-            return second;
-
-        throw NewTypeError("Cannot convert object to primitive value");
+        return OrdinaryToPrimitive(preferString);
     }
 
     private JSValue ToPrimitiveDefault()
@@ -262,7 +251,28 @@ public partial class JSObject : JSValue
             }
         }
 
-        return ToPrimitive(preferString: false);
+        // The default hint behaves as the number hint for OrdinaryToPrimitive. Call it
+        // directly rather than delegating to ToPrimitive(false), which would re-read
+        // @@toPrimitive — an observable second [[Get]] of the symbol property.
+        return OrdinaryToPrimitive(preferString: false);
+    }
+
+    // OrdinaryToPrimitive(O, hint): try valueOf/toString (or toString/valueOf for the
+    // string hint) without consulting @@toPrimitive (the caller already did).
+    private JSValue OrdinaryToPrimitive(bool preferString)
+    {
+        var firstMethod = preferString ? KeyStrings.toString : KeyStrings.valueOf;
+        var secondMethod = preferString ? KeyStrings.valueOf : KeyStrings.toString;
+
+        var first = TryCallPrimitiveMethod(firstMethod);
+        if (first != null)
+            return first;
+
+        var second = TryCallPrimitiveMethod(secondMethod);
+        if (second != null)
+            return second;
+
+        throw NewTypeError("Cannot convert object to primitive value");
     }
 
     internal JSValue ToDefaultPrimitive() => ToPrimitiveDefault();

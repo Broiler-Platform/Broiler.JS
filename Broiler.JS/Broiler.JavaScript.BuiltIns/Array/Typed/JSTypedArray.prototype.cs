@@ -409,6 +409,12 @@ partial class JSTypedArray
         var en = GetElementEnumerator(startIndex);
         while (en.MoveNext(out var hasValue, out var item, out var index))
         {
+            // The search is bounded by the length captured before fromIndex coercion:
+            // coercing fromIndex (ToIntegerOrInfinity) may have run user code that GREW
+            // the backing resizable buffer, but indexOf only inspects indices below the
+            // original length (test262 indexOf/coerced-searchelement-fromindex-grow).
+            if (index >= (uint)n)
+                break;
             if (!hasValue)
                 continue;
             if (searchElement.StrictEquals(item))
@@ -455,6 +461,16 @@ partial class JSTypedArray
         }
 
         var startIndex = a.Length == 2 ? fromIndex.IntValue : int.MaxValue;
+
+        // Coercing fromIndex (ToIntegerOrInfinity) may run user code that resizes the
+        // backing resizable buffer, leaving this fixed-length view out of bounds — every
+        // index is then absent (HasProperty is false), so the search yields -1 (test262
+        // TypedArray/prototype/lastIndexOf/coerced-position-shrink).
+        if (IsOutOfBounds)
+        {
+            return JSNumber.MinusOne;
+        }
+
         if (startIndex >= n)
         {
             startIndex = n - 1;
@@ -791,11 +807,17 @@ partial class JSTypedArray
         end = end < 0 ? Math.Max(srcLength + end, 0) : Math.Min(end, srcLength);
         var newLength = Math.Max(end - begin, 0);
 
-        // subarray step 17 is TypedArraySpeciesCreate(O, «buffer, beginByteOffset,
-        // newLength»), whose TypedArrayCreate step performs ValidateTypedArray on the
-        // constructed value. A custom @@species constructor that returns a non-typed
-        // array (or nothing) must therefore surface as a TypeError, not be returned.
-        var created = GetSpeciesConstructor(this).CreateInstance(buffer, new JSNumber(byteOffset + begin * bytesPerElement), new JSNumber(newLength));
+        // subarray step 17 is TypedArraySpeciesCreate(O, argumentsList), whose
+        // TypedArrayCreate step performs ValidateTypedArray on the constructed value (so a
+        // custom @@species constructor returning a non-typed array surfaces as a TypeError).
+        // Step 15/16: when the source has an AUTO length (a length-tracking view) and `end`
+        // is undefined, only «buffer, beginByteOffset» is passed so the result is itself
+        // length-tracking; otherwise the explicit newLength is included.
+        var beginByteOffset = new JSNumber(byteOffset + begin * bytesPerElement);
+        var speciesConstructor = GetSpeciesConstructor(this);
+        var created = isLengthTracking && a.GetAt(1).IsUndefined
+            ? speciesConstructor.CreateInstance(buffer, beginByteOffset)
+            : speciesConstructor.CreateInstance(buffer, beginByteOffset, new JSNumber(newLength));
         if (created is not JSTypedArray)
             throw JSEngine.NewTypeError("TypedArray species constructor did not return a TypedArray");
 

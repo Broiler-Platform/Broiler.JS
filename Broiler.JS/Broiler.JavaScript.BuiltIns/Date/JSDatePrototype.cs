@@ -130,12 +130,31 @@ public partial class JSDate
             return;
         }
 
-        int year = unchecked((int)JSValue.ToUint32(yD)), month = unchecked((int)JSValue.ToUint32(moD)),
-            day = unchecked((int)JSValue.ToUint32(dD)), hours = unchecked((int)JSValue.ToUint32(hD)),
-            minutes = unchecked((int)JSValue.ToUint32(miD)), seconds = unchecked((int)JSValue.ToUint32(sD)),
-            millis = unchecked((int)JSValue.ToUint32(msD));
+        // ToIntegerOrInfinity (truncate toward zero), NOT ToUint32 — the latter's
+        // modulo-2^32 reduction wraps a huge year such as Number.MAX_VALUE into range
+        // (MAX_VALUE mod 2^32 == 0 → year 1900) so the DateTimeOffset fast path below
+        // would succeed with the wrong year instead of producing NaN.
+        double yearD = Math.Truncate(yD), monthD = Math.Truncate(moD), dayD = Math.Truncate(dD),
+            hoursD = Math.Truncate(hD), minutesD = Math.Truncate(miD), secondsD = Math.Truncate(sD), millisD = Math.Truncate(msD);
+        yearD = yearD >= 0 && yearD < 100 ? yearD + 1900 : yearD;
 
-        year = year >= 0 && year < 100 ? year + 1900 : year;
+        // A component too large to reduce losslessly to a 32-bit int cannot use the
+        // DateTimeOffset fast path; evaluate it with full-range ECMAScript date math,
+        // which yields NaN when the result falls outside the valid Date range.
+        const double Int32Limit = int.MaxValue;
+        if (Math.Abs(yearD) > Int32Limit || Math.Abs(monthD) > Int32Limit || Math.Abs(dayD) > Int32Limit
+            || Math.Abs(hoursD) > Int32Limit || Math.Abs(minutesD) > Int32Limit
+            || Math.Abs(secondsD) > Int32Limit || Math.Abs(millisD) > Int32Limit)
+        {
+            double timeOutOfRange = JSDateMath.MakeTime(hoursD, minutesD, secondsD, millisD);
+            double dayOutOfRange = JSDateMath.MakeDay(yearD, monthD, dayD);
+            value = DateTimeOffset.MinValue;
+            rawTimeMs = JSDateMath.TimeClip(JSDateMath.UTC(JSDateMath.MakeDate(dayOutOfRange, timeOutOfRange)));
+            return;
+        }
+
+        int year = (int)yearD, month = (int)monthD, day = (int)dayD, hours = (int)hoursD,
+            minutes = (int)minutesD, seconds = (int)secondsD, millis = (int)millisD;
 
         try
         {

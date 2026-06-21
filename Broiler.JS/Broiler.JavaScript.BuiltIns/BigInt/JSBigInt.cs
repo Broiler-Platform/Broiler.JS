@@ -82,7 +82,20 @@ public partial class JSBigInt : JSPrimitive
         {
             var hi = Math.BitIncrement(lo);
             if (double.IsInfinity(hi))
-                return negative ? -lo : lo;
+            {
+                // `lo` is the largest finite double (MAX_VALUE = 2^1024 - 2^971); its
+                // conceptual successor is 2^1024. IEEE-754 roundTiesToEven overflows to
+                // Infinity once the magnitude reaches the midpoint 2^1024 - 2^970, and a
+                // tie also rounds up (2^1024 has the even significand). Below the midpoint
+                // it rounds down to MAX_VALUE.
+                var conceptualHi = BigInteger.One << 1024;
+                var overflowDistanceLo = magnitude - loBig;
+                var overflowDistanceHi = conceptualHi - magnitude;
+                if (overflowDistanceLo < overflowDistanceHi)
+                    return negative ? -lo : lo;
+
+                return negative ? double.NegativeInfinity : double.PositiveInfinity;
+            }
 
             var distanceLo = magnitude - loBig;
             var distanceHi = new BigInteger(hi) - magnitude;

@@ -79,7 +79,8 @@ public partial class JSWeakMap: JSObject
             index.Put(uk) = new(new(uk, value, Unregister));
         }
 
-        return value;
+        // WeakMap.prototype.set returns the WeakMap object (Return M), enabling chaining.
+        return this;
     }
 
     private void Unregister(in HashedString key) => index.RemoveAt(key.Value);

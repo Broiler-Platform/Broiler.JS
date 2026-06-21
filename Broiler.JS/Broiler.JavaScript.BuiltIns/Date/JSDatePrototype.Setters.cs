@@ -74,7 +74,7 @@ public partial class JSDate
                 || double.IsNaN(dv) || double.IsInfinity(dv))
                 return new JSNumber(SetTimeValue(double.NaN));
 
-            double newDate = JSDateMath.MakeDate(JSDateMath.MakeDay((long)year, (long)mv, (long)dv), JSDateMath.TimeWithinDay(t));
+            double newDate = JSDateMath.MakeDate(JSDateMath.MakeDay(Math.Truncate(year), Math.Truncate(mv), Math.Truncate(dv)), JSDateMath.TimeWithinDay(t));
             return new JSNumber(SetTimeValue(JSDateMath.TimeClip(JSDateMath.UTC(newDate))));
         }
 
@@ -126,7 +126,7 @@ public partial class JSDate
         // For year 0 or negative years, use ECMAScript date math directly.
         // This handles the proleptic Gregorian calendar correctly.
         double timeWithinDay = JSDateMath.MakeTime(date.Hour, date.Minute, date.Second, date.Millisecond);
-        double dayValue = JSDateMath.MakeDay((long)year, month, day);
+        double dayValue = JSDateMath.MakeDay(Math.Truncate(year), month, day);
         double utcMs = JSDateMath.UTC(JSDateMath.MakeDate(dayValue, timeWithinDay));
         double result = JSDateMath.TimeClip(utcMs);
 
@@ -438,7 +438,9 @@ public partial class JSDate
             return new JSNumber(SetTimeValue(double.NaN));
         }
 
-        double newDay = JSDateMath.MakeDay((long)yearValue, (long)monthValue, (long)dayValue);
+        // Pass the truncated-but-full-magnitude doubles to MakeDay (which guards the
+        // out-of-range case); a (long) cast would wrap a huge year such as MAX_VALUE.
+        double newDay = JSDateMath.MakeDay(Math.Truncate(yearValue), Math.Truncate(monthValue), Math.Truncate(dayValue));
         double newDate = JSDateMath.MakeDate(newDay, JSDateMath.TimeWithinDay(t));
         return new JSNumber(SetTimeValue(JSDateMath.TimeClip(newDate)));
     }
