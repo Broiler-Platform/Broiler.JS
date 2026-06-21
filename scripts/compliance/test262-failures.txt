@@ -31,7 +31,6 @@ test/built-ins/Array/prototype/keys/iteration-mutable.js
 test/built-ins/Array/prototype/lastIndexOf/15.4.4.15-3-28.js
 test/built-ins/Array/prototype/methods-called-as-functions.js
 test/built-ins/Array/prototype/push/S15.4.4.7_A3.js
-test/built-ins/Array/prototype/push/S15.4.4.7_A4_T2.js
 test/built-ins/Array/prototype/reduceRight/length-near-integer-limit.js
 test/built-ins/Array/prototype/reverse/length-exceeding-integer-limit-with-proxy.js
 test/built-ins/Array/prototype/slice/S15.4.4.10_A3_T1.js
@@ -72,7 +71,6 @@ test/built-ins/Error/prototype/toString/tostring-message-throws-symbol.js
 test/built-ins/Error/prototype/toString/tostring-message-throws-toprimitive.js
 test/built-ins/FinalizationRegistry/prototype/unregister/unregister-symbol-token.js
 test/built-ins/Function/prototype/S15.3.4_A4.js
-test/built-ins/GeneratorPrototype/throw/try-finally-following-finally.js
 test/built-ins/Iterator/concat/throws-typeerror-when-iterator-method-not-callable.js
 test/built-ins/Iterator/from/iterable-primitives.js
 test/built-ins/JSON/rawJSON/basic.js
@@ -398,7 +396,6 @@ test/language/computed-property-names/object/property/number-duplicates.js
 test/language/destructuring/binding/keyed-destructuring-property-reference-target-evaluation-order-with-bindings.js
 test/language/eval-code/direct/new.target-fn.js
 test/language/eval-code/direct/var-env-func-init-local-new-delete.js
-test/language/eval-code/direct/var-env-func-init-local-update.js
 test/language/eval-code/direct/var-env-var-init-local-new-delete.js
 test/language/eval-code/indirect/var-env-global-lex-non-strict.js
 test/language/expressions/addition/bigint-and-number.js
@@ -414,25 +411,18 @@ test/language/expressions/dynamic-import/returns-promise.js
 test/language/expressions/equals/bigint-and-number-extremes.js
 test/language/expressions/equals/bigint-and-object.js
 test/language/expressions/equals/bigint-and-string.js
-test/language/expressions/greater-than-or-equal/S11.8.4_A3.1_T2.5.js
 test/language/expressions/greater-than-or-equal/bigint-and-incomparable-string.js
-test/language/expressions/greater-than-or-equal/bigint-and-string.js
 test/language/expressions/greater-than/bigint-and-incomparable-string.js
 test/language/expressions/greater-than/bigint-and-string.js
 test/language/expressions/less-than-or-equal/bigint-and-incomparable-string.js
 test/language/expressions/less-than-or-equal/bigint-and-string.js
-test/language/expressions/less-than/S11.8.1_A3.1_T2.5.js
 test/language/expressions/less-than/bigint-and-incomparable-string.js
-test/language/expressions/less-than/bigint-and-string.js
 test/language/expressions/object/accessor-name-computed-yield-expr.js
-test/language/expressions/relational/S9.1_A1_T4.js
 test/language/expressions/right-shift/bigint.js
 test/language/expressions/tagged-template/cache-eval-inner-function.js
 test/language/expressions/tagged-template/template-object.js
 test/language/expressions/template-literal/tv-line-continuation.js
 test/language/expressions/template-literal/tv-line-terminator-sequence.js
-test/language/expressions/yield/from-catch.js
-test/language/expressions/yield/from-try.js
 test/language/literals/regexp/S7.8.5_A1.1_T2.js
 test/language/literals/regexp/S7.8.5_A1.4_T2.js
 test/language/literals/regexp/S7.8.5_A2.1_T2.js
@@ -519,7 +509,6 @@ test/staging/sm/expressions/destructuring-array-default-simple.js
 test/staging/sm/expressions/optional-chain.js
 test/staging/sm/extensions/mutable-proto-special-form.js
 test/staging/sm/extensions/quote-string-for-nul-character.js
-test/staging/sm/generators/delegating-yield-2.js
 test/staging/sm/generators/objects.js
 test/staging/sm/generators/return-finally.js
 test/staging/sm/generators/runtime.js
