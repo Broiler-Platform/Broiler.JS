@@ -210,9 +210,13 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         len = -1;
         switch (source)
         {
-            case JSArray array:
-                len = array.Length;
-                break;
+            // A JSArray is NOT special-cased to a direct length+index copy: per
+            // InitializeTypedArrayFromList the constructor must drain the source's
+            // @@iterator into a list FIRST and only then convert each element to Number.
+            // Reading lazily would let an element's valueOf mutate the array mid-copy
+            // (iterated-array-changed-by-tonumber) and would ignore a replaced array
+            // iterator (iterated-array-with-modified-array-iterator). It therefore falls
+            // through to the len == -1 iterable path below (GetIterableEnumerator → @@iterator).
             case JSString @string:
                 len = @string.Length;
                 break;
