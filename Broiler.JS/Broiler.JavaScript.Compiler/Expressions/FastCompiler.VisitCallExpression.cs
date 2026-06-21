@@ -354,7 +354,11 @@ partial class FastCompiler
                         withTargetTemp.Expression,
                         YExpression.Condition(
                             hasWithObject,
-                            JSValueBuilder.Index(withObjTemp.Expression, key),
+                            // §9.1.1.2.6 GetBindingValue re-probes HasProperty (step 2) before
+                            // the Get (step 4): HasBinding (ResolveWithObject) and GetBindingValue
+                            // are distinct abstract operations, so a `with` object proxy observes
+                            // a second `has` after the @@unscopables `get`.
+                            JSContextBuilder.GetWithObjectBindingValue(withObjTemp.Expression, key, IsStrictMode),
                             // The with scopes were already walked by ResolveWithObject above
                             // (hasWithObject is false here), so resolve the remaining scopes
                             // without re-probing the binding object — a second `has` trap on

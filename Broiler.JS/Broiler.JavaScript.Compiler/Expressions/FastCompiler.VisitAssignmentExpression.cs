@@ -333,7 +333,10 @@ partial class FastCompiler
         using var withObjectTemp = scope.Top.GetTempVariable(typeof(JSObject));
         using var valueTemp = scope.Top.GetTempVariable(typeof(JSValue));
 
-        var retainedWithReference = JSValueBuilder.Index(withObjectTemp.Expression, key);
+        // §9.1.1.2.6 GetBindingValue re-probes HasProperty (step 2) before the Get (step 4),
+        // so the compound-assignment read observes its own `has` after HasBinding's
+        // @@unscopables `get` (test262 with/set-mutable-binding-idref-compound-assign-with-proxy-env).
+        var retainedWithReference = JSContextBuilder.GetWithObjectBindingValue(withObjectTemp.Expression, key, IsStrictMode);
         var retainedWithAssignment = YExpression.Block(
             valueTemp.Variable.AsSequence(),
             YExpression.Assign(valueTemp.Expression, retainedWithReference),
