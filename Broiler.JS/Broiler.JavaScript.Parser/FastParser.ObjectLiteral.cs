@@ -73,6 +73,13 @@ partial class FastParser
                 if (property.Kind == AstPropertyKind.Get || property.Kind == AstPropertyKind.Set)
                     throw stream.Unexpected();
 
+                // `async` introduces an async method, so a method definition
+                // (`async name(params){}`) must follow. If the recursion instead
+                // produced a data property/field/shorthand — `({async async: 0})`,
+                // `async x = 1`, `async x` — that is not a method and is a SyntaxError.
+                if (property.UsesColon || property.UsesAssign || property.Kind == AstPropertyKind.Data)
+                    throw stream.Unexpected();
+
                 property = new AstClassProperty(current, property.End, AstPropertyKind.Method, property.IsPrivate, isStatic, property.Key, property.Computed, RebaseFunctionStart(property.Init, methodStart), property.UsesColon, property.UsesAssign);
                 return true;
             }
