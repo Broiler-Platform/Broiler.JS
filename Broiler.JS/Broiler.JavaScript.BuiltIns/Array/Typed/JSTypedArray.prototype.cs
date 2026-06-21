@@ -455,6 +455,16 @@ partial class JSTypedArray
         }
 
         var startIndex = a.Length == 2 ? fromIndex.IntValue : int.MaxValue;
+
+        // Coercing fromIndex (ToIntegerOrInfinity) may run user code that resizes the
+        // backing resizable buffer, leaving this fixed-length view out of bounds — every
+        // index is then absent (HasProperty is false), so the search yields -1 (test262
+        // TypedArray/prototype/lastIndexOf/coerced-position-shrink).
+        if (IsOutOfBounds)
+        {
+            return JSNumber.MinusOne;
+        }
+
         if (startIndex >= n)
         {
             startIndex = n - 1;

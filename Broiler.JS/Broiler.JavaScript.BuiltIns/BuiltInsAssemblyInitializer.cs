@@ -1353,6 +1353,19 @@ internal static class BuiltInsAssemblyInitializer
             return (int)length;
         }
 
+        // ToLength as a double (clamped to the integer index range [0, 2^53-1]) for the
+        // lastIndex advance, where the value can legitimately exceed int.MaxValue.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static double ToLengthDouble(JSValue value)
+        {
+            var length = Math.Truncate(value.DoubleValue);
+            if (double.IsNaN(length) || length <= 0)
+                return 0;
+
+            const double MaxSafeLength = 9007199254740991d; // 2^53 - 1
+            return length > MaxSafeLength ? MaxSafeLength : length;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static int AdvanceStringIndex(string input, int index, bool unicode)
         {
@@ -1596,11 +1609,14 @@ internal static class BuiltInsAssemblyInitializer
                 if (matchString.Length != 0)
                     continue;
 
-                // §22.2.6.11 step 14.d.iii: lastIndex = AdvanceStringIndex(S, …, fullUnicode).
-                var nextIndex = (int)rx[KeyStrings.lastIndex].DoubleValue;
-                var advanced = nextIndex + 1;
+                // §22.2.6.11 step 14.d: thisIndex = ToLength(Get(rx, "lastIndex")); nextIndex
+                // = AdvanceStringIndex(S, thisIndex, fullUnicode). ToLength clamps to 2^53-1,
+                // so compute in double — a huge lastIndex (e.g. 2^54) must clamp and advance
+                // to 2^53, not overflow a 32-bit int to a negative value.
+                double thisIndex = ToLengthDouble(rx[KeyStrings.lastIndex]);
+                double advanced = thisIndex + 1;
                 if (fullUnicode && advanced < input.Length
-                    && char.IsHighSurrogate(input[nextIndex]) && char.IsLowSurrogate(input[advanced]))
+                    && char.IsHighSurrogate(input[(int)thisIndex]) && char.IsLowSurrogate(input[(int)thisIndex + 1]))
                     advanced++;
                 rx[KeyStrings.lastIndex] = JSValue.CreateNumber(advanced);
             }
