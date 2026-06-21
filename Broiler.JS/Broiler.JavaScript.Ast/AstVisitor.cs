@@ -34,6 +34,20 @@ public class AstIdentifierReplacer : AstReduce
     }
 }
 
+// Reports whether a subtree contains a function/arrow expression, i.e. a closure
+// whose binding identity (which loop-iteration variable it captures) is observable.
+public sealed class ClosureDetector : AstReduce
+{
+    public bool Found { get; private set; }
+
+    protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
+    {
+        Found = true;
+        // No need to descend into the function body: its mere presence is enough.
+        return functionExpression;
+    }
+}
+
 public abstract class AstReduce : AstMapVisitor<AstNode>
 {
 

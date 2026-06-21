@@ -35,6 +35,10 @@ public class JSContextBuilder
     /// <summary>Reads the home-object super reference made available to a direct eval body.</summary>
     public static Expression DirectEvalSuper => Expression.Property(Expression.Convert(Current, typeof(JSContext)), _DirectEvalSuper);
 
+    private static readonly PropertyInfo _DirectEvalNewTarget = typeof(JSContext).GetProperty(nameof(JSContext.DirectEvalNewTarget));
+    /// <summary>Reads the caller's <c>new.target</c> threaded into a direct eval body.</summary>
+    public static Expression DirectEvalNewTarget => Expression.Property(Expression.Convert(Current, typeof(JSContext)), _DirectEvalNewTarget);
+
     private static readonly PropertyInfo _DirectEvalSuperConstructor = typeof(JSContext).GetProperty(nameof(JSContext.DirectEvalSuperConstructor));
     /// <summary>Reads the superclass constructor a <c>super(...)</c> in a direct eval body targets.</summary>
     public static Expression DirectEvalSuperConstructor => Expression.Property(Expression.Convert(Current, typeof(JSContext)), _DirectEvalSuperConstructor);

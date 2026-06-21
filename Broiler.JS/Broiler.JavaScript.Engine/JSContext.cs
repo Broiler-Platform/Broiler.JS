@@ -540,6 +540,29 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     /// <summary>The super reference visible to the direct eval currently being compiled/executed, or undefined.</summary>
     public JSValue DirectEvalSuper => directEvalSuperValues.Count == 0 ? JSUndefined.Value : directEvalSuperValues[^1];
 
+    private readonly List<JSValue> directEvalNewTargetValues = [];
+
+    private sealed class DirectEvalNewTargetScope(JSContext context) : IDisposable
+    {
+        public void Dispose() => context.directEvalNewTargetValues.RemoveAt(context.directEvalNewTargetValues.Count - 1);
+    }
+
+    /// <summary>
+    /// Threads the caller's <c>new.target</c> into a direct eval body so that
+    /// <c>new.target</c> at the top level of the eval (PerformEval shares the
+    /// caller's [[NewTarget]]) observes the enclosing function's new target
+    /// rather than <c>undefined</c>. Pushed for every direct eval (even when the
+    /// value is undefined) so a nested eval inherits the same new target.
+    /// </summary>
+    public IDisposable PushDirectEvalNewTarget(JSValue newTarget)
+    {
+        directEvalNewTargetValues.Add(newTarget ?? JSUndefined.Value);
+        return new DirectEvalNewTargetScope(this);
+    }
+
+    /// <summary>The new.target visible to the direct eval currently being compiled/executed, or undefined.</summary>
+    public JSValue DirectEvalNewTarget => directEvalNewTargetValues.Count == 0 ? JSUndefined.Value : directEvalNewTargetValues[^1];
+
     /// <summary>Whether a super reference is available to the direct eval currently being compiled.</summary>
     public bool HasDirectEvalSuper => directEvalSuperValues.Count > 0;
 

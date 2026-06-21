@@ -732,7 +732,19 @@ partial class FastParser
                     scopedDeclarations.Add(new VariableDeclarator(new AstIdentifier(temp.Start, id), temp));
 
                 if (update != null)
-                    update = AstIdentifierReplacer.Replace(update, changes) as AstExpression;
+                {
+                    // ForBodyEvaluation creates a fresh per-iteration environment before
+                    // evaluating the increment, so a closure created in the update must
+                    // capture that iteration's loop binding — not the single shared
+                    // carrier. When the update contains a closure, wrap it in an IIFE
+                    // that copies each carrier into a fresh per-iteration `let` binding,
+                    // runs the original update against it, then writes the result back to
+                    // the carrier (test262 let-closure-inside-next-expression). Updates
+                    // with no closure keep the cheaper direct carrier mutation.
+                    update = useLoopEnv && ContainsClosure(update)
+                        ? BuildPerIterationUpdate(update, changes)
+                        : AstIdentifierReplacer.Replace(update, changes) as AstExpression;
+                }
 
                 if (test != null)
                 {
@@ -801,6 +813,41 @@ partial class FastParser
                     return false;
             }
             return true;
+        }
+
+        static bool ContainsClosure(AstNode node)
+        {
+            var detector = new ClosureDetector();
+            detector.Visit(node);
+            return detector.Found;
+        }
+
+        // Wrap a C-style for-loop update in an arrow IIFE that gives the increment its
+        // own per-iteration copy of each loop binding: `() => { let i = <carrier>; <update>;
+        // <carrier> = i; }`. A closure created inside <update> then captures that call's
+        // fresh `i` rather than the shared carrier, and the write-back keeps the carrier
+        // progressing for the next iteration.
+        static AstExpression BuildPerIterationUpdate(AstExpression update, IFastEnumerable<(string id, AstIdentifier temp)> changes)
+        {
+            var start = update.Start;
+            var end = update.End;
+
+            var perIterationDecls = new Sequence<VariableDeclarator>();
+            var statements = new Sequence<AstStatement>();
+            var en = changes.GetFastEnumerator();
+            while (en.MoveNext(out var change))
+                perIterationDecls.Add(new VariableDeclarator(new AstIdentifier(start, change.id), new AstIdentifier(change.temp.Start, change.temp.Name.Value)));
+
+            statements.Add(new AstVariableDeclaration(start, end, perIterationDecls, FastVariableKind.Let));
+            statements.Add(new AstExpressionStatement(update));
+
+            en = changes.GetFastEnumerator();
+            while (en.MoveNext(out var change))
+                statements.Add(new AstExpressionStatement(new AstBinaryExpression(new AstIdentifier(change.temp.Start, change.temp.Name.Value), TokenTypes.Assign, new AstIdentifier(start, change.id))));
+
+            var body = new AstBlock(start, end, statements);
+            var arrow = new AstFunctionExpression(start, end, isArrow: true, isAsync: false, generator: false, id: null, declarators: new Sequence<VariableDeclarator>(), body: body);
+            return new AstCallExpression(arrow, new Sequence<AstExpression>());
         }
 
         static IFastEnumerable<StringSpan>? CombineHoisting(

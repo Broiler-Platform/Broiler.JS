@@ -13,8 +13,8 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private static readonly System.Reflection.MethodInfo DirectEvalMethod = typeof(DirectEvalSupport)
-        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(CallStackItem), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool), typeof(JSValue), typeof(JSVariable), typeof(string[]), typeof(bool)])
-        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, CallStackItem, bool, bool, string[], JSVariable[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool, JSValue, JSVariable, string[], bool) not found");
+        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(CallStackItem), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool), typeof(JSValue), typeof(JSVariable), typeof(string[]), typeof(JSValue), typeof(bool)])
+        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, CallStackItem, bool, bool, string[], JSVariable[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool, JSValue, JSVariable, string[], JSValue, bool) not found");
 
     protected override YExpression VisitCallExpression(AstCallExpression callExpression)
     {
@@ -157,7 +157,13 @@ partial class FastCompiler
             }
 
             var evalVarEnvNames = CaptureEvalVarEnvNames();
-            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), thisArg, activationOwner, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, shadowedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding), superValue, YExpression.Constant(inMemberInitializer), YExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding, evalVarEnvNames);
+            // The caller's new.target, threaded so `new.target` in the eval body
+            // (PerformEval shares the calling context's [[NewTarget]]) resolves to it.
+            // Inside an enclosing direct-eval compilation read the already-threaded
+            // value so a nested eval inherits it.
+            var directEvalNewTarget = scope.Top.NewTargetExpression
+                ?? (isDirectEvalCompilation ? JSContextBuilder.DirectEvalNewTarget : JSContextBuilder.NewTarget());
+            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), thisArg, activationOwner, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, shadowedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding), superValue, YExpression.Constant(inMemberInitializer), YExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding, evalVarEnvNames, directEvalNewTarget);
         }
 
     skipDirectEval:
