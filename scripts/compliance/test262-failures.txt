@@ -39,10 +39,7 @@ test/built-ins/Date/UTC/length.js
 test/built-ins/Date/UTC/no-arg.js
 test/built-ins/Date/prototype/getDate/this-value-valid-date.js
 test/built-ins/Date/prototype/setFullYear/arg-year-to-number.js
-test/built-ins/Error/prototype/toString/tostring-message-throws-symbol.js
-test/built-ins/Error/prototype/toString/tostring-message-throws-toprimitive.js
 test/built-ins/FinalizationRegistry/prototype/unregister/unregister-symbol-token.js
-test/built-ins/Function/prototype/S15.3.4_A4.js
 test/built-ins/Iterator/concat/throws-typeerror-when-iterator-method-not-callable.js
 test/built-ins/Math/hypot/Math.hypot_InfinityNaN.js
 test/built-ins/Math/round/S15.8.2.15_A7.js
@@ -57,9 +54,7 @@ test/built-ins/Object/prototype/setPrototypeOf-with-non-circular-values.js
 test/built-ins/Object/setPrototypeOf/set-failure-cycle.js
 test/built-ins/Promise/all/same-reject-function.js
 test/built-ins/Promise/prototype/finally/invokes-then-with-function.js
-test/built-ins/Proxy/has/call-in-prototype-index.js
 test/built-ins/Proxy/proxy-no-prototype.js
-test/built-ins/Proxy/set/call-parameters-prototype-dunder-proto.js
 test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/lookahead-quantifier-match-groups.js
@@ -94,7 +89,6 @@ test/built-ins/ShadowRealm/prototype/importValue/specifier-tostring.js
 test/built-ins/String/prototype/split/this-value-tostring-error.js
 test/built-ins/String/prototype/startsWith/return-true-if-searchstring-is-empty.js
 test/built-ins/String/raw/special-characters.js
-test/built-ins/SuppressedError/message-undefined-no-prop.js
 test/built-ins/Symbol/prototype/Symbol.toPrimitive/prop-desc.js
 test/built-ins/Temporal/Duration/prototype/round/next-day-out-of-range.js
 test/built-ins/Temporal/Duration/prototype/round/out-of-range-when-converting-from-normalized-duration.js
@@ -310,10 +304,8 @@ test/language/comments/S7.4_A5.js
 test/language/comments/S7.4_A6.js
 test/language/computed-property-names/object/property/number-duplicates.js
 test/language/destructuring/binding/keyed-destructuring-property-reference-target-evaluation-order-with-bindings.js
-test/language/eval-code/direct/new.target-fn.js
 test/language/eval-code/direct/var-env-func-init-local-new-delete.js
 test/language/eval-code/direct/var-env-var-init-local-new-delete.js
-test/language/eval-code/indirect/var-env-global-lex-non-strict.js
 test/language/expressions/addition/bigint-and-number.js
 test/language/expressions/assignment/destructuring/keyed-destructuring-property-reference-target-evaluation-order-with-bindings.js
 test/language/expressions/async-generator/default-proto.js
@@ -332,7 +324,6 @@ test/language/expressions/less-than-or-equal/bigint-and-incomparable-string.js
 test/language/expressions/less-than-or-equal/bigint-and-string.js
 test/language/expressions/less-than/bigint-and-incomparable-string.js
 test/language/expressions/right-shift/bigint.js
-test/language/expressions/tagged-template/cache-eval-inner-function.js
 test/language/expressions/tagged-template/template-object.js
 test/language/expressions/template-literal/tv-line-continuation.js
 test/language/expressions/template-literal/tv-line-terminator-sequence.js
@@ -345,7 +336,6 @@ test/language/literals/string/legacy-octal-escape-sequence.js
 test/language/statements/class/arguments/access.js
 test/language/statements/class/definition/basics.js
 test/language/statements/class/definition/prototype-getter.js
-test/language/statements/class/elements/class-field-on-frozen-objects.js
 test/language/statements/class/elements/privatefieldset-evaluation-order-1.js
 test/language/statements/continue/labeled-continue.js
 test/language/statements/continue/nested-let-bound-for-loops-inner-continue.js
@@ -356,8 +346,6 @@ test/language/statements/continue/shadowing-loop-variable-in-same-scope-as-conti
 test/language/statements/continue/simple-and-labeled.js
 test/language/statements/for-of/iterator-next-result-value-attr-error.js
 test/language/statements/for/scope-body-lex-open.js
-test/language/statements/let/syntax/let-closure-inside-next-expression.js
-test/language/statements/try/completion-values.js
 test/language/types/reference/put-value-prop-base-primitive.js
 test/staging/Temporal/removed-methods.js
 test/staging/built-ins/RegExp/escape/surrogate-pair.js
@@ -371,7 +359,6 @@ test/staging/sm/Date/constructor-convert-all-arguments.js
 test/staging/sm/Date/non-iso.js
 test/staging/sm/Date/two-digit-years.js
 test/staging/sm/Function/arguments-parameter-shadowing.js
-test/staging/sm/Function/function-toString-builtin-name.js
 test/staging/sm/Function/return-finally.js
 test/staging/sm/PrivateName/illegal-in-class-context.js
 test/staging/sm/Proxy/global-receiver.js
@@ -392,8 +379,6 @@ test/staging/sm/String/string-code-point-upper-lower-mapping.js
 test/staging/sm/String/string-upper-lower-mapping.js
 test/staging/sm/TypedArray/indexOf-and-lastIndexOf.js
 test/staging/sm/TypedArray/sort_large_countingsort.js
-test/staging/sm/async-functions/async-property-name-error.js
-test/staging/sm/async-functions/await-in-arrow-parameters.js
 test/staging/sm/class/classHeritage.js
 test/staging/sm/class/newTargetArrow.js
 test/staging/sm/class/newTargetEval.js
@@ -408,7 +393,6 @@ test/staging/sm/extensions/mutable-proto-special-form.js
 test/staging/sm/extensions/quote-string-for-nul-character.js
 test/staging/sm/generators/return-finally.js
 test/staging/sm/generators/runtime.js
-test/staging/sm/global/bug-320887.js
 test/staging/sm/global/eval-02.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-label.js
@@ -421,4 +405,3 @@ test/staging/sm/regress/regress-554955-2.js
 test/staging/sm/regress/regress-554955-3.js
 test/staging/sm/regress/regress-610026.js
 test/staging/sm/statements/try-completion.js
-test/staging/sm/strict/15.5.5.1.js
