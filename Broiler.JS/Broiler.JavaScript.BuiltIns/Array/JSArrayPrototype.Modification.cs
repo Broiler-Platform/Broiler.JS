@@ -468,6 +468,12 @@ public partial class JSArray
             CreateDataPropertyOrThrow(deletedItems, i, GetIndexedValue(@this, fromIndex));
         }
 
+        // Step 12: Set(A, "length", actualDeleteCount, true). A no-op for a plain array
+        // (its length already matches), but a real, observable [[Set]] on a @@species
+        // result — e.g. a Proxy records the set/getOwnPropertyDescriptor/defineProperty
+        // traps (test262 splice/property-traps-order-with-species).
+        deletedItems.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(deleteCount));
+
         // Move the trailing elements.
         int offset = itemsLength - deleteCountInt;
         int newLength = arrayLengthInt + offset;
@@ -536,6 +542,10 @@ public partial class JSArray
             if (HasIndexedProperty(@this, fromIndex))
                 CreateDataPropertyOrThrow(deletedItems, (uint)k, GetIndexedValue(@this, fromIndex));
         }
+
+        // Step 12: Set(A, "length", actualDeleteCount, true) — observable on a @@species
+        // proxy result, mirroring the 32-bit splice path above.
+        deletedItems.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(deleteCount));
 
         var newLength = len - deleteCount + itemsLength;
 

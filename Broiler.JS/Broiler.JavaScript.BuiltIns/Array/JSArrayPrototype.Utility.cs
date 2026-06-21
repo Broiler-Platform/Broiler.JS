@@ -37,8 +37,17 @@ public partial class JSArray
         {
             if (IsConcatSpreadable(item, out var spreadable))
             {
-                var length = GetArrayLikeLength(spreadable);
-                for (uint sourceIndex = 0; sourceIndex < length; sourceIndex++)
+                // LengthOfArrayLike (ToLength) is up to 2^53-1, so read it as a long.
+                var length = GetArrayLikeLengthLong(spreadable);
+
+                // §23.1.3.1 step 5.c.iii: if n + len > 2^53 - 1, throw a TypeError BEFORE
+                // visiting any element — otherwise a spreadable claiming a length near
+                // 2^53-1 would be walked index by index (test262 concat/
+                // arg-length-exceeding-integer-limit, which would otherwise hang).
+                if ((double)resultIndex + length > MaxArrayLikeLength)
+                    throw JSEngine.NewTypeError("Invalid array length");
+
+                for (long sourceIndex = 0; sourceIndex < length; sourceIndex++)
                 {
                     if (TryGetArrayLikeElement(spreadable, sourceIndex, out var value))
                         CreateDataPropertyOrThrow(result, resultIndex, value);
@@ -52,7 +61,11 @@ public partial class JSArray
             CreateDataPropertyOrThrow(result, resultIndex++, item);
         }
 
-        Append(a.This);
+        // Step 4: the item list starts with O = ToObject(this) (here @this), NOT the raw
+        // receiver — so `Array.prototype.concat.call(true)` spreads/appends the Boolean
+        // wrapper object, giving result[0] instanceof Boolean (test262 concat/
+        // call-with-boolean).
+        Append(@this);
         for (int i = 0; i < a.Length; i++)
             Append(a.GetAt(i));
 
