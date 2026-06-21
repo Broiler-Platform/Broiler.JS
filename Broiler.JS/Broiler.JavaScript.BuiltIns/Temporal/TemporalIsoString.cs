@@ -23,13 +23,26 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 // designator through the strict calendar / time-zone canonicalizers.
 internal static class TemporalIsoString
 {
+    // A numeric UTC offset (±HH[:MM[:SS[.fff]]]). Within a single offset the field separators must be
+    // used consistently — either every field is ':'-separated (extended, ±HH:MM:SS) or none is (basic,
+    // ±HHMMSS); a mixed form such as "+00:0000" or "+0000:00" is a RangeError per the Temporal ISO
+    // grammar. The two branches enforce that: the first consumes ':'-prefixed fields, the second
+    // separator-less ones, so a mix leaves trailing digits that fail the anchored match.
+    internal const string OffsetCore =
+        @"[+-]\d{2}(?::\d{2}(?::\d{2}(?:[.,]\d{1,9})?)?|\d{2}(?:\d{2}(?:[.,]\d{1,9})?)?)?";
+
+    // The wall-clock HH[:MM[:SS[.fff]]] core, with the same consistent-separator rule as OffsetCore so
+    // "00:0000" / "0000:00" are rejected. Capture group names (h/mi/s/f) match the consuming patterns.
+    internal const string TimeCore =
+        @"(?<h>\d{2})(?::(?<mi>\d{2})(?::(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?|(?<mi>\d{2})(?:(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?";
+
     // The time-of-day + UTC-offset tail permitted after the date in a Temporal date / date-time
     // string: an optional T / space separator and HH[:MM[:SS]] with a fraction allowed only on the
     // smallest (seconds) component, then an optional Z or numeric UTC offset. Mirrors the strict
     // PlainDateTime time grammar so the date-only parsers reject a fraction on the minutes or hours.
     internal const string TimeAndOffsetTail =
-        @"(?:[Tt ](?<th>\d{2})(?::?(?<tmin>\d{2})(?::?(?<tsec>\d{2})(?:[.,]\d{1,9})?)?)?" +
-        @"(?<toffset>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?";
+        @"(?:[Tt ](?<th>\d{2})(?::(?<tmin>\d{2})(?::(?<tsec>\d{2})(?:[.,]\d{1,9})?)?|(?<tmin>\d{2})(?:(?<tsec>\d{2})(?:[.,]\d{1,9})?)?)?" +
+        @"(?<toffset>[Zz]|" + OffsetCore + @")?)?";
 
     // The calendar-only parsers (PlainDate / PlainYearMonth / PlainMonthDay) discard the optional
     // time tail captured by TimeAndOffsetTail, but a string is still rejected (RangeError) when it
@@ -172,15 +185,15 @@ internal static class TemporalIsoString
     // Z / numeric-offset designators are all optional.
     private static readonly Regex DateTimePattern = new(
         @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))" +
-        @"(?:[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
-        @"(?<offset>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?$",
+        @"(?:[Tt ]" + TimeCore +
+        @"(?<offset>[Zz]|" + OffsetCore + @")?)?$",
         RegexOptions.CultureInvariant);
 
     // A bare time-of-day string, optionally prefixed with the time designator and carrying a Z or a
     // numeric offset.
     private static readonly Regex TimePattern = new(
-        @"^[Tt]?(?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
-        @"(?<offset>[Zz]|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?$",
+        @"^[Tt]?" + TimeCore +
+        @"(?<offset>[Zz]|" + OffsetCore + @")?$",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex YearMonthPattern = new(

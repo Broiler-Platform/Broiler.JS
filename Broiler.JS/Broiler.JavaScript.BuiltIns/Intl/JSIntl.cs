@@ -5159,16 +5159,17 @@ public class JSIntlCollator : JSObject
         if (TryGetUnicodeExtension(locale, "co", out var co) && JSIntl.CanonicalizeCollation(co) is { } tagCo)
             collation = tagCo;
 
-        if (TryGetOwnOption(options, "usage", out var usageValue))
-            usage = usageValue.StringValue;
-        if (TryGetOwnOption(options, "sensitivity", out var sensitivityValue))
-            sensitivity = sensitivityValue.StringValue;
+        // usage / sensitivity / caseFirst are constrained string options: a provided value outside
+        // the allowed set is a RangeError (ECMA-402 GetOption), so route them through the shared
+        // validating helper rather than reading the raw string. The current field value is passed as
+        // the default so an absent option keeps the locale-derived / spec default.
+        usage = JSIntl.GetOption(options, KeyStrings.GetOrCreate("usage"), ["sort", "search"], false, usage);
+        sensitivity = JSIntl.GetOption(options, KeyStrings.GetOrCreate("sensitivity"), ["base", "accent", "case", "variant"], false, sensitivity);
         if (TryGetOwnOption(options, "ignorePunctuation", out var ignorePunctuationValue))
             ignorePunctuation = ignorePunctuationValue.BooleanValue;
         if (TryGetOwnOption(options, "numeric", out var numericValue))
             numeric = numericValue.BooleanValue;
-        if (TryGetOwnOption(options, "caseFirst", out var caseFirstValue))
-            caseFirst = caseFirstValue.StringValue;
+        caseFirst = JSIntl.GetOption(options, KeyStrings.GetOrCreate("caseFirst"), ["upper", "lower", "false"], false, caseFirst);
         if (TryGetOwnOption(options, "collation", out var collationValue)
             && JSIntl.CanonicalizeCollation(collationValue.StringValue) is { } optCo)
             collation = optCo;

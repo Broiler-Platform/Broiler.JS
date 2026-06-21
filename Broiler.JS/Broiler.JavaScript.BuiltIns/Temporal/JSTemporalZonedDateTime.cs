@@ -1704,8 +1704,11 @@ public partial class JSTemporalZonedDateTime : JSObject
     private const string YearField = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
     private static readonly Regex ZonedCorePattern = new(
         @"^(?:(?<y>" + YearField + @")-(?<mo>\d{2})-(?<d>\d{2})|(?<y>" + YearField + @")(?<mo>\d{2})(?<d>\d{2}))" +
-        @"(?:[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
-        @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::?(?<om>\d{2})(?::?(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))?)?$",
+        // Time and offset must each use a consistent separator style (all ':' or none): "00:0000" or
+        // an offset "+00:0000" is rejected. TimeCore covers the wall clock; the offset is spelled out
+        // here because its sub-fields (osign/oh/om/os/of) are captured for later resolution.
+        @"(?:[Tt ]" + TemporalIsoString.TimeCore +
+        @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::(?<om>\d{2})(?::(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?|(?<om>\d{2})(?:(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))?)?$",
         RegexOptions.CultureInvariant);
 
     private static readonly Regex ZonedTrailingAnnotation = new(@"\[(!?)([^\]]*)\]$", RegexOptions.CultureInvariant);
