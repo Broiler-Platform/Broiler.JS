@@ -727,14 +727,12 @@ public partial class JSObject
                 return DefineReceiverDataProperty(target, name, value, GetReceiverAttributes(descriptor, defaultAttributes), throwError);
             }
 
-            if (!target.IsExtensible())
-            {
-                if (throwError)
-                    throw NewTypeError($"Cannot add property {name} to {target}");
-
-                return false;
-            }
-
+            // CreateDataProperty(receiver, P, V) is receiver.[[DefineOwnProperty]]; the
+            // extensibility check belongs to OrdinaryDefineOwnProperty and is performed
+            // inside DefineReceiverDataProperty for an ordinary target. Calling
+            // IsExtensible() here would additionally fire a proxy receiver's isExtensible
+            // trap, which the spec's OrdinarySetWithOwnDescriptor does NOT (test262 Array
+            // reverse/splice length-exceeding-integer-limit-with-proxy).
             return DefineReceiverDataProperty(target, name, value, defaultAttributes, throwError);
         }
 
@@ -810,14 +808,12 @@ public partial class JSObject
                 return DefineReceiverDataProperty(target, name, value, GetReceiverAttributes(descriptor, defaultAttributes), throwError);
             }
 
-            if (!target.IsExtensible())
-            {
-                if (throwError)
-                    throw NewTypeError($"Cannot add property {name} to {target}");
-
-                return false;
-            }
-
+            // CreateDataProperty(receiver, P, V) is receiver.[[DefineOwnProperty]]; the
+            // extensibility check belongs to OrdinaryDefineOwnProperty and is performed
+            // inside DefineReceiverDataProperty for an ordinary target. Calling
+            // IsExtensible() here would additionally fire a proxy receiver's isExtensible
+            // trap, which the spec's OrdinarySetWithOwnDescriptor does NOT (test262 Array
+            // reverse/splice length-exceeding-integer-limit-with-proxy).
             return DefineReceiverDataProperty(target, name, value, defaultAttributes, throwError);
         }
 
@@ -900,14 +896,12 @@ public partial class JSObject
                 return DefineReceiverDataProperty(target, name, value, GetReceiverAttributes(descriptor, defaultAttributes), throwError);
             }
 
-            if (!target.IsExtensible())
-            {
-                if (throwError)
-                    throw NewTypeError($"Cannot add property {name} to {target}");
-
-                return false;
-            }
-
+            // CreateDataProperty(receiver, P, V) is receiver.[[DefineOwnProperty]]; the
+            // extensibility check belongs to OrdinaryDefineOwnProperty and is performed
+            // inside DefineReceiverDataProperty for an ordinary target. Calling
+            // IsExtensible() here would additionally fire a proxy receiver's isExtensible
+            // trap, which the spec's OrdinarySetWithOwnDescriptor does NOT (test262 Array
+            // reverse/splice length-exceeding-integer-limit-with-proxy).
             return DefineReceiverDataProperty(target, name, value, defaultAttributes, throwError);
         }
 

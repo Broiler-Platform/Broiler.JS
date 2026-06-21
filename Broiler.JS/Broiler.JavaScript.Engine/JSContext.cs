@@ -82,6 +82,10 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     // %Array.prototype.values% captured at realm init — the mapped/unmapped arguments
     // object's @@iterator must be this exact intrinsic (=== [][Symbol.iterator]).
     public JSValue IntrinsicArrayValues { get; private set; } = JSUndefined.Value;
+    // %Promise.prototype% captured at realm init. Internally-created promises (async
+    // functions, dynamic import, .then results, Promise.resolve/reject) must use this
+    // genuine prototype even after the global `Promise` binding is reassigned.
+    public JSObject IntrinsicPromisePrototype { get; private set; }
     public event LogEventHandler Log;
     public event ErrorEventHandler Error;
     public event ConsoleEvent ConsoleEvent;
@@ -1441,6 +1445,15 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             var values = arrayProto[KeyStrings.GetOrCreate("values")];
             if (values.IsFunction)
                 IntrinsicArrayValues = values;
+        }
+        // Capture %Promise.prototype% so engine-created promises keep the genuine
+        // prototype even after user code reassigns the global `Promise` binding
+        // (test262 dynamic-import/returns-promise). In the common case the intrinsic
+        // equals the current global Promise.prototype, so this changes nothing.
+        if (this[KeyStrings.GetOrCreate("Promise")] is IJSFunction promiseCtor
+            && promiseCtor.Prototype is JSObject promiseProto)
+        {
+            IntrinsicPromisePrototype = promiseProto;
         }
         // globalThis is { writable, enumerable: false, configurable } per spec.
         this.FastAddValue(KeyStrings.globalThis, this, JSPropertyAttributes.ConfigurableValue);

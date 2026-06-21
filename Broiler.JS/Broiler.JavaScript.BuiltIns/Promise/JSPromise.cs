@@ -69,8 +69,20 @@ public partial class JSPromise : JSObject, IJSPromise
         pending.TryAdd(promiseID, this);
     }
 
+    // Engine-created promises (Promise.resolve/reject internals, dynamic import,
+    // async functions, .then results) must carry the intrinsic %Promise.prototype%,
+    // not the current global `Promise.prototype` (which user code may have reassigned).
+    // The parameterless constructor resolves the prototype eagerly from the global, so
+    // re-pin it to the captured intrinsic here. A no-op when they are the same object.
+    private void PinIntrinsicPrototype()
+    {
+        if ((JSEngine.Current as JSContext)?.IntrinsicPromisePrototype is JSObject intrinsic)
+            BasePrototypeObject = intrinsic;
+    }
+
     internal JSPromise(JSValue value, PromiseState state) : this()
     {
+        PinIntrinsicPrototype();
         InitPromise();
         this.state = state;
         result = value;
@@ -82,6 +94,7 @@ public partial class JSPromise : JSObject, IJSPromise
     /// <param name="value"></param>
     public JSPromise(Task<JSValue> value) : this()
     {
+        PinIntrinsicPrototype();
         sc = CaptureSynchronizationContext();
         RegisterPromise();
         value.ContinueWith((t) =>
@@ -126,6 +139,7 @@ public partial class JSPromise : JSObject, IJSPromise
 
     public JSPromise(JSPromiseDelegate @delegate) : this()
     {
+        PinIntrinsicPrototype();
         InitPromise();
         try
         {
