@@ -799,11 +799,14 @@ internal static class BuiltInsAssemblyInitializer
     }
 
     private static void EnsureAccessorProperty(JSObject target, KeyString key, string name, JSFunctionDelegate getter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
+        => EnsureAccessorProperty(target, key, name, getter, null, attributes);
+
+    private static void EnsureAccessorProperty(JSObject target, KeyString key, string name, JSFunctionDelegate getter, JSFunctionDelegate setter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
     {
         if (!target.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(key.ToString(), key)).IsUndefined)
             return;
 
-        target.FastAddProperty(key, CreateNativeGetter(getter, name), null, attributes);
+        target.FastAddProperty(key, CreateNativeGetter(getter, name), setter == null ? null : CreateNativeSetter(setter, name), attributes);
     }
 
     private static void PatchSpeciesConstructors(JSContext context)
@@ -1281,16 +1284,6 @@ internal static class BuiltInsAssemblyInitializer
             return JSValue.CreateString(sb.ToString());
         }
 
-        static JSValue InvokeSpeciesConstructor(JSRegExp regExp, JSValue flags)
-        {
-            var constructor = regExp[KeyStrings.constructor];
-            var species = GetSpeciesConstructor(constructor);
-            if (species.IsNullOrUndefined)
-                return JSUndefined.Value;
-
-            return species.CreateInstance(new Arguments(species, regExp, flags));
-        }
-
         static JSValue RegExpExec(JSValue rx, JSValue input)
         {
             // §22.2.7.1 RegExpExec: a callable "exec" property is used; otherwise (it is absent or any
@@ -1476,6 +1469,11 @@ internal static class BuiltInsAssemblyInitializer
                 throw JSEngine.NewTypeError("RegExp.prototype[Symbol.match] called on incompatible receiver");
 
             var input = a.Get1();
+            // §22.2.6.8 step 3: S = ToString(string). Coerce the argument before reading
+            // "flags" so its toString/valueOf side effects occur in spec order, and so the
+            // string S — not the raw argument — is what RegExpExec (and any user exec) sees.
+            var s = input.StringValue;
+            var sValue = JSValue.CreateString(s);
             // §22.2.6.8 step 4: flags = ToString(Get(rx, "flags")). Read the
             // observable "flags" property (so a user getter / toString runs and
             // its errors propagate) rather than the individual flag accessors.
@@ -1485,20 +1483,19 @@ internal static class BuiltInsAssemblyInitializer
                 // §22.2.6.8 step 6: when not global, return RegExpExec(rx, S). This
                 // must go through exec — which reads `lastIndex` (firing its valueOf)
                 // — rather than a fast path that skips that observable read.
-                return RegExpExec(rx, input);
+                return RegExpExec(rx, sValue);
             }
 
             // §22.2.6.9 step 7: fullUnicode is derived from the flags STRING (a `u` or
             // `v` flag), so an empty match advances by a whole code point.
             var matchFullUnicode = flags.Contains('u') || flags.Contains('v');
-            var s = input.ToString();
             rxObj.SetPropertyOrThrow(KeyStrings.lastIndex.ToJSValue(), JSValue.NumberZero);
             var matches = JSValue.CreateArray() as JSObject
                 ?? throw new InvalidOperationException("Expected JS array object");
             uint matchCount = 0;
             while (true)
             {
-                var result = RegExpExec(rx, input);
+                var result = RegExpExec(rx, sValue);
                 if (result.IsNull)
                     return matchCount == 0 ? JSValue.NullValue : matches;
 
@@ -1527,47 +1524,45 @@ internal static class BuiltInsAssemblyInitializer
         }, "[Symbol.match]", 1), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.matchAll.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
-            if (a.This is JSRegExp regExp)
-            {
-                // Per 22.2.6.9, flags is ToString(Get(R, "flags")) and lastIndex
-                // is ToLength(Get(R, "lastIndex")) — both reads are observable, so
-                // a throwing `flags` getter / `flags` toString / `lastIndex`
-                // valueOf must propagate.
-                var flagsString = regExp[KeyStrings.GetOrCreate("flags")].ToString();
-                var flags = JSValue.CreateString(flagsString);
-                var matcher = InvokeSpeciesConstructor(regExp, flags);
-                if (matcher.IsUndefined)
-                    matcher = new JSRegExp(new Arguments(JSUndefined.Value, regExp, flags));
-                matcher[KeyStrings.lastIndex] = JSValue.CreateNumber(ToLength(regExp[KeyStrings.lastIndex]));
-                // Steps 9-12: global / fullUnicode are derived from the flags STRING,
-                // not by reading "global"/"unicode" off the constructed matcher (those
-                // reads are not observable per spec — a throwing getter must not fire).
-                return new JSRegExpStringIterator(
-                    matcher,
-                    JSValue.CreateString(a.Get1().ToString()),
-                    flagsString.Contains('g'),
-                    flagsString.Contains('u') || flagsString.Contains('v'));
-            }
+            // §22.2.6.10 RegExp.prototype [ @@matchAll ] ( string ). The algorithm does not
+            // branch on whether the receiver is a "real" RegExp: it always reads the receiver's
+            // own "flags" and constructs a fresh matcher through SpeciesConstructor, so every
+            // observable read happens for an arbitrary object receiver too.
+            //
+            // Steps 1-2: the this value must be an Object.
+            if (a.This is not JSObject r)
+                throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] called on a non-object this value");
 
-            if (JSRegExp.IsRegExpLike(a.This))
-            {
-                var flags = a.This[KeyStrings.GetOrCreate("flags")];
-                if (flags.IsNullOrUndefined)
-                    throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] requires a non-null flags value");
+            // Step 3: S = ToString(string) — observable and sequenced before "flags".
+            var s = JSValue.CreateString(a.Get1().StringValue);
 
-                if (!flags.ToString().Contains('g'))
-                    throw JSEngine.NewTypeError("RegExp.prototype[Symbol.matchAll] requires a global regular expression");
+            // Step 4: C = SpeciesConstructor(R, %RegExp%). The "constructor" read and the
+            // @@species read both precede the "flags" read below.
+            var constructor = r[KeyStrings.constructor];
+            var species = GetSpeciesConstructor(constructor);
 
-                var matcher = new JSRegExp(new Arguments(JSUndefined.Value, a.This, flags));
-                return new JSRegExpStringIterator(
-                    matcher,
-                    JSValue.CreateString(a.Get1().ToString()),
-                    matcher.globalSearch,
-                    matcher.unicode);
-            }
+            // Step 5: flags = ToString(Get(R, "flags")). Both the read and its ToString are
+            // observable, so a throwing getter / toString must propagate.
+            var flagsString = r[KeyStrings.GetOrCreate("flags")].StringValue;
+            var flags = JSValue.CreateString(flagsString);
 
-            var defaultMatcher = new JSRegExp(new Arguments(JSUndefined.Value, a.This, JSValue.CreateString("g")));
-            return new JSRegExpStringIterator(defaultMatcher, JSValue.CreateString(a.Get1().ToString()), defaultMatcher.globalSearch, defaultMatcher.unicode);
+            // Step 6: matcher = Construct(C, « R, flags »). With no @@species the default
+            // %RegExp% is used; constructing it runs IsRegExp(R), an observable @@match probe.
+            var matcher = species.IsNullOrUndefined
+                ? new JSRegExp(new Arguments(JSUndefined.Value, r, flags))
+                : species.CreateInstance(new Arguments(species, r, flags));
+
+            // Steps 7-8: matcher.lastIndex = ToLength(Get(R, "lastIndex")).
+            matcher[KeyStrings.lastIndex] = JSValue.CreateNumber(ToLength(r[KeyStrings.lastIndex]));
+
+            // Steps 9-11: global / fullUnicode are derived from the flags STRING, not by
+            // reading "global"/"unicode" off the constructed matcher (those reads are not
+            // observable per spec — a throwing getter must not fire).
+            return new JSRegExpStringIterator(
+                matcher,
+                s,
+                flagsString.Contains('g'),
+                flagsString.Contains('u') || flagsString.Contains('v'));
         }, "[Symbol.matchAll]", 1), JSPropertyAttributes.ConfigurableValue);
         symbols.Put(JSSymbol.replace.Key) = JSProperty.Property(CreateNativeFunction((in Arguments a) =>
         {
@@ -1829,7 +1824,16 @@ internal static class BuiltInsAssemblyInitializer
         PatchLegacyRegExpAccessor(regExpCtor, "lastParen", "$+", static (in Arguments _) => LegacyRegExpValue(static s => s.LastParen));
         PatchLegacyRegExpAccessor(regExpCtor, "leftContext", "$`", static (in Arguments _) => LegacyRegExpValue(static s => s.LeftContext));
         PatchLegacyRegExpAccessor(regExpCtor, "rightContext", "$'", static (in Arguments _) => LegacyRegExpValue(static s => s.RightContext));
-        PatchLegacyRegExpAccessor(regExpCtor, "input", "$_", static (in Arguments _) => LegacyRegExpValue(static s => s.Input));
+        // RegExp.input / $_ are the only legacy statics with a setter
+        // (SetLegacyRegExpStaticProperty); the rest are get-only.
+        PatchLegacyRegExpAccessor(regExpCtor, "input", "$_",
+            static (in Arguments _) => LegacyRegExpValue(static s => s.Input),
+            static (in Arguments a) =>
+            {
+                if (JSEngine.Current?.LegacyRegExp is { } state)
+                    state.Input = a.Get1().ToString();
+                return JSUndefined.Value;
+            });
 
         for (var i = 1; i <= 9; i++)
         {
@@ -1876,15 +1880,38 @@ internal static class BuiltInsAssemblyInitializer
         regExpCtor.FastAddValue(escapeKey, CreateNativeFunction(JSRegExp.Escape, "escape", 1), JSPropertyAttributes.ConfigurableValue);
     }
 
-    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, string alias, JSFunctionDelegate getter)
+    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, string alias, JSFunctionDelegate getter, JSFunctionDelegate setter = null)
     {
-        PatchLegacyRegExpAccessor(regExpCtor, propertyName, getter);
-        PatchLegacyRegExpAccessor(regExpCtor, alias, getter);
+        PatchLegacyRegExpAccessor(regExpCtor, propertyName, getter, setter);
+        PatchLegacyRegExpAccessor(regExpCtor, alias, getter, setter);
     }
 
-    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, JSFunctionDelegate getter)
+    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, JSFunctionDelegate getter, JSFunctionDelegate setter = null)
     {
-        EnsureAccessorProperty(regExpCtor, KeyStrings.GetOrCreate(propertyName), propertyName, getter);
+        // §B.2.4 GetLegacyRegExpStaticProperty / SetLegacyRegExpStaticProperty step 2:
+        // these statics belong to %RegExp% itself. If SameValue(%RegExp%, thisValue) is
+        // false — a subclass constructor, a RegExp instance, %RegExp.prototype%, or a
+        // primitive receiver — throw a TypeError rather than reading or writing the slot
+        // (test262 annexB/.../legacy-accessors/{this-not-regexp-constructor,this-subclass-constructor}).
+        JSValue GuardedGet(in Arguments a)
+        {
+            if (!ReferenceEquals(a.This, regExpCtor))
+                throw JSEngine.NewTypeError($"RegExp.{propertyName} getter called on incompatible receiver");
+            return getter(a);
+        }
+
+        JSFunctionDelegate guardedSetter = null;
+        if (setter != null)
+        {
+            guardedSetter = (in Arguments a) =>
+            {
+                if (!ReferenceEquals(a.This, regExpCtor))
+                    throw JSEngine.NewTypeError($"RegExp.{propertyName} setter called on incompatible receiver");
+                return setter(a);
+            };
+        }
+
+        EnsureAccessorProperty(regExpCtor, KeyStrings.GetOrCreate(propertyName), propertyName, GuardedGet, guardedSetter);
     }
 
     private static void PatchArrayPrototype(JSContext context)

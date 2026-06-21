@@ -1184,7 +1184,14 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         if (result.BooleanValue || IsStrictModeEnabled?.Invoke() != true)
             return result;
 
-        throw NewTypeError?.Invoke($"Cannot delete property {key} of {target}")
+        // `delete o[p]` performs ToPropertyKey(p) exactly once (when the [[Delete]]
+        // that produced `result` coerced the key). Interpolating an object-valued
+        // `key` into the message would call its `toString` a *second* time — observable
+        // re-coercion the spec forbids (test262 sm/strict/8.12.7-2). Only embed the key
+        // when it is already a primitive (string/number/symbol), which carries no
+        // user-visible coercion.
+        var keyText = key.IsObject ? "property" : $"property {key}";
+        throw NewTypeError?.Invoke($"Cannot delete {keyText} of {target}")
             ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
     }
 

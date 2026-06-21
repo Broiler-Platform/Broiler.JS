@@ -3,11 +3,15 @@ using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
+    private static readonly System.Reflection.PropertyInfo TemplateSubstitutionStringValueProperty =
+        typeof(JSValue).GetProperty(nameof(JSValue.StringValue));
+
     protected override YExpression VisitTemplateExpression(AstTemplateExpression templateExpression)
     {
         var items = new Sequence<YExpression>(templateExpression.Parts.Count);
@@ -33,7 +37,14 @@ partial class FastCompiler
             }
             else
             {
-                items.Add(VisitExpression(item));
+                // §13.2.8.6 TemplateLiteral evaluation coerces each substitution with
+                // ToString — which throws a TypeError for a Symbol and converts an object
+                // through its toString with the "string" hint. Read the substitution's
+                // StringValue (the spec ToString) here rather than letting the lenient CLR
+                // ToString of the runtime template builder stringify a Symbol (test262
+                // sm/object/toPrimitive: `` `${Symbol()}` `` must throw).
+                var substitution = VisitExpression(item);
+                items.Add(JSStringBuilder.New(YExpression.Property(substitution, TemplateSubstitutionStringValueProperty)));
             }
         }
 

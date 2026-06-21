@@ -202,6 +202,9 @@ public partial class JSString
 
         var created = new JSRegExp(search.StringValue, "");
         var builtinSearcher = created[(IJSSymbol)JSSymbol.search];
-        return builtinSearcher.InvokeFunction(new Arguments(created, a.This));
+        // §22.1.3.12 step 5: Invoke(rx, @@search, « string »), where string is ToString(O)
+        // (computed above as @this) — not the raw receiver. A boxed String receiver must
+        // therefore reach the built-in @@search as the primitive string it coerces to.
+        return builtinSearcher.InvokeFunction(new Arguments(created, JSValue.CreateString(@this)));
     }
 }

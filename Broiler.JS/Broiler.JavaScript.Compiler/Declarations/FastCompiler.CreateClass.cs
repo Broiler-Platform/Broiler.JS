@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Ast.Statements;
@@ -52,7 +53,11 @@ partial class FastCompiler
         if (literal.TokenType == TokenTypes.Number)
         {
             var value = literal.NumericValue;
-            if (value == 0 || (value > 0 && value <= uint.MaxValue && value % 1 == 0))
+            // An array index is an integer in [0, 2**32-1); 4294967295 (uint.MaxValue) is
+            // NOT one and names the ordinary string property "4294967295" (matching
+            // TryGetArrayIndex and the member-read path). Folding it to a uint key would
+            // store it at the element table's reserved sentinel slot and silently drop it.
+            if (value == 0 || (value > 0 && value < uint.MaxValue && value % 1 == 0))
                 return YExpression.Constant((uint)value);
 
             return VisitLiteral(literal);
@@ -71,7 +76,9 @@ partial class FastCompiler
     private YExpression BigIntPropertyKey(string literalText)
     {
         var value = BigIntLiteralToValue(literalText);
-        if (value >= 0 && value <= uint.MaxValue)
+        // 4294967295 (uint.MaxValue) is not an array index — it names the string property
+        // "4294967295" — so exclude it from the integer-key fast path (see GetLiteralPropertyKey).
+        if (value >= 0 && value < uint.MaxValue)
             return YExpression.Constant((uint)value);
 
         return KeyOfName(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -165,6 +172,18 @@ partial class FastCompiler
         }
     }
 
+
+    // Wrap a (value-discarding) statement so it executes inside a runtime strict-mode
+    // scope. Used for a computed ClassElementName assignment: class code is strict, so
+    // the key expression's member stores etc. must observe the live runtime strict flag.
+    private static YExpression WrapStatementInStrictMode(YExpression statement)
+    {
+        var strictScope = YExpression.Parameter(typeof(IDisposable), "#strictScope");
+        return YExpression.Block(
+            new Sequence<YParameterExpression> { strictScope },
+            YExpression.Assign(strictScope, YExpression.Call(null, EnterStrictModeDisposableMethod, YExpression.Constant(true))),
+            YExpression.TryFinally(statement, YExpression.Call(strictScope, DisposeMethod)));
+    }
 
     private YExpression GetClassElementName(AstClassProperty property)
     {
@@ -413,7 +432,15 @@ partial class FastCompiler
             {
                 var computedNameVar = YExpression.Parameter(typeof(JSValue), $"#className{computedMemberNames.Count}");
                 classScopeVariables.Add(computedNameVar);
-                stmts.Add(YExpression.Assign(computedNameVar, ValidateStaticPropertyName(property, GetClassElementName(property))));
+                var keyAssign = YExpression.Assign(computedNameVar, ValidateStaticPropertyName(property, GetClassElementName(property)));
+                // The computed key evaluates as strict-mode code at runtime too, so a store
+                // inside it (e.g. to a non-extensible object) throws. The runtime strict
+                // scope is a try/finally, which must not wrap a `yield`/`await` inside the
+                // key (it would disrupt the generator/async state machine); a computed key
+                // can only contain those when the enclosing function is a generator/async,
+                // so skip the runtime wrap there (the compile-time strict flag still applies).
+                var mayContainSuspension = AwaitYieldParameterDetector.Contains(property.Key);
+                stmts.Add(mayContainSuspension ? keyAssign : WrapStatementInStrictMode(keyAssign));
                 computedMemberNames[property] = computedNameVar;
             }
 

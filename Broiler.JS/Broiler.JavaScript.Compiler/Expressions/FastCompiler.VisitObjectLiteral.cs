@@ -90,7 +90,14 @@ partial class FastCompiler
         var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
         var keyForName = keyTemp.Variable;
         keyExp = YExpression.Block(YExpression.Assign(keyTemp.Variable, keyExp), keyTemp.Variable);
-        keyTemp.Dispose();
+        // An accessor's value reads this temp for its NamedEvaluation ("get "/"set " name),
+        // so the temp must outlive the key assignment. Releasing it back to the pool lets a
+        // sibling computed accessor reuse the same slot; across a `yield` key in a generator
+        // the two accessors' keys then interleave on one slot and the earlier accessor is
+        // lost (test262 .../object/accessor-name-computed-yield-expr). A data key consumes
+        // its temp inline in the Add call, so it can still be pooled.
+        if (p.Kind is not (AstPropertyKind.Get or AstPropertyKind.Set))
+            keyTemp.Dispose();
         return keyForName;
     }
 

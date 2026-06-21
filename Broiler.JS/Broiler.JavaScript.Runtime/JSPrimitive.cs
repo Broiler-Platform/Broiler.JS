@@ -32,13 +32,11 @@ public abstract class JSPrimitive: JSValue
             ResolvePrototype();
             if (prototypeChain == null)
                 return UndefinedValue;
-            var px = prototypeChain.GetInternalProperty(symbol);
-            if (px.IsEmpty)
-            {
-                // throw JSEngine.Current.NewTypeError($"{name} property not found on {this.GetType().Name}:{this}");
-                return UndefinedValue;
-            }
-            return this.GetValue(px);
+            // OrdinaryGet with the primitive as the receiver: walk the wrapper prototype
+            // chain through each object's [[Get]] (rather than flattening it into a single
+            // internal-property lookup) so an inherited accessor's getter — and a Proxy in
+            // the chain — is invoked with this primitive as its this/receiver value.
+            return GetValue(symbol, this);
         }
         set
         {
@@ -59,13 +57,12 @@ public abstract class JSPrimitive: JSValue
             ResolvePrototype();
             if (prototypeChain == null)
                 return UndefinedValue;
-            var px = prototypeChain.GetInternalProperty(name);
-            if (px.IsEmpty)
-            {
-                // throw JSEngine.Current.NewTypeError($"{name} property not found on {this.GetType().Name}:{this}");
-                return UndefinedValue;
-            }
-            return this.GetValue(px);
+            // OrdinaryGet with the primitive as the receiver: walk the wrapper prototype
+            // chain through each object's [[Get]] (rather than flattening it into a single
+            // internal-property lookup) so an inherited accessor's getter — and a Proxy in
+            // the chain — is invoked with this primitive as its this/receiver value. A
+            // subclass override (e.g. JSString's own "length"/index) still takes precedence.
+            return GetValue(name, this);
         }
         set
         {

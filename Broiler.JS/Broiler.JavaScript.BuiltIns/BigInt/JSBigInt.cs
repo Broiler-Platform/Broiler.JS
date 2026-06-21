@@ -656,43 +656,24 @@ public partial class JSBigInt : JSPrimitive
     public static JSValue AsUintN(in Arguments a)
     {
         var bits = ToBitsIndex(a.GetAt(0));
-        var original = ToBigInt(a.GetAt(1));
+        var n = ToBigInt(a.GetAt(1));
 
-        var n = original;
-        if (n.Sign == BigInteger.MinusOne.Sign)
-            n = -n;
+        // BigInt.asUintN(bits, n): return n modulo 2**bits as a non-negative BigInt
+        // (spec step 3). A negative n wraps into [0, 2**bits), e.g. asUintN(2, -1n) is
+        // 3n and asUintN(64, -1n) is 18446744073709551615n.
+        if (bits == 0)
+            return new JSBigInt(BigInteger.Zero);
 
-        var buffer = n.ToByteArray();
-        if (buffer.Length * 8 < bits)
-            return new JSBigInt(original);
+        // A non-negative value already below 2**bits needs no reduction; this also
+        // avoids materialising 2**bits for the common in-range case.
+        if (n.Sign >= 0 && n.GetBitLength() <= bits)
+            return new JSBigInt(n);
 
-        var reminderBits = bits % 8;
+        var modulus = BigInteger.One << (int)bits;
+        var r = n % modulus;
+        if (r.Sign < 0)
+            r += modulus;
 
-        var length = (int)(bits / 8);
-        if (reminderBits > 0)
-            length++;
-
-        // extra pad will result in a UInt
-        var copy = new byte[length + 1];
-        Buffer.BlockCopy(buffer, 0, copy, 0, length);
-
-        if (reminderBits > 0)
-        {
-            ref byte last = ref copy[length - 1];
-            byte start = 1;
-            reminderBits--;
-            
-            while (reminderBits > 0)
-            {
-                start <<= 1;
-                start |= 1;
-                reminderBits--;
-            }
-
-            last &= start;
-        }
-
-        var r = new BigInteger(copy);
         return new JSBigInt(r);
     }
 }

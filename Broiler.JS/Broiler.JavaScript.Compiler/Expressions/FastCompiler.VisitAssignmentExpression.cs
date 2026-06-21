@@ -179,6 +179,15 @@ partial class FastCompiler
                 var initExpr = Visit(right);
                 if (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName)
                     initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
+                else
+                    // NamedEvaluation names the function from the target identifier here
+                    // rather than relying on the binding setter: a read-only binding (a
+                    // named function expression's own name, `namedLambda = function(){}`)
+                    // rejects the write, so the setter never runs — yet the assignment's
+                    // value must still be the named function (test262
+                    // sm/Function/function-name-assignment). For a writable binding this is
+                    // equivalent to the setter's own inference (same target name).
+                    initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(identifier.Name.Value), YExpression.Constant(true));
                 return JSVariableBuilder.Assign(variable.Variable, initExpr);
             }
 
@@ -187,6 +196,11 @@ partial class FastCompiler
                 var initExpr = Visit(right);
                 if (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName)
                     initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
+                else if (!IsDestructuringAssignmentExpression(right))
+                    // NamedEvaluation from the target identifier (see the lexical branch above):
+                    // a read-only binding such as a named function expression's own name rejects
+                    // the write, so name the function here rather than via the assignment setter.
+                    initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(identifier.Name.Value), YExpression.Constant(true));
                 if (IsDestructuringAssignmentExpression(right))
                     return AssignMaterializedValue(variable.Expression, initExpr);
                 return YExpression.Assign(variable.Expression, initExpr);
@@ -327,7 +341,20 @@ partial class FastCompiler
     private YExpression AssignIdentifier(AstIdentifier identifier, AstExpression right, TokenTypes assignmentOperator)
     {
         if (assignmentOperator == TokenTypes.Assign)
-            return AssignIdentifier(identifier, Visit(right));
+        {
+            var value = Visit(right);
+            // NamedEvaluation: `target = function(){}` where `target` is an
+            // IdentifierReference resolved dynamically (e.g. through a `with` scope, or a
+            // global binding with no static slot) still infers the anonymous function's
+            // name from the target identifier. The static-binding path names it via the
+            // JSVariable setter; the dynamic path has no setter to do so, so name it here
+            // (test262 sm/Function/function-name-assignment). The caller only routes a
+            // non-parenthesized anonymous RHS to this overload.
+            if (IsAnonymousFunctionDefinition(right))
+                value = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod,
+                    value, YExpression.Constant(identifier.Name.Value), YExpression.Constant(true));
+            return AssignIdentifier(identifier, value);
+        }
 
         var key = KeyOfName(identifier.Name);
         using var withObjectTemp = scope.Top.GetTempVariable(typeof(JSObject));

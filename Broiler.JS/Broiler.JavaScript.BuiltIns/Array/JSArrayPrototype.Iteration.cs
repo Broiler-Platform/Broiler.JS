@@ -274,6 +274,52 @@ public partial class JSArray
         public JSValue NextOrDefault(JSValue @default) => MoveNext(out var value) ? value : @default;
     }
 
+    // Length-bound key iterator (CreateArrayIterator, "key" kind). Like the value and
+    // entry variants the length is re-read on every step, so an index appended after
+    // the iterator is created (but before it is exhausted) remains reachable and an
+    // index removed by shrinking "length" ends iteration early.
+    private struct ArrayLikeKeyEnumerator(JSObject @object) : IElementEnumerator
+    {
+        private int index = -1;
+
+        public bool MoveNext(out JSValue value)
+        {
+            if (++index < GetArrayLikeLength(@object))
+            {
+                value = JSValue.CreateNumber(index);
+                return true;
+            }
+
+            value = JSValue.UndefinedValue;
+            return false;
+        }
+
+        public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
+        {
+            if (MoveNext(out value))
+            {
+                hasValue = true;
+                index = (uint)this.index;
+                return true;
+            }
+
+            hasValue = false;
+            index = 0;
+            return false;
+        }
+
+        public bool MoveNextOrDefault(out JSValue value, JSValue @default)
+        {
+            if (MoveNext(out value))
+                return true;
+
+            value = @default;
+            return false;
+        }
+
+        public JSValue NextOrDefault(JSValue @default) => MoveNext(out var value) ? value : @default;
+    }
+
     private struct ArrayLikeEntryEnumerator(JSObject @object) : IElementEnumerator
     {
         private int index = -1;
@@ -613,8 +659,7 @@ public partial class JSArray
         if (a.This is Typed.JSTypedArray taK)
             return taK.GetArrayIterator(Typed.JSTypedArray.ArrayIteratorKind.Key);
         var @this = ToArrayLikeObject(a.This);
-        var length = GetArrayLikeLength(@this);
-        return new JSGenerator(new IntKeyEnumerator((int)length), "Array Iterator");
+        return new JSGenerator(new ArrayLikeKeyEnumerator(@this), "Array Iterator");
     }
 
     [JSPrototypeMethod]
