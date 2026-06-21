@@ -784,9 +784,9 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     internal JSValue InvokeCallback(in Arguments a) =>
         JSTailCall.Resolve((CoerceThisOnInvoke ? f(a.OverrideThis(CoerceNonStrictThis(a.This))) : f(in a)) ?? JSUndefined.Value);
 
-    [JSPrototypeMethod]
-    [JSExport("valueOf", Length = 1)]
-    public new static JSValue ValueOf(in Arguments a) => a.This;
+    // Function.prototype has no own `valueOf`: per the spec it simply inherits
+    // %Object.prototype.valueOf%, so `Function.prototype.hasOwnProperty("valueOf")`
+    // must be false (test262: built-ins/Function/prototype/S15.3.4_A4).
 
     [JSPrototypeMethod]
     [JSExport("call", Length = 1)]
