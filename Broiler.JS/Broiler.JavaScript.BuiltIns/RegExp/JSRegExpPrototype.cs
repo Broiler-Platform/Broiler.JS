@@ -71,8 +71,15 @@ public partial class JSRegExp
             nextFlags = flagsValue.IsUndefined ? string.Empty : flagsValue.StringValue;
         }
 
+        // Parse/validate the new pattern and flags BEFORE mutating any instance state:
+        // CreateRegex throws a SyntaxError for an invalid pattern or flags, and in that
+        // case `compile` must leave the receiver's [[OriginalSource]] and
+        // [[RegExpMatcher]] untouched (annexB RegExp.prototype.compile
+        // pattern-string-invalid / flags-string-invalid).
+        var compiled = CreateRegex(nextPattern, nextFlags, out var nextCaptureMap);
         pattern = nextPattern;
-        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, flags) = CreateRegex(nextPattern, nextFlags, out captureMap);
+        captureMap = nextCaptureMap;
+        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, flags) = compiled;
         SetObservableLastIndex(0);
         return this;
     }

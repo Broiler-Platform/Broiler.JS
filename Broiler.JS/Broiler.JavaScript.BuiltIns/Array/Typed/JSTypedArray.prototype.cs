@@ -23,6 +23,37 @@ partial class JSTypedArray
     // indices read as undefined rather than truncating the iteration.
     private JSValue ReadElement(int k) => k < length ? this[(uint)k] : JSUndefined.Value;
 
+    // §7.1.5 ToIntegerOrInfinity: truncate toward zero, with ±Infinity mapped to
+    // long.MaxValue / long.MinValue sentinels. Unlike IntValue (which is ToUint32 and
+    // collapses Infinity to 0), this preserves the infinite magnitude so index callers
+    // clamp it correctly — e.g. indexOf(x, Infinity) is past the end, not index 0
+    // (test262 TypedArray/prototype/{indexOf,lastIndexOf}/fromIndex-infinity).
+    private static long ToIntegerOrInfinityIndex(JSValue value, long defaultValue = 0)
+    {
+        if (value == null || value.IsUndefined)
+            return defaultValue;
+
+        var number = value.DoubleValue;
+        if (double.IsNaN(number) || number == 0)
+            return 0;
+        if (double.IsPositiveInfinity(number))
+            return long.MaxValue;
+        if (double.IsNegativeInfinity(number))
+            return long.MinValue;
+
+        return (long)number;
+    }
+
+    // Resolves a relative index (per copyWithin/slice clamping): a negative value counts
+    // from the end and clamps at 0; a positive value clamps at len. Overflow-safe for the
+    // long.MinValue / long.MaxValue infinity sentinels.
+    private static int ClampRelativeIndex(long relative, int len)
+    {
+        if (relative < 0)
+            return relative <= -len ? 0 : (int)(len + relative);
+        return relative >= len ? len : (int)relative;
+    }
+
     [JSExport("toString")]
     private new JSValue ToString(in Arguments a) => new JSString(ToString());
 
@@ -46,13 +77,13 @@ partial class JSTypedArray
         // original length (steps 5-10), not the post-coercion one.
         var len = Length;
         var (t, s) = a.Get2();
-        var target = t.IntValue;
-        var start = s.IntValue;
-        var end = a.TryGetAt(2, out var e) ? e.IntValue : len;
-        // Negative values represent offsets from the end of the array.
-        target = target < 0 ? Math.Max(len + target, 0) : Math.Min(target, len);
-        start = start < 0 ? Math.Max(len + start, 0) : Math.Min(start, len);
-        end = end < 0 ? Math.Max(len + end, 0) : Math.Min(end, len);
+        // §23.2.3.5 steps 4-8: target/start/end are ToIntegerOrInfinity, then clamped as
+        // offsets from the end (negative) or the length (positive). An undefined/absent
+        // end defaults to len, and an infinite argument clamps to the array bound rather
+        // than collapsing to 0 (test262 copyWithin/{undefined-end,non-negative-out-of-bounds-end}).
+        var target = ClampRelativeIndex(ToIntegerOrInfinityIndex(t), len);
+        var start = ClampRelativeIndex(ToIntegerOrInfinityIndex(s), len);
+        var end = ClampRelativeIndex(a.TryGetAt(2, out var e) ? ToIntegerOrInfinityIndex(e, len) : len, len);
 
         // Calculate the number of values to copy.
         int count = Math.Min(end - start, len - target);
@@ -393,19 +424,15 @@ partial class JSTypedArray
         {
             return JSNumber.MinusOne;
         }
-        var startIndex = fromIndex.AsInt32OrDefault();
-        if (startIndex >= n)
+        // §23.2.3.13: fromIndex is ToIntegerOrInfinity. +Infinity is past the end (-1);
+        // -Infinity (and any offset before the start) clamps the search start to 0
+        // (test262 indexOf/fromIndex-infinity).
+        var from = ToIntegerOrInfinityIndex(fromIndex);
+        if (from >= n)
         {
             return JSNumber.MinusOne;
         }
-        if (startIndex < 0)
-        {
-            startIndex = n + startIndex;
-            if (startIndex < 0)
-            {
-                startIndex = 0;
-            }
-        }
+        var startIndex = from >= 0 ? (int)from : (from <= -n ? 0 : (int)(n + from));
         var en = GetElementEnumerator(startIndex);
         while (en.MoveNext(out var hasValue, out var item, out var index))
         {
@@ -460,7 +487,10 @@ partial class JSTypedArray
             return JSNumber.MinusOne;
         }
 
-        var startIndex = a.Length == 2 ? fromIndex.IntValue : int.MaxValue;
+        // §23.2.3.17: fromIndex (when present) is ToIntegerOrInfinity, else len-1.
+        // +Infinity clamps to the last index; -Infinity (or an offset before -length)
+        // leaves nothing to search (test262 lastIndexOf/fromIndex-infinity).
+        var from = a.Length == 2 ? ToIntegerOrInfinityIndex(fromIndex) : (long)n - 1;
 
         // Coercing fromIndex (ToIntegerOrInfinity) may run user code that resizes the
         // backing resizable buffer, leaving this fixed-length view out of bounds — every
@@ -471,19 +501,19 @@ partial class JSTypedArray
             return JSNumber.MinusOne;
         }
 
-        if (startIndex >= n)
+        int startIndex;
+        if (from >= 0)
         {
-            startIndex = n - 1;
+            startIndex = from >= n ? n - 1 : (int)from;
         }
-        else if (startIndex < 0)
+        else if (from < -n)
         {
-            startIndex += n;
-        }
-
-        // A fromIndex more negative than -length leaves no elements to search (k stays < 0).
-        if (startIndex < 0)
-        {
+            // A fromIndex more negative than -length leaves no elements to search.
             return JSNumber.MinusOne;
+        }
+        else
+        {
+            startIndex = (int)(n + from);
         }
 
         var i = (uint)startIndex;

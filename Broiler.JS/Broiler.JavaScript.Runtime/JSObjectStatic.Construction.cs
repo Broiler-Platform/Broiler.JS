@@ -489,7 +489,22 @@ public partial class JSObject
                 throw NewTypeError(NotEntry(item));
             }
 
-            r.FastAddValue(entry[0], entry[1], JSPropertyAttributes.EnumerableConfigurableValue);
+            // AddEntriesFromIterable: reading the entry's key / value (and coercing the
+            // key to a property key) can throw — a throwing key/value accessor or a
+            // throwing key toString. Such an abrupt completion must IteratorClose the
+            // source (invoke its `return`) before propagating (test262
+            // Object/fromEntries/iterator-closed-for-throwing-entry-*).
+            try
+            {
+                r.FastAddValue(entry[0], entry[1], JSPropertyAttributes.EnumerableConfigurableValue);
+            }
+            catch
+            {
+                // If `return` itself throws while unwinding a throw completion, the
+                // original exception wins, so swallow any error from closing.
+                try { (en as IReturnableEnumerator)?.Return(); } catch { /* original exception propagates */ }
+                throw;
+            }
         }
 
         return r;
