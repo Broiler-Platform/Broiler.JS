@@ -174,7 +174,9 @@ public partial class JSJSON : JSObject
                 if (replacer != null)
                     jsValue = replacer((array, JSValue.CreateString(index.ToString()), jsValue));
 
-                if (jsValue.IsUndefined || jsValue is JSFunction)
+                // SerializeJSONArray: an element whose serialization is undefined — an
+                // undefined / callable / Symbol value — is rendered as the literal "null".
+                if (jsValue.IsUndefined || jsValue is JSFunction || jsValue is JSSymbol)
                     jsValue = JSNull.Value;
 
                 Stringify(sb, jsValue, replacer, propertyList, indent, stack);
@@ -607,9 +609,12 @@ public partial class JSJSON : JSObject
         {
             var wrapped = wrapper.value;
             if (wrapped is JSNumber)
-                target = CoerceJsonWrapperToPrimitive(wrapper, preferString: false);
+                // ToNumber(wrapper): ToPrimitive then ToNumber, so when valueOf/toString are
+                // removed and ToPrimitive falls back to Object.prototype.toString ("[object
+                // Number]"), the final ToNumber yields NaN and the value serializes as null.
+                target = JSValue.CreateNumber(CoerceJsonWrapperToPrimitive(wrapper, preferString: false).DoubleValue);
             else if (wrapped.IsString)
-                target = CoerceJsonWrapperToPrimitive(wrapper, preferString: true);
+                target = JSValue.CreateString(CoerceJsonWrapperToPrimitive(wrapper, preferString: true).ToString());
             else
                 target = wrapped;
         }
@@ -684,18 +689,19 @@ public partial class JSJSON : JSObject
         // from the holder.
         void EmitMember(in StringSpan keyText, JSValue keyValue, JSValue jsValue)
         {
-            if (jsValue.IsUndefined || jsValue is JSFunction)
-                return;
-
+            // SerializeJSONProperty runs toJSON (step 2) then the replacer (step 3) before
+            // deciding whether a member produces text — the replacer is consulted even when
+            // the slot value is undefined (e.g. a property an earlier getter deleted).
             jsValue = ToJson(jsValue, keyValue);
 
-            // check replacer...
             if (replacer != null)
-            {
                 jsValue = replacer((target, keyValue, jsValue));
-                if (jsValue.IsUndefined)
-                    return;
-            }
+
+            // Steps 8-11: an undefined / callable / Symbol value has no JSON text, so the
+            // member is omitted entirely (neither key nor colon is written) — unlike an
+            // array element, which would be rendered as "null".
+            if (jsValue.IsUndefined || jsValue is JSFunction || jsValue is JSSymbol)
+                return;
 
             // write indention here...
             if (!first)
@@ -713,27 +719,6 @@ public partial class JSJSON : JSObject
             Stringify(sb, jsValue, replacer, propertyList, indent, stack);
         }
 
-        void WriteMember(in StringSpan keyText, JSValue keyValue, in JSProperty value)
-        {
-            if (value.IsEmpty || !value.IsEnumerable)
-                return;
-
-            JSValue jsValue;
-            if (!value.IsValue)
-            {
-                if (value.get == null)
-                    return;
-
-                jsValue = ((JSFunction)value.get).InvokeCallback(new Arguments(target));
-            }
-            else
-            {
-                jsValue = (JSValue)value.value;
-            }
-
-            EmitMember(keyText, keyValue, jsValue);
-        }
-
         if (propertyList != null)
         {
             // SerializeJSONObject step 5: when a PropertyList is present, iterate it
@@ -747,19 +732,30 @@ public partial class JSJSON : JSObject
         }
         else
         {
-            // Integer-indexed properties (stored separately from named ones) are own
-            // enumerable string keys too and must be serialized — previously they were
-            // skipped entirely, so e.g. `JSON.stringify({0:'a',x:1})` dropped "0".
-            // ElementArray.AllValues() yields them in ascending index order.
+            // SerializeJSONObject step 6.a snapshots EnumerableOwnPropertyNames ONCE, then
+            // step 8 reads each member live via [[Get]] (SerializeJSONProperty step 1). So a
+            // property a sibling getter deletes mid-serialization is still visited (its value
+            // reads as undefined and the replacer still runs), while a property added
+            // mid-serialization is not. Integer-indexed keys (stored apart from named ones)
+            // come first in ascending order, then named keys in insertion order.
+            var snapshot = new List<string>();
             foreach (var (index, element) in obj.GetElements(create: false).AllValues())
             {
-                var indexText = index.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                WriteMember(indexText, JSValue.CreateString(indexText), element);
+                if (element.IsEmpty || !element.IsEnumerable)
+                    continue;
+                snapshot.Add(index.ToString(System.Globalization.CultureInfo.InvariantCulture));
             }
 
             var pen = obj.GetOwnProperties().GetEnumerator();
             while (pen.MoveNext(out var key, out var value))
-                WriteMember(key.Value, KeyStringCoreExtensions.GetJSString(value.key), value);
+            {
+                if (value.IsEmpty || !value.IsEnumerable)
+                    continue;
+                snapshot.Add(key.Value.ToString());
+            }
+
+            foreach (var keyText in snapshot)
+                EmitMember(keyText, JSValue.CreateString(keyText), obj[KeyStrings.GetOrCreate(keyText)]);
         }
 
         if (indent != null)
