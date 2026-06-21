@@ -98,8 +98,11 @@ public partial class JSJSON : JSObject
 
     private static long GetArrayLength(JSObject valueObject)
     {
+        // A trapless array proxy forwards "length" straight to its target, but that target
+        // may itself be a proxy whose own get trap defines the length — so recurse rather
+        // than read the innermost array's raw .Length (which would ignore the inner trap).
         if (valueObject is JSProxy proxy && proxy.IsArray && !proxy.HasTrap(KeyStrings.get))
-            return proxy.Target.Length;
+            return GetArrayLength(proxy.Target);
 
         return ToLength(valueObject[KeyStrings.length]);
     }

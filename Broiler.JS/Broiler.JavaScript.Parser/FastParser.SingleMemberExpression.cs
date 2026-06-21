@@ -147,6 +147,11 @@ partial class FastParser
                         throw stream.Unexpected();
                     if (asNew)
                     {
+                        // §13.3: a `new` operand is a MemberExpression, which an OptionalChain
+                        // is not — so `new a?.b()`, `new a?.[b]()` and `new C?.()` are early
+                        // SyntaxErrors (the optional links are detected via inOptional).
+                        if (inOptional)
+                            throw new FastParseException(token, "Invalid optional chain in 'new' expression");
                         node = new AstNewExpression(token, node, arguments);
                         asNew = false;
                     }
@@ -247,7 +252,13 @@ partial class FastParser
         }
 
         if (asNew)
+        {
+            // `new a?.b` (no call) is likewise an early SyntaxError: an OptionalChain
+            // cannot be the operand of `new`.
+            if (inOptional)
+                throw new FastParseException(token, "Invalid optional chain in 'new' expression");
             node = new AstNewExpression(token, node, Sequence<AstExpression>.Empty);
+        }
 
         // An optional chain short-circuits via an internal sentinel that each link
         // propagates; wrap the chain root so the sentinel is converted back to
