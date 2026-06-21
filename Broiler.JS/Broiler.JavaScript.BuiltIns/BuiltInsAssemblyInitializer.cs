@@ -888,8 +888,12 @@ internal static class BuiltInsAssemblyInitializer
             var name = @object[KeyStrings.name];
             var message = @object[KeyStrings.message];
 
-            var nameString = name.IsUndefined ? "Error" : name.ToString();
-            var messageString = message.IsUndefined ? string.Empty : message.ToString();
+            // Coerce `name` and `message` with the ToString abstract operation
+            // (StringValue), not C#'s ToString: a Symbol must throw a TypeError
+            // rather than being rendered as "Symbol(...)", and an object must run
+            // its own toString. (test262: Error.prototype.toString tostring-message-throws-symbol)
+            var nameString = name.IsUndefined ? "Error" : name.StringValue;
+            var messageString = message.IsUndefined ? string.Empty : message.StringValue;
 
             if (nameString.Length == 0)
                 return JSValue.CreateString(messageString);
