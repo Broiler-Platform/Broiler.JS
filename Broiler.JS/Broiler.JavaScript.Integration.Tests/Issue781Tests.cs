@@ -125,13 +125,19 @@ public class Issue781Tests
 
     // ───────────── Problems 16/17: timeZone slot value as an ISO string ─────────────
 
+    // The ZonedDateTime *constructor* runs ToTemporalTimeZoneIdentifier → ParseTimeZoneIdentifier,
+    // which accepts only a bare time-zone identifier (an IANA name or a minute-precision UTC
+    // offset). A full ISO date-time string is therefore a RangeError — unlike the lenient from() /
+    // property-bag / toZonedDateTime paths (below), which still parse it via
+    // ParseTemporalTimeZoneString and adopt its designator. (test262
+    // built-ins/Temporal/ZonedDateTime/timezone-iso-string.)
     [Theory]
-    [InlineData("2021-08-19T17:30Z", "UTC")]                          // a Z (UTC) designator
-    [InlineData("2016-12-31T23:59:60+00:00[UTC]", "UTC")]             // a [TimeZone] annotation (leap second)
-    [InlineData("2021-08-19T17:30+01:00", "+01:00")]                  // a numeric UTC offset
-    [InlineData("2021-08-19T17:30-08:00[America/Vancouver]", "America/Vancouver")] // annotation wins over offset
-    public void TimeZoneConstructorIsoStringExtractsDesignator(string timeZone, string expected)
-        => Assert.Equal(expected, Eval($"new Temporal.ZonedDateTime(0n, '{timeZone}').timeZoneId"));
+    [InlineData("2021-08-19T17:30Z")]                            // a Z (UTC) designator
+    [InlineData("2016-12-31T23:59:60+00:00[UTC]")]               // a [TimeZone] annotation (leap second)
+    [InlineData("2021-08-19T17:30+01:00")]                       // a numeric UTC offset
+    [InlineData("2021-08-19T17:30-08:00[America/Vancouver]")]    // an IANA annotation
+    public void TimeZoneConstructorRejectsIsoString(string timeZone)
+        => Assert.Equal("RangeError", ErrorName($"new Temporal.ZonedDateTime(0n, '{timeZone}')"));
 
     // The property-bag timeZone field accepts the same ISO strings.
     [Fact]

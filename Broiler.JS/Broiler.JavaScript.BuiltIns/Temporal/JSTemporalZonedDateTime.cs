@@ -45,7 +45,13 @@ public partial class JSTemporalZonedDateTime : JSObject
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime: time zone must be a string");
 
         epochNanoseconds = ns;
-        timeZoneId = CanonicalizeTimeZone(tzArg.ToString());
+        // §6.1.1: the constructor runs ToTemporalTimeZoneIdentifier → ParseTimeZoneIdentifier,
+        // which accepts only a bare time-zone identifier (IANA name or minute-precision UTC
+        // offset). A full ISO date-time string such as "1997-12-04T12:34[+01:00]" is valid
+        // input for from(), but not for the constructor, where it is a RangeError.
+        if (!TryCanonicalizeTimeZoneIdentifier(tzArg.ToString(), out var canonicalTimeZone))
+            throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: invalid time zone identifier \"{tzArg}\"");
+        timeZoneId = canonicalTimeZone;
         calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(2), "Temporal.ZonedDateTime");
     }
 
@@ -707,7 +713,30 @@ public partial class JSTemporalZonedDateTime : JSObject
         var l = Local();
         var current = new JSTemporalPlainDateTime(l.y, l.mo, l.d, l.h, l.mi, l.s, l.ms, l.us, l.ns, calendarId,
             JSTemporalPlainDateTime.PlainDateTimePrototype);
-        var updated = (JSTemporalPlainDateTime)current.With(new Arguments(JSUndefined.Value, fields, options));
+
+        // For ZonedDateTime the field list also includes `offset`, so a bag carrying only an
+        // offset (already validated above) satisfies the "at least one field" requirement and
+        // leaves the wall-clock date-time unchanged. PlainDateTime.with counts only date-time
+        // fields, so delegating an offset-only bag would wrongly raise a TypeError instead of
+        // letting the offset interpretation below run (and, here, throw a RangeError when the
+        // result is out of range). The calendar/timeZone-field rejection and the overflow
+        // option that PlainDateTime.with performs are reproduced for that case.
+        JSTemporalPlainDateTime updated;
+        if (HasAnyDateTimeField(fields))
+        {
+            updated = (JSTemporalPlainDateTime)current.With(new Arguments(JSUndefined.Value, fields, options));
+        }
+        else
+        {
+            if (!fields[KeyStrings.GetOrCreate("calendar")].IsUndefined)
+                throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.with does not accept a calendar field");
+            if (!fields[KeyStrings.GetOrCreate("timeZone")].IsUndefined)
+                throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.with does not accept a timeZone field");
+            if (offsetField.IsUndefined)
+                throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.with requires at least one field");
+            ReadOverflow(options);
+            updated = current;
+        }
 
         var localNs = LocalNanoseconds(updated.isoYear, updated.isoMonth, updated.isoDay,
             updated.hour, updated.minute, updated.second, updated.millisecond, updated.microsecond, updated.nanosecond);
@@ -1491,6 +1520,19 @@ public partial class JSTemporalZonedDateTime : JSObject
         return true;
     }
 
+    // The date-time field names PrepareCalendarFields recognizes for PlainDateTime.with;
+    // `offset` (and `timeZone`) are ZonedDateTime-only and handled separately.
+    private static readonly string[] DateTimeFieldNames =
+        ["year", "month", "monthCode", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond", "era", "eraYear"];
+
+    private static bool HasAnyDateTimeField(JSObject bag)
+    {
+        foreach (var name in DateTimeFieldNames)
+            if (!bag[KeyStrings.GetOrCreate(name)].IsUndefined)
+                return true;
+        return false;
+    }
+
     private static string CanonicalizeCalendar(JSValue calendar)
     {
         if (calendar == null || calendar.IsUndefined) return "iso8601";
@@ -1630,8 +1672,13 @@ public partial class JSTemporalZonedDateTime : JSObject
     // A UTC offset *value* (the offset field of a property bag, or a "with" offset): ±HH[:MM[:SS[.fff]]],
     // which — unlike an offset time-zone *identifier* (OffsetIdPattern) — may carry sub-minute and
     // fractional-second precision.
+    // The minute/second separators must be used consistently: an offset is either fully
+    // colon-separated (±HH:MM[:SS[.fff]]) or fully unseparated (±HHMM[SS[.fff]]). A mixed form
+    // such as "+00:0000" is not a valid UTCOffset (test262 from/offset-string-invalid), so the
+    // two forms are spelled as separate alternatives sharing the m/s/f capture names.
     private static readonly Regex OffsetValuePattern = new(
-        @"^([+-])(\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,](\d{1,9}))?)?)?$", RegexOptions.CultureInvariant);
+        @"^(?<sign>[+-])(?<h>\d{2})(?::(?<m>\d{2})(?::(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?|(?<m>\d{2})(?:(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?$",
+        RegexOptions.CultureInvariant);
 
     private static bool TryParseOffsetString(string text, out long offsetNs)
     {
@@ -1639,11 +1686,11 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (string.Equals(text, "Z", StringComparison.OrdinalIgnoreCase)) return true;
         var m = OffsetValuePattern.Match(text);
         if (!m.Success) return false;
-        var sign = m.Groups[1].Value is "-" or "−" ? -1 : 1;
-        var hours = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
-        var minutes = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
-        var seconds = m.Groups[4].Success ? int.Parse(m.Groups[4].Value, CultureInfo.InvariantCulture) : 0;
-        var fractionNs = m.Groups[5].Success ? long.Parse(m.Groups[5].Value.PadRight(9, '0'), CultureInfo.InvariantCulture) : 0L;
+        var sign = m.Groups["sign"].Value is "-" or "−" ? -1 : 1;
+        var hours = int.Parse(m.Groups["h"].Value, CultureInfo.InvariantCulture);
+        var minutes = m.Groups["m"].Success ? int.Parse(m.Groups["m"].Value, CultureInfo.InvariantCulture) : 0;
+        var seconds = m.Groups["s"].Success ? int.Parse(m.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
+        var fractionNs = m.Groups["f"].Success ? long.Parse(m.Groups["f"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture) : 0L;
         offsetNs = (long)sign * (((long)hours * 3600 + minutes * 60 + seconds) * 1_000_000_000 + fractionNs);
         return true;
     }
