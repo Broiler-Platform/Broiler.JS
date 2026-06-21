@@ -409,7 +409,16 @@ partial class FastCompiler
                 // otherwise `(0,eval)("'use strict'; function f(){}")` leaked `f`
                 // to the global object.
                 var isStrictEvalProgram = isDirectEvalCompilation && IsStrictMode;
-                if (previousScope.Function == null && isProgramTopLevel && !isStrictEvalProgram)
+                // A direct eval whose variable environment is a function activation (sloppy
+                // eval inside a function) must NOT instantiate a top-level function
+                // declaration on the global object: EvalDeclarationInstantiation creates the
+                // binding in that function's variable environment, where it lives only for the
+                // life of the activation. CreateGlobalFunctionBinding is reached only when
+                // varEnv is the global environment (a global-scoped or strict-eval program).
+                // Otherwise `function h(){ var f; eval("function f(){}"); }` leaked `f` to the
+                // global object even though it should merely update h's own `f`.
+                var isLocalVarEnvEval = isDirectEvalCompilation && usesDirectEvalLocalVarEnvironment;
+                if (previousScope.Function == null && isProgramTopLevel && !isStrictEvalProgram && !isLocalVarEnvEval)
                     jsFVarScope.SetPostInit(JSContextBuilder.DeclareGlobalFunction(KeyOfName(functionName), jsf));
                 else
                     jsFVarScope.SetPostInit(jsf);

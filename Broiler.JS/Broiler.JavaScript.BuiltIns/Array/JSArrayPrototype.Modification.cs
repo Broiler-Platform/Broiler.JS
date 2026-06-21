@@ -173,15 +173,11 @@ public partial class JSArray
 
         for (var index = 0; index < a.Length; index++, length++)
         {
-            var item = a.GetAt(index);
-            if (length <= uint.MaxValue)
-            {
-                SetIndexedValue(@this, (uint)length, item);
-            }
-            else
-            {
-                @this.SetPropertyOrThrow(KeyStrings.GetOrCreate(length.ToString()).ToJSValue(), item);
-            }
+            // The long overload routes indices < 2^32-1 through the fast uint path and
+            // addresses 2^32-1 and above by their canonical numeric key. 2^32-1 is NOT a
+            // valid array index, so it must not take the uint fast path (which would drop
+            // the element); `length <= uint.MaxValue` would wrongly include it.
+            SetIndexedValue(@this, length, a.GetAt(index));
         }
 
         var newLength = new JSNumber(length);

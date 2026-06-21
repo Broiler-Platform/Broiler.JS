@@ -254,49 +254,73 @@ public partial class JSString : JSPrimitive
 
     public override bool StrictEqualsLiteral(string value) => this.value.Equals(value);
 
+    // Abstract Relational Comparison (ECMA-262): the other operand is first coerced to a
+    // primitive with the Number hint (valueOf-then-toString), not the String hint. Only when
+    // BOTH operands end up Strings is a code-point string comparison performed; otherwise the
+    // operands are compared numerically. Coercing an object via ToString here would wrongly
+    // pick toString and force a string comparison (e.g. "-1" < {valueOf:()=>-2}).
     public override bool Less(JSValue value)
     {
-        if (value.IsUndefined)
+        var py = value is JSObject o ? o.ToNumberPrimitive() : value;
+
+        if (py.IsUndefined)
             return false;
 
-        if (value.CanBeNumber)
-            return DoubleValue < value.DoubleValue;
+        if (py.IsBigInt)
+            return py.Greater(this);
 
-        return this.value.Less(value.ToString());
+        if (py.IsString)
+            return this.value.Less(py.StringValue);
 
+        return DoubleValue < py.DoubleValue;
     }
 
     public override bool LessOrEqual(JSValue value)
     {
-        if (value.IsUndefined)
+        var py = value is JSObject o ? o.ToNumberPrimitive() : value;
+
+        if (py.IsUndefined)
             return false;
 
-        if (value.CanBeNumber)
-            return DoubleValue <= value.DoubleValue;
+        if (py.IsBigInt)
+            return py.GreaterOrEqual(this);
 
-        return this.value.LessOrEqual(value.ToString());
+        if (py.IsString)
+            return this.value.LessOrEqual(py.StringValue);
+
+        return DoubleValue <= py.DoubleValue;
     }
 
     public override bool Greater(JSValue value)
     {
-        if (value.IsUndefined)
+        var py = value is JSObject o ? o.ToNumberPrimitive() : value;
+
+        if (py.IsUndefined)
             return false;
 
-        if (value.CanBeNumber)
-            return DoubleValue > value.DoubleValue;
+        if (py.IsBigInt)
+            return py.Less(this);
 
-        return this.value.Greater(value.ToString());
+        if (py.IsString)
+            return this.value.Greater(py.StringValue);
+
+        return DoubleValue > py.DoubleValue;
     }
 
     public override bool GreaterOrEqual(JSValue value)
     {
-        if (value.IsUndefined)
+        var py = value is JSObject o ? o.ToNumberPrimitive() : value;
+
+        if (py.IsUndefined)
             return false;
 
-        if (value.CanBeNumber)
-            return DoubleValue >= value.DoubleValue;
+        if (py.IsBigInt)
+            return py.LessOrEqual(this);
 
-        return this.value.GreaterOrEqual(value.ToString());
+        if (py.IsString)
+            return this.value.GreaterOrEqual(py.StringValue);
+
+        return DoubleValue >= py.DoubleValue;
     }
 
     public override bool StrictEquals(JSValue value)

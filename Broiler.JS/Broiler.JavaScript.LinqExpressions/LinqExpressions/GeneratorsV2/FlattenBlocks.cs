@@ -108,6 +108,21 @@ public class FlattenBlocks : YExpressionMapVisitor
 
     private bool Flatten(Expression exp, Func<Expression, Expression> p, out Expression result)
     {
+        // Look through a type-conversion wrapper (e.g. `{ … yield … } as JSValue`, which
+        // arises when a try/catch's completion value is lifted into a generator box). The
+        // wrapped block can carry a yield suspension — `return state; <jump label>; value` —
+        // and leaving it buried inside `p`'s operand (a field store that pre-loads its
+        // target) means the resume `goto` lands mid-store with the target reference missing,
+        // faulting at runtime. Recurse into the operand and re-apply the conversion to the
+        // tail value only, so the suspension's leading statements are hoisted out as siblings.
+        if (exp is YTypeAsExpression typeAs && typeAs.Target.NodeType == YExpressionType.Block)
+        {
+            var targetType = typeAs.Type;
+            return Flatten(typeAs.Target,
+                last => p(last.Type == targetType ? last : YExpression.Convert(last, targetType)),
+                out result);
+        }
+
         if (exp.NodeType != YExpressionType.Block)
         {
             result = null;

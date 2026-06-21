@@ -258,9 +258,12 @@ partial class FastCompiler
             if (scope.Top.Function?.IsArrowFunction == true
             )
             {
-                if (parameterInitializerDepth > 0)
-                    return JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name));
-
+                // An arrow in a parameter initializer (`function g(h = () => arguments)`)
+                // refers to the enclosing function's `arguments` exactly like an arrow in
+                // the body. Fall through to the shared materialisation path (which targets
+                // the arrow's RootScope — the enclosing function) instead of emitting a
+                // runtime identifier lookup that finds no such binding and throws
+                // "arguments is not defined".
                 if (TryGetStaticIdentifierVariable(identifier, out var arrowVariable) && arrowVariable != null)
                     return arrowVariable.Expression;
 
