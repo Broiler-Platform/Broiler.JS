@@ -76,6 +76,16 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     /// prototype to the instance they allocate (required for subclassing).
     /// </summary>
     public bool IsOrdinaryUserFunction { get; set; }
+
+    /// <summary>
+    /// Whether a tail call targeting this function may be dispatched by the InvokeFunction
+    /// fast loop (re-entering the delegate directly). Ordinary functions can; subclasses
+    /// whose InvokeFunction override enforces an invariant (e.g. a class constructor's
+    /// "cannot be invoked without 'new'" guard) must return false so a tail-positioned
+    /// call is routed through the virtual InvokeFunction and the guard still runs.
+    /// </summary>
+    protected virtual bool SupportsTailCallLoop => true;
+
     public JSObject[] CapturedWithObjects { get; set; }
 
     // The `with`-fallback lexical overlays captured when this function was created inside a `with`
@@ -723,7 +733,13 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                 if (result is not JSTailCall tailCall)
                     return result;
 
-                if (tailCall.Target is not JSFunction jsFunction)
+                // The fast loop dispatches a tail call by re-entering the target's
+                // delegate (current.f) directly, bypassing its InvokeFunction override.
+                // Subclasses that override InvokeFunction to enforce an invariant — a
+                // class constructor's "cannot be invoked without 'new'" guard — must not
+                // be shortcut this way, or a tail-positioned call (`() => SomeClass()`)
+                // would skip the guard. Route those through the virtual InvokeFunction.
+                if (tailCall.Target is not JSFunction jsFunction || !jsFunction.SupportsTailCallLoop)
                     return tailCall.Target.InvokeFunction(tailCall.Arguments);
 
                 // The function that produced this tail call becomes the caller

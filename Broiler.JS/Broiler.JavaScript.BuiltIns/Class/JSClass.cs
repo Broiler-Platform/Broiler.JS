@@ -94,6 +94,11 @@ public class JSClass : JSFunction
         return f(a);
     }
 
+    // A tail-positioned call to this class constructor must still hit the
+    // "is not a function" guard above, not be looped through the delegate by the
+    // JSFunction tail-call fast path (which would skip the new.target check).
+    protected override bool SupportsTailCallLoop => false;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override JSValue CreateInstance(in Arguments a)
     {
