@@ -79,6 +79,18 @@ public class JSAsyncFunction
             var span = fn.SourceSpan;
             if (!span.IsEmpty)
                 asyncFn.OverrideSource(span);
+
+            // An anonymous async function must report name "" (not the "native"
+            // placeholder the name-less native-function path assigns) while staying
+            // eligible for NamedEvaluation, exactly like an anonymous ordinary function
+            // expression — so `[async function(){}][0].name` is "" but
+            // `var f = async function(){}` infers "f" (test262
+            // sm/Function/function-name-assignment). A named async function keeps its name.
+            if (fn.name.IsEmpty || fn.IsAnonymousNamePending)
+            {
+                asyncFn.SetNameProperty(string.Empty);
+                asyncFn.IsAnonymousNamePending = true;
+            }
         }
 
         return asyncFunction;
