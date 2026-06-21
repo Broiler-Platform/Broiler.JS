@@ -245,31 +245,49 @@ public partial class JSIteratorObject : JSObject
 
         // A wrapper produced by Iterator.from uses %WrapForValidIteratorPrototype% (next / return,
         // but no own @@toStringTag — it inherits "Iterator" from %Iterator.prototype%).
-        if (obj.IsString)
-            return new JSIteratorObject(WrapPrototype(), obj.GetElementEnumerator());
-
-        if (obj is not JSObject @object)
-            throw JSEngine.NewTypeError("Iterator.from requires an iterable or iterator argument");
-
-        // GetIteratorFlattenable: with no (or nullish) @@iterator the object is itself the iterator;
-        // otherwise its @@iterator is called to obtain one. The wrapper records { iterator, nextMethod }
-        // and delegates next()/return() to it, returning results verbatim (WrapForValidIterator).
-        var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];
         JSObject iterator;
-        if (iteratorMethod.IsNull || iteratorMethod.IsUndefined)
+        if (obj.IsString)
         {
-            iterator = @object;
+            // GetIteratorFlattenable special-cases primitive strings: rather than ToObject-ing
+            // first, GetMethod(string, @@iterator) is performed directly on the primitive, so a
+            // String.prototype[@@iterator] accessor observes the primitive string as its receiver
+            // (test262 Iterator/from/iterable-primitives). The method is then called with the
+            // primitive as the this value to obtain the iterator.
+            var stringIteratorMethod = obj[(IJSSymbol)JSSymbol.iterator];
+            if (stringIteratorMethod.IsNull || stringIteratorMethod.IsUndefined)
+                return new JSIteratorObject(WrapPrototype(), obj.GetElementEnumerator());
+            if (!stringIteratorMethod.IsFunction)
+                throw JSEngine.NewTypeError("Iterator.from requires a callable @@iterator");
+            var stringIteratorValue = stringIteratorMethod.InvokeFunction(new Arguments(obj));
+            if (stringIteratorValue is not JSObject stringIteratorObject)
+                throw JSEngine.NewTypeError("Iterator.from requires an object iterator result");
+            iterator = stringIteratorObject;
         }
-        else if (!iteratorMethod.IsFunction)
+        else if (obj is not JSObject @object)
         {
-            throw JSEngine.NewTypeError("Iterator.from requires a callable @@iterator");
+            throw JSEngine.NewTypeError("Iterator.from requires an iterable or iterator argument");
         }
         else
         {
-            var iteratorValue = iteratorMethod.InvokeFunction(new Arguments(@object));
-            if (iteratorValue is not JSObject iteratorObject)
-                throw JSEngine.NewTypeError("Iterator.from requires an object iterator result");
-            iterator = iteratorObject;
+            // GetIteratorFlattenable: with no (or nullish) @@iterator the object is itself the iterator;
+            // otherwise its @@iterator is called to obtain one. The wrapper records { iterator, nextMethod }
+            // and delegates next()/return() to it, returning results verbatim (WrapForValidIterator).
+            var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];
+            if (iteratorMethod.IsNull || iteratorMethod.IsUndefined)
+            {
+                iterator = @object;
+            }
+            else if (!iteratorMethod.IsFunction)
+            {
+                throw JSEngine.NewTypeError("Iterator.from requires a callable @@iterator");
+            }
+            else
+            {
+                var iteratorValue = iteratorMethod.InvokeFunction(new Arguments(@object));
+                if (iteratorValue is not JSObject iteratorObject)
+                    throw JSEngine.NewTypeError("Iterator.from requires an object iterator result");
+                iterator = iteratorObject;
+            }
         }
 
         // GetIteratorDirect reads "next" before the %Iterator% brand check, so the
