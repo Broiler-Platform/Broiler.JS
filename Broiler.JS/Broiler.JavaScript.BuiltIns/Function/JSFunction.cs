@@ -851,6 +851,13 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         ownProperties.Put(KeyStrings.name, JSValue.CreateString(boundName), JSPropertyAttributes.ConfigurableReadonlyValue);
         ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(boundLength), JSPropertyAttributes.ConfigurableReadonlyValue);
 
+        // Function.prototype.toString of a bound function is the implementation-defined
+        // NativeFunction form with NO name: the bound "name" property ("bound …") is not a
+        // valid identifier to splice into the source, so the rendering must omit it rather
+        // than fall back to the "native" placeholder
+        // (test262 staging/sm/Function/function-toString-builtin-name).
+        fx.OverrideSource("function () { [native code] }");
+
         return fx;
     }
 

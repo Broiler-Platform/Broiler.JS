@@ -550,16 +550,12 @@ public partial class JSObject
             return SetPrivateMember(in name, value, receiver, throwError);
         }
 
-        if (name.Key == KeyStrings.__proto__.Key
-            && GetInternalProperty(name, false).IsEmpty
-            && !GetInternalProperty(name).IsEmpty)
-        {
-            if (!value.IsObject && !value.IsNull)
-                return true;
-
-            (receiver as JSObject ?? this).SetPrototypeOf(value);
-            return true;
-        }
+        // `obj.__proto__ = v` is an ordinary [[Set]] of the inherited %Object.prototype%
+        // `__proto__` accessor: it must walk the prototype chain so that an exotic [[Set]]
+        // on the way (e.g. a Proxy in the chain) intercepts it, and only the accessor's own
+        // setter performs SetPrototypeOf. Short-circuiting to SetPrototypeOf here would
+        // bypass such an interceptor (test262 Proxy/set/call-parameters-prototype-dunder-proto);
+        // the natural walk below reaches the real accessor for an ordinary chain instead.
 
         var p = GetInternalProperty(name, false);
         if (p.IsProperty)

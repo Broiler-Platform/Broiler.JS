@@ -641,15 +641,11 @@ public partial class JSProxy : JSObject
         if (IsPrivateName(in name))
             return base.SetValue(name, value, receiver, throwError);
 
-        if (name.Key == KeyStrings.__proto__.Key)
-        {
-            if (!value.IsObject && !value.IsNull)
-                return true;
-
-            SetPrototypeOf(value);
-            return true;
-        }
-
+        // `proxy.__proto__ = v` is an ordinary [[Set]]: it invokes the "set" trap with
+        // the property key "__proto__" (the magic %Object.prototype% accessor is only
+        // reached when [[Set]] forwards to an ordinary target). It must NOT short-circuit
+        // to [[SetPrototypeOf]] here — that path belongs to Object.setPrototypeOf / the
+        // "setPrototypeOf" trap (test262 Proxy/set/call-parameters-prototype-dunder-proto).
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.set);
         if (!fx.IsUndefined)
