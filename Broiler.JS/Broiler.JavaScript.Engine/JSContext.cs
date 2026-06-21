@@ -914,7 +914,16 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             // initialize it to undefined so subsequent reads observe the new local
             // binding rather than continuing to forward to the outer one. An
             // already-initialized binding keeps its value (`var x = 1; var x;`).
-            if (existing is EvalShadowVariable { IsInitialized: false })
+            //
+            // EvalDeclarationInstantiation creates NO new binding — and performs no
+            // re-initialization — when one already exists in the calling function's own
+            // variable environment (HasBinding is true). So when the name is the
+            // immediate function's var-env binding (e.g. a parameter or pre-existing
+            // var), the declaration is a no-op that must preserve the current value:
+            // `(function(f){ eval("init=f; { function f(){} }"); }(123))` must read the
+            // parameter (123), not undefined. Only a name that genuinely shadows an
+            // ENCLOSING-function / global binding becomes a fresh undefined local.
+            if (existing is EvalShadowVariable { IsInitialized: false } && !IsImmediateEvalVarEnvName(name))
                 existing.Value = JSUndefined.Value;
 
             return existing;
