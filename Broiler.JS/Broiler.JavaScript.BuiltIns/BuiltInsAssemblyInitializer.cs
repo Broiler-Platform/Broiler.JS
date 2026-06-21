@@ -1476,6 +1476,11 @@ internal static class BuiltInsAssemblyInitializer
                 throw JSEngine.NewTypeError("RegExp.prototype[Symbol.match] called on incompatible receiver");
 
             var input = a.Get1();
+            // §22.2.6.8 step 3: S = ToString(string). Coerce the argument before reading
+            // "flags" so its toString/valueOf side effects occur in spec order, and so the
+            // string S — not the raw argument — is what RegExpExec (and any user exec) sees.
+            var s = input.StringValue;
+            var sValue = JSValue.CreateString(s);
             // §22.2.6.8 step 4: flags = ToString(Get(rx, "flags")). Read the
             // observable "flags" property (so a user getter / toString runs and
             // its errors propagate) rather than the individual flag accessors.
@@ -1485,20 +1490,19 @@ internal static class BuiltInsAssemblyInitializer
                 // §22.2.6.8 step 6: when not global, return RegExpExec(rx, S). This
                 // must go through exec — which reads `lastIndex` (firing its valueOf)
                 // — rather than a fast path that skips that observable read.
-                return RegExpExec(rx, input);
+                return RegExpExec(rx, sValue);
             }
 
             // §22.2.6.9 step 7: fullUnicode is derived from the flags STRING (a `u` or
             // `v` flag), so an empty match advances by a whole code point.
             var matchFullUnicode = flags.Contains('u') || flags.Contains('v');
-            var s = input.ToString();
             rxObj.SetPropertyOrThrow(KeyStrings.lastIndex.ToJSValue(), JSValue.NumberZero);
             var matches = JSValue.CreateArray() as JSObject
                 ?? throw new InvalidOperationException("Expected JS array object");
             uint matchCount = 0;
             while (true)
             {
-                var result = RegExpExec(rx, input);
+                var result = RegExpExec(rx, sValue);
                 if (result.IsNull)
                     return matchCount == 0 ? JSValue.NullValue : matches;
 

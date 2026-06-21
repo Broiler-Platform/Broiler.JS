@@ -129,7 +129,10 @@ public partial class JSPromise : JSObject, IJSPromise
         InitPromise();
         try
         {
-            @delegate.InvokeFunction(new Arguments(this, resolveFunction, rejectFunction));
+            // §27.2.3.1 step 9: Call(executor, undefined, «resolve, reject»). The executor
+            // runs with an undefined this value — in sloppy mode it is then substituted with
+            // the global object, in strict mode it stays undefined — never the Promise itself.
+            @delegate.InvokeFunction(new Arguments(JSUndefined.Value, resolveFunction, rejectFunction));
         }
         catch (Exception ex)
         {
