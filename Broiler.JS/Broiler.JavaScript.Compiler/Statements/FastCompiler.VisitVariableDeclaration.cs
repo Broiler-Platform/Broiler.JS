@@ -35,7 +35,13 @@ partial class FastCompiler
                         : top.CreateVariable(id.Name, JSVariableBuilder.New(id.Name.Value), newScope);
                     if (d.Init == null)
                     {
-                        list.Add(newScope ? YExpression.Assign(v.Expression, JSUndefinedBuilder.Value) : v.Expression);
+                        // A fresh lexical binding (let/const) is initialized to undefined. A
+                        // bare, already-hoisted `var x;` initializes nothing and produces no
+                        // value, so its read is NOT evaluated here: for a direct-eval var whose
+                        // name is an existing global accessor that read would fire the getter
+                        // (test262 staging/sm/global/bug-320887).
+                        if (newScope)
+                            list.Add(YExpression.Assign(v.Expression, JSUndefinedBuilder.Value));
                     }
                     else
                     {

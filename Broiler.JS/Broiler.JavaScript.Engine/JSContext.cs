@@ -788,12 +788,22 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             return;
 
         KeyString name = variable.Name;
+        variable.IsGlobalLexical = true;
         globalVars.Put(name.Key) = variable;
     }
 
     public JSValue Register(JSVariable variable)
     {
         KeyString name = variable.Name;
+        // EvalDeclarationInstantiation: a global `var` declared by an eval may not collide
+        // with an existing global lexical (let/const/class) binding — that is a SyntaxError.
+        // A script's own `var` hoists before its lexicals are declared, so this only fires
+        // across compilations (e.g. `let x; (0,eval)('var x;')`).
+        if (!variable.IsGlobalLexical
+            && globalVars.TryGetValue(name.Key, out var existingLexical)
+            && existingLexical.IsGlobalLexical
+            && !ReferenceEquals(existingLexical, variable))
+            JSException.ThrowSyntaxError($"Identifier '{name}' has already been declared");
         // Skip an uninitialized parameter-eval shadow: a captured-binding publish must
         // not initialize it. The eval's own var declaration reuses the shadow as its
         // local storage via GetOrCreateDirectEvalLocalBinding instead.
@@ -829,10 +839,10 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             if (hadExistingVariable && !ReferenceEquals(existingVariable, variable))
                 existingVariable.Value = v;
         }
-        else
-        {
-            this[name] = v;
-        }
+        // When the global object already has the property, CreateGlobalVarBinding is a
+        // no-op: it must neither rewrite the value (which would clobber a data property or
+        // fire an accessor) nor otherwise touch it. The var's name is still tracked via
+        // globalVars below. (test262 staging/sm/global/bug-320887)
 
         if ((directEvalDepth <= 0 || hadExistingVariable)
             && (!hadExistingVariable || ReferenceEquals(existingVariable, variable)))
