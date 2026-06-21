@@ -108,15 +108,30 @@ internal static class JSDateMath
     /// MakeDay per ECMA-262 § 21.4.1.13.
     /// Returns the day number for the given year/month/date combination.
     /// </summary>
-    internal static double MakeDay(long year, long month, long date)
+    internal static double MakeDay(double year, double month, double date)
     {
-        long yr = year + FloorDiv(month, 12);
-        long mn = FloorMod(month, 12);
+        // MakeDay step 1: a non-finite component yields NaN.
+        if (!double.IsFinite(year) || !double.IsFinite(month) || !double.IsFinite(date))
+            return double.NaN;
+
+        double ymD = year + Math.Floor(month / 12);
+
+        // A component this far out of range can only produce a time value outside the
+        // valid Date range (|t| ≤ 8.64e15 ms ≈ ±273790 years), so the spec's
+        // MakeDate/TimeClip would map it to NaN anyway. Short-circuit here because the
+        // 64-bit integer day math below would otherwise overflow and wrap silently
+        // (e.g. Date.UTC(Number.MAX_VALUE, Number.MAX_VALUE)).
+        const double SafeComponentLimit = 1e15;
+        if (Math.Abs(ymD) > SafeComponentLimit || Math.Abs(date) > SafeComponentLimit)
+            return double.NaN;
+
+        long yr = (long)ymD;
+        long mn = FloorMod((long)month, 12);
 
         long dayStart = DayFromYear(yr);
         var cumDays = IsLeapYear(yr) ? CumulativeDaysLeap : CumulativeDays;
 
-        return dayStart + cumDays[(int)mn] + date - 1;
+        return dayStart + cumDays[(int)mn] + (long)date - 1;
     }
 
     /// <summary>MakeDate per ECMA-262 § 21.4.1.14.</summary>

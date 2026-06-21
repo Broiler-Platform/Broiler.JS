@@ -339,6 +339,14 @@ public partial class JSGenerator : JSObject, IJSGenerator
 
     public override IElementEnumerator GetElementEnumerator() => new ElementEnumerator(this);
 
+    // A generator object exposes its values through GetElementEnumerator (for for-of /
+    // spread), but those values are NOT own indexed properties. Key enumeration
+    // (Object.keys / getOwnPropertyNames / for-in) must walk only the generator's own
+    // element slots — otherwise running the generator would leak its yielded values as
+    // integer keys (e.g. getOwnPropertyNames of a fresh generator returning ["0", ...]).
+    internal override IElementEnumerator GetOwnIndexedElementEnumerator(bool enumerableOnly = false)
+        => GetOwnElementSlotEnumerator(enumerableOnly);
+
     public override IElementEnumerator GetAsyncIterableEnumerator()
         => IsAsyncGenerator
             ? new ElementEnumerator(this)

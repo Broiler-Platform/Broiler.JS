@@ -53,10 +53,14 @@ partial class JSDate
             double.IsNaN(msD) || double.IsInfinity(msD))
             return JSNumber.NaN;
 
-        int year = unchecked((int)JSValue.ToUint32(yD)), month = unchecked((int)JSValue.ToUint32(moD)),
-            day = unchecked((int)JSValue.ToUint32(dD)), hour = unchecked((int)JSValue.ToUint32(hD)),
-            minute = unchecked((int)JSValue.ToUint32(miD)), second = unchecked((int)JSValue.ToUint32(sD)),
-            millisecond = unchecked((int)JSValue.ToUint32(msD));
+        // MakeDay/MakeTime use ToIntegerOrInfinity (truncate toward zero, preserving
+        // magnitude and sign) on each component — NOT ToUint32, whose modulo-2^32
+        // reduction would wrap a huge year such as Number.MAX_VALUE down into range
+        // (MAX_VALUE mod 2^32 == 0 → year 1900) instead of yielding NaN. The components
+        // are already finite here (the NaN/Infinity scan above returned otherwise).
+        double year = Math.Truncate(yD), month = Math.Truncate(moD), day = Math.Truncate(dD);
+        double hour = Math.Truncate(hD), minute = Math.Truncate(miD),
+            second = Math.Truncate(sD), millisecond = Math.Truncate(msD);
         year = year >= 0 && year < 100 ? year + 1900 : year;
 
         double time = JSDateMath.MakeTime(hour, minute, second, millisecond);

@@ -1562,6 +1562,14 @@ public partial class JSObject
         return new ElementEnumerator(this, enumerableOnly);
     }
 
+    // Walks ONLY the object's own integer-indexed element slots (never an overridden
+    // iterator walk). A subclass whose GetElementEnumerator runs an iterator protocol
+    // (a generator / built-in iterator) overrides GetOwnIndexedElementEnumerator to use
+    // this, so its yielded values are not mistaken for indexed own keys during key
+    // enumeration (Object.keys / getOwnPropertyNames / for-in).
+    internal IElementEnumerator GetOwnElementSlotEnumerator(bool enumerableOnly = false)
+        => new ElementEnumerator(this, enumerableOnly);
+
     public override IElementEnumerator GetIterableEnumerator()
     {
         var iterator = this[JSValue.SymbolIterator];
