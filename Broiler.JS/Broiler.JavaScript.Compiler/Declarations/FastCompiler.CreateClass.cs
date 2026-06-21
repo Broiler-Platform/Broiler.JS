@@ -52,7 +52,11 @@ partial class FastCompiler
         if (literal.TokenType == TokenTypes.Number)
         {
             var value = literal.NumericValue;
-            if (value == 0 || (value > 0 && value <= uint.MaxValue && value % 1 == 0))
+            // An array index is an integer in [0, 2**32-1); 4294967295 (uint.MaxValue) is
+            // NOT one and names the ordinary string property "4294967295" (matching
+            // TryGetArrayIndex and the member-read path). Folding it to a uint key would
+            // store it at the element table's reserved sentinel slot and silently drop it.
+            if (value == 0 || (value > 0 && value < uint.MaxValue && value % 1 == 0))
                 return YExpression.Constant((uint)value);
 
             return VisitLiteral(literal);
@@ -71,7 +75,9 @@ partial class FastCompiler
     private YExpression BigIntPropertyKey(string literalText)
     {
         var value = BigIntLiteralToValue(literalText);
-        if (value >= 0 && value <= uint.MaxValue)
+        // 4294967295 (uint.MaxValue) is not an array index — it names the string property
+        // "4294967295" — so exclude it from the integer-key fast path (see GetLiteralPropertyKey).
+        if (value >= 0 && value < uint.MaxValue)
             return YExpression.Constant((uint)value);
 
         return KeyOfName(value.ToString(System.Globalization.CultureInfo.InvariantCulture));

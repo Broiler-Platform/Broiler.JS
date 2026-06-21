@@ -48,12 +48,23 @@ public struct ElementArray
     public bool RemoveAt(uint key) => Storage.RemoveAt(key);
     public IEnumerable<(uint Key, JSProperty Value)> AllValues()
     {
-        for (uint i = 0; i < Length; i++)
+        // Enumerate the stored indices in ascending numeric order. Scanning 0..Length
+        // would, for a lone element at a high sparse index (e.g. 4294967294, just below
+        // the array-index limit), walk billions of absent slots and hang; instead gather
+        // the actually-stored nodes (O(stored)) and order them. The yielded set and its
+        // ascending order are identical to the old dense scan.
+        List<uint> keys = null;
+        foreach (var (key, _) in Storage.AllValues())
+            (keys ??= new List<uint>()).Add(key);
+
+        if (keys == null)
+            yield break;
+
+        keys.Sort();
+        foreach (var key in keys)
         {
-            if (Storage.TryGetValue(i, out var v))
-            {
-                yield return (i, v);
-            }
+            if (Storage.TryGetValue(key, out var v))
+                yield return (key, v);
         }
     }
 

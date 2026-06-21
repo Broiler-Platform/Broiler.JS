@@ -446,6 +446,23 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         {
             AssignPrototypeField(pd[KeyStrings.value]);
         }
+        else if (HasLegacyCallerArguments
+            && (name.Key == LegacyCallerKey.Key || name.Key == KeyStrings.arguments.Key)
+            // [[DefineOwnProperty]] reports success as undefined (the abstract-operation
+            // value) and failure as the boolean false, so a successful redefine is "not
+            // the false boolean" rather than a truthy result.
+            && !(result.IsBoolean && !result.BooleanValue))
+        {
+            // Once script explicitly redefines the legacy "caller"/"arguments" own
+            // property, stop the engine's live per-invocation updates of it. The
+            // [[GetOwnProperty]] invariant requires a non-writable, non-configurable
+            // data property's value to stay constant, so a frozen "caller"/"arguments"
+            // must not change to the running caller/arguments object while the function
+            // is on the stack (test262 Object/internals/DefineOwnProperty/
+            // consistent-value-function-caller and -arguments). Functions whose property
+            // is left untouched keep the web-reality dynamic behaviour.
+            HasLegacyCallerArguments = false;
+        }
 
         return result;
     }
