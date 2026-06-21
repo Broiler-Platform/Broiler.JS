@@ -158,8 +158,10 @@ public partial class JSJSON : JSObject
                 indent.Indent++;
 
             var length = GetArrayLength(array);
+            bool wroteElement = false;
             for (uint index = 0; index < length; index++)
             {
+                wroteElement = true;
                 if (index > 0)
                     sb.Write(',');
 
@@ -180,7 +182,9 @@ public partial class JSJSON : JSObject
 
             if (indent != null)
             {
-                sb.WriteLine();
+                // SerializeJSONArray: an empty array collapses to "[]" with no interior newline.
+                if (wroteElement)
+                    sb.WriteLine();
                 indent.Indent--;
             }
 
@@ -449,13 +453,37 @@ public partial class JSJSON : JSObject
         {
             if (a.Length > 2)
             {
-                if (pi is JSNumber jn)
+                // §25.5.2.1 steps 4-5: a Number/String wrapper object is coerced to a
+                // primitive with ToNumber / ToString — both run through ToPrimitive, so a
+                // user-redefined valueOf / toString on the wrapper is observed (and an abrupt
+                // completion propagates) rather than the raw internal slot being read.
+                var space = pi;
+                if (space is JSPrimitiveObject spaceWrapper)
                 {
-                    indent = new string(' ', pi.IntValue);
+                    if (spaceWrapper.value is JSNumber)
+                        space = JSValue.CreateNumber(CoerceJsonWrapperToPrimitive(spaceWrapper, preferString: false).DoubleValue);
+                    else if (spaceWrapper.value.IsString)
+                        space = JSValue.CreateString(CoerceJsonWrapperToPrimitive(spaceWrapper, preferString: true).ToString());
                 }
-                else if (pi is JSString js)
+
+                if (space.IsNumber)
                 {
-                    indent = js.ToString();
+                    // step 6.a: space = min(10, ToIntegerOrInfinity(space)); step 6.b:
+                    // a gap shorter than one space yields the empty String (compact output).
+                    var n = space.DoubleValue;
+                    var count = double.IsNaN(n) ? 0 : (int)Math.Min(10, Math.Truncate(n));
+                    if (count >= 1)
+                        indent = new string(' ', count);
+                }
+                else if (space.IsString)
+                {
+                    // step 7: a gap longer than 10 code units is truncated to its first 10;
+                    // an empty gap leaves indent null so the output stays compact.
+                    var gap = space.ToString();
+                    if (gap.Length > 10)
+                        gap = gap.Substring(0, 10);
+                    if (gap.Length > 0)
+                        indent = gap;
                 }
             }
 
@@ -736,7 +764,9 @@ public partial class JSJSON : JSObject
 
         if (indent != null)
         {
-            sb.WriteLine();
+            // SerializeJSONObject: an empty object collapses to "{}" with no interior newline.
+            if (!first)
+                sb.WriteLine();
             indent.Indent--;
         }
 

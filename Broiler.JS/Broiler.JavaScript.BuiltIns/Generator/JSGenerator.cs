@@ -47,6 +47,9 @@ public partial class JSGenerator : JSObject, IJSGenerator
         value = JSUndefined.Value;
     }
 
+    // CLR-side display only. %GeneratorPrototype% deliberately exposes NO own JS
+    // `toString`: per §27.5 a generator inherits %Object.prototype.toString%, which
+    // reports "[object Generator]" from the @@toStringTag on %GeneratorPrototype%.
     public override string ToString() => $"[object {name}]";
 
     private static JSObject GetIteratorPrototype()
@@ -74,10 +77,6 @@ public partial class JSGenerator : JSObject, IJSGenerator
 
         return generator.Next(in a);
     }
-
-    [JSExport("toString")]
-    public new JSValue ToString(in Arguments a) => JSValue.CreateString(ToString());
-
 
     public JSValue Return(JSValue value)
     {
