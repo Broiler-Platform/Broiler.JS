@@ -23,7 +23,13 @@ partial class FastCompiler
 
         // Inside a function, new.target resolves to the lexically captured cell
         // (which an arrow function inherits from its enclosing ordinary function).
-        // At the program/root level there is no cell, so read the live value.
-        return scope.Top.NewTargetExpression ?? JSContextBuilder.NewTarget();
+        // At the program/root level there is no cell, so read the live value — except
+        // in a direct eval, whose top-level new.target shares the caller's [[NewTarget]]
+        // threaded in by PerformEval (a function declared inside the eval still gets its
+        // own cell and so keeps using NewTargetExpression).
+        if (scope.Top.NewTargetExpression != null)
+            return scope.Top.NewTargetExpression;
+
+        return isDirectEvalCompilation ? JSContextBuilder.DirectEvalNewTarget : JSContextBuilder.NewTarget();
     }
 }

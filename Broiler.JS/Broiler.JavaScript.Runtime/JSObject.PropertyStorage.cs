@@ -550,16 +550,12 @@ public partial class JSObject
             return SetPrivateMember(in name, value, receiver, throwError);
         }
 
-        if (name.Key == KeyStrings.__proto__.Key
-            && GetInternalProperty(name, false).IsEmpty
-            && !GetInternalProperty(name).IsEmpty)
-        {
-            if (!value.IsObject && !value.IsNull)
-                return true;
-
-            (receiver as JSObject ?? this).SetPrototypeOf(value);
-            return true;
-        }
+        // `obj.__proto__ = v` is an ordinary [[Set]] of the inherited %Object.prototype%
+        // `__proto__` accessor: it must walk the prototype chain so that an exotic [[Set]]
+        // on the way (e.g. a Proxy in the chain) intercepts it, and only the accessor's own
+        // setter performs SetPrototypeOf. Short-circuiting to SetPrototypeOf here would
+        // bypass such an interceptor (test262 Proxy/set/call-parameters-prototype-dunder-proto);
+        // the natural walk below reaches the real accessor for an ordinary chain instead.
 
         var p = GetInternalProperty(name, false);
         if (p.IsProperty)
@@ -1066,13 +1062,41 @@ public partial class JSObject
     // constructor) overrides these to route through [[DefineOwnProperty]], so its
     // defineProperty trap observes the field initialization.
     public virtual void CreateDataProperty(KeyString key, JSValue value)
-        => FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+    {
+        if (!IsExtensible() && ownProperties.GetValue(key.Key).IsEmpty)
+            throw NewTypeError($"Cannot define property {key}, object is not extensible");
+        FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+    }
 
     public virtual void CreateDataProperty(uint index, JSValue value)
-        => FastAddValue(index, value, JSPropertyAttributes.EnumerableConfigurableValue);
+    {
+        if (!IsExtensible() && elements.Get(index).IsEmpty)
+            throw NewTypeError($"Cannot define property {index}, object is not extensible");
+        FastAddValue(index, value, JSPropertyAttributes.EnumerableConfigurableValue);
+    }
 
     public virtual void CreateDataProperty(JSValue key, JSValue value)
-        => FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+    {
+        // CreateDataPropertyOrThrow on a non-extensible object fails when the
+        // property is new (e.g. a public class field on a frozen instance handed
+        // back by a return-override base constructor). Route through the typed
+        // overloads so the same extensibility guard applies to every key kind.
+        var propertyKey = key.ToKey(false);
+        switch (propertyKey.Type)
+        {
+            case KeyType.UInt:
+                CreateDataProperty(propertyKey.Index, value);
+                return;
+            case KeyType.String:
+                CreateDataProperty(propertyKey.KeyString, value);
+                return;
+            case KeyType.Symbol:
+                if (!IsExtensible() && symbols.GetRefOrDefault(propertyKey.Symbol.Key, ref JSProperty.Empty).IsEmpty)
+                    throw NewTypeError($"Cannot define property {key}, object is not extensible");
+                break;
+        }
+        FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+    }
 
     internal static JSObject CreateDataDescriptor(JSValue value, JSPropertyAttributes attributes)
     {

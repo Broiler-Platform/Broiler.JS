@@ -540,6 +540,29 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     /// <summary>The super reference visible to the direct eval currently being compiled/executed, or undefined.</summary>
     public JSValue DirectEvalSuper => directEvalSuperValues.Count == 0 ? JSUndefined.Value : directEvalSuperValues[^1];
 
+    private readonly List<JSValue> directEvalNewTargetValues = [];
+
+    private sealed class DirectEvalNewTargetScope(JSContext context) : IDisposable
+    {
+        public void Dispose() => context.directEvalNewTargetValues.RemoveAt(context.directEvalNewTargetValues.Count - 1);
+    }
+
+    /// <summary>
+    /// Threads the caller's <c>new.target</c> into a direct eval body so that
+    /// <c>new.target</c> at the top level of the eval (PerformEval shares the
+    /// caller's [[NewTarget]]) observes the enclosing function's new target
+    /// rather than <c>undefined</c>. Pushed for every direct eval (even when the
+    /// value is undefined) so a nested eval inherits the same new target.
+    /// </summary>
+    public IDisposable PushDirectEvalNewTarget(JSValue newTarget)
+    {
+        directEvalNewTargetValues.Add(newTarget ?? JSUndefined.Value);
+        return new DirectEvalNewTargetScope(this);
+    }
+
+    /// <summary>The new.target visible to the direct eval currently being compiled/executed, or undefined.</summary>
+    public JSValue DirectEvalNewTarget => directEvalNewTargetValues.Count == 0 ? JSUndefined.Value : directEvalNewTargetValues[^1];
+
     /// <summary>Whether a super reference is available to the direct eval currently being compiled.</summary>
     public bool HasDirectEvalSuper => directEvalSuperValues.Count > 0;
 
@@ -765,12 +788,22 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             return;
 
         KeyString name = variable.Name;
+        variable.IsGlobalLexical = true;
         globalVars.Put(name.Key) = variable;
     }
 
     public JSValue Register(JSVariable variable)
     {
         KeyString name = variable.Name;
+        // EvalDeclarationInstantiation: a global `var` declared by an eval may not collide
+        // with an existing global lexical (let/const/class) binding — that is a SyntaxError.
+        // A script's own `var` hoists before its lexicals are declared, so this only fires
+        // across compilations (e.g. `let x; (0,eval)('var x;')`).
+        if (!variable.IsGlobalLexical
+            && globalVars.TryGetValue(name.Key, out var existingLexical)
+            && existingLexical.IsGlobalLexical
+            && !ReferenceEquals(existingLexical, variable))
+            JSException.ThrowSyntaxError($"Identifier '{name}' has already been declared");
         // Skip an uninitialized parameter-eval shadow: a captured-binding publish must
         // not initialize it. The eval's own var declaration reuses the shadow as its
         // local storage via GetOrCreateDirectEvalLocalBinding instead.
@@ -806,10 +839,10 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             if (hadExistingVariable && !ReferenceEquals(existingVariable, variable))
                 existingVariable.Value = v;
         }
-        else
-        {
-            this[name] = v;
-        }
+        // When the global object already has the property, CreateGlobalVarBinding is a
+        // no-op: it must neither rewrite the value (which would clobber a data property or
+        // fire an accessor) nor otherwise touch it. The var's name is still tracked via
+        // globalVars below. (test262 staging/sm/global/bug-320887)
 
         if ((directEvalDepth <= 0 || hadExistingVariable)
             && (!hadExistingVariable || ReferenceEquals(existingVariable, variable)))

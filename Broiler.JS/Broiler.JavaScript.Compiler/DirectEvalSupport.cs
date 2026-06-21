@@ -81,7 +81,7 @@ public static class DirectEvalSupport
         }
     }
 
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, string[] evalVarEnvNames = null, bool tailCall = false)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, CallStackItem activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, string[] evalVarEnvNames = null, JSValue directEvalNewTarget = null, bool tailCall = false)
     {
         if (!IsDirectEval(callee))
         {
@@ -137,6 +137,10 @@ public static class DirectEvalSupport
             using var superCallScope = directEvalThisBinding != null
                 ? context.PushDirectEvalSuperCall(directEvalSuperConstructor, directEvalThisBinding)
                 : null;
+            // Thread the caller's new.target so `new.target` at the eval's top level
+            // (and a nested eval) observes it. Pushed unconditionally so a nested
+            // direct eval inherits the same value rather than reading undefined.
+            using var newTargetScope = context.PushDirectEvalNewTarget(directEvalNewTarget);
             using var __ = context.PushDirectEvalCompilation(requiresActivation, privateNamesInScope);
             // The completion value of the eval body is a real value, not a tail
             // call of the surrounding function: eval is a syntactic boundary. Under

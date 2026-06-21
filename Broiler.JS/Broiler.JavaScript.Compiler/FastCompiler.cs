@@ -38,6 +38,14 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     // step 20). Null when not inside such a function. Inherited by nested functions.
     private FastFunctionScope evalShadowBoundary;
     private readonly string location;
+    // A process-unique id for this compilation. A tagged template's object identity is
+    // per parse node (ES §13.2.8.4 GetTemplateObject), so two distinct compilations of the
+    // same source text — e.g. the same string evaluated by `eval` in a loop — must produce
+    // distinct template objects even though their source offset and raw contents match.
+    // Folded into the template-object cache key alongside the offset so it stays stable
+    // across re-executions of one compiled template yet differs between compilations.
+    private static int _compilationCounter;
+    private readonly int compilationId = System.Threading.Interlocked.Increment(ref _compilationCounter);
     private readonly bool isDirectEvalCompilation;
     private readonly bool usesDirectEvalLocalVarEnvironment;
     private readonly string[] directEvalBindingNames;

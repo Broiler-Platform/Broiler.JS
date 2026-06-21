@@ -239,6 +239,11 @@ public class JSVariable
     internal bool IsReadOnly;
     internal bool ThrowOnReadOnlyWrite;
 
+    // True for a top-level script let/const/class binding published into the global
+    // lexical environment. A later eval that declares a global var of the same name is a
+    // SyntaxError (EvalDeclarationInstantiation, var/global-lexical collision).
+    internal bool IsGlobalLexical;
+
     static readonly PropertyInfo _ValueProperty = typeof(JSVariable).GetProperty("Value");
     internal readonly StringSpan Name;
     private KeyString key;

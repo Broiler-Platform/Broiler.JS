@@ -202,6 +202,28 @@ public partial class JSString : JSPrimitive
         return base.GetValue(key, receiver, throwError);
     }
 
+    internal protected override bool SetValue(KeyString key, JSValue value, JSValue receiver, bool throwError = true)
+    {
+        // "length" is a String exotic object's own { [[Writable]]: false } data property,
+        // so a write must fail — the primitive indexer setter then applies the sloppy
+        // no-op / strict TypeError (test262 sm/strict/15.5.5.1). Without this the inherited
+        // [[Set]] reports success and the strict write is silently swallowed.
+        if (key.Key == KeyStrings.length.Key)
+            return false;
+
+        return base.SetValue(key, value, receiver, throwError);
+    }
+
+    public override bool SetValue(uint key, JSValue value, JSValue receiver, bool throwError = true)
+    {
+        // An in-range indexed character is likewise a non-writable own property; the write
+        // fails so the caller applies the sloppy no-op / strict TypeError.
+        if (key < value.Length)
+            return false;
+
+        return base.SetValue(key, value, receiver, throwError);
+    }
+
     // Property-key enumeration (for-in, Object.keys, spread) must yield the index
     // properties as String keys ("0", "1", …), not Numbers — otherwise destructuring
     // a for-in key (`for (var {length:x} in "foo")`) reads `.length` off a number.

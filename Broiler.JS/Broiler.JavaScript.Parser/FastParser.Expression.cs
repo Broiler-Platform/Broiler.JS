@@ -121,9 +121,11 @@ partial class FastParser
             // as an ordinary expression, so — unlike a normal FormalParameters list — the
             // await/yield parse sites did not reject it; check the refined parameters here.
             // await/yield expressions only exist inside an async/generator context, so the
-            // scan is limited to those (the enclosing context, still in effect before the
-            // arrow's own context is established below).
-            if ((inAsyncFunctionBody || inGeneratorBody) && AwaitYieldParameterDetector.Contains(node))
+            // scan is limited to those — either the enclosing context (still in effect before
+            // the arrow's own context is established below) or the arrow's own async-ness:
+            // an async arrow's own parameters parse `await x` as an AwaitExpression even at
+            // the top level (`async (a = await x) => {}`), which is an early SyntaxError.
+            if ((inAsyncFunctionBody || inGeneratorBody || isAsync || isGenerator) && AwaitYieldParameterDetector.Contains(node))
                 throw stream.Unexpected();
 
             var scope = variableScope.Push(token, FastNodeType.FunctionExpression);

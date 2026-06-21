@@ -784,9 +784,9 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     internal JSValue InvokeCallback(in Arguments a) =>
         JSTailCall.Resolve((CoerceThisOnInvoke ? f(a.OverrideThis(CoerceNonStrictThis(a.This))) : f(in a)) ?? JSUndefined.Value);
 
-    [JSPrototypeMethod]
-    [JSExport("valueOf", Length = 1)]
-    public new static JSValue ValueOf(in Arguments a) => a.This;
+    // Function.prototype has no own `valueOf`: per the spec it simply inherits
+    // %Object.prototype.valueOf%, so `Function.prototype.hasOwnProperty("valueOf")`
+    // must be false (test262: built-ins/Function/prototype/S15.3.4_A4).
 
     [JSPrototypeMethod]
     [JSExport("call", Length = 1)]
@@ -850,6 +850,13 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         ref var ownProperties = ref fx.GetOwnProperties();
         ownProperties.Put(KeyStrings.name, JSValue.CreateString(boundName), JSPropertyAttributes.ConfigurableReadonlyValue);
         ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(boundLength), JSPropertyAttributes.ConfigurableReadonlyValue);
+
+        // Function.prototype.toString of a bound function is the implementation-defined
+        // NativeFunction form with NO name: the bound "name" property ("bound …") is not a
+        // valid identifier to splice into the source, so the rendering must omit it rather
+        // than fall back to the "native" placeholder
+        // (test262 staging/sm/Function/function-toString-builtin-name).
+        fx.OverrideSource("function () { [native code] }");
 
         return fx;
     }

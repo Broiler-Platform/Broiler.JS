@@ -17,7 +17,11 @@ public partial class JSSuppressedError : JSError
 
     [JSExport(Length = 3)]
     public JSSuppressedError(in Arguments a, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) :
-        base(new Arguments(JSUndefined.Value, a[2] ?? new JSString("Suppressed Error")), function: function, filePath: filePath, line: line)
+        // Forward the user-supplied `message` (third argument) untouched. When it is
+        // absent or undefined the Error base constructor creates no own `message`
+        // property — SuppressedError must not invent a default one
+        // (test262: built-ins/SuppressedError/message-undefined-no-prop).
+        base(new Arguments(JSUndefined.Value, a.GetAt(2)), function: function, filePath: filePath, line: line)
     {
         DefineErrorAndSuppressed(a.GetAt(0), a.GetAt(1));
     }

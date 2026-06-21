@@ -123,8 +123,14 @@ partial class FastCompiler
 
                 var isDirectEvalLexicalBinding = directEvalLexicalBindingNames?.Contains(v.Value) ?? false;
                 var isFunctionDeclaration = functionDeclarations.Contains(v.Value);
+                // A direct-eval global `var` seeds its binding with `undefined`, never an
+                // eager read of the existing global property: CreateGlobalVarBinding is a
+                // no-op when the property already exists (it must not be re-read or rewritten),
+                // and reads of the var go through the lazy ResolveGlobalVarRead/Index paths
+                // below. Eagerly reading here would observe an existing accessor's getter
+                // (test262 staging/sm/global/bug-320887).
                 var g = isDirectEvalProgramScope
-                    ? (isFunctionDeclaration ? JSUndefinedBuilder.Value : JSContextBuilder.Index(KeyOfName(v)))
+                    ? JSUndefinedBuilder.Value
                     : JSValueBuilder.Index(top.Context, KeyOfName(v));
                 var vs = scope.CreateVariable(v, null, true);
                 vs.IsLexical = false;

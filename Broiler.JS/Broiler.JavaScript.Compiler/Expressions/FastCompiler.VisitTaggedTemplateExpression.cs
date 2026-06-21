@@ -83,10 +83,10 @@ partial class FastCompiler
         var unfrozenArray = JSArrayBuilder.New(parts);
 
         // Use source position (combined with a hash of the raw contents) as a
-        // stable cache key for template object identity (ES2015 12.2.9.3). The
-        // raw-content hash disambiguates distinct templates that share a source
-        // offset across separate compilations using the process-wide cache.
-        var cacheKey = unchecked((template.Start.Span.Offset * 397) ^ rawHash);
+        // stable cache key for template object identity (ES2015 12.2.9.3), scoped to
+        // THIS compilation so two distinct parse nodes — the same source `eval`'d twice —
+        // get distinct template objects while re-executions of one parse node share one.
+        var cacheKey = unchecked((((compilationId * 397) ^ template.Start.Span.Offset) * 397) ^ rawHash);
         var partsArray = YExpression.Call(null, GetOrCreateTemplateObjectMethod, YExpression.Constant(cacheKey), unfrozenArray);
         args[0] = partsArray;
 
