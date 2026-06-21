@@ -59,6 +59,7 @@ public class JSContextBuilder
     private static MethodInfo _ResolveGlobalVarRead = typeof(JSContext).GetMethod(nameof(JSContext.ResolveGlobalVarRead), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _ResolveIdentifierOrUndefined = typeof(JSContext).GetMethod(nameof(JSContext.ResolveIdentifierOrUndefined), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _ResolveWithObject = typeof(JSContext).GetMethod(nameof(JSContext.ResolveWithObject), [typeof(KeyString).MakeByRefType()]);
+    private static MethodInfo _GetWithObjectBindingValue = typeof(JSContext).GetMethod(nameof(JSContext.GetWithObjectBindingValue), [typeof(JSObject), typeof(KeyString).MakeByRefType(), typeof(bool)]);
     private static MethodInfo _EnsureCanDeclareGlobalFunction = typeof(JSContext).GetMethod(nameof(JSContext.EnsureCanDeclareGlobalFunction), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _DeclareGlobalFunction = typeof(JSContext).GetMethod(nameof(JSContext.DeclareGlobalFunction), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
     private static MethodInfo _DeclareGlobalLexical = typeof(JSContext).GetMethod(nameof(JSContext.DeclareGlobalLexical), [typeof(JSVariable)]);
@@ -86,6 +87,7 @@ public class JSContextBuilder
     public static Expression ResolveGlobalVarRead(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveGlobalVarRead, key);
     public static Expression ResolveIdentifierOrUndefined(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveIdentifierOrUndefined, key);
     public static Expression ResolveWithObject(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveWithObject, key);
+    public static Expression GetWithObjectBindingValue(Expression withObject, Expression key, bool strictMode) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _GetWithObjectBindingValue, withObject, key, Expression.Constant(strictMode));
     public static Expression EnsureCanDeclareGlobalFunction(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _EnsureCanDeclareGlobalFunction, key);
     public static Expression DeclareGlobalFunction(Expression key, Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareGlobalFunction, key, value);
     public static Expression DeclareGlobalLexical(Expression variable) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareGlobalLexical, variable);

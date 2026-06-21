@@ -412,6 +412,13 @@ internal static class BuiltInsAssemblyInitializer
         if (value is JSRegExp { value: not null })
             return "RegExp";
 
+        // §20.1.3.6 step 13: an object with a [[DateValue]] internal slot (a real Date
+        // instance — %Date.prototype% is an ordinary object and so falls through to "Object")
+        // tags as "Date". The tag must come from the internal slot, not a @@toStringTag on the
+        // prototype, so a user-supplied own @@toStringTag can still override it.
+        if (value is JSDate)
+            return "Date";
+
         if (value is JSPrimitiveObject boxed)
         {
             var primitive = boxed.value;
@@ -1185,8 +1192,10 @@ internal static class BuiltInsAssemblyInitializer
         if (context[KeyStrings.Date] is not JSFunction dateCtor)
             return;
 
-        EnsureAccessorProperty(dateCtor.prototype, JSSymbol.toStringTag, "[Symbol.toStringTag]", static (in Arguments a)
-            => JSValue.CreateString("Date"));
+        // §21.4.4: %Date.prototype% has NO @@toStringTag. Object.prototype.toString tags a
+        // Date via its [[DateValue]] internal slot (see ResolveBuiltinToStringTag), which a
+        // user-supplied own @@toStringTag is free to override.
+        _ = dateCtor;
     }
 
     private static void PatchRegExpPrototype(JSContext context)

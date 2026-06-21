@@ -1221,6 +1221,22 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return JSUndefined.Value;
     }
 
+    /// <summary>
+    /// §9.1.1.2.6 GetBindingValue for the object Environment Record of a <c>with</c>
+    /// statement, given the binding object already resolved by HasBinding
+    /// (<see cref="ResolveWithObject"/>). The read re-probes HasProperty (step 2) — a
+    /// @@unscopables getter or <c>has</c> trap run during HasBinding may have removed the
+    /// property — before performing the Get (step 4). When the property is gone a strict
+    /// reference throws a ReferenceError; a sloppy one yields <c>undefined</c>.
+    /// </summary>
+    public JSValue GetWithObjectBindingValue(JSObject withObject, in KeyString name, bool strictMode)
+    {
+        if (!withObject.HasProperty(name.ToJSValue()).BooleanValue)
+            return strictMode ? throw JSEngine.NewReferenceError($"{name} is not defined") : JSUndefined.Value;
+
+        return withObject[name];
+    }
+
     public JSValue AssignIdentifier(in KeyString name, JSValue value) => AssignIdentifier(name, value, JSEngine.IsStrictMode);
 
     public JSValue AssignWithObjectIdentifier(JSObject withObject, in KeyString name, JSValue value, bool strictMode)

@@ -98,8 +98,11 @@ public partial class JSJSON : JSObject
 
     private static long GetArrayLength(JSObject valueObject)
     {
+        // A trapless array proxy forwards "length" straight to its target, but that target
+        // may itself be a proxy whose own get trap defines the length — so recurse rather
+        // than read the innermost array's raw .Length (which would ignore the inner trap).
         if (valueObject is JSProxy proxy && proxy.IsArray && !proxy.HasTrap(KeyStrings.get))
-            return proxy.Target.Length;
+            return GetArrayLength(proxy.Target);
 
         return ToLength(valueObject[KeyStrings.length]);
     }
@@ -125,12 +128,11 @@ public partial class JSJSON : JSObject
                 item = v.ToString();
             else if (v is JSPrimitiveObject wrapper && (wrapper.value.IsString || wrapper.value is JSNumber))
             {
-                // The spec sets item to ToString(v) — ToString of the *object*, which
-                // runs ToPrimitive(v, String) and so invokes the object's own toString
-                // (not valueOf). wrapper.ToString() does exactly this; reading the
-                // [[NumberData]]/[[StringData]] slot directly would skip a user
-                // toString override (and a user valueOf must not be called at all).
-                item = wrapper.ToString();
+                // The spec sets item to ToString(v): ToString(ToPrimitive(v, String)), which
+                // runs the wrapper's own toString (then valueOf) through the prototype chain
+                // — so a user-redefined Number/String.prototype.toString is observed. Reading
+                // the [[NumberData]]/[[StringData]] slot directly would skip that override.
+                item = CoerceJsonWrapperToPrimitive(wrapper, preferString: true).StringValue;
             }
 
             if (item != null && seen.Add(item))
@@ -158,8 +160,10 @@ public partial class JSJSON : JSObject
                 indent.Indent++;
 
             var length = GetArrayLength(array);
+            bool wroteElement = false;
             for (uint index = 0; index < length; index++)
             {
+                wroteElement = true;
                 if (index > 0)
                     sb.Write(',');
 
@@ -172,7 +176,9 @@ public partial class JSJSON : JSObject
                 if (replacer != null)
                     jsValue = replacer((array, JSValue.CreateString(index.ToString()), jsValue));
 
-                if (jsValue.IsUndefined || jsValue is JSFunction)
+                // SerializeJSONArray: an element whose serialization is undefined — an
+                // undefined / callable / Symbol value — is rendered as the literal "null".
+                if (jsValue.IsUndefined || jsValue is JSFunction || jsValue is JSSymbol)
                     jsValue = JSNull.Value;
 
                 Stringify(sb, jsValue, replacer, propertyList, indent, stack);
@@ -180,7 +186,9 @@ public partial class JSJSON : JSObject
 
             if (indent != null)
             {
-                sb.WriteLine();
+                // SerializeJSONArray: an empty array collapses to "[]" with no interior newline.
+                if (wroteElement)
+                    sb.WriteLine();
                 indent.Indent--;
             }
 
@@ -449,13 +457,37 @@ public partial class JSJSON : JSObject
         {
             if (a.Length > 2)
             {
-                if (pi is JSNumber jn)
+                // §25.5.2.1 steps 4-5: a Number/String wrapper object is coerced to a
+                // primitive with ToNumber / ToString — both run through ToPrimitive, so a
+                // user-redefined valueOf / toString on the wrapper is observed (and an abrupt
+                // completion propagates) rather than the raw internal slot being read.
+                var space = pi;
+                if (space is JSPrimitiveObject spaceWrapper)
                 {
-                    indent = new string(' ', pi.IntValue);
+                    if (spaceWrapper.value is JSNumber)
+                        space = JSValue.CreateNumber(CoerceJsonWrapperToPrimitive(spaceWrapper, preferString: false).DoubleValue);
+                    else if (spaceWrapper.value.IsString)
+                        space = JSValue.CreateString(CoerceJsonWrapperToPrimitive(spaceWrapper, preferString: true).ToString());
                 }
-                else if (pi is JSString js)
+
+                if (space.IsNumber)
                 {
-                    indent = js.ToString();
+                    // step 6.a: space = min(10, ToIntegerOrInfinity(space)); step 6.b:
+                    // a gap shorter than one space yields the empty String (compact output).
+                    var n = space.DoubleValue;
+                    var count = double.IsNaN(n) ? 0 : (int)Math.Min(10, Math.Truncate(n));
+                    if (count >= 1)
+                        indent = new string(' ', count);
+                }
+                else if (space.IsString)
+                {
+                    // step 7: a gap longer than 10 code units is truncated to its first 10;
+                    // an empty gap leaves indent null so the output stays compact.
+                    var gap = space.ToString();
+                    if (gap.Length > 10)
+                        gap = gap.Substring(0, 10);
+                    if (gap.Length > 0)
+                        indent = gap;
                 }
             }
 
@@ -534,7 +566,10 @@ public partial class JSJSON : JSObject
         if (parsed is JSObject)
             throw JSEngine.NewSyntaxError("JSON.rawJSON cannot be called with a JSON object or array");
 
+        // §JSON.rawJSON: obj is OrdinaryObjectCreate(null) — a null-prototype object —
+        // carrying the [[IsRawJSON]] marker (the own "rawJSON" data property) and frozen.
         var result = new JSObject();
+        result.BasePrototypeObject = null;
         result.FastAddValue(rawJSONKey, JSValue.CreateString(str), JSPropertyAttributes.ConfigurableValue);
         JSObject.FreezeObject(result);
         return result;
@@ -545,19 +580,28 @@ public partial class JSJSON : JSObject
 
     [JSExport("isRawJSON", Length = 1)]
     public static JSValue IsRawJSON(in Arguments a)
-    {
-        var value = a.Get1();
-        if (value is not JSObject obj)
-            return JSBoolean.False;
+        => TryGetRawJsonText(a.Get1(), out _) ? JSBoolean.True : JSBoolean.False;
 
-        if (!obj.IsFrozen())
-            return JSBoolean.False;
+    // A value produced by JSON.rawJSON: a frozen object carrying the [[IsRawJSON]] marker
+    // (an own "rawJSON" data property whose value is a String). SerializeJSONProperty emits
+    // that text verbatim instead of serializing the object.
+    private static bool TryGetRawJsonText(JSValue value, out string text)
+    {
+        text = null;
+        if (value is not JSObject obj || !obj.IsFrozen())
+            return false;
 
         ref var ownProps = ref obj.GetOwnProperties();
         if (!ownProps.TryGetValue(rawJSONKey.Key, out var prop) || prop.IsEmpty)
-            return JSBoolean.False;
+            return false;
 
-        return prop.value is JSValue v && v.IsString ? JSBoolean.True : JSBoolean.False;
+        if (prop.value is JSValue v && v.IsString)
+        {
+            text = v.ToString();
+            return true;
+        }
+
+        return false;
     }
 
     private static void Stringify(
@@ -579,9 +623,12 @@ public partial class JSJSON : JSObject
         {
             var wrapped = wrapper.value;
             if (wrapped is JSNumber)
-                target = CoerceJsonWrapperToPrimitive(wrapper, preferString: false);
+                // ToNumber(wrapper): ToPrimitive then ToNumber, so when valueOf/toString are
+                // removed and ToPrimitive falls back to Object.prototype.toString ("[object
+                // Number]"), the final ToNumber yields NaN and the value serializes as null.
+                target = JSValue.CreateNumber(CoerceJsonWrapperToPrimitive(wrapper, preferString: false).DoubleValue);
             else if (wrapped.IsString)
-                target = CoerceJsonWrapperToPrimitive(wrapper, preferString: true);
+                target = JSValue.CreateString(CoerceJsonWrapperToPrimitive(wrapper, preferString: true).ToString());
             else
                 target = wrapped;
         }
@@ -626,6 +673,14 @@ public partial class JSJSON : JSObject
 
         }
 
+        // SerializeJSONProperty (json-parse-with-source): a JSON.rawJSON object is emitted
+        // as its stored text verbatim, never serialized as an ordinary object.
+        if (TryGetRawJsonText(target, out var rawJsonText))
+        {
+            sb.Write(rawJsonText);
+            return;
+        }
+
         if (target is JSObject arrayObject && arrayObject.IsArray)
         {
             StringifyArray(sb, arrayObject, replacer, propertyList, indent, stack);
@@ -656,18 +711,19 @@ public partial class JSJSON : JSObject
         // from the holder.
         void EmitMember(in StringSpan keyText, JSValue keyValue, JSValue jsValue)
         {
-            if (jsValue.IsUndefined || jsValue is JSFunction)
-                return;
-
+            // SerializeJSONProperty runs toJSON (step 2) then the replacer (step 3) before
+            // deciding whether a member produces text — the replacer is consulted even when
+            // the slot value is undefined (e.g. a property an earlier getter deleted).
             jsValue = ToJson(jsValue, keyValue);
 
-            // check replacer...
             if (replacer != null)
-            {
                 jsValue = replacer((target, keyValue, jsValue));
-                if (jsValue.IsUndefined)
-                    return;
-            }
+
+            // Steps 8-11: an undefined / callable / Symbol value has no JSON text, so the
+            // member is omitted entirely (neither key nor colon is written) — unlike an
+            // array element, which would be rendered as "null".
+            if (jsValue.IsUndefined || jsValue is JSFunction || jsValue is JSSymbol)
+                return;
 
             // write indention here...
             if (!first)
@@ -685,27 +741,6 @@ public partial class JSJSON : JSObject
             Stringify(sb, jsValue, replacer, propertyList, indent, stack);
         }
 
-        void WriteMember(in StringSpan keyText, JSValue keyValue, in JSProperty value)
-        {
-            if (value.IsEmpty || !value.IsEnumerable)
-                return;
-
-            JSValue jsValue;
-            if (!value.IsValue)
-            {
-                if (value.get == null)
-                    return;
-
-                jsValue = ((JSFunction)value.get).InvokeCallback(new Arguments(target));
-            }
-            else
-            {
-                jsValue = (JSValue)value.value;
-            }
-
-            EmitMember(keyText, keyValue, jsValue);
-        }
-
         if (propertyList != null)
         {
             // SerializeJSONObject step 5: when a PropertyList is present, iterate it
@@ -719,24 +754,48 @@ public partial class JSJSON : JSObject
         }
         else
         {
-            // Integer-indexed properties (stored separately from named ones) are own
-            // enumerable string keys too and must be serialized — previously they were
-            // skipped entirely, so e.g. `JSON.stringify({0:'a',x:1})` dropped "0".
-            // ElementArray.AllValues() yields them in ascending index order.
-            foreach (var (index, element) in obj.GetElements(create: false).AllValues())
+            // SerializeJSONObject step 6.a snapshots EnumerableOwnPropertyNames ONCE, then
+            // step 8 reads each member live via [[Get]] (SerializeJSONProperty step 1). So a
+            // property a sibling getter deletes mid-serialization is still visited (its value
+            // reads as undefined and the replacer still runs), while a property added
+            // mid-serialization is not. Integer-indexed keys (stored apart from named ones)
+            // come first in ascending order, then named keys in insertion order.
+            List<string> snapshot;
+            if (obj is JSProxy)
             {
-                var indexText = index.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                WriteMember(indexText, JSValue.CreateString(indexText), element);
+                // A Proxy exposes its own keys only through the [[OwnPropertyKeys]] and
+                // [[GetOwnProperty]] traps; its internal slot stores nothing. Route it
+                // through EnumerableOwnPropertyNames so the traps drive the key list.
+                snapshot = EnumerableOwnPropertyNames(obj);
+            }
+            else
+            {
+                snapshot = new List<string>();
+                foreach (var (index, element) in obj.GetElements(create: false).AllValues())
+                {
+                    if (element.IsEmpty || !element.IsEnumerable)
+                        continue;
+                    snapshot.Add(index.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                }
+
+                var pen = obj.GetOwnProperties().GetEnumerator();
+                while (pen.MoveNext(out var key, out var value))
+                {
+                    if (value.IsEmpty || !value.IsEnumerable)
+                        continue;
+                    snapshot.Add(key.Value.ToString());
+                }
             }
 
-            var pen = obj.GetOwnProperties().GetEnumerator();
-            while (pen.MoveNext(out var key, out var value))
-                WriteMember(key.Value, KeyStringCoreExtensions.GetJSString(value.key), value);
+            foreach (var keyText in snapshot)
+                EmitMember(keyText, JSValue.CreateString(keyText), obj[KeyStrings.GetOrCreate(keyText)]);
         }
 
         if (indent != null)
         {
-            sb.WriteLine();
+            // SerializeJSONObject: an empty object collapses to "{}" with no interior newline.
+            if (!first)
+                sb.WriteLine();
             indent.Indent--;
         }
 
