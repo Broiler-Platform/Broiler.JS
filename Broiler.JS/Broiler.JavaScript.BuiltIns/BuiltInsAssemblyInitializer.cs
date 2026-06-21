@@ -799,11 +799,14 @@ internal static class BuiltInsAssemblyInitializer
     }
 
     private static void EnsureAccessorProperty(JSObject target, KeyString key, string name, JSFunctionDelegate getter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
+        => EnsureAccessorProperty(target, key, name, getter, null, attributes);
+
+    private static void EnsureAccessorProperty(JSObject target, KeyString key, string name, JSFunctionDelegate getter, JSFunctionDelegate setter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
     {
         if (!target.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(key.ToString(), key)).IsUndefined)
             return;
 
-        target.FastAddProperty(key, CreateNativeGetter(getter, name), null, attributes);
+        target.FastAddProperty(key, CreateNativeGetter(getter, name), setter == null ? null : CreateNativeSetter(setter, name), attributes);
     }
 
     private static void PatchSpeciesConstructors(JSContext context)
@@ -1821,7 +1824,16 @@ internal static class BuiltInsAssemblyInitializer
         PatchLegacyRegExpAccessor(regExpCtor, "lastParen", "$+", static (in Arguments _) => LegacyRegExpValue(static s => s.LastParen));
         PatchLegacyRegExpAccessor(regExpCtor, "leftContext", "$`", static (in Arguments _) => LegacyRegExpValue(static s => s.LeftContext));
         PatchLegacyRegExpAccessor(regExpCtor, "rightContext", "$'", static (in Arguments _) => LegacyRegExpValue(static s => s.RightContext));
-        PatchLegacyRegExpAccessor(regExpCtor, "input", "$_", static (in Arguments _) => LegacyRegExpValue(static s => s.Input));
+        // RegExp.input / $_ are the only legacy statics with a setter
+        // (SetLegacyRegExpStaticProperty); the rest are get-only.
+        PatchLegacyRegExpAccessor(regExpCtor, "input", "$_",
+            static (in Arguments _) => LegacyRegExpValue(static s => s.Input),
+            static (in Arguments a) =>
+            {
+                if (JSEngine.Current?.LegacyRegExp is { } state)
+                    state.Input = a.Get1().ToString();
+                return JSUndefined.Value;
+            });
 
         for (var i = 1; i <= 9; i++)
         {
@@ -1868,15 +1880,38 @@ internal static class BuiltInsAssemblyInitializer
         regExpCtor.FastAddValue(escapeKey, CreateNativeFunction(JSRegExp.Escape, "escape", 1), JSPropertyAttributes.ConfigurableValue);
     }
 
-    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, string alias, JSFunctionDelegate getter)
+    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, string alias, JSFunctionDelegate getter, JSFunctionDelegate setter = null)
     {
-        PatchLegacyRegExpAccessor(regExpCtor, propertyName, getter);
-        PatchLegacyRegExpAccessor(regExpCtor, alias, getter);
+        PatchLegacyRegExpAccessor(regExpCtor, propertyName, getter, setter);
+        PatchLegacyRegExpAccessor(regExpCtor, alias, getter, setter);
     }
 
-    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, JSFunctionDelegate getter)
+    private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, JSFunctionDelegate getter, JSFunctionDelegate setter = null)
     {
-        EnsureAccessorProperty(regExpCtor, KeyStrings.GetOrCreate(propertyName), propertyName, getter);
+        // §B.2.4 GetLegacyRegExpStaticProperty / SetLegacyRegExpStaticProperty step 2:
+        // these statics belong to %RegExp% itself. If SameValue(%RegExp%, thisValue) is
+        // false — a subclass constructor, a RegExp instance, %RegExp.prototype%, or a
+        // primitive receiver — throw a TypeError rather than reading or writing the slot
+        // (test262 annexB/.../legacy-accessors/{this-not-regexp-constructor,this-subclass-constructor}).
+        JSValue GuardedGet(in Arguments a)
+        {
+            if (!ReferenceEquals(a.This, regExpCtor))
+                throw JSEngine.NewTypeError($"RegExp.{propertyName} getter called on incompatible receiver");
+            return getter(a);
+        }
+
+        JSFunctionDelegate guardedSetter = null;
+        if (setter != null)
+        {
+            guardedSetter = (in Arguments a) =>
+            {
+                if (!ReferenceEquals(a.This, regExpCtor))
+                    throw JSEngine.NewTypeError($"RegExp.{propertyName} setter called on incompatible receiver");
+                return setter(a);
+            };
+        }
+
+        EnsureAccessorProperty(regExpCtor, KeyStrings.GetOrCreate(propertyName), propertyName, GuardedGet, guardedSetter);
     }
 
     private static void PatchArrayPrototype(JSContext context)

@@ -80,7 +80,11 @@ public partial class JSArray
         var @this = ToArrayLikeObject(a.This);
         var first = a.Get1();
         var length = GetArrayLikeLength(@this);
-        var sep = first.IsUndefined ? "," : first.ToString();
+        // §23.1.3.18 step 4: sep = ToString(separator). ToString performs
+        // ToPrimitive(separator, String), which tries toString *then* valueOf — so a
+        // separator whose toString returns an object falls back to valueOf rather than
+        // collapsing to "[object Object]" (test262 Array/prototype/join S15.4.4.5_A3.1_T2).
+        var sep = first.IsUndefined ? "," : ToStringPrimitive(first).ToString();
         var sb = new StringBuilder();
 
         for (uint i = 0; i < length; i++)
