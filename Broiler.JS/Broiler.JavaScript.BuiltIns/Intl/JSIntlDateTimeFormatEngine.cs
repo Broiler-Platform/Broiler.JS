@@ -217,7 +217,8 @@ internal static class JSIntlDateTimeFormatEngine
         bool hasHour, bool hasMinute, bool hasSecond, int fractionalSecondDigits, bool hasDayPeriodField,
         string dateStyle, string timeStyle, bool hour12, string calendar = null,
         bool hasWeekday = false, string weekdayStyle = null, bool hasTimeZoneName = false,
-        string hourCycle = null, bool hasEra = false, string eraStyle = null)
+        string hourCycle = null, bool hasEra = false, string eraStyle = null,
+        string hourStyle = null, string minuteStyle = null, string secondStyle = null)
     {
         string datePattern = null;
         string timePattern = null;
@@ -293,13 +294,20 @@ internal static class JSIntlDateTimeFormatEngine
             // The hour token follows the resolved hour cycle: h12 → "h" (1-12), h23 → "HH" (0-23),
             // h11 → "K" (0-11), h24 → "k" (1-24). The 12-hour cycles (h11/h12) also show a dayPeriod.
             var cycle = hourCycle ?? (hour12 ? "h12" : "h23");
-            var (hourTok, showDayPeriod) = cycle switch
+            var (hourBase, showDayPeriod) = cycle switch
             {
                 "h11" => ("K", true),
                 "h24" => ("k", false),
-                "h23" => ("HH", false),
+                "h23" => ("H", false),
                 _ => ("h", true), // h12
             };
+            // "2-digit" pads the hour to two digits ("hh" → 02); "numeric" leaves it unpadded
+            // ("h" → 2). The 24-hour cycle keeps its historical zero-padded default when no
+            // explicit hour style is requested.
+            var hourCount = hourStyle == "2-digit" ? 2
+                : hourStyle == "numeric" ? 1
+                : cycle == "h23" ? 2 : 1;
+            var hourTok = new string(hourBase[0], hourCount);
 
             // The dayPeriod option renders a flexible day-period name ('B') in place of AM/PM and
             // implies a 12-hour hour.
@@ -307,29 +315,37 @@ internal static class JSIntlDateTimeFormatEngine
             if (hasDayPeriodField) { hourTok = "h"; ap = " B"; }
             else ap = showDayPeriod ? " a" : "";
 
+            // The fractional-seconds field attaches to the seconds (".SSS"), BEFORE any day-period
+            // marker — "2:35:06.789 AM", not "2:35:06 AM.789". A lone fractionalSecondDigits with no
+            // seconds field still renders the digits alone.
+            var renderFractional = fractionalSecondDigits >= 1 && fractionalSecondDigits <= 3;
+            var secFrac = renderFractional && hasSecond ? "." + new string('S', fractionalSecondDigits) : string.Empty;
+
+            // A minute or second that FOLLOWS another time field is always zero-padded (CLDR
+            // "h:mm:ss"); a standalone minute / second honours its own numeric vs 2-digit style.
+            var loneMinute = minuteStyle == "numeric" ? "m" : "mm";
+            var loneSecond = secondStyle == "numeric" ? "s" : "ss";
+
             var time = new StringBuilder();
             if (hasHour && hasMinute && hasSecond)
-                time.Append($"{hourTok}:mm:ss{ap}");
+                time.Append($"{hourTok}:mm:ss{secFrac}{ap}");
             else if (hasHour && hasMinute)
                 time.Append($"{hourTok}:mm{ap}");
             else if (hasMinute && hasSecond)
-                time.Append("mm:ss");
+                time.Append($"mm:ss{secFrac}");
             else if (hasHour)
                 time.Append($"{hourTok}{ap}");
             else if (hasDayPeriodField)
                 time.Append("B"); // dayPeriod with no hour: the period name alone
             else if (hasMinute)
-                time.Append("mm");
+                time.Append(loneMinute);
             else if (hasSecond)
-                time.Append("ss");
+                time.Append($"{loneSecond}{secFrac}");
 
-            if (fractionalSecondDigits >= 1 && fractionalSecondDigits <= 3)
-            {
+            if (renderFractional && !hasSecond)
                 // A fractional-seconds field without a seconds field still renders (the digits alone),
                 // so a lone fractionalSecondDigits option does not collapse to the default date.
-                if (hasSecond) time.Append('.');
                 time.Append(new string('S', fractionalSecondDigits));
-            }
 
             datePattern = date.Length > 0 ? date.ToString() : null;
             timePattern = time.Length > 0 ? time.ToString() : null;

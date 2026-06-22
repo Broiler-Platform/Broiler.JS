@@ -7590,8 +7590,10 @@ public class BuiltInsTests
             ].join('|');
             """);
 
-        // CLDR de compact: short suffixes "Tsd.|Mio.|Mrd.|Bio."; long "Tausend|Million(en)|…".
-        Assert.Equal("988 Mio.|2,5 Mio.|1,2 Tsd.|988 Millionen|2,5 Millionen", result.ToString());
+        // CLDR de compact: the SHORT form has no thousands abbreviation (1200 stays "1200")
+        // and joins the million+ suffixes with a NO-BREAK SPACE (U+00A0); the LONG form
+        // abbreviates thousands ("Tausend") and joins with an ordinary space.
+        Assert.Equal("988 Mio.|2,5 Mio.|1200|988 Millionen|2,5 Millionen", result.ToString());
     }
 
     [Fact]
@@ -7605,13 +7607,14 @@ public class BuiltInsTests
             parts.map(p => p.type + ':' + p.value).join('|');
             """);
 
-        // Per spec: compact-formatted "988 Mio." has three parts — integer "988", literal " ",
-        // compact "Mio." — not the five parts a full decimal "987.654.321" would produce.
-        Assert.Equal("integer:988|literal: |compact:Mio.", result.ToString());
+        // Per spec: the German short compact value has three parts — integer "988", a literal
+        // NO-BREAK SPACE (U+00A0), and compact "Mio." — not the five parts a full decimal
+        // "987.654.321" would produce.
+        Assert.Equal("integer:988|literal: |compact:Mio.", result.ToString());
     }
 
     [Fact]
-    public void DateTimeFormat_Hour12_True_PicksParityOfLocaleDefault()
+    public void DateTimeFormat_Hour12_True_PicksLocalePreferred12HourCycle()
     {
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
@@ -7621,15 +7624,16 @@ public class BuiltInsTests
               new Intl.DateTimeFormat('fr-FR', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
               new Intl.DateTimeFormat('de-DE', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
               new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
+              new Intl.DateTimeFormat('ja-JP', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
               new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false }).resolvedOptions().hourCycle
             ].join('|');
             """);
 
-        // ECMA-402 resolves hour12 by the parity of the locale's default hour cycle, not
-        // CLDR's "allowed" list: a 0-based default (h23, e.g. fr-FR / de-DE) yields the
-        // 0-based 12-hour cycle h11, while a 1-based default (h12, e.g. en-US) yields h12.
-        // hour12 false yields h23. This matches V8.
-        Assert.Equal("h11|h11|h12|h23", result.ToString());
+        // hour12 true selects the locale's CLDR preferred 12-hour cycle: "h12" everywhere
+        // (fr-FR / de-DE / en-US) except the locales whose day-period clock starts at 0
+        // (ja-JP → "h11"). hour12 false yields h23. This matches V8 and test262
+        // (intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default).
+        Assert.Equal("h12|h12|h12|h11|h23", result.ToString());
     }
 
     [Fact]

@@ -378,6 +378,17 @@ public partial class JSTemporalPlainYearMonth : JSObject
             return new JSTemporalDuration(cy, cm, 0, 0, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
         }
 
+        // DifferenceTemporalPlainYearMonth anchors both year-months at day 1 and forms an intermediate
+        // PlainDate for each, which must lie within the representable ISO date range. At the boundary
+        // months the year-month range is wider than the date range (e.g. -271821-04 is a valid
+        // year-month but -271821-04-01 is not a valid date), so a difference against a different
+        // year-month throws RangeError. Equal year-months short-circuit to a zero duration below
+        // (no intermediate date is formed), so they never reach this check.
+        var sameYearMonth = isoYear == target.isoYear && isoMonth == target.isoMonth;
+        if (!sameYearMonth
+            && (!IsWithinIsoDateLimits(isoYear, isoMonth, 1) || !IsWithinIsoDateLimits(target.isoYear, target.isoMonth, 1)))
+            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: difference is outside the supported ISO date range");
+
         // The difference is measured from the receiver (day 1) and negated for "since"; the rounding mode
         // is correspondingly negated before rounding (GetDifferenceSettings).
         var mode = sign == -1 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
@@ -428,9 +439,16 @@ public partial class JSTemporalPlainYearMonth : JSObject
         {
             var c = CalendarYmd();
             var (iy, im, id) = TemporalNonIso.RegulateToIso(calendarId, c.y, c.m, day, "constrain");
+            if (!IsWithinIsoDateLimits(iy, im, id))
+                throw JSEngine.NewRangeError("Temporal.PlainYearMonth.prototype.toPlainDate: result is outside the supported ISO date range");
             return new JSTemporalPlainDate(iy, im, id, calendarId, JSTemporalPlainDate.PlainDatePrototype);
         }
         day = Math.Clamp(day, 1, DaysInMonthOf(isoYear, isoMonth));
+        // The combined date can fall outside the representable ISO range even when the
+        // year-month itself is in range (the year-month limit is wider than the date limit
+        // at the boundary months, e.g. -271821-04 is valid but -271821-04-18 is not).
+        if (!IsWithinIsoDateLimits(isoYear, isoMonth, day))
+            throw JSEngine.NewRangeError("Temporal.PlainYearMonth.prototype.toPlainDate: result is outside the supported ISO date range");
         return new JSTemporalPlainDate(isoYear, isoMonth, day, calendarId, JSTemporalPlainDate.PlainDatePrototype);
     }
 
