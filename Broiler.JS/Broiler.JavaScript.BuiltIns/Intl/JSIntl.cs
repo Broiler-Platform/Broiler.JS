@@ -177,7 +177,14 @@ public static class JSIntl
                     return list;
                 }
 
-                return JSValue.CreateArray();
+                // "timeZone" is a valid key whose enumeration data is not yet wired up; it returns
+                // an empty list rather than throwing (a valid key must never be a RangeError).
+                if (key == "timeZone")
+                    return JSValue.CreateArray();
+
+                // §Intl.supportedValuesOf step 8.a: any other key is invalid — throw a RangeError
+                // (test262 Intl/supportedValuesOf/invalid-key).
+                throw JSEngine.NewRangeError($"Intl.supportedValuesOf: invalid key \"{key}\"");
             }, "supportedValuesOf", "function supportedValuesOf() { [native code] }", length: 1, createPrototype: false),
             JSPropertyAttributes.ConfigurableValue);
         // Intl[@@toStringTag] = "Intl"
