@@ -1023,11 +1023,11 @@ public static class JSIntl
         return KnownCollations.Contains(canonical) ? canonical : null;
     }
 
-    // Applies the Unicode ("-u-") keyword type-value aliases (CanonicalizeUnicodeLocaleId,
-    // UTS #35) over an already case-folded tag — e.g. "en-u-ca-islamicc" → "en-u-ca-islamic-
-    // civil". Walks the -u- sequence: attributes (3–8 chars) precede the keyword pairs, each a
-    // 2-char key followed by its 3–8-char type subtags; the joined type is mapped through the
-    // alias tables. Keyword reordering is intentionally not applied here.
+    // Canonicalizes the Unicode ("-u-") extension of an already case-folded tag (CanonicalizeUnicode-
+    // LocaleId, UTS #35): the keyword type-value aliases are applied (e.g. "en-u-ca-islamicc" →
+    // "en-u-ca-islamic-civil"), the attributes and the keyword pairs are sorted, duplicate attributes
+    // and duplicate keyword keys are removed (the first occurrence of a key wins), and a keyword value
+    // equal to "true" is dropped to the value-less canonical form.
     private static string CanonicalizeUnicodeKeywordValues(string tag)
     {
         var subtags = tag.Split('-');
@@ -1049,14 +1049,29 @@ public static class JSIntl
             result.Add(subtags[i]);
 
         var j = u + 1;
-        // Attributes (3–8 chars) appear before the first 2-char key.
+        // Attributes (3–8 chars) appear before the first 2-char key; canonical form sorts them and
+        // removes duplicates.
+        var attributes = new List<string>();
         while (j < subtags.Length && subtags[j].Length >= 3 && subtags[j].Length <= 8)
         {
-            result.Add(subtags[j]);
+            attributes.Add(subtags[j]);
             j++;
         }
+        attributes.Sort(StringComparer.Ordinal);
+        string lastAttribute = null;
+        foreach (var attribute in attributes)
+        {
+            if (attribute == lastAttribute)
+                continue;
+            result.Add(attribute);
+            lastAttribute = attribute;
+        }
 
-        // Keyword pairs, until the extension ends (a 1-char singleton starts the next one).
+        // Keyword pairs (a 2-char key followed by its 3–8-char type subtags), until the extension
+        // ends (a 1-char singleton starts the next one). Canonical form sorts the keywords by key and
+        // keeps only the first occurrence of a duplicated key.
+        var keywords = new List<(string Key, string Value)>();
+        var seenKeys = new HashSet<string>(StringComparer.Ordinal);
         while (j < subtags.Length && subtags[j].Length == 2)
         {
             var key = subtags[j];
@@ -1068,14 +1083,20 @@ public static class JSIntl
                 j++;
             }
 
-            result.Add(key);
+            if (!seenKeys.Add(key))
+                continue; // duplicate key: the first occurrence wins
+
             var canonical = CanonicalizeKeywordValue(key, string.Join("-", types));
-            // UTS #35 §3.6.4: a boolean Unicode keyword's "true" value is the default
-            // and is omitted from the canonical form ("und-u-kb-yes" → "und-u-kb").
-            if (canonical == "true" && BooleanUnicodeKeywordKeys.Contains(key))
-                continue;
-            if (canonical.Length > 0)
-                result.AddRange(canonical.Split('-'));
+            // UTS #35 §3.6.4: a "true" Unicode keyword value is the default and is omitted from the
+            // canonical form ("und-u-kb-yes" → "und-u-kb", "de-u-kf-true" → "de-u-kf").
+            keywords.Add((key, canonical == "true" ? string.Empty : canonical));
+        }
+        keywords.Sort((x, y) => string.CompareOrdinal(x.Key, y.Key));
+        foreach (var (key, value) in keywords)
+        {
+            result.Add(key);
+            if (value.Length > 0)
+                result.AddRange(value.Split('-'));
         }
 
         // Any following singleton extension / private-use sequence is copied verbatim.
@@ -2293,10 +2314,24 @@ public static class JSIntl
         return (value, locale);
     }
 
+    // ResolveLocale's per-key reflection rule: the "-u-<key>" keyword stays in the resolved locale
+    // when no option overrides it, or when the option value equals the extension value; an option
+    // that differs from the extension drops the keyword (test262 .../resolved-*-unicode-extensions-
+    // and-options). extValue is the extension's value (GetUnicodeExtensionType, null when absent;
+    // callers normalize an elided boolean "" to "true").
+    internal static string ReflectExtensionKeyword(string localeTag, string key, string optionValue, string extValue)
+    {
+        if (optionValue == null)
+            return localeTag;
+        return string.Equals(optionValue, extValue, StringComparison.Ordinal)
+            ? localeTag
+            : RemoveUnicodeExtensionKeyword(localeTag, key);
+    }
+
     // Rebuilds a BCP-47 tag dropping a single Unicode ("-u-") extension keyword (and the
     // whole "-u-" sequence when nothing else survives). Sibling of
     // FilterUnicodeExtensionKeywords, which keeps a set instead of removing one.
-    private static string RemoveUnicodeExtensionKeyword(string tag, string removeKey)
+    internal static string RemoveUnicodeExtensionKeyword(string tag, string removeKey)
     {
         if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase) < 0)
             return tag;
@@ -5684,12 +5719,32 @@ public class JSIntlCollator : JSObject
         sensitivity = JSIntl.GetOption(options, KeyStrings.GetOrCreate("sensitivity"), ["base", "accent", "case", "variant"], false, sensitivity);
         if (TryGetOwnOption(options, "ignorePunctuation", out var ignorePunctuationValue))
             ignorePunctuation = ignorePunctuationValue.BooleanValue;
-        if (TryGetOwnOption(options, "numeric", out var numericValue))
+        var numericPresent = TryGetOwnOption(options, "numeric", out var numericValue);
+        if (numericPresent)
             numeric = numericValue.BooleanValue;
-        caseFirst = JSIntl.GetOption(options, KeyStrings.GetOrCreate("caseFirst"), ["upper", "lower", "false"], false, caseFirst);
+        var caseFirstKey = KeyStrings.GetOrCreate("caseFirst");
+        var caseFirstPresent = options != null && options[caseFirstKey] is { IsUndefined: false };
+        caseFirst = JSIntl.GetOption(options, caseFirstKey, ["upper", "lower", "false"], false, caseFirst);
         if (TryGetOwnOption(options, "collation", out var collationValue)
             && JSIntl.CanonicalizeCollation(collationValue.StringValue) is { } optCo)
             collation = optCo;
+
+        // ResolveLocale: keep the -u-kn / -u-kf keyword in the resolved locale only when the option
+        // matches the extension value (an absent option keeps it; a differing option drops it). The
+        // boolean "kn" keyword's "true" is elided to a value-less form in the canonical tag.
+        if (numericPresent)
+        {
+            var knExt = JSIntl.GetUnicodeExtensionType(locale, "kn");
+            var knExtValue = knExt == null ? null : (knExt.Length == 0 ? "true" : knExt);
+            locale = JSIntl.ReflectExtensionKeyword(locale, "kn", numeric ? "true" : "false", knExtValue);
+        }
+        if (caseFirstPresent)
+            locale = JSIntl.ReflectExtensionKeyword(locale, "kf", caseFirst, JSIntl.GetUnicodeExtensionType(locale, "kf"));
+
+        // A reserved ("standard"/"search") or unsupported -u-co- value is not a real collation, so it
+        // is dropped from the resolved locale (test262 Collator/ignore-invalid-unicode-ext-values).
+        if (TryGetUnicodeExtension(locale, "co", out var coExt) && JSIntl.CanonicalizeCollation(coExt) == null)
+            locale = JSIntl.RemoveUnicodeExtensionKeyword(locale, "co");
 
         compareInfo = ResolveCompareInfo(locale, collation);
     }
@@ -6879,10 +6934,14 @@ public class JSIntlDateTimeFormat : JSObject
 
         var resolvedLocale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.DateTimeFormatRelevantKeys);
         (numberingSystem, localeTag) = JSIntl.ResolveNumberingSystem(resolvedLocale, nuOption);
-        // An hour12 or hourCycle option overrides — and so drops — the locale's -u-hc- keyword
-        // from the resolved locale; without such an option the extension's hc value is kept.
-        if (!hour12.IsUndefined || options[HourCycleKey] is { IsUndefined: false })
+        // hour12 forces a non-keyword hour cycle, so it always drops the locale's -u-hc-. An
+        // hourCycle option only drops it when it DIFFERS from the extension value; an equal value
+        // keeps -u-hc- in the resolved locale (test262 resolvedOptions/resolved-hour-cycle-...).
+        if (!hour12.IsUndefined)
             localeTag = JSIntl.DropHourCycleExtension(localeTag);
+        else
+            localeTag = JSIntl.ReflectExtensionKeyword(
+                localeTag, "hc", OptionString(HourCycleKey), JSIntl.GetUnicodeExtensionType(localeTag, "hc"));
         locale = CultureInfo.CurrentCulture;
     }
 

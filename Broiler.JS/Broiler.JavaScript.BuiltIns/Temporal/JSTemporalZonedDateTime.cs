@@ -1454,7 +1454,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static bool TimeZoneEquals(string a, string b)
         => a == b || PrimaryTimeZoneIdentifier(a) == PrimaryTimeZoneIdentifier(b);
 
-    private static string PrimaryTimeZoneIdentifier(string id)
+    internal static string PrimaryTimeZoneIdentifier(string id)
     {
         var primary = Tz.IanaTimeZoneDatabase.GetPrimary(id);
         // AvailableNamedTimeZoneIdentifiers step 5.c: the primary identifier of the UTC/GMT-zero

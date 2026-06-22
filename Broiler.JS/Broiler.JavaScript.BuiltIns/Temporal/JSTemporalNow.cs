@@ -24,13 +24,15 @@ internal static class JSTemporalNow
         try
         {
             var local = TimeZoneInfo.Local;
-            // Report a CANONICAL identifier: a host whose IANA zone is "Etc/UTC" surfaces as
-            // "UTC" so Temporal.Now.timeZoneId() agrees with the zone of Temporal.Now.zonedDateTimeISO()
-            // (test262 Now/zonedDateTimeISO/time-zone-undefined) and with Intl.DateTimeFormat.
+            // The system default is a PRIMARY time-zone identifier: a host whose IANA zone is
+            // "Etc/UTC" surfaces as "UTC" (test262 DateTimeFormat/resolvedOptions/basic requires a
+            // canonical zone), so Temporal.Now.timeZoneId() agrees with the zone of
+            // Temporal.Now.zonedDateTimeISO() and with Intl.DateTimeFormat. (An explicitly supplied
+            // identifier is preserved instead — only the default is resolved to its primary.)
             if (local.HasIanaId)
-                return JSTemporalZonedDateTime.CanonicalizeTimeZoneId(local.Id);
+                return JSTemporalZonedDateTime.PrimaryTimeZoneIdentifier(local.Id);
             if (TimeZoneInfo.TryConvertWindowsIdToIanaId(local.Id, out var iana))
-                return JSTemporalZonedDateTime.CanonicalizeTimeZoneId(iana);
+                return JSTemporalZonedDateTime.PrimaryTimeZoneIdentifier(iana);
         }
         catch { /* fall through */ }
         return "UTC";
