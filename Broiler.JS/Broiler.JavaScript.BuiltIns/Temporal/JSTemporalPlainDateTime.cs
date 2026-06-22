@@ -543,7 +543,7 @@ public partial class JSTemporalPlainDateTime : JSObject
             var roundedDays = (long)TemporalRoundingOptions.RoundToIncrement(total, NanosecondsPerDay, roundingMode) / NanosecondsPerDay;
             var epoch = DaysFromCivil(isoYear, isoMonth, isoDay) + roundedDays;
             var (ry, rm, rd) = CivilFromDays(epoch);
-            return new JSTemporalPlainDateTime((int)ry, (int)rm, (int)rd, 0, 0, 0, 0, 0, 0, calendarId, PlainDateTimePrototype);
+            return Create((int)ry, (int)rm, (int)rd, 0, 0, 0, 0, 0, 0, calendarId, PlainDateTimePrototype);
         }
 
         var unitNs = UnitNanoseconds(unit) * increment;
@@ -553,7 +553,9 @@ public partial class JSTemporalPlainDateTime : JSObject
         var ep = DaysFromCivil(isoYear, isoMonth, isoDay) + dayspill;
         var (cy, cm, cd) = CivilFromDays(ep);
         var (hh, mm, ss, l, mc, nn) = FromTimeNanoseconds(wrapped);
-        return new JSTemporalPlainDateTime((int)cy, (int)cm, (int)cd, hh, mm, ss, l, mc, nn, calendarId, PlainDateTimePrototype);
+        // RoundISODateTime can push the result past the representable range (test262
+        // round/limits); Create performs the ISODateTimeWithinLimits RangeError check.
+        return Create((int)cy, (int)cm, (int)cd, hh, mm, ss, l, mc, nn, calendarId, PlainDateTimePrototype);
     }
 
     [JSExport("equals", Length = 1)]
@@ -622,6 +624,12 @@ public partial class JSTemporalPlainDateTime : JSObject
             wrapped = rounded - dayspill * NanosecondsPerDay;
             var (cy, cm, cd) = CivilFromDays(DaysFromCivil(isoYear, isoMonth, isoDay) + dayspill);
             ry = (int)cy; rm = (int)cm; rd = (int)cd;
+
+            // Rounding can carry the wall clock past the representable range (test262
+            // toString/rounding-edge-of-range): reject an out-of-limits result.
+            var (vh, vmi, vs, vms, vus, vns) = FromTimeNanoseconds(wrapped);
+            if (!IsValidISODateTime(ry, rm, rd, vh, vmi, vs, vms, vus, vns))
+                throw JSEngine.NewRangeError("Temporal.PlainDateTime.toString: result is out of range");
         }
 
         return new JSString(FormatISOString(ry, rm, rd, wrapped, showCalendar, fracDigits, minutePrecision));

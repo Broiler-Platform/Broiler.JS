@@ -719,7 +719,15 @@ public partial class JSTemporalDuration
         var nanos = ns;
 
         double S(BigInteger v) => sign * NearestDouble(v);
-        return new JSTemporalDuration(0, 0, 0, S(days), S(hours), S(minutes), S(seconds), S(millis), S(micros), S(nanos), DurationPrototype);
+        double rDays = S(days), rHours = S(hours), rMinutes = S(minutes), rSeconds = S(seconds),
+            rMillis = S(millis), rMicros = S(micros), rNanos = S(nanos);
+
+        // TemporalDurationFromInternal: each component is turned into a float64-representable integer,
+        // and the assembled duration must still be valid — NearestDouble can round a large component
+        // up past the maximum time-duration limit, which is then a RangeError (test262 round/
+        // result-out-of-range, round/out-of-range-when-converting-from-normalized-duration).
+        RejectDuration(0, 0, 0, rDays, rHours, rMinutes, rSeconds, rMillis, rMicros, rNanos);
+        return new JSTemporalDuration(0, 0, 0, rDays, rHours, rMinutes, rSeconds, rMillis, rMicros, rNanos, DurationPrototype);
     }
 
     // Converts a non-negative integer to the nearest IEEE-754 double (ties to even), matching
