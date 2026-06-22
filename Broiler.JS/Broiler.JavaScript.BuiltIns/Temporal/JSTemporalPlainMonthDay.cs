@@ -115,8 +115,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         // satisfies the "at least one field" requirement even though it does not change the
         // month/day for ISO. It is still read and coerced like the others.
         var hasYear = !yearValue.IsUndefined;
-        if (hasYear)
-            ToIntegerWithTruncation(yearValue);
+        var yearInt = hasYear ? ToIntegerWithTruncation(yearValue) : 0;
 
         if (NonIso)
         {
@@ -163,7 +162,12 @@ public partial class JSTemporalPlainMonthDay : JSObject
             month = monthCoerced;
         }
 
-        return RegulateMonthDay(month, isoDayOut, overflow, calendarId, referenceISOYear);
+        // A supplied `year` is used only to apply the overflow option (e.g. Feb 29 in a common year
+        // is constrained to Feb 28, or rejected) — it is never range-checked and never stored. With
+        // no year, validate against this instance's own reference year (test262 .../with/
+        // iso-year-used-only-for-overflow).
+        var validationYear = hasYear ? yearInt : referenceISOYear;
+        return RegulateMonthDay(month, isoDayOut, overflow, calendarId, validationYear);
     }
 
     [JSExport("equals", Length = 1)]
@@ -228,6 +232,12 @@ public partial class JSTemporalPlainMonthDay : JSObject
         }
 
         var day = Math.Clamp(isoDay, 1, DaysInMonthOf(year, isoMonth));
+        // The resulting PlainDate (resolved year + this month-day) must lie within the representable
+        // ISO date range (−271821-04-19 … +275760-09-13); a year that pushes it out of range is a
+        // RangeError rather than being silently produced (test262 .../toPlainDate/limits).
+        var epoch = TemporalNonIso.DaysFromCivil(year, isoMonth, day);
+        if (epoch < TemporalNonIso.MinEpochDays || epoch > TemporalNonIso.MaxEpochDays)
+            throw JSEngine.NewRangeError("Temporal.PlainMonthDay.prototype.toPlainDate: date is out of range");
         return new JSTemporalPlainDate(year, isoMonth, day, calendarId, JSTemporalPlainDate.PlainDatePrototype);
     }
 
@@ -392,6 +402,10 @@ public partial class JSTemporalPlainMonthDay : JSObject
         // the overflow option is read (test262 from/options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
         var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainMonthDay");
+        // Validate monthCode *syntax* (well-formedness) as soon as it is read — before the `year`
+        // field below is coerced — so an ill-formed code is a RangeError regardless of the year's
+        // type (test262 .../from/monthcode-invalid "syntax is validated before year type").
+        TemporalIsoString.RequireWellFormedMonthCode(monthCodeStr, "Temporal.PlainMonthDay");
 
         // A bare month/day with no year resolves against the leap-year reference (1972) so that
         // 02-29 is representable; a supplied year is used to validate/constrain the day instead.

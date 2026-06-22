@@ -636,6 +636,10 @@ public partial class JSTemporalPlainYearMonth : JSObject
         // the overflow option is read (test262 from/options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
         var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainYearMonth");
+        // Validate monthCode *syntax* (well-formedness) as soon as it is read — before the `year`
+        // field below is coerced — so an ill-formed code is a RangeError regardless of the year's
+        // type (test262 .../from/monthcode-invalid "syntax is validated before year type").
+        TemporalIsoString.RequireWellFormedMonthCode(monthCodeStr, "Temporal.PlainYearMonth");
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
         var yearInt = yearValue.IsUndefined ? 0 : ToIntegerWithTruncation(yearValue);

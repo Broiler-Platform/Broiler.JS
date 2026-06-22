@@ -36,9 +36,15 @@ partial class JSDate
 {
     public static long epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
 
-    [JSExport("UTC")]
+    [JSExport("UTC", Length = 7)]
     internal static JSValue UTC(in Arguments a)
     {
+        // `year` is a required argument: when no arguments are supplied it is undefined, whose
+        // ToNumber is NaN, so the time value is NaN (test262 Date/UTC/no-arg). The remaining
+        // components legitimately default (month 0, date 1, the rest 0) when absent.
+        if (a.Length == 0)
+            return JSNumber.NaN;
+
         // Compute the time value with ECMAScript date math (ms since epoch) so the
         // full Date range is supported, including years outside .NET's 1–9999 window.
         // Each argument must be coerced to Number exactly once (Get7Double), then the
