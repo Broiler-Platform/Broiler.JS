@@ -767,7 +767,14 @@ public partial class JSTemporalPlainDateTime : JSObject
         var match = Regex.Match(code, @"^M(\d{2})$");
         if (!match.Success)
             throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
-        return int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+
+        // These ISO-based (12-month) calendar paths reject a well-formed but out-of-range code such
+        // as "M00" / "M13" up front — monthCode is never subject to the overflow option, so it must
+        // throw rather than be constrained.
+        var month = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+        if (month is < 1 or > 12)
+            throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
+        return month;
     }
 
     // A well-formed monthCode is "M" + two digits + an optional leap-month "L" marker; this SYNTAX is
