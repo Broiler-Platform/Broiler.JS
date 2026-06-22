@@ -661,6 +661,19 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     {
         error = null;
 
+        // §10.4.7.1 Immutable prototype exotic objects (e.g. %Object.prototype%):
+        // the change only succeeds when the new value equals the current prototype.
+        if (this is JSObject { } immutableProtoObject && (immutableProtoObject.status & ObjectStatus.ImmutablePrototype) != 0)
+        {
+            var currentProto = prototypeChain?.Object;
+            var unchanged = currentProto == null ? target == NullValue : ReferenceEquals(currentProto, target);
+            if (unchanged)
+                return true;
+
+            error = "Immutable prototype object cannot have its prototype changed";
+            return false;
+        }
+
         if (target == NullValue)
         {
             if (this is JSObject { } nullTargetObject && !nullTargetObject.IsExtensible() && prototypeChain?.Object != null)

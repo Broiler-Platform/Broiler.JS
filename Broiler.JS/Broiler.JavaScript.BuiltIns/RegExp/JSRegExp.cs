@@ -155,31 +155,57 @@ public partial class JSRegExp : JSObject, IJSRegExp
             return "(?:)";
 
         var sb = new StringBuilder(pattern.Length);
+        // Whether the cursor is inside an unescaped character class `[...]`. A bare
+        // `/` only needs escaping outside a class — inside one it is an ordinary
+        // member and must be preserved verbatim (test262 sm/RegExp/escape).
+        var inClass = false;
         for (var i = 0; i < pattern.Length; i++)
         {
             var c = pattern[i];
+
+            // A backslash begins an escape sequence; consume the following code unit
+            // together with it so the escaped character is never reinterpreted. This
+            // keeps an escaped backslash (`\\`) distinct from a backslash that escapes
+            // a following raw line terminator (test262 sm/RegExp/escape).
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                var next = pattern[i + 1];
+                i++;
+
+                // `\<LineTerminator>` (an identity escape of a raw line terminator)
+                // must serialize without a literal line terminator: emit just the
+                // `\n` / `\r` / `\u2028` / `\u2029` escape, which matches the same
+                // code point, instead of keeping the backslash and the raw character.
+                if (TryAppendLineTerminatorEscape(sb, next))
+                    continue;
+
+                sb.Append('\\');
+                if (char.IsSurrogate(next))
+                    AppendUnicodeEscape(sb, next);
+                else
+                    sb.Append(next);
+                continue;
+            }
+
             switch (c)
             {
-                case '/':
-                    if (i > 0 && pattern[i - 1] == '\\')
-                    {
-                        sb.Append('/');
-                        continue;
-                    }
-
+                case '[':
+                    inClass = true;
+                    break;
+                case ']':
+                    inClass = false;
+                    break;
+                case '/' when !inClass:
+                    // A bare forward slash outside a character class must be escaped so
+                    // the serialized source is safe between the delimiting slashes of a
+                    // regular expression literal.
                     sb.Append(@"\/");
                     continue;
-                case '\n':
-                    sb.Append(@"\n");
-                    continue;
-                case '\r':
-                    sb.Append(@"\r");
-                    continue;
-                case '\u2028':
-                case '\u2029':
-                    AppendUnicodeEscape(sb, c);
-                    continue;
             }
+
+            // A bare line terminator likewise cannot appear literally in the source.
+            if (TryAppendLineTerminatorEscape(sb, c))
+                continue;
 
             if (char.IsSurrogate(c))
             {
@@ -191,6 +217,27 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         return sb.ToString();
+    }
+
+    // Appends the escaped form of a line terminator (so the RegExp source never
+    // contains a raw <LF>, <CR>, <LS>, or <PS>). Returns false for any other char.
+    private static bool TryAppendLineTerminatorEscape(StringBuilder sb, char c)
+    {
+        switch (c)
+        {
+            case '\n':
+                sb.Append(@"\n");
+                return true;
+            case '\r':
+                sb.Append(@"\r");
+                return true;
+            case '\u2028':
+            case '\u2029':
+                AppendUnicodeEscape(sb, c);
+                return true;
+            default:
+                return false;
+        }
     }
 
     public string pattern;

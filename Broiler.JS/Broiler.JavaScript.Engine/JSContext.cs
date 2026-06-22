@@ -1455,6 +1455,10 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         this.FastAddValue(objectKey, Object, JSPropertyAttributes.ConfigurableValue);
         ObjectPrototype = ((IJSFunction)Object).Prototype as JSObject;
         ObjectPrototype.BasePrototypeObject = null;
+        // %Object.prototype% is an immutable prototype exotic object (§10.4.7):
+        // attempts to change its [[Prototype]] to anything but null fail
+        // (test262: Object/prototype/setPrototypeOf-with-non-circular-values).
+        ObjectPrototype.MarkImmutablePrototype();
 
         func.BasePrototypeObject = Object;
         FunctionPrototype.BasePrototypeObject = ObjectPrototype;
