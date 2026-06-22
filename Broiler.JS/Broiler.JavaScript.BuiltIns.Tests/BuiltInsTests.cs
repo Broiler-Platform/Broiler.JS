@@ -7611,7 +7611,7 @@ public class BuiltInsTests
     }
 
     [Fact]
-    public void DateTimeFormat_Hour12_True_PicksParityOfLocaleDefault()
+    public void DateTimeFormat_Hour12_True_PicksLocalePreferred12HourCycle()
     {
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
@@ -7621,15 +7621,16 @@ public class BuiltInsTests
               new Intl.DateTimeFormat('fr-FR', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
               new Intl.DateTimeFormat('de-DE', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
               new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
+              new Intl.DateTimeFormat('ja-JP', { hour: 'numeric', hour12: true }).resolvedOptions().hourCycle,
               new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false }).resolvedOptions().hourCycle
             ].join('|');
             """);
 
-        // ECMA-402 resolves hour12 by the parity of the locale's default hour cycle, not
-        // CLDR's "allowed" list: a 0-based default (h23, e.g. fr-FR / de-DE) yields the
-        // 0-based 12-hour cycle h11, while a 1-based default (h12, e.g. en-US) yields h12.
-        // hour12 false yields h23. This matches V8.
-        Assert.Equal("h11|h11|h12|h23", result.ToString());
+        // hour12 true selects the locale's CLDR preferred 12-hour cycle: "h12" everywhere
+        // (fr-FR / de-DE / en-US) except the locales whose day-period clock starts at 0
+        // (ja-JP → "h11"). hour12 false yields h23. This matches V8 and test262
+        // (intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default).
+        Assert.Equal("h12|h12|h12|h11|h23", result.ToString());
     }
 
     [Fact]

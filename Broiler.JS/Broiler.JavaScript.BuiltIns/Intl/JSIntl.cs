@@ -2375,6 +2375,17 @@ public static class JSIntl
         return LanguageSubtag(tag) == "en" ? "h12" : "h23";
     }
 
+    // CLDR <hours> preferred 12-hour cycle: "h" (h12) in almost every locale, but "K" (h11)
+    // in the small set whose day-period clock starts at 0 — Japan (ja / JP). Used when the
+    // hour12 option requests a 12-hour clock.
+    internal static bool Prefers11HourCycle(string tag)
+    {
+        var region = RegionSubtag(tag);
+        if (region != null)
+            return region == "JP";
+        return LanguageSubtag(tag) == "ja";
+    }
+
     private static string LanguageSubtag(string tag)
     {
         if (string.IsNullOrEmpty(tag))
@@ -5197,7 +5208,11 @@ public class JSIntlNumberFormat : JSObject
         // (e.g. KWD's 3) and the generic 0/3 cap are overridden.
         if ((resolved?.Notation ?? "standard") == "compact")
             return (0, 0);
-        if (StyleOption() == "currency")
+        // The currency's CLDR minor-unit digit count is only the default under "standard"
+        // notation. Scientific / engineering notation ignores it and uses the generic 0 … 3
+        // bounds (ECMA-402 SetNumberFormatDigitOptions passes mnfdDefault 0 / mxfdDefault 3
+        // unless style is currency *and* notation is standard).
+        if (StyleOption() == "currency" && (resolved?.Notation ?? "standard") == "standard")
         {
             var cDigits = ResolveCurrency().FractionDigits;
             return (cDigits, cDigits);
@@ -5418,10 +5433,9 @@ public class JSIntlNumberFormat : JSObject
                 result.CreateDataProperty(KeyStrings.GetOrCreate("currencySign"),
                     JSValue.CreateString(@this.CurrencySignOption()));
             }
-            else if (!@this.options[currencyKey].IsUndefined)
-            {
-                result.CreateDataProperty(currencyKey, CanonicalCurrencyValue(@this.options[currencyKey]));
-            }
+            // A currency option supplied without style:"currency" is validated at construction
+            // but is NOT reflected by resolvedOptions (ECMA-402 only emits currency/currencyDisplay/
+            // currencySign for the currency style).
             if (!@this.options[unitKey].IsUndefined)
                 result.CreateDataProperty(unitKey, @this.options[unitKey]);
             // unitDisplay sits with unit in the resolvedOptions table — before the digit
@@ -5795,14 +5809,12 @@ public class JSIntlDateTimeFormat : JSObject
         var hour12 = options?[Hour12Key];
         if (hour12 != null && !hour12.IsUndefined)
         {
-            // hour12 resolves via ECMA-402's symmetric transformation of the locale's
-            // default hour cycle (not CLDR's <hours> "allowed" list): hour12 true picks
-            // the 12-hour cycle keeping the 0-based/1-based parity — h11 when the default
-            // is a 0-based cycle (h11/h23), else h12; hour12 false picks h23 (the common
-            // 24-hour cycle observed by other engines). So fr-FR (h23 default) → h11,
-            // en-US (h12 default) → h12, matching V8.
+            // hour12 picks the locale's preferred clock of the requested kind from CLDR's
+            // <hours> data: hour12 true selects the 12-hour cycle, which is "h12" everywhere
+            // except the few locales (Japanese) whose preferred 12-hour cycle is "h11"; hour12
+            // false selects "h23" (the 24-hour cycle observed by other engines).
             if (hour12.BooleanValue)
-                return hcDefault == "h11" || hcDefault == "h23" ? "h11" : "h12";
+                return JSIntl.Prefers11HourCycle(localeTag) ? "h11" : "h12";
             return "h23";
         }
 
