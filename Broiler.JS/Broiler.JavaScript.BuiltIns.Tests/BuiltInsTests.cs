@@ -7590,8 +7590,10 @@ public class BuiltInsTests
             ].join('|');
             """);
 
-        // CLDR de compact: short suffixes "Tsd.|Mio.|Mrd.|Bio."; long "Tausend|Million(en)|…".
-        Assert.Equal("988 Mio.|2,5 Mio.|1,2 Tsd.|988 Millionen|2,5 Millionen", result.ToString());
+        // CLDR de compact: the SHORT form has no thousands abbreviation (1200 stays "1200")
+        // and joins the million+ suffixes with a NO-BREAK SPACE (U+00A0); the LONG form
+        // abbreviates thousands ("Tausend") and joins with an ordinary space.
+        Assert.Equal("988 Mio.|2,5 Mio.|1200|988 Millionen|2,5 Millionen", result.ToString());
     }
 
     [Fact]
@@ -7605,9 +7607,10 @@ public class BuiltInsTests
             parts.map(p => p.type + ':' + p.value).join('|');
             """);
 
-        // Per spec: compact-formatted "988 Mio." has three parts — integer "988", literal " ",
-        // compact "Mio." — not the five parts a full decimal "987.654.321" would produce.
-        Assert.Equal("integer:988|literal: |compact:Mio.", result.ToString());
+        // Per spec: the German short compact value has three parts — integer "988", a literal
+        // NO-BREAK SPACE (U+00A0), and compact "Mio." — not the five parts a full decimal
+        // "987.654.321" would produce.
+        Assert.Equal("integer:988|literal: |compact:Mio.", result.ToString());
     }
 
     [Fact]

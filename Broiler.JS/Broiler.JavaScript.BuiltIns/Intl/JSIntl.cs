@@ -2068,6 +2068,13 @@ public static class JSIntl
     // The Unicode-extension keys each service uses to negotiate the resolved locale.
     internal static readonly string[] NumberFormatRelevantKeys = ["nu"];
     internal static readonly string[] DateTimeFormatRelevantKeys = ["ca", "hc", "nu"];
+    // The relevant keys minus "hc": used to drop the locale's -u-hc- extension when an
+    // hour12 / hourCycle option overrides it (ResolveLocale only reflects a keyword whose
+    // value actually came from the locale, not one supplied by an option).
+    internal static readonly string[] DateTimeFormatRelevantKeysWithoutHourCycle = ["ca", "nu"];
+
+    internal static string DropHourCycleExtension(string tag)
+        => FilterUnicodeExtensionKeywords(tag, DateTimeFormatRelevantKeysWithoutHourCycle);
     internal static readonly string[] CollatorRelevantKeys = ["co", "kf", "kn"];
 
     // Rebuilds a BCP-47 tag keeping only the "-u-" extension keywords whose key is in
@@ -4696,10 +4703,12 @@ public class JSIntlNumberFormat : JSObject
     private static readonly (int Exp, string Suffix)[] CompactUnitsKo = [(12, "조"), (8, "억"), (4, "만"), (3, "천")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHant = [(12, "兆"), (8, "億"), (4, "萬")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsZhHans = [(12, "兆"), (8, "亿"), (4, "万")];
-    // German compact (CLDR de: short "0 Tsd." / "0 Mio." / "0 Mrd." / "0 Bio."; long
-    // "0 Tausend" / "0 Million(en)" / "0 Milliarde(n)" / "0 Billion(en)"). Both forms
-    // insert a literal space between the number and the suffix.
-    private static readonly (int Exp, string Suffix)[] CompactUnitsDe = [(12, "Bio."), (9, "Mrd."), (6, "Mio."), (3, "Tsd.")];
+    // German compact (CLDR de). The SHORT form has no thousands abbreviation — values below a
+    // million are shown in full (98765 → "98.765") — and starts compacting at 10^6 ("0 Mio." /
+    // "0 Mrd." / "0 Bio."), joining with a NO-BREAK SPACE. The LONG form does abbreviate
+    // thousands ("0 Tausend" / "0 Million(en)" / "0 Milliarde(n)" / "0 Billion(en)") with an
+    // ordinary space.
+    private static readonly (int Exp, string Suffix)[] CompactUnitsDe = [(12, "Bio."), (9, "Mrd."), (6, "Mio.")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsDeLong =
         [(12, "Billionen"), (9, "Milliarden"), (6, "Millionen"), (3, "Tausend")];
 
@@ -4778,9 +4787,12 @@ public class JSIntlNumberFormat : JSObject
         {
             // CLDR compact patterns that include a literal space between the number and the
             // suffix word: English long ("988 million"), and both German forms ("988 Mio." /
-            // "988 Millionen"). CJK suffixes and English short ("988M") have no space.
-            if (ReferenceEquals(units, CompactUnitsEnLong)
-                || ReferenceEquals(units, CompactUnitsDe)
+            // "988 Millionen"). CJK suffixes and English short ("988M") have no space. The
+            // German *short* pattern joins with a NO-BREAK SPACE (U+00A0); the long forms use
+            // an ordinary space.
+            if (ReferenceEquals(units, CompactUnitsDe))
+                parts.Add(("literal", " "));
+            else if (ReferenceEquals(units, CompactUnitsEnLong)
                 || ReferenceEquals(units, CompactUnitsDeLong))
                 parts.Add(("literal", " "));
             parts.Add(("compact", suffix));
@@ -4821,7 +4833,11 @@ public class JSIntlNumberFormat : JSObject
         if (intDigits.Length == 0)
             intDigits = "0";
 
-        var result = new List<(string, string)> { ("integer", intDigits) };
+        // The compact integer is grouped with the resolved (CLDR "min2" by default) grouping —
+        // most compact values are abbreviated to ≤4 digits and stay ungrouped, but a locale that
+        // leaves a range uncompacted (German short: 98765 → "98.765") still groups it.
+        var result = new List<(string, string)>();
+        AppendIntegerParts(result, intDigits);
         if (fracDigits.Length > 0)
         {
             result.Add(("decimal", DecimalSeparator()));
@@ -6505,7 +6521,10 @@ public class JSIntlDateTimeFormat : JSObject
         => options != null && !options[DayPeriodKey].IsUndefined;
 
     private bool UsesHourFormatting()
-        => options != null && !options[HourKey].IsUndefined;
+        => (options != null && !options[HourKey].IsUndefined)
+            // Every timeStyle (full/long/medium/short) renders an hour component, so its
+            // resolvedOptions carries a resolved hourCycle / hour12 just like an explicit hour.
+            || timeStyle != null;
 
     private string DayPeriodStyle()
         => options?[DayPeriodKey]?.StringValue ?? string.Empty;
@@ -6707,6 +6726,10 @@ public class JSIntlDateTimeFormat : JSObject
 
         var resolvedLocale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.DateTimeFormatRelevantKeys);
         (numberingSystem, localeTag) = JSIntl.ResolveNumberingSystem(resolvedLocale, nuOption);
+        // An hour12 or hourCycle option overrides — and so drops — the locale's -u-hc- keyword
+        // from the resolved locale; without such an option the extension's hc value is kept.
+        if (!hour12.IsUndefined || options[HourCycleKey] is { IsUndefined: false })
+            localeTag = JSIntl.DropHourCycleExtension(localeTag);
         locale = CultureInfo.CurrentCulture;
     }
 
