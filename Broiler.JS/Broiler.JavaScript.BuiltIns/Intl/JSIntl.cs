@@ -892,6 +892,7 @@ public static class JSIntl
         // Unicode-extension keyword options.
         SetKeyword(keywords, "ca", ReadTypeOption(options, "calendar", "ca"));
         SetKeyword(keywords, "co", ReadTypeOption(options, "collation", "co"));
+        SetKeyword(keywords, "fw", ReadFirstDayOfWeekOption(options));
         SetKeyword(keywords, "hc", GetOption(options, KeyStrings.GetOrCreate("hourCycle"), ["h11", "h12", "h23", "h24"], false, null));
         SetKeyword(keywords, "kf", GetOption(options, KeyStrings.GetOrCreate("caseFirst"), ["upper", "lower", "false"], false, null));
         var numericOption = options[KeyStrings.GetOrCreate("numeric")];
@@ -1106,6 +1107,33 @@ public static class JSIntl
         var v = options[key];
         return v == null || v.IsUndefined ? null : v.ToString();
     }
+
+    // The firstDayOfWeek option (-u-fw-) per Intl.Locale: coerced to a string, mapped through
+    // WeekdayToString (the ISO day numbers 1..7 — plus the alias 0 — become mon..sun, anything
+    // else passes through), then validated against the Unicode keyword type sequence.
+    private static string ReadFirstDayOfWeekOption(JSObject options)
+    {
+        var value = OptionString(options, KeyStrings.GetOrCreate("firstDayOfWeek"));
+        if (value == null)
+            return null;
+        value = WeekdayToString(value).ToLowerInvariant();
+        if (!UnicodeKeywordTypePattern.IsMatch(value))
+            throw JSEngine.NewRangeError("Invalid firstDayOfWeek option");
+        return value;
+    }
+
+    private static string WeekdayToString(string fw) => fw switch
+    {
+        "1" => "mon",
+        "2" => "tue",
+        "3" => "wed",
+        "4" => "thu",
+        "5" => "fri",
+        "6" => "sat",
+        "7" => "sun",
+        "0" => "sun",
+        _ => fw,
+    };
 
     private static bool IsAllDigitTag(string s)
     {
@@ -3974,8 +4002,10 @@ public sealed class JSIntlLocale : JSObject
         // from WeekInfoOfLocale by a normative ECMA-402 change. Day numbers follow ISO-8601
         // (Monday = 1 … Sunday = 7). CLDR's full per-region data is not bundled, so this uses
         // reasonable defaults (Saturday+Sunday weekend) with a Sunday-first region table.
+        // An explicit -u-fw- keyword (mon..sun) overrides the region-derived default.
         var region = locale.GetRegion();
-        var firstDay = region != null && SundayFirstRegions.Contains(region) ? 7 : 1;
+        var firstDay = WeekdayToNumber(locale.GetUnicodeKeyword("fw"))
+            ?? (region != null && SundayFirstRegions.Contains(region) ? 7 : 1);
 
         var weekend = JSValue.CreateArray();
         weekend.AddArrayItem(JSValue.CreateNumber(6)); // Saturday
@@ -3988,6 +4018,20 @@ public sealed class JSIntlLocale : JSObject
             weekend, JSPropertyAttributes.EnumerableConfigurableValue);
         return info;
     }
+
+    // The ISO-8601 day number (Monday = 1 … Sunday = 7) for a -u-fw- keyword value, or null
+    // when the value is absent or not one of the weekday abbreviations.
+    private static int? WeekdayToNumber(string fw) => fw switch
+    {
+        "mon" => 1,
+        "tue" => 2,
+        "wed" => 3,
+        "thu" => 4,
+        "fri" => 5,
+        "sat" => 6,
+        "sun" => 7,
+        _ => null,
+    };
 
     public static JSValue ToStringPrototype(in Arguments a)
         => JSValue.CreateString(RequireLocale(in a, "toString").tag);

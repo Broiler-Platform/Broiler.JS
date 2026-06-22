@@ -518,8 +518,9 @@ public partial class JSTemporalZonedDateTime : JSObject
         else { precision = digits; incrementNs = TemporalRoundingOptions.Pow10(9 - digits); }
 
         // Round the instant to the requested precision, then resolve the wall clock / offset from the
-        // rounded instant.
-        var rounded = TemporalRoundingOptions.RoundToIncrement(epochNanoseconds, incrementNs, roundingMode);
+        // rounded instant. The epoch count is rounded as if non-negative so the direction never
+        // depends on the sign (toString/negative-zoneddatetime-rounding, toString/rounding-direction).
+        var rounded = TemporalRoundingOptions.RoundToIncrementAsIfPositive(epochNanoseconds, incrementNs, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime.toString: result is out of range");
 
