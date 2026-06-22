@@ -518,8 +518,9 @@ public partial class JSTemporalZonedDateTime : JSObject
         else { precision = digits; incrementNs = TemporalRoundingOptions.Pow10(9 - digits); }
 
         // Round the instant to the requested precision, then resolve the wall clock / offset from the
-        // rounded instant.
-        var rounded = TemporalRoundingOptions.RoundToIncrement(epochNanoseconds, incrementNs, roundingMode);
+        // rounded instant. The epoch count is rounded as if non-negative so the direction never
+        // depends on the sign (toString/negative-zoneddatetime-rounding, toString/rounding-direction).
+        var rounded = TemporalRoundingOptions.RoundToIncrementAsIfPositive(epochNanoseconds, incrementNs, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime.toString: result is out of range");
 
@@ -1453,7 +1454,32 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static bool TimeZoneEquals(string a, string b)
         => a == b || PrimaryTimeZoneIdentifier(a) == PrimaryTimeZoneIdentifier(b);
 
-    private static string PrimaryTimeZoneIdentifier(string id) => Tz.IanaTimeZoneDatabase.GetPrimary(id);
+    internal static string PrimaryTimeZoneIdentifier(string id)
+    {
+        var primary = Tz.IanaTimeZoneDatabase.GetPrimary(id);
+        // AvailableNamedTimeZoneIdentifiers step 5.c: the primary identifier of the UTC/GMT-zero
+        // cluster is "UTC", so e.g. "Etc/GMT", "GMT" and "Etc/Zulu" all compare equal to "UTC".
+        return primary is "Etc/UTC" or "Etc/GMT" or "GMT" ? "UTC" : primary;
+    }
+
+    private static string[] _primaryTimeZoneIdentifiers;
+
+    // AvailablePrimaryTimeZoneIdentifiers: the time-zone identifiers whose [[Identifier]] equals
+    // their [[PrimaryIdentifier]] (a zone, not a backward link), sorted in code-unit order. Backed by
+    // the bundled IANA database, so it naturally includes "UTC" and the offset zones "Etc/GMT±N" while
+    // excluding the UTC/GMT-zero links. Used by Intl.supportedValuesOf("timeZone").
+    internal static IReadOnlyList<string> AvailablePrimaryTimeZoneIdentifiers()
+    {
+        var cached = _primaryTimeZoneIdentifiers;
+        if (cached != null) return cached;
+
+        var names = new List<string>();
+        foreach (var name in Tz.IanaTimeZoneDatabase.AllNames)
+            if (PrimaryTimeZoneIdentifier(name) == name)
+                names.Add(name);
+        names.Sort(StringComparer.Ordinal);
+        return _primaryTimeZoneIdentifiers = names.ToArray();
+    }
 
     // ToTemporalTimeZoneIdentifier: a time-zone slot value supplied as a String is a bare time-zone
     // identifier (UTC, a numeric offset, or an IANA name) or a full Temporal ISO string, in which
@@ -1487,13 +1513,13 @@ public partial class JSTemporalZonedDateTime : JSObject
     // or a named IANA zone. Returns false for anything else rather than throwing.
     private static bool TryCanonicalizeTimeZoneIdentifier(string id, out string canonical)
     {
-        // "UTC" is the canonical identifier for the UTC/GMT-zero cluster: unlike other backward
-        // links (which keep their own name), the exact identifiers "Etc/UTC" and "Etc/GMT" are
-        // normalized to "UTC" per ECMAScript / CLDR (test262 testIntl.js treats both as
-        // non-canonical). An offset-bearing "Etc/GMT+5" is a distinct zone and is left alone below.
-        if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(id, "Etc/UTC", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(id, "Etc/GMT", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
+        // "UTC" is the canonical spelling of the bare UTC zone. The UTC/GMT-zero *links*
+        // ("Etc/UTC", "Etc/GMT", "GMT", "Etc/Zulu", …) are NOT collapsed to "UTC": per the
+        // canonical-tz spec the available identifier is preserved on the instance (and in
+        // Intl.DateTimeFormat's resolvedOptions), with only the *primary* identifier — used for
+        // equality and offsets, see PrimaryTimeZoneIdentifier — resolving to "UTC". They fall
+        // through to the IANA database below, which returns each one case-normalized.
+        if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
         if (TryOffsetTimeZoneIdentifier(id, out var offsetNs)) { canonical = FormatOffset(offsetNs); return true; }
 
         // IANA identifiers (zones and backward-alias links alike) match case-insensitively and are

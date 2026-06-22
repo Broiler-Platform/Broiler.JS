@@ -535,25 +535,27 @@ public partial class JSTemporalPlainDateTime : JSObject
     [JSExport("round", Length = 1)]
     public JSValue Round(in Arguments a)
     {
-        var (unit, increment) = ReadRoundTo(a.GetAt(0));
+        var (unit, increment, roundingMode) = ReadRoundTo(a.GetAt(0));
 
         if (unit == "day")
         {
             var total = TimeNanoseconds();
-            var roundedDays = RoundHalfExpand(total, NanosecondsPerDay) / NanosecondsPerDay;
+            var roundedDays = (long)TemporalRoundingOptions.RoundToIncrement(total, NanosecondsPerDay, roundingMode) / NanosecondsPerDay;
             var epoch = DaysFromCivil(isoYear, isoMonth, isoDay) + roundedDays;
             var (ry, rm, rd) = CivilFromDays(epoch);
-            return new JSTemporalPlainDateTime((int)ry, (int)rm, (int)rd, 0, 0, 0, 0, 0, 0, calendarId, PlainDateTimePrototype);
+            return Create((int)ry, (int)rm, (int)rd, 0, 0, 0, 0, 0, 0, calendarId, PlainDateTimePrototype);
         }
 
         var unitNs = UnitNanoseconds(unit) * increment;
-        var rounded = RoundHalfExpand(TimeNanoseconds(), unitNs);
+        var rounded = (long)TemporalRoundingOptions.RoundToIncrement(TimeNanoseconds(), unitNs, roundingMode);
         var dayspill = rounded / NanosecondsPerDay;
         var wrapped = rounded - dayspill * NanosecondsPerDay;
         var ep = DaysFromCivil(isoYear, isoMonth, isoDay) + dayspill;
         var (cy, cm, cd) = CivilFromDays(ep);
         var (hh, mm, ss, l, mc, nn) = FromTimeNanoseconds(wrapped);
-        return new JSTemporalPlainDateTime((int)cy, (int)cm, (int)cd, hh, mm, ss, l, mc, nn, calendarId, PlainDateTimePrototype);
+        // RoundISODateTime can push the result past the representable range (test262
+        // round/limits); Create performs the ISODateTimeWithinLimits RangeError check.
+        return Create((int)cy, (int)cm, (int)cd, hh, mm, ss, l, mc, nn, calendarId, PlainDateTimePrototype);
     }
 
     [JSExport("equals", Length = 1)]
@@ -622,6 +624,12 @@ public partial class JSTemporalPlainDateTime : JSObject
             wrapped = rounded - dayspill * NanosecondsPerDay;
             var (cy, cm, cd) = CivilFromDays(DaysFromCivil(isoYear, isoMonth, isoDay) + dayspill);
             ry = (int)cy; rm = (int)cm; rd = (int)cd;
+
+            // Rounding can carry the wall clock past the representable range (test262
+            // toString/rounding-edge-of-range): reject an out-of-limits result.
+            var (vh, vmi, vs, vms, vus, vns) = FromTimeNanoseconds(wrapped);
+            if (!IsValidISODateTime(ry, rm, rd, vh, vmi, vs, vms, vus, vns))
+                throw JSEngine.NewRangeError("Temporal.PlainDateTime.toString: result is out of range");
         }
 
         return new JSString(FormatISOString(ry, rm, rd, wrapped, showCalendar, fracDigits, minutePrecision));
@@ -1255,19 +1263,11 @@ public partial class JSTemporalPlainDateTime : JSObject
         _ => 1,
     };
 
-    private static long RoundHalfExpand(long value, long increment)
-    {
-        if (increment <= 1) return value;
-        var quotient = value / increment;
-        var remainder = value - quotient * increment;
-        if (remainder * 2 >= increment) quotient += 1;
-        return quotient * increment;
-    }
-
-    private static (string unit, int increment) ReadRoundTo(JSValue roundTo)
+    private static (string unit, int increment, string roundingMode) ReadRoundTo(JSValue roundTo)
     {
         string smallestUnit;
         var increment = 1;
+        var roundingMode = "halfExpand";
 
         if (roundTo.IsString) smallestUnit = roundTo.ToString();
         else if (roundTo is JSObject obj)
@@ -1277,7 +1277,7 @@ public partial class JSTemporalPlainDateTime : JSObject
             // is validated against the unit, so a bad increment is reported only after every
             // option getter has fired (test262 round/options-read-before-algorithmic-validation).
             increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
-            TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
 
             var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
             if (unitValue.IsUndefined)
@@ -1303,7 +1303,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         var maximum = smallestUnit == "day" ? 1 : TemporalRoundingOptions.MaximumRoundingIncrement(smallestUnit);
         TemporalRoundingOptions.ValidateRoundingIncrement(increment, maximum, inclusive: smallestUnit == "day");
 
-        return (smallestUnit, increment);
+        return (smallestUnit, increment, roundingMode);
     }
 
     private static long DaysFromCivil(long y, long m, long d)

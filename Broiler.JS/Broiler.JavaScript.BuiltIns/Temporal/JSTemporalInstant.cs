@@ -263,7 +263,7 @@ public partial class JSTemporalInstant : JSObject
         TemporalRoundingOptions.ValidateRoundingIncrement(increment, dayUnits, inclusive: true);
 
         var unitNs = (BigInteger)UnitNanoseconds(smallestUnit) * increment;
-        var rounded = TemporalRoundingOptions.RoundToIncrement(epochNanoseconds, unitNs, roundingMode);
+        var rounded = TemporalRoundingOptions.RoundToIncrementAsIfPositive(epochNanoseconds, unitNs, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.Instant.round: result is out of range");
 
@@ -335,7 +335,7 @@ public partial class JSTemporalInstant : JSObject
         else if (digits == -1) { precision = -1; incrementNs = 1; }
         else { precision = digits; incrementNs = TemporalRoundingOptions.Pow10(9 - digits); }
 
-        var rounded = TemporalRoundingOptions.RoundToIncrement(epochNanoseconds, incrementNs, roundingMode);
+        var rounded = TemporalRoundingOptions.RoundToIncrementAsIfPositive(epochNanoseconds, incrementNs, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.Instant.toString: result is out of range");
 

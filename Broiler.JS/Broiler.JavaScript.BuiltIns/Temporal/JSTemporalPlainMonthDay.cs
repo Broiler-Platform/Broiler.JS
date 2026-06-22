@@ -117,6 +117,14 @@ public partial class JSTemporalPlainMonthDay : JSObject
         var hasYear = !yearValue.IsUndefined;
         var yearInt = hasYear ? ToIntegerWithTruncation(yearValue) : 0;
 
+        // Only the ISO 8601 calendar can resolve a month-day from a bare numeric month (its months
+        // are year-independent). For every other calendar a numeric month replaces the inherited
+        // monthCode and cannot be resolved without a monthCode or a year, so {month} alone is a
+        // TypeError (test262 PlainMonthDay/prototype/with/fields-missing-properties).
+        if (calendarId != "iso8601" && hasMonth && monthCodeStr == null && !hasYear)
+            throw JSEngine.NewTypeError(
+                "Temporal.PlainMonthDay.prototype.with: a numeric month for a non-ISO calendar requires monthCode or year");
+
         if (NonIso)
         {
             var (curCode, curDay) = TemporalNonIso.MonthDayFields(calendarId, referenceISOYear, isoMonth, isoDay);

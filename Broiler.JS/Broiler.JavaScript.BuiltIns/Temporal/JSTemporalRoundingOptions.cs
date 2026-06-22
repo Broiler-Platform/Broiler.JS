@@ -215,4 +215,33 @@ internal static class TemporalRoundingOptions
 
         return quotient * increment;
     }
+
+    // RoundNumberToIncrementAsIfPositive: rounds toward the two surrounding multiples as though the
+    // value were non-negative, so the direction of "floor"/"trunc" (down, toward the Big Bang) and
+    // "ceil"/"expand" (up) never depends on the sign. Temporal.Instant and Temporal.ZonedDateTime
+    // round an absolute epoch-nanosecond count this way (test262 .../rounding-direction).
+    internal static BigInteger RoundToIncrementAsIfPositive(BigInteger value, BigInteger increment, string roundingMode)
+    {
+        var quotient = BigInteger.DivRem(value, increment, out var remainder);
+        if (remainder == 0) return value;
+
+        // Floor the quotient so 0 < remainder < increment (the lower surrounding multiple).
+        if (remainder < 0) { quotient -= 1; remainder += increment; }
+        var rem2 = remainder * 2;
+
+        var roundUp = roundingMode switch
+        {
+            "trunc" or "floor" => false,
+            "expand" or "ceil" => true,
+            "halfExpand" or "halfCeil" => rem2 >= increment,
+            "halfTrunc" or "halfFloor" => rem2 > increment,
+            "halfEven" => rem2 > increment || (rem2 == increment && !quotient.IsEven),
+            _ => rem2 >= increment,
+        };
+
+        if (roundUp)
+            quotient += 1;
+
+        return quotient * increment;
+    }
 }
