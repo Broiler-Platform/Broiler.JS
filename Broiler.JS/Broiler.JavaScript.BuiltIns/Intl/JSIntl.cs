@@ -745,12 +745,13 @@ public static class JSIntl
         ["imperial"] = "uksystem",
     };
 
-    // The Unicode boolean keys (UTS #35 bcp47/collation.xml + bcp47/transform.xml): their
-    // "yes"/"no" type-values canonicalize to "true"/"false", and a canonical "true" is
-    // dropped from the tag (the bare key implies true).
+    // The Unicode boolean keys (UTS #35 bcp47/collation.xml): only these keys declare a
+    // "true" type with a "yes" alias, so only for them does "yes" canonicalize to "true"
+    // (and a canonical "true" is then dropped — the bare key implies true). Other "k*" keys
+    // such as ka/kf/kr/ks/kv take "yes" as an ordinary type value that must be preserved.
     private static readonly HashSet<string> BooleanUnicodeKeywordKeys = new(StringComparer.Ordinal)
     {
-        "kb", "kc", "kh", "kk", "kn", "kv",
+        "kb", "kc", "kh", "kk", "kn",
     };
 
     // Collation types sanctioned by CLDR for a "co" keyword. "standard" and "search" are
@@ -782,6 +783,30 @@ public static class JSIntl
     // type — the grammar the calendar / numberingSystem options must satisfy.
     internal static bool IsWellFormedUnicodeKeywordType(string value)
         => !string.IsNullOrEmpty(value) && UnicodeKeywordTypePattern.IsMatch(value.ToLowerInvariant());
+
+    // CanonicalizeUnicodeLocaleId restricted to the extension-free base name (language,
+    // script, region, variants): applies the regular-grandfathered replacement and the
+    // language/region/variant subtag aliases. Used by ApplyOptionsToTag to re-canonicalize a
+    // base name reassembled from Locale option overrides.
+    private static string CanonicalizeBaseName(string baseName)
+    {
+        if (RegularGrandfatheredMappings.TryGetValue(baseName, out var preferred))
+            return preferred;
+
+        var secondDash = baseName.IndexOf('-');
+        if (secondDash > 0)
+        {
+            var thirdDash = baseName.IndexOf('-', secondDash + 1);
+            if (thirdDash > 0)
+            {
+                var prefix = baseName[..thirdDash];
+                if (RegularGrandfatheredMappings.TryGetValue(prefix, out var prefixPreferred))
+                    return ApplySubtagAliases(CanonicalizeLanguageTagCase(prefixPreferred + baseName[thirdDash..]));
+            }
+        }
+
+        return CanonicalizeMainTagVariants(ApplySubtagAliases(baseName));
+    }
 
     // InitializeLocale steps 12-30: apply the language/script/region options and the Unicode-extension
     // keyword options to the canonical tag, then re-emit it with the "-u-" keywords canonicalized
@@ -873,11 +898,17 @@ public static class JSIntl
         SetKeyword(keywords, "kn", numericOption.IsUndefined ? null : (numericOption.BooleanValue ? "true" : "false"));
         SetKeyword(keywords, "nu", ReadTypeOption(options, "numberingSystem", "nu"));
 
-        // Re-emit. The "-u-" keywords are sorted by key and their values canonicalized.
-        var sb = new StringBuilder(language);
-        if (script != null) sb.Append('-').Append(script);
-        if (region != null) sb.Append('-').Append(region);
-        foreach (var v in variants) sb.Append('-').Append(v);
+        // Re-emit. ApplyOptionsToTag finishes by re-canonicalizing the assembled tag, so an
+        // option combination that forms a grandfathered tag (e.g. language "cel" + variant
+        // "gaulish" => "cel-gaulish") is replaced by its preferred value ("xtg"), and any
+        // deprecated language/region subtag introduced by an option is de-aliased.
+        var baseName = new StringBuilder(language);
+        if (script != null) baseName.Append('-').Append(script);
+        if (region != null) baseName.Append('-').Append(region);
+        foreach (var v in variants) baseName.Append('-').Append(v);
+
+        // The "-u-" keywords are sorted by key and their values canonicalized.
+        var sb = new StringBuilder(CanonicalizeBaseName(baseName.ToString()));
 
         if (attributes.Count > 0 || keywords.Count > 0)
         {
@@ -915,11 +946,17 @@ public static class JSIntl
     private static readonly Dictionary<string, string> SubdivisionValueAliases = new(StringComparer.Ordinal)
     {
         ["no23"] = "no50",
+        ["cn11"] = "cnbj",
+        ["cz10a"] = "cz110",
         ["fra"] = "frges",
         ["frb"] = "frbre",
         ["frc"] = "frcvl",
         ["frd"] = "frbfc",
         ["fre"] = "frbre",
+        ["frg"] = "frges",
+        // A multi-region replacement list ("lud" -> "lucl ludi lurd luvd luwi") canonicalizes
+        // to the first entry.
+        ["lud"] = "lucl",
     };
 
     // CLDR timezone aliases (supplemental/metaZones.xml / windowsZones — used here as the
@@ -931,6 +968,11 @@ public static class JSIntl
         ["cnckg"] = "cnsha",
         ["aqams"] = "nzakl",
         ["cnhrb"] = "cnsha",
+        ["eire"] = "iedub",
+        ["est"] = "papty",
+        ["gmt0"] = "gmt",
+        ["uct"] = "utc",
+        ["zulu"] = "utc",
     };
 
     private static string CanonicalizeKeywordValue(string key, string value)
@@ -1329,9 +1371,13 @@ public static class JSIntl
 
         if (p < payload.Count && IsLanguageSubtag(payload[p]))
         {
-            canonical.Add(payload[p]); p++;
-            if (p < payload.Count && IsScriptSubtag(payload[p])) { canonical.Add(payload[p]); p++; }
-            if (p < payload.Count && IsRegionSubtag(payload[p])) { canonical.Add(payload[p]); p++; }
+            // The tlang (language[-script][-region]) is canonicalized like a normal language
+            // tag — deprecated language/region subtags are replaced (e.g. "iw" -> "he") — while
+            // staying lowercase, since the whole transform extension is lowercase.
+            var head = new List<string> { payload[p] }; p++;
+            if (p < payload.Count && IsScriptSubtag(payload[p])) { head.Add(payload[p]); p++; }
+            if (p < payload.Count && IsRegionSubtag(payload[p])) { head.Add(payload[p]); p++; }
+            canonical.AddRange(ApplySubtagAliases(string.Join("-", head)).ToLowerInvariant().Split('-'));
 
             var variants = new List<string>();
             while (p < payload.Count && IsVariantSubtag(payload[p]))
@@ -1360,6 +1406,12 @@ public static class JSIntl
             }
             if (values.Count == 0)
                 return null;
+            // Deprecated tfield values are replaced by their preferred value (UTS #35
+            // bcp47/transform_*.xml, e.g. the "m0" key's "names" -> "prprname").
+            if (TransformedFieldValueAliases.TryGetValue(key, out var valueAliases))
+                for (var v = 0; v < values.Count; v++)
+                    if (valueAliases.TryGetValue(values[v], out var preferred))
+                        values[v] = preferred;
             fields.Add((key, values));
         }
         fields.Sort((a, b) => System.StringComparer.Ordinal.Compare(a.Key, b.Key));
@@ -1371,6 +1423,15 @@ public static class JSIntl
 
         return canonical;
     }
+
+    // Bcp47 transform-extension tfield value aliases (UTS #35 bcp47/transform_*.xml type
+    // "deprecated"/"preferred" entries), keyed by tkey. Only the entries test262 exercises
+    // are listed; an unrecognized value passes through unchanged.
+    private static readonly Dictionary<string, Dictionary<string, string>> TransformedFieldValueAliases =
+        new(StringComparer.Ordinal)
+    {
+        ["m0"] = new(StringComparer.Ordinal) { ["names"] = "prprname" },
+    };
 
     // Bcp47 language subtag aliases (CLDR supplemental languageAlias, reason="deprecated").
     // The lowercase deprecated tag maps to its single preferred language subtag — these are
