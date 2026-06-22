@@ -17,6 +17,32 @@ partial class FastCompiler
     private static readonly MethodInfo GetOrCreateTemplateObjectMethod = typeof(JSObject).GetMethod("GetOrCreateTemplateObject", BindingFlags.Static | BindingFlags.NonPublic)
         ?? throw new InvalidOperationException("JSObject.GetOrCreateTemplateObject not found");
 
+    // Map <CR> and <CRLF> line terminators in a raw template segment to a single <LF>, per the
+    // TRV (template raw value) grammar. Other characters — including <LS>/<PS> — are unchanged.
+    private static string NormalizeTemplateLineTerminators(string r)
+    {
+        if (r.IndexOf('\r') < 0)
+            return r;
+
+        var sb = new System.Text.StringBuilder(r.Length);
+        for (int i = 0; i < r.Length; i++)
+        {
+            char c = r[i];
+            if (c == '\r')
+            {
+                sb.Append('\n');
+                if (i + 1 < r.Length && r[i + 1] == '\n')
+                    i++;
+            }
+            else
+            {
+                sb.Append(c);
+            }
+        }
+
+        return sb.ToString();
+    }
+
     protected override YExpression VisitTaggedTemplateExpression(AstTaggedTemplateExpression template)
     {
         var callee = template.Tag;
@@ -53,6 +79,11 @@ partial class FastCompiler
                     else if (r.EndsWith("`"))
                         r = r.Substring(0, r.Length - 1);
 
+                    // ES TRV normalization: <CR> and <CRLF> in the raw template text both map to
+                    // a single <LF> (so `String.raw` and the `.raw` array never expose a carriage
+                    // return). <LS>/<PS> are preserved.
+                    r = NormalizeTemplateLineTerminators(r);
+
                     unchecked
                     {
                         foreach (var c in r)
@@ -77,8 +108,11 @@ partial class FastCompiler
         }
 
         // replace first node...
+        // §13.2.8.4 GetTemplateObject freezes the template object, so its "raw" property is a
+        // non-writable, non-enumerable, non-configurable data property (ReadonlyValue) — not an
+        // enumerable/configurable one (test262 tagged-template/template-object).
         var rawArray = YExpression.Call(null, FreezeObjectMethod, JSArrayBuilder.New(raw));
-        parts.Add(new YElementInit(JSObjectBuilder._FastAddValueKeyString, KeyOfName("raw"), rawArray, JSPropertyAttributesBuilder.EnumerableConfigurableValue));
+        parts.Add(new YElementInit(JSObjectBuilder._FastAddValueKeyString, KeyOfName("raw"), rawArray, JSPropertyAttributesBuilder.ReadonlyValue));
 
         var unfrozenArray = JSArrayBuilder.New(parts);
 

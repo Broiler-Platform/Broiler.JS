@@ -201,13 +201,18 @@ partial class FastCompiler
 
         var bodyListItems = new Sequence<YExpression>
         {
+            // IteratorStep / IteratorValue (performed by MoveNext, which reads the result's
+            // `value`) abrupt completions must NOT close the iterator — only the binding and
+            // the body do (test262 for-of/iterator-next-result-value-attr-error). Mark the
+            // iterator "done" while stepping and reading the value so a throw from MoveNext
+            // skips the finally/catch close, then clear it once the value is in hand.
+            YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
             // When MoveNext returns false the iterator finished normally;
-            // mark it done so finally does NOT call return().
+            // leave it marked done so finally does NOT call return().
             YExpression.IfThen(
                 YExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)),
-                YExpression.Block(
-                    YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                    YExpression.Goto(s.Break)))
+                YExpression.Goto(s.Break)),
+            YExpression.Assign(iterDoneVar, YExpression.Constant(false))
         };
 
         if (forOfStatement.IsAwait)

@@ -969,6 +969,17 @@ public class FastScanner
                 if (ScanEscaped(ch, t, deferInvalid: true))
                     continue;
 
+                if (ch == '\r')
+                {
+                    // ES LineTerminatorSequence normalization: a bare <CR> and a <CRLF> pair
+                    // both contribute a single <LF> to the cooked (TV) template value.
+                    // (<LS> U+2028 / <PS> U+2029 are NOT normalized and fall through below.)
+                    t.Append('\n');
+                    if (Next() == '\n')
+                        Consume(); // step onto the LF so the CRLF is consumed as one sequence
+                    continue;
+                }
+
                 t.Append(ch);
             } while (true);
         }
