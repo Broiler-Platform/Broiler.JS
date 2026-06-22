@@ -607,7 +607,13 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             // `new` performs strict property [[Set]] semantics (the runtime strict
             // flag is read by JSValue's set accessors through IsStrictModeEnabled).
             using (JSEngine.EnterStrictMode(IsStrictMode))
-                r = f(a1) ?? JSUndefined.Value;
+                // A constructor body ending in `return g()` produces a JSTailCall sentinel under
+                // BROILER_SCRIPT_HOST (the proper-tail-call trampoline that [[Call]] unwraps in its
+                // loop). [[Construct]] invokes the delegate directly, so it must resolve the sentinel
+                // to g()'s real value before the "explicit object return vs new instance" decision —
+                // otherwise the raw JSTailCall object leaks out (e.g. `new (function(){return {a:1}})().a`
+                // was undefined). Mirrors InvokeCallback.
+                r = JSTailCall.Resolve(f(a1) ?? JSUndefined.Value);
         }
         finally
         {
