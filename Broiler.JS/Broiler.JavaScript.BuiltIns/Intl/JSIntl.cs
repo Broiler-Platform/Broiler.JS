@@ -1450,11 +1450,15 @@ public static class JSIntl
 
     // CLDR supplemental languageAlias entries that, after replacing the language subtag,
     // also fill in a default script subtag — but only when no script is already present
-    // (e.g. "sh" -> "sr-Latn", but "sh-Cyrl" -> "sr-Cyrl").
-    private static readonly Dictionary<string, (string Language, string DefaultScript)> ComplexLanguageAliases =
+    // (e.g. "sh" -> "sr-Latn", but "sh-Cyrl" -> "sr-Cyrl"). A complex alias may instead carry a
+    // default *region* (e.g. "cnr" -> "sr-ME", but "cnr-BA" -> "sr-BA"); at most one of
+    // DefaultScript / DefaultRegion is non-null, and it is only inserted when the tag does not
+    // already carry a subtag of that kind.
+    private static readonly Dictionary<string, (string Language, string DefaultScript, string DefaultRegion)> ComplexLanguageAliases =
         new(StringComparer.Ordinal)
     {
-        ["sh"] = ("sr", "Latn"),
+        ["sh"] = ("sr", "Latn", null),
+        ["cnr"] = ("sr", null, "ME"),
     };
 
     // Region replacements selected by the tag's script subtag (CLDR territoryAlias "overlong"
@@ -1513,16 +1517,22 @@ public static class JSIntl
         if (ComplexLanguageAliases.TryGetValue(language, out var complex))
         {
             subtags[0] = complex.Language;
-            if (!hasScript)
+            if (complex.DefaultScript != null && !hasScript)
             {
                 // Splice the default script in between the (new) language and the rest.
-                var widened = new string[subtags.Length + 1];
-                widened[0] = subtags[0];
-                widened[1] = complex.DefaultScript;
-                for (var i = 1; i < subtags.Length; i++)
-                    widened[i + 1] = subtags[i];
-                subtags = widened;
+                subtags = SpliceSubtag(subtags, 1, complex.DefaultScript);
                 hasScript = true;
+            }
+            else if (complex.DefaultRegion != null)
+            {
+                // Splice the default region (after the language, and the script if present) only
+                // when the tag has no region of its own.
+                var insertAt = hasScript ? 2 : 1;
+                var hasRegion = insertAt < subtags.Length
+                    && ((subtags[insertAt].Length == 2 && IsAllAlpha(subtags[insertAt]))
+                        || (subtags[insertAt].Length == 3 && IsAllDigitTag(subtags[insertAt])));
+                if (!hasRegion)
+                    subtags = SpliceSubtag(subtags, insertAt, complex.DefaultRegion);
             }
         }
         else if (SimpleLanguageAliases.TryGetValue(language, out var simple))
@@ -1552,6 +1562,19 @@ public static class JSIntl
         }
 
         return string.Join("-", subtags);
+    }
+
+    // Returns a copy of <paramref name="subtags"/> with <paramref name="value"/> inserted at
+    // <paramref name="index"/> (shifting the remaining subtags right).
+    private static string[] SpliceSubtag(string[] subtags, int index, string value)
+    {
+        var widened = new string[subtags.Length + 1];
+        for (var i = 0; i < index; i++)
+            widened[i] = subtags[i];
+        widened[index] = value;
+        for (var i = index; i < subtags.Length; i++)
+            widened[i + 1] = subtags[i];
+        return widened;
     }
 
     // CanonicalizeUnicodeLocaleId case folding (UTS #35 §3.2.1): the language
