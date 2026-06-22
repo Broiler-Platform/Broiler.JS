@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Broiler.JavaScript.Ast.Patterns;
@@ -15,9 +15,9 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    private YExpression Scoped(FastFunctionScope scope, IFastEnumerable<YExpression> body)
+    private BExpression Scoped(FastFunctionScope scope, IFastEnumerable<BExpression> body)
     {
-        var list = new Sequence<YExpression>();
+        var list = new Sequence<BExpression>();
         list.AddRange(scope.InitList);
         list.AddRange(body);
 
@@ -25,16 +25,16 @@ partial class FastCompiler
             throw new InvalidOperationException();
 
         if (!list.Any())
-            return YExpression.Empty;
+            return BExpression.Empty;
 
-        var r = YExpression.Block(scope.VariableParameters.AsSequence(), list);
+        var r = BExpression.Block(scope.VariableParameters.AsSequence(), list);
 
         if (scope.HasDisposable)
         {
             list =
             [
                 // create new disposable via factory delegate ...
-                YExpression.Assign(scope.Disposable,
+                BExpression.Assign(scope.Disposable,
                     NewLambdaExpression.StaticCallExpression<IJSDisposableStack>(() => () => IJSDisposableStack.New()))
             ];
 
@@ -47,7 +47,7 @@ partial class FastCompiler
                 // `using` scope disposes synchronously (no await), which is spec-correct and
                 // avoids a Yield inside a try/finally nested in a loop (not yet lowerable by
                 // the async state-machine rewrite).
-                list.Add(YExpression.TryFinally(r, YExpression.Yield(dispose)));
+                list.Add(BExpression.TryFinally(r, BExpression.Yield(dispose)));
             }
             else
             {
@@ -59,22 +59,22 @@ partial class FastCompiler
                 var pe = scope.CreateException("#usingBodyError");
                 var seed = d.CallExpression<IJSDisposableStack, Exception, JSValue>(
                     () => (j, e) => j.SeedPendingError(e), pe.Expression);
-                var guardedBody = YExpression.TryCatch(r, YExpression.Catch(pe.Variable, seed));
-                list.Add(YExpression.TryFinally(guardedBody, dispose));
+                var guardedBody = BExpression.TryCatch(r, BExpression.Catch(pe.Variable, seed));
+                list.Add(BExpression.TryFinally(guardedBody, dispose));
 
-                return YExpression.Block(new Sequence<YParameterExpression> { scope.Disposable, pe.Variable }, list);
+                return BExpression.Block(new Sequence<BParameterExpression> { scope.Disposable, pe.Variable }, list);
             }
 
-            return YExpression.Block(new Sequence<YParameterExpression> { scope.Disposable }, list);
+            return BExpression.Block(new Sequence<BParameterExpression> { scope.Disposable }, list);
         }
 
         return r;
     }
 
 
-    protected override YExpression VisitProgram(AstProgram program)
+    protected override BExpression VisitProgram(AstProgram program)
     {
-        var blockList = new Sequence<YExpression>(program.Statements.Count);
+        var blockList = new Sequence<BExpression>(program.Statements.Count);
         ref var hoistingScope = ref program.HoistingScope;
         var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
         var lexicalBindings = CollectTopLevelLexicalBindings(program.Statements);
@@ -205,8 +205,8 @@ partial class FastCompiler
         // flows into it; statements that complete empty leave it untouched. This is
         // what makes `eval('function f(){}{x:42};')` evaluate to 42 rather than the
         // trailing empty statement's undefined.
-        var completionVar = YExpression.Variable(typeof(JSValue), "#programCompletion");
-        blockList.Add(YExpression.Assign(completionVar, JSUndefinedBuilder.Value));
+        var completionVar = BExpression.Variable(typeof(JSValue), "#programCompletion");
+        blockList.Add(BExpression.Assign(completionVar, JSUndefinedBuilder.Value));
 
         // Publish the script's top-level lexical bindings (created above, still in their TDZ) into
         // the global lexical environment before any statement runs, so an indirect eval invoked
@@ -248,8 +248,8 @@ partial class FastCompiler
         }
 
         blockList.Add(completionVar);
-        var r = YExpression.Block(
-            new Sequence<YParameterExpression> { completionVar },
+        var r = BExpression.Block(
+            new Sequence<BParameterExpression> { completionVar },
             Scoped(scope, blockList));
 
         scope.Dispose();

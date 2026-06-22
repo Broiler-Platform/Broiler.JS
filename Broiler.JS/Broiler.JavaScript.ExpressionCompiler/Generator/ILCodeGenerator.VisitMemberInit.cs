@@ -7,7 +7,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitMemberInit(YMemberInitExpression memberInitExpression)
+    protected override CodeInfo VisitMemberInit(BMemberInitExpression memberInitExpression)
     {
         Visit(memberInitExpression.Target);
         var be = memberInitExpression.Bindings.GetFastEnumerator();
@@ -16,7 +16,7 @@ public partial class ILCodeGenerator
             switch (b.BindingType)
             {
                 case BindingType.MemberAssignment:
-                    var ma = b as YMemberAssignment;
+                    var ma = b as BMemberAssignment;
                     il.Emit(OpCodes.Dup);
                     Visit(ma.Value);
                     switch (b.Member)
@@ -45,7 +45,7 @@ public partial class ILCodeGenerator
                             throw new NotImplementedException();
                     }
 
-                    var la = b as YMemberElementInit;
+                    var la = b as BMemberElementInit;
                     foreach(var ei in la.Elements)
                     {
                         il.Emit(OpCodes.Dup);
@@ -60,7 +60,7 @@ public partial class ILCodeGenerator
                     break;
                 case BindingType.ElementInit:
                     il.Emit(OpCodes.Dup);
-                    var el = b as YElementInit;
+                    var el = b as BElementInit;
                     {
                         var en = el.Arguments.GetFastEnumerator();
                         while(en.MoveNext(out var item))

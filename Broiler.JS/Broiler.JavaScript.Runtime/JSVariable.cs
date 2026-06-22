@@ -1,10 +1,10 @@
-using Broiler.JavaScript.Ast.Misc;
+﻿using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Storage;
 using System;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 
 namespace Broiler.JavaScript.Runtime;
 

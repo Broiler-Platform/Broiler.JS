@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
@@ -155,7 +155,7 @@ partial class FastCompiler
             => classStatement;
     }
 
-    protected override YExpression VisitIdentifier(AstIdentifier identifier) => VisitIdentifier(identifier, true);
+    protected override BExpression VisitIdentifier(AstIdentifier identifier) => VisitIdentifier(identifier, true);
 
     private static bool IsScopeInsideWithBoundary(FastFunctionScope declarationScope, FastFunctionScope boundary)
     {
@@ -198,7 +198,7 @@ partial class FastCompiler
         return false;
     }
 
-    private YExpression VisitIdentifierReference(AstIdentifier identifier)
+    private BExpression VisitIdentifierReference(AstIdentifier identifier)
     {
         if (identifier.Name.Equals("arguments")
             && scope.Top.Function?.IsArrowFunction == true)
@@ -218,7 +218,7 @@ partial class FastCompiler
         return JSContextBuilder.Index(KeyOfName(identifier.Name));
     }
 
-    private YExpression VisitIdentifier(AstIdentifier identifier, bool throwIfMissing)
+    private BExpression VisitIdentifier(AstIdentifier identifier, bool throwIfMissing)
     {
         if (identifier.Name.Equals("undefined"))
             return JSUndefinedBuilder.Value;
@@ -289,11 +289,11 @@ partial class FastCompiler
                 var argumentsKey = KeyOfName(identifier.Name);
                 var argumentsBinding = MaterializeArgumentsBinding().Expression;
                 using var withObjectTemp = scope.Top.GetTempVariable(typeof(JSObject));
-                var hasWithObject = YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject)));
-                return YExpression.Block(
-                    new Sequence<YParameterExpression> { withObjectTemp.Variable },
-                    YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(argumentsKey)),
-                    YExpression.Condition(
+                var hasWithObject = BExpression.NotEqual(withObjectTemp.Expression, BExpression.Constant(null, typeof(JSObject)));
+                return BExpression.Block(
+                    new Sequence<BParameterExpression> { withObjectTemp.Variable },
+                    BExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(argumentsKey)),
+                    BExpression.Condition(
                         hasWithObject,
                         JSValueBuilder.Index(withObjectTemp.Expression, argumentsKey),
                         argumentsBinding,
@@ -346,28 +346,28 @@ partial class FastCompiler
                 parameters.Add(parameter);
 
             var parameterCount = parameters.Count;
-            var mappedParameters = new YExpression[parameterCount];
+            var mappedParameters = new BExpression[parameterCount];
             var seenNames = new HashSet<string>();
 
             for (var i = parameterCount - 1; i >= 0; i--)
             {
                 if (parameters[i].Identifier is not AstIdentifier parameterIdentifier)
                 {
-                    mappedParameters[i] = YExpression.Constant(null, typeof(JSVariable));
+                    mappedParameters[i] = BExpression.Constant(null, typeof(JSVariable));
                     continue;
                 }
 
                 var parameterName = parameterIdentifier.Name.Value;
                 if (!seenNames.Add(parameterName))
                 {
-                    mappedParameters[i] = YExpression.Constant(null, typeof(JSVariable));
+                    mappedParameters[i] = BExpression.Constant(null, typeof(JSVariable));
                     continue;
                 }
 
                 mappedParameters[i] = functionScope.GetVariable(parameterIdentifier.Name).Variable;
             }
 
-            argumentsObject = JSArgumentsBuilder.NewMapped(functionScope.ArgumentsExpression, YExpression.NewArrayInit(typeof(JSVariable), mappedParameters));
+            argumentsObject = JSArgumentsBuilder.NewMapped(functionScope.ArgumentsExpression, BExpression.NewArrayInit(typeof(JSVariable), mappedParameters));
         }
 
         return functionScope.CreateVariable("arguments", argumentsObject);

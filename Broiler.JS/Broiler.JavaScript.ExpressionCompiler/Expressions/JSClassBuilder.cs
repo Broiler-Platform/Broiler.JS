@@ -1,4 +1,4 @@
-﻿using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+﻿using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 using System;
 using System.Reflection;
 
@@ -40,11 +40,11 @@ public static class JSClassBuilder
     private const string AddConstructorName = "AddConstructor";
     private const string ResolveSuperclassPrototypeName = "ResolveSuperclassPrototype";
 
-    public static YElementInit AddConstructor(Expression exp) => Expression.ElementInit(_addConstructor, exp);
+    public static BElementInit AddConstructor(Expression exp) => Expression.ElementInit(_addConstructor, exp);
 
     public static Expression ResolveSuperclassPrototype(Expression exp) => Expression.Call(null, _resolveSuperclassPrototype, exp);
 
-    public static YNewExpression New(Expression constructor, Expression super, string name, string code = "") =>
+    public static BNewExpression New(Expression constructor, Expression super, string name, string code = "") =>
         Expression.New(_ctor,
             constructor ?? Expression.Null, super ?? Expression.Null, Expression.Constant(name), Expression.Constant(code));
 }

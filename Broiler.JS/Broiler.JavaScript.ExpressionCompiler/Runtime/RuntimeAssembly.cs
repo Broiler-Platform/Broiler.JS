@@ -9,7 +9,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Runtime;
 public static class RuntimeAssembly
 {
 
-    public static object Compile(this YLambdaExpression exp)
+    public static object Compile(this BLambdaExpression exp)
     {
         LambdaRewriter.Rewrite(exp);
         exp = exp.WithThis(typeof(Closures));
@@ -26,7 +26,7 @@ public static class RuntimeAssembly
         return method.CreateDelegate(exp.Type, c);
     }
 
-    public static T Compile<T>(this YExpression<T> exp)
+    public static T Compile<T>(this BExpression<T> exp)
     {
         LambdaRewriter.Rewrite(exp);
         exp = exp.WithThis<T>(typeof(Closures));
@@ -50,7 +50,7 @@ public static class RuntimeAssembly
 
 
     internal static (DynamicMethod, string il, string exp) CompileToBoundDynamicMethod(
-        this YLambdaExpression exp, Type boundType = null, IMethodBuilder methodBuilder = null)
+        this BLambdaExpression exp, Type boundType = null, IMethodBuilder methodBuilder = null)
     {
         // create closure...
 
@@ -74,10 +74,10 @@ public static class RuntimeAssembly
 
     }
 
-    public static T CompileWithNestedLambdas<T>(this YExpression<T> expression)
+    public static T CompileWithNestedLambdas<T>(this BExpression<T> expression)
     {
         var repository = new MethodRepository();
-        var outerLambda = YExpression.InstanceLambda<Func<T>>(expression.Name + "_outer", expression, YExpression.Parameter(typeof(Closures)), []) as YLambdaExpression;
+        var outerLambda = BExpression.InstanceLambda<Func<T>>(expression.Name + "_outer", expression, BExpression.Parameter(typeof(Closures)), []) as BLambdaExpression;
         LambdaRewriter.Rewrite(outerLambda);
         var runtimeMethodBuilder = new RuntimeMethodBuilder(repository);
 

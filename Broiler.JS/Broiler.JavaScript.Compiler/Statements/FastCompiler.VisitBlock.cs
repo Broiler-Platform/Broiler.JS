@@ -7,13 +7,13 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitBlock(AstBlock block)
+    protected override BExpression VisitBlock(AstBlock block)
     {
         int count = block.Statements.Count;
         if (count == 0)
-            return YExpression.Empty;
+            return BExpression.Empty;
 
-        var blockList = new Sequence<YExpression>(count);
+        var blockList = new Sequence<BExpression>(count);
         var hoistingScope = block.HoistingScope;
         var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
         var lexicalBindings = CollectTopLevelLexicalBindings(block.Statements);

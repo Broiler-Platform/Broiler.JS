@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Runtime;
@@ -40,11 +40,11 @@ public class JSArrayBuilder
 
     public static Expression AddRange(Expression target, Expression p) => Expression.Call(target, _AddRange, p);
 
-    public static Expression New(IFastEnumerable<YElementInit> inits) => Expression.ListInit(Expression.New(_New), inits);
+    public static Expression New(IFastEnumerable<BElementInit> inits) => Expression.ListInit(Expression.New(_New), inits);
 
     public static Expression New(IFastEnumerable<Expression> list)
     {
-        var ei = new Sequence<YElementInit>(list.Count());
+        var ei = new Sequence<BElementInit>(list.Count());
         var en = list.GetFastEnumerator();
 
         while (en.MoveNext(out var e))

@@ -5,13 +5,13 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitConditional(YConditionalExpression yConditionalExpression)
+    protected override CodeInfo VisitConditional(BConditionalExpression yConditionalExpression)
     {
         // Conditional statement must leave only one item on stack...
 
         // optimize for jumps...
         var test = yConditionalExpression.test;
-        if (test.NodeType == YExpressionType.Binary && test is YBinaryExpression be)
+        if (test.NodeType == BExpressionType.Binary && test is BBinaryExpression be)
         {
             if (TryVisitConditional(be.Left, be.Right, be.Operator, yConditionalExpression.@true, yConditionalExpression.@false)) {
                 return true;
@@ -60,11 +60,11 @@ public partial class ILCodeGenerator
     }
 
     private bool TryVisitConditional(
-        YExpression left, 
-        YExpression right, 
-        YOperator @operator, 
-        YExpression @true, 
-        YExpression @false)
+        BExpression left, 
+        BExpression right, 
+        BOperator @operator, 
+        BExpression @true, 
+        BExpression @false)
     {
         var type = left.Type;
         if (type != right.Type)
@@ -78,24 +78,24 @@ public partial class ILCodeGenerator
         OpCode code;
         switch (@operator)
         {
-            case YOperator.GreaterOrEqual:
+            case BOperator.GreaterOrEqual:
                 code = unsigned ? OpCodes.Blt_Un : OpCodes.Blt;
                 break;
-            case YOperator.Greater:
+            case BOperator.Greater:
                 code = unsigned ? OpCodes.Ble_Un : OpCodes.Ble;
                 break;
-            case YOperator.LessOrEqual:
+            case BOperator.LessOrEqual:
                 code = unsigned ? OpCodes.Bgt_Un : OpCodes.Bgt;
                 break;
-            case YOperator.Less:
+            case BOperator.Less:
                 code = unsigned ? OpCodes.Bge_Un : OpCodes.Bge;
                 break;
-            case YOperator.Equal:
+            case BOperator.Equal:
                 if (type == typeof(int))
                     return false;
                 code = OpCodes.Bne_Un;
                 break;
-            case YOperator.NotEqual:
+            case BOperator.NotEqual:
                 code = OpCodes.Beq;
                 break;
             default:

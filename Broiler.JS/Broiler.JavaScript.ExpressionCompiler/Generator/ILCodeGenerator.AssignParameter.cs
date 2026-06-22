@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    private CodeInfo AssignParameter(DataSource exp, YParameterExpression yParameterExpression, int savedIndex)
+    private CodeInfo AssignParameter(DataSource exp, BParameterExpression yParameterExpression, int savedIndex)
     {
         if (closureRepository.TryGet(yParameterExpression, out var ve))
         {

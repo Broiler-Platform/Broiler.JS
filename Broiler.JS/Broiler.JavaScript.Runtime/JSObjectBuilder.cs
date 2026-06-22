@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Storage;
@@ -116,18 +116,18 @@ public class JSObjectBuilder
     readonly static MethodInfo _NewWithPropertiesAndElements =
         type.PublicMethod(nameof(JSObject.NewWithPropertiesAndElements));
 
-    public static YElementInit AddValue(Expression key, Expression value, JSPropertyAttributes attributes = JSPropertyAttributes.EnumerableConfigurableValue)
+    public static BElementInit AddValue(Expression key, Expression value, JSPropertyAttributes attributes = JSPropertyAttributes.EnumerableConfigurableValue)
     {
         if (key.Type.IsJSValueType())
-            return new YElementInit(_FastAddValueKeyValue, key, value, Expression.Constant(attributes));
+            return new BElementInit(_FastAddValueKeyValue, key, value, Expression.Constant(attributes));
 
         if (key.Type == typeof(uint))
-            return new YElementInit(_FastAddValueUInt, key, value, Expression.Constant(attributes));
+            return new BElementInit(_FastAddValueUInt, key, value, Expression.Constant(attributes));
 
         if (key.Type == typeof(int))
-            return new YElementInit(_FastAddValueUInt, Expression.Convert(key, typeof(uint)), value, Expression.Constant(attributes));
+            return new BElementInit(_FastAddValueUInt, Expression.Convert(key, typeof(uint)), value, Expression.Constant(attributes));
 
-        return new YElementInit(_FastAddValueKeyString, key, value, Expression.Constant(attributes));
+        return new BElementInit(_FastAddValueKeyString, key, value, Expression.Constant(attributes));
     }
 
     // Mints a unique per-evaluation private-name key (KeyString) at class-evaluation
@@ -144,8 +144,8 @@ public class JSObjectBuilder
     // PrivateFieldAdd for an instance private field: installs the field as an
     // internal slot, throwing a TypeError when the target is non-extensible or
     // already carries the private name. The key is always a minted KeyString.
-    public static YElementInit PrivateFieldAdd(Expression key, Expression value)
-        => new YElementInit(_PrivateFieldAddKeyString, key, value);
+    public static BElementInit PrivateFieldAdd(Expression key, Expression value)
+        => new BElementInit(_PrivateFieldAddKeyString, key, value);
 
     // PrivateMethodOrAccessorAdd for an instance private method/accessor: installs
     // the shared function object(s) onto `target` under the minted private key,
@@ -158,46 +158,46 @@ public class JSObjectBuilder
 
     // CreateDataPropertyOrThrow for a public class field: observable on exotic
     // receivers (Proxy), a plain own-property store on ordinary objects.
-    public static YElementInit CreateDataProperty(Expression key, Expression value)
+    public static BElementInit CreateDataProperty(Expression key, Expression value)
     {
         if (key.Type.IsJSValueType())
-            return new YElementInit(_CreateDataPropertyKeyValue, key, value);
+            return new BElementInit(_CreateDataPropertyKeyValue, key, value);
 
         if (key.Type == typeof(uint))
-            return new YElementInit(_CreateDataPropertyUInt, key, value);
+            return new BElementInit(_CreateDataPropertyUInt, key, value);
 
         if (key.Type == typeof(int))
-            return new YElementInit(_CreateDataPropertyUInt, Expression.Convert(key, typeof(uint)), value);
+            return new BElementInit(_CreateDataPropertyUInt, Expression.Convert(key, typeof(uint)), value);
 
-        return new YElementInit(_CreateDataPropertyKeyString, key, value);
+        return new BElementInit(_CreateDataPropertyKeyString, key, value);
     }
 
-    public static YElementInit AddSetter(Expression key, Expression setter, JSPropertyAttributes attributes = JSPropertyAttributes.EnumerableConfigurableProperty)
+    public static BElementInit AddSetter(Expression key, Expression setter, JSPropertyAttributes attributes = JSPropertyAttributes.EnumerableConfigurableProperty)
     {
         if (key.Type.IsJSValueType())
-            return new YElementInit(_FastAddSetterValue, key, setter, Expression.Constant(attributes));
+            return new BElementInit(_FastAddSetterValue, key, setter, Expression.Constant(attributes));
 
         if (key.Type == typeof(uint))
-            return new YElementInit(_FastAddSetterUInt, key, setter, Expression.Constant(attributes));
+            return new BElementInit(_FastAddSetterUInt, key, setter, Expression.Constant(attributes));
 
         if (key.Type == typeof(int))
-            return new YElementInit(_FastAddSetterUInt, Expression.Convert(key, typeof(uint)), setter, Expression.Constant(attributes));
+            return new BElementInit(_FastAddSetterUInt, Expression.Convert(key, typeof(uint)), setter, Expression.Constant(attributes));
 
-        return new YElementInit(_FastAddSetterKeyString, key, setter, Expression.Constant(attributes));
+        return new BElementInit(_FastAddSetterKeyString, key, setter, Expression.Constant(attributes));
     }
 
-    public static YElementInit AddGetter(Expression key, Expression getter, JSPropertyAttributes attributes = JSPropertyAttributes.EnumerableConfigurableProperty)
+    public static BElementInit AddGetter(Expression key, Expression getter, JSPropertyAttributes attributes = JSPropertyAttributes.EnumerableConfigurableProperty)
     {
         if (key.Type.IsJSValueType())
-            return new YElementInit(_FastAddGetterValue, key, getter, Expression.Constant(attributes));
+            return new BElementInit(_FastAddGetterValue, key, getter, Expression.Constant(attributes));
 
         if (key.Type == typeof(uint))
-            return new YElementInit(_FastAddGetterUInt, key, getter, Expression.Constant(attributes));
+            return new BElementInit(_FastAddGetterUInt, key, getter, Expression.Constant(attributes));
 
         if (key.Type == typeof(int))
-            return new YElementInit(_FastAddGetterUInt, Expression.Convert(key, typeof(uint)), getter, Expression.Constant(attributes));
+            return new BElementInit(_FastAddGetterUInt, Expression.Convert(key, typeof(uint)), getter, Expression.Constant(attributes));
 
-        return new YElementInit(_FastAddGetterKeyString, key, getter, Expression.Constant(attributes));
+        return new BElementInit(_FastAddGetterKeyString, key, getter, Expression.Constant(attributes));
     }
 
     public static Expression AddRange(Expression target, Expression value)
@@ -260,11 +260,11 @@ public class JSObjectBuilder
 
     public static Expression New() => Expression.New(_New);
 
-    public static Expression New(IFastEnumerable<YElementInit> elements) => Expression.ListInit(Expression.New(_New), elements);
+    public static Expression New(IFastEnumerable<BElementInit> elements) => Expression.ListInit(Expression.New(_New), elements);
 
     public static Expression New(IList<ExpressionHolder> keyValues)
     {
-        var list = new Sequence<YElementInit>();
+        var list = new Sequence<BElementInit>();
 
         foreach (var v in keyValues)
         {

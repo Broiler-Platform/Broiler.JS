@@ -1,4 +1,4 @@
-
+﻿
 using Broiler.JavaScript.Ast.Misc;
 using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -8,7 +8,7 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitLiteral(AstLiteral literal)
+    protected override BExpression VisitLiteral(AstLiteral literal)
     {
         switch (literal.TokenType)
         {
@@ -19,7 +19,7 @@ partial class FastCompiler
                 return JSBooleanBuilder.False;
 
             case TokenTypes.String:
-                return JSStringBuilder.New(YExpression.Constant(literal.StringValue));
+                return JSStringBuilder.New(BExpression.Constant(literal.StringValue));
 
             case TokenTypes.BigInt:
                 return JSBigIntBuilder.New(literal.StringValue);
@@ -28,7 +28,7 @@ partial class FastCompiler
                 return JSDecimalBuilder.New(literal.StringValue);
 
             case TokenTypes.RegExLiteral:
-                return JSRegExpBuilder.New(YExpression.Constant(literal.Regex.Pattern), YExpression.Constant(literal.Regex.Flags));
+                return JSRegExpBuilder.New(BExpression.Constant(literal.Regex.Pattern), BExpression.Constant(literal.Regex.Flags));
             
             case TokenTypes.Null:
                 return JSNullBuilder.Value;
@@ -48,7 +48,7 @@ partial class FastCompiler
                 if (n == 0 && n != -0)
                     return JSNumberBuilder.Zero;
 
-                return JSNumberBuilder.New(YExpression.Constant(n));
+                return JSNumberBuilder.New(BExpression.Constant(n));
         }
 
         throw new NotImplementedException();

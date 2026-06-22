@@ -1,7 +1,7 @@
-using Broiler.JavaScript.Engine;
+﻿using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.LinqExpressions.LambdaGen;
 using Broiler.JavaScript.Runtime;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 
 namespace Broiler.JavaScript.LinqExpressions.LinqExpressions;
 

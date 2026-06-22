@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Broiler.JavaScript.ExpressionCompiler;
 
-public class YDispatcher
+public class BDispatcher
 {
     public static object Queue(object input, Func<object,object> func)
     {
@@ -39,7 +39,7 @@ public abstract class StackGuard<T,TIn> {
             {
                 var prev = start;
                 start = 0;
-                var output = (T)YDispatcher.Queue(input, (i) => VisitIn((TIn)i));
+                var output = (T)BDispatcher.Queue(input, (i) => VisitIn((TIn)i));
                 start = prev;
                 return output;
             }

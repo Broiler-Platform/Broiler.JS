@@ -6,12 +6,12 @@ namespace Broiler.JavaScript.LinqExpressions.LinqExpressions;
 
 public class JSBigIntBuilder
 {
-    public static YExpression New(string value) => NewLambdaExpression.StaticCallExpression<JSValue>(
-        () => () => JSValue.CreateBigIntFromString(""), YExpression.Constant(value));
+    public static BExpression New(string value) => NewLambdaExpression.StaticCallExpression<JSValue>(
+        () => () => JSValue.CreateBigIntFromString(""), BExpression.Constant(value));
 }
 
 public class JSDecimalBuilder
 {
-    public static YExpression New(string value) => NewLambdaExpression.StaticCallExpression<JSValue>(
-        () => () => JSValue.CreateDecimalFromString(""), YExpression.Constant(value));
+    public static BExpression New(string value) => NewLambdaExpression.StaticCallExpression<JSValue>(
+        () => () => JSValue.CreateDecimalFromString(""), BExpression.Constant(value));
 }

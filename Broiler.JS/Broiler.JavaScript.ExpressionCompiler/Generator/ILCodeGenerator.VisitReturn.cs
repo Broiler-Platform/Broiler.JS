@@ -7,7 +7,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitReturn(YReturnExpression yReturnExpression)
+    protected override CodeInfo VisitReturn(BReturnExpression yReturnExpression)
     {
         var label = labels[yReturnExpression.Target];
         var def = yReturnExpression.Default;
@@ -16,12 +16,12 @@ public partial class ILCodeGenerator
 
             if(!il.IsTryBlock)
             {
-                if(def.NodeType == YExpressionType.Call)
+                if(def.NodeType == BExpressionType.Call)
                 {
                     if(yReturnExpression.Type.IsAssignableFrom(def.Type))
                     {
                         // tail call....
-                        if (VisitTailCall(def as YCallExpression))
+                        if (VisitTailCall(def as BCallExpression))
                             return true;
                     }
                     Visit(yReturnExpression.Default);
@@ -42,32 +42,32 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    private CodeInfo VisitReturn(YExpression exp, ILWriterLabel label, int localIndex)
+    private CodeInfo VisitReturn(BExpression exp, ILWriterLabel label, int localIndex)
     {
         switch (exp.NodeType)
         {
-            case YExpressionType.Assign:
-                return VisitReturnAssign(exp as YAssignExpression, label, localIndex);
-            case YExpressionType.Block:
-                return VisitReturnBlock(exp as YBlockExpression, label, localIndex);
+            case BExpressionType.Assign:
+                return VisitReturnAssign(exp as BAssignExpression, label, localIndex);
+            case BExpressionType.Block:
+                return VisitReturnBlock(exp as BBlockExpression, label, localIndex);
 
             // The branches of a conditional / short-circuit operator in return
             // position are themselves in tail position, so recurse into them to
             // preserve proper tail calls (e.g. `return c ? a : f()`, `return a && f()`).
-            case YExpressionType.Conditional
-                when exp is YConditionalExpression { @false: not null } conditional
+            case BExpressionType.Conditional
+                when exp is BConditionalExpression { @false: not null } conditional
                     && !conditional.Type.IsValueType
                     && conditional.@true.Type.IsAssignableTo(conditional.Type)
                     && conditional.@false.Type.IsAssignableTo(conditional.Type):
                 return VisitReturnConditional(conditional, label, localIndex);
-            case YExpressionType.Coalesce
-                when exp is YCoalesceExpression coalesce
+            case BExpressionType.Coalesce
+                when exp is BCoalesceExpression coalesce
                     && !coalesce.Type.IsValueType
                     && coalesce.Left.Type.IsAssignableTo(coalesce.Type)
                     && coalesce.Right.Type.IsAssignableTo(coalesce.Type):
                 return VisitReturnCoalesce(coalesce, label, localIndex);
         }
-        if (exp is not YCallExpression call || !TryEmitJavaScriptTailCallValue(call))
+        if (exp is not BCallExpression call || !TryEmitJavaScriptTailCallValue(call))
             Visit(exp);
         return EmitReturnOnStack(label, localIndex);
     }
@@ -86,7 +86,7 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    private CodeInfo VisitReturnConditional(YConditionalExpression conditional, ILWriterLabel label, int localIndex)
+    private CodeInfo VisitReturnConditional(BConditionalExpression conditional, ILWriterLabel label, int localIndex)
     {
         var falseBegin = il.DefineLabel("retCondFalse", il.Top);
         Visit(conditional.test);
@@ -97,7 +97,7 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    private CodeInfo VisitReturnCoalesce(YCoalesceExpression coalesce, ILWriterLabel label, int localIndex)
+    private CodeInfo VisitReturnCoalesce(BCoalesceExpression coalesce, ILWriterLabel label, int localIndex)
     {
         var notNull = il.DefineLabel("retCoalesce", il.Top);
         Visit(coalesce.Left);
@@ -109,7 +109,7 @@ public partial class ILCodeGenerator
         return EmitReturnOnStack(label, localIndex);
     }
 
-    private CodeInfo VisitReturnAssign(YAssignExpression assign, ILWriterLabel label, int localIndex)
+    private CodeInfo VisitReturnAssign(BAssignExpression assign, ILWriterLabel label, int localIndex)
     {
         VisitAssign(assign, localIndex);
         if (!il.IsTryBlock)
@@ -122,7 +122,7 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    private CodeInfo VisitReturnBlock(YBlockExpression block, ILWriterLabel label, int localIndex)
+    private CodeInfo VisitReturnBlock(BBlockExpression block, ILWriterLabel label, int localIndex)
     {
         using var tvs = tempVariables.Push();
 

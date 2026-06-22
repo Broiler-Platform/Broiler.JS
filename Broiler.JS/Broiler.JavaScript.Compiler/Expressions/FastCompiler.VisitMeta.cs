@@ -7,7 +7,7 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitMeta(AstMeta astMeta)
+    protected override BExpression VisitMeta(AstMeta astMeta)
     {
         // only new.target is supported....
         if (!(astMeta.Identifier.Name.Equals("new") && astMeta.Property.Name.Equals("target")))

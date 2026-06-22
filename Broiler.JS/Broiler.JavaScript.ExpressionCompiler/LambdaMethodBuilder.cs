@@ -13,7 +13,7 @@ public class LambdaMethodBuilder(MethodBuilder builder) : IMethodBuilder
 {
     private readonly TypeBuilder typeBuilder = (TypeBuilder)builder.DeclaringType;
 
-    public YExpression Relay(YExpression @this, IFastEnumerable<YExpression> closures, YLambdaExpression innerLambda)
+    public BExpression Relay(BExpression @this, IFastEnumerable<BExpression> closures, BLambdaExpression innerLambda)
     {
         LambdaRewriter.Rewrite(innerLambda);
         var derived = (typeBuilder.Module as ModuleBuilder).DefineType(
@@ -28,11 +28,11 @@ public class LambdaMethodBuilder(MethodBuilder builder) : IMethodBuilder
             typeof(Box[])
         ]);
 
-        var boxes = YExpression.Parameter(typeof(Box[]));
+        var boxes = BExpression.Parameter(typeof(Box[]));
 
-        var cnstrLambda = YExpression.Lambda(innerLambda.Type, "cnstr",
-            YExpression.CallNew(Closures.constructor, YExpression.Null, boxes, YExpression.Null, YExpression.Null),
-            [YExpression.Parameter(derived), boxes]);
+        var cnstrLambda = BExpression.Lambda(innerLambda.Type, "cnstr",
+            BExpression.CallNew(Closures.constructor, BExpression.Null, boxes, BExpression.Null, BExpression.Null),
+            [BExpression.Parameter(derived), boxes]);
 
         var cnstrIL = new ILCodeGenerator(cnstr.GetILGenerator(), null);
         cnstrIL.EmitConstructor(cnstrLambda);
@@ -48,7 +48,7 @@ public class LambdaMethodBuilder(MethodBuilder builder) : IMethodBuilder
 
         var im = derivedType.GetMethods().First(x => x.Name == m.Name);
 
-        return YExpression.New(cdt, YExpression.New(ct, closures == null ? YExpression.Null : YExpression.NewArray(typeof(Box), closures)), YExpression.Constant(im));
+        return BExpression.New(cdt, BExpression.New(ct, closures == null ? BExpression.Null : BExpression.NewArray(typeof(Box), closures)), BExpression.Constant(im));
 
     }
 }

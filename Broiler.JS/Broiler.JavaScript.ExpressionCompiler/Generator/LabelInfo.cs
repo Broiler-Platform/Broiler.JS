@@ -6,13 +6,13 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public class LabelInfo(ILWriter il)
 {
-    private Dictionary<YLabelTarget, ILWriterLabel> labels = [];
+    private Dictionary<BLabelTarget, ILWriterLabel> labels = [];
 
-    public ILWriterLabel this[YLabelTarget target] => Create(target);
+    public ILWriterLabel this[BLabelTarget target] => Create(target);
 
 
 
-    private ILWriterLabel Create(YLabelTarget target)
+    private ILWriterLabel Create(BLabelTarget target)
     {
         if (labels.TryGetValue(target, out var l))
             return l;
@@ -21,7 +21,7 @@ public class LabelInfo(ILWriter il)
         return l;
     }
 
-    public ILWriterLabel Create(YLabelTarget target, ILTryBlock tryBlock, bool throwIfFail = true)
+    public ILWriterLabel Create(BLabelTarget target, ILTryBlock tryBlock, bool throwIfFail = true)
     {
         if (labels.TryGetValue(target, out var l))
         {

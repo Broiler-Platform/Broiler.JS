@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitLoop(YLoopExpression yLoopExpression)
+    protected override CodeInfo VisitLoop(BLoopExpression yLoopExpression)
     {
         var @continue = labels[yLoopExpression.Continue];
         var @break = labels[yLoopExpression.Break];

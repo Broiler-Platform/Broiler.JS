@@ -8,9 +8,9 @@ namespace Broiler.JavaScript.ExpressionCompiler.Converters;
 
 public partial class LinqConverter
 {
-    private YExpression[] VisitList(IList<Expression> list)
+    private BExpression[] VisitList(IList<Expression> list)
     {
-        var r = new YExpression[list.Count];
+        var r = new BExpression[list.Count];
         for (int i = 0; i < list.Count; i++)
         {
             var v = Visit(list[i]) ?? throw new ArgumentNullException();

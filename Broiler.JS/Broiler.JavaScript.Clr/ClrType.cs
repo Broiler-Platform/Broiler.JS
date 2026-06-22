@@ -340,9 +340,9 @@ public class ClrType : JSFunction
 
     public JSFunction CreateConstuctorDelegate(ConstructorInfo c)
     {
-        var pe = YExpression.Parameter(ArgumentsBuilder.refType);
+        var pe = BExpression.Parameter(ArgumentsBuilder.refType);
         var name = this.name.Value;
-        JSFunctionDelegate newDelegate = YExpression.Lambda<JSFunctionDelegate>(name, ClrProxyBuilder.From(YExpression.New(c, pe)), pe).Compile();
+        JSFunctionDelegate newDelegate = BExpression.Lambda<JSFunctionDelegate>(name, ClrProxyBuilder.From(BExpression.New(c, pe)), pe).Compile();
 
         var length = c.GetCustomAttribute<JSExportAttribute>()?.Length;
         if (length == null)

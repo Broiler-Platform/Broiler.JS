@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Broiler.JavaScript.BuiltIns;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
@@ -219,16 +219,16 @@ public class Phase2ValidationTests
     public void M13_ExpressionCompiler_RemainsMonolithic()
     {
         // M13 concluded no-go on decomposition. Verify the assembly exists as one unit.
-        var ecAssembly = typeof(ExpressionCompiler.Expressions.YExpression).Assembly;
+        var ecAssembly = typeof(ExpressionCompiler.Expressions.BExpression).Assembly;
         Assert.Equal("Broiler.JavaScript.ExpressionCompiler", ecAssembly.GetName().Name);
 
         // Verify key functional groups coexist in same assembly:
         var types = ecAssembly.GetTypes().Select(t => t.Name).ToList();
 
         // Y-expression types:
-        Assert.Contains("YExpression", types);
-        Assert.Contains("YBinaryExpression", types);
-        Assert.Contains("YConstantExpression", types);
+        Assert.Contains("BExpression", types);
+        Assert.Contains("BBinaryExpression", types);
+        Assert.Contains("BConstantExpression", types);
 
         // IL Code Generator:
         Assert.Contains("ILCodeGenerator", types);
@@ -241,7 +241,7 @@ public class Phase2ValidationTests
     public void M13_ExpressionCompiler_IsLeafDependency()
     {
         // ExpressionCompiler should not reference any other Broiler assemblies.
-        var ecAssembly = typeof(ExpressionCompiler.Expressions.YExpression).Assembly;
+        var ecAssembly = typeof(ExpressionCompiler.Expressions.BExpression).Assembly;
         var refs = ecAssembly.GetReferencedAssemblies()
             .Select(a => a.Name)
             .Where(n => n != null && n.StartsWith("Broiler."))

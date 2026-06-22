@@ -22,10 +22,10 @@ namespace Broiler.JavaScript.Compiler;
 // Method is set instead for an ordinary private method.
 public sealed class PrivateInstanceElement
 {
-    public YExpression Key;
-    public YExpression Method;
-    public YExpression Getter;
-    public YExpression Setter;
+    public BExpression Key;
+    public BExpression Method;
+    public BExpression Getter;
+    public BExpression Setter;
 }
 
 
@@ -132,15 +132,15 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 {
     public class VariableScope : IDisposable
     {
-        public YParameterExpression Variable { get; internal set; }
-        public YExpression Expression { get; internal set; }
+        public BParameterExpression Variable { get; internal set; }
+        public BExpression Expression { get; internal set; }
 
         // A distinct expression for a *read* of this binding when it differs from the
         // assignable <see cref="Expression"/> used for writes. Used for an eval-introduced global
         // `var`, whose read must throw a ReferenceError once the binding is deleted (a method call
         // that cannot serve as an assignment lvalue). Null means reads use <see cref="Expression"/>.
         // Only consulted for a throwing read; `typeof` keeps the non-throwing Expression.
-        public YExpression ReadExpression { get; internal set; }
+        public BExpression ReadExpression { get; internal set; }
         public string Name { get; internal set; }
         public bool Create { get; internal set; }
 
@@ -149,16 +149,16 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         // A named function expression's self-name is captured read-only (no local
         // Variable, so it is otherwise omitted from the eval/with capture); it supplies
         // its underlying JSVariable here so `(function g(){ eval("g") })` can resolve `g`.
-        public YExpression EvalCaptureExpression { get; internal set; }
+        public BExpression EvalCaptureExpression { get; internal set; }
 
         // The JSVariable-typed expression used to capture this binding for a direct eval
         // or `with` body: the binding's own Variable, or its EvalCaptureExpression.
-        internal YExpression CaptureExpression => (YExpression)Variable ?? EvalCaptureExpression;
+        internal BExpression CaptureExpression => (BExpression)Variable ?? EvalCaptureExpression;
         public bool IsLexical { get; internal set; }
         public bool IsSimpleCatchBinding { get; internal set; }
         public bool IsDeletable { get; internal set; }
         public AstFunctionExpression OwnerFunction { get; internal set; }
-        public YExpression Init { get; private set; }
+        public BExpression Init { get; private set; }
 
         /// <summary>
         /// Create Variable first and then assign it, in next step.
@@ -166,7 +166,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         /// This is required for recursive function as name/instance of function
         /// is null when it is being created and accessed at the same time
         /// </summary>
-        public YExpression PostInit { get; private set; }
+        public BExpression PostInit { get; private set; }
         public bool InUse { get; internal set; }
         public bool IsTemp { get; internal set; }
         public bool SkipRegistration { get; internal set; }
@@ -179,7 +179,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
         public void Dispose() => InUse = false;
 
-        public void SetPostInit(YExpression exp)
+        public void SetPostInit(BExpression exp)
         {
             if (exp == null)
             {
@@ -191,15 +191,15 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             {
                 if (exp.Type == typeof(JSVariable))
                 {
-                    PostInit = YExpression.Assign(Variable, exp);
+                    PostInit = BExpression.Assign(Variable, exp);
                     return;
                 }
             }
 
-            PostInit = YExpression.Assign(Expression, exp);
+            PostInit = BExpression.Assign(Expression, exp);
         }
 
-        public void SetInit(YExpression exp, bool initialize = true)
+        public void SetInit(BExpression exp, bool initialize = true)
         {
             if (Variable.Type == typeof(JSVariable))
             {
@@ -207,23 +207,23 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
                 {
                     if (typeof(JSValue).IsAssignableFrom(exp.Type))
                     {
-                        Init = YExpression.Assign(Variable, JSVariableBuilder.New(exp, Name));
+                        Init = BExpression.Assign(Variable, JSVariableBuilder.New(exp, Name));
                     }
                     else
                     {
-                        Init = YExpression.Assign(Variable, exp);
+                        Init = BExpression.Assign(Variable, exp);
                     }
                 }
                 else
                 {
-                    Init = YExpression.Assign(Variable, initialize ? JSVariableBuilder.New(Name) : JSVariableBuilder.NewUninitialized(Name));
+                    Init = BExpression.Assign(Variable, initialize ? JSVariableBuilder.New(Name) : JSVariableBuilder.NewUninitialized(Name));
                 }
             }
             else
             {
                 if (exp != null)
                 {
-                    Init = YExpression.Assign(Variable, exp);
+                    Init = BExpression.Assign(Variable, exp);
                 }
             }
         }
@@ -238,8 +238,8 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public AstFunctionExpression Function { get; }
 
-    private YExpression _thisExpression;
-    public YExpression ThisExpression
+    private BExpression _thisExpression;
+    public BExpression ThisExpression
     {
         get => _thisExpression ??= GetVariable("this", true).Expression;
         internal set => _thisExpression = value;
@@ -250,7 +250,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     // functions reuse the enclosing function's cell instead of creating their own
     // (an arrow has no new.target of its own). Null in the root/program scope,
     // where VisitMeta falls back to reading the live call-stack value.
-    public YExpression NewTargetExpression { get; private set; }
+    public BExpression NewTargetExpression { get; private set; }
 
     internal const string NewTargetBindingName = "new.target";
 
@@ -264,12 +264,12 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     // currently lower.
     public bool HasAsyncDisposable { get; set; }
 
-    private YParameterExpression _dispoable;
-    public YParameterExpression Disposable => _dispoable ??= YExpression.Parameter(typeof(IJSDisposableStack));
+    private BParameterExpression _dispoable;
+    public BParameterExpression Disposable => _dispoable ??= BExpression.Parameter(typeof(IJSDisposableStack));
 
-    public YExpression ArgumentsExpression { get; }
+    public BExpression ArgumentsExpression { get; }
 
-    public YParameterExpression Arguments { get; }
+    public BParameterExpression Arguments { get; }
 
     public string[] CurrentDirectEvalParameterBindings { get; set; }
 
@@ -277,9 +277,9 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public string[] DirectEvalPrivateNames { get; }
 
-    public YParameterExpression Context { get; }
+    public BParameterExpression Context { get; }
 
-    public YParameterExpression StackItem { get; }
+    public BParameterExpression StackItem { get; }
 
     public bool IsRoot => Function == null;
 
@@ -290,13 +290,13 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     /// references. (For a derived constructor this is the superclass prototype,
     /// not the superclass constructor — those differ; see <see cref="SuperConstructor"/>.)
     /// </summary>
-    public YExpression Super { get; set; }
+    public BExpression Super { get; set; }
 
     /// <summary>
     /// The superclass constructor, used by a <c>super(...)</c> call in a derived
     /// class constructor. Distinct from <see cref="Super"/> (the prototype).
     /// </summary>
-    public YExpression SuperConstructor { get; set; }
+    public BExpression SuperConstructor { get; set; }
 
     public IEnumerable<VariableScope> Variables
     {
@@ -311,7 +311,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         }
     }
 
-    public IEnumerable<YParameterExpression> VariableParameters
+    public IEnumerable<BParameterExpression> VariableParameters
     {
         get
         {
@@ -324,7 +324,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         }
     }
 
-    public IEnumerable<YExpression> InitList
+    public IEnumerable<BExpression> InitList
     {
         get
         {
@@ -338,7 +338,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     // The binding-construction half of InitList (variable allocation, direct-eval local
     // binding setup). These run before parameter binding.
-    public IEnumerable<YExpression> InitOnlyList
+    public IEnumerable<BExpression> InitOnlyList
     {
         get
         {
@@ -355,7 +355,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     // assignments. Per FunctionDeclarationInstantiation these run AFTER the formal
     // parameters are bound, so a body `function x(){}` overrides a same-named parameter
     // rather than being clobbered by it.
-    public IEnumerable<YExpression> PostInitList
+    public IEnumerable<BExpression> PostInitList
     {
         get
         {
@@ -368,19 +368,19 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         }
     }
 
-    public YLabelTarget ReturnLabel { get; }
+    public BLabelTarget ReturnLabel { get; }
 
     public readonly FastFunctionScope TopScope;
 
-    public YParameterExpression Generator { get; set; }
+    public BParameterExpression Generator { get; set; }
 
-    public YParameterExpression Awaiter { get; set; }
+    public BParameterExpression Awaiter { get; set; }
 
     private static int scopeID = 0;
 
     public IFastEnumerable<AstClassProperty> MemberInits { get; set; }
 
-    public IReadOnlyDictionary<AstClassProperty, YExpression> ComputedMemberNames { get; set; }
+    public IReadOnlyDictionary<AstClassProperty, BExpression> ComputedMemberNames { get; set; }
 
     // Non-static private methods/accessors installed on each instance (before the
     // field initializers) by the constructor's InitMembers. Null/empty for classes
@@ -389,10 +389,10 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public readonly FastFunctionScope RootScope;
 
-    public FastFunctionScope(FastPool pool, AstFunctionExpression fx, YExpression previousThis = null, YExpression super = null, bool isAsync = false,
+    public FastFunctionScope(FastPool pool, AstFunctionExpression fx, BExpression previousThis = null, BExpression super = null, bool isAsync = false,
         IFastEnumerable<AstClassProperty> memberInits = null, FastFunctionScope previous = null, string[] directEvalPrivateNames = null,
-        IReadOnlyDictionary<AstClassProperty, YExpression> computedMemberNames = null, bool thisIsUninitialized = false,
-        YExpression previousNewTarget = null)
+        IReadOnlyDictionary<AstClassProperty, BExpression> computedMemberNames = null, bool thisIsUninitialized = false,
+        BExpression previousNewTarget = null)
     {
         RootScope = previous ?? this;
         TopScope = this;
@@ -406,7 +406,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
         if (fx?.Generator ?? false)
         {
-            Generator = YExpression.Parameter(typeof(ClrGeneratorV2), "clrGenerator");
+            Generator = BExpression.Parameter(typeof(ClrGeneratorV2), "clrGenerator");
         }
         else
         {
@@ -414,12 +414,12 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         }
 
         if (fx?.Async ?? true)
-            Generator = YExpression.Parameter(typeof(ClrGeneratorV2), "clrGenerator");
+            Generator = BExpression.Parameter(typeof(ClrGeneratorV2), "clrGenerator");
 
         if (isAsync && Generator == null)
-            Generator = YExpression.Parameter(typeof(ClrGeneratorV2), "clrGenerator");
+            Generator = BExpression.Parameter(typeof(ClrGeneratorV2), "clrGenerator");
 
-        Arguments = (fx?.Generator ?? false) ? YExpression.Parameter(typeof(Arguments), $"a-{sID}") : YExpression.Parameter(typeof(Arguments).MakeByRefType(), $"a-{sID}");
+        Arguments = (fx?.Generator ?? false) ? BExpression.Parameter(typeof(Arguments), $"a-{sID}") : BExpression.Parameter(typeof(Arguments).MakeByRefType(), $"a-{sID}");
         ArgumentsExpression = Arguments;
 
         if (previousThis == null)
@@ -454,12 +454,12 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             NewTargetExpression = nt.Expression;
         }
 
-        Context = YExpression.Parameter(typeof(JSContext), $"{nameof(Context)}{sID}");
-        StackItem = YExpression.Parameter(typeof(CallStackItem), $"{nameof(StackItem)}{sID}");
+        Context = BExpression.Parameter(typeof(JSContext), $"{nameof(Context)}{sID}");
+        StackItem = BExpression.Parameter(typeof(CallStackItem), $"{nameof(StackItem)}{sID}");
 
         Loop = new LinkedStack<LoopScope>();
         TempVariables = [];
-        ReturnLabel = YExpression.Label(typeof(JSValue));
+        ReturnLabel = BExpression.Label(typeof(JSValue));
     }
 
     public FastFunctionScope(FastFunctionScope p)
@@ -492,7 +492,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         NewTargetExpression = p.NewTargetExpression;
     }
 
-    public YExpression this[string name] => GetVariable(name).Expression;
+    public BExpression this[string name] => GetVariable(name).Expression;
 
     public IEnumerable<VariableScope> GetVisibleVariables()
     {
@@ -643,7 +643,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public VariableScope CreateException(string name)
     {
-        var v = new VariableScope { Variable = YExpression.Parameter(typeof(Exception), name + "Exp") };
+        var v = new VariableScope { Variable = BExpression.Parameter(typeof(Exception), name + "Exp") };
         variableScopeList[name + DateTime.UtcNow.Ticks] = v;
         v.Expression = v.Variable;
 
@@ -668,7 +668,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             }
         }
 
-        var tp = YExpression.Variable(type, "#Temp" + type.Name + id++);
+        var tp = BExpression.Variable(type, "#Temp" + type.Name + id++);
         var temp = new VariableScope
         {
             Create = true,
@@ -700,7 +700,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         return name;
     }
 
-    public VariableScope CreateVariable(in StringSpan name, YExpression init = null, bool newScope = false, Type type = null, bool initialize = true)
+    public VariableScope CreateVariable(in StringSpan name, BExpression init = null, bool newScope = false, Type type = null, bool initialize = true)
     {
         var v = variableScopeList[name];
         if (v != null)
@@ -721,7 +721,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         }
 
         // we need to move variable in top scope...
-        var pe = YExpression.Parameter(type ?? typeof(JSVariable), name.Value);
+        var pe = BExpression.Parameter(type ?? typeof(JSVariable), name.Value);
         var ve = JSVariable.ValueExpression(pe);
         
         v = new VariableScope
@@ -773,9 +773,9 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     /// parameter list contains a sloppy direct eval. The binding forwards to the
     /// outer one until the eval introduces the var; reads use <c>GetValue</c>.
     /// </summary>
-    public VariableScope CreateEvalShadow(in StringSpan name, YParameterExpression outerVariable, bool outerIsGlobal)
+    public VariableScope CreateEvalShadow(in StringSpan name, BParameterExpression outerVariable, bool outerIsGlobal)
     {
-        var pe = YExpression.Parameter(typeof(JSVariable), name.Value + "`evalShadow");
+        var pe = BExpression.Parameter(typeof(JSVariable), name.Value + "`evalShadow");
         var v = new VariableScope
         {
             Name = name.Value,

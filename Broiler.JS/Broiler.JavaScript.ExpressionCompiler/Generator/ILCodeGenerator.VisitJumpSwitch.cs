@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitJumpSwitch(YJumpSwitchExpression node)
+    protected override CodeInfo VisitJumpSwitch(BJumpSwitchExpression node)
     {
 
         Visit(node.Target);

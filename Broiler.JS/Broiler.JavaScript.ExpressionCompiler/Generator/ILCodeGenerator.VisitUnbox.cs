@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitUnbox(YUnboxExpression node)
+    protected override CodeInfo VisitUnbox(BUnboxExpression node)
     {
         Visit(node.Target);
         il.Emit(OpCodes.Unbox_Any, node.Type);

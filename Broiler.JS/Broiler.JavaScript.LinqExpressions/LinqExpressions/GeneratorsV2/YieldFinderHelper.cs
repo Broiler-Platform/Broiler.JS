@@ -1,5 +1,5 @@
 ﻿using Broiler.JavaScript.ExpressionCompiler.Expressions;
-using Exp = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Exp = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 
 namespace Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 
@@ -20,7 +20,7 @@ public static class YieldFinderHelper
         return r;
     }
 
-    public class YieldFinder : YExpressionMapVisitor
+    public class YieldFinder : BExpressionMapVisitor
     {
         public static bool HasYield(Exp exp)
         {
@@ -39,18 +39,18 @@ public static class YieldFinderHelper
             return base.VisitIn(exp);
         }
 
-        protected override Exp VisitYield(YYieldExpression node)
+        protected override Exp VisitYield(BYieldExpression node)
         {
             hasYield = true;
             return node;
         }
 
-        protected override Exp VisitReturn(YReturnExpression yReturnExpression)
+        protected override Exp VisitReturn(BReturnExpression yReturnExpression)
         {
             hasYield = true;
             return yReturnExpression;
         }
 
-        protected override Exp VisitLambda(YLambdaExpression yLambdaExpression) => yLambdaExpression;
+        protected override Exp VisitLambda(BLambdaExpression yLambdaExpression) => yLambdaExpression;
     }
 }

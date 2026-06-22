@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitThrow(YThrowExpression throwExpression)
+    protected override CodeInfo VisitThrow(BThrowExpression throwExpression)
     {
         Visit(throwExpression.Expression);
         il.Emit(OpCodes.Throw);

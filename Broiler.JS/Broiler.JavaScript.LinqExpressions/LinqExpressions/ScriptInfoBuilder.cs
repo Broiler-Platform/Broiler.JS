@@ -1,5 +1,5 @@
 ﻿using Broiler.JavaScript.Storage;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.LinqExpressions.LambdaGen;
 using Broiler.JavaScript.Runtime;

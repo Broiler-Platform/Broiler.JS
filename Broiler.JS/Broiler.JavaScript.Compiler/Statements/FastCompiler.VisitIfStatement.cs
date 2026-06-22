@@ -1,4 +1,4 @@
-
+﻿
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.Runtime;
@@ -11,7 +11,7 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitIfStatement(AstIfStatement ifStatement)
+    protected override BExpression VisitIfStatement(AstIfStatement ifStatement)
     {
         var test = JSValueBuilder.BooleanValue(VisitExpression(ifStatement.Test));
 
@@ -26,33 +26,33 @@ partial class FastCompiler
                     ? VisitRuntimeFunctionDeclaration(generatorFalseFunctionDeclaration, implicitBlockScoped: true).ToJSValue()
                     : VisitStatement(ifStatement.False).ToJSValue();
 
-            return YExpression.Condition(test, generatorTrueCase, generatorFalseCase);
+            return BExpression.Condition(test, generatorTrueCase, generatorFalseCase);
         }
 
-        var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
+        var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
         var outerCompletionVars = GetCompletionVariables();
         using var completion = completionScopes.Push(completionVar);
         var trueCase = ifStatement.True is AstExpressionStatement { Expression: AstFunctionExpression trueFunctionDeclaration }
             ? TrackCompletion(VisitRuntimeFunctionDeclaration(trueFunctionDeclaration, implicitBlockScoped: true).ToJSValue())
             : TrackCompletion(VisitStatement(ifStatement.True).ToJSValue());
 
-        YExpression result;
+        BExpression result;
         if (ifStatement.False != null)
         {
             var elseCase = ifStatement.False is AstExpressionStatement { Expression: AstFunctionExpression falseFunctionDeclaration }
                 ? TrackCompletion(VisitRuntimeFunctionDeclaration(falseFunctionDeclaration, implicitBlockScoped: true).ToJSValue())
                 : TrackCompletion(VisitStatement(ifStatement.False).ToJSValue());
-            result = YExpression.Condition(test, trueCase, elseCase);
+            result = BExpression.Condition(test, trueCase, elseCase);
         }
         else
         {
-            result = YExpression.Condition(test, trueCase, JSUndefinedBuilder.Value);
+            result = BExpression.Condition(test, trueCase, JSUndefinedBuilder.Value);
         }
 
-        return YExpression.Block(
-            new Sequence<YParameterExpression> { completionVar },
-            YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
-            YExpression.TailCallTransparentTryFinally(result, PropagateCompletion(completionVar, outerCompletionVars)),
+        return BExpression.Block(
+            new Sequence<BParameterExpression> { completionVar },
+            BExpression.Assign(completionVar, JSUndefinedBuilder.Value),
+            BExpression.TailCallTransparentTryFinally(result, PropagateCompletion(completionVar, outerCompletionVars)),
             completionVar);
     }
 }

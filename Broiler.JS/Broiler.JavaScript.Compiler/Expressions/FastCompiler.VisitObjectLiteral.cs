@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -46,26 +46,26 @@ partial class FastCompiler
     // (PropertyDefinitionEvaluation evaluates PropertyName before the
     // AssignmentExpression). The runtime Add* call would otherwise defer the
     // ToPropertyKey until after the value was read, so perform it eagerly here.
-    private static YExpression ToPropertyKeyValueExpr(YExpression keyExp)
-        => YExpression.Call(null, ToPropertyKeyValueMethod, keyExp);
+    private static BExpression ToPropertyKeyValueExpr(BExpression keyExp)
+        => BExpression.Call(null, ToPropertyKeyValueMethod, keyExp);
 
     // ClassFieldDefinitionEvaluation: if a field initializer is an anonymous
     // function definition, NamedEvaluation names it after the field. Computed keys
     // resolve the name from the runtime key value; everything else uses the
     // compile-time field name (which already carries the "#" for a private field).
-    private YExpression ApplyFieldFunctionName(AstClassProperty property, YExpression nameExpr, YExpression value)
+    private BExpression ApplyFieldFunctionName(AstClassProperty property, BExpression nameExpr, BExpression value)
     {
         if (!IsAnonymousFunctionDefinition(property.Init))
             return value;
 
         if (property.Computed)
-            return YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, value, nameExpr);
+            return BExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, value, nameExpr);
 
         var fieldName = GetPropertyFunctionName(property);
         if (fieldName == null)
             return value;
 
-        return YExpression.Call(null, PrepareAnonymousFunctionNameForFieldMethod, value, YExpression.Constant(fieldName, typeof(string)));
+        return BExpression.Call(null, PrepareAnonymousFunctionNameForFieldMethod, value, BExpression.Constant(fieldName, typeof(string)));
     }
 
     // A computed PropertyName whose value is an anonymous function/accessor is used
@@ -78,7 +78,7 @@ partial class FastCompiler
     // it, and hand back a side-effect-free read of that temp for the name. The temp is
     // assigned by the key argument (evaluated first by the Add* call) before the value
     // argument reads it.
-    private YExpression SpillComputedPropertyKey(ref YExpression keyExp, bool keyIsLiteral, AstClassProperty p)
+    private BExpression SpillComputedPropertyKey(ref BExpression keyExp, bool keyIsLiteral, AstClassProperty p)
     {
         if (keyIsLiteral || !IsAnonymousFunctionDefinition(p.Init))
             return keyExp;
@@ -89,7 +89,7 @@ partial class FastCompiler
 
         var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
         var keyForName = keyTemp.Variable;
-        keyExp = YExpression.Block(YExpression.Assign(keyTemp.Variable, keyExp), keyTemp.Variable);
+        keyExp = BExpression.Block(BExpression.Assign(keyTemp.Variable, keyExp), keyTemp.Variable);
         // An accessor's value reads this temp for its NamedEvaluation ("get "/"set " name),
         // so the temp must outlive the key assignment. Releasing it back to the pool lets a
         // sibling computed accessor reuse the same slot; across a `yield` key in a generator
@@ -114,28 +114,28 @@ partial class FastCompiler
         };
     }
 
-    protected override YExpression VisitObjectLiteral(AstObjectLiteral objectExpression)
+    protected override BExpression VisitObjectLiteral(AstObjectLiteral objectExpression)
     {
-        static YExpression PrepareAnonymousFunctionName(YExpression value, YExpression key)
+        static BExpression PrepareAnonymousFunctionName(BExpression value, BExpression key)
         {
             if (key.Type == typeof(uint))
-                return YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyUIntMethod, value, key);
+                return BExpression.Call(null, PrepareAnonymousFunctionNameForPropertyUIntMethod, value, key);
 
             if (key.Type.IsJSValueType())
-                return YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, value, key);
+                return BExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, value, key);
 
-            return YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyKeyStringMethod, value, key);
+            return BExpression.Call(null, PrepareAnonymousFunctionNameForPropertyKeyStringMethod, value, key);
         }
 
         // NamedEvaluation for a computed-key accessor: name the function "get "/"set "
         // followed by the property key (the function is created anonymous because the key
         // is not known at compile time).
-        static YExpression PrepareAnonymousAccessorName(YExpression value, YExpression key, bool isGetter)
+        static BExpression PrepareAnonymousAccessorName(BExpression value, BExpression key, bool isGetter)
         {
             if (key.Type == typeof(uint))
-                return YExpression.Call(null, isGetter ? PrepareAnonymousFunctionNameForGetterUIntMethod : PrepareAnonymousFunctionNameForSetterUIntMethod, value, key);
+                return BExpression.Call(null, isGetter ? PrepareAnonymousFunctionNameForGetterUIntMethod : PrepareAnonymousFunctionNameForSetterUIntMethod, value, key);
 
-            return YExpression.Call(null, isGetter ? PrepareAnonymousFunctionNameForGetterMethod : PrepareAnonymousFunctionNameForSetterMethod, value, key);
+            return BExpression.Call(null, isGetter ? PrepareAnonymousFunctionNameForGetterMethod : PrepareAnonymousFunctionNameForSetterMethod, value, key);
         }
 
         var properties = objectExpression.Properties;
@@ -168,7 +168,7 @@ partial class FastCompiler
 
         if (!hasProtoSetter && !usesSuper)
         {
-            var elements = new Sequence<YElementInit>();
+            var elements = new Sequence<BElementInit>();
             var en = properties.GetFastEnumerator();
 
             while (en.MoveNext(out var pn))
@@ -177,7 +177,7 @@ partial class FastCompiler
                 {
                     case FastNodeType.SpreadElement:
                         var spread = pn as AstSpreadElement;
-                        elements.Add(new YElementInit(JSObjectBuilder._FastAddRange, Visit(spread.Argument)));
+                        elements.Add(new BElementInit(JSObjectBuilder._FastAddRange, Visit(spread.Argument)));
                         continue;
 
                     case FastNodeType.ClassProperty:
@@ -189,8 +189,8 @@ partial class FastCompiler
 
                 AstClassProperty p = pn as AstClassProperty;
 
-                YExpression key = null;
-                YExpression value = null;
+                BExpression key = null;
+                BExpression value = null;
                 var pKey = p.Key;
 
                 value = p.Kind switch
@@ -208,7 +208,7 @@ partial class FastCompiler
                 {
                     // there is a possibility of numeric index
                     var keyIsLiteral = pKey.IsUIntLiteral(out var num);
-                    var keyExp = keyIsLiteral ? YExpression.Constant(num) : Visit(pKey);
+                    var keyExp = keyIsLiteral ? BExpression.Constant(num) : Visit(pKey);
 
                     // Evaluate ToPropertyKey eagerly so a computed key's ToString/valueOf
                     // runs before the value expression (PropertyDefinitionEvaluation order).
@@ -309,15 +309,15 @@ partial class FastCompiler
         // (VariableParameters), and a doubly-declared variable cannot be captured
         // reliably, leaving super null at call time. Mirror the class compiler and
         // capture a dedicated, block-local home-object variable instead.
-        var homeObjectVar = usesSuper ? YExpression.Parameter(typeof(JSObject), "#home" + tempHomeId++) : null;
+        var homeObjectVar = usesSuper ? BExpression.Parameter(typeof(JSObject), "#home" + tempHomeId++) : null;
 
-        var statements = new Sequence<YExpression>
+        var statements = new Sequence<BExpression>
         {
-            YExpression.Assign(temp.Variable, JSObjectBuilder.New())
+            BExpression.Assign(temp.Variable, JSObjectBuilder.New())
         };
 
         if (usesSuper)
-            statements.Add(YExpression.Assign(homeObjectVar, temp.Variable));
+            statements.Add(BExpression.Assign(homeObjectVar, temp.Variable));
 
         var enWithProto = properties.GetFastEnumerator();
         while (enWithProto.MoveNext(out var pn))
@@ -339,10 +339,10 @@ partial class FastCompiler
             AstClassProperty p = pn as AstClassProperty;
 
             // Home object prototype for super.x inside this object's methods/accessors.
-            YExpression MethodSuper() => usesSuper ? JSValueBuilder.SuperPrototypeOf(homeObjectVar) : null;
+            BExpression MethodSuper() => usesSuper ? JSValueBuilder.SuperPrototypeOf(homeObjectVar) : null;
 
-            YExpression key = null;
-            YExpression value = p.Kind switch
+            BExpression key = null;
+            BExpression value = p.Kind switch
             {
                 AstPropertyKind.Get when p.Init is AstFunctionExpression function =>
                     CreateFunction(function, super: MethodSuper(), inferredFunctionName: GetPropertyFunctionName(p, "get"), createPrototype: false),
@@ -357,7 +357,7 @@ partial class FastCompiler
             if (p.Computed)
             {
                 var keyIsLiteral = pKey.IsUIntLiteral(out var num);
-                var keyExp = keyIsLiteral ? YExpression.Constant(num) : Visit(pKey);
+                var keyExp = keyIsLiteral ? BExpression.Constant(num) : Visit(pKey);
 
                 // Evaluate ToPropertyKey eagerly so a computed key's ToString/valueOf
                 // runs before the value expression (PropertyDefinitionEvaluation order).
@@ -439,10 +439,10 @@ partial class FastCompiler
         }
 
         statements.Add(temp.Variable);
-        var blockVariables = new Sequence<YParameterExpression> { temp.Variable };
+        var blockVariables = new Sequence<BParameterExpression> { temp.Variable };
         if (usesSuper)
             blockVariables.Add(homeObjectVar);
-        return YExpression.Block(blockVariables, statements);
+        return BExpression.Block(blockVariables, statements);
     }
 
     // Detects whether any of the object literal's own methods/accessors reference

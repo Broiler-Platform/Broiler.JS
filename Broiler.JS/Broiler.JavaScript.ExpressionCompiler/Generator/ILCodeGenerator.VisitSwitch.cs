@@ -42,7 +42,7 @@ public partial class ILCodeGenerator
         typeof(StringHashExtensions)
         .GetMethod(nameof(StringHashExtensions.UnsafeGetHashCode));
 
-    protected override CodeInfo VisitSwitch(YSwitchExpression node)
+    protected override CodeInfo VisitSwitch(BSwitchExpression node)
     {
 
         using var tmp = tempVariables.Push();
@@ -91,7 +91,7 @@ public partial class ILCodeGenerator
         Action LoadTargetMethod()
         {
             var t = node.Target;
-            var isParameter = t.NodeType == YExpressionType.Parameter;
+            var isParameter = t.NodeType == BExpressionType.Parameter;
             if (isParameter && !isString)
             {
                 return () => Visit(t);
@@ -128,9 +128,9 @@ public partial class ILCodeGenerator
             return () => il.EmitLoadLocal(tmp.LocalIndex);
         }
 
-        Action<YExpression, ILWriterLabel> LoadCompareMethod()
+        Action<BExpression, ILWriterLabel> LoadCompareMethod()
         {
-            void CompareInteger(YExpression test, ILWriterLabel target)
+            void CompareInteger(BExpression test, ILWriterLabel target)
             {
                 Visit(test);
                 il.Emit(OpCodes.Beq, target);
@@ -152,9 +152,9 @@ public partial class ILCodeGenerator
             if (isString)
             {
                 cm = StringEqualsMethod;
-                void CompareString(YExpression test, ILWriterLabel target)
+                void CompareString(BExpression test, ILWriterLabel target)
                 {
-                    var hash = (test as YStringConstantExpression).Value.ToString().UnsafeGetHashCode();
+                    var hash = (test as BStringConstantExpression).Value.ToString().UnsafeGetHashCode();
                     Visit(test);
                     il.EmitConstant(hash);
                     il.EmitCall(HashMatch);
@@ -163,7 +163,7 @@ public partial class ILCodeGenerator
                 return CompareString;
             }
 
-            void Compare(YExpression test, ILWriterLabel target)
+            void Compare(BExpression test, ILWriterLabel target)
             {
                 Visit(test);
                 il.EmitCall(cm);

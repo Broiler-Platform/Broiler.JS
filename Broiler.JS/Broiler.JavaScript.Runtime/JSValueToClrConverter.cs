@@ -9,14 +9,14 @@ public static class JSValueToClrConverter
 {
     private static bool HasValue(this JSValue value) => value == null ? false : !value.IsNullOrUndefined;
 
-    internal static Func<YExpression, int, YExpression> GetAtExpression;
-    internal static Func<YExpression, YExpression> LengthExpression;
+    internal static Func<BExpression, int, BExpression> GetAtExpression;
+    internal static Func<BExpression, BExpression> LengthExpression;
 
-    private static Func<YExpression, int, YExpression> EnsureGetAtExpression =>
+    private static Func<BExpression, int, BExpression> EnsureGetAtExpression =>
         GetAtExpression ?? throw new InvalidOperationException(
             "JSValueToClrConverter.GetAtExpression delegate is not initialized. Ensure the LinqExpressions assembly module initializer has run.");
 
-    private static Func<YExpression, YExpression> EnsureLengthExpression =>
+    private static Func<BExpression, BExpression> EnsureLengthExpression =>
         LengthExpression ?? throw new InvalidOperationException(
             "JSValueToClrConverter.LengthExpression delegate is not initialized. Ensure the LinqExpressions assembly module initializer has run.");
 
@@ -79,15 +79,15 @@ public static class JSValueToClrConverter
         }
     }
 
-    public static YExpression GetArgument(YExpression args, int index, Type type, YExpression defaultValue, string name)
+    public static BExpression GetArgument(BExpression args, int index, Type type, BExpression defaultValue, string name)
     {
         if (methods.TryGetValue(type, out var method))
         {
             if (defaultValue == null)
-                return YExpression.Call(null, method, EnsureGetAtExpression(args, index), YExpression.Constant(name));
+                return BExpression.Call(null, method, EnsureGetAtExpression(args, index), BExpression.Constant(name));
 
-            return YExpression.Condition(YExpression.Binary(EnsureLengthExpression(args), YOperator.Greater, YExpression.Constant(index)),
-                YExpression.Call(null, method, EnsureGetAtExpression(args, index), YExpression.Constant(name)), defaultValue);
+            return BExpression.Condition(BExpression.Binary(EnsureLengthExpression(args), BOperator.Greater, BExpression.Constant(index)),
+                BExpression.Call(null, method, EnsureGetAtExpression(args, index), BExpression.Constant(name)), defaultValue);
         }
 
         if (typeof(JSValue).IsAssignableFrom(type))
@@ -96,19 +96,19 @@ public static class JSValueToClrConverter
         return Get(EnsureGetAtExpression(args, index), type, defaultValue, $"{name} is required");
     }
 
-    public static YExpression Get(YExpression target, Type type, string name)
+    public static BExpression Get(BExpression target, Type type, string name)
     {
         if (typeof(JSValue).IsAssignableFrom(type))
             return target;
 
         if (methods.TryGetValue(type, out var method))
-            return YExpression.Call(null, method, target, YExpression.Constant(name));
+            return BExpression.Call(null, method, target, BExpression.Constant(name));
 
         var m = GetAsOrThrowGeneric.MakeGenericMethod(type);
-        return YExpression.Call(null, m, target, YExpression.Constant($"{name} is required"));
+        return BExpression.Call(null, m, target, BExpression.Constant($"{name} is required"));
     }
 
-    public static YExpression Get(YExpression target, Type type, YExpression defaultValue, string name)
+    public static BExpression Get(BExpression target, Type type, BExpression defaultValue, string name)
     {
         if (defaultValue == null)
             return Get(target, type, name);
@@ -117,10 +117,10 @@ public static class JSValueToClrConverter
             return target;
 
         if (methods.TryGetValue(type, out var method))
-            return YExpression.Call(null, method, target, YExpression.Constant(name));
+            return BExpression.Call(null, method, target, BExpression.Constant(name));
 
         var m = GetAsGeneric.MakeGenericMethod(type);
-        return YExpression.Coalesce(YExpression.Call(null, m, target), defaultValue);
+        return BExpression.Coalesce(BExpression.Call(null, m, target), defaultValue);
     }
 
     public static Func<JSValue, string, T> ToFastClrDelegate<T>()

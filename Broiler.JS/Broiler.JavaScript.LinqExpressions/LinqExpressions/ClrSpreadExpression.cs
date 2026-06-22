@@ -3,7 +3,7 @@ using Broiler.JavaScript.Runtime;
 using System;
 using System.CodeDom.Compiler;
 using System.Reflection;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 
 namespace Broiler.JavaScript.LinqExpressions.LinqExpressions;
 
@@ -16,7 +16,7 @@ public class JSSpreadValueBuilder
     public static Expression New(Expression target) => Expression.New(_new, target);
 }
 
-public class ClrSpreadExpression(Expression argument) : Expression(YExpressionType.Constant, argument.Type)
+public class ClrSpreadExpression(Expression argument) : Expression(BExpressionType.Constant, argument.Type)
 {
     public Expression Argument { get; } = JSSpreadValueBuilder.New(argument);
 

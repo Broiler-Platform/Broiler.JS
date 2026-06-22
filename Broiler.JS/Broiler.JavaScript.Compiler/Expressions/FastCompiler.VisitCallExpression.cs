@@ -16,15 +16,15 @@ partial class FastCompiler
         .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(CallStackItem), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool), typeof(JSValue), typeof(JSVariable), typeof(string[]), typeof(JSValue), typeof(bool)])
         ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, CallStackItem, bool, bool, string[], JSVariable[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool, JSValue, JSVariable, string[], JSValue, bool) not found");
 
-    protected override YExpression VisitCallExpression(AstCallExpression callExpression)
+    protected override BExpression VisitCallExpression(AstCallExpression callExpression)
     {
         var ce = VisitCallExpression(callExpression.Callee, callExpression.Arguments, callExpression.Coalesce, callExpression.InOptionalChain);
         return ce;
     }
 
-    protected (IFastEnumerable<YExpression> args, bool hasSpread) VisitArguments(IFastEnumerable<AstExpression> arguments)
+    protected (IFastEnumerable<BExpression> args, bool hasSpread) VisitArguments(IFastEnumerable<AstExpression> arguments)
     {
-        var args = new Sequence<YExpression>(arguments.Count);
+        var args = new Sequence<BExpression>(arguments.Count);
         bool hasSpread = false;
         var e = arguments.GetFastEnumerator();
 
@@ -42,13 +42,13 @@ partial class FastCompiler
             hasSpread = true;
         }
 
-        var result = args.Any() ? (args, hasSpread) : (Sequence<YExpression>.Empty, false);
+        var result = args.Any() ? (args, hasSpread) : (Sequence<BExpression>.Empty, false);
         return result;
     }
 
-    protected YExpression VisitArguments(YExpression? thisArg, IFastEnumerable<AstExpression> arguments, YExpression? newTarget = null)
+    protected BExpression VisitArguments(BExpression? thisArg, IFastEnumerable<AstExpression> arguments, BExpression? newTarget = null)
     {
-        var args = new Sequence<YExpression>(arguments.Count);
+        var args = new Sequence<BExpression>(arguments.Count);
         bool hasSpread = false;
         var e = arguments.GetFastEnumerator();
 
@@ -85,7 +85,7 @@ partial class FastCompiler
         return result;
     }
 
-    protected YExpression VisitCallExpression(AstExpression callee, IFastEnumerable<AstExpression> arguments, bool coalesce = false, bool inChain = false)
+    protected BExpression VisitCallExpression(AstExpression callee, IFastEnumerable<AstExpression> arguments, bool coalesce = false, bool inChain = false)
     {
         if (!coalesce
             && callee is AstIdentifier identifier
@@ -125,10 +125,10 @@ partial class FastCompiler
             var useActivationBinding = scope.Top.Function?.IsArrowFunction == true && parameterInitializerDepth > 0;
             var activationOwner = disallowArgumentsDeclaration || useActivationBinding
                 ? scope.Top.StackItem
-                : YExpression.Constant(null, typeof(CallStackItem));
+                : BExpression.Constant(null, typeof(CallStackItem));
             // Pass the lexical [[HomeObject]] super reference so super.x inside the
             // eval body resolves against the enclosing method/initializer's super.
-            var superValue = scope.Top.Super ?? YExpression.Constant(null, typeof(JSValue));
+            var superValue = scope.Top.Super ?? BExpression.Constant(null, typeof(JSValue));
             // new.target is only legal in the eval body when the direct eval is
             // (transitively, through arrow functions) inside ordinary function
             // code. In global code it is a SyntaxError (PerformEval early error).
@@ -146,14 +146,14 @@ partial class FastCompiler
             // super() call. Falls back to the prior behaviour when `this` is not a
             // JSVariable-backed binding.
             var thisArg = scope.Top.ThisExpression;
-            YExpression directEvalSuperConstructor = YExpression.Constant(null, typeof(JSValue));
-            YExpression directEvalThisBinding = YExpression.Constant(null, typeof(JSVariable));
-            if (allowSuperCall && (scope.Top.ThisExpression as YPropertyExpression)?.Target is { } thisBindingTarget
+            BExpression directEvalSuperConstructor = BExpression.Constant(null, typeof(JSValue));
+            BExpression directEvalThisBinding = BExpression.Constant(null, typeof(JSVariable));
+            if (allowSuperCall && (scope.Top.ThisExpression as BPropertyExpression)?.Target is { } thisBindingTarget
                 && thisBindingTarget.Type == typeof(JSVariable))
             {
                 directEvalThisBinding = thisBindingTarget;
                 directEvalSuperConstructor = scope.Top.SuperConstructor ?? scope.Top.Super ?? directEvalSuperConstructor;
-                thisArg = YExpression.Constant(null, typeof(JSValue));
+                thisArg = BExpression.Constant(null, typeof(JSValue));
             }
 
             var evalVarEnvNames = CaptureEvalVarEnvNames();
@@ -163,7 +163,7 @@ partial class FastCompiler
             // value so a nested eval inherits it.
             var directEvalNewTarget = scope.Top.NewTargetExpression
                 ?? (isDirectEvalCompilation ? JSContextBuilder.DirectEvalNewTarget : JSContextBuilder.NewTarget());
-            return YExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), thisArg, activationOwner, YExpression.Constant(IsStrictMode), YExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, shadowedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, YExpression.Constant(allowSuperProperty), YExpression.Constant(allowSuperCall), YExpression.Constant(useActivationBinding), superValue, YExpression.Constant(inMemberInitializer), YExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding, evalVarEnvNames, directEvalNewTarget);
+            return BExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), thisArg, activationOwner, BExpression.Constant(IsStrictMode), BExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, shadowedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, BExpression.Constant(allowSuperProperty), BExpression.Constant(allowSuperCall), BExpression.Constant(useActivationBinding), superValue, BExpression.Constant(inMemberInitializer), BExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding, evalVarEnvNames, directEvalNewTarget);
         }
 
     skipDirectEval:
@@ -185,7 +185,7 @@ partial class FastCompiler
 
         if (callee.Type == FastNodeType.MemberExpression && callee is AstMemberExpression me)
         {
-            YExpression name;
+            BExpression name;
             var isPrivateMethodKey = false;
 
             switch (me.Property.Type)
@@ -250,13 +250,13 @@ partial class FastCompiler
             // scope. InvokeMethod takes the key as an `in KeyString` (by-address)
             // argument, and a captured closure variable cannot be loaded by address;
             // copy it into a method-local temp (which can) first.
-            YExpression invocation;
+            BExpression invocation;
             if (isPrivateMethodKey)
             {
                 using var keyTemp = scope.Top.GetTempVariable(typeof(KeyString));
-                invocation = YExpression.Block(new YExpression[]
+                invocation = BExpression.Block(new BExpression[]
                 {
-                    YExpression.Assign(keyTemp.Variable, name),
+                    BExpression.Assign(keyTemp.Variable, name),
                     JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, keyTemp.Variable, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain),
                 });
             }
@@ -303,13 +303,13 @@ partial class FastCompiler
                 // (a property over the underlying JSVariable parameter); bind that
                 // parameter directly when available, else fall back to a plain
                 // assignment for non-JSVariable `this` representations.
-                var thisBinding = (@this as YPropertyExpression)?.Target;
+                var thisBinding = (@this as BPropertyExpression)?.Target;
                 // Thread the lexically-captured new.target (inherited correctly across
                 // arrow functions) so a super() nested in an arrow allocates the instance
                 // with the most-derived prototype. The arrow's own call-stack item carries
                 // no new target, so the runtime fallback would otherwise be undefined.
                 var superNewTarget = scope.Top.NewTargetExpression ?? JSContextBuilder.NewTarget();
-                YExpression BindSuperResult() => thisBinding != null
+                BExpression BindSuperResult() => thisBinding != null
                     ? JSVariableBuilder.BindThis(thisBinding, JSFunctionBuilder.ConstructSuper(super, superNewTarget, paramArray1))
                     : JSFunctionBuilder.InvokeSuperConstructor(super, superNewTarget, @this, paramArray1);
 
@@ -318,12 +318,12 @@ partial class FastCompiler
                 // initialized members.. and super has been called...
                 if (members?.Any() ?? false)
                 {
-                    var initList = new Sequence<YExpression>() { BindSuperResult() };
+                    var initList = new Sequence<BExpression>() { BindSuperResult() };
                     InitMembers(initList, top);
                     root.MemberInits = null;
                     top.MemberInits = null;
 
-                    return YExpression.Block(initList);
+                    return BExpression.Block(initList);
                 }
 
                 return BindSuperResult();
@@ -344,21 +344,21 @@ partial class FastCompiler
                 using var withObjTemp = scope.Top.GetTempVariable(typeof(JSObject));
                 using var withTargetTemp = scope.Top.GetTempVariable(typeof(JSValue));
 
-                var hasWithObject = YExpression.NotEqual(withObjTemp.Expression, YExpression.Constant(null, typeof(JSObject)));
-                var withThis = YExpression.Condition(
+                var hasWithObject = BExpression.NotEqual(withObjTemp.Expression, BExpression.Constant(null, typeof(JSObject)));
+                var withThis = BExpression.Condition(
                     hasWithObject,
-                    YExpression.Convert(withObjTemp.Expression, typeof(JSValue)),
+                    BExpression.Convert(withObjTemp.Expression, typeof(JSValue)),
                     JSUndefinedBuilder.Value,
                     typeof(JSValue));
 
                 var withArgs = VisitArguments(withThis, arguments);
 
-                return YExpression.Block(
-                    new Sequence<YParameterExpression> { withObjTemp.Variable, withTargetTemp.Variable },
-                    YExpression.Assign(withObjTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
-                    YExpression.Assign(
+                return BExpression.Block(
+                    new Sequence<BParameterExpression> { withObjTemp.Variable, withTargetTemp.Variable },
+                    BExpression.Assign(withObjTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
+                    BExpression.Assign(
                         withTargetTemp.Expression,
-                        YExpression.Condition(
+                        BExpression.Condition(
                             hasWithObject,
                             // §9.1.1.2.6 GetBindingValue re-probes HasProperty (step 2) before
                             // the Get (step 4): HasBinding (ResolveWithObject) and GetBindingValue
@@ -396,13 +396,13 @@ partial class FastCompiler
         return false;
     }
 
-    private YExpression CaptureDirectEvalBindings()
+    private BExpression CaptureDirectEvalBindings()
     {
-        var bindings = new Sequence<YExpression>();
+        var bindings = new Sequence<BExpression>();
         foreach (var variable in scope.Top.GetVisibleVariables())
             bindings.Add(variable.CaptureExpression);
 
-        return YExpression.NewArrayInit(typeof(JSVariable), bindings);
+        return BExpression.NewArrayInit(typeof(JSVariable), bindings);
     }
 
     // The function-owned subset of the direct-eval captured bindings whose writes
@@ -412,96 +412,96 @@ partial class FastCompiler
     // `var` is resolvable through the global environment and kept in sync with its
     // property by the normal dual-binding path, so it is not isolated. Mirrors the
     // `with`-fallback shadowed subset.
-    private YExpression CaptureDirectEvalShadowedBindings()
+    private BExpression CaptureDirectEvalShadowedBindings()
     {
-        var bindings = new Sequence<YExpression>();
+        var bindings = new Sequence<BExpression>();
         foreach (var variable in scope.Top.GetWithFallbackVariables())
             bindings.Add(variable.Variable);
 
-        return YExpression.NewArrayInit(typeof(JSVariable), bindings);
+        return BExpression.NewArrayInit(typeof(JSVariable), bindings);
     }
 
     // All in-scope bindings, overlaid so they remain resolvable inside a `with`
     // body even though the object environment is consulted first.
-    private YExpression CaptureWithFallbackBindings()
+    private BExpression CaptureWithFallbackBindings()
     {
-        var bindings = new Sequence<YExpression>();
+        var bindings = new Sequence<BExpression>();
         foreach (var variable in scope.Top.GetVisibleVariables())
             bindings.Add(variable.CaptureExpression);
 
-        return YExpression.NewArrayInit(typeof(JSVariable), bindings);
+        return BExpression.NewArrayInit(typeof(JSVariable), bindings);
     }
 
     // The function-owned subset whose writes must stay local. A program-level
     // global `var` is resolvable through the global environment and kept in sync
     // with its property by the normal dual-binding path, so it is not isolated.
-    private YExpression CaptureWithFallbackShadowedBindings()
+    private BExpression CaptureWithFallbackShadowedBindings()
     {
-        var bindings = new Sequence<YExpression>();
+        var bindings = new Sequence<BExpression>();
         foreach (var variable in scope.Top.GetWithFallbackVariables())
             bindings.Add(variable.Variable);
 
-        return YExpression.NewArrayInit(typeof(JSVariable), bindings);
+        return BExpression.NewArrayInit(typeof(JSVariable), bindings);
     }
 
-    private YExpression CaptureDirectEvalBindingLexicalNames()
+    private BExpression CaptureDirectEvalBindingLexicalNames()
     {
-        var names = new Sequence<YExpression>();
+        var names = new Sequence<BExpression>();
         foreach (var variable in scope.Top.GetVisibleVariables())
         {
             if (variable.IsLexical)
-                names.Add(YExpression.Constant(variable.Name));
+                names.Add(BExpression.Constant(variable.Name));
         }
 
-        return YExpression.NewArrayInit(typeof(string), names);
+        return BExpression.NewArrayInit(typeof(string), names);
     }
 
     // The immediate calling function's var-environment binding names: a sloppy direct eval's
     // `var X` reuses such a binding (it already exists in that var environment) instead of creating
     // a separate overlay, so reads/writes inside the eval reach the function's own binding.
-    private YExpression CaptureEvalVarEnvNames()
+    private BExpression CaptureEvalVarEnvNames()
     {
-        var names = new Sequence<YExpression>();
+        var names = new Sequence<BExpression>();
         foreach (var name in scope.Top.GetImmediateVarEnvNames())
-            names.Add(YExpression.Constant(name));
+            names.Add(BExpression.Constant(name));
 
-        return YExpression.NewArrayInit(typeof(string), names);
+        return BExpression.NewArrayInit(typeof(string), names);
     }
 
-    private YExpression CaptureDirectEvalLexicalBindings()
+    private BExpression CaptureDirectEvalLexicalBindings()
     {
-        var bindings = new Sequence<YExpression>();
+        var bindings = new Sequence<BExpression>();
         // In non-strict mode a simple catch parameter does not conflict with a
         // `var` of the same name in the direct eval body (Annex B.3.4).
         foreach (var name in scope.Top.GetDirectEvalLexicalBindingNames(excludeSimpleCatchBindings: !IsStrictMode))
-            bindings.Add(YExpression.Constant(name));
+            bindings.Add(BExpression.Constant(name));
 
-        return YExpression.NewArrayInit(typeof(string), bindings);
+        return BExpression.NewArrayInit(typeof(string), bindings);
     }
 
-    private YExpression CaptureDirectEvalParameterBindings()
+    private BExpression CaptureDirectEvalParameterBindings()
     {
         var parameterBindings = scope.Top.CurrentDirectEvalParameterBindings;
         if (parameterBindings == null || parameterBindings.Length == 0)
-            return YExpression.Constant(null, typeof(string[]));
+            return BExpression.Constant(null, typeof(string[]));
 
-        var bindings = new Sequence<YExpression>(parameterBindings.Length);
+        var bindings = new Sequence<BExpression>(parameterBindings.Length);
         foreach (var name in parameterBindings)
-            bindings.Add(YExpression.Constant(name));
+            bindings.Add(BExpression.Constant(name));
 
-        return YExpression.NewArrayInit(typeof(string), bindings);
+        return BExpression.NewArrayInit(typeof(string), bindings);
     }
 
-    private YExpression CaptureDirectEvalPrivateNames()
+    private BExpression CaptureDirectEvalPrivateNames()
     {
         var privateNames = scope.Top.DirectEvalPrivateNames;
         if (privateNames == null || privateNames.Length == 0)
-            return YExpression.Constant(null, typeof(string[]));
+            return BExpression.Constant(null, typeof(string[]));
 
-        var bindings = new Sequence<YExpression>(privateNames.Length);
+        var bindings = new Sequence<BExpression>(privateNames.Length);
         foreach (var name in privateNames)
-            bindings.Add(YExpression.Constant(name));
+            bindings.Add(BExpression.Constant(name));
 
-        return YExpression.NewArrayInit(typeof(string), bindings);
+        return BExpression.NewArrayInit(typeof(string), bindings);
     }
 }

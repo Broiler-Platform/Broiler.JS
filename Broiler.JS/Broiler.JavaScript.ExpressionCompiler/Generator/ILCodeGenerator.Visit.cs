@@ -12,7 +12,7 @@ public struct CodeInfo(bool success)
 
 }
 
-public partial class ILCodeGenerator: YExpressionVisitor<CodeInfo>
+public partial class ILCodeGenerator: BExpressionVisitor<CodeInfo>
 {
 
 }

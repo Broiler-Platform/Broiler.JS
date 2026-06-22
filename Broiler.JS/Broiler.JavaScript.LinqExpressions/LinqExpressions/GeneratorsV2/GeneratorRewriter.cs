@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Exp = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
-using ParameterExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.YParameterExpression;
-using LambdaExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.YLambdaExpression;
-using LabelTarget = Broiler.JavaScript.ExpressionCompiler.Expressions.YLabelTarget;
-using GotoExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.YGoToExpression;
-using TryExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.YTryCatchFinallyExpression;
+using Exp = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
+using ParameterExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression;
+using LambdaExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.BLambdaExpression;
+using LabelTarget = Broiler.JavaScript.ExpressionCompiler.Expressions.BLabelTarget;
+using GotoExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.BGoToExpression;
+using TryExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.BTryCatchFinallyExpression;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.ClosureSeparator;
@@ -18,16 +18,16 @@ namespace Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 
 
 
-public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, ParameterExpression replaceArguments, ParameterExpression replaceStackItem, ParameterExpression replaceContext, ParameterExpression replaceScriptInfo) : YExpressionMapVisitor
+public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, ParameterExpression replaceArguments, ParameterExpression replaceStackItem, ParameterExpression replaceContext, ParameterExpression replaceScriptInfo) : BExpressionMapVisitor
 {
     private readonly ParameterExpression args = Expression.Parameter(typeof(Arguments).MakeByRefType(), "args");
     private readonly ParameterExpression nextJump = Expression.Parameter(typeof(int), "nextJump");
     private readonly ParameterExpression nextValue = Expression.Parameter(typeof(JSValue), "nextValue");
     private readonly ParameterExpression exception = Expression.Parameter(typeof(Exception), "ex");
-    private readonly YFieldExpression Context = Expression.Field(pe, "Context");
+    private readonly BFieldExpression Context = Expression.Field(pe, "Context");
     private readonly ParameterExpression _replaceScriptInfo = replaceScriptInfo;
     private readonly ParameterExpression _scriptInfoBox = Expression.Parameter(typeof(Box<ScriptInfo>), "scriptInfo");
-    private readonly YFieldExpression StackItem = Expression.Field(pe, "StackItem");
+    private readonly BFieldExpression StackItem = Expression.Field(pe, "StackItem");
     private readonly LabelTarget generatorReturn = Expression.Label(typeof(GeneratorState), "RETURN");
     private readonly Sequence<(ParameterExpression original, ParameterExpression box, int index, Expression boxField)> lifted = [];
 
@@ -59,7 +59,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         var jumpExp = gw.GenerateJumps(@break);
         var (boxes, inits) = gw.LoadBoxes();
 
-        YBlockExpression newBody;
+        BBlockExpression newBody;
 
         if (boxes == null)
         {
@@ -128,7 +128,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         return Expression.JumpSwitch(nextJump + offset, cases);
     }
 
-    protected override Expression VisitBlock(YBlockExpression node)
+    protected override Expression VisitBlock(BBlockExpression node)
     {
         if (!node.HasYield())
             return base.VisitBlock(node);
@@ -174,11 +174,11 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
     }
 
 
-    private sealed class NonYieldingCatchParameterFinder : YExpressionMapVisitor
+    private sealed class NonYieldingCatchParameterFinder : BExpressionMapVisitor
     {
         private readonly HashSet<ParameterExpression> parameters = new(CoreReferenceEqualityComparer.Instance);
 
-        public static HashSet<ParameterExpression> Find(YBlockExpression block)
+        public static HashSet<ParameterExpression> Find(BBlockExpression block)
         {
             var finder = new NonYieldingCatchParameterFinder();
             var en = block.Expressions.GetFastEnumerator();
@@ -199,16 +199,16 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         protected override Expression VisitLambda(LambdaExpression yLambdaExpression) => yLambdaExpression;
     }
 
-    protected override Exp VisitReturn(YReturnExpression node)
+    protected override Exp VisitReturn(BReturnExpression node)
     {
-        if (node.Default == null || node.Default.NodeType != YExpressionType.Yield)
+        if (node.Default == null || node.Default.NodeType != BExpressionType.Yield)
             return Expression.Return(generatorReturn, GeneratorStateBuilder.New(Visit(node.Default), -1));
 
         // return yield case... need to expand..
         // Preserve the suspension kind: `return yield* X` must delegate, and
         // `return await X` (async) must be treated as an await — otherwise the
         // flags are lost and the operand surfaces as a plain yield value.
-        var yield = node.Default as YYieldExpression;
+        var yield = node.Default as BYieldExpression;
         var arg = Visit(yield.Argument);
         var (label, id) = GetNextYieldJumpTarget();
 
@@ -250,7 +250,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         return r;
     }
 
-    protected override Exp VisitYield(YYieldExpression node)
+    protected override Exp VisitYield(BYieldExpression node)
     {
         var arg = Visit(node.Argument);
         var (label, id) = GetNextYieldJumpTarget();
@@ -258,10 +258,10 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         return Expression.Block(Expression.Return(generatorReturn, GeneratorStateBuilder.New(arg, id, node.DelegateYield, node.IsAwait)), Expression.Label(label), nextValue);
     }
 
-    protected override Exp VisitConditional(YConditionalExpression node)
+    protected override Exp VisitConditional(BConditionalExpression node)
     {
         var conditional = base.VisitConditional(node);
-        if (conditional is not YConditionalExpression rewritten)
+        if (conditional is not BConditionalExpression rewritten)
             return conditional;
 
         static Exp ToVoid(Exp expression) => expression.Type == typeof(void)
@@ -270,7 +270,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
 
         if (node.Type == typeof(void))
         {
-            return new YConditionalExpression(
+            return new BConditionalExpression(
                 rewritten.test,
                 ToVoid(rewritten.@true),
                 rewritten.@false == null ? null : ToVoid(rewritten.@false),
@@ -295,7 +295,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         var temp = Expression.Parameter(node.Type);
         return Expression.Block(
             new Sequence<ParameterExpression> { temp },
-            new YConditionalExpression(
+            new BConditionalExpression(
                 rewritten.test,
                 ToVoid(Expression.Assign(temp, rewritten.@true)),
                 ToVoid(Expression.Assign(temp, rewritten.@false)),
@@ -351,7 +351,7 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         LabelTarget finallyLabel = null;
         int finallyId = 0;
 
-        var tryList = new YBlockBuilder();
+        var tryList = new BBlockBuilder();
         if (hasCatch)
             (catchLabel, catchId) = GetNextYieldJumpTarget();
 

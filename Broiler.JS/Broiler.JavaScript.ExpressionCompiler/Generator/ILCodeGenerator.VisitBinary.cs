@@ -6,11 +6,11 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitBinary(YBinaryExpression yBinaryExpression)
+    protected override CodeInfo VisitBinary(BBinaryExpression yBinaryExpression)
     {
         switch (yBinaryExpression.Operator)
         {
-            case YOperator.BooleanAnd:
+            case BOperator.BooleanAnd:
                 {
                     var trueEnd = il.DefineLabel("trueEnd", il.Top);
                     var falseEnd = il.DefineLabel("falseEnd", il.Top);
@@ -23,7 +23,7 @@ public partial class ILCodeGenerator
                     il.MarkLabel(falseEnd);
                 }
                 return true;
-            case YOperator.BooleanOr:
+            case BOperator.BooleanOr:
                 {
                     var trueEnd = il.DefineLabel("trueEnd", il.Top);
                     var falseEnd = il.DefineLabel("falseEnd", il.Top);
@@ -43,61 +43,61 @@ public partial class ILCodeGenerator
         Visit(yBinaryExpression.Right);
         switch (yBinaryExpression.Operator)
         {
-            case YOperator.Add:
+            case BOperator.Add:
                 il.Emit(OpCodes.Add);
                 break;
-            case YOperator.Subtract:
+            case BOperator.Subtract:
                 il.Emit(OpCodes.Sub);
                 break;
-            case YOperator.Multipley:
+            case BOperator.Multipley:
                 il.Emit(OpCodes.Mul);
                 break;
-            case YOperator.Divide:
+            case BOperator.Divide:
                 il.Emit(OpCodes.Div);
                 break;
-            case YOperator.Mod:
+            case BOperator.Mod:
                 il.Emit(OpCodes.Rem);
                 break;
-            case YOperator.Xor:
+            case BOperator.Xor:
                 il.Emit(OpCodes.Xor);
                 break;
-            case YOperator.BitwiseAnd:
+            case BOperator.BitwiseAnd:
                 il.Emit(OpCodes.And);
                 break;
-            case YOperator.BitwiseOr:
+            case BOperator.BitwiseOr:
                 il.Emit(OpCodes.Or);
                 break;
-            case YOperator.Less:
+            case BOperator.Less:
                 il.Emit(OpCodes.Clt);
                 break;
-            case YOperator.LessOrEqual:
+            case BOperator.LessOrEqual:
                 il.Emit(OpCodes.Cgt);
                 il.EmitConstant(0);
                 il.Emit(OpCodes.Ceq);
                 break;
-            case YOperator.Greater:
+            case BOperator.Greater:
                 il.Emit(OpCodes.Cgt);
                 break;
-            case YOperator.GreaterOrEqual:
+            case BOperator.GreaterOrEqual:
                 il.Emit(OpCodes.Clt);
                 il.EmitConstant(0);
                 il.Emit(OpCodes.Ceq);
                 break;
-            case YOperator.Equal:
+            case BOperator.Equal:
                 il.Emit(OpCodes.Ceq);
                 break;
-            case YOperator.NotEqual:
+            case BOperator.NotEqual:
                 il.Emit(OpCodes.Ceq);
                 il.EmitConstant(0);
                 il.Emit(OpCodes.Ceq);
                 break;
-            case YOperator.LeftShift:
+            case BOperator.LeftShift:
                 il.Emit(OpCodes.Shl);
                 break;
-            case YOperator.RightShift:
+            case BOperator.RightShift:
                 il.Emit(OpCodes.Shr);
                 break;
-            case YOperator.UnsignedRightShift:
+            case BOperator.UnsignedRightShift:
                 il.Emit(OpCodes.Shr_Un);
                 break;
             default:

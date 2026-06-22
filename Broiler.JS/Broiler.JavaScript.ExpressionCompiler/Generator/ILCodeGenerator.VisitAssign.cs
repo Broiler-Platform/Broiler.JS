@@ -5,12 +5,12 @@ using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
-public readonly struct DataSource(YExpression? exp, int index = -1)
+public readonly struct DataSource(BExpression? exp, int index = -1)
 {
-    public readonly YExpression? Expression = exp;
+    public readonly BExpression? Expression = exp;
     public readonly int Index = index;
 
-    public static implicit operator DataSource(YExpression exp) 
+    public static implicit operator DataSource(BExpression exp) 
         => new(exp);
 
     public static implicit  operator DataSource(int index)
@@ -19,7 +19,7 @@ public readonly struct DataSource(YExpression? exp, int index = -1)
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitAssign(YAssignExpression yAssignExpression)
+    protected override CodeInfo VisitAssign(BAssignExpression yAssignExpression)
     {
         // we need to investigate each type of expression on the left...
         // Visit(yAssignExpression.Right);
@@ -50,43 +50,43 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    protected CodeInfo VisitAssign(YAssignExpression exp, int savedIndex)
+    protected CodeInfo VisitAssign(BAssignExpression exp, int savedIndex)
     {
         switch (exp.Left.NodeType)
         {
-            case YExpressionType.Parameter:
-                return AssignParameter(exp.Right, exp.Left as YParameterExpression, savedIndex);
-            case YExpressionType.Property:
-                return AssignProperty(exp.Right, (exp.Left as YPropertyExpression)!, savedIndex);
-            case YExpressionType.Field:
-                return AssignField(exp.Right, (exp.Left as YFieldExpression)!, savedIndex);
-            case YExpressionType.Index:
-                return AssignIndex(exp.Right, (exp.Left as YIndexExpression)!, savedIndex);
-            case YExpressionType.ArrayIndex:
-                return AssignArrayIndex(exp.Right, exp.Left as YArrayIndexExpression, savedIndex);
+            case BExpressionType.Parameter:
+                return AssignParameter(exp.Right, exp.Left as BParameterExpression, savedIndex);
+            case BExpressionType.Property:
+                return AssignProperty(exp.Right, (exp.Left as BPropertyExpression)!, savedIndex);
+            case BExpressionType.Field:
+                return AssignField(exp.Right, (exp.Left as BFieldExpression)!, savedIndex);
+            case BExpressionType.Index:
+                return AssignIndex(exp.Right, (exp.Left as BIndexExpression)!, savedIndex);
+            case BExpressionType.ArrayIndex:
+                return AssignArrayIndex(exp.Right, exp.Left as BArrayIndexExpression, savedIndex);
         }
         throw new NotImplementedException();
     }
 
-    private CodeInfo Assign(YExpression left, DataSource source, int savedIndex = -1)
+    private CodeInfo Assign(BExpression left, DataSource source, int savedIndex = -1)
     {
         switch (left.NodeType)
         {
-            case YExpressionType.Parameter:
-                return AssignParameter(source, left as YParameterExpression, savedIndex);
-            case YExpressionType.Property:
-                return AssignProperty(source, (left as YPropertyExpression)!, savedIndex);
-            case YExpressionType.Field:
-                return AssignField(source, (left as YFieldExpression)!, savedIndex);
-            case YExpressionType.Index:
-                return AssignIndex(source, (left as YIndexExpression)!, savedIndex);
-            case YExpressionType.ArrayIndex:
-                return AssignArrayIndex(source, left as YArrayIndexExpression, savedIndex);
+            case BExpressionType.Parameter:
+                return AssignParameter(source, left as BParameterExpression, savedIndex);
+            case BExpressionType.Property:
+                return AssignProperty(source, (left as BPropertyExpression)!, savedIndex);
+            case BExpressionType.Field:
+                return AssignField(source, (left as BFieldExpression)!, savedIndex);
+            case BExpressionType.Index:
+                return AssignIndex(source, (left as BIndexExpression)!, savedIndex);
+            case BExpressionType.ArrayIndex:
+                return AssignArrayIndex(source, left as BArrayIndexExpression, savedIndex);
         }
         throw new NotImplementedException();
     }
 
-    private CodeInfo AssignIndex(DataSource exp, YIndexExpression yIndexExpression, int savedIndex = -1)
+    private CodeInfo AssignIndex(DataSource exp, BIndexExpression yIndexExpression, int savedIndex = -1)
     {
         Visit(yIndexExpression.Target);
         var pa = yIndexExpression.SetMethod!.GetParameters();
@@ -103,11 +103,11 @@ public partial class ILCodeGenerator
                 }
             }
 
-            if(pe.NodeType == YExpressionType.Assign)
+            if(pe.NodeType == BExpressionType.Assign)
             {
                 using var t = il.NewTemp(pe.Type);
                 var ti = t.LocalIndex;
-                VisitAssign((pe as YAssignExpression)!, ti);
+                VisitAssign((pe as BAssignExpression)!, ti);
                 il.EmitLoadLocal(ti);
                 continue;
             }
@@ -119,7 +119,7 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    private CodeInfo AssignProperty(DataSource exp, YPropertyExpression yPropertyExpression, int savedIndex = -1)
+    private CodeInfo AssignProperty(DataSource exp, BPropertyExpression yPropertyExpression, int savedIndex = -1)
     {
         if (!yPropertyExpression.IsStatic)
             Visit(yPropertyExpression.Target);
@@ -128,7 +128,7 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    private CodeInfo AssignField(DataSource exp, YFieldExpression yFieldExpression, int savedIndex = -1)
+    private CodeInfo AssignField(DataSource exp, BFieldExpression yFieldExpression, int savedIndex = -1)
     {
         if (!yFieldExpression.FieldInfo.IsStatic)
         {
@@ -165,23 +165,23 @@ public partial class ILCodeGenerator
     // Detects whether evaluating an expression may transfer control out of itself
     // (a generator-rewritten `return`) — i.e. emit a `ret`/branch while a value is
     // mid-computation. Nested lambdas have their own IL stream and are skipped.
-    private sealed class ControlTransferScanner : YExpressionMapVisitor
+    private sealed class ControlTransferScanner : BExpressionMapVisitor
     {
         private bool found;
 
-        public static bool MayTransfer(YExpression exp)
+        public static bool MayTransfer(BExpression exp)
         {
             var scanner = new ControlTransferScanner();
             scanner.Visit(exp);
             return scanner.found;
         }
 
-        protected override YExpression VisitReturn(YReturnExpression node)
+        protected override BExpression VisitReturn(BReturnExpression node)
         {
             found = true;
             return node;
         }
 
-        protected override YExpression VisitLambda(YLambdaExpression node) => node;
+        protected override BExpression VisitLambda(BLambdaExpression node) => node;
     }
 }

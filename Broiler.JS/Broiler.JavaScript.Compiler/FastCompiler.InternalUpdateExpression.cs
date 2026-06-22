@@ -1,4 +1,4 @@
-using Broiler.JavaScript.ExpressionCompiler.Expressions;
+﻿using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Ast.Misc;
@@ -23,16 +23,16 @@ partial class FastCompiler
     private static JSValue ThrowInvalidUpdateReference() =>
         throw JSEngine.NewReferenceError("Invalid left-hand side expression for update");
 
-    private YExpression InternalVisitUpdateExpression(AstUnaryExpression updateExpression)
+    private BExpression InternalVisitUpdateExpression(AstUnaryExpression updateExpression)
     {
         // added support for a++, a--
         updateExpression.Argument.VerifyIdentifierForUpdate(IsStrictMode);
 
         if (updateExpression.Argument is AstCallExpression)
         {
-            return YExpression.Block(
+            return BExpression.Block(
                 VisitExpression(updateExpression.Argument),
-                YExpression.Call(null, ThrowInvalidUpdateReferenceMethod));
+                BExpression.Call(null, ThrowInvalidUpdateReferenceMethod));
         }
 
         if (updateExpression.Argument is AstIdentifier identifier)
@@ -42,24 +42,24 @@ partial class FastCompiler
                 using var withObject = scope.Top.GetTempVariable(typeof(JSObject));
                 using var current = scope.Top.GetTempVariable(typeof(JSValue));
                 using var previous = updateExpression.Prefix ? null : scope.Top.GetTempVariable(typeof(JSValue));
-                var variables = new Sequence<YParameterExpression> { withObject.Variable, current.Variable };
+                var variables = new Sequence<BParameterExpression> { withObject.Variable, current.Variable };
                 var globalKey = KeyOfName(identifier.Name);
 
                 if (previous != null)
                     variables.Add(previous.Variable);
 
-                var dynamicStatements = new Sequence<YExpression>
+                var dynamicStatements = new Sequence<BExpression>
                 {
-                    YExpression.Assign(current.Variable, JSContextBuilder.ResolveIdentifier(globalKey)),
+                    BExpression.Assign(current.Variable, JSContextBuilder.ResolveIdentifier(globalKey)),
                     // Coerce to Number/BigInt once: the postfix result is the coerced
                     // old value and the operand's valueOf must run exactly once.
-                    YExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
+                    BExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
                 };
 
                 if (previous != null)
-                    dynamicStatements.Add(YExpression.Assign(previous.Variable, current.Expression));
+                    dynamicStatements.Add(BExpression.Assign(previous.Variable, current.Expression));
 
-                dynamicStatements.Add(YExpression.Assign(
+                dynamicStatements.Add(BExpression.Assign(
                     current.Variable,
                     updateExpression.Operator == UnaryOperator.Increment
                         ? JSValueBuilder.Increment(current.Expression)
@@ -68,16 +68,16 @@ partial class FastCompiler
                 dynamicStatements.Add(previous?.Expression ?? current.Expression);
 
                 var retainedWithReference = JSValueBuilder.Index(withObject.Expression, globalKey);
-                var withStatements = new Sequence<YExpression>
+                var withStatements = new Sequence<BExpression>
                 {
-                    YExpression.Assign(current.Variable, retainedWithReference),
-                    YExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
+                    BExpression.Assign(current.Variable, retainedWithReference),
+                    BExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
                 };
 
                 if (previous != null)
-                    withStatements.Add(YExpression.Assign(previous.Variable, current.Expression));
+                    withStatements.Add(BExpression.Assign(previous.Variable, current.Expression));
 
-                withStatements.Add(YExpression.Assign(
+                withStatements.Add(BExpression.Assign(
                     current.Variable,
                     updateExpression.Operator == UnaryOperator.Increment
                         ? JSValueBuilder.Increment(current.Expression)
@@ -85,13 +85,13 @@ partial class FastCompiler
                 withStatements.Add(JSContextBuilder.AssignWithObjectIdentifier(withObject.Expression, globalKey, current.Expression, IsStrictMode));
                 withStatements.Add(previous?.Expression ?? current.Expression);
 
-                return YExpression.Block(
+                return BExpression.Block(
                     variables,
-                    YExpression.Assign(withObject.Expression, JSContextBuilder.ResolveWithObject(globalKey)),
-                    YExpression.Condition(
-                        YExpression.NotEqual(withObject.Expression, YExpression.Constant(null, typeof(JSObject))),
-                        YExpression.Block(withStatements),
-                        YExpression.Block(dynamicStatements),
+                    BExpression.Assign(withObject.Expression, JSContextBuilder.ResolveWithObject(globalKey)),
+                    BExpression.Condition(
+                        BExpression.NotEqual(withObject.Expression, BExpression.Constant(null, typeof(JSObject))),
+                        BExpression.Block(withStatements),
+                        BExpression.Block(dynamicStatements),
                         typeof(JSValue)));
             }
 
@@ -99,30 +99,30 @@ partial class FastCompiler
             {
                 using var current = scope.Top.GetTempVariable(typeof(JSValue));
                 using var previous = updateExpression.Prefix ? null : scope.Top.GetTempVariable(typeof(JSValue));
-                var variables = new Sequence<YParameterExpression> { current.Variable };
-                var statements = new Sequence<YExpression>
+                var variables = new Sequence<BParameterExpression> { current.Variable };
+                var statements = new Sequence<BExpression>
                 {
-                    YExpression.Assign(current.Variable, variable.Expression),
+                    BExpression.Assign(current.Variable, variable.Expression),
                     // Coerce to Number/BigInt once: the postfix result is the coerced
                     // old value (`var y = "1"++` yields the Number 1).
-                    YExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
+                    BExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
                 };
 
                 if (previous != null)
                 {
                     variables.Add(previous.Variable);
-                    statements.Add(YExpression.Assign(previous.Variable, current.Expression));
+                    statements.Add(BExpression.Assign(previous.Variable, current.Expression));
                 }
 
-                statements.Add(YExpression.Assign(
+                statements.Add(BExpression.Assign(
                     current.Variable,
                     updateExpression.Operator == UnaryOperator.Increment
                         ? JSValueBuilder.Increment(current.Expression)
                         : JSValueBuilder.Decrement(current.Expression)));
-                statements.Add(YExpression.Assign(variable.Expression, current.Expression));
+                statements.Add(BExpression.Assign(variable.Expression, current.Expression));
                 statements.Add(previous?.Expression ?? current.Expression);
 
-                return YExpression.Block(variables, statements);
+                return BExpression.Block(variables, statements);
             }
 
             // An eval-introduced global `var` is deletable: its read goes through the throwing
@@ -136,33 +136,33 @@ partial class FastCompiler
             {
                 using var current = scope.Top.GetTempVariable(typeof(JSValue));
                 using var previous = updateExpression.Prefix ? null : scope.Top.GetTempVariable(typeof(JSValue));
-                var variables = new Sequence<YParameterExpression> { current.Variable };
-                var statements = new Sequence<YExpression>
+                var variables = new Sequence<BParameterExpression> { current.Variable };
+                var statements = new Sequence<BExpression>
                 {
-                    YExpression.Assign(current.Variable, variable.ReadExpression),
+                    BExpression.Assign(current.Variable, variable.ReadExpression),
                     // Coerce to Number/BigInt once: the postfix result is the coerced old value.
-                    YExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
+                    BExpression.Assign(current.Variable, JSValueBuilder.ToNumeric(current.Expression))
                 };
 
                 if (previous != null)
                 {
                     variables.Add(previous.Variable);
-                    statements.Add(YExpression.Assign(previous.Variable, current.Expression));
+                    statements.Add(BExpression.Assign(previous.Variable, current.Expression));
                 }
 
-                statements.Add(YExpression.Assign(
+                statements.Add(BExpression.Assign(
                     current.Variable,
                     updateExpression.Operator == UnaryOperator.Increment
                         ? JSValueBuilder.Increment(current.Expression)
                         : JSValueBuilder.Decrement(current.Expression)));
-                statements.Add(YExpression.Assign(variable.Expression, current.Expression));
+                statements.Add(BExpression.Assign(variable.Expression, current.Expression));
                 statements.Add(previous?.Expression ?? current.Expression);
 
-                return YExpression.Block(variables, statements);
+                return BExpression.Block(variables, statements);
             }
         }
 
-        var list = new Sequence<YExpression>();
+        var list = new Sequence<BExpression>();
 
         FastFunctionScope.VariableScope target = null;
         FastFunctionScope.VariableScope key = null;
@@ -175,7 +175,7 @@ partial class FastCompiler
             var isSuper = memberExpression.Object?.Type == FastNodeType.Super;
 
             target = scope.Top.GetTempVariable(typeof(JSValue));
-            list.Add(YExpression.Assign(target.Variable, VisitExpression(memberExpression.Object)));
+            list.Add(BExpression.Assign(target.Variable, VisitExpression(memberExpression.Object)));
 
             if (isSuper)
             {
@@ -192,26 +192,26 @@ partial class FastCompiler
                 if (memberExpression.Computed)
                 {
                     key = scope.Top.GetTempVariable(typeof(JSValue));
-                    list.Add(YExpression.Assign(key.Variable, VisitExpression(memberExpression.Property)));
-                    list.Add(YExpression.Assign(superBase.Variable, scope.Top.Super));
-                    list.Add(YExpression.Assign(key.Variable, YExpression.Call(null, NormalizeUpdatePropertyKeyMethod, key.Expression)));
+                    list.Add(BExpression.Assign(key.Variable, VisitExpression(memberExpression.Property)));
+                    list.Add(BExpression.Assign(superBase.Variable, scope.Top.Super));
+                    list.Add(BExpression.Assign(key.Variable, BExpression.Call(null, NormalizeUpdatePropertyKeyMethod, key.Expression)));
                     right = JSValueBuilder.Index(target.Expression, superBase.Expression, key.Expression);
                 }
                 else
                 {
-                    list.Add(YExpression.Assign(superBase.Variable, scope.Top.Super));
+                    list.Add(BExpression.Assign(superBase.Variable, scope.Top.Super));
                     right = JSValueBuilder.Index(target.Expression, superBase.Expression, CreatePropertyKeyExpression(memberExpression.Property, false));
                 }
             }
             else if (memberExpression.Computed)
             {
                 key = scope.Top.GetTempVariable(typeof(JSValue));
-                list.Add(YExpression.Assign(key.Variable, VisitExpression(memberExpression.Property)));
+                list.Add(BExpression.Assign(key.Variable, VisitExpression(memberExpression.Property)));
                 // Per spec, ToObject(base) must precede ToPropertyKey(key).
                 // RequireObjectCoercible throws TypeError for null/undefined before
                 // NormalizePropertyKey can trigger observable side effects (e.g. toString).
-                list.Add(YExpression.Call(null, RequireObjectCoercibleMethod, target.Expression));
-                list.Add(YExpression.Assign(key.Variable, YExpression.Call(null, NormalizeUpdatePropertyKeyMethod, key.Expression)));
+                list.Add(BExpression.Call(null, RequireObjectCoercibleMethod, target.Expression));
+                list.Add(BExpression.Assign(key.Variable, BExpression.Call(null, NormalizeUpdatePropertyKeyMethod, key.Expression)));
                 right = JSValueBuilder.Index(target.Expression, key.Expression);
             }
             else
@@ -222,13 +222,13 @@ partial class FastCompiler
 
         switch (right.NodeType)
         {
-            case YExpressionType.Index:
+            case BExpressionType.Index:
                 if (target == null)
                 {
-                    var index = right as YIndexExpression;
+                    var index = right as BIndexExpression;
                     target = scope.Top.GetTempVariable(index.Type);
-                    list.Add(YExpression.Assign(target.Variable, index.Target));
-                    right = YExpression.Index(target.Variable, index.Property, index.Arguments);
+                    list.Add(BExpression.Assign(target.Variable, index.Target));
+                    right = BExpression.Index(target.Variable, index.Property, index.Arguments);
                 }
                 break;
         }
@@ -238,7 +238,7 @@ partial class FastCompiler
         // once and the result of a postfix update is the coerced old value
         // (`obj.x++` where obj.x is "1" yields the Number 1, not the String "1").
         var coerced = scope.Top.GetTempVariable(typeof(JSValue));
-        list.Add(YExpression.Assign(coerced.Variable, JSValueBuilder.ToNumeric(right)));
+        list.Add(BExpression.Assign(coerced.Variable, JSValueBuilder.ToNumeric(right)));
 
         var newValue = updateExpression.Operator == UnaryOperator.Increment
             ? JSValueBuilder.Increment(coerced.Expression)
@@ -250,19 +250,19 @@ partial class FastCompiler
             // before writing it back. The write may silently fail (e.g. non-writable
             // property in sloppy mode), but the expression must return the new value.
             @return = scope.Top.GetTempVariable(typeof(JSValue));
-            list.Add(YExpression.Assign(@return.Variable, newValue));
-            list.Add(YExpression.Assign(right, @return.Variable));
+            list.Add(BExpression.Assign(@return.Variable, newValue));
+            list.Add(BExpression.Assign(right, @return.Variable));
         }
         else
         {
             // Postfix: the coerced old value is the result; write the new value back.
-            list.Add(YExpression.Assign(right, newValue));
+            list.Add(BExpression.Assign(right, newValue));
             @return = coerced;
         }
 
         list.Add(@return.Variable);
 
-        var r = YExpression.Block(list);
+        var r = BExpression.Block(list);
         @return?.Dispose();
         if (!ReferenceEquals(@return, coerced))
             coerced.Dispose();

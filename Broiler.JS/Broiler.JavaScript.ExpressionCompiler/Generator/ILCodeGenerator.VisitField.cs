@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitField(YFieldExpression yFieldExpression)
+    protected override CodeInfo VisitField(BFieldExpression yFieldExpression)
     {
 
         var field = yFieldExpression.FieldInfo;

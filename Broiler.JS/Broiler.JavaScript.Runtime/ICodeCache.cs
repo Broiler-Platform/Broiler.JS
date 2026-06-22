@@ -7,7 +7,7 @@ namespace Broiler.JavaScript.Runtime;
 /// Factory delegate that compiles JavaScript source code into an
 /// expression tree representing a callable function.
 /// </summary>
-public delegate YExpression<JSFunctionDelegate> JSCodeCompiler();
+public delegate BExpression<JSFunctionDelegate> JSCodeCompiler();
 
 /// <summary>
 /// Defines the contract for caching compiled JavaScript code.

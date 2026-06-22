@@ -7,11 +7,11 @@ using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 namespace Broiler.JavaScript.ExpressionCompiler.SL;
 
-public class LambdaConverter : YExpressionVisitor<Expression>
+public class LambdaConverter : BExpressionVisitor<Expression>
 {
-    private Dictionary<YParameterExpression, ParameterExpression> cache = [];
+    private Dictionary<BParameterExpression, ParameterExpression> cache = [];
 
-    public (IFastEnumerable<ParameterExpression> pe, IDisposable disposable) Register(IFastEnumerable<YParameterExpression> plist)
+    public (IFastEnumerable<ParameterExpression> pe, IDisposable disposable) Register(IFastEnumerable<BParameterExpression> plist)
     {
         if (plist == null)
         {
@@ -41,45 +41,45 @@ public class LambdaConverter : YExpressionVisitor<Expression>
         return (pe, d);
     }
 
-    protected override Expression VisitAddressOf(YAddressOfExpression node) => throw new NotImplementedException();
+    protected override Expression VisitAddressOf(BAddressOfExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitArrayIndex(YArrayIndexExpression yArrayIndexExpression) => Expression.ArrayIndex(Visit(yArrayIndexExpression.Target), Visit(yArrayIndexExpression.Index));
+    protected override Expression VisitArrayIndex(BArrayIndexExpression yArrayIndexExpression) => Expression.ArrayIndex(Visit(yArrayIndexExpression.Target), Visit(yArrayIndexExpression.Index));
 
-    protected override Expression VisitArrayLength(YArrayLengthExpression arrayLengthExpression) => Expression.ArrayLength(Visit(arrayLengthExpression.Target));
+    protected override Expression VisitArrayLength(BArrayLengthExpression arrayLengthExpression) => Expression.ArrayLength(Visit(arrayLengthExpression.Target));
 
-    protected override Expression VisitAssign(YAssignExpression yAssignExpression) => Expression.Assign(Visit(yAssignExpression.Left), Visit(yAssignExpression.Right));
+    protected override Expression VisitAssign(BAssignExpression yAssignExpression) => Expression.Assign(Visit(yAssignExpression.Left), Visit(yAssignExpression.Right));
 
-    protected override Expression VisitBinary(YBinaryExpression yBinaryExpression)
+    protected override Expression VisitBinary(BBinaryExpression yBinaryExpression)
     {
         var left = Visit(yBinaryExpression.Left);
         var right = Visit(yBinaryExpression.Right);
         return yBinaryExpression.Operator switch
         {
-            YOperator.Add => Expression.Add(left, right),
-            YOperator.Subtract => Expression.Subtract(left, right),
-            YOperator.Multipley => Expression.Multiply(left, right),
-            YOperator.Divide => Expression.Divide(left, right),
-            YOperator.Mod => Expression.Modulo(left, right),
-            YOperator.Power => Expression.Power(left, right),
-            YOperator.Xor => Expression.ExclusiveOr(left, right),
-            YOperator.BitwiseAnd => Expression.And(left, right),
-            YOperator.BitwiseOr => Expression.Or(left, right),
-            YOperator.BooleanAnd => Expression.AndAlso(left, right),
-            YOperator.BooleanOr => Expression.OrElse(left, right),
-            YOperator.Less => Expression.LessThan(left, right),
-            YOperator.LessOrEqual => Expression.LessThanOrEqual(left, right),
-            YOperator.Greater => Expression.GreaterThan(left, right),
-            YOperator.GreaterOrEqual => Expression.GreaterThanOrEqual(left, right),
-            YOperator.Equal => Expression.Equal(left, right),
-            YOperator.NotEqual => Expression.NotEqual(left, right),
-            YOperator.LeftShift => Expression.LeftShift(left, right),
-            YOperator.RightShift => Expression.RightShift(left, right),
-            YOperator.UnsignedRightShift => Expression.RightShift(Expression.Convert(left, typeof(uint)), right),
+            BOperator.Add => Expression.Add(left, right),
+            BOperator.Subtract => Expression.Subtract(left, right),
+            BOperator.Multipley => Expression.Multiply(left, right),
+            BOperator.Divide => Expression.Divide(left, right),
+            BOperator.Mod => Expression.Modulo(left, right),
+            BOperator.Power => Expression.Power(left, right),
+            BOperator.Xor => Expression.ExclusiveOr(left, right),
+            BOperator.BitwiseAnd => Expression.And(left, right),
+            BOperator.BitwiseOr => Expression.Or(left, right),
+            BOperator.BooleanAnd => Expression.AndAlso(left, right),
+            BOperator.BooleanOr => Expression.OrElse(left, right),
+            BOperator.Less => Expression.LessThan(left, right),
+            BOperator.LessOrEqual => Expression.LessThanOrEqual(left, right),
+            BOperator.Greater => Expression.GreaterThan(left, right),
+            BOperator.GreaterOrEqual => Expression.GreaterThanOrEqual(left, right),
+            BOperator.Equal => Expression.Equal(left, right),
+            BOperator.NotEqual => Expression.NotEqual(left, right),
+            BOperator.LeftShift => Expression.LeftShift(left, right),
+            BOperator.RightShift => Expression.RightShift(left, right),
+            BOperator.UnsignedRightShift => Expression.RightShift(Expression.Convert(left, typeof(uint)), right),
             _ => throw new NotImplementedException(),
         };
     }
 
-    protected override Expression VisitBlock(YBlockExpression yBlockExpression)
+    protected override Expression VisitBlock(BBlockExpression yBlockExpression)
     {
         var (list, d) = Register(yBlockExpression.Variables);
         using (d)
@@ -88,98 +88,98 @@ public class LambdaConverter : YExpressionVisitor<Expression>
         }
     }
 
-    protected override Expression VisitBooleanConstant(YBooleanConstantExpression node) => throw new NotImplementedException();
+    protected override Expression VisitBooleanConstant(BBooleanConstantExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitBox(YBoxExpression node) => Expression.Convert(Visit(node.Target), typeof(object));
+    protected override Expression VisitBox(BBoxExpression node) => Expression.Convert(Visit(node.Target), typeof(object));
 
-    protected override Expression VisitByteConstant(YByteConstantExpression node) => throw new NotImplementedException();
+    protected override Expression VisitByteConstant(BByteConstantExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitCall(YCallExpression yCallExpression) => Expression.Call(Visit(yCallExpression.Target), yCallExpression.Method, yCallExpression.Arguments.Select(Visit));
+    protected override Expression VisitCall(BCallExpression yCallExpression) => Expression.Call(Visit(yCallExpression.Target), yCallExpression.Method, yCallExpression.Arguments.Select(Visit));
 
-    protected override Expression VisitCoalesce(YCoalesceExpression yCoalesceExpression) => Expression.Coalesce(Visit(yCoalesceExpression.Left), Visit(yCoalesceExpression.Right));
+    protected override Expression VisitCoalesce(BCoalesceExpression yCoalesceExpression) => Expression.Coalesce(Visit(yCoalesceExpression.Left), Visit(yCoalesceExpression.Right));
 
-    protected override Expression VisitCoalesceCall(YCoalesceCallExpression node) => throw new NotImplementedException();
+    protected override Expression VisitCoalesceCall(BCoalesceCallExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitConditional(YConditionalExpression yConditionalExpression) => Expression.Condition(
+    protected override Expression VisitConditional(BConditionalExpression yConditionalExpression) => Expression.Condition(
             Visit(yConditionalExpression.test),
             Visit(yConditionalExpression.@true),
             Visit(yConditionalExpression.@false));
 
-    protected override Expression VisitConstant(YConstantExpression yConstantExpression) => Expression.Constant(yConstantExpression.Value);
+    protected override Expression VisitConstant(BConstantExpression yConstantExpression) => Expression.Constant(yConstantExpression.Value);
 
-    protected override Expression VisitConvert(YConvertExpression convertExpression) => Expression.Convert(Visit(convertExpression), convertExpression.Type);
+    protected override Expression VisitConvert(BConvertExpression convertExpression) => Expression.Convert(Visit(convertExpression), convertExpression.Type);
 
-    protected override Expression VisitDebugInfo(YDebugInfoExpression node) => Expression.Empty();
+    protected override Expression VisitDebugInfo(BDebugInfoExpression node) => Expression.Empty();
 
-    protected override Expression VisitDelegate(YDelegateExpression yDelegateExpression) => throw new NotImplementedException();
+    protected override Expression VisitDelegate(BDelegateExpression yDelegateExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitDoubleConstant(YDoubleConstantExpression node) => throw new NotImplementedException();
+    protected override Expression VisitDoubleConstant(BDoubleConstantExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitEmpty(YEmptyExpression exp) => Expression.Empty();
+    protected override Expression VisitEmpty(BEmptyExpression exp) => Expression.Empty();
 
-    protected override Expression VisitField(YFieldExpression yFieldExpression) => Expression.Field(Visit(yFieldExpression.Target), yFieldExpression.FieldInfo);
+    protected override Expression VisitField(BFieldExpression yFieldExpression) => Expression.Field(Visit(yFieldExpression.Target), yFieldExpression.FieldInfo);
 
-    protected override Expression VisitFloatConstant(YFloatConstantExpression node) => throw new NotImplementedException();
+    protected override Expression VisitFloatConstant(BFloatConstantExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitGoto(YGoToExpression yGoToExpression) => throw new NotImplementedException();
+    protected override Expression VisitGoto(BGoToExpression yGoToExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitILOffset(YILOffsetExpression node) => throw new NotImplementedException();
+    protected override Expression VisitILOffset(BILOffsetExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitIndex(YIndexExpression yIndexExpression) => throw new NotImplementedException();
+    protected override Expression VisitIndex(BIndexExpression yIndexExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitInt32Constant(YInt32ConstantExpression node) => throw new NotImplementedException();
+    protected override Expression VisitInt32Constant(BInt32ConstantExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitInt64Constant(YInt64ConstantExpression node) => throw new NotImplementedException();
+    protected override Expression VisitInt64Constant(BInt64ConstantExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitInvoke(YInvokeExpression invokeExpression) => throw new NotImplementedException();
+    protected override Expression VisitInvoke(BInvokeExpression invokeExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitJumpSwitch(YJumpSwitchExpression node) => throw new NotImplementedException();
+    protected override Expression VisitJumpSwitch(BJumpSwitchExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitLabel(YLabelExpression yLabelExpression) => throw new NotImplementedException();
+    protected override Expression VisitLabel(BLabelExpression yLabelExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitLambda(YLambdaExpression yLambdaExpression) => throw new NotImplementedException();
+    protected override Expression VisitLambda(BLambdaExpression yLambdaExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitListInit(YListInitExpression node) => throw new NotImplementedException();
+    protected override Expression VisitListInit(BListInitExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitLoop(YLoopExpression yLoopExpression) => throw new NotImplementedException();
+    protected override Expression VisitLoop(BLoopExpression yLoopExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitMemberInit(YMemberInitExpression memberInitExpression) => throw new NotImplementedException();
+    protected override Expression VisitMemberInit(BMemberInitExpression memberInitExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitMethodConstant(YMethodConstantExpression node) => throw new NotImplementedException();
+    protected override Expression VisitMethodConstant(BMethodConstantExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitNew(YNewExpression yNewExpression) => throw new NotImplementedException();
+    protected override Expression VisitNew(BNewExpression yNewExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitNewArray(YNewArrayExpression yNewArrayExpression) => throw new NotImplementedException();
+    protected override Expression VisitNewArray(BNewArrayExpression yNewArrayExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitNewArrayBounds(YNewArrayBoundsExpression yNewArrayBoundsExpression) => throw new NotImplementedException();
+    protected override Expression VisitNewArrayBounds(BNewArrayBoundsExpression yNewArrayBoundsExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitParameter(YParameterExpression yParameterExpression) => throw new NotImplementedException();
+    protected override Expression VisitParameter(BParameterExpression yParameterExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitProperty(YPropertyExpression yPropertyExpression) => throw new NotImplementedException();
+    protected override Expression VisitProperty(BPropertyExpression yPropertyExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitReturn(YReturnExpression yReturnExpression) => throw new NotImplementedException();
+    protected override Expression VisitReturn(BReturnExpression yReturnExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitStringConstant(YStringConstantExpression node) => throw new NotImplementedException();
+    protected override Expression VisitStringConstant(BStringConstantExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitSwitch(YSwitchExpression node) => throw new NotImplementedException();
+    protected override Expression VisitSwitch(BSwitchExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitThrow(YThrowExpression throwExpression) => throw new NotImplementedException();
+    protected override Expression VisitThrow(BThrowExpression throwExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitTryCatchFinally(YTryCatchFinallyExpression tryCatchFinallyExpression) => throw new NotImplementedException();
+    protected override Expression VisitTryCatchFinally(BTryCatchFinallyExpression tryCatchFinallyExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitTypeAs(YTypeAsExpression yTypeAsExpression) => throw new NotImplementedException();
+    protected override Expression VisitTypeAs(BTypeAsExpression yTypeAsExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitTypeConstant(YTypeConstantExpression node) => throw new NotImplementedException();
+    protected override Expression VisitTypeConstant(BTypeConstantExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitTypeIs(YTypeIsExpression yTypeIsExpression) => throw new NotImplementedException();
+    protected override Expression VisitTypeIs(BTypeIsExpression yTypeIsExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitUInt32Constant(YUInt32ConstantExpression node) => throw new NotImplementedException();
+    protected override Expression VisitUInt32Constant(BUInt32ConstantExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitUInt64Constant(YUInt64ConstantExpression node) => throw new NotImplementedException();
+    protected override Expression VisitUInt64Constant(BUInt64ConstantExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitUnary(YUnaryExpression yUnaryExpression) => throw new NotImplementedException();
+    protected override Expression VisitUnary(BUnaryExpression yUnaryExpression) => throw new NotImplementedException();
 
-    protected override Expression VisitUnbox(YUnboxExpression node) => throw new NotImplementedException();
+    protected override Expression VisitUnbox(BUnboxExpression node) => throw new NotImplementedException();
 
-    protected override Expression VisitYield(YYieldExpression node) => throw new NotImplementedException();
+    protected override Expression VisitYield(BYieldExpression node) => throw new NotImplementedException();
 }

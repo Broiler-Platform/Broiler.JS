@@ -7,7 +7,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 public partial class ILCodeGenerator
 {
 
-    protected override CodeInfo VisitArrayIndex(YArrayIndexExpression yArrayIndexExpression)
+    protected override CodeInfo VisitArrayIndex(BArrayIndexExpression yArrayIndexExpression)
     {
         Visit(yArrayIndexExpression.Target);
         Visit(yArrayIndexExpression.Index);

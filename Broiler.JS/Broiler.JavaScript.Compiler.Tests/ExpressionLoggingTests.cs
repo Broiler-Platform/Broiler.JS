@@ -1,4 +1,4 @@
-using System.CodeDom.Compiler;
+﻿using System.CodeDom.Compiler;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
@@ -11,11 +11,11 @@ public class ExpressionLoggingTests
     {
         var constructor = typeof(List<int>).GetConstructor(Type.EmptyTypes)!;
         var add = typeof(List<int>).GetMethod(nameof(List<int>.Add), [typeof(int)])!;
-        var expression = YExpression.MemberInit(
-            YExpression.New(constructor, Sequence<YExpression>.Empty),
-            new Sequence<YBinding>
+        var expression = BExpression.MemberInit(
+            BExpression.New(constructor, Sequence<BExpression>.Empty),
+            new Sequence<BBinding>
             {
-                new YElementInit(add, YExpression.Constant(1)),
+                new BElementInit(add, BExpression.Constant(1)),
                 null!
             });
 

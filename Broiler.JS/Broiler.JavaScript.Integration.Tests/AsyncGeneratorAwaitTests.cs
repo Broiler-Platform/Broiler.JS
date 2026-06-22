@@ -1,4 +1,4 @@
-using Broiler.JavaScript.Engine;
+﻿using Broiler.JavaScript.Engine;
 
 namespace Broiler.JavaScript.Integration.Tests;
 
@@ -10,7 +10,7 @@ namespace Broiler.JavaScript.Integration.Tests;
 // with the settled value) from a consumer-facing yield (surface {value,done}).
 // As a result the per-iteration await of `for await` — and any explicit `await`
 // — leaked to the consumer as if it were a yield. A new IsAwait marker now flows
-// from `await`/`for await` through YYieldExpression and GeneratorState, and the
+// from `await`/`for await` through BYieldExpression and GeneratorState, and the
 // async-generator driver awaits internal awaits while surfacing only user yields.
 //
 // This unblocks the 4 test262 for-await-of/async-gen-decl-dstr-*-yield-expr files.

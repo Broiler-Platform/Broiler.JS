@@ -81,7 +81,7 @@ internal static class TypeExtensions
 
     public static System.Reflection.Emit.MethodBuilder CreateMethod(
         this System.Reflection.Emit.TypeBuilder type,
-        YLambdaExpression exp,
+        BLambdaExpression exp,
         string name, bool hasThis)
     {
         var dt = exp.Type;// this is delegate type...

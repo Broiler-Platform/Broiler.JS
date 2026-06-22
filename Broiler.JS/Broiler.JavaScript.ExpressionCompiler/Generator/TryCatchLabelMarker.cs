@@ -3,9 +3,9 @@ using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
-public class TryCatchLabelMarker(ILTryBlock tryBlock, LabelInfo labels) : YExpressionMapVisitor
+public class TryCatchLabelMarker(ILTryBlock tryBlock, LabelInfo labels) : BExpressionMapVisitor
 {
-    public static void Collect(YTryCatchFinallyExpression body, ILTryBlock tryBlock, LabelInfo labels)
+    public static void Collect(BTryCatchFinallyExpression body, ILTryBlock tryBlock, LabelInfo labels)
     {
         TryCatchLabelMarker t = new(tryBlock, labels);
         t.Visit(body.Try);
@@ -15,20 +15,20 @@ public class TryCatchLabelMarker(ILTryBlock tryBlock, LabelInfo labels) : YExpre
             t.Visit(body.Finally);
     }
 
-    protected override YExpression VisitLabel(YLabelExpression yLabelExpression)
+    protected override BExpression VisitLabel(BLabelExpression yLabelExpression)
     {
         labels.Create(yLabelExpression.Target, tryBlock, false);
         return base.VisitLabel(yLabelExpression);
     }
 
-    protected override YExpression VisitLoop(YLoopExpression yLoopExpression)
+    protected override BExpression VisitLoop(BLoopExpression yLoopExpression)
     {
         labels.Create(yLoopExpression.Break, tryBlock, false);
         labels.Create(yLoopExpression.Continue, tryBlock, false);
         return base.VisitLoop(yLoopExpression);
     }
 
-    protected override YExpression VisitTryCatchFinally(YTryCatchFinallyExpression tryCatchFinallyExpression) => tryCatchFinallyExpression;
+    protected override BExpression VisitTryCatchFinally(BTryCatchFinallyExpression tryCatchFinallyExpression) => tryCatchFinallyExpression;
 
-    protected override YExpression VisitLambda(YLambdaExpression yLambdaExpression) => yLambdaExpression;
+    protected override BExpression VisitLambda(BLambdaExpression yLambdaExpression) => yLambdaExpression;
 }

@@ -1,4 +1,4 @@
-using Broiler.JavaScript.Ast.Expressions;
+﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
@@ -59,20 +59,20 @@ partial class FastCompiler
         return list;
     }
 
-    protected override YExpression VisitExportStatement(AstExportStatement exportStatement)
+    protected override BExpression VisitExportStatement(AstExportStatement exportStatement)
     {
         var exports = scope.Top.GetVariable("exports");
         var top = scope.Top;
         var declaration = exportStatement.Declaration;
-        YExpression left;
+        BExpression left;
 
         if (exportStatement.IsDefault)
         {
             var defExports = JSValueBuilder.Index(exports.Expression, KeyOfName("default"));
-            return YExpression.Assign(defExports, Visit(declaration));
+            return BExpression.Assign(defExports, Visit(declaration));
         }
 
-        var list = new Sequence<YExpression>();
+        var list = new Sequence<BExpression>();
 
         try
         {
@@ -89,10 +89,10 @@ partial class FastCompiler
                     {
                         left = JSValueBuilder.Index(exports.Expression, KeyOfName(name));
                         var right = top.GetVariable(name);
-                        list.Add(YExpression.Assign(left, right.Expression));
+                        list.Add(BExpression.Assign(left, right.Expression));
                     }
 
-                    return YExpression.Block(list);
+                    return BExpression.Block(list);
 
                 case FastNodeType.Identifier:
                     var id = exportStatement.Declaration as AstIdentifier;
@@ -100,15 +100,15 @@ partial class FastCompiler
 
                     if (exportStatement.Source != null)
                     {
-                        var tempRequire = YExpression.Parameter(typeof(JSValue));
+                        var tempRequire = BExpression.Parameter(typeof(JSValue));
                         var import = scope.Top.GetVariable("import");
                         var source = VisitExpression((AstExpression)exportStatement.Source);
                         var args = ArgumentsBuilder.New(JSUndefinedBuilder.Value, source);
 
-                        return YExpression.Block(
+                        return BExpression.Block(
                             tempRequire.AsSequence(),
-                            YExpression.Assign(tempRequire, YExpression.Yield(JSFunctionBuilder.InvokeFunction(import.Expression, args))),
-                            YExpression.Assign(left, tempRequire));
+                            BExpression.Assign(tempRequire, BExpression.Yield(JSFunctionBuilder.InvokeFunction(import.Expression, args))),
+                            BExpression.Assign(left, tempRequire));
                     }
 
                     return left;
@@ -120,7 +120,7 @@ partial class FastCompiler
                     if (fd.Id != null)
                     {
                         left = JSValueBuilder.Index(exports.Expression, KeyOfName(fd.Id.Name));
-                        return YExpression.Assign(left, fe);
+                        return BExpression.Assign(left, fe);
                     }
 
                     break;
@@ -132,7 +132,7 @@ partial class FastCompiler
                     if (cd.Id != null)
                     {
                         left = JSValueBuilder.Index(exports.Expression, KeyOfName(cd.Id.Name));
-                        return YExpression.Assign(left, ce);
+                        return BExpression.Assign(left, ce);
                     }
 
                     break;

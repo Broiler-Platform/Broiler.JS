@@ -28,11 +28,11 @@ internal static class ClrTypeBuilder
     }
     internal static ClrProxyFactory CompileToJSFunctionDelegate(this ConstructorInfo m, string name = null)
     {
-        var args = YExpression.Parameter(typeof(Arguments).MakeByRefType());
+        var args = BExpression.Parameter(typeof(Arguments).MakeByRefType());
         var parameters = m.GetArgumentsExpression(args);
-        YExpression body = YExpression.New(m, parameters);
-        body = m.DeclaringType.IsValueType ? YExpression.Box(body) : body;
-        var lambda = YExpression.Lambda<ClrProxyFactory>(name, body, args);
+        BExpression body = BExpression.New(m, parameters);
+        body = m.DeclaringType.IsValueType ? BExpression.Box(body) : body;
+        var lambda = BExpression.Lambda<ClrProxyFactory>(name, body, args);
         return lambda.Compile();
     }
 
@@ -59,51 +59,51 @@ internal static class ClrTypeBuilder
 
         // To speed up, we will use compilation.
 
-        var args = YExpression.Parameter(typeof(Arguments).MakeByRefType());
+        var args = BExpression.Parameter(typeof(Arguments).MakeByRefType());
         var parameters = m.GetArgumentsExpression(args);
 
-        YExpression body;
+        BExpression body;
 
         Type returnType;
 
         var @this = ArgumentsBuilder.This(args);
         var convertedThis = m.IsStatic ? null : JSValueToClrConverter.Get(@this, m.DeclaringType, "this");
         
-        body = YExpression.Call(convertedThis, m, parameters);
+        body = BExpression.Call(convertedThis, m, parameters);
         returnType = m.ReturnType;
 
         // unless return type is JSValue
         // we need to marshal it
         if (returnType == typeof(void))
         {
-            body = YExpression.Block(body, JSUndefinedBuilder.Value);
+            body = BExpression.Block(body, JSUndefinedBuilder.Value);
         }
         else
         {
             body = ClrProxyBuilder.Marshal(body);
         }
 
-        var lambda = YExpression.Lambda<JSFunctionDelegate>(name, body, args);
+        var lambda = BExpression.Lambda<JSFunctionDelegate>(name, body, args);
         return lambda.Compile();
     }
 
-    private static List<YExpression> GetArgumentsExpression(this MethodBase m, YExpression args)
+    private static List<BExpression> GetArgumentsExpression(this MethodBase m, BExpression args)
     {
-        var parameters = new List<YExpression>();
+        var parameters = new List<BExpression>();
         var pList = m.GetParameters();
         
         for (int i = 0; i < pList.Length; i++)
         {
             var ai = ArgumentsBuilder.GetAt(args, i);
             var pi = pList[i];
-            YExpression defValue;
+            BExpression defValue;
             
             if (pi.HasDefaultValue)
             {
-                defValue = YExpression.Constant(pi.DefaultValue);
+                defValue = BExpression.Constant(pi.DefaultValue);
                 if (pi.ParameterType.IsValueType)
                 {
-                    defValue = YExpression.Box(YExpression.Constant(pi.DefaultValue));
+                    defValue = BExpression.Box(BExpression.Constant(pi.DefaultValue));
                 }
                 parameters.Add(JSValueToClrConverter.GetArgument(args, i, pi.ParameterType, defValue, pi.Name));
                 continue;
@@ -113,11 +113,11 @@ internal static class ClrTypeBuilder
             
             if (pi.ParameterType.IsValueType)
             {
-                defValue = YExpression.Constant(Activator.CreateInstance(pi.ParameterType));
+                defValue = BExpression.Constant(Activator.CreateInstance(pi.ParameterType));
             }
             else
             {
-                defValue = YExpression.Null;
+                defValue = BExpression.Null;
             }
 
             parameters.Add(JSValueToClrConverter.GetArgument(args, i, pi.ParameterType, defValue, pi.Name));

@@ -7,11 +7,11 @@ namespace Broiler.JavaScript.ExpressionCompiler.Converters;
 
 public partial class LinqConverter
 {
-    protected override YExpression VisitBlock(BlockExpression node)
+    protected override BExpression VisitBlock(BlockExpression node)
     {
         var list = Register(node.Variables);
         var s = node.Expressions.Select(Visit).ToArray();
-        return YExpression.Block(list, s);
+        return BExpression.Block(list, s);
     }
 
 }

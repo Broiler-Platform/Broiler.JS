@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Reflection;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
-using ParameterExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.YParameterExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
+using ParameterExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Storage;
 using Broiler.JavaScript.Runtime;

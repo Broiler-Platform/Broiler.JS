@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
@@ -17,5 +17,5 @@ public static class JSAsyncFunctionBuilder
         _createMethod = asyncFunctionType.GetMethod("Create", [parameterType]);
     }
 
-    public static YExpression Create(YExpression fx) => YExpression.Call(null, _createMethod, fx);
+    public static BExpression Create(BExpression fx) => BExpression.Call(null, _createMethod, fx);
 }

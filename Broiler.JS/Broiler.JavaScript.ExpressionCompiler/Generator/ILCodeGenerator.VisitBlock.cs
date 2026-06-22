@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitBlock(YBlockExpression yBlockExpression)
+    protected override CodeInfo VisitBlock(BBlockExpression yBlockExpression)
     {
         using var tvs = tempVariables.Push();
         foreach(var p in yBlockExpression.FlattenVariables)
@@ -22,13 +22,13 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    private CodeInfo VisitSave(YExpression exp, bool save)
+    private CodeInfo VisitSave(BExpression exp, bool save)
     {
-        if(exp.NodeType == YExpressionType.Assign)
+        if(exp.NodeType == BExpressionType.Assign)
         {
             if (!save)
             {
-                return VisitAssign(exp as YAssignExpression, -1);
+                return VisitAssign(exp as BAssignExpression, -1);
             }
         }
         Visit(exp);

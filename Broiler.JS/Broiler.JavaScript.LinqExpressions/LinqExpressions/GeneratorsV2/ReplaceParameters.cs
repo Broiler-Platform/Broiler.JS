@@ -3,9 +3,9 @@ using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 namespace Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 
-internal class ReplaceParameters(Dictionary<YExpression, YExpression> replacers) : YExpressionMapVisitor
+internal class ReplaceParameters(Dictionary<BExpression, BExpression> replacers) : BExpressionMapVisitor
 {
-    public override YExpression VisitIn(YExpression exp)
+    public override BExpression VisitIn(BExpression exp)
     {
         if (exp == null)
             return null;
