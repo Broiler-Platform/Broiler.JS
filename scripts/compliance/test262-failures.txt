@@ -35,12 +35,9 @@ test/built-ins/DataView/prototype/setInt8/range-check-after-value-conversion.js
 test/built-ins/DataView/prototype/setUint16/range-check-after-value-conversion.js
 test/built-ins/DataView/prototype/setUint32/range-check-after-value-conversion.js
 test/built-ins/DataView/prototype/setUint8/range-check-after-value-conversion.js
-test/built-ins/Date/UTC/length.js
-test/built-ins/Date/UTC/no-arg.js
 test/built-ins/Date/prototype/getDate/this-value-valid-date.js
 test/built-ins/Date/prototype/setFullYear/arg-year-to-number.js
 test/built-ins/FinalizationRegistry/prototype/unregister/unregister-symbol-token.js
-test/built-ins/Math/hypot/Math.hypot_InfinityNaN.js
 test/built-ins/Math/round/S15.8.2.15_A7.js
 test/built-ins/Number/S9.3.1_A2_U180E.js
 test/built-ins/Number/S9.3.1_A3_T1_U180E.js
@@ -86,7 +83,6 @@ test/built-ins/ShadowRealm/prototype/evaluate/throws-typeerror-wrap-throwing.js
 test/built-ins/ShadowRealm/prototype/importValue/specifier-tostring.js
 test/built-ins/String/prototype/split/this-value-tostring-error.js
 test/built-ins/String/prototype/startsWith/return-true-if-searchstring-is-empty.js
-test/built-ins/String/raw/special-characters.js
 test/built-ins/Symbol/prototype/Symbol.toPrimitive/prop-desc.js
 test/built-ins/Temporal/Duration/prototype/round/next-day-out-of-range.js
 test/built-ins/Temporal/Duration/prototype/round/out-of-range-when-converting-from-normalized-duration.js
@@ -116,12 +112,8 @@ test/built-ins/Temporal/PlainDateTime/prototype/round/roundingmode-halfTrunc.js
 test/built-ins/Temporal/PlainDateTime/prototype/round/roundingmode-trunc.js
 test/built-ins/Temporal/PlainDateTime/prototype/toString/rounding-edge-of-range.js
 test/built-ins/Temporal/PlainDateTime/prototype/with/calendar-temporal-object-throws.js
-test/built-ins/Temporal/PlainMonthDay/from/monthcode-invalid.js
-test/built-ins/Temporal/PlainMonthDay/prototype/toPlainDate/limits.js
-test/built-ins/Temporal/PlainMonthDay/prototype/with/iso-year-used-only-for-overflow.js
 test/built-ins/Temporal/PlainTime/from/options-wrong-type.js
 test/built-ins/Temporal/PlainTime/from/order-of-operations.js
-test/built-ins/Temporal/PlainYearMonth/from/monthcode-invalid.js
 test/built-ins/Temporal/PlainYearMonth/prototype/since/throws-if-year-outside-valid-iso-range.js
 test/built-ins/Temporal/PlainYearMonth/prototype/toPlainDate/limits.js
 test/built-ins/Temporal/PlainYearMonth/prototype/until/throws-if-year-outside-valid-iso-range.js
@@ -144,8 +136,6 @@ test/intl402/Collator/prototype/resolvedOptions/resolved-collation-unicode-exten
 test/intl402/Collator/prototype/resolvedOptions/resolved-numeric-unicode-extensions-and-options.js
 test/intl402/Collator/usage-de.js
 test/intl402/DateTimeFormat/constructor-options-calendar-islamic-fallback.js
-test/intl402/DateTimeFormat/date-time-options.js
-test/intl402/DateTimeFormat/default-options-object-prototype.js
 test/intl402/DateTimeFormat/prototype/format/numbering-system.js
 test/intl402/DateTimeFormat/prototype/format/proleptic-gregorian-calendar.js
 test/intl402/DateTimeFormat/prototype/format/timedatestyle-en.js
@@ -160,7 +150,6 @@ test/intl402/DateTimeFormat/prototype/formatToParts/compare-to-temporal-lunisola
 test/intl402/DateTimeFormat/prototype/formatToParts/compare-to-temporal.js
 test/intl402/DateTimeFormat/prototype/formatToParts/dangi-calendar-dates.js
 test/intl402/DateTimeFormat/prototype/formatToParts/era.js
-test/intl402/DateTimeFormat/prototype/resolvedOptions/basic.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/hourCycle-timeStyle.js
 test/intl402/DateTimeFormat/prototype/resolvedOptions/resolved-calendar-unicode-extensions-and-options.js
@@ -181,7 +170,6 @@ test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-subdivision.js
 test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-timezone.js
 test/intl402/Intl/getCanonicalLocales/unicode-ext-canonicalize-yes-to-true.js
 test/intl402/Intl/supportedValuesOf/calendars-accepted-by-DateTimeFormat.js
-test/intl402/Intl/supportedValuesOf/invalid-key.js
 test/intl402/Intl/supportedValuesOf/numberingSystems-with-simple-digit-mappings.js
 test/intl402/Intl/supportedValuesOf/timeZones-include-non-continental.js
 test/intl402/ListFormat/prototype/formatToParts/en-us-disjunction.js
@@ -304,9 +292,6 @@ test/language/expressions/less-than-or-equal/bigint-and-incomparable-string.js
 test/language/expressions/less-than-or-equal/bigint-and-string.js
 test/language/expressions/less-than/bigint-and-incomparable-string.js
 test/language/expressions/right-shift/bigint.js
-test/language/expressions/tagged-template/template-object.js
-test/language/expressions/template-literal/tv-line-continuation.js
-test/language/expressions/template-literal/tv-line-terminator-sequence.js
 test/language/literals/regexp/S7.8.5_A1.1_T2.js
 test/language/literals/regexp/S7.8.5_A1.4_T2.js
 test/language/literals/regexp/S7.8.5_A2.1_T2.js
@@ -324,7 +309,6 @@ test/language/statements/continue/nested-let-bound-for-loops-outer-continue.js
 test/language/statements/continue/no-label-continue.js
 test/language/statements/continue/shadowing-loop-variable-in-same-scope-as-continue.js
 test/language/statements/continue/simple-and-labeled.js
-test/language/statements/for-of/iterator-next-result-value-attr-error.js
 test/language/statements/for/scope-body-lex-open.js
 test/language/types/reference/put-value-prop-base-primitive.js
 test/staging/Temporal/removed-methods.js
@@ -334,7 +318,6 @@ test/staging/sm/Array/from_proxy.js
 test/staging/sm/Array/to-length.js
 test/staging/sm/Array/toLocaleString-01.js
 test/staging/sm/Array/unshift-01.js
-test/staging/sm/AsyncGenerators/for-await-of-error.js
 test/staging/sm/Date/non-iso.js
 test/staging/sm/Date/two-digit-years.js
 test/staging/sm/Function/arguments-parameter-shadowing.js
@@ -368,7 +351,6 @@ test/staging/sm/expressions/destructuring-array-default-function-nested.js
 test/staging/sm/expressions/destructuring-array-default-function.js
 test/staging/sm/expressions/destructuring-array-default-simple.js
 test/staging/sm/extensions/mutable-proto-special-form.js
-test/staging/sm/extensions/quote-string-for-nul-character.js
 test/staging/sm/generators/return-finally.js
 test/staging/sm/generators/runtime.js
 test/staging/sm/global/eval-02.js
