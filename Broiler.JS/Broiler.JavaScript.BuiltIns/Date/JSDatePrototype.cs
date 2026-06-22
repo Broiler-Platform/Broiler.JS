@@ -65,7 +65,11 @@ public partial class JSDate
 
         var dateString = a.Get1();
 
-        if (dateString.IsNumber && double.IsNaN(dateString.DoubleValue))
+        // Fast path for the one-argument time-value form new Date(NaN). This must NOT short-circuit
+        // the multi-argument component form: new Date(year, month, …) has to ToNumber *every* argument
+        // (in order) even when an earlier one is NaN, so a later argument's coercion side effect (e.g.
+        // a throwing valueOf) is still observed — test262 sm/Date/constructor-convert-all-arguments.
+        if (a.Length == 1 && dateString.IsNumber && double.IsNaN(dateString.DoubleValue))
         {
             value = DateTimeOffset.MinValue;
             return;

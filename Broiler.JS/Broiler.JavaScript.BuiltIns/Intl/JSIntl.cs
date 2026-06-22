@@ -1165,6 +1165,7 @@ public static class JSIntl
         if (!StructurallyValidLanguageTagPattern.IsMatch(tag) ||
             InvalidGrandfatheredLanguageTags.Contains(tag) ||
             HasDuplicateVariantSubtag(tag) ||
+            HasDuplicateSingletonSubtag(tag) ||
             HasInvalidUnicodeExtensionKey(tag) ||
             HasInvalidTransformedExtension(tag))
             throw JSEngine.NewRangeError("Invalid language tag");
@@ -1564,6 +1565,33 @@ public static class JSIntl
             variants ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             if (!variants.Add(subtag))
                 return true;
+        }
+
+        return false;
+    }
+
+    // A structurally valid language tag carries each extension singleton ('u', 't', 'a'…) at most
+    // once, compared case-insensitively (UTS-35 unicode_locale_id / RFC 5646: "de-DE-u-kn-true-U-kn-true"
+    // and "pt-u-ca-gregory-u-nu-latn" are both invalid). The privateuse singleton "x" is terminal —
+    // its single-character payload subtags are not extension singletons and may repeat — so scanning
+    // stops once "x" is seen.
+    private static bool HasDuplicateSingletonSubtag(string tag)
+    {
+        var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        HashSet<char> singletons = null;
+
+        for (var i = 0; i < subtags.Length; i++)
+        {
+            if (subtags[i].Length != 1)
+                continue;
+
+            var singleton = char.ToLowerInvariant(subtags[i][0]);
+            singletons ??= new HashSet<char>();
+            if (!singletons.Add(singleton))
+                return true;
+
+            if (singleton == 'x')
+                break;
         }
 
         return false;
@@ -5159,16 +5187,17 @@ public class JSIntlCollator : JSObject
         if (TryGetUnicodeExtension(locale, "co", out var co) && JSIntl.CanonicalizeCollation(co) is { } tagCo)
             collation = tagCo;
 
-        if (TryGetOwnOption(options, "usage", out var usageValue))
-            usage = usageValue.StringValue;
-        if (TryGetOwnOption(options, "sensitivity", out var sensitivityValue))
-            sensitivity = sensitivityValue.StringValue;
+        // usage / sensitivity / caseFirst are constrained string options: a provided value outside
+        // the allowed set is a RangeError (ECMA-402 GetOption), so route them through the shared
+        // validating helper rather than reading the raw string. The current field value is passed as
+        // the default so an absent option keeps the locale-derived / spec default.
+        usage = JSIntl.GetOption(options, KeyStrings.GetOrCreate("usage"), ["sort", "search"], false, usage);
+        sensitivity = JSIntl.GetOption(options, KeyStrings.GetOrCreate("sensitivity"), ["base", "accent", "case", "variant"], false, sensitivity);
         if (TryGetOwnOption(options, "ignorePunctuation", out var ignorePunctuationValue))
             ignorePunctuation = ignorePunctuationValue.BooleanValue;
         if (TryGetOwnOption(options, "numeric", out var numericValue))
             numeric = numericValue.BooleanValue;
-        if (TryGetOwnOption(options, "caseFirst", out var caseFirstValue))
-            caseFirst = caseFirstValue.StringValue;
+        caseFirst = JSIntl.GetOption(options, KeyStrings.GetOrCreate("caseFirst"), ["upper", "lower", "false"], false, caseFirst);
         if (TryGetOwnOption(options, "collation", out var collationValue)
             && JSIntl.CanonicalizeCollation(collationValue.StringValue) is { } optCo)
             collation = optCo;

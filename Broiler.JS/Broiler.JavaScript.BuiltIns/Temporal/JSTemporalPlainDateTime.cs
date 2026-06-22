@@ -767,7 +767,14 @@ public partial class JSTemporalPlainDateTime : JSObject
         var match = Regex.Match(code, @"^M(\d{2})$");
         if (!match.Success)
             throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
-        return int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+
+        // These ISO-based (12-month) calendar paths reject a well-formed but out-of-range code such
+        // as "M00" / "M13" up front — monthCode is never subject to the overflow option, so it must
+        // throw rather than be constrained.
+        var month = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+        if (month is < 1 or > 12)
+            throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
+        return month;
     }
 
     // A well-formed monthCode is "M" + two digits + an optional leap-month "L" marker; this SYNTAX is
@@ -1024,10 +1031,12 @@ public partial class JSTemporalPlainDateTime : JSObject
     }
 
     // The calendar date may be written in extended (YYYY-MM-DD) or basic (YYYYMMDD) form; the two
-    // halves of the date must agree (both separators or neither), but the time may independently use
-    // either form.
+    // halves of the date must agree (both separators or neither). The time-of-day and the UTC offset
+    // each carry the same consistent-separator rule (TimeCore / OffsetCore), so a mixed form such as
+    // "00:0000" or an offset "+00:0000" is rejected.
     private static readonly Regex DateTimePattern = new(
-        @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))(?:[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?(?:(?<z>[Zz])|[+-]\d{2}(?::?\d{2}(?::?\d{2}(?:[.,]\d{1,9})?)?)?)?)?(?:\[[^\]]*\])*$",
+        @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))(?:[Tt ]"
+        + TemporalIsoString.TimeCore + @"(?:(?<z>[Zz])|" + TemporalIsoString.OffsetCore + @")?)?(?:\[[^\]]*\])*$",
         RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalDateTimeString(string text)

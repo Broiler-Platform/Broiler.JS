@@ -329,8 +329,12 @@ public partial class JSIteratorObject : JSObject
             if (item is null || item.IsNullOrUndefined || item is not JSObject @object)
                 throw JSEngine.NewTypeError("Iterator.concat requires iterable arguments");
 
+            // Iterator.concat step 2.b/2.c: GetMethod(item, @@iterator) — a null/undefined @@iterator
+            // (e.g. a plain object, or one whose @@iterator is explicitly undefined/null) yields
+            // method === undefined, which the spec treats as a TypeError, exactly like a present but
+            // non-callable @@iterator. So the method must be callable for every argument.
             var iteratorMethod = @object[(IJSSymbol)JSSymbol.iterator];
-            if (!iteratorMethod.IsNull && !iteratorMethod.IsUndefined && !iteratorMethod.IsFunction)
+            if (!iteratorMethod.IsFunction)
                 throw JSEngine.NewTypeError("Iterator.concat requires a callable @@iterator");
 
             iterables[i] = new ConcatSource(@object, iteratorMethod);

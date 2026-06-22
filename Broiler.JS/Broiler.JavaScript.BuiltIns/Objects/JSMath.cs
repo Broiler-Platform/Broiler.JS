@@ -1,5 +1,6 @@
 ﻿using Broiler.JavaScript.ExpressionCompiler;
 using System;
+using System.Collections.Generic;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
@@ -601,6 +602,29 @@ public partial class JSMath : JSObject
     /// Returns the sum of values from an iterable using Neumaier compensated
     /// summation for improved floating-point precision.
     /// </summary>
+    // 2**1023, 2**53 and 2**(1023-52); computed with ScaleB so no decimal-literal rounding creeps in.
+    private static readonly double Two1023 = Math.ScaleB(1.0, 1023);
+    private static readonly double Two53 = Math.ScaleB(1.0, 53);
+    private static readonly double MaxUlp = Math.ScaleB(1.0, 971); // == double.MaxValue - PENULTIMATE_DOUBLE
+
+    // (hi, lo) such that hi + lo == x + y exactly and hi == fl(x + y). Requires |x| >= |y|.
+    private static (double hi, double lo) TwoSum(double x, double y)
+    {
+        var hi = x + y;
+        var lo = y - (hi - x);
+        return (hi, lo);
+    }
+
+    // Object.is for two non-finite operands: NaN matches NaN; ±Infinity match only themselves.
+    private static bool SameNonFinite(double a, double b) => (double.IsNaN(a) && double.IsNaN(b)) || a == b;
+
+    /// <summary>
+    /// Math.sumPrecise — the maximally precise (correctly rounded) sum of a finite list of Numbers.
+    /// Ports the TC39 reference algorithm (Shewchuk/Python-fsum exact addition, as used by
+    /// CPython's math.fsum, extended with a "biased" partial that tracks multiples of 2**1024 so
+    /// intermediate overflow does not lose precision). See
+    /// https://github.com/tc39/proposal-math-sum.
+    /// </summary>
     [JSExport("sumPrecise", Length = 1)]
     public static JSValue SumPrecise(in Arguments args)
     {
@@ -608,77 +632,164 @@ public partial class JSMath : JSObject
         if (iterable.IsNullOrUndefined)
             throw JSEngine.NewTypeError("Math.sumPrecise requires an iterable argument");
 
-        // Per spec the accumulator starts at -0𝔽, so an empty list (or a list of
-        // only -0 values) yields -0, while mixing in a +0 produces +0.
-        double sum = -0.0;
-        double compensation = 0.0;
-        bool hasNaN = false;
-        bool hasPositiveInfinity = false;
-        bool hasNegativeInfinity = false;
-        // Tracks whether every finite summand seen so far has been -0 (the empty
-        // list also qualifies). Only then is the -0 accumulator preserved; any +0 or
-        // other value forces the result's zero to be +0.
-        bool allNegativeZero = true;
-
         var en = iterable.GetIterableEnumerator();
-        while (en.MoveNext(out var hasValue, out var item, out var _))
+
+        // Pull the next Number summand (skipping holes); a non-Number element is a TypeError after
+        // closing the iterator. Returns false at end of iteration.
+        bool Next(out double value)
         {
-            if (!hasValue)
-                continue;
-
-            if (item is not JSNumber number)
+            while (en.MoveNext(out var hasValue, out var item, out _))
             {
-                if (en is IReturnableEnumerator returnable)
-                    returnable.Return();
+                if (!hasValue)
+                    continue;
 
-                throw JSEngine.NewTypeError("Math.sumPrecise only accepts Number values");
+                if (item is not JSNumber number)
+                {
+                    if (en is IReturnableEnumerator returnable)
+                        returnable.Return();
+                    throw JSEngine.NewTypeError("Math.sumPrecise only accepts Number values");
+                }
+
+                value = number.value;
+                return true;
             }
 
-            var d = number.value;
-
-            if (double.IsNaN(d))
-            {
-                hasNaN = true;
-                continue;
-            }
-
-            if (double.IsPositiveInfinity(d))
-            {
-                hasPositiveInfinity = true;
-                continue;
-            }
-
-            if (double.IsNegativeInfinity(d))
-            {
-                hasNegativeInfinity = true;
-                continue;
-            }
-
-            if (d != 0.0 || !double.IsNegative(d))
-                allNegativeZero = false;
-
-            // Neumaier compensated summation
-            var t = sum + d;
-            if (Math.Abs(sum) >= Math.Abs(d))
-                compensation += (sum - t) + d;
-            else
-                compensation += (d - t) + sum;
-            sum = t;
+            value = 0;
+            return false;
         }
 
-        if (hasNaN || (hasPositiveInfinity && hasNegativeInfinity))
-            return JSNumber.NaN;
+        // Once a non-finite value is seen, the remaining (finite) summands cannot affect the result;
+        // only the non-finite values matter. Summing two distinct non-finite values gives NaN, while
+        // a non-finite value with itself gives itself. The rest of the iterable is still consumed
+        // (and type-checked).
+        double DrainNonFinite(double current)
+        {
+            while (Next(out var value))
+            {
+                if (!double.IsFinite(value) && !SameNonFinite(value, current))
+                    current = double.NaN;
+            }
 
-        if (hasPositiveInfinity)
-            return JSNumber.PositiveInfinity;
+            return current;
+        }
 
-        if (hasNegativeInfinity)
-            return JSNumber.NegativeInfinity;
+        var partials = new List<double>();
+        double overflow = 0; // conceptually 2**1024 times this value; the final (biased) partial
 
-        var result = sum + compensation;
-        if (result == 0.0)
-            return new JSNumber(allNegativeZero ? -0.0 : 0.0);
+        // Skip a leading run of -0 (the accumulator is -0𝔽, so an all--0 list — and the empty list —
+        // yields -0), stopping at the first value that is not -0.
+        while (true)
+        {
+            if (!Next(out var value))
+                return new JSNumber(-0.0);
 
-        return new JSNumber(result);
+            if (!(value == 0.0 && double.IsNegative(value)))
+            {
+                if (!double.IsFinite(value))
+                    return new JSNumber(DrainNonFinite(value));
+                partials.Add(value);
+                break;
+            }
+        }
+
+        // Main loop: fold each summand into the non-overlapping partials, spilling whole-2**1024
+        // overflow into the biased partial so the running sum can exceed the double range losslessly.
+        while (Next(out var value))
+        {
+            var x = value;
+            if (!double.IsFinite(x))
+                return new JSNumber(DrainNonFinite(x));
+
+            var used = 0;
+            for (var idx = 0; idx < partials.Count; idx++)
+            {
+                var y = partials[idx];
+                if (Math.Abs(x) < Math.Abs(y))
+                    (x, y) = (y, x);
+
+                var (hi, lo) = TwoSum(x, y);
+                if (double.IsInfinity(hi))
+                {
+                    var sign = hi > 0 ? 1 : -1;
+                    overflow += sign;
+                    if (Math.Abs(overflow) >= Two53)
+                        throw JSEngine.NewRangeError("Math.sumPrecise: intermediate overflow");
+
+                    x = (x - sign * Two1023) - sign * Two1023;
+                    if (Math.Abs(x) < Math.Abs(y))
+                        (x, y) = (y, x);
+                    (hi, lo) = TwoSum(x, y);
+                }
+
+                if (lo != 0)
+                    partials[used++] = lo;
+                x = hi;
+            }
+
+            partials.RemoveRange(used, partials.Count - used);
+            if (x != 0)
+                partials.Add(x);
+        }
+
+        // Compute the exact sum of the partials (plus the biased overflow), stopping once it becomes
+        // inexact, then apply round-half-to-even.
+        var n = partials.Count - 1;
+        double resultHi = 0, resultLo = 0;
+
+        if (overflow != 0)
+        {
+            var next = n >= 0 ? partials[n] : 0;
+            --n;
+            if (Math.Abs(overflow) > 1 || (overflow > 0 && next > 0) || (overflow < 0 && next < 0))
+                return new JSNumber(overflow > 0 ? double.PositiveInfinity : double.NegativeInfinity);
+
+            // |overflow| == 1: do the arithmetic with a factor of 2 dropped so it cannot overflow.
+            (resultHi, resultLo) = TwoSum(overflow * Two1023, next / 2);
+            resultLo *= 2;
+            if (double.IsInfinity(2 * resultHi))
+            {
+                if (resultHi > 0)
+                {
+                    if (resultHi == Two1023 && resultLo == -(MaxUlp / 2) && n >= 0 && partials[n] < 0)
+                        return new JSNumber(double.MaxValue);
+                    return new JSNumber(double.PositiveInfinity);
+                }
+
+                if (resultHi == -Two1023 && resultLo == MaxUlp / 2 && n >= 0 && partials[n] > 0)
+                    return new JSNumber(-double.MaxValue);
+                return new JSNumber(double.NegativeInfinity);
+            }
+
+            if (resultLo != 0)
+            {
+                partials[n + 1] = resultLo;
+                ++n;
+                resultLo = 0;
+            }
+
+            resultHi *= 2;
+        }
+
+        while (n >= 0)
+        {
+            var x = resultHi;
+            var y = partials[n];
+            --n;
+            (resultHi, resultLo) = TwoSum(x, y);
+            if (resultLo != 0)
+                break;
+        }
+
+        // When the roundoff is exactly half a ULP, the next partial's sign decides the rounding.
+        if (n >= 0 && ((resultLo < 0.0 && partials[n] < 0.0) || (resultLo > 0.0 && partials[n] > 0.0)))
+        {
+            var y = resultLo * 2.0;
+            var x = resultHi + y;
+            var yr = x - resultHi;
+            if (y == yr)
+                resultHi = x;
+        }
+
+        return new JSNumber(resultHi);
     }
 }
