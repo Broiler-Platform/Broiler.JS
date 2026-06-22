@@ -37,6 +37,14 @@ partial class FastParser
         if (type == TokenTypes.QuestionDot)
             return new AstMemberExpression(left, right, false, true);
 
+        // A PrivateIdentifier may only be the LEFT operand of `in` (the brand check, handled by the
+        // compiler) — never any other binary operand. This rejects `1 + #x in o`, where `#x` is
+        // parsed as `+`'s right operand even though `in` textually follows it. (Member access
+        // `obj.#x` is parsed in SingleMemberExpression and never reaches here as a `#`-identifier.)
+        if (right is AstIdentifier rightId && rightId.Name.Length > 0 && rightId.Name.Value[0] == '#')
+            throw new FastParseException(right.Start,
+                "Private identifier is only allowed as the left operand of 'in'");
+
         // The left operand of `**` must be an UpdateExpression: an unparenthesised
         // unary expression (-x, +x, !x, ~x, typeof/void/delete x) is a SyntaxError,
         // because its precedence relative to `**` is ambiguous. Prefix/postfix

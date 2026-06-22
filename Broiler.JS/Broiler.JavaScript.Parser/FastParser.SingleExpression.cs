@@ -178,15 +178,23 @@ partial class FastParser
             }
 
             case TokenTypes.Hash:
-                // A leading `#name` is a PrivateIdentifier, only valid as the left
-                // operand of `in` (the ergonomic brand check `#x in obj`). Parse it
-                // into an identifier in the private-name namespace; the compiler
-                // resolves the brand check (VisitBinaryExpression) and rejects any
-                // other position.
+                // A leading `#name` is a PrivateIdentifier, only valid as the left operand of `in`
+                // (the ergonomic brand check `#x in obj`). Parse it into an identifier in the
+                // private-name namespace; the compiler resolves the brand check
+                // (VisitBinaryExpression).
                 stream.Consume();
                 if (!Identitifer(out var privateName))
                     throw stream.Unexpected();
                 node = new AstIdentifier(token, "#" + privateName.Name.Value);
+
+                // `in` must follow immediately (line terminators allowed): every other position —
+                // `!#x`, `#x;`, `#x + 1` — is an early SyntaxError. The remaining precedence case
+                // `1 + #x in o`, where `in` does follow `#x` textually but binds to a wider
+                // expression, is caught in Combine (a private identifier is never a binary operand).
+                stream.LineTerminator();
+                if (stream.Current.Type != TokenTypes.In)
+                    throw new FastParseException(token,
+                        "Private identifier is only allowed as the left operand of 'in'");
                 return true;
 
             case TokenTypes.TemplateBegin:

@@ -406,8 +406,10 @@ public partial class JSTemporalPlainMonthDay : JSObject
         // runs when one of those fields is present; the resolved proleptic-Gregorian (ISO) year then
         // runs when one of those fields is present; ResolveIsoYear surfaces the overspecification as a
         // RangeError / TypeError (test262 intl402/.../PlainMonthDay/from/fields-overspecified).
-        if (calendarId != "iso8601" && (hasYear || hasEra || hasEraYear))
-            _ = TemporalCalendar.ResolveIsoYear(calendarId, hasYear, yearInt, hasEra, eraStr, hasEraYear, eraYearInt);
+        var hasResolvedYear = calendarId != "iso8601" && (hasYear || hasEra || hasEraYear);
+        var resolvedIsoYear = hasResolvedYear
+            ? TemporalCalendar.ResolveIsoYear(calendarId, hasYear, yearInt, hasEra, eraStr, hasEraYear, eraYearInt)
+            : 0;
 
         if (dayValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay: missing day");
@@ -420,6 +422,19 @@ public partial class JSTemporalPlainMonthDay : JSObject
         var month = monthCodeValue.IsUndefined ? monthFromMonth : monthFromCode;
         if (monthFromMonth != -1 && !monthCodeValue.IsUndefined && monthFromMonth != month)
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month and monthCode disagree");
+
+        // A supplied year (or era/eraYear) is validated against the ISO date limits even though
+        // PlainMonthDay drops it: a year that places the month-day outside the representable ISO
+        // range (−271821-04-19 … +275760-09-13) is a RangeError rather than being silently dropped
+        // to the reference year. The Gregorian-family calendars (buddhist/gregory/japanese/roc) share
+        // the ISO month/day, so the resolved ISO year + month/day is the ISO date to bound-check.
+        // (test262 intl402/.../PlainMonthDay/from/dont-calculate-month-info-for-out-of-range-year.)
+        if (hasResolvedYear)
+        {
+            var epoch = TemporalNonIso.DaysFromCivil(resolvedIsoYear, month, dayInt);
+            if (epoch < TemporalNonIso.MinEpochDays || epoch > TemporalNonIso.MaxEpochDays)
+                throw JSEngine.NewRangeError("Temporal.PlainMonthDay: date is out of range");
+        }
 
         return RegulateMonthDay(month, dayInt, overflow, calendarId, validationYear);
     }
