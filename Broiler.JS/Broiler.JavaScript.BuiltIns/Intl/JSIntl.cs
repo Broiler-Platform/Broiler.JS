@@ -3992,9 +3992,10 @@ public sealed class JSIntlPluralRules : JSObject
         var options = JSIntl.ValidateConstructorArguments("PluralRules", in a, out var canonical);
         locale = JSIntl.ResolveLocaleFromCanonical(canonical);
         var typeKey = KeyStrings.GetOrCreate("type");
-        // Read the type option's getter exactly once (a second [[Get]] would fire it twice).
-        var typeValue = options is null ? JSUndefined.Value : options[typeKey];
-        type = typeValue.IsUndefined ? "cardinal" : typeValue.StringValue;
+        // GetOption reads the "type" getter exactly once and validates it against the sanctioned
+        // set, throwing a RangeError for any other value (e.g. "cardinal\0cookie") rather than
+        // silently accepting it (test262 sm/extensions/quote-string-for-nul-character).
+        type = JSIntl.GetOption(options, typeKey, ["cardinal", "ordinal"], false, "cardinal");
         // notation precedes the digit options (SetNumberFormatDigitOptions) and is reported by
         // resolvedOptions; the digit options are snapshotted once at construction.
         notation = JSIntl.GetOption(options, KeyStrings.GetOrCreate("notation"),

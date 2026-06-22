@@ -4,6 +4,7 @@ using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
+using Broiler.JavaScript.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -28,6 +29,14 @@ partial class FastParser
         stream.Consume();
 
         var awaitOf = stream.CheckAndConsume(FastKeywords.await);
+
+        // `for await` is only valid where an AwaitExpression is — inside an async function body,
+        // or at the top level of a module / TLA-enabled eval. In an ordinary script or a
+        // non-async function it is a SyntaxError (test262 sm/AsyncGenerators/for-await-of-error);
+        // without this guard the `await` reaches the compiler as an unsupported top-level await
+        // and surfaces as an internal error rather than a SyntaxError.
+        if (awaitOf && !(inAsyncFunctionBody || (functionDepth == 0 && CoreScript.AllowTopLevelAwait)))
+            throw new FastParseException(begin, "for await (... of ...) is only valid in async functions and modules");
 
         stream.Expect(TokenTypes.BracketStart);
 
