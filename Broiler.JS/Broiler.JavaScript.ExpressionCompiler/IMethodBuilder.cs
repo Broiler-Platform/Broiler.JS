@@ -5,5 +5,5 @@ namespace Broiler.JavaScript.ExpressionCompiler;
 
 public interface IMethodBuilder
 {
-    YExpression Relay(YExpression @this, IFastEnumerable<YExpression> closures, YLambdaExpression innerLambda);
+    BExpression Relay(BExpression @this, IFastEnumerable<BExpression> closures, BLambdaExpression innerLambda);
 }

@@ -1,4 +1,4 @@
-using Broiler.JavaScript.Ast.Expressions;
+﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
@@ -55,7 +55,7 @@ partial class FastCompiler
         }
     }
 
-    private YExpression VisitAssignmentExpression(AstExpression left, TokenTypes assignmentOperator, AstExpression right)
+    private BExpression VisitAssignmentExpression(AstExpression left, TokenTypes assignmentOperator, AstExpression right)
     {
         // A function call (or other invalid reference) used as an assignment
         // target is a runtime ReferenceError. The target is still evaluated for
@@ -63,9 +63,9 @@ partial class FastCompiler
         // behaviour already used for update expressions such as `f()++`.
         if (left.Type == FastNodeType.CallExpression)
         {
-            return YExpression.Block(
+            return BExpression.Block(
                 Visit(left),
-                YExpression.Call(null, ThrowInvalidAssignmentReferenceMethod));
+                BExpression.Call(null, ThrowInvalidAssignmentReferenceMethod));
         }
 
         switch (left.Type)
@@ -108,18 +108,18 @@ partial class FastCompiler
                     using var propertyTemp = scope.Top.GetTempVariable(typeof(JSValue));
                     using var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
                     var leftExp = JSValueBuilder.Index(objectTemp.Expression, superBaseTemp.Expression, keyTemp.Expression);
-                    return YExpression.Block(
-                        YExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
-                        YExpression.Assign(propertyTemp.Expression, Visit(mem.Property)),
-                        YExpression.Assign(superBaseTemp.Expression, scope.Top.Super),
-                        YExpression.Assign(keyTemp.Expression, YExpression.Call(null, NormalizePropertyKeyMethod, propertyTemp.Expression)),
+                    return BExpression.Block(
+                        BExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
+                        BExpression.Assign(propertyTemp.Expression, Visit(mem.Property)),
+                        BExpression.Assign(superBaseTemp.Expression, scope.Top.Super),
+                        BExpression.Assign(keyTemp.Expression, BExpression.Call(null, NormalizePropertyKeyMethod, propertyTemp.Expression)),
                         Assign(leftExp, right, assignmentOperator));
                 }
 
                 var superLeftExp = JSValueBuilder.Index(objectTemp.Expression, superBaseTemp.Expression, CreatePropertyKeyExpression(mem.Property, false));
-                return YExpression.Block(
-                    YExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
-                    YExpression.Assign(superBaseTemp.Expression, scope.Top.Super),
+                return BExpression.Block(
+                    BExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
+                    BExpression.Assign(superBaseTemp.Expression, scope.Top.Super),
                     Assign(superLeftExp, right, assignmentOperator));
             }
 
@@ -128,17 +128,17 @@ partial class FastCompiler
                 using var propertyTemp = scope.Top.GetTempVariable(typeof(JSValue));
                 using var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
                 var leftExp = JSValueBuilder.Index(objectTemp.Expression, keyTemp.Expression);
-                return YExpression.Block(
-                    YExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
-                    YExpression.Assign(propertyTemp.Expression, Visit(mem.Property)),
-                    YExpression.Call(null, RequireObjectCoercibleMethod, objectTemp.Expression),
-                    YExpression.Assign(keyTemp.Expression, YExpression.Call(null, NormalizePropertyKeyMethod, propertyTemp.Expression)),
+                return BExpression.Block(
+                    BExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
+                    BExpression.Assign(propertyTemp.Expression, Visit(mem.Property)),
+                    BExpression.Call(null, RequireObjectCoercibleMethod, objectTemp.Expression),
+                    BExpression.Assign(keyTemp.Expression, BExpression.Call(null, NormalizePropertyKeyMethod, propertyTemp.Expression)),
                     Assign(leftExp, right, assignmentOperator));
             }
 
             var memberExp = CreateMemberExpression(objectTemp.Expression, mem.Property, false);
-            return YExpression.Block(
-                YExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
+            return BExpression.Block(
+                BExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
                 Assign(memberExp, right, assignmentOperator));
         }
 
@@ -168,7 +168,7 @@ partial class FastCompiler
                 if (assignmentOperator == TokenTypes.Assign && (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName))
                 {
                     var initExpr = Visit(right);
-                    initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
+                    initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(""), BExpression.Constant(false));
                     return AssignIdentifier(identifier, initExpr);
                 }
                 return AssignIdentifier(identifier, right, assignmentOperator);
@@ -178,7 +178,7 @@ partial class FastCompiler
             {
                 var initExpr = Visit(right);
                 if (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName)
-                    initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
+                    initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(""), BExpression.Constant(false));
                 else
                     // NamedEvaluation names the function from the target identifier here
                     // rather than relying on the binding setter: a read-only binding (a
@@ -187,7 +187,7 @@ partial class FastCompiler
                     // value must still be the named function (test262
                     // sm/Function/function-name-assignment). For a writable binding this is
                     // equivalent to the setter's own inference (same target name).
-                    initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(identifier.Name.Value), YExpression.Constant(true));
+                    initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(identifier.Name.Value), BExpression.Constant(true));
                 return JSVariableBuilder.Assign(variable.Variable, initExpr);
             }
 
@@ -195,15 +195,15 @@ partial class FastCompiler
             {
                 var initExpr = Visit(right);
                 if (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName)
-                    initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
+                    initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(""), BExpression.Constant(false));
                 else if (!IsDestructuringAssignmentExpression(right))
                     // NamedEvaluation from the target identifier (see the lexical branch above):
                     // a read-only binding such as a named function expression's own name rejects
                     // the write, so name the function here rather than via the assignment setter.
-                    initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(identifier.Name.Value), YExpression.Constant(true));
+                    initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(identifier.Name.Value), BExpression.Constant(true));
                 if (IsDestructuringAssignmentExpression(right))
                     return AssignMaterializedValue(variable.Expression, initExpr);
-                return YExpression.Assign(variable.Expression, initExpr);
+                return BExpression.Assign(variable.Expression, initExpr);
             }
 
             // A parenthesized assignment target is not an IdentifierReference, so a
@@ -215,8 +215,8 @@ partial class FastCompiler
             if (shouldSuppressAnonymousFunctionName
                 && assignmentOperator is TokenTypes.AssignBooleanOr or TokenTypes.AssignBooleanAnd or TokenTypes.AssignCoalesce)
             {
-                var suppressedRight = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod,
-                    Visit(right), YExpression.Constant(""), YExpression.Constant(false));
+                var suppressedRight = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod,
+                    Visit(right), BExpression.Constant(""), BExpression.Constant(false));
                 return BinaryOperation.Assign(variable.Expression, suppressedRight, assignmentOperator);
             }
 
@@ -251,7 +251,7 @@ partial class FastCompiler
     // Compiles an assignment whose target is an EvalShadowVariable. Reads/writes use
     // GetValue/SetValue (the binding may forward to its outer binding), so the target
     // cannot be used as an ordinary assignable expression.
-    private YExpression ShadowAssign(FastFunctionScope.VariableScope shadow, AstIdentifier identifier, AstExpression right, TokenTypes assignmentOperator, bool suppressAnonymousFunctionName)
+    private BExpression ShadowAssign(FastFunctionScope.VariableScope shadow, AstIdentifier identifier, AstExpression right, TokenTypes assignmentOperator, bool suppressAnonymousFunctionName)
     {
         var target = shadow.Variable;
 
@@ -265,11 +265,11 @@ partial class FastCompiler
             // shadow forwards to first, then evaluate the RHS, then write through the
             // captured reference.
             var simpleReferenceTemp = scope.Top.GetTempVariable(typeof(bool));
-            var simpleCaptureReference = YExpression.Assign(simpleReferenceTemp.Expression, EvalShadowBuilder.CaptureReference(target));
+            var simpleCaptureReference = BExpression.Assign(simpleReferenceTemp.Expression, EvalShadowBuilder.CaptureReference(target));
             var initExpr = Visit(right);
             if (!IsAnonymousFunctionDefinition(right) || suppressAnonymousFunctionName)
-                initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(identifier.Name.Value), YExpression.Constant(false));
-            var simpleResult = YExpression.Block(
+                initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(identifier.Name.Value), BExpression.Constant(false));
+            var simpleResult = BExpression.Block(
                 simpleReferenceTemp.Variable.AsSequence(),
                 simpleCaptureReference,
                 EvalShadowBuilder.SetCaptured(target, simpleReferenceTemp.Expression, initExpr));
@@ -281,7 +281,7 @@ partial class FastCompiler
         // runs. Capture which binding the shadow's read observes so a direct eval in
         // the RHS that introduces a local var cannot redirect the write (§13.15.2).
         var referenceTemp = scope.Top.GetTempVariable(typeof(bool));
-        var captureReference = YExpression.Assign(referenceTemp.Expression, EvalShadowBuilder.CaptureReference(target));
+        var captureReference = BExpression.Assign(referenceTemp.Expression, EvalShadowBuilder.CaptureReference(target));
         var current = EvalShadowBuilder.GetCaptured(target, referenceTemp.Expression);
 
         switch (assignmentOperator)
@@ -295,13 +295,13 @@ partial class FastCompiler
                 {
                     TokenTypes.AssignCoalesce => JSValueBuilder.IsNullOrUndefined(currentTemp.Expression),
                     TokenTypes.AssignBooleanAnd => JSValueBuilder.BooleanValue(currentTemp.Expression),
-                    _ => YExpression.Not(JSValueBuilder.BooleanValue(currentTemp.Expression)),
+                    _ => BExpression.Not(JSValueBuilder.BooleanValue(currentTemp.Expression)),
                 };
-                var logical = YExpression.Block(
-                    new Sequence<YParameterExpression> { referenceTemp.Variable, currentTemp.Variable },
+                var logical = BExpression.Block(
+                    new Sequence<BParameterExpression> { referenceTemp.Variable, currentTemp.Variable },
                     captureReference,
-                    YExpression.Assign(currentTemp.Expression, current),
-                    YExpression.Condition(
+                    BExpression.Assign(currentTemp.Expression, current),
+                    BExpression.Condition(
                         condition,
                         EvalShadowBuilder.SetCaptured(target, referenceTemp.Expression, Visit(right)),
                         currentTemp.Expression,
@@ -313,7 +313,7 @@ partial class FastCompiler
 
         var rhs = Visit(right);
         var computed = BinaryOperation.Operation(current, rhs, CompoundAssignmentToBinaryOperator(assignmentOperator));
-        var result = YExpression.Block(
+        var result = BExpression.Block(
             referenceTemp.Variable.AsSequence(),
             captureReference,
             EvalShadowBuilder.SetCaptured(target, referenceTemp.Expression, computed));
@@ -338,7 +338,7 @@ partial class FastCompiler
         _ => throw new NotSupportedException($"Unsupported compound assignment {assignmentOperator}"),
     };
 
-    private YExpression AssignIdentifier(AstIdentifier identifier, AstExpression right, TokenTypes assignmentOperator)
+    private BExpression AssignIdentifier(AstIdentifier identifier, AstExpression right, TokenTypes assignmentOperator)
     {
         if (assignmentOperator == TokenTypes.Assign)
         {
@@ -351,8 +351,8 @@ partial class FastCompiler
             // (test262 sm/Function/function-name-assignment). The caller only routes a
             // non-parenthesized anonymous RHS to this overload.
             if (IsAnonymousFunctionDefinition(right))
-                value = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod,
-                    value, YExpression.Constant(identifier.Name.Value), YExpression.Constant(true));
+                value = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod,
+                    value, BExpression.Constant(identifier.Name.Value), BExpression.Constant(true));
             return AssignIdentifier(identifier, value);
         }
 
@@ -364,42 +364,42 @@ partial class FastCompiler
         // so the compound-assignment read observes its own `has` after HasBinding's
         // @@unscopables `get` (test262 with/set-mutable-binding-idref-compound-assign-with-proxy-env).
         var retainedWithReference = JSContextBuilder.GetWithObjectBindingValue(withObjectTemp.Expression, key, IsStrictMode);
-        var retainedWithAssignment = YExpression.Block(
+        var retainedWithAssignment = BExpression.Block(
             valueTemp.Variable.AsSequence(),
-            YExpression.Assign(valueTemp.Expression, retainedWithReference),
+            BExpression.Assign(valueTemp.Expression, retainedWithReference),
             BinaryOperation.Assign(valueTemp.Expression, Visit(right), assignmentOperator),
             JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, valueTemp.Expression, IsStrictMode));
         // ResolveWithObject above already walked the with scopes; when it found no
         // binding, the read and the write resolve the remaining scopes directly. Re-running
         // the with-aware resolvers here would fire extra `has` traps on the binding object,
         // so a compound assignment observes a single HasBinding probe like the spec.
-        var dynamicAssignment = YExpression.Block(
+        var dynamicAssignment = BExpression.Block(
             valueTemp.Variable.AsSequence(),
-            YExpression.Assign(valueTemp.Expression, JSContextBuilder.ResolveIdentifierWithoutWithScopes(key)),
+            BExpression.Assign(valueTemp.Expression, JSContextBuilder.ResolveIdentifierWithoutWithScopes(key)),
             BinaryOperation.Assign(valueTemp.Expression, Visit(right), assignmentOperator),
             JSContextBuilder.AssignIdentifierWithoutWith(key, valueTemp.Expression, IsStrictMode));
 
-        return YExpression.Block(
+        return BExpression.Block(
             withObjectTemp.Variable.AsSequence(),
-            YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
-            YExpression.Condition(
-                YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject))),
+            BExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
+            BExpression.Condition(
+                BExpression.NotEqual(withObjectTemp.Expression, BExpression.Constant(null, typeof(JSObject))),
                 retainedWithAssignment,
                 dynamicAssignment,
                 typeof(JSValue)));
     }
 
-    private YExpression AssignIdentifier(AstIdentifier identifier, YExpression value)
+    private BExpression AssignIdentifier(AstIdentifier identifier, BExpression value)
     {
         var key = KeyOfName(identifier.Name);
         using var withObjectTemp = scope.Top.GetTempVariable(typeof(JSObject));
         var retainedWithReference = JSValueBuilder.Index(withObjectTemp.Expression, key);
 
-        return YExpression.Block(
+        return BExpression.Block(
             withObjectTemp.Variable.AsSequence(),
-            YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
-            YExpression.Condition(
-                YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject))),
+            BExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key)),
+            BExpression.Condition(
+                BExpression.NotEqual(withObjectTemp.Expression, BExpression.Constant(null, typeof(JSObject))),
                 JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, value, IsStrictMode),
                 // The with-object lookup above resolved the target Reference BEFORE the
                 // RHS (value) runs. When it found no with-object property, write to the
@@ -410,38 +410,38 @@ partial class FastCompiler
                 typeof(JSValue)));
     }
 
-    private YExpression Assign(YExpression exp, AstExpression right, TokenTypes assignmentOperator)
+    private BExpression Assign(BExpression exp, AstExpression right, TokenTypes assignmentOperator)
     {
         if (assignmentOperator == TokenTypes.AssignAdd && right.Type == FastNodeType.Literal && right is AstLiteral literal)
         {
             if (literal.TokenType == TokenTypes.String)
-                return YExpression.Assign(exp, JSValueBuilder.AddString(exp, YExpression.Constant(literal.StringValue)));
+                return BExpression.Assign(exp, JSValueBuilder.AddString(exp, BExpression.Constant(literal.StringValue)));
 
             if (literal.TokenType == TokenTypes.Number)
-                return YExpression.Assign(exp, JSValueBuilder.AddDouble(exp, YExpression.Constant(literal.NumericValue)));
+                return BExpression.Assign(exp, JSValueBuilder.AddDouble(exp, BExpression.Constant(literal.NumericValue)));
         }
 
         return BinaryOperation.Assign(exp, Visit(right), assignmentOperator);
     }
 
-    private YExpression CreateAssignment(AstExpression pattern, YExpression init, bool createVariable = false, bool newScope = false,
+    private BExpression CreateAssignment(AstExpression pattern, BExpression init, bool createVariable = false, bool newScope = false,
         bool suppressAnonymousFunctionNameInference = false, bool initializeVariable = true, bool readOnlyAfterAssign = false,
         bool forceDynamicAssignment = false)
     {
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
-        var inits = new Sequence<YExpression>();
-        inits.Add(YExpression.Assign(temp.Variable, init));
+        var inits = new Sequence<BExpression>();
+        inits.Add(BExpression.Assign(temp.Variable, init));
         CreateAssignment(inits, pattern, temp.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
         inits.Add(temp.Expression);
 
-        return YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, inits);
+        return BExpression.Block(new Sequence<BParameterExpression> { temp.Variable }, inits);
     }
 
-    private void CreateAssignment(Sequence<YExpression> inits, AstExpression pattern, YExpression init, bool createVariable = false, bool newScope = false,
+    private void CreateAssignment(Sequence<BExpression> inits, AstExpression pattern, BExpression init, bool createVariable = false, bool newScope = false,
         bool suppressAnonymousFunctionNameInference = false, bool initializeVariable = true, bool readOnlyAfterAssign = false,
         bool forceDynamicAssignment = false)
     {
-        YExpression target;
+        BExpression target;
 
         switch (pattern.Type)
         {
@@ -454,9 +454,9 @@ partial class FastCompiler
                         target = v.Expression;
                         if (suppressAnonymousFunctionNameInference)
                         {
-                            init = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, YExpression.Constant(id.Name.Value), YExpression.Constant(false));
+                            init = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, BExpression.Constant(id.Name.Value), BExpression.Constant(false));
                         }
-                        inits.Add(YExpression.Assign(target, init));
+                        inits.Add(BExpression.Assign(target, init));
                         if (readOnlyAfterAssign)
                             inits.Add(JSVariableBuilder.SetReadOnly(v.Variable, true));
                         return;
@@ -466,7 +466,7 @@ partial class FastCompiler
                         if (!forceDynamicAssignment && TryResolveEvalShadow(id.Name, out var shadowVar))
                         {
                             if (suppressAnonymousFunctionNameInference)
-                                init = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, YExpression.Constant(id.Name.Value), YExpression.Constant(false));
+                                init = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, BExpression.Constant(id.Name.Value), BExpression.Constant(false));
                             inits.Add(EvalShadowBuilder.SetValue(shadowVar.Variable, init));
                             return;
                         }
@@ -475,7 +475,7 @@ partial class FastCompiler
                         {
                             if (suppressAnonymousFunctionNameInference)
                             {
-                                init = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, YExpression.Constant(id.Name.Value), YExpression.Constant(false));
+                                init = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, BExpression.Constant(id.Name.Value), BExpression.Constant(false));
                             }
 
                             inits.Add(AssignIdentifier(id, init));
@@ -484,7 +484,7 @@ partial class FastCompiler
 
                         if (suppressAnonymousFunctionNameInference)
                         {
-                            init = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, YExpression.Constant(id.Name.Value), YExpression.Constant(false));
+                            init = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, BExpression.Constant(id.Name.Value), BExpression.Constant(false));
                         }
 
                         if (!newScope && variable.IsLexical && variable.Variable?.Type == typeof(JSVariable))
@@ -498,9 +498,9 @@ partial class FastCompiler
 
                     if (suppressAnonymousFunctionNameInference)
                     {
-                        init = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, YExpression.Constant(id.Name.Value), YExpression.Constant(false));
+                        init = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, init, BExpression.Constant(id.Name.Value), BExpression.Constant(false));
                     }
-                    inits.Add(YExpression.Assign(target, init));
+                    inits.Add(BExpression.Assign(target, init));
                 }
                 return;
 
@@ -527,15 +527,15 @@ partial class FastCompiler
                 var objectPattern = pattern as AstObjectPattern;
                 {
                     using var tempValue = scope.Top.GetTempVariable(typeof(JSValue));
-                    inits.Add(YExpression.Assign(tempValue.Variable, YExpression.Call(null, RequireObjectCoercibleMethod, init)));
+                    inits.Add(BExpression.Assign(tempValue.Variable, BExpression.Call(null, RequireObjectCoercibleMethod, init)));
                     init = tempValue.Expression;
 
                     var en = objectPattern.Properties.GetFastEnumerator();
-                    var excludedKeys = new Sequence<YExpression>();
+                    var excludedKeys = new Sequence<BExpression>();
 
                     while (en.MoveNext(out var property))
                     {
-                        YExpression start = null;
+                        BExpression start = null;
                         if (property.Spread || property.Key == null)
                         {
                             CreateAssignment(inits, property.Value, CreateObjectRest(init, excludedKeys), createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
@@ -554,7 +554,7 @@ partial class FastCompiler
 
                         // Determine the member access expression `init[key]` and the key to
                         // exclude when collecting an object rest.
-                        YExpression memberAccess;
+                        BExpression memberAccess;
                         if (property.Computed
                             && id.Type != FastNodeType.Identifier
                             && id.Type != FastNodeType.Literal)
@@ -566,9 +566,9 @@ partial class FastCompiler
                             // evaluating the key, such as `a.b` when `a` is undefined) occur
                             // in spec order, before the destructuring target is read.
                             var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
-                            inits.Add(YExpression.Assign(
+                            inits.Add(BExpression.Assign(
                                 keyTemp.Variable,
-                                YExpression.Call(null, NormalizePropertyKeyMethod, Visit(id))));
+                                BExpression.Call(null, NormalizePropertyKeyMethod, Visit(id))));
                             excludedKeys.Add(keyTemp.Expression);
                             memberAccess = JSValueBuilder.Index(init, keyTemp.Expression);
                         }
@@ -588,7 +588,7 @@ partial class FastCompiler
                            }
 
                            var piTemp = scope.Top.GetTempVariable(typeof(JSValue));
-                           inits.Add(YExpression.Assign(
+                           inits.Add(BExpression.Assign(
                                piTemp.Variable,
                                memberAccess));
                            inits.Add(AssignDestructuringDefault(
@@ -622,7 +622,7 @@ partial class FastCompiler
                                 // so a `yield`/`await` in the default stays at a statement
                                 // boundary instead of inside a value-position coalesce.
                                 var apTemp = scope.Top.GetTempVariable(typeof(JSValue));
-                                inits.Add(YExpression.Assign(apTemp.Variable, start));
+                                inits.Add(BExpression.Assign(apTemp.Variable, start));
                                 inits.Add(AssignDestructuringDefault(apTemp.Expression, defaultValue));
                                 CreateAssignment(inits, ap.Left,
                                     apTemp.Expression,
@@ -646,11 +646,11 @@ partial class FastCompiler
                 {
                     var destExp = enVar.Expression;
                     var iterDoneVar = iterDoneTemp.Expression;
-                    inits.Add(YExpression.Assign(destExp, IElementEnumeratorBuilder.Get(init)));
-                    inits.Add(YExpression.Assign(returnableVar.Expression, YExpression.TypeAs(destExp, typeof(IReturnableEnumerator))));
-                    inits.Add(YExpression.Assign(iterDoneVar, YExpression.Constant(false)));
+                    inits.Add(BExpression.Assign(destExp, IElementEnumeratorBuilder.Get(init)));
+                    inits.Add(BExpression.Assign(returnableVar.Expression, BExpression.TypeAs(destExp, typeof(IReturnableEnumerator))));
+                    inits.Add(BExpression.Assign(iterDoneVar, BExpression.Constant(false)));
                     var en = arrayPattern.Elements.GetFastEnumerator();
-                    var arrayInits = new Sequence<YExpression>();
+                    var arrayInits = new Sequence<BExpression>();
 
                     while (en.MoveNext(out var element))
                     {
@@ -660,30 +660,30 @@ partial class FastCompiler
                                 // Elision: advance iterator without assigning, track done
                                 using (var skipTemp = scope.Top.GetTempVariable(typeof(JSValue)))
                                 {
-                                    arrayInits.Add(YExpression.IfThen(
-                                        YExpression.Not(iterDoneVar),
-                                        YExpression.IfThen(
-                                            YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, skipTemp.Expression)),
-                                            YExpression.Block(
-                                                YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                                                YExpression.Empty))));
+                                    arrayInits.Add(BExpression.IfThen(
+                                        BExpression.Not(iterDoneVar),
+                                        BExpression.IfThen(
+                                            BExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, skipTemp.Expression)),
+                                            BExpression.Block(
+                                                BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
+                                                BExpression.Empty))));
                                 }
                                 break;
                             case FastNodeType.Identifier:
                                 using (var moveTemp = scope.Top.GetTempVariable(typeof(JSValue)))
                                 {
-                                    arrayInits.Add(YExpression.IfThen(
-                                        YExpression.OrElse(iterDoneVar,
-                                            YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp.Expression))),
-                                        YExpression.Block(
-                                            YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+                                    arrayInits.Add(BExpression.IfThen(
+                                        BExpression.OrElse(iterDoneVar,
+                                            BExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp.Expression))),
+                                        BExpression.Block(
+                                            BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
                                             CreateAssignment(element, JSUndefinedBuilder.Value, createVariable, newScope,
                                                 suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment),
-                                            YExpression.Empty),
-                                        YExpression.Block(
+                                            BExpression.Empty),
+                                        BExpression.Block(
                                             CreateAssignment(element, moveTemp.Expression, createVariable, newScope,
                                                 suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment),
-                                            YExpression.Empty)));
+                                            BExpression.Empty)));
                                 }
                                 break;
                             case FastNodeType.MemberExpression:
@@ -691,23 +691,23 @@ partial class FastCompiler
                                 using (var objectTemp = scope.Top.GetTempVariable(typeof(JSValue)))
                                 using (var moveTemp = scope.Top.GetTempVariable(typeof(JSValue)))
                                 {
-                                    arrayInits.Add(YExpression.Assign(objectTemp.Variable, Visit(member.Object)));
-                                    YExpression memberTarget;
+                                    arrayInits.Add(BExpression.Assign(objectTemp.Variable, Visit(member.Object)));
+                                    BExpression memberTarget;
                                     if (member.Computed)
                                     {
                                         var propertyTemp = scope.Top.GetTempVariable(typeof(JSValue));
                                         var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
-                                        arrayInits.Add(YExpression.Assign(propertyTemp.Variable, Visit(member.Property)));
+                                        arrayInits.Add(BExpression.Assign(propertyTemp.Variable, Visit(member.Property)));
                                         memberTarget = JSValueBuilder.Index(objectTemp.Expression, keyTemp.Expression);
-                                        arrayInits.Add(YExpression.IfThen(
-                                            YExpression.OrElse(iterDoneVar,
-                                                YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp.Expression))),
-                                            YExpression.Block(
-                                                YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                                                YExpression.Assign(moveTemp.Expression, JSUndefinedBuilder.Value),
-                                                YExpression.Empty)));
-                                        arrayInits.Add(YExpression.Call(null, RequireObjectCoercibleMethod, objectTemp.Expression));
-                                        arrayInits.Add(YExpression.Assign(keyTemp.Variable, YExpression.Call(null, NormalizePropertyKeyMethod, propertyTemp.Expression)));
+                                        arrayInits.Add(BExpression.IfThen(
+                                            BExpression.OrElse(iterDoneVar,
+                                                BExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp.Expression))),
+                                            BExpression.Block(
+                                                BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
+                                                BExpression.Assign(moveTemp.Expression, JSUndefinedBuilder.Value),
+                                                BExpression.Empty)));
+                                        arrayInits.Add(BExpression.Call(null, RequireObjectCoercibleMethod, objectTemp.Expression));
+                                        arrayInits.Add(BExpression.Assign(keyTemp.Variable, BExpression.Call(null, NormalizePropertyKeyMethod, propertyTemp.Expression)));
                                         arrayInits.Add(BinaryOperation.Assign(memberTarget, moveTemp.Expression, TokenTypes.Assign));
                                         keyTemp.Dispose();
                                         propertyTemp.Dispose();
@@ -715,13 +715,13 @@ partial class FastCompiler
                                     else
                                     {
                                         memberTarget = CreateMemberExpression(objectTemp.Expression, member.Property, false);
-                                        arrayInits.Add(YExpression.IfThen(
-                                            YExpression.OrElse(iterDoneVar,
-                                                YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp.Expression))),
-                                            YExpression.Block(
-                                                YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                                                YExpression.Assign(moveTemp.Expression, JSUndefinedBuilder.Value),
-                                                YExpression.Empty)));
+                                        arrayInits.Add(BExpression.IfThen(
+                                            BExpression.OrElse(iterDoneVar,
+                                                BExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp.Expression))),
+                                            BExpression.Block(
+                                                BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
+                                                BExpression.Assign(moveTemp.Expression, JSUndefinedBuilder.Value),
+                                                BExpression.Empty)));
                                         arrayInits.Add(BinaryOperation.Assign(memberTarget, moveTemp.Expression, TokenTypes.Assign));
                                     }
                                 }
@@ -730,13 +730,13 @@ partial class FastCompiler
                                 var be = element as AstBinaryExpression;
                                 using (var moveTemp2 = scope.Top.GetTempVariable(typeof(JSValue)))
                                 {
-                                    arrayInits.Add(YExpression.IfThen(
-                                        YExpression.OrElse(iterDoneVar,
-                                            YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp2.Expression))),
-                                        YExpression.Block(
-                                            YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                                            YExpression.Assign(moveTemp2.Expression, JSUndefinedBuilder.Value),
-                                            YExpression.Empty)));
+                                    arrayInits.Add(BExpression.IfThen(
+                                        BExpression.OrElse(iterDoneVar,
+                                            BExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, moveTemp2.Expression))),
+                                        BExpression.Block(
+                                            BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
+                                            BExpression.Assign(moveTemp2.Expression, JSUndefinedBuilder.Value),
+                                            BExpression.Empty)));
                                     var identifierDefaultValue = Visit(be.Right);
                                     if (suppressAnonymousFunctionNameInference)
                                     {
@@ -759,14 +759,14 @@ partial class FastCompiler
                                 // be called again (test262 destructuring-array-done covers
                                 // exactly that observable).
                                 CreateAssignment(arrayInits, spe.Argument,
-                                    YExpression.Condition(
+                                    BExpression.Condition(
                                         iterDoneVar,
                                         JSArrayBuilder.New(),
                                         JSArrayBuilder.NewFromElementEnumerator(destExp),
                                         typeof(JSValue)),
                                     createVariable, newScope,
                                     suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
-                                arrayInits.Add(YExpression.Assign(iterDoneVar, YExpression.Constant(true)));
+                                arrayInits.Add(BExpression.Assign(iterDoneVar, BExpression.Constant(true)));
                                 break;
 
                             case FastNodeType.ObjectPattern:
@@ -776,13 +776,13 @@ partial class FastCompiler
                                 // nested object ...
                                 using (var te = scope.Top.GetTempVariable(typeof(JSValue)))
                                 {
-                                    arrayInits.Add(YExpression.IfThen(
-                                        YExpression.OrElse(iterDoneVar,
-                                            YExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, te.Expression))),
-                                        YExpression.Block(
-                                            YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                                            YExpression.Assign(te.Expression, JSUndefinedBuilder.Value),
-                                            YExpression.Empty)));
+                                    arrayInits.Add(BExpression.IfThen(
+                                        BExpression.OrElse(iterDoneVar,
+                                            BExpression.Not(IElementEnumeratorBuilder.MoveNext(destExp, te.Expression))),
+                                        BExpression.Block(
+                                            BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
+                                            BExpression.Assign(te.Expression, JSUndefinedBuilder.Value),
+                                            BExpression.Empty)));
                                     CreateAssignment(arrayInits, ape, te.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
                                 }
                                 break;
@@ -792,30 +792,30 @@ partial class FastCompiler
                         }
                     }
 
-                    arrayInits.Add(YExpression.Empty);
-                    var arrayInitBlock = YExpression.Block(arrayInits);
+                    arrayInits.Add(BExpression.Empty);
+                    var arrayInitBlock = BExpression.Block(arrayInits);
                     // Build a void finally body – only close iterator if NOT exhausted.
-                    var closeIterator = YExpression.Block(
-                        YExpression.IfThen(
-                            YExpression.Not(iterDoneVar),
-                            YExpression.Block(
-                                YExpression.Call(null, CloseIteratorMethod, returnableVar.Expression),
-                                YExpression.Empty)),
-                        YExpression.Empty);
+                    var closeIterator = BExpression.Block(
+                        BExpression.IfThen(
+                            BExpression.Not(iterDoneVar),
+                            BExpression.Block(
+                                BExpression.Call(null, CloseIteratorMethod, returnableVar.Expression),
+                                BExpression.Empty)),
+                        BExpression.Empty);
                     var caughtException = scope.Top.CreateException("#arrayDestructuringIteratorClose");
-                    var closeIteratorAfterThrow = YExpression.Block(
-                        YExpression.IfThen(
-                            YExpression.Not(iterDoneVar),
-                            YExpression.Block(
-                                YExpression.Call(null, CloseIteratorIgnoringErrorsMethod, returnableVar.Expression),
-                                YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                                YExpression.Empty)),
-                        YExpression.Throw(caughtException.Expression));
+                    var closeIteratorAfterThrow = BExpression.Block(
+                        BExpression.IfThen(
+                            BExpression.Not(iterDoneVar),
+                            BExpression.Block(
+                                BExpression.Call(null, CloseIteratorIgnoringErrorsMethod, returnableVar.Expression),
+                                BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
+                                BExpression.Empty)),
+                        BExpression.Throw(caughtException.Expression));
 
-                    inits.Add(YExpression.TryCatchFinally(
+                    inits.Add(BExpression.TryCatchFinally(
                         arrayInitBlock,
                         closeIterator,
-                        YExpression.Catch(caughtException.Variable, closeIteratorAfterThrow)));
+                        BExpression.Catch(caughtException.Variable, closeIteratorAfterThrow)));
                 }
 
                 return;
@@ -824,19 +824,19 @@ partial class FastCompiler
         throw new NotImplementedException();
     }
 
-    private YExpression CreateObjectRest(YExpression source, Sequence<YExpression> excludedKeys)
+    private BExpression CreateObjectRest(BExpression source, Sequence<BExpression> excludedKeys)
     {
         var restTemp = scope.Top.GetTempVariable(typeof(JSObject));
-        var restInits = new Sequence<YExpression>
+        var restInits = new Sequence<BExpression>
         {
-            YExpression.Assign(restTemp.Variable, JSObjectBuilder.New()),
+            BExpression.Assign(restTemp.Variable, JSObjectBuilder.New()),
         };
 
         if (excludedKeys.Count == 0)
         {
             restInits.Add(JSObjectBuilder.AddRange(restTemp.Expression, source));
             restInits.Add(restTemp.Expression);
-            return YExpression.Block(restTemp.Variable.AsSequence(), restInits);
+            return BExpression.Block(restTemp.Variable.AsSequence(), restInits);
         }
 
         // CopyDataProperties with the already-destructured keys excluded. Passing the keys into
@@ -846,16 +846,16 @@ partial class FastCompiler
         // are stored as the own keys of a scratch object via the ordinary indexer, which
         // normalises every key form (string/index/symbol) exactly as the source's keys are.
         var excludedTemp = scope.Top.GetTempVariable(typeof(JSObject));
-        restInits.Add(YExpression.Assign(excludedTemp.Variable, JSObjectBuilder.New()));
+        restInits.Add(BExpression.Assign(excludedTemp.Variable, JSObjectBuilder.New()));
         var keyEnumerator = excludedKeys.GetFastEnumerator();
         while (keyEnumerator.MoveNext(out var excludedKey))
-            restInits.Add(YExpression.Assign(
+            restInits.Add(BExpression.Assign(
                 JSValueBuilder.Index(excludedTemp.Expression, excludedKey),
                 JSBooleanBuilder.True));
         restInits.Add(JSObjectBuilder.AddRange(restTemp.Expression, source, excludedTemp.Expression));
         restInits.Add(restTemp.Expression);
-        return YExpression.Block(
-            new Sequence<YParameterExpression> { restTemp.Variable, excludedTemp.Variable },
+        return BExpression.Block(
+            new Sequence<BParameterExpression> { restTemp.Variable, excludedTemp.Variable },
             restInits);
     }
 
@@ -874,13 +874,13 @@ partial class FastCompiler
             Left.Type: FastNodeType.ArrayPattern or FastNodeType.ObjectPattern
         };
 
-    private YExpression AssignMaterializedValue(YExpression target, YExpression value)
+    private BExpression AssignMaterializedValue(BExpression target, BExpression value)
     {
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
-        return YExpression.Block(
+        return BExpression.Block(
             temp.Variable.AsSequence(),
-            YExpression.Assign(temp.Expression, value),
-            YExpression.Assign(target, temp.Expression),
+            BExpression.Assign(temp.Expression, value),
+            BExpression.Assign(target, temp.Expression),
             temp.Expression);
     }
 
@@ -893,23 +893,23 @@ partial class FastCompiler
     // boundary. The generator/async state-machine rewriter suspends by emitting a
     // mid-stream `return`, which corrupts the IL evaluation stack if it occurs
     // inside a value-position sub-expression (e.g. the right operand of `??`).
-    private static YExpression AssignDestructuringDefault(YExpression temp, YExpression defaultValue)
-        => YExpression.IfThen(
+    private static BExpression AssignDestructuringDefault(BExpression temp, BExpression defaultValue)
+        => BExpression.IfThen(
             JSValueBuilder.IsUndefined(temp),
             // The if-body must be void (the assigned value is discarded); leaving a
             // value on the stack would unbalance the then/else branches.
-            YExpression.Block(YExpression.Assign(temp, defaultValue), YExpression.Empty));
+            BExpression.Block(BExpression.Assign(temp, defaultValue), BExpression.Empty));
 
-    private static YExpression PrepareDestructuringInitializer(AstExpression target, AstExpression initializer, YExpression value)
+    private static BExpression PrepareDestructuringInitializer(AstExpression target, AstExpression initializer, BExpression value)
     {
         if (target is not AstIdentifier id)
             return value;
 
-        return YExpression.Call(
+        return BExpression.Call(
             null,
             PrepareAnonymousFunctionNameForDestructuringMethod,
             value,
-            YExpression.Constant(id.InferenceName),
-            YExpression.Constant(IsAnonymousFunctionDefinition(initializer)));
+            BExpression.Constant(id.InferenceName),
+            BExpression.Constant(IsAnonymousFunctionDefinition(initializer)));
     }
 }

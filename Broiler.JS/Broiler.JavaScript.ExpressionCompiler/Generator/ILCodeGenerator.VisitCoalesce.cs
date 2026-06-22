@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitCoalesce(YCoalesceExpression yCoalesceExpression)
+    protected override CodeInfo VisitCoalesce(BCoalesceExpression yCoalesceExpression)
     {
         var notNull = il.DefineLabel("coalesce", il.Top);
         Visit(yCoalesceExpression.Left);

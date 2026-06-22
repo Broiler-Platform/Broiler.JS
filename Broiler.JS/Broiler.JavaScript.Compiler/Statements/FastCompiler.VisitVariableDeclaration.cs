@@ -11,12 +11,12 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitVariableDeclaration(AstVariableDeclaration variableDeclaration)
+    protected override BExpression VisitVariableDeclaration(AstVariableDeclaration variableDeclaration)
     {
         var dispose = variableDeclaration.Using;
         var async = variableDeclaration.AwaitUsing;
         var readOnlyAfterAssign = variableDeclaration.Kind == FastVariableKind.Const;
-        var list = new Sequence<YExpression>();
+        var list = new Sequence<BExpression>();
         var top = scope.Top;
         // Record that this scope's disposal must be awaited (an `await using` resource).
         // A sync-only `using` scope disposes synchronously and must not be Yield-wrapped.
@@ -41,7 +41,7 @@ partial class FastCompiler
                         // name is an existing global accessor that read would fire the getter
                         // (test262 staging/sm/global/bug-320887).
                         if (newScope)
-                            list.Add(YExpression.Assign(v.Expression, JSUndefinedBuilder.Value));
+                            list.Add(BExpression.Assign(v.Expression, JSUndefinedBuilder.Value));
                     }
                     else
                     {
@@ -52,7 +52,7 @@ partial class FastCompiler
                             anonymousClassNameHint = id.Name.Value;
                         var initExpr = Visit(d.Init);
                         if (!IsAnonymousFunctionDefinition(d.Init))
-                            initExpr = YExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, YExpression.Constant(""), YExpression.Constant(false));
+                            initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(""), BExpression.Constant(false));
                         if (newScope)
                         {
                             // The initializer may lower to a value-producing try/finally —
@@ -63,10 +63,10 @@ partial class FastCompiler
                             // call. Spill into a plain local first (which the backend assigns
                             // inside the try), then store that into the binding.
                             using var lexicalInitTemp = top.GetTempVariable(typeof(JSValue));
-                            list.Add(YExpression.Block(
-                                new Sequence<YParameterExpression> { lexicalInitTemp.Variable },
-                                YExpression.Assign(lexicalInitTemp.Expression, initExpr),
-                                YExpression.Assign(v.Expression, lexicalInitTemp.Expression)));
+                            list.Add(BExpression.Block(
+                                new Sequence<BParameterExpression> { lexicalInitTemp.Variable },
+                                BExpression.Assign(lexicalInitTemp.Expression, initExpr),
+                                BExpression.Assign(v.Expression, lexicalInitTemp.Expression)));
                         }
                         else if (withBoundaries.Count > 0
                             && TryGetStaticIdentifierVariable(id, out var staticVar) && staticVar != null)
@@ -78,15 +78,15 @@ partial class FastCompiler
                             // otherwise a `var x = init` whose name collides with a
                             // with-object property would store into the object and leave the
                             // local undefined.
-                            list.Add(YExpression.Assign(v.Expression, initExpr));
+                            list.Add(BExpression.Assign(v.Expression, initExpr));
                         }
                         else
                         {
                             var key = KeyOfName(id.Name);
                             using var withObjectTemp = top.GetTempVariable(typeof(JSObject));
                             using var initTemp = top.GetTempVariable(typeof(JSValue));
-                            var resolveStep = YExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key));
-                            var initStep = YExpression.Assign(initTemp.Expression, initExpr);
+                            var resolveStep = BExpression.Assign(withObjectTemp.Expression, JSContextBuilder.ResolveWithObject(key));
+                            var initStep = BExpression.Assign(initTemp.Expression, initExpr);
                             // Inside a `with`, ResolveBinding (which with-object, if any, holds
                             // the name) happens BEFORE the Initializer runs, per VariableDeclaration
                             // semantics: the reference is resolved, then the Initializer runs, then
@@ -99,14 +99,14 @@ partial class FastCompiler
                             var first = withBoundaries.Count > 0 ? resolveStep : initStep;
                             var second = withBoundaries.Count > 0 ? initStep : resolveStep;
                             list.Add(
-                                YExpression.Block(
-                                    new Sequence<YParameterExpression> { withObjectTemp.Variable, initTemp.Variable },
+                                BExpression.Block(
+                                    new Sequence<BParameterExpression> { withObjectTemp.Variable, initTemp.Variable },
                                     first,
                                     second,
-                                    YExpression.Condition(
-                                        YExpression.NotEqual(withObjectTemp.Expression, YExpression.Constant(null, typeof(JSObject))),
+                                    BExpression.Condition(
+                                        BExpression.NotEqual(withObjectTemp.Expression, BExpression.Constant(null, typeof(JSObject))),
                                         JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, initTemp.Expression, IsStrictMode),
-                                        YExpression.Assign(v.Expression, initTemp.Expression),
+                                        BExpression.Assign(v.Expression, initTemp.Expression),
                                         typeof(JSValue))));
                         }
                     }
@@ -117,7 +117,7 @@ partial class FastCompiler
                     if (dispose)
                     {
                         list.Add(top.Disposable.CallExpression<IJSDisposableStack, JSValue, bool>(() => (j, v, b) => 
-                        j.AddDisposableResource(v, b), v.Expression, YExpression.Constant(async)));
+                        j.AddDisposableResource(v, b), v.Expression, BExpression.Constant(async)));
                     }
                     break;
 
@@ -126,14 +126,14 @@ partial class FastCompiler
                     using (var temp = top.GetTempVariable())
                     {
                         if (d.Init != null)
-                            list.Add(YExpression.Assign(temp.Variable, Visit(d.Init)));
+                            list.Add(BExpression.Assign(temp.Variable, Visit(d.Init)));
 
                         CreateAssignment(list, objectPattern, temp.Expression, true, newScope, suppressAnonymousFunctionNameInference: true, readOnlyAfterAssign: readOnlyAfterAssign);
 
                         if (dispose)
                         {
                             list.Add(top.Disposable.CallExpression<IJSDisposableStack, JSValue, bool>(() => (j, v, b) => 
-                            j.AddDisposableResource(v, b), temp.Variable, YExpression.Constant(async)));
+                            j.AddDisposableResource(v, b), temp.Variable, BExpression.Constant(async)));
                         }
                     }
                     break;
@@ -143,13 +143,13 @@ partial class FastCompiler
                     using (var temp = scope.Top.GetTempVariable())
                     {
                         if (d.Init != null)
-                            list.Add(YExpression.Assign(temp.Variable, Visit(d.Init)));
+                            list.Add(BExpression.Assign(temp.Variable, Visit(d.Init)));
 
                         CreateAssignment(list, arrayPattern, temp.Expression, true, newScope, suppressAnonymousFunctionNameInference: true, readOnlyAfterAssign: readOnlyAfterAssign);
                         if (dispose)
                         {
                             list.Add(top.Disposable.CallExpression<IJSDisposableStack, JSValue, bool>(() => (j, v, b) => 
-                            j.AddDisposableResource(v, b), temp.Variable, YExpression.Constant(async)));
+                            j.AddDisposableResource(v, b), temp.Variable, BExpression.Constant(async)));
                         }
                     }
                     break;
@@ -164,7 +164,7 @@ partial class FastCompiler
             var e = list[0];
             return e;
         }
-        var r = YExpression.Block(list);
+        var r = BExpression.Block(list);
         return r;
     }
 }

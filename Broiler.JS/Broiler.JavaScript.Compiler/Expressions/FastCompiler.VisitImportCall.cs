@@ -1,4 +1,4 @@
-using Broiler.JavaScript.Ast.Expressions;
+﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 
@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitImportCall(AstImportCall node)
+    protected override BExpression VisitImportCall(AstImportCall node)
     {
         var specifier = VisitExpression(node.Source);
 

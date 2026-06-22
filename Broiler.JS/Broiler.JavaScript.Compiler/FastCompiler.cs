@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -16,7 +16,7 @@ using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.Compiler;
 
-public partial class FastCompiler : AstMapVisitor<YExpression>
+public partial class FastCompiler : AstMapVisitor<BExpression>
 {
     private static readonly MethodInfo EnterStrictModeDisposableMethod = typeof(JSEngine)
         .InternalMethod("EnterStrictModeDisposable", typeof(bool))
@@ -27,7 +27,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     private readonly FastPool pool;
 
     readonly LinkedStack<FastFunctionScope> scope = new();
-    readonly ScopedStack<YParameterExpression> completionScopes = new();
+    readonly ScopedStack<BParameterExpression> completionScopes = new();
     private readonly Stack<FastFunctionScope> withBoundaries = new();
 
     // The scope of the nearest enclosing sloppy function whose parameter list
@@ -73,9 +73,9 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
     public LoopScope LoopScope => scope.Top.Loop.Top;
 
     private StringArray _keyStrings = new();
-    private YParameterExpression scriptInfo;
+    private BParameterExpression scriptInfo;
 
-    public YExpression<JSFunctionDelegate> Method { get; }
+    public BExpression<JSFunctionDelegate> Method { get; }
 
     public FastCompiler(in StringSpan code, string location = null, IList<string> argsList = null, ICodeCache codeCache = null)
     {
@@ -147,12 +147,12 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             jScript.HoistingScope = list;
         }
 
-        scriptInfo = YExpression.Parameter(typeof(ScriptInfo));
+        scriptInfo = BExpression.Parameter(typeof(ScriptInfo));
 
         var args = fx.ArgumentsExpression;
         var te = ArgumentsBuilder.This(args);
         var stackItem = fx.StackItem;
-        var vList = new Sequence<YParameterExpression>() { scriptInfo, lScope, stackItem };
+        var vList = new Sequence<BParameterExpression>() { scriptInfo, lScope, stackItem };
 
         if (argsList != null)
         {
@@ -171,13 +171,13 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         IsStrictMode = previousStrictMode;
         if (isStrictProgram)
             script = WrapInStrictMode(script);
-        var sList = new Sequence<YExpression>()
+        var sList = new Sequence<BExpression>()
         {
-            YExpression.Assign(scriptInfo, ScriptInfoBuilder.New(location,code.Value)),
-            YExpression.Assign(lScope, JSContextBuilder.Current)
+            BExpression.Assign(scriptInfo, ScriptInfoBuilder.New(location,code.Value)),
+            BExpression.Assign(lScope, JSContextBuilder.Current)
         };
 
-        JSContextStackBuilder.Push(sList, lScope, stackItem, YExpression.Constant(location), StringSpanBuilder.Empty, 0, 0);
+        JSContextStackBuilder.Push(sList, lScope, stackItem, BExpression.Constant(location), StringSpanBuilder.Empty, 0, 0);
         sList.Add(ScriptInfoBuilder.Build(scriptInfo, _keyStrings));
 
         // GlobalDeclarationInstantiation step 8: every top-level FunctionDeclaration of a
@@ -229,10 +229,10 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             }
         }
 
-        sList.Add(YExpression.Return(l, script.ToJSValue()));
-        sList.Add(YExpression.Label(l, JSUndefinedBuilder.Value));
+        sList.Add(BExpression.Return(l, script.ToJSValue()));
+        sList.Add(BExpression.Label(l, JSUndefinedBuilder.Value));
 
-        script = YExpression.Block(vList, YExpression.TryFinally(YExpression.Block(sList), JSContextStackBuilder.Pop(stackItem, lScope)));
+        script = BExpression.Block(vList, BExpression.TryFinally(BExpression.Block(sList), JSContextStackBuilder.Pop(stackItem, lScope)));
 
         if (jScript.IsAsync)
         {
@@ -243,15 +243,15 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             Broiler.JavaScript.ExpressionCompiler.LambdaRewriter.RewriteRootOnly(g);
 
             var jsf = JSAsyncFunctionBuilder.Create(JSGeneratorFunctionBuilderV2.New(g, StringSpanBuilder.New("vm"), StringSpanBuilder.New(code.Value)));
-            var np = YExpression.Parameter(ArgumentsBuilder.refType, "a");
+            var np = BExpression.Parameter(ArgumentsBuilder.refType, "a");
 
             jsf = JSFunctionBuilder.InvokeFunction(jsf, np);
 
-            Method = YExpression.Lambda<JSFunctionDelegate>("vm", jsf, [np]);
+            Method = BExpression.Lambda<JSFunctionDelegate>("vm", jsf, [np]);
             return;
         }
 
-        var lambda = YExpression.Lambda<JSFunctionDelegate>("body", script, fx.Arguments);
+        var lambda = BExpression.Lambda<JSFunctionDelegate>("body", script, fx.Arguments);
         Method = lambda;
     }
 
@@ -276,16 +276,16 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         return false;
     }
 
-    private static YExpression WrapInStrictMode(YExpression body)
+    private static BExpression WrapInStrictMode(BExpression body)
     {
-        var strictScope = YExpression.Parameter(typeof(IDisposable), "#strictScope");
-        return YExpression.Block(
-            new Sequence<YParameterExpression> { strictScope },
-            YExpression.Assign(strictScope, YExpression.Call(null, EnterStrictModeDisposableMethod, YExpression.Constant(true))),
-            YExpression.TryFinally(body, YExpression.Call(strictScope, DisposeMethod)));
+        var strictScope = BExpression.Parameter(typeof(IDisposable), "#strictScope");
+        return BExpression.Block(
+            new Sequence<BParameterExpression> { strictScope },
+            BExpression.Assign(strictScope, BExpression.Call(null, EnterStrictModeDisposableMethod, BExpression.Constant(true))),
+            BExpression.TryFinally(body, BExpression.Call(strictScope, DisposeMethod)));
     }
 
-    private YExpression TrackCompletion(YExpression result)
+    private BExpression TrackCompletion(BExpression result)
     {
         if (result == null || !typeof(JSValue).IsAssignableFrom(result.Type))
             return result;
@@ -295,19 +295,19 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             return result;
 
         if (completionVars.Length == 1)
-            return YExpression.Block(YExpression.Assign(completionVars[0], result), completionVars[0]);
+            return BExpression.Block(BExpression.Assign(completionVars[0], result), completionVars[0]);
 
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
-        var statements = new Sequence<YExpression> { YExpression.Assign(temp.Variable, result) };
+        var statements = new Sequence<BExpression> { BExpression.Assign(temp.Variable, result) };
         foreach (var completionVar in completionVars)
-            statements.Add(YExpression.Assign(completionVar, temp.Variable));
+            statements.Add(BExpression.Assign(completionVar, temp.Variable));
         statements.Add(temp.Variable);
-        return YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, statements);
+        return BExpression.Block(new Sequence<BParameterExpression> { temp.Variable }, statements);
     }
 
-    private YParameterExpression[] GetCompletionVariables()
+    private BParameterExpression[] GetCompletionVariables()
     {
-        var items = new List<YParameterExpression>();
+        var items = new List<BParameterExpression>();
         var current = completionScopes.Top;
         while (current != null)
         {
@@ -320,24 +320,24 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         return [.. items];
     }
 
-    private static YExpression PropagateCompletion(YParameterExpression completionVar, YParameterExpression[] outerCompletionVars)
+    private static BExpression PropagateCompletion(BParameterExpression completionVar, BParameterExpression[] outerCompletionVars)
     {
         if (outerCompletionVars == null || outerCompletionVars.Length == 0)
-            return YExpression.Empty;
+            return BExpression.Empty;
 
-        var statements = new Sequence<YExpression>(outerCompletionVars.Length);
+        var statements = new Sequence<BExpression>(outerCompletionVars.Length);
         foreach (var outerCompletionVar in outerCompletionVars)
-            statements.Add(YExpression.Assign(outerCompletionVar, completionVar));
-        return YExpression.Block(statements);
+            statements.Add(BExpression.Assign(outerCompletionVar, completionVar));
+        return BExpression.Block(statements);
     }
 
-    private YExpression VisitExpression(AstExpression exp) => Visit(exp);
+    private BExpression VisitExpression(AstExpression exp) => Visit(exp);
 
-    private YExpression VisitStatement(AstStatement exp) => Visit(exp);
+    private BExpression VisitStatement(AstStatement exp) => Visit(exp);
 
-    protected override YExpression VisitClassStatement(AstClassExpression classStatement) => CreateClass(classStatement.Identifier, classStatement.Base, classStatement);
+    protected override BExpression VisitClassStatement(AstClassExpression classStatement) => CreateClass(classStatement.Identifier, classStatement.Base, classStatement);
 
-    protected override YExpression VisitContinueStatement(AstContinueStatement continueStatement)
+    protected override BExpression VisitContinueStatement(AstContinueStatement continueStatement)
     {
         string name = continueStatement.Label?.Name.Value;
         if (name != null)
@@ -345,17 +345,17 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             var target = LoopScope.Get(name);
             // `continue <label>` jumps to the labelled loop's CONTINUE target (next
             // iteration), not its Break target — otherwise it exits the loop entirely.
-            return target == null ? throw JSEngine.NewSyntaxError($"No label found for {name}") : YExpression.Continue(target.Continue);
+            return target == null ? throw JSEngine.NewSyntaxError($"No label found for {name}") : BExpression.Continue(target.Continue);
         }
 
-        return YExpression.Continue(scope.Top.Loop.Top.Continue);
+        return BExpression.Continue(scope.Top.Loop.Top.Continue);
     }
 
-    protected override YExpression VisitDebuggerStatement(AstDebuggerStatement debuggerStatement) => JSDebuggerBuilder.RaiseBreak();
+    protected override BExpression VisitDebuggerStatement(AstDebuggerStatement debuggerStatement) => JSDebuggerBuilder.RaiseBreak();
 
-    protected override YExpression VisitEmptyExpression(AstEmptyExpression emptyExpression) => YExpression.Empty;
+    protected override BExpression VisitEmptyExpression(AstEmptyExpression emptyExpression) => BExpression.Empty;
 
-    protected override YExpression VisitExpressionStatement(AstExpressionStatement expressionStatement)
+    protected override BExpression VisitExpressionStatement(AstExpressionStatement expressionStatement)
     {
         // A FunctionDeclaration and a ClassDeclaration complete with an empty value
         // (per spec), so they must NOT update the script/eval completion value —
@@ -408,9 +408,9 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             currentBinding.IsDeletable = true;
 
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
-        var statements = new Sequence<YExpression>
+        var statements = new Sequence<BExpression>
         {
-            YExpression.Assign(temp.Variable, result)
+            BExpression.Assign(temp.Variable, result)
         };
 
         // Annex B 3.3 Web Legacy Compatibility (the function-scope var copy-out)
@@ -420,10 +420,10 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             AppendAnnexBOuterBindingAssignments(statements, currentBinding, id.Name, temp.Variable);
         statements.Add(temp.Variable);
 
-        return YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, statements);
+        return BExpression.Block(new Sequence<BParameterExpression> { temp.Variable }, statements);
     }
 
-    private YExpression VisitRuntimeFunctionDeclaration(AstFunctionExpression functionDeclaration, bool implicitBlockScoped = false)
+    private BExpression VisitRuntimeFunctionDeclaration(AstFunctionExpression functionDeclaration, bool implicitBlockScoped = false)
     {
         var functionName = functionDeclaration.Id!.Name;
 
@@ -476,10 +476,10 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         var result = CreateFunction(functionDeclaration, hoistStatementDeclaration: false);
 
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
-        var variables = new Sequence<YParameterExpression> { temp.Variable };
-        var statements = new Sequence<YExpression>
+        var variables = new Sequence<BParameterExpression> { temp.Variable };
+        var statements = new Sequence<BExpression>
         {
-            YExpression.Assign(temp.Variable, result),
+            BExpression.Assign(temp.Variable, result),
         };
 
         if (isDirectEvalCompilation && scope.Top.Function == null && !usesDirectEvalLocalVarEnvironment)
@@ -487,7 +487,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
 
         statements.AddRange(
         [
-            YExpression.Assign(currentBinding.Expression, temp.Variable)
+            BExpression.Assign(currentBinding.Expression, temp.Variable)
         ]);
 
         // Annex B 3.3 Web Legacy Compatibility (the function-scope var copy-out)
@@ -497,14 +497,14 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             AppendAnnexBOuterBindingAssignments(statements, currentBinding, functionName, temp.Variable);
 
         statements.Add(temp.Variable);
-        return YExpression.Block(variables, statements);
+        return BExpression.Block(variables, statements);
     }
 
     // Materialise the implicit B.3.4 block of an `if`-clause FunctionDeclaration:
     // a fresh block-scoped binding (distinct from any outer var/global binding) is
     // created, the function body resolves its own name to it, and the function
     // value is then copied out to the Annex B var-scoped binding (unless blocked).
-    private YExpression VisitImplicitBlockFunctionDeclaration(AstFunctionExpression functionDeclaration, in StringSpan functionName)
+    private BExpression VisitImplicitBlockFunctionDeclaration(AstFunctionExpression functionDeclaration, in StringSpan functionName)
     {
         var blockScope = scope.Push(new FastFunctionScope(scope.Top));
 
@@ -518,10 +518,10 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         var result = CreateFunction(functionDeclaration, hoistStatementDeclaration: false);
 
         using var temp = blockScope.GetTempVariable(typeof(JSValue));
-        var statements = new Sequence<YExpression>
+        var statements = new Sequence<BExpression>
         {
-            YExpression.Assign(temp.Variable, result),
-            YExpression.Assign(blockBinding.Expression, temp.Variable),
+            BExpression.Assign(temp.Variable, result),
+            BExpression.Assign(blockBinding.Expression, temp.Variable),
         };
 
         // Annex B 3.3 var copy-out is for plain FunctionDeclarations only.
@@ -529,13 +529,13 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             AppendAnnexBOuterBindingAssignments(statements, blockBinding, functionName, temp.Variable);
         statements.Add(temp.Variable);
 
-        var inner = YExpression.Block(new Sequence<YParameterExpression> { temp.Variable }, statements);
-        var scoped = Scoped(blockScope, new Sequence<YExpression> { inner });
+        var inner = BExpression.Block(new Sequence<BParameterExpression> { temp.Variable }, statements);
+        var scoped = Scoped(blockScope, new Sequence<BExpression> { inner });
         blockScope.Dispose();
         return scoped;
     }
 
-    private void AppendAnnexBOuterBindingAssignments(Sequence<YExpression> statements, FastFunctionScope.VariableScope currentBinding, in StringSpan name, YExpression value)
+    private void AppendAnnexBOuterBindingAssignments(Sequence<BExpression> statements, FastFunctionScope.VariableScope currentBinding, in StringSpan name, BExpression value)
     {
         if (IsStrictMode)
             return;
@@ -559,7 +559,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         {
             var outerBinding = GetAnnexBOuterBinding(name, currentBinding);
             if (outerBinding != null && outerBinding != currentBinding)
-                statements.Add(YExpression.Assign(outerBinding.Expression, value));
+                statements.Add(BExpression.Assign(outerBinding.Expression, value));
         }
 
         if (scope.Top.Function == null)
@@ -568,7 +568,7 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
             {
                 var evalProgramBinding = GetOrCreateDirectEvalProgramBinding(name);
                 if (evalProgramBinding != null && evalProgramBinding != currentBinding)
-                    statements.Add(YExpression.Assign(evalProgramBinding.Expression, value));
+                    statements.Add(BExpression.Assign(evalProgramBinding.Expression, value));
             }
             else
             {
@@ -647,20 +647,20 @@ public partial class FastCompiler : AstMapVisitor<YExpression>
         return variable;
     }
 
-    protected override YExpression VisitFunctionExpression(AstFunctionExpression functionExpression)
+    protected override BExpression VisitFunctionExpression(AstFunctionExpression functionExpression)
         // Arrow functions have no super binding of their own; they inherit the
         // lexical [[HomeObject]] super of the enclosing method/initializer.
         => CreateFunction(functionExpression, functionExpression.IsArrowFunction ? scope.Top.Super : null);
 
-    protected override YExpression VisitSuper(AstSuper super) => scope.Top.ThisExpression;
+    protected override BExpression VisitSuper(AstSuper super) => scope.Top.ThisExpression;
 
-    protected override YExpression VisitSpreadElement(AstSpreadElement spreadElement) => throw new NotImplementedException();
+    protected override BExpression VisitSpreadElement(AstSpreadElement spreadElement) => throw new NotImplementedException();
 
-    protected override YExpression VisitThrowStatement(AstThrowStatement throwStatement) => JSExceptionBuilder.Throw(VisitExpression(throwStatement.Argument));
+    protected override BExpression VisitThrowStatement(AstThrowStatement throwStatement) => JSExceptionBuilder.Throw(VisitExpression(throwStatement.Argument));
 
-    protected override YExpression VisitYieldExpression(AstYieldExpression yieldExpression)
+    protected override BExpression VisitYieldExpression(AstYieldExpression yieldExpression)
     {
         var target = yieldExpression.Argument == null ? JSUndefinedBuilder.Value : VisitExpression(yieldExpression.Argument);
-        return YExpression.Yield(target, yieldExpression.Delegate);
+        return BExpression.Yield(target, yieldExpression.Delegate);
     }
 }

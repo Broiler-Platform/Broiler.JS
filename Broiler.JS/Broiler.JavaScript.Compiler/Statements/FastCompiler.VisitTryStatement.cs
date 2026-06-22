@@ -1,4 +1,4 @@
-using Broiler.JavaScript.Ast.Expressions;
+﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
@@ -12,7 +12,7 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitTryStatement(AstTryStatement tryStatement)
+    protected override BExpression VisitTryStatement(AstTryStatement tryStatement)
     {
         // Inside a generator the body is rewritten into a state machine; the script/eval completion
         // value is irrelevant there, so use the plain form (no completion tracking) to avoid
@@ -28,24 +28,24 @@ partial class FastCompiler
         // the enclosing completion variables. The Finally block tracks into `#cv` too, but only an
         // ABRUPT finally (break/continue/return) keeps that value — a normal finally restores the
         // Block/Catch value (BuildTryCore → VisitFinallyBlock).
-        var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
+        var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
         var outerCompletionVars = GetCompletionVariables();
 
-        YExpression coreTry;
+        BExpression coreTry;
         using (completionScopes.Push(completionVar))
             coreTry = BuildTryCore(tryStatement, completionVar);
 
-        return YExpression.Block(
-            new Sequence<YParameterExpression> { completionVar },
-            YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
-            YExpression.TailCallTransparentTryFinally(coreTry, PropagateCompletion(completionVar, outerCompletionVars)),
+        return BExpression.Block(
+            new Sequence<BParameterExpression> { completionVar },
+            BExpression.Assign(completionVar, JSUndefinedBuilder.Value),
+            BExpression.TailCallTransparentTryFinally(coreTry, PropagateCompletion(completionVar, outerCompletionVars)),
             completionVar);
     }
 
     // Builds the underlying try/catch/finally expression. The Block and Catch are visited under the
     // currently-active completion scope (so their values flow into the completion variable for a
     // script/eval), while the Finally block is visited with completion tracking suppressed.
-    private YExpression BuildTryCore(AstTryStatement tryStatement, YParameterExpression completionVar)
+    private BExpression BuildTryCore(AstTryStatement tryStatement, BParameterExpression completionVar)
     {
         var block = VisitStatement(tryStatement.Block);
         var cb = tryStatement.Catch;
@@ -60,13 +60,13 @@ partial class FastCompiler
                 using var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
                 var v = scope.CreateVariable(id.Name, newScope: true);
                 v.IsSimpleCatchBinding = true;
-                var catchBlock = YExpression.Block(v.Variable.AsSequence(), YExpression.Assign(v.Variable, JSVariableBuilder.NewFromException(pe.Variable, id.Name.Value)), VisitStatement(cb));
-                var cbExp = YExpression.Catch(pe.Variable, catchBlock.ToJSValue());
+                var catchBlock = BExpression.Block(v.Variable.AsSequence(), BExpression.Assign(v.Variable, JSVariableBuilder.NewFromException(pe.Variable, id.Name.Value)), VisitStatement(cb));
+                var cbExp = BExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 
                 if (tryStatement.Finally != null)
-                    return YExpression.TryCatchFinally(block.ToJSValue(), VisitFinallyBlock(tryStatement.Finally, completionVar), cbExp);
+                    return BExpression.TryCatchFinally(block.ToJSValue(), VisitFinallyBlock(tryStatement.Finally, completionVar), cbExp);
 
-                return YExpression.TryCatch(block.ToJSValue(), cbExp);
+                return BExpression.TryCatch(block.ToJSValue(), cbExp);
             }
             else if (catchParam is AstArrayPattern or AstObjectPattern)
             {
@@ -75,7 +75,7 @@ partial class FastCompiler
                 var pe = this.scope.Top.CreateException(syntheticName.Value);
                 using var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
                 var v = this.scope.Top.CreateVariable(syntheticName, newScope: true);
-                var destrList = new Sequence<YExpression>();
+                var destrList = new Sequence<BExpression>();
                 // Destructure the caught exception into the pattern's bindings. Pass
                 // suppressAnonymousFunctionNameInference so a per-element default that is
                 // not a plain anonymous function definition (e.g. `[x = (0, function(){})]`)
@@ -84,42 +84,42 @@ partial class FastCompiler
                 CreateAssignment(destrList, catchParam, v.Expression, createVariable: true, newScope: true,
                     suppressAnonymousFunctionNameInference: true);
                 // Collect all variables created in this scope (including destructured bindings)
-                var vars = new Sequence<YParameterExpression>();
-                var list = new Sequence<YExpression>();
+                var vars = new Sequence<BParameterExpression>();
+                var list = new Sequence<BExpression>();
                 foreach (var vp in this.scope.Top.VariableParameters)
                     vars.Add(vp);
                 // Initialize all variables (including JSVariable constructors for destructured bindings)
                 foreach (var initExpr in this.scope.Top.InitList)
                     list.Add(initExpr);
-                list.Add(YExpression.Assign(v.Variable, JSVariableBuilder.NewFromException(pe.Variable, syntheticName.Value)));
+                list.Add(BExpression.Assign(v.Variable, JSVariableBuilder.NewFromException(pe.Variable, syntheticName.Value)));
                 foreach (var d in destrList)
                     list.Add(d);
                 list.Add(VisitStatement(cb));
-                var catchBlock = YExpression.Block(vars, list);
-                var cbExp = YExpression.Catch(pe.Variable, catchBlock.ToJSValue());
+                var catchBlock = BExpression.Block(vars, list);
+                var cbExp = BExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 
                 if (tryStatement.Finally != null)
-                    return YExpression.TryCatchFinally(block.ToJSValue(), VisitFinallyBlock(tryStatement.Finally, completionVar), cbExp);
+                    return BExpression.TryCatchFinally(block.ToJSValue(), VisitFinallyBlock(tryStatement.Finally, completionVar), cbExp);
 
-                return YExpression.TryCatch(block.ToJSValue(), cbExp);
+                return BExpression.TryCatch(block.ToJSValue(), cbExp);
             }
             else
             {
                 // Optional catch binding: catch { ... }
                 var pe = this.scope.Top.CreateException("__catchParam__");
                 var catchBlock = VisitStatement(cb);
-                var cbExp = YExpression.Catch(pe.Variable, catchBlock.ToJSValue());
+                var cbExp = BExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 
                 if (tryStatement.Finally != null)
-                    return YExpression.TryCatchFinally(block.ToJSValue(), VisitFinallyBlock(tryStatement.Finally, completionVar), cbExp);
+                    return BExpression.TryCatchFinally(block.ToJSValue(), VisitFinallyBlock(tryStatement.Finally, completionVar), cbExp);
 
-                return YExpression.TryCatch(block.ToJSValue(), cbExp);
+                return BExpression.TryCatch(block.ToJSValue(), cbExp);
             }
         }
 
         var @finally = tryStatement.Finally;
         if (@finally != null)
-            return YExpression.TryFinally(block.ToJSValue(), VisitFinallyBlock(@finally, completionVar));
+            return BExpression.TryFinally(block.ToJSValue(), VisitFinallyBlock(@finally, completionVar));
 
         return JSUndefinedBuilder.Value;
     }
@@ -133,7 +133,7 @@ partial class FastCompiler
     // while a normal finally reaches the restore and brings back the Block/Catch value. The
     // finally is pushed above a null boundary so it tracks ONLY `#cv`, never the enclosing
     // completion variables (those are reconciled afterwards by PropagateCompletion).
-    private YExpression VisitFinallyBlock(AstStatement finallyStatement, YParameterExpression completionVar)
+    private BExpression VisitFinallyBlock(AstStatement finallyStatement, BParameterExpression completionVar)
     {
         if (completionVar == null)
         {
@@ -148,12 +148,12 @@ partial class FastCompiler
         using (completionScopes.Push(completionVar))
         {
             var finallyBody = VisitStatement(finallyStatement).ToJSValue();
-            return YExpression.Block(
-                new Sequence<YParameterExpression> { saved.Variable },
-                YExpression.Assign(saved.Variable, completionVar),
-                YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
+            return BExpression.Block(
+                new Sequence<BParameterExpression> { saved.Variable },
+                BExpression.Assign(saved.Variable, completionVar),
+                BExpression.Assign(completionVar, JSUndefinedBuilder.Value),
                 finallyBody,
-                YExpression.Assign(completionVar, saved.Variable)).ToJSValue();
+                BExpression.Assign(completionVar, saved.Variable)).ToJSValue();
         }
     }
 }

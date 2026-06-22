@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Generator;
@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 /// <summary>
 /// Determines whether a <c>finally</c> body can complete abruptly by branching
 /// out of the block — i.e. it contains a <c>return</c>, or a <c>break</c>/
-/// <c>continue</c> (a <see cref="YGoToExpression"/>/<see cref="YJumpSwitchExpression"/>)
+/// <c>continue</c> (a <see cref="BGoToExpression"/>/<see cref="BJumpSwitchExpression"/>)
 /// whose target label is declared <em>outside</em> the finally.
 ///
 /// Such a finally must override a pending throw per the ECMAScript spec
@@ -20,13 +20,13 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 /// be misclassified as internal. (A false positive merely emits an unnecessary
 /// — but still correct — guard.)
 /// </summary>
-internal sealed class FinallyBranchScanner : YExpressionMapVisitor
+internal sealed class FinallyBranchScanner : BExpressionMapVisitor
 {
-    private readonly HashSet<YLabelTarget> internalLabels = new();
-    private readonly List<YLabelTarget> branchTargets = new();
+    private readonly HashSet<BLabelTarget> internalLabels = new();
+    private readonly List<BLabelTarget> branchTargets = new();
     private bool hasReturn;
 
-    public static bool BranchesOut(YExpression @finally)
+    public static bool BranchesOut(BExpression @finally)
     {
         if (@finally == null)
             return false;
@@ -46,26 +46,26 @@ internal sealed class FinallyBranchScanner : YExpressionMapVisitor
         return false;
     }
 
-    protected override YExpression VisitLabel(YLabelExpression yLabelExpression)
+    protected override BExpression VisitLabel(BLabelExpression yLabelExpression)
     {
         internalLabels.Add(yLabelExpression.Target);
         return base.VisitLabel(yLabelExpression);
     }
 
-    protected override YExpression VisitLoop(YLoopExpression yLoopExpression)
+    protected override BExpression VisitLoop(BLoopExpression yLoopExpression)
     {
         internalLabels.Add(yLoopExpression.Break);
         internalLabels.Add(yLoopExpression.Continue);
         return base.VisitLoop(yLoopExpression);
     }
 
-    protected override YExpression VisitGoto(YGoToExpression yGoToExpression)
+    protected override BExpression VisitGoto(BGoToExpression yGoToExpression)
     {
         branchTargets.Add(yGoToExpression.Target);
         return base.VisitGoto(yGoToExpression);
     }
 
-    protected override YExpression VisitJumpSwitch(YJumpSwitchExpression node)
+    protected override BExpression VisitJumpSwitch(BJumpSwitchExpression node)
     {
         var en = node.Cases.GetFastEnumerator();
         while (en.MoveNext(out var c, out _))
@@ -73,7 +73,7 @@ internal sealed class FinallyBranchScanner : YExpressionMapVisitor
         return base.VisitJumpSwitch(node);
     }
 
-    protected override YExpression VisitReturn(YReturnExpression yReturnExpression)
+    protected override BExpression VisitReturn(BReturnExpression yReturnExpression)
     {
         hasReturn = true;
         return base.VisitReturn(yReturnExpression);
@@ -81,5 +81,5 @@ internal sealed class FinallyBranchScanner : YExpressionMapVisitor
 
     // A nested function compiles to its own IL stream; its returns/branches are
     // not branch-outs of this finally.
-    protected override YExpression VisitLambda(YLambdaExpression yLambdaExpression) => yLambdaExpression;
+    protected override BExpression VisitLambda(BLambdaExpression yLambdaExpression) => yLambdaExpression;
 }

@@ -4,7 +4,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitIndex(YIndexExpression yIndexExpression)
+    protected override CodeInfo VisitIndex(BIndexExpression yIndexExpression)
     {
         Visit(yIndexExpression.Target);
         EmitParameters(yIndexExpression.GetMethod, yIndexExpression.Arguments, yIndexExpression.Type);

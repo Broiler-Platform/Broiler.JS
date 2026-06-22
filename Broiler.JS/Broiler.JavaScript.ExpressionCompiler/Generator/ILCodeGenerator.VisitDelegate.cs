@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitDelegate(YDelegateExpression delegateExpression)
+    protected override CodeInfo VisitDelegate(BDelegateExpression delegateExpression)
     {
         il.Emit(OpCodes.Ldnull);
         il.Emit(OpCodes.Ldftn, delegateExpression.Method);

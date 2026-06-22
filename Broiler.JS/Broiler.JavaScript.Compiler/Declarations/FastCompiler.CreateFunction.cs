@@ -17,10 +17,10 @@ partial class FastCompiler
 {
     private int parameterInitializerDepth;
 
-    private YExpression CreateFunction(AstFunctionExpression functionDeclaration, YExpression super = null, bool createClass = false, string className = null,
+    private BExpression CreateFunction(AstFunctionExpression functionDeclaration, BExpression super = null, bool createClass = false, string className = null,
         IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true, string inferredFunctionName = null,
-        bool createPrototype = true, string[] directEvalPrivateNames = null, IReadOnlyDictionary<AstClassProperty, YExpression> computedMemberNames = null,
-        bool thisIsUninitialized = false, YExpression superConstructor = null, IReadOnlyList<PrivateInstanceElement> privateInstanceElements = null)
+        bool createPrototype = true, string[] directEvalPrivateNames = null, IReadOnlyDictionary<AstClassProperty, BExpression> computedMemberNames = null,
+        bool thisIsUninitialized = false, BExpression superConstructor = null, IReadOnlyList<PrivateInstanceElement> privateInstanceElements = null)
     {
         var node = functionDeclaration;
         var functionLength = GetExpectedArgumentCount(functionDeclaration.Params);
@@ -46,9 +46,9 @@ partial class FastCompiler
         var nodeCode = node.Code;
 
         var code = StringSpanBuilder.New(ScriptInfoBuilder.Code(scriptInfo), nodeCode.Offset, nodeCode.Length);
-        var sList = new Sequence<YExpression>();
-        var bodyInits = new Sequence<YExpression>();
-        var vList = new Sequence<YParameterExpression>();
+        var sList = new Sequence<BExpression>();
+        var bodyInits = new Sequence<BExpression>();
+        var vList = new Sequence<BParameterExpression>();
 
         var current = scope.Top.RootScope;
         var cs = scope.Push(new FastFunctionScope(
@@ -72,14 +72,14 @@ partial class FastCompiler
 
             vList.Add(cs.Context);
             vList.Add(cs.StackItem);
-            sList.Add(YExpression.Assign(cs.Context, JSContextBuilder.Current));
+            sList.Add(BExpression.Assign(cs.Context, JSContextBuilder.Current));
 
             FastFunctionScope.VariableScope jsFVarScope = null;
 
             // BROILER-PATCH: For function declarations, look up name in parent scope
             // to bind the function. For function expressions, the name is local to
             // the function body and must not leak to the parent scope (ES3 §13).
-            YParameterExpression fexprNameParam = null;
+            BParameterExpression fexprNameParam = null;
             if (functionName != null && functionDeclaration.IsStatement && hoistStatementDeclaration)
             {
                 jsFVarScope = previousScope.GetVariable(functionName);
@@ -99,7 +99,7 @@ partial class FastCompiler
                 // binding, so the body resolves its own name to the enclosing
                 // (mutable) binding instead. Otherwise self-assignment such as
                 // `function f(){ f = 1; }` is wrongly ignored.
-                fexprNameParam = YExpression.Parameter(typeof(JSVariable), functionName);
+                fexprNameParam = BExpression.Parameter(typeof(JSVariable), functionName);
                 var fexprVarScope = new FastFunctionScope.VariableScope
                 {
                     Name = functionName,
@@ -145,8 +145,8 @@ partial class FastCompiler
 
             var directEvalParameterBindings = CollectDirectEvalParameterBindings(functionDeclaration, parameterNames);
 
-            YExpression fxName;
-            YExpression localFxName;
+            BExpression fxName;
+            BExpression localFxName;
             int nameOffset;
             int nameLength;
 
@@ -179,7 +179,7 @@ partial class FastCompiler
 
             var point = node.Start.Start;
 
-            sList.Add(YExpression.Assign(stackItem, CallStackItemBuilder.New(cs.Context, scriptInfo, nameOffset, nameLength, point.Line, point.Column)));
+            sList.Add(BExpression.Assign(stackItem, CallStackItemBuilder.New(cs.Context, scriptInfo, nameOffset, nameLength, point.Line, point.Column)));
 
             var argumentElements = args;
 
@@ -203,7 +203,7 @@ partial class FastCompiler
                     continue;
                 }
 
-                YExpression parameterInitializer = null;
+                BExpression parameterInitializer = null;
                 if (v.Init != null)
                 {
                     var previousDirectEvalParameterBindings = cs.CurrentDirectEvalParameterBindings;
@@ -258,7 +258,7 @@ partial class FastCompiler
             if (containsEval)
                 MaterializeArgumentsBinding();
 
-            YExpression lambdaBody;
+            BExpression lambdaBody;
             using (completionScopes.Push(null))
                 lambdaBody = VisitStatement(functionDeclaration.Body);
 
@@ -295,7 +295,7 @@ partial class FastCompiler
             sList.AddRange(s.PostInitList);
 
             if (functionDeclaration.Generator)
-                sList.Add(YExpression.Yield(JSUndefinedBuilder.Value));
+                sList.Add(BExpression.Yield(JSUndefinedBuilder.Value));
 
             sList.Add(lambdaBody);
 
@@ -309,7 +309,7 @@ partial class FastCompiler
             // IL generator unable to resolve them (KeyNotFoundException at emit time).
             vList.AddRange(s.VariableParameters);
 
-            sList.Add(YExpression.Label(r, JSUndefinedBuilder.Value));
+            sList.Add(BExpression.Label(r, JSUndefinedBuilder.Value));
 
             // A class constructor body produces a value via the return label
             // (explicit `return x`, or `undefined` on fall-through). Apply the
@@ -317,14 +317,14 @@ partial class FastCompiler
             // a base constructor otherwise yields `this`, and a derived
             // constructor throws (TypeError for a non-undefined non-object,
             // ReferenceError when `this` is still uninitialized).
-            YExpression bodyExpression = YExpression.Block(sList);
+            BExpression bodyExpression = BExpression.Block(sList);
             if (createClass)
                 bodyExpression = JSFunctionBuilder.NormalizeConstructorReturn(
                     bodyExpression, s.ThisExpression, thisIsUninitialized);
 
-            var block = YExpression.Block(
+            var block = BExpression.Block(
                 vList,
-                YExpression.TryFinally(
+                BExpression.TryFinally(
                     bodyExpression,
                     JSContextStackBuilder.Pop(stackItem, cs.Context)));
 
@@ -332,12 +332,12 @@ partial class FastCompiler
 
             functionName = functionName ?? inferredFunctionName ?? "inline";
 
-            static YExpression ToDelegate(YLambdaExpression e1) => e1;
+            static BExpression ToDelegate(BLambdaExpression e1) => e1;
 
             var scriptFunctionName = new FunctionName(functionName, location, point.Line, point.Column);
 
-            YLambdaExpression lambda;
-            YExpression jsf;
+            BLambdaExpression lambda;
+            BExpression jsf;
 
             if (functionDeclaration.Generator)
             {
@@ -362,7 +362,7 @@ partial class FastCompiler
             }
             else
             {
-                lambda = YExpression.Lambda(typeof(JSFunctionDelegate), block, in scriptFunctionName, [cs.Arguments]);
+                lambda = BExpression.Lambda(typeof(JSFunctionDelegate), block, in scriptFunctionName, [cs.Arguments]);
                 jsf = JSFunctionBuilder.New(ToDelegate(lambda), fxName, code, functionLength, createPrototype: createPrototype && !functionDeclaration.IsArrowFunction);
                 if (!isStrictFunction)
                     jsf = JSFunctionBuilder.EnableNonStrictThis(jsf);
@@ -431,7 +431,7 @@ partial class FastCompiler
             // function reference. The function body captures this variable.
             if (fexprNameParam != null)
             {
-                var fexprVars = new Sequence<YParameterExpression> { fexprNameParam };
+                var fexprVars = new Sequence<BParameterExpression> { fexprNameParam };
 
                 // Mark the name binding read-only. In a strict-mode function an
                 // assignment to it must throw a TypeError; the default read-only
@@ -440,8 +440,8 @@ partial class FastCompiler
                 // outside that scope, so the throw would be lost. Baking the
                 // strictness in (throwOnWrite) makes the TypeError independent of
                 // the runtime flag.
-                return YExpression.Block(fexprVars,
-                    YExpression.Assign(fexprNameParam, JSVariableBuilder.New(jsf, functionName)),
+                return BExpression.Block(fexprVars,
+                    BExpression.Assign(fexprNameParam, JSVariableBuilder.New(jsf, functionName)),
                     JSVariableBuilder.SetReadOnly(fexprNameParam, throwOnWrite: isStrictFunction),
                     JSVariable.ValueExpression(fexprNameParam));
             }
@@ -467,7 +467,7 @@ partial class FastCompiler
         return count;
     }
 
-    private void InitMembers(Sequence<YExpression> sList, FastFunctionScope s)
+    private void InitMembers(Sequence<BExpression> sList, FastFunctionScope s)
     {
         var @this = s.ThisExpression;
 
@@ -486,8 +486,8 @@ partial class FastCompiler
                 else
                 {
                     sList.Add(JSObjectBuilder.PrivateAccessorAdd(@this, element.Key,
-                        element.Getter ?? YExpression.Constant(null, typeof(JSValue)),
-                        element.Setter ?? YExpression.Constant(null, typeof(JSValue))));
+                        element.Getter ?? BExpression.Constant(null, typeof(JSValue)),
+                        element.Setter ?? BExpression.Constant(null, typeof(JSValue))));
                 }
             }
         }
@@ -499,7 +499,7 @@ partial class FastCompiler
             var name = s.ComputedMemberNames != null && s.ComputedMemberNames.TryGetValue(member, out var computedName)
                 ? computedName
                 : GetClassElementName(member);
-            YExpression value;
+            BExpression value;
             if (member.Init == null)
             {
                 value = JSUndefinedBuilder.Value;
@@ -527,7 +527,7 @@ partial class FastCompiler
                 ? JSObjectBuilder.PrivateFieldAdd(name, value)
                 : JSObjectBuilder.CreateDataProperty(name, value);
 
-            sList.Add(YExpression.Call(@this, init.Member as MethodInfo, init.Arguments));
+            sList.Add(BExpression.Call(@this, init.Member as MethodInfo, init.Arguments));
         }
     }
 

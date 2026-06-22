@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitNew(YNewExpression newExpression)
+    protected override CodeInfo VisitNew(BNewExpression newExpression)
     {
         using (tempVariables.Push())
         {
@@ -23,7 +23,7 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    protected override CodeInfo VisitNewArray(YNewArrayExpression yNewArrayExpression)
+    protected override CodeInfo VisitNewArray(BNewArrayExpression yNewArrayExpression)
     {
 
         using (tempVariables.Push())
@@ -50,7 +50,7 @@ public partial class ILCodeGenerator
         }
     }
 
-    protected override CodeInfo VisitNewArrayBounds(YNewArrayBoundsExpression yNewArrayBoundsExpression)
+    protected override CodeInfo VisitNewArrayBounds(BNewArrayBoundsExpression yNewArrayBoundsExpression)
     {
         Visit(yNewArrayBoundsExpression.Size);
         il.Emit(OpCodes.Newarr, yNewArrayBoundsExpression.ElementType);

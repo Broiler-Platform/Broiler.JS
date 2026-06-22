@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -40,12 +40,12 @@ partial class FastCompiler
         return FormatNumericPropertyName(literal.NumericValue);
     }
 
-    private YExpression GetLiteralPropertyKey(AstLiteral literal)
+    private BExpression GetLiteralPropertyKey(AstLiteral literal)
     {
         if (literal.TokenType == TokenTypes.String)
         {
             if (NumberParser.TryGetArrayIndex(literal.StringValue, out var ui))
-                return YExpression.Constant(ui);
+                return BExpression.Constant(ui);
 
             return KeyOfName(literal.StringValue);
         }
@@ -58,7 +58,7 @@ partial class FastCompiler
             // TryGetArrayIndex and the member-read path). Folding it to a uint key would
             // store it at the element table's reserved sentinel slot and silently drop it.
             if (value == 0 || (value > 0 && value < uint.MaxValue && value % 1 == 0))
-                return YExpression.Constant((uint)value);
+                return BExpression.Constant((uint)value);
 
             return VisitLiteral(literal);
         }
@@ -73,13 +73,13 @@ partial class FastCompiler
     // is the value's canonical decimal string; a value that fits in a uint is emitted
     // as an integer key, mirroring the numeric-literal path (so `4294967295n` and
     // `4294967295` resolve to the same slot).
-    private YExpression BigIntPropertyKey(string literalText)
+    private BExpression BigIntPropertyKey(string literalText)
     {
         var value = BigIntLiteralToValue(literalText);
         // 4294967295 (uint.MaxValue) is not an array index — it names the string property
         // "4294967295" — so exclude it from the integer-key fast path (see GetLiteralPropertyKey).
         if (value >= 0 && value < uint.MaxValue)
-            return YExpression.Constant((uint)value);
+            return BExpression.Constant((uint)value);
 
         return KeyOfName(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
     }
@@ -146,7 +146,7 @@ partial class FastCompiler
         .PublicMethod(nameof(JSClassStaticPropertyValidator.Validate), typeof(JSValue))
         ?? throw new InvalidOperationException("JSClassStaticPropertyValidator.Validate(JSValue) not found");
 
-    private YExpression GetName(AstClassProperty property)
+    private BExpression GetName(AstClassProperty property)
     {
         var exp = property.Key;
         var computed = property.Computed;
@@ -176,24 +176,24 @@ partial class FastCompiler
     // Wrap a (value-discarding) statement so it executes inside a runtime strict-mode
     // scope. Used for a computed ClassElementName assignment: class code is strict, so
     // the key expression's member stores etc. must observe the live runtime strict flag.
-    private static YExpression WrapStatementInStrictMode(YExpression statement)
+    private static BExpression WrapStatementInStrictMode(BExpression statement)
     {
-        var strictScope = YExpression.Parameter(typeof(IDisposable), "#strictScope");
-        return YExpression.Block(
-            new Sequence<YParameterExpression> { strictScope },
-            YExpression.Assign(strictScope, YExpression.Call(null, EnterStrictModeDisposableMethod, YExpression.Constant(true))),
-            YExpression.TryFinally(statement, YExpression.Call(strictScope, DisposeMethod)));
+        var strictScope = BExpression.Parameter(typeof(IDisposable), "#strictScope");
+        return BExpression.Block(
+            new Sequence<BParameterExpression> { strictScope },
+            BExpression.Assign(strictScope, BExpression.Call(null, EnterStrictModeDisposableMethod, BExpression.Constant(true))),
+            BExpression.TryFinally(statement, BExpression.Call(strictScope, DisposeMethod)));
     }
 
-    private YExpression GetClassElementName(AstClassProperty property)
+    private BExpression GetClassElementName(AstClassProperty property)
     {
         var name = GetName(property);
         return property.Computed && name.Type.IsJSValueType()
-            ? YExpression.Call(null, NormalizePropertyKeyMethod, name)
+            ? BExpression.Call(null, NormalizePropertyKeyMethod, name)
             : name;
     }
 
-    private static YExpression ValidateStaticPropertyName(AstClassProperty property, YExpression name)
+    private static BExpression ValidateStaticPropertyName(AstClassProperty property, BExpression name)
     {
         // Only a public static element can collide with the reserved "prototype"
         // name. A private name (`#x`) lives in the marker-prefixed private namespace
@@ -205,8 +205,8 @@ partial class FastCompiler
 
         return name.Type switch
         {
-            var type when type == typeof(KeyString) => YExpression.Call(null, ValidateClassStaticPropertyNameKeyStringMethod, name),
-            var type when type == typeof(JSValue) => YExpression.Call(null, ValidateClassStaticPropertyNameJSValueMethod, name),
+            var type when type == typeof(KeyString) => BExpression.Call(null, ValidateClassStaticPropertyNameKeyStringMethod, name),
+            var type when type == typeof(JSValue) => BExpression.Call(null, ValidateClassStaticPropertyNameJSValueMethod, name),
             _ => name,
         };
     }
@@ -217,7 +217,7 @@ partial class FastCompiler
     // applied (too late) when the class object is stored into its binding.
     private string anonymousClassNameHint;
 
-    private YExpression CreateClass(AstIdentifier id, AstExpression super, AstClassExpression body)
+    private BExpression CreateClass(AstIdentifier id, AstExpression super, AstClassExpression body)
     {
         // Consume the inferred-name hint immediately so a nested class in the body,
         // base clause or a member initializer does not inherit it.
@@ -228,8 +228,8 @@ partial class FastCompiler
         var tempVar = this.scope.Top.GetTempVariable(JSClassBuilder.Type);
         var hasSuperClass = super != null;
 
-        var prototypeElements = new Sequence<YElementInit>();
-        var staticElements = new Sequence<YBinding>();
+        var prototypeElements = new Sequence<BElementInit>();
+        var staticElements = new Sequence<BBinding>();
 
         // The class name is an immutable (const-like) binding scoped to the class
         // body, created BEFORE the ClassHeritage is evaluated so the heritage
@@ -250,7 +250,7 @@ partial class FastCompiler
 
         // need to save super..
         // create a super variable...
-        YExpression superExp;
+        BExpression superExp;
         if (hasSuperClass)
         {
             // All parts of a class definition are strict mode code, including the
@@ -274,8 +274,8 @@ partial class FastCompiler
             superExp = JSContextBuilder.Object;
         }
 
-        var superVar = YExpression.Parameter(typeof(JSValue));
-        var superPrototypeVar = YExpression.Parameter(typeof(JSObject));
+        var superVar = BExpression.Parameter(typeof(JSValue));
+        var superPrototypeVar = BExpression.Parameter(typeof(JSObject));
 
         // [[HomeObject]] holders for DYNAMIC super resolution. GetSuperBase reads the
         // home object's CURRENT [[Prototype]] on every super access, so
@@ -288,29 +288,29 @@ partial class FastCompiler
         // local at that moment — when the class/prototype do not yet exist. A JSVariable
         // is a heap box whose REFERENCE is captured (stable) while its value is filled in
         // after the class is built (the same mechanism the inner class-name binding uses).
-        var homeConstructorVar = YExpression.Parameter(typeof(JSVariable), "#super-home-ctor");
-        var homePrototypeVar = YExpression.Parameter(typeof(JSVariable), "#super-home-proto");
-        YExpression StaticSuper() => JSValueBuilder.SuperPrototypeOf(JSVariable.ValueExpression(homeConstructorVar));
-        YExpression InstanceSuper() => JSValueBuilder.SuperPrototypeOf(JSVariable.ValueExpression(homePrototypeVar));
+        var homeConstructorVar = BExpression.Parameter(typeof(JSVariable), "#super-home-ctor");
+        var homePrototypeVar = BExpression.Parameter(typeof(JSVariable), "#super-home-proto");
+        BExpression StaticSuper() => JSValueBuilder.SuperPrototypeOf(JSVariable.ValueExpression(homeConstructorVar));
+        BExpression InstanceSuper() => JSValueBuilder.SuperPrototypeOf(JSVariable.ValueExpression(homePrototypeVar));
 
-        var stmts = new Sequence<YExpression>(body.Members.Count)
+        var stmts = new Sequence<BExpression>(body.Members.Count)
         {
-            YExpression.Assign(superVar, superExp),
-            YExpression.Assign(superPrototypeVar, JSClassBuilder.ResolveSuperclassPrototype(superVar)),
+            BExpression.Assign(superVar, superExp),
+            BExpression.Assign(superPrototypeVar, JSClassBuilder.ResolveSuperclassPrototype(superVar)),
             // Allocate the (empty) home-object boxes before any member function object is
             // created, so the methods capture these stable references. The JSVariable
             // names are EMPTY: a named binding would re-run NamedEvaluation when the
             // class object is stored into it, renaming an anonymous `class {}` to the
             // holder's name instead of its binding's.
-            YExpression.Assign(homeConstructorVar, JSVariableBuilder.New("")),
-            YExpression.Assign(homePrototypeVar, JSVariableBuilder.New(""))
+            BExpression.Assign(homeConstructorVar, JSVariableBuilder.New("")),
+            BExpression.Assign(homePrototypeVar, JSVariableBuilder.New(""))
         };
 
-        YExpression retValue = tempVar.Variable;
+        BExpression retValue = tempVar.Variable;
 
         var memberInits = new Sequence<AstClassProperty>();
-        var computedMemberNames = new Dictionary<AstClassProperty, YExpression>();
-        var classScopeVariables = new Sequence<YParameterExpression> { superVar, superPrototypeVar, homeConstructorVar, homePrototypeVar };
+        var computedMemberNames = new Dictionary<AstClassProperty, BExpression>();
+        var classScopeVariables = new Sequence<BParameterExpression> { superVar, superPrototypeVar, homeConstructorVar, homePrototypeVar };
         AstFunctionExpression constructor = null;
 
         // Non-static private methods/accessors are installed PER INSTANCE (not on the
@@ -333,9 +333,9 @@ partial class FastCompiler
         // block sees the first field's value and the second field sees the block's effect).
         // The deferred initializers therefore share ONE source-ordered list, with each entry
         // tagged as either a field (StaticBlock == null) or a block (Name/Value unused).
-        var staticInits = new List<(YExpression Name, YExpression Value, bool IsPrivate, AstClassProperty StaticBlock)>();
+        var staticInits = new List<(BExpression Name, BExpression Value, bool IsPrivate, AstClassProperty StaticBlock)>();
 
-        PrivateInstanceElement PrivateElementFor(AstClassProperty property, YExpression keyName)
+        PrivateInstanceElement PrivateElementFor(AstClassProperty property, BExpression keyName)
         {
             var pname = ((AstIdentifier)property.Key).Name.Value;
             if (!privateElementByName.TryGetValue(pname, out var element))
@@ -347,11 +347,11 @@ partial class FastCompiler
             return element;
         }
 
-        YParameterExpression SharedMemberFunctionVar(YExpression fx, string label)
+        BParameterExpression SharedMemberFunctionVar(BExpression fx, string label)
         {
-            var fnVar = YExpression.Parameter(fx.Type, $"{label}$pf{privateKeyVarCounter++}");
+            var fnVar = BExpression.Parameter(fx.Type, $"{label}$pf{privateKeyVarCounter++}");
             classScopeVariables.Add(fnVar);
-            stmts.Add(YExpression.Assign(fnVar, fx));
+            stmts.Add(BExpression.Assign(fnVar, fx));
             return fnVar;
         }
         var ownPrivateNames = CollectPrivateNames(body.Members);
@@ -372,7 +372,7 @@ partial class FastCompiler
         // (the key is the per-evaluation PrivateBrand). The names are registered on
         // the compiler's private-name stack while members compile, so a nested
         // class's `#x` shadows an enclosing one.
-        Dictionary<string, YExpression> privateNameScope = null;
+        Dictionary<string, BExpression> privateNameScope = null;
         // A direct eval inside a member can reference this class's private names, but
         // the eval is compiled separately and resolves them to the stable
         // marker-prefixed constant key (it cannot see the minted-key variables). So
@@ -382,7 +382,7 @@ partial class FastCompiler
         // (eval-free) class still gets unique per-evaluation brands.
         if (mintablePrivateNames != null && !ClassBodyMayDirectEval(body.Members))
         {
-            privateNameScope = new Dictionary<string, YExpression>(mintablePrivateNames.Length);
+            privateNameScope = new Dictionary<string, BExpression>(mintablePrivateNames.Length);
             foreach (var privateName in mintablePrivateNames)
             {
                 // A getter and setter share one private name — mint it only once.
@@ -393,10 +393,10 @@ partial class FastCompiler
                 // address (a private-method call `o.#m()` passes the key as an
                 // `in KeyString` argument) resolves the captured closure variable by
                 // name, and the name must be unique across nested class evaluations.
-                var privateKeyVar = YExpression.Parameter(
+                var privateKeyVar = BExpression.Parameter(
                     typeof(KeyString), $"{privateName}$pk{privateKeyVarCounter++}");
                 classScopeVariables.Add(privateKeyVar);
-                stmts.Add(YExpression.Assign(privateKeyVar, JSObjectBuilder.MintPrivateName(privateName)));
+                stmts.Add(BExpression.Assign(privateKeyVar, JSObjectBuilder.MintPrivateName(privateName)));
                 privateNameScope[privateName] = privateKeyVar;
             }
 
@@ -430,9 +430,9 @@ partial class FastCompiler
                 && property.Kind is AstPropertyKind.Data or AstPropertyKind.Get
                     or AstPropertyKind.Set or AstPropertyKind.Method)
             {
-                var computedNameVar = YExpression.Parameter(typeof(JSValue), $"#className{computedMemberNames.Count}");
+                var computedNameVar = BExpression.Parameter(typeof(JSValue), $"#className{computedMemberNames.Count}");
                 classScopeVariables.Add(computedNameVar);
-                var keyAssign = YExpression.Assign(computedNameVar, ValidateStaticPropertyName(property, GetClassElementName(property)));
+                var keyAssign = BExpression.Assign(computedNameVar, ValidateStaticPropertyName(property, GetClassElementName(property)));
                 // The computed key evaluates as strict-mode code at runtime too, so a store
                 // inside it (e.g. to a non-extensible object) throws. The runtime strict
                 // scope is a try/finally, which must not wrap a `yield`/`await` inside the
@@ -444,7 +444,7 @@ partial class FastCompiler
                 computedMemberNames[property] = computedNameVar;
             }
 
-            YExpression name;
+            BExpression name;
             // var el = property.IsStatic ? staticElements : prototypeElements;
             switch (property.Kind)
             {
@@ -458,7 +458,7 @@ partial class FastCompiler
                         name = property.Computed
                             ? computedMemberNames[property]
                             : ValidateStaticPropertyName(property, GetClassElementName(property));
-                        YExpression value;
+                        BExpression value;
                         if (property.Init == null)
                             value = JSUndefinedBuilder.Value;
                         else
@@ -524,7 +524,7 @@ partial class FastCompiler
                         var fx = CreateFunction(property.Init as AstFunctionExpression, StaticSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         if (property.Computed)
-                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForGetterMethod, fx, name);
+                            fx = BExpression.Call(null, PrepareAnonymousFunctionNameForGetterMethod, fx, name);
                         staticElements.Add(JSObjectBuilder.AddGetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                         break;
                     }
@@ -533,7 +533,7 @@ partial class FastCompiler
                         var fx = CreateFunction(property.Init as AstFunctionExpression, InstanceSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "get"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         if (property.Computed)
-                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForGetterMethod, fx, name);
+                            fx = BExpression.Call(null, PrepareAnonymousFunctionNameForGetterMethod, fx, name);
                         if (isPrivateName)
                             PrivateElementFor(property, name).Getter = SharedMemberFunctionVar(fx, "#get");
                         else
@@ -550,7 +550,7 @@ partial class FastCompiler
                         var fx = CreateFunction(property.Init as AstFunctionExpression, StaticSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         if (property.Computed)
-                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForSetterMethod, fx, name);
+                            fx = BExpression.Call(null, PrepareAnonymousFunctionNameForSetterMethod, fx, name);
                         staticElements.Add(JSObjectBuilder.AddSetter(name, fx, JSPropertyAttributes.ConfigurableProperty));
                     }
                     else
@@ -558,7 +558,7 @@ partial class FastCompiler
                         var fx = CreateFunction(property.Init as AstFunctionExpression, InstanceSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property, "set"), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         if (property.Computed)
-                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForSetterMethod, fx, name);
+                            fx = BExpression.Call(null, PrepareAnonymousFunctionNameForSetterMethod, fx, name);
                         if (isPrivateName)
                             PrivateElementFor(property, name).Setter = SharedMemberFunctionVar(fx, "#set");
                         else
@@ -582,7 +582,7 @@ partial class FastCompiler
                         // from the runtime key value (SetFunctionName) so `name` reflects the
                         // key, e.g. `[Symbol('x')]() {}` → "[x]", `[1]() {}` → "1".
                         if (property.Computed)
-                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, fx, name);
+                            fx = BExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, fx, name);
                         staticElements.Add(JSObjectBuilder.AddValue(name, fx, isPrivateName ? JSPropertyAttributes.ConfigurableReadonlyValue : JSPropertyAttributes.ConfigurableValue));
                     }
                     else
@@ -590,7 +590,7 @@ partial class FastCompiler
                         var fx = CreateFunction(property.Init as AstFunctionExpression, InstanceSuper(), forceStrictMode: true,
                             inferredFunctionName: GetPropertyFunctionName(property), createPrototype: false, directEvalPrivateNames: directEvalPrivateNames);
                         if (property.Computed)
-                            fx = YExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, fx, name);
+                            fx = BExpression.Call(null, PrepareAnonymousFunctionNameForPropertyJSValueMethod, fx, name);
                         if (isPrivateName)
                             PrivateElementFor(property, name).Method = SharedMemberFunctionVar(fx, "#m");
                         else
@@ -632,7 +632,7 @@ partial class FastCompiler
                 s.PrivateInstanceElements = privateInstanceElements;
                 var args = s.Arguments;
                 var @this = s.ThisExpression;
-                var inits = new Sequence<YExpression>() { };
+                var inits = new Sequence<BExpression>() { };
 
                 inits.AddRange(s.InitList);
                 if (hasSuperClass)
@@ -643,7 +643,7 @@ partial class FastCompiler
                 InitMembers(inits, s);
                 inits.Add(@this);
 
-                var lambda = YExpression.Lambda<JSFunctionDelegate>(className, YExpression.Block(s.VariableParameters.AsSequence(), inits), args);
+                var lambda = BExpression.Lambda<JSFunctionDelegate>(className, BExpression.Block(s.VariableParameters.AsSequence(), inits), args);
                 var fx = JSFunctionBuilder.New(lambda, StringSpanBuilder.New(className), StringSpanBuilder.Empty, 1);
 
                 staticElements.Add(JSClassBuilder.AddConstructor(fx));
@@ -660,24 +660,24 @@ partial class FastCompiler
         var _new = JSClassBuilder.New(null, superVar, className, classSource);
 
         if (prototypeElements.Any())
-            staticElements.Add(new YMemberElementInit(JSFunctionBuilder._prototype, prototypeElements));
+            staticElements.Add(new BMemberElementInit(JSFunctionBuilder._prototype, prototypeElements));
 
-        YExpression retVal = staticElements.Any() ? YExpression.MemberInit(_new, staticElements) : _new;
+        BExpression retVal = staticElements.Any() ? BExpression.MemberInit(_new, staticElements) : _new;
 
-        stmts.Add(YExpression.Assign(retValue, retVal));
+        stmts.Add(BExpression.Assign(retValue, retVal));
 
         // Fill the home-object boxes now that the class object exists. Member function
         // objects created above captured these boxes; their super references read the
         // current value here at call time. Done before static field initializers and
         // static blocks run (which may themselves use super).
-        stmts.Add(YExpression.Assign(JSVariable.ValueExpression(homeConstructorVar), retValue));
-        stmts.Add(YExpression.Assign(JSVariable.ValueExpression(homePrototypeVar), JSFunctionBuilder.Prototype(retValue)));
+        stmts.Add(BExpression.Assign(JSVariable.ValueExpression(homeConstructorVar), retValue));
+        stmts.Add(BExpression.Assign(JSVariable.ValueExpression(homePrototypeVar), JSFunctionBuilder.Prototype(retValue)));
 
         if (innerNameVar != null)
         {
             // Initialize the inner class-name binding to the class object, then
             // lock it so a write from within the body throws a TypeError.
-            stmts.Add(YExpression.Assign(innerNameVar.Expression, retValue));
+            stmts.Add(BExpression.Assign(innerNameVar.Expression, retValue));
             stmts.Add(JSVariableBuilder.SetReadOnly(innerNameVar.Variable, true));
         }
 
@@ -725,7 +725,7 @@ partial class FastCompiler
         if (classNameScope != null)
         {
             classScopeVariables.AddRange(classNameScope.VariableParameters);
-            var initList = new Sequence<YExpression>();
+            var initList = new Sequence<BExpression>();
             initList.AddRange(classNameScope.InitList);
             initList.AddRange(stmts);
             stmts = initList;
@@ -738,13 +738,13 @@ partial class FastCompiler
             if (body.IsDeclaration)
             {
                 var outer = this.scope.Top.CreateVariable(id.Name);
-                stmts.Add(YExpression.Assign(outer.Expression, retValue));
+                stmts.Add(BExpression.Assign(outer.Expression, retValue));
             }
         }
 
         stmts.Add(retValue);
 
-        var result = YExpression.Block(classScopeVariables, stmts);
+        var result = BExpression.Block(classScopeVariables, stmts);
         scope.Dispose();
         return result;
     }

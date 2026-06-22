@@ -1,13 +1,13 @@
-using Broiler.JavaScript.Ast.Expressions;
+﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitAwaitExpression(AstAwaitExpression node)
+    protected override BExpression VisitAwaitExpression(AstAwaitExpression node)
     {
         var target = VisitExpression(node.Argument);
-        return YExpression.Await(target);
+        return BExpression.Await(target);
     }
 }

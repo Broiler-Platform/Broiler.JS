@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitListInit(YListInitExpression node)
+    protected override CodeInfo VisitListInit(BListInitExpression node)
     {
         Visit(node.NewExpression);
 

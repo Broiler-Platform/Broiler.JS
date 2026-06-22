@@ -1,6 +1,6 @@
 ﻿using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.LinqExpressions.LambdaGen;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 
 namespace Broiler.JavaScript.LinqExpressions.LinqExpressions;
 

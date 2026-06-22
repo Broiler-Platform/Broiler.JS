@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Storage;
@@ -14,11 +14,11 @@ public class KeyStringsBuilder
 
     public static Expression GetOrCreate(Expression text) => NewLambdaExpression.StaticCallExpression<KeyString>(() => () => KeyStrings.GetOrCreate((StringSpan)""), text);
 
-    public readonly static StringMap<YFieldExpression> Fields = ToStringMap(typeof(KeyStrings).GetFields());
+    public readonly static StringMap<BFieldExpression> Fields = ToStringMap(typeof(KeyStrings).GetFields());
 
-    private static StringMap<YFieldExpression> ToStringMap(FieldInfo[] fields)
+    private static StringMap<BFieldExpression> ToStringMap(FieldInfo[] fields)
     {
-        StringMap<YFieldExpression> map = new();
+        StringMap<BFieldExpression> map = new();
 
         foreach (var field in fields)
             map.Put(field.Name) = Expression.Field(null, field);

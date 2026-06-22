@@ -8,15 +8,15 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitImportStatement(AstImportStatement importStatement)
+    protected override BExpression VisitImportStatement(AstImportStatement importStatement)
     {
-        var tempRequire = YExpression.Parameter(typeof(JSValue));
+        var tempRequire = BExpression.Parameter(typeof(JSValue));
         var require = scope.Top.GetVariable("import");
         var source = VisitExpression(importStatement.Source);
         var args = ArgumentsBuilder.New(JSUndefinedBuilder.Value, source);
-        var stmts = new Sequence<YExpression>
+        var stmts = new Sequence<BExpression>
         {
-            YExpression.Assign(tempRequire, YExpression.Yield(JSFunctionBuilder.InvokeFunction(require.Expression, args)))
+            BExpression.Assign(tempRequire, BExpression.Yield(JSFunctionBuilder.InvokeFunction(require.Expression, args)))
         };
 
         FastFunctionScope.VariableScope imported;
@@ -25,14 +25,14 @@ partial class FastCompiler
         if (all != null)
         {
             imported = scope.Top.CreateVariable(all.Name);
-            stmts.Add(YExpression.Assign(imported.Expression, tempRequire));
+            stmts.Add(BExpression.Assign(imported.Expression, tempRequire));
         }
 
         if (importStatement.Default != null)
         {
             imported = scope.Top.CreateVariable(importStatement.Default.Name);
             var prop = JSValueBuilder.Index(tempRequire, KeyOfName("default"));
-            stmts.Add(YExpression.Assign(imported.Expression, prop));
+            stmts.Add(BExpression.Assign(imported.Expression, prop));
         }
 
         if (importStatement.Members != null)
@@ -42,11 +42,11 @@ partial class FastCompiler
             {
                 imported = scope.Top.CreateVariable(item.asName);
                 var prop = JSValueBuilder.Index(tempRequire, KeyOfName(item.name));
-                stmts.Add(YExpression.Assign(imported.Expression, prop));
+                stmts.Add(BExpression.Assign(imported.Expression, prop));
             }
         }
 
-        var importExp = YExpression.Block(tempRequire.AsSequence(), stmts);
+        var importExp = BExpression.Block(tempRequire.AsSequence(), stmts);
         return importExp;
     }
 

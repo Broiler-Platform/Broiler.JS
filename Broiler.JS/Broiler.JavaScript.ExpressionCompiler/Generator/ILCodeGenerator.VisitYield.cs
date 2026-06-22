@@ -5,5 +5,5 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitYield(YYieldExpression node) => throw new NotImplementedException();
+    protected override CodeInfo VisitYield(BYieldExpression node) => throw new NotImplementedException();
 }

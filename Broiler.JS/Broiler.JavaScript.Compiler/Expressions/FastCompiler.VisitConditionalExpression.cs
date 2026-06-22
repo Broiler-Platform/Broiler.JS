@@ -8,24 +8,24 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitConditionalExpression(AstConditionalExpression conditionalExpression)
+    protected override BExpression VisitConditionalExpression(AstConditionalExpression conditionalExpression)
     {
         // The operand of `typeof` must resolve a bare identifier without throwing when it
         // is undeclared (`typeof undeclared` is "undefined", not a ReferenceError). Mirror
         // the ordinary typeof path (VisitUnaryExpression) so the `typeof x === "..."`
         // ternary-test optimization below preserves that semantics.
-        YExpression TypeofOperand(AstExpression target)
+        BExpression TypeofOperand(AstExpression target)
             => target is AstIdentifier id
                 ? VisitIdentifier(id, false)
                 : VisitExpression(target);
 
-        YExpression EvaluateTest(AstExpression exp)
+        BExpression EvaluateTest(AstExpression exp)
         {
             if (exp.IsUnaryExpression(out var u) && u.Operator == UnaryOperator.Negate)
             {
                 var eu = VisitExpression(u.Argument);
                 var e1 = JSValueBuilder.BooleanValue(eu);
-                var e2 = YExpression.Not(e1);
+                var e2 = BExpression.Not(e1);
                 return e2;
             }
 
@@ -35,10 +35,10 @@ partial class FastCompiler
                 {
                     case "undefined":
                         if (b.Operator == TokenTypes.Equal || b.Operator == TokenTypes.StrictlyEqual)
-                            return YExpression.Equal(TypeofOperand(u.Argument), JSUndefinedBuilder.Value);
+                            return BExpression.Equal(TypeofOperand(u.Argument), JSUndefinedBuilder.Value);
 
                         if (b.Operator == TokenTypes.NotEqual || b.Operator == TokenTypes.StrictlyNotEqual)
-                            return YExpression.NotEqual(TypeofOperand(u.Argument), JSUndefinedBuilder.Value);
+                            return BExpression.NotEqual(TypeofOperand(u.Argument), JSUndefinedBuilder.Value);
 
                         break;
                     case "number":
@@ -46,7 +46,7 @@ partial class FastCompiler
                             return JSValueBuilder.IsNumber(TypeofOperand(u.Argument));
 
                         if (b.Operator == TokenTypes.NotEqual || b.Operator == TokenTypes.StrictlyNotEqual)
-                            return YExpression.Not(JSValueBuilder.IsNumber(TypeofOperand(u.Argument)));
+                            return BExpression.Not(JSValueBuilder.IsNumber(TypeofOperand(u.Argument)));
 
                         break;
                     case "string":
@@ -54,7 +54,7 @@ partial class FastCompiler
                             return JSValueBuilder.IsString(TypeofOperand(u.Argument));
 
                         if (b.Operator == TokenTypes.NotEqual || b.Operator == TokenTypes.StrictlyNotEqual)
-                            return YExpression.Not(JSValueBuilder.IsString(TypeofOperand(u.Argument)));
+                            return BExpression.Not(JSValueBuilder.IsString(TypeofOperand(u.Argument)));
 
                         break;
                     case "function":
@@ -62,7 +62,7 @@ partial class FastCompiler
                             return JSValueBuilder.IsFunction(TypeofOperand(u.Argument));
 
                         if (b.Operator == TokenTypes.NotEqual || b.Operator == TokenTypes.StrictlyNotEqual)
-                            return YExpression.Not(JSValueBuilder.IsFunction(TypeofOperand(u.Argument)));
+                            return BExpression.Not(JSValueBuilder.IsFunction(TypeofOperand(u.Argument)));
 
                         break;
                     case "object":
@@ -70,7 +70,7 @@ partial class FastCompiler
                             return JSValueBuilder.IsObjectType(TypeofOperand(u.Argument));
 
                         if (b.Operator == TokenTypes.NotEqual || b.Operator == TokenTypes.StrictlyNotEqual)
-                            return YExpression.Not(JSValueBuilder.IsObjectType(TypeofOperand(u.Argument)));
+                            return BExpression.Not(JSValueBuilder.IsObjectType(TypeofOperand(u.Argument)));
 
                         break;
                     case "symbol":
@@ -78,7 +78,7 @@ partial class FastCompiler
                             return JSValueBuilder.IsSymbol(TypeofOperand(u.Argument));
 
                         if (b.Operator == TokenTypes.NotEqual || b.Operator == TokenTypes.StrictlyNotEqual)
-                            return YExpression.Not(JSValueBuilder.IsSymbol(TypeofOperand(u.Argument)));
+                            return BExpression.Not(JSValueBuilder.IsSymbol(TypeofOperand(u.Argument)));
 
                         break;
                 }
@@ -91,6 +91,6 @@ partial class FastCompiler
         var @true = VisitExpression(conditionalExpression.True);
         var @false = VisitExpression(conditionalExpression.False);
 
-        return YExpression.Condition(test, @true, @false, typeof(JSValue));
+        return BExpression.Condition(test, @true, @false, typeof(JSValue));
     }
 }

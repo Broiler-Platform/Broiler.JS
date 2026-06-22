@@ -8,7 +8,7 @@ public abstract class BoxHelper
 {
     public static BoxHelper For(Type type) => Activator.CreateInstance(typeof(BoxHelper<>).MakeGenericType(type)) as BoxHelper;
     public abstract Type BoxType { get; }
-    public abstract YExpression New(YExpression value);
+    public abstract BExpression New(BExpression value);
     public abstract ConstructorInfo Constructor { get; }
 }
 
@@ -19,7 +19,7 @@ public class BoxHelper<T> : BoxHelper
     public static readonly ConstructorInfo _new = _BoxType.GetConstructor([]);
     private static ConstructorInfo _newFromValue = _BoxType.GetConstructor([typeof(T)]);
     public override ConstructorInfo Constructor => _new;
-    public override YExpression New(YExpression value) => YExpression.New(_newFromValue, value);
+    public override BExpression New(BExpression value) => BExpression.New(_newFromValue, value);
 }
 
 public abstract class Box

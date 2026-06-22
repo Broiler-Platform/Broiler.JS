@@ -1,17 +1,17 @@
 ﻿using System;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
-using Exp = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
-using ParameterExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.YParameterExpression;
+using Exp = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
+using ParameterExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression;
 
 namespace Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 
-public class FlattenBlocks : YExpressionMapVisitor
+public class FlattenBlocks : BExpressionMapVisitor
 {
-    protected override Exp VisitLambda(YLambdaExpression yLambdaExpression) => yLambdaExpression;
+    protected override Exp VisitLambda(BLambdaExpression yLambdaExpression) => yLambdaExpression;
 
-    protected override Expression VisitBinary(YBinaryExpression node)
+    protected override Expression VisitBinary(BBinaryExpression node)
     {
         if (Flatten(node.Right, last => node.Update(node.Left, node.Operator, last), out var result))
             return result;
@@ -19,15 +19,15 @@ public class FlattenBlocks : YExpressionMapVisitor
         return base.VisitBinary(node);
     }
 
-    protected override Exp VisitAssign(YAssignExpression node)
+    protected override Exp VisitAssign(BAssignExpression node)
     {
-        if (Flatten(node.Right, last => new YAssignExpression(node.Left, last, null), out var result))
+        if (Flatten(node.Right, last => new BAssignExpression(node.Left, last, null), out var result))
             return result;
 
         return base.VisitAssign(node);
     }
 
-    protected override Exp VisitReturn(YReturnExpression node)
+    protected override Exp VisitReturn(BReturnExpression node)
     {
         if (Flatten(node.Default, x => node.Update(node.Target, x), out var block))
             return block;
@@ -35,7 +35,7 @@ public class FlattenBlocks : YExpressionMapVisitor
         return base.VisitReturn(node);
     }
 
-    protected override Expression VisitNew(YNewExpression node)
+    protected override Expression VisitNew(BNewExpression node)
     {
         var vars = new Sequence<ParameterExpression>();
         var args = new Sequence<Expression>();
@@ -46,7 +46,7 @@ public class FlattenBlocks : YExpressionMapVisitor
         {
             var e = Visit(a);
 
-            if (e.NodeType == YExpressionType.Block && e is YBlockExpression block)
+            if (e.NodeType == BExpressionType.Block && e is BBlockExpression block)
             {
                 vars.AddRange(block.Variables);
 
@@ -84,7 +84,7 @@ public class FlattenBlocks : YExpressionMapVisitor
         return Expression.Block(vars, list);
     }
 
-    protected override Expression VisitBlock(YBlockExpression node)
+    protected override Expression VisitBlock(BBlockExpression node)
     {
         var vars = new Sequence<ParameterExpression>(node.Variables);
         var list = new Sequence<Expression>(node.Expressions.Count);
@@ -93,7 +93,7 @@ public class FlattenBlocks : YExpressionMapVisitor
         while (en.MoveNext(out var e))
         {
             var visited = Visit(e);
-            if (visited.NodeType == YExpressionType.Block && visited is YBlockExpression block)
+            if (visited.NodeType == BExpressionType.Block && visited is BBlockExpression block)
             {
                 vars.AddRange(block.Variables);
                 list.AddRange(block.Expressions);
@@ -115,21 +115,21 @@ public class FlattenBlocks : YExpressionMapVisitor
         // target) means the resume `goto` lands mid-store with the target reference missing,
         // faulting at runtime. Recurse into the operand and re-apply the conversion to the
         // tail value only, so the suspension's leading statements are hoisted out as siblings.
-        if (exp is YTypeAsExpression typeAs && typeAs.Target.NodeType == YExpressionType.Block)
+        if (exp is BTypeAsExpression typeAs && typeAs.Target.NodeType == BExpressionType.Block)
         {
             var targetType = typeAs.Type;
             return Flatten(typeAs.Target,
-                last => p(last.Type == targetType ? last : YExpression.Convert(last, targetType)),
+                last => p(last.Type == targetType ? last : BExpression.Convert(last, targetType)),
                 out result);
         }
 
-        if (exp.NodeType != YExpressionType.Block)
+        if (exp.NodeType != BExpressionType.Block)
         {
             result = null;
             return false;
         }
 
-        var block = exp as YBlockExpression;
+        var block = exp as BBlockExpression;
 
         var vars = new Sequence<ParameterExpression>(block.Variables);
         var length = block.Expressions.Count;
@@ -150,12 +150,12 @@ public class FlattenBlocks : YExpressionMapVisitor
                 // notably the yield's Return branch — are hoisted out as siblings
                 // instead of being left buried inside `p`'s result, which would
                 // emit a mid-expression branch and produce invalid IL inside loops.
-                if (Flatten(visited, p, out var nested) && nested is YBlockExpression nestedBlock)
+                if (Flatten(visited, p, out var nested) && nested is BBlockExpression nestedBlock)
                 {
                     vars.AddRange(nestedBlock.Variables);
                     list.AddRange(nestedBlock.Expressions);
                 }
-                else if (visited.NodeType == YExpressionType.TryCatchFinally && visited.Type != typeof(void))
+                else if (visited.NodeType == BExpressionType.TryCatchFinally && visited.Type != typeof(void))
                 {
                     // A value-producing try/catch/finally cannot be consumed in place by `p`
                     // when `p` pre-loads a target onto the evaluation stack — e.g. a store to

@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitTryCatchFinally(YTryCatchFinallyExpression tryCatchFinallyExpression)
+    protected override CodeInfo VisitTryCatchFinally(BTryCatchFinallyExpression tryCatchFinallyExpression)
     {
         using (tempVariables.Push())
         {

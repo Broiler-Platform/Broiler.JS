@@ -1,4 +1,4 @@
-using Broiler.JavaScript.Ast.Expressions;
+﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -12,9 +12,9 @@ partial class FastCompiler
     private static readonly System.Reflection.PropertyInfo TemplateSubstitutionStringValueProperty =
         typeof(JSValue).GetProperty(nameof(JSValue.StringValue));
 
-    protected override YExpression VisitTemplateExpression(AstTemplateExpression templateExpression)
+    protected override BExpression VisitTemplateExpression(AstTemplateExpression templateExpression)
     {
-        var items = new Sequence<YExpression>(templateExpression.Parts.Count);
+        var items = new Sequence<BExpression>(templateExpression.Parts.Count);
         var e = templateExpression.Parts.GetFastEnumerator();
         int size = 0;
 
@@ -33,7 +33,7 @@ partial class FastCompiler
                 var txt = l.TokenType == TokenTypes.TemplatePart ? l.Start.CookedText : l.StringValue;
 
                 size += txt.Length;
-                items.Add(YExpression.Constant(txt));
+                items.Add(BExpression.Constant(txt));
             }
             else
             {
@@ -44,7 +44,7 @@ partial class FastCompiler
                 // ToString of the runtime template builder stringify a Symbol (test262
                 // sm/object/toPrimitive: `` `${Symbol()}` `` must throw).
                 var substitution = VisitExpression(item);
-                items.Add(JSStringBuilder.New(YExpression.Property(substitution, TemplateSubstitutionStringValueProperty)));
+                items.Add(JSStringBuilder.New(BExpression.Property(substitution, TemplateSubstitutionStringValueProperty)));
             }
         }
 

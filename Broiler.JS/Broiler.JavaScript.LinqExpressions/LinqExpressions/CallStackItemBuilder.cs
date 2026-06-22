@@ -6,10 +6,10 @@ namespace Broiler.JavaScript.LinqExpressions.LinqExpressions;
 
 public static class CallStackItemBuilder
 {
-    public static YExpression New(YExpression context, YExpression scriptInfo, int nameOffset, int nameLength, int line, int column) =>
+    public static BExpression New(BExpression context, BExpression scriptInfo, int nameOffset, int nameLength, int line, int column) =>
         NewLambdaExpression.NewExpression<CallStackItem>(() => () => new CallStackItem(null, null, 0, 0, 0, 0), context, scriptInfo,
-            YExpression.Constant(nameOffset), YExpression.Constant(nameLength), YExpression.Constant(line), YExpression.Constant(column));
+            BExpression.Constant(nameOffset), BExpression.Constant(nameLength), BExpression.Constant(line), BExpression.Constant(column));
 
-    public static YExpression Step(YExpression target, int line, int column) => target.CallExpression<CallStackItem, int, int>(() => (x, a, b) => x.Step(a, b),
-            YExpression.Constant(line), YExpression.Constant(column));
+    public static BExpression Step(BExpression target, int line, int column) => target.CallExpression<CallStackItem, int, int>(() => (x, a, b) => x.Step(a, b),
+            BExpression.Constant(line), BExpression.Constant(column));
 }

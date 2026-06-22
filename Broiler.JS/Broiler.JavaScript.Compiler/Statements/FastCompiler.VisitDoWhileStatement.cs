@@ -9,23 +9,23 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     // In doWhile continue should preced the test
-    protected override YExpression VisitDoWhileStatement(AstDoWhileStatement doWhileStatement, string label = null)
+    protected override BExpression VisitDoWhileStatement(AstDoWhileStatement doWhileStatement, string label = null)
     {
-        var breakTarget = YExpression.Label();
-        var continueTarget = YExpression.Label();
-        var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
+        var breakTarget = BExpression.Label();
+        var continueTarget = BExpression.Label();
+        var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
         var outerCompletionVars = GetCompletionVariables();
 
         using var completion = completionScopes.Push(completionVar);
         using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, continueTarget, false, label) { CompletionVariable = completionVar });
         var body = TrackCompletion(VisitStatement(doWhileStatement.Body));
-        var test = YExpression.Not(JSValueBuilder.BooleanValue(VisitExpression(doWhileStatement.Test)));
-        var loop = YExpression.Loop(YExpression.Block(body, YExpression.Label(continueTarget), YExpression.IfThen(test, YExpression.Goto(breakTarget))), breakTarget, null);
+        var test = BExpression.Not(JSValueBuilder.BooleanValue(VisitExpression(doWhileStatement.Test)));
+        var loop = BExpression.Loop(BExpression.Block(body, BExpression.Label(continueTarget), BExpression.IfThen(test, BExpression.Goto(breakTarget))), breakTarget, null);
 
-        return YExpression.Block(
-            new Sequence<YParameterExpression> { completionVar },
-            YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
-            YExpression.TailCallTransparentTryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)),
+        return BExpression.Block(
+            new Sequence<BParameterExpression> { completionVar },
+            BExpression.Assign(completionVar, JSUndefinedBuilder.Value),
+            BExpression.TailCallTransparentTryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)),
             completionVar);
     }
 }

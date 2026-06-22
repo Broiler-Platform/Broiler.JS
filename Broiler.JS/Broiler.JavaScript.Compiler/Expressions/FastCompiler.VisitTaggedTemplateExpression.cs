@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
@@ -43,13 +43,13 @@ partial class FastCompiler
         return sb.ToString();
     }
 
-    protected override YExpression VisitTaggedTemplateExpression(AstTaggedTemplateExpression template)
+    protected override BExpression VisitTaggedTemplateExpression(AstTaggedTemplateExpression template)
     {
         var callee = template.Tag;
 
-        var args = new Sequence<YExpression>(template.Arguments.Count);
-        var parts = new Sequence<YElementInit>(template.Arguments.Count);
-        var raw = new Sequence<YExpression>(template.Arguments.Count);
+        var args = new Sequence<BExpression>(template.Arguments.Count);
+        var parts = new Sequence<BElementInit>(template.Arguments.Count);
+        var raw = new Sequence<BExpression>(template.Arguments.Count);
 
         var e = template.Arguments.GetFastEnumerator();
         args.Add(null);
@@ -91,15 +91,15 @@ partial class FastCompiler
                         rawHash = (rawHash ^ 0x1F) * 16777619; // part separator
                     }
 
-                    raw.Add(JSStringBuilder.New(YExpression.Constant(r)));
+                    raw.Add(JSStringBuilder.New(BExpression.Constant(r)));
 
                     // A template part with an invalid escape sequence has no cooked
                     // value: its TemplateStringsArray entry is `undefined` (ES2018
                     // template literal revision). The raw value is still preserved.
                     var cooked = l.Start.CookedInvalid
-                        ? (YExpression)JSUndefinedBuilder.Value
-                        : JSStringBuilder.New(YExpression.Constant(l.StringValue));
-                    parts.Add(new YElementInit(JSArrayBuilder._Add, cooked));
+                        ? (BExpression)JSUndefinedBuilder.Value
+                        : JSStringBuilder.New(BExpression.Constant(l.StringValue));
+                    parts.Add(new BElementInit(JSArrayBuilder._Add, cooked));
                     continue;
                 }
             }
@@ -111,8 +111,8 @@ partial class FastCompiler
         // §13.2.8.4 GetTemplateObject freezes the template object, so its "raw" property is a
         // non-writable, non-enumerable, non-configurable data property (ReadonlyValue) — not an
         // enumerable/configurable one (test262 tagged-template/template-object).
-        var rawArray = YExpression.Call(null, FreezeObjectMethod, JSArrayBuilder.New(raw));
-        parts.Add(new YElementInit(JSObjectBuilder._FastAddValueKeyString, KeyOfName("raw"), rawArray, JSPropertyAttributesBuilder.ReadonlyValue));
+        var rawArray = BExpression.Call(null, FreezeObjectMethod, JSArrayBuilder.New(raw));
+        parts.Add(new BElementInit(JSObjectBuilder._FastAddValueKeyString, KeyOfName("raw"), rawArray, JSPropertyAttributesBuilder.ReadonlyValue));
 
         var unfrozenArray = JSArrayBuilder.New(parts);
 
@@ -121,12 +121,12 @@ partial class FastCompiler
         // THIS compilation so two distinct parse nodes — the same source `eval`'d twice —
         // get distinct template objects while re-executions of one parse node share one.
         var cacheKey = unchecked((((compilationId * 397) ^ template.Start.Span.Offset) * 397) ^ rawHash);
-        var partsArray = YExpression.Call(null, GetOrCreateTemplateObjectMethod, YExpression.Constant(cacheKey), unfrozenArray);
+        var partsArray = BExpression.Call(null, GetOrCreateTemplateObjectMethod, BExpression.Constant(cacheKey), unfrozenArray);
         args[0] = partsArray;
 
         if (callee.Type == FastNodeType.MemberExpression && callee is AstMemberExpression me)
         {
-            YExpression name;
+            BExpression name;
 
             switch (me.Property.Type)
             {

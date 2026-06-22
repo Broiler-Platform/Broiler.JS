@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 using Broiler.JavaScript.LinqExpressions.String;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
@@ -12,7 +12,7 @@ public class JSTemplateStringBuilder
 {
     public static Expression New(IEnumerable<Expression> select, int total)
     {
-        var list = new Sequence<YElementInit>();
+        var list = new Sequence<BElementInit>();
         var newExp = NewLambdaExpression.NewExpression<JSTemplateString>(() => () => new JSTemplateString(0), Expression.Constant(total));
         var en = select.GetEnumerator();
 
@@ -22,7 +22,7 @@ public class JSTemplateStringBuilder
         while (en.MoveNext())
         {
             var current = en.Current;
-            if (current.NodeType == YExpressionType.Constant)
+            if (current.NodeType == BExpressionType.Constant)
             {
                 list.Add(Expression.ElementInit(addStringMethod, current));
                 continue;

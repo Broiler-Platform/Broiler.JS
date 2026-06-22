@@ -4,7 +4,7 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Runtime;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 
 namespace Broiler.JavaScript.Compiler;
 
@@ -19,15 +19,15 @@ public static class ListOfExpressionsExtensions
         {
             switch (exp.NodeType)
             {
-                case YExpressionType.Int32Constant:
-                case YExpressionType.UInt32Constant:
-                case YExpressionType.Int64Constant:
-                case YExpressionType.UInt64Constant:
+                case BExpressionType.Int32Constant:
+                case BExpressionType.UInt32Constant:
+                case BExpressionType.Int64Constant:
+                case BExpressionType.UInt64Constant:
                     result.Add(exp);
                     continue;
 
-                case YExpressionType.DoubleConstant:
-                    result.Add(Expression.Constant((int)(exp as YDoubleConstantExpression).Value));
+                case BExpressionType.DoubleConstant:
+                    result.Add(Expression.Constant((int)(exp as BDoubleConstantExpression).Value));
                     continue;
             }
             if (!exp.IsConstant(out var ce))
@@ -54,10 +54,10 @@ public static class ListOfExpressionsExtensions
         {
             switch (exp.NodeType)
             {
-                case YExpressionType.Int32Constant:
-                case YExpressionType.UInt32Constant:
-                case YExpressionType.Int64Constant:
-                case YExpressionType.UInt64Constant:
+                case BExpressionType.Int32Constant:
+                case BExpressionType.UInt32Constant:
+                case BExpressionType.Int64Constant:
+                case BExpressionType.UInt64Constant:
                     result.Add(exp);
                     continue;
             }
@@ -85,29 +85,29 @@ public static class ListOfExpressionsExtensions
         while (se.MoveNext(out var exp))
         {
             // Numeric switch-case tests are emitted as DoubleConstant (the literal
-            // path always uses YExpression.Constant(double)); the typed constant
+            // path always uses BExpression.Constant(double)); the typed constant
             // nodes are not generic Constant nodes, so IsConstant() does not match
             // them. Mirror ConvertToInteger and pass/convert them by NodeType.
             switch (exp.NodeType)
             {
-                case YExpressionType.DoubleConstant:
+                case BExpressionType.DoubleConstant:
                     result.Add(exp);
                     continue;
 
-                case YExpressionType.Int32Constant:
-                    result.Add(Expression.Constant((double)(exp as YInt32ConstantExpression).Value));
+                case BExpressionType.Int32Constant:
+                    result.Add(Expression.Constant((double)(exp as BInt32ConstantExpression).Value));
                     continue;
 
-                case YExpressionType.UInt32Constant:
-                    result.Add(Expression.Constant((double)(exp as YUInt32ConstantExpression).Value));
+                case BExpressionType.UInt32Constant:
+                    result.Add(Expression.Constant((double)(exp as BUInt32ConstantExpression).Value));
                     continue;
 
-                case YExpressionType.Int64Constant:
-                    result.Add(Expression.Constant((double)(exp as YInt64ConstantExpression).Value));
+                case BExpressionType.Int64Constant:
+                    result.Add(Expression.Constant((double)(exp as BInt64ConstantExpression).Value));
                     continue;
 
-                case YExpressionType.UInt64Constant:
-                    result.Add(Expression.Constant((double)(exp as YUInt64ConstantExpression).Value));
+                case BExpressionType.UInt64Constant:
+                    result.Add(Expression.Constant((double)(exp as BUInt64ConstantExpression).Value));
                     continue;
             }
 
@@ -154,7 +154,7 @@ public static class ListOfExpressionsExtensions
 
         while (se.MoveNext(out var exp))
         {
-            if (exp.NodeType == YExpressionType.StringConstant)
+            if (exp.NodeType == BExpressionType.StringConstant)
             {
                 result.Add(exp);
                 continue;
@@ -184,12 +184,12 @@ public static class ListOfExpressionsExtensions
         {
             switch (exp.NodeType)
             {
-                case YExpressionType.StringConstant:
-                    result.Add(JSStringBuilder.New(exp as YStringConstantExpression));
+                case BExpressionType.StringConstant:
+                    result.Add(JSStringBuilder.New(exp as BStringConstantExpression));
                     continue;
 
-                case YExpressionType.DoubleConstant:
-                    result.Add(JSNumberBuilder.New(exp as YDoubleConstantExpression));
+                case BExpressionType.DoubleConstant:
+                    result.Add(JSNumberBuilder.New(exp as BDoubleConstantExpression));
                     continue;
             }
 

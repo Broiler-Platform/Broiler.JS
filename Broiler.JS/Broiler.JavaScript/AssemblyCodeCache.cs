@@ -66,13 +66,13 @@ namespace BroilerJS
         {
             var expression = code.Compiler();
 
-            //var outerLambda = YExpression
+            //var outerLambda = BExpression
             //    .InstanceLambda<JSFunctionDelegate>(
             //        expression.Name + "_outer",
             //        expression,
-            //        YExpression.Parameter(typeof(Closures))
-            //        , new YParameterExpression[] { })
-            //    as YLambdaExpression;
+            //        BExpression.Parameter(typeof(Closures))
+            //        , new BParameterExpression[] { })
+            //    as BLambdaExpression;
 
             var asmName = System.IO.Path.GetFileNameWithoutExtension(dll);
 

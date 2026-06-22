@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 
@@ -7,7 +7,7 @@ namespace Broiler.JavaScript.Runtime;
 /// <summary>
 /// Defines the contract for compiling JavaScript source code into an executable
 /// expression tree. Implementations convert source code through parsing and AST
-/// compilation to produce a <see cref="YExpression{T}"/> of
+/// compilation to produce a <see cref="BExpression{T}"/> of
 /// <see cref="JSFunctionDelegate"/>.
 /// </summary>
 public interface IJSCompiler
@@ -21,5 +21,5 @@ public interface IJSCompiler
     /// <param name="argsList">Optional list of argument names for function-style compilation.</param>
     /// <param name="codeCache">Optional code cache for compiled script reuse.</param>
     /// <returns>A compiled expression tree representing the JavaScript program.</returns>
-    YExpression<JSFunctionDelegate> Compile(in StringSpan code, string location = null, IList<string> argsList = null, ICodeCache codeCache = null);
+    BExpression<JSFunctionDelegate> Compile(in StringSpan code, string location = null, IList<string> argsList = null, ICodeCache codeCache = null);
 }

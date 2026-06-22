@@ -4,7 +4,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitConvert(YConvertExpression convertExpression)
+    protected override CodeInfo VisitConvert(BConvertExpression convertExpression)
     {
         Visit(convertExpression.Target);
         il.EmitCall(convertExpression.Method);

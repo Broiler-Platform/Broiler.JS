@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Broiler.JavaScript.ExpressionCompiler.ClosureSeparator;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
@@ -16,7 +16,7 @@ public class GeneratorState(JSValue value, int nextJump, bool isValueDelegate, b
     public readonly bool IsValueDelegate = isValueDelegate;
     public readonly int NextJump = nextJump;
 
-    // True when this suspension is an internal `await` (see YYieldExpression.IsAwait).
+    // True when this suspension is an internal `await` (see BYieldExpression.IsAwait).
     // The async-generator driver awaits the value and resumes without surfacing it.
     public readonly bool IsAwait = isAwait;
 }

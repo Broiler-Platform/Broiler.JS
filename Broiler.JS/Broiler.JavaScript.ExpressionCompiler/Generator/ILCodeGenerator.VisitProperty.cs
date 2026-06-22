@@ -4,7 +4,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitProperty(YPropertyExpression yPropertyExpression)
+    protected override CodeInfo VisitProperty(BPropertyExpression yPropertyExpression)
     {
         if (!yPropertyExpression.IsStatic)
         {

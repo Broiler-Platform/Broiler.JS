@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -21,7 +21,7 @@ public partial class ILCodeGenerator
         .GetMethod("GetOrCreate", [StringSpanType.MakeByRefType()])
         ?? throw new InvalidOperationException("KeyStrings.GetOrCreate(StringSpan) not found");
 
-    protected override CodeInfo VisitParameter(YParameterExpression yParameterExpression)
+    protected override CodeInfo VisitParameter(BParameterExpression yParameterExpression)
     {
         // check if it is marked as a closure...
 
@@ -130,7 +130,7 @@ public partial class ILCodeGenerator
         return false;
     }
 
-    private bool TryResolveClosureByName(string name, out YExpression exp)
+    private bool TryResolveClosureByName(string name, out BExpression exp)
     {
         if (string.IsNullOrEmpty(name))
         {

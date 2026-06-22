@@ -1,8 +1,8 @@
-using Broiler.JavaScript.LinqExpressions.LambdaGen;
+﻿using Broiler.JavaScript.LinqExpressions.LambdaGen;
 using Broiler.JavaScript.Runtime;
 using System;
 using System.Reflection;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 
 namespace Broiler.JavaScript.LinqExpressions.LinqExpressions;
 

@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitCoalesceCall(YCoalesceCallExpression node)
+    protected override CodeInfo VisitCoalesceCall(BCoalesceCallExpression node)
     {
         Visit(node.Target);
         il.Emit(OpCodes.Dup);

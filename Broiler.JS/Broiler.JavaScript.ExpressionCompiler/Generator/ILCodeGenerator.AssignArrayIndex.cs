@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    private CodeInfo AssignArrayIndex(DataSource exp, YArrayIndexExpression yArrayIndexExpression, int savedIndex = -1)
+    private CodeInfo AssignArrayIndex(DataSource exp, BArrayIndexExpression yArrayIndexExpression, int savedIndex = -1)
     {
         Visit(yArrayIndexExpression.Target);
         Visit(yArrayIndexExpression.Index);

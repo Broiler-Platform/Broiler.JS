@@ -10,7 +10,7 @@ public partial class ILCodeGenerator
      * https://sharplab.io/#v2:C4LglgNgPgAgTARgLACgYGYAE9MGFMDeqmJ2WMALJgLIAUAlIcaQL7MntnYIBs3ADDQS0A9gCMAVgFMAxsEwBDRkRSk12AOyLFAZwEBuTmxScM3PmJEiINOKMmz5SpqvUkYWhZjB6YCfoauJMaoLEA==
      */
 
-    protected override CodeInfo VisitTypeIs(YTypeIsExpression yTypeIsExpression)
+    protected override CodeInfo VisitTypeIs(BTypeIsExpression yTypeIsExpression)
     {
         Visit(yTypeIsExpression.Target);
         if (yTypeIsExpression.Type.IsAssignableFrom(yTypeIsExpression.Target.Type))
@@ -21,7 +21,7 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    protected override CodeInfo VisitTypeAs(YTypeAsExpression typeAsExpression)
+    protected override CodeInfo VisitTypeAs(BTypeAsExpression typeAsExpression)
     {
         Visit(typeAsExpression.Target);
         if (typeAsExpression.Type.IsAssignableFrom(typeAsExpression.Target.Type))

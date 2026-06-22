@@ -16,7 +16,7 @@ public partial class ILCodeGenerator
 
     public static bool GenerateLogs = false;
     private ClosureRepository closureRepository;
-    private YParameterExpression? This;
+    private BParameterExpression? This;
     private readonly VariableInfo variables;
     private readonly LabelInfo labels;
     private readonly TempVariables tempVariables;
@@ -25,7 +25,7 @@ public partial class ILCodeGenerator
     private int tailCallTryDepth;
     private int tailCallBlockedDepth;
 
-    private readonly Dictionary<YParameterExpression,(Type type, int localIndex)> uninitialized
+    private readonly Dictionary<BParameterExpression,(Type type, int localIndex)> uninitialized
         = new(Core.ReferenceEqualityComparer.Instance);
 
     public Sequence<ILDebugInfo> SequencePoints { get; }
@@ -56,7 +56,7 @@ public partial class ILCodeGenerator
         this.expressionWriter = expressionWriter;
     }
 
-    private void InitializeClosure(YParameterExpression pe)
+    private void InitializeClosure(BParameterExpression pe)
     {
         if (uninitialized.TryGetValue(pe, out var x))
         {
@@ -66,7 +66,7 @@ public partial class ILCodeGenerator
         }
     }
 
-    internal void Emit(YLambdaExpression exp)
+    internal void Emit(BLambdaExpression exp)
     {
         var body = exp.Body;
 
@@ -159,11 +159,11 @@ public partial class ILCodeGenerator
                 body.Print(writer);
             }
 
-            if(body.NodeType == YExpressionType.Call)
+            if(body.NodeType == BExpressionType.Call)
             {
                 if(exp.ReturnType.IsAssignableFrom(body.Type) && body.Type != typeof(void))
                 {
-                    if (VisitTailCall((body as YCallExpression)!))
+                    if (VisitTailCall((body as BCallExpression)!))
                         return;
                 }
             }
@@ -178,11 +178,11 @@ public partial class ILCodeGenerator
 
     }
 
-    private void RegisterBlockVariables(YExpression expression)
+    private void RegisterBlockVariables(BExpression expression)
     {
         switch (expression)
         {
-            case YBlockExpression block:
+            case BBlockExpression block:
                 foreach (var p in block.FlattenVariables)
                 {
                     if (!variables.TryGetValue(p, out _))
@@ -192,15 +192,15 @@ public partial class ILCodeGenerator
                     RegisterBlockVariables(child);
                 break;
 
-            case YConvertExpression convert:
+            case BConvertExpression convert:
                 RegisterBlockVariables(convert.Target);
                 break;
 
-            case YReturnExpression @return when @return.Default != null:
+            case BReturnExpression @return when @return.Default != null:
                 RegisterBlockVariables(@return.Default);
                 break;
 
-            case YTryCatchFinallyExpression tryCatchFinally:
+            case BTryCatchFinallyExpression tryCatchFinally:
                 RegisterBlockVariables(tryCatchFinally.Try);
                 if (tryCatchFinally.Catch != null)
                     RegisterBlockVariables(tryCatchFinally.Catch.Body);
@@ -210,28 +210,28 @@ public partial class ILCodeGenerator
         }
     }
 
-    private static YExpression ReWriteTryCatch(YExpression body)
+    private static BExpression ReWriteTryCatch(BExpression body)
     {
-        if (body.NodeType != YExpressionType.TryCatchFinally)
+        if (body.NodeType != BExpressionType.TryCatchFinally)
         {
             return body;
         }
 
-        YTryCatchFinallyExpression exp = (body as YTryCatchFinallyExpression)!;
+        BTryCatchFinallyExpression exp = (body as BTryCatchFinallyExpression)!;
 
-        var returnLabel = YExpression.Label("ReturnLabel", exp.Try.Type);
+        var returnLabel = BExpression.Label("ReturnLabel", exp.Try.Type);
 
         // replace catchbody...
         var @catch = exp.Catch;
         if(@catch != null)
         {
-            @catch = YExpression.Catch(@catch.Parameter!, YExpression.Return(returnLabel, @catch.Body));
+            @catch = BExpression.Catch(@catch.Parameter!, BExpression.Return(returnLabel, @catch.Body));
         }
 
-        exp = new YTryCatchFinallyExpression(
-            YExpression.Return(returnLabel, exp.Try), @catch, exp.Finally);
+        exp = new BTryCatchFinallyExpression(
+            BExpression.Return(returnLabel, exp.Try), @catch, exp.Finally);
 
-        return YExpression.Block(exp, YExpression.Label(returnLabel));
+        return BExpression.Block(exp, BExpression.Label(returnLabel));
         
     }
 }

@@ -10,7 +10,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    private CodeInfo VisitTailCall(YCallExpression callExpression)
+    private CodeInfo VisitTailCall(BCallExpression callExpression)
     {
         if (TryVisitJavaScriptTailCall(callExpression))
             return true;
@@ -34,7 +34,7 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    private bool TryVisitJavaScriptTailCall(YCallExpression callExpression)
+    private bool TryVisitJavaScriptTailCall(BCallExpression callExpression)
     {
         if (!TryEmitJavaScriptTailCallValue(callExpression))
             return false;
@@ -42,7 +42,7 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    private bool TryEmitJavaScriptTailCallValue(YCallExpression callExpression)
+    private bool TryEmitJavaScriptTailCallValue(BCallExpression callExpression)
     {
         if (!string.Equals(Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"), "1", StringComparison.Ordinal))
             return false;
@@ -61,10 +61,10 @@ public partial class ILCodeGenerator
             && callExpression.Type.FullName == "Broiler.JavaScript.Runtime.JSValue")
         {
             var argCount = callExpression.Arguments.Count;
-            var tailArgs = new Sequence<YExpression>(argCount + 1);
+            var tailArgs = new Sequence<BExpression>(argCount + 1);
             for (int i = 0; i < argCount; i++)
                 tailArgs.Add(callExpression.Arguments[i]);
-            tailArgs.Add(YExpression.Constant(true));
+            tailArgs.Add(BExpression.Constant(true));
 
             var save = EmitParameters(callExpression.Method, tailArgs, callExpression.Type);
             il.EmitCall(callExpression.Method);
@@ -90,7 +90,7 @@ public partial class ILCodeGenerator
     }
 
 
-    protected override CodeInfo VisitCall(YCallExpression yCallExpression)
+    protected override CodeInfo VisitCall(BCallExpression yCallExpression)
     {
         using (tempVariables.Push())
         {

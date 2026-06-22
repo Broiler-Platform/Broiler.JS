@@ -9,25 +9,25 @@ namespace Broiler.JavaScript.ExpressionCompiler;
 
 public static class ClosureRepositoryExtensions
 {
-    public static ClosureRepository GetClosureRepository(this YLambdaExpression lambda) => ClosureRepository.For(lambda);
+    public static ClosureRepository GetClosureRepository(this BLambdaExpression lambda) => ClosureRepository.For(lambda);
 }
 
 public class ClosureRepository
 {
-    private static System.Runtime.CompilerServices.ConditionalWeakTable<YLambdaExpression, ClosureRepository> cache =
+    private static System.Runtime.CompilerServices.ConditionalWeakTable<BLambdaExpression, ClosureRepository> cache =
         [];
 
-    public readonly Dictionary<YParameterExpression, (YParameterExpression local, YExpression value, int index, int argIndex)>
+    public readonly Dictionary<BParameterExpression, (BParameterExpression local, BExpression value, int index, int argIndex)>
         Closures = new(Core.ReferenceEqualityComparer.Instance);
 
-    public List<YParameterExpression> Inputs 
+    public List<BParameterExpression> Inputs 
         = [];
 
-    private YLambdaExpression lambda;
+    private BLambdaExpression lambda;
 
-    protected ClosureRepository(YLambdaExpression lambda) => this.lambda = lambda;
+    protected ClosureRepository(BLambdaExpression lambda) => this.lambda = lambda;
 
-    public static ClosureRepository For(YLambdaExpression lambda)
+    public static ClosureRepository For(BLambdaExpression lambda)
     {
         if (cache.TryGetValue(lambda, out var value))
             return value;
@@ -36,7 +36,7 @@ public class ClosureRepository
         return value;
     }
 
-    internal bool TryGet(YParameterExpression pe, out YExpression exp)
+    internal bool TryGet(BParameterExpression pe, out BExpression exp)
     {
         if (Closures.TryGetValue(pe, out var ve))
         {
@@ -47,28 +47,28 @@ public class ClosureRepository
         return false;
     }
 
-    internal YParameterExpression Setup(YParameterExpression pe, Func<YParameterExpression> source)
+    internal BParameterExpression Setup(BParameterExpression pe, Func<BParameterExpression> source)
     {
         if (Closures.TryGetValue(pe, out var value))
             return value.local;
         var s = source();
         bool isBox = typeof(Box).IsAssignableFrom(pe.Type);
         var boxType = isBox ? pe.Type : BoxHelper.For(pe.Type).BoxType;
-        var converted = YExpression.Parameter(boxType, pe.Name + "`");
-        YExpression valueField = isBox ? converted : YExpression.Field(converted, "Value");
+        var converted = BExpression.Parameter(boxType, pe.Name + "`");
+        BExpression valueField = isBox ? converted : BExpression.Field(converted, "Value");
         Closures[pe] = (converted, valueField, Inputs.Count, -1);
         Inputs.Add(s);
         return converted;
     }
 
-    internal YParameterExpression Convert(YParameterExpression pe)
+    internal BParameterExpression Convert(BParameterExpression pe)
     {
         if (Closures.TryGetValue(pe, out var value))
             return value.local;
         bool isBox = typeof(Box).IsAssignableFrom(pe.Type);
         var boxType = isBox ? pe.Type : BoxHelper.For(pe.Type).BoxType;
-        var converted = YExpression.Parameter(boxType, pe.Name + "`");
-        YExpression valueField = isBox ? converted : YExpression.Field(converted, "Value");
+        var converted = BExpression.Parameter(boxType, pe.Name + "`");
+        BExpression valueField = isBox ? converted : BExpression.Field(converted, "Value");
         var argIndex = Array.IndexOf(lambda.Parameters, pe);
         Closures[pe] = (converted, valueField, -1, argIndex);
         return converted;
@@ -76,22 +76,22 @@ public class ClosureRepository
 }
 
 
-public class LambdaRewriter: YExpressionMapVisitor
+public class LambdaRewriter: BExpressionMapVisitor
 {
     public class Scope
     {
-        public readonly YLambdaExpression Root;
-        public readonly List<YParameterExpression> Variables = [];
+        public readonly BLambdaExpression Root;
+        public readonly List<BParameterExpression> Variables = [];
 
-        public Scope(YLambdaExpression exp)
+        public Scope(BLambdaExpression exp)
         {
             Root = exp;
             Variables.AddRange(exp.Parameters);
         }
 
-        public static implicit operator Scope(YLambdaExpression e) => new(e);
+        public static implicit operator Scope(BLambdaExpression e) => new(e);
 
-        internal IDisposable Register(IFastEnumerable<YParameterExpression> variables)
+        internal IDisposable Register(IFastEnumerable<BParameterExpression> variables)
         {
             Variables.AddRange(variables);
             return new DisposableAction(() => {
@@ -105,7 +105,7 @@ public class LambdaRewriter: YExpressionMapVisitor
     }
 
     private ScopedStack<Scope> lambdaStack = new();
-    private YLambdaExpression RootExpression;
+    private BLambdaExpression RootExpression;
 
     // When false, the rewriter processes only the root lambda's own body and does
     // NOT descend into nested lambdas. Used by the async pre-rewrite (which runs in
@@ -126,7 +126,7 @@ public class LambdaRewriter: YExpressionMapVisitor
 
     
 
-    protected override YExpression VisitLambda(YLambdaExpression node)
+    protected override BExpression VisitLambda(BLambdaExpression node)
     {
         /// we will not mark nested lambda as relay for two reasons
         /// 1.  In case of Runtime Execution, IMethodRepository will be
@@ -150,7 +150,7 @@ public class LambdaRewriter: YExpressionMapVisitor
         return base.VisitLambda(node);
     }
 
-    protected override YExpression VisitBlock(YBlockExpression yBlockExpression)
+    protected override BExpression VisitBlock(BBlockExpression yBlockExpression)
     {
         var variables = Root.Root.Name.Name == "body" || Root.Root.Name.Name == "body_outer"
             ? CollectBlockVariables(yBlockExpression)
@@ -159,54 +159,54 @@ public class LambdaRewriter: YExpressionMapVisitor
         return base.VisitBlock(yBlockExpression);
     }
 
-    private static Sequence<YParameterExpression> CollectBlockVariables(YExpression expression)
+    private static Sequence<BParameterExpression> CollectBlockVariables(BExpression expression)
     {
-        var variables = new Sequence<YParameterExpression>();
+        var variables = new Sequence<BParameterExpression>();
         new BlockVariableCollector(variables).Visit(expression);
         return variables;
     }
 
-    private sealed class BlockVariableCollector(Sequence<YParameterExpression> variables) : YExpressionMapVisitor
+    private sealed class BlockVariableCollector(Sequence<BParameterExpression> variables) : BExpressionMapVisitor
     {
-        protected override YExpression VisitBlock(YBlockExpression yBlockExpression)
+        protected override BExpression VisitBlock(BBlockExpression yBlockExpression)
         {
             variables.AddRange(yBlockExpression.FlattenVariables);
             return base.VisitBlock(yBlockExpression);
         }
 
-        protected override YExpression VisitLambda(YLambdaExpression yLambdaExpression) => yLambdaExpression;
+        protected override BExpression VisitLambda(BLambdaExpression yLambdaExpression) => yLambdaExpression;
     }
 
-    private static void CollectBlockVariables(YExpression expression, Sequence<YParameterExpression> variables)
+    private static void CollectBlockVariables(BExpression expression, Sequence<BParameterExpression> variables)
     {
         switch (expression)
         {
-            case YBlockExpression block:
+            case BBlockExpression block:
                 variables.AddRange(block.FlattenVariables);
                 foreach (var (child, _) in block.FlattenExpressions)
                     CollectBlockVariables(child, variables);
                 break;
 
-            case YConvertExpression convert:
+            case BConvertExpression convert:
                 CollectBlockVariables(convert.Target, variables);
                 break;
 
-            case YReturnExpression @return when @return.Default != null:
+            case BReturnExpression @return when @return.Default != null:
                 CollectBlockVariables(@return.Default, variables);
                 break;
 
-            case YConditionalExpression conditional:
+            case BConditionalExpression conditional:
                 CollectBlockVariables(conditional.test, variables);
                 CollectBlockVariables(conditional.@true, variables);
                 if (conditional.@false != null)
                     CollectBlockVariables(conditional.@false, variables);
                 break;
 
-            case YLoopExpression loop:
+            case BLoopExpression loop:
                 CollectBlockVariables(loop.Body, variables);
                 break;
 
-            case YTryCatchFinallyExpression tryCatchFinally:
+            case BTryCatchFinallyExpression tryCatchFinally:
                 CollectBlockVariables(tryCatchFinally.Try, variables);
                 if (tryCatchFinally.Catch != null)
                     CollectBlockVariables(tryCatchFinally.Catch.Body, variables);
@@ -216,13 +216,13 @@ public class LambdaRewriter: YExpressionMapVisitor
         }
     }
 
-    protected override YExpression VisitParameter(YParameterExpression yParameterExpression)
+    protected override BExpression VisitParameter(BParameterExpression yParameterExpression)
     {
         CheckForClosure(lambdaStack.Top, yParameterExpression);
         return base.VisitParameter(yParameterExpression);
     }
 
-    private YParameterExpression CheckForClosure(ScopedStack<Scope>.ScopedItem current, YParameterExpression pe, bool setup = false)
+    private BParameterExpression CheckForClosure(ScopedStack<Scope>.ScopedItem current, BParameterExpression pe, bool setup = false)
     {
         if (current.Item.Variables.Contains(pe))
         {
@@ -240,7 +240,7 @@ public class LambdaRewriter: YExpressionMapVisitor
         return repository.Setup(pe, () => CheckForClosure(parent,pe,true));
     }
 
-    public static YExpression Rewrite(YLambdaExpression convert)
+    public static BExpression Rewrite(BLambdaExpression convert)
     {
         var l = new LambdaRewriter();
         l.RootExpression = convert;
@@ -253,7 +253,7 @@ public class LambdaRewriter: YExpressionMapVisitor
     /// for a later enclosing-scope rewrite. Used by the async function pre-rewrite,
     /// which runs before the enclosing scope exists; see <see cref="rewriteNestedLambdas"/>.
     /// </summary>
-    public static YExpression RewriteRootOnly(YLambdaExpression convert)
+    public static BExpression RewriteRootOnly(BLambdaExpression convert)
     {
         var l = new LambdaRewriter { rewriteNestedLambdas = false };
         l.RootExpression = convert;

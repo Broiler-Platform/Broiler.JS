@@ -6,16 +6,16 @@ namespace Broiler.JavaScript.ExpressionCompiler.Converters;
 
 public class LabelMap
 {
-    private readonly Dictionary<LabelTarget, YLabelTarget> labels = [];
+    private readonly Dictionary<LabelTarget, BLabelTarget> labels = [];
 
-    public YLabelTarget this[LabelTarget label]
+    public BLabelTarget this[LabelTarget label]
     {
         get
         {
             if (labels.TryGetValue(label, out var r))
                 return r;
 
-            r = YExpression.Label(label.Name + labels.Count, label.Type);
+            r = BExpression.Label(label.Name + labels.Count, label.Type);
             labels[label] = r;
             return r;
         }

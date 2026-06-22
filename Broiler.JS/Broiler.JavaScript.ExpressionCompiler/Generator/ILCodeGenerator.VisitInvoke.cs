@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitInvoke(YInvokeExpression invokeExpression)
+    protected override CodeInfo VisitInvoke(BInvokeExpression invokeExpression)
     {
 
         Type type = invokeExpression.Target.Type;

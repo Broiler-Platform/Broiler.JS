@@ -7,9 +7,9 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    private Action EmitParameters(MethodBase method, IFastEnumerable<YExpression> args, Type returnType)
+    private Action EmitParameters(MethodBase method, IFastEnumerable<BExpression> args, Type returnType)
     {
-        Sequence<(int temp, YExpression exp)>? saveList = null;
+        Sequence<(int temp, BExpression exp)>? saveList = null;
 
         var pa = method.GetParameters();
         for (int i = 0; i < pa.Length; i++)
@@ -23,7 +23,7 @@ public partial class ILCodeGenerator
 
                 if (p.IsOut)
                 {
-                    if(a.NodeType == YExpressionType.Property)
+                    if(a.NodeType == BExpressionType.Property)
                     {
                         // BROILER-PATCH: Use element type for byref parameters;
                         // DeclareLocal does not accept byref types directly.

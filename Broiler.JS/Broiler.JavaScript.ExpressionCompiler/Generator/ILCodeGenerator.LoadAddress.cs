@@ -7,18 +7,18 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 public partial class ILCodeGenerator
 {
 
-    protected override CodeInfo VisitAddressOf(YAddressOfExpression node) => LoadAddress(node.Target);
+    protected override CodeInfo VisitAddressOf(BAddressOfExpression node) => LoadAddress(node.Target);
 
-    private CodeInfo LoadAddress(YExpression exp)
+    private CodeInfo LoadAddress(BExpression exp)
     {
         switch (exp.NodeType)
         {
-            case YExpressionType.Parameter:
-                return LoadParameterAddress(exp as YParameterExpression);
-            case YExpressionType.Field:
-                return LoadFieldAddress(exp as YFieldExpression);
-            case YExpressionType.ArrayIndex:
-                return LoadArrayIndexAddress(exp as YArrayIndexExpression);
+            case BExpressionType.Parameter:
+                return LoadParameterAddress(exp as BParameterExpression);
+            case BExpressionType.Field:
+                return LoadFieldAddress(exp as BFieldExpression);
+            case BExpressionType.ArrayIndex:
+                return LoadArrayIndexAddress(exp as BArrayIndexExpression);
 
         }
         var temp = tempVariables[exp.Type];
@@ -28,7 +28,7 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    private CodeInfo LoadArrayIndexAddress(YArrayIndexExpression yArrayIndexExpression)
+    private CodeInfo LoadArrayIndexAddress(BArrayIndexExpression yArrayIndexExpression)
     {
         Visit(yArrayIndexExpression.Target);
         Visit(yArrayIndexExpression.Index);
@@ -52,7 +52,7 @@ public partial class ILCodeGenerator
 
     }
 
-    private CodeInfo LoadFieldAddress(YFieldExpression yFieldExpression)
+    private CodeInfo LoadFieldAddress(BFieldExpression yFieldExpression)
     {
         var field = yFieldExpression.FieldInfo;
         if (field.IsStatic)
@@ -70,7 +70,7 @@ public partial class ILCodeGenerator
         return true;
     }
 
-    private CodeInfo LoadParameterAddress(YParameterExpression yParameterExpression)
+    private CodeInfo LoadParameterAddress(BParameterExpression yParameterExpression)
     {
         if (!variables.TryGetValue(yParameterExpression, out var varInfo))
         {

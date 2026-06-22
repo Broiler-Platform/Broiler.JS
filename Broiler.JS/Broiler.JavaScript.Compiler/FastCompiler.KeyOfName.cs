@@ -12,13 +12,13 @@ partial class FastCompiler
     // ("#x") to a class-scope variable holding the unique KeyString minted for the
     // enclosing class evaluation. Innermost class last; a reference resolves against
     // the nearest enclosing class so a nested class's `#x` shadows an outer one.
-    private readonly List<Dictionary<string, YExpression>> privateNameScopes = [];
+    private readonly List<Dictionary<string, BExpression>> privateNameScopes = [];
 
     // Monotonic suffix making each minted-key variable's name unique (closure
     // capture of the key — used by-address in private method calls — resolves by name).
     private static int privateKeyVarCounter;
 
-    internal void PushPrivateNameScope(Dictionary<string, YExpression> names)
+    internal void PushPrivateNameScope(Dictionary<string, BExpression> names)
         => privateNameScopes.Add(names);
 
     internal void PopPrivateNameScope()
@@ -35,7 +35,7 @@ partial class FastCompiler
     // that evaluation's minted-key variable (each `new`/factory call gets a distinct
     // brand). Otherwise (e.g. a direct-eval fragment with no class scope on the
     // compiler stack) it falls back to a stable marker-prefixed constant key.
-    public YExpression KeyOfPrivateName(in StringSpan name)
+    public BExpression KeyOfPrivateName(in StringSpan name)
     {
         for (var i = privateNameScopes.Count - 1; i >= 0; i--)
             if (privateNameScopes[i].TryGetValue(name.Value, out var keyVar))
@@ -44,7 +44,7 @@ partial class FastCompiler
         return KeyOfName(JSObject.PrivateNameMarker + name.Value);
     }
 
-    public YExpression KeyOfName(string name)
+    public BExpression KeyOfName(string name)
     {
         // search for variable...
         if (KeyStringsBuilder.Fields.TryGetValue(name, out var fx))
@@ -54,7 +54,7 @@ partial class FastCompiler
         return ScriptInfoBuilder.KeyString(scriptInfo, (int)i);
     }
 
-    public YExpression KeyOfName(in StringSpan name)
+    public BExpression KeyOfName(in StringSpan name)
     {
         // search for variable...
         if (KeyStringsBuilder.Fields.TryGetValue(name, out var fx))

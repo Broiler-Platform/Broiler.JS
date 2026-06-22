@@ -4,7 +4,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public partial class ILCodeGenerator
 {
-    protected override CodeInfo VisitLabel(YLabelExpression yLabelExpression)
+    protected override CodeInfo VisitLabel(BLabelExpression yLabelExpression)
     {
         var l = labels[yLabelExpression.Target];
 

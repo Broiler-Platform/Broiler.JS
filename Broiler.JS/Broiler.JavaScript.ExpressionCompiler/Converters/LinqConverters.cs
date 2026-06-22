@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.ExpressionCompiler.Converters;
 
 public static partial class LinqConverters
 {
-    public static YLambdaExpression ToLLExpression(this LambdaExpression lambda)
+    public static BLambdaExpression ToLLExpression(this LambdaExpression lambda)
     {
         var lc = new LinqConverter();
         return lc.VisitLambdaSpecific(lambda);

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 namespace Broiler.JavaScript.LinqExpressions.LambdaGen;
@@ -28,7 +28,7 @@ public static class NewLambdaExpression
         return Expression.Property(exp, f);
     }
 
-    public static YNewExpression NewExpression<TOut>(Func<Expression<Func<TOut>>> fx, params Expression[] args)
+    public static BNewExpression NewExpression<TOut>(Func<Expression<Func<TOut>>> fx, params Expression[] args)
     {
         var m = TypeQuery.TypeQuery.QueryConstructor(fx);
         return Expression.New(m, args);
@@ -39,7 +39,7 @@ public static class NewLambdaExpression
     /// parameter count matches <paramref name="args"/>.
     /// Used when the type is only known at runtime (e.g. after Initialize pattern).
     /// </summary>
-    public static YNewExpression NewExpression(Type type, params Expression[] args)
+    public static BNewExpression NewExpression(Type type, params Expression[] args)
     {
         var paramTypes = new Type[args.Length];
         for (int i = 0; i < args.Length; i++)

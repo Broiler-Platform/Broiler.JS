@@ -10,7 +10,7 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitLabeledStatement(AstLabeledStatement labeledStatement)
+    protected override BExpression VisitLabeledStatement(AstLabeledStatement labeledStatement)
     {
         switch (labeledStatement.Body.Type)
         {
@@ -31,19 +31,19 @@ partial class FastCompiler
 
             default:
                 {
-                    var breakTarget = YExpression.Label();
+                    var breakTarget = BExpression.Label();
                     var label = labeledStatement.Label.Span.Value;
-                    var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
+                    var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
                     var outerCompletionVars = GetCompletionVariables();
                     var loopScope = new LoopScope(breakTarget, null, false, label) { CompletionVariable = completionVar };
                     using var completion = completionScopes.Push(completionVar);
                     using var s = scope.Top.Loop.Push(loopScope);
                     var body = TrackCompletion(VisitStatement(labeledStatement.Body));
-                    return YExpression.Block(
-                        new Sequence<YParameterExpression> { completionVar },
-                        YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
-                        YExpression.TailCallTransparentTryFinally(body, PropagateCompletion(completionVar, outerCompletionVars)),
-                        YExpression.Label(breakTarget),
+                    return BExpression.Block(
+                        new Sequence<BParameterExpression> { completionVar },
+                        BExpression.Assign(completionVar, JSUndefinedBuilder.Value),
+                        BExpression.TailCallTransparentTryFinally(body, PropagateCompletion(completionVar, outerCompletionVars)),
+                        BExpression.Label(breakTarget),
                         completionVar);
                 }
         }

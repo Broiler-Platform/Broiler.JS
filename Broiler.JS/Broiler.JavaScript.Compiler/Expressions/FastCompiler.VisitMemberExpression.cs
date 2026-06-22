@@ -1,4 +1,4 @@
-using Broiler.JavaScript.Ast.Expressions;
+﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -9,7 +9,7 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitMemberExpression(AstMemberExpression memberExpression)
+    protected override BExpression VisitMemberExpression(AstMemberExpression memberExpression)
     {
         var isSuper = memberExpression.Object?.Type == FastNodeType.Super;
         var target = isSuper ? scope.Top.ThisExpression : VisitExpression(memberExpression.Object);
@@ -41,16 +41,16 @@ partial class FastCompiler
             // into a temp first to force that ordering, then evaluate the key.
             using var thisTemp = scope.Top.GetTempVariable(typeof(JSValue));
             using var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
-            return YExpression.Block(
-                YExpression.Assign(thisTemp.Expression, target),
-                YExpression.Assign(keyTemp.Expression, VisitExpression(mp)),
+            return BExpression.Block(
+                BExpression.Assign(thisTemp.Expression, target),
+                BExpression.Assign(keyTemp.Expression, VisitExpression(mp)),
                 JSValueBuilder.Index(thisTemp.Expression, super, keyTemp.Expression, memberExpression.Coalesce));
         }
 
         // Inside an optional chain, member access routes through the skip-aware links
         // (a `?.` link short-circuits on a nullish base; a trailing link only propagates
         // an in-flight short-circuit). Outside a chain it is an ordinary index.
-        YExpression Access(YExpression keyExpr) =>
+        BExpression Access(BExpression keyExpr) =>
             memberExpression.InOptionalChain
                 ? JSValueBuilder.ChainAccess(target, super, keyExpr, memberExpression.Coalesce)
                 : JSValueBuilder.Index(target, super, keyExpr, memberExpression.Coalesce);
@@ -61,15 +61,15 @@ partial class FastCompiler
         // non-short-circuit path. Spill the target into a temp, gate it, and lift the key
         // evaluation inside the gated branch. Non-computed accesses (Identifier / Literal
         // keys above) are pure, so they fall through to the simpler Access path.
-        YExpression GatedComputedAccess(System.Func<YExpression> compileKey)
+        BExpression GatedComputedAccess(System.Func<BExpression> compileKey)
         {
             if (!memberExpression.InOptionalChain || super != null)
                 return Access(compileKey());
 
             using var recv = scope.Top.GetTempVariable(typeof(JSValue));
-            return YExpression.Block(
-                YExpression.Assign(recv.Expression, target),
-                YExpression.Condition(
+            return BExpression.Block(
+                BExpression.Assign(recv.Expression, target),
+                BExpression.Condition(
                     JSValueBuilder.OptionalChainGuard(recv.Expression, memberExpression.Coalesce),
                     JSValueBuilder.OptionalChainSkip(),
                     JSValueBuilder.Index(recv.Expression, super, compileKey(), false)));
@@ -98,9 +98,9 @@ partial class FastCompiler
                     if (isPrivate && memberExpression.InOptionalChain)
                     {
                         using var recv = scope.Top.GetTempVariable(typeof(JSValue));
-                        return YExpression.Block(
-                            YExpression.Assign(recv.Expression, target),
-                            YExpression.Condition(
+                        return BExpression.Block(
+                            BExpression.Assign(recv.Expression, target),
+                            BExpression.Condition(
                                 JSValueBuilder.OptionalChainGuard(recv.Expression, memberExpression.Coalesce),
                                 JSValueBuilder.OptionalChainSkip(),
                                 JSValueBuilder.Index(recv.Expression, super, key, false)));
@@ -127,14 +127,14 @@ partial class FastCompiler
                     case TokenTypes.String:
                         var text = l.StringValue;
                         if (NumberParser.TryGetArrayIndex(text, out var d))
-                            return Access(YExpression.Constant(d));
+                            return Access(BExpression.Constant(d));
 
                         return Access(KeyOfName(text));
 
                     case TokenTypes.Number:
                         var number = l.NumericValue;
                         if (number >= 0 && number < uint.MaxValue && (number % 1) == 0)
-                            return Access(YExpression.Constant((uint)l.NumericValue));
+                            return Access(BExpression.Constant((uint)l.NumericValue));
 
                         return Access(VisitLiteral(l));
 

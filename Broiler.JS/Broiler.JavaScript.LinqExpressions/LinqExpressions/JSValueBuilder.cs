@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Storage;
@@ -96,7 +96,7 @@ public class JSValueBuilder
 
     public static Expression BooleanValue(Expression exp)
     {
-        if (exp.NodeType == YExpressionType.Conditional && exp is YConditionalExpression ce)
+        if (exp.NodeType == BExpressionType.Conditional && exp is BConditionalExpression ce)
         {
             if (ce.@true == JSBooleanBuilder.True && ce.@false == JSBooleanBuilder.False)
                 return ce.test;

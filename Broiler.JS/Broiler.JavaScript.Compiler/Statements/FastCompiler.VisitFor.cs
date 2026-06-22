@@ -1,4 +1,4 @@
-using Broiler.JavaScript.Ast.Expressions;
+﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
@@ -11,7 +11,7 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    protected override YExpression VisitForInStatement(AstForInStatement forInStatement, string? label = null)
+    protected override BExpression VisitForInStatement(AstForInStatement forInStatement, string? label = null)
     {
         FastFunctionScope? tdzScope = null;
         if (forInStatement.HeadTdzNames != null)
@@ -25,9 +25,9 @@ partial class FastCompiler
             }
         }
 
-        var breakTarget = YExpression.Label();
-        var continueTarget = YExpression.Label();
-        var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
+        var breakTarget = BExpression.Label();
+        var continueTarget = BExpression.Label();
+        var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
         var outerCompletionVars = GetCompletionVariables();
         // this will create a variable if needed...
         // desugar takes care of let so do not worry
@@ -37,9 +37,9 @@ partial class FastCompiler
         // assignment target such as a member expression. Mirror the for-of
         // handling: when the target is not a simple identifier, enumerate each
         // key into a temporary and run the assignment per-iteration.
-        var perIterationInits = new Sequence<YExpression>();
-        YParameterExpression? iterationValueVariable = null;
-        YExpression? identifier = forInStatement.Init.Type switch
+        var perIterationInits = new Sequence<BExpression>();
+        BParameterExpression? iterationValueVariable = null;
+        BExpression? identifier = forInStatement.Init.Type switch
         {
             // A bare-identifier head (whether it resolves to a known binding or is a
             // free/undeclared identifier) is assigned through the per-iteration
@@ -77,7 +77,7 @@ partial class FastCompiler
         // to the binding ONCE, before the RHS Expression is evaluated. (let/const initializers
         // and for-of initializers are rejected by the parser; the per-iteration path above
         // only assigns each enumerated key.)
-        YExpression? headInitAssignment = null;
+        BExpression? headInitAssignment = null;
         if (forInStatement.Init is AstVariableDeclaration { Kind: FastVariableKind.Var } headDeclaration)
         {
             var declEnumerator = headDeclaration.Declarators.GetFastEnumerator();
@@ -94,37 +94,37 @@ partial class FastCompiler
 
         using var completion = completionScopes.Push(completionVar);
         using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, continueTarget, false, label) { CompletionVariable = completionVar });
-        var en = YExpression.Variable(typeof(IElementEnumerator));
-        var pList = new Sequence<YParameterExpression> { en, completionVar };
+        var en = BExpression.Variable(typeof(IElementEnumerator));
+        var pList = new Sequence<BParameterExpression> { en, completionVar };
         if (iterationValueVariable != null)
             pList.Add(iterationValueVariable);
         var body = TrackCompletion(VisitStatement(forInStatement.Body));
-        var bodyListItems = new Sequence<YExpression>
+        var bodyListItems = new Sequence<BExpression>
         {
-            YExpression.IfThen(YExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)), YExpression.Goto(s.Break)),
+            BExpression.IfThen(BExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)), BExpression.Goto(s.Break)),
         };
         bodyListItems.AddRange(perIterationInits);
         bodyListItems.Add(body);
-        var bodyList = YExpression.Block(bodyListItems);
+        var bodyList = BExpression.Block(bodyListItems);
         var right = VisitExpression(forInStatement.Target);
-        var loop = YExpression.Loop(bodyList, s.Break, s.Continue);
+        var loop = BExpression.Loop(bodyList, s.Break, s.Continue);
 
-        var resultItems = new Sequence<YExpression> { YExpression.Assign(completionVar, JSUndefinedBuilder.Value) };
+        var resultItems = new Sequence<BExpression> { BExpression.Assign(completionVar, JSUndefinedBuilder.Value) };
         if (headInitAssignment != null)
             resultItems.Add(headInitAssignment);
-        resultItems.Add(YExpression.Assign(en, JSValueBuilder.GetAllKeys(right)));
-        resultItems.Add(YExpression.TailCallTransparentTryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)));
+        resultItems.Add(BExpression.Assign(en, JSValueBuilder.GetAllKeys(right)));
+        resultItems.Add(BExpression.TailCallTransparentTryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)));
         resultItems.Add(completionVar);
-        var result = YExpression.Block(pList, resultItems);
+        var result = BExpression.Block(pList, resultItems);
         if (tdzScope == null)
             return result;
 
-        var scoped = Scoped(tdzScope, new Sequence<YExpression> { result });
+        var scoped = Scoped(tdzScope, new Sequence<BExpression> { result });
         tdzScope.Dispose();
         return scoped;
     }
 
-    protected override YExpression VisitForOfStatement(AstForOfStatement forOfStatement, string? label = null)
+    protected override BExpression VisitForOfStatement(AstForOfStatement forOfStatement, string? label = null)
     {
         FastFunctionScope? tdzScope = null;
         if (forOfStatement.HeadTdzNames != null)
@@ -138,16 +138,16 @@ partial class FastCompiler
             }
         }
 
-        var breakTarget = YExpression.Label();
-        var continueTarget = YExpression.Label();
-        var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
+        var breakTarget = BExpression.Label();
+        var continueTarget = BExpression.Label();
+        var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
         var outerCompletionVars = GetCompletionVariables();
         // this will create a variable if needed...
         // desugar takes care of let so do not worry
 
-        var perIterationInits = new Sequence<YExpression>();
-        YParameterExpression? iterationValueVariable = null;
-        YExpression? identifier = forOfStatement.Init.Type switch
+        var perIterationInits = new Sequence<BExpression>();
+        BParameterExpression? iterationValueVariable = null;
+        BExpression? identifier = forOfStatement.Init.Type switch
         {
             // See VisitForInStatement: a bare-identifier head (declared or free) is
             // assigned through the per-iteration path (`x = value`). Using the
@@ -185,93 +185,93 @@ partial class FastCompiler
 
         using var completion = completionScopes.Push(completionVar);
         using var s = scope.Top.Loop.Push(new LoopScope(breakTarget, continueTarget, false, label) { CompletionVariable = completionVar });
-        var en = YExpression.Variable(typeof(IElementEnumerator));
+        var en = BExpression.Variable(typeof(IElementEnumerator));
         var body = TrackCompletion(VisitStatement(forOfStatement.Body));
         var right = VisitExpression(forOfStatement.Target);
         var enumerator = forOfStatement.IsAwait ? IElementEnumeratorBuilder.GetAsync(right) : IElementEnumeratorBuilder.Get(right);
 
         // Wrap loop in try-finally to call iterator.return() on abrupt
         // completion (break/return/throw) per ECMAScript IteratorClose.
-        var returnableVar = YExpression.Variable(typeof(IReturnableEnumerator));
-        var iterDoneVar = YExpression.Variable(typeof(bool));
+        var returnableVar = BExpression.Variable(typeof(IReturnableEnumerator));
+        var iterDoneVar = BExpression.Variable(typeof(bool));
 
-        var pList = new Sequence<YParameterExpression> { en, returnableVar, iterDoneVar, completionVar };
+        var pList = new Sequence<BParameterExpression> { en, returnableVar, iterDoneVar, completionVar };
         if (iterationValueVariable != null)
             pList.Add(iterationValueVariable);
 
-        var bodyListItems = new Sequence<YExpression>
+        var bodyListItems = new Sequence<BExpression>
         {
             // IteratorStep / IteratorValue (performed by MoveNext, which reads the result's
             // `value`) abrupt completions must NOT close the iterator — only the binding and
             // the body do (test262 for-of/iterator-next-result-value-attr-error). Mark the
             // iterator "done" while stepping and reading the value so a throw from MoveNext
             // skips the finally/catch close, then clear it once the value is in hand.
-            YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
+            BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
             // When MoveNext returns false the iterator finished normally;
             // leave it marked done so finally does NOT call return().
-            YExpression.IfThen(
-                YExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)),
-                YExpression.Goto(s.Break)),
-            YExpression.Assign(iterDoneVar, YExpression.Constant(false))
+            BExpression.IfThen(
+                BExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)),
+                BExpression.Goto(s.Break)),
+            BExpression.Assign(iterDoneVar, BExpression.Constant(false))
         };
 
         if (forOfStatement.IsAwait)
-            bodyListItems.Add(YExpression.Assign(identifier, YExpression.Await(identifier)));
+            bodyListItems.Add(BExpression.Assign(identifier, BExpression.Await(identifier)));
 
         bodyListItems.AddRange(perIterationInits);
         bodyListItems.Add(body);
-        var bodyList = YExpression.Block(bodyListItems);
+        var bodyList = BExpression.Block(bodyListItems);
 
         // Build a void finally body – must not leave values on the stack.
         // IteratorClose preserves an active throw completion even if return()
         // itself throws; return() errors are only observable for non-throw
         // abrupt completions such as break/return.
         var caughtException = scope.Top.CreateException("#forOfIteratorClose");
-        var closeIterator = YExpression.Block(
-            YExpression.IfThen(
-                YExpression.Not(iterDoneVar),
-                YExpression.Block(
-                    YExpression.Call(null, CloseIteratorMethod, returnableVar),
-                    YExpression.Empty)),
-            YExpression.Empty);
-        var closeIteratorAfterThrow = YExpression.Block(
-            YExpression.IfThen(
-                YExpression.Not(iterDoneVar),
-                YExpression.Block(
-                    YExpression.Call(null, CloseIteratorIgnoringErrorsMethod, returnableVar),
-                    YExpression.Assign(iterDoneVar, YExpression.Constant(true)),
-                    YExpression.Empty)),
-            YExpression.Throw(caughtException.Expression));
+        var closeIterator = BExpression.Block(
+            BExpression.IfThen(
+                BExpression.Not(iterDoneVar),
+                BExpression.Block(
+                    BExpression.Call(null, CloseIteratorMethod, returnableVar),
+                    BExpression.Empty)),
+            BExpression.Empty);
+        var closeIteratorAfterThrow = BExpression.Block(
+            BExpression.IfThen(
+                BExpression.Not(iterDoneVar),
+                BExpression.Block(
+                    BExpression.Call(null, CloseIteratorIgnoringErrorsMethod, returnableVar),
+                    BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
+                    BExpression.Empty)),
+            BExpression.Throw(caughtException.Expression));
 
-        var loop = YExpression.Loop(bodyList, s.Break, s.Continue);
-        var tryFinally = YExpression.TryCatchFinally(
+        var loop = BExpression.Loop(bodyList, s.Break, s.Continue);
+        var tryFinally = BExpression.TryCatchFinally(
             loop,
             closeIterator,
-            YExpression.Catch(caughtException.Variable, closeIteratorAfterThrow));
+            BExpression.Catch(caughtException.Variable, closeIteratorAfterThrow));
 
-        var r = YExpression.Block(pList,
-            YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
-            YExpression.Assign(en, enumerator),
-            YExpression.Assign(returnableVar, YExpression.TypeAs(en, typeof(IReturnableEnumerator))),
-            YExpression.Assign(iterDoneVar, YExpression.Constant(false)),
-            YExpression.TailCallTransparentTryFinally(tryFinally, PropagateCompletion(completionVar, outerCompletionVars)),
+        var r = BExpression.Block(pList,
+            BExpression.Assign(completionVar, JSUndefinedBuilder.Value),
+            BExpression.Assign(en, enumerator),
+            BExpression.Assign(returnableVar, BExpression.TypeAs(en, typeof(IReturnableEnumerator))),
+            BExpression.Assign(iterDoneVar, BExpression.Constant(false)),
+            BExpression.TailCallTransparentTryFinally(tryFinally, PropagateCompletion(completionVar, outerCompletionVars)),
             completionVar);
 
         if (tdzScope == null)
             return r;
 
-        var scoped = Scoped(tdzScope, new Sequence<YExpression> { r });
+        var scoped = Scoped(tdzScope, new Sequence<BExpression> { r });
         tdzScope.Dispose();
         return scoped;
     }
 
-    private YExpression CreateForOfDestructuringAssignment(
+    private BExpression CreateForOfDestructuringAssignment(
         AstExpression expression,
-        Sequence<YExpression> perIterationInits,
-        out YParameterExpression? iterationValueVariable,
+        Sequence<BExpression> perIterationInits,
+        out BParameterExpression? iterationValueVariable,
         bool forceDynamicAssignment)
     {
-        iterationValueVariable = YExpression.Variable(typeof(JSValue), "#forOfValue");
+        iterationValueVariable = BExpression.Variable(typeof(JSValue), "#forOfValue");
 
         // A function call (or other invalid reference) used as the loop target is
         // a runtime ReferenceError (AnnexB web-compat). Evaluate it for its side
@@ -280,7 +280,7 @@ partial class FastCompiler
         if (expression.Type == FastNodeType.CallExpression)
         {
             perIterationInits.Add(Visit(expression));
-            perIterationInits.Add(YExpression.Call(null, ThrowInvalidAssignmentReferenceMethod));
+            perIterationInits.Add(BExpression.Call(null, ThrowInvalidAssignmentReferenceMethod));
             return iterationValueVariable;
         }
 
@@ -297,8 +297,8 @@ partial class FastCompiler
 
     private bool TryCreateForOfDestructuringAssignment(
         AstVariableDeclaration declaration,
-        Sequence<YExpression> perIterationInits,
-        out YParameterExpression? iterationValueVariable)
+        Sequence<BExpression> perIterationInits,
+        out BParameterExpression? iterationValueVariable)
     {
         iterationValueVariable = null;
 
@@ -322,7 +322,7 @@ partial class FastCompiler
         if (!isPattern && !isVarIdentifier)
             return false;
 
-        iterationValueVariable = YExpression.Variable(typeof(JSValue), "#forOfValue");
+        iterationValueVariable = BExpression.Variable(typeof(JSValue), "#forOfValue");
         var newScope = declaration.Kind is FastVariableKind.Const or FastVariableKind.Let;
         var readOnlyAfterAssign = declaration.Kind == FastVariableKind.Const;
         CreateAssignment(
@@ -336,11 +336,11 @@ partial class FastCompiler
         return true;
     }
 
-    protected override YExpression VisitForStatement(AstForStatement forStatement, string? label = null)
+    protected override BExpression VisitForStatement(AstForStatement forStatement, string? label = null)
     {
-        var breakTarget = YExpression.Label();
-        var continueTarget = YExpression.Label();
-        var completionVar = YExpression.Variable(typeof(JSValue), "#cv");
+        var breakTarget = BExpression.Label();
+        var continueTarget = BExpression.Label();
+        var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
         var outerCompletionVars = GetCompletionVariables();
         // C-style `for (let x = …; …; …)` introduces a fresh per-loop lexical
         // environment for the head bindings (PerIterationEnvironment). The parser's
@@ -356,15 +356,15 @@ partial class FastCompiler
         {
         // this will create a variable if needed...
         // desugar takes care of let so do not worry
-        YExpression init = Visit(forStatement.Init);
-        var innerBody = new Sequence<YExpression>();
+        BExpression init = Visit(forStatement.Init);
+        var innerBody = new Sequence<BExpression>();
 
         var update = Visit(forStatement.Update);
         var test = Visit(forStatement.Test);
 
         if (test != null)
         {
-            test = YExpression.IfThen(YExpression.Not(JSValueBuilder.BooleanValue(test)), YExpression.Goto(breakTarget));
+            test = BExpression.IfThen(BExpression.Not(JSValueBuilder.BooleanValue(test)), BExpression.Goto(breakTarget));
             innerBody.Add(test);
         }
 
@@ -373,30 +373,30 @@ partial class FastCompiler
         var body = TrackCompletion(VisitStatement(forStatement.Body));
 
         innerBody.Add(body);
-        innerBody.Add(YExpression.Label(continueTarget));
+        innerBody.Add(BExpression.Label(continueTarget));
 
         if (update != null)
             innerBody.Add(update);
 
         if (init == null)
         {
-            var loop = YExpression.Loop(YExpression.Block(innerBody), breakTarget);
-            var r1 = YExpression.Block(
-                new Sequence<YParameterExpression> { completionVar },
-                YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
-                YExpression.TailCallTransparentTryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)),
+            var loop = BExpression.Loop(BExpression.Block(innerBody), breakTarget);
+            var r1 = BExpression.Block(
+                new Sequence<BParameterExpression> { completionVar },
+                BExpression.Assign(completionVar, JSUndefinedBuilder.Value),
+                BExpression.TailCallTransparentTryFinally(loop, PropagateCompletion(completionVar, outerCompletionVars)),
                 completionVar);
-            return forScope != null ? Scoped(forScope, new Sequence<YExpression> { r1 }) : r1;
+            return forScope != null ? Scoped(forScope, new Sequence<BExpression> { r1 }) : r1;
         }
 
-        var bodyLoop = YExpression.Loop(YExpression.Block(innerBody), breakTarget);
-        var r = YExpression.Block(
-            new Sequence<YParameterExpression> { completionVar },
-            YExpression.Assign(completionVar, JSUndefinedBuilder.Value),
+        var bodyLoop = BExpression.Loop(BExpression.Block(innerBody), breakTarget);
+        var r = BExpression.Block(
+            new Sequence<BParameterExpression> { completionVar },
+            BExpression.Assign(completionVar, JSUndefinedBuilder.Value),
             init,
-            YExpression.TailCallTransparentTryFinally(bodyLoop, PropagateCompletion(completionVar, outerCompletionVars)),
+            BExpression.TailCallTransparentTryFinally(bodyLoop, PropagateCompletion(completionVar, outerCompletionVars)),
             completionVar);
-        return forScope != null ? Scoped(forScope, new Sequence<YExpression> { r }) : r;
+        return forScope != null ? Scoped(forScope, new Sequence<BExpression> { r }) : r;
         }
         finally
         {

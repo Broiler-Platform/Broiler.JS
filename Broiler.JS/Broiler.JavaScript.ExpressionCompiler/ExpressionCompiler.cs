@@ -30,7 +30,7 @@ public static class ExpressionCompiler
         typeof(int)
     ]);
 
-    public static T CompileInAssembly<T>(this YExpression<T> exp)
+    public static T CompileInAssembly<T>(this BExpression<T> exp)
     {
         AssemblyName name = new("demo");
 
@@ -49,7 +49,7 @@ public static class ExpressionCompiler
 
 
     public static (MethodInfo method, string il, string exp) CompileToInstnaceMethod(
-        this YLambdaExpression lambdaExpression,
+        this BLambdaExpression lambdaExpression,
         TypeBuilder type, bool rewriteNestedLambda = true
         )
     {
@@ -85,7 +85,7 @@ public static class ExpressionCompiler
     /// <param name="debug"></param>
     /// <returns></returns>
     public static MethodInfo CompileToStaticMethod(
-        this YLambdaExpression lambdaExpression,
+        this BLambdaExpression lambdaExpression,
         TypeBuilder type, bool debug = false)
     {
         LambdaRewriter.Rewrite(lambdaExpression);
@@ -116,7 +116,7 @@ public static class ExpressionCompiler
     }
 
     public static MethodInfo CompileToStaticMethod(
-        this YLambdaExpression lambdaExpression, 
+        this BLambdaExpression lambdaExpression, 
         TypeBuilder type,
         MethodBuilder method, bool debug = false)
     {
@@ -137,15 +137,15 @@ public static class ExpressionCompiler
             typeof(Box[])
         ]);
 
-        var boxes = YExpression.Parameter(typeof(Box[]));
+        var boxes = BExpression.Parameter(typeof(Box[]));
 
-        var cnstrLambda = YExpression.Lambda(lambdaExpression.Type, "cnstr",
-            YExpression.CallNew(Closures.constructor,
-                YExpression.New(MethodRepository.constructor),
+        var cnstrLambda = BExpression.Lambda(lambdaExpression.Type, "cnstr",
+            BExpression.CallNew(Closures.constructor,
+                BExpression.New(MethodRepository.constructor),
                 boxes,
-                YExpression.Constant(il),
-                YExpression.Constant(exp)),
-            [YExpression.Parameter(derived), boxes]);
+                BExpression.Constant(il),
+                BExpression.Constant(exp)),
+            [BExpression.Parameter(derived), boxes]);
 
         var cnstrIL = new ILCodeGenerator(cnstr.GetILGenerator(), null);
         cnstrIL.EmitConstructor(cnstrLambda);
@@ -164,11 +164,11 @@ public static class ExpressionCompiler
         var derivedType = derived.CreateTypeInfo();
         var ct = derivedType.GetConstructors()[0];
 
-        var create = YExpression.Lambda( lambdaExpression.Type, "Create", 
+        var create = BExpression.Lambda( lambdaExpression.Type, "Create", 
             
-            YExpression.New(cdt,
-                YExpression.New(cnstr, YExpression.Null),
-                YExpression.Constant(im))
+            BExpression.New(cdt,
+                BExpression.New(cnstr, BExpression.Null),
+                BExpression.Constant(im))
             , []);
 
         var m = method;

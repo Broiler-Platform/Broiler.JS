@@ -1,11 +1,11 @@
-namespace Broiler.JavaScript.ExpressionCompiler.Expressions;
+﻿namespace Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 public class ExpressionHolder
 {
     public bool Static;
-    public YExpression Key;
-    public YExpression Value;
-    public YExpression Getter;
-    public YExpression Setter;
+    public BExpression Key;
+    public BExpression Value;
+    public BExpression Getter;
+    public BExpression Setter;
     public bool Spread;
 }

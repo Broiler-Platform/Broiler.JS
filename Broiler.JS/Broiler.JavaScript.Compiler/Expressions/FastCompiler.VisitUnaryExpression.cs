@@ -1,4 +1,4 @@
-using Broiler.JavaScript.Ast.Expressions;
+﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -9,20 +9,20 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    private static YExpression DoubleValue(YExpression exp) => JSValueBuilder.DoubleValue(exp);
+    private static BExpression DoubleValue(BExpression exp) => JSValueBuilder.DoubleValue(exp);
 
-    private YExpression DoubleValue(AstExpression exp) => JSValueBuilder.DoubleValue(VisitExpression(exp));
+    private BExpression DoubleValue(AstExpression exp) => JSValueBuilder.DoubleValue(VisitExpression(exp));
 
-    private YExpression BooleanValue(AstExpression exp) => JSValueBuilder.BooleanValue(VisitExpression(exp));
+    private BExpression BooleanValue(AstExpression exp) => JSValueBuilder.BooleanValue(VisitExpression(exp));
 
-    protected override YExpression VisitUnaryExpression(AstUnaryExpression unaryExpression)
+    protected override BExpression VisitUnaryExpression(AstUnaryExpression unaryExpression)
     {
         var target = unaryExpression.Argument;
 
         switch (unaryExpression.Operator)
         {
             case UnaryOperator.Plus:
-                return JSNumberBuilder.New(YExpression.UnaryPlus(DoubleValue(target)));
+                return JSNumberBuilder.New(BExpression.UnaryPlus(DoubleValue(target)));
 
             case UnaryOperator.Minus:
                 if (target.Type == FastNodeType.Literal)
@@ -30,13 +30,13 @@ partial class FastCompiler
                     AstLiteral l = unaryExpression.Argument as AstLiteral;
 
                     if (l.TokenType == TokenTypes.Number)
-                        return JSNumberBuilder.New(YExpression.Constant(-l.NumericValue));
+                        return JSNumberBuilder.New(BExpression.Constant(-l.NumericValue));
 
                     if (l.TokenType == TokenTypes.BigInt)
                         return JSBigIntBuilder.New("-" + l.StringValue);
 
                     if (l.TokenType == TokenTypes.String)
-                        return JSNumberBuilder.New(YExpression.Negate(DoubleValue(target)));
+                        return JSNumberBuilder.New(BExpression.Negate(DoubleValue(target)));
                 }
 
                 return JSValueBuilder.Negate(Visit(target));
@@ -45,7 +45,7 @@ partial class FastCompiler
                 return JSValueBuilder.BitwiseNot(Visit(target));
 
             case UnaryOperator.Negate:
-                return YExpression.Condition(BooleanValue(target), JSBooleanBuilder.False, JSBooleanBuilder.True);
+                return BExpression.Condition(BooleanValue(target), JSBooleanBuilder.False, JSBooleanBuilder.True);
 
             case UnaryOperator.delete:
                 // delete expression...
@@ -87,12 +87,12 @@ partial class FastCompiler
                         {
                             var canDeleteCapturedDirectEvalBinding = isDirectEvalCompilation
                                 && variable.OwnerFunction != scope.Top.Function
-                                && variable.Expression is YPropertyExpression { PropertyInfo.Name: nameof(JSVariable.GlobalValue) };
+                                && variable.Expression is BPropertyExpression { PropertyInfo.Name: nameof(JSVariable.GlobalValue) };
                             if (canDeleteCapturedDirectEvalBinding)
                                 return JSBooleanBuilder.True;
 
                             if (!canDeleteCapturedDirectEvalBinding
-                                && variable.Expression is not YPropertyExpression { PropertyInfo.Name: nameof(JSVariable.GlobalValue) })
+                                && variable.Expression is not BPropertyExpression { PropertyInfo.Name: nameof(JSVariable.GlobalValue) })
                                 return JSBooleanBuilder.False;
                         }
 
@@ -102,7 +102,7 @@ partial class FastCompiler
                         break;
 
                     default:
-                        return YExpression.Block(Visit(target), JSBooleanBuilder.True);
+                        return BExpression.Block(Visit(target), JSBooleanBuilder.True);
                 }
 
                 var me = target as AstMemberExpression;
@@ -123,14 +123,14 @@ partial class FastCompiler
                     // is evaluated. Read `this` first, then the key, then the
                     // delete-of-super ReferenceError.
                     using var thisTemp = scope.Top.GetTempVariable(typeof(JSValue));
-                    return YExpression.Block(
-                        YExpression.Assign(thisTemp.Expression, scope.Top.ThisExpression),
+                    return BExpression.Block(
+                        BExpression.Assign(thisTemp.Expression, scope.Top.ThisExpression),
                         VisitExpression(me.Property),
                         refError);
                 }
 
                 // Build `delete base.<key>` for an already-evaluated base expression.
-                YExpression DeleteFrom(YExpression baseObj)
+                BExpression DeleteFrom(BExpression baseObj)
                 {
                     if (me.Computed)
                         return JSValueBuilder.Delete(baseObj, VisitExpression(me.Property));
@@ -141,7 +141,7 @@ partial class FastCompiler
                         case FastNodeType.Literal:
                             AstLiteral l = mep as AstLiteral;
                             if (l.TokenType == TokenTypes.Number)
-                                return JSValueBuilder.Delete(baseObj, YExpression.Constant((uint)l.NumericValue));
+                                return JSValueBuilder.Delete(baseObj, BExpression.Constant((uint)l.NumericValue));
                             if (l.TokenType == TokenTypes.String)
                                 return JSValueBuilder.Delete(baseObj, KeyOfName(l.StringValue));
                             return null;
@@ -164,9 +164,9 @@ partial class FastCompiler
                     var deleteExpr = DeleteFrom(baseTemp.Expression);
                     if (deleteExpr != null)
                     {
-                        return YExpression.Block(
-                            YExpression.Assign(baseTemp.Expression, VisitExpression(me.Object)),
-                            YExpression.Condition(
+                        return BExpression.Block(
+                            BExpression.Assign(baseTemp.Expression, VisitExpression(me.Object)),
+                            BExpression.Condition(
                                 JSValueBuilder.OptionalChainGuard(baseTemp.Expression, me.Coalesce),
                                 JSBooleanBuilder.True,
                                 deleteExpr));
@@ -182,7 +182,7 @@ partial class FastCompiler
 
             case UnaryOperator.@void:
                 if (target != null && target.Type != FastNodeType.Literal)
-                    return YExpression.Condition(YExpression.Equal(YExpression.Null, Visit(target)), JSUndefinedBuilder.Value, JSUndefinedBuilder.Value);
+                    return BExpression.Condition(BExpression.Equal(BExpression.Null, Visit(target)), JSUndefinedBuilder.Value, JSUndefinedBuilder.Value);
 
                 return JSUndefinedBuilder.Value;
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -21,7 +21,7 @@ public class DefaultJSCompiler : IJSCompiler
     /// The registered compilation delegate.  Set by the Compiler assembly's
     /// module initializer via <see cref="Register"/>.
     /// </summary>
-    private static Func<StringSpan, string, IList<string>, ICodeCache, YExpression<JSFunctionDelegate>> _compileFunc;
+    private static Func<StringSpan, string, IList<string>, ICodeCache, BExpression<JSFunctionDelegate>> _compileFunc;
 
     /// <summary>
     /// Static constructor that ensures the Compiler assembly is loaded and
@@ -67,13 +67,13 @@ public class DefaultJSCompiler : IJSCompiler
     /// module initializer to wire in the real <c>FastCompiler</c> pipeline.
     /// </summary>
     public static void Register(
-        Func<StringSpan, string, IList<string>, ICodeCache, YExpression<JSFunctionDelegate>> compileFunc)
+        Func<StringSpan, string, IList<string>, ICodeCache, BExpression<JSFunctionDelegate>> compileFunc)
     {
         _compileFunc = compileFunc ?? throw new ArgumentNullException(nameof(compileFunc));
     }
 
     /// <inheritdoc />
-    public YExpression<JSFunctionDelegate> Compile(
+    public BExpression<JSFunctionDelegate> Compile(
         in StringSpan code,
         string location = null,
         IList<string> argsList = null,

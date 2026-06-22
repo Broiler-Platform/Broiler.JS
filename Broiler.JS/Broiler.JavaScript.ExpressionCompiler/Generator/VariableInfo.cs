@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -8,10 +8,10 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
 public class VariableInfo(ILGenerator il)
 {
-    private Dictionary<YParameterExpression, Variable> variables 
+    private Dictionary<BParameterExpression, Variable> variables 
         = new(Core.ReferenceEqualityComparer.Instance);
 
-    public Variable this[YParameterExpression exp]
+    public Variable this[BParameterExpression exp]
     {
         get
         {
@@ -37,12 +37,12 @@ public class VariableInfo(ILGenerator il)
         return false;
     }
 
-    public bool TryGetValue(YParameterExpression exp, out Variable value) => variables.TryGetValue(exp, out value);
+    public bool TryGetValue(BParameterExpression exp, out Variable value) => variables.TryGetValue(exp, out value);
 
     public IEnumerable<Variable> Values => variables.Values;
 
     public Variable Create(
-        YParameterExpression exp, 
+        BParameterExpression exp, 
         bool isArgument = false, 
         short index = -1)
     {
@@ -52,7 +52,7 @@ public class VariableInfo(ILGenerator il)
     }
 
     public Variable Create(
-        YParameterExpression exp,
+        BParameterExpression exp,
         TempVariables.TempVariableItem tvs)
     {
         var vb = new Variable(tvs.Get(exp.Type), false, -1, exp.Type.IsByRef, exp.Name);

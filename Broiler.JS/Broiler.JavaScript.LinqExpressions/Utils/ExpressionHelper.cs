@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using System.Collections.Generic;
-using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.YExpression;
-using ParameterExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.YParameterExpression;
+using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
+using ParameterExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -12,9 +12,9 @@ public static class ExpressionHelper
 {
     public static void AddExpanded(this IList<Expression> list, IList<ParameterExpression> peList, Expression exp)
     {
-        if (exp.NodeType == YExpressionType.Block)
+        if (exp.NodeType == BExpressionType.Block)
         {
-            var block = (exp as YBlockExpression)!;
+            var block = (exp as BBlockExpression)!;
 
             foreach (var p in block.Variables)
                 peList.Add(p);

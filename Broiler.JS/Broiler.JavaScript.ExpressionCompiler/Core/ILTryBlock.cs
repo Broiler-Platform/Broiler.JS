@@ -27,7 +27,7 @@ public class ILTryBlock(ILWriter iLWriter, Label label, bool hasOuterGuard = fal
 
     internal int SavedLocal;
 
-    internal void CollectLabels(YTryCatchFinallyExpression exp, LabelInfo labels) => TryCatchLabelMarker.Collect(exp, this, labels);
+    internal void CollectLabels(BTryCatchFinallyExpression exp, LabelInfo labels) => TryCatchLabelMarker.Collect(exp, this, labels);
 
     internal void MarkHasFinally()
     {
