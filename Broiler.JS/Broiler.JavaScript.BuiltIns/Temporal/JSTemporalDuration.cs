@@ -190,7 +190,8 @@ public partial class JSTemporalDuration : JSObject
     public JSValue ToJSON(in Arguments a) => new JSString(ToISOString(-1, 1, "trunc"));
 
     [JSExport("toLocaleString", Length = 0)]
-    public JSValue ToLocaleString(in Arguments a) => new JSString(ToISOString(-1, 1, "trunc"));
+    public JSValue ToLocaleString(in Arguments a)
+        => Intl.JSIntlDurationFormat.TemporalToLocaleString(this, a.Get1(), a.GetAt(1));
 
     [JSExport("valueOf", Length = 0)]
     public JSValue ValueOf(in Arguments a)

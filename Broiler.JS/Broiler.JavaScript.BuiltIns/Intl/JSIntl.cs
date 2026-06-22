@@ -3119,6 +3119,19 @@ public sealed class JSIntlDurationFormat : JSObject
         return JSValue.CreateString(self.Format(durationObject));
     }
 
+    // Temporal.Duration.prototype.toLocaleString(locales, options): formats the duration with a
+    // freshly-constructed Intl.DurationFormat, exactly as `new Intl.DurationFormat(locales,
+    // options).format(duration)` would.
+    internal static JSValue TemporalToLocaleString(JSValue duration, JSValue locales, JSValue options)
+    {
+        var args = new Arguments(JSUndefined.Value, locales, options ?? JSUndefined.Value);
+        var optionsObject = JSIntl.ValidateConstructorArguments(
+            "DurationFormat", in args, out var canonical, requireNew: false, coerceOptions: false);
+        var locale = JSIntl.ResolveLocaleFromCanonical(canonical);
+        var df = new JSIntlDurationFormat(locale, optionsObject);
+        return JSValue.CreateString(df.Format(ToDurationFormatRecord(duration)));
+    }
+
     public static JSValue FormatToPartsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlDurationFormat self)
@@ -3194,12 +3207,18 @@ public sealed class JSIntlDurationFormat : JSObject
             var display = unitDisplay[i];
             var value = values[i];
             var combineFractional = false;
+            string fractionalExact = null;
 
             // Numeric seconds/milliseconds/microseconds fold the finer sub-second
             // units into a single fractional value when the next unit is numeric.
             if ((unit is "seconds" or "milliseconds" or "microseconds") && unitStyle[i + 1] == "numeric")
             {
-                value = DurationToFractional(values, unit == "seconds" ? 9 : unit == "milliseconds" ? 6 : 3);
+                var exponent = unit == "seconds" ? 9 : unit == "milliseconds" ? 6 : 3;
+                value = DurationToFractional(values, exponent);
+                // The double is only kept for the display / sign checks below; the value is
+                // formatted from its EXACT decimal string so e.g. 10000000 s + 1 ns renders as
+                // "10000000.000000001" rather than the nearest double.
+                fractionalExact = DurationToFractionalString(values, exponent);
                 combineFractional = true;
             }
 
@@ -3227,7 +3246,7 @@ public sealed class JSIntlDurationFormat : JSObject
                     signNever = true;
                 }
 
-                var numberParts = FormatNumberParts(SingularUnits[i], value, unitStyleValue, combineFractional, signNever);
+                var numberParts = FormatNumberParts(SingularUnits[i], value, fractionalExact, unitStyleValue, combineFractional, signNever);
                 var unitName = SingularUnits[i];
 
                 if (!needSeparator)
@@ -3310,7 +3329,32 @@ public sealed class JSIntlDurationFormat : JSObject
         return ns / Math.Pow(10, exponent);
     }
 
-    private List<(string type, string value)> FormatNumberParts(string singularUnit, double value, string unitStyleValue, bool fractional, bool signNever)
+    // The exact decimal string of the folded sub-second value (DurationToFractional computed with
+    // real arithmetic): the seconds/milliseconds/microseconds/nanoseconds fields are integers, so
+    // their exact magnitudes combine over 10^exponent without the precision loss a double incurs.
+    private static string DurationToFractionalString(double[] values, int exponent)
+    {
+        var total = new BigInteger(values[9]); // nanoseconds
+        if (exponent >= 9)
+            total += new BigInteger(values[6]) * 1_000_000_000;
+        if (exponent >= 6)
+            total += new BigInteger(values[7]) * 1_000_000;
+        if (exponent >= 3)
+            total += new BigInteger(values[8]) * 1_000;
+
+        var negative = total.Sign < 0;
+        var magnitude = BigInteger.Abs(total);
+        var scale = BigInteger.Pow(10, exponent);
+        var intPart = magnitude / scale;
+        var fracPart = magnitude % scale;
+
+        var s = intPart.ToString(CultureInfo.InvariantCulture);
+        if (!fracPart.IsZero)
+            s += "." + fracPart.ToString(CultureInfo.InvariantCulture).PadLeft(exponent, '0');
+        return negative ? "-" + s : s;
+    }
+
+    private List<(string type, string value)> FormatNumberParts(string singularUnit, double value, string exactValue, string unitStyleValue, bool fractional, bool signNever)
     {
         var options = new JSObject();
         void Set(string key, JSValue v) => options.FastAddValue(KeyStrings.GetOrCreate(key), v, JSPropertyAttributes.EnumerableConfigurableValue);
@@ -3344,7 +3388,10 @@ public sealed class JSIntlDurationFormat : JSObject
 
         var args = new Arguments(JSUndefined.Value, JSValue.CreateString(locale), options);
         var nf = new JSIntlNumberFormat(in args);
-        return nf.ComputeFormatParts(JSValue.CreateNumber(value));
+        // A folded fractional value is formatted from its exact decimal string (parsed as an Intl
+        // mathematical value) so no sub-second precision is lost to the double round-trip.
+        var operand = exactValue != null ? JSValue.CreateString(exactValue) : JSValue.CreateNumber(value);
+        return nf.ComputeFormatParts(operand);
     }
 
     private static JSObject CurrentPrototype()
@@ -4550,7 +4597,7 @@ public class JSIntlNumberFormat : JSObject
         ["hanidec"] = new[] { "〇", "一", "二", "三", "四", "五", "六", "七", "八", "九" },
     };
 
-    private static string MapDigit(string numberingSystem, int d)
+    internal static string MapDigit(string numberingSystem, int d)
     {
         if (AlgorithmicDigits.TryGetValue(numberingSystem, out var glyphs))
             return glyphs[d];
@@ -5868,7 +5915,10 @@ public class JSIntlDateTimeFormat : JSObject
             hasTimeZoneName: OptionString(KeyStrings.GetOrCreate("timeZoneName")) != null,
             hourCycle: ResolveHourCycle(),
             hasEra: OptionString(KeyStrings.GetOrCreate("era")) != null,
-            eraStyle: OptionString(KeyStrings.GetOrCreate("era")));
+            eraStyle: OptionString(KeyStrings.GetOrCreate("era")),
+            hourStyle: OptionString(HourKey),
+            minuteStyle: OptionString(MinuteKey),
+            secondStyle: OptionString(SecondKey));
 
     // The resolved calendar: per ECMA-402 InitializeDateTimeFormat the `calendar` OPTION
     // takes precedence over the locale tag's -u-ca- value, then -u-ca-, then the locale's
@@ -6240,7 +6290,7 @@ public class JSIntlDateTimeFormat : JSObject
         var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in start, enforceStyle: false));
         var startFields = start.Fields;
         var endFields = end.Fields;
-        return JSIntlDateTimeFormatEngine.FormatRangeToParts(pattern, in startFields, in endFields, FractionalSecondDigits());
+        return MapNumbering(JSIntlDateTimeFormatEngine.FormatRangeToParts(pattern, in startFields, in endFields, FractionalSecondDigits()));
     }
 
     // Builds an engine pattern from the effective Temporal fields, projecting each component's width
@@ -6319,7 +6369,7 @@ public class JSIntlDateTimeFormat : JSObject
         var pattern = ResolveEnginePattern();
         var fields = ResolveFields(clipped);
         var parts = JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), "literal");
-        return new JSString(JSIntlDateTimeFormatEngine.PartsToString(parts));
+        return new JSString(JSIntlDateTimeFormatEngine.PartsToString(MapNumbering(parts)));
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -6381,7 +6431,7 @@ public class JSIntlDateTimeFormat : JSObject
         var pattern = ResolveEnginePattern();
         var startFields = ResolveFields(startValue);
         var endFields = ResolveFields(endValue);
-        return JSIntlDateTimeFormatEngine.FormatRangeToParts(pattern, in startFields, in endFields, FractionalSecondDigits());
+        return MapNumbering(JSIntlDateTimeFormatEngine.FormatRangeToParts(pattern, in startFields, in endFields, FractionalSecondDigits()));
     }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
@@ -6453,7 +6503,43 @@ public class JSIntlDateTimeFormat : JSObject
         var pattern = @this.ResolveEnginePattern();
         var fields = @this.ResolveFields(clipped);
         var engineParts = JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, @this.FractionalSecondDigits(), null);
-        return PartsArray(engineParts);
+        return PartsArray(@this.MapNumbering(engineParts));
+    }
+
+    // Translates the ASCII digits the engine produces for the numeric date/time fields into the
+    // resolved numbering system's digits (e.g. "arab" → ٠-٩, "hanidec" → 〇一二…), and renders the
+    // fractional-seconds decimal point with that numbering system's decimal separator (arab uses
+    // U+066B). Names, separators and symbols keep the locale's characters.
+    private System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> MapNumbering(
+        System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> parts)
+    {
+        if (numberingSystem == null || numberingSystem == "latn")
+            return parts;
+
+        var decimalSeparator = numberingSystem is "arab" or "arabext" ? "٫" : ".";
+        var mapped = new System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part>(parts.Count);
+        for (var i = 0; i < parts.Count; i++)
+        {
+            var part = parts[i];
+            if (part.Type is "year" or "relatedYear" or "month" or "day"
+                or "hour" or "minute" or "second" or "fractionalSecond")
+            {
+                var sb = new StringBuilder(part.Value.Length);
+                foreach (var c in part.Value)
+                    sb.Append(c is >= '0' and <= '9' ? JSIntlNumberFormat.MapDigit(numberingSystem, c - '0') : c.ToString());
+                mapped.Add(new JSIntlDateTimeFormatEngine.Part(part.Type, sb.ToString(), part.Source));
+            }
+            else if (part.Type == "literal" && part.Value == "."
+                && i + 1 < parts.Count && parts[i + 1].Type == "fractionalSecond")
+            {
+                mapped.Add(new JSIntlDateTimeFormatEngine.Part(part.Type, decimalSeparator, part.Source));
+            }
+            else
+            {
+                mapped.Add(part);
+            }
+        }
+        return mapped;
     }
 
     private static void AddDateTimePart(JSValue parts, string type, string value)
