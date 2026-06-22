@@ -1187,7 +1187,10 @@ internal static class BuiltInsAssemblyInitializer
                 return symbolObject.WrappedSymbol;
 
             throw JSEngine.NewTypeError("Symbol.prototype[Symbol.toPrimitive] requires a symbol receiver");
-        }, "[Symbol.toPrimitive]", 1), JSPropertyAttributes.ConfigurableValue);
+            // §20.4.3.5: Symbol.prototype[@@toPrimitive] is { [[Writable]]: false,
+            // [[Enumerable]]: false, [[Configurable]]: true }
+            // (test262: Symbol/prototype/Symbol.toPrimitive/prop-desc).
+        }, "[Symbol.toPrimitive]", 1), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         EnsureAccessorProperty(symbolCtor.prototype, KeyStrings.GetOrCreate("description"), "description", static (in Arguments a) =>
         {
@@ -2092,6 +2095,10 @@ internal static class BuiltInsAssemblyInitializer
         // JSON[@@toStringTag] = "JSON"
         if (context[KeyStrings.GetOrCreate("JSON")] is JSObject jsonObject)
             SetToStringTag(jsonObject, "JSON");
+
+        // Atomics[@@toStringTag] = "Atomics" (test262: Atomics/Symbol.toStringTag)
+        if (context[KeyStrings.GetOrCreate("Atomics")] is JSObject atomicsObject)
+            SetToStringTag(atomicsObject, "Atomics");
 
         // WeakRef.prototype[@@toStringTag] = "WeakRef"
         if (context[KeyStrings.GetOrCreate("WeakRef")] is JSFunction weakRefCtor && weakRefCtor.prototype is JSObject weakRefProto)
