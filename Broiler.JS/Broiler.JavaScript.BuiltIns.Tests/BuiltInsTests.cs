@@ -7403,20 +7403,20 @@ public class BuiltInsTests
             try {
               var dtf = new Intl.DateTimeFormat('en-US');
               var resolved = dtf.resolvedOptions();
-              // resolvedOptions returns OrdinaryObjectCreate(%Object.prototype%), so a
-              // prototype-walking read on .day still sees the planted value — but the
-              // implementation must not capture the leaked value as an OWN day property
-              // (i.e. Object.getOwnPropertyDescriptor / Object.keys must not see it).
+              // ToDateTimeOptions supplies the year/month/day = "numeric" defaults for a
+              // formatter created with no date/time component, so `day` IS an own property —
+              // but it must be the spec default "numeric", NOT the "2-digit" value a client
+              // planted on Object.prototype (test262 default-options-object-prototype).
               [
-                Object.getOwnPropertyDescriptor(resolved, 'day') === undefined,
-                Object.keys(resolved).includes('day')
+                resolved.day,
+                Object.getOwnPropertyDescriptor(resolved, 'day').value
               ].join('|');
             } finally {
               delete Object.prototype.day;
             }
             """);
 
-        Assert.Equal("true|false", result.ToString());
+        Assert.Equal("numeric|numeric", result.ToString());
     }
 
     [Fact]

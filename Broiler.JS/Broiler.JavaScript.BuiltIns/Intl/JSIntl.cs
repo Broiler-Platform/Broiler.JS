@@ -5421,6 +5421,13 @@ public class JSIntlDateTimeFormat : JSObject
     private readonly string dateStyle;
     private readonly string timeStyle;
 
+    // True when the constructor supplied the year/month/day = "numeric" defaults because the user
+    // specified no date/time component and no dateStyle/timeStyle (ToDateTimeOptions, defaults
+    // "date"). The defaults are stored on the snapshot so resolvedOptions reports them, but the
+    // formatter must still treat itself as "default" (RequestedFields) so a Temporal value formats
+    // its own default fields rather than being constrained to the injected year/month/day.
+    private readonly bool dateDefaultsApplied;
+
     private string OptionString(KeyString key)
     {
         var value = options?[key];
@@ -5609,7 +5616,10 @@ public class JSIntlDateTimeFormat : JSObject
             if (timeStyle is "long" or "full") f |= TemporalFields.TimeZoneName;
         }
 
-        return (f, !hadComponents && dateStyle == null && timeStyle == null);
+        // A formatter that only carries the injected year/month/day defaults (no user-specified
+        // component or style) is still "default": a Temporal value formats its own default fields
+        // rather than being constrained to year/month/day.
+        return (f, dateDefaultsApplied || (!hadComponents && dateStyle == null && timeStyle == null));
     }
 
     // Temporal.X.prototype.toLocaleString: create a DateTimeFormat for the locale/options and format
@@ -6098,7 +6108,12 @@ public class JSIntlDateTimeFormat : JSObject
         result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.localeTag));
         result.CreateDataProperty(KeyStrings.GetOrCreate("calendar"), JSValue.CreateString(@this.ResolvedCalendar()));
         result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString(@this.numberingSystem));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("timeZone"), JSValue.CreateString(TimeZoneInfo.Local.Id));
+        // The default time zone must be reported as a CANONICAL identifier — a host whose local
+        // zone is "Etc/UTC" (e.g. a UTC container) reports "UTC", not "Etc/UTC" (test262
+        // DateTimeFormat/prototype/resolvedOptions/basic). SystemTimeZoneId normalizes Windows ids
+        // to IANA (falling back to UTC); CanonicalizeTimeZoneId then applies the UTC-cluster rule.
+        result.CreateDataProperty(KeyStrings.GetOrCreate("timeZone"),
+            JSValue.CreateString(Temporal.JSTemporalZonedDateTime.CanonicalizeTimeZoneId(Temporal.JSTemporalNow.SystemTimeZoneId())));
 
         if (@this.options != null)
         {
@@ -6314,6 +6329,29 @@ public class JSIntlDateTimeFormat : JSObject
                 if (snapshot[KeyStrings.GetOrCreate(name)] is { IsUndefined: false })
                     throw JSEngine.NewTypeError(
                         $"Intl.DateTimeFormat: the {name} option cannot be combined with dateStyle or timeStyle");
+        }
+
+        // ToDateTimeOptions(options, "any", "date"): when the user specified no date/time COMPONENT
+        // and no dateStyle/timeStyle, default year/month/day to "numeric" so resolvedOptions reports
+        // them (test262 resolvedOptions/basic) and so they are own properties — not inherited from a
+        // tainted Object.prototype (test262 default-options-object-prototype). era / timeZoneName are
+        // supplementary and do not suppress the defaults.
+        if (dateStyle == null && timeStyle == null)
+        {
+            var hasComponent = false;
+            foreach (var name in DateComponentKeys)
+                if (!snapshot[KeyStrings.GetOrCreate(name)].IsUndefined) { hasComponent = true; break; }
+            if (!hasComponent)
+                foreach (var name in TimeComponentKeys)
+                    if (!snapshot[KeyStrings.GetOrCreate(name)].IsUndefined) { hasComponent = true; break; }
+
+            if (!hasComponent)
+            {
+                snapshot[YearKey] = JSValue.CreateString("numeric");
+                snapshot[MonthKey] = JSValue.CreateString("numeric");
+                snapshot[DayKey] = JSValue.CreateString("numeric");
+                dateDefaultsApplied = true;
+            }
         }
 
         options = snapshot;

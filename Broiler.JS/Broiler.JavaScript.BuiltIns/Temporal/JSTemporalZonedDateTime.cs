@@ -1487,7 +1487,13 @@ public partial class JSTemporalZonedDateTime : JSObject
     // or a named IANA zone. Returns false for anything else rather than throwing.
     private static bool TryCanonicalizeTimeZoneIdentifier(string id, out string canonical)
     {
-        if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
+        // "UTC" is the canonical identifier for the UTC/GMT-zero cluster: unlike other backward
+        // links (which keep their own name), the exact identifiers "Etc/UTC" and "Etc/GMT" are
+        // normalized to "UTC" per ECMAScript / CLDR (test262 testIntl.js treats both as
+        // non-canonical). An offset-bearing "Etc/GMT+5" is a distinct zone and is left alone below.
+        if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(id, "Etc/UTC", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(id, "Etc/GMT", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
         if (TryOffsetTimeZoneIdentifier(id, out var offsetNs)) { canonical = FormatOffset(offsetNs); return true; }
 
         // IANA identifiers (zones and backward-alias links alike) match case-insensitively and are
