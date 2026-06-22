@@ -380,13 +380,22 @@ public partial class JSMath : JSObject
     {
         double abs1 = Math.Abs(number1);
         double abs2 = Math.Abs(number2);
+
+        // Per spec (Math.hypot), an infinite magnitude takes precedence over NaN: if any argument
+        // is ±Infinity the result is +Infinity even when another is NaN. Math.Min/Math.Max
+        // propagate NaN, so these cases must be handled before the general computation.
+        if (double.IsInfinity(abs1) || double.IsInfinity(abs2))
+            return double.PositiveInfinity;
+        if (double.IsNaN(abs1) || double.IsNaN(abs2))
+            return double.NaN;
+
         double min = Math.Min(abs1, abs2);
         double max = Math.Max(abs1, abs2);
-        double u = min / max;
 
         if (min == 0)
             return max;
 
+        double u = min / max;
         return max * Math.Sqrt(1 + u * u);
     }
 

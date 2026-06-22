@@ -77,6 +77,20 @@ internal static class TemporalIsoString
     internal static string RequireMonthCodeString(JSValue value, string typeName)
         => RequireStringField(value, typeName, "monthCode");
 
+    // The calendar-independent monthCode grammar: "M" followed by exactly two decimal digits and
+    // an optional leap-month marker "L" (e.g. "M01", "M05L"). An ill-formed code such as "L99M" is
+    // a RangeError raised when the field is *read* — before sibling fields like `year` are coerced
+    // and before the later, calendar-dependent suitability check (so "L99M" with a Symbol year is a
+    // RangeError, while a well-formed "M99L" with a Symbol year is a TypeError from the year first).
+    private static readonly Regex MonthCodeSyntaxPattern =
+        new(@"^M\d{2}L?$", RegexOptions.CultureInvariant);
+
+    internal static void RequireWellFormedMonthCode(string code, string typeName)
+    {
+        if (code != null && !MonthCodeSyntaxPattern.IsMatch(code))
+            throw JSEngine.NewRangeError($"{typeName}: invalid monthCode \"{code}\"");
+    }
+
     // The offset field has the same "to-string-or-TypeError" coercion as monthCode (test262
     // built-ins/Temporal/Duration/.../relativeto-propertybag-invalid-offset-string and friends).
     // A Number, BigInt, null, boolean, … is a TypeError; an Object goes through ToPrimitive and

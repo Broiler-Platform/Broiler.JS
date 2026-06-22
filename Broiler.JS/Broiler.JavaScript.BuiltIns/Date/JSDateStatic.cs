@@ -36,7 +36,7 @@ partial class JSDate
 {
     public static long epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
 
-    [JSExport("UTC")]
+    [JSExport("UTC", Length = 7)]
     internal static JSValue UTC(in Arguments a)
     {
         // Compute the time value with ECMAScript date math (ms since epoch) so the
