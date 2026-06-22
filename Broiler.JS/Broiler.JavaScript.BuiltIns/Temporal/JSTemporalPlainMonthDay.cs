@@ -429,6 +429,11 @@ public partial class JSTemporalPlainMonthDay : JSObject
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay: missing day");
         if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay: missing month / monthCode");
+        // A non-ISO calendar cannot turn a bare numeric month into a month-day on its own: the
+        // month number's meaning depends on the year (leap months shift it), so a non-ISO
+        // PlainMonthDay requires monthCode unless a year (or era/eraYear) pins the calendar year.
+        if (calendarId != "iso8601" && monthCodeValue.IsUndefined && !hasResolvedYear)
+            throw JSEngine.NewTypeError("Temporal.PlainMonthDay: a non-ISO calendar requires monthCode (or month together with a year)");
 
         var overflow = ReadOverflow(options);
 

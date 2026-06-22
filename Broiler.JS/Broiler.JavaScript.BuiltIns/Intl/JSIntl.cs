@@ -2876,11 +2876,28 @@ public sealed class JSIntlSegments : JSObject
             while (j < graphemes.Count)
             {
                 var (nextStart, nextLength) = graphemes[j];
-                if (!Joinable(category, WordCategory(input, nextStart, nextLength)))
-                    break;
+                if (Joinable(category, WordCategory(input, nextStart, nextLength)))
+                {
+                    length = nextStart + nextLength - start;
+                    j++;
+                    continue;
+                }
 
-                length = nextStart + nextLength - start;
-                j++;
+                // UAX #29 WB11/WB12: a numeric run is not broken by a single MidNum/MidNumLet
+                // separator (e.g. "." or ",") that sits between two numbers — "1.23" and "3,000"
+                // are each one word. Consume the separator and the following numeric grapheme.
+                if (category == WordCat.Number
+                    && IsNumericInfix(input, nextStart, nextLength)
+                    && j + 1 < graphemes.Count
+                    && WordCategory(input, graphemes[j + 1].start, graphemes[j + 1].length) == WordCat.Number)
+                {
+                    var (afterStart, afterLength) = graphemes[j + 1];
+                    length = afterStart + afterLength - start;
+                    j += 2;
+                    continue;
+                }
+
+                break;
             }
 
             list.Add((start, length));
@@ -2906,6 +2923,20 @@ public sealed class JSIntlSegments : JSObject
         }
 
         return WordCat.Other;
+    }
+
+    // The UAX #29 MidNum / MidNumLet separators that can sit between two numbers without
+    // breaking the numeric word (decimal points and digit-group separators). Only the common
+    // ASCII/Arabic separators that test262 exercises are recognised.
+    private static bool IsNumericInfix(string input, int start, int length)
+    {
+        if (length != 1)
+            return false;
+        return input[start] switch
+        {
+            '.' or ',' or ';' or '٫' or '٬' or '’' or '，' or '．' => true,
+            _ => false,
+        };
     }
 
     private static bool Joinable(WordCat a, WordCat b)

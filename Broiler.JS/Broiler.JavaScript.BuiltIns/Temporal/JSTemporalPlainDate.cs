@@ -416,7 +416,13 @@ public partial class JSTemporalPlainDate : JSObject
 
     [JSExport("toPlainYearMonth", Length = 0)]
     public JSValue ToPlainYearMonth(in Arguments a)
-        => new JSTemporalPlainYearMonth(isoYear, isoMonth, isoDay, calendarId, JSTemporalPlainYearMonth.PlainYearMonthPrototype);
+    {
+        // CalendarYearMonthFromFields canonicalizes the reference day: for the ISO calendar the
+        // year-month's reference ISO day is always 1 (so every date in a month maps to the same
+        // PlainYearMonth), independent of this date's day-of-month.
+        var referenceDay = calendarId == "iso8601" ? 1 : isoDay;
+        return new JSTemporalPlainYearMonth(isoYear, isoMonth, referenceDay, calendarId, JSTemporalPlainYearMonth.PlainYearMonthPrototype);
+    }
 
     [JSExport("toPlainMonthDay", Length = 0)]
     public JSValue ToPlainMonthDay(in Arguments a)
