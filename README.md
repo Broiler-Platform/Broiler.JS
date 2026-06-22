@@ -105,7 +105,6 @@ A donation is genuinely appreciated. It directly offsets AI API costs and frees 
 the time needed to keep test262 passing and the project moving forward.
 
 **Sponsor or donate:** [github.com/sponsors/MaiRat](https://github.com/sponsors/MaiRat)
-or reach out at enrico.bartky@gmail.com.
 
 ---
 
