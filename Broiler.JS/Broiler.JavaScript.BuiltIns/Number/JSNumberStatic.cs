@@ -83,9 +83,11 @@ public partial class JSNumber
             return nan;
 
         var p = a.Get1();
-        if (p.IsNumber)
-            return p;
 
+        // §19.2.5 parseInt(string, radix): inputString is ToString(string) BEFORE parsing,
+        // even for a Number argument — so parseInt(Infinity) parses "Infinity" → NaN,
+        // parseInt(1e21) parses "1e+21" → 1, and parseInt(-0) parses "0" → +0. Returning
+        // the number verbatim skipped that conversion (test262: parseInt/S15.1.2.2_A1_T2).
         if (p.IsNull || p.IsUndefined)
             return nan;
 

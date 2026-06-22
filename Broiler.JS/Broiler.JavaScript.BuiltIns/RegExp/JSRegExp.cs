@@ -1218,7 +1218,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         ScanCaptureGroups(pattern, (index, name) =>
         {
-            var decodedName = DecodeGroupName(name, unicode);
+            // A GroupName's RegExpIdentifierName always uses Unicode escape rules — \u{…}
+            // and \u-escaped surrogate pairs are valid even in a non-u/v regex — so decode
+            // it with unicode rules regardless of the pattern's flags, matching
+            // ValidateNamedGroupNames (test262: named-groups/non-unicode-property-names-valid).
+            var decodedName = DecodeGroupName(name, unicode: true);
             originalNames.Add(decodedName);
             if (decodedName == null)
                 return;
@@ -1259,7 +1263,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     var nameEnd = pattern.IndexOf('>', i + 3);
                     if (nameEnd > i + 3)
                     {
-                        var refName = DecodeGroupName(pattern.Substring(i + 3, nameEnd - (i + 3)), unicode);
+                        // The referenced name uses the same always-Unicode escape rules as
+                        // the GroupSpecifier it resolves against.
+                        var refName = DecodeGroupName(pattern.Substring(i + 3, nameEnd - (i + 3)), unicode: true);
                         if (refName != null && nameToIndices.TryGetValue(refName, out var refIndices))
                         {
                             sb.Append(BuildNamedBackref(refIndices));
@@ -3492,6 +3498,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
         for (int i = 0; i < pattern.Length; i++)
         {
             char c = pattern[i];
+
+            // A GroupName specifier `(?<name>` always uses Unicode escape rules, so its
+            // content may contain `\u{…}` or `\u`-escaped surrogate pairs that look
+            // "malformed" to a non-u/v regex. Copy `(?<name>` verbatim so those escapes are
+            // preserved for the group-name decoder instead of being identity-escaped
+            // (test262: named-groups/non-unicode-property-names-valid). Lookbehind
+            // `(?<=` / `(?<!` is not a group name and falls through to normal handling.
+            if (!inClass && c == '(' && i + 3 < pattern.Length
+                && pattern[i + 1] == '?' && pattern[i + 2] == '<'
+                && pattern[i + 3] != '=' && pattern[i + 3] != '!')
+            {
+                var gtEnd = pattern.IndexOf('>', i + 3);
+                if (gtEnd > i + 3)
+                {
+                    sb.Append(pattern, i, gtEnd - i + 1);
+                    i = gtEnd;
+                    continue;
+                }
+            }
+
             if (c == '\\' && i + 1 < pattern.Length)
             {
                 char next = pattern[i + 1];

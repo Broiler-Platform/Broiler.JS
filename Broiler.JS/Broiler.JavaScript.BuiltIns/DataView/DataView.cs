@@ -187,17 +187,19 @@ public partial class DataView : JSObject
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ToByteOffset(JSValue value)
     {
+        // ToIndex (SetViewValue step 4 / GetViewValue step 4): ToNumber then truncate
+        // toward zero; NaN/undefined → 0; a negative value or one above 2^53-1 (including
+        // ±Infinity) is a RangeError. This runs BEFORE the value coercion in the set*
+        // methods, so an out-of-range index is rejected before the value's valueOf is
+        // observed (test262: DataView/prototype/set*/index-check-before-value-conversion).
         var number = value.DoubleValue;
-        if (double.IsNaN(number) || number == 0)
-            return 0;
+        var integer = double.IsNaN(number) ? 0 : Math.Truncate(number);
+        if (integer < 0 || integer > 9007199254740991d) // [0, 2^53 - 1]
+            throw JSEngine.NewRangeError("DataView offset is outside the bounds of the buffer.");
 
-        if (double.IsPositiveInfinity(number))
-            return int.MaxValue;
-
-        if (double.IsNegativeInfinity(number))
-            return int.MinValue;
-
-        return (int)number;
+        // A valid index that still overflows int is clamped so the per-access bounds
+        // check (getIndex + elementSize > viewSize) reports it as out of range.
+        return integer > int.MaxValue ? int.MaxValue : (int)integer;
     }
 
     /// <summary>
@@ -589,11 +591,12 @@ public partial class DataView : JSObject
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var value = a[1] ?? JSUndefined.Value;
 
-        // SetViewValue coerces the value (ToBigInt for the BigInt element types)
-        // BEFORE the out-of-bounds RangeError check, so e.g. setBigInt64(0) with no
-        // value argument is a TypeError (ToBigInt(undefined)) rather than a no-op.
-        if (bigInt)
-            value = JSBigInt.Coerce(value);
+        // SetViewValue coerces the value (step 6 — ToBigInt for the BigInt element types,
+        // ToNumber otherwise) BEFORE the out-of-bounds RangeError check (step 13). So
+        // setBigInt64(0) with no value is a TypeError (ToBigInt(undefined)), and a value
+        // whose valueOf throws is observed even when the index is out of range
+        // (test262: DataView/prototype/setUint8/range-check-after-value-conversion).
+        value = bigInt ? JSBigInt.Coerce(value) : JSValue.CreateNumber(value.DoubleValue);
 
         var littleEndian = a[2]?.BooleanValue ?? false;
 
