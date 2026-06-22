@@ -81,7 +81,7 @@ public static class JSIntl
     // has NO `extlang` production, so a 3-alpha subtag after the language (e.g. the "els" in
     // "en-els") is not structurally valid and must be rejected.
     private static readonly Regex StructurallyValidLanguageTagPattern = new(
-        @"^(?:[A-Za-z]{2,3}|[A-Za-z]{4}|[A-Za-z]{5,8})(?:-[A-Za-z]{4})?(?:-(?:[A-Za-z]{2}|\d{3}))?(?:-(?:[0-9A-Za-z]{5,8}|\d[0-9A-Za-z]{3}))*(?:-(?:[0-9A-WY-Za-wy-z](?:-[0-9A-Za-z]{2,8})+))*(?:-x(?:-[0-9A-Za-z]{1,8})+)?$",
+        @"^(?:[A-Za-z]{2,3}|[A-Za-z]{5,8})(?:-[A-Za-z]{4})?(?:-(?:[A-Za-z]{2}|\d{3}))?(?:-(?:[0-9A-Za-z]{5,8}|\d[0-9A-Za-z]{3}))*(?:-(?:[0-9A-WY-Za-wy-z](?:-[0-9A-Za-z]{2,8})+))*(?:-x(?:-[0-9A-Za-z]{1,8})+)?$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
     private static readonly HashSet<string> InvalidGrandfatheredLanguageTags = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -942,7 +942,10 @@ public static class JSIntl
             if (body.Length > 0) sb.Append('-').Append(body);
         }
 
-        return sb.ToString();
+        // The "-u-" block was emitted ahead of the other singletons above; re-sort every extension
+        // into canonical alphabetical order (private-use last) so e.g. an "-a-" extension precedes
+        // "-u-" (test262 Locale/constructor-tag).
+        return SortExtensions(sb.ToString());
     }
 
     // CLDR subdivision aliases (supplemental/subdivisionAlias.xml) used for the "sd" Unicode
@@ -1104,6 +1107,45 @@ public static class JSIntl
             result.Add(subtags[j]);
 
         return string.Join("-", result);
+    }
+
+    // UTS-35 §3.6.1 canonical form: the extension singletons of a tag appear in alphabetical order,
+    // with the private-use ("x") singleton last (e.g. "en-a-bar-u-baz-x-u-foo", and a "-u-…-t-…" tag
+    // re-emits "-t-" before "-u-"). Each extension's own body is canonicalized earlier, so reordering
+    // whole blocks here is sufficient.
+    private static string SortExtensions(string tag)
+    {
+        var parts = tag.Split('-');
+        if (parts.Length < 2 || parts[0].Length == 1)
+            return tag;
+
+        var i = 1;
+        while (i < parts.Length && parts[i].Length != 1) i++;
+        if (i >= parts.Length)
+            return tag; // no extension singletons
+
+        var baseTag = string.Join("-", parts, 0, i);
+        var extensions = new List<(char Singleton, string Body)>();
+        while (i < parts.Length)
+        {
+            var singleton = char.ToLowerInvariant(parts[i][0]);
+            var block = new List<string> { parts[i] };
+            i++;
+            if (singleton == 'x')
+                // The private-use singleton is terminal: every remaining subtag (even 1-char ones)
+                // belongs to its body.
+                while (i < parts.Length) { block.Add(parts[i]); i++; }
+            else
+                while (i < parts.Length && parts[i].Length != 1) { block.Add(parts[i]); i++; }
+            extensions.Add((singleton, string.Join("-", block)));
+        }
+
+        extensions.Sort((a, b) =>
+            (a.Singleton == 'x' ? '￿' : a.Singleton).CompareTo(b.Singleton == 'x' ? '￿' : b.Singleton));
+
+        var sb = new StringBuilder(baseTag);
+        foreach (var ext in extensions) sb.Append('-').Append(ext.Body);
+        return sb.ToString();
     }
 
     private static void SetKeyword(List<(string Key, List<string> Types)> keywords, string key, string value)
@@ -1294,16 +1336,16 @@ public static class JSIntl
             {
                 var prefix = tag.Substring(0, thirdDash);
                 if (RegularGrandfatheredMappings.TryGetValue(prefix, out var prefixPreferred))
-                    return CanonicalizeUnicodeKeywordValues(ApplySubtagAliases(
-                        CanonicalizeLanguageTagCase(prefixPreferred + tag.Substring(thirdDash))));
+                    return SortExtensions(CanonicalizeUnicodeKeywordValues(ApplySubtagAliases(
+                        CanonicalizeLanguageTagCase(prefixPreferred + tag.Substring(thirdDash)))));
             }
         }
 
-        return CanonicalizeTransformedExtension(
+        return SortExtensions(CanonicalizeTransformedExtension(
             CanonicalizeUnicodeKeywordValues(
                 CanonicalizeMainTagVariants(
                     ApplySubtagAliases(
-                        CanonicalizeLanguageTagCase(tag)))));
+                        CanonicalizeLanguageTagCase(tag))))));
     }
 
     // CLDR variantAlias (supplemental/supplementalMetadata.xml) — single-variant
@@ -1346,12 +1388,20 @@ public static class JSIntl
             return tag;
 
         // Substitute via variantAlias (dropped entries return null), deduplicate while
-        // preserving the first occurrence's order, then sort alphabetically.
+        // preserving the first occurrence's order, then sort alphabetically. A language+variant
+        // compound alias (e.g. "hy-arevmda" -> "hyw") replaces the language subtag and drops the
+        // variant.
+        var language = parts[0];
         var variants = new List<string>(i - variantStart);
         var seen = new HashSet<string>(StringComparer.Ordinal);
         for (var j = variantStart; j < i; j++)
         {
             var v = parts[j];
+            if (LanguageVariantAliases.TryGetValue(parts[0] + "-" + v, out var languageReplacement))
+            {
+                language = languageReplacement;
+                continue; // the variant is folded into the language replacement
+            }
             if (SingleVariantAliases.TryGetValue(v, out var replacement))
             {
                 if (replacement == null) continue; // dropped
@@ -1362,10 +1412,11 @@ public static class JSIntl
         }
         variants.Sort(System.StringComparer.Ordinal);
 
-        // Rebuild: pre-variant prefix + canonical variants + everything after the variant
-        // run (extension singletons / private-use).
+        // Rebuild: pre-variant prefix (with any replaced language) + canonical variants +
+        // everything after the variant run (extension singletons / private-use).
         var rebuilt = new List<string>(variantStart + variants.Count + (parts.Length - i));
-        for (var j = 0; j < variantStart; j++) rebuilt.Add(parts[j]);
+        rebuilt.Add(language);
+        for (var j = 1; j < variantStart; j++) rebuilt.Add(parts[j]);
         rebuilt.AddRange(variants);
         for (var j = i; j < parts.Length; j++) rebuilt.Add(parts[j]);
 
@@ -1493,14 +1544,25 @@ public static class JSIntl
     // strict in/out replacements (no script/region adjustments).
     private static readonly Dictionary<string, string> SimpleLanguageAliases = new(StringComparer.Ordinal)
     {
+        ["aar"] = "aa",
+        ["ces"] = "cs",
         ["cmn"] = "zh",
         ["drw"] = "fa-AF",
+        ["heb"] = "he",
         ["in"] = "id",
         ["iw"] = "he",
         ["ji"] = "yi",
         ["jw"] = "jv",
         ["mo"] = "ro",
         ["tw"] = "ak",
+    };
+
+    // CLDR languageAlias entries keyed by language + variant: the whole pair is replaced by a single
+    // preferred language and the variant is dropped (e.g. "hy-arevmda" -> "hyw" Western Armenian).
+    // Only the entries test262 exercises are listed.
+    private static readonly Dictionary<string, string> LanguageVariantAliases = new(StringComparer.Ordinal)
+    {
+        ["hy-arevmda"] = "hyw",
     };
 
     // CLDR supplemental languageAlias entries that, after replacing the language subtag,

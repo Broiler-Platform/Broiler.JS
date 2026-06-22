@@ -44,7 +44,7 @@ public class Issue871NextTests
 
     [Theory]
     // Distinct singletons (u / t / x) and repeated single-char subtags inside private-use are valid.
-    [InlineData("Intl.getCanonicalLocales('en-u-ca-gregory-t-en-x-foo')[0]", "en-u-ca-gregory-t-en-x-foo")]
+    [InlineData("Intl.getCanonicalLocales('en-u-ca-gregory-t-en-x-foo')[0]", "en-t-en-u-ca-gregory-x-foo")]
     [InlineData("Intl.getCanonicalLocales('en-x-a-a')[0]", "en-x-a-a")]
     [InlineData("Intl.getCanonicalLocales('en-US-u-ca-gregory')[0]", "en-US-u-ca-gregory")]
     public void AcceptsValidSingletons(string expr, string expected)

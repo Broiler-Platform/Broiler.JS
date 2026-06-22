@@ -179,20 +179,23 @@ public class JSGeneratorFunctionV2 : JSFunction
         if (primeOnInvoke && generator is IJSGenerator jsGenerator)
             jsGenerator.MoveNext(JSUndefined.Value, out _);
 
-        // §27.5.3.x: the generator object is created via
-        // OrdinaryCreateFromConstructor(functionObject, "%GeneratorPrototype%"), whose
-        // [[Prototype]] is Get(functionObject, "prototype") — this generator function's
-        // OWN .prototype property (which itself inherits %GeneratorPrototype%). So
-        // `Object.getPrototypeOf(g()) === g.prototype`. Read it live; when it is not an
-        // object (per GetPrototypeFromConstructor) fall back to the intrinsic
-        // %GeneratorPrototype%. Only the SYNC path is rebound here: the async generator
-        // prototype chain (%AsyncGeneratorPrototype% → %AsyncIteratorPrototype% carrying
-        // @@asyncIterator) is wired separately and the function's .prototype does not reach
-        // it, so async generators keep the default object prototype that supports `for await`.
-        if (!asyncGenerator && generator is JSObject genObject)
-            genObject.BasePrototypeObject = this[KeyStrings.prototype] is JSObject ownPrototype
-                ? ownPrototype
-                : GetGeneratorPrototype(asyncGenerator);
+        // §27.5.3.x / §27.4.3.x: the generator object is created via
+        // OrdinaryCreateFromConstructor(functionObject, "%(Async)GeneratorPrototype%"), whose
+        // [[Prototype]] is Get(functionObject, "prototype") — this function's OWN .prototype, falling
+        // back (per GetPrototypeFromConstructor) to the intrinsic %GeneratorPrototype% (sync) or
+        // %AsyncGeneratorPrototype% (async) when that is not an object. When .prototype is not an
+        // object both sync and async generators must use the matching intrinsic; the async builder
+        // already wires the default fn.prototype chain, so the object case is only rebound for sync.
+        if (generator is JSObject genObject)
+        {
+            if (this[KeyStrings.prototype] is JSObject ownPrototype)
+            {
+                if (!asyncGenerator)
+                    genObject.BasePrototypeObject = ownPrototype;
+            }
+            else
+                genObject.BasePrototypeObject = GetGeneratorPrototype(asyncGenerator);
+        }
 
         return generator;
     }
