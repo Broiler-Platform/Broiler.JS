@@ -81,14 +81,17 @@ public partial class JSString
             return @this.StartsWith(search) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
 
         pos = Math.Min(Math.Max(0, pos), @this.Length);
+        // §22.1.3.22 step 8: if searchLength + start > len, return false. Otherwise
+        // compare searchStr against the slice of S that starts at `start` — anchored at
+        // `start`, not found anywhere via IndexOf. An empty searchStr therefore matches
+        // at any in-range position, including start == len
+        // (test262: String/prototype/startsWith/return-true-if-searchstring-is-empty).
         if (pos + search.Length > @this.Length)
             return JSValue.BooleanFalse;
 
-        int index = @this.IndexOf(search);
-        if (index == pos)
-            return JSValue.BooleanTrue;
-
-        return JSValue.BooleanFalse;
+        return string.CompareOrdinal(@this.Substring(pos, search.Length), search) == 0
+            ? JSValue.BooleanTrue
+            : JSValue.BooleanFalse;
     }
 
     [JSPrototypeMethod]

@@ -2111,7 +2111,14 @@ internal static class BuiltInsAssemblyInitializer
 
         // Set.prototype[@@toStringTag] = "Set"
         if (context[KeyStrings.Set] is JSFunction setCtor && setCtor.prototype is JSObject setProto)
+        {
             SetToStringTag(setProto, "Set");
+
+            // §24.2.3.10: the initial value of Set.prototype.keys is the same function
+            // object as Set.prototype.values (test262: Set/prototype/keys/keys).
+            if (setProto[KeyStrings.GetOrCreate("values")] is JSFunction setValues)
+                setProto.FastAddValue(KeyStrings.GetOrCreate("keys"), setValues, JSPropertyAttributes.ConfigurableValue);
+        }
 
         // WeakMap.prototype[@@toStringTag] = "WeakMap"
         if (context[KeyStrings.GetOrCreate("WeakMap")] is JSFunction weakMapCtor && weakMapCtor.prototype is JSObject weakMapProto)
