@@ -702,7 +702,7 @@ public static class NumberParser
     /// <returns> <c>true</c> if the character is whitespace or a line terminator; <c>false</c>
     /// otherwise. </returns>
     private static bool IsWhiteSpaceOrLineTerminator(int c) => c == 9 || c == 0x0b || c == 0x0c || c == ' ' || c == 0xa0 || c == 0xfeff ||
-            c == 0x1680 || c == 0x180e || (c >= 0x2000 && c <= 0x200a) || c == 0x202f || c == 0x205f || c == 0x3000 ||
+            c == 0x1680 || (c >= 0x2000 && c <= 0x200a) || c == 0x202f || c == 0x205f || c == 0x3000 ||
             c == 0x0a || c == 0x0d || c == 0x2028 || c == 0x2029;
 
     /// <summary>

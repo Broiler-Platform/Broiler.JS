@@ -661,6 +661,19 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     {
         error = null;
 
+        // §10.4.7.1 Immutable prototype exotic objects (e.g. %Object.prototype%):
+        // the change only succeeds when the new value equals the current prototype.
+        if (this is JSObject { } immutableProtoObject && (immutableProtoObject.status & ObjectStatus.ImmutablePrototype) != 0)
+        {
+            var currentProto = prototypeChain?.Object;
+            var unchanged = currentProto == null ? target == NullValue : ReferenceEquals(currentProto, target);
+            if (unchanged)
+                return true;
+
+            error = "Immutable prototype object cannot have its prototype changed";
+            return false;
+        }
+
         if (target == NullValue)
         {
             if (this is JSObject { } nullTargetObject && !nullTargetObject.IsExtensible() && prototypeChain?.Object != null)
@@ -1054,32 +1067,22 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         };
     }
 
+    // OrdinarySet on a primitive base value (number/string/boolean/symbol/bigint):
+    // §6.2.5.6 PutValue boxes the base with ToObject, so [[Set]] must walk the wrapper
+    // prototype chain object-by-object with the primitive as the receiver — NOT flatten
+    // it into a single descriptor lookup. Walking it reaches an inherited accessor's
+    // setter AND any exotic [[Set]] in the chain, e.g. a Proxy (test262:
+    // language/types/reference/put-value-prop-base-primitive). A data property — or no
+    // property — cannot be created on a primitive, so SetKeyStringOnReceiver fails as a
+    // no-op (non-strict) / throws (strict) when the walk reaches the terminal create.
     public virtual bool SetValue(uint key, JSValue value, JSValue receiver, bool throwError = true)
-        => prototypeChain != null && TryInvokeInheritedSetter(prototypeChain.GetInternalProperty(key), value, receiver);
+        => prototypeChain?.Object is JSObject proto && proto.SetValue(key, value, receiver ?? this, throwError);
 
     internal protected virtual bool SetValue(KeyString key, JSValue value, JSValue receiver, bool throwError = true)
-        => prototypeChain != null && TryInvokeInheritedSetter(prototypeChain.GetInternalProperty(key), value, receiver);
+        => prototypeChain?.Object is JSObject proto && proto.SetValue(key, value, receiver ?? this, throwError);
 
     internal protected virtual bool SetValue(IJSSymbol key, JSValue value, JSValue receiver, bool throwError = true)
-        => prototypeChain != null && TryInvokeInheritedSetter(prototypeChain.GetInternalProperty(key), value, receiver);
-
-    // OrdinarySet on a primitive base value (number/string/boolean/symbol/bigint):
-    // an inherited accessor property's setter is invoked with the primitive as the
-    // receiver. A data property — or no property at all — cannot be created on a
-    // primitive, so those cases are left to the caller's no-op (non-strict) /
-    // ThrowOnStrictPrimitiveAssignment (strict) handling by returning false. The
-    // resolved property comes from the prototype chain's flattened descriptor set,
-    // mirroring the read path (GetValue), which already delegates to the chain.
-    private bool TryInvokeInheritedSetter(in JSProperty property, JSValue value, JSValue receiver)
-    {
-        if (property.IsProperty && property.set is IJSFunction setter)
-        {
-            setter.InvokeFunction(new Arguments(receiver ?? this, value));
-            return true;
-        }
-
-        return false;
-    }
+        => prototypeChain?.Object is JSObject proto && proto.SetValue(key, value, receiver ?? this, throwError);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool SetValue(JSValue key, JSValue value, JSValue receiver, bool throwError = true)

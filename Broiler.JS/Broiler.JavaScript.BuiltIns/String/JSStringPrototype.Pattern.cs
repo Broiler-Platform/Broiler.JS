@@ -235,7 +235,13 @@ public partial class JSString
     internal static JSValue Split(in Arguments a)
     {
         var @thisValue = a.This;
-        var @this = @thisValue.AsString();
+        // §22.1.3.21 step 1: RequireObjectCoercible(this value). This precedes the
+        // @@split lookup (step 2); ToString(this) is step 3 and must NOT run until the
+        // @@split fast path has been ruled out
+        // (test262: String/prototype/split/this-value-tostring-error).
+        if (@thisValue.IsNullOrUndefined)
+            throw JSEngine.NewTypeError("String.prototype.split called on null or undefined");
+
         var (_separator, limit) = a.Get2();
 
         if (!_separator.IsNullOrUndefined && _separator.IsObject)
@@ -252,6 +258,9 @@ public partial class JSString
                     : splitter.InvokeFunction(new Arguments(_separator, @thisValue, limit));
             }
         }
+
+        // §22.1.3.21 step 3: ToString(this value), now that no @@split method applies.
+        var @this = @thisValue.AsString();
 
         // Limit defaults to unlimited. Note the ToUint32() conversion.
         // Spec order (§22.1.3.21): ToUint32(limit) is step 6, ToString(separator)

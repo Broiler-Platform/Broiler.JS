@@ -162,13 +162,20 @@ public partial class JSDate
 
         try
         {
+            // MakeDay/MakeDate order (§21.4.1.11/§21.4.1.13): resolve the calendar
+            // year+month FIRST (on day 1, which is valid in every month so AddMonths
+            // never clamps), THEN add the day offset, THEN the time. Adding months last
+            // would clamp an overflowing day to the target month's length — e.g.
+            // new Date(2016, 1, 29, 23, 59, 59, 1000) accumulates to Jan 30, and
+            // Jan 30 + 1 month would clamp to Feb 29 instead of rolling to Mar 1
+            // (test262: Date/prototype/getDate/this-value-valid-date).
             date = new DateTimeOffset(year, 1, 1, 0, 0, 0, 0, Local);
-            date = date.AddMilliseconds(millis);
-            date = date.AddSeconds(seconds);
-            date = date.AddMinutes(minutes);
-            date = date.AddHours(hours);
-            date = date.AddDays(day - 1);
             date = date.AddMonths(month);
+            date = date.AddDays(day - 1);
+            date = date.AddHours(hours);
+            date = date.AddMinutes(minutes);
+            date = date.AddSeconds(seconds);
+            date = date.AddMilliseconds(millis);
             value = date;
             rawTimeMs = double.NaN;
 

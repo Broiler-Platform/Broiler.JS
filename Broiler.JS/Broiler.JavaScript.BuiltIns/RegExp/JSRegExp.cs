@@ -155,31 +155,57 @@ public partial class JSRegExp : JSObject, IJSRegExp
             return "(?:)";
 
         var sb = new StringBuilder(pattern.Length);
+        // Whether the cursor is inside an unescaped character class `[...]`. A bare
+        // `/` only needs escaping outside a class — inside one it is an ordinary
+        // member and must be preserved verbatim (test262 sm/RegExp/escape).
+        var inClass = false;
         for (var i = 0; i < pattern.Length; i++)
         {
             var c = pattern[i];
+
+            // A backslash begins an escape sequence; consume the following code unit
+            // together with it so the escaped character is never reinterpreted. This
+            // keeps an escaped backslash (`\\`) distinct from a backslash that escapes
+            // a following raw line terminator (test262 sm/RegExp/escape).
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                var next = pattern[i + 1];
+                i++;
+
+                // `\<LineTerminator>` (an identity escape of a raw line terminator)
+                // must serialize without a literal line terminator: emit just the
+                // `\n` / `\r` / `\u2028` / `\u2029` escape, which matches the same
+                // code point, instead of keeping the backslash and the raw character.
+                if (TryAppendLineTerminatorEscape(sb, next))
+                    continue;
+
+                sb.Append('\\');
+                if (char.IsSurrogate(next))
+                    AppendUnicodeEscape(sb, next);
+                else
+                    sb.Append(next);
+                continue;
+            }
+
             switch (c)
             {
-                case '/':
-                    if (i > 0 && pattern[i - 1] == '\\')
-                    {
-                        sb.Append('/');
-                        continue;
-                    }
-
+                case '[':
+                    inClass = true;
+                    break;
+                case ']':
+                    inClass = false;
+                    break;
+                case '/' when !inClass:
+                    // A bare forward slash outside a character class must be escaped so
+                    // the serialized source is safe between the delimiting slashes of a
+                    // regular expression literal.
                     sb.Append(@"\/");
                     continue;
-                case '\n':
-                    sb.Append(@"\n");
-                    continue;
-                case '\r':
-                    sb.Append(@"\r");
-                    continue;
-                case '\u2028':
-                case '\u2029':
-                    AppendUnicodeEscape(sb, c);
-                    continue;
             }
+
+            // A bare line terminator likewise cannot appear literally in the source.
+            if (TryAppendLineTerminatorEscape(sb, c))
+                continue;
 
             if (char.IsSurrogate(c))
             {
@@ -191,6 +217,27 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         return sb.ToString();
+    }
+
+    // Appends the escaped form of a line terminator (so the RegExp source never
+    // contains a raw <LF>, <CR>, <LS>, or <PS>). Returns false for any other char.
+    private static bool TryAppendLineTerminatorEscape(StringBuilder sb, char c)
+    {
+        switch (c)
+        {
+            case '\n':
+                sb.Append(@"\n");
+                return true;
+            case '\r':
+                sb.Append(@"\r");
+                return true;
+            case '\u2028':
+            case '\u2029':
+                AppendUnicodeEscape(sb, c);
+                return true;
+            default:
+                return false;
+        }
     }
 
     public string pattern;
@@ -1171,7 +1218,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         ScanCaptureGroups(pattern, (index, name) =>
         {
-            var decodedName = DecodeGroupName(name, unicode);
+            // A GroupName's RegExpIdentifierName always uses Unicode escape rules — \u{…}
+            // and \u-escaped surrogate pairs are valid even in a non-u/v regex — so decode
+            // it with unicode rules regardless of the pattern's flags, matching
+            // ValidateNamedGroupNames (test262: named-groups/non-unicode-property-names-valid).
+            var decodedName = DecodeGroupName(name, unicode: true);
             originalNames.Add(decodedName);
             if (decodedName == null)
                 return;
@@ -1212,7 +1263,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     var nameEnd = pattern.IndexOf('>', i + 3);
                     if (nameEnd > i + 3)
                     {
-                        var refName = DecodeGroupName(pattern.Substring(i + 3, nameEnd - (i + 3)), unicode);
+                        // The referenced name uses the same always-Unicode escape rules as
+                        // the GroupSpecifier it resolves against.
+                        var refName = DecodeGroupName(pattern.Substring(i + 3, nameEnd - (i + 3)), unicode: true);
                         if (refName != null && nameToIndices.TryGetValue(refName, out var refIndices))
                         {
                             sb.Append(BuildNamedBackref(refIndices));
@@ -3445,6 +3498,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
         for (int i = 0; i < pattern.Length; i++)
         {
             char c = pattern[i];
+
+            // A GroupName specifier `(?<name>` always uses Unicode escape rules, so its
+            // content may contain `\u{…}` or `\u`-escaped surrogate pairs that look
+            // "malformed" to a non-u/v regex. Copy `(?<name>` verbatim so those escapes are
+            // preserved for the group-name decoder instead of being identity-escaped
+            // (test262: named-groups/non-unicode-property-names-valid). Lookbehind
+            // `(?<=` / `(?<!` is not a group name and falls through to normal handling.
+            if (!inClass && c == '(' && i + 3 < pattern.Length
+                && pattern[i + 1] == '?' && pattern[i + 2] == '<'
+                && pattern[i + 3] != '=' && pattern[i + 3] != '!')
+            {
+                var gtEnd = pattern.IndexOf('>', i + 3);
+                if (gtEnd > i + 3)
+                {
+                    sb.Append(pattern, i, gtEnd - i + 1);
+                    i = gtEnd;
+                    continue;
+                }
+            }
+
             if (c == '\\' && i + 1 < pattern.Length)
             {
                 char next = pattern[i + 1];

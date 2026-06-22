@@ -149,7 +149,12 @@ public partial class JSArray
                 ? JSEngine.NewRangeError("Invalid array length")
                 : JSEngine.NewTypeError("Invalid array length");
 
-        if (@this is JSArray array && length <= uint.MaxValue)
+        // 2^32-1 (uint.MaxValue) is NOT a valid array index — array indices are < 2^32-1 —
+        // so an element pushed there must be stored as an ordinary property and the
+        // subsequent length update to 2^32 must throw RangeError AFTER the element is set.
+        // The uint fast path would address it as element 2^32-1 and drop it, so route a
+        // length already at 2^32-1 through the slow path (test262: push/S15.4.4.7_A3).
+        if (@this is JSArray array && length < uint.MaxValue)
         {
             var mustSetLengthThroughProperty = false;
             for (var index = 0; index < a.Length; index++, length++)

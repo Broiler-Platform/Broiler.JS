@@ -27,7 +27,8 @@ public class JSGeneratorFunctionV2 : JSFunction
     private static JSObject CreateGeneratorFunctionPrototype(bool asyncGenerator)
     {
         var prototype = new JSObject();
-        if ((Engine.Core.JSEngine.Current as Engine.IJSExecutionContext)?.FunctionPrototype is JSObject functionPrototype)
+        var functionPrototype = (Engine.Core.JSEngine.Current as Engine.IJSExecutionContext)?.FunctionPrototype;
+        if (functionPrototype != null)
             prototype.BasePrototypeObject = functionPrototype;
 
         var constructorName = asyncGenerator ? "AsyncGeneratorFunction" : "GeneratorFunction";
@@ -41,6 +42,11 @@ public class JSGeneratorFunctionV2 : JSFunction
         }, constructorName, $"function {constructorName}() {{ [native code] }}", 1, createPrototype: false);
         constructor.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
         constructor.prototype = prototype;
+        // §27.3.2 / §27.4.2: %GeneratorFunction%.[[Prototype]] and
+        // %AsyncGeneratorFunction%.[[Prototype]] are the intrinsic %Function% (the
+        // Function constructor), so both are subclasses of Function.
+        if (functionPrototype?[KeyStrings.constructor] is JSObject functionConstructor)
+            constructor.BasePrototypeObject = functionConstructor;
         // §27.3.3.2 / §27.4.3.2: the .prototype.constructor property is non-writable
         // (attributes { writable: false, enumerable: false, configurable: true }).
         prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableReadonlyValue);

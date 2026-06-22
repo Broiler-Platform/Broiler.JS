@@ -1,6 +1,7 @@
 ﻿using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
+using System.Collections.Generic;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
@@ -11,7 +12,11 @@ namespace Broiler.JavaScript.BuiltIns.Weak;
 public partial class JSFinalizationRegistry : JSObject
 {
     private readonly JSSymbol finalizationSymbol = new("finalization");
-    private readonly JSSymbol finalizationToken = new("finalizationToken");
+    // [[Cells]] entries that carry a non-undefined [[UnregisterToken]]. The token may be
+    // a Symbol, which cannot hold a hidden property, so unregister-by-token is tracked in
+    // an explicit list keyed by SameValue rather than via a property on the token object
+    // (test262: FinalizationRegistry/prototype/unregister/unregister-symbol-token).
+    private readonly List<(JSValue Token, WeakObject Ref)> tokenCells = new();
     private readonly JSFunction finalizer;
 
     [JSExport(Length = 1)]
@@ -76,22 +81,27 @@ public partial class JSFinalizationRegistry : JSObject
         if (target is JSObject targetObject)
             targetObject[(IJSSymbol)finalizationSymbol] = weakRef;
 
-        if (unregisterToken is JSObject unregisterTokenObject)
-            unregisterTokenObject[(IJSSymbol)finalizationToken] = weakRef;
+        if (!unregisterToken.IsUndefined)
+            tokenCells.Add((unregisterToken, weakRef));
     }
 
     private bool Unregister(JSValue token)
     {
-        if (token is not JSObject tokenObject)
-            return false;
+        // §26.2.3.4: remove every cell whose [[UnregisterToken]] is SameValue to the
+        // argument; return whether any cell was removed. Works for object and symbol
+        // tokens alike.
+        var removed = false;
+        for (var i = tokenCells.Count - 1; i >= 0; i--)
+        {
+            if (!tokenCells[i].Token.Is(token).BooleanValue)
+                continue;
 
-        var weakRef = tokenObject[(IJSSymbol)finalizationToken];
-        if (weakRef.IsUndefined)
-            return false;
+            GC.SuppressFinalize(tokenCells[i].Ref);
+            tokenCells.RemoveAt(i);
+            removed = true;
+        }
 
-        tokenObject.Delete((IJSSymbol)finalizationToken);
-        GC.SuppressFinalize(weakRef);
-        return true;
+        return removed;
     }
 }
 

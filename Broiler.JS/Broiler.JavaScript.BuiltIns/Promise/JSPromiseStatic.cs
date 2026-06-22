@@ -279,15 +279,12 @@ public partial class JSPromise
                         Settle();
                         return JSUndefined.Value;
                     }, "", "function () { [native code] }", length: 1, createPrototype: false);
-                    var rejectElement = new JSFunction((in Arguments args) =>
-                    {
-                        reject.InvokeFunction(new Arguments(JSUndefined.Value, args.Get1()));
-                        return JSUndefined.Value;
-                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
-
                     // PerformPromiseAll (§27.2.4.1.2): route every value through
                     // Call(promiseResolve, constructor, « nextValue ») and then
-                    // Invoke(nextPromise, "then", « resolveElement, rejectElement »).
+                    // Invoke(nextPromise, "then", « resolveElement, resultCapability.[[Reject]] »).
+                    // The onRejected argument is the SHARED capability reject function for
+                    // every element (not a fresh per-element wrapper), so each element's
+                    // "then" observes the same reject (test262: Promise/all/same-reject-function).
                     // The "then" method is observable, so it must be invoked even for
                     // a native promise rather than special-casing it via the internal
                     // Then.
@@ -296,7 +293,7 @@ public partial class JSPromise
                     if (!then.IsFunction)
                         throw JSEngine.NewTypeError("Promise resolve did not return a thenable");
 
-                    then.InvokeFunction(new Arguments(nextPromise, resolveElement, rejectElement));
+                    then.InvokeFunction(new Arguments(nextPromise, resolveElement, reject));
                 }
 
                 Settle();

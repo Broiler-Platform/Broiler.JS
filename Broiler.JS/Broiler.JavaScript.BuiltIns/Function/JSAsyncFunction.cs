@@ -33,7 +33,8 @@ public class JSAsyncFunction
     private static JSObject CreateAsyncFunctionPrototype()
     {
         var prototype = new JSObject();
-        if ((JSEngine.Current as IJSExecutionContext)?.FunctionPrototype is JSObject functionPrototype)
+        var functionPrototype = (JSEngine.Current as IJSExecutionContext)?.FunctionPrototype;
+        if (functionPrototype != null)
             prototype.BasePrototypeObject = functionPrototype;
 
         var constructor = (JSFunction)JSValue.CreateFunction((in Arguments a) =>
@@ -46,6 +47,11 @@ public class JSAsyncFunction
         }, "AsyncFunction", "function AsyncFunction() { [native code] }", 1, createPrototype: false);
         constructor.FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
         constructor.prototype = prototype;
+        // §27.7.3: %AsyncFunction%.[[Prototype]] is the intrinsic %Function% (the
+        // Function constructor), so AsyncFunction is a subclass of Function
+        // (test262: built-ins/AsyncFunction/AsyncFunction-is-subclass).
+        if (functionPrototype?[KeyStrings.constructor] is JSObject functionConstructor)
+            constructor.BasePrototypeObject = functionConstructor;
         // §27.7.3.2: AsyncFunction.prototype.constructor is non-writable
         // (attributes { writable: false, enumerable: false, configurable: true }).
         prototype.FastAddValue(KeyStrings.constructor, constructor, JSPropertyAttributes.ConfigurableReadonlyValue);

@@ -90,6 +90,13 @@ public partial class JSObject
         return true;
     }
 
+    /// <summary>
+    /// Marks this object as an immutable prototype exotic object (§10.4.7), so its
+    /// [[SetPrototypeOf]] only succeeds when the new value equals the current
+    /// [[Prototype]]. Used for %Object.prototype% and host global objects.
+    /// </summary>
+    public void MarkImmutablePrototype() => status |= ObjectStatus.ImmutablePrototype;
+
     internal override PropertyKey ToKey(bool create = true)
     {
         // ToPropertyKey(argument): let key = ToPrimitive(argument, string). If key is a

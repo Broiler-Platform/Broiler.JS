@@ -225,7 +225,7 @@ partial class JSTypedArray
         for (int i = 0; i < len; i++)
             values.Add(this[(uint)i]);
 
-        values.Sort(cx);
+        StableSort(values, cx);
 
         // toSorted returns a new typed array of the same type (TypedArrayCreateSameType,
         // never @@species), leaving this intact.
@@ -793,6 +793,26 @@ partial class JSTypedArray
         };
     }
 
+    // %TypedArray%.prototype.sort is required to be stable, but List<T>.Sort / Array.Sort
+    // use an unstable introsort; pair each element with its original index and break
+    // comparator ties on that index so equal elements keep their input order
+    // (test262: TypedArray/prototype/sort/stability).
+    private static void StableSort(List<JSValue> values, Comparison<JSValue> compare)
+    {
+        var indexed = new (JSValue Value, int Index)[values.Count];
+        for (int i = 0; i < values.Count; i++)
+            indexed[i] = (values[i], i);
+
+        System.Array.Sort(indexed, (x, y) =>
+        {
+            var r = compare(x.Value, y.Value);
+            return r != 0 ? r : x.Index.CompareTo(y.Index);
+        });
+
+        for (int i = 0; i < values.Count; i++)
+            values[i] = indexed[i].Value;
+    }
+
     [JSExport("sort", Length = 1)]
     public JSValue Sort(in Arguments a)
     {
@@ -808,7 +828,7 @@ partial class JSTypedArray
         for (int i = 0; i < len; i++)
             list.Add(this[(uint)i]);
 
-        list.Sort(cx);
+        StableSort(list, cx);
 
         // %TypedArray%.prototype.sort sorts in place and returns the same instance.
         for (int i = 0; i < len; i++)

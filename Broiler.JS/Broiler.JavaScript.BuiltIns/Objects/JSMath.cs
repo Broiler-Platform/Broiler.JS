@@ -60,18 +60,20 @@ public partial class JSMath : JSObject
         }
 
         var number = first.DoubleValue;
-        if (number > 0.0)
-            return new JSNumber(Math.Floor(number + 0.5));
+        if (double.IsNaN(number) || double.IsInfinity(number) || number == 0.0)
+            return new JSNumber(number);
 
-        if (number >= -0.5)
-        {
-            // BitConverter is used to distinguish positive and negative zero.
-            if (BitConverter.DoubleToInt64Bits(number) == 0L)
-                return JSNumber.Zero;
+        // §21.3.2.28 Math.round: the result is the integer closest to x, with halves
+        // rounded toward +Infinity. Use floor(x) + (frac >= 0.5 ? 1 : 0) rather than
+        // floor(x + 0.5): adding 0.5 loses precision, rounding 0.5 - ε/4 up to 1 and
+        // perturbing large odd integers. This also yields -0 for x in (-0.5, -0]
+        // (test262: Math/round/S15.8.2.15_A7).
+        var floor = Math.Floor(number);
+        var result = number - floor >= 0.5 ? floor + 1.0 : floor;
+        if (result == 0.0 && number < 0.0)
             return new JSNumber(-0.0D);
-        }
 
-        return new JSNumber(Math.Floor(number + 0.5));
+        return new JSNumber(result);
     }
 
     /// <summary>

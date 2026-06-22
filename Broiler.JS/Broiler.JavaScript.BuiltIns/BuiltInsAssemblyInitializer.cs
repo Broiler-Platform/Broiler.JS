@@ -1136,8 +1136,15 @@ internal static class BuiltInsAssemblyInitializer
         if (context[proxyKey] is not JSFunction proxyCtor)
             return;
 
+        // §28.2 The Proxy constructor has no "prototype" property at all, because
+        // proxy exotic objects have no [[Prototype]] slot to initialize. The export
+        // machinery auto-creates one for constructor functions, so strip it here
+        // (test262: built-ins/Proxy/proxy-no-prototype).
         ref var ownProperties = ref proxyCtor.GetOwnProperties();
-        ownProperties.Put(KeyStrings.prototype.Key) = JSProperty.Property(KeyStrings.prototype, JSUndefined.Value, JSPropertyAttributes.Value);
+        // The auto-created "prototype" is non-configurable, so make it configurable
+        // first and then delete it outright.
+        ownProperties.Put(KeyStrings.prototype.Key) = JSProperty.Property(KeyStrings.prototype, JSUndefined.Value, JSPropertyAttributes.ConfigurableValue);
+        ownProperties.RemoveAt(KeyStrings.prototype.Key);
     }
 
     private static void PatchSymbolPrototype(JSContext context)
@@ -1180,7 +1187,10 @@ internal static class BuiltInsAssemblyInitializer
                 return symbolObject.WrappedSymbol;
 
             throw JSEngine.NewTypeError("Symbol.prototype[Symbol.toPrimitive] requires a symbol receiver");
-        }, "[Symbol.toPrimitive]", 1), JSPropertyAttributes.ConfigurableValue);
+            // §20.4.3.5: Symbol.prototype[@@toPrimitive] is { [[Writable]]: false,
+            // [[Enumerable]]: false, [[Configurable]]: true }
+            // (test262: Symbol/prototype/Symbol.toPrimitive/prop-desc).
+        }, "[Symbol.toPrimitive]", 1), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         EnsureAccessorProperty(symbolCtor.prototype, KeyStrings.GetOrCreate("description"), "description", static (in Arguments a) =>
         {
@@ -2086,6 +2096,10 @@ internal static class BuiltInsAssemblyInitializer
         if (context[KeyStrings.GetOrCreate("JSON")] is JSObject jsonObject)
             SetToStringTag(jsonObject, "JSON");
 
+        // Atomics[@@toStringTag] = "Atomics" (test262: Atomics/Symbol.toStringTag)
+        if (context[KeyStrings.GetOrCreate("Atomics")] is JSObject atomicsObject)
+            SetToStringTag(atomicsObject, "Atomics");
+
         // WeakRef.prototype[@@toStringTag] = "WeakRef"
         if (context[KeyStrings.GetOrCreate("WeakRef")] is JSFunction weakRefCtor && weakRefCtor.prototype is JSObject weakRefProto)
             SetToStringTag(weakRefProto, "WeakRef");
@@ -2104,7 +2118,14 @@ internal static class BuiltInsAssemblyInitializer
 
         // Set.prototype[@@toStringTag] = "Set"
         if (context[KeyStrings.Set] is JSFunction setCtor && setCtor.prototype is JSObject setProto)
+        {
             SetToStringTag(setProto, "Set");
+
+            // §24.2.3.10: the initial value of Set.prototype.keys is the same function
+            // object as Set.prototype.values (test262: Set/prototype/keys/keys).
+            if (setProto[KeyStrings.GetOrCreate("values")] is JSFunction setValues)
+                setProto.FastAddValue(KeyStrings.GetOrCreate("keys"), setValues, JSPropertyAttributes.ConfigurableValue);
+        }
 
         // WeakMap.prototype[@@toStringTag] = "WeakMap"
         if (context[KeyStrings.GetOrCreate("WeakMap")] is JSFunction weakMapCtor && weakMapCtor.prototype is JSObject weakMapProto)
