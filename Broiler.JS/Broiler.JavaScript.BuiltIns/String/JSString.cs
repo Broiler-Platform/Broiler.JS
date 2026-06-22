@@ -250,6 +250,11 @@ public partial class JSString : JSPrimitive
         if (value.IsObject)
             return value.Equals(this);
 
+        // String == BigInt compares via StringToBigInt; let the BigInt side perform it
+        // (it handles empty/whitespace -> 0n and non-integer strings -> not equal).
+        if (value.IsBigInt)
+            return value.Equals(this);
+
         switch (value)
         {
             case JSString strValue:

@@ -159,6 +159,21 @@ public partial class JSBigInt : JSPrimitive
         value = n;
     }
 
+    // StringToBigInt (ECMA-262 §7.1.14): an empty or whitespace-only string maps to 0n;
+    // any other string is parsed as a BigInt integer literal. A string that is not a valid
+    // integer (e.g. "0.", "1.5", "abc") yields undefined — signalled here by returning false —
+    // so abstract equality treats it as not-equal and relational comparison as incomparable.
+    internal static bool TryStringToBigInt(string value, out BigInteger result)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            result = BigInteger.Zero;
+            return true;
+        }
+
+        return TryParseBigIntString(value, out result);
+    }
+
     private static bool TryParseBigIntString(string value, out BigInteger result)
     {
         var text = value.Trim();
@@ -256,14 +271,20 @@ public partial class JSBigInt : JSPrimitive
 
     public override bool Equals(JSValue value)
     {
+        // Abstract equality with an Object operand first applies ToPrimitive (default
+        // hint) and re-compares; a boxed primitive unwraps via ValueOf.
         if (value is JSPrimitiveObject primitiveObject)
             value = primitiveObject.ValueOf();
+        else if (value is JSObject @object)
+            value = @object.ToDefaultPrimitive();
 
         if (value is JSBigInt bigint)
             return this.value == bigint.value;
 
-        if (value is JSString str && BigInteger.TryParse(str.ToString(), out var bigintFromString))
-            return this.value == bigintFromString;
+        // BigInt == String compares via StringToBigInt: an empty/whitespace string is 0n,
+        // and a non-integer string (e.g. "0.") is not equal to any BigInt.
+        if (value is JSString str)
+            return TryStringToBigInt(str.ToString(), out var bigintFromString) && this.value == bigintFromString;
 
         // A Boolean operand is converted with ToNumber first (true -> 1, false -> 0)
         // and then compared by mathematical value, per abstract equality.
@@ -316,7 +337,15 @@ public partial class JSBigInt : JSPrimitive
             case JSBigInt bigint:
                 comparison = this.value.CompareTo(bigint.value);
                 return true;
-            case var _ when value.IsNumber || value.IsBoolean || value.IsNull || value.IsString:
+            case JSString str:
+                // BigInt vs String relational comparison uses StringToBigInt for exact
+                // comparison; a non-integer string is incomparable (yields undefined),
+                // signalled with NaNComparison so every relational operator returns false.
+                comparison = TryStringToBigInt(str.ToString(), out var parsed)
+                    ? this.value.CompareTo(parsed)
+                    : JSBigIntExtensions.NaNComparison;
+                return true;
+            case var _ when value.IsNumber || value.IsBoolean || value.IsNull:
                 comparison = this.value.CompareToNumber(value.DoubleValue);
                 return true;
             default:
@@ -339,7 +368,10 @@ public partial class JSBigInt : JSPrimitive
     public override bool GreaterOrEqual(JSValue value)
         => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison >= 0 : base.GreaterOrEqual(value);
 
-    public override bool EqualsLiteral(string value) => this.value.ToString() == value;
+    // BigInt == String literal uses StringToBigInt, not a textual comparison: an
+    // empty/whitespace string is 0n (so `0n == ""` is true) and a non-integer string
+    // (e.g. "0.") equals no BigInt.
+    public override bool EqualsLiteral(string value) => TryStringToBigInt(value, out var parsed) && this.value == parsed;
 
     public override bool EqualsLiteral(double value) => (double)this.value == value;
 
@@ -460,7 +492,11 @@ public partial class JSBigInt : JSPrimitive
         if (value is JSObject @object)
             return new JSString(this.value + @object.StringValue);
 
-        return new JSBigInt(this.value + value.BigIntValue);
+        // After ToPrimitive, the only operands that combine with a BigInt are another BigInt
+        // (numeric add, handled above) or a String (concatenation, handled above). Everything
+        // else — Number, Boolean, null, undefined, Symbol — is a numeric type mismatch:
+        // ApplyStringOrNumericBinaryOperator throws a TypeError (e.g. `1n + null`).
+        throw CannotMix();
     }
 
     // BigInt.prototype methods accept either a BigInt primitive or a boxed

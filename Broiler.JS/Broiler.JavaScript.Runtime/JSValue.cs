@@ -571,6 +571,13 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         if (self.CanBeNumber && value.CanBeNumber)
             return CreateNumber(self.DoubleValue + value.DoubleValue);
 
+        // §13.15 ApplyStringOrNumericBinaryOperator for `+`: once neither operand (after
+        // ToPrimitive) is a String the operands add numerically via ToNumeric, and mixing a
+        // BigInt with a non-BigInt numeric value (Number/Boolean/null/undefined) is a
+        // TypeError rather than a string concatenation — e.g. `true + 1n`.
+        if (!self.IsString && !value.IsString && (self.IsBigInt ^ value.IsBigInt))
+            throw NewTypeError("Cannot mix BigInt and other types, use explicit conversions");
+
         if (value.ToString().Length == 0)
             return self.IsString ? self : CreateString(self.StringValue);
 

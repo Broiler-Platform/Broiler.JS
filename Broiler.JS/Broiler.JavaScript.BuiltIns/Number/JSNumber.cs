@@ -344,6 +344,12 @@ public sealed partial class JSNumber : JSPrimitive
         if (value.IsObject)
             return value.Equals(this);
 
+        // Number == BigInt compares mathematical values exactly (a finite Number equals a
+        // BigInt iff ℝ(x) = ℝ(y)); let the BigInt side do it rather than reading
+        // BigInt.DoubleValue (which throws) or falling through to a string comparison.
+        if (value.IsBigInt)
+            return value.Equals(this);
+
         switch (value)
         {
             case JSNumber number:

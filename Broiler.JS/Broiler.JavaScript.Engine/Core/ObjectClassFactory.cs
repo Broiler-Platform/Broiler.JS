@@ -44,7 +44,8 @@ internal static class ObjectClassFactory
             return JSObject.Constructor(a);
         }
 
-        var classValue = JSValue.CreateFunction(ObjectConstructor, "Object", "function Object() { [native code] }");
+        // §20.1.1 The Object constructor has length 1 (its single optional `value` parameter).
+        var classValue = JSValue.CreateFunction(ObjectConstructor, "Object", "function Object() { [native code] }", 1);
         var @class = (JSObject)classValue;
         objectClass = @class;
 
