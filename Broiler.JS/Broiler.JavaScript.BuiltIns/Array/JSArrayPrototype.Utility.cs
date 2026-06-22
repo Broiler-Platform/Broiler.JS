@@ -199,13 +199,18 @@ public partial class JSArray
     internal static JSValue ToSorted(in Arguments a)
     {
         var source = ToArrayLikeObject(a.This);
-        var length = GetArrayLikeLengthLong(source);
-        if (length > uint.MaxValue)
-            throw JSEngine.NewRangeError("Invalid array length");
 
+        // §23.1.3.34 Array.prototype.toSorted: the IsCallable(comparefn) check is
+        // step 2, before LengthOfArrayLike (step 3), so an invalid comparator must
+        // throw before "length" is observed
+        // (test262: Array/prototype/toSorted/comparefn-not-a-function).
         var compareFn = a.Get1();
         if (!compareFn.IsUndefined && !compareFn.IsFunction)
             throw JSEngine.NewTypeError("Argument is not a function");
+
+        var length = GetArrayLikeLengthLong(source);
+        if (length > uint.MaxValue)
+            throw JSEngine.NewRangeError("Invalid array length");
 
         Comparison<JSValue> comparison;
         if (compareFn.IsUndefined)

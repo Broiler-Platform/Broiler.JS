@@ -1136,8 +1136,15 @@ internal static class BuiltInsAssemblyInitializer
         if (context[proxyKey] is not JSFunction proxyCtor)
             return;
 
+        // §28.2 The Proxy constructor has no "prototype" property at all, because
+        // proxy exotic objects have no [[Prototype]] slot to initialize. The export
+        // machinery auto-creates one for constructor functions, so strip it here
+        // (test262: built-ins/Proxy/proxy-no-prototype).
         ref var ownProperties = ref proxyCtor.GetOwnProperties();
-        ownProperties.Put(KeyStrings.prototype.Key) = JSProperty.Property(KeyStrings.prototype, JSUndefined.Value, JSPropertyAttributes.Value);
+        // The auto-created "prototype" is non-configurable, so make it configurable
+        // first and then delete it outright.
+        ownProperties.Put(KeyStrings.prototype.Key) = JSProperty.Property(KeyStrings.prototype, JSUndefined.Value, JSPropertyAttributes.ConfigurableValue);
+        ownProperties.RemoveAt(KeyStrings.prototype.Key);
     }
 
     private static void PatchSymbolPrototype(JSContext context)
