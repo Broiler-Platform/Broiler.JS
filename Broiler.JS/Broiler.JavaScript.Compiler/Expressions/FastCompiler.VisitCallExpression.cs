@@ -135,7 +135,14 @@ partial class FastCompiler
             // A class field initializer counts as ordinary function code even when
             // the class has no explicit constructor (so scope.Top is not itself a
             // function scope), so new.target is permitted there too.
-            var rejectNewTarget = !inMemberInitializer && !EnclosedByOrdinaryFunction(scope.Top);
+            // When we are ourselves compiling a direct-eval body (a NESTED eval such
+            // as `eval('eval("new.target")')`) the local scope chain no longer carries
+            // the enclosing ordinary function, so inherit the outer eval's legality
+            // decision rather than recomputing it — matching how VisitMeta defers to
+            // DirectEvalSupport for new.target placed directly in an eval body.
+            var rejectNewTarget = isDirectEvalCompilation
+                ? (JSEngine.Current as JSContext)?.DirectEvalRejectsNewTarget ?? true
+                : !inMemberInitializer && !EnclosedByOrdinaryFunction(scope.Top);
 
             // When a `super(...)` call is permitted in the eval body (a derived
             // constructor before super()), share the constructor's `this` binding and

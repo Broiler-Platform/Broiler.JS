@@ -140,7 +140,7 @@ public static class DirectEvalSupport
             // Thread the caller's new.target so `new.target` at the eval's top level
             // (and a nested eval) observes it. Pushed unconditionally so a nested
             // direct eval inherits the same value rather than reading undefined.
-            using var newTargetScope = context.PushDirectEvalNewTarget(directEvalNewTarget);
+            using var newTargetScope = context.PushDirectEvalNewTarget(directEvalNewTarget, rejectNewTarget);
             using var __ = context.PushDirectEvalCompilation(requiresActivation, privateNamesInScope);
             // The completion value of the eval body is a real value, not a tail
             // call of the surrounding function: eval is a syntactic boundary. Under

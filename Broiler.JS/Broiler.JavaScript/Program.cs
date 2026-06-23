@@ -70,6 +70,7 @@ namespace BroilerJS
                 Environment.SetEnvironmentVariable("BROILER_SCRIPT_HOST", "1");
                 using var sc = CreateSynchronizationContext();
                 using var context = new JSContext(SynchronizationContext.Current, experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026);
+                DefineScriptHostGlobals(context);
                 var code = await File.ReadAllTextAsync(file.FullName);
                 // Pass the global context explicitly so top-level `this` resolves to
                 // the same host object that owns the evaluated script. Prefer the
@@ -97,6 +98,28 @@ namespace BroilerJS
                 });
             if (!r.IsUndefined)
                 Console.WriteLine(r);
+        }
+
+        // Host functions provided by JavaScript shells (SpiderMonkey's `js`, V8's `d8`)
+        // that are not part of ECMAScript but are relied upon by many test262 staging
+        // tests — most notably the imported SpiderMonkey `sm/` suite. Defined only in
+        // script-host mode so they do not leak into the embeddable engine surface.
+        private static void DefineScriptHostGlobals(JSContext context)
+        {
+            // `print(...values)` writes the space-joined string form of its arguments,
+            // followed by a newline, to standard output and returns undefined.
+            context[Broiler.JavaScript.Storage.KeyStrings.GetOrCreate("print")] = JSValue.CreateFunction(
+                static (in Arguments a) =>
+                {
+                    var parts = new string[a.Length];
+                    for (var i = 0; i < a.Length; i++)
+                        parts[i] = a.GetAt(i).ToString();
+
+                    Console.WriteLine(string.Join(" ", parts));
+                    return JSUndefined.Value;
+                },
+                "print",
+                length: 1);
         }
     }
 

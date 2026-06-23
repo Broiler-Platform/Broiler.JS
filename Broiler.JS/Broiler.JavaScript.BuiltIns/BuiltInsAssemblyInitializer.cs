@@ -1645,7 +1645,12 @@ internal static class BuiltInsAssemblyInitializer
                 // sm/RegExp/replace-trace.
                 var capturesLength = Math.Max((int)result[KeyStrings.length].DoubleValue, 0);
                 var matched = result[0].ToString();
-                var position = (int)result[KeyStrings.index].DoubleValue;
+                // §22.2.6.11 step 16.f-g: position is ToIntegerOrInfinity(Get(result, "index"))
+                // clamped to [0, lengthS]. An ill-behaving exec (e.g. a Proxy result) may report
+                // an index past the end of the subject string; clamping keeps the later
+                // input.AsSpan(...) slices in range instead of throwing ArgumentOutOfRangeException.
+                var rawPosition = result[KeyStrings.index].DoubleValue;
+                var position = (int)Math.Clamp(double.IsNaN(rawPosition) ? 0 : Math.Truncate(rawPosition), 0, input.Length);
 
                 List<JSValue> captures = [];
                 for (var i = 1; i < capturesLength; i++)
