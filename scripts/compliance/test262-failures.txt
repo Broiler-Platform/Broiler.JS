@@ -22,13 +22,11 @@ test/built-ins/Date/prototype/setFullYear/arg-year-to-number.js
 test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/lookahead-quantifier-match-groups.js
-test/built-ins/RegExp/named-groups/unicode-references.js
 test/built-ins/RegExp/nullable-quantifier.js
 test/built-ins/RegExp/property-escapes/generated/strings/Basic_Emoji.js
 test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji.js
 test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Modifier_Sequence.js
 test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_ZWJ_Sequence.js
-test/built-ins/RegExp/prototype/Symbol.replace/coerce-global.js
 test/built-ins/RegExp/regexp-modifiers/add-ignoreCase-affects-slash-lower-b.js
 test/built-ins/RegExp/regexp-modifiers/add-ignoreCase-affects-slash-upper-b.js
 test/built-ins/RegExp/regexp-modifiers/add-ignoreCase-affects-slash-upper-p.js
@@ -128,9 +126,6 @@ test/language/literals/regexp/S7.8.5_A1.1_T2.js
 test/language/literals/regexp/S7.8.5_A1.4_T2.js
 test/language/literals/regexp/S7.8.5_A2.1_T2.js
 test/language/literals/regexp/S7.8.5_A2.4_T2.js
-test/language/literals/regexp/u-case-mapping.js
-test/language/literals/string/legacy-octal-escape-sequence.js
-test/language/statements/class/definition/basics.js
 test/language/statements/class/elements/privatefieldset-evaluation-order-1.js
 test/language/statements/continue/labeled-continue.js
 test/language/statements/continue/nested-let-bound-for-loops-inner-continue.js
@@ -141,7 +136,6 @@ test/language/statements/continue/shadowing-loop-variable-in-same-scope-as-conti
 test/language/statements/continue/simple-and-labeled.js
 test/language/statements/for/scope-body-lex-open.js
 test/staging/Temporal/removed-methods.js
-test/staging/built-ins/RegExp/escape/surrogate-pair.js
 test/staging/decorators/public-auto-accessor.js
 test/staging/sm/Array/from_proxy.js
 test/staging/sm/Array/to-length.js
@@ -154,7 +148,6 @@ test/staging/sm/Function/return-finally.js
 test/staging/sm/Proxy/global-receiver.js
 test/staging/sm/RegExp/exec.js
 test/staging/sm/RegExp/ignoreCase-non-latin1-to-latin1.js
-test/staging/sm/RegExp/replace-trace.js
 test/staging/sm/RegExp/unicode-back-reference.js
 test/staging/sm/RegExp/unicode-braced.js
 test/staging/sm/RegExp/unicode-class-braced.js
@@ -168,8 +161,6 @@ test/staging/sm/String/string-code-point-upper-lower-mapping.js
 test/staging/sm/String/string-upper-lower-mapping.js
 test/staging/sm/TypedArray/indexOf-and-lastIndexOf.js
 test/staging/sm/TypedArray/sort_large_countingsort.js
-test/staging/sm/class/classHeritage.js
-test/staging/sm/class/newTargetArrow.js
 test/staging/sm/class/newTargetEval.js
 test/staging/sm/class/superCallBaseInvoked.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
