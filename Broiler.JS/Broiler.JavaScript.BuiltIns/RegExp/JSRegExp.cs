@@ -1781,7 +1781,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static string BuildNamedBackref(List<int> indices)
     {
         if (indices.Count == 1)
-            return $"\\k<bjsg{indices[0]}>";
+            // Gate the backreference on the group having participated. In ECMAScript an
+            // unset backreference (a forward/self reference, or a backward reference to a
+            // group in an unmatched optional) always matches the empty string. .NET only
+            // honours that under RegexOptions.ECMAScript, which is disabled in u/v mode —
+            // there a bare `\k<bjsgN>` to an unset group FAILS the match instead. The
+            // conditional matches the capture when set and the empty string otherwise, in
+            // both modes (the duplicate-name path below already relies on this form).
+            return $"(?(bjsg{indices[0]})\\k<bjsg{indices[0]}>)";
 
         var acc = $"(?(bjsg{indices[^1]})\\k<bjsg{indices[^1]}>)";
         for (var k = indices.Count - 2; k >= 0; k--)
