@@ -480,13 +480,32 @@ public partial class JSTemporalPlainTime : JSObject
     private static JSValue ToTemporalTime(JSValue item, Func<string> readOverflow)
     {
         if (item is JSTemporalPlainTime t)
+        {
+            // GetTemporalOverflowOption is still performed (and the options bag validated) for
+            // every source kind, including those whose time comes from internal slots — only the
+            // property-bag form reads time fields (test262 PlainTime/from order-of-operations).
+            readOverflow();
             return new JSTemporalPlainTime(t.TotalNanoseconds(), PlainTimePrototype);
+        }
 
         // ToTemporalTime fast path: a PlainDateTime carries its time in internal slots, so
         // the time components are read directly rather than through observable property
         // getters (test262 PlainTime/from/argument-plaindatetime checks no getters run).
         if (item is JSTemporalPlainDateTime pdt)
-            return Create(pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond);
+        {
+            var pdtResult = Create(pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond);
+            readOverflow();
+            return pdtResult;
+        }
+
+        // A ZonedDateTime is projected onto its wall-clock PlainTime via internal slots (no
+        // observable getters), then the overflow option is read like every other source kind.
+        if (item is JSTemporalZonedDateTime zdt)
+        {
+            var zdtResult = zdt.ToPlainTimeFromSlots();
+            readOverflow();
+            return zdtResult;
+        }
 
         if (item.IsString)
             return ParseTemporalTimeString(item.ToString());

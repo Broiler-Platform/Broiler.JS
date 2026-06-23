@@ -606,6 +606,21 @@ partial class FastCompiler
                                 preEvaluatedTargetRef = CreateMemberExpression(objectTemp.Expression, targetMember.Property, false);
                             }
                         }
+                        else if (!newScope
+                            && (property.Value as AstIdentifier
+                                ?? ((property.Value as AstBinaryExpression) is { Operator: TokenTypes.Assign, Left: AstIdentifier l } ? l : null)) is { } identTarget)
+                        {
+                            // §13.15.5.4 KeyedDestructuringAssignmentEvaluation / KeyedBindingInitialization:
+                            // ResolveBinding(target) is evaluated BEFORE GetV reads the value from the
+                            // source. For a var-scoped binding or an assignment target inside a `with`,
+                            // that resolution probes the with object's [[HasProperty]] — observable via a
+                            // Proxy `has` trap — so the order is target, GetV, default (test262
+                            // destructuring/binding/keyed-...-target-evaluation-order-with-bindings). A
+                            // fresh lexical (let/const, newScope) target resolves in its own inner
+                            // declarative environment and never reaches the with object, so it is excluded;
+                            // outside a `with` this is a cheap no-op.
+                            inits.Add(JSContextBuilder.ResolveWithObject(KeyOfName(identTarget.Name)));
+                        }
 
                         if (propertyInit != null)
                         {
