@@ -78,9 +78,13 @@ public class JSGeneratorFunctionV2 : JSFunction
         if (cache.AsyncGeneratorPrototype != null)
             return cache.AsyncGeneratorPrototype;
 
+        // §27.4.1: %AsyncGeneratorPrototype%.[[Prototype]] is %AsyncIteratorPrototype% —
+        // NOT the sync %IteratorPrototype%. Building it here ensures
+        // `getPrototypeOf(getPrototypeOf(asyncGen.prototype))` is %AsyncIteratorPrototype%
+        // and exposes its @@asyncIterator / @@asyncDispose as OWN properties.
         var asyncGeneratorPrototype = new JSObject
         {
-            BasePrototypeObject = generatorPrototype.GetPrototypeOf()
+            BasePrototypeObject = CreateAsyncIteratorPrototype()
         };
 
         AddAsyncGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.next, "next");
@@ -89,6 +93,47 @@ public class JSGeneratorFunctionV2 : JSFunction
 
         asyncGeneratorPrototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("AsyncGenerator"), JSPropertyAttributes.ConfigurableReadonlyValue);
         return cache.AsyncGeneratorPrototype = asyncGeneratorPrototype;
+    }
+
+    // %AsyncIteratorPrototype% (§27.1.3): a distinct object inheriting %Object.prototype%
+    // with own @@asyncIterator (returns this) and — for explicit-resource-management —
+    // @@asyncDispose, both { writable: true, enumerable: false, configurable: true }.
+    private static JSObject CreateAsyncIteratorPrototype()
+    {
+        var asyncIteratorPrototype = new JSObject();
+
+        asyncIteratorPrototype.FastAddValue(
+            (IJSSymbol)JSSymbol.asyncIterator,
+            JSValue.CreateFunction(static (in Arguments a) => a.This,
+                "[Symbol.asyncIterator]", "function [Symbol.asyncIterator]() { [native code] }", 0, createPrototype: false),
+            JSPropertyAttributes.ConfigurableValue);
+
+        // %AsyncIteratorPrototype% [ @@asyncDispose ] (): closes the async iterator via its
+        // `return` method, returning a promise (the fulfillment value of return is ignored).
+        asyncIteratorPrototype.FastAddValue(
+            (IJSSymbol)JSSymbol.asyncDispose,
+            JSValue.CreateFunction(static (in Arguments a) =>
+            {
+                var iterator = a.This;
+                return new Broiler.JavaScript.BuiltIns.Promise.JSPromise((resolve, reject) =>
+                {
+                    try
+                    {
+                        var ret = iterator[KeyStrings.GetOrCreate("return")]; // GetMethod(O, "return")
+                        if (ret.IsNullOrUndefined) { resolve(JSUndefined.Value); return; }
+                        if (ret is not JSFunction returnFn)
+                            throw Engine.Core.JSEngine.NewTypeError("AsyncIterator.prototype[Symbol.asyncDispose]: return is not a function");
+                        var result = returnFn.InvokeFunction(new Arguments(iterator));
+                        if (!result.IsObject)
+                            throw Engine.Core.JSEngine.NewTypeError("AsyncIterator.prototype[Symbol.asyncDispose]: return must return an object");
+                        resolve(JSUndefined.Value);
+                    }
+                    catch (JSException ex) { reject(ex.Error); }
+                });
+            }, "[Symbol.asyncDispose]", "function [Symbol.asyncDispose]() { [native code] }", 0, createPrototype: false),
+            JSPropertyAttributes.ConfigurableValue);
+
+        return asyncIteratorPrototype;
     }
 
     /// <summary>
