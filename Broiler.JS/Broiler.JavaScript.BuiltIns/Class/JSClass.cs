@@ -72,6 +72,13 @@ public class JSClass : JSFunction
     public void AddConstructor(JSFunction fx)
     {
         f = fx.f;
+        // SetFunctionLength: a class constructor's "length" is the formal-parameter count of
+        // the class's own constructor. AddConstructor previously copied only the delegate,
+        // leaving the placeholder length (0) the base JSFunction ctor installed, so e.g.
+        // `class C { constructor(a, b) {} }` reported `C.length === 0`. Copy the constructor
+        // function's own "length" (configurable, non-writable, non-enumerable).
+        GetOwnProperties().Put(KeyStrings.length, fx[KeyStrings.length], JSPropertyAttributes.ConfigurableReadonlyValue);
+
         // The class now has its own constructor body, so it is no longer the default
         // derived constructor; its super references are already compiled dynamically.
         IsBodylessDefaultConstructor = false;

@@ -90,8 +90,37 @@ public partial class JSShadowRealm : JSObject
     }
 
     [JSExport(Length = 2)]
-    public JSValue ImportValue(in Arguments a) =>
+    public JSValue ImportValue(in Arguments a)
+    {
+        // §ShadowRealm.prototype.importValue:
+        //   1. Let O be this value; perform ? GetShadowRealmRecord(O).
+        //   2. Let specifierString be ? ToString(specifier).
+        //   3. ... (module load is not yet implemented)
+        // Step 2 must run BEFORE the "not implemented" failure — a specifier whose
+        // @@toPrimitive / toString / valueOf returns an abrupt completion has to
+        // surface that completion (test262 importValue/specifier-tostring).
+        if (a.This is not JSShadowRealm)
+            throw JSEngine.NewTypeError("ShadowRealm.prototype.importValue called on incompatible receiver");
+
+        var specifier = a.Get1();
+        _ = ToStringForImport(specifier);
+
         throw JSEngine.NewTypeError("ShadowRealm.prototype.importValue is not implemented");
+    }
+
+    // ToString(argument) — the part of the spec that may abruptly complete: an Object operand
+    // is first ToPrimitive(string) (observing @@toPrimitive / toString / valueOf), and a Symbol
+    // (whether produced directly or returned from @@toPrimitive) is a TypeError.
+    private static string ToStringForImport(JSValue value)
+    {
+        if (value is Runtime.JSObject @object)
+            value = @object.ToStringPrimitive();
+
+        if (value.IsSymbol)
+            throw JSEngine.NewTypeError("Cannot convert a Symbol value to a string");
+
+        return value.StringValue;
+    }
 
     /// <summary>
     /// Implements the spec's GetWrappedValue abstract operation. Primitives are

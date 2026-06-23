@@ -275,7 +275,6 @@ partial class FastCompiler
         }
 
         var superVar = BExpression.Parameter(typeof(JSValue));
-        var superPrototypeVar = BExpression.Parameter(typeof(JSObject));
 
         // [[HomeObject]] holders for DYNAMIC super resolution. GetSuperBase reads the
         // home object's CURRENT [[Prototype]] on every super access, so
@@ -296,7 +295,12 @@ partial class FastCompiler
         var stmts = new Sequence<BExpression>(body.Members.Count)
         {
             BExpression.Assign(superVar, superExp),
-            BExpression.Assign(superPrototypeVar, JSClassBuilder.ResolveSuperclassPrototype(superVar)),
+            // ClassDefinitionEvaluation reads the superclass's "prototype" exactly once
+            // (protoParent), which the JSClass constructor does when the class object is
+            // built. The previous extra read here re-invoked a `prototype` getter on the
+            // heritage (test262: class/definition/prototype-getter expects `calls === 1`),
+            // so it is dropped; super property access resolves the home object's CURRENT
+            // [[Prototype]] dynamically and never needed this cached value.
             // Allocate the (empty) home-object boxes before any member function object is
             // created, so the methods capture these stable references. The JSVariable
             // names are EMPTY: a named binding would re-run NamedEvaluation when the
@@ -310,7 +314,7 @@ partial class FastCompiler
 
         var memberInits = new Sequence<AstClassProperty>();
         var computedMemberNames = new Dictionary<AstClassProperty, BExpression>();
-        var classScopeVariables = new Sequence<BParameterExpression> { superVar, superPrototypeVar, homeConstructorVar, homePrototypeVar };
+        var classScopeVariables = new Sequence<BParameterExpression> { superVar, homeConstructorVar, homePrototypeVar };
         AstFunctionExpression constructor = null;
 
         // Non-static private methods/accessors are installed PER INSTANCE (not on the

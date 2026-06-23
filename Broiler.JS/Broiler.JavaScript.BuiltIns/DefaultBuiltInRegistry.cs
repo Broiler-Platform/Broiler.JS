@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Extensions;
@@ -92,6 +93,15 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
         // Set up Iterator.prototype helpers and prototype chain (ES2025).
         SetupIteratorPrototypeChain(context);
         BuiltInsAssemblyInitializer.PatchAsyncIteratorPrototype(context);
+
+        // ShadowRealm.prototype[@@toStringTag] = "ShadowRealm" — a non-writable,
+        // non-enumerable, configurable data property (§ShadowRealm.prototype[@@toStringTag]).
+        if (context[KeyStrings.GetOrCreate("ShadowRealm")] is JSFunction shadowRealmCtor
+            && shadowRealmCtor.prototype is JSObject shadowRealmPrototype
+            && shadowRealmPrototype.GetOwnPropertyDescriptor(JSSymbol.toStringTag).IsUndefined)
+        {
+            shadowRealmPrototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("ShadowRealm"), JSPropertyAttributes.ConfigurableReadonlyValue);
+        }
 
         // Register the console object via factory delegate (wired by BuiltIns assembly).
         if (ConsoleFactory != null)

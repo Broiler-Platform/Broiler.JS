@@ -424,17 +424,17 @@ public partial class JSArray
     {
         var r = new JSArray();
 
+        // §23.1.3.31 step 1: O = ? ToObject(this value), performed before any argument
+        // coercion — a null/undefined receiver throws a TypeError first (a primitive is
+        // boxed). Previously a null receiver silently returned an empty array.
+        var @this = ToArrayLikeObject(a.This);
+
         long start = a.TryGetAt(0, out var startP)
             ? ToIntegerOrInfinity(startP)
             : 0;
         var deleteCount = a.TryGetAt(1, out var deleteCountP)
             ? ToIntegerOrInfinity(deleteCountP)
             : (a.Length == 0 ? 0 : long.MaxValue);
-
-        var @this = a.This as JSObject;
-
-        if (@this == null)
-            return r;
 
         if (@this.IsSealedOrFrozen())
             throw JSEngine.NewTypeError("Cannot modify property length");
