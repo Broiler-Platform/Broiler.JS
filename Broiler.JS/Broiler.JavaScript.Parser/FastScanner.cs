@@ -740,17 +740,36 @@ public class FastScanner
                 break;
 
             case '0':
-                // \0 followed by an octal digit (0-7) is a legacy octal escape
-                var nextCh = Next();
-                if (nextCh >= '0' && nextCh <= '7')
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            {
+                // Annex B.1.2 LegacyOctalEscapeSequence: in a non-strict string literal a
+                // `\` followed by octal digits is the corresponding code unit (e.g. `\1`
+                // is U+0001, `\101` is "A"). A leading digit 0-3 permits up to three octal
+                // digits total, 4-7 up to two (the value never exceeds 0o377 = 255). `\0`
+                // not followed by an octal digit is the NUL escape. Strict-mode and
+                // template occurrences are rejected separately (SyntaxValidation /
+                // the deferInvalid path above), so only the cooked value is produced here.
+                int value = next - '0';
+                int maxMore = next <= '3' ? 2 : 1;
+                for (var k = 0; k < maxMore; k++)
                 {
-                    // Legacy octal escape \0N: consume the octal digit
-                    var octal = Consume();
-                    t.Append((char)(octal - '0'));
-                    return true;
+                    var d = Next();
+                    if (d < '0' || d > '7')
+                        break;
+
+                    Consume();
+                    value = value * 8 + (d - '0');
                 }
-                next = '\0';
-                break;
+
+                t.Append((char)value);
+                return true;
+            }
 
             default:
                 t.Append(next);

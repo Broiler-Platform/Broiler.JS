@@ -49,6 +49,19 @@ public partial class JSRegExp : JSObject, IJSRegExp
         for (int i = 0; i < str.Length; i++)
         {
             var c = str[i];
+
+            // A well-formed surrogate pair is a single (astral) code point. RegExp.escape
+            // works on code points, and an astral letter/symbol is not a syntax,
+            // punctuator or white-space character, so it is emitted literally. Only a LONE
+            // surrogate is escaped (handled by TryAppendEscape's char.IsSurrogate branch).
+            if (char.IsHighSurrogate(c) && i + 1 < str.Length && char.IsLowSurrogate(str[i + 1]))
+            {
+                sb.Append(c);
+                sb.Append(str[i + 1]);
+                i++;
+                continue;
+            }
+
             if (TryAppendEscape(sb, c, i == 0))
                 continue;
 
