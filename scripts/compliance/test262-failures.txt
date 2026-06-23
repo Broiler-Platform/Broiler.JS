@@ -34,13 +34,6 @@ test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-lower-b.j
 test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-lower-w.js
 test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-upper-b.js
 test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-upper-w.js
-test/built-ins/RegExp/unicodeSets/generated/character-class-escape-union-character-class.js
-test/built-ins/RegExp/unicodeSets/generated/character-class-union-character-class-escape.js
-test/built-ins/RegExp/unicodeSets/generated/character-class-union-character-class.js
-test/built-ins/RegExp/unicodeSets/generated/character-class-union-character-property-escape.js
-test/built-ins/RegExp/unicodeSets/generated/character-class-union-character.js
-test/built-ins/RegExp/unicodeSets/generated/character-property-escape-union-character-class.js
-test/built-ins/RegExp/unicodeSets/generated/character-union-character-class.js
 test/built-ins/RegExp/unicodeSets/generated/rgi-emoji-17.0.js
 test/built-ins/RegExp/unicode_full_case_folding.js
 test/built-ins/ShadowRealm/prototype/evaluate/throws-typeerror-wrap-throwing.js
@@ -94,7 +87,6 @@ test/intl402/Temporal/Duration/prototype/round/dst-balancing-result.js
 test/intl402/Temporal/Duration/prototype/round/relativeto-dst-back-transition.js
 test/intl402/Temporal/Duration/prototype/total/dst-balancing-result.js
 test/intl402/Temporal/Duration/prototype/total/relativeto-dst-back-transition.js
-test/intl402/Temporal/Instant/prototype/toString/timezone-offset.js
 test/intl402/Temporal/PlainMonthDay/from/chinese-dangi-leap-month-with-year-from-options-bag.js
 test/intl402/Temporal/PlainYearMonth/prototype/with/leap-months-chinese.js
 test/intl402/Temporal/PlainYearMonth/prototype/with/leap-months-dangi.js
@@ -106,9 +98,6 @@ test/intl402/Temporal/ZonedDateTime/from/argument-propertybag-dst-options-offset
 test/intl402/Temporal/ZonedDateTime/from/argument-string-dst-option-disambiguation.js
 test/intl402/Temporal/ZonedDateTime/from/argument-string-dst-option-offset-disambiguation-combinations.js
 test/intl402/Temporal/ZonedDateTime/links.js
-test/intl402/Temporal/ZonedDateTime/prototype/getTimeZoneTransition/no-transitions-named-timezone.js
-test/intl402/Temporal/ZonedDateTime/prototype/getTimeZoneTransition/rule-change-without-offset-transition.js
-test/intl402/Temporal/ZonedDateTime/prototype/getTimeZoneTransition/subtract-second-and-nanosecond-from-last-transition.js
 test/intl402/Temporal/ZonedDateTime/prototype/since/same-date-reverse-wallclock.js
 test/intl402/Temporal/ZonedDateTime/prototype/until/dst-rounding-result.js
 test/intl402/Temporal/ZonedDateTime/prototype/until/same-date-reverse-wallclock.js
@@ -118,15 +107,12 @@ test/language/comments/S7.4_A6.js
 test/language/destructuring/binding/keyed-destructuring-property-reference-target-evaluation-order-with-bindings.js
 test/language/eval-code/direct/var-env-func-init-local-new-delete.js
 test/language/eval-code/direct/var-env-var-init-local-new-delete.js
-test/language/expressions/assignment/destructuring/keyed-destructuring-property-reference-target-evaluation-order-with-bindings.js
 test/language/expressions/call/11.2.3-3_3.js
 test/language/expressions/dynamic-import/import-attributes/2nd-param-with-enumeration-enumerable.js
-test/language/expressions/right-shift/bigint.js
 test/language/literals/regexp/S7.8.5_A1.1_T2.js
 test/language/literals/regexp/S7.8.5_A1.4_T2.js
 test/language/literals/regexp/S7.8.5_A2.1_T2.js
 test/language/literals/regexp/S7.8.5_A2.4_T2.js
-test/language/statements/class/elements/privatefieldset-evaluation-order-1.js
 test/language/statements/continue/labeled-continue.js
 test/language/statements/continue/nested-let-bound-for-loops-inner-continue.js
 test/language/statements/continue/nested-let-bound-for-loops-labeled-continue.js
@@ -135,7 +121,6 @@ test/language/statements/continue/no-label-continue.js
 test/language/statements/continue/shadowing-loop-variable-in-same-scope-as-continue.js
 test/language/statements/continue/simple-and-labeled.js
 test/language/statements/for/scope-body-lex-open.js
-test/staging/Temporal/removed-methods.js
 test/staging/decorators/public-auto-accessor.js
 test/staging/sm/Array/from_proxy.js
 test/staging/sm/Array/to-length.js
