@@ -41,7 +41,7 @@ public class JSClass : JSFunction
 
     private static bool IsConstructableSuperclass(JSValue value) => JSConstructorOperations.IsConstructor(value);
 
-    public JSClass(JSFunctionDelegate fx, JSValue super, string name = null, string code = null)
+    public JSClass(JSFunctionDelegate fx, JSValue super, bool hasHeritage, string name = null, string code = null)
         : base(fx ?? (super as JSFunction)?.Delegate ?? empty, name, code)
     {
         this.super = super;
@@ -56,7 +56,15 @@ public class JSClass : JSFunction
         // throw rather than silently failing.
         IsStrictMode = true;
 
-        if (super is JSObject superObject)
+        // A derived class's constructor [[Prototype]] is its superclass
+        // (ClassDefinitionEvaluation constructorParent). A base class (no
+        // ClassHeritage) keeps %Function.prototype%, which the JSFunction base
+        // constructor already installed. The compiler passes the Object constructor
+        // as `super` for a base class only so the prototype's [[Prototype]] resolves to
+        // %Object.prototype% below — it must NOT also become the constructor's
+        // [[Prototype]], which would make `Object.getPrototypeOf(class C {})` the Object
+        // constructor instead of Function.prototype.
+        if (hasHeritage && super is JSObject superObject)
             BasePrototypeObject = superObject;
 
         prototype.BasePrototypeObject = ResolveSuperclassPrototype(super);

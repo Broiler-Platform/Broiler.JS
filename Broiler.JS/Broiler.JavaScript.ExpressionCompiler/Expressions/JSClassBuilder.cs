@@ -28,7 +28,7 @@ public static class JSClassBuilder
         _type = classType;
         _addConstructor = classType.GetMethod(nameof(AddConstructorName), [functionType])
             ?? classType.GetMethod(AddConstructorName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        _ctor = classType.GetConstructor([delegateType, jsValueType, typeof(string), typeof(string)]);
+        _ctor = classType.GetConstructor([delegateType, jsValueType, typeof(bool), typeof(string), typeof(string)]);
         _resolveSuperclassPrototype = classType.GetMethod(
             ResolveSuperclassPrototypeName,
             BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public,
@@ -44,7 +44,7 @@ public static class JSClassBuilder
 
     public static Expression ResolveSuperclassPrototype(Expression exp) => Expression.Call(null, _resolveSuperclassPrototype, exp);
 
-    public static BNewExpression New(Expression constructor, Expression super, string name, string code = "") =>
+    public static BNewExpression New(Expression constructor, Expression super, bool hasHeritage, string name, string code = "") =>
         Expression.New(_ctor,
-            constructor ?? Expression.Null, super ?? Expression.Null, Expression.Constant(name), Expression.Constant(code));
+            constructor ?? Expression.Null, super ?? Expression.Null, Expression.Constant(hasHeritage), Expression.Constant(name), Expression.Constant(code));
 }
