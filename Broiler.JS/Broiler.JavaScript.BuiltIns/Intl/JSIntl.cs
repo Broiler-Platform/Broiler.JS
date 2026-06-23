@@ -3811,50 +3811,89 @@ public sealed class JSIntlListFormat : JSObject
         if (a.This is not JSIntlListFormat @this)
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.formatToParts called on incompatible receiver");
 
-        // Minimal formatToParts: a single "element" part per list item plus
-        // "literal" parts for the surrounding separators. We re-derive the
-        // literals by diffing the full formatted string against the elements.
         var items = StringListFromIterable(a.Get1());
-        var formatted = @this.FormatList(items);
+        var parts = @this.BuildParts(items);
         var result = JSValue.CreateArray();
-        var parts = (JSObject)result;
-        uint index = 0;
-        int cursor = 0;
-        for (int i = 0; i < items.Count; i++)
-        {
-            var pos = formatted.IndexOf(items[i], cursor, StringComparison.Ordinal);
-            if (pos < 0)
-                pos = cursor;
-            if (pos > cursor)
-                parts.SetPropertyOrThrow(JSValue.CreateNumber(index++), MakePart("literal", formatted.Substring(cursor, pos - cursor)));
-            parts.SetPropertyOrThrow(JSValue.CreateNumber(index++), MakePart("element", items[i]));
-            cursor = pos + items[i].Length;
-        }
-        if (cursor < formatted.Length)
-            parts.SetPropertyOrThrow(JSValue.CreateNumber(index++), MakePart("literal", formatted.Substring(cursor)));
+        var arr = (JSObject)result;
+        for (uint i = 0; i < (uint)parts.Count; i++)
+            arr.SetPropertyOrThrow(JSValue.CreateNumber(i), MakePart(parts[(int)i].type, parts[(int)i].value));
         return result;
     }
 
     // Like formatToParts, but returns ("element"|"literal", value) tuples. Used by
     // Intl.DurationFormat to interleave its own per-unit parts with the list's
     // separators (the "element" entries are replaced by the caller).
-    internal List<(string type, string value)> FormatPartsForUnits(List<string> items)
+    internal List<(string type, string value)> FormatPartsForUnits(List<string> items) => BuildParts(items);
+
+    // Build the parts list directly from the CLDR start/middle/end/pair patterns.
+    // The earlier implementation formatted the full list to a single string and then
+    // recovered the separators with IndexOf against each element, which misattributed
+    // substrings when an element happened to also occur inside a separator (e.g. the
+    // "or" in `formatToParts("foo")` gets iterated to ['f','o','o'], and the second
+    // 'o' would match the 'o' in the "or " connector before reaching the actual third
+    // element). Walking the pattern templates directly produces the parts unambiguously.
+    private List<(string type, string value)> BuildParts(List<string> items)
     {
-        var formatted = FormatList(items);
-        var result = new List<(string, string)>();
-        var cursor = 0;
-        for (var i = 0; i < items.Count; i++)
+        var count = items.Count;
+        if (count == 0)
+            return new List<(string, string)>();
+        if (count == 1)
+            return new List<(string, string)> { ("element", items[0]) };
+
+        var (start, middle, end, pair) = GetPatterns();
+        if (count == 2)
+            return ExpandPattern(pair, new List<(string, string)> { ("element", items[0]) }, new List<(string, string)> { ("element", items[1]) });
+
+        var inner = ExpandPattern(end,
+            new List<(string, string)> { ("element", items[count - 2]) },
+            new List<(string, string)> { ("element", items[count - 1]) });
+        for (var i = count - 3; i >= 1; i--)
+            inner = ExpandPattern(middle, new List<(string, string)> { ("element", items[i]) }, inner);
+        return ExpandPattern(start, new List<(string, string)> { ("element", items[0]) }, inner);
+    }
+
+    // Walk a "{0} … {1}" pattern emitting placeholder substitutions as the supplied
+    // sub-parts and the surrounding literal text as "literal" parts; adjacent literal
+    // parts are merged so the result has no zero-content runs.
+    private static List<(string type, string value)> ExpandPattern(string pattern,
+        List<(string type, string value)> parts0,
+        List<(string type, string value)> parts1)
+    {
+        var result = new List<(string type, string value)>();
+        var literal = new StringBuilder();
+        void FlushLiteral()
         {
-            var pos = formatted.IndexOf(items[i], cursor, StringComparison.Ordinal);
-            if (pos < 0)
-                pos = cursor;
-            if (pos > cursor)
-                result.Add(("literal", formatted.Substring(cursor, pos - cursor)));
-            result.Add(("element", items[i]));
-            cursor = pos + items[i].Length;
+            if (literal.Length > 0)
+            {
+                result.Add(("literal", literal.ToString()));
+                literal.Clear();
+            }
         }
-        if (cursor < formatted.Length)
-            result.Add(("literal", formatted.Substring(cursor)));
+        void Append(List<(string type, string value)> subParts)
+        {
+            foreach (var p in subParts)
+            {
+                if (p.type == "literal")
+                {
+                    literal.Append(p.value);
+                }
+                else
+                {
+                    FlushLiteral();
+                    result.Add(p);
+                }
+            }
+        }
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            if (pattern[i] == '{' && i + 2 < pattern.Length && pattern[i + 2] == '}')
+            {
+                if (pattern[i + 1] == '0') { Append(parts0); i += 2; continue; }
+                if (pattern[i + 1] == '1') { Append(parts1); i += 2; continue; }
+            }
+            literal.Append(pattern[i]);
+        }
+        FlushLiteral();
         return result;
     }
 
