@@ -1990,6 +1990,13 @@ public static class JSIntl
         if (style == "unit" && unitValue.IsUndefined)
             throw JSEngine.NewTypeError("Intl.NumberFormat unit style requires a unit option");
 
+        // SetNumberFormatUnitOptions: a provided unit must be a well-formed unit identifier
+        // (a sanctioned single unit, or "<numerator>-per-<denominator>" of two such units).
+        // Anything else — including valid CLDR units that ECMA-402 does not sanction, such as
+        // "acre-foot" or "ampere" — is a RangeError.
+        if (!unitValue.IsUndefined && !IsWellFormedUnitIdentifier(unitValue.StringValue))
+            throw JSEngine.NewRangeError($"Invalid unit identifier: {unitValue.StringValue}");
+
         // unitDisplay is read (and validated) regardless of style, but the
         // resolved slot only exists when style is "unit".
         var unitDisplay = GetOption(options, UnitDisplayKey, UnitDisplayValues, false, "short");
@@ -2069,6 +2076,26 @@ public static class JSIntl
         };
     }
 
+    // The ECMA-402 sanctioned single unit identifiers — the same set
+    // Intl.supportedValuesOf("unit") reports (AvailableCanonicalUnits).
+    private static readonly HashSet<string> SanctionedSingleUnits = new(IntlEnumerationData.Units, StringComparer.Ordinal);
+
+    // IsWellFormedUnitIdentifier (ECMA-402): a sanctioned single unit, or
+    // "<numerator>-per-<denominator>" where both are sanctioned single units.
+    private static bool IsWellFormedUnitIdentifier(string unit)
+    {
+        if (SanctionedSingleUnits.Contains(unit))
+            return true;
+
+        var perIndex = unit.IndexOf("-per-", StringComparison.Ordinal);
+        if (perIndex < 0)
+            return false;
+
+        var numerator = unit[..perIndex];
+        var denominator = unit[(perIndex + 5)..];
+        return SanctionedSingleUnits.Contains(numerator) && SanctionedSingleUnits.Contains(denominator);
+    }
+
     // GetBooleanOrStringNumberFormatOption(options, "useGrouping", « "min2", "auto",
     // "always" », defaultUseGrouping): true maps to "always", any falsy value to the
     // boolean false (returned as the "false" sentinel), and an unrecognized string
@@ -2087,7 +2114,14 @@ public static class JSIntl
         if (!v.BooleanValue)
             return "false";
         var s = v.ToString();
-        return s is "min2" or "auto" or "always" ? s : fallback;
+        if (s is "min2" or "auto" or "always")
+            return s;
+        // Legacy "true"/"false" strings resolve to the fallback; every other string value
+        // is unsupported and throws a RangeError (Intl.NumberFormat v3
+        // GetBooleanOrStringNumberFormatOption — e.g. "MIN2", "True", "42").
+        if (s is "true" or "false")
+            return fallback;
+        throw JSEngine.NewRangeError("useGrouping value is not supported");
     }
 
     // Reads the digit-related options from the bag once (in spec order) and stores
@@ -3852,6 +3886,13 @@ public sealed class JSIntlDisplayNames : JSObject
         switch (options.Type)
         {
             case "language":
+                // Intl.DisplayNames type "language" requires the code to be matched by the
+                // unicode_language_id nonterminal, which — unlike a full unicode_locale_id —
+                // has no extension/singleton subtags. Reject any single-character subtag
+                // (e.g. the "u" in "en-u-hebrew") before structural validation.
+                foreach (var subtag in code.Split('-'))
+                    if (subtag.Length == 1)
+                        throw JSEngine.NewRangeError($"Invalid language code: {code}");
                 return JSIntl.ValidateLanguageTag(code);
             case "region":
                 if (Regex.IsMatch(code, "^(?:[A-Za-z]{2}|\\d{3})$", RegexOptions.CultureInvariant))
