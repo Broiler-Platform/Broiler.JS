@@ -541,10 +541,15 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     public JSValue DirectEvalSuper => directEvalSuperValues.Count == 0 ? JSUndefined.Value : directEvalSuperValues[^1];
 
     private readonly List<JSValue> directEvalNewTargetValues = [];
+    private readonly List<bool> directEvalRejectsNewTargetValues = [];
 
     private sealed class DirectEvalNewTargetScope(JSContext context) : IDisposable
     {
-        public void Dispose() => context.directEvalNewTargetValues.RemoveAt(context.directEvalNewTargetValues.Count - 1);
+        public void Dispose()
+        {
+            context.directEvalNewTargetValues.RemoveAt(context.directEvalNewTargetValues.Count - 1);
+            context.directEvalRejectsNewTargetValues.RemoveAt(context.directEvalRejectsNewTargetValues.Count - 1);
+        }
     }
 
     /// <summary>
@@ -553,15 +558,27 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     /// caller's [[NewTarget]]) observes the enclosing function's new target
     /// rather than <c>undefined</c>. Pushed for every direct eval (even when the
     /// value is undefined) so a nested eval inherits the same new target.
+    /// <paramref name="rejectsNewTarget"/> records whether <c>new.target</c> is an
+    /// early SyntaxError at this eval's position (true in global code), so a nested
+    /// direct eval inherits that legality instead of recomputing it from a scope
+    /// chain that no longer reflects the enclosing ordinary function.
     /// </summary>
-    public IDisposable PushDirectEvalNewTarget(JSValue newTarget)
+    public IDisposable PushDirectEvalNewTarget(JSValue newTarget, bool rejectsNewTarget)
     {
         directEvalNewTargetValues.Add(newTarget ?? JSUndefined.Value);
+        directEvalRejectsNewTargetValues.Add(rejectsNewTarget);
         return new DirectEvalNewTargetScope(this);
     }
 
     /// <summary>The new.target visible to the direct eval currently being compiled/executed, or undefined.</summary>
     public JSValue DirectEvalNewTarget => directEvalNewTargetValues.Count == 0 ? JSUndefined.Value : directEvalNewTargetValues[^1];
+
+    /// <summary>
+    /// Whether <c>new.target</c> is an early SyntaxError at the position of the direct
+    /// eval currently being compiled. Defaults to <c>true</c> (reject) when no eval is
+    /// active so a stray nested eval errs on the conservative side.
+    /// </summary>
+    public bool DirectEvalRejectsNewTarget => directEvalRejectsNewTargetValues.Count == 0 || directEvalRejectsNewTargetValues[^1];
 
     /// <summary>Whether a super reference is available to the direct eval currently being compiled.</summary>
     public bool HasDirectEvalSuper => directEvalSuperValues.Count > 0;

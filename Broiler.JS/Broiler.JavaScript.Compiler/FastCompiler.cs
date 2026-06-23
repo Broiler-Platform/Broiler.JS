@@ -129,6 +129,21 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
             fx.ThisExpression = evalThis.Expression;
         }
 
+        // A direct eval shares the calling context's [[NewTarget]] (PerformEval). Capture
+        // it into a local at eval entry — like #evalSuper/#evalThis — and expose it as the
+        // eval body's new.target. An arrow created in the eval body then closes over this
+        // stable local rather than reading the context's DirectEvalNewTarget lazily, which
+        // is only valid while the eval runs: `eval('()=>new.target')()` calls the arrow
+        // AFTER eval returns, when the context value has been popped to undefined.
+        // (A non-arrow function declared in the eval still gets its own new.target cell,
+        // since CreateFunction only inherits NewTargetExpression for arrows.)
+        if (isDirectEvalCompilation)
+        {
+            var evalNewTarget = fx.CreateVariable("#evalNewTarget", JSContextBuilder.DirectEvalNewTarget);
+            evalNewTarget.SkipRegistration = true;
+            fx.NewTargetExpression = evalNewTarget.Expression;
+        }
+
         var lScope = fx.Context;
 
         if (argsList != null && jScript.HoistingScope != null)

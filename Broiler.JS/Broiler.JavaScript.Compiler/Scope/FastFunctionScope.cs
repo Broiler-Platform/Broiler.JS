@@ -250,7 +250,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     // functions reuse the enclosing function's cell instead of creating their own
     // (an arrow has no new.target of its own). Null in the root/program scope,
     // where VisitMeta falls back to reading the live call-stack value.
-    public BExpression NewTargetExpression { get; private set; }
+    public BExpression NewTargetExpression { get; set; }
 
     internal const string NewTargetBindingName = "new.target";
 

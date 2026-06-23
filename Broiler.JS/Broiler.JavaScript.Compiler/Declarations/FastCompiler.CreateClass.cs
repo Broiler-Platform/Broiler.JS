@@ -661,7 +661,7 @@ partial class FastCompiler
         // keyword through the closing `}`, so parentheses around the expression are
         // already excluded.
         var classSource = body.Code.Value ?? string.Empty;
-        var _new = JSClassBuilder.New(null, superVar, className, classSource);
+        var _new = JSClassBuilder.New(null, superVar, hasSuperClass, className, classSource);
 
         if (prototypeElements.Any())
             staticElements.Add(new BMemberElementInit(JSFunctionBuilder._prototype, prototypeElements));
