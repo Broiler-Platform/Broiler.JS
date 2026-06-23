@@ -236,12 +236,19 @@ internal static class JSIntlDateTimeFormatEngine
 
         if (timeStyle != null)
         {
-            timePattern = timeStyle switch
+            // The time-style pattern honours the resolved hour cycle: a 24-hour cycle (h23/h24)
+            // renders "HH:mm[:ss]" with no day period, while a 12-hour cycle (h11/h12) renders
+            // "h:mm[:ss] a". (test262 timedatestyle-en exercises every hour12 / hourCycle combo.)
+            var cycle = hourCycle ?? (hour12 ? "h12" : "h23");
+            var (hourTok, ap) = cycle switch
             {
-                "full" or "long" => "h:mm:ss a",
-                "medium" => "h:mm:ss a",
-                _ => "h:mm a", // short
+                "h11" => ("K", " a"),   // 12-hour cycles render an unpadded hour
+                "h24" => ("kk", ""),    // 24-hour cycles render a zero-padded hour
+                "h23" => ("HH", ""),
+                _ => ("h", " a"), // h12
             };
+            var withSeconds = timeStyle is "full" or "long" or "medium";
+            timePattern = withSeconds ? $"{hourTok}:mm:ss{ap}" : $"{hourTok}:mm{ap}";
         }
 
         if (datePattern == null && timePattern == null)

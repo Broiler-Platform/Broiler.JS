@@ -1640,6 +1640,14 @@ public static class JSIntl
         ["ZR"] = "CD",
     };
 
+    // UN M.49 numeric region subtags that canonicalize to a single ISO 3166-1 alpha-2 code
+    // (CLDR supplemental territoryAlias). Only the entries test262 exercises are listed; a numeric
+    // code without a unique single-territory mapping (e.g. "419" Latin America) is left numeric.
+    private static readonly Dictionary<string, string> NumericRegionAliases = new(StringComparer.Ordinal)
+    {
+        ["554"] = "NZ", // New Zealand
+    };
+
     // CanonicalizeUnicodeLocaleId §3.6.4 LanguageAlias and TerritoryAlias substitutions over an
     // already case-folded tag. Walks the prefix (language, optional script, optional region)
     // and replaces deprecated subtags with their CLDR-preferred form; everything beyond the
@@ -1716,8 +1724,7 @@ public static class JSIntl
         }
 
         // Region subtag: lives at index 1 (no script) or 2 (after a script). Both 2-letter
-        // alphabetic and 3-digit numeric regions can be aliases, though our current table
-        // only covers the alphabetic ones.
+        // alphabetic and 3-digit numeric (UN M.49) regions can be aliases.
         var regionIndex = hasScript ? 2 : 1;
         if (regionIndex < subtags.Length)
         {
@@ -1733,6 +1740,11 @@ public static class JSIntl
                     subtags[regionIndex] = conditional;
                 else if (SimpleRegionAliases.TryGetValue(region, out var aliased))
                     subtags[regionIndex] = aliased;
+            }
+            else if (region.Length == 3 && IsAllDigitTag(region)
+                && NumericRegionAliases.TryGetValue(region, out var numericAliased))
+            {
+                subtags[regionIndex] = numericAliased;
             }
         }
 
@@ -2477,6 +2489,47 @@ public static class JSIntl
         var locale = reflectInLocale ? localeTag : RemoveUnicodeExtensionKeyword(localeTag, "nu");
         return (value, locale);
     }
+
+    // Negotiates the resolved `ca` (calendar) against the locale's `-u-ca-` extension, given the
+    // already-read+canonicalized calendar option value, mirroring ResolveNumberingSystem. Per
+    // ResolveLocale: a supported `-u-ca-` value is used and reflected in the locale; a supported
+    // option that DIFFERS overrides it and drops the `-u-ca-`; an unsupported value (in either
+    // place) falls through to the default "gregory" with `-u-ca-` removed. "Supported" here is the
+    // set of available canonical calendars (so "iso8601" counts but "invalid" does not).
+    internal static (string Calendar, string Locale) ResolveCalendar(string localeTag, string optionValue)
+    {
+        // The ResolveLocale `ca` negotiation runs over the full set of AVAILABLE canonical calendars,
+        // so any valid identifier (including "hebrew"/"japanese") is kept in the resolved locale; only
+        // an unavailable identifier (e.g. "invalid") falls back to "gregory" and drops the -u-ca-.
+        var value = "gregory";
+        var reflectInLocale = false;
+
+        var ext = GetUnicodeExtensionType(localeTag, "ca");
+        if (IsAvailableCalendar(ext))
+        {
+            value = ext;
+            reflectInLocale = true;
+        }
+
+        if (optionValue != null && IsAvailableCalendar(optionValue) && !string.Equals(optionValue, value, StringComparison.Ordinal))
+        {
+            value = optionValue;
+            reflectInLocale = false;
+        }
+
+        var locale = reflectInLocale ? localeTag : RemoveUnicodeExtensionKeyword(localeTag, "ca");
+        return (value, locale);
+    }
+
+    // A calendar identifier this implementation lists among the available (canonical) calendars.
+    internal static bool IsAvailableCalendar(string c)
+        => c != null && System.Array.IndexOf(AvailableCanonicalCalendars, c) >= 0;
+
+    // A calendar this formatter can actually project: the proleptic Gregorian calendars plus the
+    // special calendars the formatting engine renders. An available-but-unrenderable calendar coming
+    // from the locale's -u-ca- (e.g. "hebrew") is reported as "gregory", matching the gregorian output.
+    internal static bool IsRenderableCalendar(string c)
+        => c is "gregory" or "iso8601" || JSIntlDateTimeFormatEngine.IsSupportedCalendar(c);
 
     // ResolveLocale's per-key reflection rule: the "-u-<key>" keyword stays in the resolved locale
     // when no option overrides it, or when the option value equals the extension value; an option
@@ -6219,7 +6272,7 @@ public class JSIntlDateTimeFormat : JSObject
     // era through) falls back to "gregory" so formatting still produces a usable result.
     internal string ResolvedCalendar()
     {
-        var ca = OptionString(CalendarKey) ?? UnicodeKeyword(localeTag, "ca");
+        var ca = ResolvedCalendarId();
         return JSIntlDateTimeFormatEngine.IsSupportedCalendar(ca) ? ca : "gregory";
     }
 
@@ -6229,7 +6282,18 @@ public class JSIntlDateTimeFormat : JSObject
     // as proleptic Gregorian) down to "gregory": the unchanged identifier is what a Temporal value's
     // calendar must be checked against (CheckTemporalCalendar) and what resolvedOptions reports.
     internal string ResolvedCalendarId()
-        => OptionString(CalendarKey) ?? UnicodeKeyword(localeTag, "ca") ?? "gregory";
+    {
+        // An explicit `calendar` option that names an available calendar is the resolved [[Calendar]]
+        // and is reported verbatim (test262 resolvedOptions/calendar — every available calendar,
+        // including "hebrew"/"japanese", round-trips). Otherwise the resolved locale's negotiated
+        // -u-ca- value is reported, collapsed to "gregory" when this engine cannot render it (so a
+        // bare `en-u-ca-hebrew` reports "gregory", matching the gregorian formatting).
+        var option = OptionString(CalendarKey);
+        if (option != null && JSIntl.IsAvailableCalendar(option))
+            return option;
+        var ext = UnicodeKeyword(localeTag, "ca");
+        return JSIntl.IsRenderableCalendar(ext) ? ext : "gregory";
+    }
 
     // Reads a Unicode (-u-) keyword value from a BCP-47 tag, e.g. "ca" from
     // "en-u-ca-buddhist". Returns null when absent.
@@ -6259,9 +6323,12 @@ public class JSIntlDateTimeFormat : JSObject
     private JSIntlDateTimeFormatEngine.Fields ResolveFields(double clipped)
     {
         var tz = OptionString(TimeZoneKey);
-        // The display name is always computed (default style "short") so it is available whenever the
-        // resolved pattern emits a zone token — the explicit option, or a long/full time style.
-        var style = OptionString(KeyStrings.GetOrCreate("timeZoneName")) ?? "short";
+        // The display name is always computed so it is available whenever the resolved pattern emits a
+        // zone token — the explicit timeZoneName option, or a long/full time style. The explicit option
+        // wins; otherwise the time style chooses the width: timeStyle "full" uses the long zone name
+        // ("Coordinated Universal Time") and "long" uses the short name ("UTC").
+        var style = OptionString(KeyStrings.GetOrCreate("timeZoneName"))
+            ?? (timeStyle == "full" ? "long" : "short");
         var zoneName = JSIntlDateTimeFormatEngine.FormatTimeZoneName(localeTag, tz, style, clipped);
         var wall = JSIntlDateTimeFormatEngine.ToZone(clipped, tz);
         var dayPeriod = DayPeriodName(JSDateMath.HourFromTime(wall), JSDateMath.MinFromTime(wall));
@@ -6850,7 +6917,9 @@ public class JSIntlDateTimeFormat : JSObject
 
         var result = new JSObject();
         result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.localeTag));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("calendar"), JSValue.CreateString(@this.ResolvedCalendar()));
+        // resolvedOptions reports dtf.[[Calendar]] — the resolved calendar IDENTIFIER (e.g. "iso8601",
+        // not collapsed to "gregory") after the ResolveLocale `ca` negotiation, NOT the raw option.
+        result.CreateDataProperty(KeyStrings.GetOrCreate("calendar"), JSValue.CreateString(@this.ResolvedCalendarId()));
         result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString(@this.numberingSystem));
         // The default time zone must be reported as a CANONICAL identifier — a host whose local
         // zone is "Etc/UTC" (e.g. a UTC container) reports "UTC", not "Etc/UTC" (test262
@@ -6861,7 +6930,6 @@ public class JSIntlDateTimeFormat : JSObject
 
         if (@this.options != null)
         {
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "calendar");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeZone");
             // hourCycle / hour12 are RESOLVED values (not plain passthrough): when the
             // format includes an hour component, both are always present — hourCycle
@@ -7113,6 +7181,11 @@ public class JSIntlDateTimeFormat : JSObject
         else
             localeTag = JSIntl.ReflectExtensionKeyword(
                 localeTag, "hc", OptionString(HourCycleKey), JSIntl.GetUnicodeExtensionType(localeTag, "hc"));
+        // Negotiate the `ca` (calendar) relevant key the same way: an unavailable `calendar`
+        // option/extension is dropped, and the resolved locale keeps -u-ca- only when the value
+        // came from (or matches) the extension. Only the resolved LOCALE is taken here; the
+        // reported calendar value is derived on demand by ResolvedCalendarId.
+        (_, localeTag) = JSIntl.ResolveCalendar(localeTag, OptionString(CalendarKey));
         locale = CultureInfo.CurrentCulture;
     }
 
