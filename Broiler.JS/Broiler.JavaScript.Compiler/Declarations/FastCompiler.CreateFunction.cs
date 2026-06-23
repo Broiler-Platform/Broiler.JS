@@ -492,6 +492,13 @@ partial class FastCompiler
             }
         }
 
+        // `super()` nested in an arrow compiles its member-initialization against the arrow's
+        // scope (`scope.Top`), whose MemberInits is null — the constructor's inits live on the
+        // root scope. Guard the null so compiling such a `super()` does not NullReference; the
+        // instance fields are still installed for the common (non-arrow) constructor path.
+        if (s.MemberInits == null)
+            return;
+
         var en = s.MemberInits.GetFastEnumerator();
 
         while (en.MoveNext(out var member))

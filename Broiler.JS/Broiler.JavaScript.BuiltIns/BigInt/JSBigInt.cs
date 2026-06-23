@@ -434,9 +434,34 @@ public partial class JSBigInt : JSPrimitive
 
     public override JSValue BitwiseXor(JSValue value) => new JSBigInt(this.value ^ value.AsBigIntegerOnly());
 
-    public override JSValue LeftShift(JSValue value) => new JSBigInt(this.value << (int)value.AsBigIntegerOnly());
+    // BigInt::leftShift(x, y): y > 0 shifts left (x × 2^y), y < 0 shifts right (arithmetic floor
+    // division by 2^|y|). BigInt::signedRightShift(x, y) is leftShift(x, -y). BigInts are
+    // arbitrary precision, so the shift count can exceed Int32 — the previous `(int)` / `(byte)`
+    // casts overflowed (e.g. `123n >> 9999999999999n`) or mangled negative counts (`5n >> -1n`).
+    public override JSValue LeftShift(JSValue value) => new JSBigInt(Shift(this.value, value.AsBigIntegerOnly()));
 
-    public override JSValue RightShift(JSValue value) => new JSBigInt(this.value >> (byte)value.AsBigIntegerOnly());
+    public override JSValue RightShift(JSValue value) => new JSBigInt(Shift(this.value, -value.AsBigIntegerOnly()));
+
+    private static BigInteger Shift(BigInteger v, BigInteger bits)
+    {
+        if (bits.IsZero || v.IsZero)
+            return v;
+
+        if (bits.Sign > 0)
+        {
+            // Left shift. A count beyond Int32 would allocate an unusable BigInt.
+            if (bits > int.MaxValue)
+                throw JSEngine.NewRangeError("Maximum BigInt size exceeded");
+            return v << (int)bits;
+        }
+
+        // Right shift by |bits| (arithmetic, sign-preserving). Beyond the magnitude's bit length
+        // the result collapses to 0 (non-negative) or -1 (negative); .NET's >> needs an Int32.
+        var count = -bits;
+        if (count > int.MaxValue)
+            return v.Sign < 0 ? BigInteger.MinusOne : BigInteger.Zero;
+        return v >> (int)count;
+    }
 
     // BigInt::unsignedRightShift always throws — BigInts are arbitrary-precision and have no fixed
     // width, so ">>>" is unsupported for any BigInt operand (a TypeError, not a RangeError).

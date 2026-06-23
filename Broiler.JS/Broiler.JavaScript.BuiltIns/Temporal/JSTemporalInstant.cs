@@ -348,7 +348,7 @@ public partial class JSTemporalInstant : JSObject
         var localFraction = FormatISO(rounded + offsetNs, precision);
         // Replace the trailing "Z" with the offset string.
         return new JSString(localFraction.Substring(0, localFraction.Length - 1)
-            + JSTemporalZonedDateTime.FormatOffsetString(offsetNs));
+            + JSTemporalZonedDateTime.FormatOffsetRounded(offsetNs));
     }
 
     [JSExport("toJSON", Length = 0)]
@@ -372,24 +372,9 @@ public partial class JSTemporalInstant : JSObject
         return JSTemporalZonedDateTime.CreateChecked(epochNanoseconds, tz.ToString());
     }
 
-    // toZonedDateTime({ timeZone, calendar }): a ZonedDateTime at this instant.
-    [JSExport("toZonedDateTime", Length = 1)]
-    public JSValue ToZonedDateTime(in Arguments a)
-    {
-        if (a.GetAt(0) is not JSObject obj)
-            throw JSEngine.NewTypeError("Temporal.Instant.prototype.toZonedDateTime requires an object");
-
-        var calendar = obj[KeyStrings.GetOrCreate("calendar")];
-        if (calendar.IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.Instant.prototype.toZonedDateTime requires a calendar");
-        if (!string.Equals(calendar.ToString(), "iso8601", StringComparison.OrdinalIgnoreCase))
-            throw JSEngine.NewRangeError($"Temporal.Instant: unsupported calendar \"{calendar}\" (only iso8601 is implemented)");
-
-        var tz = obj[KeyStrings.GetOrCreate("timeZone")];
-        if (tz.IsUndefined || !tz.IsString)
-            throw JSEngine.NewTypeError("Temporal.Instant.prototype.toZonedDateTime requires a timeZone string");
-        return JSTemporalZonedDateTime.CreateChecked(epochNanoseconds, tz.ToString());
-    }
+    // Note: Temporal.Instant.prototype.toZonedDateTime was removed from the Temporal
+    // proposal (June 2024 TC39 consensus); only toZonedDateTimeISO remains. See
+    // test/staging/Temporal/removed-methods.js.
 
     // ── helpers ─────────────────────────────────────────────────────────────────
 

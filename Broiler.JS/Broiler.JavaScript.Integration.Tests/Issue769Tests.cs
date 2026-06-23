@@ -212,9 +212,12 @@ public class Issue769Tests
             "Temporal.PlainDateTime.from('2020-06-15T12:30').toZonedDateTime('UTC').toString()"));
 
     [Fact]
-    public void PlainTimeToZonedDateTime()
-        => Assert.Equal("2020-06-15T09:00:00+00:00[UTC]", Eval(
-            "Temporal.PlainTime.from('09:00').toZonedDateTime({plainDate: Temporal.PlainDate.from('2020-06-15'), timeZone:'UTC'}).toString()"));
+    public void PlainTimeToZonedDateTimeWasRemoved()
+        // Temporal.PlainTime.prototype.toZonedDateTime was removed from the Temporal
+        // proposal (June 2024 TC39 consensus); see issue #887 and
+        // test/staging/Temporal/removed-methods.js. Build a ZonedDateTime from the date
+        // side instead. The method must no longer exist.
+        => Assert.Equal("false", Eval("'toZonedDateTime' in Temporal.PlainTime.prototype"));
 
     // ── Temporal.Now ──────────────────────────────────────────────────────────────
 

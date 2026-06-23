@@ -397,35 +397,9 @@ public partial class JSTemporalPlainTime : JSObject
     public JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.PlainTime.prototype.valueOf, which is not supported. Use Temporal.PlainTime.compare for comparison.");
 
-    // toPlainDateTime combines this time with a PlainDate argument.
-    [JSExport("toPlainDateTime", Length = 1)]
-    public JSValue ToPlainDateTime(in Arguments a)
-    {
-        var d = JSTemporalPlainDate.From(new Arguments(JSUndefined.Value, a.GetAt(0))) as JSTemporalPlainDate
-            ?? throw JSEngine.NewTypeError("expected a Temporal.PlainDate");
-        return new JSTemporalPlainDateTime(d.isoYear, d.isoMonth, d.isoDay,
-            hour, minute, second, millisecond, microsecond, nanosecond, JSTemporalPlainDateTime.PlainDateTimePrototype);
-    }
-
-    // toZonedDateTime({ plainDate, timeZone }): combine this time with a date and interpret
-    // it in the given zone.
-    [JSExport("toZonedDateTime", Length = 1)]
-    public JSValue ToZonedDateTime(in Arguments a)
-    {
-        if (a.GetAt(0) is not JSObject obj)
-            throw JSEngine.NewTypeError("Temporal.PlainTime.prototype.toZonedDateTime requires an object");
-
-        var tzValue = obj[KeyStrings.GetOrCreate("timeZone")];
-        if (tzValue.IsUndefined || !tzValue.IsString)
-            throw JSEngine.NewTypeError("Temporal.PlainTime.prototype.toZonedDateTime: timeZone must be a string");
-
-        var plainDateValue = obj[KeyStrings.GetOrCreate("plainDate")];
-        var d = JSTemporalPlainDate.From(new Arguments(JSUndefined.Value, plainDateValue)) as JSTemporalPlainDate
-            ?? throw JSEngine.NewTypeError("expected a Temporal.PlainDate");
-
-        return JSTemporalZonedDateTime.FromLocal(d.isoYear, d.isoMonth, d.isoDay,
-            hour, minute, second, millisecond, microsecond, nanosecond, tzValue.ToString(), d.calendarId);
-    }
+    // Note: Temporal.PlainTime.prototype.toPlainDateTime and toZonedDateTime were removed
+    // from the Temporal proposal (June 2024 TC39 consensus). Build a PlainDateTime or
+    // ZonedDateTime from the date side instead. See test/staging/Temporal/removed-methods.js.
 
     // ── helpers ─────────────────────────────────────────────────────────────────
 
