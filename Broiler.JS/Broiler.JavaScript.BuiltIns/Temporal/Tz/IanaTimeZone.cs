@@ -77,9 +77,22 @@ internal sealed class IanaTimeZone
     public bool IsDaylightSavingTimeAt(BigInteger epochNs)
         => IsDaylightSavingTime(FloorDivToSeconds(epochNs));
 
+    // True when transition i actually changes the UTC offset. `zic` emits a final no-op
+    // transition at the 32-bit boundary (2038-01-19T03:14:07Z, INT32_MAX seconds) for zones
+    // with no genuine future transitions, so the 32- and 64-bit TZif views agree. Such an
+    // entry leaves the offset unchanged and is not an observable transition — getTimeZoneTransition
+    // must skip it (e.g. Asia/Riyadh has no transition after its 1947 LMT→+03 change).
+    private bool IsOffsetChange(int i)
+    {
+        int after = _types[_transitionTypeIndices[i]].OffsetSeconds;
+        int before = i == 0 ? _types[_initialTypeIndex].OffsetSeconds : _types[_transitionTypeIndices[i - 1]].OffsetSeconds;
+        return after != before;
+    }
+
     // The first transition instant strictly after (forward) / before (!forward) startNs, in
     // nanoseconds, or null when the zone has no such transition. Transition instants are whole
-    // seconds in the IANA database, so the nanosecond value is exact.
+    // seconds in the IANA database, so the nanosecond value is exact. No-op transitions (which
+    // do not change the UTC offset) are skipped.
     public BigInteger? FindTransition(BigInteger startNs, bool forward)
     {
         var times = _transitionTimes;
@@ -88,22 +101,22 @@ internal sealed class IanaTimeZone
 
         if (forward)
         {
-            // Smallest i with times[i] * 1e9 > startNs.
+            // Smallest i with times[i] * 1e9 > startNs that actually changes the offset.
             for (var lo = LowerBoundByNs(startNs); lo < times.Length; lo++)
             {
                 var ns = (BigInteger)times[lo] * NsPerSecond;
-                if (ns > startNs) return ns;
+                if (ns > startNs && IsOffsetChange(lo)) return ns;
             }
             return null;
         }
         else
         {
-            // Largest i with times[i] * 1e9 < startNs.
+            // Largest i with times[i] * 1e9 < startNs that actually changes the offset.
             for (var hi = LowerBoundByNs(startNs); hi >= 0; hi--)
             {
                 if (hi >= times.Length) continue;
                 var ns = (BigInteger)times[hi] * NsPerSecond;
-                if (ns < startNs) return ns;
+                if (ns < startNs && IsOffsetChange(hi)) return ns;
             }
             return null;
         }

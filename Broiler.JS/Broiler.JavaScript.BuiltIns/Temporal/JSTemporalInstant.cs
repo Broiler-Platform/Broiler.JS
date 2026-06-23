@@ -348,7 +348,7 @@ public partial class JSTemporalInstant : JSObject
         var localFraction = FormatISO(rounded + offsetNs, precision);
         // Replace the trailing "Z" with the offset string.
         return new JSString(localFraction.Substring(0, localFraction.Length - 1)
-            + JSTemporalZonedDateTime.FormatOffsetString(offsetNs));
+            + JSTemporalZonedDateTime.FormatOffsetRounded(offsetNs));
     }
 
     [JSExport("toJSON", Length = 0)]

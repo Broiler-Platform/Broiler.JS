@@ -556,15 +556,16 @@ partial class FastCompiler
                         // exclude when collecting an object rest.
                         BExpression memberAccess;
                         if (property.Computed
-                            && id.Type != FastNodeType.Identifier
                             && id.Type != FastNodeType.Literal)
                         {
-                            // A computed key that is an arbitrary expression (e.g.
-                            // `{ ['x' + 'y']: t }`, `{ [a.b]: t }`, `{ [fn()]: t }`).
-                            // Evaluate it exactly once and normalize it to a property key so
-                            // its observable side effects (and any errors raised while
-                            // evaluating the key, such as `a.b` when `a` is undefined) occur
-                            // in spec order, before the destructuring target is read.
+                            // A computed key (e.g. `{ ['x' + 'y']: t }`, `{ [a.b]: t }`,
+                            // `{ [fn()]: t }`, or a bare `{ [k]: t }`). Evaluate it exactly once
+                            // and normalize it to a property key so its observable side effects —
+                            // ToPropertyKey on an object key calls its toString/valueOf — occur in
+                            // spec order: the PropertyName is evaluated before the destructuring
+                            // target reference and before the value is read from the source.
+                            // (A computed *literal* key has no observable coercion, so it stays on
+                            // the lighter path below.)
                             var keyTemp = scope.Top.GetTempVariable(typeof(JSValue));
                             inits.Add(BExpression.Assign(
                                 keyTemp.Variable,
@@ -577,6 +578,33 @@ partial class FastCompiler
                             var key = CreatePropertyKeyExpression(id, property.Computed);
                             excludedKeys.Add(key);
                             memberAccess = CreateMemberExpression(init, id, property.Computed);
+                        }
+
+                        // §13.15.5.4 KeyedDestructuringAssignmentEvaluation: when the
+                        // DestructuringAssignmentTarget is a property reference (e.g.
+                        // `{ [k]: obj[key] = d } = src`), its reference — the base object and
+                        // the property-key *expression* — is evaluated BEFORE the value is read
+                        // from the source and before the default Initializer; only ToPropertyKey
+                        // is deferred to the PutValue. Pre-spill the base/key here so the
+                        // observable order is target-base, target-key, GetV(source), default,
+                        // ToPropertyKey, set — rather than reading the source first.
+                        BExpression preEvaluatedTargetRef = null;
+                        if (property.Value is AstMemberExpression targetMember
+                            && targetMember.Object?.Type != FastNodeType.Super)
+                        {
+                            var objectTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                            inits.Add(BExpression.Assign(objectTemp.Variable, Visit(targetMember.Object)));
+                            if (targetMember.Computed)
+                            {
+                                var propertyTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                                inits.Add(BExpression.Assign(propertyTemp.Variable, Visit(targetMember.Property)));
+                                preEvaluatedTargetRef = JSValueBuilder.Index(objectTemp.Expression,
+                                    BExpression.Call(null, NormalizePropertyKeyMethod, propertyTemp.Expression));
+                            }
+                            else
+                            {
+                                preEvaluatedTargetRef = CreateMemberExpression(objectTemp.Expression, targetMember.Property, false);
+                            }
                         }
 
                         if (propertyInit != null)
@@ -603,6 +631,15 @@ partial class FastCompiler
 
                         switch (property.Value.Type)
                         {
+                            case FastNodeType.MemberExpression when preEvaluatedTargetRef != null:
+                                // GetV(source) (and any default, already folded into `start`) must
+                                // be observed before the target key's ToPropertyKey, which the final
+                                // PutValue performs. Spill the value first, then assign — yielding
+                                // target-base, target-key, GetV, ToPropertyKey(target-key), set.
+                                var valueTemp = scope.Top.GetTempVariable(typeof(JSValue));
+                                inits.Add(BExpression.Assign(valueTemp.Variable, start));
+                                inits.Add(BinaryOperation.Assign(preEvaluatedTargetRef, valueTemp.Expression, TokenTypes.Assign));
+                                break;
                             case FastNodeType.Identifier:
                             case FastNodeType.MemberExpression:
                             case FastNodeType.ArrayPattern:

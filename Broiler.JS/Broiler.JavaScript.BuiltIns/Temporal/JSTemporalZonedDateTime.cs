@@ -1988,6 +1988,29 @@ public partial class JSTemporalZonedDateTime : JSObject
         return sb.ToString();
     }
 
+    // FormatDateTimeUTCOffsetRounded (Temporal §): the UTC offset shown in a ZonedDateTime /
+    // Instant *string* is rounded to the nearest minute (ties away from zero) and emitted as
+    // ±HH:MM — never with a seconds field. The wall-clock time is still computed from the full
+    // offset, and the `offset` property / `offsetNanoseconds` keep full sub-minute precision; only
+    // the serialized offset is rounded (e.g. Europe/Paris LMT +00:09:21 prints as "+00:09",
+    // Africa/Monrovia -00:44:30 prints as "-00:45").
+    internal static string FormatOffsetRounded(long offsetNs)
+    {
+        const long NsPerMinute = 60_000_000_000L;
+        var sign = offsetNs < 0 ? '-' : '+';
+        var abs = Math.Abs(offsetNs);
+        var totalMinutes = abs / NsPerMinute;
+        if (abs % NsPerMinute * 2 >= NsPerMinute)
+            totalMinutes++; // halfExpand: round half away from zero
+        var hours = totalMinutes / 60;
+        var minutes = totalMinutes % 60;
+        return string.Concat(
+            sign.ToString(),
+            hours.ToString("00", CultureInfo.InvariantCulture),
+            ":",
+            minutes.ToString("00", CultureInfo.InvariantCulture));
+    }
+
     // YYYY-MM-DDTHH:MM:SS[.fff]±HH:MM[timeZoneId] at full (auto) precision.
     private string ToISOString(string showCalendar = "auto")
         => FormatToString(epochNanoseconds, showCalendar, precision: -1, showOffset: true, timeZoneNameMode: "auto");
@@ -2027,7 +2050,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         }
 
         if (showOffset)
-            sb.Append(FormatOffset(offsetNs));
+            sb.Append(FormatOffsetRounded(offsetNs));
 
         if (timeZoneNameMode != "never")
         {
