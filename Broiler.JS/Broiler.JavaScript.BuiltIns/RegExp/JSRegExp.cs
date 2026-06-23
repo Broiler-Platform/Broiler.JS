@@ -3953,6 +3953,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     int cp = HexValue(pattern[i + 2]) << 12 | HexValue(pattern[i + 3]) << 8
                            | HexValue(pattern[i + 4]) << 4 | HexValue(pattern[i + 5]);
                     var equiv = GetCaseFoldEquivalents((char)cp, unicode);
+                    if (!unicode && !inClass && IsNonUnicodeOverFold((char)cp))
+                    {
+                        sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
+                        AppendOverFoldNeutralized(sb, (char)cp, equiv);
+                        i += 5;
+                        continue;
+                    }
                     if (equiv != null)
                     {
                         sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
@@ -3971,6 +3978,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 {
                     int cp = HexValue(pattern[i + 2]) << 4 | HexValue(pattern[i + 3]);
                     var equiv = GetCaseFoldEquivalents((char)cp, unicode);
+                    if (!unicode && !inClass && IsNonUnicodeOverFold((char)cp))
+                    {
+                        sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
+                        AppendOverFoldNeutralized(sb, (char)cp, equiv);
+                        i += 3;
+                        continue;
+                    }
                     if (equiv != null)
                     {
                         sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
@@ -4007,6 +4021,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
             // Check literal characters
             var litEquiv = GetCaseFoldEquivalents(c, unicode);
+            if (!unicode && !inClass && IsNonUnicodeOverFold(c))
+            {
+                sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
+                AppendOverFoldNeutralized(sb, c, litEquiv);
+                continue;
+            }
             if (litEquiv != null)
             {
                 sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
@@ -4036,6 +4056,42 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 sb.Append(eq);
             sb.Append(']');
         }
+    }
+
+    /// <summary>
+    /// A non-ASCII code unit whose .NET (ToLower-based) IgnoreCase folds it onto an
+    /// ASCII character, even though ECMAScript's non-Unicode Canonicalize (toUppercase
+    /// with the ASCII guard) keeps it distinct. The canonical example is U+212A KELVIN
+    /// SIGN: .NET considers it equal to 'k'/'K' (ToLower yields 'k'), so left to .NET a
+    /// non-Unicode <c>/K/i</c> would wrongly match 'k'. ECMAScript leaves such a
+    /// code point as its own canonical form, so it must only match itself (and any true
+    /// non-ASCII equivalents) — never an ASCII letter.
+    /// </summary>
+    private static bool IsNonUnicodeOverFold(char c)
+        => c >= 128 && char.ToLowerInvariant(c) < 128;
+
+    /// <summary>
+    /// Emits <paramref name="c"/> (plus its genuine ECMAScript equivalents) with
+    /// IgnoreCase locally disabled via an inline <c>(?-i:…)</c> group, so .NET's
+    /// over-broad ToLower folding no longer matches an unrelated ASCII letter. Only used
+    /// outside a character class (an inline group is not valid class syntax).
+    /// </summary>
+    private static void AppendOverFoldNeutralized(StringBuilder sb, char c, char[] equivalents)
+    {
+        sb.Append("(?-i:");
+        if (equivalents == null || equivalents.Length == 0)
+        {
+            AppendUnicodeEscape(sb, c);
+        }
+        else
+        {
+            sb.Append('[');
+            AppendUnicodeEscape(sb, c);
+            foreach (var eq in equivalents)
+                AppendUnicodeEscape(sb, eq);
+            sb.Append(']');
+        }
+        sb.Append(')');
     }
 
     /// <summary>
