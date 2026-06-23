@@ -96,14 +96,98 @@ public partial class JSPromise
     [JSExport("finally", Length = 1)]
     public static JSValue Finally(in Arguments a)
     {
-        if (!a.This.IsObject)
+        // §27.2.5.3 Promise.prototype.finally ( onFinally )
+        var promise = a.This;
+        if (!promise.IsObject)
             throw JSEngine.NewTypeError("Promise.prototype.finally called on non-object");
 
+        // step 3: C = ? SpeciesConstructor(promise, %Promise%).
+        var c = FinallySpeciesConstructor(promise);
+
         var onFinally = a.Get1();
-        var then = a.This[KeyStrings.then];
+
+        var then = promise[KeyStrings.then];
         if (then is not JSFunction thenFunction)
             throw JSEngine.NewTypeError("Property then is not a function");
 
-        return thenFunction.InvokeFunction(new Arguments(a.This, onFinally, onFinally));
+        JSValue thenFinally;
+        JSValue catchFinally;
+
+        // step 5: a non-callable onFinally is passed through to `then` unchanged.
+        if (onFinally is not JSFunction onFinallyFx)
+        {
+            thenFinally = onFinally;
+            catchFinally = onFinally;
+        }
+        else
+        {
+            // step 6: wrap onFinally so it runs for both fulfilment and rejection, then
+            // forwards the original value/reason after awaiting onFinally's result. Both
+            // wrappers are fresh functions with length 1 and the empty name (so they are
+            // distinct from onFinally and are not constructors).
+            thenFinally = new JSFunction((in Arguments args) =>
+            {
+                var value = args.Get1();
+                var result = onFinallyFx.InvokeFunction(new Arguments(JSUndefined.Value));
+                var p = PerformPromiseResolve(c, result);
+                var valueThunk = new JSFunction((in Arguments _) => value,
+                    "", "function () { [native code] }", length: 0, createPrototype: false);
+                return InvokeThen(p, valueThunk);
+            }, "", "function () { [native code] }", length: 1, createPrototype: false);
+
+            catchFinally = new JSFunction((in Arguments args) =>
+            {
+                var reason = args.Get1();
+                var result = onFinallyFx.InvokeFunction(new Arguments(JSUndefined.Value));
+                var p = PerformPromiseResolve(c, result);
+                var thrower = new JSFunction((in Arguments _) => throw new JSException(reason),
+                    "", "function () { [native code] }", length: 0, createPrototype: false);
+                return InvokeThen(p, thrower);
+            }, "", "function () { [native code] }", length: 1, createPrototype: false);
+        }
+
+        // step 7: Invoke(promise, "then", « thenFinally, catchFinally »).
+        return thenFunction.InvokeFunction(new Arguments(promise, thenFinally, catchFinally));
+    }
+
+    // SpeciesConstructor(promise, %Promise%) for finally — like GetThenSpeciesConstructor
+    // but returns the concrete constructor (defaulting to %Promise%) rather than null,
+    // because finally needs C to drive PromiseResolve for the wrapper functions.
+    private static JSValue FinallySpeciesConstructor(JSValue promise)
+    {
+        var defaultConstructor = (JSEngine.Current as JSObject)?[KeyStrings.Promise];
+
+        var constructor = promise[KeyStrings.constructor];
+        if (constructor.IsUndefined)
+            return defaultConstructor;
+
+        if (!constructor.IsObject)
+            throw JSEngine.NewTypeError("Promise constructor must be an object");
+
+        var species = constructor[(IJSSymbol)BuiltIns.Symbol.JSSymbol.species];
+        if (species.IsNullOrUndefined)
+            return defaultConstructor;
+
+        if (!IsConstructor(species))
+            throw JSEngine.NewTypeError("Promise species constructor is not a constructor");
+
+        return species;
+    }
+
+    // PromiseResolve(C, x) — §27.2.4.7.1, performed via Invoke(C, "resolve", « x »).
+    private static JSValue PerformPromiseResolve(JSValue c, JSValue x)
+    {
+        var resolve = GetPromiseResolve(c);
+        return resolve.InvokeFunction(new Arguments(c, x));
+    }
+
+    // Invoke(p, "then", « handler »).
+    private static JSValue InvokeThen(JSValue p, JSValue handler)
+    {
+        var then = p[KeyStrings.then];
+        if (then is not JSFunction thenFunction)
+            throw JSEngine.NewTypeError("Property then is not a function");
+
+        return thenFunction.InvokeFunction(new Arguments(p, handler));
     }
 }

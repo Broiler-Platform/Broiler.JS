@@ -71,7 +71,12 @@ public static class AstExpressionExtensions
                 if (n == 0)
                     return true;
 
-                if (n > 0 && n % 1 == 0)
+                // Only 0 .. 2^32-2 are array indices, so a whole-number literal is a uint
+                // key only when it fits that range. Without the upper bound a large literal
+                // (e.g. `{ [1e55]: 'B' }`) casts out of range — (uint)1e55 wraps to 0 — and
+                // silently collides with key 0; such keys must take the string path
+                // (ToString(1e55) === "1e+55"), matching JSNumber.ToKey.
+                if (n > 0 && n < uint.MaxValue && n % 1 == 0)
                 {
                     value = (uint)n;
                     return true;
