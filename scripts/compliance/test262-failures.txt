@@ -42,11 +42,8 @@ test/built-ins/Temporal/Duration/prototype/total/precision-exact-mathematical-va
 test/built-ins/Temporal/Duration/prototype/total/relativeto-total-of-each-unit.js
 test/built-ins/Temporal/Duration/prototype/total/rounding-window.js
 test/built-ins/Temporal/PlainDateTime/prototype/with/calendar-temporal-object-throws.js
-test/built-ins/Temporal/PlainTime/from/options-wrong-type.js
-test/built-ins/Temporal/PlainTime/from/order-of-operations.js
 test/built-ins/Temporal/ZonedDateTime/prototype/since/round-cross-unit-boundary.js
 test/built-ins/Temporal/ZonedDateTime/prototype/until/round-cross-unit-boundary.js
-test/built-ins/Temporal/ZonedDateTime/prototype/with/order-of-operations.js
 test/intl402/Collator/prototype/compare/ignorePunctuation.js
 test/intl402/Collator/prototype/resolvedOptions/ignorePunctuation-default.js
 test/intl402/Collator/prototype/resolvedOptions/resolved-collation-unicode-extensions-and-options.js
@@ -85,8 +82,6 @@ test/intl402/Temporal/PlainMonthDay/from/chinese-dangi-leap-month-with-year-from
 test/intl402/Temporal/PlainYearMonth/prototype/with/leap-months-chinese.js
 test/intl402/Temporal/PlainYearMonth/prototype/with/leap-months-dangi.js
 test/intl402/Temporal/PlainYearMonth/prototype/with/leap-months-hebrew.js
-test/intl402/Temporal/PlainYearMonth/prototype/with/mutually-exclusive-fields-hebrew.js
-test/intl402/Temporal/PlainYearMonth/prototype/with/non-iso-calendar-fields.js
 test/intl402/Temporal/ZonedDateTime/from/argument-propertybag-dst-option-disambiguation.js
 test/intl402/Temporal/ZonedDateTime/from/argument-propertybag-dst-options-offset-disambiguation-combinations.js
 test/intl402/Temporal/ZonedDateTime/from/argument-string-dst-option-disambiguation.js
@@ -98,7 +93,6 @@ test/intl402/Temporal/ZonedDateTime/prototype/until/same-date-reverse-wallclock.
 test/intl402/Temporal/ZonedDateTime/prototype/with/dst-option-offset-disambiguation-combinations.js
 test/language/comments/S7.4_A5.js
 test/language/comments/S7.4_A6.js
-test/language/destructuring/binding/keyed-destructuring-property-reference-target-evaluation-order-with-bindings.js
 test/language/eval-code/direct/var-env-func-init-local-new-delete.js
 test/language/eval-code/direct/var-env-var-init-local-new-delete.js
 test/language/expressions/call/11.2.3-3_3.js
@@ -143,17 +137,11 @@ test/staging/sm/TypedArray/sort_large_countingsort.js
 test/staging/sm/class/newTargetEval.js
 test/staging/sm/class/superCallBaseInvoked.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
-test/staging/sm/expressions/destructuring-array-default-call.js
-test/staging/sm/expressions/destructuring-array-default-class.js
-test/staging/sm/expressions/destructuring-array-default-function-nested.js
-test/staging/sm/expressions/destructuring-array-default-function.js
-test/staging/sm/expressions/destructuring-array-default-simple.js
 test/staging/sm/generators/return-finally.js
 test/staging/sm/generators/runtime.js
 test/staging/sm/global/eval-02.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-label.js
-test/staging/sm/lexical-environment/bug-1216623.js
 test/staging/sm/lexical-environment/for-loop.js
 test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
 test/staging/sm/misc/line-paragraph-separator-parse-as-lineterminator.js
