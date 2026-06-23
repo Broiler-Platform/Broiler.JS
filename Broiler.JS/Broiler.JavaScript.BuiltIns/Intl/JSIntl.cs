@@ -1557,6 +1557,33 @@ public static class JSIntl
         ["tw"] = "ak",
     };
 
+    // CLDR languageAlias entries that map a (language + region) pair to a single replacement
+    // language with the region dropped — the canonical sign-language identifiers (UTS-35).
+    // Matched case-insensitively on a `sgn-XX` prefix; the region is removed entirely so e.g.
+    // "sgn-GR" canonicalizes to "gss" with no trailing region subtag.
+    private static readonly Dictionary<string, string> SignLanguageAliases = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["BR"] = "bzs", // Brazilian Sign Language
+        ["CO"] = "csn", // Colombian Sign Language
+        ["DE"] = "gsg", // German Sign Language
+        ["DK"] = "dsl", // Danish Sign Language
+        ["ES"] = "ssp", // Spanish Sign Language
+        ["FR"] = "fsl", // French Sign Language
+        ["GB"] = "bfi", // British Sign Language
+        ["GR"] = "gss", // Greek Sign Language
+        ["IE"] = "isg", // Irish Sign Language
+        ["IT"] = "ise", // Italian Sign Language
+        ["JP"] = "jsl", // Japanese Sign Language
+        ["MX"] = "mfs", // Mexican Sign Language
+        ["NI"] = "ncs", // Nicaraguan Sign Language
+        ["NL"] = "dse", // Dutch Sign Language
+        ["NO"] = "nsl", // Norwegian Sign Language
+        ["PT"] = "psr", // Portuguese Sign Language
+        ["SE"] = "swl", // Swedish Sign Language
+        ["US"] = "ase", // American Sign Language
+        ["ZA"] = "sfs", // South African Sign Language
+    };
+
     // CLDR languageAlias entries keyed by language + variant: the whole pair is replaced by a single
     // preferred language and the variant is dropped (e.g. "hy-arevmda" -> "hyw" Western Armenian).
     // Only the entries test262 exercises are listed.
@@ -1630,6 +1657,37 @@ public static class JSIntl
         // (only when no script is already present); a simple alias just substitutes.
         var language = subtags[0];
         var hasScript = subtags.Length >= 2 && subtags[1].Length == 4 && IsAllAlpha(subtags[1]);
+
+        // CLDR sign-language aliases: a "sgn" language with a 2-alpha region (e.g. "sgn-GR")
+        // collapses to a single ISO 639-3 sign-language code (e.g. "gss") with the region
+        // dropped. Apply BEFORE the language-only alias step so the (language, region) pair
+        // matches before "sgn" alone is considered. The script slot (if present at index 1)
+        // is preserved by keying the region by its actual index.
+        if (subtags.Length >= 2
+            && language.Equals("sgn", StringComparison.OrdinalIgnoreCase))
+        {
+            var regionIdx = hasScript ? 2 : 1;
+            if (regionIdx < subtags.Length
+                && subtags[regionIdx].Length == 2
+                && IsAllAlpha(subtags[regionIdx])
+                && SignLanguageAliases.TryGetValue(subtags[regionIdx], out var signLang))
+            {
+                var rest = new string[subtags.Length - 1];
+                rest[0] = signLang;
+                // Copy everything after the region: keeps the script (if any) DROPPED — per
+                // CLDR the replacement language is reported without script/region — and any
+                // trailing variant/extension subtags are preserved.
+                for (var i = regionIdx + 1; i < subtags.Length; i++)
+                    rest[i - 1 - (regionIdx == 1 ? 0 : 1)] = subtags[i];
+                // Truncate trailing nulls when a script was skipped.
+                var trim = 0;
+                for (var i = rest.Length - 1; i > 0 && rest[i] == null; i--)
+                    trim++;
+                if (trim > 0)
+                    System.Array.Resize(ref rest, rest.Length - trim);
+                return string.Join("-", rest);
+            }
+        }
 
         if (ComplexLanguageAliases.TryGetValue(language, out var complex))
         {
@@ -1847,7 +1905,17 @@ public static class JSIntl
                 p = 1;
                 if (p < payload.Length && IsScriptSubtag(payload[p])) p++;
                 if (p < payload.Length && IsRegionSubtag(payload[p])) p++;
-                while (p < payload.Length && IsVariantSubtag(payload[p])) p++;
+                // UTS-35 §3.6: a tlang carries no duplicate unicode_variant_subtag (compared
+                // case-insensitively). "de-t-en-emodeng-emodeng" is structurally invalid for
+                // the same reason "en-emodeng-emodeng" is.
+                HashSet<string> tlangVariants = null;
+                while (p < payload.Length && IsVariantSubtag(payload[p]))
+                {
+                    tlangVariants ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    if (!tlangVariants.Add(payload[p]))
+                        return true;
+                    p++;
+                }
             }
 
             // Any leading non-tlang subtags, and everything after the tlang, must form tfields:
