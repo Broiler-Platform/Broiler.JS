@@ -46,7 +46,9 @@ Equivalent to editing `CuratedUnits` by hand and running
 ## `broiler-unicode-issue887-emoji-17.patch`
 
 Fixes the **Unicode 17.0 emoji** cluster (Problems 134–137) of
-[#887](https://github.com/MaiRat/Broiler.JS/issues/887): `\p{Basic_Emoji}`,
+[#887](https://github.com/MaiRat/Broiler.JS/issues/887) — and the resurfacing of the
+same four tests as **Problems 121–124** of
+[#889](https://github.com/MaiRat/Broiler.JS/issues/889): `\p{Basic_Emoji}`,
 `\p{RGI_Emoji_Modifier_Sequence}`, `\p{RGI_Emoji_ZWJ_Sequence}` and `\p{RGI_Emoji}`
 (properties of strings, `v` flag) missed sequences added in Unicode/Emoji 17.0 — for
 example `\p{Basic_Emoji}` did not match 🛘 (U+1F6D8 LANDSLIDE).

@@ -60,7 +60,7 @@ partial class FastCompiler
                 using var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
                 var v = scope.CreateVariable(id.Name, newScope: true);
                 v.IsSimpleCatchBinding = true;
-                var catchBlock = BExpression.Block(v.Variable.AsSequence(), BExpression.Assign(v.Variable, JSVariableBuilder.NewFromException(pe.Variable, id.Name.Value)), VisitStatement(cb));
+                var catchBlock = BExpression.Block(v.Variable.AsSequence(), ResetCompletion(completionVar), BExpression.Assign(v.Variable, JSVariableBuilder.NewFromException(pe.Variable, id.Name.Value)), VisitStatement(cb));
                 var cbExp = BExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 
                 if (tryStatement.Finally != null)
@@ -88,6 +88,7 @@ partial class FastCompiler
                 var list = new Sequence<BExpression>();
                 foreach (var vp in this.scope.Top.VariableParameters)
                     vars.Add(vp);
+                list.Add(ResetCompletion(completionVar));
                 // Initialize all variables (including JSVariable constructors for destructured bindings)
                 foreach (var initExpr in this.scope.Top.InitList)
                     list.Add(initExpr);
@@ -107,7 +108,7 @@ partial class FastCompiler
             {
                 // Optional catch binding: catch { ... }
                 var pe = this.scope.Top.CreateException("__catchParam__");
-                var catchBlock = VisitStatement(cb);
+                var catchBlock = BExpression.Block(ResetCompletion(completionVar), VisitStatement(cb));
                 var cbExp = BExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 
                 if (tryStatement.Finally != null)
@@ -123,6 +124,14 @@ partial class FastCompiler
 
         return JSUndefinedBuilder.Value;
     }
+
+    // When Block throws and Catch handles it (ECMA-262 §14.15.5), the result is the Catch's
+    // completion value; the partial completion value the Block had produced before throwing
+    // (`try { 'try'; throw 'e'; } catch (e) {}` — `'try'` lived in `#cv` when the throw
+    // unwound the stack) must be discarded, otherwise `eval` returns the try's value instead
+    // of letting UpdateEmpty(undefined) kick in for an empty catch.
+    private static BExpression ResetCompletion(BParameterExpression completionVar)
+        => completionVar == null ? BExpression.Empty : BExpression.Assign(completionVar, JSUndefinedBuilder.Value);
 
     // A Finally block's completion value only survives when the finally completes ABRUPTLY
     // (break/continue/return): per UpdateEmpty the abrupt finally's own value (or undefined
