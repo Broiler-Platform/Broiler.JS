@@ -23,10 +23,6 @@ test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/lookahead-quantifier-match-groups.js
 test/built-ins/RegExp/nullable-quantifier.js
-test/built-ins/RegExp/property-escapes/generated/strings/Basic_Emoji.js
-test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji.js
-test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Modifier_Sequence.js
-test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_ZWJ_Sequence.js
 test/built-ins/RegExp/regexp-modifiers/add-ignoreCase-affects-slash-lower-b.js
 test/built-ins/RegExp/regexp-modifiers/add-ignoreCase-affects-slash-upper-b.js
 test/built-ins/RegExp/regexp-modifiers/add-ignoreCase-affects-slash-upper-p.js
@@ -34,7 +30,6 @@ test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-lower-b.j
 test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-lower-w.js
 test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-upper-b.js
 test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-upper-w.js
-test/built-ins/RegExp/unicodeSets/generated/rgi-emoji-17.0.js
 test/built-ins/RegExp/unicode_full_case_folding.js
 test/built-ins/ShadowRealm/prototype/evaluate/throws-typeerror-wrap-throwing.js
 test/built-ins/Temporal/Duration/prototype/round/next-day-out-of-range.js
@@ -70,7 +65,6 @@ test/intl402/DateTimeFormat/prototype/formatToParts/dangi-calendar-dates.js
 test/intl402/DateTimeFormat/prototype/formatToParts/era.js
 test/intl402/DateTimeFormat/timezone-not-canonicalized.js
 test/intl402/Intl/getCanonicalLocales/complex-region-subtag-replacement.js
-test/intl402/ListFormat/prototype/formatToParts/en-us-disjunction.js
 test/intl402/Locale/getters.js
 test/intl402/NumberFormat/prototype/format/unit-zh-TW.js
 test/intl402/NumberFormat/prototype/format/useGrouping-extended-en-IN.js
@@ -166,4 +160,3 @@ test/staging/sm/misc/line-paragraph-separator-parse-as-lineterminator.js
 test/staging/sm/regress/regress-554955-2.js
 test/staging/sm/regress/regress-554955-3.js
 test/staging/sm/regress/regress-610026.js
-test/staging/sm/statements/try-completion.js
