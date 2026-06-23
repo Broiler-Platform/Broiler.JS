@@ -42,3 +42,41 @@ git push -u origin claude/awesome-ramanujan-01qa92
 Equivalent to editing `CuratedUnits` by hand and running
 `dotnet run --project src/UnicodeCldr.LocaleData.DataTool -- update 48.2.0`
 (the patch just bakes in the regenerated data so no network/regeneration is needed).
+
+## `broiler-unicode-issue887-emoji-17.patch`
+
+Fixes the **Unicode 17.0 emoji** cluster (Problems 134–137) of
+[#887](https://github.com/MaiRat/Broiler.JS/issues/887): `\p{Basic_Emoji}`,
+`\p{RGI_Emoji_Modifier_Sequence}`, `\p{RGI_Emoji_ZWJ_Sequence}` and `\p{RGI_Emoji}`
+(properties of strings, `v` flag) missed sequences added in Unicode/Emoji 17.0 — for
+example `\p{Basic_Emoji}` did not match 🛘 (U+1F6D8 LANDSLIDE).
+
+The bundled emoji tables in `Broiler.Unicode` were generated from Emoji 16.0. The patch
+adds the Emoji 17.0 source data under `data/unicode/17.0/`
+(`emoji-test.txt`, `emoji-sequences.txt`, `emoji-zwj-sequences.txt`) and regenerates
+`src/UnicodeEmoji.StringProperties/Generated/EmojiTrieData.g.cs`
+(`UnicodeEmojiVersion` → `"17.0"`, 3790 → 3953 sequences). `EmojiStringProperties`
+and the `JSRegExp` v-flag property-of-strings path then match the full Emoji 17.0 set.
+
+Fixes test262 `built-ins/RegExp/property-escapes/generated/strings/{Basic_Emoji,
+RGI_Emoji_Modifier_Sequence,RGI_Emoji_ZWJ_Sequence}.js` and
+`built-ins/RegExp/unicodeSets/generated/rgi-emoji-17.0.js`.
+
+### Applying it
+
+```bash
+# from the Broiler.JS checkout
+cd Broiler.Unicode
+git checkout -b claude/brave-shannon-r7q7om
+git apply ../patches/broiler-unicode-issue887-emoji-17.patch
+git add -A   # the patch introduces new files under data/unicode/17.0/
+git commit -m "emoji: regenerate string-property tables from Unicode/Emoji 17.0"
+git push -u origin claude/brave-shannon-r7q7om
+# open a PR on MaiRat/Broiler.Unicode, then bump the submodule pointer in Broiler.JS
+```
+
+Equivalent to running
+`dotnet run --project src/UnicodeEmoji.StringProperties.DataTool -- update 17.0`
+(the patch bakes in the downloaded data and regenerated tables so no network access is
+needed; the official `unicode.org` host is not on the environment's egress allowlist, so
+the data files were mirrored from `unicode-org/unicodetools`).

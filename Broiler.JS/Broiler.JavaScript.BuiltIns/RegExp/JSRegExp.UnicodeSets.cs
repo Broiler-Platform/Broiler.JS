@@ -144,8 +144,9 @@ partial class JSRegExp
 
     /// <summary>
     /// True when a class body uses a v-mode construct that .NET cannot express
-    /// directly: the difference (<c>--</c>) or intersection (<c>&amp;&amp;</c>)
-    /// operators, a string literal (<c>\q{</c>), or a property of strings.
+    /// directly: a nested class (<c>[...]</c>), the difference (<c>--</c>) or
+    /// intersection (<c>&amp;&amp;</c>) operators, a string literal (<c>\q{</c>),
+    /// or a property of strings.
     /// </summary>
     private static bool ClassNeedsSetEvaluation(string inner)
     {
@@ -153,6 +154,14 @@ partial class JSRegExp
         while (i < inner.Length)
         {
             var c = inner[i];
+
+            // A nested class is a v-mode union (or the left/right operand of a set
+            // operator). .NET regex has no nested-class syntax — it would read
+            // `[d[0-9]]` as the class `[d[0-9]` followed by a literal `]` — so any
+            // unescaped `[` inside the body must be evaluated as a class set.
+            if (c == '[')
+                return true;
+
             if (c == '\\' && i + 1 < inner.Length)
             {
                 var n = inner[i + 1];

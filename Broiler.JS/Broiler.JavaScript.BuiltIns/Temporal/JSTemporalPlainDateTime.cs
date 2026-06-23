@@ -672,13 +672,9 @@ public partial class JSTemporalPlainDateTime : JSObject
     public JSValue ToPlainTime(in Arguments a)
         => JSTemporalPlainTime.Create(hour, minute, second, millisecond, microsecond, nanosecond);
 
-    [JSExport("toPlainYearMonth", Length = 0)]
-    public JSValue ToPlainYearMonth(in Arguments a)
-        => new JSTemporalPlainYearMonth(isoYear, isoMonth, isoDay, calendarId, JSTemporalPlainYearMonth.PlainYearMonthPrototype);
-
-    [JSExport("toPlainMonthDay", Length = 0)]
-    public JSValue ToPlainMonthDay(in Arguments a)
-        => new JSTemporalPlainMonthDay(isoMonth, isoDay, 1972, JSTemporalPlainMonthDay.PlainMonthDayPrototype);
+    // Note: Temporal.PlainDateTime.prototype.toPlainYearMonth and toPlainMonthDay were
+    // removed from the Temporal proposal (June 2024 TC39 consensus). See
+    // test/staging/Temporal/removed-methods.js.
 
     // toZonedDateTime(timeZone): interpret this wall-clock datetime in the given zone.
     [JSExport("toZonedDateTime", Length = 1)]
