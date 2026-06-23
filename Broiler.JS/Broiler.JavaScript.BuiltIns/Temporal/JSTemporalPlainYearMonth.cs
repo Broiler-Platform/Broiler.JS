@@ -212,12 +212,24 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
         var monthCodeStrW = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainYearMonth");
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
-        int month = c.m;
+        int month;
         if (monthCodeStrW != null)
         {
             var (codeNumber, leapMonth) = ParseMonthCodeLeap(monthCodeStrW);
             month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, leapMonth);
             any = true;
+        }
+        else
+        {
+            // No month/monthCode in the bag: the receiver's *monthCode* (not its ordinal) carries
+            // over and is re-resolved against the (possibly changed) year. In a lunisolar calendar a
+            // leap month shifts later ordinals, so e.g. monthCode "M12" is ordinal 12 in a common year
+            // but 13 in a leap year — keeping the bare ordinal would silently pick the wrong month
+            // when era/eraYear/year moves to a year with a different month structure (test262
+            // PlainYearMonth/prototype/with mutually-exclusive-fields-hebrew).
+            var receiverCode = TemporalCalendarMath.MonthCode(calendarId, c.y, c.m);
+            var (codeNumber, leapMonth) = ParseMonthCodeLeap(receiverCode);
+            month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, leapMonth);
         }
         if (!monthValue.IsUndefined)
         {

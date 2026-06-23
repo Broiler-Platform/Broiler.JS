@@ -695,28 +695,38 @@ partial class FastParser
             // effects still run exactly once. `const` heads keep the original lowering — a `const`
             // carrier cannot be mutated by an update.
             var useLoopEnv = requiresReplacement
-                && declaration.Kind == FastVariableKind.Let
-                && AllSimpleIdentifiers(declaration);
+                && declaration.Kind == FastVariableKind.Let;
 
             var en = declaration.Declarators.GetFastEnumerator();
             while (en.MoveNext(out var d))
             {
                 if (useLoopEnv)
                 {
-                    var origId = (AstIdentifier)d.Identifier;
-                    var origName = origId.Name;
-                    var tempID = Interlocked.Increment(ref TempVarID).ToString();
-                    var temp = new AstIdentifier(origId.Start, tempID) { InferenceName = origName.Value };
+                    // Keep the original binding — a simple identifier OR a destructuring pattern
+                    // (`{[++q]: r}`, `[a, b]`, …) — bound once in the head's own lexical scope, so a
+                    // closure created in a later declarator's initializer (`s = () => r`) resolves the
+                    // earlier binding instead of throwing "r is not defined" (test262 sm bug-1216623).
+                    // Per spec the loop runs in a single environment whose values are copied per
+                    // iteration; the body re-declares each name from a carrier (built below) so closures
+                    // in the head capture the original binding while the loop variable still advances.
+                    tempDeclarations.Add(new VariableDeclarator(d.Identifier, d.Init));
 
-                    // loop-scope binding `let i = <init>` followed by the carrier `let <temp> = i`,
-                    // both in the head's init declaration (a single lexical scope that encloses
-                    // test/update). The body block re-declares `let i = <temp>` in a child scope,
-                    // shadowing this binding with the fresh per-iteration copy.
-                    tempDeclarations.Add(new VariableDeclarator(origId, d.Init));
-                    tempDeclarations.Add(new VariableDeclarator(temp, new AstIdentifier(origId.Start, origName.Value)));
+                    // One per-iteration carrier per bound name, seeded from the original binding. For a
+                    // simple identifier this is the single name; for a pattern it is each destructured
+                    // name (collected in declaration order so a carrier never precedes its source).
+                    var boundNames = new Sequence<StringSpan>();
+                    CollectBindingNames(d.Identifier, boundNames);
+                    var nameEn = boundNames.GetFastEnumerator();
+                    while (nameEn.MoveNext(out var origName))
+                    {
+                        var tempID = Interlocked.Increment(ref TempVarID).ToString();
+                        var temp = new AstIdentifier(d.Identifier.Start, tempID) { InferenceName = origName.Value };
 
-                    hoisted.Add(origName);
-                    list.Add((origName.Value!, temp));
+                        tempDeclarations.Add(new VariableDeclarator(temp, new AstIdentifier(d.Identifier.Start, origName.Value)));
+
+                        hoisted.Add(origName);
+                        list.Add((origName.Value!, temp));
+                    }
                 }
                 else if (requiresReplacement)
                 {
@@ -811,17 +821,6 @@ partial class FastParser
                 block.AnnexBFunctionNames = sourceBlock.AnnexBFunctionNames;
 
             return (r, block, update, test);
-        }
-
-        static bool AllSimpleIdentifiers(AstVariableDeclaration declaration)
-        {
-            var en = declaration.Declarators.GetFastEnumerator();
-            while (en.MoveNext(out var d))
-            {
-                if (d.Identifier.Type != FastNodeType.Identifier)
-                    return false;
-            }
-            return true;
         }
 
         static bool ContainsClosure(AstNode node)

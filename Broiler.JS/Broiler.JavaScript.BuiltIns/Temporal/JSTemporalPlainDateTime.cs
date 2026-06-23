@@ -189,7 +189,18 @@ public partial class JSTemporalPlainDateTime : JSObject
     // ── methods ─────────────────────────────────────────────────────────────────
 
     [JSExport("with", Length = 1)]
-    public JSValue With(in Arguments a)
+    public JSValue With(in Arguments a) => WithCore(in a, null, null, null);
+
+    // The ISO-calendar `with` field reader, with optional hooks so Temporal.ZonedDateTime.prototype.with
+    // can reuse the exact same single alphabetical PrepareCalendarFields pass:
+    //  - afterNanosecond runs at the alphabetical position of `offset` (between nanosecond and second),
+    //    letting ZDT read its extra `offset` field in spec order;
+    //  - hasExtraField makes the "at least one field" requirement count that extra field (an
+    //    offset-only ZDT bag is valid);
+    //  - overflowReader replaces the trailing GetTemporalOverflowOption so the caller can read the
+    //    disambiguation / offset / overflow options together, after every field has been read.
+    // (test262 ZonedDateTime/prototype/with order-of-operations.)
+    internal JSValue WithCore(in Arguments a, Action afterNanosecond, Func<string> overflowReader, Func<bool> hasExtraField)
     {
         if (a.GetAt(0) is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires an object");
@@ -236,14 +247,18 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (monthCodeStr != null) any = true;
 
         var ns = Read("nanosecond", nanosecond);
+
+        // `offset` sorts between `nanosecond` and `second`; a ZonedDateTime caller reads it here.
+        afterNanosecond?.Invoke();
+
         var s = Read("second", second);
 
         var year = ResolveWithYear(obj, ref any);
 
-        if (!any)
+        if (!any && (hasExtraField == null || !hasExtraField()))
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires at least one field");
 
-        var overflow = ReadOverflow(a.GetAt(1));
+        var overflow = overflowReader != null ? overflowReader() : ReadOverflow(a.GetAt(1));
 
         if (monthCodeStr != null)
             monthFromCode = MonthFromCode(monthCodeStr);

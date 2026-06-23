@@ -438,6 +438,15 @@ public partial class JSTemporalZonedDateTime : JSObject
         return JSTemporalPlainTime.Create(l.h, l.mi, l.s, l.ms, l.us, l.ns);
     }
 
+    // Projects this ZonedDateTime's wall-clock time onto a Temporal.PlainTime purely from its
+    // internal slots, without reading any observable property. Used by ToTemporalTime so
+    // Temporal.PlainTime.from consumes a ZonedDateTime via its slots (no getter calls).
+    internal JSValue ToPlainTimeFromSlots()
+    {
+        var l = Local();
+        return JSTemporalPlainTime.Create(l.h, l.mi, l.s, l.ms, l.us, l.ns);
+    }
+
     [JSExport("toPlainDateTime", Length = 0)]
     public JSValue ToPlainDateTime(in Arguments a)
     {
@@ -671,11 +680,67 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         var options = a.GetAt(1);
 
-        // PrepareCalendarFields reads and validates the offset field before the date-time fields are
-        // interpreted, so parse it up front: an absent offset keeps the current one, a present
-        // non-string offset is a TypeError (ToOffsetString requires a String after ToPrimitive), and
-        // an unparseable string such as "00:00" / "+0" is a RangeError — independent of whether the
-        // remaining partial fields form a recognized date-time set.
+        // Merge the partial fields onto the current local wall-clock datetime, reusing the
+        // calendar-aware PlainDateTime.with (which rejects calendar/timeZone fields, applies the
+        // overflow option and validates era / monthCode / partial era pairs).
+        var l = Local();
+        var current = new JSTemporalPlainDateTime(l.y, l.mo, l.d, l.h, l.mi, l.s, l.ms, l.us, l.ns, calendarId,
+            JSTemporalPlainDateTime.PlainDateTimePrototype);
+
+        // PrepareCalendarFields reads the ZonedDateTime field list — the PlainDateTime fields plus
+        // `offset` (which sorts alphabetically between nanosecond and second) — in a single pass, and
+        // the disambiguation / offset / overflow options are all read afterwards. Drive that exact
+        // order through PlainDateTime.WithCore's hooks rather than reading offset/options up front
+        // (test262 ZonedDateTime/prototype/with order-of-operations). The non-ISO receiver path keeps
+        // the simpler ordering — it is not exercised by the operation-order tests.
+        if (TemporalCalendarMath.IsNonIso(calendarId))
+            return WithNonIsoReceiver(fields, options, current);
+
+        long candidateOffset = OffsetNanoseconds();
+        var offsetPresent = false;
+        string offsetString = null;
+        var offsetOption = "prefer";
+
+        // `offset` is read (and ToString-coerced) at its alphabetical position; a present non-string
+        // offset is a TypeError there. Parsing/validation (RangeError) is deferred until after every
+        // field and option has been read, matching InterpretISODateTimeOffset.
+        void ReadOffsetField()
+        {
+            var offsetField = fields[KeyStrings.GetOrCreate("offset")];
+            if (offsetField.IsUndefined)
+                return;
+            offsetPresent = true;
+            var offsetPrimitive = offsetField is JSObject offsetObj ? offsetObj.ToStringPrimitive() : offsetField;
+            if (!offsetPrimitive.IsString)
+                throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.with: the offset field must be a string");
+            offsetString = offsetPrimitive.StringValue;
+        }
+
+        string ReadOptions()
+        {
+            // disambiguation, then offset, then overflow — every option getter fires after all fields.
+            ReadDisambiguation(options); // validated; only "compatible" behaviour is applied below
+            offsetOption = ReadOffsetOption(options);
+            return ReadOverflow(options);
+        }
+
+        var updated = (JSTemporalPlainDateTime)current.WithCore(
+            new Arguments(JSUndefined.Value, fields, options),
+            afterNanosecond: ReadOffsetField,
+            overflowReader: ReadOptions,
+            hasExtraField: () => offsetPresent);
+
+        if (offsetPresent && !TryParseOffsetString(offsetString, out candidateOffset))
+            throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.with: invalid offset");
+
+        return MergeWith(updated, candidateOffset, offsetOption);
+    }
+
+    // Non-ISO receiver: keep the original (offset/options-up-front) ordering — the exact spec
+    // operation order is only asserted for the ISO calendar. PlainDateTime.With handles the non-ISO
+    // date merge; an offset-only bag (no date-time fields) leaves the wall-clock unchanged.
+    private JSValue WithNonIsoReceiver(JSObject fields, JSValue options, JSTemporalPlainDateTime current)
+    {
         long candidateOffset;
         var offsetField = fields[KeyStrings.GetOrCreate("offset")];
         if (offsetField.IsUndefined)
@@ -691,37 +756,13 @@ public partial class JSTemporalZonedDateTime : JSObject
                 throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.with: invalid offset");
         }
 
-        // Read the with() options — disambiguation, then offset — before interpreting the
-        // fields, so every option getter has fired before any field validation can throw
-        // (overflow is read third, inside PlainDateTime.With below). test262
-        // ZonedDateTime/prototype/with options-read-before-algorithmic-validation requires
-        // that e.g. an invalid monthCode is rejected only after all options are read.
-        //
-        // A non-object (and non-undefined) options bag is a TypeError, but the partial
-        // date-time fields are processed first (PlainDateTime.With raises it via ReadOverflow
-        // below), so skip the getter reads here and let that path throw — keeping
-        // `with({ day: -1 }, primitive)` a RangeError (options-wrong-type).
         var offsetOption = "prefer";
         if (options is JSObject || options == null || options.IsUndefined)
         {
-            ReadDisambiguation(options); // validated; only "compatible" behaviour is applied below
+            ReadDisambiguation(options);
             offsetOption = ReadOffsetOption(options);
         }
 
-        // Merge the date/time fields onto the current local wall-clock datetime, reusing the
-        // calendar-aware PlainDateTime.with (which rejects calendar/timeZone fields, applies the
-        // overflow option and validates era / monthCode / partial era pairs).
-        var l = Local();
-        var current = new JSTemporalPlainDateTime(l.y, l.mo, l.d, l.h, l.mi, l.s, l.ms, l.us, l.ns, calendarId,
-            JSTemporalPlainDateTime.PlainDateTimePrototype);
-
-        // For ZonedDateTime the field list also includes `offset`, so a bag carrying only an
-        // offset (already validated above) satisfies the "at least one field" requirement and
-        // leaves the wall-clock date-time unchanged. PlainDateTime.with counts only date-time
-        // fields, so delegating an offset-only bag would wrongly raise a TypeError instead of
-        // letting the offset interpretation below run (and, here, throw a RangeError when the
-        // result is out of range). The calendar/timeZone-field rejection and the overflow
-        // option that PlainDateTime.with performs are reproduced for that case.
         JSTemporalPlainDateTime updated;
         if (HasAnyDateTimeField(fields))
         {
@@ -739,6 +780,13 @@ public partial class JSTemporalZonedDateTime : JSObject
             updated = current;
         }
 
+        return MergeWith(updated, candidateOffset, offsetOption);
+    }
+
+    // Re-anchors the updated wall-clock date-time onto the epoch timeline using the candidate offset
+    // and the GetTemporalOffsetOption mode (use / ignore / prefer / reject).
+    private JSValue MergeWith(JSTemporalPlainDateTime updated, long candidateOffset, string offsetOption)
+    {
         var localNs = LocalNanoseconds(updated.isoYear, updated.isoMonth, updated.isoDay,
             updated.hour, updated.minute, updated.second, updated.millisecond, updated.microsecond, updated.nanosecond);
 

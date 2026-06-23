@@ -12,27 +12,36 @@ public class FlattenBlocks : BExpressionMapVisitor
     protected override Exp VisitLambda(BLambdaExpression yLambdaExpression) => yLambdaExpression;
 
     protected override Expression VisitBinary(BBinaryExpression node)
-    {
-        if (Flatten(node.Right, last => node.Update(node.Left, node.Operator, last), out var result))
-            return result;
-
-        return base.VisitBinary(node);
-    }
+        => HoistValueOperand(node.Right, last => node.Update(node.Left, node.Operator, last));
 
     protected override Exp VisitAssign(BAssignExpression node)
-    {
-        if (Flatten(node.Right, last => new BAssignExpression(node.Left, last, null), out var result))
-            return result;
-
-        return base.VisitAssign(node);
-    }
+        => HoistValueOperand(node.Right, last => new BAssignExpression(node.Left, last, null));
 
     protected override Exp VisitReturn(BReturnExpression node)
     {
-        if (Flatten(node.Default, x => node.Update(node.Target, x), out var block))
-            return block;
+        if (node.Default == null)
+            return base.VisitReturn(node);
 
-        return base.VisitReturn(node);
+        return HoistValueOperand(node.Default, x => node.Update(node.Target, x));
+    }
+
+    // Flatten a value operand consumed by `p` (an assignment RHS, a binary right operand, a
+    // return value, …). A raw block operand is flattened directly, as before. But an operand
+    // that is NOT itself a block may still HOIST into one when visited — e.g. an array
+    // destructuring assignment in value position lowers, via VisitCall, into a block carrying
+    // the iterator-close try/catch/finally. Left in this value position the embedded try faults
+    // (the CLR forbids entering a try region with a non-empty evaluation stack), so visit the
+    // operand and flatten the result too, hoisting its statements out as siblings.
+    private Expression HoistValueOperand(Expression rawExp, Func<Expression, Expression> p)
+    {
+        if (Flatten(rawExp, p, out var result))
+            return result;
+
+        var visited = Visit(rawExp);
+        if (visited.NodeType == BExpressionType.Block && Flatten(visited, p, out var hoisted))
+            return hoisted;
+
+        return p(visited);
     }
 
     protected override Expression VisitNew(BNewExpression node)
@@ -81,6 +90,61 @@ public class FlattenBlocks : BExpressionMapVisitor
             return Expression.New(node.constructor, args);
 
         list.Add(Expression.New(node.constructor, args));
+        return Expression.Block(vars, list);
+    }
+
+    protected override Expression VisitCall(BCallExpression node)
+    {
+        // A method-call operand (instance target or argument) may itself be a block — e.g. an
+        // array destructuring assignment used in value position (`y = ([a] = [1])`) lowers to a
+        // block that contains an iterator-close try/catch/finally and returns the source value.
+        // The CLR requires an empty evaluation stack when entering a try region, but a block used
+        // directly as a call operand is evaluated while the target / preceding arguments are already
+        // on the stack, so the embedded try faults as an invalid program. Hoist each block operand's
+        // statements out as siblings and spill its tail value into a temp, then call with the temps —
+        // exactly as VisitNew already does for constructor arguments. (Object destructuring uses no
+        // iterator and so produced no try, which is why only the array form crashed.)
+        var vars = new Sequence<ParameterExpression>();
+        var list = new Sequence<Expression>();
+
+        Expression HoistOperand(Expression operand)
+        {
+            var e = Visit(operand);
+
+            if (e.NodeType != BExpressionType.Block || e is not BBlockExpression block)
+                return e;
+
+            vars.AddRange(block.Variables);
+            var p = Expression.Parameter(e.Type);
+            vars.Add(p);
+
+            var length = block.Expressions.Count;
+            var last = length - 1;
+            var en = block.Expressions.GetFastEnumerator();
+            while (en.MoveNext(out var exp, out var i))
+            {
+                if (i == last)
+                {
+                    list.Add(Expression.Assign(p, exp));
+                    continue;
+                }
+
+                list.Add(exp);
+            }
+
+            return p;
+        }
+
+        var target = node.Target == null ? null : HoistOperand(node.Target);
+        var args = new Sequence<Expression>(node.Arguments.Count);
+        var argEn = node.Arguments.GetFastEnumerator();
+        while (argEn.MoveNext(out var a))
+            args.Add(HoistOperand(a));
+
+        if (vars.Count == 0)
+            return new BCallExpression(target, node.Method, args);
+
+        list.Add(new BCallExpression(target, node.Method, args));
         return Expression.Block(vars, list);
     }
 
