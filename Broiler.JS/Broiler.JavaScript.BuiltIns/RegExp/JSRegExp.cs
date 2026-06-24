@@ -857,7 +857,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // Property escapes (\p{…}/\P{…}) are only valid in u/v mode.
                 // Translate the General_Category dimension to .NET-compatible
                 // short forms before the surrogate-aware class transforms run.
-                pattern = TransformUnicodePropertyEscapes(pattern, unicodeSets);
+                pattern = TransformUnicodePropertyEscapes(pattern, unicodeSets, ignoreCase);
                 pattern = TransformUnicodeWordBoundaries(pattern, ignoreCase);
                 // Inline modifiers disable .NET ECMAScript mode, so `\w`/`\W` need the ECMAScript word
                 // set re-imposed (effective-ignoreCase aware). Only needed when modifiers are present —
@@ -3182,7 +3182,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// require a Unicode database that is not bundled yet and raise a clear
     /// "not supported" SyntaxError (see <see cref="UnsupportedUnicodePropertyNames"/>).
     /// </summary>
-    private static string TransformUnicodePropertyEscapes(string pattern, bool unicodeSets)
+    private static string TransformUnicodePropertyEscapes(string pattern, bool unicodeSets, bool ignoreCase)
     {
         if (pattern.IndexOf("\\p", StringComparison.Ordinal) < 0 &&
             pattern.IndexOf("\\P", StringComparison.Ordinal) < 0)
@@ -3191,6 +3191,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
         var sb = new StringBuilder(pattern.Length);
         int i = 0;
         bool inClass = false;
+        // Effective ignoreCase per position. An inline modifier group `(?i:…)` / `(?-i:…)`
+        // toggles ignoreCase for its extent, so a `\P{X}` escape can sit under a different
+        // effective flag than the regex's global one. A negated property escape needs the
+        // case closure of the COMPLEMENT under ignoreCase (see ExpandCodePointProperty),
+        // which the position-independent translation cannot pick without this stack.
+        var ignoreCaseStack = new System.Collections.Generic.Stack<bool>();
+        ignoreCaseStack.Push(ignoreCase);
         while (i < pattern.Length)
         {
             var c = pattern[i];
@@ -3211,7 +3218,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     if (close > 0)
                     {
                         var inner = pattern.Substring(i + 3, close - (i + 3));
-                        var translated = TranslateUnicodeProperty(next == 'P', inner, inClass, unicodeSets);
+                        var translated = TranslateUnicodeProperty(next == 'P', inner, inClass, unicodeSets, ignoreCaseStack.Peek());
                         if (translated != null)
                         {
                             sb.Append(translated);
@@ -3237,10 +3244,41 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // usable inside a class: the in-class form cannot nest a negated fragment or
             // a supplementary-plane range, so it would otherwise be rejected.
             if (c == '[' && !inClass
-                && TryTranslateSinglePropertyClass(pattern, i, unicodeSets, out var classTranslated, out var afterClass))
+                && TryTranslateSinglePropertyClass(pattern, i, unicodeSets, ignoreCaseStack.Peek(), out var classTranslated, out var afterClass))
             {
                 sb.Append(classTranslated);
                 i = afterClass;
+                continue;
+            }
+
+            // Inline modifier groups change the effective ignoreCase for their extent.
+            // Track them outside a character class (where `(` is literal); the group header
+            // is copied verbatim and its body — including any nested `\P{X}` — is then
+            // processed under the updated flag. A plain `(…)` / `(?:…)` just inherits.
+            if (!inClass && c == '(')
+            {
+                if (TryParseInlineModifierGroup(pattern, i, out var groupLength, out var addFlags, out var removeFlags))
+                {
+                    var ic = ignoreCaseStack.Peek();
+                    if (addFlags.Contains('i')) ic = true;
+                    if (removeFlags.Contains('i')) ic = false;
+                    ignoreCaseStack.Push(ic);
+                    sb.Append(pattern, i, groupLength);
+                    i += groupLength;
+                    continue;
+                }
+
+                ignoreCaseStack.Push(ignoreCaseStack.Peek());
+                sb.Append(c);
+                i++;
+                continue;
+            }
+
+            if (!inClass && c == ')' && ignoreCaseStack.Count > 1)
+            {
+                ignoreCaseStack.Pop();
+                sb.Append(c);
+                i++;
                 continue;
             }
 
@@ -3265,7 +3303,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// false (leaving the normal in-class path to handle it) for any other class shape, or
     /// when the property has no standalone translation (a native form left to .NET).
     /// </summary>
-    private static bool TryTranslateSinglePropertyClass(string pattern, int start, bool unicodeSets, out string translated, out int afterClass)
+    private static bool TryTranslateSinglePropertyClass(string pattern, int start, bool unicodeSets, bool ignoreCase, out string translated, out int afterClass)
     {
         translated = null;
         afterClass = start;
@@ -3295,7 +3333,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         var inner = pattern.Substring(p + 3, close - (p + 3));
         var effectiveNegated = (pc == 'P') ^ classNegated;
-        var t = TranslateUnicodeProperty(effectiveNegated, inner, inClass: false, unicodeSets);
+        var t = TranslateUnicodeProperty(effectiveNegated, inner, inClass: false, unicodeSets, ignoreCase);
         if (t == null)
             return false;
 
@@ -3310,7 +3348,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// Throws a SyntaxError for property classes that are recognized but not
     /// yet supported.
     /// </summary>
-    private static string TranslateUnicodeProperty(bool negated, string inner, bool inClass, bool unicodeSets)
+    private static string TranslateUnicodeProperty(bool negated, string inner, bool inClass, bool unicodeSets, bool ignoreCase)
     {
         var eq = inner.IndexOf('=');
         var prefix = negated ? "\\P" : "\\p";
@@ -3335,12 +3373,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
             var value = NormalizeKey(inner.Substring(eq + 1));
 
             if (name is "gc" or "generalcategory")
-                return TranslateGeneralCategory(value, prefix, negated, inClass, inner);
+                return TranslateGeneralCategory(value, prefix, negated, inClass, inner, ignoreCase);
 
             if (name is "sc" or "script")
             {
                 var ranges = UnicodeProperties.GetScript(value);
-                if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass) is { } expanded)
+                if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass, ignoreCase) is { } expanded)
                     return expanded;
 
                 throw NewUnsupportedPropertyError(inner);
@@ -3349,7 +3387,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if (name is "scx" or "scriptextensions")
             {
                 var ranges = UnicodeProperties.GetScriptExtensions(value);
-                if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass) is { } expanded)
+                if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass, ignoreCase) is { } expanded)
                     return expanded;
 
                 throw NewUnsupportedPropertyError(inner);
@@ -3365,14 +3403,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
         // A lone General_Category value (Lu, L, Letter, …).
         if (UnicodeProperties.GetGeneralCategory(lone) != null
             || (inClass && GeneralCategoryNames.ContainsKey(lone)))
-            return TranslateGeneralCategory(lone, prefix, negated, inClass, inner);
+            return TranslateGeneralCategory(lone, prefix, negated, inClass, inner, ignoreCase);
 
         // Binary Unicode properties (ASCII, Alphabetic, Assigned, Emoji, …) come from
         // the generated UCD 17.0.0 range tables in Broiler.Unicode.Properties.
         var binaryRanges = UnicodeProperties.GetBinaryProperty(lone);
         if (binaryRanges != null)
         {
-            var expanded = ExpandCodePointProperty(binaryRanges, negated, inClass);
+            var expanded = ExpandCodePointProperty(binaryRanges, negated, inClass, ignoreCase);
             if (expanded != null)
                 return expanded;
             throw NewUnsupportedPropertyError(inner);
@@ -3403,7 +3441,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// range expansion (with its surrogate-pair alternatives) cannot be nested — it falls
     /// back to .NET's native category escape (<c>\p{Lu}</c>), which is code-unit based.
     /// </summary>
-    private static string TranslateGeneralCategory(string value, string prefix, bool negated, bool inClass, string inner)
+    private static string TranslateGeneralCategory(string value, string prefix, bool negated, bool inClass, string inner, bool ignoreCase)
     {
         if (inClass)
         {
@@ -3413,7 +3451,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         var ranges = UnicodeProperties.GetGeneralCategory(value);
-        if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass) is { } expanded)
+        if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass, ignoreCase) is { } expanded)
             return expanded;
 
         throw NewUnsupportedPropertyError(inner);
@@ -3473,7 +3511,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// Inside a character class only BMP, non-negated ranges can be expressed as
     /// raw class fragments; anything else returns <c>null</c> (caller errors).
     /// </summary>
-    private static string ExpandCodePointProperty((int Lo, int Hi)[] ranges, bool negated, bool inClass)
+    private static string ExpandCodePointProperty((int Lo, int Hi)[] ranges, bool negated, bool inClass, bool ignoreCase)
     {
         if (inClass)
         {
@@ -3514,9 +3552,43 @@ public partial class JSRegExp : JSObject, IJSRegExp
         if (!negated)
             return positive;
 
+        // Under ignoreCase, `\P{X}` matches the case closure of the COMPLEMENT of X
+        // (22.2.2.7.1: ch matches iff some `a` NOT in X has Canonicalize(a) ==
+        // Canonicalize(ch)). The negative-lookahead form below is wrong there: a
+        // `(?!positive)` lookahead has the active IgnoreCase applied to `positive`, so it
+        // rejects every ch that case-folds into X — e.g. `(?i:\P{Lu})` would reject "a"
+        // because "a" folds to "A" ∈ Lu, and reject "A" too. Emit a positive matcher over
+        // the COMPLEMENT ranges instead: .NET applies the active IgnoreCase to that set,
+        // yielding the correct case-closed-complement (so "a" and "A" both match). Without
+        // ignoreCase the two forms are equivalent, so keep the lookahead there — it is the
+        // shape the surrogate/lone-surrogate handling was tuned against.
+        if (ignoreCase)
+            return BuildPositiveCodePointMatcher(ComplementCodePointRanges(ranges));
+
         // Match one code point that is NOT in the set: reject the set, then consume
         // a full code point (a surrogate pair or any single code unit).
         return $"(?:(?!{positive})(?:[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\s\\S]))";
+    }
+
+    /// <summary>
+    /// Returns the code-point ranges complementary to <paramref name="ranges"/> over the
+    /// whole Unicode range [U+0000, U+10FFFF]. The input is assumed sorted ascending and
+    /// non-overlapping (as the bundled UCD tables are), matching the in-class complement
+    /// path above.
+    /// </summary>
+    private static (int Lo, int Hi)[] ComplementCodePointRanges((int Lo, int Hi)[] ranges)
+    {
+        var result = new List<(int Lo, int Hi)>();
+        int cursor = 0;
+        foreach (var (lo, hi) in ranges)
+        {
+            if (lo > cursor)
+                result.Add((cursor, lo - 1));
+            cursor = System.Math.Max(cursor, hi + 1);
+        }
+        if (cursor <= 0x10FFFF)
+            result.Add((cursor, 0x10FFFF));
+        return result.ToArray();
     }
 
     private static string BuildPositiveCodePointMatcher((int Lo, int Hi)[] ranges)

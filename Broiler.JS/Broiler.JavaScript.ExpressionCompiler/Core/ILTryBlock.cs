@@ -155,6 +155,21 @@ public class ILTryBlock(ILWriter iLWriter, Label label, bool hasOuterGuard = fal
 
     internal void Branch(ILWriterLabel label, int index = -1)
     {
+        // A target owned by THIS block is a label declared directly inside this
+        // block's own body (e.g. the end-of-statement label of a labelled
+        // statement nested in this finally). Branching to it stays within this
+        // protected region, so emit a plain branch — even when we are currently
+        // emitting this block's finally. This MUST be checked before the
+        // `isFinally` deferral below: otherwise a `break L` to a label that lives
+        // in this same finally (reached via an inner try's deferred-jump dispatch)
+        // would be pushed onto this finally's exit machinery and dispatched AFTER
+        // endfinally, producing a branch into the finally region — invalid IL.
+        if (label.TryBlock == this)
+        {
+            il.Goto(label, index);
+            return;
+        }
+
         if (isFinally)
         {
             finallyJumpLabel ??= il.DefineLabel($"finally hop for {label.ID}");
@@ -163,12 +178,6 @@ public class ILTryBlock(ILWriter iLWriter, Label label, bool hasOuterGuard = fal
             il.Emit(OpCodes.Ldc_I4, state);
             il.EmitSaveLocal(finallyJumpState!.LocalIndex);
             il.Emit(OpCodes.Br, finallyJumpLabel);
-            return;
-        }
-
-        if (label.TryBlock == this)
-        {
-            il.Goto(label, index);
             return;
         }
 
