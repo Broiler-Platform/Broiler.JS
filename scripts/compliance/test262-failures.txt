@@ -32,14 +32,8 @@ test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-upper-b.j
 test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-upper-w.js
 test/built-ins/RegExp/unicode_full_case_folding.js
 test/built-ins/ShadowRealm/prototype/evaluate/throws-typeerror-wrap-throwing.js
-test/built-ins/Temporal/Duration/prototype/round/next-day-out-of-range.js
 test/built-ins/Temporal/Duration/prototype/round/relativeto-largestunit-smallestunit-combinations.js
 test/built-ins/Temporal/Duration/prototype/round/rounding-window.js
-test/built-ins/Temporal/Duration/prototype/round/roundingincrement-days-large.js
-test/built-ins/Temporal/Duration/prototype/round/roundingincrement-non-integer.js
-test/built-ins/Temporal/Duration/prototype/total/precision-exact-mathematical-values-6.js
-test/built-ins/Temporal/Duration/prototype/total/precision-exact-mathematical-values-7.js
-test/built-ins/Temporal/Duration/prototype/total/relativeto-total-of-each-unit.js
 test/built-ins/Temporal/Duration/prototype/total/rounding-window.js
 test/built-ins/Temporal/PlainDateTime/prototype/with/calendar-temporal-object-throws.js
 test/built-ins/Temporal/ZonedDateTime/prototype/since/round-cross-unit-boundary.js
@@ -79,9 +73,6 @@ test/intl402/Temporal/Duration/prototype/round/relativeto-dst-back-transition.js
 test/intl402/Temporal/Duration/prototype/total/dst-balancing-result.js
 test/intl402/Temporal/Duration/prototype/total/relativeto-dst-back-transition.js
 test/intl402/Temporal/PlainMonthDay/from/chinese-dangi-leap-month-with-year-from-options-bag.js
-test/intl402/Temporal/PlainYearMonth/prototype/with/leap-months-chinese.js
-test/intl402/Temporal/PlainYearMonth/prototype/with/leap-months-dangi.js
-test/intl402/Temporal/PlainYearMonth/prototype/with/leap-months-hebrew.js
 test/intl402/Temporal/ZonedDateTime/from/argument-propertybag-dst-option-disambiguation.js
 test/intl402/Temporal/ZonedDateTime/from/argument-propertybag-dst-options-offset-disambiguation-combinations.js
 test/intl402/Temporal/ZonedDateTime/from/argument-string-dst-option-disambiguation.js
@@ -94,7 +85,6 @@ test/intl402/Temporal/ZonedDateTime/prototype/with/dst-option-offset-disambiguat
 test/language/comments/S7.4_A5.js
 test/language/comments/S7.4_A6.js
 test/language/eval-code/direct/var-env-func-init-local-new-delete.js
-test/language/eval-code/direct/var-env-var-init-local-new-delete.js
 test/language/expressions/call/11.2.3-3_3.js
 test/language/expressions/dynamic-import/import-attributes/2nd-param-with-enumeration-enumerable.js
 test/language/literals/regexp/S7.8.5_A1.1_T2.js
@@ -132,8 +122,6 @@ test/staging/sm/RegExp/unicode-ignoreCase.js
 test/staging/sm/RegExp/unicode-raw.js
 test/staging/sm/String/string-code-point-upper-lower-mapping.js
 test/staging/sm/String/string-upper-lower-mapping.js
-test/staging/sm/TypedArray/indexOf-and-lastIndexOf.js
-test/staging/sm/TypedArray/sort_large_countingsort.js
 test/staging/sm/class/newTargetEval.js
 test/staging/sm/class/superCallBaseInvoked.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
@@ -144,7 +132,6 @@ test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-label.js
 test/staging/sm/lexical-environment/for-loop.js
 test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
-test/staging/sm/misc/line-paragraph-separator-parse-as-lineterminator.js
 test/staging/sm/regress/regress-554955-2.js
 test/staging/sm/regress/regress-554955-3.js
 test/staging/sm/regress/regress-610026.js
