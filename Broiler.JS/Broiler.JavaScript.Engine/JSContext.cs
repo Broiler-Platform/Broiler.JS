@@ -1414,6 +1414,11 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 }
 
                 current.DeleteDirectEvalBinding(name);
+                // A closure created in the same direct eval may still hold this binding object;
+                // tear it down so a later read through it throws a ReferenceError rather than
+                // observing the now-removed local's stale value (test262 eval-code/direct/
+                // var-env-{var,func}-init-local-new-delete).
+                directEvalBinding.MarkDeleted();
                 return JSValue.BooleanTrue;
             }
         }
