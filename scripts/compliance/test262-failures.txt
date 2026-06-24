@@ -22,7 +22,6 @@ test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/lookahead-quantifier-match-groups.js
 test/built-ins/RegExp/nullable-quantifier.js
-test/built-ins/RegExp/regexp-modifiers/add-ignoreCase-affects-slash-upper-p.js
 test/built-ins/RegExp/unicode_full_case_folding.js
 test/intl402/Collator/prototype/compare/ignorePunctuation.js
 test/intl402/Collator/usage-de.js
@@ -52,7 +51,6 @@ test/staging/sm/Array/to-length.js
 test/staging/sm/Array/toLocaleString-01.js
 test/staging/sm/Array/unshift-01.js
 test/staging/sm/Function/arguments-parameter-shadowing.js
-test/staging/sm/Function/return-finally.js
 test/staging/sm/Proxy/global-receiver.js
 test/staging/sm/RegExp/exec.js
 test/staging/sm/RegExp/ignoreCase-non-latin1-to-latin1.js
