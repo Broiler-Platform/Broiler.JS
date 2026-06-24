@@ -204,10 +204,11 @@ public partial class JSTemporalPlainDateTime : JSObject
     {
         if (a.GetAt(0) is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with requires an object");
-        if (!obj[KeyStrings.GetOrCreate("calendar")].IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with does not accept a calendar field");
-        if (!obj[KeyStrings.GetOrCreate("timeZone")].IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.with does not accept a timeZone field");
+        // IsPartialTemporalObject: a branded Temporal object is rejected with a TypeError via the
+        // internal-slot check BEFORE any "calendar"/"timeZone" property Get fires — observable when
+        // those are throwing getters (test262 .../with/calendar-temporal-object-throws). The shared
+        // helper does the brand check first, then the calendar/timeZone own/inherited-property check.
+        TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
 
         if (NonIso)
             return WithNonIso(obj, ReadOverflow(a.GetAt(1)));

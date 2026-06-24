@@ -1435,6 +1435,26 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     public virtual IElementEnumerator GetIterableEnumerator() => throw NewTypeError("Value is not iterable");
     public virtual IElementEnumerator GetAsyncIterableEnumerator() => GetIterableEnumerator();
 
+    // GetIterator using an @@iterator method already fetched by the caller (GetMethod).
+    // Callers such as Array.from perform their own GetMethod(items, @@iterator) — re-reading
+    // the property here would be an extra observable [[Get]] on a Proxy/getter
+    // (test262 sm/Array/from_proxy). The receiver for the Call(method, items) step is this
+    // value (a primitive string is passed through unwrapped, matching GetV semantics).
+    public IElementEnumerator GetIterableEnumerator(JSValue iteratorMethod)
+    {
+        if (iteratorMethod.IsNullOrUndefined)
+            throw NewTypeError(JSException.NotIterable(this));
+
+        if (!iteratorMethod.IsFunction)
+            throw NewTypeError("@@iterator is not a function");
+
+        var iteratorResult = iteratorMethod.InvokeFunction(new Arguments(this));
+        if (!iteratorResult.IsObject)
+            throw NewTypeError("@@iterator result is not an object");
+
+        return new JSIterator(iteratorResult);
+    }
+
     private readonly struct ElementEnumerator : IElementEnumerator
     {
         public static IElementEnumerator Empty = new ElementEnumerator();

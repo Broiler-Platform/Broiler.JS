@@ -268,6 +268,13 @@ partial class FastParser
                 type = TokenTypes.SemiColon;
                 return true;
 
+            // The `}` closing a template substitution ends the substitution expression.
+            // For the LAST substitution it scans as TemplateEnd; for any EARLIER one it
+            // scans as TemplatePart (the literal text up to the next `${`). Both terminate
+            // the expression here — without the TemplatePart case a non-final substitution's
+            // trailing binary operand was dropped (`` `${a + b}-${c}` `` parsed the first
+            // substitution as just `a`).
+            case TokenTypes.TemplatePart:
             case TokenTypes.TemplateEnd:
                 return true;
 

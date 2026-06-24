@@ -158,7 +158,11 @@ public class Issue751Tests
 
     [Fact]
     public void SetPrototypeIteratorNames()
-        => Assert.Equal("entries,values,keys", Eval(
+        // Per ECMA-262 §24.2.3.6, Set.prototype.keys IS the same function object as
+        // Set.prototype.values (Set has no separate keys iterator), so its name is "values"
+        // — unlike Map, whose keys/values/entries are three distinct functions. Hence the
+        // third name here is "values", not "keys".
+        => Assert.Equal("entries,values,values", Eval(
             "[Set.prototype.entries.name,Set.prototype.values.name,Set.prototype.keys.name].join(',')"));
 
     // ---- Problem 39/40: computed-key accessor name ----

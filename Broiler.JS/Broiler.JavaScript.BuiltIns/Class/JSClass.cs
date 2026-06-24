@@ -152,6 +152,40 @@ public class JSClass : JSFunction
         if (IsBodylessDefaultConstructor && super != null && super.IsNull)
             throw JSEngine.NewTypeError("Super constructor null of derived class is not a constructor");
 
+        // A body-less default derived constructor runs `super(...args)`. The delegate
+        // fast-path below calls the super constructor's delegate directly, which is only
+        // equivalent to [[Construct]] for a plain JSFunction super (its [[Call]] with
+        // `this` = @object sets up the instance). A super constructor that is NOT a
+        // JSFunction — a Proxy (no construct trap forwards to its target's [[Construct]])
+        // or a bound function — has no such delegate, so it must be invoked through its
+        // real [[Construct]] via CreateInstance, threading the active new target so the
+        // base allocates the most-derived prototype (test262 sm/class/superCallBaseInvoked,
+        // proxy default-constructor case).
+        if (IsBodylessDefaultConstructor && GetPrototypeOf() is { } superCtor && !superCtor.IsNull && superCtor is not JSFunction)
+        {
+            JSValue constructed;
+            try
+            {
+                if (ec != null)
+                    ec.CurrentNewTarget = previousNewTarget ?? this;
+                using (JSEngine.EnterStrictMode(IsStrictMode))
+                    constructed = superCtor.CreateInstance(a);
+            }
+            finally
+            {
+                if (ec != null)
+                    ec.CurrentNewTarget = previousNewTarget;
+            }
+
+            if (constructed is { IsObject: true })
+            {
+                constructed.BasePrototypeObject = instancePrototype;
+                return constructed;
+            }
+
+            return @object;
+        }
+
         var constructorDelegate = IsBodylessDefaultConstructor && GetPrototypeOf() is JSFunction superConstructor
             ? superConstructor.Delegate
             : f;
