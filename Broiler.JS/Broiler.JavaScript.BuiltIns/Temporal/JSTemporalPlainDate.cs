@@ -426,7 +426,21 @@ public partial class JSTemporalPlainDate : JSObject
 
     [JSExport("toPlainMonthDay", Length = 0)]
     public JSValue ToPlainMonthDay(in Arguments a)
-        => new JSTemporalPlainMonthDay(isoMonth, isoDay, 1972, JSTemporalPlainMonthDay.PlainMonthDayPrototype);
+    {
+        // For a non-ISO calendar the month-day must be re-projected onto the
+        // calendar's reference year (the canonical ISO reference date for this
+        // calendar's monthCode/day), not the date's own ISO month/day. Mirrors
+        // Temporal.PlainMonthDay.from({calendar, monthCode, day}).
+        if (NonIso)
+        {
+            var (cy, cm, cd) = CalendarYmd();
+            var code = TemporalCalendarMath.MonthCode(calendarId, cy, cm);
+            var (ny, nm, nd) = TemporalNonIso.MonthDayFromCode(calendarId, code, cd, "constrain");
+            return new JSTemporalPlainMonthDay(nm, nd, ny, calendarId, JSTemporalPlainMonthDay.PlainMonthDayPrototype);
+        }
+
+        return new JSTemporalPlainMonthDay(isoMonth, isoDay, 1972, JSTemporalPlainMonthDay.PlainMonthDayPrototype);
+    }
 
     // toZonedDateTime(timeZone | { timeZone, plainTime }): combine this date with a time
     // (default midnight) and interpret it in the given zone.

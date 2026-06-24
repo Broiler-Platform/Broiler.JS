@@ -1981,6 +1981,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // (e.g. [^a], [^\d]) excludes nothing astral, so its negation must
                 // match an astral code point as a single unit.
                 bool excludesAstral = false;
+                // A lone surrogate member (an escape or raw unit that is NOT part of a
+                // surrogate pair) needs code-point semantics too: it must match a lone
+                // surrogate code unit only when that unit is not itself part of a pair.
+                bool hasLoneSurrogate = false;
 
                 int scanPos = i;
                 while (scanPos < pattern.Length && pattern[scanPos] != ']')
@@ -2001,6 +2005,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
                             hasSupplementary = true;
                             break;
                         }
+                        // A surrogate escape that is not the lead of such a pair is lone.
+                        if (esc == 'u' && IsSurrogateEscapeAt(pattern, scanPos, 0xD800, 0xDFFF))
+                            hasLoneSurrogate = true;
                         scanPos += 2;
                         continue;
                     }
@@ -2010,6 +2017,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
                         hasSupplementary = true;
                         break;
                     }
+                    // A raw surrogate code unit that is not part of a raw pair is lone.
+                    if (char.IsSurrogate(pattern[scanPos]))
+                        hasLoneSurrogate = true;
                     scanPos++;
                 }
 
@@ -2019,7 +2029,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // when it holds no supplementary members.
                 bool negatedNeedsSurrogatePair = negated && !excludesAstral;
 
-                if (!hasSupplementary && !classMatchesSupplementary && !negatedNeedsSurrogatePair)
+                if (!hasSupplementary && !classMatchesSupplementary && !negatedNeedsSurrogatePair && !hasLoneSurrogate)
                 {
                     // Find end of class and skip
                     while (i < pattern.Length && pattern[i] != ']')
@@ -2092,6 +2102,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
                     if (lo > 0xFFFF)
                         alternatives.Add(EncodeSurrogatePair(lo));
+                    else if (lo is >= 0xD800 and <= 0xDBFF)
+                        // A lone lead surrogate: match a lead unit only when it is not
+                        // followed by a trailing unit (otherwise the two form one pair).
+                        alternatives.Add(Unit(lo) + "(?![\uDC00-\uDFFF])");
+                    else if (lo is >= 0xDC00 and <= 0xDFFF)
+                        // A lone trail surrogate: match a trail unit only when it is not
+                        // preceded by a leading unit.
+                        alternatives.Add("(?<![\uD800-\uDBFF])" + Unit(lo));
                     else
                         AppendBmpCodePoint(bmpParts, lo);
                 }
@@ -2248,16 +2266,38 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static string LowRange(int lo, int hi)
         => lo == hi ? Unit(lo) : "[" + Unit(lo) + "-" + Unit(hi) + "]";
 
+    // A "[\uLO-\uHI]" sub-range over BMP code units (or "\uLO" when degenerate).
+    private static string UnitRange(int lo, int hi)
+        => lo == hi ? Unit(lo) : "[" + Unit(lo) + "-" + Unit(hi) + "]";
+
+    // Appends the BMP sub-range [lo, hi] (both ≤ 0xFFFF) as code-point alternatives.
+    // The surrogate block U+D800–U+DFFF is split out and guarded so a surrogate that
+    // forms a pair is not matched as a standalone code unit — a lead matches only when
+    // not followed by a trail, and a trail only when not preceded by a lead.
+    private static void AppendBmpSubRangeAlternatives(List<string> alts, int lo, int hi)
+    {
+        if (lo <= 0xD7FF)
+            alts.Add(UnitRange(lo, System.Math.Min(hi, 0xD7FF)));
+        if (hi >= 0xD800 && lo <= 0xDBFF)
+            alts.Add(UnitRange(System.Math.Max(lo, 0xD800), System.Math.Min(hi, 0xDBFF)) + "(?![\uDC00-\uDFFF])");
+        if (hi >= 0xDC00 && lo <= 0xDFFF)
+            alts.Add("(?<![\uD800-\uDBFF])" + UnitRange(System.Math.Max(lo, 0xDC00), System.Math.Min(hi, 0xDFFF)));
+        if (hi >= 0xE000)
+            alts.Add(UnitRange(System.Math.Max(lo, 0xE000), hi));
+    }
+
     // Decomposes the code-point range [lo, hi] (which reaches into the supplementary
     // planes) into surrogate-aware .NET sub-patterns, each matching one whole code
     // point. Appends each as an alternative.
     private static void AppendCodePointRangeAlternatives(List<string> alts, int lo, int hi)
     {
-        // The BMP portion [lo, min(hi, 0xFFFF)] matches as single units.
+        // The BMP portion [lo, min(hi, 0xFFFF)] matches as single units, with the
+        // surrogate block split out and guarded so a paired surrogate is not matched
+        // as a lone unit.
         if (lo <= 0xFFFF)
         {
             int bmpHi = System.Math.Min(hi, 0xFFFF);
-            alts.Add(lo == bmpHi ? Unit(lo) : "[" + Unit(lo) + "-" + Unit(bmpHi) + "]");
+            AppendBmpSubRangeAlternatives(alts, lo, bmpHi);
             if (hi <= 0xFFFF)
                 return;
             lo = 0x10000;
@@ -2666,8 +2706,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 }
                 else
                 {
-                    // Lone lead surrogate: match only when not part of a pair.
-                    sb.Append(c).Append("(?![\uDC00-\uDFFF])");
+                    // Lone lead surrogate: match only when not part of a pair. Wrap
+                    // in a non-capturing group so a following quantifier binds to the
+                    // guarded atom, not just the zero-width look-ahead.
+                    sb.Append("(?:").Append(c).Append("(?![\uDC00-\uDFFF]))");
                 }
                 continue;
             }
@@ -2675,8 +2717,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if (char.IsLowSurrogate(c))
             {
                 // Lone trail surrogate (a preceding lead would have been consumed as
-                // a pair above): match only when not part of a pair.
-                sb.Append("(?<![\uD800-\uDBFF])").Append(c);
+                // a pair above): match only when not part of a pair. Wrap in a group
+                // so a following quantifier binds to the guarded atom.
+                sb.Append("(?:(?<![\uD800-\uDBFF])").Append(c).Append(')');
                 continue;
             }
 
@@ -2699,9 +2742,38 @@ public partial class JSRegExp : JSObject, IJSRegExp
             return pattern;
 
         var sb = new StringBuilder(pattern.Length);
+        bool inClass = false;
+        int classDepth = 0;
 
         for (int i = 0; i < pattern.Length; i++)
         {
+            // Inside a character class, keep \uHHHH escapes intact: the class
+            // transform's ReadClassCodePoint distinguishes a lone surrogate escape
+            // from a raw surrogate pair, and a zero-width (?:) separator (emitted
+            // below for the out-of-class case) would be invalid inside [...].
+            if (inClass)
+            {
+                if (pattern[i] == '\\' && i + 1 < pattern.Length)
+                {
+                    sb.Append(pattern[i]).Append(pattern[i + 1]);
+                    i++;
+                    continue;
+                }
+                if (pattern[i] == '[')
+                    classDepth++;
+                else if (pattern[i] == ']' && --classDepth <= 0)
+                    inClass = false;
+                sb.Append(pattern[i]);
+                continue;
+            }
+            if (pattern[i] == '[')
+            {
+                inClass = true;
+                classDepth = 1;
+                sb.Append(pattern[i]);
+                continue;
+            }
+
             // Check for \uHHHH pattern
             if (i + 5 < pattern.Length && pattern[i] == '\\' && pattern[i + 1] == 'u'
                 && IsHex(pattern[i + 2]) && IsHex(pattern[i + 3])
@@ -2733,9 +2805,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // otherwise the decoded character is parsed as an operator and the
                 // pattern becomes invalid (`/\u{3f}/u` matched a literal `?`).
                 char decoded = (char)hi;
+
+                // A decoded lone surrogate must not silently merge with an *adjacent
+                // raw* surrogate to form a pair: per spec only two \u escapes, or two
+                // raw code units, combine into one astral code point — never one
+                // escaped and one raw (e.g. `/\uD83D<rawDC38>/u` must NOT match 🐸).
+                // A zero-width (?:) separator breaks the adjacency so the later
+                // surrogate transforms treat each as a lone code point, while leaving
+                // the genuine all-escape (collapsed above) and all-raw pairs intact.
+                bool isHigh = hi is >= 0xD800 and <= 0xDBFF;
+                bool isLow = hi is >= 0xDC00 and <= 0xDFFF;
+                if (isLow && sb.Length > 0 && char.IsHighSurrogate(sb[sb.Length - 1]))
+                    sb.Append("(?:)");
+
                 if (IsSyntaxCharacter(decoded) || decoded == '-')
                     sb.Append('\\');
                 sb.Append(decoded);
+
+                if (isHigh && i + 6 < pattern.Length && char.IsLowSurrogate(pattern[i + 6]))
+                    sb.Append("(?:)");
+
                 i += 5;
                 continue;
             }
@@ -2760,6 +2849,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         var sb = new StringBuilder(pattern.Length);
         int i = 0;
+        bool inClass = false;
         while (i < pattern.Length)
         {
             char c = pattern[i];
@@ -2779,7 +2869,22 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     }
                     if (any && !overflow && j < pattern.Length && pattern[j] == '}')
                     {
-                        AppendCodePointEscape(sb, value);
+                        // A braced escape `\u{X}` is always a single code point and,
+                        // unlike `\uHi\uLo`, never combines with an adjacent surrogate
+                        // escape. When it denotes a lone surrogate outside a character
+                        // class, wrap it in a non-capturing group so the later
+                        // CollapseSurrogatePairEscapes cannot pair it with a neighbour
+                        // (the group also keeps a following quantifier bound to the atom).
+                        if (!inClass && value is >= 0xD800 and <= 0xDFFF)
+                        {
+                            sb.Append("(?:");
+                            AppendCodePointEscape(sb, value);
+                            sb.Append(')');
+                        }
+                        else
+                        {
+                            AppendCodePointEscape(sb, value);
+                        }
                         i = j + 1;
                         continue;
                     }
@@ -2792,6 +2897,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 i += 2;
                 continue;
             }
+
+            if (c == '[')
+                inClass = true;
+            else if (c == ']')
+                inClass = false;
 
             sb.Append(c);
             i++;
@@ -3382,12 +3492,15 @@ public partial class JSRegExp : JSObject, IJSRegExp
         alts.Add(Atom(highHi) + UnitRange(0xDC00, lowHi));
 
         static string Unit(int u) => $"\\u{u:X4}";
-        // A standalone single code unit is wrapped in a one-character class so the
-        // later lone-surrogate transform (which only special-cases bare high/low
-        // surrogate *characters*, not class bodies) copies it verbatim instead of
-        // inserting a `(?![\uDC00-\uDFFF])` guard that would break the pair.
-        static string Atom(int u) => $"[\\u{u:X4}]";
-        static string UnitRange(int lo, int hi) => lo == hi ? Atom(lo) : $"[{Unit(lo)}-{Unit(hi)}]";
+        // A single surrogate code unit here is an internal code-UNIT pair atom (one
+        // half of a surrogate pair), not a code-POINT lone surrogate. It is emitted
+        // as a degenerate range `[\uX-\uX]` rather than a single-member class `[\uX]`:
+        // the lone-surrogate class transform guards single-member surrogate classes
+        // (so a code-point `[\uD83D]` matches only a lone surrogate) but leaves
+        // surrogate *ranges* verbatim, which is exactly the code-unit semantics a
+        // pair atom needs.
+        static string Atom(int u) => $"[\\u{u:X4}-\\u{u:X4}]";
+        static string UnitRange(int lo, int hi) => $"[{Unit(lo)}-{Unit(hi)}]";
     }
 
     private static void AppendClassRange(StringBuilder sb, int lo, int hi)

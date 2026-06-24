@@ -954,9 +954,25 @@ public partial class JSTemporalZonedDateTime : JSObject
         // `since` is `-(until)`, so it rounds the (this→other) difference with the negated mode and
         // negates the result below — matching the PlainDate/PlainDateTime difference.
         var diffMode = sign < 0 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
-        var result = IsTimeUnit(largestUnit)
-            ? DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, diffMode)
-            : DifferenceCalendar(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, diffMode);
+        JSTemporalDuration result;
+        if (IsTimeUnit(largestUnit))
+        {
+            result = DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, diffMode);
+        }
+        else
+        {
+            // DifferenceCalendar applies the rounding options itself for a calendar smallestUnit
+            // (year/month/week/day). For a TIME smallestUnit it returns the unrounded calendar
+            // difference, so round it through the relative-duration algorithm — which rounds the
+            // time part to smallestUnit and bubbles any day/calendar overflow up to largestUnit
+            // (e.g. since/until across a unit boundary: 1971-12-31T23:59:59.999999999 rounded up to
+            // a microsecond balances to 2 years). The modern path's bubble is ISO-only, so a
+            // non-ISO calendar keeps DifferenceCalendar's (still unrounded) time-unit result.
+            result = DifferenceCalendar(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, diffMode);
+            if (IsTimeUnit(smallestUnit) && (smallestUnit != "nanosecond" || increment != 1)
+                && !TemporalCalendarMath.IsNonIso(calendarId))
+                result = (JSTemporalDuration)RoundDurationRelative(result, smallestUnit, largestUnit, increment, diffMode);
+        }
 
         if (sign < 0)
             result = new JSTemporalDuration(
@@ -1006,25 +1022,37 @@ public partial class JSTemporalZonedDateTime : JSObject
         var end = LocalAt(ns2);
         var sign = ns2 > ns1 ? 1 : -1;
 
-        var timeNs = TimeOfDayNs(end) - TimeOfDayNs(start);
-        var dayCorrection = Math.Sign(timeNs) == -sign ? 1 : 0;
-
         int iy = end.y, im = end.mo, id = end.d;
         BigInteger residual;
-        while (true)
+
+        // Same calendar day: the date difference is zero and the whole difference is the
+        // epoch-nanosecond remainder. Running the day-correction loop would re-resolve the wall
+        // clock through EpochNsForLocal, which across a DST fall-back disambiguates the repeated
+        // hour to a different offset than the operands and spuriously adds a day (proposal-temporal
+        // #3141: same ISO date, opposite-sign wall-clock vs epoch deltas).
+        if (start.y == end.y && start.mo == end.mo && start.d == end.d)
         {
-            var epochDay = DaysFromCivil(end.y, end.mo, end.d) - (long)dayCorrection * sign;
-            var (cy, cm, cd) = CivilFromDays(epochDay);
-            iy = (int)cy; im = (int)cm; id = (int)cd;
+            residual = ns2 - ns1;
+        }
+        else
+        {
+            var timeNs = TimeOfDayNs(end) - TimeOfDayNs(start);
+            var dayCorrection = Math.Sign(timeNs) == -sign ? 1 : 0;
+            while (true)
+            {
+                var epochDay = DaysFromCivil(end.y, end.mo, end.d) - (long)dayCorrection * sign;
+                var (cy, cm, cd) = CivilFromDays(epochDay);
+                iy = (int)cy; im = (int)cm; id = (int)cd;
 
-            var intermediateNs = EpochNsForLocal(iy, im, id, start.h, start.mi, start.s, start.ms, start.us, start.ns);
-            residual = ns2 - intermediateNs;
-            if (residual == 0 || residual.Sign == sign)
-                break;
+                var intermediateNs = EpochNsForLocal(iy, im, id, start.h, start.mi, start.s, start.ms, start.us, start.ns);
+                residual = ns2 - intermediateNs;
+                if (residual == 0 || residual.Sign == sign)
+                    break;
 
-            dayCorrection++;
-            if (dayCorrection > 3) // the loop is guaranteed to settle within two corrections
-                break;
+                dayCorrection++;
+                if (dayCorrection > 3) // the loop is guaranteed to settle within two corrections
+                    break;
+            }
         }
 
         // The date portion is differenced in the instance's calendar: the ISO start / intermediate
