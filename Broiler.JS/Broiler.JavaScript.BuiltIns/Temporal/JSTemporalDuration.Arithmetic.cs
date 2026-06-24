@@ -219,7 +219,10 @@ public partial class JSTemporalDuration
         if (relDate != null)
             return RoundRelative(relDate, smallestUnit, largestUnit, (long)increment, roundingMode);
 
-        var unitNs = TimeUnitNanoseconds(smallestUnit) * (long)increment;
+        // Use BigInteger for the increment-unit span: a large day increment (e.g. 1e7 days =
+        // 8.64×10^20 ns) overflows Int64, which silently corrupted the rounding modulus and left
+        // the duration unrounded (test262 round/roundingincrement-days-large, -non-integer).
+        var unitNs = (BigInteger)TimeUnitNanoseconds(smallestUnit) * (long)increment;
         var rounded = RoundToIncrement(TimePlusDaysNanoseconds(), unitNs, roundingMode);
         return BalanceFromNanoseconds(rounded, largestUnit);
     }
@@ -269,12 +272,12 @@ public partial class JSTemporalDuration
 
         var totalNs = TimePlusDaysNanoseconds();
         var unitNs = TimeUnitNanoseconds(unit);
-        var whole = BigInteger.DivRem(totalNs, unitNs, out var remainder);
-        // The total is the nearest double to the exact rational totalNs/unitNs. The
-        // integer part must round to nearest (ℝ→𝔽), not truncate as (double)BigInteger
-        // does; the fraction is below an ulp once |whole| is large (#818 Problem 8).
-        var result = NearestDouble(whole) + (double)remainder / (double)unitNs;
-        return new JSNumber(result);
+        // DivideNormalizedTimeDuration computes total = TotalNanoseconds / divisor on EXACT
+        // mathematical values, then 𝔽(): the single ℝ→𝔽 rounding of the exact rational. Rounding
+        // the integer part and the fraction separately and adding them (NearestDouble(whole) +
+        // (double)remainder/(double)unitNs) rounds three times and can be one ULP off
+        // (test262 Duration/prototype/total/precision-exact-mathematical-values-6/7).
+        return new JSNumber(RatioToDouble(totalNs, unitNs));
     }
 
     // ── relativeTo (PlainDate) calendar rounding ──────────────────────────────────
@@ -482,15 +485,39 @@ public partial class JSTemporalDuration
         }
 
         // calendar is read first (GetTemporalCalendarIdentifierWithISODefault), then the merged
-        // date / time / offset / timeZone fields in alphabetical order. era / eraYear are part of
-        // the calendar's date fields (used by gregory / japanese / buddhist / roc and the
-        // arithmetic non-iso calendars) and must be read here too — otherwise a non-finite
-        // eraYear (e.g. Infinity) would never trigger its RangeError and the downstream date
-        // resolution would instead raise a "missing year" TypeError.
-        CopyRaw("calendar");
+        // date / time / offset / timeZone fields in alphabetical order. era / eraYear are calendar
+        // date fields ONLY for calendars that use eras (gregory / japanese / buddhist / roc and the
+        // arithmetic non-iso era calendars); the iso8601 default and the era-less lunisolar
+        // calendars (chinese / dangi) do not have them, so PrepareCalendarFields must NOT read them
+        // there (test262 Duration/prototype/{total,round}/order-of-operations). The calendar value
+        // is read exactly once and reused for both the snapshot and this decision.
+        var calendarValue = rel[KeyStrings.GetOrCreate("calendar")];
+        if (calendarValue != null && !calendarValue.IsUndefined)
+            snapshot[KeyStrings.GetOrCreate("calendar")] = calendarValue;
+
+        string calendarId;
+        if (calendarValue == null || calendarValue.IsUndefined)
+            calendarId = "iso8601";
+        else if (calendarValue.IsString)
+        {
+            // A bare identifier string; canonicalize to classify it. An unrecognised value is left
+            // for the later ToRelativeDate to reject — assume it may use eras so the fields are
+            // still read (preserving the pre-existing validation behaviour).
+            try { calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(calendarValue, "Temporal.Duration"); }
+            catch { calendarId = null; }
+        }
+        else
+            calendarId = null; // a Temporal object's calendar slot, resolved later; keep era fields.
+
+        var readEraFields = calendarId == null
+            || (calendarId != "iso8601" && TemporalCalendarMath.HasEra(calendarId));
+
         CopyNumber("day");
-        CopyString("era");
-        CopyNumber("eraYear");
+        if (readEraFields)
+        {
+            CopyString("era");
+            CopyNumber("eraYear");
+        }
         CopyNumber("hour");
         CopyNumber("microsecond");
         CopyNumber("millisecond");
@@ -595,7 +622,9 @@ public partial class JSTemporalDuration
             return new JSTemporalDuration(anchorYears, anchorMonths, roundedWeeks, 0, 0, 0, 0, 0, 0, 0, DurationPrototype);
         }
 
-        var smallestNs = TimeUnitNanoseconds(smallestUnit) * increment;
+        // BigInteger span: a large day increment (1e7+ days) overflows Int64 here too — see the
+        // matching non-relative path (test262 round/roundingincrement-days-large with PlainDate).
+        var smallestNs = (BigInteger)TimeUnitNanoseconds(smallestUnit) * increment;
         var roundedNs = RoundToIncrement(endNs - startNs, smallestNs, roundingMode);
 
         if (UnitIndex(largestUnit) <= UnitIndex("week"))
@@ -627,7 +656,11 @@ public partial class JSTemporalDuration
         }
 
         var unitNs = unit == "week" ? 7 * (BigInteger)NanosecondsPerDay : TimeUnitNanoseconds(unit);
-        return (double)(endNs - startNs) / (double)unitNs;
+        // The total is the nearest double to the EXACT rational (endNs − startNs)/unitNs. Converting
+        // each BigInteger to double first and then dividing rounds twice and can be off by one ULP
+        // (test262 Duration/prototype/total/relativeto-total-of-each-unit "weeks"); RatioToDouble
+        // rounds the exact ratio once, matching the spec and the ZonedDateTime total path.
+        return RatioToDouble(endNs - startNs, unitNs);
     }
 
     // Rounds the (fractional) number of year/month units from relativeTo to the duration's end to a
