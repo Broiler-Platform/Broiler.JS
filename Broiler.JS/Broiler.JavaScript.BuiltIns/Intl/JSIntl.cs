@@ -5169,6 +5169,28 @@ public class JSIntlNumberFormat : JSObject
     private static readonly (int Exp, string Suffix)[] CompactUnitsDe = [(12, "Bio."), (9, "Mrd."), (6, "Mio.")];
     private static readonly (int Exp, string Suffix)[] CompactUnitsDeLong =
         [(12, "Billionen"), (9, "Milliarden"), (6, "Millionen"), (3, "Tausend")];
+    // English (India) uses the Indian numbering scale: lakh (10^5) and crore (10^7)
+    // instead of million/billion (CLDR en-IN short "0K"/"0L"/"0Cr", long
+    // "0 thousand"/"0 lakh"/"0 crore"). Ordered largest-first like the others.
+    private static readonly (int Exp, string Suffix)[] CompactUnitsEnIn = [(7, "Cr"), (5, "L"), (3, "K")];
+    private static readonly (int Exp, string Suffix)[] CompactUnitsEnInLong =
+        [(7, "crore"), (5, "lakh"), (3, "thousand")];
+
+    // True when the locale's region subtag is the given two-letter region (the first
+    // 2-alpha subtag after the language, skipping any 4-letter script subtag).
+    private static bool LocaleHasRegion(string tag, string region)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return false;
+        var parts = tag.Split('-');
+        for (var i = 1; i < parts.Length; i++)
+        {
+            var p = parts[i];
+            if (p.Length == 2 && char.IsLetter(p[0]) && char.IsLetter(p[1]))
+                return string.Equals(p, region, StringComparison.OrdinalIgnoreCase);
+        }
+        return false;
+    }
 
     private static (int Exp, string Suffix)[] GetCompactUnits(string localeTag, bool longForm)
     {
@@ -5178,6 +5200,8 @@ public class JSIntlNumberFormat : JSObject
         switch (language)
         {
             case "en":
+                if (LocaleHasRegion(tag, "IN"))
+                    return longForm ? CompactUnitsEnInLong : CompactUnitsEnIn;
                 return longForm ? CompactUnitsEnLong : CompactUnitsEn;
             case "de":
                 return longForm ? CompactUnitsDeLong : CompactUnitsDe;
@@ -6162,6 +6186,25 @@ public class JSIntlCollator : JSObject
 
     private JSIntlCollator() : base(CurrentPrototype()) { }
 
+    // Removes the characters ignorePunctuation drops (whitespace, punctuation and
+    // symbols — the variable-weighted characters in the Unicode Collation Algorithm),
+    // so two strings can be tested for differing only in such characters.
+    private static string StripIgnorablePunctuation(string s)
+    {
+        StringBuilder sb = null;
+        for (var i = 0; i < s.Length; i++)
+        {
+            var c = s[i];
+            if (char.IsWhiteSpace(c) || char.IsPunctuation(c) || char.IsSymbol(c))
+            {
+                sb ??= new StringBuilder(s.Length).Append(s, 0, i);
+                continue;
+            }
+            sb?.Append(c);
+        }
+        return sb?.ToString() ?? s;
+    }
+
     public JSValue Compare(in Arguments a)
     {
         var left = a.Get1().StringValue;
@@ -6188,7 +6231,26 @@ public class JSIntlCollator : JSObject
         if (ignorePunctuation)
             options |= CompareOptions.IgnoreSymbols;
 
-        return JSValue.CreateNumber(compareInfo.Compare(left, right, options));
+        var result = compareInfo.Compare(left, right, options);
+
+        // Some locale collations (notably Thai) give punctuation/whitespace zero
+        // primary weight, so "" and " " compare equal even though ignorePunctuation is
+        // false. ECMA-402 only ignores those characters when ignorePunctuation is true,
+        // so when it is false and the two strings are equal apart from such ignorable
+        // characters, break the tie on them (test262
+        // intl402/Collator/prototype/compare/ignorePunctuation).
+        if (result == 0 && !ignorePunctuation && !string.Equals(left, right, StringComparison.Ordinal))
+        {
+            // When removing the ignorable punctuation/whitespace makes the two strings
+            // identical, their ONLY difference is those characters — so break the tie on
+            // them (without ignorePunctuation they are significant). A difference that
+            // survives stripping is a genuine collation tie (e.g. case/accent folded by
+            // the sensitivity) and is left equal.
+            if (string.Equals(StripIgnorablePunctuation(left), StripIgnorablePunctuation(right), StringComparison.Ordinal))
+                result = Math.Sign(string.CompareOrdinal(left, right));
+        }
+
+        return JSValue.CreateNumber(result);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
