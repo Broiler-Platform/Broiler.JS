@@ -728,19 +728,35 @@ public partial class JSTemporalDuration
 
         var (ey, em, ed) = JSTemporalPlainDate.DateFromEpochDays((long)FloorDivBig(endNs, NanosecondsPerDay));
         var diff = JSTemporalPlainDate.DiffCalendarDate(r.isoYear, r.isoMonth, r.isoDay, ey, em, ed, isYear ? "year" : "month");
-        var whole = isYear ? diff.years : diff.months;
-        var w = (long)whole;
+        var w = (long)(isYear ? diff.years : diff.months);
 
-        var (fy, fm, fd) = isYear
-            ? JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, w, 0, 0, 0)
-            : JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, 0, w, 0, 0);
-        var (cy, cm, cd) = isYear
-            ? JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, w + sign, 0, 0, 0)
-            : JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, 0, w + sign, 0, 0);
+        BigInteger BoundaryNs(long units)
+        {
+            var (ay, am, ad) = isYear
+                ? JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, units, 0, 0, 0)
+                : JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, 0, units, 0, 0);
+            return (BigInteger)JSTemporalPlainDate.EpochDaysFor(ay, am, ad) * NanosecondsPerDay;
+        }
 
-        var floorNs = (BigInteger)JSTemporalPlainDate.EpochDaysFor(fy, fm, fd) * NanosecondsPerDay;
-        var ceilNs = (BigInteger)JSTemporalPlainDate.EpochDaysFor(cy, cm, cd) * NanosecondsPerDay;
-        return (whole, sign, BigInteger.Abs(endNs - floorNs), BigInteger.Abs(ceilNs - floorNs));
+        var floorNs = BoundaryNs(w);
+        var ceilNs = BoundaryNs(w + sign);
+
+        // Window shift (spec NudgeToCalendarUnit "additional shift"): the calendar's month-end
+        // clamping can place the end OUTSIDE the [floor, ceil] window — e.g. from 2020-01-31 the
+        // 1-month difference clamps to 2020-02-29 so DiffCalendarDate yields 0 months, yet the
+        // duration's end is past that boundary. Shift the window one unit toward the end so the
+        // fractional progress is measured against the correct surrounding boundaries.
+        var inBounds = sign == 1
+            ? floorNs <= endNs && endNs <= ceilNs
+            : ceilNs <= endNs && endNs <= floorNs;
+        if (!inBounds)
+        {
+            w += sign;
+            floorNs = ceilNs;
+            ceilNs = BoundaryNs(w + sign);
+        }
+
+        return (w, sign, BigInteger.Abs(endNs - floorNs), BigInteger.Abs(ceilNs - floorNs));
     }
 
     // Splits a signed sub-day nanosecond count into time components that all share its sign.

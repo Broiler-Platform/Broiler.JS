@@ -110,25 +110,37 @@ public partial class JSTemporalZonedDateTime
         var end = LocalAt(ns2);
         var sign = ns2 > ns1 ? 1 : -1;
 
-        var timeNs = TimeOfDayNs(end) - TimeOfDayNs(start);
-        var dayCorrection = Math.Sign(timeNs) == -sign ? 1 : 0;
-
         int iy = end.y, im = end.mo, id = end.d;
         BigInteger residual;
-        while (true)
+
+        // Same calendar day: the date difference is zero and the whole difference is the
+        // epoch-nanosecond remainder. Running the day-correction loop here would re-resolve the
+        // wall clock through EpochNsForLocal — which, across a DST fall-back, disambiguates the
+        // repeated hour to a different offset than the operands and spuriously adds a day
+        // (proposal-temporal #3141: same ISO date, opposite-sign wall-clock vs epoch deltas).
+        if (start.y == end.y && start.mo == end.mo && start.d == end.d)
         {
-            var epochDay = DaysFromCivil(end.y, end.mo, end.d) - (long)dayCorrection * sign;
-            var (cy, cm, cd) = CivilFromDays(epochDay);
-            iy = (int)cy; im = (int)cm; id = (int)cd;
+            residual = ns2 - ns1;
+        }
+        else
+        {
+            var timeNs = TimeOfDayNs(end) - TimeOfDayNs(start);
+            var dayCorrection = Math.Sign(timeNs) == -sign ? 1 : 0;
+            while (true)
+            {
+                var epochDay = DaysFromCivil(end.y, end.mo, end.d) - (long)dayCorrection * sign;
+                var (cy, cm, cd) = CivilFromDays(epochDay);
+                iy = (int)cy; im = (int)cm; id = (int)cd;
 
-            var intermediateNs = EpochNsForLocal(iy, im, id, start.h, start.mi, start.s, start.ms, start.us, start.ns);
-            residual = ns2 - intermediateNs;
-            if (residual == 0 || residual.Sign == sign)
-                break;
+                var intermediateNs = EpochNsForLocal(iy, im, id, start.h, start.mi, start.s, start.ms, start.us, start.ns);
+                residual = ns2 - intermediateNs;
+                if (residual == 0 || residual.Sign == sign)
+                    break;
 
-            dayCorrection++;
-            if (dayCorrection > 3)
-                break;
+                dayCorrection++;
+                if (dayCorrection > 3)
+                    break;
+            }
         }
 
         var (years, months, weeks, days) = DifferenceISODate(start.y, start.mo, start.d, iy, im, id, largestUnit);
