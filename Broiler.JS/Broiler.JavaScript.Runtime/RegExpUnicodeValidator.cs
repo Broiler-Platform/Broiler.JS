@@ -83,16 +83,29 @@ public static class RegExpUnicodeValidator
                     return false;
 
                 // Skip the escape sequence length
-                if (next == 'u' && i + 2 < pattern.Length && pattern[i + 2] == '{')
+                if (next == 'u')
                 {
-                    // \u{NNNNN}
-                    int end = pattern.IndexOf('}', i + 3);
-                    if (end < 0) return false;
-                    i = end;
-                }
-                else if (next == 'u' && i + 5 < pattern.Length)
-                {
-                    i += 5; // \uNNNN
+                    // In Unicode mode `\u` must be followed by exactly four hex digits
+                    // or a `\u{CodePoint}` braced escape; anything else (too few digits,
+                    // a non-hex digit, an empty/unterminated brace) is a SyntaxError.
+                    if (i + 2 < pattern.Length && pattern[i + 2] == '{')
+                    {
+                        int end = pattern.IndexOf('}', i + 3);
+                        if (end <= i + 3) return false;
+                        for (int k = i + 3; k < end; k++)
+                            if (!IsHexDigit(pattern[k])) return false;
+                        i = end;
+                    }
+                    else if (i + 5 < pattern.Length
+                        && IsHexDigit(pattern[i + 2]) && IsHexDigit(pattern[i + 3])
+                        && IsHexDigit(pattern[i + 4]) && IsHexDigit(pattern[i + 5]))
+                    {
+                        i += 5; // \uNNNN
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else if (next == 'x' && i + 3 < pattern.Length)
                 {
@@ -179,6 +192,9 @@ public static class RegExpUnicodeValidator
     }
 
     private static bool IsAsciiLetter(char c) => (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+
+    private static bool IsHexDigit(char c) =>
+        (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 
     // Counts capturing groups (plain '(' and named '(?<name>') so backreferences can
     // be validated in Unicode mode. Non-capturing groups and lookaround assertions
