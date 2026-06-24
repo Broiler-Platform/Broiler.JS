@@ -22,15 +22,8 @@ test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/lookahead-quantifier-match-groups.js
 test/built-ins/RegExp/nullable-quantifier.js
-test/built-ins/RegExp/regexp-modifiers/add-ignoreCase-affects-slash-lower-b.js
-test/built-ins/RegExp/regexp-modifiers/add-ignoreCase-affects-slash-upper-b.js
 test/built-ins/RegExp/regexp-modifiers/add-ignoreCase-affects-slash-upper-p.js
-test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-lower-b.js
-test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-lower-w.js
-test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-upper-b.js
-test/built-ins/RegExp/regexp-modifiers/remove-ignoreCase-affects-slash-upper-w.js
 test/built-ins/RegExp/unicode_full_case_folding.js
-test/built-ins/Temporal/Duration/prototype/round/relativeto-largestunit-smallestunit-combinations.js
 test/intl402/Collator/prototype/compare/ignorePunctuation.js
 test/intl402/Collator/usage-de.js
 test/intl402/NumberFormat/prototype/format/unit-zh-TW.js
@@ -38,15 +31,7 @@ test/intl402/NumberFormat/prototype/format/useGrouping-extended-en-IN.js
 test/intl402/NumberFormat/prototype/formatRange/en-US.js
 test/intl402/NumberFormat/prototype/formatRange/pt-PT.js
 test/intl402/NumberFormat/prototype/formatToParts/unit-zh-TW.js
-test/intl402/Temporal/Duration/compare/relativeto-hour.js
-test/intl402/Temporal/Duration/prototype/round/dst-balancing-result.js
-test/intl402/Temporal/Duration/prototype/total/dst-balancing-result.js
-test/intl402/Temporal/ZonedDateTime/from/argument-propertybag-dst-option-disambiguation.js
-test/intl402/Temporal/ZonedDateTime/from/argument-propertybag-dst-options-offset-disambiguation-combinations.js
-test/intl402/Temporal/ZonedDateTime/from/argument-string-dst-option-disambiguation.js
-test/intl402/Temporal/ZonedDateTime/from/argument-string-dst-option-offset-disambiguation-combinations.js
 test/intl402/Temporal/ZonedDateTime/links.js
-test/intl402/Temporal/ZonedDateTime/prototype/with/dst-option-offset-disambiguation-combinations.js
 test/language/comments/S7.4_A5.js
 test/language/comments/S7.4_A6.js
 test/language/eval-code/direct/var-env-func-init-local-new-delete.js
@@ -62,7 +47,6 @@ test/language/statements/continue/nested-let-bound-for-loops-outer-continue.js
 test/language/statements/continue/no-label-continue.js
 test/language/statements/continue/shadowing-loop-variable-in-same-scope-as-continue.js
 test/language/statements/continue/simple-and-labeled.js
-test/language/statements/for/scope-body-lex-open.js
 test/staging/decorators/public-auto-accessor.js
 test/staging/sm/Array/to-length.js
 test/staging/sm/Array/toLocaleString-01.js
@@ -83,7 +67,6 @@ test/staging/sm/generators/runtime.js
 test/staging/sm/global/eval-02.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-label.js
-test/staging/sm/lexical-environment/for-loop.js
 test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
 test/staging/sm/regress/regress-554955-2.js
 test/staging/sm/regress/regress-554955-3.js
