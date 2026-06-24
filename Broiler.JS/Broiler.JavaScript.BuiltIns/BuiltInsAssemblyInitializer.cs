@@ -2168,57 +2168,6 @@ internal static class BuiltInsAssemblyInitializer
             SetToStringTag(generatorProto, "Generator");
     }
 
-    internal static void PatchAsyncIteratorPrototype(JSContext context)
-    {
-        if (context[KeyStrings.GetOrCreate("Generator")] is not JSFunction generator)
-            return;
-
-        var generatorPrototype = generator.prototype as JSObject;
-        var currentAsyncGeneratorPrototype = generatorPrototype?.GetPrototypeOf() as JSObject;
-        var currentAsyncIteratorPrototype = currentAsyncGeneratorPrototype?.GetPrototypeOf() as JSObject;
-
-        if (generatorPrototype == null
-            || currentAsyncGeneratorPrototype == null
-            || (currentAsyncIteratorPrototype != null
-                && !currentAsyncIteratorPrototype.GetOwnPropertyDescriptor(JSSymbol.asyncIterator).IsUndefined))
-        {
-            return;
-        }
-
-        var asyncGeneratorPrototype = new JSObject();
-        asyncGeneratorPrototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("AsyncGenerator"), JSPropertyAttributes.ConfigurableReadonlyValue);
-        var asyncIteratorPrototype = new JSObject
-        {
-            BasePrototypeObject = currentAsyncGeneratorPrototype
-        };
-        asyncIteratorPrototype.FastAddValue((IJSSymbol)JSSymbol.asyncIterator, CreateNativeFunction(static (in Arguments a) => a.This, "[Symbol.asyncIterator]"), JSPropertyAttributes.ConfigurableValue);
-
-        // %AsyncIteratorPrototype% [ @@asyncDispose ] (): returns a promise that closes the async
-        // iterator via its return method (the fulfillment value of return is ignored).
-        asyncIteratorPrototype.FastAddValue((IJSSymbol)JSSymbol.asyncDispose, CreateNativeFunction(static (in Arguments a) =>
-        {
-            var iterator = a.This;
-            return new JSPromise((resolve, reject) =>
-            {
-                try
-                {
-                    var ret = iterator[KeyStrings.GetOrCreate("return")]; // GetMethod(O, "return")
-                    if (ret.IsNullOrUndefined) { resolve(JSUndefined.Value); return; }
-                    if (ret is not IJSFunction returnFn)
-                        throw JSEngine.NewTypeError("AsyncIterator.prototype[Symbol.asyncDispose]: return is not a function");
-                    var result = returnFn.InvokeFunction(new Arguments(iterator));
-                    if (!result.IsObject)
-                        throw JSEngine.NewTypeError("AsyncIterator.prototype[Symbol.asyncDispose]: return must return an object");
-                    resolve(JSUndefined.Value);
-                }
-                catch (JSException ex) { reject(ex.Error); }
-            });
-        }, "[Symbol.asyncDispose]", 0), JSPropertyAttributes.ConfigurableValue);
-
-        asyncGeneratorPrototype.BasePrototypeObject = asyncIteratorPrototype;
-        generator.prototype.BasePrototypeObject = asyncGeneratorPrototype;
-    }
-
     private static void PatchErrorConstructor(JSContext context, KeyString key, JSFunctionDelegate factory, JSFunction baseConstructor = null, int length = 1)
     {
         if (context[key] is not JSFunction existing)

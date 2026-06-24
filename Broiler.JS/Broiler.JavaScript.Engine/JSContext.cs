@@ -1702,13 +1702,13 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     private void InstallDynamicImport()
         => this.FastAddValue(
             KeyStrings.GetOrCreate("import"),
-            JSValue.CreateFunction((in Arguments a) => DynamicImport(a.GetAt(0))),
+            JSValue.CreateFunction((in Arguments a) => DynamicImport(a.GetAt(0), a.GetAt(1))),
             JSPropertyAttributes.ConfigurableValue);
 
     // HostImportModuleDynamically: always returns a promise. The specifier is ToString-coerced (an
     // abrupt completion rejecting the promise rather than throwing synchronously), then forwarded to
     // HostImportModule, or rejected with a TypeError when no loader is configured.
-    private JSValue DynamicImport(JSValue specifier)
+    private JSValue DynamicImport(JSValue specifier, JSValue options)
     {
         string moduleSpecifier;
         try
@@ -1719,6 +1719,15 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         {
             return RejectedPromise(ex.Error);
         }
+
+        // EvaluateImportCall steps for the second `options` argument: read and
+        // enumerate the import attributes (`with`) before loading. The host loader
+        // resolves modules by specifier alone, but the attribute enumeration is still
+        // observable per spec — Get(options, "with"), then EnumerableOwnPropertyNames
+        // followed by Get on each entry (each value must be a String) — so it must run
+        // synchronously here, with any abrupt completion rejecting the promise.
+        if (!ProcessImportAttributes(options, out var attributesError))
+            return RejectedPromise(attributesError);
 
         var loader = HostImportModule;
         if (loader == null)
@@ -1733,6 +1742,70 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         {
             return RejectedPromise(ex.Error);
         }
+    }
+
+    // EvaluateImportCall, options handling: validate `options`, read its `with`
+    // attributes object and enumerate its enumerable own String-keyed entries
+    // (EnumerableOwnPropertyNames + Get), requiring every value to be a String. The
+    // descriptor lookup and value Get interleave per key so a Proxy observes its
+    // ownKeys / getOwnPropertyDescriptor / get traps exactly as the spec prescribes.
+    // Returns false (with the rejection reason in <paramref name="error"/>) on any
+    // abrupt completion so the caller rejects the import promise instead of throwing.
+    private static bool ProcessImportAttributes(JSValue options, out JSValue error)
+    {
+        error = JSUndefined.Value;
+        if (options.IsUndefined)
+            return true;
+
+        if (options is not JSObject optionsObject)
+        {
+            error = JSEngine.NewTypeError("import() options argument must be an object").Error;
+            return false;
+        }
+
+        try
+        {
+            var attributesValue = optionsObject[KeyStrings.GetOrCreate("with")]; // Get(options, "with")
+            if (attributesValue.IsUndefined)
+                return true;
+
+            if (attributesValue is not JSObject attributesObject)
+            {
+                error = JSEngine.NewTypeError("import() \"with\" attributes must be an object").Error;
+                return false;
+            }
+
+            // Snapshot [[OwnPropertyKeys]] (String keys only) before reading any value,
+            // then interleave [[GetOwnProperty]] (enumerable filter) and [[Get]] per key.
+            var keys = new System.Collections.Generic.List<JSValue>();
+            var keyEnumerator = attributesObject.GetAllKeys(showEnumerableOnly: false, inherited: false);
+            while (keyEnumerator.MoveNext(out var hasValue, out var key, out _))
+            {
+                if (hasValue && key is not IJSSymbol)
+                    keys.Add(key);
+            }
+
+            foreach (var key in keys)
+            {
+                if (attributesObject.GetOwnPropertyDescriptor(key) is not JSObject descriptor
+                    || !descriptor[KeyStrings.enumerable].BooleanValue)
+                    continue;
+
+                var value = attributesObject[key]; // Get(attributesObject, key)
+                if (!value.IsString)
+                {
+                    error = JSEngine.NewTypeError("import() attribute values must be strings").Error;
+                    return false;
+                }
+            }
+        }
+        catch (JSException ex)
+        {
+            error = ex.Error;
+            return false;
+        }
+
+        return true;
     }
 
     private static JSValue RejectedPromise(JSValue reason)

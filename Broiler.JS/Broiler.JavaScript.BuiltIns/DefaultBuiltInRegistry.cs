@@ -90,9 +90,12 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
 
         ApplyExperimentalFeatureFlags(context);
 
-        // Set up Iterator.prototype helpers and prototype chain (ES2025).
+        // Set up Iterator.prototype helpers and prototype chain (ES2025). This wires
+        // the sync %GeneratorPrototype%.[[Prototype]] to %IteratorPrototype%. The async
+        // generator chain (%AsyncGeneratorPrototype% → %AsyncIteratorPrototype%) is a
+        // distinct intrinsic built lazily in JSGeneratorFunctionV2, so it must NOT be
+        // grafted on top of the shared sync prototype here.
         SetupIteratorPrototypeChain(context);
-        BuiltInsAssemblyInitializer.PatchAsyncIteratorPrototype(context);
 
         // ShadowRealm.prototype[@@toStringTag] = "ShadowRealm" — a non-writable,
         // non-enumerable, configurable data property (§ShadowRealm.prototype[@@toStringTag]).

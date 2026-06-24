@@ -235,8 +235,15 @@ public class JSGeneratorFunctionV2 : JSFunction
         {
             if (this[KeyStrings.prototype] is JSObject ownPrototype)
             {
-                if (!asyncGenerator)
-                    genObject.BasePrototypeObject = ownPrototype;
+                // Both sync and async generator objects take their function's OWN
+                // .prototype as [[Prototype]] (an ordinary object whose own
+                // [[Prototype]] is the matching %(Async)GeneratorPrototype% intrinsic,
+                // wired in this type's constructor). Binding the async case too keeps
+                // sync and async chains distinct so the sync %GeneratorPrototype% can
+                // inherit %IteratorPrototype% while async generators reach
+                // %AsyncIteratorPrototype% (and its @@asyncIterator) through their own
+                // %AsyncGeneratorPrototype%.
+                genObject.BasePrototypeObject = ownPrototype;
             }
             else
                 genObject.BasePrototypeObject = GetGeneratorPrototype(asyncGenerator);
