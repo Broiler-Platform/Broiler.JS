@@ -172,6 +172,16 @@ internal static class TemporalLunisolarCalendar
         return $"M{ordinalMonth - 1:00}";
     }
 
+    // The displayed lunar month number (1..12) for an ordinal month, i.e. the number in the
+    // month code: a leap month and every month after it carry the previous month's number.
+    // Used by Intl.DateTimeFormat, which numbers chinese/dangi months by their lunar number,
+    // not the 1..13 ordinal position.
+    internal static int DisplayMonthNumber(string id, int year, int ordinalMonth)
+    {
+        var leap = LeapMonthOrdinal(id, year);
+        return leap != 0 && ordinalMonth >= leap ? ordinalMonth - 1 : ordinalMonth;
+    }
+
     internal static int OrdinalFromMonthCode(string id, int year, int codeNumber, bool leapMonth)
     {
         var leap = LeapMonthOrdinal(id, year);

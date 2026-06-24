@@ -188,7 +188,8 @@ internal static class JSIntlDateTimeFormatEngine
     private static readonly HashSet<string> IslamicCalendars = new(StringComparer.Ordinal)
         { "islamic", "islamic-civil", "islamic-rgsa", "islamic-tbla", "islamic-umalqura" };
 
-    private static bool NeedsCalendarConversion(string calendar) => calendar != null && IslamicCalendars.Contains(calendar);
+    private static bool NeedsCalendarConversion(string calendar)
+        => calendar != null && (IslamicCalendars.Contains(calendar) || CyclicYearCalendars.Contains(calendar));
 
     private static readonly string[] IslamicMonthWide =
         { "Muharram", "Safar", "Rabiʻ I", "Rabiʻ II", "Jumada I", "Jumada II", "Rajab", "Shaʻban", "Ramadan", "Shawwal", "Dhuʻl-Qiʻdah", "Dhuʻl-Hijjah" };
@@ -587,7 +588,7 @@ internal static class JSIntlDateTimeFormatEngine
     // A normalized skeleton key (field letters in canonical order) for interval lookup.
     private static string SkeletonOf(List<Token> tokens)
     {
-        bool y = false, h = false, dayP = false;
+        bool y = false, weekday = false;
         var monthCount = 0; bool d = false, hour = false, minute = false, second = false, frac = false;
         foreach (var t in tokens)
         {
@@ -596,23 +597,26 @@ internal static class JSIntlDateTimeFormatEngine
             {
                 case 'y': y = true; break;
                 case 'M': case 'L': monthCount = Math.Max(monthCount, t.Count); break;
+                case 'E': case 'c': weekday = true; break;
                 case 'd': d = true; break;
                 case 'h': case 'H': case 'k': case 'K': hour = true; break;
                 case 'm': minute = true; break;
                 case 's': second = true; break;
                 case 'S': frac = true; break;
-                case 'a': case 'b': dayP = true; break;
             }
         }
         var sb = new StringBuilder();
         if (y) sb.Append('y');
-        if (monthCount >= 3) sb.Append("MMM"); else if (monthCount == 2) sb.Append("MM"); else if (monthCount == 1) sb.Append('M');
+        // Preserve the month width (a long "MMMM" must not collapse to short "MMM") and the
+        // weekday, so a pattern carrying a weekday or long month does not borrow a shorter
+        // skeleton's specific interval pattern — it falls back to formatting both endpoints fully.
+        for (var i = 0; i < Math.Min(monthCount, 4); i++) sb.Append('M');
+        if (weekday) sb.Append('E');
         if (d) sb.Append('d');
         if (hour) sb.Append('h');
         if (minute) sb.Append('m');
         if (second) sb.Append('s');
         if (frac) sb.Append('S');
-        _ = h; _ = dayP;
         return sb.ToString();
     }
 
@@ -786,6 +790,10 @@ internal static class JSIntlDateTimeFormatEngine
     private static Fields ConvertToCalendar(in Fields f, string calendar)
     {
         var (cy, cm, cd) = Temporal.TemporalNonIso.CalendarYmd(calendar, f.Year, f.Month, f.Day);
+        // chinese/dangi number their months by the lunar month (the month-code number), not the
+        // 1..13 ordinal position that counts an intervening leap month.
+        if (CyclicYearCalendars.Contains(calendar))
+            cm = Temporal.TemporalLunisolarCalendar.DisplayMonthNumber(calendar, cy, cm);
         return new Fields(cy, cm, cd, f.Hour, f.Minute, f.Second, f.Millisecond, f.TimeZoneName, f.DayPeriod);
     }
 
@@ -849,6 +857,23 @@ internal static class JSIntlDateTimeFormatEngine
         {
             var intervalTokens = Parse(intervalPatternText);
             return FormatIntervalPattern(intervalTokens, in start, in end, fractionalSecondDigits, pattern.Calendar);
+        }
+
+        // CLDR date/time interval combination: when a date+time pattern's endpoints differ only
+        // in a time field, the shared date is shown once and the two times form the range
+        // (e.g. "8/4/2021, 12:30 AM – 11:30 PM") rather than repeating the whole date. Build the
+        // interval by appending the time portion again — FormatIntervalPattern then renders the
+        // once-occurring date fields as shared and the twice-occurring time fields per-range.
+        if (IsTimeFieldType(greatest))
+        {
+            var firstTime = FirstTimeFieldIndex(pattern.Tokens);
+            if (firstTime > 0 && HasDateFieldBefore(pattern.Tokens, firstTime))
+            {
+                var combined = new List<Token>(pattern.Tokens) { new Token(RangeSeparator) };
+                for (var i = firstTime; i < pattern.Tokens.Count; i++)
+                    combined.Add(pattern.Tokens[i]);
+                return FormatIntervalPattern(combined, in start, in end, fractionalSecondDigits, pattern.Calendar);
+            }
         }
 
         // Fallback "{0} – {1}".
@@ -917,6 +942,32 @@ internal static class JSIntlDateTimeFormatEngine
             parts.Add(new Part(type, value, source));
         }
         return parts;
+    }
+
+    // Time field pattern letters (hour / minute / second / fractional second / day period).
+    private static bool IsTimeFieldLetter(char c)
+        => c is 'h' or 'H' or 'k' or 'K' or 'm' or 's' or 'S' or 'a' or 'b' or 'B';
+
+    private static bool IsDateFieldLetter(char c)
+        => c is 'G' or 'y' or 'M' or 'L' or 'd' or 'E' or 'c' or 'r' or 'U';
+
+    private static bool IsTimeFieldType(string fieldType)
+        => fieldType is "hour" or "minute" or "second" or "fractionalSecond" or "dayPeriod";
+
+    private static int FirstTimeFieldIndex(List<Token> tokens)
+    {
+        for (var i = 0; i < tokens.Count; i++)
+            if (tokens[i].IsField && IsTimeFieldLetter(tokens[i].Field))
+                return i;
+        return -1;
+    }
+
+    private static bool HasDateFieldBefore(List<Token> tokens, int index)
+    {
+        for (var i = 0; i < index; i++)
+            if (tokens[i].IsField && IsDateFieldLetter(tokens[i].Field))
+                return true;
+        return false;
     }
 
     private static string PrevFieldSource(string[] sources, List<Token> tokens, int i)
