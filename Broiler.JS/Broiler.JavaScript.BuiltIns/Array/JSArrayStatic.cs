@@ -74,7 +74,9 @@ public partial class JSArray
         if (r == null)
             throw JSEngine.NewTypeError("Array.from constructor must return an object");
 
-        var en = f.GetIterableEnumerator();
+        // Reuse the @@iterator method fetched above (GetMethod) rather than re-reading it —
+        // a second [[Get]] is observable on a Proxy/getter (test262 sm/Array/from_proxy).
+        var en = f.GetIterableEnumerator(iteratorMethod);
         uint index = 0;
         // MoveNext performs IteratorStep / value access; an error there is the
         // iterator's own abrupt completion and must NOT trigger IteratorClose. Only

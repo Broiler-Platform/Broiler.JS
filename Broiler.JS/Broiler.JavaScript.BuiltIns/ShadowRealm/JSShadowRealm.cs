@@ -154,14 +154,20 @@ public partial class JSShadowRealm : JSObject
         // copy completes abruptly (e.g. a throwing `length`/`name` getter), the
         // failure is swallowed and a fresh TypeError is thrown in the caller realm
         // rather than letting the target realm's exception escape.
-        JSValue lengthValue;
+        JSValue lengthValue = JSUndefined.Value;
         JSValue nameValue;
         var outer = JSEngine.Current as JSContext;
         try
         {
             if (srcRealm != null)
                 JSEngine.CurrentContext = srcRealm;
-            lengthValue = target[KeyStrings.length];
+            // CopyNameAndLength step 3 does HasOwnProperty(Target, "length"), which runs
+            // [[GetOwnProperty]] — a Proxy's getOwnPropertyDescriptor trap. A throwing trap
+            // therefore aborts the copy and is re-surfaced as a TypeError below, and "length"
+            // is only Get when the own property exists (test262
+            // ShadowRealm/.../evaluate/throws-typeerror-wrap-throwing).
+            if (!target.GetOwnPropertyDescriptor(JSValue.CreateString("length")).IsUndefined)
+                lengthValue = target[KeyStrings.length];
             nameValue = target[KeyStrings.name];
         }
         catch (Exception)

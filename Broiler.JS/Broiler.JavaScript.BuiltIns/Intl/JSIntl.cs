@@ -2285,9 +2285,20 @@ public static class JSIntl
     {
         if (canonicalLocales is JSObject array)
         {
-            var first = array[0u];
-            if (!first.IsUndefined)
-                return first.StringValue;
+            // LookupMatcher (ECMA-402): take the first requested locale that has a
+            // BestAvailableLocale match; a structurally valid but unsupported tag (e.g.
+            // "xyz") is skipped so a later supported locale wins, falling back to the
+            // default locale when none match (test262 intl402 .../locales-valid).
+            var length = array[KeyStrings.length].UIntValue;
+            for (uint i = 0; i < length; i++)
+            {
+                var locale = array[i];
+                if (locale.IsUndefined)
+                    continue;
+
+                if (IsLocaleAvailable(locale.StringValue))
+                    return locale.StringValue;
+            }
         }
 
         return string.IsNullOrEmpty(CultureInfo.CurrentCulture.Name) ? "en-US" : CultureInfo.CurrentCulture.Name;

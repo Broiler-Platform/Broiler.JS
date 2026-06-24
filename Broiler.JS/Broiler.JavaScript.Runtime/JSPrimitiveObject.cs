@@ -322,21 +322,36 @@ public class JSPrimitiveObject : JSObject
 
     private JSValue CoerceOwnOverrides(bool preferString)
     {
-        var methodKey = preferString ? KeyStrings.toString : KeyStrings.valueOf;
-        var overridden = TryInvokeOwnPrimitiveMethod(in methodKey);
-        if (overridden != null)
-            return overridden;
+        // OrdinaryToPrimitive: try the two methods in hint order (valueOf-then-toString for
+        // number/default, toString-then-valueOf for string), each via a full prototype-chain
+        // Get. When neither is callable / both return objects this throws a TypeError, exactly
+        // like the spec — the wrapper does NOT silently fall back to its primitive value
+        // (test262 BigInt/wrapper-object-ordinary-toprimitive: Number(Object(1n)) with valueOf
+        // and toString hooked to non-callables must throw).
+        var firstKey = preferString ? KeyStrings.toString : KeyStrings.valueOf;
+        var secondKey = preferString ? KeyStrings.valueOf : KeyStrings.toString;
 
-        return value;
+        var first = TryInvokePrimitiveMethod(in firstKey);
+        if (first != null)
+            return first;
+
+        var second = TryInvokePrimitiveMethod(in secondKey);
+        if (second != null)
+            return second;
+
+        throw NewTypeError("Cannot convert object to primitive value");
     }
 
-    private JSValue TryInvokeOwnPrimitiveMethod(in KeyString key)
+    private JSValue TryInvokePrimitiveMethod(in KeyString key)
     {
-        var descriptor = GetOwnPropertyDescriptor(JSValue.CreateString(key.Value.Value));
-        if (descriptor.IsUndefined)
-            return null;
-
-        var method = descriptor[KeyStrings.value];
+        // OrdinaryToPrimitive (ToPrimitive) resolves valueOf/toString via Get(O, name) —
+        // a full prototype-chain lookup — so an overridden valueOf/toString on the boxed
+        // primitive's PROTOTYPE (e.g. a user-replaced Number.prototype.valueOf or
+        // BigInt.prototype.valueOf) is observed, not just an own property. The default
+        // inherited method unwraps the wrapper and returns its primitive value, so the
+        // common (unhooked) case still yields `value`
+        // (test262 BigInt/wrapper-object-ordinary-toprimitive).
+        var method = this[key];
         if (!method.IsFunction)
             return null;
 

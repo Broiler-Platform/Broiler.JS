@@ -670,6 +670,12 @@ internal static class JSIntlDateTimeFormatEngine
                 var year = f.Year;
                 if (calendar != null && EraCalendars.TryGetValue(calendar, out var cal))
                     year += cal.YearOffset;
+                else if ((calendar is null or "gregory") && year <= 0)
+                    // The proleptic Gregorian calendar has no year 0: ISO year 0 is 1 BC,
+                    // -1 is 2 BC, and so on. The 'y' field renders the YEAR OF ERA — a positive
+                    // count within BC/AD — consistent with the 'G' era field, which marks any
+                    // year <= 0 as BC (test262 intl402 .../format/proleptic-gregorian-calendar).
+                    year = 1 - year;
                 return ("year", token.Count == 2
                     ? (year % 100).ToString("D2", CultureInfo.InvariantCulture)
                     : year.ToString(CultureInfo.InvariantCulture));

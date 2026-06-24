@@ -529,7 +529,11 @@ public partial class JSBigInt : JSPrimitive
     // reject any other receiver with a TypeError (thisBigIntValue per spec).
     private static JSBigInt ThisBigInt(JSValue value)
     {
-        var unwrapped = value is JSPrimitiveObject primitiveObject ? primitiveObject.ValueOf() : value;
+        // thisBigIntValue reads the wrapper's internal [[BigIntData]] slot DIRECTLY — it
+        // must not run the (possibly user-overridden) valueOf/toString, which would recurse
+        // when an override calls the original BigInt.prototype.valueOf
+        // (test262 BigInt/wrapper-object-ordinary-toprimitive).
+        var unwrapped = value is JSPrimitiveObject primitiveObject ? primitiveObject.value : value;
         return unwrapped as JSBigInt
             ?? throw JSEngine.NewTypeError("BigInt.prototype method called on incompatible receiver");
     }

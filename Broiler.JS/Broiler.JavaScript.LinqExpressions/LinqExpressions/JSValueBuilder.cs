@@ -175,9 +175,6 @@ public class JSValueBuilder
 
     public static Expression InvokeMethod(Expression targetTemp, Expression methodTemp, Expression target, Expression name, IFastEnumerable<Expression> args, bool spread, bool memberCoalesce, bool callCoalesce = false, bool inChain = false)
     {
-        if (!memberCoalesce && !callCoalesce && !inChain)
-            return JSValueExtensionsBuilder.InvokeMethod(target, name, args, spread);
-
         var method = _Index;
 
         if (name.Type == typeof(KeyString))
@@ -192,6 +189,23 @@ public class JSValueBuilder
         {
             method = _IndexUInt;
             name = Expression.Convert(name, typeof(uint));
+        }
+
+        if (!memberCoalesce && !callCoalesce && !inChain)
+        {
+            // Per spec CallExpression evaluation the callee reference is fully resolved —
+            // its base evaluated, then GetValue reads the property — BEFORE the ArgumentList
+            // is evaluated. So a member access whose base is nullish (`o.bar.gar(foo())` with
+            // `o.bar` undefined) must throw the TypeError from reading `.gar` before any
+            // argument's side effects run (test262 language/expressions/call/11.2.3-3_3).
+            // Read the receiver and the method into temps first, then evaluate the arguments;
+            // this mirrors the optional-chain path below. (A missing method on a defined
+            // receiver still leaves the arguments evaluated before the not-a-function throw,
+            // exactly as the spec requires.)
+            return Expression.Block(
+                Expression.Assign(targetTemp, target),
+                Expression.Assign(methodTemp, Expression.MakeIndex(targetTemp, method, name)),
+                JSFunctionBuilder.InvokeFunction(methodTemp, ArgumentsBuilder.New(targetTemp, args, spread)));
         }
 
         // Inside an optional chain a short-circuit produces the skip sentinel (the chain
