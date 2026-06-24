@@ -207,7 +207,7 @@ internal static class TemporalCalendar
     // Resolves a proleptic-Gregorian (ISO) date to its japanese era code and era-year. Dates on or
     // after a regnal era's start belong to that era (eraYear counts from 1 at the era's start year);
     // dates before Meiji use the Gregorian ce/bce eras.
-    private static (string code, int eraYear) JapaneseEra(int isoYear, int isoMonth, int isoDay)
+    internal static (string code, int eraYear) JapaneseEra(int isoYear, int isoMonth, int isoDay)
     {
         foreach (var e in JapaneseEras)
             if (CompareDate(isoYear, isoMonth, isoDay, e.y, e.m, e.d) >= 0)
