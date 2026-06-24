@@ -410,7 +410,7 @@ internal static class TemporalNonIso
     // month ("M03") under overflow "constrain" and is a RangeError under "reject". A common month
     // re-resolves by code too, so its ordinal shifts across a leap month present in only one of the
     // years. Calendars without leap months map code↔ordinal identically.
-    private static int ResolveMonthAfterYearShift(string calendarId, int year, int month, int targetYear, string overflow)
+    internal static int ResolveMonthAfterYearShift(string calendarId, int year, int month, int targetYear, string overflow)
     {
         if (year == targetYear)
             return month;

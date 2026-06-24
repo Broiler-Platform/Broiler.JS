@@ -226,10 +226,12 @@ public partial class JSTemporalPlainYearMonth : JSObject
             // leap month shifts later ordinals, so e.g. monthCode "M12" is ordinal 12 in a common year
             // but 13 in a leap year — keeping the bare ordinal would silently pick the wrong month
             // when era/eraYear/year moves to a year with a different month structure (test262
-            // PlainYearMonth/prototype/with mutually-exclusive-fields-hebrew).
-            var receiverCode = TemporalCalendarMath.MonthCode(calendarId, c.y, c.m);
-            var (codeNumber, leapMonth) = ParseMonthCodeLeap(receiverCode);
-            month = TemporalCalendarMath.OrdinalFromMonthCode(calendarId, year, codeNumber, leapMonth);
+            // PlainYearMonth/prototype/with mutually-exclusive-fields-hebrew). A *leap* receiver month
+            // (e.g. hebrew "M05L", chinese/dangi "MnnL") whose leap month is absent in the target year
+            // constrains to the matching regular month under overflow "constrain" and is a RangeError
+            // under "reject" (test262 .../with/leap-months-{hebrew,chinese,dangi}); this is exactly the
+            // year-shift code-preservation handled by ResolveMonthAfterYearShift.
+            month = TemporalNonIso.ResolveMonthAfterYearShift(calendarId, c.y, c.m, year, overflow);
         }
         if (!monthValue.IsUndefined)
         {
