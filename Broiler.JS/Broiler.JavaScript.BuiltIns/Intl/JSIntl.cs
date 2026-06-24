@@ -1612,33 +1612,34 @@ public static class JSIntl
         ["cnr"] = ("sr", null, "ME"),
     };
 
-    // Region replacements selected by the tag's script subtag (CLDR territoryAlias "overlong"
-    // entries with a multi-region replacement list). When the script matches an entry here the
-    // mapped region wins; otherwise the SimpleRegionAliases default applies. Only the entries
-    // a test262 case actually exercises are listed.
-    private static readonly Dictionary<string, Dictionary<string, string>> ScriptConditionalRegionAliases =
-        new(StringComparer.Ordinal)
+    // CLDR territoryAlias entries whose replacement is a LIST of regions (the deprecated code
+    // spans several successor territories). The actual replacement is chosen by likely subtags
+    // (UTS #35 §3.2.1): take the most likely region for the tag's (language, script) — ignoring
+    // the source region — and use it when it is in the list, otherwise the first list entry.
+    private static readonly string[] SovietUnionSuccessors =
+        { "RU", "AM", "AZ", "BY", "EE", "GE", "KZ", "KG", "LV", "LT", "MD", "TJ", "TM", "UA", "UZ" };
+
+    private static readonly Dictionary<string, string[]> MultiRegionAliases = new(StringComparer.Ordinal)
     {
-        // SU (Soviet Union) defaults to RU, but with Armenian script Armn → AM (Armenia).
-        ["SU"] = new(StringComparer.Ordinal) { ["Armn"] = "AM" },
+        // SU / 810 (Soviet Union) and CS (Serbia and Montenegro) and NT (Neutral Zone).
+        ["SU"] = SovietUnionSuccessors,
+        ["810"] = SovietUnionSuccessors,
+        ["CS"] = new[] { "RS", "ME" },
+        ["NT"] = new[] { "SA", "IQ" },
     };
 
     // Bcp47 region subtag aliases (CLDR supplemental territoryAlias) whose deprecated code
-    // maps to a single preferred region. "Overlong" aliases whose replacement is a list (e.g.
-    // "SU" → "RU AM AZ ..." that selects by likely-subtags) use the first list entry as the
-    // default; the ScriptConditionalRegionAliases table above overrides this default for the
-    // explicit script combinations test262 covers.
+    // maps to a single preferred region. Multi-region "overlong" aliases (SU, CS, NT, …) are
+    // resolved by MultiRegionAliases above, which is consulted first.
     private static readonly Dictionary<string, string> SimpleRegionAliases = new(StringComparer.Ordinal)
     {
         ["BU"] = "MM",
-        ["CS"] = "RS",
         ["DD"] = "DE",
         ["DY"] = "BJ",
         ["FX"] = "FR",
         ["HV"] = "BF",
         ["NH"] = "VU",
         ["RH"] = "ZW",
-        ["SU"] = "RU",
         ["TP"] = "TL",
         ["UK"] = "GB",
         ["VD"] = "VN",
@@ -1737,25 +1738,38 @@ public static class JSIntl
         {
             var region = subtags[regionIndex];
             var isAlphaRegion = region.Length == 2 && IsAllAlpha(region);
-            if (isAlphaRegion)
+            var isNumericRegion = region.Length == 3 && IsAllDigitTag(region);
+            if (isAlphaRegion || isNumericRegion)
             {
-                // A script-conditional override (e.g. SU + Armn → AM) wins over the
-                // default alias (SU → RU); fall back to the simple table otherwise.
-                if (hasScript
-                    && ScriptConditionalRegionAliases.TryGetValue(region, out var byScript)
-                    && byScript.TryGetValue(subtags[1], out var conditional))
-                    subtags[regionIndex] = conditional;
-                else if (SimpleRegionAliases.TryGetValue(region, out var aliased))
+                // Multi-region aliases (SU/810/CS/NT) select among their successors by the
+                // likely region of the (language, script); single-region aliases substitute
+                // directly.
+                if (MultiRegionAliases.TryGetValue(region, out var choices))
+                    subtags[regionIndex] = SelectRegionByLikelySubtags(choices, subtags[0], hasScript ? subtags[1] : "");
+                else if (isAlphaRegion && SimpleRegionAliases.TryGetValue(region, out var aliased))
                     subtags[regionIndex] = aliased;
-            }
-            else if (region.Length == 3 && IsAllDigitTag(region)
-                && NumericRegionAliases.TryGetValue(region, out var numericAliased))
-            {
-                subtags[regionIndex] = numericAliased;
+                else if (isNumericRegion && NumericRegionAliases.TryGetValue(region, out var numericAliased))
+                    subtags[regionIndex] = numericAliased;
             }
         }
 
         return string.Join("-", subtags);
+    }
+
+    // UTS #35 §3.2.1 multi-region territoryAlias resolution: the most likely region for the
+    // (language, script) pair — computed WITHOUT the source region — wins when it is one of the
+    // candidate replacements, otherwise the first candidate is used.
+    private static string SelectRegionByLikelySubtags(string[] choices, string language, string script)
+    {
+        var likely = CldrLikelySubtags.Maximize(language, script ?? string.Empty, string.Empty);
+        if (likely != null)
+        {
+            var likelyRegion = likely.Value.region;
+            foreach (var candidate in choices)
+                if (string.Equals(candidate, likelyRegion, StringComparison.Ordinal))
+                    return candidate;
+        }
+        return choices[0];
     }
 
     // Returns a copy of <paramref name="subtags"/> with <paramref name="value"/> inserted at

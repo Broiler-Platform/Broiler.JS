@@ -1,5 +1,20 @@
+diff --git a/src/UnicodeCldr.LocaleData/CldrLikelySubtags.cs b/src/UnicodeCldr.LocaleData/CldrLikelySubtags.cs
+index b21d3dc..bbf39c2 100644
+--- a/src/UnicodeCldr.LocaleData/CldrLikelySubtags.cs
++++ b/src/UnicodeCldr.LocaleData/CldrLikelySubtags.cs
+@@ -15,7 +15,9 @@ public static class CldrLikelySubtags
+     private static Dictionary<string, string> Parse()
+     {
+         var map = new Dictionary<string, string>(StringComparer.Ordinal);
+-        foreach (var line in CldrLikelySubtagsData.Packed.Split('\n'))
++        // The packed literal's line endings follow the source file (CRLF), so split on both
++        // and drop empties — otherwise every value would carry a trailing '\r'.
++        foreach (var line in CldrLikelySubtagsData.Packed.Split('\n', '\r'))
+         {
+             if (line.Length == 0)
+                 continue;
 diff --git a/src/UnicodeProperties/JSStringSpecialCasing.cs b/src/UnicodeProperties/JSStringSpecialCasing.cs
-index f7fbd25..24ae012 100644
+index f7fbd25..978e896 100644
 --- a/src/UnicodeProperties/JSStringSpecialCasing.cs
 +++ b/src/UnicodeProperties/JSStringSpecialCasing.cs
 @@ -24,20 +24,62 @@ public static class JSStringSpecialCasing
@@ -78,7 +93,123 @@ index f7fbd25..24ae012 100644
  
      /// <summary>Invariant (non-locale) full toUpperCase, per the ECMAScript Default Case Conversion.</summary>
      public static string ToUpper(string s) => Map(s, Upper, toUpper: true, culture: null);
-@@ -331,7 +373,7 @@ public static class JSStringSpecialCasing
+@@ -188,18 +230,107 @@ public static class JSStringSpecialCasing
+         if (IsTurkic(culture))
+             return TurkicToLower(s);
+ 
+-        var lowered = culture.TextInfo.ToLower(s);
+-        if (s.IndexOf(GreekCapitalSigma) < 0 || lowered.Length != s.Length)
+-            return lowered;
++        // Lithuanian inserts an explicit COMBINING DOT ABOVE when lowercasing I/J/Į that is
++        // followed by another character of combining class 230 (Above) — SpecialCasing.txt
++        // "lt More_Above" — which .NET's culture-aware ToLower does not implement.
++        if (IsLithuanian(culture))
++            return LithuanianToLower(s);
+ 
+-        var chars = lowered.ToCharArray();
+-        for (var i = 0; i < s.Length; i++)
++        // Every other locale uses the default (locale-independent) lowercase. Routing through
++        // ToLowerCore applies the unconditional SpecialCasing expansions — notably
++        // İ (U+0130) → "i̇" — plus the Final_Sigma conditional, which a raw culture ToLower misses.
++        return ToLowerCore(s, culture);
++    }
++
++    // Lithuanian toLocaleLowerCase (SpecialCasing.txt, lt). I/J/Į lowercase to i/j/į and gain a
++    // COMBINING DOT ABOVE when More_Above holds (a following character of combining class 230,
++    // with only class-not-0-not-230 marks intervening); the precomposed Ì/Í/Ĩ expand to the
++    // base letter + dot above + the accent. Every other character uses the default lowercase.
++    private static string LithuanianToLower(string s)
++    {
++        if (string.IsNullOrEmpty(s))
++            return s;
++
++        var sb = new StringBuilder(s.Length + 2);
++        var i = 0;
++        while (i < s.Length)
+         {
+-            if (s[i] == GreekCapitalSigma)
+-                chars[i] = BeforeIsCased(s, i) && !AfterIsCased(s, i + 1) ? GreekSmallFinalSigma : GreekSmallSigma;
++            var c = s[i];
++            int cp;
++            int len;
++            if (char.IsHighSurrogate(c) && i + 1 < s.Length && char.IsLowSurrogate(s[i + 1]))
++            {
++                cp = char.ConvertToUtf32(c, s[i + 1]);
++                len = 2;
++            }
++            else
++            {
++                cp = c;
++                len = 1;
++            }
++
++            switch (cp)
++            {
++                case 0x0049: // LATIN CAPITAL LETTER I
++                    sb.Append('i');
++                    if (HasMoreAbove(s, i + len)) sb.Append('\u0307');
++                    break;
++                case 0x004A: // LATIN CAPITAL LETTER J
++                    sb.Append('j');
++                    if (HasMoreAbove(s, i + len)) sb.Append('\u0307');
++                    break;
++                case 0x012E: // LATIN CAPITAL LETTER I WITH OGONEK
++                    sb.Append('\u012F');
++                    if (HasMoreAbove(s, i + len)) sb.Append('\u0307');
++                    break;
++                case 0x00CC: sb.Append("i\u0307\u0300"); break; // Ì -> i + dot above + grave
++                case 0x00CD: sb.Append("i\u0307\u0301"); break; // Í -> i + dot above + acute
++                case 0x0128: sb.Append("i\u0307\u0303"); break; // Ĩ -> i + dot above + tilde
++                case GreekCapitalSigma:
++                    sb.Append(BeforeIsCased(s, i) && !AfterIsCased(s, i + len) ? GreekSmallFinalSigma : GreekSmallSigma);
++                    break;
++                default:
++                    if (Lower.TryGetValue(cp, out var mapped))
++                        sb.Append(mapped);
++                    else
++                        sb.Append(s.Substring(i, len).ToLowerInvariant());
++                    break;
++            }
++
++            i += len;
+         }
+ 
+-        return new string(chars);
++        return sb.ToString();
++    }
++
++    // SpecialCasing.txt More_Above: scanning forward from index j, is there a character of
++    // combining class 230 (Above) with only context-transparent marks (class neither 0 nor 230)
++    // intervening?
++    private static bool HasMoreAbove(string s, int j)
++    {
++        while (j < s.Length)
++        {
++            var c = s[j];
++            int cp;
++            int len;
++            if (char.IsHighSurrogate(c) && j + 1 < s.Length && char.IsLowSurrogate(s[j + 1]))
++            {
++                cp = char.ConvertToUtf32(c, s[j + 1]);
++                len = 2;
++            }
++            else
++            {
++                cp = c;
++                len = 1;
++            }
++
++            if (IsCombiningAbove(cp))
++                return true;
++            if (!IsContextTransparent(cp))
++                return false;
++            j += len;
++        }
++        return false;
+     }
+ 
+     // Canonical_Combining_Class == 230 (Above) code-point ranges (Unicode 17.0.0,
+@@ -331,7 +462,7 @@ public static class JSStringSpecialCasing
                      break;
                  case 0x0307: // COMBINING DOT ABOVE
                      if (!IsAfterI(s, i))
@@ -87,7 +218,7 @@ index f7fbd25..24ae012 100644
                      break;
                  case GreekCapitalSigma:
                      sb.Append(BeforeIsCased(s, i) && !AfterIsCased(s, i + len) ? GreekSmallFinalSigma : GreekSmallSigma);
-@@ -355,7 +397,84 @@ public static class JSStringSpecialCasing
+@@ -355,7 +486,84 @@ public static class JSStringSpecialCasing
      /// İ → "i̇" override is NOT locale-independent for Turkic locales, so it is applied
      /// only by the non-locale ToLower above.)
      /// </summary>
@@ -173,7 +304,7 @@ index f7fbd25..24ae012 100644
  
      private static string Map(string s, Dictionary<int, string> special, bool toUpper, CultureInfo? culture)
      {
-@@ -363,12 +482,24 @@ public static class JSStringSpecialCasing
+@@ -363,12 +571,24 @@ public static class JSStringSpecialCasing
              return s;
  
          // Fast path: no special-cased character present (the common case), so defer to
@@ -202,7 +333,7 @@ index f7fbd25..24ae012 100644
              {
                  found = true;
                  break;
-@@ -512,6 +643,9 @@ public static class JSStringSpecialCasing
+@@ -512,6 +732,9 @@ public static class JSStringSpecialCasing
              }
          }
  

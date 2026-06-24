@@ -66,13 +66,38 @@ internal static class JSIntlDateTimeFormatEngine
 
         if (style is not ("shortOffset" or "longOffset"))
         {
-            var name = CldrLocaleData.GetTimeZoneName(localeTag, timeZone, style, IsDaylight(timeZone, epochMs));
+            var isDaylight = IsDaylight(timeZone, epochMs);
+            var name = CldrLocaleData.GetTimeZoneName(localeTag, timeZone, style, isDaylight);
+            if (string.IsNullOrEmpty(name))
+                name = NameForEquivalentZone(localeTag, timeZone, style, isDaylight);
             if (!string.IsNullOrEmpty(name))
                 return name;
         }
 
         var offsetMs = ToZone(epochMs, timeZone) - epochMs;
         return GmtOffset(offsetMs, style is "longOffset" or "long" or "longGeneric");
+    }
+
+    // CLDR keys its metazone names on a single representative IANA id per zone (e.g.
+    // "Asia/Calcutta", not the now-primary "Asia/Kolkata"). When the supplied id is not itself
+    // covered, try the other IANA ids that denote the same zone so a link and its target format
+    // identically (test262 DateTimeFormat/timezone-not-canonicalized). Only reached on a miss.
+    private static string NameForEquivalentZone(string localeTag, string timeZone, string style, bool isDaylight)
+    {
+        var primary = Temporal.Tz.IanaTimeZoneDatabase.GetPrimary(timeZone);
+        if (string.IsNullOrEmpty(primary))
+            return null;
+        foreach (var id in Temporal.Tz.IanaTimeZoneDatabase.AllNames)
+        {
+            if (string.Equals(id, timeZone, StringComparison.OrdinalIgnoreCase))
+                continue;
+            if (!string.Equals(Temporal.Tz.IanaTimeZoneDatabase.GetPrimary(id), primary, StringComparison.OrdinalIgnoreCase))
+                continue;
+            var name = CldrLocaleData.GetTimeZoneName(localeTag, id, style, isDaylight);
+            if (!string.IsNullOrEmpty(name))
+                return name;
+        }
+        return null;
     }
 
     // Whether daylight-saving time is in effect for a named IANA zone at the instant (false for an
