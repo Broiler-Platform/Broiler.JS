@@ -1,0 +1,214 @@
+diff --git a/src/UnicodeProperties/JSStringSpecialCasing.cs b/src/UnicodeProperties/JSStringSpecialCasing.cs
+index f7fbd25..24ae012 100644
+--- a/src/UnicodeProperties/JSStringSpecialCasing.cs
++++ b/src/UnicodeProperties/JSStringSpecialCasing.cs
+@@ -24,20 +24,62 @@ public static class JSStringSpecialCasing
+ 
+     // Full-lowercase mappings (one-to-many). The only unconditional, locale-independent
+     // entry is LATIN CAPITAL LETTER I WITH DOT ABOVE → "i" + COMBINING DOT ABOVE.
+-    private static readonly Dictionary<int, string> Lower = new()
++    private static readonly Dictionary<int, string> Lower = BuildLower();
++
++    private static Dictionary<int, string> BuildLower()
+     {
+-        [0x0130] = "i̇",
+-        // Recent Unicode additions (15.1 / 16.0) whose simple lowercase mapping .NET's
+-        // bundled ICU does not yet know (test262 sm/String/string-upper-lower-mapping).
+-        [0xA7DC] = "ƛ",   // Ꟶ -> ƛ
+-        [0xA7CB] = "ɤ",   // Ɤ -> ɤ
+-        [0x1C89] = "ᲊ",   // Cyrillic capital tje -> small
+-        [0xA7CC] = "ꟍ",
+-        [0xA7CE] = "꟏",
+-        [0xA7D2] = "ꟓ",
+-        [0xA7D4] = "ꟕ",
+-        [0xA7DA] = "ꟛ",
+-    };
++        var lower = new Dictionary<int, string>
++        {
++            [0x0130] = "i̇",
++            // Recent Unicode additions (15.1 / 16.0) whose simple lowercase mapping .NET's
++            // bundled ICU does not yet know (test262 sm/String/string-upper-lower-mapping).
++            [0xA7DC] = "ƛ",   // Ꟶ -> ƛ
++            [0xA7CB] = "ɤ",   // Ɤ -> ɤ
++            [0x1C89] = "ᲊ",   // Cyrillic capital tje -> small
++            [0xA7CC] = "ꟍ",
++            [0xA7CE] = "꟏",
++            [0xA7D2] = "ꟓ",
++            [0xA7D4] = "ꟕ",
++            [0xA7DA] = "ꟛ",
++        };
++
++        // Astral simple case mappings (capital -> small) that .NET's bundled ICU lacks.
++        AddAstralSimpleCase(lower, toUpper: false);
++        return lower;
++    }
++
++    // Supplementary-plane (astral) simple case-mapping ranges whose 1:1 mappings .NET's
++    // ToUpperInvariant/ToLowerInvariant leave unchanged (Osage, Vithkuqi, Old Hungarian,
++    // Garay, Warang Citi, Medefaidrin, Adlam — test262
++    // sm/String/string-code-point-upper-lower-mapping). Each run "loLow-hiLow>loCap" pairs
++    // the small-letter range [loLow,hiLow] with the capital range beginning at loCap.
++    private const string AstralSimpleCaseRuns =
++        "104D8-104FB>104B0,10597-105A1>10570,105A3-105B1>1057C,105B3-105B9>1058C," +
++        "105BB-105BC>10594,10CC0-10CF2>10C80,10D70-10D85>10D50,118C0-118DF>118A0," +
++        "16E60-16E7F>16E40,1E922-1E943>1E900";
++
++    // Populates a case-mapping table from AstralSimpleCaseRuns. For the upper table the
++    // mapping is small -> capital; for the lower table it is capital -> small.
++    private static void AddAstralSimpleCase(Dictionary<int, string> map, bool toUpper)
++    {
++        foreach (var run in AstralSimpleCaseRuns.Split(','))
++        {
++            var dash = run.IndexOf('-');
++            var gt = run.IndexOf('>');
++            var smallLo = ParseHex(run.AsSpan(0, dash));
++            var smallHi = ParseHex(run.AsSpan(dash + 1, gt - dash - 1));
++            var capLo = ParseHex(run.AsSpan(gt + 1));
++            for (var k = 0; smallLo + k <= smallHi; k++)
++            {
++                var small = smallLo + k;
++                var capital = capLo + k;
++                if (toUpper)
++                    map[small] = char.ConvertFromUtf32(capital);
++                else
++                    map[capital] = char.ConvertFromUtf32(small);
++            }
++        }
++    }
+ 
+     /// <summary>Invariant (non-locale) full toUpperCase, per the ECMAScript Default Case Conversion.</summary>
+     public static string ToUpper(string s) => Map(s, Upper, toUpper: true, culture: null);
+@@ -331,7 +373,7 @@ public static class JSStringSpecialCasing
+                     break;
+                 case 0x0307: // COMBINING DOT ABOVE
+                     if (!IsAfterI(s, i))
+-                        sb.Append('̇');
++                        sb.Append('\u0307');
+                     break;
+                 case GreekCapitalSigma:
+                     sb.Append(BeforeIsCased(s, i) && !AfterIsCased(s, i + len) ? GreekSmallFinalSigma : GreekSmallSigma);
+@@ -355,7 +397,84 @@ public static class JSStringSpecialCasing
+     /// İ → "i̇" override is NOT locale-independent for Turkic locales, so it is applied
+     /// only by the non-locale ToLower above.)
+     /// </summary>
+-    public static string ToLocaleUpper(string s, CultureInfo culture) => Map(s, Upper, toUpper: true, culture);
++    public static string ToLocaleUpper(string s, CultureInfo culture)
++    {
++        // Lithuanian uppercasing removes a COMBINING DOT ABOVE that sits after a
++        // Soft_Dotted letter (SpecialCasing.txt: 0307 → "" / lt After_Soft_Dotted),
++        // because the capital form already carries the dot implicitly.
++        if (IsLithuanian(culture))
++            return LithuanianToUpper(s, culture);
++
++        return Map(s, Upper, toUpper: true, culture);
++    }
++
++    // lt (Lithuanian) is the only locale with language-sensitive uppercase mappings here.
++    private static bool IsLithuanian(CultureInfo? culture) => culture?.TwoLetterISOLanguageName == "lt";
++
++    // \p{Soft_Dotted} (PropList.txt). A stable set since Unicode 5.1 — the lowercase i/j
++    // family plus their stroked/hooked variants and the mathematical-alphanumeric i/j.
++    private static readonly HashSet<int> SoftDotted = new()
++    {
++        0x0069, 0x006A, 0x012F, 0x0249, 0x0268, 0x029D, 0x02B2, 0x03F3, 0x0456, 0x0458,
++        0x1D62, 0x1D96, 0x1DA4, 0x1DA8, 0x1E2D, 0x1ECB, 0x2071, 0x2148, 0x2149, 0x2C7C,
++        0x1D422, 0x1D423, 0x1D456, 0x1D457, 0x1D48A, 0x1D48B, 0x1D4BE, 0x1D4BF, 0x1D4F2,
++        0x1D4F3, 0x1D526, 0x1D527, 0x1D55A, 0x1D55B, 0x1D58E, 0x1D58F, 0x1D5C2, 0x1D5C3,
++        0x1D5F6, 0x1D5F7, 0x1D62A, 0x1D62B, 0x1D65E, 0x1D65F, 0x1D692, 0x1D693,
++    };
++
++    // SpecialCasing.txt After_Soft_Dotted: scanning backwards from a COMBINING DOT ABOVE
++    // at index k, the nearest preceding non-transparent character is Soft_Dotted (only
++    // characters of combining class neither 0 nor 230 — the context-transparent marks —
++    // may intervene).
++    private static bool IsAfterSoftDotted(string s, int k)
++    {
++        var idx = k;
++        while (idx > 0)
++        {
++            var prev = idx - 1;
++            if (prev > 0 && char.IsLowSurrogate(s[prev]) && char.IsHighSurrogate(s[prev - 1]))
++                prev--;
++
++            var cp = char.IsHighSurrogate(s[prev]) && prev + 1 < s.Length && char.IsLowSurrogate(s[prev + 1])
++                ? char.ConvertToUtf32(s[prev], s[prev + 1])
++                : s[prev];
++
++            if (SoftDotted.Contains(cp))
++                return true;
++            if (!IsContextTransparent(cp))
++                return false;
++            idx = prev;
++        }
++        return false;
++    }
++
++    // Lithuanian toLocaleUpperCase: drop every COMBINING DOT ABOVE that is After_Soft_Dotted
++    // (evaluated on the original lowercase text, before the simple uppercase is applied),
++    // then uppercase the remainder like any other locale.
++    private static string LithuanianToUpper(string s, CultureInfo culture)
++    {
++        if (string.IsNullOrEmpty(s) || s.IndexOf('\u0307') < 0)
++            return Map(s, Upper, toUpper: true, culture);
++
++        var sb = new StringBuilder(s.Length);
++        for (var i = 0; i < s.Length;)
++        {
++            var c = s[i];
++            var len = char.IsHighSurrogate(c) && i + 1 < s.Length && char.IsLowSurrogate(s[i + 1]) ? 2 : 1;
++            if (c == '\u0307' && IsAfterSoftDotted(s, i))
++            {
++                // Removed in the uppercase result.
++            }
++            else
++            {
++                sb.Append(s, i, len);
++            }
++
++            i += len;
++        }
++
++        return Map(sb.ToString(), Upper, toUpper: true, culture);
++    }
+ 
+     private static string Map(string s, Dictionary<int, string> special, bool toUpper, CultureInfo? culture)
+     {
+@@ -363,12 +482,24 @@ public static class JSStringSpecialCasing
+             return s;
+ 
+         // Fast path: no special-cased character present (the common case), so defer to
+-        // the framework's simple mapping. All special keys are BMP, so a UTF-16 scan
+-        // is sufficient to detect them.
++        // the framework's simple mapping. Keys include supplementary-plane code points,
++        // so decode surrogate pairs while scanning (lone surrogates fall through as-is).
+         var found = false;
+-        foreach (var ch in s)
++        for (var i = 0; i < s.Length; i++)
+         {
+-            if (special.ContainsKey(ch))
++            var c = s[i];
++            int cp;
++            if (char.IsHighSurrogate(c) && i + 1 < s.Length && char.IsLowSurrogate(s[i + 1]))
++            {
++                cp = char.ConvertToUtf32(c, s[i + 1]);
++                i++;
++            }
++            else
++            {
++                cp = c;
++            }
++
++            if (special.ContainsKey(cp))
+             {
+                 found = true;
+                 break;
+@@ -512,6 +643,9 @@ public static class JSStringSpecialCasing
+             }
+         }
+ 
++        // Astral simple case mappings (small -> capital) .NET's bundled ICU does not apply.
++        AddAstralSimpleCase(map, toUpper: true);
++
+         return map;
+     }
+ }

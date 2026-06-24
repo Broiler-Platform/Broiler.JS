@@ -1354,10 +1354,10 @@ public static class JSIntl
     // unchanged.
     private static readonly Dictionary<string, string> SingleVariantAliases = new(StringComparer.Ordinal)
     {
-        ["heploc"] = "alalc97",
-        ["hepburn"] = "alalc97",  // CLDR groups the hepburn/heploc pair onto alalc97; after
-                                  // both subtags map to alalc97 the duplicate is folded away
-                                  // by the dedup pass below.
+        ["heploc"] = "alalc97",  // CLDR variantAlias maps "heploc" → "alalc97". A lone
+                                 // "hepburn" (Hepburn romanization) is a valid variant and is
+                                 // NOT aliased; only the "hepburn-heploc" sequence collapses to
+                                 // "alalc97" (handled in CanonicalizeMainTagVariants).
         ["polytoni"] = "polyton",
         ["arevela"] = null,  // dropped (no replacement); the language subtag handles it
         ["arevmda"] = null,
@@ -1394,9 +1394,16 @@ public static class JSIntl
         var language = parts[0];
         var variants = new List<string>(i - variantStart);
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        var rawVariants = new HashSet<string>(StringComparer.Ordinal);
+        for (var j = variantStart; j < i; j++) rawVariants.Add(parts[j]);
         for (var j = variantStart; j < i; j++)
         {
             var v = parts[j];
+            // "hepburn-heploc": heploc -> alalc97 supersedes the hepburn prefix, so the pair
+            // collapses to the single "alalc97". Drop "hepburn" only when "heploc" is also
+            // present; a lone "hepburn" is preserved.
+            if (v == "hepburn" && rawVariants.Contains("heploc"))
+                continue;
             if (LanguageVariantAliases.TryGetValue(parts[0] + "-" + v, out var languageReplacement))
             {
                 language = languageReplacement;
