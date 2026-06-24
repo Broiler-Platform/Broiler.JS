@@ -389,16 +389,31 @@ public partial class JSTemporalDuration
             // bare date-time with no designator — is a RangeError.
             var tzId = JSTemporalZonedDateTime.ToTimeZoneIdentifier(relObj[KeyStrings.GetOrCreate("timeZone")]);
 
+            // Resolve the bag's wall-clock date-time (used both to validate the offset and to build the
+            // ZonedDateTime relativeTo below).
+            var bagDateTime = (JSTemporalPlainDateTime)JSTemporalPlainDateTime.From(new Arguments(JSUndefined.Value, relObj));
+
             // InterpretISODateTimeOffset: a bag offset must EXACTLY match the zone's offset for the
             // local wall clock (no minute rounding, unlike the string form), so a rounded "-00:45" for
-            // a -00:44:30 zone is a RangeError. Resolve the bag's wall-clock date-time to check.
+            // a -00:44:30 zone is a RangeError.
             if (offsetString != null)
-            {
-                var bagDateTime = (JSTemporalPlainDateTime)JSTemporalPlainDateTime.From(new Arguments(JSUndefined.Value, relObj));
                 JSTemporalZonedDateTime.ValidateBagOffsetMatchesZone(
                     tzId, bagDateTime.isoYear, bagDateTime.isoMonth, bagDateTime.isoDay,
                     bagDateTime.hour, bagDateTime.minute, bagDateTime.second, offsetString);
-            }
+
+            ValidateRelativeBagTimeFields(rel);
+
+            // A relativeTo property bag with a timeZone is a ZonedDateTime relativeTo (DST-aware): a day
+            // may be 23/24/25 hours, exactly like an object or string ZonedDateTime relativeTo — not a
+            // fixed 24-hour PlainDate (test262 Duration round/total/compare casts-relativeTo-from-object).
+            if (TemporalCalendarMath.IsNonIso(bagDateTime.calendarId))
+                throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{bagDateTime.calendarId}\" calendar is not yet implemented");
+            zoned = JSTemporalZonedDateTime.BuildRelative(
+                bagDateTime.isoYear, bagDateTime.isoMonth, bagDateTime.isoDay,
+                bagDateTime.hour, bagDateTime.minute, bagDateTime.second,
+                bagDateTime.millisecond, bagDateTime.microsecond, bagDateTime.nanosecond,
+                tzId, offsetString, bagDateTime.calendarId);
+            return true;
         }
 
         ValidateRelativeBagTimeFields(rel);

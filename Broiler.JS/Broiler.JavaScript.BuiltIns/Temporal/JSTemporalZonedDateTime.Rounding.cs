@@ -439,26 +439,48 @@ public partial class JSTemporalZonedDateTime
         var sign = x.Time.Sign;
         var t = BigInteger.Abs(x.Time);
 
-        BigInteger seconds = t / 1_000_000_000;
-        var sub = (long)(t % 1_000_000_000);
-        long nanoseconds = sub % 1000;
-        long microseconds = sub / 1000 % 1000;
-        long milliseconds = sub / 1_000_000 % 1000;
-
-        BigInteger minutes = 0, hours = 0;
+        // Distribute the sub-day nanoseconds across the time components with `largestUnit` as the
+        // coarsest bucket. When largestUnit is finer than a second (milli/micro/nanosecond) the
+        // larger components must fold INTO that bucket rather than populating seconds/minutes/hours
+        // — e.g. largestUnit "millisecond" expresses a 3660-second remainder as 3_660_000
+        // milliseconds, not 3660 seconds (test262 Duration/round/
+        // relativeto-largestunit-smallestunit-combinations). The day count comes from x.Days (the
+        // DST-aware calendar difference); x.Time is the sub-day remainder, whose hours must NOT be
+        // re-split into 24-hour days — in a 25-hour day a 24-hour remainder stays 24h (#818 P9).
+        BigInteger hours = 0, minutes = 0, seconds = 0, milliseconds = 0, microseconds = 0, nanoseconds = 0;
         var rank = UnitRank(largestUnit);
-        if (rank <= UnitRank("minute")) { minutes = seconds / 60; seconds %= 60; }
-        if (rank <= UnitRank("hour")) { hours = minutes / 60; minutes %= 60; }
-        // The day count comes from x.Days (the DST-aware calendar difference); x.Time is
-        // the sub-day remainder, whose hours must NOT be re-split into 24-hour days — in
-        // a 25-hour day a 24-hour remainder stays 24 hours, not 1 day (#818 Problem 9).
+        if (rank <= UnitRank("second"))
+        {
+            seconds = t / 1_000_000_000;
+            var sub = t % 1_000_000_000;
+            milliseconds = sub / 1_000_000;
+            microseconds = sub / 1_000 % 1_000;
+            nanoseconds = sub % 1_000;
+            if (rank <= UnitRank("minute")) { minutes = seconds / 60; seconds %= 60; }
+            if (rank <= UnitRank("hour")) { hours = minutes / 60; minutes %= 60; }
+        }
+        else if (rank == UnitRank("millisecond"))
+        {
+            milliseconds = t / 1_000_000;
+            microseconds = t / 1_000 % 1_000;
+            nanoseconds = t % 1_000;
+        }
+        else if (rank == UnitRank("microsecond"))
+        {
+            microseconds = t / 1_000;
+            nanoseconds = t % 1_000;
+        }
+        else // nanosecond
+        {
+            nanoseconds = t;
+        }
 
         // ℝ→𝔽 nearest double (ties to even) for the BigInteger components, not .NET's
         // truncating (double)BigInteger (#818 Problems 18/19).
         double S(BigInteger v) => sign * JSTemporalDuration.NearestDouble(v);
         return new JSTemporalDuration(
             x.Years, x.Months, x.Weeks, x.Days,
-            S(hours), S(minutes), S(seconds), sign * milliseconds, sign * microseconds, sign * nanoseconds,
+            S(hours), S(minutes), S(seconds), S(milliseconds), S(microseconds), S(nanoseconds),
             JSTemporalDuration.DurationPrototype);
     }
 

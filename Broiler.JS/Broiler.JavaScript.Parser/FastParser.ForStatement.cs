@@ -235,7 +235,7 @@ partial class FastParser
 
                 if (newScope && declaration != null && !cStyleUsing)
                 {
-                    (beginNode, statement, update, test) = Desugar(declaration, block.Statements, update, test, block);
+                    (beginNode, statement, update, test) = Desugar(declaration, block.Statements, update, test, cStyle: !@in && !of, block);
                 }
                 else
                 {
@@ -246,7 +246,7 @@ partial class FastParser
             else if (NonDeclarativeStatement(out statement))
             {
                 if (newScope && declaration != null && !cStyleUsing)
-                    (beginNode, statement, update, test) = Desugar(declaration, new Sequence<AstStatement>(1) { statement }, update, test);
+                    (beginNode, statement, update, test) = Desugar(declaration, new Sequence<AstStatement>(1) { statement }, update, test, cStyle: !@in && !of);
             }
             else throw stream.Unexpected();
 
@@ -668,7 +668,7 @@ partial class FastParser
         }
 
         (AstNode beginNode, AstStatement statement, AstExpression? update, AstExpression? test) Desugar(AstVariableDeclaration declaration, IFastEnumerable<AstStatement> body,
-            AstExpression? update, AstExpression? test, AstBlock? sourceBlock = null)
+            AstExpression? update, AstExpression? test, bool cStyle, AstBlock? sourceBlock = null)
         {
             var statementList = new Sequence<AstStatement>(body.Count + 1) { null! };
             statementList.AddRange(body);
@@ -694,8 +694,17 @@ partial class FastParser
             // single loop environment). The carrier is seeded from it, so the initializer's side
             // effects still run exactly once. `const` heads keep the original lowering — a `const`
             // carrier cannot be mutated by an update.
-            var useLoopEnv = requiresReplacement
-                && declaration.Kind == FastVariableKind.Let;
+            //
+            // This applies even to a head with no test and no update (`for (let x = init; ;)`): an
+            // initializer closure must still resolve the loop binding, not the enclosing scope's
+            // same-named variable (test262 sm/lexical-environment/for-loop's `for (let outer = (save =
+            // function () { return outer; }); ;) break;`, where save() must return the loop `outer`).
+            //
+            // Restricted to a C-style head (`!@in && !of`): Desugar is shared with for-in / for-of,
+            // whose heads also have no test/update but bind the loop variable from each enumerated
+            // value (handled by VisitForIn/OfStatement), not from a carrier — they must keep the
+            // plain lowering.
+            var useLoopEnv = cStyle && declaration.Kind == FastVariableKind.Let;
 
             var en = declaration.Declarators.GetFastEnumerator();
             while (en.MoveNext(out var d))
@@ -745,26 +754,49 @@ partial class FastParser
 
             var changes = list;
 
+            // The per-iteration body block re-binds each name from its carrier (`let x = <carrier>`).
+            // `changes` is empty for a no-replacement non-loop-env head (its scopedDeclarations were
+            // populated directly above), so this is a no-op there.
+            foreach (var (id, temp) in changes)
+                scopedDeclarations.Add(new VariableDeclarator(new AstIdentifier(temp.Start, id), temp));
+
+            // A closure created in the increment must capture the SAME per-iteration environment the
+            // following test and body run in: ForBodyEvaluation copies the loop bindings AFTER the
+            // body, then evaluates the increment in that fresh environment, which the next test/body
+            // then share. Model this by running the increment at the TOP of the per-iteration body
+            // block — guarded by a loop-scoped "started" flag so it is skipped on the first pass — and
+            // copying each per-iteration binding back into its carrier from a `finally` so the copy
+            // happens on `continue`/`break`/`return` too (test262 sm/lexical-environment/for-loop's
+            // "incr" closures). Only a loop-env update that actually contains a closure needs this; the
+            // common case keeps the cheaper direct carrier mutation plus an end-of-body copy-back.
+            var incrementAtTop = useLoopEnv && update != null && ContainsClosure(update);
+            AstIdentifier startedFlag = null;
+            if (incrementAtTop)
+            {
+                var flagId = Interlocked.Increment(ref TempVarID).ToString();
+                startedFlag = new AstIdentifier(declaration.Start, flagId);
+                tempDeclarations.Add(new VariableDeclarator(startedFlag, new AstLiteral(TokenTypes.False, declaration.Start)));
+
+                // Wrap the user body in `try { … } finally { <carrier> = x; … }` so the per-iteration
+                // value is copied back to the carrier on every completion path before the next
+                // iteration's increment reads it. Rebuild statementList ([0] is the scoped-decl slot).
+                var bodyStatements = new Sequence<AstStatement>();
+                for (int bi = 1; bi < statementList.Count; bi++)
+                    bodyStatements.Add(statementList[bi]);
+
+                var finallyStatements = new Sequence<AstStatement>();
+                foreach (var (id, temp) in changes)
+                    finallyStatements.Add(new AstExpressionStatement(new AstBinaryExpression(
+                        new AstIdentifier(temp.Start, temp.Name.Value), TokenTypes.Assign, new AstIdentifier(temp.Start, id))));
+
+                var tryBody = new AstBlock(declaration.Start, declaration.End, bodyStatements);
+                var finallyBody = new AstBlock(declaration.Start, declaration.End, finallyStatements);
+                var tryStmt = new AstTryStatement(declaration.Start, declaration.End, tryBody, null, null, finallyBody);
+                statementList = new Sequence<AstStatement>(2) { null!, tryStmt };
+            }
+
             if (requiresReplacement)
             {
-                foreach (var (id, temp) in changes)
-                    scopedDeclarations.Add(new VariableDeclarator(new AstIdentifier(temp.Start, id), temp));
-
-                if (update != null)
-                {
-                    // ForBodyEvaluation creates a fresh per-iteration environment before
-                    // evaluating the increment, so a closure created in the update must
-                    // capture that iteration's loop binding — not the single shared
-                    // carrier. When the update contains a closure, wrap it in an IIFE
-                    // that copies each carrier into a fresh per-iteration `let` binding,
-                    // runs the original update against it, then writes the result back to
-                    // the carrier (test262 let-closure-inside-next-expression). Updates
-                    // with no closure keep the cheaper direct carrier mutation.
-                    update = useLoopEnv && ContainsClosure(update)
-                        ? BuildPerIterationUpdate(update, changes)
-                        : AstIdentifierReplacer.Replace(update, changes) as AstExpression;
-                }
-
                 if (test != null)
                 {
                     if (useLoopEnv)
@@ -788,7 +820,40 @@ partial class FastParser
                         test = AstIdentifierReplacer.Replace(test, changes) as AstExpression;
                     }
                 }
+
+                if (update != null)
+                {
+                    if (incrementAtTop)
+                    {
+                        // `if (started) { <update>; } else { started = true; }`, inserted ABOVE the
+                        // test so the increment runs before the test in the shared per-iteration
+                        // environment, and is skipped on the first iteration. The update keeps
+                        // referencing the original names (which resolve to the per-iteration bindings).
+                        var guard = new AstIfStatement(update.Start, update.End,
+                            new AstIdentifier(startedFlag.Start, startedFlag.Name.Value),
+                            new AstExpressionStatement(update),
+                            new AstExpressionStatement(new AstBinaryExpression(
+                                new AstIdentifier(startedFlag.Start, startedFlag.Name.Value),
+                                TokenTypes.Assign,
+                                new AstLiteral(TokenTypes.True, declaration.Start))));
+                        statementList.Insert(1, guard);
+                        update = null;
+                    }
+                    else
+                    {
+                        update = AstIdentifierReplacer.Replace(update, changes) as AstExpression;
+                    }
+                }
             }
+
+            // NOTE: for a no-closure update the carrier is mutated directly by the (replaced) outer
+            // loop update, and the per-iteration body re-binds each name from that carrier — closures
+            // in the test/body still capture the correct per-iteration value (test262
+            // let-closure-inside-condition). We deliberately do NOT also copy the per-iteration
+            // binding back into the carrier at the end of the body: that would change the value seen
+            // by the next iteration when the BODY (not the update) mutates the loop variable, which is
+            // a separate pre-existing behaviour and not needed by any of the loop-env fixes here
+            // (P40/P25's increment-position closures use the increment-at-top `finally` path above).
 
             // The per-iteration scoped declaration carries the original head's
             // `using` / `await using` disposal markers, so a `for (using x of …)`
@@ -813,7 +878,7 @@ partial class FastParser
             // hoisted into this block scope and a closure over the per-iteration
             // loop variable captures an uninitialised slot. Merge those names with
             // the loop's own per-iteration binding names (`hoisted`).
-            var combinedHoisting = CombineHoisting(requiresReplacement ? hoisted : null, sourceBlock?.HoistingScope);
+            var combinedHoisting = CombineHoisting(useLoopEnv || requiresReplacement ? hoisted : null, sourceBlock?.HoistingScope);
             if (combinedHoisting != null)
                 block.HoistingScope = combinedHoisting;
 
@@ -828,34 +893,6 @@ partial class FastParser
             var detector = new ClosureDetector();
             detector.Visit(node);
             return detector.Found;
-        }
-
-        // Wrap a C-style for-loop update in an arrow IIFE that gives the increment its
-        // own per-iteration copy of each loop binding: `() => { let i = <carrier>; <update>;
-        // <carrier> = i; }`. A closure created inside <update> then captures that call's
-        // fresh `i` rather than the shared carrier, and the write-back keeps the carrier
-        // progressing for the next iteration.
-        static AstExpression BuildPerIterationUpdate(AstExpression update, IFastEnumerable<(string id, AstIdentifier temp)> changes)
-        {
-            var start = update.Start;
-            var end = update.End;
-
-            var perIterationDecls = new Sequence<VariableDeclarator>();
-            var statements = new Sequence<AstStatement>();
-            var en = changes.GetFastEnumerator();
-            while (en.MoveNext(out var change))
-                perIterationDecls.Add(new VariableDeclarator(new AstIdentifier(start, change.id), new AstIdentifier(change.temp.Start, change.temp.Name.Value)));
-
-            statements.Add(new AstVariableDeclaration(start, end, perIterationDecls, FastVariableKind.Let));
-            statements.Add(new AstExpressionStatement(update));
-
-            en = changes.GetFastEnumerator();
-            while (en.MoveNext(out var change))
-                statements.Add(new AstExpressionStatement(new AstBinaryExpression(new AstIdentifier(change.temp.Start, change.temp.Name.Value), TokenTypes.Assign, new AstIdentifier(start, change.id))));
-
-            var body = new AstBlock(start, end, statements);
-            var arrow = new AstFunctionExpression(start, end, isArrow: true, isAsync: false, generator: false, id: null, declarators: new Sequence<VariableDeclarator>(), body: body);
-            return new AstCallExpression(arrow, new Sequence<AstExpression>());
         }
 
         static IFastEnumerable<StringSpan>? CombineHoisting(
