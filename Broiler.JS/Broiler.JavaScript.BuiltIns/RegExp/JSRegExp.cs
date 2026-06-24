@@ -859,6 +859,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // short forms before the surrogate-aware class transforms run.
                 pattern = TransformUnicodePropertyEscapes(pattern, unicodeSets);
                 pattern = TransformUnicodeWordBoundaries(pattern, ignoreCase);
+                // Inline modifiers disable .NET ECMAScript mode, so `\w`/`\W` need the ECMAScript word
+                // set re-imposed (effective-ignoreCase aware). Only needed when modifiers are present —
+                // a plain /u pattern keeps ECMAScript mode and its ASCII `\w`. Runs before the
+                // surrogate-aware `\W` expansion below so each `\w`/`\W` is rewritten exactly once.
+                if (hasInlineModifiers)
+                    pattern = TransformUnicodeWordClassEscapes(pattern, ignoreCase);
                 pattern = TransformUnicodeDot(pattern, dotAll);
                 // Transform character class escapes (\S, \W, \D) outside character
                 // classes so they also match supplementary-plane code points (surrogate pairs).
@@ -1954,6 +1960,85 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 {
                     // Any other group (capture, (?:\u2026), (?=\u2026), (?<name>\u2026), \u2026) leaves the
                     // flags unchanged; mirror the current scope so its ')' pops a balanced entry.
+                    ignoreCaseStack.Push(ignoreCaseStack.Peek());
+                }
+                continue;
+            }
+
+            if (c == ')' && ignoreCaseStack.Count > 1)
+                ignoreCaseStack.Pop();
+        }
+
+        if (sb == null)
+            return pattern;
+
+        sb.Append(pattern, start, pattern.Length - start);
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// An inline modifier group `(?i:…)` / `(?-i:…)` forces the whole pattern out of .NET's ECMAScript
+    /// mode, so `\w` / `\W` revert to .NET's broad Unicode word set instead of the ECMAScript one. In
+    /// Unicode mode re-impose the ECMAScript word set — ASCII `[A-Za-z0-9_]`, extended with U+017F (ſ)
+    /// and U+212A (K) only where the EFFECTIVE ignoreCase is on — tracking the (?i:…)/(?-i:…) scopes so
+    /// each `\w`/`\W` uses the flag in effect at its position (test262
+    /// regexp-modifiers/{add,remove}-ignoreCase-affects-slash-{lower,upper}-w). `\W` keeps matching a
+    /// surrogate pair (an astral code point is a non-word character).
+    /// </summary>
+    private static string TransformUnicodeWordClassEscapes(string pattern, bool ignoreCase)
+    {
+        if (string.IsNullOrEmpty(pattern))
+            return pattern;
+
+        static string Word(bool ic, bool negated)
+        {
+            var chars = ic ? @"A-Za-z0-9_ſK" : "A-Za-z0-9_";
+            return negated ? $@"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^{chars}])" : $"[{chars}]";
+        }
+
+        StringBuilder sb = null;
+        int start = 0;
+        bool inClass = false;
+        var ignoreCaseStack = new System.Collections.Generic.Stack<bool>();
+        ignoreCaseStack.Push(ignoreCase);
+
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+
+            // Skip an escaped pair first (in and out of classes) so `\]` cannot mis-close a class and a
+            // class-internal `\w` is left to the class transforms; only an out-of-class `\w`/`\W` is rewritten.
+            if (c == '\\' && i + 1 < pattern.Length)
+            {
+                var next = pattern[i + 1];
+                if (!inClass && (next == 'w' || next == 'W'))
+                {
+                    sb ??= new StringBuilder(pattern.Length + 64);
+                    sb.Append(pattern, start, i - start);
+                    sb.Append(Word(ignoreCaseStack.Peek(), negated: next == 'W'));
+                    start = i + 2;
+                }
+
+                i++;
+                continue;
+            }
+
+            if (c == '[' && !inClass) { inClass = true; continue; }
+            if (c == ']' && inClass) { inClass = false; continue; }
+            if (inClass) continue;
+
+            if (c == '(')
+            {
+                if (TryParseInlineModifierGroup(pattern, i, out var groupLength, out var addFlags, out var removeFlags))
+                {
+                    var ic = ignoreCaseStack.Peek();
+                    if (addFlags.Contains('i')) ic = true;
+                    if (removeFlags.Contains('i')) ic = false;
+                    ignoreCaseStack.Push(ic);
+                    i += groupLength - 1;
+                }
+                else
+                {
                     ignoreCaseStack.Push(ignoreCaseStack.Peek());
                 }
                 continue;
