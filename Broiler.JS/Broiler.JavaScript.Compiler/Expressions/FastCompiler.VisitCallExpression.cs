@@ -91,8 +91,19 @@ partial class FastCompiler
             && callee is AstIdentifier identifier
             && identifier.Name.Equals("eval"))
         {
-            if (TryGetStaticIdentifierVariable(identifier, out var evalVariable) && evalVariable != null)
-                goto skipDirectEval;
+            // `eval(...)` is a *direct* eval candidate whenever the callee is the
+            // IdentifierReference "eval" — regardless of whether that name resolves to a
+            // local binding (a parameter, `var eval = …`, or a `with`-object property) or
+            // the global. Whether it is actually a direct eval is decided at RUNTIME by
+            // DirectEvalSupport.Execute, which compares the resolved callee to %eval% and
+            // falls back to an ordinary call when it differs. So a shadowed `eval` that
+            // still holds the real %eval% (test262 sm/global/eval-02 directArg/directVar)
+            // must run as a direct eval, evaluating its source in the caller's scope —
+            // hence resolve the callee through the static binding when there is one rather
+            // than skipping the direct-eval path entirely.
+            BExpression evalCallee = (TryGetStaticIdentifierVariable(identifier, out var evalVariable) && evalVariable != null)
+                ? evalVariable.Expression
+                : JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name));
 
             var paramArray = VisitArguments(null, arguments);
             var lexicalBindings = CaptureDirectEvalLexicalBindings();
@@ -170,10 +181,8 @@ partial class FastCompiler
             // value so a nested eval inherits it.
             var directEvalNewTarget = scope.Top.NewTargetExpression
                 ?? (isDirectEvalCompilation ? JSContextBuilder.DirectEvalNewTarget : JSContextBuilder.NewTarget());
-            return BExpression.Call(null, DirectEvalMethod, paramArray, JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)), thisArg, activationOwner, BExpression.Constant(IsStrictMode), BExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, shadowedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, BExpression.Constant(allowSuperProperty), BExpression.Constant(allowSuperCall), BExpression.Constant(useActivationBinding), superValue, BExpression.Constant(inMemberInitializer), BExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding, evalVarEnvNames, directEvalNewTarget);
+            return BExpression.Call(null, DirectEvalMethod, paramArray, evalCallee, thisArg, activationOwner, BExpression.Constant(IsStrictMode), BExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, shadowedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, BExpression.Constant(allowSuperProperty), BExpression.Constant(allowSuperCall), BExpression.Constant(useActivationBinding), superValue, BExpression.Constant(inMemberInitializer), BExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding, evalVarEnvNames, directEvalNewTarget);
         }
-
-    skipDirectEval:
 
         // A parenthesized optional chain closes the chain at the parens (per spec ECMAScript
         // §13.3.5 Optional Chains), but the inner MemberExpression still carries a Reference

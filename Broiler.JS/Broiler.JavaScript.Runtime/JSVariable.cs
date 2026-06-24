@@ -140,6 +140,7 @@ public class JSVariable
 
     private JSValue _value;
     private bool _isInitialized = true;
+    private bool _deleted;
 
     /// <summary>
     /// Whether this binding has been initialized. A binding in its temporal dead
@@ -148,15 +149,33 @@ public class JSVariable
     /// </summary>
     internal bool IsInitialized => _isInitialized;
 
+    /// <summary>
+    /// Tears down a binding that <c>delete</c> has removed from its (function) variable
+    /// environment. A reference still holding this binding object — e.g. a closure created
+    /// inside the same direct eval (<c>eval('delete x; cb=()=>x; var x;')</c>) — must then
+    /// throw a ReferenceError, matching EvalDeclarationInstantiation's deletable
+    /// (CreateMutableBinding(name, true)) local bindings. Reuses the uninitialized state so
+    /// the hot <see cref="Value"/> read stays a single branch.
+    /// </summary>
+    public void MarkDeleted() => _deleted = true;
+
     private string ReferenceErrorMessage
-        => Name.IsEmpty ? "Cannot access variable before initialization" : $"Cannot access '{Name.Value}' before initialization";
+        => _deleted
+            ? (Name.IsEmpty ? "variable is not defined" : $"{Name.Value} is not defined")
+            : (Name.IsEmpty ? "Cannot access variable before initialization" : $"Cannot access '{Name.Value}' before initialization");
 
     public JSValue Value
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            if (!_isInitialized)
+            // A deleted binding (delete removed it from its variable environment) and an
+            // uninitialized one (TDZ) both make a READ throw a ReferenceError. Writes are not
+            // blocked by deletion: a hoisted FunctionDeclaration's redundant value re-assignment
+            // at its textual position would otherwise crash after `delete f`; the binding simply
+            // stays deleted so later reads through it keep throwing (test262 eval-code/direct/
+            // var-env-func-init-local-new-delete).
+            if (!_isInitialized || _deleted)
                 throw (NewReferenceErrorFactory ?? throw new InvalidOperationException("JSVariable.NewReferenceErrorFactory delegate is not initialized. Ensure the Engine assembly module initializer has run."))
                     (ReferenceErrorMessage);
 

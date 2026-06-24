@@ -111,12 +111,16 @@ partial class FastCompiler
                     localVariable.IsDeletable = !IsStrictMode && isDirectEvalProgramScope;
                     if (usesDirectEvalLocalVarEnvironment && !IsStrictMode)
                     {
-                        var currentValue = JSContextBuilder.Index(KeyOfName(v));
-                        // Reuse an existing activation binding (e.g. a parameter-eval
-                        // shadow) as the storage so assignments inside the eval body
-                        // reach the same binding the surrounding closures capture;
-                        // GetOrCreate registers a freshly created binding itself.
-                        localVariable.SetInit(JSContextBuilder.GetOrCreateDirectEvalLocalBinding(KeyOfName(v), currentValue));
+                        // EvalDeclarationInstantiation initializes a NEWLY created var binding to
+                        // `undefined` (CreateMutableBinding + InitializeBinding(undefined)). When the
+                        // name instead reuses an existing var-env binding (a parameter or a pre-existing
+                        // var, e.g. `(function(f){ eval("init=f;…") })`), GetOrCreate returns that binding
+                        // and ignores this seed — so the seed must be `undefined`, never an eager read of
+                        // the current value. Reading the current value here wrongly seeded a fresh local
+                        // that shadows an enclosing/global `var X` with the outer value instead of
+                        // undefined (test262 sm/misc/line-paragraph-separator: `eval('var hidden …')`
+                        // must leave `hidden` undefined even though an outer `var hidden = 17` exists).
+                        localVariable.SetInit(JSContextBuilder.GetOrCreateDirectEvalLocalBinding(KeyOfName(v), JSUndefinedBuilder.Value));
                     }
                     continue;
                 }

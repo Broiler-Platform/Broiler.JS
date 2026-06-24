@@ -100,7 +100,8 @@ public class Issue826RoundOptionOrderTests
                 "get options.relativeTo",
                 "get options.relativeTo.calendar",
                 "get options.relativeTo.day", "get options.relativeTo.day.valueOf", "call options.relativeTo.day.valueOf",
-                "get options.relativeTo.era", "get options.relativeTo.eraYear",
+                // era / eraYear are NOT calendar fields for the iso8601 calendar, so they are not read
+                // (PrepareCalendarFields; test262 Duration/prototype/round/order-of-operations).
                 "get options.relativeTo.hour", "get options.relativeTo.microsecond", "get options.relativeTo.millisecond",
                 "get options.relativeTo.minute",
                 "get options.relativeTo.month", "get options.relativeTo.month.valueOf", "call options.relativeTo.month.valueOf",
@@ -128,7 +129,8 @@ public class Issue826RoundOptionOrderTests
                 "get options.relativeTo",
                 "get options.relativeTo.calendar",
                 "get options.relativeTo.day", "get options.relativeTo.day.valueOf", "call options.relativeTo.day.valueOf",
-                "get options.relativeTo.era", "get options.relativeTo.eraYear",
+                // era / eraYear are NOT calendar fields for the iso8601 calendar, so they are not read
+                // (PrepareCalendarFields; test262 Duration/prototype/round/order-of-operations).
                 "get options.relativeTo.hour", "get options.relativeTo.hour.valueOf", "call options.relativeTo.hour.valueOf",
                 "get options.relativeTo.microsecond", "get options.relativeTo.microsecond.valueOf", "call options.relativeTo.microsecond.valueOf",
                 "get options.relativeTo.millisecond", "get options.relativeTo.millisecond.valueOf", "call options.relativeTo.millisecond.valueOf",

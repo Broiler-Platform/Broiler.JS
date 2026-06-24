@@ -91,9 +91,11 @@ public partial class JSTemporalZonedDateTime
         }
 
         // A time unit: the whole elapsed nanoseconds (date part is zero for a time-unit largestUnit)
-        // divided by the unit length.
+        // divided by the unit length. Round the EXACT rational once (RatioToDouble) rather than
+        // converting both operands to double and dividing, which rounds twice and can be one ULP off
+        // (test262 Duration/prototype/total/relativeto-total-of-each-unit "hours"/"minutes").
         var totalNs = diff.Time + (BigInteger)diff.Days * NanosecondsPerDay;
-        return (double)totalNs / TimeUnitNs(unit);
+        return JSTemporalDuration.RatioToDouble(totalNs, TimeUnitNs(unit));
     }
 
     // The signed difference between two instants in this zone as an InternalDuration. For a time-unit
@@ -309,6 +311,17 @@ public partial class JSTemporalZonedDateTime
         // time amount so a time-unit largestUnit reports e.g. 24 hours, not 1 day
         // (#818 Problem 9).
         var didRoundBeyondDay = beyond.Sign == sign;
+
+        // The next-day boundary used to measure the day length is the result of
+        // AddDaysToZonedDateTime and must be a representable instant whenever it actually contributes
+        // to the result: when rounding TO days (largestUnit "day", the day length is the output unit)
+        // or when the rounded time rolls across the boundary into the next day. A relativeTo within
+        // one day of the maximum instant then pushes this boundary past nsMaxInstant — a RangeError
+        // (test262 round/next-day-out-of-range). A larger largestUnit whose time does not roll over
+        // (e.g. rounding an empty duration with largestUnit "years" relative to the max date) never
+        // consumes the boundary and must NOT throw (test262 round/relativeto-date-limits).
+        if ((largestUnit == "day" || didRoundBeyondDay) && !IsValid(endEpochNs))
+            throw JSEngine.NewRangeError("Temporal.Duration: day boundary is out of range");
 
         long dayDelta;
         BigInteger nudgedEpochNs, roundedFinal;
