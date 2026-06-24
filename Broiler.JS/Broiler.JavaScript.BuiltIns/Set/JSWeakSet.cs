@@ -16,6 +16,11 @@ public partial class JSWeakSet : JSObject
 {
     private StringMap<WeakReference<WeakValue>> index;
 
+    // The index holds each WeakValue only weakly; a ConditionalWeakTable keyed by the element keeps
+    // it alive for exactly as long as the element is reachable, so a `has` does not spuriously miss a
+    // live member after a GC. See the matching note in JSWeakMap.
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSValue, WeakValue> anchor = new();
+
     public JSWeakSet(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
         var iterable = a.Get1();
@@ -54,8 +59,12 @@ public partial class JSWeakSet : JSObject
         HashedString key = value.ToUniqueID();
         lock (this)
         {
-            if (!index.TryGetValue(key, out var w))
-                index.Put(key) = new(new (key, value, Unregister));
+            if (!index.TryGetValue(key, out var w) || !w.TryGetTarget(out _))
+            {
+                var weakValue = new WeakValue(key, value, Unregister);
+                index.Put(key) = new(weakValue);
+                anchor.AddOrUpdate(value, weakValue);
+            }
         }
 
         // WeakSet.prototype.add returns the WeakSet itself (not the value) so
@@ -68,13 +77,15 @@ public partial class JSWeakSet : JSObject
     [JSExport("delete")]
     public JSValue Delete(in Arguments a)
     {
-        var key = a.Get1().ToUniqueID();
+        var keyValue = a.Get1();
+        var key = keyValue.ToUniqueID();
         lock (this)
         {
             if (index.TryRemove(key, out var w))
             {
                 if (w.TryGetTarget(out var target))
                     GC.SuppressFinalize(target);
+                anchor.Remove(keyValue);
 
                 return JSBoolean.True;
             }

@@ -28,6 +28,16 @@ public partial class JSWeakMap: JSObject
 {
     private StringMap<WeakReference<WeakValue>> index;
 
+    // The index references each WeakValue only WEAKLY, so without a separate owner the WeakValue
+    // (and thus the mapped value) would be collected on the next GC even while the key is still
+    // strongly reachable — making `has`/`get` spuriously miss live keys (test262
+    // TypedArray/sort_large_countingsort, which relies on a WeakMap surviving a GC-provoking sort).
+    // A ConditionalWeakTable keyed by the key object keeps each WeakValue alive for exactly as long
+    // as its key is reachable: the entry vanishes only when the key itself is collected. Using an
+    // ephemeron table (rather than a strong reference from the key) keeps the classic
+    // value-references-key cycle collectable once the key becomes externally unreachable.
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSValue, WeakValue> anchor = new();
+
     public JSWeakMap(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
         var iterable = a.Get1();
@@ -76,7 +86,10 @@ public partial class JSWeakMap: JSObject
             if (index.TryGetValue(uk, out var existing) && existing.TryGetTarget(out var oldTarget))
                 GC.SuppressFinalize(oldTarget);
 
-            index.Put(uk) = new(new(uk, value, Unregister));
+            var weakValue = new WeakValue(uk, value, Unregister);
+            index.Put(uk) = new(weakValue);
+            // Anchor the WeakValue to the key's lifetime (replacing any prior anchor for this key).
+            anchor.AddOrUpdate(keyValue, weakValue);
         }
 
         // WeakMap.prototype.set returns the WeakMap object (Return M), enabling chaining.
@@ -88,13 +101,15 @@ public partial class JSWeakMap: JSObject
     [JSExport("delete")]
     public JSValue Delete(in Arguments a)
     {
-        var key = a.Get1().ToUniqueID();
+        var keyValue = a.Get1();
+        var key = keyValue.ToUniqueID();
         lock (this)
         {
             if (index.TryRemove(key, out var w))
             {
                 if (w.TryGetTarget(out var target))
                     GC.SuppressFinalize(target);
+                anchor.Remove(keyValue);
 
                 return JSBoolean.True;
             }
@@ -161,7 +176,9 @@ public partial class JSWeakMap: JSObject
                     return target.value;
             }
 
-            index.Put(uk) = new WeakReference<WeakValue>(new WeakValue(uk, defaultValue, Unregister));
+            var weakValue = new WeakValue(uk, defaultValue, Unregister);
+            index.Put(uk) = new WeakReference<WeakValue>(weakValue);
+            anchor.AddOrUpdate(keyVal, weakValue);
         }
 
         return defaultValue;
@@ -192,7 +209,9 @@ public partial class JSWeakMap: JSObject
             }
 
             var value = callbackfn.Call(JSUndefined.Value, keyVal);
-            index.Put(uk) = new WeakReference<WeakValue>(new WeakValue(uk, value, Unregister));
+            var weakValue = new WeakValue(uk, value, Unregister);
+            index.Put(uk) = new WeakReference<WeakValue>(weakValue);
+            anchor.AddOrUpdate(keyVal, weakValue);
             return value;
         }
     }
