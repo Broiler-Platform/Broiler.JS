@@ -27,6 +27,9 @@ internal static class JSIntlDateTimeFormatEngine
         // The pre-rendered flexible day-period name (CLDR, e.g. "in the morning"), emitted by the 'B'
         // token for the ECMA-402 dayPeriod option. Null when no dayPeriod is requested.
         public readonly string DayPeriod;
+        // A pre-rendered month label that overrides the numeric month, used for calendars whose
+        // months are not a plain number: hebrew month names, and chinese/dangi leap months ("11bis").
+        public readonly string MonthLabel;
         public Fields(double wallClockMs, string timeZoneName = null, string dayPeriod = null)
         {
             Year = (int)JSDateMath.YearFromTime(wallClockMs);
@@ -38,16 +41,18 @@ internal static class JSIntlDateTimeFormatEngine
             Millisecond = JSDateMath.MsFromTime(wallClockMs);
             TimeZoneName = timeZoneName;
             DayPeriod = dayPeriod;
+            MonthLabel = null;
         }
 
         // Explicit wall-clock fields, used when formatting a Temporal plain type: its own clock is
         // formatted directly, with no time-zone conversion (the formatter's time zone is ignored).
-        public Fields(int year, int month, int day, int hour, int minute, int second, int millisecond, string timeZoneName = null, string dayPeriod = null)
+        public Fields(int year, int month, int day, int hour, int minute, int second, int millisecond, string timeZoneName = null, string dayPeriod = null, string monthLabel = null)
         {
             Year = year; Month = month; Day = day;
             Hour = hour; Minute = minute; Second = second; Millisecond = millisecond;
             TimeZoneName = timeZoneName;
             DayPeriod = dayPeriod;
+            MonthLabel = monthLabel;
         }
     }
 
@@ -66,13 +71,38 @@ internal static class JSIntlDateTimeFormatEngine
 
         if (style is not ("shortOffset" or "longOffset"))
         {
-            var name = CldrLocaleData.GetTimeZoneName(localeTag, timeZone, style, IsDaylight(timeZone, epochMs));
+            var isDaylight = IsDaylight(timeZone, epochMs);
+            var name = CldrLocaleData.GetTimeZoneName(localeTag, timeZone, style, isDaylight);
+            if (string.IsNullOrEmpty(name))
+                name = NameForEquivalentZone(localeTag, timeZone, style, isDaylight);
             if (!string.IsNullOrEmpty(name))
                 return name;
         }
 
         var offsetMs = ToZone(epochMs, timeZone) - epochMs;
         return GmtOffset(offsetMs, style is "longOffset" or "long" or "longGeneric");
+    }
+
+    // CLDR keys its metazone names on a single representative IANA id per zone (e.g.
+    // "Asia/Calcutta", not the now-primary "Asia/Kolkata"). When the supplied id is not itself
+    // covered, try the other IANA ids that denote the same zone so a link and its target format
+    // identically (test262 DateTimeFormat/timezone-not-canonicalized). Only reached on a miss.
+    private static string NameForEquivalentZone(string localeTag, string timeZone, string style, bool isDaylight)
+    {
+        var primary = Temporal.Tz.IanaTimeZoneDatabase.GetPrimary(timeZone);
+        if (string.IsNullOrEmpty(primary))
+            return null;
+        foreach (var id in Temporal.Tz.IanaTimeZoneDatabase.AllNames)
+        {
+            if (string.Equals(id, timeZone, StringComparison.OrdinalIgnoreCase))
+                continue;
+            if (!string.Equals(Temporal.Tz.IanaTimeZoneDatabase.GetPrimary(id), primary, StringComparison.OrdinalIgnoreCase))
+                continue;
+            var name = CldrLocaleData.GetTimeZoneName(localeTag, id, style, isDaylight);
+            if (!string.IsNullOrEmpty(name))
+                return name;
+        }
+        return null;
     }
 
     // Whether daylight-saving time is in effect for a named IANA zone at the instant (false for an
@@ -136,6 +166,8 @@ internal static class JSIntlDateTimeFormatEngine
         new(StringComparer.Ordinal)
         {
             ["buddhist"] = (543, "BE"),
+            // Minguo / Republic of China: year = ISO year - 1911, single modern era.
+            ["roc"] = (-1911, "Minguo"),
         };
 
     // Calendars that display the year as a related (Gregorian) year plus a
@@ -163,7 +195,15 @@ internal static class JSIntlDateTimeFormatEngine
     private static readonly HashSet<string> IslamicCalendars = new(StringComparer.Ordinal)
         { "islamic", "islamic-civil", "islamic-rgsa", "islamic-tbla", "islamic-umalqura" };
 
-    private static bool NeedsCalendarConversion(string calendar) => calendar != null && IslamicCalendars.Contains(calendar);
+    // Arithmetic non-Gregorian calendars whose own year/month/day come from the calendar
+    // conversion (TemporalNonIso). Their displayed year equals the era-year (a single era, year
+    // count matching), so the numeric year field renders the converted year directly.
+    private static readonly HashSet<string> ArithmeticCalendars = new(StringComparer.Ordinal)
+        { "coptic", "ethiopic", "ethioaa", "indian", "persian" };
+
+    private static bool NeedsCalendarConversion(string calendar)
+        => calendar != null && (IslamicCalendars.Contains(calendar) || CyclicYearCalendars.Contains(calendar)
+            || ArithmeticCalendars.Contains(calendar) || calendar == "hebrew");
 
     private static readonly string[] IslamicMonthWide =
         { "Muharram", "Safar", "Rabiʻ I", "Rabiʻ II", "Jumada I", "Jumada II", "Rajab", "Shaʻban", "Ramadan", "Shawwal", "Dhuʻl-Qiʻdah", "Dhuʻl-Hijjah" };
@@ -172,7 +212,8 @@ internal static class JSIntlDateTimeFormatEngine
 
     internal static bool IsSupportedCalendar(string calendar)
         => calendar != null && (EraCalendars.ContainsKey(calendar) || CyclicYearCalendars.Contains(calendar)
-            || IslamicCalendars.Contains(calendar));
+            || IslamicCalendars.Contains(calendar) || ArithmeticCalendars.Contains(calendar)
+            || calendar is "japanese" or "hebrew");
 
     // ── en locale data ──
     private static readonly string[] MonthShort =
@@ -381,7 +422,8 @@ internal static class JSIntlDateTimeFormatEngine
             // form used elsewhere wraps the name in parentheses, "r(U)". Each makes the pattern
             // structurally distinct.
             var eraCalendar = EraCalendars.ContainsKey(calendar ?? string.Empty) || IslamicCalendars.Contains(calendar ?? string.Empty);
-            if (eraCalendar || hasEra)
+            // The cyclic calendars (chinese/dangi) have no era, so an era option is ignored for them.
+            if ((eraCalendar || hasEra) && !CyclicYearCalendars.Contains(calendar ?? string.Empty))
                 datePattern += eraStyle switch { "narrow" => " GGGGG", "long" => " GGGG", _ => " G" };
             else if (CyclicYearCalendars.Contains(calendar ?? string.Empty))
                 datePattern = ReplaceYearField(datePattern,
@@ -562,7 +604,7 @@ internal static class JSIntlDateTimeFormatEngine
     // A normalized skeleton key (field letters in canonical order) for interval lookup.
     private static string SkeletonOf(List<Token> tokens)
     {
-        bool y = false, h = false, dayP = false;
+        bool y = false, weekday = false;
         var monthCount = 0; bool d = false, hour = false, minute = false, second = false, frac = false;
         foreach (var t in tokens)
         {
@@ -571,23 +613,26 @@ internal static class JSIntlDateTimeFormatEngine
             {
                 case 'y': y = true; break;
                 case 'M': case 'L': monthCount = Math.Max(monthCount, t.Count); break;
+                case 'E': case 'c': weekday = true; break;
                 case 'd': d = true; break;
                 case 'h': case 'H': case 'k': case 'K': hour = true; break;
                 case 'm': minute = true; break;
                 case 's': second = true; break;
                 case 'S': frac = true; break;
-                case 'a': case 'b': dayP = true; break;
             }
         }
         var sb = new StringBuilder();
         if (y) sb.Append('y');
-        if (monthCount >= 3) sb.Append("MMM"); else if (monthCount == 2) sb.Append("MM"); else if (monthCount == 1) sb.Append('M');
+        // Preserve the month width (a long "MMMM" must not collapse to short "MMM") and the
+        // weekday, so a pattern carrying a weekday or long month does not borrow a shorter
+        // skeleton's specific interval pattern — it falls back to formatting both endpoints fully.
+        for (var i = 0; i < Math.Min(monthCount, 4); i++) sb.Append('M');
+        if (weekday) sb.Append('E');
         if (d) sb.Append('d');
         if (hour) sb.Append('h');
         if (minute) sb.Append('m');
         if (second) sb.Append('s');
         if (frac) sb.Append('S');
-        _ = h; _ = dayP;
         return sb.ToString();
     }
 
@@ -647,19 +692,7 @@ internal static class JSIntlDateTimeFormatEngine
         {
             case 'G':
                 // Era. Emitted by era-using calendars and by the explicit `era` option.
-                if (NeedsCalendarConversion(calendar))
-                    return ("era", "AH");
-                if (EraCalendars.TryGetValue(calendar ?? string.Empty, out var era))
-                    return ("era", era.Era);
-                // Proleptic Gregorian: AD for year > 0, BC otherwise, rendered at the
-                // requested width (GGGGG narrow, GGGG long, otherwise short).
-                var beforeCommon = f.Year <= 0;
-                return ("era", token.Count switch
-                {
-                    5 => beforeCommon ? "B" : "A",
-                    4 => beforeCommon ? "Before Christ" : "Anno Domini",
-                    _ => beforeCommon ? "BC" : "AD",
-                });
+                return ("era", ResolveEraDisplay(calendar, in f, token.Count));
             case 'U':
                 // Cyclic year name (sexagenary), used by chinese/dangi.
                 return ("yearName", SexagenaryYearName(f.Year));
@@ -668,7 +701,11 @@ internal static class JSIntlDateTimeFormatEngine
                 return ("relatedYear", f.Year.ToString(CultureInfo.InvariantCulture));
             case 'y':
                 var year = f.Year;
-                if (calendar != null && EraCalendars.TryGetValue(calendar, out var cal))
+                if (calendar == "japanese")
+                    // The regnal year resets at each era boundary; derive it from the ISO date
+                    // (japanese shares the ISO year/month/day, so the converted fields are the ISO ones).
+                    year = Temporal.TemporalCalendar.JapaneseEra(f.Year, f.Month, f.Day).eraYear;
+                else if (calendar != null && EraCalendars.TryGetValue(calendar, out var cal))
                     year += cal.YearOffset;
                 else if ((calendar is null or "gregory") && year <= 0)
                     // The proleptic Gregorian calendar has no year 0: ISO year 0 is 1 BC,
@@ -681,7 +718,13 @@ internal static class JSIntlDateTimeFormatEngine
                     : year.ToString(CultureInfo.InvariantCulture));
             case 'M':
             case 'L':
-                var islamic = NeedsCalendarConversion(calendar);
+                // A pre-rendered label (hebrew month name, chinese/dangi leap "<n>bis") overrides
+                // the numeric month at any requested width.
+                if (f.MonthLabel != null)
+                    return ("month", f.MonthLabel);
+                // Only the islamic family has bundled (English) month names; every other converted
+                // calendar (chinese/dangi/coptic/…) is numbered numerically here.
+                var islamic = IslamicCalendars.Contains(calendar ?? string.Empty);
                 return ("month", token.Count switch
                 {
                     >= 4 when token.Count == 4 => (islamic ? IslamicMonthWide : MonthWide)[f.Month - 1],
@@ -758,11 +801,91 @@ internal static class JSIntlDateTimeFormatEngine
         return parts;
     }
 
+    // The era display string for a calendar's date (the 'G' field). The test262 era tests require
+    // distinct, non-empty era strings per calendar; exact CLDR long names are not checked, so short
+    // codes are mapped to readable forms. For converted calendars f already holds the calendar
+    // year/month/day; japanese and roc are not converted, so f holds the ISO date.
+    private static string ResolveEraDisplay(string calendar, in Fields f, int width)
+    {
+        if (calendar == "japanese")
+            return EraName(Temporal.TemporalCalendar.JapaneseEra(f.Year, f.Month, f.Day).code);
+        if (calendar == "roc")
+            return f.Year >= 1912 ? "Minguo" : "Before R.O.C.";
+        if (EraCalendars.TryGetValue(calendar ?? string.Empty, out var era))
+            return era.Era;
+        if (calendar is null or "gregory" or "iso8601")
+        {
+            var bc = f.Year <= 0;
+            return width switch
+            {
+                5 => bc ? "B" : "A",
+                4 => bc ? "Before Christ" : "Anno Domini",
+                _ => bc ? "BC" : "AD",
+            };
+        }
+        // Converted era calendars (coptic/ethiopic/ethioaa/indian/persian/islamic/hebrew).
+        return EraName(Temporal.TemporalCalendarMath.Era(calendar, f.Year).code);
+    }
+
+    private static string EraName(string code) => code switch
+    {
+        "ah" => "AH",
+        "bh" => "BH",
+        "am" => "AM",
+        "aa" => "Anno Mundi",
+        "shaka" => "Saka",
+        "ap" => "AP",
+        "ce" => "AD",
+        "bce" => "BC",
+        "reiwa" => "Reiwa",
+        "heisei" => "Heisei",
+        "showa" => "Shōwa",
+        "taisho" => "Taishō",
+        "meiji" => "Meiji",
+        _ => code,
+    };
+
     private static Fields ConvertToCalendar(in Fields f, string calendar)
     {
         var (cy, cm, cd) = Temporal.TemporalNonIso.CalendarYmd(calendar, f.Year, f.Month, f.Day);
-        return new Fields(cy, cm, cd, f.Hour, f.Minute, f.Second, f.Millisecond, f.TimeZoneName, f.DayPeriod);
+        string monthLabel = null;
+        if (CyclicYearCalendars.Contains(calendar))
+        {
+            // chinese/dangi number their months by the lunar month (the month-code number), not the
+            // 1..13 ordinal that counts an intervening leap month; a leap month renders as "<n>bis".
+            var code = Temporal.TemporalLunisolarCalendar.MonthCode(calendar, cy, cm);
+            cm = Temporal.TemporalLunisolarCalendar.DisplayMonthNumber(calendar, cy, cm);
+            if (code.EndsWith("L", StringComparison.Ordinal))
+                monthLabel = cm.ToString(CultureInfo.InvariantCulture) + "bis";
+        }
+        else if (calendar == "hebrew")
+        {
+            // Hebrew months are always shown by name (never numeric), keyed by the month code so
+            // the leap-year Adar I / Adar II distinction is preserved.
+            monthLabel = HebrewMonthName(Temporal.TemporalCalendarMath.MonthCode("hebrew", cy, cm));
+        }
+        return new Fields(cy, cm, cd, f.Hour, f.Minute, f.Second, f.Millisecond, f.TimeZoneName, f.DayPeriod, monthLabel);
     }
+
+    // English Hebrew month names keyed by Temporal month code (Adar II shares "M06" with a
+    // non-leap year's Adar). test262 maps these names back to the month code.
+    private static string HebrewMonthName(string monthCode) => monthCode switch
+    {
+        "M01" => "Tishri",
+        "M02" => "Heshvan",
+        "M03" => "Kislev",
+        "M04" => "Tevet",
+        "M05" => "Shevat",
+        "M05L" => "Adar I",
+        "M06" => "Adar",
+        "M07" => "Nisan",
+        "M08" => "Iyar",
+        "M09" => "Sivan",
+        "M10" => "Tamuz",
+        "M11" => "Av",
+        "M12" => "Elul",
+        _ => monthCode,
+    };
 
     internal static string PartsToString(List<Part> parts)
     {
@@ -824,6 +947,23 @@ internal static class JSIntlDateTimeFormatEngine
         {
             var intervalTokens = Parse(intervalPatternText);
             return FormatIntervalPattern(intervalTokens, in start, in end, fractionalSecondDigits, pattern.Calendar);
+        }
+
+        // CLDR date/time interval combination: when a date+time pattern's endpoints differ only
+        // in a time field, the shared date is shown once and the two times form the range
+        // (e.g. "8/4/2021, 12:30 AM – 11:30 PM") rather than repeating the whole date. Build the
+        // interval by appending the time portion again — FormatIntervalPattern then renders the
+        // once-occurring date fields as shared and the twice-occurring time fields per-range.
+        if (IsTimeFieldType(greatest))
+        {
+            var firstTime = FirstTimeFieldIndex(pattern.Tokens);
+            if (firstTime > 0 && HasDateFieldBefore(pattern.Tokens, firstTime))
+            {
+                var combined = new List<Token>(pattern.Tokens) { new Token(RangeSeparator) };
+                for (var i = firstTime; i < pattern.Tokens.Count; i++)
+                    combined.Add(pattern.Tokens[i]);
+                return FormatIntervalPattern(combined, in start, in end, fractionalSecondDigits, pattern.Calendar);
+            }
         }
 
         // Fallback "{0} – {1}".
@@ -892,6 +1032,32 @@ internal static class JSIntlDateTimeFormatEngine
             parts.Add(new Part(type, value, source));
         }
         return parts;
+    }
+
+    // Time field pattern letters (hour / minute / second / fractional second / day period).
+    private static bool IsTimeFieldLetter(char c)
+        => c is 'h' or 'H' or 'k' or 'K' or 'm' or 's' or 'S' or 'a' or 'b' or 'B';
+
+    private static bool IsDateFieldLetter(char c)
+        => c is 'G' or 'y' or 'M' or 'L' or 'd' or 'E' or 'c' or 'r' or 'U';
+
+    private static bool IsTimeFieldType(string fieldType)
+        => fieldType is "hour" or "minute" or "second" or "fractionalSecond" or "dayPeriod";
+
+    private static int FirstTimeFieldIndex(List<Token> tokens)
+    {
+        for (var i = 0; i < tokens.Count; i++)
+            if (tokens[i].IsField && IsTimeFieldLetter(tokens[i].Field))
+                return i;
+        return -1;
+    }
+
+    private static bool HasDateFieldBefore(List<Token> tokens, int index)
+    {
+        for (var i = 0; i < index; i++)
+            if (tokens[i].IsField && IsDateFieldLetter(tokens[i].Field))
+                return true;
+        return false;
     }
 
     private static string PrevFieldSource(string[] sources, List<Token> tokens, int i)

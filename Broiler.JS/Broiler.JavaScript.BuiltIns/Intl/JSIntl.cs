@@ -1354,10 +1354,10 @@ public static class JSIntl
     // unchanged.
     private static readonly Dictionary<string, string> SingleVariantAliases = new(StringComparer.Ordinal)
     {
-        ["heploc"] = "alalc97",
-        ["hepburn"] = "alalc97",  // CLDR groups the hepburn/heploc pair onto alalc97; after
-                                  // both subtags map to alalc97 the duplicate is folded away
-                                  // by the dedup pass below.
+        ["heploc"] = "alalc97",  // CLDR variantAlias maps "heploc" → "alalc97". A lone
+                                 // "hepburn" (Hepburn romanization) is a valid variant and is
+                                 // NOT aliased; only the "hepburn-heploc" sequence collapses to
+                                 // "alalc97" (handled in CanonicalizeMainTagVariants).
         ["polytoni"] = "polyton",
         ["arevela"] = null,  // dropped (no replacement); the language subtag handles it
         ["arevmda"] = null,
@@ -1394,9 +1394,16 @@ public static class JSIntl
         var language = parts[0];
         var variants = new List<string>(i - variantStart);
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        var rawVariants = new HashSet<string>(StringComparer.Ordinal);
+        for (var j = variantStart; j < i; j++) rawVariants.Add(parts[j]);
         for (var j = variantStart; j < i; j++)
         {
             var v = parts[j];
+            // "hepburn-heploc": heploc -> alalc97 supersedes the hepburn prefix, so the pair
+            // collapses to the single "alalc97". Drop "hepburn" only when "heploc" is also
+            // present; a lone "hepburn" is preserved.
+            if (v == "hepburn" && rawVariants.Contains("heploc"))
+                continue;
             if (LanguageVariantAliases.TryGetValue(parts[0] + "-" + v, out var languageReplacement))
             {
                 language = languageReplacement;
@@ -1605,33 +1612,34 @@ public static class JSIntl
         ["cnr"] = ("sr", null, "ME"),
     };
 
-    // Region replacements selected by the tag's script subtag (CLDR territoryAlias "overlong"
-    // entries with a multi-region replacement list). When the script matches an entry here the
-    // mapped region wins; otherwise the SimpleRegionAliases default applies. Only the entries
-    // a test262 case actually exercises are listed.
-    private static readonly Dictionary<string, Dictionary<string, string>> ScriptConditionalRegionAliases =
-        new(StringComparer.Ordinal)
+    // CLDR territoryAlias entries whose replacement is a LIST of regions (the deprecated code
+    // spans several successor territories). The actual replacement is chosen by likely subtags
+    // (UTS #35 §3.2.1): take the most likely region for the tag's (language, script) — ignoring
+    // the source region — and use it when it is in the list, otherwise the first list entry.
+    private static readonly string[] SovietUnionSuccessors =
+        { "RU", "AM", "AZ", "BY", "EE", "GE", "KZ", "KG", "LV", "LT", "MD", "TJ", "TM", "UA", "UZ" };
+
+    private static readonly Dictionary<string, string[]> MultiRegionAliases = new(StringComparer.Ordinal)
     {
-        // SU (Soviet Union) defaults to RU, but with Armenian script Armn → AM (Armenia).
-        ["SU"] = new(StringComparer.Ordinal) { ["Armn"] = "AM" },
+        // SU / 810 (Soviet Union) and CS (Serbia and Montenegro) and NT (Neutral Zone).
+        ["SU"] = SovietUnionSuccessors,
+        ["810"] = SovietUnionSuccessors,
+        ["CS"] = new[] { "RS", "ME" },
+        ["NT"] = new[] { "SA", "IQ" },
     };
 
     // Bcp47 region subtag aliases (CLDR supplemental territoryAlias) whose deprecated code
-    // maps to a single preferred region. "Overlong" aliases whose replacement is a list (e.g.
-    // "SU" → "RU AM AZ ..." that selects by likely-subtags) use the first list entry as the
-    // default; the ScriptConditionalRegionAliases table above overrides this default for the
-    // explicit script combinations test262 covers.
+    // maps to a single preferred region. Multi-region "overlong" aliases (SU, CS, NT, …) are
+    // resolved by MultiRegionAliases above, which is consulted first.
     private static readonly Dictionary<string, string> SimpleRegionAliases = new(StringComparer.Ordinal)
     {
         ["BU"] = "MM",
-        ["CS"] = "RS",
         ["DD"] = "DE",
         ["DY"] = "BJ",
         ["FX"] = "FR",
         ["HV"] = "BF",
         ["NH"] = "VU",
         ["RH"] = "ZW",
-        ["SU"] = "RU",
         ["TP"] = "TL",
         ["UK"] = "GB",
         ["VD"] = "VN",
@@ -1730,25 +1738,38 @@ public static class JSIntl
         {
             var region = subtags[regionIndex];
             var isAlphaRegion = region.Length == 2 && IsAllAlpha(region);
-            if (isAlphaRegion)
+            var isNumericRegion = region.Length == 3 && IsAllDigitTag(region);
+            if (isAlphaRegion || isNumericRegion)
             {
-                // A script-conditional override (e.g. SU + Armn → AM) wins over the
-                // default alias (SU → RU); fall back to the simple table otherwise.
-                if (hasScript
-                    && ScriptConditionalRegionAliases.TryGetValue(region, out var byScript)
-                    && byScript.TryGetValue(subtags[1], out var conditional))
-                    subtags[regionIndex] = conditional;
-                else if (SimpleRegionAliases.TryGetValue(region, out var aliased))
+                // Multi-region aliases (SU/810/CS/NT) select among their successors by the
+                // likely region of the (language, script); single-region aliases substitute
+                // directly.
+                if (MultiRegionAliases.TryGetValue(region, out var choices))
+                    subtags[regionIndex] = SelectRegionByLikelySubtags(choices, subtags[0], hasScript ? subtags[1] : "");
+                else if (isAlphaRegion && SimpleRegionAliases.TryGetValue(region, out var aliased))
                     subtags[regionIndex] = aliased;
-            }
-            else if (region.Length == 3 && IsAllDigitTag(region)
-                && NumericRegionAliases.TryGetValue(region, out var numericAliased))
-            {
-                subtags[regionIndex] = numericAliased;
+                else if (isNumericRegion && NumericRegionAliases.TryGetValue(region, out var numericAliased))
+                    subtags[regionIndex] = numericAliased;
             }
         }
 
         return string.Join("-", subtags);
+    }
+
+    // UTS #35 §3.2.1 multi-region territoryAlias resolution: the most likely region for the
+    // (language, script) pair — computed WITHOUT the source region — wins when it is one of the
+    // candidate replacements, otherwise the first candidate is used.
+    private static string SelectRegionByLikelySubtags(string[] choices, string language, string script)
+    {
+        var likely = CldrLikelySubtags.Maximize(language, script ?? string.Empty, string.Empty);
+        if (likely != null)
+        {
+            var likelyRegion = likely.Value.region;
+            foreach (var candidate in choices)
+                if (string.Equals(candidate, likelyRegion, StringComparison.Ordinal))
+                    return candidate;
+        }
+        return choices[0];
     }
 
     // Returns a copy of <paramref name="subtags"/> with <paramref name="value"/> inserted at
@@ -4578,7 +4599,21 @@ public sealed class JSIntlPluralRules : JSObject
     // rules generated from cldr-json (UnicodeCldr.LocaleData). Non-finite numbers,
     // and locales with no rules, resolve to "other".
     public string SelectCategory(double n)
-        => CldrLocaleData.SelectPlural(locale, type, n);
+        => CldrLocaleData.SelectPlural(locale, type, n, exponent: CompactExponent(n));
+
+    // The c/e plural operand: the compact-notation exponent of the number (0 for every other
+    // notation). CLDR short/long compact buckets step in powers of one thousand (K=10³,
+    // M=10⁶, …); a magnitude below 1000 has exponent 0.
+    private int CompactExponent(double n)
+    {
+        if (notation != "compact")
+            return 0;
+        var abs = System.Math.Abs(n);
+        if (!(abs >= 1000) || !double.IsFinite(abs))
+            return 0;
+        var e = 3 * (int)System.Math.Floor(System.Math.Log10(abs) / 3);
+        return System.Math.Min(e, 14);
+    }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
@@ -5982,8 +6017,11 @@ public class JSIntlCollator : JSObject
             numeric = kn == "true";
         if (TryGetUnicodeExtension(locale, "kf", out var kf) && (kf == "upper" || kf == "lower" || kf == "false"))
             caseFirst = kf;
-        if (TryGetUnicodeExtension(locale, "co", out var co) && JSIntl.CanonicalizeCollation(co) is { } tagCo)
-            collation = tagCo;
+        // The locale's -u-co- value (canonicalized; null when absent/unrecognized) is a
+        // candidate collation, resolved against the locale's available collations below.
+        var extensionCollation = TryGetUnicodeExtension(locale, "co", out var co) && JSIntl.CanonicalizeCollation(co) is { } tagCo
+            ? tagCo
+            : null;
 
         // usage / sensitivity / caseFirst are constrained string options: a provided value outside
         // the allowed set is a RangeError (ECMA-402 GetOption), so route them through the shared
@@ -5993,15 +6031,18 @@ public class JSIntlCollator : JSObject
         sensitivity = JSIntl.GetOption(options, KeyStrings.GetOrCreate("sensitivity"), ["base", "accent", "case", "variant"], false, sensitivity);
         if (TryGetOwnOption(options, "ignorePunctuation", out var ignorePunctuationValue))
             ignorePunctuation = ignorePunctuationValue.BooleanValue;
+        else
+            ignorePunctuation = LocaleDefaultIgnorePunctuation(locale);
         var numericPresent = TryGetOwnOption(options, "numeric", out var numericValue);
         if (numericPresent)
             numeric = numericValue.BooleanValue;
         var caseFirstKey = KeyStrings.GetOrCreate("caseFirst");
         var caseFirstPresent = options != null && options[caseFirstKey] is { IsUndefined: false };
         caseFirst = JSIntl.GetOption(options, caseFirstKey, ["upper", "lower", "false"], false, caseFirst);
-        if (TryGetOwnOption(options, "collation", out var collationValue)
-            && JSIntl.CanonicalizeCollation(collationValue.StringValue) is { } optCo)
-            collation = optCo;
+        var optionCollation = TryGetOwnOption(options, "collation", out var collationValue)
+            && JSIntl.CanonicalizeCollation(collationValue.StringValue) is { } optCo
+            ? optCo
+            : null;
 
         // ResolveLocale: keep the -u-kn / -u-kf keyword in the resolved locale only when the option
         // matches the extension value (an absent option keeps it; a differing option drops it). The
@@ -6015,9 +6056,24 @@ public class JSIntlCollator : JSObject
         if (caseFirstPresent)
             locale = JSIntl.ReflectExtensionKeyword(locale, "kf", caseFirst, JSIntl.GetUnicodeExtensionType(locale, "kf"));
 
-        // A reserved ("standard"/"search") or unsupported -u-co- value is not a real collation, so it
-        // is dropped from the resolved locale (test262 Collator/ignore-invalid-unicode-ext-values).
-        if (TryGetUnicodeExtension(locale, "co", out var coExt) && JSIntl.CanonicalizeCollation(coExt) == null)
+        // ResolveLocale over the "co" key (UTS #35): the locale's -u-co- value is used when it is
+        // available for the locale; an available collation option overrides it, and when the option
+        // value differs from the extension value the -u-co- is dropped from the resolved locale.
+        // The resolved -u-co- is reflected only when the chosen value came from the locale extension.
+        var bareLocale = StripUnicodeExtension(locale);
+        var fromExtension = false;
+        if (extensionCollation != null && IsCollationAvailableForLocale(bareLocale, extensionCollation))
+        {
+            collation = extensionCollation;
+            fromExtension = true;
+        }
+        if (optionCollation != null && optionCollation != collation
+            && IsCollationAvailableForLocale(bareLocale, optionCollation))
+        {
+            collation = optionCollation;
+            fromExtension = false;
+        }
+        if (!fromExtension)
             locale = JSIntl.RemoveUnicodeExtensionKeyword(locale, "co");
 
         compareInfo = ResolveCompareInfo(locale, collation);
@@ -6078,6 +6134,30 @@ public class JSIntlCollator : JSObject
             if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
                 return string.Join("-", parts, 0, i);
         return tag;
+    }
+
+    // Whether a (canonical, recognized) collation is available for a locale. The root
+    // collations "emoji" and "eor" are available everywhere; every other tailoring is
+    // locale-specific and recognized only where .NET exposes it (NetCollationSuffix), e.g.
+    // "phonebk" for German but not English.
+    private static bool IsCollationAvailableForLocale(string bareLocale, string collation)
+    {
+        if (string.IsNullOrEmpty(collation) || collation == "default" || collation == "standard" || collation == "search")
+            return false;
+        if (collation == "emoji" || collation == "eor")
+            return true;
+        return NetCollationSuffix(bareLocale, collation) != null;
+    }
+
+    // The locale's default ignorePunctuation. CLDR gives Thai the only root collation with
+    // alternate="shifted", so "th" defaults to true; every other locale defaults to false.
+    private static bool LocaleDefaultIgnorePunctuation(string localeTag)
+    {
+        if (string.IsNullOrEmpty(localeTag))
+            return false;
+        var dash = localeTag.IndexOf('-');
+        var language = dash < 0 ? localeTag : localeTag.Substring(0, dash);
+        return string.Equals(language, "th", StringComparison.OrdinalIgnoreCase);
     }
 
     private JSIntlCollator() : base(CurrentPrototype()) { }
