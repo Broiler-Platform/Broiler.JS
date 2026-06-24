@@ -306,11 +306,13 @@ public partial class JSTemporalZonedDateTime
         var unitNs = (BigInteger)TimeUnitNs(unit) * increment;
         var rounded = TemporalRoundingOptions.RoundToIncrement(dur.Time, unitNs, roundingMode);
         var beyond = rounded - daySpan;
-        // The rounded time crosses into the next day only when it is STRICTLY past the
-        // day length; landing exactly on the day boundary (beyond == 0) keeps it as a
-        // time amount so a time-unit largestUnit reports e.g. 24 hours, not 1 day
-        // (#818 Problem 9).
-        var didRoundBeyondDay = beyond.Sign == sign;
+        // The rounded time rolls into the next day when it reaches OR passes the day length.
+        // Reaching it exactly (beyond == 0) must still roll here: largestUnit is always a
+        // calendar unit in this branch (a time largestUnit returned early above and keeps the
+        // overflow as time per #818 P9), so a time that rounds up to a whole day has to become
+        // a day and bubble up — e.g. since/until with a calendar largestUnit and a time
+        // smallestUnit (round-cross-unit-boundary: 23:59:59.999999999 expands to 1 day → 2 years).
+        var didRoundBeyondDay = beyond.Sign == sign || beyond.IsZero;
 
         // The next-day boundary used to measure the day length is the result of
         // AddDaysToZonedDateTime and must be a representable instant whenever it actually contributes

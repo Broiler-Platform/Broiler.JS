@@ -598,7 +598,17 @@ public partial class JSTemporalDuration
                 ? JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, roundedUnits, 0, 0, 0)
                 : JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, 0, roundedUnits, 0, 0);
             var (fy, fmo, fw, fd) = JSTemporalPlainDate.DiffCalendarDate(r.isoYear, r.isoMonth, r.isoDay, ny, nm, nd, largestUnit);
-            return new JSTemporalDuration(fy, fmo, fw, fd, 0, 0, 0, 0, 0, 0, DurationPrototype);
+
+            // Re-deriving the difference to the rounded end date can re-express the rounded count
+            // with fewer large units because of the calendar's month-end clamping (spec
+            // BubbleRelativeDuration): from a Feb-29 anchor, the 12-month difference to 2021-02-28
+            // comes back out of DiffCalendarDate as 11 months 30 days. Bubble the smaller units up
+            // so a whole larger unit is restored (12 months → 1 year).
+            var endEpochDays = JSTemporalPlainDate.EpochDaysFor(ny, nm, nd);
+            var bubbleSign = endEpochDays >= JSTemporalPlainDate.EpochDaysFor(r.isoYear, r.isoMonth, r.isoDay) ? 1 : -1;
+            var (by, bmo, bw, bd) = BubbleDateDuration(
+                r, (long)fy, (long)fmo, (long)fw, (long)fd, endEpochDays, bubbleSign, largestUnit, smallestUnit);
+            return new JSTemporalDuration(by, bmo, bw, bd, 0, 0, 0, 0, 0, 0, DurationPrototype);
         }
 
         if (smallestUnit == "week")
@@ -661,6 +671,38 @@ public partial class JSTemporalDuration
         // (test262 Duration/prototype/total/relativeto-total-of-each-unit "weeks"); RatioToDouble
         // rounds the exact ratio once, matching the spec and the ZonedDateTime total path.
         return RatioToDouble(endNs - startNs, unitNs);
+    }
+
+    // Bubbles smaller calendar units up into larger ones so the date difference uses the maximal
+    // larger unit (spec BubbleRelativeDuration). `endEpochDays` is relativeTo + the rounded duration;
+    // a larger unit absorbs the smaller ones (which are then zeroed) when adding one more of it stays
+    // on the same side of the end. Units are processed from the one just above smallestUnit up to
+    // largestUnit; weeks bubble only when largestUnit is week.
+    private static (long y, long mo, long w, long d) BubbleDateDuration(
+        JSTemporalPlainDate r, long y, long mo, long w, long d,
+        long endEpochDays, int sign, string largestUnit, string smallestUnit)
+    {
+        for (var idx = UnitIndex(smallestUnit) - 1; idx >= UnitIndex(largestUnit); idx--)
+        {
+            var unit = UnitOrder[idx];
+            if (unit == "week" && largestUnit != "week") continue;
+
+            long cy = y, cmo = mo, cw = w, cd = d;
+            switch (unit)
+            {
+                case "year": cy = y + sign; cmo = 0; cw = 0; cd = 0; break;
+                case "month": cmo = mo + sign; cw = 0; cd = 0; break;
+                case "week": cw = w + sign; cd = 0; break;
+                default: continue;
+            }
+
+            var (ay, am, ad) = JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, cy, cmo, cw, cd);
+            var candEpoch = JSTemporalPlainDate.EpochDaysFor(ay, am, ad);
+            var notBeyond = sign > 0 ? candEpoch <= endEpochDays : candEpoch >= endEpochDays;
+            if (notBeyond) { y = cy; mo = cmo; w = cw; d = cd; }
+            else break;
+        }
+        return (y, mo, w, d);
     }
 
     // Rounds the (fractional) number of year/month units from relativeTo to the duration's end to a
