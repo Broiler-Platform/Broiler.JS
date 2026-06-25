@@ -1210,6 +1210,15 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         if (!GetInternalProperty(name).IsEmpty)
             return this[name];
 
+        // The global Environment Record's GetBindingValue consults the global object's
+        // [[HasProperty]] / [[Get]], which walk the prototype chain — firing a Proxy's
+        // `has` / `get` traps with the global object as the receiver. GetInternalProperty
+        // above is a structural lookup that cannot see a name a proxy prototype supplies,
+        // so probe [[HasProperty]] before reporting the name as unresolved (test262
+        // staging/sm/Proxy/global-receiver).
+        if (HasProperty(name.ToJSValue()).BooleanValue)
+            return this[name];
+
         throw JSEngine.NewReferenceError($"{name} is not defined");
     }
 
@@ -1355,7 +1364,13 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             if (strictMode)
                 throw JSEngine.NewReferenceError($"{name} is not defined");
 
-            FastAddValue(name, value, JSPropertyAttributes.EnumerableConfigurableValue);
+            // A sloppy assignment to an unresolved name is Set(globalObject, name, value,
+            // false): the global object's [[Set]] walks the prototype chain (firing a
+            // Proxy's `set` trap with the global as the receiver) and otherwise creates an
+            // own enumerable-configurable data property on the receiver — the same result
+            // FastAddValue produced for an ordinary prototype, but routed through [[Set]]
+            // so a proxy/setter in the chain intercepts it (test262 sm/Proxy/global-receiver).
+            SetValue(name, value, this, throwError: false);
             return value;
         }
 
