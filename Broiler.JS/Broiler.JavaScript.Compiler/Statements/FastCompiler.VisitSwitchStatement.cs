@@ -49,8 +49,26 @@ partial class FastCompiler
                 // it lexical would wrongly make it block its own Annex B hoisting
                 // via IsAnnexBHoistingBlocked.
                 var isLexical = lexicalBindings.Contains(name.Value);
-                var variable = switchLexicalScope.CreateVariable(name, null, true, initialize: isLexical == false);
+
+                // In a direct-eval program scope an Annex B var-hoisted case-body
+                // function must hoist to (and reuse) the eval's own var-environment
+                // binding rather than a fresh switch-scoped local — otherwise it
+                // shadows a same-named binding (e.g. a calling-function parameter)
+                // that the eval should reuse, leaving it `undefined` before the
+                // declaration runs. Mirrors the block path in VisitBlock
+                // (test262 annexB/.../func-switch-{case,dflt}-eval-func-no-skip-param).
+                var hoistToDirectEvalRoot = isDirectEvalCompilation
+                    && switchLexicalScope.Function == null
+                    && usesDirectEvalLocalVarEnvironment
+                    && !IsStrictMode
+                    && !isLexical
+                    && !IsAnnexBHoistingBlocked(name);
+                var variable = hoistToDirectEvalRoot
+                    ? GetOrCreateDirectEvalRootVariable(name)
+                    : switchLexicalScope.CreateVariable(name, null, true, initialize: isLexical == false);
                 variable.IsLexical = isLexical;
+                if (hoistToDirectEvalRoot && directEvalBindingNames != null && Array.IndexOf(directEvalBindingNames, name.Value) >= 0)
+                    variable.Expression = JSContextBuilder.Index(KeyOfName(name));
             }
         }
 
