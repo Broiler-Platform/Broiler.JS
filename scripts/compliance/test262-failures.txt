@@ -29,15 +29,12 @@ test/language/statements/continue/nested-let-bound-for-loops-outer-continue.js
 test/language/statements/continue/no-label-continue.js
 test/language/statements/continue/shadowing-loop-variable-in-same-scope-as-continue.js
 test/language/statements/continue/simple-and-labeled.js
-test/staging/decorators/public-auto-accessor.js
 test/staging/sm/Array/to-length.js
 test/staging/sm/Array/toLocaleString-01.js
 test/staging/sm/Array/unshift-01.js
 test/staging/sm/RegExp/unicode-back-reference.js
 test/staging/sm/RegExp/unicode-braced.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
-test/staging/sm/generators/return-finally.js
-test/staging/sm/global/eval-02.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
 test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
 test/staging/sm/regress/regress-610026.js
