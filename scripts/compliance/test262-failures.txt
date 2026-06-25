@@ -4,8 +4,6 @@
 
 test/annexB/built-ins/RegExp/RegExp-leading-escape-BMP.js
 test/annexB/built-ins/RegExp/RegExp-trailing-escape-BMP.js
-test/annexB/language/eval-code/direct/func-switch-case-eval-func-no-skip-param.js
-test/annexB/language/eval-code/direct/func-switch-dflt-eval-func-no-skip-param.js
 test/annexB/language/function-code/block-decl-func-skip-arguments.js
 test/built-ins/Array/prototype/reduceRight/length-near-integer-limit.js
 test/built-ins/Array/prototype/slice/S15.4.4.10_A3_T1.js
@@ -59,8 +57,6 @@ test/staging/sm/global/eval-02.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-label.js
 test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
-test/staging/sm/regress/regress-554955-2.js
-test/staging/sm/regress/regress-554955-3.js
 test/staging/sm/regress/regress-610026.js
 test/staging/sm/strict/10.6.js
 test/staging/sm/strict/15.5.5.1.js
