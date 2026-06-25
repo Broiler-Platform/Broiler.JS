@@ -52,6 +52,26 @@ TEST_FIXTURE_SUFFIX = "_FIXTURE.js"
 # empty set so the shared classification contract — also consumed by
 # audit_test262.py — stays intact.)
 UNSUPPORTED_FEATURES: set[str] = set()
+# Individual test262 files that are demonstrably incorrect AT THE PINNED SUITE REF
+# (DEFAULT_SUITE_REF) and have since been corrected upstream. These are skipped — not
+# because the feature is unsupported (it is implemented and spec-correct here), but
+# because the test itself asserts something impossible, so no conformant engine can
+# pass it at this ref. Each entry must cite the upstream fix; revisit when the pinned
+# ref is bumped past the fix (the entry then becomes dead and should be removed).
+KNOWN_INCORRECT_TESTS: dict[str, str] = {
+    # The (start, end) coercion table asserts `dest.byteLength === intLength` where
+    # intLength = end - start WITHOUT the spec's `max(final - first, 0)` clamp (step 9
+    # of ArrayBuffer.prototype.sliceToImmutable), so e.g. sliceToImmutable(1, 0) expects
+    # byteLength === -1 — impossible, and self-contradictory with the test's own
+    # `compareArray(new Uint8Array(dest), [])` (0 bytes) assertion in the same iteration.
+    # Fixed upstream by wrapping intLength in `Math.max(0, ...)` (tc39/test262; the version
+    # at HEAD clamps). Broiler returns the spec-correct 0.
+    "test/built-ins/ArrayBuffer/prototype/sliceToImmutable/argument-coercion.js": (
+        "buggy at pinned ref: asserts byteLength === end - start without the spec "
+        "max(final - first, 0) clamp (negative for start > end); fixed upstream via "
+        "Math.max(0, ...). Engine is spec-correct."
+    ),
+}
 USER_AGENT = "Broiler.JS compliance runner"
 DOWNLOAD_TIMEOUT_SECONDS = 120
 MAX_ARCHIVE_SIZE_BYTES = 256 * 1024 * 1024
@@ -319,7 +339,7 @@ class Test262Repository:
         return files
 
 
-# The metadata block is delimited by `/*---` … `---*/`, each on its own line; the line terminator
+# The metadata block is delimited by `/*---` ... `---*/`, each on its own line; the line terminator
 # after `---` and before `---*/` may be CR, CRLF, LF, LS, or PS. Match any of them so a test that uses
 # non-LF terminators (e.g. the Function.prototype.toString line-terminator-normalisation cases, whose
 # source is read with its terminators preserved) still has its metadata recognised.
@@ -658,7 +678,8 @@ def select_paths(
         expanded_paths = [
             path
             for path in candidate_paths
-            if _is_selectable(
+            if path not in KNOWN_INCORRECT_TESTS
+            and _is_selectable(
                 repo.read_text(path),
                 repo,
                 harness_dependency_cache,
@@ -726,6 +747,13 @@ def run_test(
     memory_limit_mb: int,
     include_negative: bool = False,
 ) -> dict[str, object]:
+    if path in KNOWN_INCORRECT_TESTS:
+        return {
+            "path": path,
+            "status": "skipped",
+            "reason": f"known-incorrect upstream test: {KNOWN_INCORRECT_TESTS[path]}",
+        }
+
     source = repo.read_text(path)
     metadata, body = parse_metadata(source)
 

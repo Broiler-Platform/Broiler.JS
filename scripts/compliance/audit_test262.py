@@ -8,7 +8,12 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from run_test262 import DEFAULT_SUITE_REF, Test262Repository, classify_test
+from run_test262 import (
+    DEFAULT_SUITE_REF,
+    KNOWN_INCORRECT_TESTS,
+    Test262Repository,
+    classify_test,
+)
 
 MAX_LARGEST_UNCOVERED_BUCKETS = 10
 
@@ -87,6 +92,12 @@ def build_audit_summary(
     manifest_path_set = set(manifest_expanded_paths)
     harness_dependency_cache: dict[str, bool] = {}
     for path in suite_paths:
+        # Tests that are spec-incorrect at the pinned ref (fixed upstream) are neither
+        # verifiable nor a real gap — exclude them so audit counts match the runner.
+        if path in KNOWN_INCORRECT_TESTS:
+            excluded_paths.append(path)
+            continue
+
         classification = classify_test(
             repo.read_text(path),
             repo,

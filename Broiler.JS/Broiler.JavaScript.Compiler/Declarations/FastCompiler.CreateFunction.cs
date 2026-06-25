@@ -426,6 +426,19 @@ partial class FastCompiler
                 else
                     jsFVarScope.SetPostInit(jsf);
 
+                // A top-level FunctionDeclaration in a function-local direct eval is
+                // instantiated once at eval entry: the program hoisting seeds the
+                // binding (GetOrCreateDirectEvalLocalBinding, registered on the calling
+                // frame) and the PostInit above assigns its function value before any
+                // statement runs. The textual declaration statement is therefore a
+                // runtime no-op and must NOT re-read the binding (jsFVarScope.Expression)
+                // — the binding is deletable, so a `delete f` executed before the textual
+                // site would make that read throw "f is not defined". The matching
+                // Annex B var copy-out in VisitExpressionStatement is likewise skipped.
+                // (test262 language/eval-code/direct/var-env-func-init-local-new-delete)
+                if (IsTopLevelLocalVarEnvEvalScope(previousScope))
+                    return JSUndefinedBuilder.Value;
+
                 return jsFVarScope.Expression;
             }
 
