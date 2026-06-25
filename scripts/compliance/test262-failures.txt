@@ -19,7 +19,6 @@ test/built-ins/Array/prototype/unshift/throws-if-integer-limit-exceeded.js
 test/built-ins/ArrayBuffer/prototype/sliceToImmutable/argument-coercion.js
 test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
-test/built-ins/RegExp/lookahead-quantifier-match-groups.js
 test/built-ins/RegExp/nullable-quantifier.js
 test/intl402/NumberFormat/prototype/formatRange/en-US.js
 test/intl402/NumberFormat/prototype/formatRange/pt-PT.js
@@ -43,12 +42,8 @@ test/staging/sm/Array/toLocaleString-01.js
 test/staging/sm/Array/unshift-01.js
 test/staging/sm/Function/arguments-parameter-shadowing.js
 test/staging/sm/Proxy/global-receiver.js
-test/staging/sm/RegExp/exec.js
-test/staging/sm/RegExp/ignoreCase-non-latin1-to-latin1.js
 test/staging/sm/RegExp/unicode-back-reference.js
 test/staging/sm/RegExp/unicode-braced.js
-test/staging/sm/RegExp/unicode-class-ignoreCase.js
-test/staging/sm/RegExp/unicode-ignoreCase.js
 test/staging/sm/class/newTargetEval.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
 test/staging/sm/generators/return-finally.js
