@@ -389,6 +389,13 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public IReadOnlyDictionary<AstClassProperty, BExpression> ComputedMemberNames { get; set; }
 
+    // For each public instance auto-accessor (`accessor x = v`), the class-scope
+    // variable holding its minted private backing-field key. The constructor's
+    // InitMembers installs the backing field (not a public data property) under this
+    // key, while the getter/setter pair sits on the prototype. Null when the class
+    // has no public instance auto-accessors.
+    public IReadOnlyDictionary<AstClassProperty, BExpression> AutoAccessorBackingKeys { get; set; }
+
     // Non-static private methods/accessors installed on each instance (before the
     // field initializers) by the constructor's InitMembers. Null/empty for classes
     // without instance private methods or accessors.
@@ -483,6 +490,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         RootScope = p.RootScope;
         MemberInits = p.MemberInits;
         ComputedMemberNames = p.ComputedMemberNames;
+        AutoAccessorBackingKeys = p.AutoAccessorBackingKeys;
         PrivateInstanceElements = p.PrivateInstanceElements;
         DirectEvalPrivateNames = p.DirectEvalPrivateNames;
         InParameterInitializer = p.InParameterInitializer;

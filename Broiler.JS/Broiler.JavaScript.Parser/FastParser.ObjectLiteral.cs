@@ -103,9 +103,15 @@ partial class FastParser
             var accUndo = Location;
             stream.Consume(); // 'accessor'
 
+            // `accessor` is the element name itself (not a modifier) when what follows
+            // cannot begin a ClassElementName on the same line: an initializer/terminator
+            // (`accessor;`, `accessor = 1`, `accessor: x`), a method paren is handled
+            // below by PropertyName failing, the closing brace / EOF, or a generator `*`.
+            // A computed name `accessor [k]` IS a valid auto-accessor, so BracketStart must
+            // NOT be excluded here.
             var nextType = stream.Current.Type;
             if (nextType is not (TokenTypes.LineTerminator or TokenTypes.Assign
-                    or TokenTypes.SemiColon or TokenTypes.Colon or TokenTypes.BracketStart
+                    or TokenTypes.SemiColon or TokenTypes.Colon
                     or TokenTypes.CurlyBracketEnd or TokenTypes.EOF or TokenTypes.Multiply)
                 && PropertyName(out var accKey, out var accComputed, out var accPrivate, acceptKeywords: true))
             {
@@ -113,7 +119,7 @@ partial class FastParser
                 if (stream.CheckAndConsume(TokenTypes.Assign) && !Expression(out accInit))
                     throw stream.Unexpected();
 
-                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, accPrivate, isStatic, accKey, accComputed, accInit);
+                property = new AstClassProperty(current, PreviousToken, AstPropertyKind.Data, accPrivate, isStatic, accKey, accComputed, accInit, isAutoAccessor: true);
                 stream.CheckAndConsume(TokenTypes.SemiColon);
                 return true;
             }

@@ -20,7 +20,8 @@ partial class FastCompiler
     private BExpression CreateFunction(AstFunctionExpression functionDeclaration, BExpression super = null, bool createClass = false, string className = null,
         IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true, string inferredFunctionName = null,
         bool createPrototype = true, string[] directEvalPrivateNames = null, IReadOnlyDictionary<AstClassProperty, BExpression> computedMemberNames = null,
-        bool thisIsUninitialized = false, BExpression superConstructor = null, IReadOnlyList<PrivateInstanceElement> privateInstanceElements = null)
+        bool thisIsUninitialized = false, BExpression superConstructor = null, IReadOnlyList<PrivateInstanceElement> privateInstanceElements = null,
+        IReadOnlyDictionary<AstClassProperty, BExpression> autoAccessorBackingKeys = null)
     {
         var node = functionDeclaration;
         var functionLength = GetExpectedArgumentCount(functionDeclaration.Params);
@@ -67,6 +68,7 @@ partial class FastCompiler
             // superclass constructor, which differs from the home-object prototype.
             cs.SuperConstructor = superConstructor ?? (functionDeclaration.IsArrowFunction ? previousScope.SuperConstructor : null);
             cs.PrivateInstanceElements = privateInstanceElements;
+            cs.AutoAccessorBackingKeys = autoAccessorBackingKeys;
             cs.InParameterInitializer = previousScope.InParameterInitializer;
             var lexicalScopeVar = cs.Context;
 
@@ -540,15 +542,27 @@ partial class FastCompiler
                     inMemberInitializer = previousInMemberInitializer;
                 }
             }
-            // A public field is CreateDataPropertyOrThrow — observable through a
-            // Proxy receiver's defineProperty trap (a `return`-override base may
-            // hand back a Proxy as `this`). A private field is an internal slot
-            // added directly via PrivateFieldAdd (never consults proxy traps), which
-            // also enforces the TypeError on a non-extensible target or a re-added
-            // private name.
-            var init = member.IsPrivate
-                ? JSObjectBuilder.PrivateFieldAdd(name, value)
-                : JSObjectBuilder.CreateDataProperty(name, value);
+            // A public auto-accessor (`accessor x = v`) stores its value in a private
+            // backing field; its getter/setter pair already sit on the prototype. The
+            // backing field is installed via PrivateFieldAdd under the minted key, NOT
+            // as a public data property.
+            BElementInit init;
+            if (s.AutoAccessorBackingKeys != null && s.AutoAccessorBackingKeys.TryGetValue(member, out var backingKey))
+            {
+                init = JSObjectBuilder.PrivateFieldAdd(backingKey, value);
+            }
+            else
+            {
+                // A public field is CreateDataPropertyOrThrow — observable through a
+                // Proxy receiver's defineProperty trap (a `return`-override base may
+                // hand back a Proxy as `this`). A private field is an internal slot
+                // added directly via PrivateFieldAdd (never consults proxy traps), which
+                // also enforces the TypeError on a non-extensible target or a re-added
+                // private name.
+                init = member.IsPrivate
+                    ? JSObjectBuilder.PrivateFieldAdd(name, value)
+                    : JSObjectBuilder.CreateDataProperty(name, value);
+            }
 
             sList.Add(BExpression.Call(@this, init.Member as MethodInfo, init.Arguments));
         }
