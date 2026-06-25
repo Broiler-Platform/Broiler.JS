@@ -816,9 +816,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // ECMAScript Canonicalize equivalence class. The class differs by mode:
             // non-Unicode uses toUppercase (with the ASCII guard, so ſ does NOT fold
             // to s), Unicode/Unicode-sets use case folding (so ſ DOES fold to s).
-            if (ignoreCase)
-                pattern = TransformUnicodeCaseFolding(pattern, unicode || unicodeSets);
-
             // Per sec-patterns-static-semantics-early-errors, an inline modifier
             // group `(?<add>-<remove>:…)` may only contain i/m/s flags, may not repeat
             // a flag within a group, may not list a flag in both the added and removed
@@ -827,10 +824,18 @@ public partial class JSRegExp : JSObject, IJSRegExp
             ValidateInlineModifiers(pattern);
 
             // §2.6 — Detect inline pattern modifiers (?i:...) / (?-i:...) / (?ims:...) etc.
-            // .NET ECMAScript mode does not support them, so switch to default mode.
+            // .NET ECMAScript mode does not support USER inline-modifier groups, so switch
+            // to default mode when one is present. This is computed BEFORE
+            // TransformUnicodeCaseFolding runs: that transform may inject its own (?-i:…)
+            // groups to neutralise .NET's over-broad case folding, and .NET honours such a
+            // group fine under ECMAScript mode — leaving the mode on keeps \d/\w/\s in
+            // their ECMAScript (ASCII) forms, which dropping it would wrongly widen.
             var hasInlineModifiers = HasInlineModifiers(pattern);
             if ((options & RegexOptions.ECMAScript) != 0 && hasInlineModifiers)
                 options &= ~RegexOptions.ECMAScript;
+
+            if (ignoreCase)
+                pattern = TransformUnicodeCaseFolding(pattern, unicode || unicodeSets);
 
             // ES2015 §21.2.2.8: In Unicode mode, '.' matches any single
             // Unicode code point.  .NET's '.' only matches a single UTF-16
@@ -870,8 +875,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // classes so they also match supplementary-plane code points (surrogate pairs).
                 pattern = TransformUnicodeCharClassEscapes(pattern);
                 // Transform character classes containing supplementary characters
-                // (surrogate pairs) so they match as whole code points.
-                pattern = TransformUnicodeCharClasses(pattern);
+                // (surrogate pairs) so they match as whole code points. Under ignoreCase
+                // the astral members/ranges are also expanded to their case-fold class
+                // (.NET applies no astral case folding of its own).
+                pattern = TransformUnicodeCharClasses(pattern, ignoreCase);
                 // Finally, give lone surrogates and surrogate pairs that sit
                 // *outside* a character class their ECMAScript code-point semantics
                 // (a lone surrogate must not match a code unit that forms a pair; a
@@ -962,6 +969,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // to Int32.MaxValue — a count that large can never be satisfied by a real
             // input, so the observable match behavior is unchanged.
             pattern = ClampLargeQuantifiers(pattern);
+
+            // ECMAScript RepeatMatcher (22.2.2.3.1) discards a min=0 quantifier iteration
+            // whose body matched the empty string, so a min=0 quantifier applied to a body
+            // that consumes no input does exactly zero iterations and never sets the captures
+            // inside it. .NET keeps those captures, so rewrite such a quantifier to `{0}`.
+            pattern = RewriteZeroWidthMinZeroQuantifiers(pattern);
 
             // Final transform: rename capturing groups to synthetic, source-ordered
             // names so .NET's group numbering and duplicate-name handling match
@@ -1540,6 +1553,218 @@ public partial class JSRegExp : JSObject, IJSRegExp
         return sb.ToString();
     }
 
+    // ECMAScript RepeatMatcher (22.2.2.3.1, step 2.b): "If min = 0 and y's endIndex =
+    // x's endIndex, return failure." — an optional (min = 0) iteration that matched the
+    // empty string is discarded. A quantifier whose body ALWAYS matches empty (a
+    // lookaround, an anchor, or an empty group — anything that consumes no input) can
+    // therefore only ever perform zero iterations when min = 0, so any capturing group
+    // inside it never participates and reads back as `undefined`. .NET instead keeps the
+    // capture (e.g. /abc()?/ leaves group 1 as "" and /(?:(?=(abc)))?a/ as "abc"), so
+    // rewrite the quantifier to `{0}`: the group's slots stay declared (preserving group
+    // numbering) but never run, matching ECMAScript. This is a sound, behaviour-preserving
+    // rewrite — a min = 0 quantifier over a zero-width body is observably equivalent to
+    // matching it exactly zero times.
+    private static string RewriteZeroWidthMinZeroQuantifiers(string pattern)
+    {
+        List<(int Start, int Len)> replacements = null;
+        var openStack = new List<int>();
+        var inClass = false;
+
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+            if (c == '\\') { i++; continue; }
+            if (inClass) { if (c == ']') inClass = false; continue; }
+            if (c == '[') { inClass = true; continue; }
+            if (c == '(') { openStack.Add(i); continue; }
+            if (c != ')') continue;
+
+            if (openStack.Count == 0)
+                continue;
+            var open = openStack[^1];
+            openStack.RemoveAt(openStack.Count - 1);
+
+            // A min = 0 quantifier must directly follow this group, and the group must
+            // consume no input.
+            if (!TryReadMinZeroQuantifier(pattern, i + 1, out var qEnd))
+                continue;
+            if (!IsZeroWidthGroup(pattern, open, i))
+                continue;
+
+            (replacements ??= new List<(int, int)>()).Add((i + 1, qEnd - (i + 1)));
+        }
+
+        if (replacements == null)
+            return pattern;
+
+        // Replacements are recorded as their closing ')' is reached, i.e. in ascending
+        // start order, so a single forward splice is enough.
+        var sb = new StringBuilder(pattern.Length);
+        var idx = 0;
+        foreach (var (start, len) in replacements)
+        {
+            sb.Append(pattern, idx, start - idx);
+            sb.Append("{0}");
+            idx = start + len;
+        }
+        sb.Append(pattern, idx, pattern.Length - idx);
+        return sb.ToString();
+    }
+
+    // Reads a quantifier at <paramref name="start"/> whose minimum repeat count is zero
+    // (`?`, `*`, `{0}`, `{0,}`, `{0,m}`, optionally with a trailing lazy `?`). On success
+    // <paramref name="end"/> is the index just past the whole quantifier.
+    private static bool TryReadMinZeroQuantifier(string pattern, int start, out int end)
+    {
+        end = start;
+        if (start >= pattern.Length)
+            return false;
+
+        var c = pattern[start];
+        if (c == '?' || c == '*')
+        {
+            end = start + 1;
+        }
+        else if (c == '{')
+        {
+            var j = start + 1;
+            var digitsStart = j;
+            while (j < pattern.Length && pattern[j] >= '0' && pattern[j] <= '9') j++;
+            if (j == digitsStart)
+                return false; // no minimum digits → a literal brace, not a quantifier
+            var minIsZero = long.TryParse(pattern.Substring(digitsStart, j - digitsStart), out var mv) && mv == 0;
+            if (j < pattern.Length && pattern[j] == '}')
+            {
+                if (!minIsZero) return false; // {n} with n>0
+                end = j + 1;
+            }
+            else if (j < pattern.Length && pattern[j] == ',')
+            {
+                j++;
+                while (j < pattern.Length && pattern[j] >= '0' && pattern[j] <= '9') j++;
+                if (j >= pattern.Length || pattern[j] != '}')
+                    return false; // malformed → a literal brace run
+                if (!minIsZero) return false; // {n,} or {n,m} with n>0
+                end = j + 1;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        // A lazy modifier on a min = 0 quantifier doesn't change that it can match empty.
+        if (end < pattern.Length && pattern[end] == '?')
+            end++;
+        return true;
+    }
+
+    // True when the group spanning [open, close] (indices of its '(' and ')') matches the
+    // empty string for every input — a lookaround, or a group whose body is a disjunction
+    // of zero-width sequences.
+    private static bool IsZeroWidthGroup(string pattern, int open, int close)
+    {
+        int bodyStart;
+        if (open + 1 <= close && open + 1 < pattern.Length && pattern[open + 1] == '?')
+        {
+            var c2 = open + 2 < pattern.Length ? pattern[open + 2] : '\0';
+            if (c2 == '=' || c2 == '!')
+                return true; // (?=…) / (?!…) lookahead — zero-width regardless of body
+            if (c2 == '<')
+            {
+                var c3 = open + 3 < pattern.Length ? pattern[open + 3] : '\0';
+                if (c3 == '=' || c3 == '!')
+                    return true; // (?<=…) / (?<!…) lookbehind
+                // (?<name>…) named capturing group: body starts after '>'
+                var gt = pattern.IndexOf('>', open + 3);
+                if (gt < 0 || gt >= close)
+                    return false;
+                bodyStart = gt + 1;
+            }
+            else if (c2 == ':')
+            {
+                bodyStart = open + 3; // (?:…) non-capturing
+            }
+            else
+            {
+                // Inline-modifier group (?ims-x:…): body after the ':'. Anything else
+                // (e.g. atomic (?>…)) is treated conservatively as non-zero-width.
+                var colon = pattern.IndexOf(':', open + 2);
+                if (colon < 0 || colon >= close)
+                    return false;
+                bodyStart = colon + 1;
+            }
+        }
+        else
+        {
+            bodyStart = open + 1; // plain capturing group
+        }
+
+        return IsZeroWidthSequence(pattern, bodyStart, close);
+    }
+
+    // True when [start, end) — a group body, possibly containing `|` alternatives —
+    // consumes no input: every atom is an anchor, a lookaround, or a (recursively)
+    // zero-width group, with quantifiers/alternation in between. Any input-consuming atom
+    // (a literal, '.', a character class, or an escape other than \b/\B) makes it false.
+    private static bool IsZeroWidthSequence(string pattern, int start, int end)
+    {
+        var i = start;
+        while (i < end)
+        {
+            var c = pattern[i];
+            if (c == '\\')
+            {
+                var n = i + 1 < end ? pattern[i + 1] : '\0';
+                if (n != 'b' && n != 'B')
+                    return false; // any escape other than the \b/\B boundary assertions consumes
+                i += 2;
+                continue;
+            }
+            if (c == '^' || c == '$' || c == '|' || c == '*' || c == '+' || c == '?')
+            {
+                i++; // anchors, alternation, and quantifier modifiers are all zero-width
+                continue;
+            }
+            if (c == '(')
+            {
+                var sub = MatchingCloseParen(pattern, i);
+                if (sub < 0 || sub >= end)
+                    return false;
+                if (!IsZeroWidthGroup(pattern, i, sub))
+                    return false;
+                i = sub + 1;
+                continue;
+            }
+            // A literal character, '.', '[' class, '{'/'}' (possible literal brace), or a
+            // stray ')' — treat as consuming / unknown and bail out conservatively.
+            return false;
+        }
+        return true;
+    }
+
+    // Index of the ')' that closes the '(' at <paramref name="open"/>, skipping escapes
+    // and character classes; -1 if unbalanced.
+    private static int MatchingCloseParen(string pattern, int open)
+    {
+        var depth = 0;
+        var inClass = false;
+        for (var i = open; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+            if (c == '\\') { i++; continue; }
+            if (inClass) { if (c == ']') inClass = false; continue; }
+            if (c == '[') { inClass = true; continue; }
+            if (c == '(') depth++;
+            else if (c == ')') { if (--depth == 0) return i; }
+        }
+        return -1;
+    }
+
     // ES2025 allows duplicate named capture groups only in SEPARATE alternatives of a
     // disjunction (so at most one participates in any match). Two GroupSpecifiers with
     // the same name reachable together in a single match (same alternative / nested /
@@ -2061,7 +2286,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// whole code points rather than two independent code units.
     /// E.g. [𝌆a-z] → (?:\uD834\uDF06|[a-z])
     /// </summary>
-    private static string TransformUnicodeCharClasses(string pattern)
+    private static string TransformUnicodeCharClasses(string pattern, bool ignoreCase = false)
     {
         if (string.IsNullOrEmpty(pattern))
             return pattern;
@@ -2215,6 +2440,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
                             // A range that reaches into the supplementary planes is
                             // decomposed into surrogate-aware alternatives.
                             AppendCodePointRangeAlternatives(alternatives, lo, hi);
+                            // Under /iu, the range also matches the case-fold images of
+                            // its supplementary members (.NET folds neither astral nor,
+                            // inside a rebuilt class, anything here).
+                            if (ignoreCase)
+                                AppendAstralCaseFoldExtras(alternatives, lo, hi);
                         }
                         else
                         {
@@ -2227,7 +2457,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     }
 
                     if (lo > 0xFFFF)
+                    {
                         alternatives.Add(EncodeSurrogatePair(lo));
+                        // Under /iu, a supplementary member also matches its case-fold class.
+                        if (ignoreCase)
+                            AppendAstralCaseFoldExtras(alternatives, lo, lo);
+                    }
                     else if (lo is >= 0xD800 and <= 0xDBFF)
                         // A lone lead surrogate: match a lead unit only when it is not
                         // followed by a trailing unit (otherwise the two form one pair).
@@ -2443,6 +2678,37 @@ public partial class JSRegExp : JSObject, IJSRegExp
         if (hHi - hLo >= 2)
             alts.Add("[" + Unit(hLo + 1) + "-" + Unit(hHi - 1) + "]" + @"[\uDC00-\uDFFF]");
         alts.Add(Unit(hHi) + LowRange(0xDC00, lLast));
+    }
+
+    // Appends the supplementary-plane ECMAScript Canonicalize (Unicode-mode) case-fold
+    // images of every code point in [lo, hi] that fall OUTSIDE [lo, hi], as surrogate-aware
+    // alternatives. Iterates the (bounded, ~hundreds of entries) astral fold map rather
+    // than the range itself, so even a very wide range stays cheap, and merges the images
+    // into contiguous runs to keep the emitted alternation compact.
+    private static void AppendAstralCaseFoldExtras(List<string> alts, int lo, int hi)
+    {
+        SortedSet<int> extras = null;
+        foreach (var kv in AstralCaseFoldEquivalents.Value)
+        {
+            if (kv.Key < lo || kv.Key > hi)
+                continue;
+            foreach (var e in kv.Value)
+                if (e < lo || e > hi)
+                    (extras ??= new SortedSet<int>()).Add(e);
+        }
+        if (extras == null)
+            return;
+
+        int runLo = -1, prev = -1;
+        foreach (var cp in extras)
+        {
+            if (runLo < 0) { runLo = prev = cp; continue; }
+            if (cp == prev + 1) { prev = cp; continue; }
+            AppendCodePointRangeAlternatives(alts, runLo, prev);
+            runLo = prev = cp;
+        }
+        if (runLo >= 0)
+            AppendCodePointRangeAlternatives(alts, runLo, prev);
     }
 
     /// <summary>
@@ -4273,6 +4539,32 @@ public partial class JSRegExp : JSObject, IJSRegExp
         {
             char c = pattern[i];
 
+            // A supplementary-plane literal (a raw surrogate pair) outside a character
+            // class, in Unicode mode: .NET does no astral case folding, so expand it to an
+            // alternation of its ECMAScript Canonicalize equivalence class — e.g. /𐐀+/iu
+            // must also match the lowercase 𐐨. (Inside a class this is handled later by
+            // TransformUnicodeCharClasses.)
+            if (unicode && !inClass && char.IsHighSurrogate(c)
+                && i + 1 < pattern.Length && char.IsLowSurrogate(pattern[i + 1]))
+            {
+                int cp = char.ConvertToUtf32(c, pattern[i + 1]);
+                var astralEq = GetAstralCaseFoldEquivalents(cp);
+                if (astralEq != null)
+                {
+                    sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
+                    sb.Append("(?:").Append(EncodeSurrogatePair(cp));
+                    foreach (var e in astralEq)
+                        sb.Append('|').Append(EncodeSurrogatePair(e));
+                    sb.Append(')');
+                }
+                else
+                {
+                    sb?.Append(c).Append(pattern[i + 1]);
+                }
+                i++; // also consume the trailing low surrogate
+                continue;
+            }
+
             if (c == '\\' && i + 1 < pattern.Length)
             {
                 char next = pattern[i + 1];
@@ -4284,10 +4576,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     int cp = HexValue(pattern[i + 2]) << 12 | HexValue(pattern[i + 3]) << 8
                            | HexValue(pattern[i + 4]) << 4 | HexValue(pattern[i + 5]);
                     var equiv = GetCaseFoldEquivalents((char)cp, unicode);
-                    if (!unicode && !inClass && IsNonUnicodeOverFold((char)cp))
+                    var overFold = !unicode && !inClass ? GetNonUnicodeOverFoldClass(cp) : null;
+                    if (overFold != null)
                     {
                         sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
-                        AppendOverFoldNeutralized(sb, (char)cp, equiv);
+                        AppendNeutralizedClass(sb, overFold);
                         i += 5;
                         continue;
                     }
@@ -4309,10 +4602,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 {
                     int cp = HexValue(pattern[i + 2]) << 4 | HexValue(pattern[i + 3]);
                     var equiv = GetCaseFoldEquivalents((char)cp, unicode);
-                    if (!unicode && !inClass && IsNonUnicodeOverFold((char)cp))
+                    var overFold = !unicode && !inClass ? GetNonUnicodeOverFoldClass(cp) : null;
+                    if (overFold != null)
                     {
                         sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
-                        AppendOverFoldNeutralized(sb, (char)cp, equiv);
+                        AppendNeutralizedClass(sb, overFold);
                         i += 3;
                         continue;
                     }
@@ -4352,10 +4646,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
             // Check literal characters
             var litEquiv = GetCaseFoldEquivalents(c, unicode);
-            if (!unicode && !inClass && IsNonUnicodeOverFold(c))
+            var litOverFold = !unicode && !inClass ? GetNonUnicodeOverFoldClass(c) : null;
+            if (litOverFold != null)
             {
                 sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
-                AppendOverFoldNeutralized(sb, c, litEquiv);
+                AppendNeutralizedClass(sb, litOverFold);
                 continue;
             }
             if (litEquiv != null)
@@ -4398,8 +4693,55 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// code point as its own canonical form, so it must only match itself (and any true
     /// non-ASCII equivalents) — never an ASCII letter.
     /// </summary>
-    private static bool IsNonUnicodeOverFold(char c)
-        => c >= 128 && char.ToLowerInvariant(c) < 128;
+    private static char[] GetNonUnicodeOverFoldClass(int cp)
+        => cp <= 0xFFFF && NonUnicodeOverFoldClasses.Value.TryGetValue((char)cp, out var cls) ? cls : null;
+
+    // Group every BMP code unit two ways: by .NET's invariant lowercase (how its
+    // IgnoreCase regex decides two units are equal) and by ECMAScript's non-Unicode
+    // Canonicalize key. A unit is "over-folded" when its .NET group reaches a unit in a
+    // DIFFERENT Canonicalize class (e.g. ẞ↔ß, k/K↔KELVIN U+212A, å/Å↔ANGSTROM U+212B,
+    // Ω↔OHM U+2126); its correct match set is the full Canonicalize class. Such a unit is
+    // emitted with IgnoreCase disabled — (?-i:[class]) — so .NET's over-broad fold is
+    // replaced by exactly the ECMAScript-equivalent units.
+    private static readonly Lazy<Dictionary<char, char[]>> NonUnicodeOverFoldClasses =
+        new(BuildNonUnicodeOverFoldClasses);
+
+    private static Dictionary<char, char[]> BuildNonUnicodeOverFoldClasses()
+    {
+        var netGroups = new Dictionary<char, List<char>>();
+        var canonGroups = new Dictionary<char, List<char>>();
+        for (int u = 0; u <= 0xFFFF; u++)
+        {
+            if (u >= 0xD800 && u <= 0xDFFF)
+                continue;
+            char ch = (char)u;
+            AddToCharGroup(netGroups, char.ToLowerInvariant(ch), ch);
+            AddToCharGroup(canonGroups, CanonicalizeKey(ch), ch);
+        }
+
+        var map = new Dictionary<char, char[]>();
+        for (int u = 0; u <= 0xFFFF; u++)
+        {
+            if (u >= 0xD800 && u <= 0xDFFF)
+                continue;
+            char ch = (char)u;
+            var canonKey = CanonicalizeKey(ch);
+            var netGroup = netGroups[char.ToLowerInvariant(ch)];
+            var overFolds = false;
+            foreach (var d in netGroup)
+                if (CanonicalizeKey(d) != canonKey) { overFolds = true; break; }
+            if (overFolds)
+                map[ch] = canonGroups[canonKey].ToArray();
+        }
+        return map;
+    }
+
+    private static void AddToCharGroup(Dictionary<char, List<char>> groups, char key, char value)
+    {
+        if (!groups.TryGetValue(key, out var list))
+            groups[key] = list = new List<char>(2);
+        list.Add(value);
+    }
 
     /// <summary>
     /// Emits <paramref name="c"/> (plus its genuine ECMAScript equivalents) with
@@ -4407,19 +4749,18 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// over-broad ToLower folding no longer matches an unrelated ASCII letter. Only used
     /// outside a character class (an inline group is not valid class syntax).
     /// </summary>
-    private static void AppendOverFoldNeutralized(StringBuilder sb, char c, char[] equivalents)
+    private static void AppendNeutralizedClass(StringBuilder sb, char[] cls)
     {
         sb.Append("(?-i:");
-        if (equivalents == null || equivalents.Length == 0)
+        if (cls.Length == 1)
         {
-            AppendUnicodeEscape(sb, c);
+            AppendUnicodeEscape(sb, cls[0]);
         }
         else
         {
             sb.Append('[');
-            AppendUnicodeEscape(sb, c);
-            foreach (var eq in equivalents)
-                AppendUnicodeEscape(sb, eq);
+            foreach (var ch in cls)
+                AppendUnicodeEscape(sb, ch);
             sb.Append(']');
         }
         sb.Append(')');
@@ -4560,6 +4901,96 @@ public partial class JSRegExp : JSObject, IJSRegExp
     // CaseFolding.txt directly, but toUppercase followed by toLowercase yields the same
     // canonical lowercase form for the affected characters.
     private static char CaseFoldKey(char ch) => char.ToLowerInvariant(char.ToUpperInvariant(ch));
+
+    // Code-point (Rune) simple case fold, used to group SUPPLEMENTARY-plane code points
+    // into ECMAScript Canonicalize (Unicode-mode) equivalence classes. .NET's char-based
+    // ToUpper/ToLower only cover the BMP; Rune.ToUpperInvariant/ToLowerInvariant carry the
+    // same Unicode (16.0) data to the astral planes, so the toUpper→toLower round-trip
+    // yields each astral letter's canonical fold (e.g. Deseret U+10400 ⇄ U+10428, Adlam,
+    // Osage, Vithkuqi, Old Hungarian, …).
+    private static int CaseFoldKeyCodePoint(int cp)
+    {
+        var r = new System.Text.Rune(cp);
+        return System.Text.Rune.ToLowerInvariant(System.Text.Rune.ToUpperInvariant(r)).Value;
+    }
+
+    // Reverse map from a SUPPLEMENTARY-plane code point to the other members of its
+    // ECMAScript Canonicalize (Unicode-mode) equivalence class. .NET's IgnoreCase regex
+    // does no astral case folding at all, and the BMP-only char maps above cannot reach
+    // these code points, so /<astral>/iu would otherwise match only the exact code point.
+    // No astral class folds onto a BMP code point (and vice versa), so the classes here are
+    // pure-supplementary and never overlap the BMP handling. Built once, lazily.
+    private static readonly Lazy<Dictionary<int, int[]>> AstralCaseFoldEquivalents =
+        new(BuildAstralCaseFoldEquivalents);
+
+    private static Dictionary<int, int[]> BuildAstralCaseFoldEquivalents()
+    {
+        var groups = new Dictionary<int, List<int>>();
+        for (int cp = 0x10000; cp <= 0x10FFFF; cp++)
+        {
+            int key = CaseFoldKeyCodePoint(cp);
+            if (!groups.TryGetValue(key, out var list))
+                groups[key] = list = new List<int>(2);
+            list.Add(cp);
+        }
+
+        var map = new Dictionary<int, int[]>();
+        foreach (var list in groups.Values)
+        {
+            if (list.Count < 2)
+                continue;
+            foreach (var member in list)
+            {
+                var others = new int[list.Count - 1];
+                int k = 0;
+                foreach (var m in list)
+                    if (m != member)
+                        others[k++] = m;
+                map[member] = others;
+            }
+        }
+
+        // Supplement classes that .NET's Unicode tables still miss. Garay (added in
+        // Unicode 16.0) has its code points assigned but carries NO simple case mapping in
+        // the Rune round-trip above, so each letter is left in a singleton class and never
+        // grouped. Seed its bicameral pairs (uppercase U+10D50..U+10D65 ⇄ lowercase
+        // U+10D70..U+10D85) explicitly so /…/iu folds them as ECMAScript requires.
+        for (int k = 0; k <= 0x15; k++)
+            SeedCaseFoldPair(map, 0x10D50 + k, 0x10D70 + k);
+
+        return map;
+    }
+
+    // Records a ↔ b as mutual case-fold equivalents, unioning with any class either is
+    // already part of (de-duplicating and excluding self).
+    private static void SeedCaseFoldPair(Dictionary<int, int[]> map, int a, int b)
+    {
+        AddCaseFoldEquivalent(map, a, b);
+        AddCaseFoldEquivalent(map, b, a);
+    }
+
+    private static void AddCaseFoldEquivalent(Dictionary<int, int[]> map, int member, int other)
+    {
+        if (map.TryGetValue(member, out var existing))
+        {
+            if (System.Array.IndexOf(existing, other) >= 0)
+                return;
+            var grown = new int[existing.Length + 1];
+            System.Array.Copy(existing, grown, existing.Length);
+            grown[existing.Length] = other;
+            map[member] = grown;
+        }
+        else
+        {
+            map[member] = new[] { other };
+        }
+    }
+
+    // The other code points that match <paramref name="cp"/> case-insensitively under
+    // ECMAScript Canonicalize in Unicode mode, for a supplementary-plane code point; null
+    // when none (or when cp is in the BMP, which the char-based maps cover).
+    private static int[] GetAstralCaseFoldEquivalents(int cp)
+        => cp > 0xFFFF && AstralCaseFoldEquivalents.Value.TryGetValue(cp, out var eq) ? eq : null;
 
     private static bool IsHexDigit(char c) =>
         (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
