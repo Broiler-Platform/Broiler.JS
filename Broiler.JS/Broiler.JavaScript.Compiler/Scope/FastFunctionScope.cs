@@ -238,6 +238,13 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public AstFunctionExpression Function { get; }
 
+    // True when this function scope is an eval-shadow boundary: a sloppy function whose
+    // parameter list or body contains a direct eval, so identifier references resolving
+    // outside it are routed through EvalShadowVariable bindings (see TryResolveEvalShadow).
+    // Marks the scope persistently so a NESTED eval-boundary (e.g. an eval-containing
+    // closure inside an eval-containing function) can chain its shadows through this one.
+    public bool IsEvalShadowBoundary { get; internal set; }
+
     private BExpression _thisExpression;
     public BExpression ThisExpression
     {
