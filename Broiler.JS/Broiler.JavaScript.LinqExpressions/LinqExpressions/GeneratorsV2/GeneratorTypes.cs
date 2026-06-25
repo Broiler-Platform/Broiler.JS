@@ -42,13 +42,19 @@ public class TryBlock
     public bool CatchBegan;
     public bool FinallyBegan;
     public TryBlock Parent;
+
+    // The completion (a real exception, or a GeneratorReturnCompletion standing in for
+    // a `return`) that this region's `finally` must re-raise when it completes normally.
+    // Stored per region — not in a single generator-wide field — so that a `finally`
+    // nested inside another region's `finally` does not clobber the outer pending
+    // completion while it unwinds (see Throw / UnwindException).
+    public Exception PendingError;
 }
 
 public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, Arguments arguments, bool asyncGenerator = false)
 {
     public CallStackItem StackItem;
 
-    private Exception lastError = null;
     private Exception injectedException = null;
 
     internal void InjectException(Exception ex) => injectedException = ex;
@@ -108,6 +114,22 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
     }
 
     internal void Next(JSValue next, out JSValue value, out bool done)
+    {
+        try
+        {
+            NextCore(next, out value, out done);
+        }
+        catch (GeneratorReturnCompletion grc)
+        {
+            // A return completion — the body's own `return`, or one injected by
+            // Generator.prototype.return — unwound through every enclosing `finally`
+            // block without being overridden. The generator completes with it.
+            done = true;
+            value = grc.Value ?? JSUndefined.Value;
+        }
+    }
+
+    private void NextCore(JSValue next, out JSValue value, out bool done)
     {
         GeneratorState v = null;
         LastYieldWasAwait = false;
@@ -199,15 +221,10 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
                 if (v.NextJump == 0 || v.NextJump == -1)
                 {
-                    // need to execute finally.. if it is there...
-                    if (Root != null && Root.Finally > 0)
-                    {
-                        v = GetNext(Root.Finally, value);
-                        NextJump = v.NextJump;
-                        if (v.IsValueDelegate)
-                            goto ProcessState;
-                    }
-
+                    // A `return` / end completion. Any enclosing `finally` blocks have
+                    // already been run by GetNext (which routes a return completion
+                    // through the finally chain, honoring override and yields), so the
+                    // value here is final.
                     done = true;
                     return;
                 }
@@ -271,12 +288,41 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
                 return s;
             }
 
+            // A `return` completion (a value carried with NextJump == -1) that is still
+            // inside one or more try regions with an un-run `finally` must run those
+            // finally blocks before the generator finishes. A finally may override the
+            // return (its own return/break/continue/throw) or yield. Drive this through
+            // the same unwinding path as Generator.prototype.return: inject a return
+            // completion and let UnwindException run the finally chain. The result is a
+            // yield suspension (surfaced), an overriding completion, or — when no finally
+            // overrides — the GeneratorReturnCompletion is re-raised and converted to a
+            // done result at the Next boundary.
+            if (r.HasValue && r.NextJump == -1 && HasUnbegunFinally())
+            {
+                InjectException(new GeneratorReturnCompletion(r.Value));
+                return GetNext(0, r.Value);
+            }
+
             return r;
         }
         catch (Exception ex)
         {
             return UnwindException(ex, lastValue);
         }
+    }
+
+    // True when some enclosing try region still has a `finally` that has not begun
+    // running — i.e. a pending `return` (or other abrupt completion) leaving the body
+    // must still execute a finally block before the generator can finish.
+    private bool HasUnbegunFinally()
+    {
+        for (var r = Root; r != null; r = r.Parent)
+        {
+            if (r.Finally > 0 && !r.FinallyBegan)
+                return true;
+        }
+
+        return false;
     }
 
     // Unwinds <paramref name="ex"/> through the generator's try-region stack, running
@@ -314,7 +360,10 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
                 // completion (its own return / yield) it returns a value; otherwise the
                 // body's trailing Throw(endId) pops this region and re-raises `ex`,
                 // which propagates out (already fully unwound through any inner frames).
-                lastError = ex;
+                // The pending completion is recorded on the region itself, so a finally
+                // nested inside this one can carry its own pending completion without
+                // clobbering this one.
+                root.PendingError = ex;
                 var v = GetNext(root.Finally, lastValue);
                 if (v.HasValue)
                     return v;
@@ -354,11 +403,19 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
     public void Throw(int end)
     {
-        if ((Root?.End) != end || lastError == null)
+        // A break/continue executed inside a finally can branch out of inner try
+        // regions without running their normal Pop epilogue, leaving Root pointing at
+        // a stale inner region whose finally already ran. Reconcile by popping such
+        // already-run regions until we reach the region this Throw(end) belongs to.
+        while (Root != null && Root.End != end && Root.FinallyBegan)
+            Pop();
+
+        if (Root == null || Root.End != end || Root.PendingError == null)
             return;
 
+        var pending = Root.PendingError;
         Pop();
-        throw lastError;
+        throw pending;
     }
 
     public void BeginFinally()

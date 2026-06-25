@@ -86,6 +86,21 @@ public class JSObjectBuilder
     readonly static MethodInfo _PrivateAccessorAddKeyString =
         type.PublicMethod(nameof(JSObject.PrivateAccessorAdd), typeof(KeyString), typeof(JSValue), typeof(JSValue));
 
+    readonly static MethodInfo _CreateAutoAccessorGetter =
+        typeof(JSAutoAccessor).PublicMethod(nameof(JSAutoAccessor.CreateGetter), typeof(KeyString), typeof(string));
+
+    readonly static MethodInfo _CreateAutoAccessorSetter =
+        typeof(JSAutoAccessor).PublicMethod(nameof(JSAutoAccessor.CreateSetter), typeof(KeyString), typeof(string));
+
+    // The getter/setter pair for a public class auto-accessor (`accessor x = v`),
+    // reading/writing the per-instance (or per-constructor, for `static`) private
+    // backing field named by <paramref name="backingKey"/>.
+    public static Expression CreateAutoAccessorGetter(Expression backingKey, string accessorName)
+        => Expression.Call(null, _CreateAutoAccessorGetter, backingKey, Expression.Constant(accessorName, typeof(string)));
+
+    public static Expression CreateAutoAccessorSetter(Expression backingKey, string accessorName)
+        => Expression.Call(null, _CreateAutoAccessorSetter, backingKey, Expression.Constant(accessorName, typeof(string)));
+
     readonly static MethodInfo _FastAddValueKeySymbol =
         type.PublicMethod(nameof(JSObject.FastAddValue), typeof(IJSSymbol), typeof(JSValue), typeof(JSPropertyAttributes));
 

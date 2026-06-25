@@ -241,6 +241,25 @@ partial class FastCompiler
             : name;
     }
 
+    // The accessor's own name, used to label the synthesized getter/setter functions
+    // ("get x" / "set x"). Null for a computed / non-identifier name (the function name
+    // is then a generic "get"/"set", which is not observable to the auto-accessor tests).
+    private static string AutoAccessorNameLabel(AstClassProperty property)
+    {
+        if (!property.Computed && property.Key is AstIdentifier id)
+        {
+            var n = id.Name.Value;
+            return n.StartsWith("#") ? n[1..] : n;
+        }
+
+        return null;
+    }
+
+    // Diagnostic text for the minted private backing-field key (it already carries the
+    // leading '#' that MintPrivateName expects); uniqueness comes from the mint counter.
+    private static string AutoAccessorBackingLabel(AstClassProperty property)
+        => "#" + (AutoAccessorNameLabel(property) ?? "accessor");
+
     private static BExpression ValidateStaticPropertyName(AstClassProperty property, BExpression name)
     {
         // Only a public static element can collide with the reserved "prototype"
@@ -362,6 +381,10 @@ partial class FastCompiler
 
         var memberInits = new Sequence<AstClassProperty>();
         var computedMemberNames = new Dictionary<AstClassProperty, BExpression>();
+        // Public instance auto-accessors: maps the element to the class-scope variable
+        // holding its minted private backing-field key, consumed by the constructor's
+        // InitMembers to install the backing field.
+        var autoAccessorBackingKeys = new Dictionary<AstClassProperty, BExpression>();
         var classScopeVariables = new Sequence<BParameterExpression> { superVar, homeConstructorVar, homePrototypeVar };
         AstFunctionExpression constructor = null;
 
@@ -509,6 +532,42 @@ partial class FastCompiler
                     break;
 
                 case AstPropertyKind.Data:
+                {
+                    // A public auto-accessor (`accessor x = v`) desugars to a private
+                    // backing field plus a getter/setter pair on the home object (the
+                    // prototype for an instance accessor, the constructor for a static
+                    // one). The getter reads / setter writes the backing field — its
+                    // private-field brand check yields the spec TypeError when a `static`
+                    // accessor is read through a derived class. Private auto-accessors
+                    // (`accessor #x`) keep the plain private-field treatment below.
+                    BExpression autoAccessorBackingKey = null;
+                    if (property.IsAutoAccessor && !isPrivateName)
+                    {
+                        var backingLabel = AutoAccessorBackingLabel(property);
+                        autoAccessorBackingKey = BExpression.Parameter(typeof(KeyString), $"{backingLabel}$acc{privateKeyVarCounter++}");
+                        classScopeVariables.Add((BParameterExpression)autoAccessorBackingKey);
+                        stmts.Add(BExpression.Assign(autoAccessorBackingKey, JSObjectBuilder.MintPrivateName(backingLabel)));
+
+                        var accessorName = property.Computed
+                            ? computedMemberNames[property]
+                            : ValidateStaticPropertyName(property, GetClassElementName(property));
+                        var nameLabel = AutoAccessorNameLabel(property);
+                        var getterFx = JSObjectBuilder.CreateAutoAccessorGetter(autoAccessorBackingKey, nameLabel);
+                        var setterFx = JSObjectBuilder.CreateAutoAccessorSetter(autoAccessorBackingKey, nameLabel);
+                        var getterAdd = JSObjectBuilder.AddGetter(accessorName, getterFx, JSPropertyAttributes.ConfigurableProperty);
+                        var setterAdd = JSObjectBuilder.AddSetter(accessorName, setterFx, JSPropertyAttributes.ConfigurableProperty);
+                        if (property.IsStatic)
+                        {
+                            staticElements.Add(getterAdd);
+                            staticElements.Add(setterAdd);
+                        }
+                        else
+                        {
+                            prototypeElements.Add(getterAdd);
+                            prototypeElements.Add(setterAdd);
+                        }
+                    }
+
                     if (property.IsStatic)
                     {
                         name = property.Computed
@@ -561,15 +620,26 @@ partial class FastCompiler
                                 inMemberInitializer = savedInMemberInitializer;
                             }
                         }
-                        // Deferred to after the class binding (see staticInits).
-                        staticInits.Add((name, value, isPrivateName, null));
+                        // Deferred to after the class binding (see staticInits). A
+                        // public static auto-accessor stores its initializer in the
+                        // private backing field on the constructor, not as a public data
+                        // property (the public name is the getter/setter installed above).
+                        if (autoAccessorBackingKey != null)
+                            staticInits.Add((autoAccessorBackingKey, value, true, null));
+                        else
+                            staticInits.Add((name, value, isPrivateName, null));
                         break;
                     }
                     // The computed key (if any) was already evaluated, in source
                     // order, into ComputedMemberNames above; the initializer runs
-                    // per-instance during construction (InitMembers).
+                    // per-instance during construction (InitMembers). A public instance
+                    // auto-accessor records its backing key so InitMembers installs the
+                    // private backing field (not a public data property).
+                    if (autoAccessorBackingKey != null)
+                        autoAccessorBackingKeys[property] = autoAccessorBackingKey;
                     memberInits.Add(property);
                     break;
+                }
 
                 case AstPropertyKind.Get:
                     name = property.Computed
@@ -674,7 +744,8 @@ partial class FastCompiler
             // reject super() (it is the signal that distinguishes the two — see the super
             // call check in VisitCallExpression).
             var fx = CreateFunction(constructor, InstanceSuper(), true, className, memberInits, true, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames,
-                thisIsUninitialized: hasSuperClass, superConstructor: hasSuperClass ? StaticSuper() : null, privateInstanceElements: privateInstanceElements);
+                thisIsUninitialized: hasSuperClass, superConstructor: hasSuperClass ? StaticSuper() : null, privateInstanceElements: privateInstanceElements,
+                autoAccessorBackingKeys: autoAccessorBackingKeys);
             staticElements.Add(JSClassBuilder.AddConstructor(fx));
         }
         else
@@ -686,6 +757,7 @@ partial class FastCompiler
                 // default constructor scope that super binding.
                 using var s = this.scope.Push(new FastFunctionScope(null, null, super: InstanceSuper(), memberInits: memberInits, directEvalPrivateNames: directEvalPrivateNames, computedMemberNames: computedMemberNames, thisIsUninitialized: hasSuperClass));
                 s.PrivateInstanceElements = privateInstanceElements;
+                s.AutoAccessorBackingKeys = autoAccessorBackingKeys;
                 var args = s.Arguments;
                 var @this = s.ThisExpression;
                 var inits = new Sequence<BExpression>() { };
