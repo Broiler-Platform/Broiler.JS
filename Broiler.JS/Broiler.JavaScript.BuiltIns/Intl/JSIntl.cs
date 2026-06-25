@@ -6100,7 +6100,7 @@ public class JSIntlCollator : JSObject
         if (!fromExtension)
             locale = JSIntl.RemoveUnicodeExtensionKeyword(locale, "co");
 
-        compareInfo = ResolveCompareInfo(locale, collation);
+        compareInfo = ResolveCompareInfo(locale, collation, usage);
     }
 
     // CompareInfo for the resolved locale, honouring the Unicode-extension collation tailoring
@@ -6110,9 +6110,24 @@ public class JSIntlCollator : JSObject
     // but does NOT actually apply the tailoring — only the full BCP-47 culture-construction
     // path is wired through to the ICU tailored collator). Falls back to the locale's default
     // CompareInfo (or the invariant one) when the tailoring isn't recognised.
-    private static CompareInfo ResolveCompareInfo(string localeTag, string collation)
+    private static CompareInfo ResolveCompareInfo(string localeTag, string collation, string usage)
     {
         var bareLocale = StripUnicodeExtension(localeTag);
+
+        // usage:"search" selects the locale's ICU "search" collation, which tailors
+        // comparison for string matching rather than sorting (e.g. German search treats
+        // Ä like AE, so "AE" and "Ä" no longer reorder). ECMA-402 never reflects "search"
+        // as the resolved collation, so it is applied here independently of the -u-co-
+        // option (test262 intl402/Collator/usage-de).
+        if (usage == "search")
+        {
+            try
+            {
+                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-search").CompareInfo;
+            }
+            catch (CultureNotFoundException) { /* fall through */ }
+        }
+
         if (collation != null && collation != "default" && collation != "standard"
             && NetCollationSuffix(bareLocale, collation) != null)
         {
