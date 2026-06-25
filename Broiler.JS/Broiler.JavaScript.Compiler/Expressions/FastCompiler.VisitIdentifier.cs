@@ -308,7 +308,15 @@ partial class FastCompiler
             // The non-eval scope here would otherwise materialise an arguments binding in
             // the eval's program scope (which has no function / parameters), giving an
             // empty unmapped arguments object whose `callee` is the strict-mode poison.
-            if (isDirectEvalCompilation)
+            //
+            // This applies ONLY to references lexically inside the eval program body
+            // itself (RootScope.Function == null). An ordinary function DECLARED within
+            // the eval (`eval('(function f(){ return arguments[0]; })(7)')`) has its own
+            // arguments object — its RootScope is that function (Function != null) — and
+            // must materialise it like any function, not leak to the enclosing frame's
+            // arguments via dynamic resolution (test262 sm/strict/10.6 arguments index
+            // writability/configurability under eval).
+            if (isDirectEvalCompilation && scope.Top.RootScope.Function == null)
                 return throwIfMissing
                     ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
                     : JSContextBuilder.ResolveIdentifierOrUndefined(KeyOfName(identifier.Name));
