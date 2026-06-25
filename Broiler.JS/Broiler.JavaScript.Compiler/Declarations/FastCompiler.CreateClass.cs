@@ -185,6 +185,54 @@ partial class FastCompiler
             BExpression.TryFinally(statement, BExpression.Call(strictScope, DisposeMethod)));
     }
 
+    // Whether a computed ClassElementName expression contains a store whose throw-on-
+    // failure is gated by the LIVE runtime strict flag — an assignment, an update
+    // (`++`/`--`) or a `delete`. These are compiled with the surrounding (sloppy)
+    // context's store IL, so only a runtime strict-mode scope around the key evaluation
+    // makes them throw as the spec requires for a strict class body (#867). A store-free
+    // key needs no such scope; emitting one anyway is not just wasted work — its
+    // try/finally yields invalid IL when the class expression is evaluated in value
+    // position (a call argument, a for-init), because the evaluation stack is non-empty
+    // on entry to the try region (#912). Descends into nested functions/classes so an
+    // IIFE store in the key (also sloppy-compiled, also runtime-gated) keeps the scope.
+    private static bool ComputedKeyContainsStore(AstNode key)
+    {
+        if (key == null)
+            return false;
+
+        var detector = new ComputedKeyStoreDetector();
+        detector.Visit(key);
+        return detector.Found;
+    }
+
+    private sealed class ComputedKeyStoreDetector : Broiler.JavaScript.Ast.AstReduce
+    {
+        public bool Found { get; private set; }
+
+        protected override AstNode VisitBinaryExpression(AstBinaryExpression binaryExpression)
+        {
+            if (binaryExpression.Operator.IsAssignmentOperator())
+            {
+                Found = true;
+                return binaryExpression;
+            }
+
+            return base.VisitBinaryExpression(binaryExpression);
+        }
+
+        protected override AstNode VisitUnaryExpression(AstUnaryExpression unaryExpression)
+        {
+            if (unaryExpression.Operator is UnaryOperator.Increment
+                or UnaryOperator.Decrement or UnaryOperator.@delete)
+            {
+                Found = true;
+                return unaryExpression;
+            }
+
+            return base.VisitUnaryExpression(unaryExpression);
+        }
+    }
+
     private BExpression GetClassElementName(AstClassProperty property)
     {
         var name = GetName(property);
@@ -444,7 +492,11 @@ partial class FastCompiler
                 // can only contain those when the enclosing function is a generator/async,
                 // so skip the runtime wrap there (the compile-time strict flag still applies).
                 var mayContainSuspension = AwaitYieldParameterDetector.Contains(property.Key);
-                stmts.Add(mayContainSuspension ? keyAssign : WrapStatementInStrictMode(keyAssign));
+                // Only wrap in the runtime strict-mode scope when the key actually has an
+                // inline store whose throw is strict-gated (#867). A store-free key needs no
+                // scope, and its try/finally would be invalid IL in value position (#912).
+                var needsRuntimeStrictScope = !mayContainSuspension && ComputedKeyContainsStore(property.Key);
+                stmts.Add(needsRuntimeStrictScope ? WrapStatementInStrictMode(keyAssign) : keyAssign);
                 computedMemberNames[property] = computedNameVar;
             }
 

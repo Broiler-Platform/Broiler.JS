@@ -763,7 +763,19 @@ public static void ValidateProgram(
                 HashSet<string> functionNames = null;
                 var cases = switchStatement.Cases.GetFastEnumerator();
                 while (cases.MoveNext(out var @case))
+                {
                     CheckDuplicateFunctionDeclarations(@case.Statements, ref functionNames);
+
+                    // A labelled FunctionDeclaration is an early SyntaxError in strict mode
+                    // in every context, including a switch CaseClause. The base visitor's
+                    // VisitCase is a no-op (it does not descend into case bodies), so the
+                    // VisitLabeledStatement check below never reaches a case-nested labelled
+                    // function — apply it explicitly here. (test262 staging/sm/
+                    // lexical-environment/block-scoped-functions-annex-b-label.)
+                    var caseStatements = @case.Statements.GetFastEnumerator();
+                    while (caseStatements.MoveNext(out var caseStatement))
+                        ThrowIfLabeledFunctionInBody(caseStatement);
+                }
             }
 
             return base.VisitSwitchStatement(switchStatement);

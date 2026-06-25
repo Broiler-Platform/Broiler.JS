@@ -276,6 +276,30 @@ partial class FastCompiler
         return functionDeclarations;
     }
 
+    // Names of FunctionDeclarations declared directly in this block's StatementList,
+    // including through one or more LabelledStatement wrappers (`l: function f(){}`).
+    // These are lexically block-scoped and (in sloppy mode) Annex B var-hoisted; the
+    // block-scoped binding holds the function value hoisted to the block top, so a
+    // reference before the textual declaration resolves to the function.
+    private static HashSet<string> CollectBlockFunctionDeclarationNames(IFastEnumerable<AstStatement> statements)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        var enumerator = statements.GetFastEnumerator();
+
+        while (enumerator.MoveNext(out var statement))
+        {
+            // Unwrap nested labels: `l0: l: function f(){}`.
+            var current = statement;
+            while (current is AstLabeledStatement labeled)
+                current = labeled.Body;
+
+            if (current is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true, Id: { } id } })
+                names.Add(id.Name.Value);
+        }
+
+        return names;
+    }
+
     private FastFunctionScope.VariableScope GetOrCreateDirectEvalRootVariable(in StringSpan name, bool functionBinding = false)
     {
         var top = scope.Top;

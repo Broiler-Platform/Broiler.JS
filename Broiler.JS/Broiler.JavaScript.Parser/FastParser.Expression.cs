@@ -129,6 +129,7 @@ partial class FastParser
                 throw stream.Unexpected();
 
             var scope = variableScope.Push(token, FastNodeType.FunctionExpression);
+            scope.IsArrow = true;
             try
             {
                 // create parameters now...

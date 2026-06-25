@@ -381,28 +381,15 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
             is AstFunctionExpression { IsStatement: true }
             or AstClassExpression { IsDeclaration: true };
 
-        if (isDirectEvalCompilation
-            && !IsStrictMode
-            && scope.Top.Function == null
-            && scope.Top.Parent != scope.Top.RootScope
-            && expressionStatement.Expression is AstFunctionExpression { IsStatement: true, Id: { } directEvalFunctionId } directEvalFunctionDeclaration)
-        {
-            // A block-scoped FunctionDeclaration in direct eval gets an isolated block-local
-            // binding (so a self-reassignment in its body — `function f(){ f = 1; }` — stays
-            // block-local) plus the Annex B var copy-out to the eval's var environment, exactly
-            // like the B.3.4 if-clause implicit block. Without the isolated binding the function
-            // shares the global var binding, so mutating it from the body clobbers the outer one.
-            // Generator/async declarations are purely block-scoped (no Annex B copy) and route
-            // through the same implicit-block path — VisitImplicitBlockFunctionDeclaration's
-            // AppendAnnexB call is itself gated on the generator/async check, so the var-env
-            // copy-out is omitted while the block binding stays in place. The previous fall
-            // through to VisitRuntimeFunctionDeclaration silently created a root binding in the
-            // eval's var environment (via GetOrCreateDirectEvalRootVariable), letting
-            // `eval("{ function* g(){} }"); typeof g` see "function" instead of "undefined"
-            // (test262 sm/lexical-environment/block-scoped-functions-annex-b-generators).
-            return VisitImplicitBlockFunctionDeclaration(directEvalFunctionDeclaration, directEvalFunctionId.Name);
-        }
-
+        // A block-scoped FunctionDeclaration in direct eval is handled by the normal
+        // path below: VisitBlock gives it a block-scoped binding (CollectBlockFunction-
+        // DeclarationNames) whose value is hoisted to the block top via PostInit, and the
+        // Annex B var copy-out to the eval's var environment is emitted here at the
+        // declaration site (AppendAnnexBOuterBindingAssignments, gated to skip generator/
+        // async so they stay purely block-scoped and do not leak — `eval("{ function* g(){} }");
+        // typeof g` is "undefined"). The block binding is mutable and distinct from the var
+        // binding, so a self-reassignment (`function f(){ f = 1; }`) stays block-local. This
+        // also hoists the value so a call BEFORE the textual declaration resolves (#912).
         var visited = Visit(expressionStatement.Expression);
         var result = producesEmptyCompletion ? visited : TrackCompletion(visited);
 
@@ -562,6 +549,15 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         {
             return;
         }
+
+        // `arguments` is an implicit parameter name of every ordinary (non-arrow) function
+        // that has an arguments object, so a block-level `function arguments(){}` is NOT
+        // Annex B var-hoisted into the function's variable environment — the arguments
+        // object must survive the block (B.3.2.6 step 1.a.ii; test262 annexB block-decl-
+        // func-skip-arguments). An arrow has no arguments object of its own, and at program
+        // scope there is none either, so the copy-out still applies there.
+        if (name.Equals("arguments") && currentFunction is { IsArrowFunction: false })
+            return;
 
         // Per B.3.3.3 step ii: skip Annex B hoisting when replacing the
         // FunctionDeclaration with a VariableStatement would produce an
