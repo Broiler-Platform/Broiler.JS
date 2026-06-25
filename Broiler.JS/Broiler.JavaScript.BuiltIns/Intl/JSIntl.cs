@@ -5865,11 +5865,68 @@ public class JSIntlNumberFormat : JSObject
             return result;
         }
 
-        foreach (var (type, value) in startParts)
+        // ICU-style range collapse (NumberRangeFormatter, COLLAPSE_AUTO): an affix that
+        // is identical at both endpoints is rendered once instead of on each side.
+        // - A shared *trailing* affix run (e.g. a currency/percent suffix) always
+        //   collapses, appearing once after the end value: `3 - 5 €` not `3 € - 5 €`.
+        // - A shared *leading* affix run collapses only when it begins with a sign, so
+        //   `signDisplay:"always"` gives `+$2.90–3.10` (the `+$` shared once) while a
+        //   lone currency prefix stays on both sides: `$3 – $5`.
+        // Number-core parts (integer/fraction/group/decimal) never collapse.
+        static bool IsAffix(string type)
+            => type is "currency" or "unit" or "literal" or "percentSign"
+                    or "plusSign" or "minusSign" or "compact";
+        static bool IsSign(string type) => type is "plusSign" or "minusSign";
+        static bool PartsEqual((string type, string value) a, (string type, string value) b)
+            => a.type == b.type && a.value == b.value;
+
+        var n1 = startParts.Count;
+        var n2 = endParts.Count;
+
+        var suffixCollapse = 0;
+        while (suffixCollapse < n1 && suffixCollapse < n2)
+        {
+            var p = startParts[n1 - 1 - suffixCollapse];
+            if (!PartsEqual(p, endParts[n2 - 1 - suffixCollapse]) || !IsAffix(p.type))
+                break;
+            suffixCollapse++;
+        }
+
+        var prefixShared = 0;
+        while (prefixShared < n1 - suffixCollapse && prefixShared < n2 - suffixCollapse)
+        {
+            var p = startParts[prefixShared];
+            if (!PartsEqual(p, endParts[prefixShared]) || !IsAffix(p.type))
+                break;
+            prefixShared++;
+        }
+        var prefixCollapse = prefixShared > 0 && IsSign(startParts[0].type) ? prefixShared : 0;
+
+        var startMiddle = startParts.GetRange(prefixCollapse, n1 - prefixCollapse - suffixCollapse);
+        var endMiddle = endParts.GetRange(prefixCollapse, n2 - prefixCollapse - suffixCollapse);
+
+        // The locale range separator (CLDR miscPatterns/range): en-dash for most locales,
+        // a spaced hyphen-minus for e.g. pt-PT. For a separator that the pattern leaves
+        // tight (no surrounding spaces), ICU's NumberRangeFormatter pads it with a space
+        // only when a non-digit (an affix) abuts it — so a collapsed or plain numeric
+        // boundary renders tight (`+$2.90–3.10`, `1–2`) while `$3 – $5` gets spaces. A
+        // pattern that already carries spaces (pt-PT) is always rendered spaced.
+        var (sepCore, sepSpaced) = CldrLocaleData.RangePattern(locale);
+        var startStr = Concat(startMiddle);
+        var endStr = Concat(endMiddle);
+        var leftDigit = startStr.Length > 0 && char.IsDigit(startStr[^1]);
+        var rightDigit = endStr.Length > 0 && char.IsDigit(endStr[0]);
+        var separator = sepSpaced || !leftDigit || !rightDigit ? " " + sepCore + " " : sepCore;
+
+        for (var i = 0; i < prefixCollapse; i++)
+            result.Add((startParts[i].type, startParts[i].value, "shared"));
+        foreach (var (type, value) in startMiddle)
             result.Add((type, value, "startRange"));
-        result.Add(("literal", " – ", "shared"));
-        foreach (var (type, value) in endParts)
+        result.Add(("literal", separator, "shared"));
+        foreach (var (type, value) in endMiddle)
             result.Add((type, value, "endRange"));
+        for (var i = n1 - suffixCollapse; i < n1; i++)
+            result.Add((startParts[i].type, startParts[i].value, "shared"));
         return result;
     }
 
