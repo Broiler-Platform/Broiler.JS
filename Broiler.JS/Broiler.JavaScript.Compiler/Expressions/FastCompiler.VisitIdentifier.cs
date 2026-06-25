@@ -288,6 +288,18 @@ partial class FastCompiler
             if (inMemberInitializer && !isDirectEvalCompilation)
                 throw new FastParseException(identifier.Start, "'arguments' is not allowed in a class field initializer");
 
+            // A lexical binding named `arguments` declared in an INNER block scope (a
+            // `let`/`const`/`class` or a block-level function declaration) shadows the
+            // function's arguments object within that block, so `arguments` there must
+            // resolve to that binding — not the materialised arguments object. (A
+            // `var arguments` instead lives in the function root and shares the arguments
+            // binding, handled by MaterializeArgumentsBinding below.) Skipped under an
+            // active `with`, whose object may dynamically provide `arguments`; that path
+            // keeps the existing with-aware handling. (test262 annexB block-decl-func-skip-
+            // arguments, language/.../arguments lexical-shadow cases.)
+            if (withBoundaries.Count == 0 && TryGetBlockScopedArguments(out var lexicalArguments))
+                return lexicalArguments.Expression;
+
             // A direct eval body has no `arguments` of its own — references resolve to the
             // ENCLOSING function's `arguments` binding via the scope chain at runtime
             // (test262 sm/extensions/function-caller-skips-eval-frames probes
@@ -366,6 +378,27 @@ partial class FastCompiler
                 ? JSContextBuilder.ResolveIdentifierStrict(KeyOfName(identifier.Name))
                 : JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name)))
             : JSContextBuilder.ResolveIdentifierOrUndefined(KeyOfName(identifier.Name));
+    }
+
+    // Finds a lexical `arguments` binding declared in an inner block scope (a
+    // `let`/`const`/`class` or a block-level function declaration) that shadows the
+    // function's arguments object. Walks the block (and arrow) scopes from the current
+    // position up to — but NOT including — the function root that owns the arguments
+    // object (the unique scope where <c>s == s.RootScope</c>): a `var arguments` lives in
+    // that root and must keep sharing the arguments binding via MaterializeArgumentsBinding.
+    private bool TryGetBlockScopedArguments(out FastFunctionScope.VariableScope variable)
+    {
+        variable = null;
+        for (var s = scope.Top; s != null && !ReferenceEquals(s, s.RootScope); s = s.Parent)
+        {
+            if (s.TryGetOwnVariable("arguments", out var v) && v.Variable != null)
+            {
+                variable = v;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // Creates (or returns) the ordinary function's own `arguments` binding in the

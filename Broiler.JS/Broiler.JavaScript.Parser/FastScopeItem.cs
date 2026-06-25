@@ -9,6 +9,11 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
     private Dictionary<string, (StringSpan name, FastVariableKind kind)> Variables = new();
     public readonly FastNodeType NodeType = nodeType;
 
+    // True for an arrow-function scope. An arrow has no `arguments` object of its own,
+    // so (unlike an ordinary function) `arguments` is NOT an implicit parameter name and
+    // a block-level `function arguments(){}` inside it still Annex B var-hoists normally.
+    public bool IsArrow;
+
     private List<StringSpan> annexBFunctionNames;
 
     /// <summary>

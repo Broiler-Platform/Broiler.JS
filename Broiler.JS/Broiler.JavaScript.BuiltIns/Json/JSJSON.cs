@@ -819,7 +819,11 @@ public partial class JSJSON : JSObject
             {
                 var bigIntToJson = value[KeyStrings.toJSON];
                 if (bigIntToJson is IJSFunction bp)
-                    return bp.Delegate(new Arguments(value, key));
+                    // Resolve a tail-call sentinel: under the script host a toJSON whose body
+                    // ends in `return f()` (e.g. `return this.toString()`) returns a JSTailCall,
+                    // which would otherwise be serialized as a bare object ("{}") instead of its
+                    // resolved value (#912 Problem 14).
+                    return JSTailCall.Resolve(bp.Delegate(new Arguments(value, key)));
             }
 
             return value;
@@ -836,7 +840,9 @@ public partial class JSJSON : JSObject
         // GetMethod abstract op which throws on a non-callable own property.
         var toJson = jobj[KeyStrings.toJSON];
         if (toJson is IJSFunction p)
-            return p.Delegate(new Arguments(value, key));
+            // Resolve a tail-call sentinel (script host): a toJSON ending in `return f()`
+            // returns a JSTailCall that must be trampolined to its value before serialization.
+            return JSTailCall.Resolve(p.Delegate(new Arguments(value, key)));
 
         return value;
     }

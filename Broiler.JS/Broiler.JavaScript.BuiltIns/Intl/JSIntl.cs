@@ -770,14 +770,24 @@ public static class JSIntl
         "trad", "unihan", "zhuyin",
     };
 
-    // The recognised collations in ascending code-unit order, for Intl.supportedValuesOf
-    // ("collation"). Kept in sync with KnownCollations (both exclude "standard"/"search").
+    // AvailableCollations (Intl.supportedValuesOf("collation")) in ascending code-unit
+    // order. Per spec this is the set of collations for which the engine actually provides
+    // Collator functionality — i.e. those some locale RESOLVES (resolvedOptions().collation
+    // === co), NOT the broader KnownCollations set merely ACCEPTED as an option value (an
+    // unrecognised-for-the-locale option silently falls back to "default"). Our Collator
+    // resolves only the root collations emoji/eor (available everywhere) plus the locale
+    // tailorings exposed by NetCollationSuffix (de phonebk; zh pinyin/stroke/phonetic/
+    // zhuyin/trad; ja/ko/zh unihan). Listing a collation here that no locale resolves would
+    // fail test262 intl402/Intl/supportedValuesOf/collations-accepted-by-Collator.js
+    // (#912 Problem 11), so this list is kept in sync with NetCollationSuffix.
     private static readonly string[] SupportedCollationsSorted = BuildSortedCollations();
 
     private static string[] BuildSortedCollations()
     {
-        var array = new string[KnownCollations.Count];
-        KnownCollations.CopyTo(array);
+        var array = new[]
+        {
+            "emoji", "eor", "phonebk", "phonetic", "pinyin", "stroke", "trad", "unihan", "zhuyin",
+        };
         System.Array.Sort(array, StringComparer.Ordinal);
         return array;
     }

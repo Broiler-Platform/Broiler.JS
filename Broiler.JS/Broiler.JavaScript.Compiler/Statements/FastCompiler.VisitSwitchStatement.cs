@@ -106,6 +106,14 @@ partial class FastCompiler
                             functionInitializers.Add(CreateSwitchFunctionInitializer(functionDeclaration));
                             break;
 
+                        // A labelled FunctionDeclaration in a CaseClause (`l: function f(){}`)
+                        // is hoisted to the CaseBlock top exactly like an unlabelled one (the
+                        // label has no runtime effect on a declaration), so a reference in an
+                        // earlier clause resolves to it (#912). Unwrap nested labels.
+                        case AstLabeledStatement labeled when TryUnwrapLabeledFunctionDeclaration(labeled) is { } labeledFunction:
+                            functionInitializers.Add(CreateSwitchFunctionInitializer(labeledFunction));
+                            break;
+
                         case AstStatement stmt:
                             body.Add(TrackCompletion(VisitStatement(stmt)));
                             break;
@@ -413,6 +421,19 @@ partial class FastCompiler
 
         AppendAnnexBOuterBindingAssignments(statements, currentBinding, functionDeclaration.Id.Name, temp.Variable);
         return BExpression.Block(variables, statements);
+    }
+
+    // Returns the FunctionDeclaration wrapped (through one or more labels) by a
+    // LabelledStatement, or null when the labelled item is not a function declaration.
+    private static AstFunctionExpression TryUnwrapLabeledFunctionDeclaration(AstLabeledStatement labeled)
+    {
+        AstStatement current = labeled;
+        while (current is AstLabeledStatement inner)
+            current = inner.Body;
+
+        return current is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true, Id: { } } fn }
+            ? fn
+            : null;
     }
 
     private static HashSet<string> CollectSwitchLexicalBindings(IFastEnumerable<Case> cases)

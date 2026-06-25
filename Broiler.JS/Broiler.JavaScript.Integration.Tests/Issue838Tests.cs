@@ -63,10 +63,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   0/0, USD 2/2, BHD 3/3, and explicit overrides resolve against those defaults.
 //
 //   Problem 69 (Intl.supportedValuesOf("collation")) — the collation enumeration returned an
-//   empty list even though the Collator accepts the standard CLDR collations, so a collation
-//   accepted by Collator (e.g. "big5han") was missing from supportedValuesOf. It now returns
-//   the recognised collation set (the same KnownCollations the Collator resolves against),
-//   sorted ascending and excluding the reserved "standard"/"search".
+//   empty list even though the Collator resolves several CLDR collations. It now returns the
+//   set of collations the Collator actually RESOLVES (AvailableCollations: emoji/eor plus the
+//   locale tailorings exposed via NetCollationSuffix), sorted ascending and excluding the
+//   reserved "standard"/"search". (Refined for #912 Problem 11: the earlier fix listed the
+//   broader KnownCollations, including values like "big5han" that are accepted as an option
+//   but never resolved, which failed collations-accepted-by-Collator.)
 //
 //   Problems 73, 79 (Unicode keyword canonicalization for calendar / collation) — keyword
 //   type-value aliases were not applied to the "-u-" extension during tag canonicalization, so
@@ -487,9 +489,17 @@ public class Issue838Tests
 
     // ---- Problem 69: Intl.supportedValuesOf("collation") ----
 
+    // AvailableCollations lists only collations the Collator actually RESOLVES (some
+    // locale reflects them in resolvedOptions), not every value accepted as an option.
+    // "big5han" is accepted as an option but never resolved (it silently falls back to
+    // "default"), so it must NOT appear; a genuinely resolvable tailoring ("phonebk")
+    // and the root collations ("emoji") must. (Corrected for #912 Problem 11; the original
+    // #838 fix over-listed non-resolvable collations — see collations-accepted-by-Collator.)
     [Fact]
-    public void SupportedValuesOfCollationIncludesBig5han()
-        => Assert.Equal("true", Eval("String(Intl.supportedValuesOf('collation').includes('big5han'))"));
+    public void SupportedValuesOfCollationListsOnlyResolvable()
+        => Assert.Equal("false,true,true", Eval(
+            "var a = Intl.supportedValuesOf('collation');" +
+            "String(a.includes('big5han')) + ',' + String(a.includes('phonebk')) + ',' + String(a.includes('emoji'))"));
 
     [Fact]
     public void SupportedValuesOfCollationIsSortedAndExcludesReserved()
@@ -498,12 +508,18 @@ public class Issue838Tests
             "String(JSON.stringify(a) === JSON.stringify([...a].sort())) + ',' +" +
             "String(a.includes('standard') || a.includes('search'))"));
 
+    // Each supportedValuesOf("collation") value must resolve for SOME locale (not 'en'
+    // specifically — phonebk resolves for de, pinyin for zh, etc.). Mirrors test262
+    // intl402/Intl/supportedValuesOf/collations-accepted-by-Collator (#912 Problem 11).
     [Fact]
     public void EverySupportedCollationIsAcceptedByCollator()
         => Assert.Equal("true", Eval(
-            "var sv = Intl.supportedValuesOf('collation'); var ok = true;" +
+            "var sv = Intl.supportedValuesOf('collation');" +
+            "var locales = ['en','ar','de','es','hi','ko','ln','si','sv','zh']; var ok = true;" +
             "sv.forEach(function (c) {" +
-            "  if (new Intl.Collator('en', { collation: c }).resolvedOptions().collation !== c) ok = false; });" +
+            "  var hit = locales.some(function (loc) {" +
+            "    return new Intl.Collator(loc, { collation: c }).resolvedOptions().collation === c; });" +
+            "  if (!hit) ok = false; });" +
             "String(ok)"));
 
     [Fact]
