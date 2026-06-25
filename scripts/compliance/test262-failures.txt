@@ -13,13 +13,11 @@ test/built-ins/Array/prototype/toReversed/length-exceeding-array-length-limit.js
 test/built-ins/Array/prototype/unshift/clamps-to-integer-limit.js
 test/built-ins/Array/prototype/unshift/length-near-integer-limit.js
 test/built-ins/Array/prototype/unshift/throws-if-integer-limit-exceeded.js
-test/built-ins/ArrayBuffer/prototype/sliceToImmutable/argument-coercion.js
 test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/nullable-quantifier.js
 test/language/comments/S7.4_A5.js
 test/language/comments/S7.4_A6.js
-test/language/eval-code/direct/var-env-func-init-local-new-delete.js
 test/language/literals/regexp/S7.8.5_A1.1_T2.js
 test/language/literals/regexp/S7.8.5_A1.4_T2.js
 test/language/literals/regexp/S7.8.5_A2.1_T2.js
