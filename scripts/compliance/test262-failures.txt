@@ -4,7 +4,6 @@
 
 test/annexB/built-ins/RegExp/RegExp-leading-escape-BMP.js
 test/annexB/built-ins/RegExp/RegExp-trailing-escape-BMP.js
-test/annexB/language/function-code/block-decl-func-skip-arguments.js
 test/built-ins/Array/prototype/reduceRight/length-near-integer-limit.js
 test/built-ins/Array/prototype/slice/S15.4.4.10_A3_T1.js
 test/built-ins/Array/prototype/slice/S15.4.4.10_A3_T2.js
@@ -15,22 +14,14 @@ test/built-ins/Array/prototype/unshift/clamps-to-integer-limit.js
 test/built-ins/Array/prototype/unshift/length-near-integer-limit.js
 test/built-ins/Array/prototype/unshift/throws-if-integer-limit-exceeded.js
 test/built-ins/ArrayBuffer/prototype/sliceToImmutable/argument-coercion.js
-test/built-ins/Function/prototype/toString/getter-class-expression-static.js
-test/built-ins/Function/prototype/toString/getter-class-expression.js
-test/built-ins/Function/prototype/toString/setter-class-expression-static.js
-test/built-ins/Function/prototype/toString/setter-class-expression.js
-test/built-ins/JSON/stringify/value-bigint-tojson.js
 test/built-ins/RegExp/lookBehind/back-references-to-captures.js
 test/built-ins/RegExp/lookBehind/mutual-recursive.js
 test/built-ins/RegExp/nullable-quantifier.js
-test/intl402/Intl/supportedValuesOf/collations-accepted-by-Collator.js
 test/intl402/NumberFormat/prototype/formatRange/en-US.js
 test/intl402/NumberFormat/prototype/formatRange/pt-PT.js
 test/language/comments/S7.4_A5.js
 test/language/comments/S7.4_A6.js
 test/language/eval-code/direct/var-env-func-init-local-new-delete.js
-test/language/expressions/class/accessor-name-inst-computed-in.js
-test/language/expressions/class/accessor-name-static-computed-in.js
 test/language/literals/regexp/S7.8.5_A1.1_T2.js
 test/language/literals/regexp/S7.8.5_A1.4_T2.js
 test/language/literals/regexp/S7.8.5_A2.1_T2.js
@@ -50,12 +41,10 @@ test/staging/sm/Function/arguments-parameter-shadowing.js
 test/staging/sm/Proxy/global-receiver.js
 test/staging/sm/RegExp/unicode-back-reference.js
 test/staging/sm/RegExp/unicode-braced.js
-test/staging/sm/class/methodInstallation.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
 test/staging/sm/generators/return-finally.js
 test/staging/sm/global/eval-02.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
-test/staging/sm/lexical-environment/block-scoped-functions-annex-b-label.js
 test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
 test/staging/sm/regress/regress-610026.js
 test/staging/sm/strict/10.6.js
