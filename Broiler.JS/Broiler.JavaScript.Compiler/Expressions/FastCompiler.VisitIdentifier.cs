@@ -38,14 +38,23 @@ partial class FastCompiler
         var withinBoundary = true;
         FastFunctionScope.VariableScope outer = null;
         var outerIsGlobal = false;
+        // The eval-boundary function scopes the reference crosses to reach `outer`,
+        // collected innermost-first. A binding introduced by an eval in the inner
+        // boundary must be able to shadow one introduced by an eval in an enclosing
+        // boundary, which must in turn shadow the real outer binding — so a shadow is
+        // created at EACH crossed boundary and chained (inner forwards to next-outer).
+        var crossedBoundaries = new List<FastFunctionScope>();
         for (var s = scope.Top; s != null; s = s.Parent)
         {
             if (s.TryGetOwnVariable(name, out var v) && v.Variable != null)
             {
                 if (v.IsEvalShadow)
                 {
-                    shadow = v;
-                    return true;
+                    // An existing shadow at a crossed boundary already forwards correctly;
+                    // reuse it as the outer binding for any (inner) boundaries still to chain.
+                    outer = v;
+                    outerIsGlobal = false;
+                    break;
                 }
 
                 if (withinBoundary)
@@ -62,6 +71,12 @@ partial class FastCompiler
                 break;
             }
 
+            // Collect eval-boundary scopes the reference crosses. The innermost boundary
+            // (evalShadowBoundary) is recorded here too; `withinBoundary` flips when we
+            // pass it so a binding owned inside it falls back to ordinary resolution.
+            if (s.IsEvalShadowBoundary)
+                crossedBoundaries.Add(s);
+
             if (ReferenceEquals(s, boundary))
                 withinBoundary = false;
         }
@@ -69,7 +84,38 @@ partial class FastCompiler
         if (outer == null)
             return false; // undeclared name: nothing to forward to
 
-        shadow = boundary.CreateEvalShadow(name, outer.Variable, outerIsGlobal);
+        // Build the shadow chain outermost→innermost: the outermost crossed boundary
+        // forwards to the real outer binding; each inner boundary forwards to the
+        // shadow of the next-outer boundary. Reuse a boundary's existing shadow.
+        var nextOuterVariable = outer.Variable;
+        var nextOuterIsGlobal = outer.IsEvalShadow ? false : outerIsGlobal;
+        FastFunctionScope.VariableScope created = null;
+        for (var i = crossedBoundaries.Count - 1; i >= 0; i--)
+        {
+            var b = crossedBoundaries[i];
+            if (b.TryGetOwnVariable(name, out var existing) && existing.IsEvalShadow)
+            {
+                created = existing;
+            }
+            else
+            {
+                created = b.CreateEvalShadow(name, nextOuterVariable, nextOuterIsGlobal);
+            }
+
+            nextOuterVariable = created.Variable;
+            // Chained shadows forward to another JSVariable via GetValue/SetValue, never
+            // through a global-object property.
+            nextOuterIsGlobal = false;
+        }
+
+        if (created != null)
+            shadow = created;                 // innermost shadow of the freshly built chain
+        else if (outer.IsEvalShadow)
+            shadow = outer;                   // existing shadow, no inner boundary to chain
+        else
+            // Defensive: no crossed boundary (shouldn't happen once the binding is found
+            // outside the active boundary) — single shadow on the active boundary.
+            shadow = boundary.CreateEvalShadow(name, outer.Variable, outerIsGlobal);
         return true;
     }
 
