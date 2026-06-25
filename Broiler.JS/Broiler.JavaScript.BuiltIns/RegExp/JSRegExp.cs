@@ -816,9 +816,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // ECMAScript Canonicalize equivalence class. The class differs by mode:
             // non-Unicode uses toUppercase (with the ASCII guard, so ſ does NOT fold
             // to s), Unicode/Unicode-sets use case folding (so ſ DOES fold to s).
-            if (ignoreCase)
-                pattern = TransformUnicodeCaseFolding(pattern, unicode || unicodeSets);
-
             // Per sec-patterns-static-semantics-early-errors, an inline modifier
             // group `(?<add>-<remove>:…)` may only contain i/m/s flags, may not repeat
             // a flag within a group, may not list a flag in both the added and removed
@@ -827,10 +824,18 @@ public partial class JSRegExp : JSObject, IJSRegExp
             ValidateInlineModifiers(pattern);
 
             // §2.6 — Detect inline pattern modifiers (?i:...) / (?-i:...) / (?ims:...) etc.
-            // .NET ECMAScript mode does not support them, so switch to default mode.
+            // .NET ECMAScript mode does not support USER inline-modifier groups, so switch
+            // to default mode when one is present. This is computed BEFORE
+            // TransformUnicodeCaseFolding runs: that transform may inject its own (?-i:…)
+            // groups to neutralise .NET's over-broad case folding, and .NET honours such a
+            // group fine under ECMAScript mode — leaving the mode on keeps \d/\w/\s in
+            // their ECMAScript (ASCII) forms, which dropping it would wrongly widen.
             var hasInlineModifiers = HasInlineModifiers(pattern);
             if ((options & RegexOptions.ECMAScript) != 0 && hasInlineModifiers)
                 options &= ~RegexOptions.ECMAScript;
+
+            if (ignoreCase)
+                pattern = TransformUnicodeCaseFolding(pattern, unicode || unicodeSets);
 
             // ES2015 §21.2.2.8: In Unicode mode, '.' matches any single
             // Unicode code point.  .NET's '.' only matches a single UTF-16
@@ -4571,10 +4576,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     int cp = HexValue(pattern[i + 2]) << 12 | HexValue(pattern[i + 3]) << 8
                            | HexValue(pattern[i + 4]) << 4 | HexValue(pattern[i + 5]);
                     var equiv = GetCaseFoldEquivalents((char)cp, unicode);
-                    if (!unicode && !inClass && IsNonUnicodeOverFold((char)cp))
+                    var overFold = !unicode && !inClass ? GetNonUnicodeOverFoldClass(cp) : null;
+                    if (overFold != null)
                     {
                         sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
-                        AppendOverFoldNeutralized(sb, (char)cp, equiv);
+                        AppendNeutralizedClass(sb, overFold);
                         i += 5;
                         continue;
                     }
@@ -4596,10 +4602,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 {
                     int cp = HexValue(pattern[i + 2]) << 4 | HexValue(pattern[i + 3]);
                     var equiv = GetCaseFoldEquivalents((char)cp, unicode);
-                    if (!unicode && !inClass && IsNonUnicodeOverFold((char)cp))
+                    var overFold = !unicode && !inClass ? GetNonUnicodeOverFoldClass(cp) : null;
+                    if (overFold != null)
                     {
                         sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
-                        AppendOverFoldNeutralized(sb, (char)cp, equiv);
+                        AppendNeutralizedClass(sb, overFold);
                         i += 3;
                         continue;
                     }
@@ -4639,10 +4646,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
             // Check literal characters
             var litEquiv = GetCaseFoldEquivalents(c, unicode);
-            if (!unicode && !inClass && IsNonUnicodeOverFold(c))
+            var litOverFold = !unicode && !inClass ? GetNonUnicodeOverFoldClass(c) : null;
+            if (litOverFold != null)
             {
                 sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
-                AppendOverFoldNeutralized(sb, c, litEquiv);
+                AppendNeutralizedClass(sb, litOverFold);
                 continue;
             }
             if (litEquiv != null)
@@ -4685,8 +4693,55 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// code point as its own canonical form, so it must only match itself (and any true
     /// non-ASCII equivalents) — never an ASCII letter.
     /// </summary>
-    private static bool IsNonUnicodeOverFold(char c)
-        => c >= 128 && char.ToLowerInvariant(c) < 128;
+    private static char[] GetNonUnicodeOverFoldClass(int cp)
+        => cp <= 0xFFFF && NonUnicodeOverFoldClasses.Value.TryGetValue((char)cp, out var cls) ? cls : null;
+
+    // Group every BMP code unit two ways: by .NET's invariant lowercase (how its
+    // IgnoreCase regex decides two units are equal) and by ECMAScript's non-Unicode
+    // Canonicalize key. A unit is "over-folded" when its .NET group reaches a unit in a
+    // DIFFERENT Canonicalize class (e.g. ẞ↔ß, k/K↔KELVIN U+212A, å/Å↔ANGSTROM U+212B,
+    // Ω↔OHM U+2126); its correct match set is the full Canonicalize class. Such a unit is
+    // emitted with IgnoreCase disabled — (?-i:[class]) — so .NET's over-broad fold is
+    // replaced by exactly the ECMAScript-equivalent units.
+    private static readonly Lazy<Dictionary<char, char[]>> NonUnicodeOverFoldClasses =
+        new(BuildNonUnicodeOverFoldClasses);
+
+    private static Dictionary<char, char[]> BuildNonUnicodeOverFoldClasses()
+    {
+        var netGroups = new Dictionary<char, List<char>>();
+        var canonGroups = new Dictionary<char, List<char>>();
+        for (int u = 0; u <= 0xFFFF; u++)
+        {
+            if (u >= 0xD800 && u <= 0xDFFF)
+                continue;
+            char ch = (char)u;
+            AddToCharGroup(netGroups, char.ToLowerInvariant(ch), ch);
+            AddToCharGroup(canonGroups, CanonicalizeKey(ch), ch);
+        }
+
+        var map = new Dictionary<char, char[]>();
+        for (int u = 0; u <= 0xFFFF; u++)
+        {
+            if (u >= 0xD800 && u <= 0xDFFF)
+                continue;
+            char ch = (char)u;
+            var canonKey = CanonicalizeKey(ch);
+            var netGroup = netGroups[char.ToLowerInvariant(ch)];
+            var overFolds = false;
+            foreach (var d in netGroup)
+                if (CanonicalizeKey(d) != canonKey) { overFolds = true; break; }
+            if (overFolds)
+                map[ch] = canonGroups[canonKey].ToArray();
+        }
+        return map;
+    }
+
+    private static void AddToCharGroup(Dictionary<char, List<char>> groups, char key, char value)
+    {
+        if (!groups.TryGetValue(key, out var list))
+            groups[key] = list = new List<char>(2);
+        list.Add(value);
+    }
 
     /// <summary>
     /// Emits <paramref name="c"/> (plus its genuine ECMAScript equivalents) with
@@ -4694,19 +4749,18 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// over-broad ToLower folding no longer matches an unrelated ASCII letter. Only used
     /// outside a character class (an inline group is not valid class syntax).
     /// </summary>
-    private static void AppendOverFoldNeutralized(StringBuilder sb, char c, char[] equivalents)
+    private static void AppendNeutralizedClass(StringBuilder sb, char[] cls)
     {
         sb.Append("(?-i:");
-        if (equivalents == null || equivalents.Length == 0)
+        if (cls.Length == 1)
         {
-            AppendUnicodeEscape(sb, c);
+            AppendUnicodeEscape(sb, cls[0]);
         }
         else
         {
             sb.Append('[');
-            AppendUnicodeEscape(sb, c);
-            foreach (var eq in equivalents)
-                AppendUnicodeEscape(sb, eq);
+            foreach (var ch in cls)
+                AppendUnicodeEscape(sb, ch);
             sb.Append(']');
         }
         sb.Append(')');
