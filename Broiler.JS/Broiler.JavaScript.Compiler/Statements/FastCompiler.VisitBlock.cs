@@ -67,9 +67,28 @@ partial class FastCompiler
                 if (!isLexical
                     && v.Equals("arguments")
                     && !blockFunctionNames.Contains(v.Value)
-                    && scope.RootScope.Function is { IsArrowFunction: false })
+                    && scope.RootScope.Function is { IsArrowFunction: false } rootFunction)
                 {
-                    MaterializeArgumentsBinding();
+                    // With a non-simple parameter list the function has a separate parameter
+                    // environment (FunctionDeclarationInstantiation §10.2.11): the parameter-env
+                    // `arguments` object is what parameter-initializer closures capture, while a
+                    // body `var arguments` is a DISTINCT var-environment binding initialised to a
+                    // copy of that object — writes to it must NOT be observed through the captured
+                    // one (test262 sm/Function/arguments-parameter-shadowing). Create that binding
+                    // in this (body-block) scope, seeded from the materialised parameter-env
+                    // arguments object; body references and assignments resolve to it ahead of the
+                    // function-root binding (TryGetBlockScopedArguments / GetVariable). With a simple
+                    // parameter list there is a single environment, so the `var` shares the
+                    // function's own arguments binding (S13_A15_T2).
+                    if (!HasSimpleParameterList(rootFunction.Params))
+                    {
+                        var parameterArguments = MaterializeArgumentsBinding();
+                        scope.CreateVariable("arguments", parameterArguments.Expression, newScope: true);
+                    }
+                    else
+                    {
+                        MaterializeArgumentsBinding();
+                    }
                     continue;
                 }
 
