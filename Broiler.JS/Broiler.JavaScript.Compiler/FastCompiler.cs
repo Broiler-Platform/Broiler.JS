@@ -370,6 +370,19 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
 
     protected override BExpression VisitEmptyExpression(AstEmptyExpression emptyExpression) => BExpression.Empty;
 
+    // True when <paramref name="top"/> is the program scope of a sloppy function-local
+    // direct eval (its own variable environment) sitting directly below the eval root —
+    // i.e. the scope a top-level FunctionDeclaration of the eval body is compiled in.
+    // Such a declaration is fully instantiated at eval entry (program hoisting seed +
+    // PostInit), so its textual statement is a runtime no-op: no binding re-read in
+    // CreateFunction and no Annex B var copy-out in VisitExpressionStatement.
+    private bool IsTopLevelLocalVarEnvEvalScope(FastFunctionScope top)
+        => isDirectEvalCompilation
+           && usesDirectEvalLocalVarEnvironment
+           && !IsStrictMode
+           && top.Function == null
+           && top.Parent == top.RootScope;
+
     protected override BExpression VisitExpressionStatement(AstExpressionStatement expressionStatement)
     {
         // A FunctionDeclaration and a ClassDeclaration complete with an empty value
@@ -395,6 +408,7 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
 
         if (IsStrictMode
             || scope.Top == scope.Top.RootScope
+            || IsTopLevelLocalVarEnvEvalScope(scope.Top)
             || expressionStatement.Expression is not AstFunctionExpression { IsStatement: true, Id: { } id })
         {
             return result;
