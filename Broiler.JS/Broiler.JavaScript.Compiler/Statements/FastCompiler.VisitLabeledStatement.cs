@@ -33,6 +33,25 @@ partial class FastCompiler
                 {
                     var breakTarget = BExpression.Label();
                     var label = labeledStatement.Label.Span.Value;
+
+                    // Inside a generator the body is lowered into a state machine and the
+                    // script/eval completion value is irrelevant — so emit the labeled
+                    // body plainly, without the completion-tracking try/finally wrapper
+                    // (mirroring VisitTryStatement's generator special-case). That wrapper
+                    // is a rewritten try region whose `finally` (PropagateCompletion) would
+                    // be SKIPPED by a `break <label>` that branches out of the body, leaving
+                    // a stale region on the generator's try-region stack and corrupting the
+                    // pending-completion unwinding of an enclosing finally.
+                    if (scope.Top.Function?.Generator == true)
+                    {
+                        var genLoopScope = new LoopScope(breakTarget, null, false, label);
+                        using var gs = scope.Top.Loop.Push(genLoopScope);
+                        return BExpression.Block(
+                            VisitStatement(labeledStatement.Body),
+                            BExpression.Label(breakTarget),
+                            JSUndefinedBuilder.Value);
+                    }
+
                     var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
                     var outerCompletionVars = GetCompletionVariables();
                     var loopScope = new LoopScope(breakTarget, null, false, label) { CompletionVariable = completionVar };
