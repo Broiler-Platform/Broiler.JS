@@ -963,6 +963,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // input, so the observable match behavior is unchanged.
             pattern = ClampLargeQuantifiers(pattern);
 
+            // ECMAScript RepeatMatcher (22.2.2.3.1) discards a min=0 quantifier iteration
+            // whose body matched the empty string, so a min=0 quantifier applied to a body
+            // that consumes no input does exactly zero iterations and never sets the captures
+            // inside it. .NET keeps those captures, so rewrite such a quantifier to `{0}`.
+            pattern = RewriteZeroWidthMinZeroQuantifiers(pattern);
+
             // Final transform: rename capturing groups to synthetic, source-ordered
             // names so .NET's group numbering and duplicate-name handling match
             // ECMAScript. Runs last so the capture layout reflects the user's groups
@@ -1538,6 +1544,218 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         return sb.ToString();
+    }
+
+    // ECMAScript RepeatMatcher (22.2.2.3.1, step 2.b): "If min = 0 and y's endIndex =
+    // x's endIndex, return failure." — an optional (min = 0) iteration that matched the
+    // empty string is discarded. A quantifier whose body ALWAYS matches empty (a
+    // lookaround, an anchor, or an empty group — anything that consumes no input) can
+    // therefore only ever perform zero iterations when min = 0, so any capturing group
+    // inside it never participates and reads back as `undefined`. .NET instead keeps the
+    // capture (e.g. /abc()?/ leaves group 1 as "" and /(?:(?=(abc)))?a/ as "abc"), so
+    // rewrite the quantifier to `{0}`: the group's slots stay declared (preserving group
+    // numbering) but never run, matching ECMAScript. This is a sound, behaviour-preserving
+    // rewrite — a min = 0 quantifier over a zero-width body is observably equivalent to
+    // matching it exactly zero times.
+    private static string RewriteZeroWidthMinZeroQuantifiers(string pattern)
+    {
+        List<(int Start, int Len)> replacements = null;
+        var openStack = new List<int>();
+        var inClass = false;
+
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+            if (c == '\\') { i++; continue; }
+            if (inClass) { if (c == ']') inClass = false; continue; }
+            if (c == '[') { inClass = true; continue; }
+            if (c == '(') { openStack.Add(i); continue; }
+            if (c != ')') continue;
+
+            if (openStack.Count == 0)
+                continue;
+            var open = openStack[^1];
+            openStack.RemoveAt(openStack.Count - 1);
+
+            // A min = 0 quantifier must directly follow this group, and the group must
+            // consume no input.
+            if (!TryReadMinZeroQuantifier(pattern, i + 1, out var qEnd))
+                continue;
+            if (!IsZeroWidthGroup(pattern, open, i))
+                continue;
+
+            (replacements ??= new List<(int, int)>()).Add((i + 1, qEnd - (i + 1)));
+        }
+
+        if (replacements == null)
+            return pattern;
+
+        // Replacements are recorded as their closing ')' is reached, i.e. in ascending
+        // start order, so a single forward splice is enough.
+        var sb = new StringBuilder(pattern.Length);
+        var idx = 0;
+        foreach (var (start, len) in replacements)
+        {
+            sb.Append(pattern, idx, start - idx);
+            sb.Append("{0}");
+            idx = start + len;
+        }
+        sb.Append(pattern, idx, pattern.Length - idx);
+        return sb.ToString();
+    }
+
+    // Reads a quantifier at <paramref name="start"/> whose minimum repeat count is zero
+    // (`?`, `*`, `{0}`, `{0,}`, `{0,m}`, optionally with a trailing lazy `?`). On success
+    // <paramref name="end"/> is the index just past the whole quantifier.
+    private static bool TryReadMinZeroQuantifier(string pattern, int start, out int end)
+    {
+        end = start;
+        if (start >= pattern.Length)
+            return false;
+
+        var c = pattern[start];
+        if (c == '?' || c == '*')
+        {
+            end = start + 1;
+        }
+        else if (c == '{')
+        {
+            var j = start + 1;
+            var digitsStart = j;
+            while (j < pattern.Length && pattern[j] >= '0' && pattern[j] <= '9') j++;
+            if (j == digitsStart)
+                return false; // no minimum digits → a literal brace, not a quantifier
+            var minIsZero = long.TryParse(pattern.Substring(digitsStart, j - digitsStart), out var mv) && mv == 0;
+            if (j < pattern.Length && pattern[j] == '}')
+            {
+                if (!minIsZero) return false; // {n} with n>0
+                end = j + 1;
+            }
+            else if (j < pattern.Length && pattern[j] == ',')
+            {
+                j++;
+                while (j < pattern.Length && pattern[j] >= '0' && pattern[j] <= '9') j++;
+                if (j >= pattern.Length || pattern[j] != '}')
+                    return false; // malformed → a literal brace run
+                if (!minIsZero) return false; // {n,} or {n,m} with n>0
+                end = j + 1;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        // A lazy modifier on a min = 0 quantifier doesn't change that it can match empty.
+        if (end < pattern.Length && pattern[end] == '?')
+            end++;
+        return true;
+    }
+
+    // True when the group spanning [open, close] (indices of its '(' and ')') matches the
+    // empty string for every input — a lookaround, or a group whose body is a disjunction
+    // of zero-width sequences.
+    private static bool IsZeroWidthGroup(string pattern, int open, int close)
+    {
+        int bodyStart;
+        if (open + 1 <= close && open + 1 < pattern.Length && pattern[open + 1] == '?')
+        {
+            var c2 = open + 2 < pattern.Length ? pattern[open + 2] : '\0';
+            if (c2 == '=' || c2 == '!')
+                return true; // (?=…) / (?!…) lookahead — zero-width regardless of body
+            if (c2 == '<')
+            {
+                var c3 = open + 3 < pattern.Length ? pattern[open + 3] : '\0';
+                if (c3 == '=' || c3 == '!')
+                    return true; // (?<=…) / (?<!…) lookbehind
+                // (?<name>…) named capturing group: body starts after '>'
+                var gt = pattern.IndexOf('>', open + 3);
+                if (gt < 0 || gt >= close)
+                    return false;
+                bodyStart = gt + 1;
+            }
+            else if (c2 == ':')
+            {
+                bodyStart = open + 3; // (?:…) non-capturing
+            }
+            else
+            {
+                // Inline-modifier group (?ims-x:…): body after the ':'. Anything else
+                // (e.g. atomic (?>…)) is treated conservatively as non-zero-width.
+                var colon = pattern.IndexOf(':', open + 2);
+                if (colon < 0 || colon >= close)
+                    return false;
+                bodyStart = colon + 1;
+            }
+        }
+        else
+        {
+            bodyStart = open + 1; // plain capturing group
+        }
+
+        return IsZeroWidthSequence(pattern, bodyStart, close);
+    }
+
+    // True when [start, end) — a group body, possibly containing `|` alternatives —
+    // consumes no input: every atom is an anchor, a lookaround, or a (recursively)
+    // zero-width group, with quantifiers/alternation in between. Any input-consuming atom
+    // (a literal, '.', a character class, or an escape other than \b/\B) makes it false.
+    private static bool IsZeroWidthSequence(string pattern, int start, int end)
+    {
+        var i = start;
+        while (i < end)
+        {
+            var c = pattern[i];
+            if (c == '\\')
+            {
+                var n = i + 1 < end ? pattern[i + 1] : '\0';
+                if (n != 'b' && n != 'B')
+                    return false; // any escape other than the \b/\B boundary assertions consumes
+                i += 2;
+                continue;
+            }
+            if (c == '^' || c == '$' || c == '|' || c == '*' || c == '+' || c == '?')
+            {
+                i++; // anchors, alternation, and quantifier modifiers are all zero-width
+                continue;
+            }
+            if (c == '(')
+            {
+                var sub = MatchingCloseParen(pattern, i);
+                if (sub < 0 || sub >= end)
+                    return false;
+                if (!IsZeroWidthGroup(pattern, i, sub))
+                    return false;
+                i = sub + 1;
+                continue;
+            }
+            // A literal character, '.', '[' class, '{'/'}' (possible literal brace), or a
+            // stray ')' — treat as consuming / unknown and bail out conservatively.
+            return false;
+        }
+        return true;
+    }
+
+    // Index of the ')' that closes the '(' at <paramref name="open"/>, skipping escapes
+    // and character classes; -1 if unbalanced.
+    private static int MatchingCloseParen(string pattern, int open)
+    {
+        var depth = 0;
+        var inClass = false;
+        for (var i = open; i < pattern.Length; i++)
+        {
+            var c = pattern[i];
+            if (c == '\\') { i++; continue; }
+            if (inClass) { if (c == ']') inClass = false; continue; }
+            if (c == '[') { inClass = true; continue; }
+            if (c == '(') depth++;
+            else if (c == ')') { if (--depth == 0) return i; }
+        }
+        return -1;
     }
 
     // ES2025 allows duplicate named capture groups only in SEPARATE alternatives of a
