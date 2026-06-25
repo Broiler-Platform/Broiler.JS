@@ -870,8 +870,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // classes so they also match supplementary-plane code points (surrogate pairs).
                 pattern = TransformUnicodeCharClassEscapes(pattern);
                 // Transform character classes containing supplementary characters
-                // (surrogate pairs) so they match as whole code points.
-                pattern = TransformUnicodeCharClasses(pattern);
+                // (surrogate pairs) so they match as whole code points. Under ignoreCase
+                // the astral members/ranges are also expanded to their case-fold class
+                // (.NET applies no astral case folding of its own).
+                pattern = TransformUnicodeCharClasses(pattern, ignoreCase);
                 // Finally, give lone surrogates and surrogate pairs that sit
                 // *outside* a character class their ECMAScript code-point semantics
                 // (a lone surrogate must not match a code unit that forms a pair; a
@@ -2279,7 +2281,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// whole code points rather than two independent code units.
     /// E.g. [𝌆a-z] → (?:\uD834\uDF06|[a-z])
     /// </summary>
-    private static string TransformUnicodeCharClasses(string pattern)
+    private static string TransformUnicodeCharClasses(string pattern, bool ignoreCase = false)
     {
         if (string.IsNullOrEmpty(pattern))
             return pattern;
@@ -2433,6 +2435,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
                             // A range that reaches into the supplementary planes is
                             // decomposed into surrogate-aware alternatives.
                             AppendCodePointRangeAlternatives(alternatives, lo, hi);
+                            // Under /iu, the range also matches the case-fold images of
+                            // its supplementary members (.NET folds neither astral nor,
+                            // inside a rebuilt class, anything here).
+                            if (ignoreCase)
+                                AppendAstralCaseFoldExtras(alternatives, lo, hi);
                         }
                         else
                         {
@@ -2445,7 +2452,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     }
 
                     if (lo > 0xFFFF)
+                    {
                         alternatives.Add(EncodeSurrogatePair(lo));
+                        // Under /iu, a supplementary member also matches its case-fold class.
+                        if (ignoreCase)
+                            AppendAstralCaseFoldExtras(alternatives, lo, lo);
+                    }
                     else if (lo is >= 0xD800 and <= 0xDBFF)
                         // A lone lead surrogate: match a lead unit only when it is not
                         // followed by a trailing unit (otherwise the two form one pair).
@@ -2661,6 +2673,37 @@ public partial class JSRegExp : JSObject, IJSRegExp
         if (hHi - hLo >= 2)
             alts.Add("[" + Unit(hLo + 1) + "-" + Unit(hHi - 1) + "]" + @"[\uDC00-\uDFFF]");
         alts.Add(Unit(hHi) + LowRange(0xDC00, lLast));
+    }
+
+    // Appends the supplementary-plane ECMAScript Canonicalize (Unicode-mode) case-fold
+    // images of every code point in [lo, hi] that fall OUTSIDE [lo, hi], as surrogate-aware
+    // alternatives. Iterates the (bounded, ~hundreds of entries) astral fold map rather
+    // than the range itself, so even a very wide range stays cheap, and merges the images
+    // into contiguous runs to keep the emitted alternation compact.
+    private static void AppendAstralCaseFoldExtras(List<string> alts, int lo, int hi)
+    {
+        SortedSet<int> extras = null;
+        foreach (var kv in AstralCaseFoldEquivalents.Value)
+        {
+            if (kv.Key < lo || kv.Key > hi)
+                continue;
+            foreach (var e in kv.Value)
+                if (e < lo || e > hi)
+                    (extras ??= new SortedSet<int>()).Add(e);
+        }
+        if (extras == null)
+            return;
+
+        int runLo = -1, prev = -1;
+        foreach (var cp in extras)
+        {
+            if (runLo < 0) { runLo = prev = cp; continue; }
+            if (cp == prev + 1) { prev = cp; continue; }
+            AppendCodePointRangeAlternatives(alts, runLo, prev);
+            runLo = prev = cp;
+        }
+        if (runLo >= 0)
+            AppendCodePointRangeAlternatives(alts, runLo, prev);
     }
 
     /// <summary>
@@ -4491,6 +4534,32 @@ public partial class JSRegExp : JSObject, IJSRegExp
         {
             char c = pattern[i];
 
+            // A supplementary-plane literal (a raw surrogate pair) outside a character
+            // class, in Unicode mode: .NET does no astral case folding, so expand it to an
+            // alternation of its ECMAScript Canonicalize equivalence class — e.g. /𐐀+/iu
+            // must also match the lowercase 𐐨. (Inside a class this is handled later by
+            // TransformUnicodeCharClasses.)
+            if (unicode && !inClass && char.IsHighSurrogate(c)
+                && i + 1 < pattern.Length && char.IsLowSurrogate(pattern[i + 1]))
+            {
+                int cp = char.ConvertToUtf32(c, pattern[i + 1]);
+                var astralEq = GetAstralCaseFoldEquivalents(cp);
+                if (astralEq != null)
+                {
+                    sb ??= new StringBuilder(pattern.Length + 16).Append(pattern, 0, i);
+                    sb.Append("(?:").Append(EncodeSurrogatePair(cp));
+                    foreach (var e in astralEq)
+                        sb.Append('|').Append(EncodeSurrogatePair(e));
+                    sb.Append(')');
+                }
+                else
+                {
+                    sb?.Append(c).Append(pattern[i + 1]);
+                }
+                i++; // also consume the trailing low surrogate
+                continue;
+            }
+
             if (c == '\\' && i + 1 < pattern.Length)
             {
                 char next = pattern[i + 1];
@@ -4778,6 +4847,96 @@ public partial class JSRegExp : JSObject, IJSRegExp
     // CaseFolding.txt directly, but toUppercase followed by toLowercase yields the same
     // canonical lowercase form for the affected characters.
     private static char CaseFoldKey(char ch) => char.ToLowerInvariant(char.ToUpperInvariant(ch));
+
+    // Code-point (Rune) simple case fold, used to group SUPPLEMENTARY-plane code points
+    // into ECMAScript Canonicalize (Unicode-mode) equivalence classes. .NET's char-based
+    // ToUpper/ToLower only cover the BMP; Rune.ToUpperInvariant/ToLowerInvariant carry the
+    // same Unicode (16.0) data to the astral planes, so the toUpper→toLower round-trip
+    // yields each astral letter's canonical fold (e.g. Deseret U+10400 ⇄ U+10428, Adlam,
+    // Osage, Vithkuqi, Old Hungarian, …).
+    private static int CaseFoldKeyCodePoint(int cp)
+    {
+        var r = new System.Text.Rune(cp);
+        return System.Text.Rune.ToLowerInvariant(System.Text.Rune.ToUpperInvariant(r)).Value;
+    }
+
+    // Reverse map from a SUPPLEMENTARY-plane code point to the other members of its
+    // ECMAScript Canonicalize (Unicode-mode) equivalence class. .NET's IgnoreCase regex
+    // does no astral case folding at all, and the BMP-only char maps above cannot reach
+    // these code points, so /<astral>/iu would otherwise match only the exact code point.
+    // No astral class folds onto a BMP code point (and vice versa), so the classes here are
+    // pure-supplementary and never overlap the BMP handling. Built once, lazily.
+    private static readonly Lazy<Dictionary<int, int[]>> AstralCaseFoldEquivalents =
+        new(BuildAstralCaseFoldEquivalents);
+
+    private static Dictionary<int, int[]> BuildAstralCaseFoldEquivalents()
+    {
+        var groups = new Dictionary<int, List<int>>();
+        for (int cp = 0x10000; cp <= 0x10FFFF; cp++)
+        {
+            int key = CaseFoldKeyCodePoint(cp);
+            if (!groups.TryGetValue(key, out var list))
+                groups[key] = list = new List<int>(2);
+            list.Add(cp);
+        }
+
+        var map = new Dictionary<int, int[]>();
+        foreach (var list in groups.Values)
+        {
+            if (list.Count < 2)
+                continue;
+            foreach (var member in list)
+            {
+                var others = new int[list.Count - 1];
+                int k = 0;
+                foreach (var m in list)
+                    if (m != member)
+                        others[k++] = m;
+                map[member] = others;
+            }
+        }
+
+        // Supplement classes that .NET's Unicode tables still miss. Garay (added in
+        // Unicode 16.0) has its code points assigned but carries NO simple case mapping in
+        // the Rune round-trip above, so each letter is left in a singleton class and never
+        // grouped. Seed its bicameral pairs (uppercase U+10D50..U+10D65 ⇄ lowercase
+        // U+10D70..U+10D85) explicitly so /…/iu folds them as ECMAScript requires.
+        for (int k = 0; k <= 0x15; k++)
+            SeedCaseFoldPair(map, 0x10D50 + k, 0x10D70 + k);
+
+        return map;
+    }
+
+    // Records a ↔ b as mutual case-fold equivalents, unioning with any class either is
+    // already part of (de-duplicating and excluding self).
+    private static void SeedCaseFoldPair(Dictionary<int, int[]> map, int a, int b)
+    {
+        AddCaseFoldEquivalent(map, a, b);
+        AddCaseFoldEquivalent(map, b, a);
+    }
+
+    private static void AddCaseFoldEquivalent(Dictionary<int, int[]> map, int member, int other)
+    {
+        if (map.TryGetValue(member, out var existing))
+        {
+            if (System.Array.IndexOf(existing, other) >= 0)
+                return;
+            var grown = new int[existing.Length + 1];
+            System.Array.Copy(existing, grown, existing.Length);
+            grown[existing.Length] = other;
+            map[member] = grown;
+        }
+        else
+        {
+            map[member] = new[] { other };
+        }
+    }
+
+    // The other code points that match <paramref name="cp"/> case-insensitively under
+    // ECMAScript Canonicalize in Unicode mode, for a supplementary-plane code point; null
+    // when none (or when cp is in the BMP, which the char-based maps cover).
+    private static int[] GetAstralCaseFoldEquivalents(int cp)
+        => cp > 0xFFFF && AstralCaseFoldEquivalents.Value.TryGetValue(cp, out var eq) ? eq : null;
 
     private static bool IsHexDigit(char c) =>
         (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
