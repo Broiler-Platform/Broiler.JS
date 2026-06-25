@@ -107,16 +107,24 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     {
         private readonly JSContext context;
 
-        public WithScope(JSContext context, JSObject @object)
+        public WithScope(JSContext context, JSObject @object, bool isCaptured = false)
         {
             this.context = context;
             Previous = context.withScope;
             Object = @object;
+            IsCaptured = isCaptured;
             context.withScope = this;
         }
 
         public JSObject Object { get; }
         public WithScope Previous { get; }
+
+        // True for a `with`-object re-established at function invocation because the
+        // function was *defined* inside a `with` (a closure-captured with). Such a scope
+        // is lexically OUTER to the invoked function's own bindings, whereas a `with`
+        // pushed by a `with` statement in the running body is INNER — a distinction the
+        // flat with-scope chain otherwise loses (see ResolveIdentifier).
+        public bool IsCaptured { get; }
 
         public void Dispose() => context.withScope = Previous;
     }
@@ -1118,7 +1126,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         {
             scopes = new IDisposable[values.Length];
             for (var i = 0; i < values.Length; i++)
-                scopes[i] = new WithScope(context, values[i]);
+                scopes[i] = new WithScope(context, values[i], isCaptured: true);
         }
 
         public void Dispose()
@@ -1129,6 +1137,9 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     }
 
     private bool TryResolveWithObject(in KeyString name, out JSObject @object)
+        => TryResolveWithObject(name, out @object, out _);
+
+    private bool TryResolveWithObject(in KeyString name, out JSObject @object, out bool isCaptured)
     {
         var propertyKey = name.ToJSValue();
         for (var current = withScope; current != null; current = current.Previous)
@@ -1153,16 +1164,56 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             // trap (test262 with/has-binding-call-with-proxy-env and the idref-with-proxy-env
             // get/set sequences).
             @object = current.Object;
+            isCaptured = current.IsCaptured;
             return true;
         }
 
         @object = null;
+        isCaptured = false;
+        return false;
+    }
+
+    // Whether <paramref name="name"/> names a function-OWNED binding overlaid by a
+    // direct eval — a local of the function the eval is running in (the "shadowed"
+    // subset, GetWithFallbackVariables). Such a binding is lexically INNER to any
+    // closure-captured `with` object that function carries, so it must win over one. A
+    // merely-visible outer/global binding (Shadowed = false, e.g. a program-level
+    // `var`) is OUTER to the captured `with` and must NOT win — distinguishing the two
+    // is exactly what keeps `directWith` (inner `var a` beats the with-object) separate
+    // from a no-local closure that reads the with-object's property.
+    private bool IsActiveEvalOverlayBinding(in KeyString name)
+    {
+        for (var i = activeDirectEvalScopes.Count - 1; i >= 0; i--)
+        {
+            var scope = activeDirectEvalScopes[i];
+            // A `with`-fallback overlay is the closure's OUTER lexical environment
+            // (re-established at invocation), which is itself outer to a captured `with`
+            // — so a name it carries must not steal the with-object's binding (e.g.
+            // `function make_adder(x){ with({x:9000}) return y => x + y; }` must read the
+            // with-object's x, not the param). Only the eval's OWN overlay names the
+            // running function's locals.
+            if (scope.IsWithFallback)
+                continue;
+
+            if (scope.TryGetOverlayShadowing(name, out var isShadowing))
+                return isShadowing;
+        }
+
         return false;
     }
 
     public JSObject ResolveWithObject(in KeyString name)
     {
-        return TryResolveWithObject(name, out var withObject) ? withObject : null;
+        // A closure-captured `with` is outer to the bindings of the function a direct
+        // eval runs in: when the name is one of those function-local bindings (an active
+        // eval overlay), report "no with-object owns it" so the compiled read/assignment
+        // resolves it through the overlay instead (read/write coherence with
+        // ResolveIdentifier; #921 eval-02).
+        if (TryResolveWithObject(name, out var withObject, out var isCaptured)
+            && !(isCaptured && IsActiveEvalOverlayBinding(name)))
+            return withObject;
+
+        return null;
     }
 
     public JSValue ResolveIdentifier(in KeyString name) => ResolveIdentifier(name, strict: false);
@@ -1174,7 +1225,8 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
     private JSValue ResolveIdentifier(in KeyString name, bool strict)
     {
-        if (TryResolveWithObject(name, out var withObject))
+        if (TryResolveWithObject(name, out var withObject, out var isCaptured)
+            && !(isCaptured && IsActiveEvalOverlayBinding(name)))
         {
             // §9.1.1.2.6 GetBindingValue for an object Environment Record: HasBinding
             // (TryResolveWithObject) already claimed this `with` object owns the name,
@@ -1182,6 +1234,13 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             // the meantime. GetBindingValue re-probes: when the property is gone a strict
             // reference (S = true) throws a ReferenceError, a sloppy one yields undefined.
             // Either way the lookup does not fall through to an enclosing scope.
+            //
+            // Exception: a closure-CAPTURED `with` object is outer to the bindings of the
+            // function the (direct) eval runs in, so when the name is one of those
+            // function-local bindings (an active eval overlay) it is resolved below
+            // through the overlay instead of this outer with-object (#921 eval-02:
+            // `directWith` — the inner function's `var a = 1` beats the captured
+            // with-object's `a`).
             if (!withObject.HasProperty(name.ToJSValue()).BooleanValue)
                 return strict ? throw JSEngine.NewReferenceError($"{name} is not defined") : JSUndefined.Value;
 
@@ -1316,7 +1375,12 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
     public JSValue AssignIdentifier(in KeyString name, JSValue value, bool strictMode)
     {
-        if (TryResolveWithObject(name, out var withObject))
+        // A closure-captured `with` object is outer to the bindings of the function a
+        // direct eval runs in; an assignment to one of those function-local bindings
+        // (an active eval overlay) must reach the local, not the outer with-object —
+        // mirroring the read path in ResolveIdentifier (#921 eval-02).
+        if (TryResolveWithObject(name, out var withObject, out var isCaptured)
+            && !(isCaptured && IsActiveEvalOverlayBinding(name)))
         {
             if (!withObject.HasProperty(name.ToJSValue()).BooleanValue && strictMode)
                 throw JSEngine.NewReferenceError($"{name} is not defined");
