@@ -77,6 +77,23 @@ internal static class IanaTimeZoneDatabase
         }
     }
 
+    // CLDR/ECMAScript non-primary identifiers that tzdata ships as standalone Zones.
+    // Each resolves to the primary IANA zone it is an alias of.
+    private static readonly (string Alias, string Target)[] LegacyPrimaryAliases =
+    {
+        ("CET", "Europe/Brussels"),
+        ("CST6CDT", "America/Chicago"),
+        ("EET", "Europe/Athens"),
+        ("EST", "America/Panama"),
+        ("EST5EDT", "America/New_York"),
+        ("HST", "Pacific/Honolulu"),
+        ("MET", "Europe/Brussels"),
+        ("MST", "America/Phoenix"),
+        ("MST7MDT", "America/Denver"),
+        ("PST8PDT", "America/Los_Angeles"),
+        ("WET", "Europe/Lisbon"),
+    };
+
     private static void EnsureLoaded()
     {
         if (_zoneData != null) return;
@@ -92,6 +109,19 @@ internal static class IanaTimeZoneDatabase
             var bytes = ms.ToArray();
 
             var (zones, links, version) = Parse(bytes);
+
+            // The legacy "pseudo" zones (CET, EET, …) and POSIX-style zones (CST6CDT, …)
+            // are shipped as standalone Zones in tzdata, but ECMAScript / CLDR classify
+            // them as NON-primary time-zone identifiers that resolve to a primary IANA
+            // zone. Register those resolutions as links (kept only when the embedded data
+            // hasn't already provided one and the target zone exists) so TimeZoneEquals
+            // and offset resolution treat e.g. `CET` as `Europe/Brussels`
+            // (test262 intl402/Temporal/ZonedDateTime/links).
+            foreach (var (alias, target) in LegacyPrimaryAliases)
+            {
+                if (!links.ContainsKey(alias) && zones.ContainsKey(target))
+                    links[alias] = target;
+            }
 
             var folded = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var name in zones.Keys) folded[name.ToUpperInvariant()] = name;

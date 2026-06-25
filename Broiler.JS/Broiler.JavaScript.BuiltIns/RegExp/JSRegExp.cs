@@ -4496,7 +4496,53 @@ public partial class JSRegExp : JSObject, IJSRegExp
             }
         }
 
+        // Characters whose ECMAScript simple-case-fold equivalence class cannot be
+        // recovered from char.ToUpperInvariant/ToLowerInvariant: their case mapping
+        // expands to MULTIPLE code units (e.g. U+0390 → U+0399 U+0308 U+0301), so the
+        // char-level round-trip above leaves them unchanged and never groups the
+        // precomposed forms together. ECMAScript Canonicalize (Unicode mode) still folds
+        // them via CaseFolding.txt, so seed those classes explicitly. Unicode mode only:
+        // in non-Unicode mode a multi-code-unit uppercase leaves the character unchanged,
+        // so these do NOT form an equivalence class there (test262
+        // built-ins/RegExp/unicode_full_case_folding).
+        if (unicode)
+        {
+            foreach (var equivalenceClass in MultiUnitCaseFoldClasses)
+                MergeCaseFoldClass(map, equivalenceClass);
+        }
+
         return map;
+    }
+
+    // Simple-case-fold equivalence classes whose members share a CaseFolding.txt
+    // mapping that expands to multiple code units (so char-level ToUpper/ToLower cannot
+    // recover the grouping). Each inner array is one class; every member folds to the
+    // others under ECMAScript Canonicalize in Unicode mode.
+    private static readonly char[][] MultiUnitCaseFoldClasses =
+    {
+        new[] { '\u0390', '\u1FD3' }, // GREEK SMALL LETTER IOTA WITH DIALYTIKA AND TONOS / OXIA
+        new[] { '\u03B0', '\u1FE3' }, // GREEK SMALL LETTER UPSILON WITH DIALYTIKA AND TONOS / OXIA
+        new[] { '\uFB05', '\uFB06' }, // LATIN SMALL LIGATURE LONG S T / ST
+    };
+
+    private static void MergeCaseFoldClass(Dictionary<char, char[]> map, char[] equivalenceClass)
+    {
+        foreach (var member in equivalenceClass)
+        {
+            // Union any class the char already belongs to (from the char-level pass)
+            // with the rest of this class, de-duplicating and excluding the member.
+            var union = new List<char>();
+            if (map.TryGetValue(member, out var existing))
+                union.AddRange(existing);
+
+            foreach (var other in equivalenceClass)
+            {
+                if (other != member && !union.Contains(other))
+                    union.Add(other);
+            }
+
+            map[member] = union.ToArray();
+        }
     }
 
     // ECMAScript Canonicalize for non-Unicode mode: the toUppercase of the code unit,

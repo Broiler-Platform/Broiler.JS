@@ -78,6 +78,35 @@ public partial class JSDate
             return new JSNumber(SetTimeValue(JSDateMath.TimeClip(JSDateMath.UTC(newDate))));
         }
 
+        // Decompose the current time value into its local month/day and
+        // time-within-day fields. When the date falls outside .NET's
+        // DateTimeOffset range it is stored in rawTimeMs (with `value` pinned to
+        // the MinValue placeholder), so the defaults for an omitted month/date and
+        // the preserved time-of-day must come from the ECMAScript local-time
+        // decomposition of rawTimeMs rather than from the `value` placeholder —
+        // otherwise a follow-up setFullYear on a year-0/negative date would reset
+        // the month, day and time to the placeholder's (Jan 1, 00:00:00).
+        int curMonth0, curDay, curHour, curMin, curSec, curMs;
+        if (double.IsNaN(rawTimeMs))
+        {
+            curMonth0 = date.Month - 1;
+            curDay = date.Day;
+            curHour = date.Hour;
+            curMin = date.Minute;
+            curSec = date.Second;
+            curMs = date.Millisecond;
+        }
+        else
+        {
+            double localMs = JSDateMath.LocalTime(rawTimeMs);
+            curMonth0 = JSDateMath.MonthFromTime(localMs);
+            curDay = JSDateMath.DateFromTime(localMs);
+            curHour = JSDateMath.HourFromTime(localMs);
+            curMin = JSDateMath.MinFromTime(localMs);
+            curSec = JSDateMath.SecFromTime(localMs);
+            curMs = JSDateMath.MsFromTime(localMs);
+        }
+
         // Coerce month then day (ToNumber, valueOf once each) before the NaN-year
         // check so their side effects run in spec order. A present-but-undefined
         // optional arg is "specified" → ToNumber(undefined)=NaN → result NaN.
@@ -91,8 +120,8 @@ public partial class JSDate
             || (dayGiven && !double.IsFinite(dayCoerced)))
             return new JSNumber(SetTimeValue(double.NaN));
 
-        var month = monthGiven ? CoercedIntValue(monthCoerced) : date.Month - 1;
-        var day = dayGiven ? CoercedIntValue(dayCoerced) : date.Day;
+        var month = monthGiven ? CoercedIntValue(monthCoerced) : curMonth0;
+        var day = dayGiven ? CoercedIntValue(dayCoerced) : curDay;
 
         // For years that .NET DateTimeOffset can handle (1–9999), use the fast path.
         if (year >= 1 && year <= 9999)
@@ -101,7 +130,7 @@ public partial class JSDate
 
             try
             {
-                date = new DateTimeOffset((int)year, 1, 1, date.Hour, date.Minute, date.Second, date.Millisecond, value.Offset);
+                date = new DateTimeOffset((int)year, 1, 1, curHour, curMin, curSec, curMs, value.Offset);
                 // Apply the month offset before the day offset: ECMAScript MakeDay
                 // resolves the (year, month) to the first of that month and then adds
                 // (date - 1) days, so day overflow rolls into the next month. Doing
@@ -125,7 +154,7 @@ public partial class JSDate
 
         // For year 0 or negative years, use ECMAScript date math directly.
         // This handles the proleptic Gregorian calendar correctly.
-        double timeWithinDay = JSDateMath.MakeTime(date.Hour, date.Minute, date.Second, date.Millisecond);
+        double timeWithinDay = JSDateMath.MakeTime(curHour, curMin, curSec, curMs);
         double dayValue = JSDateMath.MakeDay(Math.Truncate(year), month, day);
         double utcMs = JSDateMath.UTC(JSDateMath.MakeDate(dayValue, timeWithinDay));
         double result = JSDateMath.TimeClip(utcMs);
