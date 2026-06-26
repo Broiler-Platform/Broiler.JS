@@ -247,6 +247,29 @@ internal static class RegExpValidator
                 if (hex && v >= 0xD800 && v <= 0xDFFF)
                     return true;
             }
+
+            // The scanner keeps the brace form for a braced escape naming a lone
+            // surrogate (`\u{D83D}`) so the runtime can stop it pairing with a
+            // neighbour. .NET rejects the brace syntax outright, so such a pattern must
+            // also skip the round-trip check (the RegExp runtime decodes it).
+            if (pattern[i] == '\\' && i + 3 < pattern.Length && pattern[i + 1] == 'u'
+                && pattern[i + 2] == '{')
+            {
+                int end = pattern.IndexOf('}', i + 3);
+                if (end > i + 3)
+                {
+                    int v = 0;
+                    bool hex = true;
+                    for (int k = i + 3; k < end; k++)
+                    {
+                        int d = HexDigitValue(pattern[k]);
+                        if (d < 0) { hex = false; break; }
+                        v = (v << 4) | d;
+                    }
+                    if (hex && v >= 0xD800 && v <= 0xDFFF)
+                        return true;
+                }
+            }
         }
         return false;
     }

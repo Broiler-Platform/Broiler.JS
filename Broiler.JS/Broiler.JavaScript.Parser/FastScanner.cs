@@ -911,14 +911,37 @@ public class FastScanner
                     if (digitCount == 0 || j >= pattern.Length)
                         throw Unexpected();
 
-                    foreach (var cu in codePoint.FromCodePoint())
+                    // A braced escape naming a lone surrogate (`\u{D83D}`) is its OWN
+                    // single code point and must never combine with an adjacent surrogate:
+                    // `/\u{D83D}\u{DC38}/u` is two lone surrogates, NOT the astral pair
+                    // `/\u{1F438}/u`. Decoding both to the bare `\uHHHH` form would make
+                    // them indistinguishable (`🐸`), so the RegExp runtime would
+                    // wrongly fold the two lone surrogates into one code point. Keep the
+                    // brace form (normalized) for lone surrogates — the runtime's
+                    // TransformBracedUnicodeEscapes guards each so it cannot pair — and
+                    // decode every other code point to the fixed-width form as before.
+                    if (codePoint is >= 0xD800 and <= 0xDFFF)
                     {
                         t.Append('\\');
                         t.Append('u');
-                        t.Append(HexDigit(cu >> 12));
-                        t.Append(HexDigit((cu >> 8) & 0xF));
-                        t.Append(HexDigit((cu >> 4) & 0xF));
-                        t.Append(HexDigit(cu & 0xF));
+                        t.Append('{');
+                        t.Append(HexDigit((codePoint >> 12) & 0xF));
+                        t.Append(HexDigit((codePoint >> 8) & 0xF));
+                        t.Append(HexDigit((codePoint >> 4) & 0xF));
+                        t.Append(HexDigit(codePoint & 0xF));
+                        t.Append('}');
+                    }
+                    else
+                    {
+                        foreach (var cu in codePoint.FromCodePoint())
+                        {
+                            t.Append('\\');
+                            t.Append('u');
+                            t.Append(HexDigit(cu >> 12));
+                            t.Append(HexDigit((cu >> 8) & 0xF));
+                            t.Append(HexDigit((cu >> 4) & 0xF));
+                            t.Append(HexDigit(cu & 0xF));
+                        }
                     }
 
                     i = j + 1; // skip past the closing '}'
