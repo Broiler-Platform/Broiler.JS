@@ -41,8 +41,11 @@
     <ProjectReference Include="..\..\Broiler.Regex\Broiler.Regex\Broiler.Regex.csproj">
       <!-- Expose only via the `BRegex` extern alias: the engine's root namespace
            `Broiler.Regex` would otherwise shadow System.Text.RegularExpressions.Regex
-           (used unqualified as `Regex` throughout this assembly). -->
+           (used unqualified as `Regex` throughout this assembly). PrivateAssets keeps
+           that compile-time reference from flowing to downstream projects (which would
+           re-introduce the collision); the runtime assembly is still emitted. -->
       <Aliases>BRegex</Aliases>
+      <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
     <ProjectReference Include="..\..\Broiler.Unicode\src\UnicodeEmoji.StringProperties\UnicodeEmoji.StringProperties.csproj" />
     <ProjectReference Include="..\..\Broiler.Unicode\src\UnicodeProperties\UnicodeProperties.csproj" />
