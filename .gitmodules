@@ -6,3 +6,6 @@
 	path = Broiler.DateTime
 	url = https://github.com/MaiRat/Broiler.DateTime.git
 	branch = main
+[submodule "Broiler.Regex"]
+	path = Broiler.Regex
+	url = https://github.com/MaiRat/Broiler.Regex.git
