@@ -33,6 +33,17 @@
     <ProjectReference Include="..\Broiler.JavaScript.Extensions\Broiler.JavaScript.Extensions.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.JSClassGenerator\Broiler.JavaScript.JSClassGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
     <ProjectReference Include="..\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj" />
+    <!-- Broiler.Regex: the from-scratch ECMAScript regex engine (issue #923). JSRegExp
+         routes patterns that hit a JS/.NET semantic gap the source-to-source translator
+         into System.Text.RegularExpressions cannot fix (look-behind with captures/
+         back-references, nullable quantifiers, code-point back-references, astral atoms)
+         through this engine. It is dependency-free, so it adds no transitive packages. -->
+    <ProjectReference Include="..\..\Broiler.Regex\Broiler.Regex\Broiler.Regex.csproj">
+      <!-- Expose only via the `BRegex` extern alias: the engine's root namespace
+           `Broiler.Regex` would otherwise shadow System.Text.RegularExpressions.Regex
+           (used unqualified as `Regex` throughout this assembly). -->
+      <Aliases>BRegex</Aliases>
+    </ProjectReference>
     <ProjectReference Include="..\..\Broiler.Unicode\src\UnicodeEmoji.StringProperties\UnicodeEmoji.StringProperties.csproj" />
     <ProjectReference Include="..\..\Broiler.Unicode\src\UnicodeProperties\UnicodeProperties.csproj" />
     <ProjectReference Include="..\..\Broiler.Unicode\src\UnicodeCldr.LocaleData\UnicodeCldr.LocaleData.csproj" />

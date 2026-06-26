@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿extern alias BRegex;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -364,7 +365,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         this.pattern = pattern;
 
-        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, this.flags) = CreateRegex(pattern, flags, out captureMap);
+        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, this.flags) = CreateRegex(pattern, flags, out captureMap, out broiler);
 
         // Initialize lastIndex as an own data property (writable, non-configurable, non-enumerable)
         ref var ownProperties = ref GetOwnProperties();
@@ -375,7 +376,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     {
         this.pattern = pattern;
 
-        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, this.flags) = CreateRegex(pattern, flags, out captureMap);
+        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, this.flags) = CreateRegex(pattern, flags, out captureMap, out broiler);
 
         // Initialize lastIndex as an own data property (writable, non-configurable, non-enumerable)
         ref var ownProps = ref GetOwnProperties();
@@ -764,8 +765,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// named capturing groups (§2.7).
     /// </summary>
     public static (Regex, bool, bool, bool, bool, bool, bool, bool, string) CreateRegex(string pattern, string flags, out CaptureGroupMap captureMap)
+        => CreateRegex(pattern, flags, out captureMap, out _);
+
+    public static (Regex, bool, bool, bool, bool, bool, bool, bool, string) CreateRegex(string pattern, string flags, out CaptureGroupMap captureMap, out BRegex::Broiler.Regex.BroilerRegex broiler)
     {
         captureMap = null;
+        broiler = null;
         try
         {
             var (options, globalSearch, ignoreCase, multiline, dotAll, hasIndices, sticky, unicode, unicodeSets, normalizedFlags) = ParseFlags(flags);
@@ -785,6 +790,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // Each (?<name>…) GroupSpecifier must be a valid RegExpIdentifierName; an exotic name
             // such as (?<🦊>…) or (?<𝟚the>…) (an ID_Continue-only first character) is a SyntaxError.
             ValidateNamedGroupNames(pattern);
+
+            // Route a JS/.NET gap-feature pattern (look-behind captures/back-refs,
+            // nullable quantifiers, code-point back-references, astral atoms) to the
+            // Broiler.Regex engine, which is correct by construction for these. The
+            // .NET `value` is still built below (the failing semantics only surface at
+            // MATCH time — RegExpBuiltinExec routes through Broiler when this is set,
+            // while split/replace/IsMatch keep using the translated .NET regex).
+            broiler = TryBuildBroilerForGaps(pattern, flags, unicode || unicodeSets);
 
             // BROILER-PATCH: Transform ES3 empty character classes and forward backreferences
             // for .NET compatibility (tests 89, 90)
@@ -982,7 +995,15 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // (the earlier transforms only add non-capturing groups / lookarounds).
             pattern = RewriteCaptureGroups(pattern, unicode || unicodeSets, out captureMap);
 
-            return (new Regex(pattern, options), globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, normalizedFlags);
+            var compiled = new Regex(pattern, options);
+
+            // For a Broiler-routed pattern the capture layout that drives exec result
+            // construction comes from Broiler (ECMAScript source order, native named
+            // groups), not from the .NET renaming above.
+            if (broiler != null)
+                captureMap = BuildCaptureMapFromBroiler(broiler);
+
+            return (compiled, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, normalizedFlags);
         }
         catch (JSException)
         {
