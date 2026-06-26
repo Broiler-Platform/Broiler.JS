@@ -76,9 +76,10 @@ public partial class JSRegExp
         // case `compile` must leave the receiver's [[OriginalSource]] and
         // [[RegExpMatcher]] untouched (annexB RegExp.prototype.compile
         // pattern-string-invalid / flags-string-invalid).
-        var compiled = CreateRegex(nextPattern, nextFlags, out var nextCaptureMap);
+        var compiled = CreateRegex(nextPattern, nextFlags, out var nextCaptureMap, out var nextBroiler);
         pattern = nextPattern;
         captureMap = nextCaptureMap;
+        broiler = nextBroiler;
         (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, flags) = compiled;
         SetObservableLastIndex(0);
         return this;
@@ -152,12 +153,15 @@ public partial class JSRegExp
             return JSValue.NullValue;
         }
 
-        // Perform the regular expression matching.
+        // Perform the regular expression matching. RunMatch dispatches to the
+        // Broiler.Regex engine for gap-feature patterns (look-behind captures/
+        // back-refs, nullable quantifiers, code-point back-references) and to the
+        // translated .NET regex otherwise; both yield the same normalized shape.
         var startPosition = useLastIndex ? observableLastIndex : 0;
-        var match = value.Match(input, startPosition);
+        var match = RunMatch(input, startPosition);
 
         if (sticky && (!match.Success || match.Index != startPosition))
-            match = System.Text.RegularExpressions.Match.Empty;
+            match = RegexMatchData.NoMatch;
 
         // Return null if no match was found.
         if (match.Success == false)
@@ -177,7 +181,7 @@ public partial class JSRegExp
         // synthetic, source-ordered name (see RewriteCaptureGroups), so .NET now
         // numbers them 1..n in ECMAScript order and integer indexing is correct.
         // The captureMap supplies that count and the original-name mapping.
-        var c = captureMap != null ? captureMap.Count + 1 : groups.Count;
+        var c = captureMap != null ? captureMap.Count + 1 : groups.Length;
 
         // §B.2.4 UpdateLegacyRegExpStaticProperties: a successful built-in exec records
         // the match on the realm's legacy RegExp statics (RegExp.lastMatch, RegExp.$1, …).
@@ -261,24 +265,26 @@ public partial class JSRegExp
             {
                 var nameKey = KeyStrings.GetOrCreate(name);
 
-                System.Text.RegularExpressions.Group matched = null;
+                var matched = default(RegexCapture);
+                var found = false;
                 foreach (var idx in indices)
                 {
                     var g = groups[idx];
                     if (g.Success)
                     {
                         matched = g;
+                        found = true;
                         break;
                     }
                 }
 
-                namedGroups.FastAddValue(nameKey, matched != null
+                namedGroups.FastAddValue(nameKey, found
                     ? JSValue.CreateString(matched.Value)
                     : JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
 
                 if (hasIndices)
                 {
-                    if (matched != null)
+                    if (found)
                     {
                         var range = JSValue.CreateArray(2);
                         range[0] = JSValue.CreateNumber(matched.Index);
