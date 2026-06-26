@@ -13,9 +13,6 @@ test/built-ins/Array/prototype/toReversed/length-exceeding-array-length-limit.js
 test/built-ins/Array/prototype/unshift/clamps-to-integer-limit.js
 test/built-ins/Array/prototype/unshift/length-near-integer-limit.js
 test/built-ins/Array/prototype/unshift/throws-if-integer-limit-exceeded.js
-test/built-ins/RegExp/lookBehind/back-references-to-captures.js
-test/built-ins/RegExp/lookBehind/mutual-recursive.js
-test/built-ins/RegExp/nullable-quantifier.js
 test/language/comments/S7.4_A5.js
 test/language/comments/S7.4_A6.js
 test/language/literals/regexp/S7.8.5_A1.1_T2.js
@@ -32,7 +29,6 @@ test/language/statements/continue/simple-and-labeled.js
 test/staging/sm/Array/to-length.js
 test/staging/sm/Array/toLocaleString-01.js
 test/staging/sm/Array/unshift-01.js
-test/staging/sm/RegExp/unicode-back-reference.js
 test/staging/sm/RegExp/unicode-braced.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
