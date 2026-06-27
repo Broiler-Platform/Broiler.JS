@@ -1,5 +1,9 @@
 # LogParser
 
+An internal Broiler.JS diagnostics tool. It is part of the unstable, AI-assisted first
+preview and is covered by the repository's [pending human review](../HUMAN_REVIEW.md),
+[Apache License 2.0](../LICENSE), and [Yantra JS provenance notice](../THIRD_PARTY_NOTICES.md).
+
 Run the parser from the repository root:
 
 ```bash

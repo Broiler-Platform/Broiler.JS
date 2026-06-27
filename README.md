@@ -3,13 +3,14 @@
 **Broiler.JS** is a modular JavaScript engine for .NET, part of the **Broiler** project
 (**B**rowser **I**nfrastructure in **I**ntermediate **L**anguage with **E**nhanced **R**eliability).
 
-Broiler.JS compiles JavaScript to .NET IL at runtime, giving you a sandboxed, embeddable
-ECMAScript engine with strong interop to C# code and first-class support for the full
-modern JS surface area.
+Broiler.JS compiles JavaScript to .NET IL at runtime, providing an embeddable ECMAScript
+engine with strong interop to C# code. **It is not a security sandbox**: JavaScript host
+capabilities and CLR integration must be restricted by the embedding application.
 
-> **Note — early-stage project.**
-> Broiler.JS is still in active development. The public API is not yet stable and breaking
-> changes may occur between versions without notice.
+> **First-preview status:** The public API and behavior are unstable, breaking changes
+> may occur without notice, and untrusted scripts must not be executed on the assumption
+> that the engine provides isolation. This component is **not human-approved for preview
+> use** while [HUMAN_REVIEW.md](HUMAN_REVIEW.md) remains `PENDING`.
 
 ---
 
@@ -19,6 +20,11 @@ Broiler.JS began as a fork of [**Yantra JS**](https://github.com/yantrajs/yantra
 (Apache 2.0), an open-source JavaScript engine for .NET. The original Yantra JS architecture,
 parser, and runtime design provided the foundation; Broiler.JS has since diverged
 substantially to pursue the goal of near-complete ECMAScript conformance.
+
+Broiler.JS is maintained independently. It is not an official Yantra JS version,
+continuation, or release, and the Yantra JS authors have not reviewed or endorsed it.
+The upstream name is used only for accurate provenance. See
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ---
 
@@ -39,6 +45,16 @@ From that point on, the split is:
 This means the bottleneck on progress is not coding hours but maintenance bandwidth
 and the cost of AI inference. If you want to see faster progress, the most direct way
 to help is a donation (see below).
+
+---
+
+## Human review
+
+AI-generated or AI-modified implementation must receive source-level review from a real
+developer before a release is described as reviewed. The per-release record must identify
+the exact commit, evidence, findings, scope, and human decision in
+[HUMAN_REVIEW.md](HUMAN_REVIEW.md). Test262 results are valuable conformance evidence,
+but they do not by themselves establish security or safety.
 
 ---
 
@@ -113,4 +129,6 @@ the time needed to keep test262 passing and the project moving forward.
 Broiler.JS is licensed under the [Apache License 2.0](LICENSE).
 
 This project is derived in part from [Yantra JS](https://github.com/yantrajs/yantra),
-which is also licensed under the Apache License 2.0.
+which is also licensed under the Apache License 2.0. Upstream attribution and independence
+are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The license provides
+the software on an “AS IS” basis, without warranties or conditions.
