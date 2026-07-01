@@ -107,7 +107,23 @@ public class JSAsyncFunction
         try
         {
             if (!gen.MoveNext(lastResult, out var r))
+            {
+                // §27.7.5.2 (AsyncFunctionStart / AsyncBlockStart): normal completion
+                // resolves the async function's result promise WITH the return value,
+                // which ADOPTS a thenable return value (Promise Resolve Functions read
+                // `then` and, if callable, follow it). CreateResolvedOrRejectedPromise
+                // fulfils with the value directly (no adoption), so
+                //   async function w(){ return new Promise(r => requestAnimationFrame(r)); }
+                // would fulfil w()'s promise with the inner promise as a plain value, and
+                // `await w()` would resume immediately instead of awaiting it to settle.
+                // Route object return values through the adopting resolve (single `then`
+                // read, throwing-`then`-getter handled per spec); primitives are never
+                // thenables, so keep the fast path for them.
+                if (r.IsObject)
+                    return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) => resolve(r));
+
                 return JSEngine.CreateResolvedOrRejectedPromise(r, true);
+            }
 
             // Is the awaited value a thenable (an object with a callable `then`)? A
             // non-thenable — a primitive, or an object without a `then` method — is
