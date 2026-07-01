@@ -9,3 +9,4 @@
 [submodule "Broiler.Regex"]
 	path = Broiler.Regex
 	url = https://github.com/MaiRat/Broiler.Regex.git
+	branch = main
