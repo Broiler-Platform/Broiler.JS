@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ public class CallStackItem
     [EditorBrowsable(EditorBrowsableState.Never)]
     public CallStackItem(IJSExecutionContext context, ScriptInfo scriptInfo, int nameOffset, int nameLength, int line, int column)
     {
-        context = context ?? JSEngine.Current as IJSExecutionContext;
+        context = ResolveContext(context);
         context.EnsureSufficientExecutionStack();
         this.context = context;
         var ctx = context.CurrentNewTarget;
@@ -47,7 +48,7 @@ public class CallStackItem
     [EditorBrowsable(EditorBrowsableState.Never)]
     public CallStackItem(IJSExecutionContext context, string fileName, in StringSpan function, int line, int column)
     {
-        context = context ?? JSEngine.Current as IJSExecutionContext;
+        context = ResolveContext(context);
         context.EnsureSufficientExecutionStack();
         this.context = context;
         FileName = fileName;
@@ -101,13 +102,25 @@ public class CallStackItem
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Pop(IJSExecutionContext context)
     {
-        context = context ?? JSEngine.Current as IJSExecutionContext;
+        context = context ?? this.context ?? JSEngine.Current as IJSExecutionContext;
+        if (context == null)
+            throw MissingExecutionContext();
+
         directEvalBindings = null;
         context.Top = Parent;
         Parent = null;
     }
 
     public override string ToString() => $"{Function} at {FileName} - {Line},{Column}";
+
+    private static IJSExecutionContext ResolveContext(IJSExecutionContext context)
+    {
+        context ??= JSEngine.Current as IJSExecutionContext;
+        return context ?? throw MissingExecutionContext();
+    }
+
+    private static InvalidOperationException MissingExecutionContext()
+        => new("Cannot enter JavaScript execution without an active JS execution context.");
 
     private static bool IsValidFunctionSpan(string code, int offset, int length)
         => code != null

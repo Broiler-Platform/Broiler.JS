@@ -64,6 +64,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public readonly StringSpan name;
 
     internal JSFunctionDelegate f;
+    private JSContext realm;
     public bool CoerceThisOnInvoke { get; set; }
     public bool IsStrictMode { get; set; }
 
@@ -102,6 +103,17 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     internal bool HasLegacyCallerArguments;
 
     private static readonly KeyString LegacyCallerKey = KeyStrings.GetOrCreate("caller");
+
+    private void CaptureRealm()
+    {
+        realm ??= JSEngine.Current as JSContext;
+    }
+
+    internal JSEngine.CurrentContextScope EnterRealm()
+    {
+        CaptureRealm();
+        return JSEngine.EnterContext(realm);
+    }
 
     public static JSValue CaptureWithScopes(JSValue functionValue)
     {
@@ -211,6 +223,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     /// </param>
     public JSFunction(JSFunctionDelegate clrDelegate, JSFunction type) : this()
     {
+        CaptureRealm();
         ref var ownProperties = ref GetOwnProperties();
 
         f = clrDelegate;
@@ -239,6 +252,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     protected JSFunction(StringSpan name, StringSpan source, JSObject _prototype) : this()
     {
+        CaptureRealm();
         ref var ownProperties = ref GetOwnProperties();
         f = empty;
         this.name = name.IsEmpty ? "native" : name;
@@ -299,6 +313,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     public JSFunction(JSFunctionDelegate f, in StringSpan name, in StringSpan source, int length = 0, bool createPrototype = true) : base((JSEngine.Current as IJSExecutionContext)?.FunctionPrototype)
     {
+        CaptureRealm();
         ref var ownProperties = ref GetOwnProperties();
         this.f = f;
         // See the other constructor above: anonymous user functions report name "" per
@@ -482,6 +497,12 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public override string ToDetailString() => source.Value;
     public override JSValue CreateInstance(in Arguments a)
     {
+        var ambientNewTarget = (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget;
+        using var realmScope = EnterRealm();
+        var ec = JSEngine.Current as IJSExecutionContext;
+        var restoreNewTarget = ec?.CurrentNewTarget;
+        var previousNewTarget = ambientNewTarget ?? restoreNewTarget;
+
         // BoundFunction [[Construct]]: construct the (immediate) target directly
         // with boundArgs ++ args, ignoring the bound `this`.
         if (BoundConstructTarget != null)
@@ -494,18 +515,16 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             // Reflect.construct(BF, args, BF) build the target with newTarget = the
             // bound target — while an explicit, different newTarget is preserved.
             // Done here (not only at the `new` site) so Reflect.construct gets it too.
-            var boundEc = JSEngine.Current as IJSExecutionContext;
-            var savedNewTarget = boundEc?.CurrentNewTarget;
-            if (boundEc != null && (savedNewTarget == null || ReferenceEquals(savedNewTarget, this)))
-                boundEc.CurrentNewTarget = BoundConstructTarget;
+            if (ec != null && (previousNewTarget == null || ReferenceEquals(previousNewTarget, this)))
+                ec.CurrentNewTarget = BoundConstructTarget;
             try
             {
                 return BoundConstructTarget.CreateInstance(BoundConstructArguments.CopyForBind(a));
             }
             finally
             {
-                if (boundEc != null)
-                    boundEc.CurrentNewTarget = savedNewTarget;
+                if (ec != null)
+                    ec.CurrentNewTarget = restoreNewTarget;
             }
         }
 
@@ -526,8 +545,6 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         if (!JSConstructorOperations.IsConstructor(this))
             throw JSEngine.NewTypeError($"{name} is not a constructor");
 
-        var ec = JSEngine.Current as IJSExecutionContext;
-        var previousNewTarget = ec?.CurrentNewTarget;
         var deferInstancePrototypeResolution = name.Value is "Promise"
             or "Function"
             or "AsyncFunction"
@@ -624,7 +641,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             }
             JSEngine.ExecutingFunction = previousExecutingFunction;
             if (ec != null)
-                ec.CurrentNewTarget = previousNewTarget;
+                ec.CurrentNewTarget = restoreNewTarget;
         }
 
         if (r.IsObject)
@@ -683,6 +700,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     public JSValue InvokeSuper(in Arguments a)
     {
+        using var realmScope = EnterRealm();
         var context = JSEngine.Current as JSContext;
         var scriptHostMode = string.Equals(
             Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"),
@@ -725,6 +743,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                     current.SetLegacyArguments(CreateLegacyArgumentsObject(currentArguments));
                 }
 
+                using (current.EnterRealm())
                 using (JSEngine.EnterStrictMode(current.IsStrictMode))
                 {
                     var context = JSEngine.Current as JSContext;
@@ -787,8 +806,11 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     /// would otherwise leak a <see cref="JSTailCall"/> object to the native
     /// caller instead of g()'s actual result.
     /// </summary>
-    internal JSValue InvokeCallback(in Arguments a) =>
-        JSTailCall.Resolve((CoerceThisOnInvoke ? f(a.OverrideThis(CoerceNonStrictThis(a.This))) : f(in a)) ?? JSUndefined.Value);
+    internal JSValue InvokeCallback(in Arguments a)
+    {
+        using var realmScope = EnterRealm();
+        return JSTailCall.Resolve((CoerceThisOnInvoke ? f(a.OverrideThis(CoerceNonStrictThis(a.This))) : f(in a)) ?? JSUndefined.Value);
+    }
 
     // Function.prototype has no own `valueOf`: per the spec it simply inherits
     // %Object.prototype.valueOf%, so `Function.prototype.hasOwnProperty("valueOf")`

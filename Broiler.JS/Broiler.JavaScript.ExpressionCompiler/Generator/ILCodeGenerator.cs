@@ -41,9 +41,11 @@ public partial class ILCodeGenerator
     public ILCodeGenerator(
         ILGenerator il,
         IMethodBuilder methodBuilder,
-        TextWriter? writer = null, TextWriter? expressionWriter = null)
+        TextWriter? writer = null,
+        TextWriter? expressionWriter = null,
+        bool captureDiagnostics = false)
     {
-        if(!GenerateLogs)
+        if(!GenerateLogs && !captureDiagnostics)
         {
             writer = null;
             expressionWriter = null;

@@ -208,6 +208,7 @@ public class JSGeneratorFunctionV2 : JSFunction
 
     public override JSValue InvokeFunction(in Arguments a)
     {
+        using var realmScope = EnterRealm();
         var args = CoerceThisOnInvoke
             ? a.OverrideThis(JSFunction.CoerceNonStrictThis(a.This))
             : a;

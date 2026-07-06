@@ -103,6 +103,7 @@ public class JSClass : JSFunction
 
     public override JSValue InvokeFunction(in Arguments a)
     {
+        using var realmScope = EnterRealm();
         if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
             throw JSEngine.NewTypeError($"{this} is not a function");
 
@@ -117,6 +118,9 @@ public class JSClass : JSFunction
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override JSValue CreateInstance(in Arguments a)
     {
+        var ambientNewTarget = (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget;
+        using var realmScope = EnterRealm();
+
         static void ValidateProxyNewTarget(JSProxy proxy) => _ = proxy.RequireTarget();
 
         JSObject ResolveInstancePrototype(JSValue newTargetValue)
@@ -132,7 +136,8 @@ public class JSClass : JSFunction
         }
 
         var ec = JSEngine.Current as IJSExecutionContext;
-        var previousNewTarget = ec?.CurrentNewTarget;
+        var restoreNewTarget = ec?.CurrentNewTarget;
+        var previousNewTarget = ambientNewTarget ?? restoreNewTarget;
         var instancePrototype = previousNewTarget != null
             ? ResolveInstancePrototype(previousNewTarget)
             : prototype;
@@ -174,7 +179,7 @@ public class JSClass : JSFunction
             finally
             {
                 if (ec != null)
-                    ec.CurrentNewTarget = previousNewTarget;
+                    ec.CurrentNewTarget = restoreNewTarget;
             }
 
             if (constructed is { IsObject: true })
@@ -209,7 +214,7 @@ public class JSClass : JSFunction
         finally
         {
             if (ec != null)
-                ec.CurrentNewTarget = previousNewTarget;
+                ec.CurrentNewTarget = restoreNewTarget;
         }
 
         if (@this == null || @this.IsUndefined)

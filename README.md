@@ -79,6 +79,7 @@ aims to pass nearly the full suite, and conformance is tracked continuously in C
 |---|---|
 | [Public API reference](docs/public-api.md) | Supported packages, entry points, module boundaries |
 | [Architecture overview](docs/architecture/overview.md) | Engine layers and satellite assemblies |
+| [Performance and IL roadmap](docs/architecture/performance-and-il-roadmap.md) | Runtime optimization plan and Roslyn/.NET IL platform direction |
 | [Contributing built-ins](docs/architecture/contributing-builtins.md) | How to implement new built-in objects |
 | [LogParser usage](logs/README.md) | Shard log summarizer and JSON export |
 | [Contributing](CONTRIBUTING.md) | CI pipeline, test262 workflow, running tests locally |

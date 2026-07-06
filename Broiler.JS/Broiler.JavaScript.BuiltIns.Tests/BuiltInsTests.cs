@@ -3992,6 +3992,42 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void Context_Startup_Preserves_Global_Descriptors_And_Default_Feature_Gates()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+
+        var result = ctx.Eval("""
+            function descriptor(target, name) {
+              var d = Object.getOwnPropertyDescriptor(target, name);
+              return [typeof d.value, d.writable, d.enumerable, d.configurable].join(",");
+            }
+
+            [
+              descriptor(globalThis, "Function"),
+              descriptor(globalThis, "Object"),
+              descriptor(globalThis, "Array"),
+              descriptor(globalThis, "Promise"),
+              descriptor(globalThis, "Temporal"),
+              typeof structuredClone,
+              typeof Math.sumPrecise,
+              typeof Uint8Array.fromBase64,
+              typeof Uint8Array.prototype.toBase64,
+              typeof Map.prototype.getOrInsert,
+              typeof Error.isError,
+              typeof Array.fromAsync,
+              typeof Object.groupBy,
+              typeof Map.groupBy,
+              typeof Iterator.concat
+            ].join("|");
+            """);
+
+        Assert.Equal(
+            "function,true,false,true|function,true,false,true|function,true,false,true|function,true,false,true|object,true,false,true|undefined|undefined|undefined|undefined|undefined|undefined|undefined|undefined|undefined|undefined",
+            result.ToString());
+    }
+
+    [Fact]
     public void AsyncIteratorPrototype_Exposes_SymbolAsyncIterator()
     {
         EnsureBuiltInsLoaded();
@@ -16121,6 +16157,53 @@ public class BuiltInsTests
         ].join('|');");
 
         Assert.Equal("3|-2|9|10000000000|-Infinity", result.ToString());
+    }
+
+    [Fact]
+    public void Host_InvokeFunction_UsesFunctionRealm_WhenAmbientContextDiffers()
+    {
+        EnsureBuiltInsLoaded();
+        using var sourceContext = new JSContext();
+        sourceContext.Eval("var marker = 'source';");
+        var fn = sourceContext.Eval("(function () { return marker; })");
+
+        using var ambientContext = new JSContext();
+        ambientContext.Eval("var marker = 'ambient';");
+
+        var result = fn.InvokeFunction(new Arguments(JSUndefined.Value));
+
+        Assert.Equal("source", result.ToString());
+        Assert.Equal("ambient", ambientContext.Eval("marker").ToString());
+    }
+
+    [Fact]
+    public void Host_InvokeFunction_RestoresFunctionRealm_WhenAmbientContextCleared()
+    {
+        EnsureBuiltInsLoaded();
+        var context = new JSContext();
+        var fn = context.Eval("""
+            (function () {
+                return Array.prototype.map.call([1], function (x) { return x + 41; })[0];
+            })
+            """);
+        context.Dispose();
+
+        var result = fn.InvokeFunction(new Arguments(JSUndefined.Value));
+
+        Assert.Equal(42.0, result.DoubleValue);
+    }
+
+    [Fact]
+    public void Host_CreateInstance_RestoresFunctionRealm_WhenAmbientContextCleared()
+    {
+        EnsureBuiltInsLoaded();
+        var context = new JSContext();
+        var constructor = context.Eval("(function C() { this.x = 42; })");
+        context.Dispose();
+
+        var instance = constructor.CreateInstance(new Arguments(JSUndefined.Value));
+
+        Assert.Equal(42.0, instance[KeyStrings.GetOrCreate("x")].DoubleValue);
     }
 
     #endregion

@@ -25,6 +25,24 @@ namespace Broiler.JavaScript.BuiltIns;
 /// </summary>
 public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
 {
+    private static readonly KeyString ShadowRealmKey = KeyStrings.GetOrCreate("ShadowRealm");
+    private static readonly KeyString StructuredCloneKey = KeyStrings.GetOrCreate("structuredClone");
+    private static readonly KeyString SumPreciseKey = KeyStrings.GetOrCreate("sumPrecise");
+    private static readonly KeyString FromBase64Key = KeyStrings.GetOrCreate("fromBase64");
+    private static readonly KeyString FromHexKey = KeyStrings.GetOrCreate("fromHex");
+    private static readonly KeyString ToBase64Key = KeyStrings.GetOrCreate("toBase64");
+    private static readonly KeyString ToHexKey = KeyStrings.GetOrCreate("toHex");
+    private static readonly KeyString SetFromBase64Key = KeyStrings.GetOrCreate("setFromBase64");
+    private static readonly KeyString SetFromHexKey = KeyStrings.GetOrCreate("setFromHex");
+    private static readonly KeyString GetOrInsertKey = KeyStrings.GetOrCreate("getOrInsert");
+    private static readonly KeyString GetOrInsertComputedKey = KeyStrings.GetOrCreate("getOrInsertComputed");
+    private static readonly KeyString IsErrorKey = KeyStrings.GetOrCreate("isError");
+    private static readonly KeyString FromAsyncKey = KeyStrings.GetOrCreate("fromAsync");
+    private static readonly KeyString GroupByKey = KeyStrings.GetOrCreate("groupBy");
+    private static readonly KeyString IteratorKey = KeyStrings.GetOrCreate("Iterator");
+    private static readonly KeyString ConcatKey = KeyStrings.GetOrCreate("concat");
+    private static readonly KeyString ValuesKey = KeyStrings.GetOrCreate("values");
+
     /// <summary>
     /// Shared singleton instance — the default registry is stateless.
     /// </summary>
@@ -99,7 +117,7 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
 
         // ShadowRealm.prototype[@@toStringTag] = "ShadowRealm" — a non-writable,
         // non-enumerable, configurable data property (§ShadowRealm.prototype[@@toStringTag]).
-        if (context[KeyStrings.GetOrCreate("ShadowRealm")] is JSFunction shadowRealmCtor
+        if (context[ShadowRealmKey] is JSFunction shadowRealmCtor
             && shadowRealmCtor.prototype is JSObject shadowRealmPrototype
             && shadowRealmPrototype.GetOwnPropertyDescriptor(JSSymbol.toStringTag).IsUndefined)
         {
@@ -114,71 +132,71 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
     private static void ApplyExperimentalFeatureFlags(JSContext context)
     {
         if (!context.HasExperimentalFeature(JavaScriptFeatureFlags.StructuredClone))
-            context.Delete(KeyStrings.GetOrCreate("structuredClone"));
+            context.Delete(StructuredCloneKey);
 
         if (!context.HasExperimentalFeature(JavaScriptFeatureFlags.MathSumPrecise) &&
-            context[KeyStrings.GetOrCreate("Math")] is JSObject mathObject)
+            context[KeyStrings.Math] is JSObject mathObject)
         {
-            mathObject.Delete(KeyStrings.GetOrCreate("sumPrecise"));
+            mathObject.Delete(SumPreciseKey);
         }
 
-        if (context[KeyStrings.GetOrCreate("Uint8Array")] is JSFunction uint8ArrayCtor &&
+        if (context[KeyStrings.Uint8Array] is JSFunction uint8ArrayCtor &&
             !context.HasExperimentalFeature(JavaScriptFeatureFlags.Uint8ArrayBase64))
         {
-            uint8ArrayCtor.Delete(KeyStrings.GetOrCreate("fromBase64"));
-            uint8ArrayCtor.Delete(KeyStrings.GetOrCreate("fromHex"));
-            uint8ArrayCtor.prototype.Delete(KeyStrings.GetOrCreate("toBase64"));
-            uint8ArrayCtor.prototype.Delete(KeyStrings.GetOrCreate("toHex"));
-            uint8ArrayCtor.prototype.Delete(KeyStrings.GetOrCreate("setFromBase64"));
-            uint8ArrayCtor.prototype.Delete(KeyStrings.GetOrCreate("setFromHex"));
+            uint8ArrayCtor.Delete(FromBase64Key);
+            uint8ArrayCtor.Delete(FromHexKey);
+            uint8ArrayCtor.prototype.Delete(ToBase64Key);
+            uint8ArrayCtor.prototype.Delete(ToHexKey);
+            uint8ArrayCtor.prototype.Delete(SetFromBase64Key);
+            uint8ArrayCtor.prototype.Delete(SetFromHexKey);
         }
 
         if (!context.HasExperimentalFeature(JavaScriptFeatureFlags.MapUpsert))
         {
-            if (context[KeyStrings.GetOrCreate("Map")] is JSFunction mapCtor)
+            if (context[KeyStrings.Map] is JSFunction mapCtor)
             {
-                mapCtor.prototype.Delete(KeyStrings.GetOrCreate("getOrInsert"));
-                mapCtor.prototype.Delete(KeyStrings.GetOrCreate("getOrInsertComputed"));
+                mapCtor.prototype.Delete(GetOrInsertKey);
+                mapCtor.prototype.Delete(GetOrInsertComputedKey);
             }
 
-            if (context[KeyStrings.GetOrCreate("WeakMap")] is JSFunction weakMapCtor)
+            if (context[KeyStrings.WeakMap] is JSFunction weakMapCtor)
             {
-                weakMapCtor.prototype.Delete(KeyStrings.GetOrCreate("getOrInsert"));
-                weakMapCtor.prototype.Delete(KeyStrings.GetOrCreate("getOrInsertComputed"));
+                weakMapCtor.prototype.Delete(GetOrInsertKey);
+                weakMapCtor.prototype.Delete(GetOrInsertComputedKey);
             }
         }
 
-        if (context[KeyStrings.GetOrCreate("Error")] is JSFunction errorCtor &&
+        if (context[KeyStrings.Error] is JSFunction errorCtor &&
             !context.HasExperimentalFeature(JavaScriptFeatureFlags.ErrorIsError))
         {
-            errorCtor.Delete(KeyStrings.GetOrCreate("isError"));
+            errorCtor.Delete(IsErrorKey);
         }
 
-        if (context[KeyStrings.GetOrCreate("Array")] is JSFunction arrayCtor &&
+        if (context[KeyStrings.Array] is JSFunction arrayCtor &&
             !context.HasExperimentalFeature(JavaScriptFeatureFlags.ArrayFromAsync))
         {
-            arrayCtor.Delete(KeyStrings.GetOrCreate("fromAsync"));
+            arrayCtor.Delete(FromAsyncKey);
         }
 
         if (!context.HasExperimentalFeature(JavaScriptFeatureFlags.ObjectMapGroupBy))
         {
-            if (context[KeyStrings.GetOrCreate("Object")] is JSFunction objectCtor)
-                objectCtor.Delete(KeyStrings.GetOrCreate("groupBy"));
+            if (context[KeyStrings.Object] is JSFunction objectCtor)
+                objectCtor.Delete(GroupByKey);
 
-            if (context[KeyStrings.GetOrCreate("Map")] is JSFunction mapCtor)
-                mapCtor.Delete(KeyStrings.GetOrCreate("groupBy"));
+            if (context[KeyStrings.Map] is JSFunction mapCtor)
+                mapCtor.Delete(GroupByKey);
         }
 
-        if (context[KeyStrings.GetOrCreate("Iterator")] is JSFunction iteratorCtor &&
+        if (context[IteratorKey] is JSFunction iteratorCtor &&
             !context.HasExperimentalFeature(JavaScriptFeatureFlags.IteratorConcat))
         {
-            iteratorCtor.Delete(KeyStrings.GetOrCreate("concat"));
+            iteratorCtor.Delete(ConcatKey);
         }
     }
 
     private static void SetupIteratorPrototypeChain(JSContext context)
     {
-        if (context[KeyStrings.GetOrCreate("Iterator")] is not JSFunction iteratorCtor)
+        if (context[IteratorKey] is not JSFunction iteratorCtor)
             return;
 
         var proto = iteratorCtor.prototype;
@@ -228,12 +246,12 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
         IteratorPrototypeSetup?.Invoke(proto);
 
         // Generator.prototype → Iterator.prototype (§2.1.14).
-        if (context[KeyStrings.GetOrCreate("Generator")] is JSFunction generatorCtor)
+        if (context[KeyStrings.Generator] is JSFunction generatorCtor)
             generatorCtor.prototype.SetPrototypeOf(proto);
 
-        if (context[KeyStrings.GetOrCreate("Set")] is JSFunction setCtor)
+        if (context[KeyStrings.Set] is JSFunction setCtor)
         {
-            var values = setCtor.prototype[KeyStrings.GetOrCreate("values")];
+            var values = setCtor.prototype[ValuesKey];
             if (values.IsFunction)
             {
                 ref var setSymbols = ref setCtor.prototype.GetSymbols();

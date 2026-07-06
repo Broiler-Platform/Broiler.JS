@@ -14,6 +14,7 @@ Broiler.JS uses a layered architecture derived from earlier YantraJS concepts bu
 - Core engine projects must not reference feature satellites such as `Broiler.JavaScript.BuiltIns`.
 - Feature satellites may register additional behavior through documented delegates rather than editing core runtime types directly.
 - Compliance fixes should land in the narrowest owning assembly and include tests in the matching `*.Tests` project.
+- Performance work and compiler-platform changes are tracked in the [Performance and IL roadmap](performance-and-il-roadmap.md).
 
 ## YantraJS migration status
 

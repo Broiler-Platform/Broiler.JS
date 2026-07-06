@@ -50,7 +50,10 @@ public static class RuntimeAssembly
 
 
     internal static (DynamicMethod, string il, string exp) CompileToBoundDynamicMethod(
-        this BLambdaExpression exp, Type boundType = null, IMethodBuilder methodBuilder = null)
+        this BLambdaExpression exp,
+        Type boundType = null,
+        IMethodBuilder methodBuilder = null,
+        bool captureDiagnostics = false)
     {
         // create closure...
 
@@ -62,34 +65,32 @@ public static class RuntimeAssembly
         var method = new DynamicMethod(exp.Name.FullName, exp.ReturnType, exp.ParameterTypesWithThis, boundType, true);
 
         var ilg = method.GetILGenerator();
-        StringWriter sw = new();
-        var expWriter = new StringWriter();
+        StringWriter sw = captureDiagnostics ? new StringWriter() : null;
+        StringWriter expWriter = captureDiagnostics ? new StringWriter() : null;
         // ILCodeGenerator.GenerateLogs = true;
-        ILCodeGenerator icg = new(ilg, methodBuilder, sw, expWriter);
+        ILCodeGenerator icg = new(ilg, methodBuilder, sw, expWriter, captureDiagnostics);
         icg.Emit(exp);
 
-        string il = sw.ToString();
+        string il = sw?.ToString() ?? string.Empty;
 
-        return (method, il, expWriter.ToString());
+        return (method, il, expWriter?.ToString() ?? string.Empty);
 
     }
 
     public static T CompileWithNestedLambdas<T>(this BExpression<T> expression)
+        => expression.CompileWithNestedLambdas(ExpressionCompilationOptions.Default).Value;
+
+    public static ExpressionCompilationResult<T> CompileWithNestedLambdas<T>(
+        this BExpression<T> expression,
+        ExpressionCompilationOptions options)
     {
-        var repository = new MethodRepository();
-        var outerLambda = BExpression.InstanceLambda<Func<T>>(expression.Name + "_outer", expression, BExpression.Parameter(typeof(Closures)), []) as BLambdaExpression;
-        LambdaRewriter.Rewrite(outerLambda);
-        var runtimeMethodBuilder = new RuntimeMethodBuilder(repository);
-
-        var (outer, il, exp) = outerLambda.CompileToBoundDynamicMethod(typeof(Closures), runtimeMethodBuilder);
-
-        repository.IL = il;
-        repository.Exp = exp;
-        var root = new Closures(repository, null, il, exp);
-
-        var func = outer.CreateDelegate(typeof(Func<T>), root) as Func<T>;
-
-        return func();
+        options ??= ExpressionCompilationOptions.Default;
+        return ExpressionCompilationBackends.Get(options.Backend).Compile(expression, options);
     }
+
+    public static T CompileWithNestedLambdas<T>(
+        this BExpression<T> expression,
+        ExpressionCompilationBackend backend)
+        => expression.CompileWithNestedLambdas(new ExpressionCompilationOptions { Backend = backend }).Value;
 
 }

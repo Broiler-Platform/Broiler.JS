@@ -49,6 +49,28 @@ public static class JSEngine
         }
     }
 
+    internal static CurrentContextScope EnterContext(IJSContext context) => new(context);
+
+    internal readonly struct CurrentContextScope : IDisposable
+    {
+        private readonly IJSContext previous;
+        private readonly bool changed;
+
+        public CurrentContextScope(IJSContext context)
+        {
+            previous = Current;
+            changed = context != null && !ReferenceEquals(context, previous);
+            if (changed)
+                CurrentContext = context;
+        }
+
+        public void Dispose()
+        {
+            if (changed)
+                CurrentContext = previous;
+        }
+    }
+
     /// <summary>
     /// Clears the async-local context reference. Called by
     /// <c>JSContext.Dispose()</c> in the Engine assembly.

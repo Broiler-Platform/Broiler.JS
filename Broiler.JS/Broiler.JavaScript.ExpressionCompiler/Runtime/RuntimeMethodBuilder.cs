@@ -8,7 +8,7 @@ using Broiler.JavaScript.ExpressionCompiler.Expressions;
 namespace Broiler.JavaScript.ExpressionCompiler.Runtime;
 
 
-public class RuntimeMethodBuilder(IMethodRepository methods) : IMethodBuilder
+public class RuntimeMethodBuilder(IMethodRepository methods, bool captureDiagnostics = false) : IMethodBuilder
 {
     private static Type type = typeof(IMethodRepository);
 
@@ -18,7 +18,7 @@ public class RuntimeMethodBuilder(IMethodRepository methods) : IMethodBuilder
     public BExpression Relay(BExpression @this, IFastEnumerable<BExpression> closures, BLambdaExpression innerLambda)
     {
         LambdaRewriter.Rewrite(innerLambda);
-        var (method, il, exp) = innerLambda.CompileToBoundDynamicMethod(methodBuilder: this);
+        var (method, il, exp) = innerLambda.CompileToBoundDynamicMethod(methodBuilder: this, captureDiagnostics: captureDiagnostics);
         var repository = BExpression.Field(@this, Closures.repositoryField);
         var id = methods.RegisterNew(method, il, exp, innerLambda.Type);
         return BExpression.Call(repository, create, closures == null ? BExpression.Null : BExpression.NewArray(typeof(Box), closures), BExpression.Constant(id));

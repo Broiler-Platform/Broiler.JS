@@ -475,6 +475,58 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_ObjectSpread_Copies_Sparse_Elements_Without_Dense_Length_Scan()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var array = [];
+                array[1] = 2;
+                array[4294967294] = 7;
+
+                var copy = { ...array };
+                return [
+                    Object.keys(copy).join(","),
+                    copy[1],
+                    copy[4294967294],
+                    typeof copy.length
+                ].join("|");
+            })()
+            """);
+
+        Assert.Equal("1,4294967294|2|7|undefined", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_ObjectSpread_Uses_Snapshot_Of_Sparse_Element_Keys()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var source = [];
+                Object.defineProperty(source, "1", {
+                    enumerable: true,
+                    get: function () {
+                        source[2] = "late";
+                        return "one";
+                    }
+                });
+                source[3] = "three";
+
+                var copy = { ...source };
+                return [
+                    Object.keys(copy).join(","),
+                    copy[1],
+                    copy[3],
+                    typeof copy[2]
+                ].join("|");
+            })()
+            """);
+
+        Assert.Equal("1,3|one|three|undefined", result.ToString());
+    }
+
+    [Fact]
     public void Compile_ObjectDestructuring_Rest_Copies_Only_Remaining_Properties()
     {
         using var ctx = new JSContext();
@@ -487,6 +539,60 @@ public class CompilerTests
             """);
 
         Assert.Equal("1|1,b|3|2", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_ObjectDestructuring_Rest_Copies_Sparse_Elements_Without_Dense_Length_Scan()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var array = [];
+                array[0] = "skip";
+                array[5] = "keep";
+                array[4294967294] = "last";
+
+                var { 0: first, ...rest } = array;
+                return [
+                    first,
+                    Object.keys(rest).join(","),
+                    rest[5],
+                    rest[4294967294],
+                    typeof rest[0]
+                ].join("|");
+            })()
+            """);
+
+        Assert.Equal("skip|5,4294967294|keep|last|undefined", result.ToString());
+    }
+
+    [Fact]
+    public void Compile_ObjectDestructuring_Rest_Uses_Snapshot_Of_Sparse_Element_Keys()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var source = [];
+                Object.defineProperty(source, "1", {
+                    enumerable: true,
+                    get: function () {
+                        source[2] = "late";
+                        return "one";
+                    }
+                });
+                source[3] = "three";
+
+                var { ...rest } = source;
+                return [
+                    Object.keys(rest).join(","),
+                    rest[1],
+                    rest[3],
+                    typeof rest[2]
+                ].join("|");
+            })()
+            """);
+
+        Assert.Equal("1,3|one|three|undefined", result.ToString());
     }
 
     [Fact]

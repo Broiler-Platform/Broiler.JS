@@ -383,10 +383,9 @@ public partial class JSObject
         // CopyDataProperties copies only the source's own *enumerable* properties, so
         // a slot stored non-enumerable (e.g. an array index or string/symbol property
         // defined with enumerable:false via Object.defineProperty) is skipped here too.
-        var en = target.elements.Length;
-        for (uint i = 0; i < en; i++)
+        foreach (var (i, p) in target.elements.AllValues())
         {
-            if (target.elements.TryGetValue(i, out var p) && !p.IsEmpty && p.IsEnumerable)
+            if (!p.IsEmpty && p.IsEnumerable)
                 elements.Put(i) = p.IsValue
                     ? JSProperty.Property(i, p.value)
                     : JSProperty.Property(i, (IPropertyValue)target.GetValue(p));
@@ -460,11 +459,9 @@ public partial class JSObject
             return;
         }
 
-        var en = target.elements.Length;
-        for (uint i = 0; i < en; i++)
+        foreach (var (i, p) in target.elements.AllValues())
         {
-            if (target.elements.TryGetValue(i, out var p) && !p.IsEmpty && p.IsEnumerable
-                && !excludedKeys.elements.HasKey(i))
+            if (!p.IsEmpty && p.IsEnumerable && !excludedKeys.elements.HasKey(i))
                 elements.Put(i) = p.IsValue
                     ? JSProperty.Property(i, p.value)
                     : JSProperty.Property(i, (IPropertyValue)target.GetValue(p));

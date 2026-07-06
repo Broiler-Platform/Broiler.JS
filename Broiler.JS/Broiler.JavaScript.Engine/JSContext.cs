@@ -25,6 +25,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 {
     private static long contextId = 1;
     private static readonly KeyString UnscopablesKey = KeyStrings.GetOrCreate("unscopables");
+    private static readonly KeyString ValuesKey = KeyStrings.GetOrCreate("values");
 
     public long ID { get; set; } = Interlocked.Increment(ref contextId);
 
@@ -1541,19 +1542,16 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
         ref var ownProperties = ref GetOwnProperties();
 
-        KeyString functionKey = "Function";
-        KeyString objectKey = "Object";
-
         var func = JSEngine.CreateFunctionClass(this, false);
         // Built-in global constructors are { writable, enumerable: false, configurable }.
         // The indexer would install them as enumerable (so they'd wrongly show up in a
         // global for-in / Object.keys), so add them with ConfigurableValue attributes.
-        this.FastAddValue(functionKey, func, JSPropertyAttributes.ConfigurableValue);
+        this.FastAddValue(KeyStrings.Function, func, JSPropertyAttributes.ConfigurableValue);
         FunctionPrototype = ((IJSFunction)func).Prototype as JSObject;
         if (FunctionPrototype.GetInternalProperty(KeyStrings.length, false).IsEmpty)
             FunctionPrototype.FastAddValue(KeyStrings.length, JSValue.NumberZero, JSPropertyAttributes.ConfigurableReadonlyValue);
         Object = JSEngine.CreateObjectClass(this, false);
-        this.FastAddValue(objectKey, Object, JSPropertyAttributes.ConfigurableValue);
+        this.FastAddValue(KeyStrings.Object, Object, JSPropertyAttributes.ConfigurableValue);
         ObjectPrototype = ((IJSFunction)Object).Prototype as JSObject;
         ObjectPrototype.BasePrototypeObject = null;
         // %Object.prototype% is an immutable prototype exotic object (§10.4.7):
@@ -1577,10 +1575,10 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         IntrinsicEval = this[KeyStrings.eval];
         // Capture %Array.prototype.values% (=== Array.prototype[@@iterator]) so the
         // arguments object can expose the genuine intrinsic as its @@iterator.
-        if (this[KeyStrings.GetOrCreate("Array")] is IJSFunction arrayCtor
+        if (this[KeyStrings.Array] is IJSFunction arrayCtor
             && arrayCtor.Prototype is JSObject arrayProto)
         {
-            var values = arrayProto[KeyStrings.GetOrCreate("values")];
+            var values = arrayProto[ValuesKey];
             if (values.IsFunction)
                 IntrinsicArrayValues = values;
         }
@@ -1588,7 +1586,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         // prototype even after user code reassigns the global `Promise` binding
         // (test262 dynamic-import/returns-promise). In the common case the intrinsic
         // equals the current global Promise.prototype, so this changes nothing.
-        if (this[KeyStrings.GetOrCreate("Promise")] is IJSFunction promiseCtor
+        if (this[KeyStrings.Promise] is IJSFunction promiseCtor
             && promiseCtor.Prototype is JSObject promiseProto)
         {
             IntrinsicPromisePrototype = promiseProto;

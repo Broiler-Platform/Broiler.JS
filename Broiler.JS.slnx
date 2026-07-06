@@ -13,6 +13,9 @@
     <Project Path="Broiler.JS/Broiler.JavaScript.Runtime.Tests/Broiler.JavaScript.Runtime.Tests.csproj" />
     <Project Path="Broiler.JS/Broiler.JavaScript.Storage.Tests/Broiler.JavaScript.Storage.Tests.csproj" />
   </Folder>
+  <Folder Name="/Benchmarks/">
+    <Project Path="Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Broiler.JavaScript.Engine.Benchmarks.csproj" />
+  </Folder>
   <Project Path="Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj" />
